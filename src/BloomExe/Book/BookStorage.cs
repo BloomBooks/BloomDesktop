@@ -1533,7 +1533,7 @@ namespace Bloom.Book
 			}
             catch (UnauthorizedAccessException error)
 			{
-				ProcessAccessDeniedError(error);
+				ShowAccessDeniedErrorHtml(error);
 				return;
 			}
 			var backupPath = GetBackupFilePath();
@@ -1612,7 +1612,7 @@ namespace Bloom.Book
 				}
 				catch (UnauthorizedAccessException error)
 				{
-					ProcessAccessDeniedError(error);
+					ShowAccessDeniedErrorHtml(error);
 					return;
 				}
 				catch (Exception error)
@@ -1765,7 +1765,10 @@ namespace Bloom.Book
 			return true;
 		}
 
-		private void ProcessAccessDeniedError(UnauthorizedAccessException error)
+		/// <summary>
+		/// Reports an UnauthorizedAccessException to the user using the book storage instance's html
+		/// </summary>
+		private void ShowAccessDeniedErrorHtml(UnauthorizedAccessException error)
 		{
 			var message = LocalizationManager.GetString("Errors.DeniedAccess",
 				"Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.");
@@ -1778,6 +1781,33 @@ namespace Bloom.Book
 			ErrorMessagesHtml = message;
 			_errorAlreadyContainsInstructions = true;
 			ErrorAllowsReporting = true;
+		}
+
+		/// <summary>
+		/// Reports an UnauthorizedAccessException to the user using the Problem Report Dialog
+		/// You can use this when you don't have easy access to the book storage's html displayed at load time.
+		/// </summary>
+		internal static void ShowAccessDeniedErrorReport(UnauthorizedAccessException noAccessError)
+		{
+			var summary = LocalizationManager.GetString("Errors.DeniedAccess",
+				"Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.");
+
+			var helpUrl = @"http://community.bloomlibrary.org/t/how-to-fix-file-permissions-problems/78";
+			var seeAlso = LocalizationManager.GetString("Common.SeeWebPage", "See {0}.");
+			summary += Environment.NewLine + String.Format(seeAlso, helpUrl);
+
+			// In the details shown to the user, don't need the extra diagnostic info in BloomUnauthorizedAccessException
+			// (However, in the error report submitted to YouTrack, we do want that extra diagnostic info)
+			Exception errorToUser = noAccessError;
+			if (noAccessError is BloomUnauthorizedAccessException)
+				errorToUser = noAccessError.InnerException;
+			string details = errorToUser.Message;
+
+			Logger.WriteEvent("*** ERROR: " + summary + Environment.NewLine + details);
+
+			// Even though there's not really anything we can fix, we still set showSendReport=true because
+			// false uses a MessageBox for which the user can't use the mouse to select text to copy/paste
+			NonFatalProblem.Report(ModalIf.All, PassiveIf.None, summary, details, noAccessError, showSendReport: true);
 		}
 
 		/// <summary>
@@ -2439,8 +2469,18 @@ namespace Bloom.Book
 						dirty = true;
 					}
 				}
+
 				if (dirty)
-					Save();
+				{
+					try
+					{
+						Save();
+					}
+					catch (UnauthorizedAccessException e)
+					{
+						ShowAccessDeniedErrorReport(e);
+					}
+				}
 			}
 			// future additional levels will add additional "if (level < N)" blocks.
 			Dom.UpdateMetaElement("maintenanceLevel", kMaintenanceLevel.ToString(CultureInfo.InvariantCulture));

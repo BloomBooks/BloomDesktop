@@ -1103,7 +1103,6 @@ namespace Bloom.Api
 						continue;
 					}
 					
-					// ENHANCE: May not be necessary if we convert it to update _countBlockedThreads?
 					isRecursiveRequestContext = IsRecursiveRequestContext(context);
 					if (isRecursiveRequestContext)
 					{
@@ -1380,8 +1379,7 @@ namespace Bloom.Api
 			// Notably, ProblemReportApi can be invoked by both server and non-server code
 			if (IsWorkerThread(Thread.CurrentThread))
 			{
-				// ENHANCE: So far only BloomApiHandler and problem report dialog have been done.
-				//    Could potentially replace the thumbnail-specific code with this?
+				// Note: So far only BloomApiHandler and problem report dialog have been analyzed to call this when needed.
 				Interlocked.Increment(ref _countBlockedThreads);
 			}			
 		}

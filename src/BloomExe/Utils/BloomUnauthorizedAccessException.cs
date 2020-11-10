@@ -70,8 +70,14 @@ namespace Bloom.Utils
 			else
 			{
 				// Check its containing directory instead.
+				// Process in a loop in case we get a path that contains folders which have not been created yet.
 				string dirName = Path.GetDirectoryName(path);
-				if (Directory.Exists(dirName))
+				while (dirName != null && !Directory.Exists(dirName))
+				{
+					dirName = Path.GetDirectoryName(dirName);
+				}
+
+				if (dirName != null)
 				{
 					string permissions = GetPermissionString(new DirectoryInfo(dirName));
 					return $"Permissions SDDL for directory '{dirName}' is '{permissions}'.";
