@@ -98,13 +98,13 @@ namespace Bloom.web.controllers
 			// and we assume that nothing sends problemReport API requests except the problemReportDialog that this class loads.
 
 			// ProblemDialog.tsx uses this endpoint to get the string to show at the top of the main dialog
-			apiHandler.RegisterEndpointHandler("problemReport/reportHeading",
+			apiHandler.RegisterEndpointHandlerUsedByOthers("problemReport/reportHeading",
 				(ApiRequest request) =>
 				{
 					request.ReplyWithText(_reportInfo.Heading ?? "");
-				}, false, requiresSync: false);
+				}, false);
 			// ProblemDialog.tsx uses this endpoint to get the screenshot image.
-			apiHandler.RegisterEndpointHandler("problemReport/screenshot",
+			apiHandler.RegisterEndpointHandlerUsedByOthers("problemReport/screenshot",
 				(ApiRequest request) =>
 				{
 					// Wait until the screenshot is finished.
@@ -118,35 +118,35 @@ namespace Bloom.web.controllers
 
 					if (isLockTaken)
 						_takingScreenshotLock.Release();
-				}, true, requiresSync: false);
+				}, true);
 
 			// ProblemDialog.tsx uses this endpoint to get the name of the book.
-			apiHandler.RegisterEndpointHandler("problemReport/bookName",
+			apiHandler.RegisterEndpointHandlerUsedByOthers("problemReport/bookName",
 				(ApiRequest request) =>
 				{
 					request.ReplyWithText(_reportInfo.BookName ?? "??");
-				}, true, requiresSync: false);
+				}, true);
 
 			// ProblemDialog.tsx uses this endpoint to get the registered user's email address.
-			apiHandler.RegisterEndpointHandler("problemReport/emailAddress",
+			apiHandler.RegisterEndpointHandlerUsedByOthers("problemReport/emailAddress",
 				(ApiRequest request) =>
 				{
 					request.ReplyWithText(_reportInfo.UserEmail);
-				}, true, requiresSync: false);
+				}, true);
 
 			// PrivacyScreen.tsx uses this endpoint to show the user what info will be included in the report.
-			apiHandler.RegisterEndpointHandler("problemReport/diagnosticInfo",
+			apiHandler.RegisterEndpointHandlerUsedByOthers("problemReport/diagnosticInfo",
 				(ApiRequest request) =>
 				{
 					var userWantsToIncludeBook = request.RequiredParam("includeBook") == "true";
 					var userInput = request.RequiredParam("userInput");
 					var userEmail = request.RequiredParam("email");
 					request.ReplyWithText(GetDiagnosticInfo(userWantsToIncludeBook, userInput, userEmail));
-				}, true, requiresSync: false);
+				}, true);
 
 			// ProblemDialog.tsx uses this endpoint in its AttemptSubmit method;
 			// it expects a response that it will use to show the issue link to the user.
-			apiHandler.RegisterEndpointHandler("problemReport/submit",
+			apiHandler.RegisterEndpointHandlerUsedByOthers("problemReport/submit",
 				(ApiRequest request) =>
 				{
 					var report = DynamicJson.Parse(request.RequiredPostJson());
@@ -222,7 +222,7 @@ namespace Bloom.web.controllers
 						}
 					}
 					request.ReplyWithJson(linkToNewIssue);
-				}, true, requiresSync: false);
+				}, true);
 		}
 
 		private string CreateBookZipFile(string basename, string userDesc)
