@@ -293,6 +293,13 @@
             margin-right: 0;
             width: auto;
         }
+
+        // This is a hack to force the layout of the children to *not* get reversed when the language is right-to-left.
+        // The lang attribute gets set on the page (an ancestor), and when the language setting is right-to-left, we add
+        // [lang='code'] {direction:rtl} in defaultLangStyles.css. We need to undo that here so the logo is always on the left.
+        // It doesn't mess up the text itself because the text boxes have lang='code' which reapplies direction:rtl.
+        // See BL-8545.
+        direction: ltr;
     }
 }
 
