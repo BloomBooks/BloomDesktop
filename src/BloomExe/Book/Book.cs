@@ -18,6 +18,7 @@ using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.ToPalaso;
+using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
@@ -1178,7 +1179,15 @@ namespace Bloom.Book
 						copyCurrentRule = false;
 				}
 			}
-			RobustFile.WriteAllText(path, cssBuilder.ToString());
+			try
+			{
+				RobustFile.WriteAllText(path, cssBuilder.ToString());
+			}
+			catch (UnauthorizedAccessException e)
+			{
+				// Re-throw with additional debugging info.
+				throw new BloomUnauthorizedAccessException(path, e);
+			}
 		}
 
 		private void UpdateCollectionSettingsInBookMetaData()

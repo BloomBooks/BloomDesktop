@@ -20,6 +20,7 @@ using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using Bloom.Properties;
 using SIL.Text;
+using Bloom.Utils;
 
 namespace Bloom.Book
 {
@@ -784,10 +785,18 @@ namespace Bloom.Book
 		{
 			string tempFilePath;
 			var metaDataPath = MetaDataPath(bookFolderPath);
-			using (var temp = TempFile.InFolderOf(metaDataPath))
+			try
 			{
-				tempFilePath = temp.Path;
+				using (var temp = TempFile.InFolderOf(metaDataPath))
+				{
+					tempFilePath = temp.Path;
+				}
 			}
+			catch (UnauthorizedAccessException e)
+			{
+				throw new BloomUnauthorizedAccessException(metaDataPath, e);
+			}
+
 			RobustFile.WriteAllText(tempFilePath, Json);
 			if (RobustFile.Exists(metaDataPath))
 				RobustFile.Replace(tempFilePath, metaDataPath, BackupFilePath(bookFolderPath));
