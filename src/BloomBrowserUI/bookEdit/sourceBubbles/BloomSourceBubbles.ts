@@ -5,11 +5,14 @@
 /// <reference path="../../typings/jquery.qtipSecondary.d.ts" />
 /// <reference path="../../typings/jquery.qtip.d.ts" />
 /// <reference path="../../typings/jquery.easytabs.d.ts" />
+import React = require("react");
+import ReactDOM = require("react-dom");
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import bloomQtipUtils from "../js/bloomQtipUtils";
 import "../../lib/jquery.easytabs.js"; //load into global space
 import BloomHintBubbles from "../js/BloomHintBubbles";
+import ContentCopyIcon from "../../react_components/icons/ContentCopyIcon";
 import { BloomApi } from "../../utils/bloomApi";
 
 declare function GetSettings(): any; //c# injects this
@@ -140,12 +143,15 @@ export default class BloomSourceBubbles {
             return 0;
         });
 
+        const copyButton = document.createElement("div");
+        copyButton.className = "bloom-ui bloom-source-copy-button";
+
         // BL-2357
         items = BloomSourceBubbles.SmartOrderSourceTabs(items, newIso);
-
         const list = $this.find("nav ul");
         items.each(function() {
-            const iso = $(this).attr("lang");
+            const sourceElement = this as HTMLElement;
+            const iso = sourceElement.getAttribute("lang");
             if (iso) {
                 const localizedLanguageName =
                     theOneLocalizationManager.getLanguageName(iso) || iso;
@@ -166,12 +172,43 @@ export default class BloomSourceBubbles {
                         "</a></li>"
                 );
                 // BL-8174: Add a tooltip with the iso code to the item
-                $(this).attr("title", iso);
+                sourceElement.setAttribute("title", iso);
+            }
+            if (sourceElement.innerText !== "") {
+                // BL-9198 Add a copy icon to the source bubble
+                const clonedCopyButton = copyButton.cloneNode(
+                    true
+                ) as HTMLDivElement;
+                sourceElement.append(clonedCopyButton);
+                ReactDOM.render(
+                    React.createElement(ContentCopyIcon, {
+                        size: "small"
+                    }),
+                    clonedCopyButton
+                );
+                clonedCopyButton.onmousedown = ev =>
+                    BloomSourceBubbles.handleCopyBubbleSourceClick(
+                        sourceElement
+                    );
             }
         });
 
         return divForBubble;
     } // end MakeSourceTextDivForGroup()
+
+    private static handleCopyBubbleSourceClick(
+        sourceElement: HTMLElement
+    ): void {
+        const textToCopy = (sourceElement.closest(
+            ".source-text"
+        ) as HTMLDivElement).innerText;
+        if (textToCopy !== "") {
+            BloomApi.postJson("common/clipboardText", {
+                text: textToCopy
+            });
+            //navigator.clipboard.writeText(textToCopy); simpler, but not available until FF66+
+        }
+    }
 
     private static RemoveCustomPageAdditions(editableDiv: JQuery): void {
         const styleAttr = editableDiv.attr("style");

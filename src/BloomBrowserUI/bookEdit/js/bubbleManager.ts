@@ -160,7 +160,7 @@ export class BubbleManager {
 
         Comical.setActiveBubbleListener(activeElement => {
             if (activeElement) {
-                var focusElements = activeElement.getElementsByClassName(
+                const focusElements = activeElement.getElementsByClassName(
                     "bloom-visibility-code-on"
                 );
                 if (focusElements.length > 0) {
@@ -339,9 +339,9 @@ export class BubbleManager {
                 // it would be nice to do this only once, but there MIGHT
                 // be TOP elements in more than one image container...too complicated,
                 // and this only happens once per TOP.
-                Comical.update(top.closest(
-                    ".bloom-imageContainer"
-                ) as HTMLElement);
+                Comical.update(
+                    top.closest(".bloom-imageContainer") as HTMLElement
+                );
             }
         });
     }
