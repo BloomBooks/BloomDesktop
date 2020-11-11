@@ -1,6 +1,9 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../typings/ckeditor/ckeditor.d.ts" />
 
+import AudioRecording from "../toolbox/talkingBook/audioRecording";
+import { BloomApi } from "../../utils/bloomApi";
+
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
 //
@@ -129,6 +132,13 @@ export default class BloomField {
                 event.data.dataValue = fixItalic;
             }
 
+            // We can't just duplicate audio ids without running into trouble later!
+            // We need to generate a new guid-based id, use it to copy the audio file, and
+            // insert it into the span.  Firefox 60 imposes using RegExp.exec.
+            event.data.dataValue = this.copyAudioFilesWithNewIdsDuringPasting(
+                event.data.dataValue
+            );
+
             const paras = event.data.dataValue.match(/<p>/g);
             if (!paras) {
                 // Enhance: should we remove the probable <span> and just leave the text?
@@ -178,6 +188,50 @@ export default class BloomField {
             // Use <sup> because that is what ckeditor uses
             return inputText.replace(re, "<sup>$1</sup>");
         }
+    }
+
+    public static copyAudioFilesWithNewIdsDuringPasting(
+        inputText: string
+    ): string {
+        const audioRegex = RegExp(
+            '<span id="([^"]*)" class="audio-sentence[" ][^>]*>([^<]*)</span>',
+            "g"
+        );
+        let array1;
+        let newText: string = "";
+        let startIndex: number = 0;
+        while ((array1 = audioRegex.exec(inputText)) !== null) {
+            if (array1["index"] > startIndex) {
+                newText =
+                    newText + inputText.substring(startIndex, array1["index"]);
+            }
+            const newId = AudioRecording.createValidXhtmlUniqueId();
+            newText =
+                newText +
+                `<span id="${newId}" class="audio-sentence">${
+                    array1[2]
+                }</span>`;
+            if ((window as any).__karma__) {
+                console.log(
+                    `Test skips post: audio/copyAudioFile?oldId=${
+                        array1[1]
+                    }&newId=${newId}`
+                );
+            } else {
+                BloomApi.post(
+                    `audio/copyAudioFile?oldId=${array1[1]}&newId=${newId}`
+                );
+            }
+            startIndex = audioRegex.lastIndex;
+        }
+        if (newText) {
+            if (startIndex > 0 && startIndex < inputText.length) {
+                newText =
+                    newText + inputText.substring(startIndex, inputText.length);
+            }
+            return newText;
+        }
+        return inputText;
     }
 
     private static MakeShiftEnterInsertLineBreak(field: HTMLElement) {

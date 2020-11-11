@@ -29,6 +29,42 @@ describe("BloomField", () => {
         expect(result).toBe("A v 2 B C \\v D E.");
     });
 
+    it("copyAudioFilesWithNewIdsDuringPasting does not change input when no audio found", () => {
+        const input = '<p><span class="bold">This is a test!</span>';
+        const result = BloomField.copyAudioFilesWithNewIdsDuringPasting(input);
+        expect(result).toBe(input);
+    });
+
+    it("copyAudioFilesWithNewIdsDuringPasting changes span ids when audio found", () => {
+        const input =
+            '<p><span id="i2b4f74ac-3d71-4692-9793-bb18ff56b6e2" class="audio-sentence ui-currentAudio" recordingmd5="db3bd4ec0300c2491de826fc858603e8" data-duration="2.690566">This page was copied and pasted.</span>&nbsp; <span id="i39184f35-39bf-4574-9e55-3eedafb6bde9" class="audio-sentence" recordingmd5="21e576d30fb30bef4f09b9c3e051763d" data-duration="5.825206">This paragraph has two sentences, so it should have two audio spans.</span></p>';
+        const result = BloomField.copyAudioFilesWithNewIdsDuringPasting(input);
+
+        expect(result).not.toBe(input);
+        expect(result).toContainText("This page was copied and pasted");
+        expect(result).toContainText(
+            "This paragraph has two sentences, so it should have two audio spans."
+        );
+        expect(result).toContainHtml('class="audio-sentence"');
+        expect(result).not.toContainHtml(
+            'id="i2b4f74ac-3d71-4692-9793-bb18ff56b6e2"'
+        );
+        expect(result).not.toContainHtml(
+            'id="i39184f35-39bf-4574-9e55-3eedafb6bde9"'
+        );
+        expect(result.startsWith('<p><span id="')).toBe(true);
+        expect(
+            result.includes(
+                '" class="audio-sentence">This page was copied and pasted.</span>&nbsp; <span id="'
+            )
+        ).toBe(true);
+        expect(
+            result.endsWith(
+                '" class="audio-sentence">This paragraph has two sentences, so it should have two audio spans.</span></p>'
+            )
+        ).toBe(true);
+    });
+
     it("bloom-editable div creates a <p>", () => {
         WireUp();
         expect($("div p").length).toBeGreaterThan(0);
