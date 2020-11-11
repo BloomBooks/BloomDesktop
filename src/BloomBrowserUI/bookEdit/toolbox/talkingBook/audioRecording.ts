@@ -1112,7 +1112,7 @@ export default class AudioRecording {
             if (currentElement.hasAttribute("id")) {
                 id = currentElement.getAttribute("id")!;
             } else {
-                id = this.createValidXhtmlUniqueId();
+                id = AudioRecording.createValidXhtmlUniqueId();
                 currentElement.setAttribute("id", id);
             }
         }
@@ -2751,7 +2751,7 @@ export default class AudioRecording {
     }
 
     // from http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
-    private createUuid(): string {
+    private static createUuid(): string {
         // http://www.ietf.org/rfc/rfc4122.txt
         var s: string[] = [];
         var hexDigits = "0123456789abcdef";
@@ -2834,7 +2834,7 @@ export default class AudioRecording {
                         root.id == null ||
                         root.id == ""
                     ) {
-                        root.id = this.createValidXhtmlUniqueId();
+                        root.id = AudioRecording.createValidXhtmlUniqueId();
                     }
 
                     // All done, no need to process any of the remaining children
@@ -3012,7 +3012,7 @@ export default class AudioRecording {
                     }
 
                     if (!newId) {
-                        newId = this.createValidXhtmlUniqueId();
+                        newId = AudioRecording.createValidXhtmlUniqueId();
                     }
                 }
 
@@ -3047,8 +3047,8 @@ export default class AudioRecording {
         return text;
     }
 
-    private createValidXhtmlUniqueId(): string {
-        let newId = this.createUuid();
+    public static createValidXhtmlUniqueId(): string {
+        let newId = AudioRecording.createUuid();
         if (/^\d/.test(newId)) newId = "i" + newId; // valid ID in XHTML can't start with digit
 
         return newId;
@@ -3650,7 +3650,7 @@ export default class AudioRecording {
         for (let i = 0; i < textFragments.length; ++i) {
             const fragment = textFragments[i];
             if (this.isRecordable(fragment)) {
-                const newId = this.createValidXhtmlUniqueId();
+                const newId = AudioRecording.createValidXhtmlUniqueId();
 
                 // Sometimes extraneous newlines can be injected (by CKEditor?). They may get removed later (maybe after the CKEditor reloads when the text box's underlying HTML is modified???)
                 // However, some processing needs the text immediately, and others are after the text is cleaned.
