@@ -21,11 +21,6 @@ namespace BloomTests.TestDoubles.CollectionTab
 			TestFolderPath = testFolder.Path;
 		}
 
-		public void RunCompressCollectionDirectoryTest(string outputPath, bool forReaderTools = false)
-		{
-			BookCompressor.CompressCollectionDirectory(outputPath, TestFolderPath, "", forReaderTools, excludeAudio: true);
-		}
-
 		protected static SourceCollectionsList GetDefaultSourceCollectionsList()
 		{
 			var parentFolder = new TemporaryFolder("Parent");
