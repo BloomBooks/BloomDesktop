@@ -326,18 +326,27 @@ namespace Bloom.CollectionTab
 			var rootName = Path.GetFileName(dirName);
 			if (rootName == null) return;
 			Logger.WriteEvent($"Making BloomPack at {path} forReaderTools={forReaderTools}");
-			MakeBloomPackWithUI(path, dirName, dirPrefix, forReaderTools);
+			MakeBloomPackWithUI(path, dirName, dirPrefix, forReaderTools, isCollection: true);
+		}
+
+		internal (string dirName, string dirPrefix) GetDirNameAndPrefixForSingleBookBloomPack(string inputBookFolder)
+		{
+			var rootName = Path.GetFileName(inputBookFolder);
+			if (rootName != null)
+				rootName += Path.DirectorySeparatorChar;
+
+			return (inputBookFolder, rootName);
 		}
 
 		public void MakeSingleBookBloomPack(string path, string inputBookFolder)
 		{
-			var rootName = Path.GetFileName(inputBookFolder);
-			if (rootName == null) return;
+			var (dirName, dirPrefix) = GetDirNameAndPrefixForSingleBookBloomPack(inputBookFolder);
+			if (dirPrefix == null) return;
 			Logger.WriteEvent($"Making single book BloomPack at {path} bookFolderPath={inputBookFolder}");
-			MakeBloomPackWithUI(path, inputBookFolder, rootName + "/", false);
+			MakeBloomPackWithUI(path, dirName, dirPrefix, false, isCollection: false);
 		}
 
-		private void MakeBloomPackWithUI(string path, string dir, string dirNamePrefix, bool forReaderTools)
+		private void MakeBloomPackWithUI(string path, string dir, string dirNamePrefix, bool forReaderTools, bool isCollection)
 		{
 			try
 			{
@@ -356,7 +365,7 @@ namespace Bloom.CollectionTab
 						Cursor.Current = Cursors.WaitCursor;
 
 						Logger.WriteEvent("BloomPack path will be " + path + ", made from " + dir + " with rootName " + Path.GetFileName(dir));
-						MakeBloomPackInternal(path, dir, dirNamePrefix, forReaderTools);
+						MakeBloomPackInternal(path, dir, dirNamePrefix, forReaderTools, isCollection);
 
 						// show it
 						Logger.WriteEvent("Showing BloomPack on disk");
@@ -380,10 +389,17 @@ namespace Bloom.CollectionTab
 		/// Makes a BloomPack of the specified dir.
 		/// </summary>
 		/// <param name="path">The path to write to. Precondition: Must not exist.</param>
-		internal void MakeBloomPackInternal(string path, string dir, string dirNamePrefix, bool forReaderTools)
+		internal void MakeBloomPackInternal(string path, string dir, string dirNamePrefix, bool forReaderTools, bool isCollection)
 		{
 			var excludeAudio = true; // don't want audio in bloompack
-			BookCompressor.CompressCollectionDirectory(path, dir, dirNamePrefix, forReaderTools, excludeAudio);
+			if (isCollection)
+			{
+				BookCompressor.CompressCollectionDirectory(path, dir, dirNamePrefix, forReaderTools, excludeAudio);
+			}
+			else
+			{
+				BookCompressor.CompressBookDirectory(path, dir, dirNamePrefix, forReaderTools, excludeAudio);
+			}
 		}
 
 		public string GetSuggestedBloomPackPath()
