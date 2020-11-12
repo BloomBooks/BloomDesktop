@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -27,6 +27,10 @@ namespace BloomTests.CollectionTab
 		{
 			ErrorReport.IsOkToInteractWithUser = false;
 			_folder = new TemporaryFolder("LibraryModelTests");
+
+			// ENHANCE: Sometimes making the FakeCollection temporary folder causes an UnauthorizedAccessException.
+			// Not exactly sure why or what to do about it. Possibly it could be related to file system operations
+			// being async in nature???
 			_collection = new TemporaryFolder(_folder, "FakeCollection");
 			MakeFakeCssFile();
 			_testLibraryModel = new FakeLibraryModel(_collection);
@@ -60,7 +64,8 @@ namespace BloomTests.CollectionTab
 		// Imitate LibraryModel.MakeBloomPack() without the user interaction
 		private void MakeTestBloomPack(string bloomPackName, bool forReaderTools)
 		{
-			_testLibraryModel.RunCompressCollectionDirectoryTest(bloomPackName, forReaderTools);
+			var (dirName, dirPrefix) = _testLibraryModel.GetDirNameAndPrefixForCollectionBloomPack();
+			_testLibraryModel.MakeBloomPackInternal(bloomPackName, dirName, dirPrefix, forReaderTools);
 		}
 
 		// Don't do anything with the zip file except read in the filenames
@@ -89,8 +94,8 @@ namespace BloomTests.CollectionTab
 			// Don't do anything with the zip file except read in the filenames
 			var actualFiles = GetActualFilenamesFromZipfile(bloomPackName);
 
-			// +1 for collection-level css file, -1 for pdf file, so the count is right
-			Assert.That(actualFiles.Count, Is.EqualTo(Directory.GetFiles(srcBookPath).Count()));
+			// +2 for collection-level CustomCollectionSettings and FakeCss.css file, -1 for pdf file, so the count is right
+			Assert.That(actualFiles.Count, Is.EqualTo(Directory.GetFiles(srcBookPath).Count() + 1));
 
 			foreach (var filePath in actualFiles)
 			{
@@ -112,8 +117,8 @@ namespace BloomTests.CollectionTab
 			// Don't do anything with the zip file except read in the filenames
 			var actualFiles = GetActualFilenamesFromZipfile(bloomPackName);
 
-			// +1 for collection-level css file, -1 for thumbs file, so the count is right
-			Assert.That(actualFiles.Count, Is.EqualTo(Directory.GetFiles(srcBookPath).Count()));
+			// +2 for collection-level CustomCollectionSettings and FakeCss.css file, -1 for thumbs file, so the count is right
+			Assert.That(actualFiles.Count, Is.EqualTo(Directory.GetFiles(srcBookPath).Count() + 1));
 
 			foreach (var filePath in actualFiles)
 			{
@@ -141,8 +146,8 @@ namespace BloomTests.CollectionTab
 			// Don't do anything with the zip file except read in the filenames
 			var actualFiles = GetActualFilenamesFromZipfile(bloomPackName);
 
-			// +1 for collection-level css file, -4 for corrupt, .map and .bak files, so the count is -3
-			Assert.That(actualFiles.Count, Is.EqualTo(Directory.GetFiles(srcBookPath).Length - 3));
+			// +2 for collection-level CustomCollectionSettings and FakeCss.css file, -4 for corrupt, .map and .bak files, so the count is -3
+			Assert.That(actualFiles.Count, Is.EqualTo(Directory.GetFiles(srcBookPath).Length - 2));
 
 			foreach (var filePath in actualFiles)
 			{

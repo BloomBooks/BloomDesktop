@@ -314,13 +314,19 @@ namespace Bloom.CollectionTab
 
 		}
 
-		public void MakeBloomPack(string path, bool forReaderTools = false)
+		internal (string dirName, string dirPrefix) GetDirNameAndPrefixForCollectionBloomPack()
 		{
 			var dir = TheOneEditableCollection.PathToDirectory;
-			var rootName = Path.GetFileName(dir);
+			return (dir, "");
+		}
+
+		public void MakeBloomPack(string path, bool forReaderTools = false)
+		{
+			var (dirName, dirPrefix) = GetDirNameAndPrefixForCollectionBloomPack();
+			var rootName = Path.GetFileName(dirName);
 			if (rootName == null) return;
 			Logger.WriteEvent($"Making BloomPack at {path} forReaderTools={forReaderTools}");
-			MakeBloomPackInternal(path, dir, "", forReaderTools);
+			MakeBloomPackWithUI(path, dirName, dirPrefix, forReaderTools);
 		}
 
 		public void MakeSingleBookBloomPack(string path, string inputBookFolder)
@@ -328,10 +334,10 @@ namespace Bloom.CollectionTab
 			var rootName = Path.GetFileName(inputBookFolder);
 			if (rootName == null) return;
 			Logger.WriteEvent($"Making single book BloomPack at {path} bookFolderPath={inputBookFolder}");
-			MakeBloomPackInternal(path, inputBookFolder, rootName + "/", false);
+			MakeBloomPackWithUI(path, inputBookFolder, rootName + "/", false);
 		}
 
-		private void MakeBloomPackInternal(string path, string dir, string dirNamePrefix, bool forReaderTools)
+		private void MakeBloomPackWithUI(string path, string dir, string dirNamePrefix, bool forReaderTools)
 		{
 			try
 			{
@@ -350,8 +356,7 @@ namespace Bloom.CollectionTab
 						Cursor.Current = Cursors.WaitCursor;
 
 						Logger.WriteEvent("BloomPack path will be " + path + ", made from " + dir + " with rootName " + Path.GetFileName(dir));
-						var excludeAudio = true; // don't want audio in bloompack
-						BookCompressor.CompressCollectionDirectory(path, dir, dirNamePrefix, forReaderTools, excludeAudio);
+						MakeBloomPackInternal(path, dir, dirNamePrefix, forReaderTools);
 
 						// show it
 						Logger.WriteEvent("Showing BloomPack on disk");
@@ -369,6 +374,16 @@ namespace Bloom.CollectionTab
 			{
 				ErrorReport.NotifyUserOfProblem(e, "Could not make the BloomPack at " + path);
 			}
+		}
+
+		/// <summary>
+		/// Makes a BloomPack of the specified dir.
+		/// </summary>
+		/// <param name="path">The path to write to. Precondition: Must not exist.</param>
+		internal void MakeBloomPackInternal(string path, string dir, string dirNamePrefix, bool forReaderTools)
+		{
+			var excludeAudio = true; // don't want audio in bloompack
+			BookCompressor.CompressCollectionDirectory(path, dir, dirNamePrefix, forReaderTools, excludeAudio);
 		}
 
 		public string GetSuggestedBloomPackPath()
