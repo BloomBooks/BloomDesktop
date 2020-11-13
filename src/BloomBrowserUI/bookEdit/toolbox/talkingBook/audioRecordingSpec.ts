@@ -2,6 +2,7 @@ import AudioRecording, {
     AudioRecordingMode,
     AudioTextFragment
 } from "./audioRecording";
+import * as $ from "jquery";
 
 describe("audio recording tests", () => {
     describe(", Next()", () => {
@@ -1596,6 +1597,71 @@ describe("audio recording tests", () => {
         const result = recording.isInSoftSplitMode();
 
         expect(result).toBe(false);
+    });
+
+    it("makeAudioSentenceElementsLeaf creates new ids for duplicate text", () => {
+        const recording = new AudioRecording();
+
+        const sent1 =
+            '<span id="i00c41f76-0d90-41be-988d-084517eea47d" class="audio-sentence" recordingmd5="702edca0b2181c15d457eacac39de39b">This is a test!</span>';
+        // The outer <p>...</p> is needed to get the right jquery object passed to the method.
+        const elt1 = $($.parseHTML(`<p>${sent1}</p>`));
+        expect(elt1.html()).toBe(sent1); // verify original
+        expect(elt1.find(".audio-sentence").attr("id")).toBe(
+            "i00c41f76-0d90-41be-988d-084517eea47d"
+        );
+        recording.makeAudioSentenceElementsLeaf(elt1);
+        expect(elt1.html()).toBe(sent1);
+
+        const sent2 =
+            '<span id="i3e2df917-07d4-44e8-865f-c3520606ff6c" class="audio-sentence" recordingmd5="3a975830778d189aa9ce5f12839d6ce8">But it looks like a cat?</span>';
+        const elt2 = $($.parseHTML(`<p>${sent2}</p>`));
+        expect(elt2.html()).toBe(sent2); // verify original state
+        expect(elt2.find(".audio-sentence").attr("id")).toBe(
+            "i3e2df917-07d4-44e8-865f-c3520606ff6c"
+        );
+        recording.makeAudioSentenceElementsLeaf(elt2);
+        expect(elt2.html()).toBe(sent2);
+
+        const sent3 = "This is a test!";
+        const elt3 = $($.parseHTML(`<p>${sent3}</p>`));
+        expect(elt3.html()).toBe(sent3); // verify original state
+        recording.makeAudioSentenceElementsLeaf(elt3);
+        expect(elt3.html()).not.toBe(sent3);
+        expect(elt3.html().startsWith('<span id="')).toBe(true);
+        expect(elt3.find(".audio-sentence").attr("id")).not.toBe(
+            "i00c41f76-0d90-41be-988d-084517eea47d"
+        );
+        expect(elt3.find(".audio-sentence").attr("id").length).toBeGreaterThan(
+            35
+        );
+        expect(elt3.find(".audio-sentence").attr("id").length).toBeLessThan(38);
+        expect(
+            elt3
+                .html()
+                .endsWith('" class="audio-sentence">This is a test!</span>')
+        );
+
+        const sent4 = "But it looks like a cat?";
+        const elt4 = $($.parseHTML(`<p>${sent4}</p>`));
+        expect(elt4.html()).toBe(sent4); // verify original state
+        recording.makeAudioSentenceElementsLeaf(elt4);
+        expect(elt4.html()).not.toBe(sent4);
+        expect(elt4.html().startsWith('<span id="')).toBe(true);
+        expect(elt4.find(".audio-sentence").attr("id")).not.toBe(
+            "i3e2df917-07d4-44e8-865f-c3520606ff6c"
+        );
+        expect(elt4.find(".audio-sentence").attr("id").length).toBeGreaterThan(
+            35
+        );
+        expect(elt4.find(".audio-sentence").attr("id").length).toBeLessThan(38);
+        expect(
+            elt4
+                .html()
+                .endsWith(
+                    '" class="audio-sentence">But it looks like a cat?</span>'
+                )
+        );
     });
 });
 
