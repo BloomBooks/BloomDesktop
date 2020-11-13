@@ -12,10 +12,20 @@
         <target xml:lang="ru" state="translated">Запустить точку доступа телефона</target>
         <note>ID: publish.help.tips.tempWiFi.hotspot</note>
       </trans-unit>
+      <trans-unit id="publish.help.tips.tempWiFi.hotspot.text">
+        <source xml:lang="en">Many mobile phones have a feature called a 'hotspot' that creates a Wi-Fi network. First disconnect from the mobile network (so that there are no data charges). Next, enable the hotspot. Finally, set your laptop and other phones to join that network.</source>
+        <target xml:lang="ru" state="translated">Многие мобильные телефоны имеют функцию, называемую «точкой доступа», которая создает сеть Wi-Fi. Сначала отключитесь от мобильной связи (чтобы не платить за передачу данных). Затем, включите точку доступа. Наконец, настройте свой ноутбук и другие телефоны, чтобы присоединиться к этой сети.</target>
+        <note>ID: publish.help.tips.tempWiFi.hotspot.text</note>
+      </trans-unit>
       <trans-unit id="publish.help.tips.tempWiFi.hostednetwork">
         <source xml:lang="en">Start a network using your laptop</source>
         <target xml:lang="ru" state="translated">Запустить сеть с помощью своего ноутбука</target>
         <note>ID: publish.help.tips.tempWiFi.hostednetwork</note>
+      </trans-unit>
+      <trans-unit id="publish.help.tips.tempWiFi.hostednetwork.text">
+        <source xml:lang="en">Windows 10 laptops can also create local Wi-Fi networks. Do a web search for "windows netsh hostednetwork". If your laptop does not support this, you can get inexpensive USB Wi-Fi adaptors that do. When shopping, make sure the adaptor supports "hosted network".</source>
+        <target xml:lang="ru" state="translated">Ноутбуки с Windows 10 также могут создавать локальные сети Wi-Fi. Выполните поиск в интернете по запросу "windows netsh hostednetwork". Если ваш ноутбук не поддерживает такую возможность, вы можете приобрести недорогие USB-адаптеры Wi-Fi, которые это поддерживают. При совершении покупок убедитесь, что адаптер поддерживает «размещенную сеть».</target>
+        <note>ID: publish.help.tips.tempWiFi.hostednetwork.text</note>
       </trans-unit>
     </body>
   </file>

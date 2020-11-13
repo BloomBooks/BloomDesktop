@@ -2,9 +2,9 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Publish-WiFi-Network-en.htm" datatype="html" source-language="en" target-language="fr">
     <body>
-      <trans-unit id="publish.help.tips.tempWiFi.title">
+      <trans-unit id="publish.help.tips.tempWiFi.title" approved="yes">
         <source xml:lang="en">Ways to make a temporary Wi-Fi Network</source>
-        <target xml:lang="fr" state="translated">Options pour créer un réseau Wi-Fi temporaire</target>
+        <target xml:lang="fr" state="final">Options pour créer un réseau Wi-Fi temporaire</target>
         <note>ID: publish.help.tips.tempWiFi.title</note>
       </trans-unit>
       <trans-unit id="publish.help.tips.tempWiFi.hotspot" approved="yes">
@@ -12,10 +12,20 @@
         <target xml:lang="fr" state="final">Démarrer un hotspot téléphonique</target>
         <note>ID: publish.help.tips.tempWiFi.hotspot</note>
       </trans-unit>
-      <trans-unit id="publish.help.tips.tempWiFi.hostednetwork">
+      <trans-unit id="publish.help.tips.tempWiFi.hotspot.text" approved="yes">
+        <source xml:lang="en">Many mobile phones have a feature called a 'hotspot' that creates a Wi-Fi network. First disconnect from the mobile network (so that there are no data charges). Next, enable the hotspot. Finally, set your laptop and other phones to join that network.</source>
+        <target xml:lang="fr" state="final">De nombreux téléphones portables sont dotés d'une fonction appelée "hotspot" qui crée un réseau Wi-Fi. D'abord déconnectez-vous du réseau mobile (afin d'éviter des frais de transmission de données). Ensuite, activez le hotspot. Enfin, configurez votre ordinateur portable et d'autres téléphones pour qu'ils rejoignent ce réseau.</target>
+        <note>ID: publish.help.tips.tempWiFi.hotspot.text</note>
+      </trans-unit>
+      <trans-unit id="publish.help.tips.tempWiFi.hostednetwork" approved="yes">
         <source xml:lang="en">Start a network using your laptop</source>
-        <target xml:lang="fr" state="translated">Créer un réseau à partir de votre ordinateur portable</target>
+        <target xml:lang="fr" state="final">Créer un réseau à partir de votre ordinateur portable</target>
         <note>ID: publish.help.tips.tempWiFi.hostednetwork</note>
+      </trans-unit>
+      <trans-unit id="publish.help.tips.tempWiFi.hostednetwork.text" approved="yes">
+        <source xml:lang="en">Windows 10 laptops can also create local Wi-Fi networks. Do a web search for "windows netsh hostednetwork". If your laptop does not support this, you can get inexpensive USB Wi-Fi adaptors that do. When shopping, make sure the adaptor supports "hosted network".</source>
+        <target xml:lang="fr" state="final">Les ordinateurs portables Windows 10 peuvent également créer des réseaux Wi-Fi locaux. Faites une recherche sur le web pour "windows netsh hostednetwork". Si votre ordinateur portable ne prend pas en charge cette fonction, vous pouvez vous procurer un adaptateur Wi-Fi USB bon marché pour ce faire. Lorsque vous faites l'achat, assurez-vous que l'adaptateur prend en charge le "réseau hébergé".</target>
+        <note>ID: publish.help.tips.tempWiFi.hostednetwork.text</note>
       </trans-unit>
     </body>
   </file>

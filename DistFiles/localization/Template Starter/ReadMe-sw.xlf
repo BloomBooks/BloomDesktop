@@ -11,7 +11,7 @@
         <source xml:lang="en">This special template lets you make your own templates. A template provides a set of related page layouts that an author can choose from in writing an original book. Usually the text blocks and picture blocks on template pages will be empty, ready for an author to fill in. Sometimes there may be standard text or pictures that should be on every copy of the page.
 There are two ways people can use your template. The first way is to start new books. For example, imagine student books that have one page for each school day of the week. You could make a template with 5 pages, each with places to type in text and choose pictures. Curriculum authors could select your template and make a new book, one for each week<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</source>
         <target xml:lang="sw" state="translated">Kiolezo hiki maalum inakuwezesha kutengeneza violezo vyako mwenyewe. Kiolezo kinatoa seti ya mipangilio ya ukurasa inayohusiana ambayo mwandishi anaweza kuchagua kwa kuandika kitabu asili. Kawaida kijisanduku cha maandishi na vijisanduku vya picha kwenye kurasa za kiolezo vitakuwa vitupu, tayari kwa mwandishi kujaza. Wakati mwingine kunaweza kuwa na maandishi au picha za kawaida ambazo zinapaswa kuwa kwenye kila nakala ya ukurasa.
-Kuna njia mbili ambazo watu wanaweza kutumia templeti yako. Njia ya kwanza ni kuanza vitabu vipya. Kwa mfano, fikiria vitabu vya wanafunzi ambavyo vina ukurasa mmoja kwa kila siku ya shule ya wiki. Unaweza kutengeneza templeti iliyo na kurasa 5, kila moja ikiwa na maeneo ya kucharaza maandishi na uchague picha. Waandishi wa mtaala wanaweza kuchagua kiolezo chako na kutengeneza kitabu kipya, kimoja kwa kila wiki<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1"></g></g>.</target>
+Kuna njia mbili ambazo watu wanaweza kutumia templeti yako. Njia ya kwanza ni kuanza vitabu vipya. Kwa mfano, fikiria vitabu vya wanafunzi ambavyo vina ukurasa mmoja kwa kila siku ya shule ya wiki. Unaweza kutengeneza templeti iliyo na kurasa 5, kila moja ikiwa na maeneo ya kucharaza maandishi na uchague picha. Waandishi wa mtaala wanaweza kuchagua kiolezo chako na kutengeneza kitabu kipya, kimoja kwa kila wiki<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</target>
         <note>ID: template.starter.firstusage</note>
       </trans-unit>
       <trans-unit id="template.starter.secondusage">
@@ -31,7 +31,7 @@ Kuna njia mbili ambazo watu wanaweza kutumia templeti yako. Njia ya kwanza ni ku
       </trans-unit>
       <trans-unit id="template.starter.labeleachpage">
         <source xml:lang="en">When you add pages to your template, make sure to give each one a useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</source>
-        <target xml:lang="sw" state="translated">Unapoongeza kurasa kwenye kiolezo chako, hakikisha kuipa kila kiolezi lebo muhimu<g id="genid-5" ctype="x-html-sup"><g id="genid-5" ctype="x-html-sup">5</g></g>:</target>
+        <target xml:lang="sw" state="translated">Unapoongeza kurasa kwenye kiolezo chako, hakikisha kuipa kila kiolezi lebo muhimu<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</target>
         <note>ID: template.starter.labeleachpage</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails">
@@ -56,7 +56,8 @@ Kuna njia mbili ambazo watu wanaweza kutumia templeti yako. Njia ya kwanza ni ku
       </trans-unit>
       <trans-unit id="template.starter.describeyours">
         <source xml:lang="en">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</source>
-        <target xml:lang="sw" state="needs-translation">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</target>
+        <target xml:lang="sw" state="translated">Pia fikiria kuongeza maelezo ya kiolezi chako, kama ile unayosoma sasa. Ili kufanya hivyo, weka faili ya maandishi iitwayo <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g>kwenye folda ya kiolezo chako. Faili hii inapaswa kufuata<g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>.
+ Ili kutoa maagizo yako katika lugha zingine, fanya matoleo ya faili hiyo ambayo hubadilisha "en" kwa herufi mbili za msimbo za kila lugha. Kwa mfano<g id="genid-10" ctype="x-html-code"> ReadMe-fr.md </g> itaonyeshwa wakati Bloom imewekwa kuonyesha lebo katika Kifaransa. Unaweza pia kujumuisha viwambo vya skrini, kama tulivyo katika hati hii. Weka picha zozote unazotumia kwenye folda iitwayo "ReadMeImages", ili picha zirejeshwe kama hii:</target>
         <note>ID: template.starter.describeyours</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnailsshown">
@@ -76,7 +77,7 @@ Kuna njia mbili ambazo watu wanaweza kutumia templeti yako. Njia ya kwanza ni ku
       </trans-unit>
       <trans-unit id="template.starter.share.bloompack">
         <source xml:lang="en">For local colleagues, an easy way to distribute your template is via a Bloom Pack. In the collections tab, right-click on your template's thumbnail. Choose 'Make Bloom Pack'. Save that somewhere, for example to a USB Key. Then take it to another computer, double click on the file you made, and your template will be added to the "Sources for New Books" on that computer.</source>
-        <target xml:lang="sw" state="needs-translation">For local colleagues, an easy way to distribute your template is via a Bloom Pack. In the collections tab, right-click on your template's thumbnail. Choose 'Make Bloom Pack'. Save that somewhere, for example to a USB Key. Then take it to another computer, double click on the file you made, and your template will be added to the "Sources for New Books" on that computer.</target>
+        <target xml:lang="sw" state="translated">Kwa wenzako wa hapa, njia rahisi ya kusambaza kiolezi chako ni kupitia Kifurushi cha Bloom. Katika kichupo cha makusanyo, bonyeza-kulia kwenye kijipicha cha kiolezi chako. Chagua 'Tengeneza Kifurushi cha Bloom'. Hifadhi hiyo mahali pengine, kwa mfano kwenya USB. Kisha upeleke kwenye kompyuta nyingine, bonyeza mara mbili kwenye faili uliyotengeneza, na templeti yako itaongezwa kwenye "Vyanzo vya Vitabu vipya" kwenye kompyuta hiyo.</target>
         <note>ID: template.starter.share.bloompack</note>
       </trans-unit>
       <trans-unit id="template.starter.notes">
@@ -86,7 +87,7 @@ Kuna njia mbili ambazo watu wanaweza kutumia templeti yako. Njia ya kwanza ni ku
       </trans-unit>
       <trans-unit id="template.starter.nothingautomatic">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
-        <target xml:lang="sw" state="needs-translation"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</target>
+        <target xml:lang="sw" state="translated"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>:Vitabu hivi baadaye vinaweza kuunganishwa kwa kutumia kipengele kinachokuja cha Folio. Kumbuka kuwa Bloom bado haikupi njia ya kuonyesha kwamba ukurasa unapaswa kujumuishwa kiotomati katika vitabu vipya; mwandishi atalazimika kuongeza kila moja kutoka kwenye kisanduku kidadisi cha Ongeza Ukurasa.</target>
         <note>ID: template.starter.nothingautomatic</note>
       </trans-unit>
       <trans-unit id="template.starter.nametonotaddpage">
@@ -96,7 +97,7 @@ Kuna njia mbili ambazo watu wanaweza kutumia templeti yako. Njia ya kwanza ni ku
       </trans-unit>
       <trans-unit id="template.starter.labelsnottranslatable">
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
-        <target xml:lang="sw" state="needs-translation"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</target>
+        <target xml:lang="sw" state="translated"><g id="genid-13" ctype="x-html-a" html:id="note3">3 </g>: Watu hawataweza kutafsiri lebo na maelezo yako katika lugha zingine za kitaifa. Ikiwa hii ni shida, tafadhali wasiliana na timu ya Bloom.</target>
         <note>ID: template.starter.labelsnottranslatable</note>
       </trans-unit>
       <trans-unit id="template.starter.editrawhtml">
