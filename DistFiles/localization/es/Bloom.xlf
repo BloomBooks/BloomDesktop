@@ -1038,26 +1038,6 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
         <target xml:lang="es-ES" state="final">Avanzado</target>
       </trans-unit>
-      <trans-unit id="Common.Colors.Black" approved="yes">
-        <source xml:lang="en">Black</source>
-        <note>ID: Common.Colors.Black</note>
-        <target xml:lang="es-ES" state="final">Negro</target>
-      </trans-unit>
-      <trans-unit id="Common.Colors.Crimson" approved="yes">
-        <source xml:lang="en">Crimson</source>
-        <note>ID: Common.Colors.Crimson</note>
-        <target xml:lang="es-ES" state="final">Carmesí</target>
-      </trans-unit>
-      <trans-unit id="Common.Colors.Yellow" approved="yes">
-        <source xml:lang="en">Yellow</source>
-        <note>ID: Common.Colors.Yellow</note>
-        <target xml:lang="es-ES" state="final">Amarillo</target>
-      </trans-unit>
-      <trans-unit id="Common.Colors.White" approved="yes">
-        <source xml:lang="en">White</source>
-        <note>ID: Common.Colors.White</note>
-        <target xml:lang="es-ES" state="final">Blanco</target>
-      </trans-unit>
       <trans-unit id="Common.BackButton" approved="yes">
         <source xml:lang="en">Back</source>
         <note>ID: Common.BackButton</note>
@@ -1069,15 +1049,46 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: Common.Cancel</note>
         <target xml:lang="es-ES" state="final">Cancelar</target>
       </trans-unit>
+      <trans-unit id="Common.CancelButton" approved="yes">
+        <source xml:lang="en">&amp;Cancel</source>
+        <note>ID: Common.CancelButton</note>
+        <target xml:lang="es-ES" state="final">&amp;Cancelar</target>
+      </trans-unit>
+      <trans-unit id="Common.Colors.Black" approved="yes">
+        <source xml:lang="en">Black</source>
+        <note>ID: Common.Colors.Black</note>
+        <target xml:lang="es-ES" state="final">Negro</target>
+      </trans-unit>
+      <trans-unit id="Common.Colors.Crimson" approved="yes">
+        <source xml:lang="en">Crimson</source>
+        <note>ID: Common.Colors.Crimson</note>
+        <target xml:lang="es-ES" state="final">Carmesí</target>
+      </trans-unit>
+      <trans-unit id="Common.Colors.White" approved="yes">
+        <source xml:lang="en">White</source>
+        <note>ID: Common.Colors.White</note>
+        <target xml:lang="es-ES" state="final">Blanco</target>
+      </trans-unit>
+      <trans-unit id="Common.Colors.Yellow" approved="yes">
+        <source xml:lang="en">Yellow</source>
+        <note>ID: Common.Colors.Yellow</note>
+        <target xml:lang="es-ES" state="final">Amarillo</target>
+      </trans-unit>
+      <trans-unit id="Common.Copy">
+        <source xml:lang="en">Copy</source>
+        <note>ID: Common.Copy</note>
+        <target xml:lang="es-ES" state="needs-translation">Copy</target>
+      </trans-unit>
       <trans-unit id="Common.Delete" approved="yes">
         <source xml:lang="en">Delete</source>
         <note>ID: Common.Delete</note>
         <target xml:lang="es-ES" state="final">Eliminar</target>
       </trans-unit>
-      <trans-unit id="Common.CancelButton" approved="yes">
-        <source xml:lang="en">&amp;Cancel</source>
-        <note>ID: Common.CancelButton</note>
-        <target xml:lang="es-ES" state="final">&amp;Cancelar</target>
+      <trans-unit id="Common.Done" approved="yes">
+        <source xml:lang="en">Done</source>
+        <note>ID: Common.Done</note>
+        <note>Shown in a list of messages when Bloom has completed a task.</note>
+        <target xml:lang="es-ES" state="final">Terminado</target>
       </trans-unit>
       <trans-unit id="Common.Error" approved="yes">
         <source xml:lang="en">Error</source>
@@ -1091,30 +1102,6 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
         <target xml:lang="es-ES" state="final">&amp;Terminar</target>
       </trans-unit>
-      <trans-unit id="Common.Info" approved="yes">
-        <source xml:lang="en">Info</source>
-        <note>ID: Common.Info</note>
-        <note>Used as a label for additional information, like duration etc in the Sign Language Tool</note>
-        <target xml:lang="es-ES" state="final">Información</target>
-      </trans-unit>
-      <trans-unit id="Common.Warning" approved="yes">
-        <source xml:lang="en">Info</source>
-        <note>ID: Common.Warning</note>
-        <note>A heading shown above some messages.</note>
-        <target xml:lang="es-ES" state="final">Información</target>
-      </trans-unit>
-      <trans-unit id="Common.Note" approved="yes">
-        <source xml:lang="en">Note</source>
-        <note>ID: Common.Note</note>
-        <note>A heading shown above some messages.</note>
-        <target xml:lang="es-ES" state="final">Nota</target>
-      </trans-unit>
-      <trans-unit id="Common.Done" approved="yes">
-        <source xml:lang="en">Done</source>
-        <note>ID: Common.Done</note>
-        <note>Shown in a list of messages when Bloom has completed a task.</note>
-        <target xml:lang="es-ES" state="final">Terminado</target>
-      </trans-unit>
       <trans-unit id="Common.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Help</source>
         <note>ID: Common.Help</note>
@@ -1124,6 +1111,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">&amp;Help</source>
         <note>ID: Common.HelpButton</note>
         <target xml:lang="es-ES" state="final">Ayuda</target>
+      </trans-unit>
+      <trans-unit id="Common.Info" approved="yes">
+        <source xml:lang="en">Info</source>
+        <note>ID: Common.Info</note>
+        <note>Used as a label for additional information, like duration etc in the Sign Language Tool</note>
+        <target xml:lang="es-ES" state="final">Información</target>
       </trans-unit>
       <trans-unit id="Common.LearnMore" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Learn More</source>
@@ -1149,6 +1142,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: Common.NextButton</note>
         <note>In a wizard, this button takes you to the next step.</note>
         <target xml:lang="es-ES" state="final">Siguiente</target>
+      </trans-unit>
+      <trans-unit id="Common.Note" approved="yes">
+        <source xml:lang="en">Note</source>
+        <note>ID: Common.Note</note>
+        <note>A heading shown above some messages.</note>
+        <target xml:lang="es-ES" state="final">Nota</target>
       </trans-unit>
       <trans-unit id="Common.OK" approved="yes">
         <source xml:lang="en">OK</source>
@@ -1196,6 +1195,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">Settings</source>
         <note>ID: Common.Settings</note>
         <target xml:lang="es-ES" state="final">Configuración</target>
+      </trans-unit>
+      <trans-unit id="Common.Warning" approved="yes">
+        <source xml:lang="en">Info</source>
+        <note>ID: Common.Warning</note>
+        <note>A heading shown above some messages.</note>
+        <target xml:lang="es-ES" state="final">Información</target>
       </trans-unit>
       <trans-unit id="Download.Completed" approved="yes">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
@@ -2134,6 +2139,12 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <source xml:lang="en">Saving...</source>
         <note>ID: EditTab.SavingNotification</note>
         <target xml:lang="es-ES" state="final">Guardando...</target>
+      </trans-unit>
+      <trans-unit id="EditTab.SourceBubbleCopied" sil:dynamic="true">
+        <source xml:lang="en">Copied</source>
+        <note>ID: EditTab.SourceBubbleCopied</note>
+        <note>Displays briefly when the user clicks the copy icon in a source bubble.</note>
+        <target xml:lang="es-ES" state="translated">Copiado</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.Alignment" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Alignment</source>
