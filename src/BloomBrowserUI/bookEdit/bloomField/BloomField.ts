@@ -1,6 +1,9 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../typings/ckeditor/ckeditor.d.ts" />
 
+import AudioRecording from "../toolbox/talkingBook/audioRecording";
+import { BloomApi } from "../../utils/bloomApi";
+
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
 //
@@ -129,6 +132,13 @@ export default class BloomField {
                 event.data.dataValue = fixItalic;
             }
 
+            // We can't just duplicate audio ids without running into trouble later!
+            // We need to generate a new guid-based id, use it to copy the audio file, and
+            // insert it into the span.
+            event.data.dataValue = this.copyAudioFilesWithNewIdsDuringPasting(
+                event.data.dataValue
+            );
+
             const paras = event.data.dataValue.match(/<p>/g);
             if (!paras) {
                 // Enhance: should we remove the probable <span> and just leave the text?
@@ -178,6 +188,54 @@ export default class BloomField {
             // Use <sup> because that is what ckeditor uses
             return inputText.replace(re, "<sup>$1</sup>");
         }
+    }
+
+    // If copying one or more audio spans, replace the ids and copy the original audio
+    // file(s) using the new ids.  Note that Firefox 60 imposes using RegExp.exec.
+    public static copyAudioFilesWithNewIdsDuringPasting(
+        inputText: string
+    ): string {
+        const audioRegex = RegExp(
+            '<span[^>]* (id="(.*?)"[^>]* class="[^"]*audio-sentence("| [^"]*")|class="[^"]*audio-sentence("| [^"]*")[^>]* id="(.*?)").*?>(.*?)</span>',
+            "g"
+        );
+        let regexMatch;
+        let newText: string = "";
+        let startIndex: number = 0;
+        while ((regexMatch = audioRegex.exec(inputText)) !== null) {
+            // The regexMatch object is rather strange, with a mix of string and numeric indices.
+            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec
+            const indexOfMatch: number = regexMatch["index"];
+            const oldId: string = regexMatch[2] ? regexMatch[2] : regexMatch[5]; // groups in the alternation
+            const audioSentenceText: string = regexMatch[6];
+            if (indexOfMatch > startIndex) {
+                newText =
+                    newText + inputText.substring(startIndex, indexOfMatch);
+            }
+            const newId = AudioRecording.createValidXhtmlUniqueId();
+            BloomApi.postDebugMessage(
+                "DEBUG copyAudio: index=" +
+                    indexOfMatch +
+                    ', oldId="' +
+                    oldId +
+                    '", text="' +
+                    audioSentenceText +
+                    '"'
+            );
+            newText =
+                newText +
+                `<span id="${newId}" class="audio-sentence">${audioSentenceText}</span>`;
+            BloomApi.post(`audio/copyAudioFile?oldId=${oldId}&newId=${newId}`);
+            startIndex = audioRegex.lastIndex;
+        }
+        if (newText) {
+            if (startIndex > 0 && startIndex < inputText.length) {
+                newText =
+                    newText + inputText.substring(startIndex, inputText.length);
+            }
+            return newText;
+        }
+        return inputText;
     }
 
     private static MakeShiftEnterInsertLineBreak(field: HTMLElement) {
