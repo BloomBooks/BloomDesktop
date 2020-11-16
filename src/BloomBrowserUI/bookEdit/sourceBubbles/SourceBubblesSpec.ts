@@ -1,4 +1,4 @@
-/// <reference path="./BloomSourceBubbles.ts" />
+/// <reference path="./BloomSourceBubbles.tsx" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
 
 import BloomSourceBubbles from "./BloomSourceBubbles";
