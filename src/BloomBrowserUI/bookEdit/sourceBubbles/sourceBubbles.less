@@ -136,7 +136,7 @@
         color: black;
         padding-top: 4px;
         &.active {
-            overflow-y: hidden !important;
+            overflow: hidden !important;
         }
 
         //thai script languages. If using Arial, they need to be 30% bigger or so. With the
@@ -205,10 +205,15 @@
     display: flex;
     flex-direction: row;
     justify-content: end;
+    margin-right: -5px; // These negative margins along with an overflow hidden above get the icon
+    margin-bottom: -5px; // to line up with the content better.
     .copy-transition {
         margin-right: 7px;
-        border: 2px solid @BubbleBorder;
         padding: 0 7px;
+        background-color: #dcc6da;
+    }
+    button {
+        padding: 0;
     }
     svg {
         transform: scale(0.6);

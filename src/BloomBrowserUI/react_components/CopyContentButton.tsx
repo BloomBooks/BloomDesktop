@@ -3,7 +3,6 @@ import { useState } from "react";
 import IconButton from "@material-ui/core/IconButton";
 import Zoom from "@material-ui/core/Zoom";
 import Typography from "@material-ui/core/Typography";
-import Paper from "@material-ui/core/Paper";
 import ContentCopyIcon from "./icons/ContentCopyIcon";
 import { useL10n } from "./l10nHooks";
 
@@ -38,9 +37,9 @@ const CopyContentButton: React.FC<ICopyContentButtonProps> = props => {
                 timeout={transitionDuration}
                 onEntered={handleOnEntered}
             >
-                <Paper className="copy-transition" elevation={4}>
+                <div className="copy-transition">
                     <Typography>{copiedText}</Typography>
-                </Paper>
+                </div>
             </Zoom>
             <IconButton aria-label="copy" size="small" onClick={handleClick}>
                 <ContentCopyIcon />
