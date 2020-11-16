@@ -1733,6 +1733,11 @@
         <source xml:lang="en">Saving...</source>
         <note>ID: EditTab.SavingNotification</note>
       </trans-unit>
+      <trans-unit id="EditTab.SourceBubbleCopied" sil:dynamic="true">
+        <source xml:lang="en">Copied</source>
+        <note>ID: EditTab.SourceBubbleCopied</note>
+        <note>Displays briefly when the user clicks the copy icon in a source bubble.</note>
+      </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.Alignment" sil:dynamic="true">
         <source xml:lang="en">Alignment</source>
         <note>ID: EditTab.TextBoxProperties.Alignment</note>

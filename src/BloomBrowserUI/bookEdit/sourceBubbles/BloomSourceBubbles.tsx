@@ -5,12 +5,17 @@
 /// <reference path="../../typings/jquery.qtipSecondary.d.ts" />
 /// <reference path="../../typings/jquery.qtip.d.ts" />
 /// <reference path="../../typings/jquery.easytabs.d.ts" />
+import React = require("react");
+import ReactDOM = require("react-dom");
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import bloomQtipUtils from "../js/bloomQtipUtils";
 import "../../lib/jquery.easytabs.js"; //load into global space
 import BloomHintBubbles from "../js/BloomHintBubbles";
 import { BloomApi } from "../../utils/bloomApi";
+import CopyContentButton, {
+    ICopyContentButtonProps
+} from "../../react_components/CopyContentButton";
 
 declare function GetSettings(): any; //c# injects this
 
@@ -142,10 +147,10 @@ export default class BloomSourceBubbles {
 
         // BL-2357
         items = BloomSourceBubbles.SmartOrderSourceTabs(items, newIso);
-
         const list = $this.find("nav ul");
         items.each(function() {
-            const iso = $(this).attr("lang");
+            const sourceElement = this as HTMLElement;
+            const iso = sourceElement.getAttribute("lang");
             if (iso) {
                 const localizedLanguageName =
                     theOneLocalizationManager.getLanguageName(iso) || iso;
@@ -166,12 +171,47 @@ export default class BloomSourceBubbles {
                         "</a></li>"
                 );
                 // BL-8174: Add a tooltip with the iso code to the item
-                $(this).attr("title", iso);
+                sourceElement.setAttribute("title", iso);
+            }
+            if (sourceElement.innerText !== "") {
+                // BL-9198 Add a copy icon to the source bubble
+                // It's actually easier to figure out what to copy out here and feed it into the button
+                // component.
+                const elementToCopy = sourceElement.closest(
+                    ".source-text"
+                ) as HTMLDivElement;
+                let textToCopy: string | undefined = undefined;
+                if (elementToCopy) {
+                    textToCopy = elementToCopy.innerText;
+                }
+                const buttonDiv = document.createElement("div");
+                sourceElement.append(buttonDiv);
+                if (textToCopy) {
+                    ReactDOM.render(
+                        <CopyContentButton
+                            onClick={() =>
+                                BloomSourceBubbles.handleCopyBubbleSourceClick(
+                                    textToCopy!
+                                )
+                            }
+                        />,
+                        buttonDiv
+                    );
+                }
             }
         });
 
         return divForBubble;
     } // end MakeSourceTextDivForGroup()
+
+    private static handleCopyBubbleSourceClick(textToCopy: string): void {
+        if (textToCopy) {
+            BloomApi.postJson("common/clipboardText", {
+                text: textToCopy
+            });
+            //navigator.clipboard.writeText(textToCopy); simpler, but not available until FF66+
+        }
+    }
 
     private static RemoveCustomPageAdditions(editableDiv: JQuery): void {
         const styleAttr = editableDiv.attr("style");
@@ -291,7 +331,7 @@ export default class BloomSourceBubbles {
                 // and the third then correctly selects the one we want.
                 divForBubble.find(".active").removeClass("active");
                 divForBubble.find(">div").attr("style", "display: none");
-                (<any>divForBubble).easytabs("select", "#" + selectIso);
+                (divForBubble as any).easytabs("select", "#" + selectIso);
             }
         } else {
             divForBubble.remove(); //no tabs, so hide the bubble
@@ -515,13 +555,17 @@ export default class BloomSourceBubbles {
                         // reliably.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6940.
                         // But if we always prevent the default behavior, it won't be possible to select and copy
                         // text from inside the source bubble.
+                        // BL-9198 Also if the user is trying to click on the copy button in the source bubble
+                        // we don't want the default behavior (which makes the bubble close;
+                        // how? we aren't quite sure yet).
                         api.elements.tooltip.mousedown(ev => {
                             const cls = ev.target.getAttribute("class");
                             const href = ev.target.getAttribute("href");
                             if (
-                                cls == "sourceTextTab" &&
-                                href &&
-                                href.startsWith("#")
+                                (cls == "sourceTextTab" &&
+                                    href &&
+                                    href.startsWith("#")) ||
+                                ev.target.closest(".source-copy-button")
                             ) {
                                 ev.preventDefault();
                             }
@@ -587,9 +631,9 @@ export default class BloomSourceBubbles {
             $(elt).focus(event => {
                 // BloomApi.postDebugMessage(
                 //     "DEBUG BloomSourceBubbles.SetupTooltips/on focus - element=" +
-                //         (<Element>event.target).outerHTML
+                //         (event.target as Element).outerHTML
                 // );
-                const element = <Element>event.target;
+                const element = event.target as Element;
                 BloomSourceBubbles.ShowSourceBubbleForElement(element);
             });
             // reset the tooltip when it loses focus. The "reset other tooltips" code
@@ -599,9 +643,9 @@ export default class BloomSourceBubbles {
             $(elt).blur(ev => {
                 // BloomApi.postDebugMessage(
                 //     "DEBUG BloomSourceBubbles.SetupTooltips/on blur - element=" +
-                //         (<Element>ev.target).outerHTML
+                //         (ev.target as Element).outerHTML
                 // );
-                const tipId = (<Element>ev.target.parentNode).getAttribute(
+                const tipId = (ev.target.parentNode as Element).getAttribute(
                     "aria-describedby"
                 );
                 const $tip = $("body").find("#" + tipId);
@@ -622,7 +666,7 @@ export default class BloomSourceBubbles {
             if (maxHeight) $thisTip.css("max-height", parseInt(maxHeight));
         });
         // show the full tip, if needed
-        const tipId = (<Element>element.parentNode).getAttribute(
+        const tipId = (element.parentNode as Element).getAttribute(
             "aria-describedby"
         );
         const $tip = $body.find("#" + tipId);

@@ -160,7 +160,7 @@ export class BubbleManager {
 
         Comical.setActiveBubbleListener(activeElement => {
             if (activeElement) {
-                var focusElements = activeElement.getElementsByClassName(
+                const focusElements = activeElement.getElementsByClassName(
                     "bloom-visibility-code-on"
                 );
                 if (focusElements.length > 0) {
@@ -339,9 +339,9 @@ export class BubbleManager {
                 // it would be nice to do this only once, but there MIGHT
                 // be TOP elements in more than one image container...too complicated,
                 // and this only happens once per TOP.
-                Comical.update(top.closest(
-                    ".bloom-imageContainer"
-                ) as HTMLElement);
+                Comical.update(
+                    top.closest(".bloom-imageContainer") as HTMLElement
+                );
             }
         });
     }
@@ -374,9 +374,14 @@ export class BubbleManager {
 
     private static onDocClickClearActiveElement(event: Event) {
         const clickedElement = event.target as Element; // most local thing clicked on
-        if (clickedElement.closest(".bloom-imageContainer")) {
+        if (
+            clickedElement.closest(".bloom-imageContainer") ||
+            clickedElement.closest(".source-copy-button")
+        ) {
             // We have other code to handle setting and clearing Comical handles
             // if the click is inside a Comical area.
+            // BL-9198 We also have code (in BloomSourceBubbles) to handle clicks on source bubble
+            // copy buttons.
             return;
         }
         // If we clicked in the document outside a Comical picture
