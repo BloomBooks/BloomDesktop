@@ -113,6 +113,8 @@ namespace Bloom.Edit
 			apiHandler.RegisterEndpointHandler("audio/currentRecordingDevice", HandleCurrentRecordingDevice, true);
 			apiHandler.RegisterEndpointHandler("audio/devices", HandleAudioDevices, true);
 
+			apiHandler.RegisterEndpointHandler("audio/copyAudioFile", HandleCopyAudioFile, false);
+
 			Debug.Assert(BloomServer.portForHttp > 0,"Need the server to be listening before this can be registered (BL-3337).");
 		}
 
@@ -707,6 +709,23 @@ namespace Bloom.Edit
 		private void WaitForRecordingToComplete()
 		{
 			_completingRecording.WaitOne();    // This will block if we ran HandleEndRecord, but haven't finished saving.
+		}
+
+		private void HandleCopyAudioFile(ApiRequest request)
+		{
+			var oldId = request.RequiredParam("oldId");
+			var newId = request.RequiredParam("newId");
+			var oldPath = GetPathToPublishableAudioForSegment(oldId);
+			var newPath = GetPathToPublishableAudioForSegment(newId);
+			if (RobustFile.Exists(oldPath))
+			{
+				RobustFile.Copy(oldPath, newPath);
+				request.PostSucceeded();
+			}
+			else
+			{
+				request.Failed("original file did not exist");
+			}
 		}
 
 		// Palaso component to do the actual recording.

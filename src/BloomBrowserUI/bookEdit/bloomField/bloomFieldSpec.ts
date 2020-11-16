@@ -29,6 +29,135 @@ describe("BloomField", () => {
         expect(result).toBe("A v 2 B C \\v D E.");
     });
 
+    it("copyAudioFilesWithNewIdsDuringPasting does not change input when no audio found", () => {
+        const input = '<p><span class="bold">This is a test!</span></p>';
+        const result = BloomField.copyAudioFilesWithNewIdsDuringPasting(input);
+        expect(result).toBe(input);
+    });
+
+    it("copyAudioFilesWithNewIdsDuringPasting changes span ids when audio found", () => {
+        const input =
+            '<p><span id="i2b4f74ac-3d71-4692-9793-bb18ff56b6e2" class="audio-sentence ui-currentAudio" recordingmd5="db3bd4ec0300c2491de826fc858603e8" data-duration="2.690566">This page was copied and pasted.</span>&nbsp; <span id="i39184f35-39bf-4574-9e55-3eedafb6bde9" class="audio-sentence" recordingmd5="21e576d30fb30bef4f09b9c3e051763d" data-duration="5.825206">This paragraph has two sentences, so it should have two audio spans.</span></p>';
+        const result = BloomField.copyAudioFilesWithNewIdsDuringPasting(input);
+
+        expect(result).not.toBe(input);
+        expect(result).toContainText("This page was copied and pasted");
+        expect(result).toContainText(
+            "This paragraph has two sentences, so it should have two audio spans."
+        );
+        expect(result).toContainHtml('class="audio-sentence"');
+        // verify workings of this test code by checking both input and result for original id values
+        expect(input).toContainHtml(
+            'id="i2b4f74ac-3d71-4692-9793-bb18ff56b6e2"'
+        );
+        expect(input).toContainHtml(
+            'id="i39184f35-39bf-4574-9e55-3eedafb6bde9"'
+        );
+        expect(result).not.toContainHtml(
+            'id="i2b4f74ac-3d71-4692-9793-bb18ff56b6e2"'
+        );
+        expect(result).not.toContainHtml(
+            'id="i39184f35-39bf-4574-9e55-3eedafb6bde9"'
+        );
+
+        expect(result.startsWith('<p><span id="')).toBe(true);
+        expect(
+            result.includes(
+                '" class="audio-sentence">This page was copied and pasted.</span>&nbsp; <span id="'
+            )
+        ).toBe(true);
+        expect(
+            result.endsWith(
+                '" class="audio-sentence">This paragraph has two sentences, so it should have two audio spans.</span></p>'
+            )
+        ).toBe(true);
+    });
+
+    it("copyAudioFilesWithNewIdsDuringPasting handles emphasized text input", () => {
+        const input =
+            '<p><span data-duration="2.481632" id="i1ea22c02-9344-4afe-9bbb-5946576d7907" class="audio-sentence">island in the middle of a <em>large</em> lake</span></p>';
+        const result = BloomField.copyAudioFilesWithNewIdsDuringPasting(input);
+        expect(result).not.toBe(input);
+        expect(result).toContainHtml('class="audio-sentence"');
+        expect(result).toContainHtml(
+            "island in the middle of a <em>large</em> lake"
+        );
+
+        // verify workings of this test code by checking both input and result for original id value
+        expect(input).toContainHtml(
+            'id="i1ea22c02-9344-4afe-9bbb-5946576d7907"'
+        );
+        expect(result).not.toContainHtml(
+            'id="i1ea22c02-9344-4afe-9bbb-5946576d7907"'
+        );
+
+        expect(result.startsWith('<p><span id="')).toBe(true);
+        expect(
+            result.endsWith(
+                '" class="audio-sentence">island in the middle of a <em>large</em> lake</span></p>'
+            )
+        ).toBe(true);
+    });
+
+    it("copyAudioFilesWithNewIdsDuringPasting handles text with span markup", () => {
+        const input =
+            '<p><span data-duration="5.2244" id="i1b625773-f5af-4289-afe6-b45a01d51e0e" class="audio-sentence" recordingmd5="undefined">Part 1: <span class="bloom-linebreak"></span>God, Creation &amp; Fall, Law</span></p>';
+        const result = BloomField.copyAudioFilesWithNewIdsDuringPasting(input);
+        expect(result).not.toBe(input);
+        expect(result).toContainHtml('class="audio-sentence"');
+        expect(result).toContainHtml(
+            'Part 1: <span class="bloom-linebreak"></span>God, Creation &amp; Fall, Law</span>'
+        );
+
+        // verify workings of this test code by checking both input and result for original id value
+        expect(input).toContainHtml(
+            'id="i1b625773-f5af-4289-afe6-b45a01d51e0e"'
+        );
+        expect(result).not.toContainHtml(
+            'id="i1b625773-f5af-4289-afe6-b45a01d51e0e"'
+        );
+
+        expect(result.startsWith('<p><span id="')).toBe(true);
+        expect(
+            result.endsWith(
+                '" class="audio-sentence">Part 1: <span class="bloom-linebreak"></span>God, Creation &amp; Fall, Law</span></p>'
+            )
+        ).toBe(true);
+    });
+
+    it("copyAudioFilesWithNewIdsDuringPasting handles odd audio span attributes", () => {
+        const input =
+            '<p><span data-duration="5.2244" class="bloom-uiCurrent audio-sentence bloom-SomethingElse" recordingmd5="undefined" id="i1b625773-f5af-4289-afe6-b45a01d51e0e"><strong>Part 1:</strong> God, Creation &amp; Fall, Law</span></p>';
+        const result = BloomField.copyAudioFilesWithNewIdsDuringPasting(input);
+        expect(result).not.toBe(input);
+        expect(result).toContainHtml('class="audio-sentence"');
+        expect(result).toContainHtml(
+            "<strong>Part 1:</strong> God, Creation &amp; Fall, Law</span>"
+        );
+
+        // verify workings of this test code by checking both input and result for original id value
+        expect(input).toContainHtml(
+            'id="i1b625773-f5af-4289-afe6-b45a01d51e0e"'
+        );
+        expect(result).not.toContainHtml(
+            'id="i1b625773-f5af-4289-afe6-b45a01d51e0e"'
+        );
+
+        expect(result.startsWith('<p><span id="')).toBe(true);
+        expect(
+            result.endsWith(
+                '" class="audio-sentence"><strong>Part 1:</strong> God, Creation &amp; Fall, Law</span></p>'
+            )
+        ).toBe(true);
+    });
+
+    it("copyAudioFilesWithNewIdsDuringPasting ignores malformed audio span attributes", () => {
+        const input =
+            '<p><span data-duration="5.2244" class="bloom-uiCurrent bloom-SomethingElse" data-type="audio-sentence" recordingmd5="undefined" id="i1b625773-f5af-4289-afe6-b45a01d51e0e"><strong>Part 1:</strong> God, Creation &amp; Fall, Law</span></p>';
+        const result = BloomField.copyAudioFilesWithNewIdsDuringPasting(input);
+        expect(result).toBe(input);
+    });
+
     it("bloom-editable div creates a <p>", () => {
         WireUp();
         expect($("div p").length).toBeGreaterThan(0);
