@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -27,6 +27,10 @@ namespace BloomTests.CollectionTab
 		{
 			ErrorReport.IsOkToInteractWithUser = false;
 			_folder = new TemporaryFolder("LibraryModelTests");
+
+			// ENHANCE: Sometimes making the FakeCollection temporary folder causes an UnauthorizedAccessException.
+			// Not exactly sure why or what to do about it. Possibly it could be related to file system operations
+			// being async in nature???
 			_collection = new TemporaryFolder(_folder, "FakeCollection");
 			MakeFakeCssFile();
 			_testLibraryModel = new FakeLibraryModel(_collection);
@@ -57,10 +61,26 @@ namespace BloomTests.CollectionTab
 			File.WriteAllText(Path.Combine(bookFolderPath, "xfile1.pdf"), "test pdf file");
 		}
 
-		// Imitate LibraryModel.MakeBloomPack() without the user interaction
-		private void MakeTestBloomPack(string bloomPackName, bool forReaderTools)
+		private void AddUnnecessaryHtmlFile(string srcBookPath)
 		{
-			_testLibraryModel.RunCompressCollectionDirectoryTest(bloomPackName, forReaderTools);
+			string extraHtmDir = Path.Combine(srcBookPath, "unnecessaryExtraFiles");
+			Directory.CreateDirectory(extraHtmDir);
+			string htmContents = "<html><body><w:sdtPr></w:sdtPr></body></html>";
+			File.WriteAllText(Path.Combine(extraHtmDir, "causesException.htm"), htmContents);
+		}
+
+		// Imitate LibraryModel.MakeBloomPack(), but bypasses the user interaction
+		private void MakeTestBloomPack(string path, bool forReaderTools)
+		{
+			var (dirName, dirPrefix) = _testLibraryModel.GetDirNameAndPrefixForCollectionBloomPack();
+			_testLibraryModel.MakeBloomPackInternal(path, dirName, dirPrefix, forReaderTools, isCollection: true);
+		}
+
+		// Imitate LibraryModel.MakeBloomPack(), but bypasses the user interaction
+		private void MakeTestSingleBookBloomPack(string path, string bookSrcPath, bool forReaderTools)
+		{
+			var (dirName, dirPrefix) = _testLibraryModel.GetDirNameAndPrefixForSingleBookBloomPack(bookSrcPath);
+			_testLibraryModel.MakeBloomPackInternal(path, dirName, dirPrefix, forReaderTools, isCollection: false);
 		}
 
 		// Don't do anything with the zip file except read in the filenames
@@ -89,8 +109,8 @@ namespace BloomTests.CollectionTab
 			// Don't do anything with the zip file except read in the filenames
 			var actualFiles = GetActualFilenamesFromZipfile(bloomPackName);
 
-			// +1 for collection-level css file, -1 for pdf file, so the count is right
-			Assert.That(actualFiles.Count, Is.EqualTo(Directory.GetFiles(srcBookPath).Count()));
+			// +2 for collection-level CustomCollectionSettings and FakeCss.css file, -1 for pdf file, so the count is +1
+			Assert.That(actualFiles.Count, Is.EqualTo(Directory.GetFiles(srcBookPath).Count() + 1));
 
 			foreach (var filePath in actualFiles)
 			{
@@ -112,8 +132,8 @@ namespace BloomTests.CollectionTab
 			// Don't do anything with the zip file except read in the filenames
 			var actualFiles = GetActualFilenamesFromZipfile(bloomPackName);
 
-			// +1 for collection-level css file, -1 for thumbs file, so the count is right
-			Assert.That(actualFiles.Count, Is.EqualTo(Directory.GetFiles(srcBookPath).Count()));
+			// +2 for collection-level CustomCollectionSettings and FakeCss.css file, -1 for thumbs file, so the count is +1
+			Assert.That(actualFiles.Count, Is.EqualTo(Directory.GetFiles(srcBookPath).Count() + 1));
 
 			foreach (var filePath in actualFiles)
 			{
@@ -141,8 +161,8 @@ namespace BloomTests.CollectionTab
 			// Don't do anything with the zip file except read in the filenames
 			var actualFiles = GetActualFilenamesFromZipfile(bloomPackName);
 
-			// +1 for collection-level css file, -4 for corrupt, .map and .bak files, so the count is -3
-			Assert.That(actualFiles.Count, Is.EqualTo(Directory.GetFiles(srcBookPath).Length - 3));
+			// +2 for collection-level CustomCollectionSettings and FakeCss.css file, -4 for corrupt, .map and .bak files, so the count is -2
+			Assert.That(actualFiles.Count, Is.EqualTo(Directory.GetFiles(srcBookPath).Length - 2));
 
 			foreach (var filePath in actualFiles)
 			{
@@ -210,6 +230,38 @@ namespace BloomTests.CollectionTab
 			// check for the lockFormatting meta tag
 			Assert.That(outputText, Is.Not.Null.And.Not.Empty);
 			Assert.IsTrue(outputText.Contains("<meta name=\"lockFormatting\" content=\"true\">"));
+		}
+
+		[Test]
+		public void MakeCollectionBloomPack_DoesntParseExtraHtmlFiles()
+		{
+			var srcBookPath = MakeBook();
+			AddUnnecessaryHtmlFile(srcBookPath);
+			var bloomPackName = Path.Combine(_folder.Path, "testPack.BloomPack");
+
+			// System Under Test
+			// Imitate LibraryModel.MakeBloomPack() without the user interaction
+			MakeTestBloomPack(bloomPackName, false);
+
+			// Verification
+			// Just make sure it doesn't throw an exception.
+			return;
+		}
+
+		[Test]
+		public void MakeSingleBookBloomPack_DoesntParseExtraHtmlFiles()
+		{
+			var srcBookPath = MakeBook();
+			AddUnnecessaryHtmlFile(srcBookPath);
+			var bloomPackName = Path.Combine(_folder.Path, "testPack.BloomPack");
+
+			// System Under Test
+			// Imitate LibraryModel.MakeBloomPack() without the user interaction
+			MakeTestSingleBookBloomPack(bloomPackName, srcBookPath, false);
+
+			// Verification
+			// Just make sure it doesn't throw an exception.
+			return;
 		}
 	}
 }
