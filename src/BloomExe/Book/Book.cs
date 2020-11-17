@@ -799,9 +799,13 @@ namespace Bloom.Book
 			BookInfo.ProvinceName = CollectionSettings.Province;
 			BookInfo.DistrictName = CollectionSettings.District;
 
-			// Propagate the IsFolio value determined by the Book class (which determines it from the HTML file)
+			// If true, propagate the IsFolio value determined by the Book class (which determines it from the HTML file)
 			// into BookInfo (which represents the meta.json file)
-			BookInfo.IsFolio = IsFolio;
+			// Note: This means BookInfo.IsFolio is true either if it was set to true by other means, or if Book.IsFolio sets it to true.
+			if (IsFolio)
+			{
+				BookInfo.IsFolio = IsFolio;
+			}
 		}
 
 		/// <summary>
@@ -2981,7 +2985,7 @@ namespace Bloom.Book
 			{
 				if (bookInfo.IsFolio)
 					continue;
-				var childBook =bookServer.GetBookFromBookInfo(bookInfo);
+				var childBook = bookServer.GetBookFromBookInfo(bookInfo);
 
 				//this will set the class bloom-content1 on the correct language
 				//this happens anyhow if the page was ever looked at in the Edti Tab
