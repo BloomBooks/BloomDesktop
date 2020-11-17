@@ -1249,7 +1249,7 @@ namespace BloomTests.Book
 				    </div>
 				  </body>
 				</html>");
-			var metadata = BookCopyrightAndLicense.GetMetadata(dom);
+			var metadata = BookCopyrightAndLicense.GetMetadata(dom, _collectionSettings);
 			var initialCopyright = metadata.CopyrightNotice;
 			Assert.AreEqual("Copyright © 2011, LASI & SILA", initialCopyright);
 

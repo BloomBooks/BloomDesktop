@@ -2,6 +2,12 @@
     "presets": [
         {
             "data-book": "copyright",
+            "lang": "en",
+            "content": "The Ministry of Education of the Islamic Republic of Afghanistan",
+            "condition": "always"
+        },
+        {
+            "data-book": "copyright",
             "lang": "ps",
             "content": "د لوست دا مرستندوی  کتاب په پوهنې وزارت پورې اړه لري.",
             "condition": "always"
@@ -16,6 +22,18 @@
             "data-book": "copyright",
             "lang": "prs",
             "content": "این کتاب کمکی خوانش متعلق به وزارت معارف است.",
+            "condition": "always"
+        },
+        {
+            "data-book": "licenseUrl",
+            "lang": "*",
+            "content": "",
+            "condition": "always"
+        },
+        {
+            "data-book": "licenseNotes",
+            "lang": "en",
+            "content": "All rights reserved",
             "condition": "always"
         },
         {

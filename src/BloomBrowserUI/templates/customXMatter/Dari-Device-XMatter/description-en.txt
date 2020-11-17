@@ -1,2 +1,2 @@
-[V6]Designed for the Afghanistan government, this provides various special pages for use in their project.
+[V7]Designed for the Afghanistan government, this provides various special pages for use in their project.
 This version is specific to the Dari language and used for digital publishing.

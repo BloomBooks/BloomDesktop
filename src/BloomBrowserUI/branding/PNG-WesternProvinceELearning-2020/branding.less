@@ -2,13 +2,16 @@
 
 [data-book="outside-back-cover-branding-bottom-html"] {
     width: 100%;
+    margin-top: auto !important;
+    margin-bottom: auto !important;
     img {
-        height: 120mm;
+        height: 140mm;
+        &.landscapeOnly {
+            height: 85mm;
+        }
     }
 }
-[data-book="outside-back-cover-branding-bottom-html"] {
-    width: 100%;
-    img.landscapeOnly {
-        height: 66mm;
-    }
+
+.outsideBackCover .bloom-translationGroup {
+    display: none;
 }
