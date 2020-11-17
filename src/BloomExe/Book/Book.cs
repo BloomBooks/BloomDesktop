@@ -798,6 +798,10 @@ namespace Bloom.Book
 			BookInfo.CountryName = CollectionSettings.Country;
 			BookInfo.ProvinceName = CollectionSettings.Province;
 			BookInfo.DistrictName = CollectionSettings.District;
+
+			// Propagate the IsFolio value determined by the Book class (which determines it from the HTML file)
+			// into BookInfo (which represents the meta.json file)
+			BookInfo.IsFolio = IsFolio;
 		}
 
 		/// <summary>
