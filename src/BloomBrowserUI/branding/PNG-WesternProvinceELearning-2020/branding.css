@@ -47,13 +47,15 @@ Rules that format the branding go in branding-base.less, or in the branding.less
 }
 [data-book="outside-back-cover-branding-bottom-html"] {
     width: 100%;
+    margin-top: auto !important;
+    margin-bottom: auto !important;
 }
 [data-book="outside-back-cover-branding-bottom-html"] img {
-    height: 120mm;
-}
-[data-book="outside-back-cover-branding-bottom-html"] {
-    width: 100%;
+    height: 140mm;
 }
 [data-book="outside-back-cover-branding-bottom-html"] img.landscapeOnly {
-    height: 66mm;
+    height: 85mm;
+}
+.outsideBackCover .bloom-translationGroup {
+    display: none;
 }
