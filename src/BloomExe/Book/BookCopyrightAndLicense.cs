@@ -28,26 +28,26 @@ namespace Bloom.Book
 		/// <summary>
 		/// Create a Clearshare.Metadata object by reading values out of the dom's bloomDataDiv
 		/// </summary>
-		public static Metadata GetMetadata(HtmlDom dom)
+		public static Metadata GetMetadata(HtmlDom dom, CollectionSettings collectionSettings)
 		{
 			if (ShouldSetToDefaultCopyrightAndLicense(dom))
 			{
 				return GetMetadataWithDefaultCopyrightAndLicense();
 			}
-			return CreateMetadata(dom.GetBookSetting("copyright"), GetLicenseUrl(dom), dom.GetBookSetting("licenseNotes"));
+			return CreateMetadata(dom.GetBookSetting("copyright"), GetLicenseUrl(dom), dom.GetBookSetting("licenseNotes"), collectionSettings);
 		}
 
-		public static Metadata GetOriginalMetadata(HtmlDom dom)
+		public static Metadata GetOriginalMetadata(HtmlDom dom, CollectionSettings collectionSettings)
 		{
-			return CreateMetadata(dom.GetBookSetting("originalCopyright"), dom.GetBookSetting("originalLicenseUrl").GetExactAlternative("*"), dom.GetBookSetting("originalLicenseNotes"));
+			return CreateMetadata(dom.GetBookSetting("originalCopyright"), dom.GetBookSetting("originalLicenseUrl").GetExactAlternative("*"), dom.GetBookSetting("originalLicenseNotes"), collectionSettings);
 		}
 
-		public static Metadata CreateMetadata(MultiTextBase copyright, string licenseUrl, MultiTextBase licenseNotes)
+		public static Metadata CreateMetadata(MultiTextBase copyright, string licenseUrl, MultiTextBase licenseNotes, CollectionSettings collectionSettings)
 		{
 			var metadata = new Metadata();
 			if (!copyright.Empty)
 			{
-				metadata.CopyrightNotice = DecodeMultiTextBase(copyright);
+				metadata.CopyrightNotice = GetBestMultiTextBaseValue(copyright, collectionSettings);
 			}
 
 			if (string.IsNullOrWhiteSpace(licenseUrl))
@@ -56,7 +56,7 @@ namespace Bloom.Book
 				//custom licenses live in this field, so if we have notes (and no URL) it is a custom one.
 				if (!licenseNotes.Empty)
 				{
-					metadata.License = new CustomLicense { RightsStatement = DecodeMultiTextBase(licenseNotes) };
+					metadata.License = new CustomLicense { RightsStatement = GetBestMultiTextBaseValue(licenseNotes, collectionSettings) };
 				}
 				else
 				{
@@ -86,15 +86,37 @@ namespace Bloom.Book
 				//are there notes that go along with that?
 				if (!licenseNotes.Empty)
 				{
-					metadata.License.RightsStatement = DecodeMultiTextBase(licenseNotes);
+					metadata.License.RightsStatement = GetBestMultiTextBaseValue(licenseNotes, collectionSettings);
 				}
 			}
 			return metadata;
 		}
 
-		private static string DecodeMultiTextBase(MultiTextBase multistring)
+		private static string GetBestMultiTextBaseValue(MultiTextBase multiTextBase, CollectionSettings collectionSettings)
 		{
-			return HtmlDom.ConvertHtmlBreaksToNewLines(WebUtility.HtmlDecode(multistring.GetFirstAlternative()));
+			string alternative = multiTextBase.GetFirstAlternative();
+
+			if (collectionSettings != null)
+			{
+				var bestAltString = multiTextBase.GetBestAlternativeString(
+					new[]
+					{
+						collectionSettings.Language1Iso639Code,
+						collectionSettings.Language2Iso639Code,
+						collectionSettings.Language3Iso639Code,
+						"*", "en"
+					}
+				);
+				if (!string.IsNullOrEmpty(bestAltString))
+					alternative = bestAltString;
+			}
+
+			return DecodeAlternative(alternative);
+		}
+
+		private static string DecodeAlternative(string alternative)
+		{
+			return HtmlDom.ConvertHtmlBreaksToNewLines(WebUtility.HtmlDecode(alternative));
 		}
 
 		public static string GetLicenseUrl(HtmlDom dom)
@@ -178,7 +200,7 @@ namespace Bloom.Book
 				useOriginalCopyright ? null : GetOriginalCopyrightAndLicenseNotice(collectionSettings, dom), "*");
 
 			if (!String.IsNullOrEmpty(bookFolderPath)) //unit tests may not be interested in checking this part
-				UpdateBookLicenseIcon(GetMetadata(dom), bookFolderPath);
+				UpdateBookLicenseIcon(GetMetadata(dom, collectionSettings), bookFolderPath);
 		}
 
 		private static void CopyStringToFieldsInPages(HtmlDom dom, string key, string val, string lang)
@@ -324,7 +346,7 @@ namespace Bloom.Book
 
 		internal static string GetOriginalCopyrightAndLicenseNotice(CollectionSettings collectionSettings, HtmlDom dom)
 		{
-			var originalMetadata = GetOriginalMetadata(dom);
+			var originalMetadata = GetOriginalMetadata(dom, collectionSettings);
 
 			// As of BL-7898, we are using the existence of an original copyright/license to determine if we are working with a derivative.
 			if (!IsDerivative(originalMetadata))

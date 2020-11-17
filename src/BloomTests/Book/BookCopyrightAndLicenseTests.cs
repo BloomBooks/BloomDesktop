@@ -1,7 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.Xml;
-using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
@@ -126,18 +123,40 @@ namespace BloomTests.Book
 			Assert.AreEqual(result, GetMetadata(dataDivContent).License.Url);
 		}
 
+		// Previously, it was assumed there would only be one value for each of copyright and license,
+		// so the code simply got the "first" one. With branding, we can have a single branding pack
+		// supply copyright and license for multiple languages (see Afghanistan branding).
+		[Test]
+		public void GetMetadata_DataProvidedByBranding_GetsCorrectValuesForLanguage1()
+		{
+			CollectionSettings collectionSettings = new CollectionSettings {Language1Iso639Code = "yyy"};
+			string dataDivContent = @"
+<div lang='aaa' data-book='licenseNotes'>My aaa license notes</div>
+<div lang='en' data-book='licenseNotes'>My en license notes</div>
+<div lang='*' data-book='licenseNotes'>My * license notes</div>
+<div lang='yyy' data-book='licenseNotes'>My yyy license notes</div>
+<div lang='zzz' data-book='licenseNotes'>My zzz license notes</div>
+<div lang='en' data-book='copyright'>My en copyright</div>
+<div lang='yyy' data-book='copyright'>My yyy copyright</div>
+<div lang='*' data-book='copyright'>My * copyright</div>";
+
+			Metadata metadata = GetMetadata(dataDivContent, collectionSettings);
+			Assert.AreEqual("My yyy license notes", metadata.License.RightsStatement);
+			Assert.AreEqual("My yyy copyright", metadata.CopyrightNotice);
+		}
+
 		[Test]
 		public void SetLicenseMetadata_ToNoLicenseUrl_OriginalHasLicenseUrlInEn_ClearsEn()
 		{
 			string dataDivContent = @"<div lang='en' data-book='licenseUrl'>http://creativecommons.org/licenses/by-nc-sa/3.0/</div>";
 			var dom = MakeDom(dataDivContent);
-			var creativeCommonsLicense = (CreativeCommonsLicense)(BookCopyrightAndLicense.GetMetadata(dom).License);
+			var collectionSettings = new CollectionSettings();
+			var creativeCommonsLicense = (CreativeCommonsLicense)(BookCopyrightAndLicense.GetMetadata(dom, collectionSettings).License);
 			Assert.IsTrue(creativeCommonsLicense.AttributionRequired); // yes, we got a CC license from the 'en' licenseUrl
 			var newLicense = new CustomLicense();
 			var newMetaData = new Metadata();
 			newMetaData.License = newLicense;
-			var settings = new CollectionSettings();
-			BookCopyrightAndLicense.SetMetadata(newMetaData, dom,  null, settings, false);
+			BookCopyrightAndLicense.SetMetadata(newMetaData, dom,  null, collectionSettings, false);
 			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@data-book='licenseUrl']");
 		}
 
@@ -229,10 +248,10 @@ namespace BloomTests.Book
 			return dom;
 		}
 
-		private static Metadata GetMetadata(string dataDivContent)
+		private Metadata GetMetadata(string dataDivContent, CollectionSettings collectionSettings = null)
 		{
 			var dom = MakeDom(dataDivContent);
-			return BookCopyrightAndLicense.GetMetadata(dom);
+			return BookCopyrightAndLicense.GetMetadata(dom, collectionSettings ?? _collectionSettings);
 		}
 
 		private static HtmlDom MakeDom(string dataDivContent)
@@ -366,7 +385,7 @@ namespace BloomTests.Book
 							</div>
 						</body></html>";
 			var bookDom = new HtmlDom(html);
-			var metadata = BookCopyrightAndLicense.GetMetadata(bookDom);
+			var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, _collectionSettings);
 			metadata.CopyrightNotice = "Copyright © 2019, Foo-Bar Publishers";
 			BookCopyrightAndLicense.SetMetadata(metadata, bookDom, "", _collectionSettings, false);
 			// This is an abbreviated version of the text we expect in originalCopyrightAndLicense. Now that we have an embedded <cite> element, matching the whole thing
@@ -380,7 +399,7 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='originalLicenseUrl' and contains(text(), 'http://creativecommons.org/licenses/by-nc/4.0/')]", 1);
 
 			// Change to use the original copyright and license.
-			var originalMetadata = BookCopyrightAndLicense.GetOriginalMetadata(bookDom);
+			var originalMetadata = BookCopyrightAndLicense.GetOriginalMetadata(bookDom, _collectionSettings);
 			BookCopyrightAndLicense.SetMetadata(originalMetadata, bookDom, "", _collectionSettings, true);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and @lang='*']");
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and .='']", 2);

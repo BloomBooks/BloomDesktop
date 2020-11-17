@@ -482,7 +482,7 @@ namespace BloomTests.Book
 }");
 				var data = new BookData(bookDom, _collectionSettings, null);
 				data.MergeBrandingSettings(tempFolder.Path);
-				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom);
+				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, _collectionSettings);
 				Assert.AreEqual("http://creativecommons.org/licenses/by/3.0/igo/", metadata.License.Url);
 				Assert.AreEqual("These are custom notes.", metadata.License.RightsStatement);
 				Assert.That(metadata.CopyrightNotice, Is.Null.Or.Empty);
@@ -523,7 +523,7 @@ namespace BloomTests.Book
 }");
 				var data = new BookData(bookDom, _collectionSettings, null);
 				data.MergeBrandingSettings(tempFolder.Path);
-				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom);
+				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, _collectionSettings);
 
 				Assert.AreEqual("http://creativecommons.org/licenses/by/3.0/igo/", metadata.License.Url);
 				Assert.AreEqual("These are custom notes.", metadata.License.RightsStatement);
@@ -559,7 +559,7 @@ namespace BloomTests.Book
 					}");
 				var data = new BookData(bookDom, _collectionSettings, null);
 				data.MergeBrandingSettings(tempFolder.Path);
-				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom);
+				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, _collectionSettings);
 
 				Assert.AreEqual($"Copyright © {DateTime.Now.Year.ToString()} Chewtoys International",
 					metadata.CopyrightNotice);
@@ -601,7 +601,7 @@ namespace BloomTests.Book
 }");
 				var data = new BookData(bookDom, _collectionSettings, null);
 				data.MergeBrandingSettings(tempFolder.Path);
-				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom);
+				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, _collectionSettings);
 				if (dataDivName == "copyright")
 					Assert.IsTrue(metadata.CopyrightNotice.Contains("2012")); // unchanged from testcase
 				else
@@ -625,6 +625,41 @@ namespace BloomTests.Book
 					Assert.That(metadata.License.RightsStatement, Is.EqualTo("Some extra notes"));
 				else
 					Assert.That(metadata.License.RightsStatement, Is.Null.Or.Empty);
+			}
+		}
+
+		[Test]
+		public void MergeSettings_CustomLicense_LicenseUrlRemoved()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='licenseUrl' lang='*'>http://creativecommons.org/licenses/by/4.0/</div>
+				</div>
+			 </body></html>");
+			using (var tempFolder = new TemporaryFolder("MergeSettings_CustomLicense_LicenseUrlRemoved"))
+			{
+				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"),
+					@"{
+	""presets"": [{
+		""data-book"": ""licenseNotes"",
+		""lang"": ""*"",
+		""content"": ""My custom license."",
+		""condition"":""always""
+	}, {
+		""data-book"": ""licenseUrl"",
+		""lang"": ""*"",
+		""content"": """",
+		""condition"":""always""
+	}]
+}");
+				var data = new BookData(bookDom, _collectionSettings, null);
+				data.MergeBrandingSettings(tempFolder.Path);
+				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, _collectionSettings);
+
+				Assert.That(metadata.License, Is.InstanceOf<CustomLicense>());
+				Assert.That(metadata.License.Url, Is.Null.Or.Empty);
+
+				Assert.That(metadata.License.RightsStatement, Is.EqualTo("My custom license."));
 			}
 		}
 
