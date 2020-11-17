@@ -954,9 +954,14 @@ namespace BloomTests.Book
 			book.BringBookUpToDate(new NullProgress());
 
 			Assert.That(!File.Exists(tagsPath), "The tags.txt file should have been removed");
+
 			// BL-2163, we are no longer migrating suitableForMakingShells
 			Assert.That(storage.BookInfo.IsSuitableForMakingShells, Is.False);
-			Assert.That(storage.BookInfo.IsFolio, Is.True);
+
+			// BL-9223, we expect BringBookUpToDate to update the bookInfo with the value determined from the book's html.
+			// The HTML in this test case does not indicate its a folio, so we expect BringBookUpToDate to change the value from True to False.
+			Assert.That(storage.BookInfo.IsFolio, Is.False);
+
 			Assert.That(storage.BookInfo.IsExperimental, Is.True);
 			Assert.That(storage.BookInfo.BookletMakingIsAppropriate, Is.True);
 			Assert.That(storage.BookInfo.AllowUploading, Is.True);
