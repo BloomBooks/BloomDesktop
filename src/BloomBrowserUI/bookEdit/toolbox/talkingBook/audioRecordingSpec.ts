@@ -7,6 +7,7 @@ import AudioRecording, {
 } from "./audioRecording";
 import { runAsyncTest } from "../../test/testUtil";
 import axios from "axios";
+import * as $ from "jquery";
 
 // Notes:
 // For any async tests:
@@ -18,6 +19,7 @@ import axios from "axios";
 //        The logs may include an actual stack trace for exceptions.
 //   For less work, it is fine to just have await with a done at the end. Or a .then() that calls done() at the end of the then callback.
 //        The error message will only say that a Timeout error occurred, which is very much not ideal
+
 describe("audio recording tests", () => {
     beforeAll(async (done: () => void) => {
         SetupTalkingBookUIElements();
@@ -2147,6 +2149,36 @@ describe("audio recording tests", () => {
         const result = recording.isInSoftSplitMode();
 
         expect(result).toBe(false);
+    });
+
+    it("makeAudioSentenceElementsLeaf creates new ids for duplicate text", () => {
+        const recording = new AudioRecording();
+
+        const sent1 =
+            '<span id="i00c41f76-0d90-41be-988d-084517eea47d" class="audio-sentence" recordingmd5="702edca0b2181c15d457eacac39de39b">This is a test!</span>';
+        // The outer <p>...</p> is needed to get the right jquery object passed to the method.
+        const elt1 = $($.parseHTML(`<p>${sent1}</p>`));
+        expect(elt1.html()).toBe(sent1); // verify original state
+        recording.makeAudioSentenceElementsLeaf(elt1);
+        expect(elt1.html()).toBe(sent1);
+        const oldId = elt1.find(".audio-sentence").attr("id");
+        expect(oldId).toBe("i00c41f76-0d90-41be-988d-084517eea47d");
+
+        const sent2 = "This is a test!";
+        const elt2 = $($.parseHTML(`<p>${sent2}</p>`));
+        expect(elt2.html()).toBe(sent2); // verify original state
+        recording.makeAudioSentenceElementsLeaf(elt2);
+        expect(elt2.html()).not.toBe(sent2);
+        const newId = elt2.find(".audio-sentence").attr("id");
+        expect(newId).not.toBe(oldId);
+        expect(newId.length).toBeGreaterThan(35);
+        expect(newId.length).toBeLessThan(38);
+        expect(elt2.html().startsWith('<span id="')).toBe(true);
+        expect(
+            elt2
+                .html()
+                .endsWith('" class="audio-sentence">This is a test!</span>')
+        ).toBe(true);
     });
 });
 
