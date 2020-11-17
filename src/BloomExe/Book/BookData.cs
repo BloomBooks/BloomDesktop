@@ -1612,8 +1612,13 @@ namespace Bloom.Book
 				foreach (var item in settings.Presets)
 				{
 					if (string.IsNullOrWhiteSpace(item.DataBook) || string.IsNullOrWhiteSpace(item.Lang) ||
-						string.IsNullOrWhiteSpace(item.Content) || string.IsNullOrWhiteSpace(item.Condition))
+						string.IsNullOrWhiteSpace(item.Condition))
 						continue;
+
+					// Allow licenseUrl to be set to nothing. Otherwise, there is no way for branding to set a custom license.
+					if (string.IsNullOrWhiteSpace(item.Content) && item.DataBook != "licenseUrl")
+						continue;
+
 					// In some places we might need to worry about content that looks empty but contains
 					// things like <br /> or empty <p> elements. But our data-div maintenance code
 					// seems to already eliminate anything that looks empty like that.
