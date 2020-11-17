@@ -799,13 +799,12 @@ namespace Bloom.Book
 			BookInfo.ProvinceName = CollectionSettings.Province;
 			BookInfo.DistrictName = CollectionSettings.District;
 
-			// If true, propagate the IsFolio value determined by the Book class (which determines it from the HTML file)
-			// into BookInfo (which represents the meta.json file)
-			// Note: This means BookInfo.IsFolio is true either if it was set to true by other means, or if Book.IsFolio sets it to true.
-			if (IsFolio)
-			{
-				BookInfo.IsFolio = IsFolio;
-			}
+			// Propagate the IsFolio value determined by the Book class (which determines it from the HTML file)
+			// into BookInfo (which represents the meta.json file).
+			// The version in Book.cs should be the ultimate source of truth, but it's handy to have BookInfo have a copy
+			// of it too because BookInfo's meta.json is faster to parse than the book's HTML file.
+			// This helps out the AddChildBookContentsToFolio() method.
+			BookInfo.IsFolio = IsFolio;
 		}
 
 		/// <summary>
