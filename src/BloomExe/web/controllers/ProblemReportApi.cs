@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Mail;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -20,16 +21,62 @@ using SIL.Reporting;
 
 namespace Bloom.web.controllers
 {
+	// ProblemReportApi should be written so that none of the API calls require sync (from BloomApiHandler).
+	// The reason is because the ProblemReportApi could be spawned from an API call that requires sync.
+	// If the parent API call required sync and the child ProblemReportApi call also required sync, the threads would deadlock
+	// until the ProblemReportDialog is closed. (All of these requests to get the strings to populate into the dialog like bookname
+	// or diagnosticInfo wouldn't return and the dialog will display their default values like "??" or "Loading..."
+	//
+	// This class should ideally save all of the values required by the API handlers at the time ShowProblemReport() is called.
+	// (That's what the ReportInfo class is here for)
+	// This will help with not requiring locking (you only need to worry about whether this class interferes with itself and can ignore the rest of Bloom)
+	// It also locks the reported values to their value at the time ShowProblemDialog() was invoked, which is also a nice-to-have.
 	internal class ProblemReportApi : IDisposable
 	{
-		private readonly BookSelection _bookSelection;
-		private static TempFile _screenshotTempFile;
+		private class ReportInfo
+		{
+			#region Readonly Properties
+			// These fields are readonly to provide assurance that they haven't been changed after the ReportInfo was constructed.
+			// (This makes proper threading/locking/synchronization easier to reason about)
+			public string Heading { get; }	// What shows at the top of the dialog to indicate the nature of the problem.
+			public string DetailedMessage { get; }	// usually from Bloom itself
+			public Exception Exception { get; }
+			public Bloom.Book.Book Book { get; }
+			public string BookName { get; }
+			public string UserEmail { get; }
+			public string UserFirstName { get; }
+			public string UserSurname { get; }
+			#endregion
+
+			// We make a special allowance for ScreenshotTempFile since it uses a more complicated SafeInvoke to be assigned.
+			public TempFile ScreenshotTempFile { get; set; }
+
+			public ReportInfo(string heading, string detailMessage, Exception exception, Bloom.Book.Book book,
+				string bookName, string email, string firstName, string surname)
+			{
+				this.Heading = heading;
+				this.DetailedMessage = detailMessage;
+				this.Exception = exception;
+				this.Book = book;
+				this.BookName = bookName;
+				this.UserEmail = email;
+				this.UserFirstName = firstName;
+				this.UserSurname = surname;
+			}
+		}
+
+
+
+		// Assumption: Assumes that only assigned to by ShowProblemReport(), and that only one problem report happens at a time.
+		// (The ShowProblemReport() thread should check and set _showingProblemReport before modifying _reportInfo,
+		//  thus basically establishing locked access to _reportInfo)
+		private static ReportInfo _reportInfo = new ReportInfo("", "", null, null, "", "", "", "");
+
+		private static BookSelection _bookSelection;
+
 		private BloomZipFile _bookZipFile;
 		private TempFile _bookZipFileTemp;
 		protected string YouTrackProjectKey = "BL";
-		private static Exception _currentException;
-		private static string _detailedMessage; // usually from Bloom itself
-		private static string _reportHeading; // What shows at the top of the dialog to indicate the nature of the problem.
 
 		/// <summary>
 		/// We want this name "different" enough that it's not likely to be supplied by a user in a book,
@@ -45,40 +92,50 @@ namespace Bloom.web.controllers
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
-		{
+		{			
+			// For the paranoid - We could also have showProblemReport block these handlers while _reportInfo is being populated.
+			// I think it's unnecessary since the problem report dialog's URL isn't even set until after the _reportInfo is populated,
+			// and we assume that nothing sends problemReport API requests except the problemReportDialog that this class loads.
+
 			// ProblemDialog.tsx uses this endpoint to get the string to show at the top of the main dialog
-			apiHandler.RegisterEndpointHandler("problemReport/reportHeading",
+			apiHandler.RegisterEndpointHandlerUsedByOthers("problemReport/reportHeading",
 				(ApiRequest request) =>
 				{
-					request.ReplyWithText(_reportHeading ?? "");
+					request.ReplyWithText(_reportInfo.Heading ?? "");
 				}, false);
 			// ProblemDialog.tsx uses this endpoint to get the screenshot image.
-			apiHandler.RegisterEndpointHandler("problemReport/screenshot",
+			apiHandler.RegisterEndpointHandlerUsedByOthers("problemReport/screenshot",
 				(ApiRequest request) =>
 				{
-					if (_screenshotTempFile == null)
+					// Wait until the screenshot is finished.
+					// If not available within the time limit, just continue anyway (so we don't deadlock or anything) and hope for the best.
+					bool isLockTaken = _takingScreenshotLock.Wait(millisecondsTimeout: 5000);
+
+					if (_reportInfo?.ScreenshotTempFile == null)
 						request.Failed();
 					else
-						request.ReplyWithImage(_screenshotTempFile.Path);
+						request.ReplyWithImage(_reportInfo.ScreenshotTempFile.Path);
+
+					if (isLockTaken)
+						_takingScreenshotLock.Release();
 				}, true);
 
 			// ProblemDialog.tsx uses this endpoint to get the name of the book.
-			apiHandler.RegisterEndpointHandler("problemReport/bookName",
+			apiHandler.RegisterEndpointHandlerUsedByOthers("problemReport/bookName",
 				(ApiRequest request) =>
 				{
-					var bestBookName = _bookSelection.CurrentSelection?.TitleBestForUserDisplay;
-					request.ReplyWithText(bestBookName ?? "??");
+					request.ReplyWithText(_reportInfo.BookName ?? "??");
 				}, true);
 
 			// ProblemDialog.tsx uses this endpoint to get the registered user's email address.
-			apiHandler.RegisterEndpointHandler("problemReport/emailAddress",
+			apiHandler.RegisterEndpointHandlerUsedByOthers("problemReport/emailAddress",
 				(ApiRequest request) =>
 				{
-					request.ReplyWithText(SIL.Windows.Forms.Registration.Registration.Default.Email);
+					request.ReplyWithText(_reportInfo.UserEmail);
 				}, true);
 
 			// PrivacyScreen.tsx uses this endpoint to show the user what info will be included in the report.
-			apiHandler.RegisterEndpointHandler("problemReport/diagnosticInfo",
+			apiHandler.RegisterEndpointHandlerUsedByOthers("problemReport/diagnosticInfo",
 				(ApiRequest request) =>
 				{
 					var userWantsToIncludeBook = request.RequiredParam("includeBook") == "true";
@@ -89,7 +146,7 @@ namespace Bloom.web.controllers
 
 			// ProblemDialog.tsx uses this endpoint in its AttemptSubmit method;
 			// it expects a response that it will use to show the issue link to the user.
-			apiHandler.RegisterEndpointHandler("problemReport/submit",
+			apiHandler.RegisterEndpointHandlerUsedByOthers("problemReport/submit",
 				(ApiRequest request) =>
 				{
 					var report = DynamicJson.Parse(request.RequiredPostJson());
@@ -98,9 +155,9 @@ namespace Bloom.web.controllers
 					var issueSubmission = new YouTrackIssueSubmitter(YouTrackProjectKey);
 					var userDesc = report.userInput as string;
 					var userEmail = report.email as string;
-					if (report.includeScreenshot && _screenshotTempFile != null && RobustFile.Exists(_screenshotTempFile.Path))
+					if (report.includeScreenshot && _reportInfo?.ScreenshotTempFile != null && RobustFile.Exists(_reportInfo.ScreenshotTempFile.Path))
 					{
-						issueSubmission.AddAttachmentWhenWeHaveAnIssue(_screenshotTempFile.Path);
+						issueSubmission.AddAttachmentWhenWeHaveAnIssue(_reportInfo.ScreenshotTempFile.Path);
 					}
 					string diagnosticInfo = GetDiagnosticInfo(report.includeBook, userDesc, userEmail);
 					if (!string.IsNullOrWhiteSpace(userEmail))
@@ -252,9 +309,9 @@ namespace Bloom.web.controllers
 					if (bookZipPath != null)
 						emailZipper.AddTopLevelFile(bookZipPath);
 				}
-				if (includeScreenshot && _screenshotTempFile != null && RobustFile.Exists(_screenshotTempFile.Path))
+				if (includeScreenshot && _reportInfo?.ScreenshotTempFile != null && RobustFile.Exists(_reportInfo.ScreenshotTempFile.Path))
 				{
-					emailZipper.AddTopLevelFile(_screenshotTempFile.Path);
+					emailZipper.AddTopLevelFile(_reportInfo.ScreenshotTempFile.Path);
 				}
 				emailZipper.Save();
 				return emailZipPath;
@@ -281,6 +338,8 @@ namespace Bloom.web.controllers
 		}
 
 		static bool _showingProblemReport;
+		// Extra locking object because 1) you can't lock primitives directly, and 2) you shouldn't use the object whose value you'll be reading as the lock object (reads to the object are not blocked)
+		static object _showingProblemReportLock = new object();	
 
 		/// <summary>
 		/// Shows a problem dialog.
@@ -295,30 +354,43 @@ namespace Bloom.web.controllers
 			// Before we do anything that might be "risky", put the problem in the log.
 			LogProblem(exception, detailedMessage, levelOfProblem);
 			Program.CloseSplashScreen(); // if it's still up, it'll be on top of the dialog
-			if (_showingProblemReport)
+
+			lock (_showingProblemReportLock)
 			{
-				// If a problem is reported when already reporting a problem, that could
-				// be an unbounded recursion that freezes the program and prevents the original
-				// problem from being reported.  So minimally report the recursive problem and stop
-				// the recursion in its tracks.
-				//
-				// Alternatively, can happen if multiple async BloomAPI calls go out and return errors.
-				// It's probably not helpful to have multiple problem report dialogs at the same time
-				// in this case either (even if there are theoretically a finite (not infinite) number of them)
-				const string msg = "MULTIPLE CALLS to ShowProblemDialog. Suppressing the subsequent calls";
-				Console.Write(msg);
-				Logger.WriteEvent(msg);
-				return; // Abort
+				if (_showingProblemReport)
+				{
+					// If a problem is reported when already reporting a problem, that could
+					// be an unbounded recursion that freezes the program and prevents the original
+					// problem from being reported.  So minimally report the recursive problem and stop
+					// the recursion in its tracks.
+					//
+					// Alternatively, can happen if multiple async BloomAPI calls go out and return errors.
+					// It's probably not helpful to have multiple problem report dialogs at the same time
+					// in this case either (even if there are theoretically a finite (not infinite) number of them)
+					const string msg = "MULTIPLE CALLS to ShowProblemDialog. Suppressing the subsequent calls";
+					Console.Write(msg);
+					Logger.WriteEvent(msg);
+					return; // Abort
+				}
+
+				_showingProblemReport = true;
 			}
 
-			_showingProblemReport = true;
-			_currentException = exception;
-			_detailedMessage = detailedMessage;
-			_reportHeading = shortUserLevelMessage;
-			if (string.IsNullOrEmpty(_reportHeading))
-				_reportHeading = detailedMessage;
-			if (string.IsNullOrEmpty(_reportHeading) && exception != null)
-				_reportHeading = exception.Message;
+			var heading = shortUserLevelMessage;
+			if (string.IsNullOrEmpty(heading))
+				heading = detailedMessage;
+			if (string.IsNullOrEmpty(heading) && exception != null)
+				heading = exception.Message;
+
+			var book = _bookSelection.CurrentSelection;
+			var bestBookName = book?.TitleBestForUserDisplay;
+
+			var userEmail = SIL.Windows.Forms.Registration.Registration.Default.Email;
+			var userFirstName = SIL.Windows.Forms.Registration.Registration.Default.FirstName;
+			var userSurname = SIL.Windows.Forms.Registration.Registration.Default.Surname;
+
+			_reportInfo = new ReportInfo(heading, detailedMessage, exception, book, bestBookName, userEmail, userFirstName, userSurname);
+
 			if (controlForScreenshotting == null)
 				controlForScreenshotting = Form.ActiveForm;
 			if (controlForScreenshotting == null) // still possible if we come from a "Details" button
@@ -344,7 +416,17 @@ namespace Bloom.web.controllers
 					{
 						// The default height is not quite enough to show the contents without scrolling.
 						dlg.Height += 30;
-						dlg.ShowDialog();
+
+						// ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
+						BloomServer._theOneInstance.RegisterThreadBlocking();
+						try
+						{
+							dlg.ShowDialog();
+						}
+						finally
+						{
+							BloomServer._theOneInstance.RegisterThreadUnblocked();
+						}
 					}
 				}
 				catch (Exception problemReportException)
@@ -358,42 +440,70 @@ namespace Bloom.web.controllers
 					// old WinForms fatal exception report directly.
 					// In any case, both of the errors will be logged by now.
 					var message = "Bloom's error reporting failed: " + problemReportException.Message;
-					ErrorReport.ReportFatalException(new ApplicationException(message, _currentException ?? problemReportException));
+					ErrorReport.ReportFatalException(new ApplicationException(message, _reportInfo.Exception ?? problemReportException));
 				}
 				finally
 				{
-					_showingProblemReport = false;
+					lock (_showingProblemReportLock)
+					{
+						_showingProblemReport = false;
+					}
 				}
 			});
 		}
 
 
+		// This lock uses a SemaphoreSlim instead of a Monitor, because a Monitor only works for one thread.
+		// Even though the acquisition of the lock and release of the lock can be on the same thread,
+		// it doesn't seem safe to assume that this is always the case. So we use a locking mechanism that works across threads.
+		private static SemaphoreSlim _takingScreenshotLock = new SemaphoreSlim(1, 1);
+
 		private static void TryGetScreenshot(Control controlForScreenshotting)
 		{
-			SafeInvoke.InvokeIfPossible("Screen Shot", controlForScreenshotting, false, () =>
-				{
-					try
-					{
-						var bounds = controlForScreenshotting.Bounds;
-						var screenshot = new Bitmap(bounds.Width, bounds.Height);
-						using (var g = Graphics.FromImage(screenshot))
-						{
-							if (controlForScreenshotting.Parent == null)
-								g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, bounds.Size);	// bounds already in screen coords
-							else
-								g.CopyFromScreen(controlForScreenshotting.PointToScreen(new Point(bounds.Left, bounds.Top)), Point.Empty, bounds.Size);
-						}
+			_takingScreenshotLock.Wait();	// Acquire the lock
 
-						_screenshotTempFile = TempFile.WithFilename(ScreenshotName);
-						RobustImageIO.SaveImage(screenshot, _screenshotTempFile.Path, ImageFormat.Png);
-					}
-					catch (Exception e)
+			try
+			{
+				SafeInvoke.Invoke("Screen Shot", controlForScreenshotting, false, true, () =>
 					{
-						ResetScreenshotFile();
-						Logger.WriteError("Bloom was unable to create a screenshot.", e);
+						try
+						{
+							var bounds = controlForScreenshotting.Bounds;
+							var screenshot = new Bitmap(bounds.Width, bounds.Height);
+							using (var g = Graphics.FromImage(screenshot))
+							{
+								if (controlForScreenshotting.Parent == null)
+									g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, bounds.Size);	// bounds already in screen coords
+								else
+									g.CopyFromScreen(controlForScreenshotting.PointToScreen(new Point(bounds.Left, bounds.Top)), Point.Empty, bounds.Size);
+							}
+
+							_reportInfo.ScreenshotTempFile = TempFile.WithFilename(ScreenshotName);
+							RobustImageIO.SaveImage(screenshot, _reportInfo.ScreenshotTempFile.Path, ImageFormat.Png);
+						}
+						catch (Exception e)
+						{
+							ResetScreenshotFile();
+							Logger.WriteError("Bloom was unable to create a screenshot.", e);
+						}
+						finally
+						{
+							// Release lock (Unblock others)
+							if (_takingScreenshotLock.CurrentCount == 0)
+								_takingScreenshotLock.Release();	
+						}
 					}
-				}
-			);
+				);
+			}
+			catch (Exception error)
+			{
+				// Release lock (Unblock others)
+				if (_takingScreenshotLock.CurrentCount == 0)
+					_takingScreenshotLock.Release();	
+
+				Debug.Fail("This error would be swallowed in release version: " + error.Message);
+				SIL.Reporting.Logger.WriteEvent("**** "+error.Message);
+			}
 		}
 
 		private static void LogProblem(Exception exception, string detailedMessage, string levelOfProblem)
@@ -411,8 +521,8 @@ namespace Bloom.web.controllers
 
 		private static void ResetScreenshotFile()
 		{
-			_screenshotTempFile?.Dispose();
-			_screenshotTempFile = null;
+			_reportInfo.ScreenshotTempFile?.Dispose();
+			_reportInfo.ScreenshotTempFile = null;
 		}
 
 		private string GetDiagnosticInfo(bool includeBook, string userDescription, string userEmail)
@@ -433,20 +543,20 @@ namespace Bloom.web.controllers
 
 		private static void GetExceptionInformation(StringBuilder bldr)
 		{
-			if (_currentException == null && string.IsNullOrWhiteSpace(_detailedMessage))
+			if (_reportInfo.Exception == null && string.IsNullOrWhiteSpace(_reportInfo.DetailedMessage))
 				return;
-			if (_currentException != null)
+			if (_reportInfo.Exception != null)
 			{
 				Exception dummy = null;
 				bldr.AppendLine();
 				bldr.AppendLine("#### Exception Details");
-				if (!string.IsNullOrWhiteSpace(_detailedMessage))
+				if (!string.IsNullOrWhiteSpace(_reportInfo.DetailedMessage))
 				{
-					bldr.AppendLine(_detailedMessage);
+					bldr.AppendLine(_reportInfo.DetailedMessage);
 					bldr.AppendLine();
 				}
 				bldr.AppendLine("```stacktrace");
-				bldr.Append(ExceptionHelper.GetHiearchicalExceptionInfo(_currentException, ref dummy));
+				bldr.Append(ExceptionHelper.GetHiearchicalExceptionInfo(_reportInfo.Exception, ref dummy));
 				bldr.AppendLine("```");
 			}
 			else
@@ -454,15 +564,13 @@ namespace Bloom.web.controllers
 				// No exception, but we do have a detailed message from Bloom. This may not actually ever occur.
 				bldr.AppendLine();
 				bldr.AppendLine("#### Detailed message");
-				bldr.AppendLine(_detailedMessage);
+				bldr.AppendLine(_reportInfo.DetailedMessage);
 			}
 		}
 
 		private static string GetObfuscatedEmail(string userEmail = "")
 		{
-			var email = string.IsNullOrWhiteSpace(userEmail) ?
-				SIL.Windows.Forms.Registration.Registration.Default.Email :
-				userEmail;
+			var email = string.IsNullOrWhiteSpace(userEmail) ?  _reportInfo?.UserEmail : userEmail;
 			string obfuscatedEmail;
 			try
 			{
@@ -479,9 +587,9 @@ namespace Bloom.web.controllers
 
 		private static void GetInformationAboutUser(StringBuilder bldr, string userEmail)
 		{
-			var firstName = SIL.Windows.Forms.Registration.Registration.Default.FirstName;
-			var lastName = SIL.Windows.Forms.Registration.Registration.Default.Surname;
-			var nameString = GetNameString(firstName, lastName);
+			var firstName = _reportInfo.UserFirstName;
+			var lastName = _reportInfo.UserSurname;
+			var nameString = GetNameString(firstName, lastName);			
 			var obfuscatedEmail = GetObfuscatedEmail(userEmail);
 			var emailString = string.IsNullOrWhiteSpace(obfuscatedEmail) ? string.Empty : " (" + obfuscatedEmail + ")";
 			bldr.AppendLine("Error Report from " + nameString + emailString + " on " + DateTime.UtcNow.ToUniversalTime() + " UTC");
@@ -532,7 +640,7 @@ namespace Bloom.web.controllers
 
 		private void GetAdditionalBloomEnvironmentInfo(StringBuilder bldr)
 		{
-			var book = _bookSelection.CurrentSelection;
+			var book = _reportInfo.Book;
 			var projectName = book?.CollectionSettings.CollectionName;
 			bldr.AppendLine("#### Additional User Environment Information");
 			if (book == null)
@@ -576,7 +684,7 @@ namespace Bloom.web.controllers
 
 		private void GetAdditionalFileInfo(StringBuilder bldr, bool includeBook)
 		{
-			var book = _bookSelection.CurrentSelection;
+			var book = _reportInfo.Book;
 			if (string.IsNullOrEmpty(book?.FolderPath))
 				return;
 			bldr.AppendLine();
@@ -616,7 +724,7 @@ namespace Bloom.web.controllers
 
 		private bool WantReaderInfo(bool includeBook)
 		{
-			var book = _bookSelection.CurrentSelection;
+			var book = _reportInfo.Book;
 
 			if (book == null || !includeBook)
 				return false;
@@ -641,7 +749,7 @@ namespace Bloom.web.controllers
 	
 		public void Dispose()
 		{
-			_screenshotTempFile?.Dispose();
+			_reportInfo.ScreenshotTempFile?.Dispose();
 			_bookZipFile = null;
 			_bookZipFileTemp?.Dispose();
 		}

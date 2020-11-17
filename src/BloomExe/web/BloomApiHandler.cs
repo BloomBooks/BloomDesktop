@@ -12,6 +12,7 @@ using SIL.IO;
 using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.Collection;
+using System.Threading;
 
 namespace Bloom.Api
 {
@@ -93,6 +94,28 @@ namespace Bloom.Api
 		}
 
 		/// <summary>
+		/// Samed as RegisterEndpointHandler, but for Endpoints that may be called by other endpoint handlers which are synchronous.
+		/// If so, sets RequiresSync to false (because it would deadlock if a synchronous handler spawned off another synchronous handler)
+		/// The caller should make sure that this endpoint handler can operate correctly without exclusive access to the lock!
+		/// </summary>
+		/// <param name="pattern">Simple string or regex to match APIs that this can handle. This must match what comes after the ".../api/" of the URL</param>
+		/// <param name="handler">The method to call</param>
+		/// <param name="handleOnUiThread">If true, the current thread will suspend until the UI thread can be used to call the method.
+		/// This deliberately no longer has a default. It's something that should be thought about.
+		/// Making it true can kill performance if you don't need it (BL-3452), and complicates exception handling and problem reporting (BL-4679).
+		/// There's also danger of deadlock if something in the UI thread is somehow waiting for this request to complete.
+		/// But, beware of race conditions or anything that manipulates UI controls if you make it false.</param>
+		public void RegisterEndpointHandlerUsedByOthers(string pattern, EndpointHandler handler, bool handleOnUiThread)
+		{
+			_endpointRegistrations[pattern.ToLowerInvariant().Trim(new char[] {'/'})] = new EndpointRegistration()
+			{
+				Handler = handler,
+				HandleOnUIThread = handleOnUiThread,
+				RequiresSync = false
+			};
+		}
+
+		/// <summary>
 		/// Handle enum reads/writes
 		/// </summary>
 		public void RegisterEnumEndpointHandler<T>(string pattern, Func<ApiRequest, T> readAction, Action<ApiRequest, T> writeAction,
@@ -161,13 +184,41 @@ namespace Bloom.Api
 							syncOn = ThumbnailsAndPreviewsSyncObj;
 						else if (localPathLc.StartsWith("api/i18n/"))
 							syncOn = I18NLock;
-						lock (syncOn)
+
+						// Basically what lock(syncObj) {} is syntactic sugar for (see its documentation),
+						// but we wrap RegisterThreadBlocking/Unblocked around acquiring the lock.
+						// We need the more complicated structure because we would like RegisterThreadUnblocked
+						// to be called immediately after acquiring the lock (notably, before Handle() is called),
+						// but we also want to handle the case where Monitor.Enter throws an exception.
+						bool lockAcquired = false;
+						try						
 						{
+							// Try to acquire lock
+							BloomServer._theOneInstance.RegisterThreadBlocking();
+							try
+							{
+								// Blocks until it either succeeds (lockAcquired will then always be true) or throws (lockAcquired will stay false)
+								Monitor.Enter(syncOn, ref lockAcquired);
+							}
+							finally
+							{
+								BloomServer._theOneInstance.RegisterThreadUnblocked();
+							}
+
+							// Lock has been acquired.
+
 							ApiRequest.Handle(pair.Value, info, CurrentCollectionSettings, _bookSelection.CurrentSelection);
 							// Even if ApiRequest.Handle() fails, return true to indicate that the request was processed and there
 							// is no further need for the caller to continue trying to process the request as a filename.
 							// See https://issues.bloomlibrary.org/youtrack/issue/BL-6763.
-							return true;
+							return true;							
+						}
+						finally
+						{
+							if (lockAcquired)
+							{
+								Monitor.Exit(syncOn);
+							}
 						}
 					}
 					else
@@ -182,6 +233,6 @@ namespace Bloom.Api
 				}
 			}
 			return false;
-		}
+		}		
 	}
 }

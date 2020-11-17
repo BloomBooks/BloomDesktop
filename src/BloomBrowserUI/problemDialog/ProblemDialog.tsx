@@ -295,7 +295,7 @@ export const ProblemDialog: React.FunctionComponent<{
                             case Mode.gather:
                                 return (
                                     <>
-                                        <div className="report-heading">
+                                        <div className="report-heading allowSelect">
                                             {reportHeading}
                                         </div>
                                         <Typography id="please_help_us">

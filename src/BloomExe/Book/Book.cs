@@ -18,6 +18,7 @@ using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.ToPalaso;
+using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
@@ -1010,7 +1011,15 @@ namespace Bloom.Book
 			var licenseMetadata = GetLicenseMetadata();
 
 			progress.WriteStatus("Updating collection settings...");
-			UpdateCollectionRelatedStylesAndSettings(bookDOM);
+			try
+			{
+				UpdateCollectionRelatedStylesAndSettings(bookDOM);
+			}
+			catch (UnauthorizedAccessException e)
+			{
+				BookStorage.ShowAccessDeniedErrorReport(e);
+				return;
+			}
 
 			progress.WriteStatus("Updating Front/Back Matter...");
 			BringXmatterHtmlUpToDate(bookDOM);
@@ -1178,7 +1187,15 @@ namespace Bloom.Book
 						copyCurrentRule = false;
 				}
 			}
-			RobustFile.WriteAllText(path, cssBuilder.ToString());
+			try
+			{
+				RobustFile.WriteAllText(path, cssBuilder.ToString());
+			}
+			catch (UnauthorizedAccessException e)
+			{
+				// Re-throw with additional debugging info.
+				throw new BloomUnauthorizedAccessException(path, e);
+			}
 		}
 
 		private void UpdateCollectionSettingsInBookMetaData()
@@ -2749,18 +2766,27 @@ namespace Bloom.Book
 					//Debug.WriteLine("Incoming User Modified Styles:   " + userModifiedStyles.OuterXml);
 				}
 
-				if (!needToDoFullSave && !stylesChanged)
+				try
 				{
-					// nothing changed outside this page. We can do a much more efficient write operation.
-					// (On a 200+ page book, like the one in BL-7253, this version of updating the page
-					// runs in about a half second instead of two and a half. Moreover, on such a book,
-					// running the full Save rather quickly fragments the heap...allocating about 16 7-megabyte
-					// memory chunks in each Save...to the point where Bloom runs out of memory.)
-					SaveForPageChanged(pageId, pageFromStorage);
+					if (!needToDoFullSave && !stylesChanged)
+					{
+						// nothing changed outside this page. We can do a much more efficient write operation.
+						// (On a 200+ page book, like the one in BL-7253, this version of updating the page
+						// runs in about a half second instead of two and a half. Moreover, on such a book,
+						// running the full Save rather quickly fragments the heap...allocating about 16 7-megabyte
+						// memory chunks in each Save...to the point where Bloom runs out of memory.)
+
+						SaveForPageChanged(pageId, pageFromStorage);
+					}
+					else
+					{
+						Save();
+					}
 				}
-				else
+				catch (UnauthorizedAccessException e)
 				{
-					Save();
+					BookStorage.ShowAccessDeniedErrorReport(e);
+					return;
 				}
 
 				Storage.UpdateBookFileAndFolderName(CollectionSettings);
@@ -3209,7 +3235,16 @@ namespace Bloom.Book
 				// current book location.
 				PageTemplateSource = Path.GetFileName(FolderPath);
 			}
-			Storage.Save();
+
+			try
+			{
+				Storage.Save();
+			}
+			catch (UnauthorizedAccessException e)
+			{
+				BookStorage.ShowAccessDeniedErrorReport(e);
+				return;
+			}
 
 			DoPostSaveTasks();
 		}
