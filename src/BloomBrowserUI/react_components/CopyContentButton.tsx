@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState } from "react";
 import IconButton from "@material-ui/core/IconButton";
-import Zoom from "@material-ui/core/Zoom";
+import Fade from "@material-ui/core/Fade";
 import Typography from "@material-ui/core/Typography";
 import ContentCopyIcon from "./icons/ContentCopyIcon";
 import { useL10n } from "./l10nHooks";
@@ -30,7 +30,7 @@ const CopyContentButton: React.FC<ICopyContentButtonProps> = props => {
 
     return (
         <div className="bloom-ui source-copy-button">
-            <Zoom
+            <Fade
                 in={showTransition}
                 enter={true}
                 exit={true}
@@ -40,7 +40,7 @@ const CopyContentButton: React.FC<ICopyContentButtonProps> = props => {
                 <div className="copy-transition">
                     <Typography>{copiedText}</Typography>
                 </div>
-            </Zoom>
+            </Fade>
             <IconButton aria-label="copy" size="small" onClick={handleClick}>
                 <ContentCopyIcon />
             </IconButton>
