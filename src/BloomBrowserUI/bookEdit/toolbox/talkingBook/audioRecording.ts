@@ -2820,7 +2820,8 @@ export default class AudioRecording {
     // just using the original order, since it is possible we have a match and only spelling or punctuation changed.
     // We also attempt to use any sentence IDs specified by this.sentenceToIdListMap.
     // N.B. If Bloom comes in here with spans that have no audio-sentence class, we may end up wrapping spans in spans.
-    private makeAudioSentenceElementsLeaf(elt: JQuery): void {
+    // public to allow unit testing.
+    public makeAudioSentenceElementsLeaf(elt: JQuery): void {
         // When all text is deleted, we get in a temporary state with no paragraph elements, so the root editable div
         // may be processed...and if this happens during editing the format button may be present. The body of this function
         // will do weird things with it (wrap it in a sentence span, for example) so the easiest thing is to remove
@@ -2868,6 +2869,7 @@ export default class AudioRecording {
         // If any new sentence has an md5 that matches a saved one, attach that id/md5 pair to that fragment.
         for (let i = 0; i < htmlFragments.length; i++) {
             const fragment = htmlFragments[i];
+            (<any>fragment).matchingAudioSpan = null; // remove obsolete audio info from possibly cached value (BL-9221)
             if (this.isRecordable(fragment)) {
                 const currentMd5 = this.md5(fragment.text);
                 for (let j = 0; j < reuse.length; j++) {
