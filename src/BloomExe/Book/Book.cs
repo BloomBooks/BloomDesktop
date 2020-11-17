@@ -798,6 +798,10 @@ namespace Bloom.Book
 			BookInfo.CountryName = CollectionSettings.Country;
 			BookInfo.ProvinceName = CollectionSettings.Province;
 			BookInfo.DistrictName = CollectionSettings.District;
+
+			// Propagate the IsFolio value determined by the Book class (which determines it from the HTML file)
+			// into BookInfo (which represents the meta.json file)
+			BookInfo.IsFolio = IsFolio;
 		}
 
 		/// <summary>
@@ -2965,6 +2969,13 @@ namespace Bloom.Book
 		{
 			XmlNode currentLastContentPage = GetLastPageForInsertingNewContent(printingDom);
 
+			int cumulativePageNum = 1;
+			string lastPageNumStr = currentLastContentPage.Attributes?.GetNamedItem("data-page-number")?.InnerText;
+			if (int.TryParse(lastPageNumStr, out int lastPageNum))
+			{
+				cumulativePageNum = lastPageNum;
+			}
+
 			//currently we have no way of filtering them, we just take them all
 			foreach (var bookInfo in currentBookCollection.GetBookInfos())
 			{
@@ -2987,6 +2998,13 @@ namespace Bloom.Book
 				foreach (XmlElement pageDiv in childBook.OurHtmlDom.RawDom.SafeSelectNodes("/html/body//div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]"))
 				{
 					XmlElement importedPage = (XmlElement) printingDom.RawDom.ImportNode(pageDiv, true);
+
+					if (!String.IsNullOrWhiteSpace(importedPage.GetAttribute("data-page-number")))
+					{
+						++cumulativePageNum;
+						importedPage.SetAttribute("data-page-number", cumulativePageNum.ToString());
+					}
+
 					currentLastContentPage.ParentNode.InsertAfter(importedPage, currentLastContentPage);
 					currentLastContentPage = importedPage;
 
