@@ -367,6 +367,10 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
 
     const setupS1AndMoveTo = (setting, id, i) => {
         const editable = setupScenario1(setting);
+
+        // Uncomment for help in debugging.
+        // ArrowKeyWorkaroundManager.printCharPositions(editable);
+
         setSelectionTo(getFirstTextNodeOfElement(id)!, i);
         return editable;
     };
@@ -806,10 +810,11 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
         const sendShift = true;
 
         it("Given Shift+ArrowDown on boundary, highlights text to the point one line down", () => {
-            const setup = () => setupS1AndMoveTo(kSentence, "s1", 15); // 2nd line of span 1
+            const setup = () => setupS1AndMoveTo(kSentence, "s1", 16); // 2nd line of span 1
+
             const verify = () => {
                 const sel = window.getSelection();
-                verifySelection(sel, getS1(), 15, getS3b(), 0);
+                verifySelection(sel, getS1(), 16, getS3b(), 0);
             };
             runArrowKeyTest(setup, verify, "ArrowDown", sendShift);
         });
@@ -818,11 +823,14 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
             const setup = () => {
                 const editable = setupScenario1(kSentence);
 
+                // Uncomment for help in debugging.
+                // ArrowKeyWorkaroundManager.printCharPositions(editable);
+
                 // Reminder: the default event doesn't move anything in the unit tests.
                 //   So this was specifically selected so that the focusNode (end of the current selection)
                 //   is on a boundary line
                 const s1 = getS1();
-                setSelectionTo(s1, 0, s1, 15);
+                setSelectionTo(s1, 0, s1, 16);
 
                 return editable;
             };
@@ -900,7 +908,7 @@ function createImageContainer(
 ) {
     // For test purposes, we set the image container position using absolute so that they can be manually positioned in such a way to produce easy numbers to work with.
     const textOverPicHtml = `<div class="bloom-textOverPicture" data-bubble="{\'style\':\'caption\'}" style="left: 0%; top: 0%; width: 10%; height: 20%; position: absolute;">${editableHtml}</div>`;
-    const html = `<div class="bloom-page customPage"><div class="bloom-imageContainer" style="width: ${width}px; height: ${height}px; left: ${left}px; top: ${top}px; position: absolute;">${textOverPicHtml}</div></div>`;
+    const html = `<div class="bloom-page customPage" style="font-family:Times New Roman; font-size:14pt"><div class="bloom-imageContainer" style="width: ${width}px; height: ${height}px; left: ${left}px; top: ${top}px; position: absolute;">${textOverPicHtml}</div></div>`;
     setupElementFromHtml(html);
 }
 
