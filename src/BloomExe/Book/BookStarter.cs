@@ -641,7 +641,7 @@ namespace Bloom.Book
 			// a template book. I was trying for a minimal reasonable change for BL-5131, and therefore
 			// put in this extra check, since previously this method was simply NEVER called in a source
 			// collection.
-			var copyrightNotice = BookCopyrightAndLicense.GetMetadata(dom).CopyrightNotice;
+			var copyrightNotice = BookCopyrightAndLicense.GetMetadata(dom, collectionSettings).CopyrightNotice;
 			if (String.IsNullOrEmpty(copyrightNotice) && collectionSettings.IsSourceCollection)
 				return;
 			bookData.Set("originalLicenseUrl", BookCopyrightAndLicense.GetLicenseUrl(dom), "*");
