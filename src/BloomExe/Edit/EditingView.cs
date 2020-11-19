@@ -1108,29 +1108,12 @@ namespace Bloom.Edit
 #endif
 				if (DialogResult.OK == result && dlg.ImageInfo != null)
 				{
-					// Save the possibly modified (by cropping) image to a file before processing further.
+					// Save the possibly modified (by cropping) image to the file.
 					// The code for ensuring non-transparency uses GraphicsMagick on the file content if possible, so the
 					// file must be in sync with the imageInfo.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8638.
-					// This applies to newly selected files as well as cropping previously selected files.
-					if (newImagePath == null || dlg.ImageInfo.OriginalFilePath != newImagePath)
-					{
-						var originalImagePath = dlg.ImageInfo.OriginalFilePath;
-						var newFilename = ImageUtils.GetUnusedFilename(Path.GetTempPath(), Path.GetFileNameWithoutExtension(originalImagePath), Path.GetExtension(originalImagePath));
-						newImagePath = Path.Combine(Path.GetTempPath(), newFilename);
-					}
-					try
-					{
+					if (newImagePath != null && dlg.ImageInfo.OriginalFilePath == newImagePath)
 						dlg.ImageInfo.Save(newImagePath);
-						using (var newImageInfo = PalasoImage.FromFileRobustly(newImagePath))
-						{
-							SaveChangedImage(imageElement, newImageInfo, "Bloom had a problem including that image");
-						}
-					}
-					finally
-					{
-						if (newImagePath != dlg.ImageInfo.OriginalFilePath)
-							RobustFile.Delete(newImagePath);
-					}
+					SaveChangedImage(imageElement, dlg.ImageInfo, "Bloom had a problem including that image");
 #if MEMORYCHECK
 					// Warn the user if we're starting to use too much memory.
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "picture chosen and saved", true);
