@@ -133,11 +133,22 @@ export default class BloomField {
             }
 
             // We can't just duplicate audio ids without running into trouble later!
-            // We need to generate a new guid-based id, use it to copy the audio file, and
-            // insert it into the span.
-            event.data.dataValue = this.copyAudioFilesWithNewIdsDuringPasting(
-                event.data.dataValue
-            );
+            if (
+                event.sender.element.$.getAttribute(
+                    "data-audiorecordingmode"
+                ) === "Sentence"
+            ) {
+                // We need to generate a new guid-based id, use it to copy the audio file, and
+                // insert it into the span when targeting a Sentence recording mode div.
+                event.data.dataValue = this.copyAudioFilesWithNewIdsDuringPasting(
+                    event.data.dataValue
+                );
+            } else {
+                // Remove all audio related span markup when targeting a TextBox recording mode div.
+                event.data.dataValue = this.removeAudioSpanMarkupDuringPasting(
+                    event.data.dataValue
+                );
+            }
 
             const paras = event.data.dataValue.match(/<p>/g);
             if (!paras) {
@@ -190,19 +201,22 @@ export default class BloomField {
         }
     }
 
-    // If copying one or more audio spans, replace the ids and copy the original audio
+    private static audioSentenceRegex =
+        '<span[^>]* (id="(.*?)"[^>]* class="[^"]*audio-sentence("| [^"]*")|class="[^"]*audio-sentence("| [^"]*")[^>]* id="(.*?)").*?>(.*?)</span>';
+    private static highlightSegmentRegex =
+        '<span[^>]* (id=".*?"[^>]* class="[^"]*bloom-highlightSegment("| [^"]*")|class="[^"]*bloom-highlightSegment("| [^"]*")[^>]* id=".*?").*?>(.*?)</span>';
+
+    // If copying one or more .audio-sentence spans, replace the ids and copy the original audio
     // file(s) using the new ids.  Note that Firefox 60 imposes using RegExp.exec.
+    // But if copying one or more .bloom-highlightSegment spans, remove the span markup.
     public static copyAudioFilesWithNewIdsDuringPasting(
         inputText: string
     ): string {
-        const audioRegex = RegExp(
-            '<span[^>]* (id="(.*?)"[^>]* class="[^"]*audio-sentence("| [^"]*")|class="[^"]*audio-sentence("| [^"]*")[^>]* id="(.*?)").*?>(.*?)</span>',
-            "g"
-        );
+        const audioRegExp = RegExp(BloomField.audioSentenceRegex, "g");
         let regexMatch;
         let newText: string = "";
         let startIndex: number = 0;
-        while ((regexMatch = audioRegex.exec(inputText)) !== null) {
+        while ((regexMatch = audioRegExp.exec(inputText)) !== null) {
             // The regexMatch object is rather strange, with a mix of string and numeric indices.
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec
             const indexOfMatch: number = regexMatch["index"];
@@ -213,20 +227,59 @@ export default class BloomField {
                     newText + inputText.substring(startIndex, indexOfMatch);
             }
             const newId = AudioRecording.createValidXhtmlUniqueId();
-            BloomApi.postDebugMessage(
-                "DEBUG copyAudio: index=" +
-                    indexOfMatch +
-                    ', oldId="' +
-                    oldId +
-                    '", text="' +
-                    audioSentenceText +
-                    '"'
-            );
             newText =
                 newText +
                 `<span id="${newId}" class="audio-sentence">${audioSentenceText}</span>`;
             BloomApi.post(`audio/copyAudioFile?oldId=${oldId}&newId=${newId}`);
-            startIndex = audioRegex.lastIndex;
+            startIndex = audioRegExp.lastIndex;
+        }
+        if (newText) {
+            if (startIndex > 0 && startIndex < inputText.length) {
+                newText =
+                    newText + inputText.substring(startIndex, inputText.length);
+            }
+            return newText;
+        }
+        // The regex didn't match, but we may have .bloom-highlightSegment markup to remove.
+        return this.removeAudioSpanMarkupDuringPasting(inputText);
+    }
+
+    public static removeAudioSpanMarkupDuringPasting(
+        inputText: string
+    ): string {
+        let result = this.removeMatchingAudioSpan(
+            inputText,
+            BloomField.audioSentenceRegex,
+            6
+        );
+        result = this.removeMatchingAudioSpan(
+            result,
+            BloomField.highlightSegmentRegex,
+            4
+        );
+        return result;
+    }
+
+    private static removeMatchingAudioSpan(
+        inputText: string,
+        spanRegex: string,
+        groupIndexForText: number
+    ): string {
+        const audioRegExp = RegExp(spanRegex, "g");
+        let regexMatch;
+        let newText: string = "";
+        let startIndex: number = 0;
+        while ((regexMatch = audioRegExp.exec(inputText)) !== null) {
+            // The regexMatch object is rather strange, with a mix of string and numeric indices.
+            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec
+            const indexOfMatch: number = regexMatch["index"];
+            const audioSentenceText: string = regexMatch[groupIndexForText];
+            if (indexOfMatch > startIndex) {
+                newText =
+                    newText + inputText.substring(startIndex, indexOfMatch);
+            }
+            newText = newText + audioSentenceText;
+            startIndex = audioRegExp.lastIndex;
         }
         if (newText) {
             if (startIndex > 0 && startIndex < inputText.length) {
