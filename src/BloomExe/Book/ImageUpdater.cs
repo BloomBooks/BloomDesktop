@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using Bloom.Utils;
 using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.Progress;
@@ -46,7 +47,7 @@ namespace Bloom.Book
 
 			foreach (XmlElement img in dom.SafeSelectNodes("//img"))
 			{
-				UpdateImgMetdataAttributesToMatchImage(folderPath, img, progress, metadata);
+				UpdateImgMetadataAttributesToMatchImage(folderPath, img, progress, metadata);
 			}
 		}
 
@@ -112,12 +113,12 @@ namespace Bloom.Book
 			return !(imageInfo.Metadata == null || imageInfo.Metadata.IsEmpty);
 		}
 
-		public static void UpdateImgMetdataAttributesToMatchImage(string folderPath, XmlElement imgElement, IProgress progress)
+		public static void UpdateImgMetadataAttributesToMatchImage(string folderPath, XmlElement imgElement, IProgress progress)
 		{
-			UpdateImgMetdataAttributesToMatchImage(folderPath, imgElement, progress, null);
+			UpdateImgMetadataAttributesToMatchImage(folderPath, imgElement, progress, null);
 		}
 
-		public static void UpdateImgMetdataAttributesToMatchImage(string folderPath, XmlElement imgElement, IProgress progress, Metadata metadata)
+		public static void UpdateImgMetadataAttributesToMatchImage(string folderPath, XmlElement imgElement, IProgress progress, Metadata metadata)
 		{
 			//see also PageEditingModel.UpdateMetadataAttributesOnImage(), which does the same thing but on the browser dom
 			var url = HtmlDom.GetImageElementUrl(new ElementProxy(imgElement));
@@ -145,7 +146,14 @@ namespace Bloom.Book
 					//Debug.Fail(" (Debug only) Image " + path + " is missing");
 					return;
 				}
-				metadata = RobustIO.MetadataFromFile(path);
+				try
+				{
+					metadata = RobustIO.MetadataFromFile(path);
+				}
+				catch (UnauthorizedAccessException e)
+				{
+					throw new BloomUnauthorizedAccessException(path, e);
+				}
 			}
 
 			progress.WriteStatus("Writing metadata to HTML for " + fileName);
@@ -171,7 +179,7 @@ namespace Bloom.Book
 			foreach (XmlElement img in imgElements)
 			{
 				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / (float)imgElements.Count);
-				UpdateImgMetdataAttributesToMatchImage(folderPath, img, progress);
+				UpdateImgMetadataAttributesToMatchImage(folderPath, img, progress);
 				completed++;
 			}
 		}

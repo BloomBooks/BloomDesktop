@@ -1053,7 +1053,7 @@ namespace BloomTests.Book
 			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(derivedBook));
 			var source2 = Path.GetDirectoryName(derivedBook);
 			var bookdata = new BookData(dom, _librarySettings.Object,
-				imgNode => ImageUpdater.UpdateImgMetdataAttributesToMatchImage(source2, imgNode, new NullProgress()));
+				imgNode => ImageUpdater.UpdateImgMetadataAttributesToMatchImage(source2, imgNode, new NullProgress()));
 			bookdata.Set("copyright", "Copyright 2018 some translator", "*");
 			bookdata.Set("versionAcknowledgments", "some translator worked on this", "en");
 			bookdata.UpdateDomFromDataset();
