@@ -97,7 +97,9 @@ namespace Bloom.WebLibraryIntegration
 				//Don't do this: Application.ExecutablePath.ToLowerInvariant()
 				//it cause us to have a wrong idea of the case of channels, which
 				//leads to urls that AWS S3 rejects when checking for an update. BL-3515
-				return Application.ExecutablePath + " \"%1\"";
+				// The executable path might have spaces in it, for example, if the user's username
+				// has spaces.
+				return "\"" + Application.ExecutablePath + "\"" + " \"%1\"";
 			}
 		}
 	}
