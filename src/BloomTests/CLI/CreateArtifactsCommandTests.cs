@@ -37,6 +37,15 @@ namespace BloomTests.CLI
 		}
 
 		[Test]
+		public void CreateArtifactsExitCode_GetErrorsFromExitCode_EpubError_Returns1Error()
+		{
+			int exitCode = 4;
+			var errors = CreateArtifactsCommand.GetErrorsFromExitCode(exitCode);
+
+			CollectionAssert.AreEquivalent(new string[] { "EpubException" }, errors);
+		}
+
+		[Test]
 		public void CreateArtifactsExitCode_GetErrorsFromExitCode_MultipleFlags_ReturnsBoth()
 		{
 			int exitCode = 0;

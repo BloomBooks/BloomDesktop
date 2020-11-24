@@ -24,7 +24,8 @@ namespace Bloom.CLI
 		// Make sure to update GetErrorsFromExitCode() too
 		Success = 0,
 		UnhandledException = 1,
-		BookHtmlNotFound = 2
+		BookHtmlNotFound = 2,
+		EpubException = 4
 	}
 
 	class CreateArtifactsCommand
@@ -50,6 +51,12 @@ namespace Bloom.CLI
 			{
 				errors.Add(CreateArtifactsExitCode.BookHtmlNotFound.ToString());
 				exitCode &= ~(int)CreateArtifactsExitCode.BookHtmlNotFound;
+			}
+
+			if ((exitCode & (int)CreateArtifactsExitCode.EpubException) != 0)
+			{
+				errors.Add(CreateArtifactsExitCode.EpubException.ToString());
+				exitCode &= ~(int)CreateArtifactsExitCode.EpubException;
 			}
 
 			// Check if:
@@ -124,7 +131,15 @@ namespace Bloom.CLI
 				ThreadPool.QueueUserWorkItem(
 					x =>
 					{
-						CreateEpubArtifact(parameters, control);
+						try
+						{
+							CreateEpubArtifact(parameters, control);
+						}
+						catch (Exception ex)
+						{
+							Console.WriteLine(ex.ToString());
+							exitCode = CreateArtifactsExitCode.EpubException;
+						}
 						countdownEvent.Signal();    // Decrement by one
 					}
 				);
