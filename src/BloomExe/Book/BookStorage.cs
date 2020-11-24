@@ -1789,25 +1789,27 @@ namespace Bloom.Book
 		/// </summary>
 		internal static void ShowAccessDeniedErrorReport(UnauthorizedAccessException noAccessError)
 		{
-			var summary = LocalizationManager.GetString("Errors.DeniedAccess",
-				"Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.");
-
-			var helpUrl = @"http://community.bloomlibrary.org/t/how-to-fix-file-permissions-problems/78";
-			var seeAlso = LocalizationManager.GetString("Common.SeeWebPage", "See {0}.");
-			summary += Environment.NewLine + String.Format(seeAlso, helpUrl);
-
 			// In the details shown to the user, don't need the extra diagnostic info in BloomUnauthorizedAccessException
 			// (However, in the error report submitted to YouTrack, we do want that extra diagnostic info)
 			Exception errorToUser = noAccessError;
 			if (noAccessError is BloomUnauthorizedAccessException)
 				errorToUser = noAccessError.InnerException;
-			string details = errorToUser.Message;
+			
 
-			Logger.WriteEvent("*** ERROR: " + summary + Environment.NewLine + details);
+			var deniedAccessMsg = LocalizationManager.GetString("Errors.DeniedAccess",
+				"Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.");
+
+			var helpUrl = @"http://community.bloomlibrary.org/t/how-to-fix-file-permissions-problems/78";
+			var seeAlsoFormatStr = LocalizationManager.GetString("Common.SeeWebPage", "See {0}.");
+			var seeAlsoMsg = String.Format(seeAlsoFormatStr, helpUrl);
+
+			var summary = errorToUser.Message + Environment.NewLine + deniedAccessMsg + Environment.NewLine + seeAlsoMsg;
+
+			Logger.WriteEvent("*** ERROR: " + summary);
 
 			// Even though there's not really anything we can fix, we still set showSendReport=true because
 			// false uses a MessageBox for which the user can't use the mouse to select text to copy/paste
-			NonFatalProblem.Report(ModalIf.All, PassiveIf.None, summary, details, noAccessError, showSendReport: true);
+			NonFatalProblem.Report(ModalIf.All, PassiveIf.None, summary, "", noAccessError, showSendReport: true);
 		}
 
 		/// <summary>

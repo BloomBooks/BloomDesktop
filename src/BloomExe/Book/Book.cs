@@ -761,7 +761,15 @@ namespace Bloom.Book
 			if (IsEditable)
 			{
 				// If the user might be editing it we want it more thoroughly up-to-date
-				ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, OurHtmlDom, progress);
+				try
+				{
+					ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, OurHtmlDom, progress);
+				}
+				catch (UnauthorizedAccessException e)
+				{
+					BookStorage.ShowAccessDeniedErrorReport(e);
+				}
+
 				VerifyLayout(OurHtmlDom); // make sure we have something recognizable for layout
 				// Restore possibly messed up multilingual settings.
 				UpdateMultilingualSettings(OurHtmlDom);
@@ -1531,7 +1539,14 @@ namespace Bloom.Book
 
 		private void UpdateImageMetadataAttributes(XmlElement imgNode)
 		{
-			ImageUpdater.UpdateImgMetdataAttributesToMatchImage(FolderPath, imgNode, new NullProgress());
+			try
+			{
+				ImageUpdater.UpdateImgMetadataAttributesToMatchImage(FolderPath, imgNode, new NullProgress());
+			}
+			catch (UnauthorizedAccessException e)
+			{
+				BookStorage.ShowAccessDeniedErrorReport(e);
+			}
 		}
 
 		// Returns true if it updated something.
@@ -3181,7 +3196,15 @@ namespace Bloom.Book
 		/// </summary>
 		public void CopyImageMetadataToWholeBookAndSave(Metadata metadata, IProgress progress)
 		{
-			ImageUpdater.CopyImageMetadataToWholeBook(Storage.FolderPath,OurHtmlDom, metadata, progress);
+			try
+			{
+				ImageUpdater.CopyImageMetadataToWholeBook(Storage.FolderPath,OurHtmlDom, metadata, progress);
+			}
+			catch (UnauthorizedAccessException e)
+			{
+				BookStorage.ShowAccessDeniedErrorReport(e);
+				return;	// Probably not much point to saving if copying the image metadata didn't fully complete successfully
+			}
 			Save();
 		}
 
