@@ -1,4 +1,4 @@
-/// <reference path="./BloomSourceBubbles.ts" />
+/// <reference path="./BloomSourceBubbles.tsx" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
 
 import BloomSourceBubbles from "./BloomSourceBubbles";
@@ -21,7 +21,7 @@ describe("SourceBubbles", () => {
         // currentCollectionLanguage2 ('tpi' in tests)
         // currentCollectionLanguage3 ('fr' in tests)
 
-        var testHtml = $(
+        const testHtml = $(
             [
                 "<div id='testTarget' class='bloom-translationGroup'>",
                 "   <div class='bloom-editable' lang='es'>Spanish text</div>",
@@ -32,7 +32,7 @@ describe("SourceBubbles", () => {
             ].join("\n")
         );
         $("body").append(testHtml);
-        var result = BloomSourceBubbles.MakeSourceTextDivForGroup(
+        const result = BloomSourceBubbles.MakeSourceTextDivForGroup(
             $("body").find("#testTarget")[0]
         );
 
@@ -50,7 +50,7 @@ describe("SourceBubbles", () => {
         // <div class='bloom-editable' lang='es'>Spanish text</div> (order not important here)
         // <div class='bloom-editable' lang='fr'>French text</div>
         // <div class='bloom-editable' lang='tpi'>Tok Pisin text</div>
-        var listItems = result.find("nav ul li");
+        const listItems = result.find("nav ul li");
         expect(listItems.length).toBe(3);
         expect(listItems.first().html()).toBe(
             '<a class="sourceTextTab" href="#tpi">Tok Pisin</a>'
@@ -61,7 +61,7 @@ describe("SourceBubbles", () => {
         expect(listItems.last().html()).toBe(
             '<a class="sourceTextTab" href="#es">español</a>'
         );
-        expect(result.find("div").length).toBe(3);
+        expect(result.find("div.source-text").length).toBe(3);
     });
 
     it("Run CreateDropdownIfNecessary with pre-defined settings", () => {
