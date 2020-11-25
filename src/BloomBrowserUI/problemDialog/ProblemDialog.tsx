@@ -22,7 +22,6 @@ import { useDrawAttention } from "../react_components/UseDrawAttention";
 import ReactDOM = require("react-dom");
 import { PrivacyScreen } from "./PrivacyScreen";
 import { useL10n } from "../react_components/l10nHooks";
-import Close from "@material-ui/icons/Close";
 
 export enum ProblemKind {
     User = "User",
