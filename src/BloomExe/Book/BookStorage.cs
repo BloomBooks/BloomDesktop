@@ -1768,7 +1768,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// Reports an UnauthorizedAccessException to the user using the book storage instance's html
 		/// </summary>
-		private void ShowAccessDeniedErrorHtml(UnauthorizedAccessException error)
+		internal void ShowAccessDeniedErrorHtml(UnauthorizedAccessException error)
 		{
 			var message = LocalizationManager.GetString("Errors.DeniedAccess",
 				"Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.");
