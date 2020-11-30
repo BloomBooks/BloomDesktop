@@ -840,22 +840,6 @@
         <note>ID: Common.Advanced</note>
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
       </trans-unit>
-      <trans-unit id="Common.Colors.Black">
-        <source xml:lang="en">Black</source>
-        <note>ID: Common.Colors.Black</note>
-      </trans-unit>
-      <trans-unit id="Common.Colors.Crimson">
-        <source xml:lang="en">Crimson</source>
-        <note>ID: Common.Colors.Crimson</note>
-      </trans-unit>
-      <trans-unit id="Common.Colors.Yellow">
-        <source xml:lang="en">Yellow</source>
-        <note>ID: Common.Colors.Yellow</note>
-      </trans-unit>
-      <trans-unit id="Common.Colors.White">
-        <source xml:lang="en">White</source>
-        <note>ID: Common.Colors.White</note>
-      </trans-unit>
       <trans-unit id="Common.BackButton">
         <source xml:lang="en">Back</source>
         <note>ID: Common.BackButton</note>
@@ -865,13 +849,38 @@
         <source xml:lang="en">Cancel</source>
         <note>ID: Common.Cancel</note>
       </trans-unit>
+      <trans-unit id="Common.CancelButton">
+        <source xml:lang="en">&amp;Cancel</source>
+        <note>ID: Common.CancelButton</note>
+      </trans-unit>
+      <trans-unit id="Common.Colors.Black">
+        <source xml:lang="en">Black</source>
+        <note>ID: Common.Colors.Black</note>
+      </trans-unit>
+      <trans-unit id="Common.Colors.Crimson">
+        <source xml:lang="en">Crimson</source>
+        <note>ID: Common.Colors.Crimson</note>
+      </trans-unit>
+      <trans-unit id="Common.Colors.White">
+        <source xml:lang="en">White</source>
+        <note>ID: Common.Colors.White</note>
+      </trans-unit>
+      <trans-unit id="Common.Colors.Yellow">
+        <source xml:lang="en">Yellow</source>
+        <note>ID: Common.Colors.Yellow</note>
+      </trans-unit>
+      <trans-unit id="Common.Copy">
+        <source xml:lang="en">Copy</source>
+        <note>ID: Common.Copy</note>
+      </trans-unit>
       <trans-unit id="Common.Delete">
         <source xml:lang="en">Delete</source>
         <note>ID: Common.Delete</note>
       </trans-unit>
-      <trans-unit id="Common.CancelButton">
-        <source xml:lang="en">&amp;Cancel</source>
-        <note>ID: Common.CancelButton</note>
+      <trans-unit id="Common.Done">
+        <source xml:lang="en">Done</source>
+        <note>ID: Common.Done</note>
+        <note>Shown in a list of messages when Bloom has completed a task.</note>
       </trans-unit>
       <trans-unit id="Common.Error">
         <source xml:lang="en">Error</source>
@@ -883,26 +892,6 @@
         <note>ID: Common.Finish</note>
         <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
       </trans-unit>
-      <trans-unit id="Common.Info">
-        <source xml:lang="en">Info</source>
-        <note>ID: Common.Info</note>
-        <note>Used as a label for additional information, like duration etc in the Sign Language Tool</note>
-      </trans-unit>
-      <trans-unit id="Common.Warning">
-        <source xml:lang="en">Info</source>
-        <note>ID: Common.Warning</note>
-        <note>A heading shown above some messages.</note>
-      </trans-unit>
-      <trans-unit id="Common.Note">
-        <source xml:lang="en">Note</source>
-        <note>ID: Common.Note</note>
-        <note>A heading shown above some messages.</note>
-      </trans-unit>
-      <trans-unit id="Common.Done">
-        <source xml:lang="en">Done</source>
-        <note>ID: Common.Done</note>
-        <note>Shown in a list of messages when Bloom has completed a task.</note>
-      </trans-unit>
       <trans-unit id="Common.Help" sil:dynamic="true">
         <source xml:lang="en">Help</source>
         <note>ID: Common.Help</note>
@@ -910,6 +899,11 @@
       <trans-unit id="Common.HelpButton">
         <source xml:lang="en">&amp;Help</source>
         <note>ID: Common.HelpButton</note>
+      </trans-unit>
+      <trans-unit id="Common.Info">
+        <source xml:lang="en">Info</source>
+        <note>ID: Common.Info</note>
+        <note>Used as a label for additional information, like duration etc in the Sign Language Tool</note>
       </trans-unit>
       <trans-unit id="Common.LearnMore" sil:dynamic="true">
         <source xml:lang="en">Learn More</source>
@@ -931,6 +925,11 @@
         <source xml:lang="en">Next</source>
         <note>ID: Common.NextButton</note>
         <note>In a wizard, this button takes you to the next step.</note>
+      </trans-unit>
+      <trans-unit id="Common.Note">
+        <source xml:lang="en">Note</source>
+        <note>ID: Common.Note</note>
+        <note>A heading shown above some messages.</note>
       </trans-unit>
       <trans-unit id="Common.OK">
         <source xml:lang="en">OK</source>
@@ -969,6 +968,11 @@
       <trans-unit id="Common.Settings">
         <source xml:lang="en">Settings</source>
         <note>ID: Common.Settings</note>
+      </trans-unit>
+      <trans-unit id="Common.Warning">
+        <source xml:lang="en">Info</source>
+        <note>ID: Common.Warning</note>
+        <note>A heading shown above some messages.</note>
       </trans-unit>
       <trans-unit id="Download.Completed">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
