@@ -1,9 +1,7 @@
 using System;
-using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Xml;
-using Bloom.Properties;
 using SIL.Reporting;
 
 namespace Bloom.Book
@@ -19,6 +17,10 @@ namespace Bloom.Book
 		/// </summary>
 		public ErrorBook(Exception exception, string folderPath, bool canDelete)
 		{
+			// ENHANCE: Address that a Guard fails when this constructor is called.
+			// This class inherits from Book. So it calls Book's default constructor here.
+			// But Book's default constructor has a Guard that says it's only supposed to be called from the unit tests.
+			// One potential route is to create an interface... IBook or ISimpleBook
 			Exception = exception;
 			_folderPath = folderPath;
 			_canDelete = canDelete;
