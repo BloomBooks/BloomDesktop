@@ -51,7 +51,7 @@ Kuna njia mbili ambazo watu wanaweza kutumia templeti yako. Njia ya kwanza ni ku
       </trans-unit>
       <trans-unit id="template.starter.document">
         <source xml:lang="en">Document Your Template</source>
-        <target xml:lang="sw" state="needs-translation">Document Your Template</target>
+        <target xml:lang="sw" state="translated">Orodesha Kiolezo chako</target>
         <note>ID: template.starter.document</note>
       </trans-unit>
       <trans-unit id="template.starter.describeyours">

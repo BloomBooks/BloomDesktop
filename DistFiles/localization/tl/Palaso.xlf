@@ -17,7 +17,7 @@
         <source xml:lang="en">About {0}</source>
         <note>ID: AboutDialog.WindowTitle</note>
         <note>{0} is the application name</note>
-        <target xml:lang="tl" state="needs-translation">About {0}</target>
+        <target xml:lang="tl" state="translated">Patungkol {0}</target>
       </trans-unit>
       <trans-unit id="AboutDialog._checkForUpdates">
         <source xml:lang="en">Check For Updates</source>
@@ -65,17 +65,17 @@
       <trans-unit id="Common.AbortButton">
         <source xml:lang="en">&amp;Abort</source>
         <note>ID: Common.AbortButton</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Abort</target>
+        <target xml:lang="tl" state="translated">&amp;Umalis</target>
       </trans-unit>
       <trans-unit id="Common.CancelButton">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Cancel</target>
+        <target xml:lang="tl" state="translated">&amp;Kanselahin</target>
       </trans-unit>
       <trans-unit id="Common.IgnoreButton">
         <source xml:lang="en">&amp;Ignore</source>
         <note>ID: Common.IgnoreButton</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Ignore</target>
+        <target xml:lang="tl" state="translated">&amp;I-ignore</target>
       </trans-unit>
       <trans-unit id="Common.No">
         <source xml:lang="en">No</source>
@@ -85,17 +85,17 @@
       <trans-unit id="Common.NoButton">
         <source xml:lang="en">&amp;No</source>
         <note>ID: Common.NoButton</note>
-        <target xml:lang="tl" state="needs-translation">&amp;No</target>
+        <target xml:lang="tl" state="translated">&amp;Hindi</target>
       </trans-unit>
       <trans-unit id="Common.OKButton">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="tl" state="needs-translation">&amp;OK</target>
+        <target xml:lang="tl" state="translated">&amp;OK</target>
       </trans-unit>
       <trans-unit id="Common.RetryButton">
         <source xml:lang="en">&amp;Retry</source>
         <note>ID: Common.RetryButton</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Retry</target>
+        <target xml:lang="tl" state="translated">&amp;Ulitin</target>
       </trans-unit>
       <trans-unit id="Common.Yes">
         <source xml:lang="en">Yes</source>
@@ -105,7 +105,7 @@
       <trans-unit id="Common.YesButton">
         <source xml:lang="en">&amp;Yes</source>
         <note>ID: Common.YesButton</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Yes</target>
+        <target xml:lang="tl" state="translated">&amp;Oo</target>
       </trans-unit>
       <trans-unit id="CustomIdentifierView.betterLabel1">
         <source xml:lang="en">RFC5646 code:</source>
@@ -139,12 +139,12 @@
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Cancel</target>
+        <target xml:lang="tl" state="translated">&amp;Kanselahin</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Delete</target>
+        <target xml:lang="tl" state="translated">&amp;Tanggalin</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.AlmostMatchingImages">
         <source xml:lang="en">Found {0} images with names close to “{1}”</source>
@@ -335,12 +335,12 @@
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
-        <target xml:lang="tl" state="needs-translation">About Language 639-3 Codes &amp; How To Apply For New Ones</target>
+        <target xml:lang="tl" state="translated">Patungkol sa Language 639-3 Codes &amp; Paano Mag-apply ng Bagong Code</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle">
         <source xml:lang="en">About The ISO Language Registry</source>
         <note>ID: LanguageLookup.CannotFindMyLanguageWindowTitle</note>
-        <target xml:lang="tl" state="needs-translation">About The ISO Language Registry</target>
+        <target xml:lang="tl" state="translated">Patungkol sa ISO Language Registry</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CodeHeader">
         <source xml:lang="en">Code</source>
@@ -557,7 +557,7 @@
         <source xml:lang="en">about {0} Public Domain</source>
         <note>ID: MetadataEditor.linkToPublicDomainCC0</note>
         <note>{0} is replaced by an untranslatable abbreviation functioning as an adjective ("CC0")</note>
-        <target xml:lang="tl" state="needs-translation">about {0} Public Domain</target>
+        <target xml:lang="tl" state="translated">patungkol sa {0} Public Domain</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons">
         <source xml:lang="en">Not Enforceable</source>
@@ -657,12 +657,12 @@
       <trans-unit id="WSFontControl.Font">
         <source xml:lang="en">&amp;Font:</source>
         <note>ID: WSFontControl.Font</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Font:</target>
+        <target xml:lang="tl" state="translated">&amp;Font:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.FontNotAvailable">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
         <note>ID: WSFontControl.FontNotAvailable</note>
-        <target xml:lang="tl" state="needs-translation">(The selected font is not available on this machine. Using default.)</target>
+        <target xml:lang="tl" state="translated">(Ang font na napili ay wala sa iyong machine. Gamit ang default.)</target>
       </trans-unit>
       <trans-unit id="WSFontControl.RightToLeftWS">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
@@ -672,12 +672,12 @@
       <trans-unit id="WSFontControl.Size">
         <source xml:lang="en">&amp;Size:</source>
         <note>ID: WSFontControl.Size</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Size:</target>
+        <target xml:lang="tl" state="translated">&amp;Laki:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.TestArea">
         <source xml:lang="en">&amp;Test Area:</source>
         <note>ID: WSFontControl.TestArea</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Test Area:</target>
+        <target xml:lang="tl" state="translated">&amp;Test Area:</target>
       </trans-unit>
       <trans-unit id="WSIdentifierView.betterLabel4">
         <source xml:lang="en">Abbreviation</source>
@@ -752,7 +752,7 @@
       <trans-unit id="WSKeyboardControl.TestAreaCaption">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Test Area (Use this area to type something to test out your keyboard.)</target>
+        <target xml:lang="tl" state="translated">&amp;Test Area (Mag-type dito para i-test ang iyong keyboard.)</target>
       </trans-unit>
       <trans-unit id="Warning">
         <source xml:lang="en">Warning</source>
