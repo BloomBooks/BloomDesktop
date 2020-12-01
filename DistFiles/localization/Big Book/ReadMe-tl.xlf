@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="bigbook.title">
         <source xml:lang="en">About Big Books</source>
-        <target xml:lang="tl" state="needs-translation">About Big Books</target>
+        <target xml:lang="tl" state="translated">Patungkol sa Big Books</target>
         <note>ID: bigbook.title</note>
       </trans-unit>
       <trans-unit id="bigbook.use">
