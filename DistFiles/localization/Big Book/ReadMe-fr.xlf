@@ -31,9 +31,9 @@ Il vous suffit de demander à l'imprimerie d'agrandir votre PDF en format A4 au 
         <target xml:lang="fr" state="final">Limitations de cette version</target>
         <note>ID: bigbook.limits</note>
       </trans-unit>
-      <trans-unit id="bigbook.limits.smallscreen">
+      <trans-unit id="bigbook.limits.smallscreen" approved="yes">
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
-        <target xml:lang="fr" state="translated">Si votre écran est petit, il sera difficile de lire la page des crédits. Pour pouvoir la modifier, essayez de zoomer avec le zoom +/- en haut à droite de votre écran.</target>
+        <target xml:lang="fr" state="final">Si votre écran est petit, la lecture de la page des crédits pourrait présenter un problème. Pour pouvoir modifier la page, essayez de manipuler le zoom +/- en haut à droite de votre écran.</target>
         <note>ID: bigbook.limits.smallscreen</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.Englishtemplate" approved="yes">

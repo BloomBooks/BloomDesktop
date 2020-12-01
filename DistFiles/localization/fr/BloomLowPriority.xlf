@@ -70,10 +70,10 @@
             Bloom Enterprise ajoute des fonctionnalités et des services importants pour les éditeurs, les gouvernements et les organisations internationales. Cet abonnement payant répond à leurs besoins uniques tout en soutenant le développement de Bloom et le support offert à toute la communauté d'utilisateurs.
         </target>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.None">
+      <trans-unit id="Settings.Enterprise.None" approved="yes">
         <source xml:lang="en">None. Enterprise features will be unavailable.</source>
         <note>ID: Settings.Enterprise.None</note>
-        <target xml:lang="fr" state="translated">Aucun. Bloom ne montrera pas les fonctionnalités de l'abonnement Entreprise.</target>
+        <target xml:lang="fr" state="final">Aucun. Bloom ne montrera pas les fonctionnalités de l'abonnement Entreprise.</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NeedsCode" approved="yes">
         <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>

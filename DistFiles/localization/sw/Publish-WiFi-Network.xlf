@@ -9,13 +9,23 @@
       </trans-unit>
       <trans-unit id="publish.help.tips.tempWiFi.hotspot">
         <source xml:lang="en">Start a phone hotspot</source>
-        <target xml:lang="sw" state="needs-translation">Start a phone hotspot</target>
+        <target xml:lang="sw" state="translated">Anza hotspot kwenye simu</target>
         <note>ID: publish.help.tips.tempWiFi.hotspot</note>
+      </trans-unit>
+      <trans-unit id="publish.help.tips.tempWiFi.hotspot.text">
+        <source xml:lang="en">Many mobile phones have a feature called a 'hotspot' that creates a Wi-Fi network. First disconnect from the mobile network (so that there are no data charges). Next, enable the hotspot. Finally, set your laptop and other phones to join that network.</source>
+        <target xml:lang="sw" state="translated">Simu nyingi za rununu zina huduma inayoitwa 'hotspot' ambayo huunda mtandao wa Wi-Fi. Kwanza ondoa kutoka kwa mtandao wa rununu (ili kusiwe na malipo ya data). Ifuatayo, wezesha hotspot. Mwishowe, weka kompyuta yako ndogo na simu zingine ili ujiunge na mtandao huo.</target>
+        <note>ID: publish.help.tips.tempWiFi.hotspot.text</note>
       </trans-unit>
       <trans-unit id="publish.help.tips.tempWiFi.hostednetwork">
         <source xml:lang="en">Start a network using your laptop</source>
         <target xml:lang="sw" state="translated">Anza mtandao ukitumia kompyuta yako ndogo</target>
         <note>ID: publish.help.tips.tempWiFi.hostednetwork</note>
+      </trans-unit>
+      <trans-unit id="publish.help.tips.tempWiFi.hostednetwork.text">
+        <source xml:lang="en">Windows 10 laptops can also create local Wi-Fi networks. Do a web search for "windows netsh hostednetwork". If your laptop does not support this, you can get inexpensive USB Wi-Fi adaptors that do. When shopping, make sure the adaptor supports "hosted network".</source>
+        <target xml:lang="sw" state="translated">Kompyuta ndogo za Windows 10 zinaweza pia kuunda mitandao ya ndani ya Wi-Fi. Tafuta wavuti kwa "windows netsh hostednetwork". Ikiwa kompyuta yako ndogo haiwezi kuunga mkono hii, unaweza kupata adapta za bei rahisi za USB ambazo hufanya hivyo. Wakati wa ununuzi, hakikisha adapta inasaidia "mtandao uliopangwa".</target>
+        <note>ID: publish.help.tips.tempWiFi.hostednetwork.text</note>
       </trans-unit>
     </body>
   </file>

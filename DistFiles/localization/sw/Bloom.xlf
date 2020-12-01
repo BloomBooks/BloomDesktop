@@ -277,7 +277,7 @@
       <trans-unit id="BookMetadata.flashingHazard">
         <source xml:lang="en">Flashing Hazard</source>
         <note>ID: BookMetadata.flashingHazard</note>
-        <target xml:lang="sw" state="needs-translation">Flashing Hazard</target>
+        <target xml:lang="sw" state="translated">Ishara ya hatari</target>
       </trans-unit>
       <trans-unit id="BookMetadata.hazards">
         <source xml:lang="en">Hazards</source>
@@ -529,7 +529,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer" sil:dynamic="true">
         <source xml:lang="en">Khmer</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer</note>
-        <target xml:lang="sw" state="needs-translation">Khmer</target>
+        <target xml:lang="sw" state="translated">Kikhmeri</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao" sil:dynamic="true">
         <source xml:lang="en">Lao</source>
@@ -1037,26 +1037,6 @@
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
         <target xml:lang="sw" state="translated">Ya hali ya juu</target>
       </trans-unit>
-      <trans-unit id="Common.Colors.Black">
-        <source xml:lang="en">Black</source>
-        <note>ID: Common.Colors.Black</note>
-        <target xml:lang="sw" state="translated">Nyeusi</target>
-      </trans-unit>
-      <trans-unit id="Common.Colors.Crimson">
-        <source xml:lang="en">Crimson</source>
-        <note>ID: Common.Colors.Crimson</note>
-        <target xml:lang="sw" state="translated">Nyekundu</target>
-      </trans-unit>
-      <trans-unit id="Common.Colors.Yellow">
-        <source xml:lang="en">Yellow</source>
-        <note>ID: Common.Colors.Yellow</note>
-        <target xml:lang="sw" state="translated">Njano</target>
-      </trans-unit>
-      <trans-unit id="Common.Colors.White">
-        <source xml:lang="en">White</source>
-        <note>ID: Common.Colors.White</note>
-        <target xml:lang="sw" state="translated">Nyeupe</target>
-      </trans-unit>
       <trans-unit id="Common.BackButton" approved="yes">
         <source xml:lang="en">Back</source>
         <note>ID: Common.BackButton</note>
@@ -1068,15 +1048,46 @@
         <note>ID: Common.Cancel</note>
         <target xml:lang="sw" state="final">Batilisha</target>
       </trans-unit>
+      <trans-unit id="Common.CancelButton" approved="yes">
+        <source xml:lang="en">&amp;Cancel</source>
+        <note>ID: Common.CancelButton</note>
+        <target xml:lang="sw" state="final">U&amp;batilishe</target>
+      </trans-unit>
+      <trans-unit id="Common.Colors.Black">
+        <source xml:lang="en">Black</source>
+        <note>ID: Common.Colors.Black</note>
+        <target xml:lang="sw" state="translated">Nyeusi</target>
+      </trans-unit>
+      <trans-unit id="Common.Colors.Crimson">
+        <source xml:lang="en">Crimson</source>
+        <note>ID: Common.Colors.Crimson</note>
+        <target xml:lang="sw" state="translated">Nyekundu</target>
+      </trans-unit>
+      <trans-unit id="Common.Colors.White">
+        <source xml:lang="en">White</source>
+        <note>ID: Common.Colors.White</note>
+        <target xml:lang="sw" state="translated">Nyeupe</target>
+      </trans-unit>
+      <trans-unit id="Common.Colors.Yellow">
+        <source xml:lang="en">Yellow</source>
+        <note>ID: Common.Colors.Yellow</note>
+        <target xml:lang="sw" state="translated">Njano</target>
+      </trans-unit>
+      <trans-unit id="Common.Copy">
+        <source xml:lang="en">Copy</source>
+        <note>ID: Common.Copy</note>
+        <target xml:lang="sw" state="needs-translation">Copy</target>
+      </trans-unit>
       <trans-unit id="Common.Delete">
         <source xml:lang="en">Delete</source>
         <note>ID: Common.Delete</note>
         <target xml:lang="sw" state="translated">Futa</target>
       </trans-unit>
-      <trans-unit id="Common.CancelButton" approved="yes">
-        <source xml:lang="en">&amp;Cancel</source>
-        <note>ID: Common.CancelButton</note>
-        <target xml:lang="sw" state="final">U&amp;batilishe</target>
+      <trans-unit id="Common.Done">
+        <source xml:lang="en">Done</source>
+        <note>ID: Common.Done</note>
+        <note>Shown in a list of messages when Bloom has completed a task.</note>
+        <target xml:lang="sw" state="translated">Imekamilika</target>
       </trans-unit>
       <trans-unit id="Common.Error">
         <source xml:lang="en">Error</source>
@@ -1090,30 +1101,6 @@
         <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
         <target xml:lang="sw" state="final">U&amp;malize</target>
       </trans-unit>
-      <trans-unit id="Common.Info">
-        <source xml:lang="en">Info</source>
-        <note>ID: Common.Info</note>
-        <note>Used as a label for additional information, like duration etc in the Sign Language Tool</note>
-        <target xml:lang="sw" state="translated">Maelezo</target>
-      </trans-unit>
-      <trans-unit id="Common.Warning">
-        <source xml:lang="en">Info</source>
-        <note>ID: Common.Warning</note>
-        <note>A heading shown above some messages.</note>
-        <target xml:lang="sw" state="translated">Maelezo</target>
-      </trans-unit>
-      <trans-unit id="Common.Note">
-        <source xml:lang="en">Note</source>
-        <note>ID: Common.Note</note>
-        <note>A heading shown above some messages.</note>
-        <target xml:lang="sw" state="translated">Kumbuka</target>
-      </trans-unit>
-      <trans-unit id="Common.Done">
-        <source xml:lang="en">Done</source>
-        <note>ID: Common.Done</note>
-        <note>Shown in a list of messages when Bloom has completed a task.</note>
-        <target xml:lang="sw" state="translated">Imekamilika</target>
-      </trans-unit>
       <trans-unit id="Common.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Help</source>
         <note>ID: Common.Help</note>
@@ -1123,6 +1110,12 @@
         <source xml:lang="en">&amp;Help</source>
         <note>ID: Common.HelpButton</note>
         <target xml:lang="sw" state="final">&amp;Usaidie</target>
+      </trans-unit>
+      <trans-unit id="Common.Info">
+        <source xml:lang="en">Info</source>
+        <note>ID: Common.Info</note>
+        <note>Used as a label for additional information, like duration etc in the Sign Language Tool</note>
+        <target xml:lang="sw" state="translated">Maelezo</target>
       </trans-unit>
       <trans-unit id="Common.LearnMore" sil:dynamic="true">
         <source xml:lang="en">Learn More</source>
@@ -1148,6 +1141,12 @@
         <note>ID: Common.NextButton</note>
         <note>In a wizard, this button takes you to the next step.</note>
         <target xml:lang="sw" state="final">Inayofuata</target>
+      </trans-unit>
+      <trans-unit id="Common.Note">
+        <source xml:lang="en">Note</source>
+        <note>ID: Common.Note</note>
+        <note>A heading shown above some messages.</note>
+        <target xml:lang="sw" state="translated">Kumbuka</target>
       </trans-unit>
       <trans-unit id="Common.OK" approved="yes">
         <source xml:lang="en">OK</source>
@@ -1195,6 +1194,12 @@
         <source xml:lang="en">Settings</source>
         <note>ID: Common.Settings</note>
         <target xml:lang="sw" state="translated">Mipangilio</target>
+      </trans-unit>
+      <trans-unit id="Common.Warning">
+        <source xml:lang="en">Info</source>
+        <note>ID: Common.Warning</note>
+        <note>A heading shown above some messages.</note>
+        <target xml:lang="sw" state="translated">Maelezo</target>
       </trans-unit>
       <trans-unit id="Download.Completed" approved="yes">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
@@ -1404,7 +1409,7 @@
         <source xml:lang="en">HTML Widget</source>
         <note>ID: EditTab.CustomPage.HtmlWidget</note>
         <note>Describes where the user can select an interactive HTML page to insert into a book page (alternative to text, picture, or video)</note>
-        <target xml:lang="sw" state="needs-translation">HTML Widget</target>
+        <target xml:lang="sw" state="translated">Wijeti ya HTML</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Or" sil:dynamic="true" approved="yes">
         <source xml:lang="en">or</source>
@@ -2126,12 +2131,18 @@
         <source xml:lang="en">To use this feature, you'll need to enable Bloom Enterprise.</source>
         <note>ID: EditTab.RequiresEnterprise</note>
         <note>Appears in notice (possibly obscuring other controls when they may not be used) because no Bloom Enterprise project has been selected.</note>
-        <target xml:lang="sw" state="needs-translation">To use this feature, you'll need to enable Bloom Enterprise.</target>
+        <target xml:lang="sw" state="translated">Ili kutumia huduma hii, utahitaji kuwezesha Bloom Enterprise.</target>
       </trans-unit>
       <trans-unit id="EditTab.SavingNotification" sil:dynamic="true">
         <source xml:lang="en">Saving...</source>
         <note>ID: EditTab.SavingNotification</note>
         <target xml:lang="sw" state="translated">Hifadhi...</target>
+      </trans-unit>
+      <trans-unit id="EditTab.SourceBubbleCopied" sil:dynamic="true">
+        <source xml:lang="en">Copied</source>
+        <note>ID: EditTab.SourceBubbleCopied</note>
+        <note>Displays briefly when the user clicks the copy icon in a source bubble.</note>
+        <target xml:lang="sw" state="translated">Kunakiliwa</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.Alignment" sil:dynamic="true">
         <source xml:lang="en">Alignment</source>
@@ -2162,7 +2173,7 @@
         <source xml:lang="en">Hint Bubbles</source>
         <note>ID: EditTab.TextBoxProperties.HintBubbles</note>
         <note>This is the label of a tab in the text properties dialog that appears when you click a cog icon in a text box while changing the layout of a page</note>
-        <target xml:lang="sw" state="needs-translation">Hint Bubbles</target>
+        <target xml:lang="sw" state="translated">Kiputo cha vidokezo</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.IncludeLang" sil:dynamic="true">
         <source xml:lang="en">Include the name of the language using {lang}. For example: "Enter color in {lang}".</source>
@@ -2209,12 +2220,12 @@
         <source xml:lang="en">Show the hint bubble</source>
         <note>ID: EditTab.TextBoxProperties.ShowHintBubble</note>
         <note>Label above pull-down menu with options, ShowOnGroup/ShowOnEach</note>
-        <target xml:lang="sw" state="needs-translation">Show the hint bubble</target>
+        <target xml:lang="sw" state="translated">Onesha kiputo cha vidokezo</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.ShowOnEach" sil:dynamic="true">
         <source xml:lang="en">On each language-field in the group</source>
         <note>ID: EditTab.TextBoxProperties.ShowOnEach</note>
-        <target xml:lang="sw" state="needs-translation">On each language-field in the group</target>
+        <target xml:lang="sw" state="translated">Kwenya kila uga wa lugha katika kikundi</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.ShowOnGroup" sil:dynamic="true">
         <source xml:lang="en">Just once on the whole group</source>
@@ -2224,7 +2235,7 @@
       <trans-unit id="EditTab.TextBoxProperties.Title" sil:dynamic="true">
         <source xml:lang="en">Text Box Properties</source>
         <note>ID: EditTab.TextBoxProperties.Title</note>
-        <target xml:lang="sw" state="needs-translation">Text Box Properties</target>
+        <target xml:lang="sw" state="translated">Vipengele vya sanduku la maandishi</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.VerticalAlignment" sil:dynamic="true">
         <source xml:lang="en">Vertical Alignment</source>
@@ -2246,7 +2257,7 @@
         <source xml:lang="en">Comic Tool</source>
         <note>ID: EditTab.Toolbox.ComicTool</note>
         <note>This tool allows users to insert speech bubbles or callouts, which are pieces of text connected by a line, arrow, or other graphic to a part of a picture. These may be used to give dialogue or to give more information about a specific part of the picture.</note>
-        <target xml:lang="sw" state="needs-translation">Comic Tool</target>
+        <target xml:lang="sw" state="translated">Zana ya Vichekesho</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true">
         <source xml:lang="en">Drag to add to an image</source>
@@ -2275,7 +2286,7 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToCalico</note>
         <note>A background color that is a gradient starting with white blending into calico color</note>
         <note>Obsolete for Bloom 4.9 and later</note>
-        <target xml:lang="sw" state="needs-translation">White to Calico</target>
+        <target xml:lang="sw" state="translated">Nyeupe kwa kaniki</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass" sil:dynamic="true">
         <source xml:lang="en">White to French Pass</source>
@@ -2318,7 +2329,7 @@
         <source xml:lang="en">Show Tail</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ShowTail</note>
         <note>This checkbox indicates if a line tail should be shown or not.</note>
-        <target xml:lang="sw" state="needs-translation">Show Tail</target>
+        <target xml:lang="sw" state="translated">Onyesha Mkia</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style" sil:dynamic="true">
         <source xml:lang="en">Style</source>
@@ -2338,7 +2349,7 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Ellipse</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents a round bubble shaped like an ellipse.</note>
-        <target xml:lang="sw" state="needs-translation">Ellipse</target>
+        <target xml:lang="sw" state="translated">Duaradufu</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Exclamation" sil:dynamic="true">
         <source xml:lang="en">Exclamation</source>
@@ -2376,7 +2387,7 @@
       <trans-unit id="EditTab.Toolbox.ComicTool.TextBlock" sil:dynamic="true">
         <source xml:lang="en">Text Block</source>
         <note>ID: EditTab.Toolbox.ComicTool.TextBlock</note>
-        <target xml:lang="sw" state="needs-translation">Text Block</target>
+        <target xml:lang="sw" state="translated">Kijisanduku cha maandishi</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer" sil:dynamic="true">
         <source xml:lang="en">Impairment Visualizer</source>
@@ -2391,7 +2402,7 @@
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.Cataracts" sil:dynamic="true">
         <source xml:lang="en">Cataracts</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer.Cataracts</note>
-        <target xml:lang="sw" state="needs-translation">Cataracts</target>
+        <target xml:lang="sw" state="translated">Mionzi</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness" sil:dynamic="true">
         <source xml:lang="en">Color Blindness</source>
@@ -2416,7 +2427,7 @@
       <trans-unit id="EditTab.Toolbox.Motion.Intro" sil:dynamic="true">
         <source xml:lang="en">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the picture fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</source>
         <note>ID: EditTab.Toolbox.Motion.Intro</note>
-        <target xml:lang="sw" state="needs-translation">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the picture fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</target>
+        <target xml:lang="sw" state="translated">Vitabu vya sinema ni vitabu vya Bloom Reader vilivyo na njia mbili. Kwa kawaida, ni Vitabu vya Kuzungumza. Unapogeuza simu upande, picha inajaza skrini. Inapindulia na kufifiza kutoka mstatili "1" hadi mstatili "2".</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Preview" sil:dynamic="true">
         <source xml:lang="en">Preview</source>
@@ -2444,13 +2455,13 @@
       <trans-unit id="EditTab.Toolbox.Motion.ThisPage" sil:dynamic="true">
         <source xml:lang="en">Enable motion on this page</source>
         <note>ID: EditTab.Toolbox.Motion.ThisPage</note>
-        <target xml:lang="sw" state="needs-translation">Enable motion on this page</target>
+        <target xml:lang="sw" state="translated">Washa msogeo kwenye ukurasa huu</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.MotionTool" sil:dynamic="true">
         <source xml:lang="en">Motion Tool</source>
         <note>ID: EditTab.Toolbox.MotionTool</note>
         <note>Used as the overall title of the toolbox panel</note>
-        <target xml:lang="sw" state="needs-translation">Motion Tool</target>
+        <target xml:lang="sw" state="translated">Zana ya Msogeo</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Choose" sil:dynamic="true">
         <source xml:lang="en">Choose...</source>
@@ -2460,7 +2471,7 @@
       <trans-unit id="EditTab.Toolbox.Music.ContinueMusic" sil:dynamic="true">
         <source xml:lang="en">Continue music from previous page</source>
         <note>ID: EditTab.Toolbox.Music.ContinueMusic</note>
-        <target xml:lang="sw" state="needs-translation">Continue music from previous page</target>
+        <target xml:lang="sw" state="translated">Endelea na muziki kutoka ukurasa uliopita</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.FileDialogSoundFiles">
         <source xml:lang="en">Sound files</source>
@@ -2471,7 +2482,7 @@
         <source xml:lang="en">The selected sound file "{0}" cannot be played by Bloom.  Please choose another sound file.</source>
         <note>ID: EditTab.Toolbox.Music.InvalidMp3File</note>
         <note>The {0} is replaced by the filename.</note>
-        <target xml:lang="sw" state="needs-translation">The selected sound file "{0}" cannot be played by Bloom.  Please choose another sound file.</target>
+        <target xml:lang="sw" state="translated">Faili ya sauti iliyochaguliwa "{0}" haiwezi kuchezwa na Bloom. Tafadhali chagua faili nyingine ya sauti.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.InvalidMp3FileTitle">
         <source xml:lang="en">Choose Another Sound File</source>
@@ -2497,7 +2508,7 @@
       <trans-unit id="EditTab.Toolbox.MusicTool" sil:dynamic="true">
         <source xml:lang="en">Music Tool</source>
         <note>ID: EditTab.Toolbox.MusicTool</note>
-        <target xml:lang="sw" state="needs-translation">Music Tool</target>
+        <target xml:lang="sw" state="translated">Zana ya Muziki</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader Tool</source>
@@ -2631,12 +2642,12 @@
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckThisBox" sil:dynamic="true">
         <source xml:lang="en">Otherwise, check this box:</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.CheckThisBox</note>
-        <target xml:lang="sw" state="needs-translation">Otherwise, check this box:</target>
+        <target xml:lang="sw" state="translated">Vinginevyo, angalia sanduku hili:</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe" sil:dynamic="true">
         <source xml:lang="en">This image should not be described.</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe</note>
-        <target xml:lang="sw" state="needs-translation">This image should not be described.</target>
+        <target xml:lang="sw" state="translated">Picha hii haipaswi kuelezewa.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeConcise" sil:dynamic="true">
         <source xml:lang="en">Be Concise</source>
@@ -2660,7 +2671,7 @@
         <source xml:lang="en">Check your image description against each of these reminders:</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.CheckDescription</note>
         <note>Obsolete for Bloom 4.5 and later</note>
-        <target xml:lang="sw" state="needs-translation">Check your image description against each of these reminders:</target>
+        <target xml:lang="sw" state="translated">Angalia maelezo ya picha yako dhidi ya kila moja ya vikumbusho hivi:</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ConsiderAudience" sil:dynamic="true">
         <source xml:lang="en">Consider your Audience</source>
@@ -2685,7 +2696,7 @@
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.PoetDiagram" sil:dynamic="true">
         <source xml:lang="en">poet.diagramcenter.org</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.PoetDiagram</note>
-        <target xml:lang="sw" state="needs-translation">poet.diagramcenter.org</target>
+        <target xml:lang="sw" state="translated">poet.diagramcenter.org</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.WriteYours" sil:dynamic="true">
         <source xml:lang="en">Write your image description on the left, in the box next to the picture.</source>
@@ -2923,7 +2934,7 @@
       <trans-unit id="EditTab.Toolbox.SignLanguage.Timeout">
         <source xml:lang="en">The initial processing of the video file timed out after one minute.  The raw video output will be stored.</source>
         <note>ID: EditTab.Toolbox.SignLanguage.Timeout</note>
-        <target xml:lang="sw" state="needs-translation">The initial processing of the video file timed out after one minute.  The raw video output will be stored.</target>
+        <target xml:lang="sw" state="translated">Usindikaji wa awali wa faili ya video umeisha baada ya dakika moja. Pato la nakala ya video ghafi litahifadhiwa.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.Trim" sil:dynamic="true">
         <source xml:lang="en">Trim</source>
@@ -2935,7 +2946,7 @@
         <source xml:lang="en">Error output from ffmpeg trying to produce {0}: {1}{2}The raw video output will be stored.</source>
         <note>ID: EditTab.Toolbox.SignLanguage.VideoProcessingError</note>
         <note>{0} is the path to the video file, {1} is the error message from the ffmpeg program, and {2} is a newline character</note>
-        <target xml:lang="sw" state="needs-translation">Error output from ffmpeg trying to produce {0}: {1}{2}The raw video output will be stored.</target>
+        <target xml:lang="sw" state="translated">Hitilafu kutoka kwa ffmpeg kujaribu kutengeneza {0}: {1} {2} Pato la video ghafi litahifadhiwa.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.WhatCameraSees" sil:dynamic="true">
         <source xml:lang="en">Here is what your camera sees:</source>
@@ -2957,7 +2968,7 @@
         <source xml:lang="en">To split recordings into sentences, first install this {0} system.</source>
         <note>ID: EditTab.Toolbox.TalkingBook.MissingDependency</note>
         <note>The placeholder {0} will be replaced with the dependency that needs to be installed.</note>
-        <target xml:lang="sw" state="needs-translation">To split recordings into sentences, first install this {0} system.</target>
+        <target xml:lang="sw" state="translated">Ili kugawanya rekodi katika sentensi, kwanza sakinisha mfumo huu wa {0}.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.NoInput" approved="yes">
         <source xml:lang="en">No input device</source>
@@ -3098,19 +3109,19 @@
         <note>Shown if you open TalkingBookTool, enable "Record the whole text box...", make a recording, and then attempt to uncheck the "Record the whole text box..." input (without first clearing the audio recordings you are about to lose)</note>
         <note>For "split", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.SplitLabel</note>
         <note>For "clear", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
-        <target xml:lang="sw" state="needs-translation">Please split or clear the existing recording in this text box before changing modes.</target>
+        <target xml:lang="sw" state="translated">Tafadhali gawanya au futa rekodi iliyopo kwenye kisanduku hiki cha maandishi kabla ya kubadilisha hali-tumizi.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter" sil:dynamic="true">
         <source xml:lang="en">Sorry, front and back-matter pages must be recorded by sentences.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter</note>
         <note>Shown if you open TalkingBookTool and then attempt to toggle the "Record by Sentences" input on an XMatter page</note>
-        <target xml:lang="sw" state="needs-translation">Sorry, front and back-matter pages must be recorded by sentences.</target>
+        <target xml:lang="sw" state="translated">Samahani, kurasa za mbele na nyuma lazima zirekodiwe na sentensi.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder" sil:dynamic="true">
         <source xml:lang="en">Show playback order buttons</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder</note>
         <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
-        <target xml:lang="sw" state="needs-translation">Show playback order buttons</target>
+        <target xml:lang="sw" state="translated">Onyesha vitufe vya mpangilio wa uchezaji</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speak" sil:dynamic="true" approved="yes">
         <source xml:lang="en">3) Speak</source>
@@ -3134,7 +3145,7 @@
         <source xml:lang="en">Split</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.SplitLabel</note>
         <note>This text appears on the button the user can press to trigger automatic splitting of audio. An audio file corresponding to an entire text box will be split into multiple audio files (one per sentence) instead. (Also known as "Forced Alignment" in technical terms)</note>
-        <target xml:lang="sw" state="needs-translation">Split</target>
+        <target xml:lang="sw" state="translated">Tenga</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true">
         <source xml:lang="en">Make an e-book that can play audio recordings while highlighting text.</source>
@@ -3172,7 +3183,7 @@
         <source xml:lang="en">Choose Widget</source>
         <note>ID: EditTab.Widget.ChooseWidget</note>
         <note>User is supposed to choose a file containing HTML that can be embedded in an element of the book.</note>
-        <target xml:lang="sw" state="needs-translation">Choose Widget</target>
+        <target xml:lang="sw" state="translated">Chagua wijeti</target>
       </trans-unit>
       <trans-unit id="Errors.BookProblem" approved="yes">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
@@ -3200,7 +3211,7 @@
         <source xml:lang="en">You are running Bloom {0}</source>
         <note>ID: Errors.CurrentRunningVersion</note>
         <note>The placeholder {0} represents the current version of Bloom. For example, {0} might be replaced with "4.3"</note>
-        <target xml:lang="sw" state="needs-translation">You are running Bloom {0}</target>
+        <target xml:lang="sw" state="translated">Unaendesha Bloom{0}</target>
       </trans-unit>
       <trans-unit id="Errors.DefenderFolderProtection">
         <source xml:lang="en">This might be caused by Windows Defender "Controlled Folder Access" or some other virus protection.</source>
@@ -3506,7 +3517,7 @@
       <trans-unit id="LayoutChoices.Device16x9Landscape" sil:dynamic="true">
         <source xml:lang="en">Device16x9 Landscape</source>
         <note>ID: LayoutChoices.Device16x9Landscape</note>
-        <target xml:lang="sw" state="needs-translation">Device16x9 Landscape</target>
+        <target xml:lang="sw" state="translated">Kifaa16X9 Kurasa mlalo</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.Device16x9Portrait" sil:dynamic="true">
         <source xml:lang="en">Device16x9 Portrait</source>
@@ -3849,7 +3860,7 @@
         <source xml:lang="en">Sharing .bloomd Files</source>
         <note>ID: PublishTab.Android.BloomD.Hint.Heading</note>
         <note/>
-        <target xml:lang="sw" state="needs-translation">Sharing .bloomd Files</target>
+        <target xml:lang="sw" state="translated">Kushiriki Faili za Bloomd</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true">
         <source xml:lang="en">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</source>
@@ -3869,9 +3880,7 @@
                             modify settings on your phone.</source>
         <note>ID: PublishTab.Android.USB.Hint</note>
         <note/>
-        <target xml:lang="sw" state="needs-translation">To Send via USB, you may need to get the right
-                            cable, install phone drivers on your computer, or
-                            modify settings on your phone.</target>
+        <target xml:lang="sw" state="translated">Kutuma kupitia USB, huenda ukahitaji kupata kebo inayofaa, kusakinisha kiendeshaji cha simu kwenye kompyuta yako, au kurekebisha mipangilio kwenye simu yako.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en">No Wi-Fi Network?</source>
@@ -3889,7 +3898,7 @@
         <source xml:lang="en">About Motion Books</source>
         <note>ID: PublishTab.Android.AboutMotionBooks</note>
         <note>Help link under Motion Book checkbox</note>
-        <target xml:lang="sw" state="needs-translation">About Motion Books</target>
+        <target xml:lang="sw" state="translated">Kuhusu vitabu vya msogeo</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Bookshelf" sil:dynamic="true">
         <source xml:lang="en">Bloom Reader Bookshelf</source>
@@ -3911,7 +3920,7 @@
         <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
         <note>ID: PublishTab.Android.ChooseLandscapeForMotion</note>
         <note>Appears in portrait mode when Motion checkbox is checked</note>
-        <target xml:lang="sw" state="needs-translation">Choose landscape to activate Motion Book mode</target>
+        <target xml:lang="sw" state="translated">Chagua kurasa mlalo ili kuamsha hali ya Kitabu cha Msogeo</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseUSB" sil:dynamic="true">
         <source xml:lang="en">Send over USB Cable</source>
@@ -4010,7 +4019,7 @@
         <source xml:lang="en">Motion Book</source>
         <note>ID: PublishTab.Android.MotionBookMode</note>
         <note>Motion Book checkbox label</note>
-        <target xml:lang="sw" state="needs-translation">Motion Book</target>
+        <target xml:lang="sw" state="translated">Kitabu cha Msogeo</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Preview" sil:dynamic="true">
         <source xml:lang="en">Preview</source>
@@ -4271,7 +4280,7 @@
       <trans-unit id="PublishTab.Epub.Accessible.MainContent">
         <source xml:lang="en">Main Content</source>
         <note>ID: PublishTab.Epub.Accessible.MainContent</note>
-        <target xml:lang="sw" state="needs-translation">Main Content</target>
+        <target xml:lang="sw" state="translated">Yaliyomo Kuu</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Accessibility">
         <source xml:lang="en">Accessibility</source>
@@ -4303,7 +4312,7 @@
       <trans-unit id="PublishTab.Epub.Help.EReaders">
         <source xml:lang="en">Compatible ePUB Readers</source>
         <note>ID: PublishTab.Epub.Help.EReaders</note>
-        <target xml:lang="sw" state="needs-translation">Compatible ePUB Readers</target>
+        <target xml:lang="sw" state="translated">Epub Readers tangamanifu</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Help.Publishing">
         <source xml:lang="en">Getting ePUBs onto a device</source>
@@ -5249,7 +5258,7 @@ Kwa<g id="mspp-1" ctype="x-html-strong">ukurasa</g>
         <source xml:lang="en"><g id="muw-1" ctype="x-html-strong">Unique</g> in <g id="muw-2" ctype="x-html-strong">Book</g></source>
         <note>ID: ReaderSetup.MaxUniqueWords2</note>
         <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum unique words in book". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="sw" state="needs-translation"><g id="muw-1" ctype="x-html-strong">Unique</g> in <g id="muw-2" ctype="x-html-strong">Book</g></target>
+        <target xml:lang="sw" state="translated"><g id="muw-1" ctype="x-html-strong">Kipekee</g>kwa<g id="muw-2" ctype="x-html-strong">Kitabu</g></target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page</source>
@@ -5366,7 +5375,7 @@ Kwa<g id="mspp-1" ctype="x-html-strong">ukurasa</g>
         <source xml:lang="en">Per <g id="mgpw-1" ctype="x-html-strong">Sentence</g></source>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
         <note>follows headings "maximum" and "words" to convey "maximum words per sentence. The "g" markup may be used for the important word.</note>
-        <target xml:lang="sw" state="needs-translation">Per <g id="mgpw-1" ctype="x-html-strong">Sentence</g></target>
+        <target xml:lang="sw" state="translated">Kwa<g id="mgpw-1" ctype="x-html-strong">sentensi</g></target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
@@ -5629,7 +5638,7 @@ Kwa<g id="mspp-1" ctype="x-html-strong">ukurasa</g>
       <trans-unit id="ReportProblemDialog.PleaseHelpUs">
         <source xml:lang="en">Please help us reproduce this problem on our computers.</source>
         <note>ID: ReportProblemDialog.PleaseHelpUs</note>
-        <target xml:lang="sw" state="needs-translation">Please help us reproduce this problem on our computers.</target>
+        <target xml:lang="sw" state="translated">Tafadhali tusaidie kuzaa tatizo hili kwenye kompyuta zetu.</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.PrivacyInfo">
         <source xml:lang="en">Your report will go into our issue tracking system and will be visible via the web. If you have something private to say, please email to '{0}'.</source>
@@ -5727,7 +5736,7 @@ Kwa<g id="mspp-1" ctype="x-html-strong">ukurasa</g>
       <trans-unit id="ScriptSettingsDialog.DefaultLineSpacing" sil:dynamic="true">
         <source xml:lang="en">Default line spacing</source>
         <note>ID: ScriptSettingsDialog.DefaultLineSpacing</note>
-        <target xml:lang="sw" state="needs-translation">Default line spacing</target>
+        <target xml:lang="sw" state="translated">Nafasi kati ya mistari chaguo-msingi</target>
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.LineBreakCheckBox">
         <source xml:lang="en">Do not use special Asian script word breaking</source>
@@ -5742,17 +5751,17 @@ Kwa<g id="mspp-1" ctype="x-html-strong">ukurasa</g>
       <trans-unit id="ScriptSettingsDialog.ScriptSettingsWindowTitle">
         <source xml:lang="en">Special Script Settings...</source>
         <note>ID: ScriptSettingsDialog.ScriptSettingsWindowTitle</note>
-        <target xml:lang="sw" state="needs-translation">Special Script Settings...</target>
+        <target xml:lang="sw" state="translated">Mipangilio Maalum ya Hati...</target>
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.TallerLinesCheckBox">
         <source xml:lang="en">This script requires taller lines</source>
         <note>ID: ScriptSettingsDialog.TallerLinesCheckBox</note>
-        <target xml:lang="sw" state="needs-translation">This script requires taller lines</target>
+        <target xml:lang="sw" state="translated">Hati hii inahitaji mistari mirefu zaidi</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Community" sil:dynamic="true">
         <source xml:lang="en">Funded by the local community only</source>
         <note>ID: Settings.Enterprise.Community</note>
-        <target xml:lang="sw" state="needs-translation">Funded by the local community only</target>
+        <target xml:lang="sw" state="translated">Imefadhiliwa na jamii ya karibu tu</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.LearnMore" sil:dynamic="true">
         <source xml:lang="en">Learn More</source>
@@ -5827,7 +5836,7 @@ Kwa<g id="mspp-1" ctype="x-html-strong">ukurasa</g>
       <trans-unit id="TemplateBooks.BookName.Template Starter" sil:dynamic="true">
         <source xml:lang="en">Template Starter</source>
         <note>ID: TemplateBooks.BookName.Template Starter</note>
-        <target xml:lang="sw" state="needs-translation">Template Starter</target>
+        <target xml:lang="sw" state="translated">Kianzio cha Kiolezi</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.The Moon and the Cap" sil:dynamic="true">
         <source xml:lang="en">The Moon and the Cap</source>
@@ -5868,7 +5877,7 @@ Kwa<g id="mspp-1" ctype="x-html-strong">ukurasa</g>
         <source xml:lang="en">For use with Landscape orientation.</source>
         <note>ID: TemplateBooks.PageDescription.Picture on Left</note>
         <note>New string in Bloom 4.2</note>
-        <target xml:lang="sw" state="needs-translation">For use with Landscape orientation.</target>
+        <target xml:lang="sw" state="translated">Kwa matumizi na mwelekeo wa Kurasa mlalo.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true">
         <source xml:lang="en">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</source>
@@ -6274,7 +6283,7 @@ Kwa<g id="mspp-1" ctype="x-html-strong">ukurasa</g>
       <trans-unit id="TemplateBooks.Quiz.HintBubble.Question" sil:dynamic="true">
         <source xml:lang="en">Put a comprehension question here</source>
         <note>ID: TemplateBooks.Quiz.HintBubble.Question</note>
-        <target xml:lang="sw" state="needs-translation">Put a comprehension question here</target>
+        <target xml:lang="sw" state="translated">Weka swali la ufahamu hapa</target>
       </trans-unit>
       <trans-unit id="Topics.Agriculture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Agriculture</source>
