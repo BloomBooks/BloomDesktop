@@ -12,6 +12,7 @@ export interface ICopyContentButtonProps {
 
 const CopyContentButton: React.FC<ICopyContentButtonProps> = props => {
     const copiedText = useL10n("Copied", "EditTab.SourceBubbleCopied");
+    const copyTooltip = useL10n("Copy", "Common.Copy");
     const [showTransition, setShowTransition] = useState(false);
 
     const transitionDuration = 300; // Length of time to transition "copied" message in or out
@@ -29,7 +30,7 @@ const CopyContentButton: React.FC<ICopyContentButtonProps> = props => {
     };
 
     return (
-        <div className="bloom-ui source-copy-button">
+        <div className="bloom-ui source-copy-button" title={copyTooltip}>
             <Fade
                 in={showTransition}
                 enter={true}
