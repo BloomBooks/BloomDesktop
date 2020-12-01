@@ -16,6 +16,10 @@ In the Comic Tool, you can now set custom background colors for text boxes.
 
 In the Comic Tool, you can now click a button to duplicate the current bubble.
 
+## Copy Text from Source Bubble
+
+We have added a Copy button to the Source Bubble. ([Feature Request](https://community.software.sil.org/t/allow-copying-text-from-speech-bubbles-with-comic-books/3216/9))
+
 ## Publish Tab
 
 Login to BloomLibrary is now through next.bloomlibrary.org, which allows you to just click the Google button to use your Google identity (include sil.org accounts, for those of you who have that).
