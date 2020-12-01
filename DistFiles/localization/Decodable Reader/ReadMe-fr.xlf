@@ -2,9 +2,9 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="fr">
     <body>
-      <trans-unit id="decodable.definition">
+      <trans-unit id="decodable.definition" approved="yes">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Decodable Reader</g> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 <g id="genid-2" ctype="x-html-em">decodable stages</g> through which learners progress.</source>
-        <target xml:lang="fr" state="translated">Un <g id="genid-1" ctype="x-html-strong">livre déchiffrable</g> est un livre dont les lettres et les mots se limitent à ceux qu'un lecteur débutant sait lire. En général, les apprenants doivent passer, suivant les langues, par 5 à 10 <g id="genid-2" ctype="x-html-em">étapes de déchiffrage</g>.</target>
+        <target xml:lang="fr" state="final">Un <g id="genid-1" ctype="x-html-strong">livre déchiffrable</g> est un livre dont les lettres et les mots se limitent à ceux qu'un lecteur débutant sait lire. En général, les apprenants doivent passer, suivant les langues, par 5 à 10 <g id="genid-2" ctype="x-html-em">étapes de déchiffrage</g>.</target>
         <note>ID: decodable.definition</note>
       </trans-unit>
       <trans-unit id="decodable.stages" approved="yes">
