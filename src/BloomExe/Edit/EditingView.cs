@@ -1130,18 +1130,19 @@ namespace Bloom.Edit
 					try
 					{
 						dlg.ImageInfo.Save(newImagePath);
-						using (var newImageInfo = PalasoImage.FromFileRobustly(newImagePath))
-						{
-							SaveChangedImage(imageElement, newImageInfo, exceptionMsg);
-						}
+						dlg.ImageInfo.SetCurrentFilePath(newImagePath);
+						SaveChangedImage(imageElement, dlg.ImageInfo, exceptionMsg);
 					}
 					catch (Exception error)
 					{
-						// Problems can happen during the PalasoImage.Save or PalasoImage.FromFileRobustly methods.
-						ErrorReport.NotifyUserOfProblem(error, exceptionMsg);
+						var path = dlg.ImageInfo.OriginalFilePath;
+						if (dlg.ImageInfo.OriginalFilePath != newImagePath)
+							path += $" (or {newImagePath})";
+						ReportFailureToLoadImage(path, error);
 					}
 					finally
 					{
+						dlg.ImageInfo.SetCurrentFilePath(null); // clears internal cache
 						if (newImagePath != dlg.ImageInfo.OriginalFilePath)
 						{
 							RobustFile.Delete(newImagePath);
