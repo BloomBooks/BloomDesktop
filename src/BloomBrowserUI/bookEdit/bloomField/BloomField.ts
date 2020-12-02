@@ -133,11 +133,22 @@ export default class BloomField {
             }
 
             // We can't just duplicate audio ids without running into trouble later!
-            // We need to generate a new guid-based id, use it to copy the audio file, and
-            // insert it into the span.
-            event.data.dataValue = this.copyAudioFilesWithNewIdsDuringPasting(
-                event.data.dataValue
-            );
+            if (
+                event.sender.element.$.getAttribute(
+                    "data-audiorecordingmode"
+                ) === "Sentence"
+            ) {
+                // We need to generate a new guid-based id, use it to copy the audio file, and
+                // insert it into the span when targeting a Sentence recording mode div.
+                event.data.dataValue = this.copyAudioFilesWithNewIdsDuringPasting(
+                    event.data.dataValue
+                );
+            } else {
+                // Remove all audio related span markup when targeting a TextBox recording mode div.
+                event.data.dataValue = this.removeAudioSpanMarkupDuringPasting(
+                    event.data.dataValue
+                );
+            }
 
             const paras = event.data.dataValue.match(/<p>/g);
             if (!paras) {
@@ -190,52 +201,66 @@ export default class BloomField {
         }
     }
 
-    // If copying one or more audio spans, replace the ids and copy the original audio
-    // file(s) using the new ids.  Note that Firefox 60 imposes using RegExp.exec.
+    // If copying one or more .audio-sentence spans, replace the ids and copy the original audio
+    // file(s) using the new ids.
+    // But if copying one or more .bloom-highlightSegment spans, remove the span markup.  (Note
+    // that .audio-sentence and .bloom-highlightSegment classes are mutually exclusive since the
+    // former is used for recording by sentence and the latter is used for recording by textbox.)
     public static copyAudioFilesWithNewIdsDuringPasting(
-        inputText: string
+        inputHtml: string // could be plain text or have embedded/surrounding HTML markup
     ): string {
-        const audioRegex = RegExp(
-            '<span[^>]* (id="(.*?)"[^>]* class="[^"]*audio-sentence("| [^"]*")|class="[^"]*audio-sentence("| [^"]*")[^>]* id="(.*?)").*?>(.*?)</span>',
-            "g"
-        );
-        let regexMatch;
-        let newText: string = "";
-        let startIndex: number = 0;
-        while ((regexMatch = audioRegex.exec(inputText)) !== null) {
-            // The regexMatch object is rather strange, with a mix of string and numeric indices.
-            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec
-            const indexOfMatch: number = regexMatch["index"];
-            const oldId: string = regexMatch[2] ? regexMatch[2] : regexMatch[5]; // groups in the alternation
-            const audioSentenceText: string = regexMatch[6];
-            if (indexOfMatch > startIndex) {
-                newText =
-                    newText + inputText.substring(startIndex, indexOfMatch);
-            }
-            const newId = AudioRecording.createValidXhtmlUniqueId();
-            BloomApi.postDebugMessage(
-                "DEBUG copyAudio: index=" +
-                    indexOfMatch +
-                    ', oldId="' +
-                    oldId +
-                    '", text="' +
-                    audioSentenceText +
-                    '"'
+        const temp = document.createElement("template");
+        temp.innerHTML = inputHtml;
+        const nodelist = temp.content.querySelectorAll("span.audio-sentence");
+        if (nodelist.length) {
+            nodelist.forEach(
+                (span: Element, key: number, parent: NodeListOf<Element>) => {
+                    const oldId = span.getAttribute("id");
+                    const newId = AudioRecording.createValidXhtmlUniqueId();
+                    span.setAttribute("id", newId);
+                    BloomApi.post(
+                        `audio/copyAudioFile?oldId=${oldId}&newId=${newId}`
+                    );
+                }
             );
-            newText =
-                newText +
-                `<span id="${newId}" class="audio-sentence">${audioSentenceText}</span>`;
-            BloomApi.post(`audio/copyAudioFile?oldId=${oldId}&newId=${newId}`);
-            startIndex = audioRegex.lastIndex;
+            return temp.innerHTML;
         }
-        if (newText) {
-            if (startIndex > 0 && startIndex < inputText.length) {
-                newText =
-                    newText + inputText.substring(startIndex, inputText.length);
-            }
-            return newText;
+        // span.audio-sentence doesn't exist, but we may have span.bloom-highlightSegment markup to remove.
+        return this.removeMatchingAudioSpanMarkup(
+            inputHtml,
+            "span.bloom-highlightSegment"
+        );
+    }
+
+    private static removeMatchingAudioSpanMarkup(
+        inputHtml: string, // could be plain text or have embedded/surrounding HTML markup
+        selector: string
+    ): string {
+        const temp = document.createElement("template");
+        temp.innerHTML = inputHtml;
+        const nodelist = temp.content.querySelectorAll(selector);
+        if (nodelist.length) {
+            let outputHtml = inputHtml;
+            nodelist.forEach(
+                (span: Element, key: number, parent: NodeListOf<Element>) => {
+                    outputHtml = outputHtml.replace(
+                        span.outerHTML,
+                        span.innerHTML
+                    );
+                }
+            );
+            return outputHtml; // could be plain text by now even if input had HTML audio span markup
         }
-        return inputText;
+        return inputHtml;
+    }
+
+    public static removeAudioSpanMarkupDuringPasting(
+        inputHtml: string // could be plain text or have embedded/surrounding HTML markup
+    ): string {
+        return this.removeMatchingAudioSpanMarkup(
+            inputHtml,
+            "span.audio-sentence, span.bloom-highlightSegment"
+        );
     }
 
     private static MakeShiftEnterInsertLineBreak(field: HTMLElement) {

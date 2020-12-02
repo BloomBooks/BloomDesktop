@@ -1108,12 +1108,45 @@ namespace Bloom.Edit
 #endif
 				if (DialogResult.OK == result && dlg.ImageInfo != null)
 				{
-					// Save the possibly modified (by cropping) image to the file.
+					// Save the possibly modified (by cropping) image to a file before processing further.
 					// The code for ensuring non-transparency uses GraphicsMagick on the file content if possible, so the
 					// file must be in sync with the imageInfo.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8638.
-					if (newImagePath != null && dlg.ImageInfo.OriginalFilePath == newImagePath)
+					// This applies to newly selected files as well as cropping previously selected files.
+					if (newImagePath == null || dlg.ImageInfo.OriginalFilePath != newImagePath)
+					{
+						var originalImagePath = dlg.ImageInfo.OriginalFilePath;
+						var extension = Path.GetExtension(originalImagePath).ToLowerInvariant();
+						// ImageInfo.Save does throws an exception for .bmp files because they can't store metadata.
+						// ImageInfo.Save doesn't save .tif file properly, creating a blank image file.  So always
+						// save images in PNG format if they aren't originally JPEG format.
+						// (Since Bloom always saves images in either PNG or JPEG format anyway, we don't need to
+						// worry about the extension of newImagePath outside this block of code.)
+						if (extension != ".jpg" && extension != ".jpeg")
+							extension = ".png";
+						var newFilename = ImageUtils.GetUnusedFilename(Path.GetTempPath(), Path.GetFileNameWithoutExtension(originalImagePath), extension);
+						newImagePath = Path.Combine(Path.GetTempPath(), newFilename);
+					}
+					var exceptionMsg = "Bloom had a problem including that image";
+					try
+					{
 						dlg.ImageInfo.Save(newImagePath);
-					SaveChangedImage(imageElement, dlg.ImageInfo, "Bloom had a problem including that image");
+						using (var newImageInfo = PalasoImage.FromFileRobustly(newImagePath))
+						{
+							SaveChangedImage(imageElement, newImageInfo, exceptionMsg);
+						}
+					}
+					catch (Exception error)
+					{
+						// Problems can happen during the PalasoImage.Save or PalasoImage.FromFileRobustly methods.
+						ErrorReport.NotifyUserOfProblem(error, exceptionMsg);
+					}
+					finally
+					{
+						if (newImagePath != dlg.ImageInfo.OriginalFilePath)
+						{
+							RobustFile.Delete(newImagePath);
+						}
+					}
 #if MEMORYCHECK
 					// Warn the user if we're starting to use too much memory.
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "picture chosen and saved", true);
