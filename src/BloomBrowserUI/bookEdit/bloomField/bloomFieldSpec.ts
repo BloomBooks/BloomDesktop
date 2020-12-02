@@ -63,12 +63,12 @@ describe("BloomField", () => {
         expect(result.startsWith('<p><span id="')).toBe(true);
         expect(
             result.includes(
-                '" class="audio-sentence">This page was copied and pasted.</span>&nbsp; <span id="'
+                '" class="audio-sentence ui-currentAudio" recordingmd5="db3bd4ec0300c2491de826fc858603e8" data-duration="2.690566">This page was copied and pasted.</span>&nbsp; <span id="'
             )
         ).toBe(true);
         expect(
             result.endsWith(
-                '" class="audio-sentence">This paragraph has two sentences, so it should have two audio spans.</span></p>'
+                '" class="audio-sentence" recordingmd5="21e576d30fb30bef4f09b9c3e051763d" data-duration="5.825206">This paragraph has two sentences, so it should have two audio spans.</span></p>'
             )
         ).toBe(true);
     });
@@ -91,7 +91,9 @@ describe("BloomField", () => {
             'id="i1ea22c02-9344-4afe-9bbb-5946576d7907"'
         );
 
-        expect(result.startsWith('<p><span id="')).toBe(true);
+        expect(
+            result.startsWith('<p><span data-duration="2.481632" id="')
+        ).toBe(true);
         expect(
             result.endsWith(
                 '" class="audio-sentence">island in the middle of a <em>large</em> lake</span></p>'
@@ -117,10 +119,12 @@ describe("BloomField", () => {
             'id="i1b625773-f5af-4289-afe6-b45a01d51e0e"'
         );
 
-        expect(result.startsWith('<p><span id="')).toBe(true);
+        expect(result.startsWith('<p><span data-duration="5.2244" id="')).toBe(
+            true
+        );
         expect(
             result.endsWith(
-                '" class="audio-sentence">Part 1: <span class="bloom-linebreak"></span>God, Creation &amp; Fall, Law</span></p>'
+                '" class="audio-sentence" recordingmd5="undefined">Part 1: <span class="bloom-linebreak"></span>God, Creation &amp; Fall, Law</span></p>'
             )
         ).toBe(true);
     });
@@ -130,7 +134,9 @@ describe("BloomField", () => {
             '<p><span data-duration="5.2244" class="bloom-uiCurrent audio-sentence bloom-SomethingElse" recordingmd5="undefined" id="i1b625773-f5af-4289-afe6-b45a01d51e0e"><strong>Part 1:</strong> God, Creation &amp; Fall, Law</span></p>';
         const result = BloomField.copyAudioFilesWithNewIdsDuringPasting(input);
         expect(result).not.toBe(input);
-        expect(result).toContainHtml('class="audio-sentence"');
+        expect(result).toContainHtml(
+            'class="bloom-uiCurrent audio-sentence bloom-SomethingElse"'
+        );
         expect(result).toContainHtml(
             "<strong>Part 1:</strong> God, Creation &amp; Fall, Law</span>"
         );
@@ -143,10 +149,14 @@ describe("BloomField", () => {
             'id="i1b625773-f5af-4289-afe6-b45a01d51e0e"'
         );
 
-        expect(result.startsWith('<p><span id="')).toBe(true);
+        expect(
+            result.startsWith(
+                '<p><span data-duration="5.2244" class="bloom-uiCurrent audio-sentence bloom-SomethingElse" recordingmd5="undefined" id="'
+            )
+        ).toBe(true);
         expect(
             result.endsWith(
-                '" class="audio-sentence"><strong>Part 1:</strong> God, Creation &amp; Fall, Law</span></p>'
+                '"><strong>Part 1:</strong> God, Creation &amp; Fall, Law</span></p>'
             )
         ).toBe(true);
     });
@@ -156,6 +166,83 @@ describe("BloomField", () => {
             '<p><span data-duration="5.2244" class="bloom-uiCurrent bloom-SomethingElse" data-type="audio-sentence" recordingmd5="undefined" id="i1b625773-f5af-4289-afe6-b45a01d51e0e"><strong>Part 1:</strong> God, Creation &amp; Fall, Law</span></p>';
         const result = BloomField.copyAudioFilesWithNewIdsDuringPasting(input);
         expect(result).toBe(input);
+    });
+
+    it("copyAudioFilesWithNewIdsDuringPasting removes .bloom-highlightSegment span markup", () => {
+        const input =
+            '<span id="i8fe9322b-47f1-4f8d-98a9-a24c0f709b23" class="bloom-highlightSegment">They are kittens, after all.</span>';
+        const result = BloomField.copyAudioFilesWithNewIdsDuringPasting(input);
+        expect(result).toBe("They are kittens, after all.");
+    });
+
+    it("removeAudioSpanMarkupDuringPasting removes only .audio-sentence and .bloom-highlightSegment span markup [1]", () => {
+        const input1 = '<p><span class="bold">This is a test!</span></p>';
+        const result1 = BloomField.removeAudioSpanMarkupDuringPasting(input1);
+        expect(result1).toBe(input1);
+    });
+
+    it("removeAudioSpanMarkupDuringPasting removes .audio-sentence span markup [1]", () => {
+        const input2 =
+            '<p><span id="i2b4f74ac-3d71-4692-9793-bb18ff56b6e2" class="audio-sentence ui-currentAudio" recordingmd5="db3bd4ec0300c2491de826fc858603e8" data-duration="2.690566">This page was copied and pasted.</span>&nbsp; <span id="i39184f35-39bf-4574-9e55-3eedafb6bde9" class="audio-sentence" recordingmd5="21e576d30fb30bef4f09b9c3e051763d" data-duration="5.825206">This paragraph has two sentences, so it should have two audio spans.</span></p>';
+        const result2 = BloomField.removeAudioSpanMarkupDuringPasting(input2);
+        expect(result2).toBe(
+            "<p>This page was copied and pasted.&nbsp; This paragraph has two sentences, so it should have two audio spans.</p>"
+        );
+    });
+
+    it("removeAudioSpanMarkupDuringPasting removes .audio-sentence span markup [2]", () => {
+        const input3 =
+            '<p><span data-duration="2.481632" id="i1ea22c02-9344-4afe-9bbb-5946576d7907" class="audio-sentence">island in the middle of a <em>large</em> lake</span></p>';
+        const result3 = BloomField.removeAudioSpanMarkupDuringPasting(input3);
+        expect(result3).toBe(
+            "<p>island in the middle of a <em>large</em> lake</p>"
+        );
+    });
+
+    it("removeAudioSpanMarkupDuringPasting removes .audio-sentence span markup [3]", () => {
+        const input4 =
+            '<p><span data-duration="5.2244" id="i1b625773-f5af-4289-afe6-b45a01d51e0e" class="audio-sentence" recordingmd5="undefined">Part 1: <span class="bloom-linebreak"></span>God, Creation &amp; Fall, Law</span></p>';
+        const result4 = BloomField.removeAudioSpanMarkupDuringPasting(input4);
+        expect(result4).toBe(
+            '<p>Part 1: <span class="bloom-linebreak"></span>God, Creation &amp; Fall, Law</p>'
+        ); // wrong, but with regex how to do better?
+    });
+
+    it("removeAudioSpanMarkupDuringPasting removes .audio-sentence span markup [4]", () => {
+        const input5 =
+            '<p><span data-duration="5.2244" class="bloom-uiCurrent audio-sentence bloom-SomethingElse" recordingmd5="undefined" id="i1b625773-f5af-4289-afe6-b45a01d51e0e"><strong>Part 1:</strong> God, Creation &amp; Fall, Law</span></p>';
+        const result5 = BloomField.removeAudioSpanMarkupDuringPasting(input5);
+        expect(result5).toBe(
+            "<p><strong>Part 1:</strong> God, Creation &amp; Fall, Law</p>"
+        );
+    });
+
+    it("removeAudioSpanMarkupDuringPasting removes only .audio-sentence and .bloom-highlightSegment span markup [2]", () => {
+        const input6 =
+            '<p><span data-duration="5.2244" class="bloom-uiCurrent bloom-SomethingElse" data-type="audio-sentence" recordingmd5="undefined" id="i1b625773-f5af-4289-afe6-b45a01d51e0e"><strong>Part 1:</strong> God, Creation &amp; Fall, Law</span></p>';
+        const result6 = BloomField.removeAudioSpanMarkupDuringPasting(input6);
+        expect(result6).toBe(input6); // look closely at the input.  :-)
+    });
+
+    it("removeAudioSpanMarkupDuringPasting removes .bloom-highlightSegment span markup [1]", () => {
+        const input7 =
+            '<p><span id="i8fe9322b-47f1-4f8d-98a9-a24c0f709b23" class="bloom-highlightSegment">They are kittens, after all.</span></p>';
+        const result7 = BloomField.removeAudioSpanMarkupDuringPasting(input7);
+        expect(result7).toBe("<p>They are kittens, after all.</p>");
+    });
+
+    it("removeAudioSpanMarkupDuringPasting removes .bloom-highlightSegment span markup [2]", () => {
+        const input8 =
+            '<p><span test="123" id="i8fe9322b-47f1-4f8d-98a9-a24c0f709b23" data="xyz" class="bloom-highlightSegment" more="end">They are kittens, after all.</span></p>';
+        const result8 = BloomField.removeAudioSpanMarkupDuringPasting(input8);
+        expect(result8).toBe("<p>They are kittens, after all.</p>");
+    });
+
+    it("removeAudioSpanMarkupDuringPasting removes .bloom-highlightSegment span markup [3]", () => {
+        const input9 =
+            '<p><span test="123" class="bloom-highlightSegment" data="xyz" id="i8fe9322b-47f1-4f8d-98a9-a24c0f709b23" more="end">They are kittens, after all.</span></p>';
+        const result9 = BloomField.removeAudioSpanMarkupDuringPasting(input9);
+        expect(result9).toBe("<p>They are kittens, after all.</p>");
     });
 
     it("bloom-editable div creates a <p>", () => {
