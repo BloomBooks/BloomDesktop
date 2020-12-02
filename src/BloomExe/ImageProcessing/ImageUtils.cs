@@ -22,7 +22,7 @@ using TempFile = SIL.IO.TempFile;
 
 namespace Bloom.ImageProcessing
 {
-	class ImageUtils
+	static class ImageUtils
 	{
 		public const int MaxLength = 3500;		// 8 pixels less than length of A4 at 300dpi (max width for landscape, height for portrait)
 		public const int MaxBreadth = 2550;		// = 8.5 inches at 300dpi (max height for landscape, width for portrait)
@@ -616,7 +616,7 @@ namespace Bloom.ImageProcessing
 			var graphicsMagickPath = GetGraphicsMagickPath();
 			if (RobustFile.Exists(graphicsMagickPath))
 			{
-				var sourcePath = imageInfo.OriginalFilePath;
+				var sourcePath = imageInfo.GetCurrentFilePath();
 				var isJpegImage = AppearsToBeJpeg(imageInfo);
 				if (String.IsNullOrEmpty(sourcePath) || !RobustFile.Exists(sourcePath))
 				{
@@ -657,7 +657,7 @@ namespace Bloom.ImageProcessing
 					try
 					{
 						RobustFile.Delete(destPath);	// don't need this any longer
-						if (sourcePath != imageInfo.OriginalFilePath)
+						if (sourcePath != imageInfo.GetCurrentFilePath())
 							RobustFile.Delete(sourcePath);
 					}
 					catch (Exception e)
@@ -959,6 +959,42 @@ namespace Bloom.ImageProcessing
 				graphic.DrawImage(image, (newImage.Width - newWidth)/2, (newImage.Height - newHeight)/2, newWidth, newHeight);
 			}
 			return newImage;
+		}
+
+		/// <summary>
+		/// Store the current file paths for PalasoImage objects.
+		/// </summary>
+		static Dictionary<string, string> _currentFilePaths = new Dictionary<string, string>();
+
+		/// <summary>
+		/// Extend PalasoImage to store a "current file path" for the image.
+		/// </summary>
+		public static void SetCurrentFilePath(this PalasoImage image, string filePath)
+		{
+			var key = image.GetFileKey();
+			if (filePath == null)
+				_currentFilePaths.Remove(key);
+			else
+				_currentFilePaths.Add(key, filePath);
+		}
+
+		/// <summary>
+		/// Extend PalasoImage to retrieve a "current file path" for the image.
+		/// </summary>
+		public static string GetCurrentFilePath(this PalasoImage image)
+		{
+			var key = image.GetFileKey();
+			if (_currentFilePaths.TryGetValue(key, out string filePath))
+				return filePath;
+			return image.OriginalFilePath;
+		}
+
+		/// <summary>
+		/// Get the key for storing the current file path for a PalasoImage object.
+		/// </summary>
+		private static string GetFileKey(this PalasoImage image)
+		{
+			return image.OriginalFilePath == null ? image.GetHashCode().ToString() : image.OriginalFilePath;
 		}
 	}
 }
