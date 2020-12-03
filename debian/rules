@@ -31,15 +31,15 @@ override_dh_auto_build:
 	export PATH="`pwd`/node_modules/.bin:$$PATH" && \
 	. ./environ && \
 	if [ -f ./build_number.env ]; then . ./build_number.env; else FULL_BUILD_NUMBER=0.0.0.0; fi && \
-	xbuild /t:RestoreBuildTasks /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER build/Bloom.proj && \
-	xbuild /t:SetAssemblyVersion /p:RootDir=$(shell pwd) /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER build/Bloom.proj && \
-	xbuild /p:Configuration=$(BUILD) /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER "Bloom.sln" && \
-	xbuild /p:Configuration=$(BUILD) /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER src/LinuxBloomLauncher/LinuxBloomLauncher.cproj
+	msbuild /t:RestoreBuildTasks /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER build/Bloom.proj && \
+	msbuild /t:SetAssemblyVersion /p:RootDir=$(shell pwd) /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER build/Bloom.proj && \
+	msbuild /p:Configuration=$(BUILD) /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER "Bloom.sln" && \
+	msbuild /p:Configuration=$(BUILD) /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER src/LinuxBloomLauncher/LinuxBloomLauncher.cproj
 
 override_dh_auto_test:
 
 override_dh_auto_clean:
-	. ./environ && xbuild /p:Configuration=$(BUILD) "Bloom.sln" /t:Clean
+	. ./environ && msbuild /p:Configuration=$(BUILD) "Bloom.sln" /t:Clean
 	dh_clean
 
 override_dh_auto_install:
@@ -64,6 +64,8 @@ override_dh_auto_install:
 	find $(DESTDIR)/$(LIB) -name '*Spec.js' -print0 | xargs -0 rm -f
 	find $(DESTDIR)/$(LIB) -name 'CheckOrFixXliff.*' -print0 | xargs -0 rm -f
 	find $(DESTDIR)/$(LIB) -name 'GeckofxHtmlToPdf.*' -print0 | xargs -0 rm -f
+	find $(DESTDIR)/$(LIB) -name '*UnitTestFramework.dll' -type d -print0 | xargs -0 rm -rf
+	find $(DESTDIR)/$(LIB) -name 'Moq.*' -type d -print0 | xargs -0 rm -f
 	# Install wrapper script
 	install -d $(DESTDIR)/usr/bin
 	install debian/bloom-alpha $(DESTDIR)/usr/bin
@@ -96,11 +98,18 @@ override_dh_shlibdeps:
 	dh_shlibdeps -l$(MONO_PREFIX)/lib --exclude=Firefox
 
 # Include mono5-sil in cli dirs searched
+# connections.dll is a plain text file.
 # Trying to process connections.dll now crashes on jenkins instead of merely complaining.
-# The -X (--exclude) option doesn't seem to work for dh_clideps to skip connections.dll.
+# Neither --exclude-moduleref nor --exclude work for excluding an existing file from being checked.
+# msvcr120.dll is a true Windows binary shared library, not a .Net assembly.
+# Newtonsoft.Json.dll and Autofac.dll crash the mono5-sil version of ikdasm (called by dh_clideps).
+# Renaming these files temporarily seems to be the only "fix" that works to get the package built.
 override_dh_clideps:
 	mv DistFiles/connections.dll DistFiles/connections.delel && \
 	mv $(DESTDIR)/$(LIB)/connections.dll $(DESTDIR)/$(LIB)/connections.delel && \
+	mv lib/msvcr120.dll lib/msvcr120.delel && \
+	mv $(DESTDIR)/$(LIB)/Autofac.dll $(DESTDIR)/$(LIB)/Autofac.delel && \
+	mv $(DESTDIR)/$(LIB)/Newtonsoft.Json.dll $(DESTDIR)/$(LIB)/Newtonsoft.Json.delel && \
 	mkdir -p debian/tmp/usr && ln -s $(MONO_PREFIX)/* debian/tmp/usr/ && \
 	PATH=$(MONO_PREFIX)/bin:$(PATH) \
 	dh_clideps internal-mono -l$(MONO_PREFIX)/lib \
@@ -117,6 +126,9 @@ override_dh_clideps:
 		--exclude-moduleref=api-ms-win-core-sysinfo-l1-2-0.dll \
 		--exclude-moduleref=ole32.dll --exclude-moduleref=version.dll && \
 	rm -rf debian/tmp/usr && \
+	mv $(DESTDIR)/$(LIB)/Newtonsoft.Json.delel $(DESTDIR)/$(LIB)/Newtonsoft.Json.dll && \
+	mv $(DESTDIR)/$(LIB)/Autofac.delel $(DESTDIR)/$(LIB)/Autofac.dll && \
+	mv lib/msvcr120.delel lib/msvcr120.dll && \
 	mv DistFiles/connections.delel DistFiles/connections.dll && \
 	mv $(DESTDIR)/$(LIB)/connections.delel $(DESTDIR)/$(LIB)/connections.dll
 
