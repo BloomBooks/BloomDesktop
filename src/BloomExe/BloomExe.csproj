@@ -76,6 +76,16 @@
   <PropertyGroup>
     <AssemblyName>Bloom</AssemblyName>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(OS)'=='Windows_NT'">
+	<!-- Uses a LargeAddressAware nuget package to specify that this executable is large address aware.
+	This means that we promise to the OS that we/our dependencies handle pointers in the upper address space (from 2GB to 4GB range) correctly (hopefully!).
+	In exchange, the OS allows the program to use up to 4 GB of virtual address space instead of 2 GB of virtual address space.
+	This will be relevant if run on 64-bit Windows (or if the user set the 3GB/IncreaseUserVa switch on 32-bit Windows)
+	
+	I believe this is unnecessary on Linux, they usually already have 4 GB virtual address space available.
+	--> 
+    <LargeAddressAware>true</LargeAddressAware>
+  </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
   </PropertyGroup>
@@ -1265,7 +1275,6 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent Condition="'$(OS)'=='Windows_NT'">
-"$(DevEnvDir)..\..\VC\bin\editbin.exe" /largeaddressaware "$(TargetPath)"
 copy /Y "$(SolutionDir)\lib\msvcr120.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\ffmpeg.exe" $(OutDir)
 xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
@@ -1417,5 +1426,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     </PropertyGroup>
     <Error Condition="'$(OS)'=='Windows_NT' AND !Exists('..\..\packages\Geckofx60.32.60.0.50\build\Geckofx60.32.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Geckofx60.32.60.0.50\build\Geckofx60.32.targets'))" />
     <Error Condition="'$(OS)'!='Windows_NT' AND !Exists('../../packages/Geckofx60.64.Linux.60.0.51/build/Geckofx60.64.Linux.targets')" Text="$([System.String]::Format('$(ErrorText)', '../../packages/Geckofx60.64.Linux.60.0.51/build/Geckofx60.64.Linux.targets'))" />
+    <Error Condition="'$(OS)'=='Windows_NT' AND !Exists('..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets'))" />
   </Target>
+  <Import Project="..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets" Condition="'$(OS)'=='Windows_NT' AND Exists('..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets')" />
 </Project>
