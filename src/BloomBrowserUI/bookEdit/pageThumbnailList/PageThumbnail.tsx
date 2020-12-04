@@ -1,12 +1,7 @@
 import * as React from "react";
-import { useState, useContext, useEffect } from "react";
-import * as ReactDOM from "react-dom";
-import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
+import { useState, useEffect } from "react";
 
-import { SetImageElementUrl } from "../js/bloomImages";
 import "errorHandler";
-import WebSocketManager from "../../utils/WebSocketManager";
-import { Responsive, WidthProvider } from "react-grid-layout";
 import { BloomApi } from "../../utils/bloomApi";
 import { IPage } from "./pageThumbnailList";
 
