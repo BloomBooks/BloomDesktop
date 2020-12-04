@@ -259,6 +259,24 @@
     }
 }
 
+// This rule works around a bizarre bug in generating PDF from HTML (BL-9278).
+// The text in a display:block div inside atext-over-picture box on a page with
+// top: less than 3mm (possibly the bleed margin) in a full bleed book
+// shows up in the HTML but not in the PDF generated from it.
+// Making such boxes be display:flex/column changes the appearance very little
+// but works around the bug.
+// The rule is rather specific because TOP boxes with data-bubble not containing
+// style:none are already made display:flex by the rule below. We want to avoid
+// doing so usually for plain TOP boxes, because it may cause some subtle change
+// in the appearance of an existing book. Doing it when switching to full bleed
+// seems acceptable, since layout will need to be checked anyway.
+.bloom-fullBleed
+    .bloom-imageContainer
+    .bloom-textOverPicture[data-bubble*="`style`:`none`"] {
+    display: flex;
+    flex-direction: column;
+}
+
 // Set vertical alignment to center
 // Working prototype using flexboxes.
 .bloom-imageContainer {
