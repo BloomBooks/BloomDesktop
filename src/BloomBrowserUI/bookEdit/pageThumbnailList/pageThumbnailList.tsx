@@ -7,7 +7,7 @@
 // so things it exports are accessible from outside the bundle using FrameExports.
 
 import * as React from "react";
-import { useState, useContext, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import * as ReactDOM from "react-dom";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
@@ -17,7 +17,7 @@ import WebSocketManager from "../../utils/WebSocketManager";
 import { Responsive } from "react-grid-layout";
 import { BloomApi } from "../../utils/bloomApi";
 import { PageThumbnail } from "./PageThumbnail";
-import LazyLoad from "react-lazyload";
+import LazyLoad, { forceCheck } from "react-lazyload";
 
 // We're using the Responsive version of react-grid-layout because
 // (1) the previous version of the page thumbnails, which this replaces,
@@ -238,7 +238,11 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                                             {
                                                 pageId: pageContent.key
                                             },
-                                            () => {}
+                                            () => {
+                                                // Make LazyLoad component re-check for elements in viewport
+                                                // to make visible.
+                                                forceCheck();
+                                            }
                                         );
                                     }}
                                 >
