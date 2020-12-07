@@ -43,8 +43,11 @@ export const ProblemDialog: React.FunctionComponent<{
     const [mode, setMode] = useState(Mode.gather);
     const [includeBook, setIncludeBook] = useState(true);
     const [includeScreenshot, setIncludeScreenshot] = useState(true);
-    const [reportHeading, setReportHeading] = BloomApi.useApiString(
-        "problemReport/reportHeading",
+
+    // Precondition: The returned string from BloomServer must already encode any special characters
+    // which are not meant to be treated as HTML code.
+    const [reportHeadingHtml] = BloomApi.useApiString(
+        "problemReport/reportHeadingHtml",
         ""
     );
     const [email, setEmail] = BloomApi.useApiString(
@@ -295,9 +298,12 @@ export const ProblemDialog: React.FunctionComponent<{
                             case Mode.gather:
                                 return (
                                     <>
-                                        <div className="report-heading allowSelect">
-                                            {reportHeading}
-                                        </div>
+                                        <div
+                                            className="report-heading allowSelect"
+                                            dangerouslySetInnerHTML={{
+                                                __html: reportHeadingHtml
+                                            }}
+                                        />
                                         <Typography id="please_help_us">
                                             {localizedPleaseHelpUs}
                                         </Typography>

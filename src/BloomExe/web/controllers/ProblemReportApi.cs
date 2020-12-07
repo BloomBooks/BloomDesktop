@@ -38,7 +38,8 @@ namespace Bloom.web.controllers
 			#region Readonly Properties
 			// These fields are readonly to provide assurance that they haven't been changed after the ReportInfo was constructed.
 			// (This makes proper threading/locking/synchronization easier to reason about)
-			public string Heading { get; }	// What shows at the top of the dialog to indicate the nature of the problem.
+			public string HeadingHtml { get; }	// What shows at the top of the dialog to indicate the nature of the problem.
+
 			public string DetailedMessage { get; }	// usually from Bloom itself
 			public Exception Exception { get; }
 			public Bloom.Book.Book Book { get; }
@@ -52,9 +53,17 @@ namespace Bloom.web.controllers
 			public TempFile ScreenshotTempFile { get; set; }
 
 			public ReportInfo(string heading, string detailMessage, Exception exception, Bloom.Book.Book book,
-				string bookName, string email, string firstName, string surname)
+				string bookName, string email, string firstName, string surname, bool isHeadingPreEncoded = false)
 			{
-				this.Heading = heading;
+				if (isHeadingPreEncoded)
+				{
+					HeadingHtml = heading;
+				}
+				else
+				{
+					HeadingHtml = UrlPathString.CreateFromUnencodedString(heading).HtmlXmlEncoded;
+				}
+
 				this.DetailedMessage = detailMessage;
 				this.Exception = exception;
 				this.Book = book;
@@ -64,8 +73,6 @@ namespace Bloom.web.controllers
 				this.UserSurname = surname;
 			}
 		}
-
-
 
 		// Assumption: Assumes that only assigned to by ShowProblemReport(), and that only one problem report happens at a time.
 		// (The ShowProblemReport() thread should check and set _showingProblemReport before modifying _reportInfo,
@@ -98,10 +105,10 @@ namespace Bloom.web.controllers
 			// and we assume that nothing sends problemReport API requests except the problemReportDialog that this class loads.
 
 			// ProblemDialog.tsx uses this endpoint to get the string to show at the top of the main dialog
-			apiHandler.RegisterEndpointHandlerUsedByOthers("problemReport/reportHeading",
+			apiHandler.RegisterEndpointHandlerUsedByOthers("problemReport/reportHeadingHtml",
 				(ApiRequest request) =>
 				{
-					request.ReplyWithText(_reportInfo.Heading ?? "");
+					request.ReplyWithText(_reportInfo.HeadingHtml ?? "");
 				}, false);
 			// ProblemDialog.tsx uses this endpoint to get the screenshot image.
 			apiHandler.RegisterEndpointHandlerUsedByOthers("problemReport/screenshot",
@@ -349,7 +356,7 @@ namespace Bloom.web.controllers
 		/// <param name="detailedMessage"></param>
 		/// <param name="levelOfProblem"></param>
 		public static void ShowProblemDialog(Control controlForScreenshotting, Exception exception,
-			string detailedMessage = "", string levelOfProblem = "user", string shortUserLevelMessage = "")
+			string detailedMessage = "", string levelOfProblem = "user", string shortUserLevelMessage = "", bool isShortMessagePreEncoded = false)
 		{
 			// Before we do anything that might be "risky", put the problem in the log.
 			LogProblem(exception, detailedMessage, levelOfProblem);
@@ -376,20 +383,7 @@ namespace Bloom.web.controllers
 				_showingProblemReport = true;
 			}
 
-			var heading = shortUserLevelMessage;
-			if (string.IsNullOrEmpty(heading))
-				heading = detailedMessage;
-			if (string.IsNullOrEmpty(heading) && exception != null)
-				heading = exception.Message;
-
-			var book = _bookSelection.CurrentSelection;
-			var bestBookName = book?.TitleBestForUserDisplay;
-
-			var userEmail = SIL.Windows.Forms.Registration.Registration.Default.Email;
-			var userFirstName = SIL.Windows.Forms.Registration.Registration.Default.FirstName;
-			var userSurname = SIL.Windows.Forms.Registration.Registration.Default.Surname;
-
-			_reportInfo = new ReportInfo(heading, detailedMessage, exception, book, bestBookName, userEmail, userFirstName, userSurname);
+			GatherReportInfoExceptScreenshot(exception, detailedMessage, shortUserLevelMessage, isShortMessagePreEncoded);
 
 			if (controlForScreenshotting == null)
 				controlForScreenshotting = Form.ActiveForm;
@@ -450,6 +444,37 @@ namespace Bloom.web.controllers
 					}
 				}
 			});
+		}
+
+		/// <summary>
+		/// Instantiates _reportInfo with the relevant info from the reported problem.
+		/// However, _screenshotTempFile will not be instantiated by this function,
+		/// since that its more involved and involves getting the UI control / calling Invoke.
+		/// </summary>
+		internal static void GatherReportInfoExceptScreenshot(Exception exception, string detailedMessage, string shortUserLevelMessage, bool isShortMessagePreEncoded)
+		{
+			var heading = shortUserLevelMessage;
+			var isHeadingPreEncoded = isShortMessagePreEncoded;
+
+			if (string.IsNullOrEmpty(heading))
+			{
+				heading = detailedMessage;
+				isHeadingPreEncoded = false;
+			}
+			if (string.IsNullOrEmpty(heading) && exception != null)
+			{
+				heading = exception.Message;
+				isHeadingPreEncoded = false;
+			}
+
+			var book = _bookSelection.CurrentSelection;
+			var bestBookName = book?.TitleBestForUserDisplay;
+
+			var userEmail = SIL.Windows.Forms.Registration.Registration.Default.Email;
+			var userFirstName = SIL.Windows.Forms.Registration.Registration.Default.FirstName;
+			var userSurname = SIL.Windows.Forms.Registration.Registration.Default.Surname;
+
+			_reportInfo = new ReportInfo(heading, detailedMessage, exception, book, bestBookName, userEmail, userFirstName, userSurname, isHeadingPreEncoded);			
 		}
 
 

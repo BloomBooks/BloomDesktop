@@ -1304,5 +1304,22 @@ namespace BloomTests.Book
 			Assert.That(maintLevel, Is.GreaterThanOrEqualTo("2"));
 			Assert.That(storage.Dom.SafeSelectNodes("//*[@class='comical-generated']").Count, Is.EqualTo(1));
 		}
+
+		[Test]
+		public void ShowAccessDeniedHtml_SetsErrorMessagesHtmlCorrectly()
+		{
+			var storage = GetInitialStorage();
+			var exception = new UnauthorizedAccessException("Access to the path 'blah blah' is denied.");
+
+			//SUT
+			storage.ShowAccessDeniedErrorHtml(exception);
+
+			//Verification
+			// Note: This expectation is based on the localized English text of several strings.
+			// Hope neither the language nor localizations change...
+			string expectedHtml =
+"Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.<br />Access to the path &#39;blah blah&#39; is denied.<br />See <a href='http://community.bloomlibrary.org/t/how-to-fix-file-permissions-problems/78'>http://community.bloomlibrary.org/t/how-to-fix-file-permissions-problems/78</a>.";
+			Assert.That(storage.ErrorMessagesHtml, Is.EqualTo(expectedHtml));
+		}
 	}
 }

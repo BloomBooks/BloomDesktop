@@ -15,7 +15,6 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Edit;
-using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.ToPalaso;
 using Bloom.Utils;

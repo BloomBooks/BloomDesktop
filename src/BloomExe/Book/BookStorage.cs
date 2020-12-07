@@ -1768,16 +1768,10 @@ namespace Bloom.Book
 		/// <summary>
 		/// Reports an UnauthorizedAccessException to the user using the book storage instance's html
 		/// </summary>
-		private void ShowAccessDeniedErrorHtml(UnauthorizedAccessException error)
+		internal void ShowAccessDeniedErrorHtml(UnauthorizedAccessException error)
 		{
-			var message = LocalizationManager.GetString("Errors.DeniedAccess",
-				"Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.");
-			message += Environment.NewLine + error.Message;
-			Logger.WriteEvent("*** ERROR: " + message);
-			message = WebUtility.HtmlEncode(message);
-			var helpUrl = @"http://community.bloomlibrary.org/t/how-to-fix-file-permissions-problems/78";
-			var seeAlso = WebUtility.HtmlEncode(LocalizationManager.GetString("Common.SeeWebPage", "See {0}."));
-			message += "<br></br>" + String.Format(seeAlso, "<a href='" + helpUrl + "'>" + helpUrl + "</a>");
+			var message = GetAccessDeniedHtml(error, writeLog: true);
+
 			ErrorMessagesHtml = message;
 			_errorAlreadyContainsInstructions = true;
 			ErrorAllowsReporting = true;
@@ -1789,27 +1783,60 @@ namespace Bloom.Book
 		/// </summary>
 		internal static void ShowAccessDeniedErrorReport(UnauthorizedAccessException noAccessError)
 		{
+			// WriteLog is false because Problem Report Dialog will log it anyway
+			string summaryHtml = GetAccessDeniedHtml(noAccessError, writeLog: false);
+
+			// Even though there's not really anything we can fix if we get a bug report,
+			// we still set showSendReport=true because false uses a MessageBox for which the user
+			// can't use the mouse to select text to copy/paste
+			NonFatalProblem.Report(ModalIf.All, PassiveIf.None, summaryHtml, "", noAccessError, showSendReport: true, isShortMessagePreEncoded: true);
+		}
+
+		private static string GetAccessDeniedHtml(UnauthorizedAccessException noAccessError, bool writeLog)
+		{
 			// In the details shown to the user, don't need the extra diagnostic info in BloomUnauthorizedAccessException
 			// (However, in the error report submitted to YouTrack, we do want that extra diagnostic info)
 			Exception errorToUser = noAccessError;
 			if (noAccessError is BloomUnauthorizedAccessException)
 				errorToUser = noAccessError.InnerException;
-			
 
 			var deniedAccessMsg = LocalizationManager.GetString("Errors.DeniedAccess",
 				"Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.");
 
+
+			var messagesForLog = new List<string>() { deniedAccessMsg, errorToUser.Message };
+
+			if (writeLog)
+			{
+				string messageForLog = String.Join(Environment.NewLine, messagesForLog);
+				Logger.WriteEvent("*** ERROR: " + messageForLog);
+			}
+			
+			string encodedMessageForLog = EncodeAndJoinStringsForHtml(messagesForLog);
+			
 			var helpUrl = @"http://community.bloomlibrary.org/t/how-to-fix-file-permissions-problems/78";
+			var encodedSeeAlsoMsg = GetEncodedSeeWebPageString(helpUrl);
+
+			return $"{encodedMessageForLog}<br />{encodedSeeAlsoMsg}";
+		}
+
+		private static string EncodeAndJoinStringsForHtml(IEnumerable<string> unencodedStrings)
+		{
+			return String.Join("<br />", unencodedStrings.Select(WebUtility.HtmlEncode));
+		}
+
+		private static string GetEncodedSeeWebPageString(string webPageUrl)
+		{
 			var seeAlsoFormatStr = LocalizationManager.GetString("Common.SeeWebPage", "See {0}.");
-			var seeAlsoMsg = String.Format(seeAlsoFormatStr, helpUrl);
+			// FYI: The braces in the format string are not encoded by HtmlEncode.
+			var encodedSeeAlsoFormatStr = WebUtility.HtmlEncode(seeAlsoFormatStr);
 
-			var summary = errorToUser.Message + Environment.NewLine + deniedAccessMsg + Environment.NewLine + seeAlsoMsg;
+			// Theoretically, '&' characters in the URL could cause problems.
+			string encodedWebPageUrl = WebUtility.HtmlEncode(webPageUrl);
+			var helpUrlLink = $"<a href='{webPageUrl}'>{encodedWebPageUrl}</a>";
 
-			Logger.WriteEvent("*** ERROR: " + summary);
-
-			// Even though there's not really anything we can fix, we still set showSendReport=true because
-			// false uses a MessageBox for which the user can't use the mouse to select text to copy/paste
-			NonFatalProblem.Report(ModalIf.All, PassiveIf.None, summary, "", noAccessError, showSendReport: true);
+			var encodedSeeWebPageMsg = String.Format(encodedSeeAlsoFormatStr, helpUrlLink);
+			return encodedSeeWebPageMsg;
 		}
 
 		/// <summary>
