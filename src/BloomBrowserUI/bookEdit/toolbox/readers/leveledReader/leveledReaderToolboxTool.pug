@@ -12,13 +12,7 @@ html
 			.stageLine.clear.noSelect
 				span.scroll-button.ui-icon.ui-icon-triangle-1-w#decLevel
 				span.stageLabel.stageLine.noSelect
-					span(data-i18n='EditTab.Toolbox.LeveledReaderTool.Level')="Level"
-					= ' '
-					span#levelNumber 1
-					= ' '
-					span.ofStage(data-i18n='EditTab.Toolbox.LeveledReaderTool.LevelOf')!="of"
-					= ' '
-					span#numberOfLevels.ofStage 2
+					span#levelNofM(data-i18n='EditTab.Toolbox.LeveledReaderTool.LevelNofM')="Level {0} of {1}"
 				span.scroll-button.ui-icon.ui-icon-triangle-1-e#incLevel
 			table.statistics.clear(style='margin-left: 6px')
 				tr

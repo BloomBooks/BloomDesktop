@@ -1,5 +1,9 @@
 ﻿/// <reference path="../../toolbox.ts" />
-import { getTheOneReaderToolsModel, DRTState } from "../readerToolsModel";
+import {
+    getTheOneReaderToolsModel,
+    DRTState,
+    ReaderToolsModel
+} from "../readerToolsModel";
 import { beginInitializeLeveledReaderTool } from "../readerTools";
 import { ITool } from "../../toolbox";
 import { BloomApi } from "../../../../utils/bloomApi";
@@ -79,7 +83,9 @@ export class LeveledReaderToolboxTool implements ITool {
     // Some things were impossible to do i18n on via the jade/pug
     // This gives us a hook to finish up the more difficult spots
     public finishToolLocalization(paneDOM: HTMLElement) {
-        // Unneeded in Leveled Reader, since Bloom.web.ExternalLinkController
+        // Unneeded for most things in Leveled Reader, since Bloom.web.ExternalLinkController
         // 'translates' external links to include the current UI language.
+        // One localized string needs converting into an HTML structure with child spans
+        ReaderToolsModel.prepareLevelNofM();
     }
 }

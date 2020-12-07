@@ -12,13 +12,7 @@ html
 			.stageLine.clear.noSelect
 				span.scroll-button.ui-icon.ui-icon-triangle-1-w#decStage
 				span.stageLabel.stageLine.noSelect
-					span(data-i18n='EditTab.Toolbox.DecodableReaderTool.Stage') Stage
-					= ' '
-					span#stageNumber 1
-					= ' '
-					span.ofStage(data-i18n='EditTab.Toolbox.DecodableReaderTool.StageOf') of
-					= ' '
-					span#numberOfStages.ofStage 2
+					span#stageNofM(data-i18n='EditTab.Toolbox.DecodableReaderTool.StageNofM') Stage {0} of {1}
 				span.scroll-button.ui-icon.ui-icon-triangle-1-e#incStage
 			#letters-in-this-stage.section.clear(style='margin-left: 6px')
 				span(data-i18n='EditTab.Toolbox.DecodableReaderTool.LettersInThisStage') Letters in this stage
