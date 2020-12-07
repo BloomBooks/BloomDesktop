@@ -4,7 +4,8 @@
 import {
     DRTState,
     getTheOneReaderToolsModel,
-    MarkupType
+    MarkupType,
+    ReaderToolsModel
 } from "../readerToolsModel";
 import { beginInitializeDecodableReaderTool } from "../readerTools";
 import { ITool } from "../../toolbox";
@@ -73,27 +74,25 @@ export class DecodableReaderToolboxTool implements ITool {
 
         $(container)
             .find(".bloom-editable")
-            .keydown(
-                (e): boolean => {
-                    if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) {
-                        // ctrl-z or ctrl-Y
-                        if (
-                            getTheOneReaderToolsModel().currentMarkupType !==
-                            MarkupType.None
-                        ) {
-                            e.preventDefault();
-                            if (e.shiftKey || e.keyCode == 89) {
-                                // ctrl-shift-z or ctrl-y
-                                getTheOneReaderToolsModel().redo();
-                            } else {
-                                getTheOneReaderToolsModel().undo();
-                            }
-                            return false;
+            .keydown((e): boolean => {
+                if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) {
+                    // ctrl-z or ctrl-Y
+                    if (
+                        getTheOneReaderToolsModel().currentMarkupType !==
+                        MarkupType.None
+                    ) {
+                        e.preventDefault();
+                        if (e.shiftKey || e.keyCode == 89) {
+                            // ctrl-shift-z or ctrl-y
+                            getTheOneReaderToolsModel().redo();
+                        } else {
+                            getTheOneReaderToolsModel().undo();
                         }
+                        return false;
                     }
-                    return true;
                 }
-            );
+                return true;
+            });
     }
 
     // Some things were impossible to do i18n on via the jade/pug
@@ -133,6 +132,7 @@ export class DecodableReaderToolboxTool implements ITool {
                 // there are actually two here, but JQuery nicely just does it
                 this.setTitleOfI(paneDOM, "sortFrequency", result);
             });
+        ReaderToolsModel.prepareStageNofM();
     }
 
     public setTitleOfI(paneDOM: HTMLElement, rootId: string, val: string) {

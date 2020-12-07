@@ -179,6 +179,41 @@ describe("averageSentencesInPage tests", () => {
     });
 });
 
+function checkText(item: ChildNode, content: string) {
+    expect(item instanceof HTMLElement).toBe(false);
+    expect(item.textContent).toBe(content);
+}
+function checkSpan(item: ChildNode, id: string) {
+    expect(item instanceof HTMLElement).toBe(true);
+    expect((item as HTMLElement).tagName).toBe("SPAN");
+    expect((item as HTMLElement).getAttribute("id")).toBe(id);
+}
+
+describe("prepareStageNofM tests", () => {
+    it("fixes stageNofM with items in order", () => {
+        const stageNofM = document.createElement("div");
+        stageNofM.innerText = "stage {0} of {1}";
+        ReaderToolsModel.prepareStageNofMInternal(stageNofM);
+        expect(stageNofM.childNodes.length).toBe(4);
+        checkText(stageNofM.childNodes[0], "stage ");
+        checkSpan(stageNofM.childNodes[1], "stageNumber");
+        checkText(stageNofM.childNodes[2], " of ");
+        checkSpan(stageNofM.childNodes[3], "numberOfStages");
+    });
+
+    it("fixes stageNofM with items out of order", () => {
+        const stageNofM = document.createElement("div");
+        stageNofM.innerText = "there are {1} stages; {0} is the current one";
+        ReaderToolsModel.prepareStageNofMInternal(stageNofM);
+        expect(stageNofM.childNodes.length).toBe(5);
+        checkText(stageNofM.childNodes[0], "there are ");
+        checkSpan(stageNofM.childNodes[1], "numberOfStages");
+        checkText(stageNofM.childNodes[2], " stages; ");
+        checkSpan(stageNofM.childNodes[3], "stageNumber");
+        checkText(stageNofM.childNodes[4], " is the current one");
+    });
+});
+
 describe("maxWordLength tests", () => {
     it("longest word", () => {
         expect(ReaderToolsModel.maxWordLength("the cat sat on the mat")).toBe(

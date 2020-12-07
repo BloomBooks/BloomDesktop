@@ -314,6 +314,80 @@ export class ReaderToolsModel {
         this.updateWordList();
     }
 
+    // If necessary, convert the element with id "stageNofM" from a string that contains
+    // {0} and {1} to one where {0} is replaced by a span with id "stageNumber" and
+    // {1} is replaced with a span with id "numberOfStages".
+    // It would be easier to just do a "replace" on textContent and then set innerHTML,
+    // but I'm just slightly nervous that something malicious could get injected that way,
+    // since the content of stageParent is potentially a crowd-contributed bit of text
+    // from crowdin.
+    public static prepareStageNofM() {
+        const stageParent = document.getElementById("stageNofM");
+        if (!stageParent) {
+            return;
+        }
+        ReaderToolsModel.prepareStageNofMInternal(stageParent);
+    }
+
+    // guts of the above method, public for testing
+    public static prepareStageNofMInternal(stageParent: HTMLElement) {
+        ReaderToolsModel.replacePlaceHoldersWithSpans(
+            stageParent,
+            "stageNumber",
+            "numberOfStages"
+        );
+    }
+
+    public static prepareLevelNofM() {
+        const levelParent = document.getElementById("levelNofM");
+        if (!levelParent) {
+            return;
+        }
+        ReaderToolsModel.prepareLevelNofMInternal(levelParent);
+    }
+
+    public static prepareLevelNofMInternal(levelParent: HTMLElement) {
+        ReaderToolsModel.replacePlaceHoldersWithSpans(
+            levelParent,
+            "levelNumber",
+            "numberOfLevels"
+        );
+    }
+
+    private static appendTextNode(parent: HTMLElement, text: string) {
+        if (!text) {
+            return;
+        }
+        parent.appendChild(document.createTextNode(text));
+    }
+
+    private static replacePlaceHoldersWithSpans(
+        parent: HTMLElement,
+        id0: string,
+        id1: string
+    ) {
+        const index0 = parent.textContent!.indexOf("{0}");
+        const index1 = parent.textContent!.indexOf("{1}");
+        if (index0 < 0 || index1 < 0) {
+            return; // already set up, or localization hopelessly botched
+        }
+        const beforeIndex = Math.min(index0, index1);
+        const afterIndex = Math.max(index0, index1);
+        const before = parent.textContent?.substring(0, beforeIndex) ?? "";
+        const after = parent.textContent?.substring(afterIndex + 3) ?? "";
+        const mid =
+            parent.textContent?.substring(beforeIndex + 3, afterIndex) ?? "";
+        parent.innerText = before;
+        const span0 = document.createElement("span");
+        span0.setAttribute("id", id0);
+        const span1 = document.createElement("span");
+        span1.setAttribute("id", id1);
+        parent.appendChild(index0 < index1 ? span0 : span1);
+        ReaderToolsModel.appendTextNode(parent, mid);
+        parent.appendChild(index0 < index1 ? span1 : span0);
+        ReaderToolsModel.appendTextNode(parent, after);
+    }
+
     public updateNumberOfStages(): void {
         if (!this.synphony) {
             return; // Synphony not loaded yet

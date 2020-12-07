@@ -1144,10 +1144,36 @@ function setWordContainerHeight() {
     div.css("height", "calc(100% - " + ht + "px)");
 }
 
+// This is a super-simplistic markdown processor that does just as much as we need.
+// Currently that is just to handle making text delimited by ** bold.
+export function processMarkdown(e: HTMLElement) {
+    const parts = e.textContent?.split("**");
+    if (!parts || parts.length <= 1) {
+        return;
+    }
+    e.innerText = parts[0];
+    for (let i = 1; i < parts.length; i++) {
+        const text = parts[i];
+        if (i % 2) {
+            const boldElement = document.createElement("strong");
+            boldElement.innerText = text;
+            e.appendChild(boldElement);
+        } else {
+            if (text.length > 0) {
+                e.appendChild(document.createTextNode(text));
+            }
+        }
+    }
+}
+
 /**
  * Called after localized strings are loaded.
  */
 function finishInitializing() {
+    document.querySelectorAll("[data-i18n]").forEach(matchingElem => {
+        processMarkdown(matchingElem as HTMLElement);
+    });
+
     $("#stages-table")
         .find("tbody")
         .sortable({ stop: updateStageNumbers });
