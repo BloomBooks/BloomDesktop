@@ -186,6 +186,10 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
             // importantly including not scrolling at all if it's already visible.
             if (pageElement) pageElement.scrollIntoView({ block: "nearest" });
         }
+        // Make LazyLoad component re-check for elements in viewport
+        // to make visible. (See this article that says forceCheck() should be in a 'useEffect':
+        // https://stackoverflow.com/questions/61191496/why-is-my-react-lazyload-component-not-working)
+        forceCheck();
     }, [realPageList]);
 
     // We insert a dummy invisible page to make the outside cover a 'right' page
@@ -215,6 +219,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                         height={rowHeight}
                         scrollContainer="#pageGridWrapper"
                         resize={true} // expand lazy elements as needed when container resizes
+                        offset={200} // give the component a better chance of noticing pages we need to show
                     >
                         <PageThumbnail
                             page={pageContent}
@@ -237,11 +242,6 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                                             "pageList/menuClicked",
                                             {
                                                 pageId: pageContent.key
-                                            },
-                                            () => {
-                                                // Make LazyLoad component re-check for elements in viewport
-                                                // to make visible.
-                                                forceCheck();
                                             }
                                         );
                                     }}
