@@ -4298,6 +4298,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.PageMaxWords2" sil:dynamic="true">
         <source xml:lang="en">Per **Page**</source>
         <note>ID: ReaderSetup.PageMaxWords2</note>
+        <note>Surround text that should be bold in double asterisks.</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.PerBookHeader" sil:dynamic="true">
         <source xml:lang="en">Per Book (Unique)</source>
