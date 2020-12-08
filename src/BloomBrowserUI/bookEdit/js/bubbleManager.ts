@@ -152,6 +152,17 @@ export class BubbleManager {
         });
     }
 
+    private focusFirstVisibleEditable(activeElement: HTMLElement) {
+        const focusElements = Array.from(
+            activeElement.getElementsByClassName(
+                "bloom-editable bloom-visibility-code-on"
+            )
+        ).filter(el => !el.parentElement!.classList.contains("box-header-off"));
+        if (focusElements.length > 0) {
+            (focusElements[0] as HTMLElement).focus();
+        }
+    }
+
     public turnOnBubbleEditing(): void {
         if (this.isComicEditingOn === true) {
             return; // Already on. No work needs to be done
@@ -160,12 +171,7 @@ export class BubbleManager {
 
         Comical.setActiveBubbleListener(activeElement => {
             if (activeElement) {
-                const focusElements = activeElement.getElementsByClassName(
-                    "bloom-visibility-code-on"
-                );
-                if (focusElements.length > 0) {
-                    (focusElements[0] as HTMLElement).focus();
-                }
+                this.focusFirstVisibleEditable(activeElement);
             }
         });
 
@@ -186,14 +192,13 @@ export class BubbleManager {
             this.activeElement = textOverPictureElems[
                 textOverPictureElems.length - 1
             ] as HTMLElement;
-            const editable = this.activeElement.getElementsByClassName(
-                "bloom-editable bloom-visibility-code-on"
-            )[0] as HTMLElement;
             // This focus call doesn't seem to work, at least in a lasting fashion.
             // See the code in bloomEditing.ts/SetupElements() that sets focus after
             // calling BloomSourceBubbles.MakeSourceBubblesIntoQtips() in a delayed loop.
             // That code usually finds that nothing is focused. (??)
-            editable.focus();
+            // (gjm: I reworked the code that finds a visible element a bit, it's possible the above comment
+            // is no longer accurate)
+            this.focusFirstVisibleEditable(this.activeElement);
             Comical.setUserInterfaceProperties({ tailHandleColor: "#96668F" }); // light bloom purple
             Comical.startEditing(imageContainers);
             this.migrateOldTopElems(textOverPictureElems);
@@ -214,6 +219,15 @@ export class BubbleManager {
                 "click",
                 BubbleManager.onDocClickClearActiveElement
             );
+        } else {
+            // Focus something!
+            // BL-8073: if Comic Tool is open, this 'turnOnBubbleEditing()' method will get run.
+            // If this particular page has no comic bubbles, we can actually arrive here with the 'body'
+            // as the document's activeElement. So we focus the first visible editable we come to.
+            const marginBox = document.getElementsByClassName("marginBox");
+            if (marginBox.length > 0) {
+                this.focusFirstVisibleEditable(marginBox[0] as HTMLElement);
+            }
         }
 
         // turn on various behaviors for each image
@@ -339,9 +353,9 @@ export class BubbleManager {
                 // it would be nice to do this only once, but there MIGHT
                 // be TOP elements in more than one image container...too complicated,
                 // and this only happens once per TOP.
-                Comical.update(
-                    top.closest(".bloom-imageContainer") as HTMLElement
-                );
+                Comical.update(top.closest(
+                    ".bloom-imageContainer"
+                ) as HTMLElement);
             }
         });
     }

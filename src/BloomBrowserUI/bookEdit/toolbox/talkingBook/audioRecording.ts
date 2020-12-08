@@ -139,7 +139,6 @@ interface ISetHighlightParams {
 export default class AudioRecording {
     private recording: boolean;
     private levelCanvas: HTMLCanvasElement;
-    private hiddenSourceBubbles: JQuery;
     private currentAudioId: string;
     private elementsToPlayConsecutivelyStack: Element[] = []; // When we are playing audio, this holds the segments we haven't yet finished playing, including the one currently playing. Thus, when it's empty we are not playing audio at all
     private subElementsWithTimings: [Element, number][] = [];
@@ -513,7 +512,6 @@ export default class AudioRecording {
     // Called by TalkingBookModel.detachFromPage(), which is called when changing tools, hiding the toolbox,
     // or saving (leaving) pages.
     public removeRecordingSetup() {
-        this.hiddenSourceBubbles.show();
         const page = this.getPageDocBodyJQuery();
         page.find(kAudioCurrentClassSelector)
             .removeClass(kAudioCurrent)
@@ -2327,13 +2325,6 @@ export default class AudioRecording {
         ++this.currentAudioSessionNum;
 
         this.isImageDescriptionActive = imageDescToolActive;
-
-        // ENHANCE: Optimization? I think the pageDocBody could be safely cached upon newPageReady and placed in a member variable.
-        //          Then we wouldn't need to find the body element so many times
-        this.hiddenSourceBubbles = this.getPageDocBodyJQuery().find(
-            ".uibloomSourceTextsBubble"
-        );
-        this.hiddenSourceBubbles.hide();
 
         // FYI, it is possible for newPageReady to be called without updateMarkup() being called
         // (e.g. when opening the toolbox with an empty text box).
