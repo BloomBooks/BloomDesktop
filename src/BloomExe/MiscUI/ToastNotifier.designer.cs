@@ -1,4 +1,4 @@
-﻿namespace Bloom.MiscUI
+namespace Bloom.MiscUI
 {
 	partial class ToastNotifier
 	{
@@ -43,9 +43,9 @@
 			this._message.Location = new System.Drawing.Point(50, 9);
 			this._message.MaximumSize = new System.Drawing.Size(240, 0);
 			this._message.Name = "_message";
-			this._message.Size = new System.Drawing.Size(239, 36);
+			this._message.Size = new System.Drawing.Size(239, 60);
 			this._message.TabIndex = 2;
-			this._message.Text = "Notification Text That may take two lines";
+			this._message.Text = "Notification Text that may take up to the maximum amount of three lines";
 			this._message.Click += new System.EventHandler(this.ToastNotifier_Click);
 			// 
 			// Image
@@ -67,7 +67,7 @@
 			// _callToAction
 			// 
 			this._callToAction.AutoSize = true;
-			this._callToAction.Location = new System.Drawing.Point(51, 47);
+			this._callToAction.Location = new System.Drawing.Point(51, 68);
 			this._callToAction.Name = "_callToAction";
 			this._callToAction.Size = new System.Drawing.Size(55, 13);
 			this._callToAction.TabIndex = 4;
@@ -81,7 +81,7 @@
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.White;
-			this.ClientSize = new System.Drawing.Size(296, 64);
+			this.ClientSize = new System.Drawing.Size(296, 90);
 			this.ControlBox = false;
 			this.Controls.Add(this._callToAction);
 			this.Controls.Add(this.Image);
