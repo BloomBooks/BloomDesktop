@@ -13,6 +13,7 @@ using SIL.IO;
 #if __MonoCS__
 using SIL.Media.AlsaAudio;
 #endif
+using SIL.Media;
 using SIL.Media.Naudio;
 using SIL.Reporting;
 using Timer = System.Windows.Forms.Timer;
@@ -178,7 +179,7 @@ namespace Bloom.Edit
 			try
 			{
 				var sb = new StringBuilder("{\"devices\":[");
-				sb.Append(string.Join(",", RecordingDevice.Devices.Select(d => "\""+d.ProductName+"\"")));
+				sb.Append(string.Join(",", SIL.Media.Naudio.RecordingDevice.Devices.Select(d => "\""+d.ProductName+"\"")));
 				sb.Append("],\"productName\":");
 				if (CurrentRecording.RecordingDevice != null)
 					sb.Append("\"" + CurrentRecording.RecordingDevice.ProductName + "\"");
@@ -212,9 +213,9 @@ namespace Bloom.Edit
 		/// </summary>
 		public void BeginMonitoring()
 		{
-			if (!RecordingDevice.Devices.Contains(RecordingDevice))
+			if (!SIL.Media.Naudio.RecordingDevice.Devices.Contains(RecordingDevice))
 			{
-				RecordingDevice = RecordingDevice.Devices.FirstOrDefault();
+				RecordingDevice = SIL.Media.Naudio.RecordingDevice.Devices.FirstOrDefault();
 			}
 			if (RecordingDevice != null)
 			{
@@ -388,9 +389,9 @@ namespace Bloom.Edit
 
 			// If someone unplugged the microphone we were planning to use switch to another.
 			// This also triggers selecting the first one initially.
-			if (!RecordingDevice.Devices.Contains(RecordingDevice))
+			if (!SIL.Media.Naudio.RecordingDevice.Devices.Contains(RecordingDevice))
 			{
-				RecordingDevice = RecordingDevice.Devices.FirstOrDefault();
+				RecordingDevice = SIL.Media.Naudio.RecordingDevice.Devices.FirstOrDefault();
 			}
 			if (RecordingDevice == null)
 			{
@@ -571,7 +572,7 @@ namespace Bloom.Edit
 			}
 		}
 
-		public RecordingDevice RecordingDevice
+		public IRecordingDevice RecordingDevice
 		{
 			get { return Recorder.SelectedDevice; }
 			set { Recorder.SelectedDevice = value; }
@@ -599,7 +600,7 @@ namespace Bloom.Edit
 
 		private bool SetRecordingDevice(string micName)
 		{
-			foreach (var d in RecordingDevice.Devices)
+			foreach (var d in SIL.Media.Naudio.RecordingDevice.Devices)
 			{
 				if (d.ProductName == micName)
 				{

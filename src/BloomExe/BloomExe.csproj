@@ -77,13 +77,13 @@
     <AssemblyName>Bloom</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(OS)'=='Windows_NT'">
-	<!-- Uses a LargeAddressAware nuget package to specify that this executable is large address aware.
+    <!-- Uses a LargeAddressAware nuget package to specify that this executable is large address aware.
 	This means that we promise to the OS that we/our dependencies handle pointers in the upper address space (from 2GB to 4GB range) correctly (hopefully!).
 	In exchange, the OS allows the program to use up to 4 GB of virtual address space instead of 2 GB of virtual address space.
 	This will be relevant if run on 64-bit Windows (or if the user set the 3GB/IncreaseUserVa switch on 32-bit Windows)
 	
 	I believe this is unnecessary on Linux, they usually already have 4 GB virtual address space available.
-	--> 
+	-->
     <LargeAddressAware>true</LargeAddressAware>
   </PropertyGroup>
   <PropertyGroup>
@@ -92,6 +92,9 @@
   <ItemGroup>
     <Reference Include="Analytics.NET, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Analytics.2.0.2\lib\Analytics.NET.dll</HintPath>
+    </Reference>
+    <Reference Include="AtkSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\AtkSharp-signed.3.22.24.37\lib\netstandard2.0\AtkSharp.dll</HintPath>
     </Reference>
     <Reference Include="Autofac, Version=6.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Autofac.6.0.0\lib\netstandard2.0\Autofac.dll</HintPath>
@@ -102,6 +105,9 @@
     <Reference Include="AWSSDK.S3, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
       <HintPath>..\..\packages\AWSSDK.S3.3.5.3.10\lib\net45\AWSSDK.S3.dll</HintPath>
     </Reference>
+    <Reference Include="CairoSharp, Version=3.22.24.37, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CairoSharp-signed.3.22.24.37\lib\netstandard2.0\CairoSharp.dll</HintPath>
+    </Reference>
     <Reference Include="CommandLine, Version=2.8.0.0, Culture=neutral, PublicKeyToken=5a870481e358d379, processorArchitecture=MSIL">
       <HintPath>..\..\packages\CommandLineParser.2.8.0\lib\net461\CommandLine.dll</HintPath>
     </Reference>
@@ -111,8 +117,17 @@
     <Reference Include="DialogAdapters, Version=0.1.11.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\DialogAdapters.0.1.11\lib\net461\DialogAdapters.dll</HintPath>
     </Reference>
+    <Reference Include="DialogAdapters, Version=0.1.9.0, Culture=neutral, PublicKeyToken=7dc842182b0626dc, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DialogAdapters.Gtk2.0.1.9\lib\net461\DialogAdapters.dll</HintPath>
+    </Reference>
+    <Reference Include="Enchant.Net, Version=1.4.0.0, Culture=neutral, PublicKeyToken=ae135aeb3d479ab9, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Enchant.Net.1.4.2\lib\net461\Enchant.Net.dll</HintPath>
+    </Reference>
     <Reference Include="Fleck, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Fleck.1.1.0\lib\net45\Fleck.dll</HintPath>
+    </Reference>
+    <Reference Include="GdkSharp, Version=3.22.24.37, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\GdkSharp-signed.3.22.24.37\lib\netstandard2.0\GdkSharp.dll</HintPath>
     </Reference>
     <Reference Include="Geckofx-Core" Condition="'$(OS)'!='Windows_NT'">
       <HintPath>..\..\packages\Geckofx60.64.Linux.60.0.51\lib\net40\Geckofx-Core.dll</HintPath>
@@ -126,8 +141,20 @@
     <Reference Include="Geckofx-Winforms, Version=60.0.50.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\packages\Geckofx60.32.60.0.50\lib\net45\Geckofx-Winforms.dll</HintPath>
     </Reference>
+    <Reference Include="GioSharp, Version=3.22.24.37, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\GioSharp-signed.3.22.24.37\lib\netstandard2.0\GioSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="GLibSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\GLibSharp-signed.3.22.24.37\lib\netstandard2.0\GLibSharp.dll</HintPath>
+    </Reference>
     <Reference Include="Glob, Version=1.1.8.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Glob.1.1.8\lib\net46\Glob.dll</HintPath>
+    </Reference>
+    <Reference Include="GtkSharp, Version=3.22.24.37, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\GtkSharp-signed.3.22.24.37\lib\netstandard2.0\GtkSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="ibusdotnet, Version=2.0.0.0, Culture=neutral, PublicKeyToken=c9ab93f7b23223fb, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\ibusdotnet.2.0.3\lib\net461\ibusdotnet.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=1.3.0.8, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\..\packages\SharpZipLib.1.3.0\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -135,8 +162,11 @@
     <Reference Include="icu.net, Version=2.6.0.0, Culture=neutral, PublicKeyToken=416fdd914afa6b66, processorArchitecture=MSIL">
       <HintPath>..\..\packages\icu.net.2.6.0\lib\net451\icu.net.dll</HintPath>
     </Reference>
-    <Reference Include="L10NSharp">
-      <HintPath>..\..\lib\dotnet\L10NSharp.dll</HintPath>
+    <Reference Include="L10NSharp, Version=4.1.0.0, Culture=neutral, PublicKeyToken=fd0b3e309a5b7c28, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\L10NSharp.4.1.0-beta0036\lib\net461\L10NSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Markdig.Signed, Version=0.22.0.0, Culture=neutral, PublicKeyToken=870da25a133885f8, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Markdig.Signed.0.22.0\lib\net452\Markdig.Signed.dll</HintPath>
     </Reference>
     <Reference Include="MarkdownDeep, Version=1.5.4615.26275, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -152,14 +182,21 @@
     <Reference Include="Microsoft.Extensions.DependencyModel, Version=3.1.6.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Extensions.DependencyModel.3.1.6\lib\net451\Microsoft.Extensions.DependencyModel.dll</HintPath>
     </Reference>
-    <Reference Include="NAudio">
-      <HintPath>..\..\lib\dotnet\NAudio.dll</HintPath>
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="NAudio, Version=1.10.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NAudio.1.10.0\lib\net35\NAudio.dll</HintPath>
+    </Reference>
+    <Reference Include="NDesk.DBus, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f6716e4f9b2ed099, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NDesk.DBus.0.15.0\lib\NDesk.DBus.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Squirrel" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\lib\dotnet\NuGet.Squirrel.dll</HintPath>
+    </Reference>
+    <Reference Include="PangoSharp, Version=3.22.24.37, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\PangoSharp-signed.3.22.24.37\lib\netstandard2.0\PangoSharp.dll</HintPath>
     </Reference>
     <Reference Include="PdfDroplet">
       <HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
@@ -187,30 +224,36 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>../../packages/SharpFont.3.1.0/lib/net20/SharpFont.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.Core">
-      <HintPath>..\..\lib\dotnet\SIL.Core.dll</HintPath>
+    <Reference Include="SIL.Core, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Core.8.0.0-beta0239\lib\net461\SIL.Core.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.Core.Desktop">
-      <HintPath>..\..\lib\dotnet\SIL.Core.Desktop.dll</HintPath>
+    <Reference Include="SIL.Core.Desktop, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Core.Desktop.8.0.0-beta0239\lib\net461\SIL.Core.Desktop.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.Media">
-      <HintPath>..\..\lib\dotnet\SIL.Media.dll</HintPath>
+    <Reference Include="SIL.Media, Version=8.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Media.8.0.0-beta0225\lib\net461\SIL.Media.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.Windows.Forms">
-      <HintPath>..\..\lib\dotnet\SIL.Windows.Forms.dll</HintPath>
+    <Reference Include="SIL.Windows.Forms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Windows.Forms.8.0.0-beta0239\lib\net461\SIL.Windows.Forms.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.Windows.Forms.Keyboarding">
-      <HintPath>..\..\lib\dotnet\SIL.Windows.Forms.Keyboarding.dll</HintPath>
+    <Reference Include="SIL.Windows.Forms.GeckoBrowserAdapter, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Windows.Forms.GeckoBrowserAdapter.8.0.0-beta0239\lib\net461\SIL.Windows.Forms.GeckoBrowserAdapter.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.Windows.Forms.WritingSystems">
-      <HintPath>..\..\lib\dotnet\SIL.Windows.Forms.WritingSystems.dll</HintPath>
+    <Reference Include="SIL.Windows.Forms.Keyboarding, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Windows.Forms.Keyboarding.8.0.0-beta0239\lib\net461\SIL.Windows.Forms.Keyboarding.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.WritingSystems">
-      <HintPath>..\..\lib\dotnet\SIL.WritingSystems.dll</HintPath>
+    <Reference Include="SIL.Windows.Forms.WritingSystems, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Windows.Forms.WritingSystems.8.0.0-beta0225\lib\net461\SIL.Windows.Forms.WritingSystems.dll</HintPath>
+    </Reference>
+    <Reference Include="SIL.WritingSystems, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.WritingSystems.8.0.0-beta0239\lib\net461\SIL.WritingSystems.dll</HintPath>
     </Reference>
     <Reference Include="SourceMapDotNet, Version=1.0.5478.26629, Culture=neutral, PublicKeyToken=d357635542166cea, processorArchitecture=MSIL">
       <HintPath>..\..\packages\SourceMapDotNet.1.0.5478.26629\lib\SourceMapDotNet.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="Spart, Version=1.0.0.0, Culture=neutral, PublicKeyToken=14d24e064e474331, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Spart.1.0.0\lib\net461\Spart.dll</HintPath>
     </Reference>
     <Reference Include="Splat">
       <HintPath>..\..\lib\dotnet\Splat.dll</HintPath>
@@ -226,6 +269,10 @@
       <HintPath>..\..\packages\System.Diagnostics.DiagnosticSource.4.7.1\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
     </Reference>
     <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.IO.FileSystem.AccessControl, Version=4.0.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.IO.FileSystem.AccessControl.4.7.0\lib\net461\System.IO.FileSystem.AccessControl.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Management" />
     <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
     </Reference>
@@ -235,6 +282,14 @@
     <Reference Include="System.Numerics.Vectors" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
     </Reference>
+    <Reference Include="System.Security" />
+    <Reference Include="System.Security.AccessControl, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Security.AccessControl.4.7.0\lib\net461\System.Security.AccessControl.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Principal.Windows, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Security.Principal.Windows.4.7.0\lib\net461\System.Security.Principal.Windows.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.ValueTuple.4.5.0\lib\net461\System.ValueTuple.dll</HintPath>
     </Reference>
@@ -246,9 +301,8 @@
     <Reference Include="AxInterop.AcroPDFLib">
       <HintPath>..\..\lib\dotnet\AxInterop.AcroPDFLib.dll</HintPath>
     </Reference>
-    <Reference Include="taglib-sharp, Version=2.1.2.0, Culture=neutral, PublicKeyToken=db62eba44689b5b0, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\dotnet\taglib-sharp.dll</HintPath>
+    <Reference Include="TagLibSharp, Version=2.2.0.0, Culture=neutral, PublicKeyToken=db62eba44689b5b0, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\TagLibSharp.2.2.0\lib\net45\TagLibSharp.dll</HintPath>
     </Reference>
     <Reference Include="TechTalk.JiraRestClient, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\TechTalk.JiraRestClient.RestSharp105.2.3.0.1\lib\net40-Client\TechTalk.JiraRestClient.dll</HintPath>
@@ -1325,9 +1379,6 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <RemoteDebugFiles Include="..\..\remoteDebugging\**" />
   </ItemGroup>
   <ItemGroup>
-    <GeckoBrowserAdapter Include="..\..\lib\dotnet\SIL.Windows.Forms.GeckoBrowserAdapter.dll" />
-  </ItemGroup>
-  <ItemGroup>
     <BloomPdfMakerArgs Include="..\..\lib\dotnet\Args.dll" />
   </ItemGroup>
   <ItemGroup>
@@ -1408,18 +1459,24 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   <ItemGroup>
     <Analyzer Include="..\..\packages\AWSSDK.S3.3.5.3.10\analyzers\dotnet\cs\AWSSDK.S3.CodeAnalysis.dll" />
   </ItemGroup>
+  <Import Project="..\..\packages\Geckofx60.32.60.0.50\build\Geckofx60.32.targets" Condition="Exists('..\..\packages\Geckofx60.32.60.0.50\build\Geckofx60.32.targets')" />
+  <Import Project="../../packages/Geckofx60.64.Linux.60.0.51/build/Geckofx60.64.Linux.targets" Condition="Exists('../../packages/Geckofx60.64.Linux.60.0.51/build/Geckofx60.64.Linux.targets')" />
+  <Import Project="..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets" Condition="'$(OS)'=='Windows_NT' AND Exists('..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets')" />
+  <Import Project="..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets" Condition="Exists('..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets')" />
+  <Import Project="..\..\packages\SIL.Media.8.0.0-beta0225\build\SIL.Media.targets" Condition="Exists('..\..\packages\SIL.Media.8.0.0-beta0225\build\SIL.Media.targets')" />
+  <Import Project="..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets" Condition="Exists('..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets')" />
+  <Import Project="..\..\packages\SIL.Windows.Forms.8.0.0-beta0239\build\SIL.Windows.Forms.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.8.0.0-beta0239\build\SIL.Windows.Forms.targets')" />
+  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.8.0.0-beta0239\build\SIL.Windows.Forms.Keyboarding.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.8.0.0-beta0225\build\SIL.Windows.Forms.Keyboarding.targets')" />
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="@(LameFiles)" DestinationFolder="../../DistFiles" Condition="'$(OS)'=='Windows_NT'" />
-    <Copy SourceFiles="@(GeckoBrowserAdapter)" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader" />
     <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />
     <Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
     <Copy SourceFiles="@(BloomPdfMakerArgs)" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="@(IccFiles)" DestinationFolder="$(OutDir)/ColorProfiles" />
+    <Message Text="AfterBuild target completed." Importance="high" />
   </Target>
-  <Import Project="..\..\packages\Geckofx60.32.60.0.50\build\Geckofx60.32.targets" Condition="Exists('..\..\packages\Geckofx60.32.60.0.50\build\Geckofx60.32.targets')" />
-  <Import Project="../../packages/Geckofx60.64.Linux.60.0.51/build/Geckofx60.64.Linux.targets" Condition="Exists('../../packages/Geckofx60.64.Linux.60.0.51/build/Geckofx60.64.Linux.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
@@ -1427,6 +1484,15 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Error Condition="'$(OS)'=='Windows_NT' AND !Exists('..\..\packages\Geckofx60.32.60.0.50\build\Geckofx60.32.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Geckofx60.32.60.0.50\build\Geckofx60.32.targets'))" />
     <Error Condition="'$(OS)'!='Windows_NT' AND !Exists('../../packages/Geckofx60.64.Linux.60.0.51/build/Geckofx60.64.Linux.targets')" Text="$([System.String]::Format('$(ErrorText)', '../../packages/Geckofx60.64.Linux.60.0.51/build/Geckofx60.64.Linux.targets'))" />
     <Error Condition="'$(OS)'=='Windows_NT' AND !Exists('..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets'))" />
+    <Error Condition="!Exists('..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SIL.Media.8.0.0-beta0225\build\SIL.Media.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Media.8.0.0-beta0225\build\SIL.Media.targets'))" />
+    <Error Condition="!Exists('..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.8.0.0-beta0239\build\SIL.Windows.Forms.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.8.0.0-beta0239\build\SIL.Windows.Forms.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.8.0.0-beta0239\build\SIL.Windows.Forms.Keyboarding.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.8.0.0-beta0239\build\SIL.Windows.Forms.Keyboarding.targets'))" />
   </Target>
-  <Import Project="..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets" Condition="'$(OS)'=='Windows_NT' AND Exists('..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets')" />
+  <!-- Note: Visual Studio automatically inserts any imports from installing packages into the end here,
+  but the AfterBuild target may not run if .targets files are imported after it.
+  I recommend you move the Import statements before the "AfterBuild" target,
+  or if not, then please verify that AfterBuild's Message is still printed out.
+  -->
 </Project>
