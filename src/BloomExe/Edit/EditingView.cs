@@ -1488,6 +1488,8 @@ namespace Bloom.Edit
 
 		public void UpdateEditButtons()
 		{
+			if (!_browser1.Visible)
+				return;	// probably changing pages: update via javascript won't work
 			_browser1.UpdateEditButtons();
 			UpdateButtonEnabled(_cutButton, _cutCommand);
 			UpdateButtonEnabled(_copyButton, _copyCommand);
