@@ -1265,8 +1265,10 @@ namespace BloomTests.Publish
 			}
 			else
 			{
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='" + kAudioSlash + "a123.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.672']", _ns);
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='" + kAudioSlash + "a23.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.672']", _ns);
+				var audioDuration = GetFakeAudioDurationSecs();
+				string clipEnd = "0:00:0" + audioDuration.ToString("0.000");				
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='" + kAudioSlash + $"a123.mp3' and @clipBegin='0:00:00.000' and @clipEnd='{clipEnd}']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='" + kAudioSlash + $"a23.mp3' and @clipBegin='0:00:00.000' and @clipEnd='{clipEnd}']", _ns);
 			}
 
 			if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.Sentence)
@@ -1332,8 +1334,11 @@ namespace BloomTests.Publish
 			}
 			else
 			{
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+"page2.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.672']", _ns);
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"+kAudioSlash+"page2.mp3' and @clipBegin='0:00:01.672' and @clipEnd='0:00:03.344']", _ns);
+				var audioDuration = GetFakeAudioDurationSecs();
+				string clipEnd1 = "0:00:0" + audioDuration.ToString("0.000");
+				string clipEnd2 = "0:00:0" + (audioDuration*2).ToString("0.000");
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+$"page2.mp3' and @clipBegin='0:00:00.000' and @clipEnd='{clipEnd1}']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"+kAudioSlash+$"page2.mp3' and @clipBegin='{clipEnd1}' and @clipEnd='{clipEnd2}']", _ns);
 			}
 
 			var page2Data = GetPageNData(2);
@@ -1600,7 +1605,8 @@ $@"<div class='bloom-translationGroup'>
 		/// <returns></returns>
 		protected static double GetFakeAudioDurationSecs()
 		{
-			double expectedDurationPerClip = 1.672;
+			// Formerly 1.672 on Windows, but after updating NAudio to 1.10.0 nuget package, now 1.646 seconds instead
+			double expectedDurationPerClip = 1.646;
 			if (Platform.IsLinux)
 			{
 				// Ffmpeg based audio time calculations on Linux don't quite match what NAudio produces on Windows.
