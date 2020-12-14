@@ -63,9 +63,13 @@ mixin credits-page-branding-top
 	block credits-page-branding-top
 		div(data-book='credits-page-branding-top-html' lang="*")
 
+//- Note that inclusion of Credits-Page-style makes it responsive to user changing other text on the page.
+//- This is a late (Dec 2020) change, which might cause older xmatters/branding problems if they don't
+//- already override this block. If so, we'll fix those to lock down the size if that's actually
+//- appropriate for them... copying the rest of the text should normally be the right thing to do.
 mixin credits-page-branding-bottom
 	block credits-page-branding-bottom
-		div(data-book='credits-page-branding-bottom-html' lang="*")
+		div.Credits-Page-style(data-book='credits-page-branding-bottom-html' lang="*")
 
 mixin title-page-branding-bottom
 	block title-page-branding-bottom
