@@ -201,6 +201,12 @@ div#bloomDataDiv {
 @A5Portrait-HeightFB: @A5Portrait-Height * @RA5-Scale;
 @A5Portrait-Height-Excess: @A5Portrait-HeightFB - @RA5Portrait-Height;
 
+@RA4Portrait-Width: @A4Portrait-Width + @bleed + @bleed;
+@RA4Portrait-Height: @A4Portrait-Height + @bleed + @bleed;
+@RA4-Scale: unit(@RA4Portrait-Width / @A4Portrait-Width);
+@A4Portrait-HeightFB: @A4Portrait-Height * @RA4-Scale;
+@A4Portrait-Height-Excess: @A4Portrait-HeightFB - @RA4Portrait-Height;
+
 @RA3Portrait-Width: @A3Portrait-Width + @bleed + @bleed;
 @RA3Portrait-Height: @A3Portrait-Height + @bleed + @bleed;
 @RA3-Scale: unit(@RA3Portrait-Width / @A3Portrait-Width);
@@ -228,6 +234,16 @@ div#bloomDataDiv {
             // NB: transform order is rightmost first
             transform: translate(-@A5Portrait-Height-Excess / 2, 0)
                 scale(@RA5-Scale);
+        }
+        &.A4Portrait {
+            // NB: transform order is rightmost first
+            transform: translate(0, -@A4Portrait-Height-Excess / 2)
+                scale(@RA4-Scale);
+        }
+        &.A4Landscape {
+            // NB: transform order is rightmost first
+            transform: translate(-@A4Portrait-Height-Excess / 2, 0)
+                scale(@RA4-Scale);
         }
         &.A3Portrait {
             // NB: transform order is rightmost first
@@ -258,6 +274,14 @@ div#bloomDataDiv {
     &.A5Landscape {
         width: @RA5Portrait-Height;
         height: @RA5Portrait-Width;
+    }
+    &.A4Portrait {
+        width: @RA4Portrait-Width;
+        height: @RA4Portrait-Height;
+    }
+    &.A4Landscape {
+        width: @RA4Portrait-Height;
+        height: @RA4Portrait-Width;
     }
     &.A3Portrait {
         width: @RA3Portrait-Width;
