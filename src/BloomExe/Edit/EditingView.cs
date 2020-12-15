@@ -487,6 +487,8 @@ namespace Bloom.Edit
 			}
 		}
 
+		DateTime _beginPageLoad;
+
 		public void UpdateSingleDisplayedPage(IPage page)
 		{
 			if(!_model.Visible)
@@ -500,6 +502,7 @@ namespace Bloom.Edit
 #endif
 			if(_model.HaveCurrentEditableBook)
 			{
+				_beginPageLoad = DateTime.Now;
 				_pageListView.SelectThumbnailWithoutSendingEvent(page);
 				_pageListView.UpdateThumbnailAsync(page);
 				_model.SetupServerWithCurrentPageIframeContents();
@@ -518,9 +521,18 @@ namespace Bloom.Edit
 				_model.NavigatingSoSuspendSaving = true;
 				if (_model.AreToolboxAndOuterFrameCurrent())
 				{
-					var pageUrl = _model.GetUrlForCurrentPage();
 					_browser1.SetEditDom(domForCurrentPage);
-					RunJavaScript("FrameExports.switchContentPage('" + pageUrl + "');");
+					if (ReloadCurrentPage())
+					{
+						Logger.WriteEvent("changing page via Navigate(\"CURRENTPAGE.htm\")");
+						_browser1.WebBrowser.Navigate(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "CURRENTPAGE.htm");
+					}
+					else
+					{
+						Logger.WriteEvent("changing page via FrameExports.switchContentPage()");
+						var pageUrl = _model.GetUrlForCurrentPage();
+						RunJavaScript("FrameExports.switchContentPage('" + pageUrl + "');");
+					}
 				}
 				else
 				{
@@ -562,6 +574,18 @@ namespace Bloom.Edit
 #endif
 		}
 
+		private bool ReloadCurrentPage()
+		{
+			// Note that ModifierKeys does not seem to work on Linux.
+			return ((ModifierKeys & Keys.Shift) == Keys.Shift) || RobustFile.Exists("/tmp/UseCURRENTPAGE");
+		}
+
+		private bool UseBackgroundGC()
+		{
+			// Note that ModifierKeys does not seem to work on Linux.
+			return ((ModifierKeys & Keys.Alt) == Keys.Alt) || RobustFile.Exists("/tmp/UseBackgroundGC");
+		}
+
 #if __MonoCS__
 		/// <summary>
 		/// Flag the PageSelection object that the current (former?) page selection has completed,
@@ -583,13 +607,27 @@ namespace Bloom.Edit
 			ChangingPages = false;
 			_model.DocumentCompleted();
 			_browser1.Focus(); //fix BL-3078 No Initial Insertion Point when any page shown
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			MemoryService.MinimizeHeap(true);
-#if MEMORYCHECK
+			var beginGarbageCollect = DateTime.Now;
+			if (UseBackgroundGC())
+			{
+				Logger.WriteEvent("performing backgound garbage collection without finalizers");
+				GC.Collect(2, GCCollectionMode.Optimized, false, true);
+				//GC.WaitForPendingFinalizers();
+				MemoryService.MinimizeHeap(false);
+			}
+			else
+			{
+				Logger.WriteEvent("performing blocking garbage collection with finalizers");
+				GC.Collect(/*2, GCCollectionMode.Optimized, false, true*/);
+				GC.WaitForPendingFinalizers();
+				MemoryService.MinimizeHeap(true);
+			}
+			var endPageLoad = DateTime.Now;
+			Logger.WriteEvent($"update page elapsed time = {endPageLoad - _beginPageLoad} (garbage collect took {endPageLoad - beginGarbageCollect}");
+//#if MEMORYCHECK
 			// Check memory for the benefit of developers.
 			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "EditingView - display page updated", false);
-#endif
+//#endif
 		}
 
 		public void AddMessageEventListener(string eventName, Action<string> action)
@@ -1450,6 +1488,13 @@ namespace Bloom.Edit
 
 		public void UpdateEditButtons()
 		{
+			// Checking whether to enable these buttons is done by javascript code.  This check
+			// will fail with a javascript error while pages are being changed.  The code for
+			// changing pages makes the browser invisible while the change is happening, so
+			// that's what we have to check to prevent spurious javascript errors.
+			// Note that this method is called by a timer (probably about 110msec cycle).
+			if (!_browser1.Visible)
+				return;	
 			_browser1.UpdateEditButtons();
 			UpdateButtonEnabled(_cutButton, _cutCommand);
 			UpdateButtonEnabled(_copyButton, _copyCommand);
