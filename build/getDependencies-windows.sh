@@ -164,7 +164,6 @@ mkdir -p ../build
 mkdir -p ../lib
 mkdir -p ../lib/FirefoxDependencies
 mkdir -p ../lib/dotnet
-mkdir -p ../lib/dotnet/
 mkdir -p ../lib/lame
 
 # download artifact dependencies
@@ -213,10 +212,6 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt463/latest.lastSuccessful/Args.dll ../lib/dotnet/Args.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt463/latest.lastSuccessful/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt463/latest.lastSuccessful/GeckofxHtmlToPdf.exe.config ../lib/dotnet/GeckofxHtmlToPdf.exe.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharp_L10NSharpMasterContinuous/latest.lastSuccessful/L10NSharp.dll ../lib/dotnet/L10NSharp.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharp_L10NSharpMasterContinuous/latest.lastSuccessful/L10NSharp.pdb ../lib/dotnet/L10NSharp.pdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharp_L10NSharpMasterContinuous/latest.lastSuccessful/CheckOrFixXliff.exe ../lib/dotnet/CheckOrFixXliff.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt402/latest.lastSuccessful/NAudio.dll ../lib/dotnet/NAudio.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfDroplet.exe ../lib/dotnet/PdfDroplet.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/latest.lastSuccessful/TidyManaged.dll ../lib/dotnet/TidyManaged.dll
@@ -225,18 +220,6 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlXliff.exe ../lib/dotnet/HtmlXliff.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlXliff.pdb ../lib/dotnet/HtmlXliff.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlAgilityPack.dll ../lib/dotnet/HtmlAgilityPack.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/irrKlang.NET4.dll ../lib/dotnet/irrKlang.NET4.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/Newtonsoft.Json.dll ../lib/dotnet/Newtonsoft.Json.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/SIL.Core.dll ../lib/dotnet/SIL.Core.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/SIL.Core.Desktop.dll ../lib/dotnet/SIL.Core.Desktop.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/SIL.Media.dll ../lib/dotnet/SIL.Media.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/SIL.TestUtilities.dll ../lib/dotnet/SIL.TestUtilities.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/SIL.Windows.Forms.dll ../lib/dotnet/SIL.Windows.Forms.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/SIL.Windows.Forms.GeckoBrowserAdapter.dll ../lib/dotnet/SIL.Windows.Forms.GeckoBrowserAdapter.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/SIL.Windows.Forms.Keyboarding.dll ../lib/dotnet/SIL.Windows.Forms.Keyboarding.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/SIL.Windows.Forms.WritingSystems.dll ../lib/dotnet/SIL.Windows.Forms.WritingSystems.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/SIL.WritingSystems.dll ../lib/dotnet/SIL.WritingSystems.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoWin32masterNostrongnameContinuous/latest.lastSuccessful/taglib-sharp.dll ../lib/dotnet/taglib-sharp.dll
 # extract downloaded zip files
 unzip -uqo ../Downloads/ghostscript-win32.zip -d "../DistFiles/ghostscript"
 unzip -uqo ../Downloads/Lame.zip -d "../lib/lame"
