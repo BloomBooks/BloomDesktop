@@ -10,11 +10,12 @@ using Bloom.Book;
 using Bloom.Api;
 using L10NSharp;
 using SIL.IO;
+using SIL.Media;
 #if __MonoCS__
 using SIL.Media.AlsaAudio;
-#endif
-using SIL.Media;
+#else
 using SIL.Media.Naudio;
+#endif
 using SIL.Reporting;
 using Timer = System.Windows.Forms.Timer;
 
