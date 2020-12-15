@@ -599,7 +599,8 @@ namespace Bloom
 			var debugBloom = Environment.GetEnvironmentVariable("DEBUGBLOOM");
 			var _addDebuggingMenuItems = !String.IsNullOrEmpty(debugBloom) && debugBloom.ToLowerInvariant() != "false" && debugBloom.ToLowerInvariant() != "no";
 #endif
-			if (_addDebuggingMenuItems)
+			// Allow debugging entries on any alpha builds as well as any debug builds.
+			if (_addDebuggingMenuItems || ApplicationUpdateSupport.IsDevOrAlpha)
 				AddOtherMenuItemsForDebugging(e);
 
 			e.ContextMenu.MenuItems.Add(LocalizationManager.GetString("Browser.CopyTroubleshootingInfo", "Copy Troubleshooting Information"), OnGetTroubleShootingInformation);
