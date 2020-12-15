@@ -511,7 +511,7 @@ export function applyToolboxStateToUpdatedPage() {
 
 function doWhenPageReady(action: () => void) {
     const page = ToolBox.getPage();
-    if (!page || !ToolBox.getPageFrame()) {
+    if (!page) {
         // Somehow, despite firing this function when the document is supposedly ready,
         // it may not really be ready when this is first called. If it doesn't even have a body yet,
         // we need to try again later.
@@ -931,9 +931,7 @@ function handleKeyboardInput(): void {
             // if we don't have one.
             if (ckeditorOfThisBox) {
                 let ckeditorSelection = ckeditorOfThisBox.getSelection();
-                if (!ckeditorSelection) {
-                    return; // may be changing pages?
-                }
+
                 // there is also createBookmarks2(), which avoids actually inserting anything. That has the
                 // advantage that changing a character in the middle of a word will allow the entire word to
                 // be evaluated by the markup routine. However, testing shows that the cursor then doesn't
