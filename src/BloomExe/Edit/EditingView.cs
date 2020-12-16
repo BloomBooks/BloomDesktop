@@ -439,7 +439,7 @@ namespace Bloom.Edit
 
 			Application.Idle -= new EventHandler(VisibleNowAddSlowContents);
 
-			CheckFontAvailablility();
+			CheckFontAvailability();
 
 			Cursor = Cursors.WaitCursor;
 			_model.ViewVisibleNowDoSlowStuff();
@@ -448,13 +448,14 @@ namespace Bloom.Edit
 		}
 
 
-		private void CheckFontAvailablility()
+		private void CheckFontAvailability()
 		{
 			var fontMessage = _model.GetFontAvailabilityMessage();
 			if(!string.IsNullOrEmpty(fontMessage))
 			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(),
-					fontMessage);
+				// Yes, we experienced a font name in the wild which contained curly brackets and crashed Bloom. BL-9340.
+				fontMessage = fontMessage.Replace("{", "{{").Replace("}", "}}");
+				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), fontMessage);
 			}
 		}
 
