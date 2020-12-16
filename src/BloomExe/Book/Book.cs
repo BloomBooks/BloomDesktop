@@ -3746,10 +3746,12 @@ namespace Bloom.Book
 
 		public static bool IsPageBloomEnterpriseOnly(XmlElement page)
 		{
-			return page.GetAttribute("class").Contains("enterprise-only") ||
-				   // legacy quiz pages don't have 'enterprise-only'
-			       page.GetAttribute("class").Contains("questions") ||
-				   page.SafeSelectNodes(".//video").Count > 0;
+			var classAttrib = page.GetAttribute("class");
+			return classAttrib.Contains("enterprise-only") ||
+				// legacy quiz pages don't have 'enterprise-only'
+			    classAttrib.Contains("questions") ||
+				page.SafeSelectNodes(".//video").Count > 0 ||
+				page.SafeSelectNodes(".//div[contains(@class,'bloom-widgetContainer')]").Count > 0;
 		}
 	}
 }
