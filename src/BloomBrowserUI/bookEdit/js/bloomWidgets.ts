@@ -9,12 +9,19 @@ import { BloomApi } from "../../utils/bloomApi";
 // (https://support.apple.com/en-us/HT204433)
 // such as using information in Info.plist to locate the root file.
 
+// BL-9319 Custom widgets should only be Enterprise-enabled.
+
 // Initialization function, sets up all the editing functions we support for these elements.
 export function SetupWidgetEditing(container: HTMLElement): void {
-    const widgets = Array.from(
-        container.getElementsByClassName("bloom-widgetContainer")
-    );
-    widgets.forEach(w => SetupWidget(w));
+    BloomApi.get("featurecontrol/enterpriseEnabled", result => {
+        const isEnterpriseEnabled: boolean = result.data;
+        if (isEnterpriseEnabled) {
+            const widgets = Array.from(
+                container.getElementsByClassName("bloom-widgetContainer")
+            );
+            widgets.forEach(w => SetupWidget(w));
+        }
+    });
 }
 
 function SetupWidget(w: Element): void {
