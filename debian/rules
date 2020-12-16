@@ -65,7 +65,21 @@ override_dh_auto_install:
 	find $(DESTDIR)/$(LIB) -name 'CheckOrFixXliff.*' -print0 | xargs -0 rm -f
 	find $(DESTDIR)/$(LIB) -name 'GeckofxHtmlToPdf.*' -print0 | xargs -0 rm -f
 	find $(DESTDIR)/$(LIB) -name '*UnitTestFramework.dll' -type d -print0 | xargs -0 rm -rf
-	find $(DESTDIR)/$(LIB) -name 'Moq.*' -type d -print0 | xargs -0 rm -f
+	find $(DESTDIR)/$(LIB) -name 'Moq.*' -print0 | xargs -0 rm -f
+	# We need NAudio.dll for SIL.Media to load even though it's Windows-only.  But we don't need the xml file.
+	find $(DESTDIR)/$(LIB) -name 'NAudio.xml' -print0 | xargs -0 rm -f
+	find $(DESTDIR)/$(LIB) -name 'irrKlang.NET4.dll' -print0 | xargs -0 rm -f
+	find $(DESTDIR)/$(LIB) -name 'win-x86' -type d -print0 | xargs -0 rm -rf
+	find $(DESTDIR)/$(LIB) -name 'win-x64' -type d -print0 | xargs -0 rm -rf
+	find $(DESTDIR)/$(LIB) -name '*Interop.AcroPDFLib.*' -print0 | xargs -0 rm -f
+	# These are needed to compile libpalaso on Windows, but aren't really used even there I suspect.
+	find $(DESTDIR)/$(LIB) -name 'AtkSharp.dll' -print0 | xargs -0 rm -f
+	find $(DESTDIR)/$(LIB) -name 'CairoSharp.dll' -print0 | xargs -0 rm -f
+	find $(DESTDIR)/$(LIB) -name 'GdkSharp.dll' -print0 | xargs -0 rm -f
+	find $(DESTDIR)/$(LIB) -name 'GioSharp.dll' -print0 | xargs -0 rm -f
+	find $(DESTDIR)/$(LIB) -name 'GLibSharp.dll' -print0 | xargs -0 rm -f
+	find $(DESTDIR)/$(LIB) -name 'GtkSharp.dll' -print0 | xargs -0 rm -f
+	find $(DESTDIR)/$(LIB) -name 'PangoSharp.dll' -print0 | xargs -0 rm -f
 	# Install wrapper script
 	install -d $(DESTDIR)/usr/bin
 	install debian/bloom-alpha $(DESTDIR)/usr/bin
@@ -102,12 +116,14 @@ override_dh_shlibdeps:
 # Trying to process connections.dll now crashes on jenkins instead of merely complaining.
 # Neither --exclude-moduleref nor --exclude work for excluding an existing file from being checked.
 # msvcr120.dll is a true Windows binary shared library, not a .Net assembly.
+# NAudio.dll is a Windows-specific assembly that SIL.Media now requires to be present even on Linux.
 # Newtonsoft.Json.dll and Autofac.dll crash the mono5-sil version of ikdasm (called by dh_clideps).
 # Renaming these files temporarily seems to be the only "fix" that works to get the package built.
 override_dh_clideps:
 	mv DistFiles/connections.dll DistFiles/connections.delel && \
 	mv $(DESTDIR)/$(LIB)/connections.dll $(DESTDIR)/$(LIB)/connections.delel && \
 	mv lib/msvcr120.dll lib/msvcr120.delel && \
+	mv $(DESTDIR)/$(LIB)/NAudio.dll $(DESTDIR)/$(LIB)/NAudio.delel && \
 	mv $(DESTDIR)/$(LIB)/Autofac.dll $(DESTDIR)/$(LIB)/Autofac.delel && \
 	mv $(DESTDIR)/$(LIB)/Newtonsoft.Json.dll $(DESTDIR)/$(LIB)/Newtonsoft.Json.delel && \
 	mkdir -p debian/tmp/usr && ln -s $(MONO_PREFIX)/* debian/tmp/usr/ && \
@@ -124,10 +140,15 @@ override_dh_clideps:
 		--exclude-moduleref=MAPI32.DLL --exclude-moduleref=__Internal \
 		--exclude-moduleref=api-ms-win-core-sysinfo-l1-1-0.dll \
 		--exclude-moduleref=api-ms-win-core-sysinfo-l1-2-0.dll \
+		--exclude-moduleref=Mpr.dll --exclude-moduleref=keyman32.dll \
+		--exclude-moduleref=libenchant.dll --exclude-moduleref=libxklavier \
+		--exclude-moduleref=libgio-2.0.so --exclude-moduleref=libglib-2.0.so \
+		--exclude-moduleref=libgobject-2.0.so \
 		--exclude-moduleref=ole32.dll --exclude-moduleref=version.dll && \
 	rm -rf debian/tmp/usr && \
 	mv $(DESTDIR)/$(LIB)/Newtonsoft.Json.delel $(DESTDIR)/$(LIB)/Newtonsoft.Json.dll && \
 	mv $(DESTDIR)/$(LIB)/Autofac.delel $(DESTDIR)/$(LIB)/Autofac.dll && \
+	mv $(DESTDIR)/$(LIB)/NAudio.delel $(DESTDIR)/$(LIB)/NAudio.dll && \
 	mv lib/msvcr120.delel lib/msvcr120.dll && \
 	mv DistFiles/connections.delel DistFiles/connections.dll && \
 	mv $(DESTDIR)/$(LIB)/connections.delel $(DESTDIR)/$(LIB)/connections.dll
