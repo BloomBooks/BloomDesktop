@@ -580,7 +580,7 @@ namespace Bloom.Edit
 			set { Recorder.SelectedDevice = value; }
 		}
 
-		private List<RecordingDevice> RecordingDevices
+		private IEnumerable<IRecordingDevice> RecordingDevices
 		{
 #if __MonoCS__
 			get { return SIL.Media.AlsaAudio.RecordingDevice.Devices; }
