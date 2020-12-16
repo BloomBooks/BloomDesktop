@@ -18,6 +18,7 @@ using SIL.Media.Naudio;
 #endif
 using SIL.Reporting;
 using Timer = System.Windows.Forms.Timer;
+using System.Collections.Generic;
 
 // Note: it is for the benefit of this component that Bloom references NAudio. We don't use it directly,
 // but Palaso.Media does, and we need to make sure it gets copied to our output.
@@ -180,7 +181,7 @@ namespace Bloom.Edit
 			try
 			{
 				var sb = new StringBuilder("{\"devices\":[");
-				sb.Append(string.Join(",", SIL.Media.Naudio.RecordingDevice.Devices.Select(d => "\""+d.ProductName+"\"")));
+				sb.Append(string.Join(",", RecordingDevices.Select(d => "\""+d.ProductName+"\"")));
 				sb.Append("],\"productName\":");
 				if (CurrentRecording.RecordingDevice != null)
 					sb.Append("\"" + CurrentRecording.RecordingDevice.ProductName + "\"");
@@ -214,9 +215,9 @@ namespace Bloom.Edit
 		/// </summary>
 		public void BeginMonitoring()
 		{
-			if (!SIL.Media.Naudio.RecordingDevice.Devices.Contains(RecordingDevice))
+			if (!RecordingDevices.Contains(RecordingDevice))
 			{
-				RecordingDevice = SIL.Media.Naudio.RecordingDevice.Devices.FirstOrDefault();
+				RecordingDevice = RecordingDevices.FirstOrDefault();
 			}
 			if (RecordingDevice != null)
 			{
@@ -390,9 +391,9 @@ namespace Bloom.Edit
 
 			// If someone unplugged the microphone we were planning to use switch to another.
 			// This also triggers selecting the first one initially.
-			if (!SIL.Media.Naudio.RecordingDevice.Devices.Contains(RecordingDevice))
+			if (!RecordingDevices.Contains(RecordingDevice))
 			{
-				RecordingDevice = SIL.Media.Naudio.RecordingDevice.Devices.FirstOrDefault();
+				RecordingDevice = RecordingDevices.FirstOrDefault();
 			}
 			if (RecordingDevice == null)
 			{
@@ -579,6 +580,15 @@ namespace Bloom.Edit
 			set { Recorder.SelectedDevice = value; }
 		}
 
+		private List<RecordingDevice> RecordingDevices
+		{
+#if __MonoCS__
+			get { return SIL.Media.AlsaAudio.RecordingDevice.Devices; }
+#else
+			get { return SIL.Media.Naudio.RecordingDevice.Devices; }
+#endif
+		}
+
 		internal void ReportNoMicrophone()
 		{
 			MessageBox.Show(null,
@@ -601,7 +611,7 @@ namespace Bloom.Edit
 
 		private bool SetRecordingDevice(string micName)
 		{
-			foreach (var d in SIL.Media.Naudio.RecordingDevice.Devices)
+			foreach (var d in RecordingDevices)
 			{
 				if (d.ProductName == micName)
 				{
