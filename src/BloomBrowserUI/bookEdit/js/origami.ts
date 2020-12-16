@@ -17,38 +17,48 @@ $(() => {
 
 export function setupOrigami(isBookLocked: boolean) {
     BloomApi.get("featurecontrol/showAdvancedFeatures", result => {
-        const customPages = document.getElementsByClassName("customPage");
-        if (customPages.length > 0) {
-            const width = customPages[0].clientWidth;
-            const origamiControl = getOrigamiControl()
-                .append(createTypeSelectors(result.data))
-                .append(createTextBoxIdentifier());
-            $("#page-scaling-container").append(origamiControl);
-            // We want to say "right: 19px" in css, but that should be relative to the
-            // page; and it's now a child of the page-scaling-container which is
-            // a parent of the page and can't use the page width.
-            // So set the left based on the two widths and an extra 19px.
-            const origamiWidth = origamiControl.get(0).clientWidth;
-            origamiControl.get(0).style.left = `${width - origamiWidth - 19}px`;
-        }
-        // I'm not clear why the rest of this needs to wait until we have
-        // result, but none of the controls shows up if we leave it all
-        // outside the result function.
-        if (isBookLocked) {
-            //$(".origami-toggle").attr("title", "localized tooltip");
-            $("#myonoffswitch").attr("disabled", "true");
-        } else {
-            $(".origami-toggle .onoffswitch").change(layoutToggleClickHandler);
-        }
+        const showAdvanced: boolean = result.data;
+        BloomApi.get("featurecontrol/enterpriseEnabled", result2 => {
+            const isEnterpriseEnabled: boolean = result2.data;
+            const customPages = document.getElementsByClassName("customPage");
+            if (customPages.length > 0) {
+                const width = customPages[0].clientWidth;
+                const origamiControl = getOrigamiControl()
+                    .append(
+                        createTypeSelectors(showAdvanced && isEnterpriseEnabled)
+                    )
+                    .append(createTextBoxIdentifier());
+                $("#page-scaling-container").append(origamiControl);
+                // We want to say "right: 19px" in css, but that should be relative to the
+                // page; and it's now a child of the page-scaling-container which is
+                // a parent of the page and can't use the page width.
+                // So set the left based on the two widths and an extra 19px.
+                const origamiWidth = origamiControl.get(0).clientWidth;
+                origamiControl.get(0).style.left = `${width -
+                    origamiWidth -
+                    19}px`;
+            }
+            // I'm not clear why the rest of this needs to wait until we have
+            // the two results, but none of the controls shows up if we leave it all
+            // outside the BloomApi functions.
+            if (isBookLocked) {
+                //$(".origami-toggle").attr("title", "localized tooltip");
+                $("#myonoffswitch").attr("disabled", "true");
+            } else {
+                $(".origami-toggle .onoffswitch").change(
+                    layoutToggleClickHandler
+                );
+            }
 
-        if ($(".customPage .marginBox.origami-layout-mode").length) {
-            setupLayoutMode();
-            $("#myonoffswitch").prop("checked", true);
-        }
+            if ($(".customPage .marginBox.origami-layout-mode").length) {
+                setupLayoutMode();
+                $("#myonoffswitch").prop("checked", true);
+            }
 
-        $(".customPage")
-            .find("*[data-i18n]")
-            .localize();
+            $(".customPage")
+                .find("*[data-i18n]")
+                .localize();
+        });
     });
 }
 
