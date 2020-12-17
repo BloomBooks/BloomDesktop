@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -1334,6 +1334,16 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.AcroPDFLib.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
 copy /Y "$(SolutionDir)lib\dotnet\GeckofxHtmlToPdf.exe" "$(OutDir)BloomPdfMaker.exe"
 copy /Y "$(SolutionDir)lib\dotnet\GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfMaker.exe.config"
+    </PostBuildEvent>
+    <PostBuildEvent Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x86'">
+copy /Y "$(SolutionDir)packages\SIL.Media.8.0.0-beta0225\build\lib\win-x86\irrKlang.NET4.dll" "$(OutDir)"
+del /F "$(OutDir)lib\win-x64\*.dll"
+rmdir "$(OutDir)lib\win-x64"
+    </PostBuildEvent>
+    <PostBuildEvent Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x64'">
+copy /Y "$(SolutionDir)packages\SIL.Media.8.0.0-beta0225\build\lib\win-x64\irrKlang.NET4.dll" "$(OutDir)"
+del /F "$(OutDir)lib\win-x86\*.dll"
+rmdir "$(OutDir)lib\win-x86"
     </PostBuildEvent>
     <PostBuildEvent Condition="'$(OS)'!='Windows_NT'">
 cp -p "$(SolutionDir)lib/BloomPdfMaker.sh" "$(OutDir)BloomPdfMaker.sh"
