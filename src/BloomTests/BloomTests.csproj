@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -396,4 +396,27 @@
   <Import Project="..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets" Condition="Exists('..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets')" />
   <Import Project="..\..\packages\SIL.Windows.Forms.8.0.0-beta0225\build\SIL.Windows.Forms.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.8.0.0-beta0225\build\SIL.Windows.Forms.targets')" />
   <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.8.0.0-beta0225\build\SIL.Windows.Forms.Keyboarding.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.8.0.0-beta0225\build\SIL.Windows.Forms.Keyboarding.targets')" />
+  <!-- msbuild mistakenly copies the 64-bit version of irrKlang.NET4.dll to $(Output) as it resolves
+       SIL.Media.dll in our 32-bit build.  It also always copies both the 32-bit and 64-bit versions
+       of the library files to $(Output)\lib\win-xXX.  We correct those errors here.  (We can't do
+       this in AfterBuild because that runs before _CopyFilesMarkedCopyLocal which does the incorrect
+       copying.) -->
+  <ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x86'">
+    <CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.8.0.0-beta0225\build\lib\win-x86\*.dll" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x64'">
+    <CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.8.0.0-beta0225\build\lib\win-x64\*.dll" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(OS)'=='Windows_NT'">
+    <DeleteForSILMedia Include="$(OutDir)lib\win-x64\*.*" />
+    <DeleteForSILMedia Include="$(OutDir)lib\win-x86\*.*" />
+    <RemoveForSILMedia Include="$(OutDir)lib\win-x86" />
+    <RemoveForSILMedia Include="$(OutDir)lib\win-x64" />
+    <RemoveForSILMedia Include="$(OutDir)lib" />
+  </ItemGroup>
+  <Target Name="ReallyAfterBuild" AfterTargets="AfterBuild;CopyFilesToOutputDirectory" Condition="'$(OS)'=='Windows_NT'">
+    <Copy SourceFiles="@(CopyForSILMedia)" DestinationFolder="$(OutDir)" />
+    <Delete Files="@(DeleteForSILMedia)" TreatErrorsAsWarnings="true" />
+    <RemoveDir Directories="@(RemoveForSILMedia)" />
+  </Target>
 </Project>
