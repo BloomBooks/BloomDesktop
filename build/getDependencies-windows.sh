@@ -112,48 +112,27 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"Args.dll"=>"lib/dotnet", "GeckofxHtmlToPdf.exe"=>"lib/dotnet", "GeckofxHtmlToPdf.exe.config"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/geckofxHtmlToPdf [refs/heads/master]
-# [6] build: L10NSharp master continuous (L10NSharp_L10NSharpMasterContinuous)
-#     project: L10NSharp
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=L10NSharp_L10NSharpMasterContinuous
-#     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"L10NSharp.dll"=>"lib/dotnet/", "L10NSharp.pdb"=>"lib/dotnet/", "CheckOrFixXliff.exe"=>"lib/dotnet/"}
-#     VCS: https://github.com/sillsdev/l10nsharp [refs/heads/master]
-# [7] build: NAudio continuous (bt402)
-#     project: NAudio
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=bt402
-#     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"NAudio.dll"=>"lib/dotnet"}
-#     VCS: https://github.com/sillsdev/naudio.git [master]
-# [8] build: PdfDroplet-Win-master-Continuous (bt54)
+# [6] build: PdfDroplet-Win-master-Continuous (bt54)
 #     project: PdfDroplet
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=bt54
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"PdfDroplet.exe"=>"lib/dotnet", "PdfSharp.dll"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/pdfDroplet [master]
-# [9] build: TidyManaged-master-win32-continuous (bt349)
+# [7] build: TidyManaged-master-win32-continuous (bt349)
 #     project: TidyManaged
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=bt349
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.*"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/TidyManaged.git [master]
-# [10] build: Windows master continuous (XliffForHtml_WindowsMasterContinuous)
+# [8] build: Windows master continuous (XliffForHtml_WindowsMasterContinuous)
 #     project: XliffForHtml
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=XliffForHtml_WindowsMasterContinuous
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"HtmlXliff.*"=>"lib/dotnet", "HtmlAgilityPack.*"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/XliffForHtml [refs/heads/master]
-# [11] build: palaso-win32-master-nostrongname Continuous (Libpalaso_PalasoWin32masterNostrongnameContinuous)
-#     project: libpalaso
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=Libpalaso_PalasoWin32masterNostrongnameContinuous
-#     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"irrKlang.NET4.dll"=>"lib/dotnet/", "Newtonsoft.Json.dll"=>"lib/dotnet/", "SIL.Core.dll"=>"lib/dotnet/", "SIL.Core.Desktop.dll"=>"lib/dotnet/", "SIL.Media.dll"=>"lib/dotnet/", "SIL.TestUtilities.dll"=>"lib/dotnet/", "SIL.Windows.Forms.dll"=>"lib/dotnet/", "SIL.Windows.Forms.GeckoBrowserAdapter.dll"=>"lib/dotnet/", "SIL.Windows.Forms.Keyboarding.dll"=>"lib/dotnet/", "SIL.Windows.Forms.WritingSystems.dll"=>"lib/dotnet/", "SIL.WritingSystems.dll"=>"lib/dotnet/", "taglib-sharp.dll"=>"lib/dotnet/"}
-#     VCS: https://github.com/sillsdev/libpalaso.git [refs/heads/master]
 
 # make sure output directories exist
 mkdir -p ../DistFiles

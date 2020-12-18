@@ -78,9 +78,9 @@ cd -
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build/", "MSBuild.Community.Tasks.Targets"=>"build/"}
-# [1] build: Bloom Help 4.8 (Bloom_Help_BloomHelp48)
+# [1] build: Bloom Help 5.0 (Bloom_Help_BloomHelp50)
 #     project: Help
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp48
+#     URL: https://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp50
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.chm"=>"DistFiles"}
@@ -98,41 +98,27 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"Args.dll"=>"lib/dotnet", "GeckofxHtmlToPdf.exe"=>"lib/dotnet", "GeckofxHtmlToPdf.exe.config"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/geckofxHtmlToPdf [refs/heads/master]
-# [4] build: L10NSharp master Mono continuous (L10NSharp_L10NSharpMasterMonoContinuous)
-#     project: L10NSharp
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=L10NSharp_L10NSharpMasterMonoContinuous
-#     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"L10NSharp.dll*"=>"lib/dotnet/", "CheckOrFixXliff.exe*"=>"lib/dotnet/"}
-#     VCS: https://github.com/sillsdev/l10nsharp [refs/heads/master]
-# [5] build: PdfDroplet-Linux-master-Continuous (bt344)
+# [4] build: PdfDroplet-Linux-master-Continuous (bt344)
 #     project: PdfDroplet
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=bt344
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"PdfDroplet.exe"=>"lib/dotnet", "PdfSharp.dll*"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/pdfDroplet [master]
-# [6] build: TidyManaged-master-linux64-continuous (bt351)
+# [5] build: TidyManaged-master-linux64-continuous (bt351)
 #     project: TidyManaged
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=bt351
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"TidyManaged.dll*"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/TidyManaged.git [master]
-# [7] build: Linux master continuous (XliffForHtml_LinuxMasterContinuous)
+# [6] build: Linux master continuous (XliffForHtml_LinuxMasterContinuous)
 #     project: XliffForHtml
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=XliffForHtml_LinuxMasterContinuous
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"HtmlXliff.*"=>"lib/dotnet", "HtmlAgilityPack.*"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/XliffForHtml [refs/heads/master]
-# [8] build: palaso-linux64-master Continuous (Libpalaso_PalasoLinux64masterContinuous)
-#     project: libpalaso
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=Libpalaso_PalasoLinux64masterContinuous
-#     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"Newtonsoft.Json.dll"=>"lib/dotnet/", "SIL.Core.dll*"=>"lib/dotnet/", "SIL.Core.pdb"=>"lib/dotnet/", "SIL.Core.Desktop.dll*"=>"lib/dotnet/", "SIL.Core.Desktop.pdb"=>"lib/dotnet/", "SIL.Media.dll*"=>"lib/dotnet/", "SIL.Media.pdb"=>"lib/dotnet/", "SIL.TestUtilities.dll*"=>"lib/dotnet/", "SIL.TestUtilities.pdb"=>"lib/dotnet/", "SIL.Windows.Forms.dll*"=>"lib/dotnet/", "SIL.Windows.Forms.pdb"=>"lib/dotnet/", "SIL.Windows.Forms.GeckoBrowserAdapter.dll*"=>"lib/dotnet/", "SIL.Windows.Forms.GeckoBrowserAdapter.pdb"=>"lib/dotnet/", "SIL.Windows.Forms.Keyboarding.dll*"=>"lib/dotnet/", "SIL.Windows.Forms.Keyboarding.pdb"=>"lib/dotnet/", "SIL.Windows.Forms.WritingSystems.dll*"=>"lib/dotnet/", "SIL.Windows.Forms.WritingSystems.pdb"=>"lib/dotnet/", "SIL.WritingSystems.dll*"=>"lib/dotnet/", "SIL.WritingSystems.pdb"=>"lib/dotnet/", "taglib-sharp.dll*"=>"lib/dotnet/", "Enchant.Net.dll*"=>"lib/dotnet/", "NDesk.DBus.dll*"=>"lib/dotnet/"}
-#     VCS: https://github.com/sillsdev/libpalaso.git [refs/heads/master]
 
 # make sure output directories exist
 mkdir -p ../DistFiles
@@ -145,7 +131,7 @@ mkdir -p ../lib/dotnet
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.dll ../build/MSBuild.Community.Tasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
-copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp48/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
+copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp50/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/latest.lastSuccessful/Args.dll ../lib/dotnet/Args.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/latest.lastSuccessful/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
