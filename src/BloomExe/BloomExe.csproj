@@ -1460,7 +1460,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   <Import Project="../../packages/Geckofx60.64.Linux.60.0.51/build/Geckofx60.64.Linux.targets" Condition="Exists('../../packages/Geckofx60.64.Linux.60.0.51/build/Geckofx60.64.Linux.targets')" />
   <Import Project="..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets" Condition="'$(OS)'=='Windows_NT' AND Exists('..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets')" />
   <Import Project="..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets" Condition="Exists('..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets')" />
-  <Import Project="..\..\packages\SIL.Media.8.0.0-beta0225\build\SIL.Media.targets" Condition="Exists('..\..\packages\SIL.Media.8.0.0-beta0239\build\SIL.Media.targets')" />
+  <Import Project="..\..\packages\SIL.Media.8.0.0-beta0239\build\SIL.Media.targets" Condition="Exists('..\..\packages\SIL.Media.8.0.0-beta0239\build\SIL.Media.targets')" />
   <Import Project="..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets" Condition="Exists('..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets')" />
   <Import Project="..\..\packages\SIL.Windows.Forms.8.0.0-beta0239\build\SIL.Windows.Forms.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.8.0.0-beta0239\build\SIL.Windows.Forms.targets')" />
   <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.8.0.0-beta0239\build\SIL.Windows.Forms.Keyboarding.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.8.0.0-beta0239\build\SIL.Windows.Forms.Keyboarding.targets')" />
