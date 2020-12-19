@@ -1397,6 +1397,23 @@ namespace Bloom.Book
 				return null;
 			return f;
 		}
+		public string GetGenericVariableOrNull(string key)
+		{
+			var s = _dataset.GetGenericLanguageString(key);
+			return string.IsNullOrEmpty(s) ? null : s;
+		}
+
+		// Why the "persist"? Well it turns out that dataset is treated as a cache, and not
+		// write-through cache.  When a book does a Save(), we actually
+		// don't look at any in-memory data values... we just reconstruct it all from the DOM.
+		// That might not be the ideal way, but changing it would be a big deal. So instead
+		// we just have this method that explicitly pushes to the dom as well as the dataset cache.
+		public void SetGenericVariableThroughToDom(string key, string value, bool isCollectionValue)
+		{
+			_dataset.UpdateGenericLanguageString(key, value, isCollectionValue);
+			UpdateSingleTextVariableInDataDiv(key, "*", value);
+		}
+
 
 		/// <summary>
 		/// Looks up the value of a data attribute associated with a particular xmatter page.

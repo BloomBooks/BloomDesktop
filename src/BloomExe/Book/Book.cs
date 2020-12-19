@@ -1,3 +1,18 @@
+using Bloom.Collection;
+using Bloom.Edit;
+using Bloom.Publish;
+using Bloom.ToPalaso;
+using Bloom.web.controllers;
+using Bloom.WebLibraryIntegration;
+using L10NSharp;
+using SIL.Code;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Progress;
+using SIL.Reporting;
+using SIL.Text;
+using SIL.Windows.Forms.ClearShare;
+using SIL.Xml;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,22 +28,6 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
 using System.Xml;
-using Bloom.Collection;
-using Bloom.Edit;
-using Bloom.ImageProcessing;
-using Bloom.Publish;
-using Bloom.ToPalaso;
-using Bloom.web.controllers;
-using Bloom.WebLibraryIntegration;
-using L10NSharp;
-using SIL.Code;
-using SIL.Extensions;
-using SIL.IO;
-using SIL.Progress;
-using SIL.Reporting;
-using SIL.Text;
-using SIL.Windows.Forms.ClearShare;
-using SIL.Xml;
 
 namespace Bloom.Book
 {
@@ -138,14 +137,8 @@ namespace Bloom.Book
 			if (!info.IsEditable)
 			{
 				SelectNextCoverColor(); // we only increment when showing a template or shell
-				InitCoverColor();
 			}
 
-			// If it doesn't already have a cover color, give it one.
-			if (HtmlDom.GetCoverColorStyleElement(OurHtmlDom.Head) == null)
-			{
-				InitCoverColor(); // should use the same color as what they saw in the preview of the template/shell
-			}
 			FixBookIdAndLineageIfNeeded();
 			Storage.Dom.RemoveExtraBookTitles();
 			Storage.Dom.RemoveExtraContentTypesMetas();
@@ -933,10 +926,18 @@ namespace Bloom.Book
 		{
 			RemoveImgTagInDataDiv(bookDOM);
 			RemoveCkeEditorResidue(bookDOM);
+
+			// This is spaghetti, I know... this may be the book's book data, or it may
+			// be a temporary one for the preview. I'm not introducing that distinction here,
+			// just making it a lot more clear because it was easy to get bugs where we were doing
+			// some things to the preview, and other things to the real book.  Why do we even have
+			// this difference? I'm not convinced that we still need it.
+			BookData bookDataWeAreUsing = null;
+
 			if (Title.Contains("allowSharedUpdate"))
 			{
 				// Original version of this code that suffers BL_3166
-				BringBookUpToDateUnprotected(bookDOM, progress);
+				bookDataWeAreUsing = BringBookUpToDateUnprotected(bookDOM, progress);
 			}
 			else
 			{
@@ -946,7 +947,7 @@ namespace Bloom.Book
 				lock (_updateLock)
 				{
 					_doingBookUpdate = true;
-					BringBookUpToDateUnprotected(bookDOM, progress);
+					bookDataWeAreUsing = BringBookUpToDateUnprotected(bookDOM, progress);
 					_doingBookUpdate = false;
 				}
 			}
@@ -955,6 +956,7 @@ namespace Bloom.Book
 			FixErrorsEncounteredByUsers(bookDOM);
 			AddReaderBodyClass(bookDOM);
 			AddLanguageAttributesToBody(bookDOM);
+			InitCoverColor(bookDOM, bookDataWeAreUsing);
 		}
 
 		private void AddLanguageAttributesToBody(HtmlDom bookDom)
@@ -996,8 +998,10 @@ namespace Bloom.Book
 			}
 		}
 
-		private void BringBookUpToDateUnprotected(HtmlDom bookDOM, IProgress progress)
+		private BookData BringBookUpToDateUnprotected(HtmlDom bookDOM, IProgress progress)
 		{
+			BookData bookData = null;
+
 			// With one exception, handled below, nothing in the update process should change the license info, so save what is current before we mess with
 			// anything (may fix BL-3166).
 			var licenseMetadata = GetLicenseMetadata();
@@ -1029,6 +1033,7 @@ namespace Bloom.Book
 			//hack
 			if (bookDOM == OurHtmlDom) //we already have a data for this
 			{
+				bookData = this.BookData;
 				// The one step that can legitimately change the metadata...though current branding packs
 				// will only do so if it is originally empty. So set the saved one before it and then get a new one.
 				BookCopyrightAndLicense.SetMetadata(licenseMetadata, bookDOM, FolderPath, CollectionSettings, BookInfo.MetaData.UseOriginalCopyright);
@@ -1046,8 +1051,9 @@ namespace Bloom.Book
 			}
 			else //used for making a preview dom
 			{
-				var bd = new BookData(bookDOM, CollectionSettings, UpdateImageMetadataAttributes);
-				bd.SynchronizeDataItemsThroughoutDOM();
+				bookData = new BookData(bookDOM, CollectionSettings, UpdateImageMetadataAttributes);
+				bookData.MergeBrandingSettings(CollectionSettings.BrandingProjectKey);
+				bookData.SynchronizeDataItemsThroughoutDOM();
 			}
 			// get any license info into the json and restored in the replaced front matter.
 			BookCopyrightAndLicense.SetMetadata(licenseMetadata, bookDOM, FolderPath, CollectionSettings, BookInfo.MetaData.UseOriginalCopyright);
@@ -1078,6 +1084,8 @@ namespace Bloom.Book
 
 			//we've removed and possible added pages, so our page cache is invalid
 			_pagesCache = null;
+
+			return bookData;
 		}
 
 		const string kCustomStyles = "customCollectionStyles.css";
@@ -2180,89 +2188,59 @@ namespace Bloom.Book
 
 		public string AboutBookMdPath => BloomFileLocator.GetBestLocalizedFile(Storage.FolderPath.CombineForPath("ReadMe-en.md"));
 
-		public void InitCoverColor()
+		public void InitCoverColor(HtmlDom bookDom, BookData bookData)
 		{
 			// for digital comic template, we want a black cover.
 			// NOTE as this writing, at least, xmatter cannot set <meta> values, so this isn't a complete solution. It's only
 			// useful for starting off a book from a template book.
-			var preserve = this.OurHtmlDom.GetMetaValue("preserveCoverColor", "false");
+			var preserve = bookDom.GetMetaValue("preserveCoverColor", "false");
 			if ( preserve == "false")
 			{
-				AddCoverColor(this.OurHtmlDom, CoverColors[s_coverColorIndex]);
-			}
-		}
-
-		private void AddCoverColor(HtmlDom dom, Color coverColor)
-		{
-			var colorValue = ColorTranslator.ToHtml(coverColor);
-//            var colorValue = String.Format("#{0:X2}{1:X2}{2:X2}", coverColor.R, coverColor.G, coverColor.B);
-			XmlElement colorStyle = dom.RawDom.CreateElement("style");
-			colorStyle.SetAttribute("type","text/css");
-			colorStyle.InnerXml = @"
-				DIV.bloom-page.coverColor	{		background-color: colorValue !important;	}
-				".Replace("colorValue", colorValue);//string.format has a hard time with all those {'s
-
-			dom.Head.AppendChild(colorStyle);
-		}
-
-		public String GetCoverColor()
-		{
-			return GetCoverColorFromDom(RawDom);
-		}
-
-		public static String GetCoverColorFromDom(XmlDocument dom)
-		{
-			foreach (XmlElement stylesheet in dom.SafeSelectNodes("//style"))
-			{
-				string content = stylesheet.InnerText;
-				// Our XML representation of an HTML DOM doesn't seem to have any object structure we can
-				// work with. The Stylesheet content is just raw CDATA text.
-				var match = new Regex(@"DIV.bloom-page.coverColor\s*{\s*background-color:\s*(#[0-9a-fA-F]*)")
-					.Match(content);
-				if (match.Success)
+				// A branding may declare a default color. The Kyrgyz project used this for nice
+				// full-bleed blue covers with optional other colors by grade.
+				var defaultCoverColor = bookData.GetGenericVariableOrNull("default-cover-color");
+				if (defaultCoverColor != null && _bookData.GetGenericVariableOrNull("cover-color") == null)
 				{
-					return match.Groups[1].Value;
+					SetCoverColor(defaultCoverColor, bookDom, bookData);
+				}
+				else
+				{
+					var hexColor = GetCoverHexColorOrNull(bookDom,bookData) ?? ColorTranslator.ToHtml(CoverColors[s_coverColorIndex]);
+					SetCoverColor(hexColor, bookDom, bookData);
 				}
 			}
-			return "#FFFFFF";
+		}
+		public  String GetCoverHexColorOrNull()
+		{
+			return GetCoverHexColorOrNull(OurHtmlDom, BookData);
+		}
+		private static String GetCoverHexColorOrNull(HtmlDom bookDom, BookData bookData)
+		{
+			return (bookData.GetGenericVariableOrNull("cover-color")
+			         ?? bookData.GetGenericVariableOrNull(("default-cover-color")))
+			        ?? bookDom.GetCoverColorFromInlineStyles();
 		}
 
-		/// <summary>
-		/// Set the cover color. Not used initially; assumes there is already an (unfortunately unmarked)
-		/// stylesheet created as in AddCoverColor.
-		/// </summary>
-		/// <param name="color"></param>
-		public void SetCoverColor(string color)
+		public void SetCoverColor(string hexColor)
 		{
-			if (SetCoverColorInternal(color))
-			{
+			SetCoverColor(hexColor,OurHtmlDom, BookData);
+		}
+
+		// this version is used both on the book and on these pesky preview DOM/BookData things.
+		private void SetCoverColor(string hexColor, HtmlDom bookDom, BookData bookData)
+		{
+			var thisIsAChange = GetCoverHexColorOrNull(bookDom,bookData) != hexColor;
+			// Note, we're setting this even if GetCoverHexColor() returns the same value, because we're
+			// also dealing with older books that don't have this cover-color variable.
+			bookData.SetGenericVariableThroughToDom("cover-color", hexColor, false);
+			bookDom.SetCoverColorStyleRule(hexColor);
+
+			// only do something if there was a change
+			if (thisIsAChange && IsEditable && bookDom == OurHtmlDom)
+			{ 
 				Save();
 				ContentsChanged?.Invoke(this, new EventArgs());	
 			}
-		}
-
-		/// <summary>
-		/// Internal method is testable
-		/// </summary>
-		/// <param name="color"></param>
-		/// <returns>true if a change was made</returns>
-		internal bool SetCoverColorInternal(string color)
-		{
-			foreach (XmlElement stylesheet in RawDom.SafeSelectNodes("//style"))
-			{
-				string content = stylesheet.InnerXml;
-				var regex =
-					new Regex(
-						@"(DIV.(coverColor\s*TEXTAREA|bloom-page.coverColor)\s*{\s*background-color:\s*)(#[0-9a-fA-F]*)",
-						RegexOptions.IgnoreCase);
-				if (!regex.IsMatch(content))
-					continue;
-				var newContent = regex.Replace(content, "$1" + color);
-				stylesheet.InnerXml = newContent;
-				return true;
-			}
-
-			return false;
 		}
 
 		/// <summary>
@@ -2795,7 +2773,7 @@ namespace Bloom.Book
 				return userStyleElement;
 
 			// We have both style elements. Make sure they're in the right order.
-			// BL -4266 was a problem if the 'coverColor' was listed first.
+			// BL-4266 was a problem if the 'coverColor' was listed first.
 			headElement.RemoveChild(coverColorElement);
 			headElement.InsertAfter(coverColorElement, userStyleElement);
 			return userStyleElement;
@@ -2943,8 +2921,11 @@ namespace Bloom.Book
 			{
 				InsertFullBleedMarkup(printingDom.Body);
 			}
+
+			// If this is full bleed, we currently assume that you actually want to print the cover color.
+			// Otherwise, we drop the cover color so you just get whatever the color of your paper is.
 			if (!FullBleed)
-				AddCoverColor(printingDom, Color.White);
+				printingDom.SetCoverColorStyleRule("#FFFFFF"); // white
 			AddPreviewJavascript(printingDom);
 			return printingDom;
 		}

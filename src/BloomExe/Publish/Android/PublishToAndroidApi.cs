@@ -115,7 +115,7 @@ namespace Bloom.Publish.Android
 					if (request.CurrentBook != _coverColorSourceBook)
 					{
 						_coverColorSourceBook = request.CurrentBook;
-						ImageUtils.TryCssColorFromString(request.CurrentBook?.GetCoverColor()??"", out _thumbnailBackgroundColor);
+						ImageUtils.TryCssColorFromString(request.CurrentBook?.GetCoverHexColorOrNull()??"", out _thumbnailBackgroundColor);
 					}
 					request.ReplyWithText(ToCssColorString(_thumbnailBackgroundColor));
 				}
@@ -189,7 +189,7 @@ namespace Bloom.Publish.Android
 					{
 						if(_thumbnailBackgroundColor == Color.Transparent)
 						{
-							ImageUtils.TryCssColorFromString(request.CurrentBook?.GetCoverColor(), out _thumbnailBackgroundColor);
+							ImageUtils.TryCssColorFromString(request.CurrentBook?.GetCoverHexColorOrNull(), out _thumbnailBackgroundColor);
 						}
 						RuntimeImageProcessor.GenerateEBookThumbnail(coverImage, thumbnail.Path, 256, 256, _thumbnailBackgroundColor);
 						request.ReplyWithImage( thumbnail.Path);

@@ -7,6 +7,12 @@
             "condition": "always"
         },
         {
+            "data-book": "default-cover-color",
+            "lang": "*",
+            "content": "#193970",
+            "condition": "always"
+        },
+        {
             "data-book": "outside-back-cover-branding-top-left-html",
             "lang": "*",
             "content": "<img class='branding' src='Kyrgyzstan2020-{flavor}-USAID.png'/>",

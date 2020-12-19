@@ -2705,5 +2705,48 @@ namespace Bloom.Book
 				mediaBoxDiv.SetAttribute("class", $"bloom-mediaBox {pageSizeClass}");
 			}
 		}
+
+		// Note, normally this is not needed, to fish this value out of a style rule. Normally
+		// you should get it directly from the 'cover-color' book variable.
+		// But one caller of this needs it for migrating from old books where
+		// this was where the value was stored. Another (HTMLThumbnailer) uses this because
+		// it only has the dom, not the book.
+		public string GetCoverColorFromInlineStyles()
+		{
+				foreach (XmlElement stylesheet in _dom.SafeSelectNodes("//style"))
+				{
+					string content = stylesheet.InnerText;
+					// Our XML representation of an HTML DOM doesn't seem to have any object structure we can
+					// work with. The Stylesheet content is just raw CDATA text.
+					var match = new Regex(@"DIV.bloom-page.coverColor\s*{\s*background-color:\s*(#[0-9a-fA-F]*)")
+						.Match(content);
+					if (match.Success)
+					{
+						return match.Groups[1].Value;
+					}
+				}
+
+				return null;
+		}
+
+		public void SetCoverColorStyleRule(string hexColor)
+		{
+			// if it's already there, remove it
+			var node = GetCoverColorStyleElement(Head);
+			node?.ParentNode?.RemoveChild((node));
+			
+			XmlElement colorStyle = _dom.CreateElement("style");
+			colorStyle.SetAttribute("type", "text/css");
+			colorStyle.SetAttribute("id", "cover-color-rule");
+
+			// REVIEW: original, more insistent version
+			// DIV.bloom-page.coverColor	{		background-color: colorValue !important;	}
+
+			colorStyle.InnerXml = @"
+				.bloom-page.coverColor	{		background-color: colorValue;	}
+				".Replace("colorValue", hexColor);//string.format has a hard time with all those {'s
+
+			Head.AppendChild(colorStyle);
+		}
 	}
 }

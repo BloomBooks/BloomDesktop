@@ -61,7 +61,7 @@ namespace BloomTests.Book
 				</style>");
 			var book = CreateBook();
 			var dom = book.RawDom;
-			book.SetCoverColorInternal(newValue);
+			book.SetCoverColor(newValue);
 			var coverColorText = dom.SafeSelectNodes("//style[text()]")[0].InnerText;
 			var first = coverColorText.IndexOf(newValue, StringComparison.InvariantCulture);
 			var last = coverColorText.LastIndexOf(newValue, StringComparison.InvariantCulture);
@@ -88,7 +88,7 @@ namespace BloomTests.Book
 				</style>");
 			var book = CreateBook();
 			var dom = book.RawDom;
-			book.SetCoverColorInternal(newValue);
+			book.SetCoverColor(newValue);
 			var coverColorText = dom.SafeSelectNodes("//style[text()]")[0].InnerText;
 			var first = coverColorText.IndexOf(newValue, StringComparison.InvariantCulture);
 			var last = coverColorText.LastIndexOf(newValue, StringComparison.InvariantCulture);

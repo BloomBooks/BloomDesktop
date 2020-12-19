@@ -45,6 +45,20 @@ namespace Bloom.Book
 			TextVariables.Add(key, new DataSetElementValue(text, isCollectionValue));
 		}
 
+		public string GetGenericLanguageString(string key)
+		{
+			DataSetElementValue dataSetElementValue;
+			MultiTextBase text;
+			if (TextVariables.TryGetValue(key, out dataSetElementValue))
+				text = dataSetElementValue.TextAlternatives;
+			else
+			{
+				text = new MultiTextBase();
+			}
+
+			return text.GetExactAlternative("*");
+		}
+
 		public void UpdateLanguageString(string key,  string value, string writingSystemId,bool isCollectionValue)
 		{
 			DataSetElementValue dataSetElementValue;

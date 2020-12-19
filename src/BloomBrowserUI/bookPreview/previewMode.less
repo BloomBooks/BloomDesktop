@@ -5,9 +5,6 @@
         background-color: @bloom-darkestBackground;
     }
 }
-div.bloom-page.coverColor {
-    background-color: @PreviewCoverColor;
-}
 /*When in preview, people often think they are looking at something edtiable. Give them this visual feedack*/
 .disabledVisual {
     cursor: not-allowed;
@@ -58,12 +55,7 @@ div#formatButton {
 .pageLabel {
     display: none;
 }
-textarea.coverColor {
-    background-color: @PreviewCoverColor;
-}
-input.coverColor {
-    background-color: @PreviewCoverColor;
-}
+
 /*this could be placed on an element by hand, but it is notably added by jscript when the element has
 a bloom-doNotPublishIfParentOtherwiseEmpty class and the parent is empty*/
 *.bloom-hideWhenPublishing,
