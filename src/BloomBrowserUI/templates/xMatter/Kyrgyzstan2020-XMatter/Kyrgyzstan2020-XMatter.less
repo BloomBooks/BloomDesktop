@@ -7,7 +7,7 @@
     --HeaderHeight: 3.5cm;
     --OutsideBackCoverLogoHeight: 15mm;
     --OutsideBackCoverCreditsFontSize: 9pt;
-    --DividerDiamondsFontSize: 7px;
+    --DividerDiamondsFontSize: 16px;
 }
 .A3Portrait {
     --HeaderHeight: 6cm;
@@ -64,7 +64,7 @@ div.bloom-page.outsideBackCover.coverColor {
 .frontCover .bottomBlock {
     margin-left: 1cm;
     margin-right: 1cm;
-    margin-bottom: 1cm;
+    margin-bottom: 1.5cm; // leave room for divider
 }
 .frontCover .bottomRow {
     display: grid !important;
@@ -118,14 +118,14 @@ div.bloom-page.outsideBackCover.coverColor {
 .outsideBackCover {
     .Outside-Back-Cover-style {
         margin-top: 8mm; // 15mm wasn't enough room for text 15mm;  In Landscape mode, we remove this
-        text-align: left !important;
         font-size: var(--OutsideBackCoverCreditsFontSize);
     }
 }
 
 @A5Landscape-column2-left: 11.5mm;
 // Landscape has a VERY different layout. We use CSS Grid display to move the items around.
-.A5Landscape {
+.A5Landscape,
+.A4Landscape {
     [data-book="outside-back-cover-branding-top-right-html"] img {
         //     position: absolute;
         //     left: @A5Landscape-column2-left;
@@ -140,18 +140,15 @@ div.bloom-page.outsideBackCover.coverColor {
             grid-template-columns: 260px auto; // Note: this must cause the left edge of the text to align with the Kyrgyzstan logo above.
             grid-template-rows: auto 3em;
             margin-top: 1cm;
-            .divider {
-                grid-row: 2;
-                grid-column: 1 / span 2;
-            }
             .bloom-translationGroup {
                 margin-top: unset;
+                margin-left: 10px;
                 grid-row: 1;
-                grid-column: 2 / span 1;
+                grid-column: 1 / span 1;
             }
             [data-book="level-image"] {
                 grid-row: 1;
-                grid-column: 1;
+                grid-column: 2 / span 1;
                 margin-left: auto;
                 margin-right: auto;
                 margin-top: auto;
@@ -164,19 +161,25 @@ div.bloom-page.outsideBackCover.coverColor {
 .frontCover,
 .outsideBackCover {
     .divider {
-        color: #97c955;
+        position: absolute;
+
+        left: -50px;
+
+        color: white;
         font-size: var(--DividerDiamondsFontSize);
-        height: 3em; // I don't know why this is necessary. Without it, even overflow-x:hidden cuts off the diamonds.
-        letter-spacing: -2px;
+        //   height: 3em; // I don't know why this is necessary. Without it, even overflow-x:hidden cuts off the diamonds.
+        letter-spacing: -4px;
         overflow: hidden;
     }
 }
+// the lines are supposed to be at the same distance from the bottom. They have
+// different contexts that determine what "bottom 0" means, though, so we have
+// different values
 .frontCover .divider {
-    margin-top: 2em;
+    bottom: 25px;
 }
 .outsideBackCover .divider {
-    margin-top: 8mm;
-    margin-bottom: 8mm; // wasn't enough room for text 15mm;
+    bottom: -31px !important;
 }
 .frontCover {
     .coverBottomLangName,
@@ -187,7 +190,7 @@ div.bloom-page.outsideBackCover.coverColor {
 
 /* Element | http://localhost:8089/bloom/C%3A/Users/hatto/Documents/Bloom/Kyrgyz%20Branding%20Test/Book/8444a5b9-4b6a-476a-90da-cc003fbc1fea-memsim-Preview.html */
 
-div.bloom-imageContainer:nth-child(2) > img:nth-child(1) {
+.frontCover div.bloom-imageContainer:nth-child(2) > img:nth-child(1) {
     /* width: 446px; */
     /* height: 367px; */
     /* margin-left: 0px; */
@@ -200,6 +203,35 @@ div.bloom-imageContainer:nth-child(2) > img:nth-child(1) {
 }
 
 .A5Portrait,
+.A4Portrait,
+.A3Portrait {
+    .bottomHalfGrid {
+        height: 600px;
+        display: grid;
+        grid-template-columns: auto;
+        grid-template-rows: 250px 30px auto;
+        [data-book="level-image"] {
+            grid-row: 2;
+            grid-column: 1;
+        }
+
+        .bloom-translationGroup {
+            grid-row: 1;
+        }
+        [data-book="level-image"] {
+            padding-top: 20px;
+            grid-row: 3;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 10px; //separate from preceding text
+            img {
+                height: 250px;
+            }
+        }
+    }
+}
+
+.A5Portrait,
 .A5Landscape,
 .A4Portrait,
 .A4Landscape,
@@ -209,6 +241,11 @@ div.bloom-imageContainer:nth-child(2) > img:nth-child(1) {
         justify-content: space-between;
     }
 }
+
+// the white bars are supposed to be exactly the same; something in the layout
+// math rounding left the back one pixel too high
+@fudgeToBackToMakeMatchFront: 1px;
+
 .outside-back-cover-branding-top-block {
     display: flex;
     flex-direction: row;
@@ -219,7 +256,7 @@ div.bloom-imageContainer:nth-child(2) > img:nth-child(1) {
     padding-right: 18mm;
     padding-top: @bleed; // nudge down because of 3mm bleed
     height: calc(
-        var(--HeaderHeight) - @bleed
+        var(--HeaderHeight) - @bleed - @fudgeToBackToMakeMatchFront
     ); // the subtraction here makes up for the padding-top
 
     img {

@@ -159,6 +159,7 @@ mixin factoryStandard-outsideFrontCover
 	// FRONT COVER
 	+page-cover('Front Cover')(data-export='front-matter-cover', data-xmatter-page='frontCover')&attributes(attributes).frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810
 		+ standard-cover-contents
+		block front-cover-footer
 
 mixin factoryStandard-creditsInsideFrontCover
 	// Inside Front Cover CREDITS PAGE
@@ -266,6 +267,7 @@ mixin factoryStandard-outsideBackCover
 			//- this isn't used, normally, but the block is here so you can insert something
 			block outsideBackCoverContentsBottom
 			+outside-back-cover-branding-bottom
+			block back-cover-footer
 
 mixin standard-ISOLanguageCode
 	.iso693Code
