@@ -29,6 +29,15 @@
         img {
             /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
             max-width: @PageWidth - (2 * @MarginOuter);
+
+            // I don't understand why we are setting a max-width on imgs both in this file
+            // for xmatter and in basePage.less for all images.
+            // But when we have full-bleed, the size is wrong. It is much easier to just unset
+            // the max-width like this than to try to figure out how to set the correct size everywhere.
+            // With the unset, the img is simply 100% width of the container which should always be correct.
+            .bloom-fullBleed & {
+                max-width: unset;
+            }
         }
     }
     .A3Landscape& {
