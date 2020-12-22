@@ -442,7 +442,17 @@ function createTextBoxIdentifier() {
     ).append(textBoxId);
 }
 function getTypeSelectors() {
-    return $(".container-selector-links > .selector-links").clone(true);
+    // Putting two levels of div here for selector-links allows us to keep the adder
+    // buttons visible and active except when the cursor is actually over the links.
+    // See https://issues.bloomlibrary.org/youtrack/issue/BL-9176.
+    const linksDiv = $(".container-selector-links > .selector-links").clone(
+        true
+    );
+    const parentDiv = $(
+        "<div class='selector-links-parent bloom-ui origami-ui'></div>"
+    );
+    parentDiv.append(linksDiv);
+    return parentDiv;
 }
 function getTextBoxIdentifier() {
     return $(".container-textBox-id > .textBox-identifier").clone();
@@ -459,7 +469,7 @@ function makeTextFieldClickHandler(e) {
     $(translationGroup).addClass("normal-style"); // replaces above to make new text boxes normal
     container.append(translationGroup).append(getTextBoxIdentifier());
     $(this)
-        .closest(".selector-links")
+        .closest(".selector-links-parent")
         .remove();
     // hook up TextBoxProperties dialog to this new Text Box (via its origami overlay)
     var dialog = GetTextBoxPropertiesDialog();
@@ -482,7 +492,7 @@ function makePictureFieldClickHandler(e) {
     SetupImage(image); // Must attach it first so event handler gets added to parent
     container.append(imageContainer);
     $(this)
-        .closest(".selector-links")
+        .closest(".selector-links-parent")
         .remove();
 }
 
@@ -500,7 +510,7 @@ function makeVideoFieldClickHandler(e) {
     // sure it is present in the book folder.
     BloomApi.post("edit/pageControls/requestVideoPlaceHolder");
     $(this)
-        .closest(".selector-links")
+        .closest(".selector-links-parent")
         .remove();
 }
 
@@ -518,6 +528,6 @@ function makeHtmlWidgetFieldClickHandler(e) {
     // sure it is present in the book folder.
     BloomApi.post("edit/pageControls/requestWidgetPlaceHolder");
     $(this)
-        .closest(".selector-links")
+        .closest(".selector-links-parent")
         .remove();
 }

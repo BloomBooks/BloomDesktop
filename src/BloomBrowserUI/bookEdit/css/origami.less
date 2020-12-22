@@ -173,6 +173,8 @@
 /*the commented line below would also add it to an empty bloom-content1 for re-entry to layout mode*/
 /*but that would be problematic/confusing in a multilingual context*/
 /*.origami-layout-mode .split-pane-component-inner .bloom-editable.bloom-content1:empty:before,*/
+/* not setting z-index in the upper layer allows the adder buttons to be visible and active when the */
+/* cursor is over the "Text Box" text, but not when it is over the .formatButton gearbox icon. (BL-9176) */
 .origami-layout-mode .split-pane-component-inner .textBox-identifier {
     /*content: "Text Box";*/
     color: @flowerPetalGrey;
@@ -183,7 +185,6 @@
     width: 100%;
     position: absolute;
     top: 45%;
-    z-index: 50000;
     .formatButton {
         z-index: 60000;
         padding-left: 10px;
@@ -196,10 +197,16 @@
 .container-textBox-id {
     display: none;
 }
-.selector-links {
+
+/* splitting into two layers allows the adder buttons to remain visible and active except */
+/* when the cursor is over the selector links themselves. (BL-9176) */
+.selector-links-parent {
     top: 45%;
     text-align: center;
+}
+.selector-links {
     z-index: 50000;
+    display: inline-block;
 }
 
 .selector-links div {
