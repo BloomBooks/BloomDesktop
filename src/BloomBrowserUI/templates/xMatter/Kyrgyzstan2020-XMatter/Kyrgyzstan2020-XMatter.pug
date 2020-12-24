@@ -5,9 +5,7 @@ mixin divider
 		//- has to be long enough for the largest page/layout we might use
 		| ◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇
 
-block cover-bottom-row
-	.bottomRow
-		+divider
+
 
 block outsideBackCover
 	div.outside-back-cover-branding-top-block
@@ -16,10 +14,9 @@ block outsideBackCover
 	div.bottomHalfGrid
 		+field-mono-meta("N1","outsideBackCover").Outside-Back-Cover-style
 			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.
-		+divider
 		+image-xmatter('level-image')
 			label.bubble Paste the level diagram here.
-
+	+divider
 
 //- The standard template uses "*", but we need to put different disclaimers in for each of the 5 languages
 block credits-page-branding-bottom
@@ -27,4 +24,9 @@ block credits-page-branding-bottom
 
 block XMatterTitle
 	title Kyrgyzstan 2020 Front & Back Matter
+
+block front-cover-footer
+	+divider
+
+
 
