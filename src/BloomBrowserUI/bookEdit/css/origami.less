@@ -198,15 +198,14 @@
     display: none;
 }
 
-/* splitting into two layers allows the adder buttons to remain visible and active except */
-/* when the cursor is over the selector links themselves. (BL-9176) */
-.selector-links-parent {
+.selector-links {
     top: 45%;
     text-align: center;
-}
-.selector-links {
-    z-index: 50000;
-    display: inline-block;
+    // Setting the z-index on the inner a elements allows the adder buttons to
+    // remain visible and active except when the cursor is over an actual link.
+    a {
+        z-index: 50000;
+    }
 }
 
 .selector-links div {
