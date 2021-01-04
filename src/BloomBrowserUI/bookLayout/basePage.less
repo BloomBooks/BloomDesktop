@@ -183,6 +183,13 @@ div.bloom-page {
     display: block;
 
     background-color: @bloom-page-background;
+
+    // Absolutely positioned elements can show outside the page
+    // because margin box is also absolutely positioned.
+    // So hide anything overflowing the page. BL-9352.
+    // Note that this does not negatively affect full-bleed because the bleed
+    // is still considered part of the page.
+    overflow: hidden;
 }
 div#bloomDataDiv {
     display: none;
