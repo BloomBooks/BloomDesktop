@@ -89,26 +89,18 @@ namespace Bloom.ImageProcessing
 			try
 			{
 				var size = GetDesiredImageSize(imageInfo.Image.Width, imageInfo.Image.Height);
-				isEncodedAsJpeg = AppearsToBeJpeg(imageInfo);
-				if (!isEncodedAsJpeg)
+
+				if (size.Width != imageInfo.Image.Width || size.Height != imageInfo.Image.Height)
 				{
-					// As explained in the comments for FixSizeAndTransparencyOfImagesInFolder(), some PDF viewers don't
-					// handle transparent images very well, so if we aren't sure this image is opaque, replace it with
-					// one that is opaque.  Also replace it if it's larger than our maximum allowed size.
-					if (size.Width != imageInfo.Image.Width || size.Height != imageInfo.Image.Height || !IsIndexedAndOpaque(imageInfo.Image))
-					{
-						// The original imageInfo.Image is disposed of in the setter.
-						// As of now (9/2016) this is safe because there are no other references to it higher in the stack.
-						imageInfo.Image = CreateImageWithoutTransparentBackground(imageInfo, size);
-					}
-				}
-				else if (size.Width != imageInfo.Image.Width || size.Height != imageInfo.Image.Height)
-				{
-					// need to shrink jpeg file since it's larger than our maximum allowed size.
+					// need to shrink image file since it's larger than our maximum allowed size.
+
+					// The original imageInfo.Image is disposed of in the setter.
+					// As of now (9/2016) this is safe because there are no other references to it higher in the stack.
 					imageInfo.Image = ResizeImageWithGraphicsMagick(imageInfo, size);
 				}
 
-				var shouldConvertToJpeg = !isEncodedAsJpeg && ShouldChangeFormatToJpeg(imageInfo.Image);
+				isEncodedAsJpeg = AppearsToBeJpeg(imageInfo);
+				var shouldConvertToJpeg = !isEncodedAsJpeg && !HasTransparency(imageInfo.Image) && ShouldChangeFormatToJpeg(imageInfo.Image);
 				string imageFileName;
 				if (!shouldConvertToJpeg && isSameFile)
 					imageFileName = imageInfo.FileName;
@@ -586,10 +578,44 @@ namespace Bloom.ImageProcessing
 				foreach (var color in image.Palette.Entries)
 				{
 					if (color.A != 255)
-						return false;	// 255 == opaque, other values varying amount of transparency
+						return false;   // 255 == opaque, other values varying amount of transparency
 				}
 				return true;
 			}
+			// Too hard / expensive to determine transparency/opacity
+			return false;
+		}
+
+		/// <summary>
+		/// Check whether the image has any transparency.
+		/// If it becomes too difficult or expensive to determine, we punt and return false.
+		/// </summary>
+		public static bool HasTransparency(Image image)
+		{
+			if ((image.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed)
+			{
+				foreach (var color in image.Palette.Entries)
+				{
+					if (color.A != 255)
+						return true;   // 255 == opaque, other values varying amount of transparency
+				}
+				return false;
+			}
+			
+			if (image is Bitmap bitmapImage)
+			{
+				// Yes, this is as expensive as it looks. But we take advantage of the fact that almost all
+				// transparent images which someone would use in Bloom would be transparent in the corner.
+				// Leave a little fudge for a non-transparent border.
+				int maxPixelsFromCorner = 15;
+				for (int y = 0; y < bitmapImage.Height && y < maxPixelsFromCorner; ++y)
+					for (int x = 0; x < bitmapImage.Width && x < maxPixelsFromCorner; ++x)
+						if (bitmapImage.GetPixel(x, y).A != 255)
+							return true;
+
+				return false;
+			}
+
 			// Too hard / expensive to determine transparency/opacity
 			return false;
 		}
