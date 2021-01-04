@@ -245,6 +245,10 @@ div.bloom-page.outsideBackCover.coverColor {
 // the white bars are supposed to be exactly the same; something in the layout
 // math rounding left the back one pixel too high
 @fudgeToBackToMakeMatchFront: 1px;
+// the subtraction here makes up for the padding-top
+@modifiedHeaderHeight: calc(
+    var(--HeaderHeight) - @bleed - @fudgeToBackToMakeMatchFront
+);
 
 .outside-back-cover-branding-top-block {
     display: flex;
@@ -255,9 +259,11 @@ div.bloom-page.outsideBackCover.coverColor {
     padding-left: 18mm;
     padding-right: 18mm;
     padding-top: @bleed; // nudge down because of 3mm bleed
-    height: calc(
-        var(--HeaderHeight) - @bleed - @fudgeToBackToMakeMatchFront
-    ); // the subtraction here makes up for the padding-top
+    height: @modifiedHeaderHeight;
+    // Setting min and max because otherwise the layout wants to
+    // flex with the size of the text box in landscape. BL-9351
+    min-height: @modifiedHeaderHeight;
+    max-height: @modifiedHeaderHeight;
 
     img {
         // height is per page size, below
