@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Reflection;
 using Bloom.ImageProcessing;
 using NUnit.Framework;
 using SIL.IO;
@@ -71,43 +72,21 @@ namespace BloomTests.ImageProcessing
 		}
 
 		// See BL-3646 which showed we were blacking out the image when converting from png to jpg
-		[Test]
-#if __MonoCS__
-		[Category("SkipOnTeamCity")]	// only for Linux: TeamCity creates an error from a low-level warning message.
-#endif
-		public static void
-			ProcessAndSaveImageIntoFolder_SimpleImageHasTransparentBackground_ImageNotConvertedAndFileSizeNotIncreased()
-		{
-			var inputPath =
-				SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirtWithTransparentBg.png");
-			var originalFileSize = new FileInfo(inputPath).Length;
-			using (var image = PalasoImage.FromFileRobustly(inputPath))
-			{
-				using (var folder = new TemporaryFolder("TransparentPngTest"))
-				{
-					var fileName = ImageUtils.ProcessAndSaveImageIntoFolder(image, folder.Path, false);
-					Assert.AreEqual(".png", Path.GetExtension(fileName));
-					var outputPath = folder.Combine(fileName);
-					using (var result = Image.FromFile(outputPath))
-					{
-						Assert.AreEqual(ImageFormat.Png, result.RawFormat);
-						Assert.That(originalFileSize <= new FileInfo(outputPath).Length);
-					}
-				}
-			}
-		}
-
+		[TestCase("shirt.png")]
 		// I think shirt.png still has a transparent background after being fixed by optipng, but I'm not absolutely sure,
 		// so I'm leaving both tests in place.
-		[Test]
-		public static void
-			ProcessAndSaveImageIntoFolder_SimpleImageHasTransparentBackground_ImageNotConvertedAndFileSizeNotIncreased2()
+		[TestCase("shirtWithTransparentBg.png")
+#if __MonoCS__
+		, Category("SkipOnTeamCity") // only for Linux: TeamCity creates an error from a low-level warning message.
+#endif
+		]
+		public static void ProcessAndSaveImageIntoFolder_SimpleImageHasTransparentBackground_ImageNotConvertedAndFileSizeNotIncreased(string sourceFileName)
 		{
-			var inputPath = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png");
+			var inputPath = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, sourceFileName);
 			var originalFileSize = new FileInfo(inputPath).Length;
 			using (var image = PalasoImage.FromFileRobustly(inputPath))
 			{
-				using (var folder = new TemporaryFolder("TransparentPngTest"))
+				using (var folder = new TemporaryFolder(MethodBase.GetCurrentMethod().Name + sourceFileName))
 				{
 					var fileName = ImageUtils.ProcessAndSaveImageIntoFolder(image, folder.Path, false);
 					Assert.AreEqual(".png", Path.GetExtension(fileName));

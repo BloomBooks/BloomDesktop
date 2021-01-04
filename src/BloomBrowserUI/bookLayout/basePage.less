@@ -492,19 +492,6 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
 .SetMarginBox(@PageWidth, @PageHeight) {
     height: @PageHeight - (@MarginTop + @MarginBottom);
     width: @PageWidth - (@MarginOuter + @MarginInner);
-    img {
-        /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
-        max-width: @PageWidth - (@MarginOuter + @MarginInner);
-
-        // I don't understand why we are setting a max-width on imgs both in this file
-        // for all images and in bloom-xmatter-common for xmatter.
-        // But when we have full-bleed, the size is wrong. It is much easier to just unset
-        // the max-width like this than to try to figure out how to set the correct size everywhere.
-        // With the unset, the img is simply 100% width of the container which should always be correct.
-        .bloom-fullBleed & {
-            max-width: unset;
-        }
-    }
 }
 
 .marginBox {
