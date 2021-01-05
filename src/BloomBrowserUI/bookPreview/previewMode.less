@@ -85,13 +85,3 @@ and as a result, the labels are shifted to this many pixels to the width. This s
 .hidePlaceHolders img[src*="placeHolder.png"] {
     display: none;
 }
-
-// Absolutely positioned elements can show outside the page
-// because margin box is also absolutely positioned.
-// So hide anything overflowing the page in the collection preview.
-// @media screen ensures we don't mess up full-bleed printing.
-@media screen {
-    .bloom-page {
-        overflow: hidden;
-    }
-}

@@ -870,8 +870,18 @@ namespace Bloom.Publish.Epub
 						TimeSpan clipTimeSpan = TimeSpan.FromSeconds(clipDurationSecs);
 
 						var segment = highlightSegments[i];
-						string segmentId = segment.GetStringAttribute("id");
-
+						// The segmentId may be missing if the user records by textbox but neglects to split the audio.
+						// This can easily happen, especially with textboxes that contain only one sentence or phrase.
+						// See https://issues.bloomlibrary.org/youtrack/issue/BL-9370.
+						string segmentId = segment.GetOptionalStringAttribute("id", null);
+						if (String.IsNullOrEmpty(segmentId))
+						{
+							// simply giving an id value is good enough for Readium to play the sound.
+							segmentId = Guid.NewGuid().ToString();
+							var first = segmentId[0];
+							if (first >= '0' && first <= '9')
+								segmentId = "i" + segmentId;
+						}
 						// Determine start time based on whether we have oneAudioPerPage (implies that we need to merge all the aduio files into one big file) or not
 						TimeSpan clipStart = (mergedAudioPath != null) ?  pageDuration + currentElementDuration : currentElementDuration;
 						TimeSpan clipEnd = clipStart + clipTimeSpan;
