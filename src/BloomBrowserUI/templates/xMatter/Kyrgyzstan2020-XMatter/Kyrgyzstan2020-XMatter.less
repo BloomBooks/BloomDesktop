@@ -163,7 +163,10 @@ div.bloom-page.outsideBackCover.coverColor {
     .divider {
         position: absolute;
 
-        left: -50px;
+        // If you change this, make sure it is far enough for front and back covers;
+        // back needs more because it is relative to the margin box, and the front
+        // cover's margin box has no margin but the back cover's does.
+        left: -100px;
 
         color: white;
         font-size: var(--DividerDiamondsFontSize);
