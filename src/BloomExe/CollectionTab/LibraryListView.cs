@@ -1039,7 +1039,7 @@ namespace Bloom.CollectionTab
 					var button = FindBookButton(bookInfo);
 					if (button == null || button.IsDisposed)
 						return; // I (gjm) found that this condition occurred sometimes when testing BL-6100
-					image = ImageUtils.CenterImageIfNecessary(MaxThumbnailSize, image);
+					image = ImageUtils.CenterImageIfNecessary(MaxThumbnailSize, image, bookInfo.IsSuitableForMakingTemplates);
 					_bookThumbnails.Images[imageIndex] = image;
 					button.Image = IsUsableBook(button) ? image : MakeDim(image);
 				}

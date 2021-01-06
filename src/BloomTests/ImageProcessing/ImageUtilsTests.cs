@@ -1,4 +1,6 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Reflection;
@@ -138,6 +140,80 @@ namespace BloomTests.ImageProcessing
 			var size = ImageUtils.GetDesiredImageSize(width, height);
 			Assert.AreEqual(size.Width, newWidth, $"Computed width for {width},{height} is correct.");
 			Assert.AreEqual(size.Height, newHeight, $"Computed height for {width},{height} is correct.");
+		}
+
+		[Test]
+		[TestCase(false, false, 200)] // Resize, no border
+		[TestCase(false, true, 200)] // Resize, add dashed border
+		[TestCase(true, false, 200)] // Center image, no border
+		[TestCase(true, true, 200)] // Center image, add dashed border
+		[TestCase(false, false, 70)] // Resize, no border, small thumb size
+		[TestCase(false, true, 70)] // Resize, add dashed border, small thumb size
+		[TestCase(true, false, 70)] // Center image, no border, small thumb size
+		[TestCase(true, true, 70)] // Center image, add dashed border, small thumb size
+		public void DrawResizedImage(bool centerImage, bool addBorder, int desiredSize)
+		{
+			var path = FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "bird.png");
+			var image = new Bitmap(path);
+			var desiredThumbSize = new Size(desiredSize, desiredSize);
+
+			// SUT
+			// I don't like conditionals in tests.
+			// Unfortunately "DrawResizedImage()" is a private method that is very simply wrapped by two
+			// public methods.
+			var result = centerImage ?
+				ImageUtils.CenterImageIfNecessary(desiredThumbSize, image, addBorder) :
+				ImageUtils.ResizeImageIfNecessary(desiredThumbSize, image, addBorder);
+
+			// Test image result
+			TestImageResult(result, desiredThumbSize, addBorder);
+		}
+
+		private static void TestImageResult(Image result, Size desiredThumbSize, bool shouldHaveBorder)
+		{
+			Assert.That(result, Is.Not.Null, "Thumbnail not created.");
+			Assert.That(Math.Max(result.Width, result.Height), Is.EqualTo(desiredThumbSize.Width), "image width");
+
+			var bitmap = new Bitmap(result);
+
+			var hitMax = false;
+			var foundFirstDash = false;
+			var foundFirstSpace = false;
+			const int maxX = 20;
+			for (var i = 0; i < maxX; i++)
+			{
+				var pixel = bitmap.GetPixel(i, 0);
+
+				if (shouldHaveBorder)
+				{
+					if (IsColorOpaqueBlack(pixel))
+					{
+						if (foundFirstDash && foundFirstSpace)
+						{
+							break; // found a second dash
+						}
+
+						foundFirstDash = true;
+					}
+					else
+					{
+						foundFirstSpace = true;
+					}
+				}
+				else
+				{
+					Assert.That(IsColorOpaqueBlack(pixel), Is.False, $"Point ({i}, {0}) should not be black.");
+				}
+
+				if (i == maxX)
+					hitMax = true;
+			}
+			Assert.That(shouldHaveBorder && hitMax, Is.False, "Didn't find dashes.");
+		}
+
+		private static bool IsColorOpaqueBlack(Color color)
+		{
+			return (color.R | color.G | color.B) == 0 && color.A == 255;
 		}
 	}
 }
