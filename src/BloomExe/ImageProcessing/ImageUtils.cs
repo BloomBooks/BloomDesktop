@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
@@ -920,19 +921,19 @@ namespace Bloom.ImageProcessing
 			return true;
 		}
 
-		public static Image ResizeImageIfNecessary(Size maxSize, Image image)
+		public static Image ResizeImageIfNecessary(Size maxSize, Image image, bool shouldAddDashedBorder)
 		{
-			return DrawResizedImage(maxSize, image, false);
+			return DrawResizedImage(maxSize, image, false, shouldAddDashedBorder);
 		}
 
-		public static Image CenterImageIfNecessary(Size size, Image image)
+		public static Image CenterImageIfNecessary(Size size, Image image, bool shouldAddDashedBorder)
 		{
-			return DrawResizedImage(size, image, true);
+			return DrawResizedImage(size, image, true, shouldAddDashedBorder);
 		}
 
 		/// <summary>
 		/// Return a possibly resized and possibly centered image.  If no change is needed,
-		/// a new copy of the image is returned.
+		/// a new copy of the image is returned. Also possibly add a dashed border (for templates).
 		/// </summary>
 		/// <remarks>
 		/// Always returning a new image simplifies keeping track of when to dispose the original
@@ -940,7 +941,7 @@ namespace Bloom.ImageProcessing
 		/// Note that this method never returns a larger image than the original: only one the
 		/// same size or smaller.
 		/// </remarks>
-		private static Image DrawResizedImage(Size maxSize, Image image, bool centerImage)
+		private static Image DrawResizedImage(Size maxSize, Image image, bool centerImage, bool shouldAddDashedBorder)
 		{
 			// adapted from https://www.c-sharpcorner.com/article/resize-image-in-c-sharp/
 			var desiredHeight = maxSize.Height;
@@ -968,11 +969,9 @@ namespace Bloom.ImageProcessing
 					newHeight = desiredHeight;
 				}
 			}
-			Image newImage;
-			if (centerImage)
-				newImage = new Bitmap(desiredWidth, desiredHeight);
-			else
-				newImage = new Bitmap(newWidth, newHeight);
+			Image newImage = centerImage ?
+				new Bitmap(desiredWidth, desiredHeight) :
+				new Bitmap(newWidth, newHeight);
 			using (var graphic = Graphics.FromImage(newImage))
 			{
 				// I tried using HighSpeed settings in here with no appreciable difference in loading speed.
@@ -982,7 +981,18 @@ namespace Bloom.ImageProcessing
 				// looks like: they're not works of art themselves.
 				// See https://stackoverflow.com/questions/15438509/graphics-drawimage-throws-out-of-memory-exception?lq=1
 				// (the second answer).
-				graphic.DrawImage(image, (newImage.Width - newWidth)/2, (newImage.Height - newHeight)/2, newWidth, newHeight);
+				// The following x and y are only non-zero when centering an image and then one or the other will be (non-zero).
+				var x = (newImage.Width - newWidth) / 2;
+				var y = (newImage.Height - newHeight) / 2;
+				graphic.DrawImage(image, x, y, newWidth, newHeight);
+				if (shouldAddDashedBorder)
+				{
+					var pen = new Pen(Brushes.Black, 2)
+					{
+						DashStyle = DashStyle.Dash
+					};
+					graphic.DrawRectangle(pen, new Rectangle(x, y, newWidth, newHeight));
+				}
 			}
 			return newImage;
 		}
