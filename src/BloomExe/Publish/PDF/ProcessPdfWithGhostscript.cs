@@ -203,19 +203,31 @@ namespace Bloom.Publish.PDF
 			bldr.Append(" -dDownsampleColorImages=true -dColorImageDownsampleThreshold=1.0");
 			bldr.Append(" -dDownsampleGrayImages=true -dGrayImageDownsampleThreshold=1.0");
 			bldr.Append(" -dDownsampleMonoImages=true -dMonoImageDownsampleThreshold=1.0");
-			// Ghostscript uses JPEG compression by default on all images when compressing a PDF file.
-			// The value in imageCompressDict provides the highest quality image using JPEG compression: best picture, least compression.
-			// See https://files.lfpp.csa.canon.com/media/Assets/PDFs/TSS/external/DPS400/Distillerpdfguide_v1_m56577569830529783.pdf#G5.1030935.
-			// The default setting here can result in visibly mottled areas of what should be solid colors.
-			// (See https://issues.bloomlibrary.org/youtrack/issue/BL-8928.)  Increasing the quality to the maximum
-			// does not totally eliminate this mottling effect, but makes it much less noticeable.
-			var imageCompressDict = "/QFactor 0.1 /Blend 1 /HSamples [1 1 1 1] /VSamples [1 1 1 1]";
-			bldr.AppendFormat(" -sColorACSImageDict=\"{0}\"", imageCompressDict);
-			bldr.AppendFormat(" -sColorImageDict=\"{0}\"", imageCompressDict);
-			bldr.AppendFormat(" -sGrayACSImageDict=\"{0}\"", imageCompressDict);
-			bldr.AppendFormat(" -sGrayImageDict=\"{0}\"", imageCompressDict);
+			if (SIL.PlatformUtilities.Platform.IsWindows)
+			{
+				// Ghostscript uses JPEG compression by default on all images when compressing a PDF file.
+				// The value in imageCompressDict provides the highest quality image using JPEG compression: best picture, least compression.
+				// See https://files.lfpp.csa.canon.com/media/Assets/PDFs/TSS/external/DPS400/Distillerpdfguide_v1_m56577569830529783.pdf#G5.1030935.
+				// The default setting here can result in visibly mottled areas of what should be solid colors.
+				// (See https://issues.bloomlibrary.org/youtrack/issue/BL-8928.)  Increasing the quality to the maximum
+				// does not totally eliminate this mottling effect, but makes it much less noticeable.
+				//
+				// These arguments cause gs 9.50 on Linux to fail.  The gs 9.21 we're using on Windows doesn't fail.
+				// Quoting from https://www.ghostscript.com/doc/current/VectorDevices.htm#note_13: (also in /doc/9.26/VectorDevices.htm)
+				// "The arrays AlwaysEmbed and NeverEmbed and image parameter dictionaries ColorACSImageDict, ColorACSImageDict, ColorImageDict,
+				// GrayACSImageDict, GrayImageDict, MonoImageDict cannot be specified on the command line. To specify these, you must use PostScript,
+				// either by including it in the PostScript source or by passing the -c command-line parameter to ghostscript as described in
+				// Limitations below."
+				// e.g., -c "<< /GrayACSImageDict <</QFactor 0.5 /HSamples [1 1 1 1] /VSamples [1 1 1 1]>> >> setdistillerparams"
+				// Note that the -c parameter must follow all other parameters, including the input file.
+				var imageCompressDict = "/QFactor 0.1 /Blend 1 /HSamples [1 1 1 1] /VSamples [1 1 1 1]";
+				bldr.AppendFormat(" -sColorACSImageDict=\"{0}\"", imageCompressDict);
+				bldr.AppendFormat(" -sColorImageDict=\"{0}\"", imageCompressDict);
+				bldr.AppendFormat(" -sGrayACSImageDict=\"{0}\"", imageCompressDict);
+				bldr.AppendFormat(" -sGrayImageDict=\"{0}\"", imageCompressDict);
+			}
 
-      if (bookIsFullBleed)
+			if (bookIsFullBleed)
 			{
 				// Our full-bleed PDF page generation currently produces a spurious almost-blank page after each real
 				// page, even if we aren't printing the bleed area. Delete them.
@@ -237,6 +249,17 @@ namespace Bloom.Publish.PDF
 			if (String.IsNullOrEmpty(inputFile))
 				inputFile = _inputPdfPath;
 			bldr.AppendFormat($" -sOutputFile=\"{tempFile}\" \"{DoubleBracesInInputPath(inputFile)}\"");
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+			{
+				// See detailed explanation of this above in the IsWindows block.
+				var imageCompressDict = "<< /QFactor 0.1 /Blend 1 /HSamples [1 1 1 1] /VSamples [1 1 1 1] >>";
+				bldr.Append(" -c \"<<");
+				bldr.AppendFormat(" /ColorACSImageDict {0}", imageCompressDict);
+				bldr.AppendFormat(" /ColorImageDict {0}", imageCompressDict);
+				bldr.AppendFormat(" /GrayACSImageDict {0}", imageCompressDict);
+				bldr.AppendFormat(" /GrayImageDict {0}", imageCompressDict);
+				bldr.Append(" >> setdistillerparams\"");
+			}
 			return bldr.ToString();
 		}
 
