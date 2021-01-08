@@ -143,5 +143,89 @@ namespace BloomTests.ImageProcessing
 			Assert.AreEqual(size.Width, newWidth, $"Computed width for {width},{height} is correct.");
 			Assert.AreEqual(size.Height, newHeight, $"Computed height for {width},{height} is correct.");
 		}
+
+		[Test]
+		[TestCase(true)]
+		[TestCase(false)]
+		public void DrawResizedImage_TestForDashedBorder_SmallSquareImage(bool addBorder)
+		{
+			var path = FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "Othello 199.jpg");
+			var image = new Bitmap(path);
+			var desiredThumbSize = new Size(200, 200);
+
+			// SUT
+			var result = ImageUtils.ResizeImageIfNecessary(desiredThumbSize, image, addBorder);
+
+			// Testing
+			TestImageResult(result, addBorder);
+		}
+
+		[Test]
+		[TestCase(false, false)] // Resize, no border
+		[TestCase(false, true)] // Resize, add dashed border
+		[TestCase(true, false)] // Center image, no border
+		[TestCase(true, true)] // Center image, add dashed border
+		public void DrawResizedImage_TestForPresenceOfDashedBorder(bool centerImage, bool addBorder)
+		{
+			var path = FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "bird.png");
+			var image = new Bitmap(path);
+			var desiredThumbSize = new Size(70, 70);
+
+			// SUT
+			// I don't like conditionals in tests.
+			// Unfortunately "DrawResizedImage()" is a private method that is very simply wrapped by two
+			// public methods.
+			var result = centerImage ?
+				ImageUtils.CenterImageIfNecessary(desiredThumbSize, image, addBorder) :
+				ImageUtils.ResizeImageIfNecessary(desiredThumbSize, image, addBorder);
+
+			// Test image result
+			TestImageResult(result, addBorder);
+		}
+
+		private static void TestImageResult(Image result, bool shouldHaveDashedBorder)
+		{
+			var bitmap = new Bitmap(result);
+
+			var hitMax = false;
+			var foundFirstDash = false;
+			var foundFirstSpace = false;
+			const int maxX = 20;
+			for (var i = 0; i < maxX; i++)
+			{
+				var pixel = bitmap.GetPixel(i, 0);
+
+				if (shouldHaveDashedBorder)
+				{
+					if (IsColorOpaqueBlack(pixel))
+					{
+						if (foundFirstDash && foundFirstSpace)
+						{
+							break; // found a second dash
+						}
+
+						foundFirstDash = true;
+					}
+					else
+					{
+						foundFirstSpace = true;
+					}
+				}
+				else
+				{
+					Assert.That(IsColorOpaqueBlack(pixel), Is.False, $"Point ({i}, 0) should not be black.");
+				}
+
+				if (i == maxX - 1)
+					hitMax = true;
+			}
+			Assert.That(shouldHaveDashedBorder, Is.Not.EqualTo(hitMax),
+				"We should have a dashed border and we didn't find dashes, or we should not have a border and we didn't finish the loop.");
+		}
+
+		private static bool IsColorOpaqueBlack(Color color)
+		{
+			return (color.R | color.G | color.B) == 0 && color.A == 255;
+		}
 	}
 }
