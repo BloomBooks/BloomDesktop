@@ -100,8 +100,9 @@ namespace Bloom
 				Height = 200,
 				Width = 200,
 				CenterImageUsingTransparentPadding = false,
-				FileName = "coverImage200.jpg"
-			};
+				FileName = "coverImage200.jpg",
+				BorderStyle = GetThumbnailBorderStyle(book)
+		};
 			CreateThumbnailOfCoverImage(book, options);
 		}
 
@@ -112,10 +113,10 @@ namespace Bloom
 		/// <param name="requestedSize">The maximum size of either dimension</param>
 		public static string GenerateCoverImageOfRequestedMaxSize(Book.Book book, int requestedSize)
 		{
-			HtmlThumbNailer.ThumbnailOptions thumbnailOptions = BookThumbNailer.GetCoverThumbnailOptions(requestedSize, new Guid());
-			BookThumbNailer.CreateThumbnailOfCoverImage(book, thumbnailOptions, null);
+			var thumbnailOptions = GetCoverThumbnailOptions(requestedSize, new Guid());
+			CreateThumbnailOfCoverImage(book, thumbnailOptions);
 
-			string thumbnailDestination = Path.Combine(book.FolderPath, thumbnailOptions.FileName);
+			var thumbnailDestination = Path.Combine(book.FolderPath, thumbnailOptions.FileName);
 			return thumbnailDestination;
 		}
 
@@ -142,9 +143,9 @@ namespace Bloom
 
 			options.FileName = $"thumbnail-{options.Width}x{options.Height}.png";
 
-			BookThumbNailer.CreateThumbnailOfCoverImage(book, options, null);
+			CreateThumbnailOfCoverImage(book, options);
 
-			string thumbnailDestination = Path.Combine(book.FolderPath, options.FileName);
+			var thumbnailDestination = Path.Combine(book.FolderPath, options.FileName);
 			return thumbnailDestination;
 		}
 
@@ -197,10 +198,10 @@ namespace Bloom
 				{
 					if (imageSrc == transparentImageFile)
 						coverImage.Image = MakeImageOpaque(coverImage.Image, book.GetCoverColor());
-					if (options.CenterImageUsingTransparentPadding)
-						coverImage.Image = ImageUtils.CenterImageIfNecessary(new Size(size, size), coverImage.Image);
-					else
-						coverImage.Image = ImageUtils.ResizeImageIfNecessary(new Size(size, size), coverImage.Image);
+					var shouldAddDashedBorder = options.BorderStyle == HtmlThumbNailer.ThumbnailOptions.BorderStyles.Dashed;
+					coverImage.Image = options.CenterImageUsingTransparentPadding ?
+						ImageUtils.CenterImageIfNecessary(new Size(size, size), coverImage.Image, shouldAddDashedBorder) :
+						ImageUtils.ResizeImageIfNecessary(new Size(size, size), coverImage.Image, shouldAddDashedBorder);
 					switch(Path.GetExtension(destFilePath).ToLowerInvariant())
 					{
 					case ".jpg":
@@ -248,7 +249,7 @@ namespace Bloom
 		/// </summary>
 		public static HtmlThumbNailer.ThumbnailOptions GetCoverThumbnailOptions(int height, Guid requestId)
 		{
-			HtmlThumbNailer.ThumbnailOptions options = new HtmlThumbNailer.ThumbnailOptions
+			var options = new HtmlThumbNailer.ThumbnailOptions
 			{
 				//since this is destined for HTML, it's much easier to handle if there is no pre-padding
 				CenterImageUsingTransparentPadding = false,
@@ -342,6 +343,13 @@ namespace Bloom
 				}, false);
 		}
 
+		private static HtmlThumbNailer.ThumbnailOptions.BorderStyles GetThumbnailBorderStyle(Book.Book book)
+		{
+			return book.IsSuitableForMakingShells
+				? HtmlThumbNailer.ThumbnailOptions.BorderStyles.Dashed
+				: HtmlThumbNailer.ThumbnailOptions.BorderStyles.None;
+		}
+
 		/// <summary>
 		/// Will call either 'callback' or 'errorCallback' UNLESS the thumbnail is readonly, in which case it will do neither.
 		/// </summary>
@@ -365,9 +373,7 @@ namespace Bloom
 
 				_thumbnailProvider.RemoveFromCache(book.Storage.Key);
 
-				thumbnailOptions.BorderStyle = (book.IsSuitableForMakingShells)
-					? HtmlThumbNailer.ThumbnailOptions.BorderStyles.Dashed // unique style for templates
-					: HtmlThumbNailer.ThumbnailOptions.BorderStyles.Solid;
+				thumbnailOptions.BorderStyle = GetThumbnailBorderStyle(book);
 				GetThumbNailOfBookCover(book, thumbnailOptions, image => callback(book.BookInfo, image),
 					error =>
 					{
