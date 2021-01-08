@@ -839,7 +839,8 @@ namespace Bloom.Publish.Epub
 					// We have some subelements to worry about.
 
 					string timingsStr = audioSentenceElement.GetAttribute("data-audiorecordingendtimes");    // These should be in seconds
-
+					if (String.IsNullOrEmpty(timingsStr))
+						timingsStr = audioSentenceElement.GetAttribute("data-duration");    // audio hasn't been split (https://issues.bloomlibrary.org/youtrack/issue/BL-9370)
 					string[] timingFields = timingsStr.Split(' ');
 					var segmentEndTimesSecs = new List<float>(timingFields.Length);
 					foreach (var timing in timingFields)
