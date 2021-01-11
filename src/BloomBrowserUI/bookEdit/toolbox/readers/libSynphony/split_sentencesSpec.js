@@ -9,7 +9,7 @@
 
 //dump it in (how else to activate the jquery extensions it adds?)
 import "./synphony_lib";
-import { _ } from "underscore";
+import _ from "underscore";
 import { theOneLibSynphony, LanguageData } from "./synphony_lib";
 
 describe("Splitting text into sentences", function() {

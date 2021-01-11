@@ -517,7 +517,7 @@ function displayWordsForSelectedStage(wordsStr: string): void {
 
     // add sight words
     _.each(sightWords, (sw: string) => {
-        let word: DataWord = _.find(words, (w: DataWord) => {
+        let word: DataWord | undefined = _.find(words, (w: DataWord) => {
             return w.Name === sw;
         });
 

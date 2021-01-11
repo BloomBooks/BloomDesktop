@@ -1,5 +1,4 @@
 /// <reference path="libSynphony/synphony_lib.d.ts" />
-/// <reference path="../../../typings/underscore/underscore.d.ts" />
 /// <reference path="../../../typings/jquery/jquery.d.ts" />
 /// <reference path="ReaderSettings.ts" />
 
@@ -45,13 +44,15 @@ export default class ReadersSynphonyWrapper {
         if (stgs) {
             this.stages = [];
             for (var j = 0; j < stgs.length; j++) {
-                this.AddStage(<ReaderStage>(
-                    jQuery.extend(
-                        true,
-                        new ReaderStage((j + 1).toString()),
-                        stgs[j]
+                this.AddStage(
+                    <ReaderStage>(
+                        jQuery.extend(
+                            true,
+                            new ReaderStage((j + 1).toString()),
+                            stgs[j]
+                        )
                     )
-                ));
+                );
             }
         }
 
@@ -59,13 +60,15 @@ export default class ReadersSynphonyWrapper {
         if (lvls) {
             this.levels = [];
             for (var i = 0; i < lvls.length; i++) {
-                this.addLevel(<ReaderLevel>(
-                    jQuery.extend(
-                        true,
-                        new ReaderLevel((i + 1).toString()),
-                        lvls[i]
+                this.addLevel(
+                    <ReaderLevel>(
+                        jQuery.extend(
+                            true,
+                            new ReaderLevel((i + 1).toString()),
+                            lvls[i]
+                        )
                     )
-                ));
+                );
             }
         }
         theOneLibSynphony.setExtraSentencePunctuation(

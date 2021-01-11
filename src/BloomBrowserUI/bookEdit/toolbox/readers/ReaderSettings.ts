@@ -1,5 +1,3 @@
-/// <reference path="../../../typings/underscore/underscore.d.ts" />
-
 /**
  * Decodable Leveled Reader Settings
  */

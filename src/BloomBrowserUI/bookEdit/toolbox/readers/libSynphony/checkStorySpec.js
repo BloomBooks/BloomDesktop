@@ -1,5 +1,5 @@
 import { theOneLibSynphony, setLangData } from "./synphony_lib";
-import { _ } from "underscore";
+import _ from "underscore";
 
 describe("Check Story", function() {
     const lettersInLanguage = [
