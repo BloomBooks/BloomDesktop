@@ -189,7 +189,12 @@ div.bloom-page {
     // So hide anything overflowing the page. BL-9352.
     // Note that this does not negatively affect full-bleed because the bleed
     // is still considered part of the page.
-    overflow: hidden;
+    // Only hide overflow on non-template pages, since in templates this would hide the page label
+    // that we want to be able to edit (BL-9045). (We tried only hiding x overflow, but somehow it STILL
+    // hid the pageLabel!)
+    &:not(.bloom-templateMode) {
+        overflow: hidden;
+    }
 }
 div#bloomDataDiv {
     display: none;
