@@ -1176,14 +1176,16 @@ namespace BloomTests.Book
 		[Test]
 		public void GetRequiredVersions_MixtureOfComicStyles_ReturnsComic()
 		{
-			var storage = GetInitialStorageWithCustomHtml(@"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
-			<body><div class='bloom-page'>
-				<div class='bloom-imageContainer'>
-					<div class='bloom-textOverPicture' data-bubble='" + MinimalDataBubbleValue + @"'/>
-					<svg class='comical-generated' />
-					<div class='bloom-textOverPicture' data-bubble='{`version`:`1.0`,`level`:1,`style`:`ellipse`,`tails`:[]}'/>
-				</div>
-			</div></body></html>");
+			const string captionBubbleWithNoTail = "{`version`:`1.0`,`level`:1,`style`:`caption`,`tails`:[]}";
+			var storage = GetInitialStorageWithCustomHtml(
+				@"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
+				<body><div class='bloom-page'>
+					<div class='bloom-imageContainer'>
+						<div class='bloom-textOverPicture' data-bubble='" + MinimalDataBubbleValue + @"'/>
+						<svg class='comical-generated' />
+						<div class='bloom-textOverPicture' data-bubble='" + captionBubbleWithNoTail + @"'/>
+					</div>
+				</div></body></html>");
 			var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
 
 			Assert.That(requiredVersions.Length, Is.EqualTo(1));
@@ -1191,6 +1193,35 @@ namespace BloomTests.Book
 			Assert.That(requiredVersions[0].FeatureId, Is.EqualTo("comical-1"));
 			Assert.That(requiredVersions[0].FeaturePhrase, Is.EqualTo("Support for Comics"));
 			Assert.That(requiredVersions[0].BloomDesktopMinVersion, Is.EqualTo("4.7"));
+			Assert.That(requiredVersions[0].BloomReaderMinVersion, Is.EqualTo("1.0"));
+		}
+
+		[Test]
+		public void GetRequiredVersions_MixtureOfComics_ReturnsBothComic1and2()
+		{
+			const string ellipseBubble = "{`version`:`1.0`,`level`:1,`style`:`ellipse`,`tails`:[{`tipX`:578,`tipY`:11,`midpointX`:566,`midpointY`:32,`autoCurve`:true}]}";
+			const string captionBubbleWithTail = "{`version`:`1.0`,`level`:1,`style`:`caption`,`tails`:[{`tipX`:332,`tipY`:287,`midpointX`:293,`midpointY`:124,`autoCurve`:true}]}";
+			// Added .ui-resizable because of an initial xpath error that only worked if the class had only .bloom-textOverPicture
+			var storage = GetInitialStorageWithCustomHtml(@"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
+			<body><div class='bloom-page'>
+				<div class='bloom-imageContainer'>
+					<div class='bloom-textOverPicture ui-resizable' data-bubble='" + ellipseBubble + @"'/>
+					<svg class='comical-generated' />
+					<div class='bloom-textOverPicture ui-resizable' data-bubble='" + captionBubbleWithTail + @"'/>
+				</div>
+			</div></body></html>");
+			var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
+
+			Assert.That(requiredVersions.Length, Is.EqualTo(2));
+
+			Assert.That(requiredVersions[1].FeatureId, Is.EqualTo("comical-1"));
+			Assert.That(requiredVersions[1].FeaturePhrase, Is.EqualTo("Support for Comics"));
+			Assert.That(requiredVersions[1].BloomDesktopMinVersion, Is.EqualTo("4.7"));
+			Assert.That(requiredVersions[1].BloomReaderMinVersion, Is.EqualTo("1.0"));
+
+			Assert.That(requiredVersions[0].FeatureId, Is.EqualTo("comical-2"));
+			Assert.That(requiredVersions[0].FeaturePhrase, Is.EqualTo("Support for Comic Captions with Straight Line Tails"));
+			Assert.That(requiredVersions[0].BloomDesktopMinVersion, Is.EqualTo("5.0"));
 			Assert.That(requiredVersions[0].BloomReaderMinVersion, Is.EqualTo("1.0"));
 		}
 
