@@ -569,16 +569,12 @@ namespace Bloom.Book
 			var builder = new StringBuilder();
 			builder.Append("<html><head><meta charset=\"UTF-8\" /></head><body style='font-family:arial,sans'>");
 
-			if(Storage != null)
-			{
-				builder.AppendLine(Storage.GetBrokenBookRecommendationHtml());
-			}
-			else
-			{
-				builder.AppendLine(BookStorage.GenericBookProblemNotice);
-			}
+			builder.AppendLine(
+				Storage != null ?
+					Storage.GetBrokenBookRecommendationHtml() :
+					BookStorage.GenericBookProblemNotice);
 
-			// often GetBrokenBookRecommendation and FatalErrorDescription both come from _storage.ErrorMessagesHtml.
+			// Often GetBrokenBookRecommendation and FatalErrorDescription both come from _storage.ErrorMessagesHtml.
 			// Try not to say the same thing twice.
 			if (FatalErrorDescription != null && !builder.ToString().Contains(FatalErrorDescription))
 				builder.Append(FatalErrorDescription);

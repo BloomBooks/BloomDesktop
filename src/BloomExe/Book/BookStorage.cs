@@ -256,14 +256,23 @@ namespace Bloom.Book
 			return null;
 		}
 
-		// Returns HTML with error message for any features that this book contains which cannot be opened by this version of Bloom.
-		// Note that although we don't allow the user to open the book (because if this version opens and saves the book, it will cause major problems for a later version of Bloom),
-		// here isn't actually any corruption or malformed data or anything particularly wrong with the book storage. So, we need to handle these kind of errors differently than validation errors.
+		/// <summary>
+		/// Returns HTML with error message for any features that this book contains which cannot be opened
+		/// by this version of Bloom.
+		/// </summary>
+		/// <remarks>
+		/// Note that although we don't allow the user to open the book (because if this version opens and
+		/// saves the book, it will cause major problems for a later version of Bloom), there isn't actually
+		/// any corruption or malformed data or anything particularly wrong with the book storage.
+		/// 
+		/// So, we need to handle these kind of errors differently than validation errors.
+		///</remarks>
+		/// <returns>HTML error message or empty string, if no error.</returns>
 		public string GetHtmlMessageIfFeatureIncompatibility()
 		{
 			// Check if there are any features in this file format (which is readable), but which won't be supported (and have effects bad enough to warrant blocking opening) in this version.
-			string featureVersionRequirementJson = Dom.GetMetaValue("FeatureRequirement", "");
-			if (String.IsNullOrEmpty(featureVersionRequirementJson))
+			var featureVersionRequirementJson = Dom.GetMetaValue("FeatureRequirement", "");
+			if (string.IsNullOrEmpty(featureVersionRequirementJson))
 			{
 				return "";
 			}
@@ -344,7 +353,7 @@ namespace Bloom.Book
 			BookInfo.FormatVersion = formatVersion;
 
 			var requiredVersions = GetRequiredVersionsString(Dom);
-			if (!String.IsNullOrEmpty(requiredVersions))
+			if (!string.IsNullOrEmpty(requiredVersions))
 			{
 				Dom.UpdateMetaElement("FeatureRequirement", requiredVersions);
 			}
@@ -708,6 +717,15 @@ namespace Bloom.Book
 				// We've updated Bloom to only store SVGs in the file if they are non-transparent. So now a
 				// Bloom book is considered 'comical' for Publishing, etc. if it has a comical-generated SVG.
 				XPath = ComicalXpath
+			},
+			new Feature() {FeatureId = "comical-2",
+				FeaturePhrase = "Support for Comic Captions with Straight Line Tails",
+				BloomDesktopMinVersion = "5.0",
+				BloomReaderMinVersion = "1.0",
+				// Bloom now allows comical Captions to have straight line tails, but if we open such a book
+				// in an older version of Bloom which nevertheless has comical, it will give it a normal bubble tail.
+				// This xpath finds a bubble with a "caption" style and a non-empty tail spec.
+				XPath = "//div[contains(@class,'bloom-textOverPicture') and contains(@data-bubble, '`caption`') and contains(@data-bubble, '`tails`:[{`')]"
 			}
 		};
 
@@ -739,8 +757,14 @@ namespace Bloom.Book
 			return result;
 		}
 
-		// Determines which features will have serious breaking effects if not opened in the proper version of any relevant Bloom products
-		// Note: This should include not only BloomDesktop considerations, but needs to insert enough information for things like BloomReader to be able to figure it out too
+		/// <summary>
+		/// Determines which features will have serious breaking effects if not opened in the proper version of any
+		/// relevant Bloom products.
+		/// </summary>
+		/// <remarks>
+		/// This should include not only BloomDesktop considerations, but needs to insert enough information
+		/// for things like BloomReader to be able to figure it out too.
+		/// </remarks>
 		public static IOrderedEnumerable<VersionRequirement> GetRequiredVersions(HtmlDom dom)
 		{
 			var reqList = new List<VersionRequirement>();
@@ -1637,7 +1661,7 @@ namespace Bloom.Book
 				}
 
 				// delete any existing branding css so that if they change to one without one, the old one isn't sticking around
-				string brandingPath = Path.Combine(FolderPath, "branding.css");
+				var brandingPath = Path.Combine(FolderPath, "branding.css");
 				if (RobustFile.Exists(brandingPath))
 				{
 					RobustFile.Delete(brandingPath);
@@ -1651,9 +1675,10 @@ namespace Bloom.Book
 				// at some point where the Book constructor wanted to know whether the book was editable (which
 				// triggers a check since books that don't validate aren't editable).
 				// Hopefully this is OK since another old comment said,
-				// we did in fact change things so that storage isn't used until we've shown all the thumbnails we can (then we go back and update in background)
+				// "We did in fact change things so that storage isn't used until we've shown all the thumbnails we can
+				// (then we go back and update in background)."
 				InitialLoadErrors = ValidateBook(Dom, pathToExistingHtml);
-				if (forSelectedBook && !String.IsNullOrEmpty(InitialLoadErrors))
+				if (forSelectedBook && !string.IsNullOrEmpty(InitialLoadErrors))
 				{
 					XmlDocument possibleBackupDom;
 					if (TryGetValidXmlDomFromHtmlFile(backupPath, out possibleBackupDom))
@@ -1664,10 +1689,10 @@ namespace Bloom.Book
 					}
 				}
 
-				//For now, we really need to do this check, at least. This will get picked up by the Book later (feeling kludgy!)
-				//I assume the following will never trigger (I also note that the dom isn't even loaded):
+				// For now, we really need to do this check, at least. This will get picked up by the Book later (feeling kludgy!)
+				// I assume the following will never trigger (I also note that the dom isn't even loaded):
 
-				if (!String.IsNullOrEmpty(ErrorMessagesHtml))
+				if (!string.IsNullOrEmpty(ErrorMessagesHtml))
 				{
 					Dom.RawDom.LoadXml(
 						"<html><body>There is a problem with the html structure of this book which will require expert help.</body></html>");
@@ -1675,11 +1700,13 @@ namespace Bloom.Book
 						"{0}: There is a problem with the html structure of this book which will require expert help: {1}",
 						PathToExistingHtml, ErrorMessagesHtml);
 				}
-					//The following is a patch pushed out on the 25th build after 1.0 was released in order to give us a bit of backwards version protection (I should have done this originally and in a less kludgy fashion than I'm forced to do now)
+				// The following is a patch pushed out on the 25th build after 1.0 was released in order to give us
+				// a bit of backwards version protection (I should have done this originally and in a less kludgy fashion
+				// than I'm forced to do now).
 				else
 				{
 					var incompatibleVersionMessage = GetHtmlMessageIfVersionIsIncompatibleWithThisBloom(Dom, PathToExistingHtml);
-					if (!String.IsNullOrWhiteSpace(incompatibleVersionMessage))
+					if (!string.IsNullOrWhiteSpace(incompatibleVersionMessage))
 					{
 						ErrorMessagesHtml = incompatibleVersionMessage;
 						Logger.WriteEvent("*** ERROR: " + incompatibleVersionMessage);
@@ -1687,23 +1714,19 @@ namespace Bloom.Book
 						ErrorAllowsReporting = true;
 						return;
 					}
-					else
-					{
-						var incompatibleFeatureMessage = GetHtmlMessageIfFeatureIncompatibility();
-						if (!String.IsNullOrWhiteSpace(incompatibleFeatureMessage))
-						{
-							ErrorMessagesHtml = incompatibleFeatureMessage;
-							Logger.WriteEvent("*** ERROR: " + incompatibleFeatureMessage);
-							_errorAlreadyContainsInstructions = true;
-							ErrorAllowsReporting = false;	// This doesn't any corruption or bugs in the code, so no reporting button needed.
-							return;
-						}
 
-						else
-						{
-							Logger.WriteEvent("BookStorage Loading Dom from {0}", PathToExistingHtml);
-						}
+					var incompatibleFeatureMessage = GetHtmlMessageIfFeatureIncompatibility();
+					if (!string.IsNullOrWhiteSpace(incompatibleFeatureMessage))
+					{
+						ErrorMessagesHtml = incompatibleFeatureMessage;
+						Logger.WriteEvent("*** ERROR: " + incompatibleFeatureMessage);
+						_errorAlreadyContainsInstructions = true;
+						// This doesn't reflect any corruption or bugs in the code, so no reporting button needed.
+						ErrorAllowsReporting = false;
+						return;
 					}
+
+					Logger.WriteEvent("BookStorage Loading Dom from {0}", PathToExistingHtml);
 				}
 
 				// probably not needed at runtime if !forSelectedBook, but one unit test relies on it having been done, and is very fast, so ok.
