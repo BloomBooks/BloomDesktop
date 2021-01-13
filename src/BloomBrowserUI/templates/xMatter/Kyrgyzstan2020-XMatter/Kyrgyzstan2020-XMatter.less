@@ -23,6 +23,11 @@
     --OutsideBackCoverLogoHeight: 10mm;
     --OutsideBackCoverCreditsFontSize: 9pt;
 }
+.Device16x9Landscape {
+    --HeaderHeight: 2.5cm;
+    --OutsideBackCoverLogoHeight: 10mm;
+    --OutsideBackCoverCreditsFontSize: 9pt;
+}
 
 // we need a lot of classes here to overcome the unfortunately "!important" class put in by Bloom at runtime
 div.bloom-page.outsideFrontCover.coverColor,
@@ -243,7 +248,8 @@ div.bloom-page.outsideBackCover.coverColor {
 .A4Landscape,
 .A3Portrait,
 .A3Landscape,
-.Device16x9Portrait {
+.Device16x9Portrait,
+.Device16x9Landscape {
     .outside-back-cover-branding-top-block {
         justify-content: space-between;
     }
@@ -294,7 +300,7 @@ div.bloom-page {
 }
 
 .bloom-mediaBox {
-    &::before {
+    :not(.Device16x9Portrait):not(.Device16x9Landscape)&::before {
         // we're not expecting an edge-to-edge images, so no need ot show the transparent bleed area. Just make it black.
         border-color: black !important;
     }
@@ -316,7 +322,8 @@ div.bloom-page {
     }
 }
 // NOTE. The existence of this selector tells XMatterHelper that we can handle device layout, so don't revert to a specialized one.
-.Device16x9Portrait {
+.Device16x9Portrait,
+.Device16x9Landscape {
     &.frontCover {
         .bloom-translationGroup.bookTitle {
             padding-top: 0;
@@ -326,10 +333,7 @@ div.bloom-page {
     &.outsideBackCover {
         .marginBox {
             left: 19px !important;
-            width: 89mm;
-            top: 10px;
             height: calc(100% - 8mm) !important;
-
             .outside-back-cover-branding-top-block {
                 height: var(--HeaderHeight);
                 padding-top: unset;
@@ -337,35 +341,57 @@ div.bloom-page {
             [data-book="outside-back-cover-branding-top-right-html"] img {
                 margin-left: 75px;
             }
+        }
 
-            .bottomHalfGrid {
-                height: 600px;
-                display: grid;
-                grid-template-columns: auto;
-                grid-template-rows: 250px 30px auto;
-                [data-book="level-image"] {
-                    grid-row: 2;
-                    grid-column: 1;
-                }
+        .bottomHalfGrid {
+            display: grid;
+            grid-template-columns: auto;
+            [data-book="level-image"] {
+                padding-top: 20px;
+                margin: 0;
+                height: 200px !important;
+            }
+        }
+        .divider {
+            bottom: 0px !important;
+        }
+    }
+}
+.Device16x9Portrait {
+    &.outsideBackCover {
+        .marginBox {
+            width: 89mm;
+        }
 
-                .bloom-translationGroup {
-                    grid-row: 1;
-                }
-                .divider {
-                    grid-row: 2;
-                }
-                [data-book="level-image"] {
-                    padding-top: 20px;
-                    grid-row: 3;
-                    // grid-column: 1;
-                    img {
-                        height: 250px;
-                    }
-                }
+        .bottomHalfGrid {
+            height: 600px;
+            grid-template-rows: 250px 30px auto;
+
+            .bloom-translationGroup {
+                grid-row: 1;
+            }
+            [data-book="level-image"] {
+                grid-row: 2;
             }
         }
     }
 }
+.Device16x9Landscape {
+    &.outsideBackCover {
+        .marginBox {
+            width: calc(100% - 11mm);
+        }
+        .bottomHalfGrid {
+            .bloom-translationGroup {
+                grid-column: 1;
+            }
+            [data-book="level-image"] {
+                grid-column: 2;
+            }
+        }
+    }
+}
+
 .A3Portrait {
     .divider {
         height: 3em; // I don't know why this is necessary. Without it, even overflow-x:hidden cuts off the diamonds.
