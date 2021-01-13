@@ -159,6 +159,30 @@ div.bloom-page.outsideBackCover.coverColor {
     }
 }
 
+.A5Landscape,
+.A4Landscape,
+.A3Landscape,
+.Device16x9Landscape {
+    &.outsideBackCover {
+        .bottomHalfGrid {
+            .bloom-translationGroup {
+                // These rules vertically align the text for landscape only.
+                // Presently, it is unclear whether portrait should be vertically aligned.
+                // If all layouts should be vertically aligned, it would be possible to
+                // simply add the bloom-vertical-align-center class to the translation group.
+                // But since the user can't get to the control for that in xmatter anyway,
+                // this seems just as good for now (and allows the difference for orientation).
+                justify-content: center;
+                .bloom-editable.bloom-visibility-code-on,
+                .bloom-editable.bloom-visibility-user-on {
+                    justify-content: center;
+                    display: flex;
+                }
+            }
+        }
+    }
+}
+
 .frontCover,
 .outsideBackCover {
     .divider {
