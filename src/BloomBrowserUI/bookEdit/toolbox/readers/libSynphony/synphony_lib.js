@@ -1,5 +1,5 @@
 import XRegExp from "xregexp";
-import { _ } from "underscore";
+import _ from "underscore";
 
 /**
  * synphony_lib.js
