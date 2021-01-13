@@ -34,7 +34,7 @@ body {
     & > * {
         pointer-events: auto; // start up clicks again a the next level
     }
-    &::before {
+    :not(.Device16x9Portrait):not(.Device16x9Landscape)&::before {
         // show bleed area
         content: "";
         position: absolute;
@@ -46,7 +46,7 @@ body {
         border: 3mm solid rgba(0, 0, 0, 0.4); // medium gray
         z-index: 1;
     }
-    &:after {
+    :not(.Device16x9Portrait):not(.Device16x9Landscape)&:after {
         // show safety area (the area inside of the trim box that still could get cut)
         content: "";
         position: absolute;
