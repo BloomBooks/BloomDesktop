@@ -330,7 +330,7 @@ div.bloom-page {
     }
     &::after {
         // don't show the trim area at all.
-        border: none;
+        border: none !important;
     }
 }
 
@@ -406,6 +406,7 @@ div.bloom-page {
             width: calc(100% - 11mm);
         }
         .bottomHalfGrid {
+            grid-template-columns: 310px auto;
             .bloom-translationGroup {
                 grid-column: 1;
             }
