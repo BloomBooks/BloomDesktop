@@ -951,6 +951,7 @@ namespace Bloom.Book
 				}
 			}
 			RemoveObsoleteSoundAttributes(bookDOM);
+			RemoveObsoleteImageAttributes(bookDOM);
 			BringBookInfoUpToDate(oldMetaData);
 			FixErrorsEncounteredByUsers(bookDOM);
 			AddReaderBodyClass(bookDOM);
@@ -3219,6 +3220,40 @@ namespace Bloom.Book
 					span.RemoveAttribute("data-duration");	// file no longer exists, shouldn't have any duration setting
 			}
 		}
+
+		/// <summary>
+		/// Remove any obsolete explicit image size and position left over from earlier versions of Bloom, before we had object-fit:contain.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-9401.  A similar fix exists in bookEdit/js/bloomImages.ts, but that applies
+		/// only when a page is opened in the edit tab.
+		/// </remarks>
+		private void RemoveObsoleteImageAttributes(HtmlDom htmlDom)
+		{
+			foreach (var img in htmlDom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-imageContainer')]/img[@style|@width|@height]").Cast<XmlElement>())
+			{
+				var style = img.GetOptionalStringAttribute("style", "");
+				var fixedStyle = RemoveSizeStyling(style);
+				if (String.IsNullOrEmpty(fixedStyle))
+					img.RemoveAttribute("style");
+				else if (fixedStyle != style)
+					img.SetAttribute("style", fixedStyle);
+				img.RemoveAttribute("width");
+				img.RemoveAttribute("height");
+			}
+		}
+
+		private string RemoveSizeStyling(string style)
+		{
+			// For example, style="width: 404px; height: 334px; margin-left: 1px; margin-top: 0px;"
+			// should reduce to "".
+			var style1 = Regex.Replace(style, "width: *[0-9a-z]+;", "");
+			var style2 = Regex.Replace(style1, "height: *[0-9a-z]+;", "");
+			var style3 = Regex.Replace(style2, "margin-left: *[0-9a-z]+;", "");
+			var style4 = Regex.Replace(style3, "margin-top: *[0-9a-z]+;", "");
+			return style4.Trim();
+		}
+
 
 		//used by the command-line "hydrate" command
 		public bool LockDownTheFileAndFolderName { get; set; }

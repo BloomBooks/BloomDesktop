@@ -272,6 +272,10 @@ namespace BloomTests.Book
 			Assert.AreEqual(imageFilename, dataBookImage.InnerText);
 			var pageImage = dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'bloom-imageContainer')]/img[@data-book='coverImage']");
 			Assert.IsTrue(pageImage.Attributes["src"].Value.Equals(noPlusEncodedName));
+
+			// Test that obsolete img attributes are gone.
+			Assert.IsNull(pageImage.GetOptionalStringAttribute("style", null));
+			Assert.IsNull(pageImage.GetOptionalStringAttribute("height", null));
 		}
 
 		[Test]
@@ -284,6 +288,44 @@ namespace BloomTests.Book
 			book.BringBookUpToDate(new NullProgress());
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@idc='copyOfVTitle'  and @lang='xyz']");
 			Assert.AreEqual("peace", textarea2.InnerText);
+		}
+
+		[Test]
+		public void BringBookUpToDate_RemovesObsoleteImageAttributes()
+		{
+			SetDom(@"<div class='bloom-page numberedPage' data-page='' id='0bc78841-6372-4e47-bacf-d11038d538d2' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398382;87768516-08f4-41db-a33e-767322137e5a' lang='' data-page-number='1'>
+  <div class='something-or-other'>
+    <div title='The Moon and The Cap_Page 021.jpg' class='bloom-imageContainer bloom-leadingElement'>
+      <img style='width: 404px; height: 334px; margin-left: 1px; margin-top: 0px;' data-license='cc-by' data-creator='Angie and Upesh' data-copyright='Copyright © 2007, Pratham Books' src='The%20Moon%20and%20The%20Cap_Page%20021.jpg' alt='' height='334' width='404' />
+    </div>
+    <div title='The Moon and The Cap_Page 021.jpg' class='bloom-imageContainer bloom-trailingElement'>
+      <img data-license='cc-by' data-creator='Angie and Upesh' data-copyright='Copyright © 2007, Pratham Books' src='The%20Moon%20and%20The%20Cap_Page%20021.jpg' alt='' height='334' width='404' />
+    </div>
+    <div title='The Moon and The Cap_Page 021.jpg' class='bloom-imageContainer bloom-leadingElement'>
+      <img style='width: 404px; height: 334px; padding: 3px; margin-left: 1px; margin-top: 0px;' data-license='cc-by' data-creator='Angie and Upesh' data-copyright='Copyright © 2007, Pratham Books' src='The%20Moon%20and%20The%20Cap_Page%20021.jpg' alt='' height='334' width='404' />
+    </div>
+    <div class='branding-Test'>
+      <img style='margin-top: 1em;' data-license='cc-by' data-creator='Joe' data-copyright='© 2007, Joe' src='BrandingTest.png' alt='' />
+    </div>
+  </div>
+</div>
+");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			var imgsBefore = dom.SafeSelectNodes("//div[contains(@class,'bloom-imageContainer')]/img[@style|@width|@height]").Cast<XmlElement>();
+			Assert.AreEqual(3, imgsBefore.Count(), "3 bloom-imageContainer images had style/size attributes");
+			imgsBefore = dom.SafeSelectNodes("//img[@style]").Cast<XmlElement>();
+			Assert.AreEqual(3, imgsBefore.Count(), "3 images had style attributes");
+
+			book.BringBookUpToDate(new NullProgress());
+
+			var imgsAfter = dom.SafeSelectNodes("//div[contains(@class,'bloom-imageContainer')]/img[@style|@width|@height]").Cast<XmlElement>();
+			Assert.AreEqual(1, imgsAfter.Count(), "1 bloom-imageContainer image has style/size attributes after updating");
+			var img = imgsAfter.First<XmlElement>();
+			var updatedStyle = img.GetOptionalStringAttribute("style", null);
+			Assert.AreEqual("padding: 3px;", updatedStyle, "unrecognized style css items are preserved");
+			imgsAfter = dom.SafeSelectNodes("//img[@style]").Cast<XmlElement>();
+			Assert.AreEqual(2, imgsAfter.Count(), "2 images have style attribute after updating");
 		}
 
 		[Test]
