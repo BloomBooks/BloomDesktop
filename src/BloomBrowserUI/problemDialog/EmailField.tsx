@@ -22,9 +22,10 @@ export const EmailField: React.FunctionComponent<{
 }> = props => {
     const [emailValid, setEmailValid] = useState(false);
 
-    const [debouncedEmailCheck] = useDebouncedCallback(value => {
+    const debounced = useDebouncedCallback(value => {
         setEmailValid(isValidEmail(value));
     }, 100);
+    const debouncedEmailCheck = debounced.callback;
 
     const localizedEmail = useL10n("Email", "ReportProblemDialog.Email");
 

@@ -1,15 +1,10 @@
 //not yet: neither bloomEditing nor this is yet a module import {SetupImage} from './bloomEditing';
 ///<reference path="../../lib/split-pane/split-pane.d.ts" />
-///<reference path="../../typings/css-element-queries.d.ts" />
 import { SetupImage } from "./bloomImages";
 import "split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
 import { BloomApi } from "../../utils/bloomApi";
-
-// Future: import { ElementQueries } from "css-element-queries";
-// Now: the following is needed by the combination of the old css-element-queries (0.3.2) and
-// old gecko (45) that we have at least through Bloom 4.5. Also the (<any>window). targets can also go away when we upgrade.
-require("css-element-queries"); // without this, geckofx 45 gives "TypeError: css_element_queries_1.ElementQueries is undefined"
+import { ElementQueries } from "css-element-queries";
 
 $(() => {
     $("div.split-pane").splitPane();
@@ -113,7 +108,7 @@ function setupLayoutMode() {
     });
 
     //have  css-element-queries notice the new elements and track them, adding classes that let rules trigger depending on size
-    (<any>window).ElementQueries.init();
+    ElementQueries.init();
 }
 
 // N.B. If you add/remove a container class, you'll likely need to modify 'createTypeSelectors()' too.
@@ -180,7 +175,7 @@ function splitClickHandler() {
     else if ($(this).hasClass("add-left"))
         performSplit(myInner, "vertical", "right", "left", true);
 
-    (<any>window).ElementQueries.init(); //notice the new elements and track them, adding classes that let rules trigger depending on size
+    ElementQueries.init(); //notice the new elements and track them, adding classes that let rules trigger depending on size
 }
 
 function performSplit(
