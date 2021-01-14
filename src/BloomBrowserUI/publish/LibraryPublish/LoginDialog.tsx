@@ -5,7 +5,7 @@ import { makeTheme } from "../../problemDialog/theme";
 
 import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth";
 // these two firebase imports are strange, but not an error. See https://github.com/firebase/firebase-js-sdk/issues/1832
-import * as firebase from "firebase/app";
+import firebase from "firebase/app";
 import "firebase/auth";
 import { BloomApi } from "../../utils/bloomApi";
 import { useState, useEffect } from "react";
