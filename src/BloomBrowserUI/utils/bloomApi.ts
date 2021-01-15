@@ -252,8 +252,9 @@ export class BloomApi {
     }
 
     public static postBoolean(urlSuffix: string, value: boolean) {
+        const data = this.adjustFalsyData(value); // Need to stringify FALSE value in axios 0.20
         BloomApi.wrapAxios(
-            axios.post(this.kBloomApiPrefix + urlSuffix, value, {
+            axios.post(this.kBloomApiPrefix + urlSuffix, data, {
                 headers: {
                     "Content-Type": "application/json"
                 }
@@ -302,6 +303,8 @@ export class BloomApi {
         successCallback?: (r: AxiosResponse) => void,
         errorCallback?: (r: AxiosResponse) => void
     ): Promise<void | AxiosResponse<any>> {
+        data = this.adjustFalsyData(data);
+
         return BloomApi.wrapAxios(
             axios
                 .post(this.kBloomApiPrefix + urlSuffix, data)
@@ -326,6 +329,7 @@ export class BloomApi {
         successCallback?: (r: AxiosResponse) => void,
         errorCallback?: (r: AxiosResponse) => void
     ): Promise<void | AxiosResponse<any>> {
+        data = this.adjustFalsyData(data);
         return BloomApi.wrapAxios(
             axios
                 .post(this.kBloomApiPrefix + urlSuffix, data, config)
@@ -354,6 +358,7 @@ export class BloomApi {
         successCallback?: (r: AxiosResponse) => void,
         errorCallback?: (r: AxiosResponse) => void
     ): Promise<void | AxiosResponse<any>> {
+        data = this.adjustFalsyData(data);
         return BloomApi.postDataWithConfig(
             urlSuffix,
             data,
@@ -379,6 +384,12 @@ export class BloomApi {
                 headers: { "Content-Type": "text/plain" }
             }
         );
+    }
+
+    private static adjustFalsyData(data: any): any {
+        // In axios 0.20.0, it was observed that 0 and false would cause an empty body to be sent, whereas previously they sent the value itself.
+        // (I conjecture this is because 0 and false are falsy, and axios has some check based on whether data is falsy or not).
+        return data === 0 || data === false ? JSON.stringify(data) : data;
     }
 }
 
