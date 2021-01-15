@@ -27,7 +27,7 @@ import {
     specialColors,
     defaultBackgroundColors,
     defaultTextColors,
-    getSwatchFromHex,
+    getSwatchFromBubbleSpecColor,
     isSpecialColorName,
     getSpecialColorName
 } from "./comicToolColorHelper";
@@ -92,8 +92,8 @@ const ComicToolControls: React.FunctionComponent = () => {
 
         const bubbleSpec = bubbleManager.getSelectedItemBubbleSpec();
 
-        // The callback function is (currently) called when switching between bubbles, but is not called if the tail spec changes,
-        // or for style and similar changes to the bubble that are initiated by React.
+        // The callback function is (currently) called when switching between bubbles, but is not called
+        // if the tail spec changes, or for style and similar changes to the bubble that are initiated by React.
         bubbleManager.requestBubbleChangeNotification(
             (bubble: BubbleSpec | undefined) => {
                 setCurrentBubbleSpec(bubble);
@@ -126,27 +126,15 @@ const ComicToolControls: React.FunctionComponent = () => {
             );
             setOutlineColor(currentBubbleSpec.outerBorderColor);
             setBubbleActive(true);
-            // N.B. Don't forget to add spec opacity to call to 'getSwatchFromHex' (and maybe rename the method).
             const backColor = getBackgroundColorValue(currentBubbleSpec);
-            if (!isSpecialColorName(backColor)) {
-                const newSwatch = getSwatchFromHex(backColor);
-                // Enhance: When the bubble spec has opacity, update it here
-                // newSwatch.opacity = (currentBubbleSpec.opacity ? currentBubbleSpec.opacity : 1);
-                setBackgroundColorSwatch(newSwatch);
-            } else {
-                // A "special" color gradient, get our swatch from the definitions.
-                // It "has" to be there, because we just checked to see if the name was a special color!
-                const newSwatch = specialColors.find(
-                    color => color.name === backColor
-                ) as ISwatchDefn;
-                setBackgroundColorSwatch(newSwatch);
-            }
+            const newSwatch = getSwatchFromBubbleSpecColor(backColor);
+            setBackgroundColorSwatch(newSwatch);
 
             // Get the current bubble's textColor and set it
             const bubbleMgr = ComicTool.bubbleManager();
             if (bubbleMgr) {
                 const bubbleTextColor = bubbleMgr.getTextColor();
-                const newSwatch = getSwatchFromHex(bubbleTextColor);
+                const newSwatch = getSwatchFromBubbleSpecColor(bubbleTextColor);
                 setTextColorSwatch(newSwatch);
             }
         } else {
@@ -200,14 +188,14 @@ const ComicToolControls: React.FunctionComponent = () => {
         }
     };
 
-    const getBackgroundColorValue = (spec: BubbleSpec) => {
+    const getBackgroundColorValue = (spec: BubbleSpec): string => {
         const bubbleMgr = ComicTool.bubbleManager();
         if (bubbleMgr) {
             const backgroundColorArray = bubbleMgr.getBackgroundColorArray(
                 spec
             );
             if (backgroundColorArray.length === 1) {
-                return backgroundColorArray[0];
+                return backgroundColorArray[0]; // This could be a hex string or an rgba() string
             }
             const specialName = getSpecialColorName(backgroundColorArray);
             return specialName ? specialName : "white"; // maybe from a later version of Bloom? All we can do.
@@ -237,7 +225,10 @@ const ComicToolControls: React.FunctionComponent = () => {
 
             // Update the Comical canvas on the page frame
             const backgroundColors = newColorSwatch.colors;
-            bubbleMgr.setBackgroundColor(backgroundColors);
+            bubbleMgr.setBackgroundColor(
+                backgroundColors,
+                newColorSwatch.opacity
+            );
         }
     };
 
@@ -254,7 +245,6 @@ const ComicToolControls: React.FunctionComponent = () => {
             // Update the toolbox controls
             setOutlineColor(newValue);
 
-            // TODO: May need to massage the values before passing them to Comical
             // Update the Comical canvas on the page frame
             bubbleMgr.updateSelectedItemBubbleSpec({
                 outerBorderColor: newValue
@@ -392,12 +382,11 @@ const ComicToolControls: React.FunctionComponent = () => {
         getEditViewFrameExports().showColorPickerDialog(colorPickerDialogProps);
     };
 
-    // We have temporarily disabled the alpha slider for the background color chooser.
+    // The background color chooser uses an alpha slider for transparency.
     // Unfortunately, with an alpha slider, the hex input will automatically switch to rgb
     // the moment the user sets alpha to anything but max opacity.
     const launchBackgroundColorChooser = () => {
         const colorPickerDialogProps: IColorPickerDialogProps = {
-            noAlphaSlider: true, // Temporary, when BL-8537 is in testing, remove this line.
             localizedTitle: backgroundColorTitle,
             initialColor: backgroundColorSwatch,
             defaultSwatchColors: defaultBackgroundColors,

@@ -840,18 +840,16 @@ namespace Bloom.Book
 				var jsonObject = GetJsonObjectFromDataBubble(dataBubbleAttr);
 				if (jsonObject == null)
 					continue; // only happens if it fails to parse the "json"
+
+				// Note: background color strings with opacity will be in the form "rgba(r, g, b, a)",
+				// while text color strings and background strings w/o opacity could be hex strings or even named colors.
 				string[] backgroundColorArray = GetBackgroundColorsFromDataBubbleJsonObj(jsonObject);
 				if (backgroundColorArray == null || backgroundColorArray.Length == 0)
 					continue;
 
-				// Review: opacity doesn't yet exist in data-bubble, but it will when we do BL-8537.
-				// float.Parse() here keeps the opacity from being in quotes (and therefore a string)
-				// This is important for matching swatch opacity on the js end.
-				var opacityValue = GetOpacityFromDataBubbleJsonObj(jsonObject);
 				var backgroundColorString = DynamicJson.Serialize(new
 				{
-					colors = backgroundColorArray,
-					opacity = opacityValue
+					colors = backgroundColorArray
 				});
 
 				colorElementList.Add(backgroundColorString);
@@ -895,20 +893,6 @@ namespace Bloom.Book
 			catch (RuntimeBinderException)
 			{
 				return null; // This is the 'normal' branch if backgroundColors aren't defined.
-			}
-		}
-
-		private static float GetOpacityFromDataBubbleJsonObj(dynamic jsonObject)
-		{
-			if (jsonObject == null)
-				return 1F;
-			try
-			{
-				return float.Parse(jsonObject.opacity);
-			}
-			catch (RuntimeBinderException)
-			{
-				return 1F;
 			}
 		}
 

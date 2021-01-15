@@ -358,7 +358,7 @@ const defaultSwatches: ISwatchDefn[] = [
     { name: "grey", colors: ["#777777"] },
     { name: "black", colors: ["#000000"] },
     { name: "whiteToCalico", colors: ["white", "#DFB28B"] },
-    { name: "50%Portafino", colors: ["#7b8eb8"], opacity: 0.5 }
+    { name: "60%Portafino", colors: ["#7b8eb8"], opacity: 0.6 }
 ];
 
 storiesOf("Custom Color Chooser", module)

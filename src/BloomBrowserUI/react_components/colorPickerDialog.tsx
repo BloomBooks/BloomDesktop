@@ -18,6 +18,10 @@ import { BloomApi } from "../utils/bloomApi";
 import CustomColorPicker from "./customColorPicker";
 import * as tinycolor from "tinycolor2";
 import { ISwatchDefn } from "./colorSwatch";
+import {
+    getSpecialColorName,
+    getSwatchFromBubbleSpecColor
+} from "../bookEdit/toolbox/comic/comicToolColorHelper";
 import Draggable from "react-draggable";
 import "./colorPickerDialog.less";
 
@@ -54,19 +58,33 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
     React.useEffect(() => {
         if (open) {
             BloomApi.get("editView/getBookColors", result => {
-                const jsonString = result.data;
-                if (!jsonString.map) {
+                const jsonArray = result.data;
+                if (!jsonArray.map) {
                     return; // this means the conversion string -> JSON didn't work. Bad JSON?
                 }
                 // Maybe we first used this for text colors and now we're using it for background colors or vice versa.
                 // Add this usage's default colors, in case they weren't already there.
+                const swatchArray = convertJsonColorsToSwatches(jsonArray);
                 addNewSwatchesToArrayIfNecessary(
-                    props.defaultSwatchColors.concat(jsonString)
+                    props.defaultSwatchColors.concat(swatchArray)
                 );
             });
             setCurrentColor(props.initialColor);
         }
     }, [open]);
+
+    const convertJsonColorsToSwatches = (jsonArray: any): ISwatchDefn[] => {
+        return jsonArray.map((bubbleSpecColor: { colors: string[] }) => {
+            const colorArray = bubbleSpecColor.colors;
+            // check for a special color or gradient
+            let colorKey = getSpecialColorName(colorArray);
+            if (!colorKey) {
+                // Not a gradient or other "known" color, so there'll only be one color.
+                colorKey = colorArray[0];
+            }
+            return getSwatchFromBubbleSpecColor(colorKey);
+        });
+    };
 
     const onClose = (result: DialogResult) => {
         setOpen(false);

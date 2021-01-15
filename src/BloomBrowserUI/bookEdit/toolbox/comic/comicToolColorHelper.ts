@@ -1,3 +1,4 @@
+import tinycolor = require("tinycolor2");
 import { ISwatchDefn } from "../../../react_components/colorSwatch";
 
 export const specialColors: ISwatchDefn[] = [
@@ -52,13 +53,25 @@ const temp: ISwatchDefn[] = [
 // We insert the Super Bible gradients after our partial transparency menu item
 export const defaultBackgroundColors = temp.concat(specialColors);
 
-export const getSwatchFromHex = (
-    hexColor: string,
-    opacity?: number
+// Handles all types of color strings: special-named, hex, rgb(), or rgba().
+// If BubbleSpec entails opacity, this string should be of the form "rgba(r, g, b, a)".
+export const getSwatchFromBubbleSpecColor = (
+    bubbleSpecColor: string
 ): ISwatchDefn => {
+    if (isSpecialColorName(bubbleSpecColor)) {
+        // A "special" color gradient, get our swatch from the definitions.
+        // It "has" to be there, because we just checked to see if the name was a special color!
+        return specialColors.find(
+            color => color.name === bubbleSpecColor
+        ) as ISwatchDefn;
+    }
+    // If currentBubbleSpec has transparency, the background color will be an rgba() string.
+    // We need to pull out the "opacity" and add it to the swatch here.
+    const colorStruct = tinycolor(bubbleSpecColor);
+    const opacity = colorStruct.getAlpha();
     return {
-        colors: [hexColor],
-        opacity: opacity ? opacity : 1
+        colors: [`#${colorStruct.toHex()}`],
+        opacity: opacity
     };
 };
 
@@ -72,4 +85,13 @@ export const getSpecialColorName = (
         elem => elem.colors[1] === colorArray[1]
     );
     return special ? special.name : undefined;
+};
+
+export const getRgbaColorStringFromColorAndOpacity = (
+    color: string,
+    opacity: number
+): string => {
+    let rgbColor = tinycolor(color).toRgb();
+    rgbColor.a = opacity;
+    return tinycolor(rgbColor).toRgbString(); // actually format is "rgba(r, g, b, a)"
 };
