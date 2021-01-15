@@ -31,7 +31,7 @@ Có hai cách để sử dụng template của bạn. Cách một, làm sách m�
       </trans-unit>
       <trans-unit id="template.starter.labeleachpage">
         <source xml:lang="en">When you add pages to your template, make sure to give each one a useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</source>
-        <target xml:lang="vi" state="translated">Khi thêm trang vào template, hãy chắc chắn rằng mỗi trang đều có tên dễ hiểu<g id="genid-6" ctype="x-html-a" html:href="#note3">3<g id="genid-6" ctype="x-html-a" html:href="#note3">3</g></g>:</target>
+        <target xml:lang="vi" state="translated">Khi thêm trang vào template, hãy chắc chắn rằng mỗi trang đều có tên dễ hiểu<g id="genid-6" ctype="x-html-a" html:href="#note3">3<g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</target>
         <note>ID: template.starter.labeleachpage</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails">

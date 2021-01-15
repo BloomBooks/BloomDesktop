@@ -5,7 +5,7 @@
       <trans-unit id="AccessibilityCheck.AccessibilityChecker" sil:dynamic="true">
         <source xml:lang="en">Accessibility Checker</source>
         <note>ID: AccessibilityCheck.AccessibilityChecker</note>
-        <target xml:lang="tl" state="needs-translation">Accessibility Checker</target>
+        <target xml:lang="tl" state="translated">Accessibility Checker</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.ACEByDaisy" sil:dynamic="true">
         <source xml:lang="en">Ace by DAISY Automated Checks</source>
@@ -44,7 +44,7 @@
         <source xml:lang="en">Accessibility Checklist</source>
         <note>ID: AccessibilityCheck.Checklist</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
-        <target xml:lang="tl" state="needs-translation">Accessibility Checklist</target>
+        <target xml:lang="tl" state="translated">Accessibility Checklist</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.descriptionsForAllImages" sil:dynamic="true">
         <source xml:lang="en">Descriptions for all images</source>
@@ -236,12 +236,12 @@
       <trans-unit id="BookMetadata.a11yFeatures">
         <source xml:lang="en">Accessibility features</source>
         <note>ID: BookMetadata.a11yFeatures</note>
-        <target xml:lang="tl" state="needs-translation">Accessibility features</target>
+        <target xml:lang="tl" state="translated">Accessibility features</target>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yLevel">
         <source xml:lang="en">Accessibility level</source>
         <note>ID: BookMetadata.a11yLevel</note>
-        <target xml:lang="tl" state="needs-translation">Accessibility level</target>
+        <target xml:lang="tl" state="translated">Accessibility level</target>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yLevelNone" sil:dynamic="true">
         <source xml:lang="en">None</source>
@@ -369,7 +369,7 @@
         <source xml:lang="en">About the Bloom Enterprise Service</source>
         <note>ID: CollectionSettingsDialog.AboutBloomEnterprise</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="tl" state="needs-translation">About the Bloom Enterprise Service</target>
+        <target xml:lang="tl" state="translated">Patungkol sa Servisyo ng Bloom Enterprise</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
         <source xml:lang="en">Advanced Program Settings</source>
@@ -919,7 +919,7 @@
       <trans-unit id="CollectionTab.Progress">
         <source xml:lang="en">({0}% complete)</source>
         <note>ID: CollectionTab.Progress</note>
-        <target xml:lang="tl" state="needs-translation">({0}% complete)</target>
+        <target xml:lang="tl" state="translated">({0}% kumpleto)</target>
       </trans-unit>
       <trans-unit id="CollectionTab.RestartToUpdate">
         <source xml:lang="en">Restart Bloom to Update</source>
@@ -1051,7 +1051,7 @@
       <trans-unit id="Common.CancelButton">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Cancel</target>
+        <target xml:lang="tl" state="translated">&amp;Kanselahin</target>
       </trans-unit>
       <trans-unit id="Common.Colors.Black">
         <source xml:lang="en">Black</source>
@@ -1099,7 +1099,7 @@
         <source xml:lang="en">&amp;Finish</source>
         <note>ID: Common.Finish</note>
         <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Finish</target>
+        <target xml:lang="tl" state="translated">&amp;Tapos</target>
       </trans-unit>
       <trans-unit id="Common.Help" sil:dynamic="true">
         <source xml:lang="en">Help</source>
@@ -1109,7 +1109,7 @@
       <trans-unit id="Common.HelpButton">
         <source xml:lang="en">&amp;Help</source>
         <note>ID: Common.HelpButton</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Help</target>
+        <target xml:lang="tl" state="translated">&amp;Tulong</target>
       </trans-unit>
       <trans-unit id="Common.Info">
         <source xml:lang="en">Info</source>
@@ -1134,7 +1134,7 @@
         <source xml:lang="en">&amp;Next</source>
         <note>ID: Common.Next</note>
         <note>Used for the Next button in wizards, like that used for making a New Collection</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Next</target>
+        <target xml:lang="tl" state="translated">&amp;Next</target>
       </trans-unit>
       <trans-unit id="Common.NextButton">
         <source xml:lang="en">Next</source>
@@ -1156,7 +1156,7 @@
       <trans-unit id="Common.OKButton">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="tl" state="needs-translation">&amp;OK</target>
+        <target xml:lang="tl" state="translated">&amp;OK</target>
       </trans-unit>
       <trans-unit id="Common.Optional">
         <source xml:lang="en">optional</source>
@@ -1352,7 +1352,7 @@
         <source xml:lang="en">&amp;Remove</source>
         <note>ID: EditTab.ConfirmRemovePageDialog.DeleteButton</note>
         <note xml:lang="en">OLD TEXT (before 3.9): &amp;Delete</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Remove</target>
+        <target xml:lang="tl" state="translated">&amp;Alisin</target>
       </trans-unit>
       <trans-unit id="EditTab.ConfirmRemovePageDialog._messageLabel">
         <source xml:lang="en">This page will be permanently removed.</source>
@@ -1857,7 +1857,7 @@
         <source xml:lang="en">, </source>
         <note>ID: EditTab.FrontMatter.ListSeparator</note>
         <note>This is used to separate items in a list, such as 'Province, District, Country' on the Title Page. For English, that means comma followed by a space. Don't forget the space if your script uses them.</note>
-        <target xml:lang="tl" state="needs-translation">, </target>
+        <target xml:lang="tl" state="translated">, </target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.MarkTheBookEnd" sil:dynamic="true">
         <source xml:lang="en">Something to tell the reader/viewer that this is the end of the book.</source>
@@ -2599,12 +2599,20 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.Stage" sil:dynamic="true">
         <source xml:lang="en">Stage</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.Stage</note>
+        <note>Obsolete for Bloom 5.0 and later</note>
         <target xml:lang="tl" state="needs-translation">Stage</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageOf" sil:dynamic="true">
         <source xml:lang="en">of</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageOf</note>
+        <note>Obsolete for Bloom 5.0 and later</note>
         <target xml:lang="tl" state="needs-translation">of</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageNofM" sil:dynamic="true">
+        <source xml:lang="en">Stage {0} of {1}</source>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.StageNofM</note>
+        <note>{0} is replaced with the current level, and {1} with the total number of levels</note>
+        <target xml:lang="tl" state="needs-translation">Stage {0} of {1}</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool" sil:dynamic="true">
         <source xml:lang="en">Image Description Tool</source>
@@ -2760,13 +2768,21 @@
         <source xml:lang="en">Level</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Level</note>
         <note>Used to create string "Level # of #". The space after this word is added programmatically.</note>
+        <note>Obsolete for Bloom 5.0 and later</note>
         <target xml:lang="tl" state="needs-translation">Level</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelOf" sil:dynamic="true">
         <source xml:lang="en">of</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.LevelOf</note>
         <note>Used to create string "Level # of #". The spaces on each side of this word are added programmatically.</note>
+        <note>Obsolete for Bloom 5.0 and later</note>
         <target xml:lang="tl" state="needs-translation">of</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelNofM" sil:dynamic="true">
+        <source xml:lang="en">Level {0} of {1}</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.LevelNofM</note>
+        <note>{0} is replaced with the current level, and {1} with the total number of levels</note>
+        <target xml:lang="tl" state="needs-translation">Level {0} of {1}</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true">
         <source xml:lang="en">Max</source>
@@ -3015,7 +3031,7 @@
         <source xml:lang="en">1) Check that you are recording into the correct device and that these levels are showing blue:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettings</note>
         <note>Last used in version 4.4, deprecated in 4.5</note>
-        <target xml:lang="tl" state="needs-translation">1) Check that you are recording into the correct device and that these levels are showing blue:</target>
+        <target xml:lang="tl" state="translated">1) Tiyakin na gamit ang tamang device sa pagrecord at kulay blue ang mga level na ito:</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel" sil:dynamic="true">
         <source xml:lang="en">Check that you are recording into the correct device and that these levels are showing blue:</source>
@@ -3359,7 +3375,7 @@
         <source xml:lang="en">About Bloom...</source>
         <note>ID: HelpMenu.CreditsMenuItem</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added dots): About Bloom</note>
-        <target xml:lang="tl" state="needs-translation">About Bloom...</target>
+        <target xml:lang="tl" state="translated">Tungkol sa Bloom</target>
       </trans-unit>
       <trans-unit id="HelpMenu.DocumentationMenuItem">
         <source xml:lang="en">Documentation</source>
@@ -3557,7 +3573,7 @@
       <trans-unit id="LayoutChoices.Cm13Landscape" sil:dynamic="true">
         <source xml:lang="en">13cm Square</source>
         <note>ID: LayoutChoices.Cm13Landscape</note>
-        <target xml:lang="tl" state="needs-translation">13cm Square</target>
+        <target xml:lang="tl" state="translated">13cm Square</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.ComicPortrait" sil:dynamic="true">
         <source xml:lang="en">Comic Portrait</source>
@@ -3592,7 +3608,7 @@
       <trans-unit id="LoginDialog.LoginButton">
         <source xml:lang="en">&amp;Login</source>
         <note>ID: LoginDialog.LoginButton</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Login</target>
+        <target xml:lang="tl" state="translated">&amp;Mag-login</target>
       </trans-unit>
       <trans-unit id="LoginDialog.Password">
         <source xml:lang="en">Password</source>
@@ -3602,7 +3618,7 @@
       <trans-unit id="LoginDialog.ShowPassword">
         <source xml:lang="en">&amp;Show Password</source>
         <note>ID: LoginDialog.ShowPassword</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Show Password</target>
+        <target xml:lang="tl" state="translated">&amp;Ipakita ang Password</target>
       </trans-unit>
       <trans-unit id="LoginDialog.ShowTerms">
         <source xml:lang="en">Show Terms of Use</source>
@@ -3739,7 +3755,7 @@
       <trans-unit id="NewCollectionWizard.WelcomePage">
         <source xml:lang="en">Welcome To Bloom!</source>
         <note>ID: NewCollectionWizard.WelcomePage</note>
-        <target xml:lang="tl" state="needs-translation">Welcome To Bloom!</target>
+        <target xml:lang="tl" state="translated">Welcome to Bloom!</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine1">
         <source xml:lang="en">You are almost ready to start making books.</source>
@@ -3900,7 +3916,7 @@
         <source xml:lang="en">About Motion Books</source>
         <note>ID: PublishTab.Android.AboutMotionBooks</note>
         <note>Help link under Motion Book checkbox</note>
-        <target xml:lang="tl" state="needs-translation">About Motion Books</target>
+        <target xml:lang="tl" state="translated">Patungkol sa Motion Books</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Bookshelf" sil:dynamic="true">
         <source xml:lang="en">Bloom Reader Bookshelf</source>
@@ -4041,12 +4057,12 @@
       <trans-unit id="PublishTab.Android.AboutBloomReader" sil:dynamic="true">
         <source xml:lang="en">About Bloom Reader</source>
         <note>ID: PublishTab.Android.AboutBloomReader</note>
-        <target xml:lang="tl" state="needs-translation">About Bloom Reader</target>
+        <target xml:lang="tl" state="translated">Patungkol sa Bloom Reader</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.AboutBookFeatures" sil:dynamic="true">
         <source xml:lang="en">About Book Features</source>
         <note>ID: PublishTab.Android.AboutBookFeatures</note>
-        <target xml:lang="tl" state="needs-translation">About Book Features</target>
+        <target xml:lang="tl" state="translated">Patungkol sa Book Features</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Settings" sil:dynamic="true">
         <source xml:lang="en">Settings</source>
@@ -4288,7 +4304,7 @@
         <source xml:lang="en">Accessibility</source>
         <note>ID: PublishTab.Epub.Accessibility</note>
         <note>Here, the English 'Accessibility' is a common way of refering to technologies that are usable by people with disabilities. With computers, this usually means people with visual impairments. It includes botht he blind and people who might need text to be larger, or who are colorblind, etc.</note>
-        <target xml:lang="tl" state="needs-translation">Accessibility</target>
+        <target xml:lang="tl" state="translated">Accessibility</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.BuildingEPub">
         <source xml:lang="en">Building ePUB</source>
@@ -4309,7 +4325,7 @@
       <trans-unit id="PublishTab.Epub.Help.AboutEpubs">
         <source xml:lang="en">About ePUBs</source>
         <note>ID: PublishTab.Epub.Help.AboutEpubs</note>
-        <target xml:lang="tl" state="needs-translation">About ePUBs</target>
+        <target xml:lang="tl" state="translated">Patungkol sa ePUBs</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Help.EReaders">
         <source xml:lang="en">Compatible ePUB Readers</source>
@@ -4636,7 +4652,7 @@
       <trans-unit id="PublishTab.PrintButton">
         <source xml:lang="en">&amp;Print...</source>
         <note>ID: PublishTab.PrintButton</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Print...</target>
+        <target xml:lang="tl" state="translated">&amp;I-print...</target>
       </trans-unit>
       <trans-unit id="PublishTab.PrologToAdobeEula">
         <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for print shop".  You must agree to the following license in order to perform this task in Bloom.</source>
@@ -4658,23 +4674,23 @@
       <trans-unit id="PublishTab.SaveButton">
         <source xml:lang="en">&amp;Save PDF...</source>
         <note>ID: PublishTab.SaveButton</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Save PDF...</target>
+        <target xml:lang="tl" state="translated">&amp;I-save sa PDF...</target>
       </trans-unit>
       <trans-unit id="PublishTab.SaveEpub">
         <source xml:lang="en">&amp;Save ePUB...</source>
         <note>ID: PublishTab.SaveEpub</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Save ePUB...</target>
+        <target xml:lang="tl" state="translated">&amp;I-save sa ePUB...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AccesibleToVisuallyImpaired">
         <source xml:lang="en">Accessible to the Visually Impaired</source>
         <note>ID: PublishTab.Upload.AccesibleToVisuallyImpaired</note>
         <note>last used in Bloom 4.4</note>
-        <target xml:lang="tl" state="needs-translation">Accessible to the Visually Impaired</target>
+        <target xml:lang="tl" state="translated">Accessible sa mga Visually Impaired</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AccessibleToBlind">
         <source xml:lang="en">Accessible to the Blind</source>
         <note>ID: PublishTab.Upload.AccessibleToBlind</note>
-        <target xml:lang="tl" state="needs-translation">Accessible to the Blind</target>
+        <target xml:lang="tl" state="translated">Accessible sa mga Bulag</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Acknowledgments">
         <source xml:lang="en">Acknowledgments</source>
@@ -4776,7 +4792,7 @@
         <source xml:lang="en">(incomplete translation)</source>
         <note>ID: PublishTab.Upload.IncompleteTranslation</note>
         <note>This is added after the language name, in order to indicate that some parts of the book have not been translated into this language yet.</note>
-        <target xml:lang="tl" state="needs-translation">(incomplete translation)</target>
+        <target xml:lang="tl" state="translated">(incomplete translation)</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Languages">
         <source xml:lang="en">Upload Text</source>
@@ -4907,7 +4923,7 @@
       <trans-unit id="PublishTab.Upload.NoLangsFound">
         <source xml:lang="en">(None found)</source>
         <note>ID: PublishTab.Upload.NoLangsFound</note>
-        <target xml:lang="tl" state="needs-translation">(None found)</target>
+        <target xml:lang="tl" state="translated">(Walang nakita)</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.OldVersion">
         <source xml:lang="en">Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</source>
@@ -5084,10 +5100,10 @@ Do you want to go ahead?</note>
         <target xml:lang="tl" state="needs-translation">Maximum Words in Book</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.BookMaxWords2" sil:dynamic="true">
-        <source xml:lang="en">Per <g id="bmw-1" ctype="x-html-strong">Book</g></source>
+        <source xml:lang="en">Per **Book**</source>
         <note>ID: ReaderSetup.BookMaxWords2</note>
-        <note>follows headings "maximum" and "words" to convey "maximum words per book. The "g" markup may be used for the important word.</note>
-        <target xml:lang="tl" state="needs-translation">Per <g id="bmw-1" ctype="x-html-strong">Book</g></target>
+        <note>follows headings "maximum" and "words" to convey "maximum words per book. Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="tl" state="needs-translation">Per **Book**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.ChooseAllowedWordsFile" sil:dynamic="true">
         <source xml:lang="en">Choose...</source>
@@ -5158,7 +5174,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.Letters.LetterHelp4" sil:dynamic="true">
         <source xml:lang="en">.</source>
         <note>ID: ReaderSetup.Letters.LetterHelp4</note>
-        <target xml:lang="tl" state="needs-translation">.</target>
+        <target xml:lang="tl" state="translated">.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters.LetterHelp5" sil:dynamic="true">
         <source xml:lang="en">Do not include punctuation in this list. Bloom does not support the inclusion of punctuation in decodable stages.</source>
@@ -5194,61 +5210,50 @@ Do you want to go ahead?</note>
         <target xml:lang="tl" state="needs-translation">matching words</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageGlyphsPerWord" sil:dynamic="true">
-        <source xml:lang="en">
-          Average per Word in <g id="magpw-1" ctype="x-html-strong">Book</g>
-        </source>
+        <source xml:lang="en">Average per Word in **Book**</source>
         <note>ID: ReaderSetup.MaxAverageGlyphsPerWord</note>
-        <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="tl" state="needs-translation">
-          
-          Average per Word in <g id="magpw-1" ctype="x-html-strong">Book</g>
-        
-        </target>
+        <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="tl" state="needs-translation">Average per Word in **Book**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageWords" sil:dynamic="true">
-        <source xml:lang="en">Average per <g id="maw-1" ctype="x-html-strong">Sentence</g> in <g id="maw-2" ctype="x-html-strong">Book</g></source>
+        <source xml:lang="en">Average per **Sentence** in **Book**</source>
         <note>ID: ReaderSetup.MaxAverageWords</note>
         <note>Prior to 4.9, was "Maximum Average Length of Sentences in Book"</note>
-        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum averate sentence length in book". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="tl" state="needs-translation">Average per <g id="maw-1" ctype="x-html-strong">Sentence</g> in <g id="maw-2" ctype="x-html-strong">Book</g></target>
+        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum averate sentence length in book". Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="tl" state="needs-translation">Average per **Sentence** in **Book**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageWordsPerPage" sil:dynamic="true">
         <source xml:lang="en">
-          Average per <g id="mawpp-1" ctype="x-html-strong">Page</g></source>
+          Average per **Page**</source>
         <note>ID: ReaderSetup.MaxAverageWordsPerPage</note>
-        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum average words per page" (in book is implied). The "g" markup may be used to mark whatever should be strongly emphasized</note>
+        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum average words per page" (in book is implied). Surround text that should be bold in double asterisks.</note>
         <target xml:lang="tl" state="needs-translation">
-          
-          Average per <g id="mawpp-1" ctype="x-html-strong">Page</g></target>
+          Average per **Page**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageSentencesPerPage" sil:dynamic="true">
         <source xml:lang="en">
-          Average per <g id="maspp-1" ctype="x-html-strong">Page</g>
+          Average per **Page**
         </source>
         <note>ID: ReaderSetup.MaxAverageSentencesPerPage</note>
-        <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". The "g" markup may be used to mark whatever should be strongly emphasized</note>
+        <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". Surround text that should be bold in double asterisks.</note>
         <target xml:lang="tl" state="needs-translation">
-          
-          Average per <g id="maspp-1" ctype="x-html-strong">Page</g>
-        
+          Average per **Page**
         </target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxGlyphsPerWord" sil:dynamic="true">
-        <source xml:lang="en">In any <g id="mgpw-1" ctype="x-html-strong">Word</g></source>
+        <source xml:lang="en">In any **Word**</source>
         <note>ID: ReaderSetup.MaxGlyphsPerWord</note>
-        <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="tl" state="needs-translation">In any <g id="mgpw-1" ctype="x-html-strong">Word</g></target>
+        <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="tl" state="needs-translation">In any **Word**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxSentencesPerPage" sil:dynamic="true">
         <source xml:lang="en">
-          Per <g id="mspp-1" ctype="x-html-strong">Page</g>
+          Per **Page**
         </source>
         <note>ID: ReaderSetup.MaxSentencesPerPage</note>
-        <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". The "g" markup may be used to mark whatever should be strongly emphasized</note>
+        <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". Surround text that should be bold in double asterisks.</note>
         <target xml:lang="tl" state="needs-translation">
-          
-          Per <g id="mspp-1" ctype="x-html-strong">Page</g>
-        
+          Per **Page**
         </target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxUniqueWords" sil:dynamic="true">
@@ -5258,10 +5263,10 @@ Do you want to go ahead?</note>
         <target xml:lang="tl" state="needs-translation">Maximum Unique Words in Book</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxUniqueWords2" sil:dynamic="true">
-        <source xml:lang="en"><g id="muw-1" ctype="x-html-strong">Unique</g> in <g id="muw-2" ctype="x-html-strong">Book</g></source>
+        <source xml:lang="en">**Unique** in **Book**</source>
         <note>ID: ReaderSetup.MaxUniqueWords2</note>
-        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum unique words in book". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="tl" state="needs-translation"><g id="muw-1" ctype="x-html-strong">Unique</g> in <g id="muw-2" ctype="x-html-strong">Book</g></target>
+        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum unique words in book". Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="tl" state="translated">**Unique** sa **Libro**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true">
         <source xml:lang="en">Page</source>
@@ -5275,9 +5280,10 @@ Do you want to go ahead?</note>
         <target xml:lang="tl" state="needs-translation">Maximum Words on each Page</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PageMaxWords2" sil:dynamic="true">
-        <source xml:lang="en">Per <g id="pmw-1" ctype="x-html-strong">Page</g></source>
+        <source xml:lang="en">Per **Page**</source>
         <note>ID: ReaderSetup.PageMaxWords2</note>
-        <target xml:lang="tl" state="needs-translation">Per <g id="pmw-1" ctype="x-html-strong">Page</g></target>
+        <note>Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="tl" state="needs-translation">Per **Page**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PerBookHeader" sil:dynamic="true">
         <source xml:lang="en">Per Book (Unique)</source>
@@ -5351,7 +5357,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.SearchEngine" sil:dynamic="true">
         <source xml:lang="en">, the Search Engine for Literacy.</source>
         <note>ID: ReaderSetup.SearchEngine</note>
-        <target xml:lang="tl" state="needs-translation">, the Search Engine for Literacy.</target>
+        <target xml:lang="tl" state="translated">, the Search Engine for Literacy.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SelectedLetters" sil:dynamic="true">
         <source xml:lang="en">Previous and New Letters</source>
@@ -5375,10 +5381,10 @@ Do you want to go ahead?</note>
         <target xml:lang="tl" state="needs-translation">Maximum Words in each Sentence</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentenceMaxWords2" sil:dynamic="true">
-        <source xml:lang="en">Per <g id="mgpw-1" ctype="x-html-strong">Sentence</g></source>
+        <source xml:lang="en">Per **Sentence**</source>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
-        <note>follows headings "maximum" and "words" to convey "maximum words per sentence. The "g" markup may be used for the important word.</note>
-        <target xml:lang="tl" state="needs-translation">Per <g id="mgpw-1" ctype="x-html-strong">Sentence</g></target>
+        <note>follows headings "maximum" and "words" to convey "maximum words per sentence. Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="tl" state="needs-translation">Per **Sentence**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
@@ -5470,7 +5476,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.Words.TypeWordsHere" sil:dynamic="true">
         <source xml:lang="en">1) Type Words Here</source>
         <note>ID: ReaderSetup.Words.TypeWordsHere</note>
-        <target xml:lang="tl" state="needs-translation">1) Type Words Here</target>
+        <target xml:lang="tl" state="translated">1) Ilagay ang mga salita</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Words.UseAllowedWords" sil:dynamic="true">
         <source xml:lang="en">We are using lists of allowed words to define stages</source>
@@ -5553,7 +5559,7 @@ Do you want to go ahead?</note>
       <trans-unit id="RegisterDialog.RegisterButton">
         <source xml:lang="en">&amp;Register</source>
         <note>ID: RegisterDialog.RegisterButton</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Register</target>
+        <target xml:lang="tl" state="translated">&amp;Mag-register</target>
       </trans-unit>
       <trans-unit id="RegisterDialog.Surname">
         <source xml:lang="en">Surname</source>
@@ -5674,7 +5680,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReportProblemDialog.SubmitButton">
         <source xml:lang="en">&amp;Submit</source>
         <note>ID: ReportProblemDialog.SubmitButton</note>
-        <target xml:lang="tl" state="needs-translation">&amp;Submit</target>
+        <target xml:lang="tl" state="translated">&amp;I-submit</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.Submitting">
         <source xml:lang="en">Submitting to server...</source>
@@ -5895,48 +5901,48 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.1" sil:dynamic="true">
         <source xml:lang="en">1</source>
         <note>ID: TemplateBooks.PageLabel.1</note>
-        <target xml:lang="tl" state="needs-translation">1</target>
+        <target xml:lang="tl" state="translated">1</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.1 Problem" sil:dynamic="true">
         <source xml:lang="en">1 Problem</source>
         <note>ID: TemplateBooks.PageLabel.1 Problem</note>
         <note>This label indicates a page with one arithmetic problem on it.</note>
-        <target xml:lang="tl" state="needs-translation">1 Problem</target>
+        <target xml:lang="tl" state="translated">May 1 Problema</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.10" sil:dynamic="true">
         <source xml:lang="en">10</source>
         <note>ID: TemplateBooks.PageLabel.10</note>
-        <target xml:lang="tl" state="needs-translation">10</target>
+        <target xml:lang="tl" state="translated">10</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.11" sil:dynamic="true">
         <source xml:lang="en">11</source>
         <note>ID: TemplateBooks.PageLabel.11</note>
-        <target xml:lang="tl" state="needs-translation">11</target>
+        <target xml:lang="tl" state="translated">11</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.12" sil:dynamic="true">
         <source xml:lang="en">12</source>
         <note>ID: TemplateBooks.PageLabel.12</note>
-        <target xml:lang="tl" state="needs-translation">12</target>
+        <target xml:lang="tl" state="translated">12</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.13" sil:dynamic="true">
         <source xml:lang="en">13</source>
         <note>ID: TemplateBooks.PageLabel.13</note>
-        <target xml:lang="tl" state="needs-translation">13</target>
+        <target xml:lang="tl" state="translated">13</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.14" sil:dynamic="true">
         <source xml:lang="en">14</source>
         <note>ID: TemplateBooks.PageLabel.14</note>
-        <target xml:lang="tl" state="needs-translation">14</target>
+        <target xml:lang="tl" state="translated">14</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.15" sil:dynamic="true">
         <source xml:lang="en">15</source>
         <note>ID: TemplateBooks.PageLabel.15</note>
-        <target xml:lang="tl" state="needs-translation">15</target>
+        <target xml:lang="tl" state="translated">15</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.16" sil:dynamic="true">
         <source xml:lang="en">16</source>
         <note>ID: TemplateBooks.PageLabel.16</note>
-        <target xml:lang="tl" state="needs-translation">16</target>
+        <target xml:lang="tl" state="translated">16</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.17" sil:dynamic="true">
         <source xml:lang="en">17</source>

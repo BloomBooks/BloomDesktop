@@ -2599,12 +2599,20 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.Stage" sil:dynamic="true">
         <source xml:lang="en">Stage</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.Stage</note>
+        <note>Obsolete for Bloom 5.0 and later</note>
         <target xml:lang="ky" state="needs-translation">Stage</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageOf" sil:dynamic="true">
         <source xml:lang="en">of</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageOf</note>
+        <note>Obsolete for Bloom 5.0 and later</note>
         <target xml:lang="ky" state="needs-translation">of</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageNofM" sil:dynamic="true">
+        <source xml:lang="en">Stage {0} of {1}</source>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.StageNofM</note>
+        <note>{0} is replaced with the current level, and {1} with the total number of levels</note>
+        <target xml:lang="ky" state="needs-translation">Stage {0} of {1}</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool" sil:dynamic="true">
         <source xml:lang="en">Image Description Tool</source>
@@ -2760,13 +2768,21 @@
         <source xml:lang="en">Level</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Level</note>
         <note>Used to create string "Level # of #". The space after this word is added programmatically.</note>
+        <note>Obsolete for Bloom 5.0 and later</note>
         <target xml:lang="ky" state="needs-translation">Level</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelOf" sil:dynamic="true">
         <source xml:lang="en">of</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.LevelOf</note>
         <note>Used to create string "Level # of #". The spaces on each side of this word are added programmatically.</note>
+        <note>Obsolete for Bloom 5.0 and later</note>
         <target xml:lang="ky" state="needs-translation">of</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelNofM" sil:dynamic="true">
+        <source xml:lang="en">Level {0} of {1}</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.LevelNofM</note>
+        <note>{0} is replaced with the current level, and {1} with the total number of levels</note>
+        <target xml:lang="ky" state="needs-translation">Level {0} of {1}</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true">
         <source xml:lang="en">Max</source>
@@ -5084,10 +5100,10 @@ Do you want to go ahead?</note>
         <target xml:lang="ky" state="needs-translation">Maximum Words in Book</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.BookMaxWords2" sil:dynamic="true">
-        <source xml:lang="en">Per <g id="bmw-1" ctype="x-html-strong">Book</g></source>
+        <source xml:lang="en">Per **Book**</source>
         <note>ID: ReaderSetup.BookMaxWords2</note>
-        <note>follows headings "maximum" and "words" to convey "maximum words per book. The "g" markup may be used for the important word.</note>
-        <target xml:lang="ky" state="needs-translation">Per <g id="bmw-1" ctype="x-html-strong">Book</g></target>
+        <note>follows headings "maximum" and "words" to convey "maximum words per book. Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="ky" state="needs-translation">Per **Book**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.ChooseAllowedWordsFile" sil:dynamic="true">
         <source xml:lang="en">Choose...</source>
@@ -5194,61 +5210,50 @@ Do you want to go ahead?</note>
         <target xml:lang="ky" state="needs-translation">matching words</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageGlyphsPerWord" sil:dynamic="true">
-        <source xml:lang="en">
-          Average per Word in <g id="magpw-1" ctype="x-html-strong">Book</g>
-        </source>
+        <source xml:lang="en">Average per Word in **Book**</source>
         <note>ID: ReaderSetup.MaxAverageGlyphsPerWord</note>
-        <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="ky" state="needs-translation">
-          
-          Average per Word in <g id="magpw-1" ctype="x-html-strong">Book</g>
-        
-        </target>
+        <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="ky" state="needs-translation">Average per Word in **Book**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageWords" sil:dynamic="true">
-        <source xml:lang="en">Average per <g id="maw-1" ctype="x-html-strong">Sentence</g> in <g id="maw-2" ctype="x-html-strong">Book</g></source>
+        <source xml:lang="en">Average per **Sentence** in **Book**</source>
         <note>ID: ReaderSetup.MaxAverageWords</note>
         <note>Prior to 4.9, was "Maximum Average Length of Sentences in Book"</note>
-        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum averate sentence length in book". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="ky" state="needs-translation">Average per <g id="maw-1" ctype="x-html-strong">Sentence</g> in <g id="maw-2" ctype="x-html-strong">Book</g></target>
+        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum averate sentence length in book". Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="ky" state="needs-translation">Average per **Sentence** in **Book**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageWordsPerPage" sil:dynamic="true">
         <source xml:lang="en">
-          Average per <g id="mawpp-1" ctype="x-html-strong">Page</g></source>
+          Average per **Page**</source>
         <note>ID: ReaderSetup.MaxAverageWordsPerPage</note>
-        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum average words per page" (in book is implied). The "g" markup may be used to mark whatever should be strongly emphasized</note>
+        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum average words per page" (in book is implied). Surround text that should be bold in double asterisks.</note>
         <target xml:lang="ky" state="needs-translation">
-          
-          Average per <g id="mawpp-1" ctype="x-html-strong">Page</g></target>
+          Average per **Page**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageSentencesPerPage" sil:dynamic="true">
         <source xml:lang="en">
-          Average per <g id="maspp-1" ctype="x-html-strong">Page</g>
+          Average per **Page**
         </source>
         <note>ID: ReaderSetup.MaxAverageSentencesPerPage</note>
-        <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". The "g" markup may be used to mark whatever should be strongly emphasized</note>
+        <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". Surround text that should be bold in double asterisks.</note>
         <target xml:lang="ky" state="needs-translation">
-          
-          Average per <g id="maspp-1" ctype="x-html-strong">Page</g>
-        
+          Average per **Page**
         </target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxGlyphsPerWord" sil:dynamic="true">
-        <source xml:lang="en">In any <g id="mgpw-1" ctype="x-html-strong">Word</g></source>
+        <source xml:lang="en">In any **Word**</source>
         <note>ID: ReaderSetup.MaxGlyphsPerWord</note>
-        <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="ky" state="needs-translation">In any <g id="mgpw-1" ctype="x-html-strong">Word</g></target>
+        <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="ky" state="needs-translation">In any **Word**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxSentencesPerPage" sil:dynamic="true">
         <source xml:lang="en">
-          Per <g id="mspp-1" ctype="x-html-strong">Page</g>
+          Per **Page**
         </source>
         <note>ID: ReaderSetup.MaxSentencesPerPage</note>
-        <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". The "g" markup may be used to mark whatever should be strongly emphasized</note>
+        <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". Surround text that should be bold in double asterisks.</note>
         <target xml:lang="ky" state="needs-translation">
-          
-          Per <g id="mspp-1" ctype="x-html-strong">Page</g>
-        
+          Per **Page**
         </target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxUniqueWords" sil:dynamic="true">
@@ -5258,10 +5263,10 @@ Do you want to go ahead?</note>
         <target xml:lang="ky" state="needs-translation">Maximum Unique Words in Book</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxUniqueWords2" sil:dynamic="true">
-        <source xml:lang="en"><g id="muw-1" ctype="x-html-strong">Unique</g> in <g id="muw-2" ctype="x-html-strong">Book</g></source>
+        <source xml:lang="en">**Unique** in **Book**</source>
         <note>ID: ReaderSetup.MaxUniqueWords2</note>
-        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum unique words in book". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="ky" state="needs-translation"><g id="muw-1" ctype="x-html-strong">Unique</g> in <g id="muw-2" ctype="x-html-strong">Book</g></target>
+        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum unique words in book". Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="ky" state="needs-translation">**Unique** in **Book**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true">
         <source xml:lang="en">Page</source>
@@ -5275,9 +5280,10 @@ Do you want to go ahead?</note>
         <target xml:lang="ky" state="needs-translation">Maximum Words on each Page</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PageMaxWords2" sil:dynamic="true">
-        <source xml:lang="en">Per <g id="pmw-1" ctype="x-html-strong">Page</g></source>
+        <source xml:lang="en">Per **Page**</source>
         <note>ID: ReaderSetup.PageMaxWords2</note>
-        <target xml:lang="ky" state="needs-translation">Per <g id="pmw-1" ctype="x-html-strong">Page</g></target>
+        <note>Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="ky" state="needs-translation">Per **Page**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PerBookHeader" sil:dynamic="true">
         <source xml:lang="en">Per Book (Unique)</source>
@@ -5375,10 +5381,10 @@ Do you want to go ahead?</note>
         <target xml:lang="ky" state="needs-translation">Maximum Words in each Sentence</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentenceMaxWords2" sil:dynamic="true">
-        <source xml:lang="en">Per <g id="mgpw-1" ctype="x-html-strong">Sentence</g></source>
+        <source xml:lang="en">Per **Sentence**</source>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
-        <note>follows headings "maximum" and "words" to convey "maximum words per sentence. The "g" markup may be used for the important word.</note>
-        <target xml:lang="ky" state="needs-translation">Per <g id="mgpw-1" ctype="x-html-strong">Sentence</g></target>
+        <note>follows headings "maximum" and "words" to convey "maximum words per sentence. Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="ky" state="needs-translation">Per **Sentence**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>

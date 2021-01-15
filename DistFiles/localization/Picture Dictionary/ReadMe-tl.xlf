@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="picture.dictionary">
         <source xml:lang="en">About the Picture Dictionary Template</source>
-        <target xml:lang="tl" state="needs-translation">About the Picture Dictionary Template</target>
+        <target xml:lang="tl" state="translated">Patungkol sa Picture Dictionary Template</target>
         <note>ID: picture.dictionary</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.use">

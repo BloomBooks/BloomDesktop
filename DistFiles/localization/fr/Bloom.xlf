@@ -1073,10 +1073,10 @@
         <note>ID: Common.Colors.Yellow</note>
         <target xml:lang="fr" state="final">Jaune</target>
       </trans-unit>
-      <trans-unit id="Common.Copy">
+      <trans-unit id="Common.Copy" approved="yes">
         <source xml:lang="en">Copy</source>
         <note>ID: Common.Copy</note>
-        <target xml:lang="fr" state="needs-translation">Copy</target>
+        <target xml:lang="fr" state="final">Copier</target>
       </trans-unit>
       <trans-unit id="Common.Delete" approved="yes">
         <source xml:lang="en">Delete</source>
@@ -2288,12 +2288,12 @@
         <note>Obsolete for Bloom 4.9 and later</note>
         <target xml:lang="fr" state="final">Blanc à Calico</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass" sil:dynamic="true" approved="yes">
         <source xml:lang="en">White to French Pass</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass</note>
         <note>A background color that is a gradient starting with white blending into the "French pass" color</note>
         <note>Obsolete for Bloom 4.9 and later</note>
-        <target xml:lang="fr" state="translated">Blanc vers «Pass français»</target>
+        <target xml:lang="fr" state="final">Blanc vers «Pass français»</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino" sil:dynamic="true" approved="yes">
         <source xml:lang="en">White to Portafino</source>
@@ -2599,12 +2599,20 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.Stage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Stage</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.Stage</note>
+        <note>Obsolete for Bloom 5.0 and later</note>
         <target xml:lang="fr" state="final">Étape</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageOf" sil:dynamic="true" approved="yes">
         <source xml:lang="en">of</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageOf</note>
+        <note>Obsolete for Bloom 5.0 and later</note>
         <target xml:lang="fr" state="final">de</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageNofM" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Stage {0} of {1}</source>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.StageNofM</note>
+        <note>{0} is replaced with the current level, and {1} with the total number of levels</note>
+        <target xml:lang="fr" state="final">Etape {0} de {1}</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image Description Tool</source>
@@ -2760,13 +2768,21 @@
         <source xml:lang="en">Level</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Level</note>
         <note>Used to create string "Level # of #". The space after this word is added programmatically.</note>
+        <note>Obsolete for Bloom 5.0 and later</note>
         <target xml:lang="fr" state="final">Niveau</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelOf" sil:dynamic="true" approved="yes">
         <source xml:lang="en">of</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.LevelOf</note>
         <note>Used to create string "Level # of #". The spaces on each side of this word are added programmatically.</note>
+        <note>Obsolete for Bloom 5.0 and later</note>
         <target xml:lang="fr" state="final">de</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelNofM" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Level {0} of {1}</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.LevelNofM</note>
+        <note>{0} is replaced with the current level, and {1} with the total number of levels</note>
+        <target xml:lang="fr" state="final">Niveau {0} de {1}</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Max</source>
@@ -4586,12 +4602,12 @@
         <note>ID: PublishTab.PdfMaker.PdfFile</note>
         <target xml:lang="fr" state="final">Fichier PDF</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2">
+      <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2" approved="yes">
         <source xml:lang="en">CMYK color (U.S. Web Coated (SWOP) v2)</source>
         <note>ID: PublishTab.PdfMaker.PdfWithCmykSwopV2</note>
         <note>displayed as a checkable menu option for the Publish tab, PDF options menu. The content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.</note>
         <note>Previously this item was "PDF with CMYK ..." and it occurred as an option within the Save dialog for PDF files</note>
-        <target xml:lang="fr" state="translated">PDF avec les couleurs CMJN (U.S. Web Coated (SWOP) v2)</target>
+        <target xml:lang="fr" state="final">PDF avec les couleurs CMJN (U.S. Web Coated (SWOP) v2)</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.PdfWithRGB" approved="yes">
         <source xml:lang="en">PDF with RGB color</source>
@@ -5084,10 +5100,10 @@ Do you want to go ahead?</note>
         <target xml:lang="fr" state="final">Limite de mots par livre</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.BookMaxWords2" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Per <g id="bmw-1" ctype="x-html-strong">Book</g></source>
+        <source xml:lang="en">Per **Book**</source>
         <note>ID: ReaderSetup.BookMaxWords2</note>
-        <note>follows headings "maximum" and "words" to convey "maximum words per book. The "g" markup may be used for the important word.</note>
-        <target xml:lang="fr" state="final">Par <g id="bmw-1" ctype="x-html-strong">Livre</g></target>
+        <note>follows headings "maximum" and "words" to convey "maximum words per book. Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="fr" state="final">Par **Livre**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.ChooseAllowedWordsFile" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose...</source>
@@ -5194,60 +5210,50 @@ Do you want to go ahead?</note>
         <target xml:lang="fr" state="final">Mots correspondants</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageGlyphsPerWord" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">
-          Average per Word in <g id="magpw-1" ctype="x-html-strong">Book</g>
-        </source>
+        <source xml:lang="en">Average per Word in **Book**</source>
         <note>ID: ReaderSetup.MaxAverageGlyphsPerWord</note>
-        <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="fr" state="final">
-          
-          Moyenne par Mot dans <g id="magpw-1" ctype="x-html-strong">Livre</g>
-        
-        </target>
+        <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="fr" state="final">Moyenne par mot dans **Livre**</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MaxAverageWords" sil:dynamic="true">
-        <source xml:lang="en">Average per <g id="maw-1" ctype="x-html-strong">Sentence</g> in <g id="maw-2" ctype="x-html-strong">Book</g></source>
+      <trans-unit id="ReaderSetup.MaxAverageWords" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Average per **Sentence** in **Book**</source>
         <note>ID: ReaderSetup.MaxAverageWords</note>
         <note>Prior to 4.9, was "Maximum Average Length of Sentences in Book"</note>
-        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum averate sentence length in book". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="fr" state="translated">La limite de mots par phrase moyenne dans le livre</target>
+        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum averate sentence length in book". Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="fr" state="final">Moyenne par **Phrase** dans **Livre**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageWordsPerPage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
-          Average per <g id="mawpp-1" ctype="x-html-strong">Page</g></source>
+          Average per **Page**</source>
         <note>ID: ReaderSetup.MaxAverageWordsPerPage</note>
-        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum average words per page" (in book is implied). The "g" markup may be used to mark whatever should be strongly emphasized</note>
+        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum average words per page" (in book is implied). Surround text that should be bold in double asterisks.</note>
         <target xml:lang="fr" state="final">
-          
-          Moyenne par <g id="mawpp-1" ctype="x-html-strong">Page</g></target>
+          Moyenne par **Page**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageSentencesPerPage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
-          Average per <g id="maspp-1" ctype="x-html-strong">Page</g>
+          Average per **Page**
         </source>
         <note>ID: ReaderSetup.MaxAverageSentencesPerPage</note>
-        <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". The "g" markup may be used to mark whatever should be strongly emphasized</note>
+        <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". Surround text that should be bold in double asterisks.</note>
         <target xml:lang="fr" state="final">
-          
-          Moyenne par <g id="maspp-1" ctype="x-html-strong">Page</g>        
+          Moyenne par **Page**
         </target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxGlyphsPerWord" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">In any <g id="mgpw-1" ctype="x-html-strong">Word</g></source>
+        <source xml:lang="en">In any **Word**</source>
         <note>ID: ReaderSetup.MaxGlyphsPerWord</note>
-        <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="fr" state="final">Par <g id="mgpw-1" ctype="x-html-strong">Mot</g></target>
+        <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="fr" state="final">Dans n'importe quel **mot**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxSentencesPerPage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
-          Per <g id="mspp-1" ctype="x-html-strong">Page</g>
+          Per **Page**
         </source>
         <note>ID: ReaderSetup.MaxSentencesPerPage</note>
-        <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". The "g" markup may be used to mark whatever should be strongly emphasized</note>
+        <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". Surround text that should be bold in double asterisks.</note>
         <target xml:lang="fr" state="final">
-          
-          Par <g id="mspp-1" ctype="x-html-strong">Page</g>
-        
+          Par **Page**
         </target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxUniqueWords" sil:dynamic="true" approved="yes">
@@ -5257,10 +5263,10 @@ Do you want to go ahead?</note>
         <target xml:lang="fr" state="final">Limite de mots différents par livre</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxUniqueWords2" sil:dynamic="true" approved="yes">
-        <source xml:lang="en"><g id="muw-1" ctype="x-html-strong">Unique</g> in <g id="muw-2" ctype="x-html-strong">Book</g></source>
+        <source xml:lang="en">**Unique** in **Book**</source>
         <note>ID: ReaderSetup.MaxUniqueWords2</note>
-        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum unique words in book". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="fr" state="final"><g id="muw-1" ctype="x-html-strong">Unique</g> dans <g id="muw-2" ctype="x-html-strong">Livre</g></target>
+        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum unique words in book". Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="fr" state="final">**Unique** dans **Livre**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page</source>
@@ -5274,9 +5280,10 @@ Do you want to go ahead?</note>
         <target xml:lang="fr" state="final">La limite de mots par page</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PageMaxWords2" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Per <g id="pmw-1" ctype="x-html-strong">Page</g></source>
+        <source xml:lang="en">Per **Page**</source>
         <note>ID: ReaderSetup.PageMaxWords2</note>
-        <target xml:lang="fr" state="final">Par <g id="pmw-1" ctype="x-html-strong">Page</g></target>
+        <note>Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="fr" state="final">Par **Page**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PerBookHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Per Book (Unique)</source>
@@ -5374,10 +5381,10 @@ Do you want to go ahead?</note>
         <target xml:lang="fr" state="final">La limite de mots par phrase</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentenceMaxWords2" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Per <g id="mgpw-1" ctype="x-html-strong">Sentence</g></source>
+        <source xml:lang="en">Per **Sentence**</source>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
-        <note>follows headings "maximum" and "words" to convey "maximum words per sentence. The "g" markup may be used for the important word.</note>
-        <target xml:lang="fr" state="final">Par <g id="mgpw-1" ctype="x-html-strong">Phrase</g></target>
+        <note>follows headings "maximum" and "words" to convey "maximum words per sentence. Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="fr" state="final">Par **Phrase**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>

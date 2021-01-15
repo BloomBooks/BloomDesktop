@@ -6,81 +6,81 @@
         <source xml:lang="en">Built on {0}</source>
         <note>ID: AboutDialog.BuiltOnDate</note>
         <note>{0} is the date the application was built</note>
-        <target xml:lang="mam" state="final">B'inchanmaja tuj {0}</target>
+        <target xml:lang="mam" state="final">B'inchanmaj tuj {0}</target>
       </trans-unit>
-      <trans-unit id="AboutDialog.NoUpdates" approved="yes">
+      <trans-unit id="AboutDialog.NoUpdates">
         <source xml:lang="en">No Updates</source>
         <note>ID: AboutDialog.NoUpdates</note>
-        <target xml:lang="mam" state="final">Nti' ak'aj ttxolil</target>
+        <target xml:lang="mam" state="translated">Nti' ak'aj ttxolil</target>
       </trans-unit>
-      <trans-unit id="AboutDialog.WindowTitle" approved="yes">
+      <trans-unit id="AboutDialog.WindowTitle">
         <source xml:lang="en">About {0}</source>
         <note>ID: AboutDialog.WindowTitle</note>
         <note>{0} is the application name</note>
-        <target xml:lang="mam" state="final">Ti'j {0}</target>
+        <target xml:lang="mam" state="translated">Ti'j {0}</target>
       </trans-unit>
-      <trans-unit id="AboutDialog._checkForUpdates" approved="yes">
+      <trans-unit id="AboutDialog._checkForUpdates">
         <source xml:lang="en">Check For Updates</source>
         <note>ID: AboutDialog._checkForUpdates</note>
-        <target xml:lang="mam" state="final">Jyol ak'aj ttxolil</target>
+        <target xml:lang="mam" state="translated">Jyol ak'aj ttxolil</target>
       </trans-unit>
-      <trans-unit id="AboutDialog._releaseNotesLabel" approved="yes">
+      <trans-unit id="AboutDialog._releaseNotesLabel">
         <source xml:lang="en">Release Notes</source>
         <note>ID: AboutDialog._releaseNotesLabel</note>
-        <target xml:lang="mam" state="final">Tqanil ti'j ttxolil aq'untl</target>
+        <target xml:lang="mam" state="translated">Tqanil ti'j ttxolil aq'untl</target>
       </trans-unit>
-      <trans-unit id="Application.AlreadyRunning.General" approved="yes">
+      <trans-unit id="Application.AlreadyRunning.General">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.General</note>
-        <target xml:lang="mam" state="final">In aq'unan juntl ttxolil aq'unb'il xk'utz'ib'. Qa min xkanet tu'na, txaqonktza t-xk'utz'ib'a juntl maj.</target>
+        <target xml:lang="mam" state="translated">In aq'unan juntl ttxolil aq'unb'il xk'utz'ib'. Qa min xkanet tu'na, txaqonktza t-xk'utz'ib'a juntl maj.</target>
       </trans-unit>
-      <trans-unit id="Application.AlreadyRunning.Specific" approved="yes">
+      <trans-unit id="Application.AlreadyRunning.Specific">
         <source xml:lang="en">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="mam" state="final">In aq'unan juntl ttxolil {0}. Qa min xkanet {0} tu'na, txaqonktza t-xk'utz'ib'a juntl maj.</target>
+        <target xml:lang="mam" state="translated">In aq'unan juntl ttxolil {0}. Qa min xkanet {0} tu'na, txaqonktza t-xk'utz'ib'a juntl maj.</target>
       </trans-unit>
-      <trans-unit id="Application.ProblemStarting.General" approved="yes">
+      <trans-unit id="Application.ProblemStarting.General">
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.General</note>
-        <target xml:lang="mam" state="final">Mya' b'a'n xb'ant ttzaj qe aq'unb'il xk'utz'ib'. B'ala ilx ti'j tu'n tjaw txaqet t-xk'utz'ib'a juntl maj.</target>
+        <target xml:lang="mam" state="translated">Mya' b'a'n xb'ant ttzaj qe aq'unb'il xk'utz'ib'. B'ala ilx ti'j tu'n tjaw txaqet t-xk'utz'ib'a juntl maj.</target>
       </trans-unit>
-      <trans-unit id="Application.ProblemStarting.Specific" approved="yes">
+      <trans-unit id="Application.ProblemStarting.Specific">
         <source xml:lang="en">There was a problem starting {0} which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="mam" state="final">Mya' b'a'n  xb'ant ttzaj qe' {0}. B'ala ilx ti'j tu'n tjaw txaqet t-xk'utz'ib'a juntl maj.</target>
+        <target xml:lang="mam" state="translated">Mya' b'a'n  xb'ant ttzaj qe' {0}. B'ala ilx ti'j tu'n tjaw txaqet t-xk'utz'ib'a juntl maj.</target>
       </trans-unit>
-      <trans-unit id="Application.WaitingFinish.General" approved="yes">
+      <trans-unit id="Application.WaitingFinish.General">
         <source xml:lang="en">Waiting for other application to finish...</source>
         <note>ID: Application.WaitingFinish.General</note>
-        <target xml:lang="mam" state="final">N-ayet tu'n tb'aj aq'unan juntl aq'unb'il xk'utz'ib'...</target>
+        <target xml:lang="mam" state="translated">N-ayet tu'n tb'aj aq'unan juntl aq'unb'il xk'utz'ib'...</target>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.Specific" approved="yes">
         <source xml:lang="en">Waiting for other {0} to finish...</source>
         <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="mam" state="final">N-ayet tu'n tb'aj aq'unan juntl {0}...</target>
+        <target xml:lang="mam" state="final">N-ayet tu'n tb'aj aq'unan {0}...</target>
       </trans-unit>
       <trans-unit id="Common.AbortButton" approved="yes">
         <source xml:lang="en">&amp;Abort</source>
         <note>ID: Common.AbortButton</note>
-        <target xml:lang="mam" state="final">&amp;M'in txi' lajet</target>
+        <target xml:lang="mam" state="final">&amp;Mi'n txi' lajet</target>
       </trans-unit>
-      <trans-unit id="Common.CancelButton" approved="yes">
+      <trans-unit id="Common.CancelButton">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="mam" state="final">&amp;Kwe'b'il</target>
+        <target xml:lang="mam" state="translated">&amp;Kwe'b'il</target>
       </trans-unit>
-      <trans-unit id="Common.IgnoreButton" approved="yes">
+      <trans-unit id="Common.IgnoreButton">
         <source xml:lang="en">&amp;Ignore</source>
         <note>ID: Common.IgnoreButton</note>
-        <target xml:lang="mam" state="final">&amp;Min txi' b'inchet</target>
+        <target xml:lang="mam" state="translated">&amp;Min txi' b'inchet</target>
       </trans-unit>
-      <trans-unit id="Common.No" approved="yes">
+      <trans-unit id="Common.No">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
-        <target xml:lang="mam" state="final">Min</target>
+        <target xml:lang="mam" state="translated">Min</target>
       </trans-unit>
       <trans-unit id="Common.NoButton" approved="yes">
         <source xml:lang="en">&amp;No</source>

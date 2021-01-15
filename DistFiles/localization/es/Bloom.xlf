@@ -1077,7 +1077,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       <trans-unit id="Common.Copy">
         <source xml:lang="en">Copy</source>
         <note>ID: Common.Copy</note>
-        <target xml:lang="es-ES" state="needs-translation">Copy</target>
+        <target xml:lang="es-ES" state="translated">Copiar</target>
       </trans-unit>
       <trans-unit id="Common.Delete" approved="yes">
         <source xml:lang="en">Delete</source>
@@ -1971,11 +1971,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: EditTab.Image.CopyImageFailed</note>
         <target xml:lang="es-ES" state="final">Bloom no pudo utilizar el portapapeles de su computadora. Es posible que haya un conflicto con otro programa.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Image.Corrupt" sil:dynamic="true">
+      <trans-unit id="EditTab.Image.Corrupt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom was not able to load {0}. The file may be corrupted. Please try another image. Here are some technical details: </source>
         <note>ID: EditTab.Image.Corrupt</note>
         <note>{0} is required, and will be replaced with a file path. After the message Bloom will append a further message.</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo cargar {0}. El archivo puede estar corrompido. Por favor, intente con otra imagen. Aquí hay algunos detalles técnicos: </target>
+        <target xml:lang="es-ES" state="final">Bloom no pudo cargar {0}. El archivo puede estar corrompido. Por favor, intente con otra imagen. Aquí hay algunos detalles técnicos: </target>
       </trans-unit>
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cut Image</source>
@@ -1998,10 +1998,10 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: EditTab.Image.PasteImage</note>
         <target xml:lang="es-ES" state="final">Pegar la imagen</target>
       </trans-unit>
-      <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true">
+      <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.</source>
         <note>ID: EditTab.Image.TooLarge</note>
-        <target xml:lang="es-ES" state="translated">Bloom se quedó sin memoria cargando esta imagen ({0}), que es bastante grande ({1} por {2} píxeles). Haga clic en Ayuda para sugerencias.</target>
+        <target xml:lang="es-ES" state="final">Bloom se quedó sin memoria cargando esta imagen ({0}), que es bastante grande ({1} por {2} píxeles). Haga clic en Ayuda para sugerencias.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.TryRestart" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Try closing other programs and restart your computer if necessary.</source>
@@ -2140,11 +2140,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: EditTab.SavingNotification</note>
         <target xml:lang="es-ES" state="final">Guardando...</target>
       </trans-unit>
-      <trans-unit id="EditTab.SourceBubbleCopied" sil:dynamic="true">
+      <trans-unit id="EditTab.SourceBubbleCopied" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Copied</source>
         <note>ID: EditTab.SourceBubbleCopied</note>
         <note>Displays briefly when the user clicks the copy icon in a source bubble.</note>
-        <target xml:lang="es-ES" state="translated">Copiado</target>
+        <target xml:lang="es-ES" state="final">Copiado</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.Alignment" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Alignment</source>
@@ -2601,12 +2601,20 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.Stage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Stage</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.Stage</note>
+        <note>Obsolete for Bloom 5.0 and later</note>
         <target xml:lang="es-ES" state="final">Etapa</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageOf" sil:dynamic="true" approved="yes">
         <source xml:lang="en">of</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageOf</note>
+        <note>Obsolete for Bloom 5.0 and later</note>
         <target xml:lang="es-ES" state="final">de</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageNofM" sil:dynamic="true">
+        <source xml:lang="en">Stage {0} of {1}</source>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.StageNofM</note>
+        <note>{0} is replaced with the current level, and {1} with the total number of levels</note>
+        <target xml:lang="es-ES" state="translated">Etapa {0} de {1}</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image Description Tool</source>
@@ -2762,13 +2770,21 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <source xml:lang="en">Level</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Level</note>
         <note>Used to create string "Level # of #". The space after this word is added programmatically.</note>
+        <note>Obsolete for Bloom 5.0 and later</note>
         <target xml:lang="es-ES" state="final">Nivel</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelOf" sil:dynamic="true" approved="yes">
         <source xml:lang="en">of</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.LevelOf</note>
         <note>Used to create string "Level # of #". The spaces on each side of this word are added programmatically.</note>
+        <note>Obsolete for Bloom 5.0 and later</note>
         <target xml:lang="es-ES" state="final">de</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelNofM" sil:dynamic="true">
+        <source xml:lang="en">Level {0} of {1}</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.LevelNofM</note>
+        <note>{0} is replaced with the current level, and {1} with the total number of levels</note>
+        <target xml:lang="es-ES" state="translated">Nivel {0} de {1}</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Max</source>
@@ -3531,10 +3547,10 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: LayoutChoices.HalfLetterLandscape</note>
         <target xml:lang="es-ES" state="final">Media carta Horizontal</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.HalfLetterPortrait" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.HalfLetterPortrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">HalfLetter Portrait</source>
         <note>ID: LayoutChoices.HalfLetterPortrait</note>
-        <target xml:lang="es-ES" state="translated">Media carta Vertical</target>
+        <target xml:lang="es-ES" state="final">Media carta Vertical</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.LetterLandscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letter Landscape</source>
@@ -4440,12 +4456,12 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: PublishTab.OpenThePDFInTheSystemPDFViewer</note>
         <target xml:lang="es-ES" state="final">Abra el PDF en el visualizador de PDF predeterminado</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Options">
+      <trans-unit id="PublishTab.Options" approved="yes">
         <source xml:lang="en">PDF Options</source>
         <note>ID: PublishTab.Options</note>
         <note>menu header in the Publish tab</note>
         <note>was previously just "Options"</note>
-        <target xml:lang="es-ES" state="translated">Opciones de PDF</target>
+        <target xml:lang="es-ES" state="final">Opciones de PDF</target>
       </trans-unit>
       <trans-unit id="PublishTab.OptionsMenu.SizeLayout" approved="yes">
         <source xml:lang="en">Size/Orientation</source>
@@ -4476,11 +4492,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: PublishTab.OverwriteWarning.WindowTitle</note>
         <target xml:lang="es-ES" state="final">Aviso</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Error.Failed">
+      <trans-unit id="PublishTab.PDF.Error.Failed" approved="yes">
         <source xml:lang="en">Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.</source>
         <note>ID: PublishTab.PDF.Error.Failed</note>
         <note>Error message displayed in a message dialog box. {0} is the filename, {1} is a newline character.</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo crear el archivo PDF ({0}).{1}{1}Detalles: BloomPdfMaker (línea de comando) no produjo el documento esperado.</target>
+        <target xml:lang="es-ES" state="final">Bloom no pudo crear el archivo PDF ({0}).{1}{1}Detalles: BloomPdfMaker (línea de comando) no produjo el documento esperado.</target>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Error.PrinterError" approved="yes">
         <source xml:lang="en">Bloom requires access to a printer in order to make a PDF, even though you are not printing.  Windows gave this error when Bloom tried to access the default printer: {0}</source>
@@ -4591,7 +4607,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: PublishTab.PdfMaker.PdfWithCmykSwopV2</note>
         <note>displayed as a checkable menu option for the Publish tab, PDF options menu. The content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.</note>
         <note>Previously this item was "PDF with CMYK ..." and it occurred as an option within the Save dialog for PDF files</note>
-        <target xml:lang="es-ES" state="translated">PDF con color CMYK (U.S. Web Coated (SWORP) v2)</target>
+        <target xml:lang="es-ES" state="translated">PDF con color CMYK (U.S. Web Coated (SWOP) v2)</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.PdfWithRGB" approved="yes">
         <source xml:lang="en">PDF with RGB color</source>
@@ -4627,11 +4643,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>title for the message box</note>
         <target xml:lang="es-ES" state="final">PDF no guardado</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfNotSavedWhy">
+      <trans-unit id="PublishTab.PdfNotSavedWhy" approved="yes">
         <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for print shop".</source>
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
-        <target xml:lang="es-ES" state="translated">No se guardó el archivo PDF porque usted no permitió la producción de un "PDF para la imprenta".</target>
+        <target xml:lang="es-ES" state="final">No se guardó el archivo PDF porque usted no permitió la producción de un "PDF para la imprenta".</target>
       </trans-unit>
       <trans-unit id="PublishTab.PrintButton" approved="yes">
         <source xml:lang="en">&amp;Print...</source>
@@ -4701,10 +4717,10 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: PublishTab.Upload.Cancelled</note>
         <target xml:lang="es-ES" state="final">La carga fue cancelada</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.CheckEmail">
+      <trans-unit id="PublishTab.Upload.CheckEmail" approved="yes">
         <source xml:lang="en">Please check your email and click on the link there, then sign in again.</source>
         <note>ID: PublishTab.Upload.CheckEmail</note>
-        <target xml:lang="es-ES" state="translated">Por favor, revise su correo electrónico y haga clic en el enlace que le enviamos allí, luego inicie sesión de nuevo.</target>
+        <target xml:lang="es-ES" state="final">Por favor, revise su correo electrónico y haga clic en el enlace que le enviamos allí, luego inicie sesión de nuevo.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CcLink" approved="yes">
         <source xml:lang="en">CC-BY-NC</source>
@@ -5083,11 +5099,11 @@ Do you want to go ahead?</note>
         <note>obsolete as of 4.9</note>
         <target xml:lang="es-ES" state="final">Cantidad máxima de palabras por libro</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.BookMaxWords2" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Per <g id="bmw-1" ctype="x-html-strong">Book</g></source>
+      <trans-unit id="ReaderSetup.BookMaxWords2" sil:dynamic="true">
+        <source xml:lang="en">Per **Book**</source>
         <note>ID: ReaderSetup.BookMaxWords2</note>
-        <note>follows headings "maximum" and "words" to convey "maximum words per book. The "g" markup may be used for the important word.</note>
-        <target xml:lang="es-ES" state="final">Por <g id="bmw-1" ctype="x-html-strong">libro</g></target>
+        <note>follows headings "maximum" and "words" to convey "maximum words per book. Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="es-ES" state="translated">Por **Libro**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.ChooseAllowedWordsFile" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose...</source>
@@ -5177,11 +5193,11 @@ Do you want to go ahead?</note>
         <note>obsolete as of 4.9. New LevelLabelMax replaces it</note>
         <target xml:lang="es-ES" state="final">Nivel</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.LevelLabelMax" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.LevelLabelMax" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level {0} Maximums</source>
         <note>ID: ReaderSetup.LevelLabelMax</note>
         <note xml:lang="en">{0} is a number. A heading for several items each of which specfies a maximum for a different quantity for a reader of the level specified by the number.</note>
-        <target xml:lang="es-ES" state="translated">Máximos del Nivel {0}</target>
+        <target xml:lang="es-ES" state="final">Máximos del Nivel {0}</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Levels" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Reader Levels</source>
@@ -5193,59 +5209,52 @@ Do you want to go ahead?</note>
         <note>ID: ReaderSetup.MatchingWords</note>
         <target xml:lang="es-ES" state="final">palabras coincidentes</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MaxAverageGlyphsPerWord" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">
-          Average per Word in <g id="magpw-1" ctype="x-html-strong">Book</g>
-        </source>
+      <trans-unit id="ReaderSetup.MaxAverageGlyphsPerWord" sil:dynamic="true">
+        <source xml:lang="en">Average per Word in **Book**</source>
         <note>ID: ReaderSetup.MaxAverageGlyphsPerWord</note>
-        <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="es-ES" state="final">
-          
-          Promedio por palabra en <g id="magpw-1" ctype="x-html-strong">libro</g>        
-        </target>
+        <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="es-ES" state="translated">Promedio por palabra en **Libro**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageWords" sil:dynamic="true">
-        <source xml:lang="en">Average per <g id="maw-1" ctype="x-html-strong">Sentence</g> in <g id="maw-2" ctype="x-html-strong">Book</g></source>
+        <source xml:lang="en">Average per **Sentence** in **Book**</source>
         <note>ID: ReaderSetup.MaxAverageWords</note>
         <note>Prior to 4.9, was "Maximum Average Length of Sentences in Book"</note>
-        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum averate sentence length in book". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="es-ES" state="translated">Promedio máximo de longitud de las oraciones en el libro</target>
+        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum averate sentence length in book". Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="es-ES" state="translated">Promedio máximo de longitud de las **frases** en el ** libro**</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MaxAverageWordsPerPage" sil:dynamic="true" approved="yes">
+      <trans-unit id="ReaderSetup.MaxAverageWordsPerPage" sil:dynamic="true">
         <source xml:lang="en">
-          Average per <g id="mawpp-1" ctype="x-html-strong">Page</g></source>
+          Average per **Page**</source>
         <note>ID: ReaderSetup.MaxAverageWordsPerPage</note>
-        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum average words per page" (in book is implied). The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="es-ES" state="final">
-          
-          Promedio por <g id="mawpp-1" ctype="x-html-strong">página</g></target>
+        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum average words per page" (in book is implied). Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="es-ES" state="translated">
+          Promedio por **página**</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MaxAverageSentencesPerPage" sil:dynamic="true" approved="yes">
+      <trans-unit id="ReaderSetup.MaxAverageSentencesPerPage" sil:dynamic="true">
         <source xml:lang="en">
-          Average per <g id="maspp-1" ctype="x-html-strong">Page</g>
+          Average per **Page**
         </source>
         <note>ID: ReaderSetup.MaxAverageSentencesPerPage</note>
-        <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="es-ES" state="final">
-          
-Promedio por<g id="maspp-1" ctype="x-html-strong">página</g>        
+        <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="es-ES" state="translated">
+          Promedio por **página**
         </target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MaxGlyphsPerWord" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">In any <g id="mgpw-1" ctype="x-html-strong">Word</g></source>
+      <trans-unit id="ReaderSetup.MaxGlyphsPerWord" sil:dynamic="true">
+        <source xml:lang="en">In any **Word**</source>
         <note>ID: ReaderSetup.MaxGlyphsPerWord</note>
-        <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="es-ES" state="final">En cualquier <g id="mgpw-1" ctype="x-html-strong">palabra</g></target>
+        <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="es-ES" state="translated">En cualquier **palabra**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxSentencesPerPage" sil:dynamic="true">
         <source xml:lang="en">
-          Per <g id="mspp-1" ctype="x-html-strong">Page</g>
+          Per **Page**
         </source>
         <note>ID: ReaderSetup.MaxSentencesPerPage</note>
-        <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". The "g" markup may be used to mark whatever should be strongly emphasized</note>
+        <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". Surround text that should be bold in double asterisks.</note>
         <target xml:lang="es-ES" state="translated">
           
-En <g id="mspp-1" ctype="x-html-strong">página</g>        
+Por <g id="mspp-1" ctype="x-html-strong">página</g>        
         </target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxUniqueWords" sil:dynamic="true" approved="yes">
@@ -5254,11 +5263,11 @@ En <g id="mspp-1" ctype="x-html-strong">página</g>
         <note xml:lang="en">OLD TEXT (before 3.9, reworded): Maximum Unique Words per Book</note>
         <target xml:lang="es-ES" state="final">Cantidad máxima de palabras únicas por libro</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MaxUniqueWords2" sil:dynamic="true" approved="yes">
-        <source xml:lang="en"><g id="muw-1" ctype="x-html-strong">Unique</g> in <g id="muw-2" ctype="x-html-strong">Book</g></source>
+      <trans-unit id="ReaderSetup.MaxUniqueWords2" sil:dynamic="true">
+        <source xml:lang="en">**Unique** in **Book**</source>
         <note>ID: ReaderSetup.MaxUniqueWords2</note>
-        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum unique words in book". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="es-ES" state="final"><g id="muw-1" ctype="x-html-strong">Únicas</g> en <g id="muw-2" ctype="x-html-strong">libro</g></target>
+        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum unique words in book". Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="es-ES" state="translated">**Único** en **Libro**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page</source>
@@ -5271,10 +5280,11 @@ En <g id="mspp-1" ctype="x-html-strong">página</g>
         <note>obsolete as of Bloom 4.9</note>
         <target xml:lang="es-ES" state="final">Cantidad máxima de palabras en cada página</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.PageMaxWords2" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Per <g id="pmw-1" ctype="x-html-strong">Page</g></source>
+      <trans-unit id="ReaderSetup.PageMaxWords2" sil:dynamic="true">
+        <source xml:lang="en">Per **Page**</source>
         <note>ID: ReaderSetup.PageMaxWords2</note>
-        <target xml:lang="es-ES" state="final">Por <g id="pmw-1" ctype="x-html-strong">página</g></target>
+        <note>Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="es-ES" state="translated">Por **página**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PerBookHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Per Book (Unique)</source>
@@ -5371,11 +5381,11 @@ En <g id="mspp-1" ctype="x-html-strong">página</g>
         <note>obsolete as of Bloom 4.9</note>
         <target xml:lang="es-ES" state="final">Cantidad máxima de palabras en cada oración</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.SentenceMaxWords2" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Per <g id="mgpw-1" ctype="x-html-strong">Sentence</g></source>
+      <trans-unit id="ReaderSetup.SentenceMaxWords2" sil:dynamic="true">
+        <source xml:lang="en">Per **Sentence**</source>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
-        <note>follows headings "maximum" and "words" to convey "maximum words per sentence. The "g" markup may be used for the important word.</note>
-        <target xml:lang="es-ES" state="final">Por <g id="mgpw-1" ctype="x-html-strong">frase</g></target>
+        <note>follows headings "maximum" and "words" to convey "maximum words per sentence. Surround text that should be bold in double asterisks.</note>
+        <target xml:lang="es-ES" state="translated">Por **frase**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
