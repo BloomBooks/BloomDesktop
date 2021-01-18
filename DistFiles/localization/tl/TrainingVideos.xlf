@@ -16,7 +16,7 @@
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">All videos</g>
         </source>
-        <target xml:lang="tl" state="needs-translation"><g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">All videos</g></target>
+        <target xml:lang="tl" state="translated"><g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">Lahat ng mga Video</g></target>
         <note>ID: training.videos.all</note>
       </trans-unit>
       <trans-unit id="training.videos.intro">
@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="training.videos.advanced">
         <source xml:lang="en">Advanced Topics</source>
-        <target xml:lang="tl" state="needs-translation">Advanced Topics</target>
+        <target xml:lang="tl" state="translated">Advanced Topics</target>
         <note>ID: training.videos.advanced</note>
       </trans-unit>
       <trans-unit id="training.videos.formatting">

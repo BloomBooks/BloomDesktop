@@ -708,6 +708,11 @@
         <note>ID: CollectionSettingsDialog.RestartMessage</note>
         <target xml:lang="prs" state="final">بلوم این پروژه را بسته و با تنظیمات جدید دوباره باز خواهد کرد.</target>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.TeamCollectionTab.TabLabel">
+        <source xml:lang="en">Team Collection</source>
+        <note>ID: CollectionSettingsDialog.TeamCollectionTab.TabLabel</note>
+        <target xml:lang="prs" state="needs-translation">Team Collection</target>
+      </trans-unit>
       <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem" approved="yes">
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>
         <note>ID: CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem</note>
@@ -1183,6 +1188,12 @@
         <source xml:lang="en">Replace</source>
         <note>ID: Common.Replace</note>
         <target xml:lang="prs" state="final">تعویض کردن</target>
+      </trans-unit>
+      <trans-unit id="Common.Report">
+        <source xml:lang="en">REPORT</source>
+        <note>ID: Common.Report</note>
+        <note>Used for a link that signifies "Bring up a dialog for sending a report of a problem. We usually want all-caps, unless inappropriate in a particular language"</note>
+        <target xml:lang="prs" state="needs-translation">REPORT</target>
       </trans-unit>
       <trans-unit id="Common.SeeWebPage" approved="yes">
         <source xml:lang="en">See {0}.</source>
@@ -1831,6 +1842,12 @@
         <source xml:lang="en">click to edit original title</source>
         <note>ID: EditTab.FrontMatter.EditOriginalTitlePlaceholder</note>
         <target xml:lang="prs" state="needs-translation">click to edit original title</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.FullOriginalCopyrightLicenseSentence" sil:dynamic="true">
+        <source xml:lang="en">Adapted from original, {0}, {1}. Licensed under {2}.</source>
+        <note>ID: EditTab.FrontMatter.FullOriginalCopyrightLicenseSentence</note>
+        <note>On the Credits page of a book being translated, Bloom shows the original copyright. {0} is original title, {1} is original copyright, and {2} is license information.</note>
+        <target xml:lang="prs" state="needs-translation">Adapted from original, {0}, {1}. Licensed under {2}.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
@@ -3310,6 +3327,11 @@
         <source xml:lang="en">Bloom had a problem importing this video.</source>
         <note>ID: Errors.ProblemImportingVideo</note>
         <target xml:lang="prs" state="final">بلوم در وارد نمودن این ویدیو مشکل داشت.</target>
+      </trans-unit>
+      <trans-unit id="Errors.ReadOnlyBookFolder">
+        <source xml:lang="en">This book cannot be edited because its folder is read-only.</source>
+        <note>ID: Errors.ReadOnlyBookFolder</note>
+        <target xml:lang="prs" state="needs-translation">This book cannot be edited because its folder is read-only.</target>
       </trans-unit>
       <trans-unit id="Errors.RemoveExcessHtml" approved="yes">
         <source xml:lang="en">Please remove all but one of the files ending in .htm.  Bloom will now open this folder for you.</source>
@@ -5802,6 +5824,141 @@ Do you want to go ahead?</note>
         <note>ID: Settings.Enterprise.SubscriptionCode</note>
         <target xml:lang="prs" state="final">کد اشتراک:</target>
       </trans-unit>
+      <trans-unit id="TeamCollection.Available" sil:dynamic="true">
+        <source xml:lang="en">This book is available for editing</source>
+        <note>ID: TeamCollection.Available</note>
+        <target xml:lang="prs" state="needs-translation">This book is available for editing</target>
+      </trans-unit>
+      <!--
+// Don't want these actually translated until things stabilize. Will need re-ordering.
+      <trans-unit id="TeamCollection.AvailableDescription" sil:dynamic="true">
+        <source xml:lang="en">When you check it out, no one on the team will be able to modify it or see your changes until you check it back in.</source>
+        <note>ID: TeamCollection.AvailableDescription</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutToYou" sil:dynamic="true">
+        <source xml:lang="en">This book is checked out to you</source>
+        <note>ID: TeamCollection.CheckedOutToYou</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutToYouDescription" sil:dynamic="true">
+        <source xml:lang="en">Are you done for now? Click this button to send your changes to your team.</source>
+        <note>ID: TeamCollection.CheckedOutToYouDescription</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutToYouElsewhere" sil:dynamic="true">
+        <source xml:lang="en">This book is checked out to you, but on a different computer</source>
+        <note>ID: TeamCollection.CheckedOutToYouElsewhere</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutToYouElsewhereDescription" sil:dynamic="true">
+        <source xml:lang="en">You cannot edit the book on this computer, until you check it in on %0.</source>
+        <note>ID: TeamCollection.CheckedOutToYouElsewhereDescription</note>
+        <note>The %0 is the name of the computer where the book is checked out.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckIn" sil:dynamic="true">
+        <source xml:lang="en">Check in book</source>
+        <note>ID: TeamCollection.CheckIn</note>
+        <note>On button to check in a book</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Checkout" sil:dynamic="true">
+        <source xml:lang="en">Check out book</source>
+        <note>ID: TeamCollection.Checkout</note>
+        <note>On button to check out a book</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutOn" sil:dynamic="true">
+        <source xml:lang="en">%0 checked out this book on %1.</source>
+        <note>ID: TeamCollection.CheckedOutOn</note>
+        <note>The %0 is a person's name, and the %1 is a date.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.YouCheckedOutOn" sil:dynamic="true">
+        <source xml:lang="en">You checked out this book on %0.</source>
+        <note>ID: TeamCollection.YouCheckedOutOn</note>
+        <note>The %0 is a date.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutToSomeone" sil:dynamic="true">
+        <source xml:lang="en">This book is checked out to %0</source>
+        <note>ID: TeamCollection.CheckedOutToSomeone</note>
+        <note>The %0 is the name of the person who checked out the book (or possibly email).</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutToSomeoneDescription" sil:dynamic="true">
+        <source xml:lang="en">You cannot edit the book until %0 checks it in.</source>
+        <note>ID: TeamCollection.CheckedOutToSomeoneDescription</note>
+        <note>The %0 is the name of the person who checked out the book.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ConflictingCheckout" sil:dynamic="true">
+        <source xml:lang="en">The book '{0}' is checked out to someone else. Your changes are saved to Lost-and-found.</source>
+        <note>ID: TeamCollection.ConflictingCheckout</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ConflictingEdit" sil:dynamic="true">
+        <source xml:lang="en">The book '{0}', which you have checked out and edited, was modified in the team collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.</source>
+        <note>ID: TeamCollection.ConflictingEdit</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CreateTeamCollection" sil:dynamic="true">
+        <source xml:lang="en">Create a Team Collection</source>
+        <note>ID: TeamCollection.CreateTeamCollection</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Intro" sil:dynamic="true">
+        <source xml:lang="en">Bloom's Team Collection system helps your team collaborate as you create, translate, and edit books.</source>
+        <note>ID: TeamCollection.Intro</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Joining" sil:dynamic="true">
+        <source xml:lang="en">How to join an existing Team Collection</source>
+        <note>ID: TeamCollection.Joining</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.JoiningInstructions" sil:dynamic="true">
+        <source xml:lang="en">First, the team leader should share the Team Collection's Dropbox folder with you. After that folder is synchronizing on your computer, open it and double click on "Join this Team Collection.JoinBloomTC" file.</source>
+        <note>ID: TeamCollection.JoiningInstructions</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.RemoteChanges" sil:dynamic="true">
+        <source xml:lang="en">Remote Changes</source>
+        <note>ID: TeamCollection.RemoteChanges</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.RequestRestart" sil:dynamic="true">
+        <source xml:lang="en">Bloom has detected that other users have made changes in your team collection folder. When convenient, please restart Bloom to see the changes.</source>
+        <note>ID: TeamCollection.RequestRestart</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.SelectFolder" sil:dynamic="true">
+        <source xml:lang="en">Select or create the folder where this collection will be shared</source>
+        <note>ID: TeamCollection.SelectFolder</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Starting" sil:dynamic="true">
+        <source xml:lang="en">Starting a new Team Collection</source>
+        <note>ID: TeamCollection.Starting</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.StartingInstructions" sil:dynamic="true">
+        <source xml:lang="en">Only one person on the team should create the Team Collection. Before creating it, you will need to have Dropbox installed on your computer.</source>
+        <note>ID: TeamCollection.StartingInstructions</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Creating" sil:dynamic="true">
+        <source xml:lang="en">Bloom will create a new collection on your computer based on this Team Collection.</source>
+        <note>ID: TeamCollection.Creating</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Join" sil:dynamic="true">
+        <source xml:lang="en">Join</source>
+        <note>ID: TeamCollection.Join</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.JoinAndMerge" sil:dynamic="true">
+        <source xml:lang="en">Join and Merge</source>
+        <note>ID: TeamCollection.JoinAndMerge</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.JoinHeading" sil:dynamic="true">
+        <source xml:lang="en">Join the Team Collection "{0}"</source>
+        <note>ID: TeamCollection.JoinHeading</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Merging" sil:dynamic="true">
+        <source xml:lang="en">Bloom will merge your existing "{0}" collection with this Team Collection.</source>
+        <note>ID: TeamCollection.Merging</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.MergingExplanation" sil:dynamic="true">
+        <source xml:lang="en">The rest of the team will receive any unique books found in that collection. Any books you have that are already in this Team Collection will be moved to the "Lost and Found" folder, unless Bloom can determine that they are the same.</source>
+        <note>ID: TeamCollection.MergingExplanation</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.MergeInstead" sil:dynamic="true">
+        <source xml:lang="en">If instead you want to merge a collection you already have into this Team Collection, click Cancel and rename the collection you want to merge to the same as the Team Collection you are joining. Then try to join again.</source>
+        <note>ID: TeamCollection.MergeInstead</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.StartFresh" sil:dynamic="true">
+        <source xml:lang="en">If instead you want to start fresh, click Cancel and rename your existing "{0}" collection to something different. Then try to join again.</source>
+        <note>ID: TeamCollection.StartFresh</note>
+      </trans-unit>
+-->
       <trans-unit id="TemplateBooks.BookName.Arithmetic Template" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Arithmetic Template</source>
         <note>ID: TemplateBooks.BookName.Arithmetic Template</note>

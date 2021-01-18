@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="integrity.title">
         <source xml:lang="en">Bloom cannot find some of its own files, and cannot continue</source>
-        <target xml:lang="tl" state="needs-translation">Bloom cannot find some of its own files, and cannot continue</target>
+        <target xml:lang="tl" state="translated">Bloom cannot find some of its own files, and cannot continue</target>
         <note>ID: integrity.title</note>
       </trans-unit>
       <trans-unit id="integrity.causes">
@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="integrity.todo.ideas">
         <source xml:lang="en">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:</source>
-        <target xml:lang="tl" state="needs-translation">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:</target>
+        <target xml:lang="tl" state="translated">Pagkasubmit mo ng report na ito, ikaw ay aming kokontakin at tutulungang ayusin ito. Pansamantala, baka makatulong ang mga ideyang ito:</target>
         <note>ID: integrity.todo.ideas</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Reinstall">
@@ -44,7 +44,7 @@
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVAST">
         <source xml:lang="en">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>.</source>
-        <target xml:lang="tl" state="needs-translation">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>.</target>
+        <target xml:lang="tl" state="translated">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>.</target>
         <note>ID: integrity.todo.ideas.AVAST</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Norton">
@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVG">
         <source xml:lang="en">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</source>
-        <target xml:lang="tl" state="needs-translation">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</target>
+        <target xml:lang="tl" state="translated">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</target>
         <note>ID: integrity.todo.ideas.AVG</note>
         <note>The former source text had an incorrect &amp;amp; following l=en_US in the href attribute value.</note>
       </trans-unit>

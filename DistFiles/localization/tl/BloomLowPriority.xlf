@@ -66,7 +66,7 @@
             Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
         </source>
         <note>ID: Settings.Enterprise.Overview</note>
-        <target xml:lang="tl" state="needs-translation">
+        <target xml:lang="tl" state="translated">
             Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
         </target>
       </trans-unit>
@@ -89,7 +89,7 @@
       <trans-unit id="Settings.Enterprise.Status">
         <source xml:lang="en">Bloom Enterprise Status</source>
         <note>ID: Settings.Enterprise.Status</note>
-        <target xml:lang="tl" state="needs-translation">Bloom Enterprise Status</target>
+        <target xml:lang="tl" state="translated">Bloom Enterprise Status</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Subscription">
         <source xml:lang="en">Enterprise Subscription</source>
