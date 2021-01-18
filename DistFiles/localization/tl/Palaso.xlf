@@ -32,13 +32,13 @@
       <trans-unit id="Application.AlreadyRunning.General">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.General</note>
-        <target xml:lang="tl" state="needs-translation">Another copy of the application is already running. If you cannot find it, restart your computer.</target>
+        <target xml:lang="tl" state="translated">May isa pang kopya ng software na gumagana. Kung hindi makita, i-restart ang iyong kompyuter.</target>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.Specific">
         <source xml:lang="en">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="tl" state="needs-translation">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</target>
+        <target xml:lang="tl" state="translated">May kopya ng {0} ang gumagana. Kung hindi makita ang kopya ng {0}, i-restart ang iyong kompyuter.</target>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.General">
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
@@ -155,7 +155,7 @@
       <trans-unit id="ImageToolbox.ArtOfReading">
         <source xml:lang="en">Art Of Reading</source>
         <note>ID: ImageToolbox.ArtOfReading</note>
-        <target xml:lang="tl" state="needs-translation">Art Of Reading</target>
+        <target xml:lang="tl" state="translated">Art Of Reading</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Camera">
         <source xml:lang="en">Camera</source>
@@ -335,7 +335,7 @@
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
-        <target xml:lang="tl" state="translated">Patungkol sa Language 639-3 Codes &amp; Paano Mag-apply ng Bagong Code</target>
+        <target xml:lang="tl" state="translated">Patungkol sa mga Language 639-3 Code &amp; Paano Mag-apply ng Bagong Code</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle">
         <source xml:lang="en">About The ISO Language Registry</source>
@@ -474,12 +474,12 @@
       <trans-unit id="MetadataEditor.AllowCommercialUse">
         <source xml:lang="en">Allow commercial uses of your work?</source>
         <note>ID: MetadataEditor.AllowCommercialUse</note>
-        <target xml:lang="tl" state="needs-translation">Allow commercial uses of your work?</target>
+        <target xml:lang="tl" state="translated">Pahintulutan gamitin sa commercial use ang iyong gawa?</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowDerivatives">
         <source xml:lang="en">Allow modifications of your work?</source>
         <note>ID: MetadataEditor.AllowDerivatives</note>
-        <target xml:lang="tl" state="needs-translation">Allow modifications of your work?</target>
+        <target xml:lang="tl" state="translated">Pahintulutan ang pagbabago sa iyong gawa?</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightHolder">
         <source xml:lang="en">Copyright Holder</source>
@@ -545,7 +545,7 @@
         <source xml:lang="en">Additional Requests</source>
         <note>ID: MetadataEditor.additionalRequestsLabel</note>
         <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
-        <target xml:lang="tl" state="needs-translation">Additional Requests</target>
+        <target xml:lang="tl" state="translated">Karagdagang Kahilingan</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.betterLinkLabel1">
         <source xml:lang="en">more info</source>
@@ -683,7 +683,7 @@
         <source xml:lang="en">Abbreviation</source>
         <note>ID: WSIdentifierView.betterLabel4</note>
         <note>In writing system setup general tab: label before abbreviation text box</note>
-        <target xml:lang="tl" state="needs-translation">Abbreviation</target>
+        <target xml:lang="tl" state="translated">Paikliin</target>
       </trans-unit>
       <trans-unit id="WSIdentifierView.betterLabel5">
         <source xml:lang="en">Special:</source>
@@ -722,7 +722,7 @@
       <trans-unit id="WSKeyboardControl.KeyboardsAvailable">
         <source xml:lang="en">Available keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsAvailable</note>
-        <target xml:lang="tl" state="needs-translation">Available keyboards</target>
+        <target xml:lang="tl" state="translated">Available keyboards</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed">
         <source xml:lang="en">Previously used keyboards</source>

@@ -709,6 +709,11 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: CollectionSettingsDialog.RestartMessage</note>
         <target xml:lang="es-ES" state="final">Bloom cerrará y abrirá nuevamente este proyecto con las nuevas configuraciones.</target>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.TeamCollectionTab.TabLabel" approved="yes">
+        <source xml:lang="en">Team Collection</source>
+        <note>ID: CollectionSettingsDialog.TeamCollectionTab.TabLabel</note>
+        <target xml:lang="es-ES" state="final">Colección de colaboración</target>
+      </trans-unit>
       <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem" approved="yes">
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>
         <note>ID: CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem</note>
@@ -1074,10 +1079,10 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: Common.Colors.Yellow</note>
         <target xml:lang="es-ES" state="final">Amarillo</target>
       </trans-unit>
-      <trans-unit id="Common.Copy">
+      <trans-unit id="Common.Copy" approved="yes">
         <source xml:lang="en">Copy</source>
         <note>ID: Common.Copy</note>
-        <target xml:lang="es-ES" state="translated">Copiar</target>
+        <target xml:lang="es-ES" state="final">Copiar</target>
       </trans-unit>
       <trans-unit id="Common.Delete" approved="yes">
         <source xml:lang="en">Delete</source>
@@ -1185,6 +1190,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: Common.Replace</note>
         <target xml:lang="es-ES" state="final">Reemplazar</target>
       </trans-unit>
+      <trans-unit id="Common.Report" approved="yes">
+        <source xml:lang="en">REPORT</source>
+        <note>ID: Common.Report</note>
+        <note>Used for a link that signifies "Bring up a dialog for sending a report of a problem. We usually want all-caps, unless inappropriate in a particular language"</note>
+        <target xml:lang="es-ES" state="final">INFORMAR</target>
+      </trans-unit>
       <trans-unit id="Common.SeeWebPage" approved="yes">
         <source xml:lang="en">See {0}.</source>
         <note>ID: Common.SeeWebPage</note>
@@ -1290,10 +1301,10 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note xml:lang="en">OLD TEXT (before 3.9): (no template file found)</note>
         <target xml:lang="es-ES" state="final">No se pudo encontrar {0}</target>
       </trans-unit>
-      <trans-unit id="EditTab.AddPageDialog.NumberOfPagesTooltip" sil:dynamic="true">
+      <trans-unit id="EditTab.AddPageDialog.NumberOfPagesTooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Number of pages to add</source>
         <note>ID: EditTab.AddPageDialog.NumberOfPagesTooltip</note>
-        <target xml:lang="es-ES" state="translated">Número de páginas que se debe agregar</target>
+        <target xml:lang="es-ES" state="final">Número de páginas que se debe agregar</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Page...</source>
@@ -1834,6 +1845,12 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: EditTab.FrontMatter.EditOriginalTitlePlaceholder</note>
         <target xml:lang="es-ES" state="final">haga clic para editar el título original</target>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.FullOriginalCopyrightLicenseSentence" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Adapted from original, {0}, {1}. Licensed under {2}.</source>
+        <note>ID: EditTab.FrontMatter.FullOriginalCopyrightLicenseSentence</note>
+        <note>On the Credits page of a book being translated, Bloom shows the original copyright. {0} is original title, {1} is original copyright, and {2} is license information.</note>
+        <target xml:lang="es-ES" state="final">Adaptado del original, {0}, {1}. Licenciado bajo {2}.</target>
+      </trans-unit>
       <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
         <note>ID: EditTab.FrontMatter.FundingAgenciesPrompt</note>
@@ -2067,10 +2084,10 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: EditTab.NoImageFoundOnClipboard</note>
         <target xml:lang="es-ES" state="final">Antes de poder pegar una imagen, copie una en su "portapapeles" desde de otro programa.</target>
       </trans-unit>
-      <trans-unit id="EditTab.NoValidImageFoundOnClipboard">
+      <trans-unit id="EditTab.NoValidImageFoundOnClipboard" approved="yes">
         <source xml:lang="en">Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else.</source>
         <note>ID: EditTab.NoValidImageFoundOnClipboard</note>
-        <target xml:lang="es-ES" state="translated">Bloom no interpretó el contenido del portapapeles como una imagen. Posiblemente era un archivo dañado, o es demasiado grande. Intente copiar otra imagen.</target>
+        <target xml:lang="es-ES" state="final">Bloom no interpretó el contenido del portapapeles como una imagen. Posiblemente era un archivo dañado, o es demasiado grande. Intente copiar otra imagen.</target>
       </trans-unit>
       <trans-unit id="EditTab.NoOtherLayouts" approved="yes">
         <source xml:lang="en">There are no other options for this template.</source>
@@ -2327,11 +2344,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>This checkbox indicates whether a text box has rounded corners instead of square corners.</note>
         <target xml:lang="es-ES" state="final">Esquinas redondeadas</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ShowTail" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ShowTail" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Show Tail</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ShowTail</note>
         <note>This checkbox indicates if a line tail should be shown or not.</note>
-        <target xml:lang="es-ES" state="translated">Agregar cola</target>
+        <target xml:lang="es-ES" state="final">Mostrar el puntero</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Style</source>
@@ -2610,11 +2627,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>Obsolete for Bloom 5.0 and later</note>
         <target xml:lang="es-ES" state="final">de</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageNofM" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageNofM" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Stage {0} of {1}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageNofM</note>
         <note>{0} is replaced with the current level, and {1} with the total number of levels</note>
-        <target xml:lang="es-ES" state="translated">Etapa {0} de {1}</target>
+        <target xml:lang="es-ES" state="final">Etapa {0} de {1}</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image Description Tool</source>
@@ -2780,11 +2797,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>Obsolete for Bloom 5.0 and later</note>
         <target xml:lang="es-ES" state="final">de</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelNofM" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelNofM" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level {0} of {1}</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.LevelNofM</note>
         <note>{0} is replaced with the current level, and {1} with the total number of levels</note>
-        <target xml:lang="es-ES" state="translated">Nivel {0} de {1}</target>
+        <target xml:lang="es-ES" state="final">Nivel {0} de {1}</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Max</source>
@@ -3312,6 +3329,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <source xml:lang="en">Bloom had a problem importing this video.</source>
         <note>ID: Errors.ProblemImportingVideo</note>
         <target xml:lang="es-ES" state="final">Bloom tuvo un problema al importar este video.</target>
+      </trans-unit>
+      <trans-unit id="Errors.ReadOnlyBookFolder" approved="yes">
+        <source xml:lang="en">This book cannot be edited because its folder is read-only.</source>
+        <note>ID: Errors.ReadOnlyBookFolder</note>
+        <target xml:lang="es-ES" state="final">No se puede editar este libro porque su carpeta es de sólo lectura.</target>
       </trans-unit>
       <trans-unit id="Errors.RemoveExcessHtml" approved="yes">
         <source xml:lang="en">Please remove all but one of the files ending in .htm.  Bloom will now open this folder for you.</source>
@@ -4602,12 +4624,12 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: PublishTab.PdfMaker.PdfFile</note>
         <target xml:lang="es-ES" state="final">Archivo PDF</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2">
+      <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2" approved="yes">
         <source xml:lang="en">CMYK color (U.S. Web Coated (SWOP) v2)</source>
         <note>ID: PublishTab.PdfMaker.PdfWithCmykSwopV2</note>
         <note>displayed as a checkable menu option for the Publish tab, PDF options menu. The content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.</note>
         <note>Previously this item was "PDF with CMYK ..." and it occurred as an option within the Save dialog for PDF files</note>
-        <target xml:lang="es-ES" state="translated">PDF con color CMYK (U.S. Web Coated (SWOP) v2)</target>
+        <target xml:lang="es-ES" state="final">PDF con color CMYK (U.S. Web Coated (SWOP) v2)</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.PdfWithRGB" approved="yes">
         <source xml:lang="en">PDF with RGB color</source>
@@ -4810,12 +4832,12 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: PublishTab.Upload.Login.AccountAlreadyExists</note>
         <target xml:lang="es-ES" state="final">Esa cuenta ya existe</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.AlreadyHaveAccount">
+      <trans-unit id="PublishTab.Upload.Login.AlreadyHaveAccount" approved="yes">
         <source xml:lang="en">We cannot sign you up with that address, because we already have an account with that address.  Would you like to sign in instead?</source>
         <note>ID: PublishTab.Upload.Login.AlreadyHaveAccount</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added space): We cannot sign you up with that address, because we already have an account with that address. Would you like to log in instead?</note>
         <note xml:lang="en">OLD TEXT (before 4.9, changed log in to sign in): We cannot sign you up with that address, because we already have an account with that address.  Would you like to log in instead?</note>
-        <target xml:lang="es-ES" state="translated">No podemos crear una nueva cuenta con esa dirección, porque ya está registrada. ¿Le gustaría ir a iniciar sesión?</target>
+        <target xml:lang="es-ES" state="final">No podemos crear una nueva cuenta con esa dirección, porque ya está registrada. ¿Le gustaría ir a iniciar sesión?</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.LoginConnectFailed" approved="yes">
         <source xml:lang="en">Bloom could not connect to the server to verify your login. Please check your network connection.</source>
@@ -5099,11 +5121,11 @@ Do you want to go ahead?</note>
         <note>obsolete as of 4.9</note>
         <target xml:lang="es-ES" state="final">Cantidad máxima de palabras por libro</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.BookMaxWords2" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.BookMaxWords2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Per **Book**</source>
         <note>ID: ReaderSetup.BookMaxWords2</note>
         <note>follows headings "maximum" and "words" to convey "maximum words per book. Surround text that should be bold in double asterisks.</note>
-        <target xml:lang="es-ES" state="translated">Por **Libro**</target>
+        <target xml:lang="es-ES" state="final">Por **Libro**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.ChooseAllowedWordsFile" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose...</source>
@@ -5209,52 +5231,51 @@ Do you want to go ahead?</note>
         <note>ID: ReaderSetup.MatchingWords</note>
         <target xml:lang="es-ES" state="final">palabras coincidentes</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MaxAverageGlyphsPerWord" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.MaxAverageGlyphsPerWord" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Average per Word in **Book**</source>
         <note>ID: ReaderSetup.MaxAverageGlyphsPerWord</note>
         <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". Surround text that should be bold in double asterisks.</note>
-        <target xml:lang="es-ES" state="translated">Promedio por palabra en **Libro**</target>
+        <target xml:lang="es-ES" state="final">Promedio por palabra en **Libro**</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MaxAverageWords" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.MaxAverageWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Average per **Sentence** in **Book**</source>
         <note>ID: ReaderSetup.MaxAverageWords</note>
         <note>Prior to 4.9, was "Maximum Average Length of Sentences in Book"</note>
         <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum averate sentence length in book". Surround text that should be bold in double asterisks.</note>
-        <target xml:lang="es-ES" state="translated">Promedio máximo de longitud de las **frases** en el ** libro**</target>
+        <target xml:lang="es-ES" state="final">Promedio máximo de longitud de las **frases** en el ** libro**</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MaxAverageWordsPerPage" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.MaxAverageWordsPerPage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           Average per **Page**</source>
         <note>ID: ReaderSetup.MaxAverageWordsPerPage</note>
         <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum average words per page" (in book is implied). Surround text that should be bold in double asterisks.</note>
-        <target xml:lang="es-ES" state="translated">
+        <target xml:lang="es-ES" state="final">
           Promedio por **página**</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MaxAverageSentencesPerPage" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.MaxAverageSentencesPerPage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           Average per **Page**
         </source>
         <note>ID: ReaderSetup.MaxAverageSentencesPerPage</note>
         <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". Surround text that should be bold in double asterisks.</note>
-        <target xml:lang="es-ES" state="translated">
+        <target xml:lang="es-ES" state="final">
           Promedio por **página**
         </target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MaxGlyphsPerWord" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.MaxGlyphsPerWord" sil:dynamic="true" approved="yes">
         <source xml:lang="en">In any **Word**</source>
         <note>ID: ReaderSetup.MaxGlyphsPerWord</note>
         <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". Surround text that should be bold in double asterisks.</note>
-        <target xml:lang="es-ES" state="translated">En cualquier **palabra**</target>
+        <target xml:lang="es-ES" state="final">En cualquier **palabra**</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MaxSentencesPerPage" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.MaxSentencesPerPage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           Per **Page**
         </source>
         <note>ID: ReaderSetup.MaxSentencesPerPage</note>
         <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". Surround text that should be bold in double asterisks.</note>
-        <target xml:lang="es-ES" state="translated">
-          
-Por <g id="mspp-1" ctype="x-html-strong">página</g>        
+        <target xml:lang="es-ES" state="final">
+          Por **página**
         </target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxUniqueWords" sil:dynamic="true" approved="yes">
@@ -5263,11 +5284,11 @@ Por <g id="mspp-1" ctype="x-html-strong">página</g>
         <note xml:lang="en">OLD TEXT (before 3.9, reworded): Maximum Unique Words per Book</note>
         <target xml:lang="es-ES" state="final">Cantidad máxima de palabras únicas por libro</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MaxUniqueWords2" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.MaxUniqueWords2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">**Unique** in **Book**</source>
         <note>ID: ReaderSetup.MaxUniqueWords2</note>
         <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum unique words in book". Surround text that should be bold in double asterisks.</note>
-        <target xml:lang="es-ES" state="translated">**Único** en **Libro**</target>
+        <target xml:lang="es-ES" state="final">**Único** en **Libro**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page</source>
@@ -5280,11 +5301,11 @@ Por <g id="mspp-1" ctype="x-html-strong">página</g>
         <note>obsolete as of Bloom 4.9</note>
         <target xml:lang="es-ES" state="final">Cantidad máxima de palabras en cada página</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.PageMaxWords2" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.PageMaxWords2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Per **Page**</source>
         <note>ID: ReaderSetup.PageMaxWords2</note>
         <note>Surround text that should be bold in double asterisks.</note>
-        <target xml:lang="es-ES" state="translated">Por **página**</target>
+        <target xml:lang="es-ES" state="final">Por **página**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PerBookHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Per Book (Unique)</source>
@@ -5381,11 +5402,11 @@ Por <g id="mspp-1" ctype="x-html-strong">página</g>
         <note>obsolete as of Bloom 4.9</note>
         <target xml:lang="es-ES" state="final">Cantidad máxima de palabras en cada oración</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.SentenceMaxWords2" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.SentenceMaxWords2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Per **Sentence**</source>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
         <note>follows headings "maximum" and "words" to convey "maximum words per sentence. Surround text that should be bold in double asterisks.</note>
-        <target xml:lang="es-ES" state="translated">Por **frase**</target>
+        <target xml:lang="es-ES" state="final">Por **frase**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
@@ -5803,6 +5824,141 @@ Por <g id="mspp-1" ctype="x-html-strong">página</g>
         <note>ID: Settings.Enterprise.SubscriptionCode</note>
         <target xml:lang="es-ES" state="final">Código de suscripción:</target>
       </trans-unit>
+      <trans-unit id="TeamCollection.Available" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">This book is available for editing</source>
+        <note>ID: TeamCollection.Available</note>
+        <target xml:lang="es-ES" state="final">Este libro está disponible para ser editado</target>
+      </trans-unit>
+      <!--
+// Don't want these actually translated until things stabilize. Will need re-ordering.
+      <trans-unit id="TeamCollection.AvailableDescription" sil:dynamic="true">
+        <source xml:lang="en">When you check it out, no one on the team will be able to modify it or see your changes until you check it back in.</source>
+        <note>ID: TeamCollection.AvailableDescription</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutToYou" sil:dynamic="true">
+        <source xml:lang="en">This book is checked out to you</source>
+        <note>ID: TeamCollection.CheckedOutToYou</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutToYouDescription" sil:dynamic="true">
+        <source xml:lang="en">Are you done for now? Click this button to send your changes to your team.</source>
+        <note>ID: TeamCollection.CheckedOutToYouDescription</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutToYouElsewhere" sil:dynamic="true">
+        <source xml:lang="en">This book is checked out to you, but on a different computer</source>
+        <note>ID: TeamCollection.CheckedOutToYouElsewhere</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutToYouElsewhereDescription" sil:dynamic="true">
+        <source xml:lang="en">You cannot edit the book on this computer, until you check it in on %0.</source>
+        <note>ID: TeamCollection.CheckedOutToYouElsewhereDescription</note>
+        <note>The %0 is the name of the computer where the book is checked out.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckIn" sil:dynamic="true">
+        <source xml:lang="en">Check in book</source>
+        <note>ID: TeamCollection.CheckIn</note>
+        <note>On button to check in a book</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Checkout" sil:dynamic="true">
+        <source xml:lang="en">Check out book</source>
+        <note>ID: TeamCollection.Checkout</note>
+        <note>On button to check out a book</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutOn" sil:dynamic="true">
+        <source xml:lang="en">%0 checked out this book on %1.</source>
+        <note>ID: TeamCollection.CheckedOutOn</note>
+        <note>The %0 is a person's name, and the %1 is a date.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.YouCheckedOutOn" sil:dynamic="true">
+        <source xml:lang="en">You checked out this book on %0.</source>
+        <note>ID: TeamCollection.YouCheckedOutOn</note>
+        <note>The %0 is a date.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutToSomeone" sil:dynamic="true">
+        <source xml:lang="en">This book is checked out to %0</source>
+        <note>ID: TeamCollection.CheckedOutToSomeone</note>
+        <note>The %0 is the name of the person who checked out the book (or possibly email).</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutToSomeoneDescription" sil:dynamic="true">
+        <source xml:lang="en">You cannot edit the book until %0 checks it in.</source>
+        <note>ID: TeamCollection.CheckedOutToSomeoneDescription</note>
+        <note>The %0 is the name of the person who checked out the book.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ConflictingCheckout" sil:dynamic="true">
+        <source xml:lang="en">The book '{0}' is checked out to someone else. Your changes are saved to Lost-and-found.</source>
+        <note>ID: TeamCollection.ConflictingCheckout</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ConflictingEdit" sil:dynamic="true">
+        <source xml:lang="en">The book '{0}', which you have checked out and edited, was modified in the team collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.</source>
+        <note>ID: TeamCollection.ConflictingEdit</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CreateTeamCollection" sil:dynamic="true">
+        <source xml:lang="en">Create a Team Collection</source>
+        <note>ID: TeamCollection.CreateTeamCollection</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Intro" sil:dynamic="true">
+        <source xml:lang="en">Bloom's Team Collection system helps your team collaborate as you create, translate, and edit books.</source>
+        <note>ID: TeamCollection.Intro</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Joining" sil:dynamic="true">
+        <source xml:lang="en">How to join an existing Team Collection</source>
+        <note>ID: TeamCollection.Joining</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.JoiningInstructions" sil:dynamic="true">
+        <source xml:lang="en">First, the team leader should share the Team Collection's Dropbox folder with you. After that folder is synchronizing on your computer, open it and double click on "Join this Team Collection.JoinBloomTC" file.</source>
+        <note>ID: TeamCollection.JoiningInstructions</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.RemoteChanges" sil:dynamic="true">
+        <source xml:lang="en">Remote Changes</source>
+        <note>ID: TeamCollection.RemoteChanges</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.RequestRestart" sil:dynamic="true">
+        <source xml:lang="en">Bloom has detected that other users have made changes in your team collection folder. When convenient, please restart Bloom to see the changes.</source>
+        <note>ID: TeamCollection.RequestRestart</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.SelectFolder" sil:dynamic="true">
+        <source xml:lang="en">Select or create the folder where this collection will be shared</source>
+        <note>ID: TeamCollection.SelectFolder</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Starting" sil:dynamic="true">
+        <source xml:lang="en">Starting a new Team Collection</source>
+        <note>ID: TeamCollection.Starting</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.StartingInstructions" sil:dynamic="true">
+        <source xml:lang="en">Only one person on the team should create the Team Collection. Before creating it, you will need to have Dropbox installed on your computer.</source>
+        <note>ID: TeamCollection.StartingInstructions</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Creating" sil:dynamic="true">
+        <source xml:lang="en">Bloom will create a new collection on your computer based on this Team Collection.</source>
+        <note>ID: TeamCollection.Creating</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Join" sil:dynamic="true">
+        <source xml:lang="en">Join</source>
+        <note>ID: TeamCollection.Join</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.JoinAndMerge" sil:dynamic="true">
+        <source xml:lang="en">Join and Merge</source>
+        <note>ID: TeamCollection.JoinAndMerge</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.JoinHeading" sil:dynamic="true">
+        <source xml:lang="en">Join the Team Collection "{0}"</source>
+        <note>ID: TeamCollection.JoinHeading</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Merging" sil:dynamic="true">
+        <source xml:lang="en">Bloom will merge your existing "{0}" collection with this Team Collection.</source>
+        <note>ID: TeamCollection.Merging</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.MergingExplanation" sil:dynamic="true">
+        <source xml:lang="en">The rest of the team will receive any unique books found in that collection. Any books you have that are already in this Team Collection will be moved to the "Lost and Found" folder, unless Bloom can determine that they are the same.</source>
+        <note>ID: TeamCollection.MergingExplanation</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.MergeInstead" sil:dynamic="true">
+        <source xml:lang="en">If instead you want to merge a collection you already have into this Team Collection, click Cancel and rename the collection you want to merge to the same as the Team Collection you are joining. Then try to join again.</source>
+        <note>ID: TeamCollection.MergeInstead</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.StartFresh" sil:dynamic="true">
+        <source xml:lang="en">If instead you want to start fresh, click Cancel and rename your existing "{0}" collection to something different. Then try to join again.</source>
+        <note>ID: TeamCollection.StartFresh</note>
+      </trans-unit>
+-->
       <trans-unit id="TemplateBooks.BookName.Arithmetic Template" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Arithmetic Template</source>
         <note>ID: TemplateBooks.BookName.Arithmetic Template</note>
