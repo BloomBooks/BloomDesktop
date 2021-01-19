@@ -5,7 +5,8 @@ import * as tinycolor from "tinycolor2";
 
 // External definition of a color swatch
 export interface ISwatchDefn {
-    // Hex colors; We use an array here, so we can support gradients (top to bottom).
+    // Usually Hex colors
+    // We use an array here, so we can support gradients (top to bottom).
     colors: string[];
     name?: string;
     opacity?: number;

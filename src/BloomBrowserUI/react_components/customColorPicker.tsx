@@ -28,12 +28,15 @@ export const CustomColorPicker: React.FunctionComponent<ICustomPicker> = props =
     // This handler may be 'hit' many times as sliders are manipulated, etc.
     const handleColorChange: ColorChangeHandler = (color, event) => {
         const newColor = getSwatchDefnFromColorResult(color, "");
-        setColorChoice(newColor);
-        props.onChange(newColor);
+        changeColor(newColor);
     };
 
     // Handler for when the user clicks on a swatch at the bottom of the picker.
     const handleSwatchClick = (swatch: ISwatchDefn) => (e: any) => {
+        changeColor(swatch);
+    };
+
+    const changeColor = (swatch: ISwatchDefn) => {
         setColorChoice(swatch);
         props.onChange(swatch);
     };

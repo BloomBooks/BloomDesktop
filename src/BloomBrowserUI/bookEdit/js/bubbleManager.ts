@@ -15,6 +15,7 @@ import {
 import { Point, PointScaling } from "./point";
 import { isLinux } from "../../utils/isLinux";
 import { reportError } from "../../lib/errorHandler";
+import { getRgbaColorStringFromColorAndOpacity } from "../toolbox/comic/comicToolColorHelper";
 
 const kComicalGeneratedClass: string = "comical-generated";
 const kTextOverPictureClass = "bloom-textOverPicture";
@@ -353,9 +354,9 @@ export class BubbleManager {
                 // it would be nice to do this only once, but there MIGHT
                 // be TOP elements in more than one image container...too complicated,
                 // and this only happens once per TOP.
-                Comical.update(top.closest(
-                    ".bloom-imageContainer"
-                ) as HTMLElement);
+                Comical.update(
+                    top.closest(".bloom-imageContainer") as HTMLElement
+                );
             }
         });
     }
@@ -474,8 +475,7 @@ export class BubbleManager {
     }
 
     // Set the color of the background in all of the active bubble family's TextOverPicture boxes.
-    // Enhance: BL-8537 Change opacity the same way (and probably update the method name).
-    public setBackgroundColor(colors: string[]) {
+    public setBackgroundColor(colors: string[], opacity: number | undefined) {
         if (!this.activeElement) {
             return;
         }
@@ -484,9 +484,15 @@ export class BubbleManager {
         if (parentBubble) {
             this.setActiveElement(parentBubble.content);
         }
+        let newBackgroundColors = colors;
+        if (opacity && opacity < 1) {
+            newBackgroundColors[0] = getRgbaColorStringFromColorAndOpacity(
+                colors[0],
+                opacity
+            );
+        }
         this.updateSelectedItemBubbleSpec({
-            backgroundColors: colors
-            // opacity: newColorSwatch.opacity?!
+            backgroundColors: newBackgroundColors
         });
         // reset active element
         this.setActiveElement(originalActiveElement);
