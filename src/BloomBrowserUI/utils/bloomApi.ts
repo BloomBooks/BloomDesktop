@@ -257,8 +257,9 @@ export class BloomApi {
     }
 
     public static postBoolean(urlSuffix: string, value: boolean) {
+        const data = this.adjustFalsyData(value);
         BloomApi.wrapAxios(
-            axios.post(this.kBloomApiPrefix + urlSuffix, value, {
+            axios.post(this.kBloomApiPrefix + urlSuffix, data, {
                 headers: {
                     "Content-Type": "application/json"
                 }
@@ -316,6 +317,8 @@ export class BloomApi {
         successCallback?: (r: AxiosResponse) => void,
         errorCallback?: (r: AxiosResponse) => void
     ): Promise<void | AxiosResponse<any>> {
+        data = this.adjustFalsyData(data);
+
         return BloomApi.wrapAxios(
             axios
                 .post(this.kBloomApiPrefix + urlSuffix, data)
@@ -340,6 +343,7 @@ export class BloomApi {
         successCallback?: (r: AxiosResponse) => void,
         errorCallback?: (r: AxiosResponse) => void
     ): Promise<void | AxiosResponse<any>> {
+        data = this.adjustFalsyData(data);
         return BloomApi.wrapAxios(
             axios
                 .post(this.kBloomApiPrefix + urlSuffix, data, config)
@@ -368,6 +372,7 @@ export class BloomApi {
         successCallback?: (r: AxiosResponse) => void,
         errorCallback?: (r: AxiosResponse) => void
     ): Promise<void | AxiosResponse<any>> {
+        data = this.adjustFalsyData(data);
         return BloomApi.postDataWithConfig(
             urlSuffix,
             data,
@@ -393,6 +398,15 @@ export class BloomApi {
                 headers: { "Content-Type": "text/plain" }
             }
         );
+    }
+
+    private static adjustFalsyData(data: any): any {
+        // Need to stringify FALSE value starting in axios 0.20. (See https://github.com/axios/axios/issues/3549)
+        // Starting in axios 0.20.0, it was observed that 0 and false would cause an empty body to be sent, whereas previously they sent the value itself.
+        // (This is because 0 and false are falsy, and axios now checks for whether data is falsy or not, whereas previously it checked whether data is undefined or not).
+        // The GitHub issue says they plan to fix it (since the JSON spec says that it is OK to pass in false or a number (e.g. 0)),
+        // so in the future this function may become unnecessary if it's fixed in a later version.
+        return data === 0 || data === false ? JSON.stringify(data) : data;
     }
 }
 
