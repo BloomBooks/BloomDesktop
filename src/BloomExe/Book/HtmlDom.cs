@@ -2132,7 +2132,7 @@ namespace Bloom.Book
 
 		public static XmlNodeList SelectAudioSentenceElementsWithRecordingMd5(XmlElement element)
 		{
-			return element.SafeSelectNodes("descendant-or-self::node()[contains(@class,'audio-sentence') and @recordingmd5]");
+			return element.SafeSelectNodes("descendant-or-self::node()[@recordingmd5 and (contains(@class,'audio-sentence') or contains(@class,'bloom-highlightSegment'))]");
 		}
 
 		public static bool HasAudioSentenceElementsWithoutId(XmlElement element)
