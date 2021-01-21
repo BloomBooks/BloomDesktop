@@ -83,14 +83,14 @@ export const ProgressDialog: React.FunctionComponent<{
                 </Typography>
 
                 <Typography className="progress-messages-typography">
-                    <div
+                    <span
                         className="progress-messages"
                         ref={messagesDivRef}
                         dangerouslySetInnerHTML={{
                             __html: props.messages
                         }}
                     />
-                    <div ref={messageEndRef} />
+                    <span ref={messageEndRef} />
                 </Typography>
             </DialogContent>
             <DialogActions>
