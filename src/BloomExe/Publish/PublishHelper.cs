@@ -80,12 +80,6 @@ namespace Bloom.Publish
 			Debug.Assert(ControlForInvoke==null || !ControlForInvoke.InvokeRequired); // should be called on UI thread.
 			Debug.Assert(dom != null && dom.Body != null);
 
-			// For some unknown reason, if the accessibility window is showing, some of the browser navigation
-			// that is needed to accurately determine which content is visible simply doesn't happen.
-			// It would be disconcerting if it popped to the top after we hid it and re-showed it.
-			// So, we just hide the window if it is showing when we do this. See BL-7807.
-			AccessibilityCheckWindow.StaticHide();
-
 			// Collect all the page divs.
 			var pageElts = new List<XmlElement>();
 			if (epubMaker != null)
