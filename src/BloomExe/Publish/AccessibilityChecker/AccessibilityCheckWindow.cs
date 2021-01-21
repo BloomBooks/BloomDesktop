@@ -28,7 +28,7 @@ namespace Bloom.Publish.AccessibilityChecker
 			}
 		}
 
-		public static void StaticHide()
+		public static void StaticClose()
 		{
 			if (_sTheOneAccessibilityCheckerWindow != null)
 			{

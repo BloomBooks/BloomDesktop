@@ -383,6 +383,18 @@ namespace Bloom.Publish.Epub
 				_stagingEpub = true;
 			}
 
+			// For some unknown reason, if the accessibility window is showing, some of the browser navigation
+			// that is needed to accurately determine which content is visible simply doesn't happen.
+			// It would be disconcerting if it popped to the top after we close it and reopen it.
+			// So, we just close the window if it is showing when we do this. See BL-7807.
+			// Except that opening the Ace Checker tab invokes this code path in a way that works without the
+			// deadlock (or whatever causes the failure).  This call can be detected by the progress argument not
+			// being null.  The Refresh button on the AccessibilityCheckWindow also uses this code path in the
+			// same way, so the next two lines also allow that Refresh button to work.  See BL-9341 for why
+			// the original fix is inadequate.
+			if (progress == null)
+				AccessibilityChecker.AccessibilityCheckWindow.StaticClose();
+
 			try
 			{
 				_webSocketServer.SendString(kWebsocketContext, "startingEbookCreation", _previewSrc);

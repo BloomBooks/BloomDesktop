@@ -13,7 +13,7 @@ fi
 sudo apt-get install -y curl
 
 # The next two lines come from https://nodejs.org/en/download/package-manager/.
-curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 sudo apt-get install -y nodejs
 
 # The next line comes from https://daisy.github.io/ace/help/troubleshooting/.
