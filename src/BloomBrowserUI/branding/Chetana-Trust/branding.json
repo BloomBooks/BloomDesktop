@@ -3,7 +3,7 @@
         {
             "data-book": "title-page-branding-bottom-html",
             "lang": "*",
-            "content": "<div class='Credits-Page-style' lang='en'>An ARM [Accessible Reading Materials] Library Book</div><img class='branding' src='ChetanaTrust-title.png'/>",
+            "content": "<div class='Credits-Page-style' lang='en'>An ARM [Accessible Reading Materials] Library Book</div><div class='two-em-shrink'></div><img class='branding' src='ChetanaTrust-title.png'/>",
             "condition": "always"
         },
         {
