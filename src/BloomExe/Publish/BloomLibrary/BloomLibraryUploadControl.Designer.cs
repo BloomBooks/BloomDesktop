@@ -295,9 +295,9 @@ namespace Bloom.Publish.BloomLibrary
 			this._L10NSharpExtender.SetLocalizableToolTip(this._loginLink, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._loginLink, null);
 			this._L10NSharpExtender.SetLocalizingId(this._loginLink, "PublishTab.Upload.LoginLink");
-			this._loginLink.Location = new System.Drawing.Point(475, 0);
+			this._loginLink.Location = new System.Drawing.Point(421, 0);
 			this._loginLink.Name = "_loginLink";
-			this._loginLink.Size = new System.Drawing.Size(129, 13);
+			this._loginLink.Size = new System.Drawing.Size(183, 13);
 			this._loginLink.TabIndex = 18;
 			this._loginLink.TabStop = true;
 			this._loginLink.Text = "Sign up or Sign in to BloomLibrary.org";
@@ -488,7 +488,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._progressBox.ShowDiagnosticsMenuItem = false;
 			this._progressBox.ShowFontMenuItem = false;
 			this._progressBox.ShowMenu = true;
-			this._progressBox.Size = new System.Drawing.Size(604, 42);
+			this._progressBox.Size = new System.Drawing.Size(604, 100);
 			this._progressBox.TabIndex = 30;
 			// 
 			// _userId
