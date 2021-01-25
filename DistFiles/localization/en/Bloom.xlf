@@ -2697,6 +2697,10 @@
         <source xml:lang="en">Bloom had a problem importing this video.</source>
         <note>ID: Errors.ProblemImportingVideo</note>
       </trans-unit>
+      <trans-unit id="Errors.ReadOnlyBookFolder">
+        <source xml:lang="en">This book cannot be edited because its folder is read-only.</source>
+        <note>ID: Errors.ReadOnlyBookFolder</note>
+      </trans-unit>
       <trans-unit id="Errors.RemoveExcessHtml">
         <source xml:lang="en">Please remove all but one of the files ending in .htm.  Bloom will now open this folder for you.</source>
         <note>ID: Errors.RemoveExcessHtml</note>
