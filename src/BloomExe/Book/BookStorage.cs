@@ -1664,7 +1664,19 @@ namespace Bloom.Book
 				var brandingPath = Path.Combine(FolderPath, "branding.css");
 				if (RobustFile.Exists(brandingPath))
 				{
-					RobustFile.Delete(brandingPath);
+					try
+					{
+						RobustFile.Delete(brandingPath);
+					}
+					catch (System.UnauthorizedAccessException error)
+					{
+						InitialLoadErrors = error.Message;
+						ErrorMessagesHtml = WebUtility.HtmlEncode(error.Message);
+						ErrorAllowsReporting = true;
+						Logger.WriteEvent("*** ERROR in " + PathToExistingHtml);
+						Logger.WriteEvent("*** ERROR: " + error.Message.Replace("{", "{{").Replace("}", "}}"));
+						return;
+					}
 				}
 
 				Dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
