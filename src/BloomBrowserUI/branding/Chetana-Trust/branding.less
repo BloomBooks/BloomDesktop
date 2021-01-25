@@ -10,7 +10,6 @@
     min-height: 190px;
     flex: unset !important;
     img {
-        margin-top: 2em; // leave space between the "an ARM Library Book" and the image
         height: 110px !important;
     }
 }
@@ -23,4 +22,11 @@
     img {
         max-height: 20mm; // helps with device landscape, since there is boilerplate text above and the logo image at the bottom gets pushed off the page.
     }
+}
+
+// Used for space between the "an ARM Library Book" and the image. Preiously, we just had
+// 2em margin-top on the image, but that doens't shrink optimally when the page is full.
+.two-em-shrink {
+    height: 2em;
+    flex-shrink: 10;
 }
