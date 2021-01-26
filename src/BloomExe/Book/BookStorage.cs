@@ -1664,7 +1664,23 @@ namespace Bloom.Book
 				var brandingPath = Path.Combine(FolderPath, "branding.css");
 				if (RobustFile.Exists(brandingPath))
 				{
-					RobustFile.Delete(brandingPath);
+					try
+					{
+						RobustFile.Delete(brandingPath);
+					}
+					catch (System.UnauthorizedAccessException error)
+					{
+						InitialLoadErrors = error.Message;
+						var msg = string.Format("<p>{0}</p><p>{1}</p><p>{2}</p>",
+							LocalizationManager.GetString("Errors.ReadOnlyBookFolder", "This book cannot be edited because its folder is read-only."),
+							WebUtility.HtmlEncode(error.Message),
+							GetHelpLinkForFilePermissions());
+						ErrorMessagesHtml = msg;
+						ErrorAllowsReporting = true;
+						Logger.WriteEvent("*** ERROR cannot delete old branding.css file in ExpensiveInitialization(" + forSelectedBook + ")");
+						Logger.WriteEvent("*** ERROR: " + error.Message.Replace("{", "{{").Replace("}", "}}"));
+						return;
+					}
 				}
 
 				Dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
@@ -1834,13 +1850,18 @@ namespace Bloom.Book
 				string messageForLog = String.Join(Environment.NewLine, messagesForLog);
 				Logger.WriteEvent("*** ERROR: " + messageForLog);
 			}
-			
+
 			string encodedMessageForLog = EncodeAndJoinStringsForHtml(messagesForLog);
-			
-			var helpUrl = @"http://community.bloomlibrary.org/t/how-to-fix-file-permissions-problems/78";
-			var encodedSeeAlsoMsg = GetEncodedSeeWebPageString(helpUrl);
+
+			string encodedSeeAlsoMsg = GetHelpLinkForFilePermissions();
 
 			return $"{encodedMessageForLog}<br />{encodedSeeAlsoMsg}";
+		}
+
+		private static string GetHelpLinkForFilePermissions()
+		{
+			var helpUrl = @"http://community.bloomlibrary.org/t/how-to-fix-file-permissions-problems/78";
+			return GetEncodedSeeWebPageString(helpUrl);
 		}
 
 		private static string EncodeAndJoinStringsForHtml(IEnumerable<string> unencodedStrings)
