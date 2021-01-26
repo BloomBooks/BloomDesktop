@@ -28,7 +28,7 @@ namespace Bloom.Book
 			get { return _currentSelection; }
 		}
 
-		private void InvokeSelectionChanged(bool aboutToEdit)
+		public void InvokeSelectionChanged(bool aboutToEdit)
 		{
 			SelectionChanged?.Invoke(this, new BookSelectionChangedEventArgs() {AboutToEdit = aboutToEdit});
 		}

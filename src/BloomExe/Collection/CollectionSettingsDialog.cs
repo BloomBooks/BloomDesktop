@@ -11,6 +11,7 @@ using SIL.Extensions;
 using SIL.WritingSystems;
 using System.Collections.Generic;
 using Bloom.Api;
+using Bloom.TeamCollection;
 using Bloom.MiscUI;
 using Bloom.web.controllers;
 
@@ -27,7 +28,10 @@ namespace Bloom.Collection
 		private bool _restartRequired;
 		private bool _loaded;
 		private List<string> _styleNames = new List<string>();
+		// Enhance: when all the tabs are in Typescript, we should be able to move the tabs themselves there and
+		// have one browser for the whole dialog.
 		private Browser _enterpriseBrowser;
+		private Browser _sharingBrowser;
 		private string _subscriptionCode;
 		private string _brand;
 
@@ -67,6 +71,7 @@ namespace Bloom.Collection
 			CollectionSettingsApi.BrandingChangeHandler = ChangeBranding;
 
 			SetupEnterpriseBrowser();
+			SetupSharingBrowser();
 
 			UpdateDisplay();
 
@@ -96,6 +101,31 @@ namespace Bloom.Collection
 				_enterpriseTab.Controls.Add(_enterpriseBrowser);
 			};
 			_enterpriseBrowser.Navigate(rootFile.ToLocalhost(), false);
+		}
+
+		private void SetupSharingBrowser()
+		{
+			if (_sharingBrowser != null)
+				return; // Seems to help performance.
+			// The Size setting is needed on Linux to keep the browser from coming up as a small
+			// rectangle in the upper left corner when the dialog is initialized to open on the
+			// Enterprise tab.
+			_sharingBrowser = new Browser { Dock = DockStyle.Fill, Location = new Point(3, 3), Size = new Size(_sharingTab.Width - 6, _sharingTab.Height - 6) };
+			_sharingBrowser.BackColor = Color.White;
+
+			var rootFile = BloomFileLocator.GetBrowserFile(false, "teamCollection", "teamCollectionSettings.html");
+			var dummy = _sharingBrowser.Handle; // gets the WebBrowser created
+			_sharingBrowser.WebBrowser.DocumentCompleted += (sender, args) =>
+			{
+				// If the control gets added to the tab before it has navigated somewhere,
+				// it shows as solid black, despite setting the BackColor to white.
+				// So just don't show it at all until it contains what we want to see.
+				_sharingTab.Controls.Add(_sharingBrowser);
+			};
+			_sharingBrowser.Navigate(rootFile.ToLocalhost(), false);
+			// If the SharingApi gets a callback from HTML that results in setting up
+			// a team collection for this collection, we need to restart afterwards.
+			TeamCollectionApi.TheOneInstance.SetCreateCallback(() => _restartRequired = true);
 		}
 
 		protected override void OnHandleCreated(EventArgs e)

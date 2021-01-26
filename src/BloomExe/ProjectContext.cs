@@ -15,6 +15,7 @@ using Bloom.ImageProcessing;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using Bloom.Api;
+using Bloom.TeamCollection;
 using Bloom.Publish.AccessibilityChecker;
 using Bloom.Publish.Android;
 using Bloom.Publish.Epub;
@@ -138,6 +139,7 @@ namespace Bloom
 							typeof(TalkingBookApi),
 							typeof(ToolboxApi),
 							typeof(CommonApi),
+							typeof(TeamCollectionApi),
 							typeof(BrandingSettings),
 							typeof(FeatureControlApi),
 							typeof(I18NApi),
@@ -329,6 +331,7 @@ namespace Bloom
 			_scope.Resolve<TalkingBookApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<ToolboxApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<CommonApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<TeamCollectionApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<FeatureControlApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<SignLanguageApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<AudioSegmentationApi>().RegisterWithApiHandler(server.ApiHandler);

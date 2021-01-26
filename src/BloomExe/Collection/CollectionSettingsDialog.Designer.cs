@@ -69,6 +69,7 @@ namespace Bloom.Collection
 			this._districtLabel = new System.Windows.Forms.Label();
 			this._provinceLabel = new System.Windows.Forms.Label();
 			this._enterpriseTab = new System.Windows.Forms.TabPage();
+			this._sharingTab = new System.Windows.Forms.TabPage();
 			this.tabPage4 = new System.Windows.Forms.TabPage();
 			this.showTroubleShooterCheckBox = new System.Windows.Forms.CheckBox();
 			this._automaticallyUpdate = new System.Windows.Forms.CheckBox();
@@ -101,6 +102,7 @@ namespace Bloom.Collection
 			this._tab.Controls.Add(this.tabPage2);
 			this._tab.Controls.Add(this.tabPage3);
 			this._tab.Controls.Add(this._enterpriseTab);
+			this._tab.Controls.Add(this._sharingTab);
 			this._tab.Controls.Add(this.tabPage4);
 			this._tab.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._tab.Location = new System.Drawing.Point(1, 2);
@@ -672,6 +674,19 @@ namespace Bloom.Collection
 			this._enterpriseTab.Text = "Bloom Enterprise";
 			this._enterpriseTab.UseVisualStyleBackColor = true;
 			// 
+			// _sharingTab
+			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this._sharingTab, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._sharingTab, null);
+			this._L10NSharpExtender.SetLocalizingId(this._sharingTab, "CollectionSettingsDialog.SharingTab.TabLabel");
+			this._sharingTab.Location = new System.Drawing.Point(4, 26);
+			this._sharingTab.Name = "_sharingTab";
+			this._sharingTab.Padding = new System.Windows.Forms.Padding(3);
+			this._sharingTab.Size = new System.Drawing.Size(610, 426);
+			this._sharingTab.TabIndex = 4;
+			this._sharingTab.Text = "Team Collection";
+			this._sharingTab.UseVisualStyleBackColor = true;
+			// 
 			// tabPage4
 			// 
 			this.tabPage4.Controls.Add(this.showTroubleShooterCheckBox);
@@ -898,6 +913,7 @@ namespace Bloom.Collection
 		private Label label3;
 		private CheckBox showTroubleShooterCheckBox;
 		private TabPage _enterpriseTab;
+		private TabPage _sharingTab;
 		private LinkLabel _removeSignLanguageLink;
 		private LinkLabel _changeSignLanguageLink;
 		protected Label _signLanguageName;

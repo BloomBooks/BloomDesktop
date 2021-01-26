@@ -573,6 +573,10 @@
         <source xml:lang="en">Bloom will close and re-open this project with the new settings.</source>
         <note>ID: CollectionSettingsDialog.RestartMessage</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.TeamCollectionTab.TabLabel">
+        <source xml:lang="en">Team Collection</source>
+        <note>ID: CollectionSettingsDialog.TeamCollectionTab.TabLabel</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>
         <note>ID: CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem</note>
@@ -4723,6 +4727,79 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Subscription Code:</source>
         <note>ID: Settings.Enterprise.SubscriptionCode</note>
       </trans-unit>
+      <trans-unit id="TeamCollection.Available" sil:dynamic="true">
+        <source xml:lang="en">This book is available for editing</source>
+        <note>ID: TeamCollection.Available</note>
+      </trans-unit>
+<!--
+// Don't want these actually translated until things stabilize.
+      <trans-unit id="TeamCollection.CheckIn" sil:dynamic="true">
+        <source xml:lang="en">Check in book</source>
+        <note>ID: TeamCollection.CheckIn</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutOn" sil:dynamic="true">
+        <source xml:lang="en">%0 checked this book out on %1</source>
+        <note>ID: TeamCollection.CheckedOutOn</note>
+        <note>Must contain %0, a person's name, and %1, a date</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutToYou" sil:dynamic="true">
+        <source xml:lang="en">This book is checked out to you</source>
+        <note>ID: TeamCollection.CheckedOutToYou</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutToSomeone" sil:dynamic="true">
+        <source xml:lang="en">This book is checked out to %0</source>
+        <note>ID: TeamCollection.CheckedOutToSomeone</note>
+        <note>Must contain %0, a person's name (or possibly email)</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Checkout" sil:dynamic="true">
+        <source xml:lang="en">Check out book</source>
+        <note>ID: TeamCollection.Checkout</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ConflictingCheckout" sil:dynamic="true">
+        <source xml:lang="en">The book '{0}' is checked out to someone else. Your changes are saved to Lost-and-found.</source>
+        <note>ID: TeamCollection.ConflictingCheckout</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ConflictingEdit" sil:dynamic="true">
+        <source xml:lang="en">The book '{0}' was modified in the collection. Your changes are saved to Lost-and-found.</source>
+        <note>ID: TeamCollection.ConflictingEdit</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CreateTeamCollection" sil:dynamic="true">
+        <source xml:lang="en">Create a Team Collection</source>
+        <note>ID: TeamCollection.CreateTeamCollection</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Intro" sil:dynamic="true">
+        <source xml:lang="en">Bloom's Team Collection system helps your team collaborate as you create, translate, and edit books.</source>
+        <note>ID: TeamCollection.Intro</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Joining" sil:dynamic="true">
+        <source xml:lang="en">How to join an existing Team Collection</source>
+        <note>ID: TeamCollection.Joining</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.JoiningInstructions" sil:dynamic="true">
+        <source xml:lang="en">First, the team leader should share the Team Collection's Dropbox folder with you. After that folder is synchronizing on your computer, open it and double click on "Join this Team Collection.JoinBloomTC" file.</source>
+        <note>ID: TeamCollection.JoiningInstructions</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.RemoteChanges" sil:dynamic="true">
+        <source xml:lang="en">Remote Changes</source>
+        <note>ID: TeamCollection.RemoteChanges</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.RequestRestart" sil:dynamic="true">
+        <source xml:lang="en">Bloom has detected that other users have made changes in your team collection folder. When convenient, please restart Bloom to see the changes.</source>
+        <note>ID: TeamCollection.RequestRestart</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.SelectFolder" sil:dynamic="true">
+        <source xml:lang="en">Select or create the folder where this collection will be shared</source>
+        <note>ID: TeamCollection.SelectFolder</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Starting" sil:dynamic="true">
+        <source xml:lang="en">Starting a new Team Collection</source>
+        <note>ID: TeamCollection.Starting</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.StartingInstructions" sil:dynamic="true">
+        <source xml:lang="en">Only one person on the team should create the Team Collection. Before creating it, you will need to have Dropbox installed on your computer.</source>
+        <note>ID: TeamCollection.StartingInstructions</note>
+      </trans-unit>
+-->
       <trans-unit id="TemplateBooks.BookName.Arithmetic Template" sil:dynamic="true">
         <source xml:lang="en">Arithmetic Template</source>
         <note>ID: TemplateBooks.BookName.Arithmetic Template</note>
