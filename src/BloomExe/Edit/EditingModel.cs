@@ -17,6 +17,7 @@ using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web.controllers;
+using BloomTemp;
 using DesktopAnalytics;
 using Gecko;
 using L10NSharp;
@@ -1512,6 +1513,80 @@ namespace Bloom.Edit
 			}
 
 			return "activities" + "/" + widgetName + "/" + rootFileName;
+		}
+
+		/// <summary>
+		/// Create a .wdgt file from a folder that contains everything needed for a proper widget.
+		/// </summary>
+		/// <param name="fullWidgetPath">full path of the widget's "index.html" file, which may not actually be named "index.html"</param>
+		/// <remarks>
+		/// This has been tested on output from only Active Presenter and Book Widgets.
+		/// </remarks>
+		public static string CreateWidgetFromHtmlFolder(string fullWidgetPath)
+		{
+			var filename = Path.GetFileName(fullWidgetPath);
+			var fullFolderName = Path.GetDirectoryName(fullWidgetPath);
+			// First attempt: get the widget name from the name of the directory
+			// containing the .html file.
+			var widgetName = Path.GetFileName(fullFolderName);
+			var fromActivePresenter = false;
+			var activePresenterFiles = new string[] {"practice.html", "tutorial.html", "test.html"};
+			if (widgetName == "HTML5")
+			{
+				// Active Presenter export HTML5 files to folder structure <ProjectName>/HTML5/<files>
+				// where the files include possibly practice.html, tutorial.html, and/or test.html.
+				// The user presumably picked one of these three files.  Get the widget name from
+				// the directory name from the level above the HTML5 subfolder.
+				widgetName = Path.GetFileName(Path.GetDirectoryName(fullFolderName));
+				fromActivePresenter = activePresenterFiles.Contains(filename);
+			}
+			if (String.IsNullOrWhiteSpace(widgetName))
+			{
+				// The .html file must be at the top level of the filesystem??
+				widgetName = "MYWIDGET";	// I doubt this ever happens, but it saves a compiler warning.
+			}
+			else if (widgetName.EndsWith(".wdgt"))
+			{
+				// Book Widgets creates a folder named <ProjectName>.wdgt in which to store the
+				// widget files.  Why a folder and not a zip file, only the programmers/analysts
+				// know...  So strip the extension off the folder name to get the widget name.
+				widgetName = Path.GetFileNameWithoutExtension(widgetName);
+			}
+			var widgetPath = Path.Combine(Path.GetTempPath(), "Bloom", widgetName + ".wdgt");
+			using (TemporaryFolder temp = new TemporaryFolder("CreatingWidgetForBloom"))
+			{
+				// Copy the relevant files and folders to a temporary location.
+				DirectoryUtils.CopyFolder(fullFolderName, temp.FolderPath);
+				// Remove excess html files (if any), and ensure desired html file is named "index.html".
+				foreach (var filePath in Directory.GetFiles(temp.FolderPath))
+				{
+					var name = Path.GetFileName(filePath);
+					if (name == filename)
+					{
+						if (filename != "index.html")
+						{
+							var destPath = Path.Combine(temp.FolderPath, "index.html");
+							if (RobustFile.Exists(destPath))
+								RobustFile.Delete(destPath);
+							RobustFile.Move(filePath, destPath);
+						}
+					}
+					else if (fromActivePresenter && (activePresenterFiles.Contains(name)))
+					{
+						RobustFile.Delete(filePath);
+					}
+				}
+				// zip up the temporary folder contents into a widget file
+				var zip = new BloomZipFile(widgetPath);
+				foreach (var file in Directory.GetFiles(temp.FolderPath))
+				{
+					zip.AddTopLevelFile(file);
+				}
+				foreach (var dir in Directory.GetDirectories(temp.FolderPath))
+					zip.AddDirectory(dir);
+				zip.Save();
+			}
+			return widgetPath;
 		}
 	}
 }
