@@ -1676,7 +1676,7 @@ namespace Bloom.Book
 							WebUtility.HtmlEncode(error.Message),
 							GetHelpLinkForFilePermissions());
 						ErrorMessagesHtml = msg;
-						ErrorAllowsReporting = true;
+						ErrorAllowsReporting = false;	// we can't really help them remotely with odd permission failures.
 						Logger.WriteEvent("*** ERROR cannot delete old branding.css file in ExpensiveInitialization(" + forSelectedBook + ")");
 						Logger.WriteEvent("*** ERROR: " + error.Message.Replace("{", "{{").Replace("}", "}}"));
 						return;
