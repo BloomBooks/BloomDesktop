@@ -3875,6 +3875,22 @@ namespace Bloom.Book
 				page.SafeSelectNodes(".//video").Count > 0 ||
 				page.SafeSelectNodes(".//div[contains(@class,'bloom-widgetContainer')]").Count > 0;
 		}
+
+		public WritingSystem GetLanguage(LanguageSlot slot)
+		{
+			switch ( slot)
+			{
+				case LanguageSlot.Language1:
+					return CollectionSettings.Language1;
+				case LanguageSlot.Language2:
+					return CollectionSettings.Language2;
+				case LanguageSlot.Language3:
+					return CollectionSettings.Language3;
+				default:
+					throw new ArgumentException("getLanguage() cannot handle that slot yet");
+
+			}
+		}
 	}
 }
 

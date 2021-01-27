@@ -1369,4 +1369,9 @@ namespace Bloom.Book
 		[JsonProperty("iso")]
 		public string Iso { get; set; }
 	}
+
+	// In the future, we may add other slots including {TitleLanguage1, TitleLanguage2, CreditsLanguage}
+	// We would then rename these to be more specific, e.g. Language1-->InteriorLanguage1
+	// See https://docs.google.com/document/d/1uIiog56oYMAa4tTyNag1SgyXPEKgk0EKMxMP1LzPeCc
+	public enum LanguageSlot { Language1, Language2, Language3 }
 }
