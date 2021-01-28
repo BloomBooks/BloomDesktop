@@ -204,8 +204,8 @@
     display: flex;
     flex-direction: row;
     justify-content: end;
-    margin-right: -5px; // These negative margins get the icon to line up better with the content.
-    margin-bottom: -5px;
+    margin-right: 0px; // These zero margins get the icon to line up with the content.
+    margin-bottom: 0px; // (Negative margins can cause overflow and scrollbars.  See BL-9394.)
     .copy-transition {
         margin-right: 7px;
         padding: 0 7px;

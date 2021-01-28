@@ -865,6 +865,13 @@ namespace Bloom.Publish.Epub
 							// Don't know how long this clip is -> don't know how long to highlight for -> just skip this segment and go to the next one.
 							continue;
 						}
+						if (clipEndTimeSecs <= previousEndTimeSecs)
+						{
+							// Duration <= 0.0 signals an error in the automatic splitting by aeneas.
+							// Passing it through results in an invalid ePUB, without improving audio playback.
+							// See https://issues.bloomlibrary.org/youtrack/issue/BL-9428.
+							continue;
+						}
 						double clipDurationSecs = clipEndTimeSecs - previousEndTimeSecs;
 						previousEndTimeSecs = clipEndTimeSecs;
 

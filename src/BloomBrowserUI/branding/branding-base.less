@@ -15,6 +15,12 @@ Rules that format the branding go in branding-base.less, or in the branding.less
         margin-right: auto;
 
         width: auto;
+        // Normally, one would expect auto width to be less than or equal to 100% width, and for
+        // the auto width to be based on the immediate parent.  This is not always working as
+        // expected: see https://issues.bloomlibrary.org/youtrack/issue/BL-9433.  (I still don't
+        // know why 4.8 works fine but 4.9 was broken.)  Setting the max-width to 100% constrains
+        // the actual width to the desired value from the immediate parent.
+        max-width: 100%;
         align-self: center;
         object-fit: contain; // in more complex size cases, ensures we keep aspect ratio and the whole thing visible
     }
