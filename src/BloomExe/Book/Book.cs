@@ -196,13 +196,13 @@ namespace Bloom.Book
 		{
 			get
 			{
-				return GetBestTitleForDisplay(_bookData.GetMultiTextVariableOrEmpty("bookTitle"), CollectionSettings, IsEditable);
+				return GetBestTitleForDisplay(_bookData.GetMultiTextVariableOrEmpty("bookTitle"), _bookData.GetBasicBookLanguageCodes().ToList(), IsEditable);
 			}
 		}
 
-		public static string GetBestTitleForDisplay(MultiTextBase title, CollectionSettings settings, bool isEditable)
+		public static string GetBestTitleForDisplay(MultiTextBase title, List<string> langCodes, bool isEditable)
 		{
-			var display = title.GetExactAlternative(settings.Language1Iso639Code);
+			var display = title.GetExactAlternative(langCodes[0]);
 			if (string.IsNullOrEmpty(display))
 			{
 				//the SIL-LEAD project, SHRP (around 2012-2016) had books that just had an English name, before we changed Bloom
@@ -226,12 +226,9 @@ namespace Bloom.Book
 					var orderedPreferences = new List<string>();
 					orderedPreferences.Add(LocalizationManager.UILanguageId);
 
-					//already checked for this, previously. orderedPreferences.Add(_collectionSettings.Language1Iso639Code);
-					if (settings.Language2Iso639Code != null)
-						orderedPreferences.Add(settings.Language2Iso639Code);
-					if (settings.Language3Iso639Code != null)
-						orderedPreferences.Add(settings.Language3Iso639Code);
-
+					// we already know that langCodes[0] does not have a title
+					for (int i = 1; i < langCodes.Count; ++i)
+						orderedPreferences.Add(langCodes[i]);
 					orderedPreferences.Add("en");
 					orderedPreferences.Add("fr");
 					orderedPreferences.Add("es");
@@ -321,8 +318,8 @@ namespace Bloom.Book
 			pageDom.AddStyleSheet("");
 			pageDom.SortStyleSheetLinks();
 			AddJavaScriptForEditing(pageDom);
-			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, CollectionSettings);
-			RuntimeInformationInjector.AddUISettingsToDom(pageDom, CollectionSettings, Storage.GetFileLocator());
+			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, _bookData);
+			RuntimeInformationInjector.AddUISettingsToDom(pageDom, _bookData, Storage.GetFileLocator());
 			UpdateMultilingualSettings(pageDom);
 
 			if (IsSuitableForMakingShells && !page.IsXMatter)
@@ -376,11 +373,11 @@ namespace Bloom.Book
 
 		private void UpdateMultilingualSettings(HtmlDom dom)
 		{
-			TranslationGroupManager.UpdateContentLanguageClasses(dom.RawDom, CollectionSettings, CollectionSettings.Language1Iso639Code, _bookData.MultilingualContentLanguage2,
-													 _bookData.MultilingualContentLanguage3);
-			BookInfo.IsRtl = CollectionSettings.Language1.IsRightToLeft;
+			TranslationGroupManager.UpdateContentLanguageClasses(dom.RawDom, _bookData, _bookData.Language1.Iso639Code,
+				_bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
+			BookInfo.IsRtl = _bookData.Language1.IsRightToLeft;
 
-			BookStarter.SetLanguageForElementsWithMetaLanguage(dom.RawDom, CollectionSettings);
+			BookStarter.SetLanguageForElementsWithMetaLanguage(dom.RawDom, _bookData);
 		}
 
 		private HtmlDom GetHtmlDomWithJustOnePage(IPage page)
@@ -715,7 +712,7 @@ namespace Bloom.Book
 			BringBookUpToDate(previewDom, new NullProgress());
 
 			// this is normally the vernacular, but when we're previewing a shell, well it won't have anything for the vernacular
-			var primaryLanguage = CollectionSettings.Language1Iso639Code;
+			var primaryLanguage = _bookData.Language1.Iso639Code;
 			if (IsShellOrTemplate)
 			{
 				//TODO: this won't be enough, if our national language isn't, say, English, and the shell just doesn't have our national language. But it might have some other language we understand.
@@ -723,10 +720,11 @@ namespace Bloom.Book
 				// If it DOES have text in the Language1Iso639Code (e.g., a French collection, and we're looking at Moon and Cap...BL-6465),
 				// don't mess with it.
 				if (previewDom.SelectSingleNode($"//*[@lang='{primaryLanguage}' and contains(@class, 'bloom-editable') and text()!='']") == null)
-					primaryLanguage = CollectionSettings.Language2Iso639Code;
+					primaryLanguage = _bookData.Language2.Iso639Code;
 			}
 
-			TranslationGroupManager.UpdateContentLanguageClasses(previewDom.RawDom, CollectionSettings, primaryLanguage, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
+			TranslationGroupManager.UpdateContentLanguageClasses(previewDom.RawDom, _bookData, primaryLanguage,
+				_bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
 
 			AddPreviewJavascript(previewDom);
 			previewDom.AddPublishClassToBody("preview");
@@ -777,7 +775,7 @@ namespace Bloom.Book
 
 			if (SHRP_TeachersGuideExtension.ExtensionIsApplicable(this))
 			{
-				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, CollectionSettings.Language1Iso639Code);
+				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, _bookData.Language1.Iso639Code);
 			}
 
 			OurHtmlDom.FixDivOrdering();
@@ -824,16 +822,10 @@ namespace Bloom.Book
 				XmlElement groupElement in
 				bookDOM.Body.SafeSelectNodes("descendant::*[contains(@class,'bloom-translationGroup')]"))
 			{
-				// Even though the user only had duplicate vernacular divs, let's check all three
+				// Even though the user only had duplicate vernacular divs, let's check all the book
 				// languages just to be safe.
-				var lang1 = CollectionSettings.Language1Iso639Code;
-				TranslationGroupManager.FixDuplicateLanguageDivs(groupElement, lang1);
-				var lang2 = CollectionSettings.Language2Iso639Code;
-				if (!String.IsNullOrEmpty(lang2) && lang2 != lang1)
-					TranslationGroupManager.FixDuplicateLanguageDivs(groupElement, lang2);
-				var lang3 = CollectionSettings.Language3Iso639Code;
-				if (!String.IsNullOrEmpty(lang3) && lang3 != lang2 && lang3 != lang1)
-					TranslationGroupManager.FixDuplicateLanguageDivs(groupElement, lang3);
+				foreach (var lang in _bookData.GetAllBookLanguageCodes())
+					TranslationGroupManager.FixDuplicateLanguageDivs(groupElement, lang);
 			}
 		}
 
@@ -971,9 +963,11 @@ namespace Bloom.Book
 
 		private void AddLanguageAttributesToBody(HtmlDom bookDom)
 		{
-			bookDom.Body.SetAttribute("data-L1", this.CollectionSettings.Language1Iso639Code);
-			bookDom.Body.SetAttribute("data-L2", this.CollectionSettings.Language2Iso639Code);
-			bookDom.Body.SetAttribute("data-L3", this.CollectionSettings.Language3Iso639Code );
+			// TODO: figure out what to do when we expand beyond three languages.  (Perhaps
+			// nothing? what are these attributes used for?)
+			bookDom.Body.SetAttribute("data-L1", this._bookData.Language1.Iso639Code);
+			bookDom.Body.SetAttribute("data-L2", this._bookData.Language2.Iso639Code);
+			bookDom.Body.SetAttribute("data-L3", this._bookData.Language3.Iso639Code );
 		}
 
 		private void AddReaderBodyClass(HtmlDom bookDom){
@@ -1038,7 +1032,7 @@ namespace Bloom.Book
 			MigrateNonstandardClassNames(bookDOM);
 
 			progress.WriteStatus("Gathering Data...");
-			TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, CollectionSettings);
+			TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _bookData);
 			progress.WriteStatus("Updating Data...");
 
 			InjectStringListingActiveLanguagesOfBook();
@@ -1051,7 +1045,7 @@ namespace Bloom.Book
 			{
 				// The one step that can legitimately change the metadata...though current branding packs
 				// will only do so if it is originally empty. So set the saved one before it and then get a new one.
-				BookCopyrightAndLicense.SetMetadata(licenseMetadata, bookDOM, FolderPath, CollectionSettings, BookInfo.MetaData.UseOriginalCopyright);
+				BookCopyrightAndLicense.SetMetadata(licenseMetadata, bookDOM, FolderPath, _bookData, BookInfo.MetaData.UseOriginalCopyright);
 				_bookData.MergeBrandingSettings(CollectionSettings.BrandingProjectKey);
 				_bookData.SynchronizeDataItemsThroughoutDOM();
 				licenseMetadata = GetLicenseMetadata();
@@ -1070,7 +1064,7 @@ namespace Bloom.Book
 				bd.SynchronizeDataItemsThroughoutDOM();
 			}
 			// get any license info into the json and restored in the replaced front matter.
-			BookCopyrightAndLicense.SetMetadata(licenseMetadata, bookDOM, FolderPath, CollectionSettings, BookInfo.MetaData.UseOriginalCopyright);
+			BookCopyrightAndLicense.SetMetadata(licenseMetadata, bookDOM, FolderPath, _bookData, BookInfo.MetaData.UseOriginalCopyright);
 
 			bookDOM.RemoveMetaElement("bloomBookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
 			bookDOM.RemoveMetaElement("bookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
@@ -1088,13 +1082,13 @@ namespace Bloom.Book
 			bookDOM.RemoveMetaElement("SuitableForMakingVernacularBooks", () => null,
 				val => BookInfo.IsSuitableForVernacularLibrary = val == "yes" || val == "definitely");
 
-			bookDOM.UpdatePageNumberAndSideClassOfPages(CollectionSettings.CharactersForDigitsForPageNumbers, CollectionSettings.Language1.IsRightToLeft);
+			bookDOM.UpdatePageNumberAndSideClassOfPages(CollectionSettings.CharactersForDigitsForPageNumbers, _bookData.Language1.IsRightToLeft);
 
 			UpdateTextsNewlyChangedToRequiresParagraph(bookDOM);
 
 			UpdateCharacterStyleMarkup(bookDOM);
 
-			bookDOM.SetImageAltAttrsFromDescriptions(CollectionSettings.Language1Iso639Code);
+			bookDOM.SetImageAltAttrsFromDescriptions(_bookData.Language1.Iso639Code);
 
 			//we've removed and possible added pages, so our page cache is invalid
 			_pagesCache = null;
@@ -1165,10 +1159,10 @@ namespace Bloom.Book
 			if (doesAlreadyExist)
 			{
 				var cssLangs = new HashSet<string>();
-				cssLangs.Add(CollectionSettings.Language1Iso639Code);
-				cssLangs.Add(CollectionSettings.Language2Iso639Code);
-				if (!String.IsNullOrEmpty(CollectionSettings.Language3Iso639Code))
-					cssLangs.Add(CollectionSettings.Language3Iso639Code);
+				cssLangs.Add(_bookData.Language1.Iso639Code);
+				cssLangs.Add(_bookData.Language2.Iso639Code);
+				if (!String.IsNullOrEmpty(_bookData.Language3.Iso639Code))
+					cssLangs.Add(_bookData.Language3.Iso639Code);
 
 				var cssLines = RobustFile.ReadAllLines(path);
 				const string kLangTag = "[lang='";
@@ -1208,15 +1202,8 @@ namespace Bloom.Book
 			BookInfo.MetaData.PageNumberStyle = CollectionSettings.PageNumberStyle;
 			if (BookInfo.MetaData.DisplayNames == null)
 				BookInfo.MetaData.DisplayNames = new Dictionary<string,string>();
-			BookInfo.MetaData.DisplayNames[CollectionSettings.Language1Iso639Code] = CollectionSettings.Language1.Name;
-			if (CollectionSettings.Language2Iso639Code != CollectionSettings.Language1Iso639Code)
-				BookInfo.MetaData.DisplayNames[CollectionSettings.Language2Iso639Code] = CollectionSettings.Language2.Name;
-			if (!String.IsNullOrEmpty(CollectionSettings.Language3Iso639Code) &&
-				CollectionSettings.Language3Iso639Code != CollectionSettings.Language1Iso639Code &&
-				CollectionSettings.Language3Iso639Code != CollectionSettings.Language2Iso639Code)
-			{
-				BookInfo.MetaData.DisplayNames[CollectionSettings.Language3Iso639Code] = CollectionSettings.Language3.Name;
-			}
+			foreach (var lang in _bookData.GetAllBookLanguages())
+				BookInfo.MetaData.DisplayNames[lang.Iso639Code] = lang.Name;
 			// These settings will be saved to the meta.json file the next time the book itself is saved.
 		}
 
@@ -1439,7 +1426,7 @@ namespace Bloom.Book
 			// this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
 			// still requiring it to be a valid layout.
 			layout = Layout.FromDomAndChoices(bookDOM, layout, fileLocator);
-			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout, BookInfo.UseDeviceXMatter, CollectionSettings.Language2Iso639Code);
+			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout, BookInfo.UseDeviceXMatter, _bookData.Language2.Iso639Code);
 
 			var dataBookLangs = bookDOM.GatherDataBookLanguages();
 			TranslationGroupManager.PrepareDataBookTranslationGroups(bookDOM.RawDom, dataBookLangs);
@@ -1606,7 +1593,7 @@ namespace Bloom.Book
 			get
 			{
 				//is there a textarea with something other than the vernacular, which has a containing element marked as a translation group?
-				var x = OurHtmlDom.SafeSelectNodes($"//*[contains(@class,'bloom-translationGroup')]//textarea[@lang and @lang!='{CollectionSettings.Language1Iso639Code}']");
+				var x = OurHtmlDom.SafeSelectNodes($"//*[contains(@class,'bloom-translationGroup')]//textarea[@lang and @lang!='{_bookData.Language1.Iso639Code}']");
 				return x.Count > 0;
 			}
 
@@ -1815,7 +1802,7 @@ namespace Bloom.Book
 		{
 			get
 			{
-				var result = new HashSet<string>(new [] {CollectionSettings.Language1Iso639Code});
+				var result = new HashSet<string>(new [] {_bookData.Language1.Iso639Code});
 				if (MultilingualContentLanguage2 != null)
 					result.Add(MultilingualContentLanguage2);
 				if (MultilingualContentLanguage3 != null)
@@ -1847,17 +1834,17 @@ namespace Bloom.Book
 		/// </remarks>
 		private void InjectStringListingActiveLanguagesOfBook()
 		{
-			var languagesOfBook = CollectionSettings.Language1.Name;
+			var languagesOfBook = _bookData.Language1.Name;
 
 			if (MultilingualContentLanguage2 != null)
 			{
-				languagesOfBook += ", " + ((MultilingualContentLanguage2 == CollectionSettings.Language2Iso639Code) ?
-					CollectionSettings.Language2.Name :
-					CollectionSettings.Language3.Name);
+				languagesOfBook += ", " + ((MultilingualContentLanguage2 == _bookData.Language2.Iso639Code) ?
+					_bookData.Language2.Name :
+					_bookData.Language3.Name);
 			}
 			if (MultilingualContentLanguage3 != null)
 			{
-				languagesOfBook += ", " + CollectionSettings.Language3.Name;
+				languagesOfBook += ", " + _bookData.Language3.Name;
 			}
 
 			_bookData.Set("languagesOfBook", languagesOfBook, false);
@@ -1949,7 +1936,7 @@ namespace Bloom.Book
 			if (OurHtmlDom.SelectSingleNode(BookStorage.ComicalXpath) != null)
 			{
 				result.Clear();
-				result[CollectionSettings.Language1Iso639Code] = true;
+				result[_bookData.Language1.Iso639Code] = true;
 			}
 			return result;
 		}
@@ -1966,17 +1953,17 @@ namespace Bloom.Book
 				{
 				case "V":
 				case "L1":
-					if (lang == CollectionSettings.Language1.Iso639Code)
+					if (lang == _bookData.Language1.Iso639Code)
 						return true;
 					break;
 				case "N1":
 				case "L2":
-					if (lang == CollectionSettings.Language2.Iso639Code)
+					if (lang == _bookData.Language2.Iso639Code)
 						return true;
 					break;
 				case "N2":
 				case "L3":
-					if (lang == CollectionSettings.Language3.Iso639Code)
+					if (lang == _bookData.Language3.Iso639Code)
 						return true;
 					break;
 				}
@@ -2081,7 +2068,7 @@ namespace Bloom.Book
 					if (!HtmlDom.HasClass(div, "bloom-editable"))
 						continue;
 					var lang = div.GetStringAttribute("lang");
-					if (lang != CollectionSettings.Language1Iso639Code)
+					if (lang != _bookData.Language1.Iso639Code)
 						continue;   // this won't go into the book -- it's a different language.
 					// TODO: Ensure handles image descriptions once those get implemented.
 					var textOfDiv = div.InnerText.Trim();
@@ -2441,7 +2428,7 @@ namespace Bloom.Book
 			XmlDocument dom = OurHtmlDom.RawDom;
 			var templatePageDiv = templatePage.GetDivNodeForThisPage();
 			var newPageDiv = dom.ImportNode(templatePageDiv, true) as XmlElement;
-			BookStarter.SetupPage(newPageDiv, CollectionSettings, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);//, LockedExceptForTranslation);
+			BookStarter.SetupPage(newPageDiv, _bookData, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);//, LockedExceptForTranslation);
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPageDiv, GetLayout());
 			newPageDiv.RemoveAttribute("title"); //titles are just for templates [Review: that's not true for front matter pages, but at the moment you can't insert those, so this is ok]C:\dev\Bloom\src\BloomExe\StyleSheetService.cs
 			// If we're a template, make the new page a template one.
@@ -2685,7 +2672,7 @@ namespace Bloom.Book
 
 			var pageNode = FindPageDiv(page);
 			pageNode.ParentNode.RemoveChild(pageNode);
-			Storage.Dom.UpdatePageNumberAndSideClassOfPages(CollectionSettings.CharactersForDigitsForPageNumbers, CollectionSettings.Language1.IsRightToLeft);
+			Storage.Dom.UpdatePageNumberAndSideClassOfPages(CollectionSettings.CharactersForDigitsForPageNumbers, _bookData.Language1.IsRightToLeft);
 
 			_pageSelection.SelectPage(pageToShowNext);
 			Save();
@@ -2697,7 +2684,7 @@ namespace Bloom.Book
 		private void OrderOrNumberOfPagesChanged()
 		{
 			OurHtmlDom.UpdatePageNumberAndSideClassOfPages(CollectionSettings.CharactersForDigitsForPageNumbers,
-				CollectionSettings.Language1.IsRightToLeft);
+				_bookData.Language1.IsRightToLeft);
 		}
 
 		private void ClearPagesCache()
@@ -2754,7 +2741,7 @@ namespace Bloom.Book
 				var pageFromStorage = GetPageFromStorage(pageId);
 
 				HtmlDom.ProcessPageAfterEditing(pageFromStorage, pageFromEditedDom);
-				HtmlDom.SetImageAltAttrsFromDescriptions(pageFromStorage, CollectionSettings.Language1Iso639Code);
+				HtmlDom.SetImageAltAttrsFromDescriptions(pageFromStorage, _bookData.Language1.Iso639Code);
 
 				// The main condition for being able to just write the page is that no shareable data on the
 				// page changed during editing. If that's so we can skip this step.
@@ -2973,7 +2960,7 @@ namespace Bloom.Book
 			BookStorage.SetBaseForRelativePaths(printingDom, FolderPath);
 
 			DeletePages(printingDom.RawDom, p=>p.GetAttribute("class").ToLowerInvariant().Contains("bloom-nonprinting"));
-			PublishHelper.RemoveEnterprisePagesIfNeeded(CollectionSettings, printingDom, printingDom.GetPageElements().ToList());
+			PublishHelper.RemoveEnterprisePagesIfNeeded(_bookData, printingDom, printingDom.GetPageElements().ToList());
 
 			switch (bookletPortion)
 			{
@@ -3136,13 +3123,13 @@ namespace Bloom.Book
 		/// <param name="elementToUpdate"></param>
 		public void UpdateEditableAreasOfElement(HtmlDom dom)
 		{
-			var language1Iso639Code = CollectionSettings.Language1Iso639Code;
+			var language1Iso639Code = _bookData.Language1.Iso639Code;
 			var multilingualContentLanguage2 = _bookData.MultilingualContentLanguage2;
 			var multilingualContentLanguage3 = _bookData.MultilingualContentLanguage3;
 			foreach (XmlElement div in dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
-				TranslationGroupManager.PrepareElementsInPageOrDocument(div, CollectionSettings);
-				TranslationGroupManager.UpdateContentLanguageClasses(div, CollectionSettings, language1Iso639Code, multilingualContentLanguage2, multilingualContentLanguage3);
+				TranslationGroupManager.PrepareElementsInPageOrDocument(div, _bookData);
+				TranslationGroupManager.UpdateContentLanguageClasses(div, _bookData, language1Iso639Code, multilingualContentLanguage2, multilingualContentLanguage3);
 			}
 		}
 
@@ -3207,7 +3194,7 @@ namespace Bloom.Book
 		public Metadata GetLicenseMetadata()
 		{
 			//BookCopyrightAndLicense.LogMetdata(OurHtmlDom);
-			var result = BookCopyrightAndLicense.GetMetadata(OurHtmlDom, CollectionSettings);
+			var result = BookCopyrightAndLicense.GetMetadata(OurHtmlDom, _bookData);
 
 			//Logger.WriteEvent("After");
 			//BookCopyrightAndLicense.LogMetdata(OurHtmlDom);
@@ -3216,7 +3203,7 @@ namespace Bloom.Book
 
 		public void SetMetadata(Metadata metadata)
 		{
-			BookCopyrightAndLicense.SetMetadata(metadata, OurHtmlDom, FolderPath, CollectionSettings, BookInfo.MetaData.UseOriginalCopyright);
+			BookCopyrightAndLicense.SetMetadata(metadata, OurHtmlDom, FolderPath, _bookData, BookInfo.MetaData.UseOriginalCopyright);
 			BookInfo.SetLicenseAndCopyrightMetadata(metadata);
 		}
 
@@ -3878,19 +3865,30 @@ namespace Bloom.Book
 
 		public WritingSystem GetLanguage(LanguageSlot slot)
 		{
-			switch ( slot)
-			{
-				case LanguageSlot.Language1:
-					return CollectionSettings.Language1;
-				case LanguageSlot.Language2:
-					return CollectionSettings.Language2;
-				case LanguageSlot.Language3:
-					return CollectionSettings.Language3;
-				default:
-					throw new ArgumentException("getLanguage() cannot handle that slot yet");
-
-			}
+			return _bookData.GetLanguage(slot);
 		}
-	}
+
+		/// <summary>
+		/// Given a choice, what language should we use to display text on the page (not in the UI, which is controlled by the UI Language)
+		/// </summary>
+		/// <returns>A prioritized enumerable of language codes</returns>
+		public IEnumerable<string> GetLanguagePrioritiesForTranslatedTextOnPage(bool includeLang1 = true)
+		{
+			return _bookData.GetLanguagePrioritiesForLocalizedTextOnPage(includeLang1);
+		}
+
+		/// <summary>
+		/// Get a name for Language1 that is safe for using as part of a file name.
+		/// (Currently used for suggesting a pdf filename when publishing.)
+		/// </summary>
+		/// <param name="inLanguage"></param>
+		/// <returns></returns>
+		public string GetFilesafeLanguage1Name(string inLanguage)
+		{
+			var languageName = _bookData.Language1.GetNameInLanguage(inLanguage);
+			return Path.GetInvalidFileNameChars().Aggregate(
+				languageName, (current, character) => current.Replace(character, ' '));
+		}
+}
 }
 

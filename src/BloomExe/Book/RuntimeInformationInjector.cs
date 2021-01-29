@@ -23,7 +23,7 @@ namespace Bloom.Book
 		private static bool _collectDynamicStrings;
 		private static bool _foundEnglish;
 
-		public static void AddUIDictionaryToDom(HtmlDom pageDom, CollectionSettings collectionSettings)
+		public static void AddUIDictionaryToDom(HtmlDom pageDom, BookData bookData)
 		{
 			CheckDynamicStrings();
 
@@ -37,18 +37,12 @@ namespace Bloom.Book
 			dictionaryScriptElement.SetAttribute("id", "ui-dictionary");
 			var d = new Dictionary<string, string>();
 
-			d.Add(collectionSettings.Language1Iso639Code, collectionSettings.Language1.Name);
-			if (!String.IsNullOrEmpty(collectionSettings.Language2Iso639Code))
-				SafelyAddLanguage(d, collectionSettings.Language2Iso639Code,
-					collectionSettings.Language2.GetNameInLanguage(collectionSettings.Language2Iso639Code));
-			if (!String.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
-				SafelyAddLanguage(d, collectionSettings.Language3Iso639Code,
-					collectionSettings.Language3.GetNameInLanguage(collectionSettings.Language3Iso639Code));
-
-			SafelyAddLanguage(d, "vernacularLang", collectionSettings.Language1Iso639Code);//use for making the vernacular the first tab
-			SafelyAddLanguage(d, "{V}", collectionSettings.Language1.Name);
-			SafelyAddLanguage(d, "{N1}", collectionSettings.Language2.GetNameInLanguage(collectionSettings.Language2Iso639Code));
-			SafelyAddLanguage(d, "{N2}", collectionSettings.Language3.GetNameInLanguage(collectionSettings.Language3Iso639Code));
+			foreach (var lang in bookData.GetAllBookLanguages())
+				SafelyAddLanguage(d, lang.Iso639Code, lang.GetNameInLanguage(lang.Iso639Code));
+			SafelyAddLanguage(d, "vernacularLang", bookData.Language1.Iso639Code);//use for making the vernacular the first tab
+			SafelyAddLanguage(d, "{V}", bookData.Language1.Name);
+			SafelyAddLanguage(d, "{N1}", bookData.Language2.GetNameInLanguage(bookData.Language2.Iso639Code));
+			SafelyAddLanguage(d, "{N2}", bookData.Language3.GetNameInLanguage(bookData.Language3.Iso639Code));
 
 			// TODO: Eventually we need to look through all .bloom-translationGroup elements on the current page to determine
 			// whether there is text in a language not yet added to the dictionary.
@@ -290,7 +284,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// stick in a json with various settings we want to make available to the javascript
 		/// </summary>
-		public static void AddUISettingsToDom(HtmlDom pageDom, CollectionSettings collectionSettings, IFileLocator fileLocator)
+		public static void AddUISettingsToDom(HtmlDom pageDom, BookData bookData, IFileLocator fileLocator)
 		{
 			CheckDynamicStrings();
 
@@ -307,17 +301,17 @@ namespace Bloom.Book
 				d.Add("defaultSourceLanguage", Settings.Default.LastSourceLanguageViewed);
 			}
 
-			d.Add("languageForNewTextBoxes", collectionSettings.Language1Iso639Code);
-			d.Add("isSourceCollection", collectionSettings.IsSourceCollection.ToString());
+			d.Add("languageForNewTextBoxes", bookData.Language1.Iso639Code);
+			d.Add("isSourceCollection", bookData.CollectionSettings.IsSourceCollection.ToString());
 
 			// BL-2357 To aid in smart ordering of source languages in source bubble
-			if (!String.IsNullOrEmpty(collectionSettings.Language2Iso639Code))
+			if (!String.IsNullOrEmpty(bookData.Language2.Iso639Code))
 			{
-				d.Add("currentCollectionLanguage2", collectionSettings.Language2Iso639Code);
+				d.Add("currentCollectionLanguage2", bookData.Language2.Iso639Code);
 			}
-			if (!String.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
+			if (!String.IsNullOrEmpty(bookData.Language3.Iso639Code))
 			{
-				d.Add("currentCollectionLanguage3", collectionSettings.Language3Iso639Code);
+				d.Add("currentCollectionLanguage3", bookData.Language3.Iso639Code);
 			}
 
 			d.Add("browserRoot", FileLocationUtilities.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot).ToLocalhost());

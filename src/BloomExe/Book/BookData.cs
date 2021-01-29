@@ -10,6 +10,7 @@ using System.Xml.Linq;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.Edit;
+using Bloom.ToPalaso;
 using L10NSharp;
 using Microsoft.CSharp.RuntimeBinder;
 using SIL.Code;
@@ -17,6 +18,7 @@ using SIL.Extensions;
 using SIL.Linq;
 using SIL.Reporting;
 using SIL.Text;
+using SIL.WritingSystems;
 using SIL.Xml;
 using TagLib;
 using File = System.IO.File;
@@ -65,19 +67,19 @@ namespace Bloom.Book
 		///
 		/// E.g.
 		/// In the data div, we have a div such as
-		/// <div data-xmatter-page="frontCover" data-backgroundaudio="SoundTrack0.mp3" data-backgroundaudiovolume="0.5717869999999999"></div>
+		/// &lt;div data-xmatter-page="frontCover" data-backgroundaudio="SoundTrack0.mp3" data-backgroundaudiovolume="0.5717869999999999"&gt;&lt;/div&gt;
 		///
 		/// The actual xmatter page will also have these same attributes (along with all the rest it has).
-		/// <div class="bloom-page cover coverColor bloom-frontMatter frontCover Device16x9Landscape layout-style-Default side-right"
+		/// &lt;div class="bloom-page cover coverColor bloom-frontMatter frontCover Device16x9Landscape layout-style-Default side-right"
 		/// id="76ed5d5b-c178-4db1-8be1-4a2f63eccaa4"
 		/// data-xmatter-page="frontCover" data-backgroundaudio="SoundTrack0.mp3" data-backgroundaudiovolume="0.5717869999999999"
-		/// lang="">
+		/// lang=""&gt;
 		/// </summary>
 		private const string kDataXmatterPage = "data-xmatter-page";
 
 		private readonly HtmlDom _dom;
 		private readonly Action<XmlElement> _updateImgNode;
-		private readonly CollectionSettings _collectionSettings;
+		internal readonly CollectionSettings CollectionSettings;
 		private readonly DataSet _dataset;
 		private XmlElement _dataDiv;
 		private Object thisLock = new Object();
@@ -102,9 +104,9 @@ namespace Bloom.Book
 		{
 			_dom = dom;
 			_updateImgNode = updateImgNodeCallback;
-			_collectionSettings = collectionSettings;
+			CollectionSettings = collectionSettings;
 			GetOrCreateDataDiv();
-			_dataset = GatherDataItemsFromCollectionSettings(_collectionSettings);
+			_dataset = GatherDataItemsFromCollectionSettings(CollectionSettings);
 			GatherDataItemsFromXElement(_dataset,_dom.RawDom);
 			MigrateData(_dataset);
 		}
@@ -208,7 +210,7 @@ namespace Bloom.Book
 			var itemsToDelete = new HashSet<Tuple<string, string>>();
 			DataSet incomingData = SynchronizeDataItemsFromContentsOfElement(elementToReadFrom, itemsToDelete);
 			UpdateToolRelatedDataFromBookInfo(info, incomingData, itemsToDelete);
-			incomingData.UpdateGenericLanguageString("contentLanguage1", _collectionSettings.Language1Iso639Code, false);
+			incomingData.UpdateGenericLanguageString("contentLanguage1", Language1.Iso639Code, false);
 			incomingData.UpdateGenericLanguageString("contentLanguage2",
 											 String.IsNullOrEmpty(MultilingualContentLanguage2)
 												 ? null
@@ -270,9 +272,9 @@ namespace Bloom.Book
 				}
 
 				int stage;
-				if (int.TryParse(stageString, out stage) && _collectionSettings != null)
+				if (int.TryParse(stageString, out stage) && CollectionSettings != null)
 				{
-					var settingsPath = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(_collectionSettings);
+					var settingsPath = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(CollectionSettings);
 					if (File.Exists(settingsPath))
 					{
 						try
@@ -287,7 +289,7 @@ namespace Bloom.Book
 								allLetters += " " + stageData.letters;
 							}
 							var letters = string.Join(", ", allLetters.Trim().Split(' '));
-							incomingData.UpdateLanguageString("decodableStageLetters", letters, _collectionSettings.Language1Iso639Code, false);
+							incomingData.UpdateLanguageString("decodableStageLetters", letters, Language1.Iso639Code, false);
 						}
 						catch (XmlException e)
 						{
@@ -424,7 +426,7 @@ namespace Bloom.Book
 				return;		// must be in a test...
 			foreach (var element in elements.Cast<XmlElement>().ToList())
 			{
-				element.SetAttribute("lang", _collectionSettings.Language2.Iso639Code);
+				element.SetAttribute("lang", Language2.Iso639Code);
 				element.InnerText = languages;
 			}
 		}
@@ -484,18 +486,18 @@ namespace Bloom.Book
 			var stringId = "Topics." + englishTopic;
 
 			//get the topic in the most prominent language for which we have a translation
-			var langOfTopicToShowOnCover = _collectionSettings.Language1Iso639Code;
-			if (LocalizationManager.GetIsStringAvailableForLangId(stringId, _collectionSettings.Language1Iso639Code))
+			var langOfTopicToShowOnCover = Language1.Iso639Code;
+			if (LocalizationManager.GetIsStringAvailableForLangId(stringId, Language1.Iso639Code))
 			{
-				langOfTopicToShowOnCover = _collectionSettings.Language1Iso639Code;
+				langOfTopicToShowOnCover = Language1.Iso639Code;
 			}
-			else if (LocalizationManager.GetIsStringAvailableForLangId(stringId, _collectionSettings.Language2Iso639Code))
+			else if (LocalizationManager.GetIsStringAvailableForLangId(stringId, Language2.Iso639Code))
 			{
-				langOfTopicToShowOnCover = _collectionSettings.Language2Iso639Code;
+				langOfTopicToShowOnCover = Language2.Iso639Code;
 			}
-			else if (LocalizationManager.GetIsStringAvailableForLangId(stringId, _collectionSettings.Language3Iso639Code))
+			else if (LocalizationManager.GetIsStringAvailableForLangId(stringId, Language3.Iso639Code))
 			{
-				langOfTopicToShowOnCover = _collectionSettings.Language3Iso639Code;
+				langOfTopicToShowOnCover = Language3.Iso639Code;
 			}
 			else
 			{
@@ -712,7 +714,7 @@ namespace Bloom.Book
 			// Since GatherDataItemsFromXElement prefers the first value it finds for any key combination, and does this by ignoring any
 			// data for a key combination already present, we would not use the new data in elementToReadFrom if we started with
 			// _dataset, which is already populated from the current document.
-			DataSet data = GatherDataItemsFromCollectionSettings(_collectionSettings);
+			DataSet data = GatherDataItemsFromCollectionSettings(CollectionSettings);
 
 			// The first encountered value for data-book/data-collection wins... so the rest better be read-only to the user, or they're in for some frustration!
 			// If we don't like that, we'd need to create an event to notice when field are changed. Usually this is fine, because
@@ -737,12 +739,12 @@ namespace Bloom.Book
 			return data;
 		}
 
-		private static DataSet GatherDataItemsFromCollectionSettings(CollectionSettings collectionSettings)
+		private DataSet GatherDataItemsFromCollectionSettings(CollectionSettings collectionSettings)
 		{
 			var data = new DataSet();
 
-			data.WritingSystemAliases.Add("N1", collectionSettings.Language2Iso639Code);
-			data.WritingSystemAliases.Add("N2", collectionSettings.Language3Iso639Code);
+			data.WritingSystemAliases.Add("N1", collectionSettings.Language2.Iso639Code);
+			data.WritingSystemAliases.Add("N2", collectionSettings.Language3.Iso639Code);
 
 //            if (makeGeneric)
 //            {
@@ -760,20 +762,20 @@ namespace Bloom.Book
 //            }
 //            else
 			{
-				data.WritingSystemAliases.Add("V", collectionSettings.Language1Iso639Code);
+				data.WritingSystemAliases.Add("V", collectionSettings.Language1.Iso639Code);
 				data.AddLanguageString("nameOfLanguage", collectionSettings.Language1.Name, "*", true);
 				data.AddLanguageString("nameOfNationalLanguage1",
 									   collectionSettings.Language2.Name, "*", true);
 				data.AddLanguageString("nameOfNationalLanguage2",
 									   collectionSettings.Language3.Name, "*", true);
-				data.UpdateGenericLanguageString("iso639Code", collectionSettings.Language1Iso639Code, true);
+				data.UpdateGenericLanguageString("iso639Code", collectionSettings.Language1.Iso639Code, true);
 				data.UpdateGenericLanguageString("country", collectionSettings.Country, true);
 				data.UpdateGenericLanguageString("province", collectionSettings.Province, true);
 				data.UpdateGenericLanguageString("district", collectionSettings.District, true);
 				string location = "";
 				var separator = LocalizationManager.GetString("EditTab.FrontMatter.ListSeparator", ", ",
 					"This is used to separate items in a list, such as 'Province, District, Country' on the Title Page. For English, that means comma followed by a space. Don't forget the space if your script uses them.",
-					collectionSettings.GetLanguagePrioritiesForTranslatedTextOnPage(false), out _);
+					GetLanguagePrioritiesForLocalizedTextOnPage(false), out _);
 				if (!String.IsNullOrEmpty(collectionSettings.District))
 					location += collectionSettings.District + separator;
 				if (!String.IsNullOrEmpty(collectionSettings.Province))
@@ -810,13 +812,13 @@ namespace Bloom.Book
 		/// </summary>
 		public string PrettyPrintLanguage(string code)
 		{
-			if (code == _collectionSettings.Language1Iso639Code && !string.IsNullOrWhiteSpace(_collectionSettings.Language1.Name))
-				return GetLanguageNameWithScriptVariants(code, _collectionSettings.Language1.Name, _collectionSettings.Language1.IsCustomName);
-			if (code == _collectionSettings.Language2Iso639Code)
-				return GetLanguageNameWithScriptVariants(code, _collectionSettings.Language2.Name, _collectionSettings.Language2.IsCustomName);
-			if (code == _collectionSettings.Language3Iso639Code)
-				return GetLanguageNameWithScriptVariants(code, _collectionSettings.Language3.Name, _collectionSettings.Language3.IsCustomName);
-			return _collectionSettings.GetLanguageName(code, _collectionSettings.Language2Iso639Code);
+			if (code == Language1.Iso639Code && !string.IsNullOrWhiteSpace(Language1.Name))
+				return GetLanguageNameWithScriptVariants(code, Language1.Name, Language1.IsCustomName);
+			if (code == Language2.Iso639Code)
+				return GetLanguageNameWithScriptVariants(code, Language2.Name, Language2.IsCustomName);
+			if (code == Language3.Iso639Code)
+				return GetLanguageNameWithScriptVariants(code, Language3.Name, Language3.IsCustomName);
+			return CollectionSettings.GetLanguageName(code, Language2.Iso639Code);
 		}
 
 		// We always want to use a name the user deliberately gave (hence the use of 'nameIsCustom').
@@ -835,7 +837,7 @@ namespace Bloom.Book
 				return collectionSettingsLanguageName;
 			var baseIsoCode = completeIsoCode.Substring(0, hyphenIndex);
 			return nameIsCustom ?
-				collectionSettingsLanguageName + " (" + _collectionSettings.GetLanguageName(baseIsoCode, _collectionSettings.Language2Iso639Code) + ")"
+				collectionSettingsLanguageName + " (" + CollectionSettings.GetLanguageName(baseIsoCode, Language2.Iso639Code) + ")"
 				: collectionSettingsLanguageName + "-" + srvCodes + " (" + collectionSettingsLanguageName + ")";
 		}
 
@@ -908,11 +910,11 @@ namespace Bloom.Book
 					if (lang == "") //the above doesn't stop a "" from getting through
 						lang = "*";
 					if (lang == "{V}")
-						lang = _collectionSettings.Language1Iso639Code;
+						lang = Language1.Iso639Code;
 					if (lang == "{N1}")
-						lang = _collectionSettings.Language2Iso639Code;
+						lang = Language2.Iso639Code;
 					if (lang == "{N2}")
-						lang = _collectionSettings.Language3Iso639Code;
+						lang = Language3.Iso639Code;
 
 					if (StringAlternativeHasNoText(value))
 					{
@@ -1337,8 +1339,8 @@ namespace Bloom.Book
 			LanguageForm formToCopyFromSinceOursIsMissing = null;
 			string s = "";
 
-			if ((languageCodeOfTargetField == _collectionSettings.Language2Iso639Code || //is it a national language?
-				 languageCodeOfTargetField == _collectionSettings.Language3Iso639Code) ||
+			if ((languageCodeOfTargetField == Language2.Iso639Code || //is it a national language?
+				 languageCodeOfTargetField == Language3.Iso639Code) ||
 				//this one is a kludge as we clearly have this case of a vernacular field that people have used
 				//to hold stuff that should be copied to every shell. So we can either remove the restriction of the
 				//first two clauses in this if statement, or add another bloom-___ class in order to make execptions.
@@ -1514,7 +1516,7 @@ namespace Bloom.Book
 				}
 			} else
 			{
-				string innerHtml = title?.TextAlternatives.GetExactAlternative(_collectionSettings.Language1Iso639Code);
+				string innerHtml = title?.TextAlternatives.GetExactAlternative(Language1.Iso639Code);
 				string unecodedOriginalTitle = BookData.TextOfInnerHtml(innerHtml);
 
 				// Note: Even though encodedOriginalTitle and innerHtml are both encoded,
@@ -1556,15 +1558,22 @@ namespace Bloom.Book
 		{
 			get
 			{
-				return new string[] {_collectionSettings.Language1Iso639Code??"", _collectionSettings.Language2Iso639Code??"", _collectionSettings.Language3Iso639Code ?? "", "en", "fr", "th", "pt", "*" };
+				var langs = new List<string>();
+				langs.AddRange(GetAllBookLanguageCodes());
+				foreach (var code in new[] { "en", "fr", "th", "pt", "*"})
+				{
+					if (!langs.Any(s => s == code))
+						langs.Add(code);
+				}
+				return langs.ToArray();
 			}
 		}
 
 		public void SetMultilingualContentLanguages(string language2Code, string language3Code)
 		{
-			if (language2Code == _collectionSettings.Language1Iso639Code) //can't have the vernacular twice
+			if (language2Code == Language1.Iso639Code) //can't have the vernacular twice
 				language2Code = null;
-			if (language3Code == _collectionSettings.Language1Iso639Code)
+			if (language3Code == Language1.Iso639Code)
 				language3Code = null;
 			if (language2Code == language3Code)	//can't use the same lang twice
 				language3Code = null;
@@ -1671,7 +1680,7 @@ namespace Bloom.Book
 						}
 					}
 
-					var content = item.Content.Replace("{flavor}",_collectionSettings.GetBrandingFlavor());
+					var content = item.Content.Replace("{flavor}", CollectionSettings.GetBrandingFlavor());
 					Set(item.DataBook, content, item.Lang);
 				}
 			}
@@ -1690,6 +1699,196 @@ namespace Bloom.Book
 			return GetMultiTextVariableOrEmpty("originalLicenseUrl").Count > 0
 			       || GetMultiTextVariableOrEmpty("originalLicenseNotes").Count > 0
 			       || GetMultiTextVariableOrEmpty("originalCopyright").Count > 0;
+		}
+
+		/// <summary>
+		/// Get the indicated language.
+		/// </summary>
+		/// <remarks>
+		/// This is the crucial method for book-specific language setting.
+		/// Phase 0 defers to the collection settings.
+		/// NB: for tests or other places where HtmlDom is empty or null, this method should still
+		/// defer to the collection settings values.
+		/// </remarks>
+		public WritingSystem GetLanguage(LanguageSlot slot)
+		{
+			switch (slot)
+			{
+				case LanguageSlot.Language1:
+					return CollectionSettings.Language1;
+				case LanguageSlot.Language2:
+					return CollectionSettings.Language2;
+				case LanguageSlot.Language3:
+					return CollectionSettings.Language3;
+				default:
+					throw new ArgumentException("BookData.GetLanguage() cannot handle that slot yet");
+
+			}
+		}
+
+		// simple synonyms for the most common languages used
+		public WritingSystem Language1 => GetLanguage(LanguageSlot.Language1);
+		public WritingSystem Language2 => GetLanguage(LanguageSlot.Language2);
+		public WritingSystem Language3 => GetLanguage(LanguageSlot.Language3);
+
+		public void SetLanguage(LanguageSlot slot, string isoCode)
+		{
+			GetLanguage(slot).ChangeIsoCode(isoCode);
+		}
+
+		/// <summary>
+		/// Returns an ordered list of distinct languages actively used in this book (from L1,
+		/// L2, and L3).  Note that L1 and L2 are always defined, and L3 may or may not be
+		/// defined.  The returned list will have 1, 2, or 3 items in it.  L1 will always be
+		/// the first language, unless includeLanguage1 is set false.  Then L2 will be the first
+		/// language (even if it is the same as L1).
+		/// </summary>
+		/// <remarks>
+		/// Places where GetBasicBookLanguages is used should be examined to see if GetAllBookLanguages
+		/// should be used instead.  It's conceivable in the long run that this method may or may not
+		/// be needed.
+		/// </remarks>
+		public List<WritingSystem> GetBasicBookLanguages(bool includeLanguage1 = true)
+		{
+			var langs = new List<WritingSystem>();
+			if (includeLanguage1)
+				langs.Add(Language1);
+			if (!includeLanguage1 || Language2.Iso639Code != Language1.Iso639Code)
+				langs.Add(Language2);
+			if (!String.IsNullOrEmpty(Language3.Iso639Code) && !langs.Any(ws => ws.Iso639Code == Language3.Iso639Code))
+				langs.Add(Language3);
+			return langs;
+		}
+		/// <summary>
+		/// Returns an ordered list of codes of distinct languages actively used in this book
+		/// (from L1, L2, and L3).  Note that L1 and L2 are always defined, and L3 may or may
+		/// not be defined.  The returned list will have 1, 2, or 3 items in it.  L1 will always
+		/// be the first language, unless includeLanguage1 is set false.  Then L2 will be the
+		/// first language (even if it is the same as L1).
+		/// </summary>
+		/// <remarks>
+		/// Places where GetBasicBookLanguageCodes is used should be examined to see if
+		/// GetAllBookLanguageCodes should be used instead.  It's conceivable in the long run
+		/// that this method may or may not be needed.
+		/// </remarks>
+		public List<string> GetBasicBookLanguageCodes(bool includeLanguage1 = true)
+		{
+			var langCodes = new List<string>();
+			if (includeLanguage1)
+				langCodes.Add(Language1.Iso639Code);
+			if (!includeLanguage1 || Language2.Iso639Code != Language1.Iso639Code)
+				langCodes.Add(Language2.Iso639Code);
+			if (!String.IsNullOrEmpty(Language3.Iso639Code) && !langCodes.Any(code => code == Language3.Iso639Code))
+				langCodes.Add(Language3.Iso639Code);
+			return langCodes;
+		}
+
+		/// <summary>
+		/// Return an ordered list of distinct languages used in this book.
+		/// L1 will always be first, following by L2 if different, and then L3 if it exists and
+		/// is different.  The order of any remainng languages is (at the moment) undefined.
+		/// L1 will always be the first language, unless includeLanguage1 is set false.  Then
+		/// L2 will be the first language (even if it is the same as L1).
+		/// </summary>
+		/// <remarks>
+		/// This method obviously will need to be worked on...
+		/// </remarks>
+		public List<WritingSystem> GetAllBookLanguages(bool includeLanguage1 = true)
+		{
+			return GetBasicBookLanguages(includeLanguage1);	// until we get a better list to work with...
+		}
+		/// <summary>
+		/// Return an ordered list of codes of distinct languages used in this book.
+		/// L1 will always be first, following by L2 if different, and then L3 if it exists and
+		/// is different.  The order of any remainng languages is (at the moment) undefined.
+		/// L1 will always be the first language, unless includeLanguage1 is set false.  Then
+		/// L2 will be the first language (even if it is the same as L1).
+		/// </summary>
+		/// <remarks>
+		/// This method obviously will need to be worked on...
+		/// </remarks>
+		public List<string> GetAllBookLanguageCodes(bool includeLanguage1 = true)
+		{
+			return GetBasicBookLanguageCodes(includeLanguage1);	// until we get a better list to work with...
+		}
+
+		/// <summary>
+		/// Given a choice, what language should we use to display text on the page (not in the UI, which is controlled by the UI Language)
+		/// </summary>
+		/// <returns>A prioritized enumerable of language codes</returns>
+		public IEnumerable<string> GetLanguagePrioritiesForLocalizedTextOnPage(bool includeLang1 = true)
+		{
+
+			var langCodes = new List<string>();
+			// The .Where is needed for various unit tests as a minimum.
+			langCodes.AddRange(GetBasicBookLanguageCodes(includeLang1).Where(lc => !string.IsNullOrWhiteSpace(lc)));
+			if (!langCodes.Contains("en"))
+				langCodes.Add("en");
+
+			// reverse-order loop so that given e.g. zh-Hans followed by zh-Hant we insert zh-CN after the second one.
+			// That is, we'll prefer either of the explicit variants to the fall-back.
+			// The part before the hyphen (if there is one) is the main language.
+			var count = langCodes.Count;
+			for (int i = count - 1; i >= 0; i--)
+			{
+				var fullLangTag = langCodes[i];
+				if (fullLangTag == null)
+					continue;
+				var language = fullLangTag.Split('-')[0]; // Generally insert corresponding language for longer culture
+				if (language == "zh")
+				{
+					language = "zh-CN"; // Insert this instead for Chinese
+				}
+
+				if (langCodes.IndexOf(language) >= 0)
+					continue;
+				langCodes.Insert(i + 1, language);
+			}
+
+			var pashtoLanguages = new[] { "ps", "pus", "pbu", "pst", "pbt" };
+			// As of Jun 2020, we have Crowdin translation for pbu,
+			// but that seems like a mistake. Some day, we should change it
+			// to the macrolanguage which is ps (2-letter) or pus (3-letter).
+			// So, when we have any of the Pashto codes above, look for a
+			// translation in one of the codes below.
+			var tryTheseLanguageCodes = new[] { "pbu", "ps", "pus" };
+			for (int i = 0; i < langCodes.Count; i++)
+			{
+				if (pashtoLanguages.Contains(langCodes[i]))
+				{
+					langCodes.InsertRange(i + 1, tryTheseLanguageCodes.Where(lc => !langCodes.Contains(lc)));
+					break;
+				}
+			}
+			return langCodes;
+		}
+
+		internal LanguageDescriptor[] MakeLanguageUploadData(string[] isoCodes)
+		{
+			var result = new LanguageDescriptor[isoCodes.Length];
+			var bookLangs = GetBasicBookLanguages();
+			for (int i = 0; i < isoCodes.Length; i++)
+			{
+				var code = isoCodes[i];
+				string name = null;
+				var lang = bookLangs.FirstOrDefault(ws => ws.Iso639Code == code);
+				if (lang != null)
+					name = lang.Name;
+				else
+					WritingSystem.LookupIsoCode.GetBestLanguageName(code, out name);
+				string ethCode;
+				LanguageSubtag data;
+				if (!StandardSubtags.RegisteredLanguages.TryGet(code.ToLowerInvariant(), out data))
+					ethCode = code;
+				else
+				{
+					ethCode = data.Iso3Code;
+					if (string.IsNullOrEmpty(ethCode))
+						ethCode = code;
+				}
+				result[i] = new LanguageDescriptor() { IsoCode = code, Name = name, EthnologueCode = ethCode };
+			}
+			return result;
 		}
 	}
 }

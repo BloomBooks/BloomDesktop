@@ -243,15 +243,7 @@ namespace Bloom.Publish.Epub
 
 			progress.Message("BuildingEPub", comment: "Shown in a progress box when Bloom is starting to create an ePUB",
 				message: "Building ePUB");
-			if (String.IsNullOrEmpty(Book.CollectionSettings.Language3Iso639Code))
-				_langsForLocalization = new string[]
-					{Book.CollectionSettings.Language1Iso639Code, Book.CollectionSettings.Language2Iso639Code};
-			else
-				_langsForLocalization = new string[]
-				{
-					Book.CollectionSettings.Language1Iso639Code, Book.CollectionSettings.Language2Iso639Code,
-					Book.CollectionSettings.Language3Iso639Code
-				};
+			_langsForLocalization = Book.BookData.GetBasicBookLanguageCodes().ToArray();
 
 			// robustly come up with a directory we can use, even if previously used directories are locked somehow
 			Directory.CreateDirectory(EpubExportRootFolder); // this is ok if it already exists
@@ -444,7 +436,7 @@ namespace Bloom.Publish.Epub
 				new XAttribute(XNamespace.Xmlns + "opf", opf.NamespaceName),
 				// attribute makes the namespace have a prefix, not be a default.
 				new XElement(dc + "title", Book.Title),
-				new XElement(dc + "language", Book.CollectionSettings.Language1Iso639Code),
+				new XElement(dc + "language", Book.BookData.Language1.Iso639Code),
 				new XElement(dc + "identifier",
 					new XAttribute("id", "I" + Book.ID), "bloomlibrary.org." + Book.ID),
 				new XElement(dc + "source", source));
@@ -965,7 +957,7 @@ namespace Bloom.Publish.Epub
 			// These IDs must match the corresponding ones in the manifest, since the spine
 			// doesn't indicate where to actually find the content.
 			var spineElt = new XElement(opf + "spine");
-			if(this.Book.CollectionSettings.Language1.IsRightToLeft)
+			if(this.Book.BookData.Language1.IsRightToLeft)
 			{
 				spineElt.SetAttributeValue("page-progression-direction","rtl");
 			}
@@ -1033,12 +1025,11 @@ namespace Bloom.Publish.Epub
 			_directionSettings.Clear();
 			// REVIEW: is BODY always ltr, or should it be the same as Language1?  Having BODY be ltr for a book in Arabic or Hebrew
 			// seems counterintuitive even if all the div elements are marked correctly.
-			_directionSettings.Add("body", this.Book.CollectionSettings.Language1.IsRightToLeft ? "rtl" : "ltr");
-			_directionSettings.Add(this.Book.CollectionSettings.Language1Iso639Code, this.Book.CollectionSettings.Language1.IsRightToLeft ? "rtl" : "ltr");
-			if (!_directionSettings.ContainsKey(this.Book.CollectionSettings.Language2Iso639Code))
-				_directionSettings.Add(this.Book.CollectionSettings.Language2Iso639Code, this.Book.CollectionSettings.Language2.IsRightToLeft ? "rtl" : "ltr");
-			if (!String.IsNullOrEmpty(this.Book.CollectionSettings.Language3Iso639Code) && !_directionSettings.ContainsKey(this.Book.CollectionSettings.Language3Iso639Code))
-				_directionSettings.Add(this.Book.CollectionSettings.Language3Iso639Code, this.Book.CollectionSettings.Language3.IsRightToLeft ? "rtl" : "ltr");
+			_directionSettings.Add("body", this.Book.BookData.Language1.IsRightToLeft ? "rtl" : "ltr");
+			foreach (var lang in this.Book.BookData.GetBasicBookLanguages())
+			{
+				_directionSettings.Add(lang.Iso639Code, lang.IsRightToLeft ? "rtl" : "ltr");
+			}
 		}
 
 		private void SetDirAttributes(HtmlDom pageDom)
@@ -1796,8 +1787,8 @@ namespace Bloom.Publish.Epub
 			// Provide the general language of this document.
 			// (Required for intermediate (AA) conformance with WCAG 2.0.)
 			div = pageDom.RawDom.SelectSingleNode("/html") as XmlElement;
-			div.SetAttribute("lang", Book.CollectionSettings.Language1Iso639Code);
-			div.SetAttribute("xml:lang", Book.CollectionSettings.Language1Iso639Code);
+			div.SetAttribute("lang", Book.BookData.Language1.Iso639Code);
+			div.SetAttribute("xml:lang", Book.BookData.Language1.Iso639Code);
 		}
 
 		private bool SetRoleAndLabelForMatchingDiv(XmlElement div, string attributeValue, string labelId, string labelEnglish)

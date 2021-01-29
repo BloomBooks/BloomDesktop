@@ -52,7 +52,7 @@ namespace Bloom.Api
 		{
 			apiHandler.RegisterEndpointHandler("collection/defaultFont", request =>
 			{
-				var bookFontName = request.CurrentCollectionSettings.Language1.FontName;
+				var bookFontName = _bookSelection.CurrentSelection.BookData.Language1.FontName;
 				if(String.IsNullOrEmpty(bookFontName))
 					bookFontName = "sans-serif";
 				request.ReplyWithText(bookFontName);
@@ -99,7 +99,7 @@ namespace Bloom.Api
 
 				case "readerToolSettings":
 					if(request.HttpMethod == HttpMethods.Get)
-						request.ReplyWithJson(GetReaderSettings(request.CurrentCollectionSettings));
+						request.ReplyWithJson(GetReaderSettings(request.CurrentBook.BookData));
 					else
 					{
 						var path = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(request.CurrentCollectionSettings);
@@ -281,7 +281,8 @@ namespace Bloom.Api
 				Directory.CreateDirectory(path);
 
 			var fileList1 = new List<string>();
-			var langFileName = String.Format(DecodableReaderToolSettings.kSynphonyLanguageDataFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
+			var langFileName = String.Format(DecodableReaderToolSettings.kSynphonyLanguageDataFileNameFormat,
+				CurrentBook.BookData.Language1.Iso639Code);
 			var langFile = Path.Combine(path, langFileName);
 
 			// if the Sample Texts directory is empty, check for ReaderToolsWords-<iso>.json in ProjectContext.GetBloomAppDataFolder()
@@ -344,9 +345,9 @@ namespace Bloom.Api
 			return text;
 		}
 
-		private static string GetReaderSettings(CollectionSettings currentCollectionSettings)
+		private static string GetReaderSettings(BookData bookData)
 		{
-			var settingsPath = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(currentCollectionSettings);
+			var settingsPath = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(bookData.CollectionSettings);
 			var jsonSettings = "";
 			// if file exists, return current settings
 			if (RobustFile.Exists(settingsPath))
@@ -359,14 +360,14 @@ namespace Bloom.Api
 			if (jsonSettings.Length > 0)
 			{
 				dynamic fixedSettings = JsonConvert.DeserializeObject(jsonSettings);
-				fixedSettings.writingSystemTag = currentCollectionSettings.Language1.Iso639Code;
+				fixedSettings.writingSystemTag = bookData.Language1.Iso639Code;
 				return JsonConvert.SerializeObject(fixedSettings);
 			}
 			// file does not exist, so make a new one
 			// The literal string here defines our default reader settings for a collection.
-			var settingsString = "{\"writingSystemTag\": \"" + currentCollectionSettings.Language1.Iso639Code+"\", "
+			var settingsString = "{\"writingSystemTag\": \"" + bookData.Language1.Iso639Code+"\", "
 			                     +"\"letters\":\"a b c d e f g h i j k l m n o p q r s t u v w x y z\","
-				+ $"\"lang\":\"{currentCollectionSettings.Language1Iso639Code}\","
+				+ $"\"lang\":\"{bookData.Language1.Iso639Code}\","
 			                     + "\"moreWords\":\"\","
 				+ "\"stages\":[{\"letters\":\"\",\"sightWords\":\"\"}],"
 				+ "\"levels\":[{\"maxWordsPerSentence\":2,\"maxWordsPerPage\":2,\"maxWordsPerBook\":20,\"maxUniqueWordsPerBook\":0,\"thingsToRemember\":[]},"
@@ -392,7 +393,7 @@ namespace Bloom.Api
 			var sb = new StringBuilder();
 			var str = LocalizationManager.GetString("EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage",
 				"The following is a generated report of the decodable stages for {0}.  You can make any changes you want to this file, but Bloom will not notice your changes.  It is just a report.");
-			sb.AppendLineFormat(str, CurrentBook.CollectionSettings.Language1.Name);
+			sb.AppendLineFormat(str, CurrentBook.BookData.Language1.Name);
 
 			var idx = 1;
 			foreach (var stage in settings.stages)
@@ -435,12 +436,12 @@ namespace Bloom.Api
 		{
 			// insert LangName and LangID if missing
 			if (jsonString.Contains("\"LangName\":\"\""))
-				jsonString = jsonString.Replace("\"LangName\":\"\"", "\"LangName\":\"" + CurrentBook.CollectionSettings.Language1.Name + "\"");
+				jsonString = jsonString.Replace("\"LangName\":\"\"", "\"LangName\":\"" + CurrentBook.BookData.Language1.Name + "\"");
 
 			if (jsonString.Contains("\"LangID\":\"\""))
-				jsonString = jsonString.Replace("\"LangID\":\"\"", "\"LangID\":\"" + CurrentBook.CollectionSettings.Language1Iso639Code + "\"");
+				jsonString = jsonString.Replace("\"LangID\":\"\"", "\"LangID\":\"" + CurrentBook.BookData.Language1.Iso639Code + "\"");
 
-			var fileName = String.Format(DecodableReaderToolSettings.kSynphonyLanguageDataFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
+			var fileName = String.Format(DecodableReaderToolSettings.kSynphonyLanguageDataFileNameFormat, CurrentBook.BookData.Language1.Iso639Code);
 			fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, fileName);
 
 			RobustFile.WriteAllText(fileName, jsonString, Encoding.UTF8);

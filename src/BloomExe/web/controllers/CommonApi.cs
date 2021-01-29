@@ -275,7 +275,7 @@ namespace Bloom.web.controllers
 				// Definitely wants to be after UILangage, otherwise we get the surprising result
 				// that in a French collection these hints stay French even when all the rest of the
 				// UI changes to English.
-				bubbleLangs.Add(_bookSelection.CurrentSelection.CollectionSettings.Language1Iso639Code);
+				bubbleLangs.Add(_bookSelection.CurrentSelection.BookData.Language1.Iso639Code);
 				// if it isn't available in any of those we'll arbitrarily take the first one.
 				request.ReplyWithJson(JsonConvert.SerializeObject(new {langs = bubbleLangs}));
 			}

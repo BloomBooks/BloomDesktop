@@ -214,7 +214,7 @@ namespace Bloom.Book
 
 			//Few sources will have this set at all. A template picture dictionary is one place where we might expect it to call for, say, bilingual
 			int multilingualLevel = int.Parse(GetMetaValue(storage.Dom.RawDom, "defaultMultilingualLevel", "1"));
-			TranslationGroupManager.SetInitialMultilingualSetting(bookData, multilingualLevel, _collectionSettings);
+			TranslationGroupManager.SetInitialMultilingualSetting(bookData, multilingualLevel);
 
 			var sourceDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(sourceFolderPath.CombineForPath(Path.GetFileName(GetPathToHtmlFile(sourceFolderPath))), false);
 
@@ -223,7 +223,7 @@ namespace Bloom.Book
 			{
 				XmlElement sourceDiv = sourceDom.SelectSingleNode("//div[@id='"+div.GetAttribute("id")+"']") as XmlElement;
 				SetupIdAndLineage(sourceDiv, div);
-				SetupPage(div, _collectionSettings, null, null);
+				SetupPage(div, bookData, null, null);
 			}
 
 			ClearAwayDraftText(storage.Dom.RawDom);
@@ -420,7 +420,7 @@ namespace Bloom.Book
 				// Yes, we want the English word Template in the vernacular Title. Ugly, but that's
 				// what determines the file name, and that's what determines whether Add Page will
 				// include it.
-				storage.Dom.SetBookSetting("bookTitle", _collectionSettings.Language1Iso639Code, "My Template");
+				storage.Dom.SetBookSetting("bookTitle", _collectionSettings.Language1.Iso639Code, "My Template");
 			}
 		}
 
@@ -430,15 +430,15 @@ namespace Bloom.Book
 			if (!TestingSoSkipAddingXMatter)
 			{
 				var data = new DataSet();
-				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.Language1Iso639Code));
-				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.Language2Iso639Code));
-				data.WritingSystemAliases.Add("V", _collectionSettings.Language1Iso639Code);
-				data.WritingSystemAliases.Add("N1", _collectionSettings.Language2Iso639Code);
-				data.WritingSystemAliases.Add("N2", _collectionSettings.Language3Iso639Code);
+				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.Language1.Iso639Code));
+				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.Language2.Iso639Code));
+				data.WritingSystemAliases.Add("V", _collectionSettings.Language1.Iso639Code);
+				data.WritingSystemAliases.Add("N1", _collectionSettings.Language2.Iso639Code);
+				data.WritingSystemAliases.Add("N2", _collectionSettings.Language3.Iso639Code);
 
 				var helper = new XMatterHelper(storage.Dom, _collectionSettings.XMatterPackName, _fileLocator);
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
-				helper.InjectXMatter(data.WritingSystemAliases, sizeAndOrientation, false, _collectionSettings.Language2Iso639Code);
+				helper.InjectXMatter(data.WritingSystemAliases, sizeAndOrientation, false, _collectionSettings.Language2.Iso639Code);
 				//TranslationGroupManager.PrepareDataBookTranslationGroups(storage.Dom,languages);
 			}
 		}
@@ -489,11 +489,11 @@ namespace Bloom.Book
 		}
 
 
-		public static void SetupPage(XmlElement pageDiv, CollectionSettings collectionSettings, string contentLanguageIso1, string contentLanguageIso2)//, bool inShellMode)
+		public static void SetupPage(XmlElement pageDiv, BookData bookData, string contentLanguageIso1, string contentLanguageIso2)//, bool inShellMode)
 		{
-			TranslationGroupManager.PrepareElementsInPageOrDocument(pageDiv, collectionSettings);
+			TranslationGroupManager.PrepareElementsInPageOrDocument(pageDiv, bookData);
 
-			SetLanguageForElementsWithMetaLanguage(pageDiv, collectionSettings);
+			SetLanguageForElementsWithMetaLanguage(pageDiv, bookData);
 
 			// a page might be "extra" as far as the template is concerned, but
 			// once a page is inserted into book (which may become a shell), it's
@@ -510,7 +510,7 @@ namespace Bloom.Book
 		/// <remarks>This is a little uncomfortable in this class, as this feature is not currently used in any
 		/// bloom-translationGroup elements.
 		/// </remarks>
-		public static void SetLanguageForElementsWithMetaLanguage(XmlNode elementOrDom, CollectionSettings settings)
+		public static void SetLanguageForElementsWithMetaLanguage(XmlNode elementOrDom, BookData bookData)
 		{
 //			foreach (XmlElement element in elementOrDom.SafeSelectNodes(".//*[@data-metalanguage]"))
 //			{
@@ -641,7 +641,7 @@ namespace Bloom.Book
 			// a template book. I was trying for a minimal reasonable change for BL-5131, and therefore
 			// put in this extra check, since previously this method was simply NEVER called in a source
 			// collection.
-			var copyrightNotice = BookCopyrightAndLicense.GetMetadata(dom, collectionSettings).CopyrightNotice;
+			var copyrightNotice = BookCopyrightAndLicense.GetMetadata(dom, bookData).CopyrightNotice;
 			if (String.IsNullOrEmpty(copyrightNotice) && collectionSettings.IsSourceCollection)
 				return;
 			bookData.Set("originalLicenseUrl", BookCopyrightAndLicense.GetLicenseUrl(dom), "*");

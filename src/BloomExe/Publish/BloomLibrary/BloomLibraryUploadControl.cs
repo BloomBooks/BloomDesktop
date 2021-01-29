@@ -123,7 +123,7 @@ namespace Bloom.Publish.BloomLibrary
 				}
 				// Disable clicking on languages that have been selected for display in this book.
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-7166.
-				if (lang == _model.Book.CollectionSettings.Language1Iso639Code ||
+				if (lang == _model.Book.BookData.Language1.Iso639Code ||
 					lang == _model.Book.MultilingualContentLanguage2 ||
 					lang == _model.Book.MultilingualContentLanguage3)
 				{

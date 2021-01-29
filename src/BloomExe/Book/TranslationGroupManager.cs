@@ -25,24 +25,20 @@ namespace Bloom.Book
 	///	</div>
 
 	/// </summary>
-	public class TranslationGroupManager
+	public static class TranslationGroupManager
 	{
 		/// <summary>
 		/// For each group of editable elements in the div which have lang attributes  (normally, a .bloom-translationGroup div),
 		/// make a new element with the lang code of the vernacular (normally, a .bloom-editable).
 		/// Also enable/disable editing as warranted (e.g. in shell mode or not)
 		/// </summary>
-		public static void PrepareElementsInPageOrDocument(XmlNode pageOrDocumentNode, CollectionSettings collectionSettings)
+		public static void PrepareElementsInPageOrDocument(XmlNode pageOrDocumentNode, BookData bookData)
 		{
 			GenerateEditableDivsWithPreTranslatedContent(pageOrDocumentNode);
 
-			PrepareElementsOnPageOneLanguage(pageOrDocumentNode, collectionSettings.Language1Iso639Code);
-			PrepareElementsOnPageOneLanguage(pageOrDocumentNode, collectionSettings.Language2Iso639Code);
+			foreach (var code in bookData.GetBasicBookLanguageCodes())
+				PrepareElementsOnPageOneLanguage(pageOrDocumentNode, code);
 
-			if (!string.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
-			{
-				PrepareElementsOnPageOneLanguage(pageOrDocumentNode, collectionSettings.Language3Iso639Code);
-			}
 			FixGroupStyleSettings(pageOrDocumentNode);
 		}
 
@@ -63,7 +59,7 @@ namespace Bloom.Book
 			//however this has implications on other fields, noticeably the acknowledgments. So in order to get this fixed
 			//and not open another can of worms, I've reduce the scope of this
 			//fix to just the bookTitle, so I'm going with findOnlyBookTitleFields for now
-			var findAllDataBookFields = "descendant-or-self::*[contains(@class,'bloom-translationGroup') and descendant::div[@data-book and contains(@class,'bloom-editable')]]";
+			//var findAllDataBookFields = "descendant-or-self::*[contains(@class,'bloom-translationGroup') and descendant::div[@data-book and contains(@class,'bloom-editable')]]";
 			var findOnlyBookTitleFields = "descendant-or-self::*[contains(@class,'bloom-translationGroup') and descendant::div[@data-book='bookTitle' and contains(@class,'bloom-editable')]]";
 			foreach (XmlElement groupElement in
 					pageOrDocumentNode.SafeSelectNodes(findOnlyBookTitleFields))
@@ -104,9 +100,9 @@ namespace Bloom.Book
 			var wrapper = ownerDocument.CreateElement("div");
 			wrapper.AppendChild(containerElement);
 
-			PrepareElementsInPageOrDocument(containerElement, currentBook.CollectionSettings);
+			PrepareElementsInPageOrDocument(containerElement, currentBook.BookData);
 
-			TranslationGroupManager.UpdateContentLanguageClasses(wrapper, currentBook.CollectionSettings, currentBook.CollectionSettings.Language1Iso639Code,
+			TranslationGroupManager.UpdateContentLanguageClasses(wrapper, currentBook.BookData, currentBook.BookData.Language1.Iso639Code,
 				currentBook.MultilingualContentLanguage2, currentBook.MultilingualContentLanguage3);
 
 			return containerElement.InnerXml;
@@ -143,8 +139,10 @@ namespace Bloom.Book
 		/// This is used when a book is first created from a source; without it, if the shell maker left the book as trilingual when working on it,
 		/// then every time someone created a new book based on it, it too would be trilingual.
 		/// </summary>
-		public static void SetInitialMultilingualSetting(BookData bookData, int oneTwoOrThreeContentLanguages,
-			CollectionSettings collectionSettings)
+		/// <remarks>
+		/// This method explicitly used the CollectionSettings languages in creating a new book.
+		/// </remarks>
+		public static void SetInitialMultilingualSetting(BookData bookData, int oneTwoOrThreeContentLanguages)
 		{
 			//var multilingualClass =  new string[]{"bloom-monolingual", "bloom-bilingual","bloom-trilingual"}[oneTwoOrThreeContentLanguages-1];
 
@@ -153,17 +151,20 @@ namespace Bloom.Book
 			if (oneTwoOrThreeContentLanguages < 2)
 				bookData.RemoveAllForms("contentLanguage2");
 
-			bookData.Set("contentLanguage1", collectionSettings.Language1Iso639Code, false);
-			bookData.Set("contentLanguage1Rtl", collectionSettings.Language1.IsRightToLeft.ToString(), false);
+			var language1 = bookData.CollectionSettings.Language1;
+			bookData.Set("contentLanguage1", language1.Iso639Code, false);
+			bookData.Set("contentLanguage1Rtl", language1.IsRightToLeft.ToString(), false);
 			if (oneTwoOrThreeContentLanguages > 1)
 			{
-				bookData.Set("contentLanguage2", collectionSettings.Language2Iso639Code, false);
-				bookData.Set("contentLanguage2Rtl", collectionSettings.Language2.IsRightToLeft.ToString(), false);
+				var language2 = bookData.CollectionSettings.Language2;
+				bookData.Set("contentLanguage2", language2.Iso639Code, false);
+				bookData.Set("contentLanguage2Rtl", language2.IsRightToLeft.ToString(), false);
 			}
-			if (oneTwoOrThreeContentLanguages > 2 && !string.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
+			var language3 = bookData.CollectionSettings.Language3;
+			if (oneTwoOrThreeContentLanguages > 2 && !string.IsNullOrEmpty(language3.Iso639Code))
 			{
-				bookData.Set("contentLanguage3", collectionSettings.Language3Iso639Code, false);
-				bookData.Set("contentLanguage3Rtl", collectionSettings.Language3.IsRightToLeft.ToString(), false);
+				bookData.Set("contentLanguage3", language3.Iso639Code, false);
+				bookData.Set("contentLanguage3Rtl", language3.IsRightToLeft.ToString(), false);
 			}
 		}
 
@@ -171,7 +172,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// We stick 'contentLanguage2' and 'contentLanguage3' classes on editable things in bilingual and trilingual books
 		/// </summary>
-		public static void UpdateContentLanguageClasses(XmlNode elementOrDom, CollectionSettings settings,
+		public static void UpdateContentLanguageClasses(XmlNode elementOrDom, BookData bookData,
 			string vernacularIso, string contentLanguageIso2, string contentLanguageIso3)
 		{
 			var multilingualClass = "bloom-monolingual";
@@ -214,7 +215,7 @@ namespace Bloom.Book
 				//nb: we don't necessarily care that a div is editable or not
 				foreach (XmlElement e in @group.SafeSelectNodes(".//textarea | .//div"))
 				{
-					UpdateContentLanguageClassesOnElement(e, contentLanguages, settings, contentLanguageIso2, contentLanguageIso3, dataDefaultLanguages);
+					UpdateContentLanguageClassesOnElement(e, contentLanguages, bookData, contentLanguageIso2, contentLanguageIso3, dataDefaultLanguages);
 				}
 			}
 
@@ -225,12 +226,12 @@ namespace Bloom.Book
 				//nb: we don't necessarily care that a div is editable or not
 				foreach (XmlElement e in coverImageDescription.SafeSelectNodes(".//textarea | .//div"))
 				{
-					UpdateContentLanguageClassesOnElement(e, contentLanguages, settings, contentLanguageIso2, contentLanguageIso3, dataDefaultLanguages);
+					UpdateContentLanguageClassesOnElement(e, contentLanguages, bookData, contentLanguageIso2, contentLanguageIso3, dataDefaultLanguages);
 				}
 			}
 		}
 
-		private static void UpdateContentLanguageClassesOnElement(XmlElement e, Dictionary<string, string> contentLanguages, CollectionSettings settings, string contentLanguageIso2, string contentLanguageIso3, string[] dataDefaultLanguages)
+		private static void UpdateContentLanguageClassesOnElement(XmlElement e, Dictionary<string, string> contentLanguages, BookData bookData, string contentLanguageIso2, string contentLanguageIso3, string[] dataDefaultLanguages)
 		{
 			HtmlDom.RemoveClassesBeginingWith(e, "bloom-content");
 			var lang = e.GetAttribute("lang");
@@ -245,30 +246,30 @@ namespace Bloom.Book
 			}
 
 			//Enhance: it's even more likely that we can get rid of these by replacing them with bloom-content2, bloom-content3
-			if (lang == settings.Language2Iso639Code)
+			if (lang == bookData.Language2.Iso639Code)
 			{
 				HtmlDom.AddClass(e, "bloom-contentNational1");
 			}
-			if (lang == settings.Language3Iso639Code)
+			if (lang == bookData.Language3.Iso639Code)
 			{
 				HtmlDom.AddClass(e, "bloom-contentNational2");
 			}
 
 			HtmlDom.RemoveClassesBeginingWith(e, "bloom-visibility-code");
-			if (ShouldNormallyShowEditable(lang, dataDefaultLanguages, contentLanguageIso2, contentLanguageIso3, settings))
+			if (ShouldNormallyShowEditable(lang, dataDefaultLanguages, contentLanguageIso2, contentLanguageIso3, bookData))
 			{
 				HtmlDom.AddClass(e, "bloom-visibility-code-on");
 			}
 
-			UpdateRightToLeftSetting(settings, e, lang);
+			UpdateRightToLeftSetting(bookData, e, lang);
 		}
 
-		private static void UpdateRightToLeftSetting(CollectionSettings settings, XmlElement e, string lang)
+		private static void UpdateRightToLeftSetting(BookData bookData, XmlElement e, string lang)
 		{
 			HtmlDom.RemoveRtlDir(e);
-			if((lang == settings.Language1Iso639Code && settings.Language1.IsRightToLeft) ||
-			   (lang == settings.Language2Iso639Code && settings.Language2.IsRightToLeft) ||
-			   (lang == settings.Language3Iso639Code && settings.Language3.IsRightToLeft))
+			if((lang == bookData.Language1.Iso639Code && bookData.Language1.IsRightToLeft) ||
+			   (lang == bookData.Language2.Iso639Code && bookData.Language2.IsRightToLeft) ||
+			   (lang == bookData.Language3.Iso639Code && bookData.Language3.IsRightToLeft))
 			{
 				HtmlDom.AddRtlDir(e);
 			}
@@ -279,7 +280,7 @@ namespace Bloom.Book
 		/// </summary>
 		internal static bool ShouldNormallyShowEditable(string lang, string[] dataDefaultLanguages,
 			string contentLanguageIso2, string contentLanguageIso3, // these are effected by the multilingual settings for this book
-			CollectionSettings settings) // use to get the collection's current N1 and N2 in xmatter or other template pages that specify default languages
+			BookData bookData) // use to get the collection's current N1 and N2 in xmatter or other template pages that specify default languages
 		{
 			// Note: There is code in bloom-player that is modeled after this code.
 			//       If this function changes, you should check in bloom-player's bloom-player-core.tsx file, function shouldNormallyShowEditable().
@@ -288,21 +289,21 @@ namespace Bloom.Book
 				|| string.IsNullOrWhiteSpace(dataDefaultLanguages[0])
 				|| dataDefaultLanguages[0].Equals("auto",StringComparison.InvariantCultureIgnoreCase))
 			{
-					return lang == settings.Language1Iso639Code || lang == contentLanguageIso2 || lang == contentLanguageIso3;
+				return lang == bookData.Language1.Iso639Code || lang == contentLanguageIso2 || lang == contentLanguageIso3;
 			}
 			else
 			{
 				// Note there are (perhaps unfortunately) two different labelling systems, but they have a 1-to-1 correspondence:
 				// The V/N1/N2 system feels natural in vernacular book contexts
 				// The L1/L2/L3 system is more natural in source book contexts.
-				return (lang == settings.Language1Iso639Code && dataDefaultLanguages.Contains("V")) ||
-				   (lang == settings.Language1Iso639Code && dataDefaultLanguages.Contains("L1")) ||
+				return (lang == bookData.Language1.Iso639Code && dataDefaultLanguages.Contains("V")) ||
+				   (lang == bookData.Language1.Iso639Code && dataDefaultLanguages.Contains("L1")) ||
 
-				   (lang == settings.Language2Iso639Code && dataDefaultLanguages.Contains("N1")) ||
-				   (lang == settings.Language2Iso639Code && dataDefaultLanguages.Contains("L2")) ||
+				   (lang == bookData.Language2.Iso639Code && dataDefaultLanguages.Contains("N1")) ||
+				   (lang == bookData.Language2.Iso639Code && dataDefaultLanguages.Contains("L2")) ||
 
-				   (lang == settings.Language3Iso639Code && dataDefaultLanguages.Contains("N2")) ||
-				   (lang == settings.Language3Iso639Code && dataDefaultLanguages.Contains("L3")) ||
+				   (lang == bookData.Language3.Iso639Code && dataDefaultLanguages.Contains("N2")) ||
+				   (lang == bookData.Language3.Iso639Code && dataDefaultLanguages.Contains("L3")) ||
 
 				   dataDefaultLanguages.Contains(lang); // a literal language id, e.g. "en" (used by template starter)
 			}

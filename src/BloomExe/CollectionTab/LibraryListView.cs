@@ -473,7 +473,11 @@ namespace Bloom.CollectionTab
 			// Note: currently (August 2014) the books that will have been localized are are those in the main "templates" section: Basic Book, Calendar, etc.
 			if (button.Text == ShortenTitleIfNeeded(bookInfo.QuickTitleUserDisplay, button))
 			{
-				var bestTitle = bookInfo.GetBestTitleForUserDisplay(_model.CollectionSettings);
+				// Actually getting the HtmlDom may be rather expensive due to finding the actual HTML file and
+				// converting it to XHTML first.
+				// Maybe in this context we can rely on the collection settings for the languages?
+				var langCodes = _model.CollectionSettings.GetAllLanguageCodes().ToList();
+				var bestTitle = bookInfo.GetBestTitleForUserDisplay(langCodes);
 				if (String.IsNullOrEmpty(bestTitle))
 				{
 					// Getting the book can be very slow for large books: do we really want to update the title enough to make the user wait?

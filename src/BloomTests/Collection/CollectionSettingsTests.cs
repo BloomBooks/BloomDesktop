@@ -1,4 +1,5 @@
 using System.IO;
+using Bloom.Book;
 using Bloom.Collection;
 using NUnit.Framework;
 using SIL.IO;
@@ -99,8 +100,8 @@ namespace BloomTests.Collection
 
 		[TestCase(null, null, null, new[] { "en" })]
 		[TestCase("", "", "", new[] { "en" })]
-		[TestCase("pt", "pt", null, new[] { "pt", "pt", "en" })]
-		[TestCase("en", "es", "de", new[] { "en", "es", "de", "en" })] // we don't really need it, but English is put at the end even if already present
+		[TestCase("pt", "pt", null, new[] { "pt", "en" })]	// don't duplicate "pt"
+		[TestCase("en", "es", "de", new[] { "en", "es", "de" })] // don't duplicate "en"
 		[TestCase("id", "es", "de", new[] { "id", "es", "de", "en" })] // more typical case where adding English is important
 		[TestCase("zh-CN", "es", "de", new[] { "zh-CN", "es", "de", "en" })] // zh-CN does not require an insertion
 		[TestCase("zh-Hans", "es", "de", new[] { "zh-Hans", "zh-CN", "es", "de", "en" })] // any other zh-X requires zh-CN to be inserted following it.
@@ -110,7 +111,7 @@ namespace BloomTests.Collection
 		[TestCase("fr-CA", "es", "de", new[] { "fr-CA", "fr", "es", "de", "en" })]
 		[TestCase("es", "fr-CA", "de", new[] { "es", "fr-CA", "fr", "de", "en" })]
 		[TestCase("es", "id", "fr-LU", new[] { "es", "id", "fr-LU", "fr", "en" })]
-		[TestCase("rub", "", "en", new [] { "rub", "en", "en" })] // don't stick in Russian as an alternative to an unrelated 3 letter code.
+		[TestCase("rub", "", "en", new [] { "rub", "en" })] // don't stick in Russian as an alternative to an unrelated 3 letter code, and don't duplicate "en"
 		// given two fr-X codes, insert fr after the last of them. The main point here is that fr should be tried after fr-FR and fr-LU.
 		// But the result here is actually debatable: should es be preferred to fr in this case?
 		// Maybe the right result is fr-FR, fr-LU, fr, es, en in this case, since the original order indicates that French is better than Spanish?
@@ -121,29 +122,31 @@ namespace BloomTests.Collection
 
 		// The following test cases are special cases for Pashto languages.
 		// See comments in LicenseDescriptionLanguagePriorities.
-		[TestCase("pbt", "pbt", null, new[] { "pbt", "pbu", "ps", "pus", "pbt", "en" })]
-		[TestCase("pst", "pst", null, new[] { "pst", "pbu", "ps", "pus", "pst", "en" })]
-		[TestCase("ps", "ps", null, new[] { "ps", "pbu", "pus", "ps", "en" })]
-		[TestCase("pus", "pus", null, new[] { "pus", "pbu", "ps", "pus", "en" })]
-		[TestCase("pbu", "pbu", null, new[] { "pbu", "ps", "pus", "pbu", "en" })]
+		[TestCase("pbt", "pbt", null, new[] { "pbt", "pbu", "ps", "pus", "en" })]	// don't duplicate "pbt"
+		[TestCase("pst", "pst", null, new[] { "pst", "pbu", "ps", "pus", "en" })]	// don't duplicate "pst"
+		[TestCase("ps", "ps", null, new[] { "ps", "pbu", "pus", "en" })]	// don't duplicate "ps"
+		[TestCase("pus", "pus", null, new[] { "pus", "pbu", "ps", "en" })]	// don't duplicate "pus"
+		[TestCase("pbu", "pbu", null, new[] { "pbu", "ps", "pus", "en" })]	// don't duplicate "pbu"
 		[TestCase("xyz", "pbu", "abc", new[] { "xyz", "pbu", "ps", "pus", "abc", "en" })]
 		public void GetLanguagePrioritiesForTranslatedTextOnPage_GetsCorrectListOfLanguages(string lang1, string lang2, string lang3, string[] results)
 		{
 			var settings = CreateCollectionSettings(_folder.Path, "test");
+			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), settings, null);
 			settings.Language1Iso639Code = lang1;
 			settings.Language2Iso639Code = lang2;
 			settings.Language3Iso639Code = lang3;
-			Assert.That(settings.GetLanguagePrioritiesForTranslatedTextOnPage(), Is.EqualTo(results));
+			Assert.That(bookData.GetLanguagePrioritiesForLocalizedTextOnPage(), Is.EqualTo(results));
 		}
 
 		[TestCase("xyz", "abc", null, new[] { "abc", "en" })]
 		public void GetLanguagePrioritiesForTranslatedTextOnPage_DoNotIncludeLang1_GetsCorrectListOfLanguages(string lang1, string lang2, string lang3, string[] results)
 		{
 			var settings = CreateCollectionSettings(_folder.Path, "test");
+			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), settings, null);
 			settings.Language1Iso639Code = lang1;
 			settings.Language2Iso639Code = lang2;
 			settings.Language3Iso639Code = lang3;
-			Assert.That(settings.GetLanguagePrioritiesForTranslatedTextOnPage(false), Is.EqualTo(results));
+			Assert.That(bookData.GetLanguagePrioritiesForLocalizedTextOnPage(false), Is.EqualTo(results));
 		}
 
 		[TestCase("", "2")] // default

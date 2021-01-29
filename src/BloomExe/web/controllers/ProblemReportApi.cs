@@ -692,18 +692,22 @@ namespace Bloom.web.controllers
 			}
 			bldr.AppendLine("Collection name: " + settings.CollectionName);
 			bldr.AppendLine("xMatter pack name: " + settings.XMatterPackName);
-			bldr.AppendLine("Language1 -> iso: '" + settings.Language1Iso639Code + "',  font: " +
-							settings.Language1.FontName + (settings.Language1.IsRightToLeft ? " RTL" : string.Empty));
-			bldr.AppendLine("Language2 -> iso: '" + settings.Language2Iso639Code + "',  font: " +
-							settings.Language2.FontName + (settings.Language2.IsRightToLeft ? " RTL" : string.Empty));
-			if (string.IsNullOrEmpty(settings.Language3Iso639Code))
+			// TODO: rethink how to display language information if we expand the languages available.
+			var language1 = book.BookData.Language1;
+			bldr.AppendLine("Language1 -> iso: '" + language1.Iso639Code + "',  font: " +
+							language1.FontName + (language1.IsRightToLeft ? " RTL" : string.Empty));
+			var language2 = book.BookData.Language2;
+			bldr.AppendLine("Language2 -> iso: '" + language2.Iso639Code + "',  font: " +
+							language2.FontName + (language2.IsRightToLeft ? " RTL" : string.Empty));
+			var language3 = book.BookData.Language3;
+			if (string.IsNullOrEmpty(language3?.Iso639Code))
 			{
 				bldr.AppendLine("No Language3 defined");
 			}
 			else
 			{
-				bldr.AppendLine("Language3 -> iso: '" + settings.Language3Iso639Code + "',  font: " +
-					settings.Language3.FontName + (settings.Language3.IsRightToLeft ? " RTL" : string.Empty));
+				bldr.AppendLine("Language3 -> iso: '" + language3.Iso639Code + "',  font: " +
+					language3.FontName + (language3.IsRightToLeft ? " RTL" : string.Empty));
 			}
 		}
 

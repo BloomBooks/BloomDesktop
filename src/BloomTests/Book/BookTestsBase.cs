@@ -32,6 +32,7 @@ namespace BloomTests.Book
 		protected CollectionSettings _collectionSettings;
 		protected HtmlDom _bookDom;
 		protected BookInfo _metadata;
+		protected BookData _bookData;
 
 		protected Mock<IBookStorage> MakeMockStorage(string tempFolderPath, Func<HtmlDom> domGetter)
 		{
@@ -188,6 +189,15 @@ namespace BloomTests.Book
 				Language2Iso639Code = "en",
 				Language3Iso639Code = "fr"
 			});
+		}
+
+		protected BookData CreateDefaultBookData()
+		{
+			if (_collectionSettings == null)
+				_collectionSettings = CreateDefaultCollectionsSettings();
+			if (_bookDom == null)
+				_bookDom = new HtmlDom(GetThreePageDom());
+			return new BookData(_bookDom, _collectionSettings, null);
 		}
 
 		protected void MakeSamplePngImageWithMetadata(string path, int width = 10, int height = 10)
