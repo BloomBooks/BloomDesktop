@@ -62,10 +62,9 @@ namespace Bloom.Edit
 		/// <summary>
 		/// Provides a hook for anything the toolbox wants to do when a project is opened.
 		/// </summary>
-		/// <param name="settings"></param>
 		public static void SetupToolboxForCollection(CollectionSettings settings)
 		{
-			DecodableReaderToolSettings.CopyRelevantNewReaderSettings(settings);
+			DecodableReaderToolSettings.CopyRelevantNewReaderSettings(new BookData(new HtmlDom("<html><body></body></html>"), settings, null));
 		}
 
 		public static IEnumerable<string> GetToolboxServerDirectories()

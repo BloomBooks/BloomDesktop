@@ -109,7 +109,7 @@ namespace Bloom.Publish.Epub
 			{
 				{
 					string suggestedName = string.Format("{0}-{1}.epub", Path.GetFileName(_bookSelection.CurrentSelection.FolderPath),
-						_collectionSettings.Language1.GetNameInLanguage("en"));
+						_bookSelection.CurrentSelection.BookData.Language1.GetNameInLanguage("en"));
 					using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
 					{
 						if (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory))

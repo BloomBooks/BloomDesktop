@@ -151,12 +151,13 @@ namespace BloomTests.Book
 			string dataDivContent = @"<div lang='en' data-book='licenseUrl'>http://creativecommons.org/licenses/by-nc-sa/3.0/</div>";
 			var dom = MakeDom(dataDivContent);
 			var collectionSettings = new CollectionSettings();
-			var creativeCommonsLicense = (CreativeCommonsLicense)(BookCopyrightAndLicense.GetMetadata(dom, collectionSettings).License);
+			var bookData = new BookData(dom, collectionSettings, null);
+			var creativeCommonsLicense = (CreativeCommonsLicense)(BookCopyrightAndLicense.GetMetadata(dom, bookData).License);
 			Assert.IsTrue(creativeCommonsLicense.AttributionRequired); // yes, we got a CC license from the 'en' licenseUrl
 			var newLicense = new CustomLicense();
 			var newMetaData = new Metadata();
 			newMetaData.License = newLicense;
-			BookCopyrightAndLicense.SetMetadata(newMetaData, dom,  null, collectionSettings, false);
+			BookCopyrightAndLicense.SetMetadata(newMetaData, dom,  null, bookData, false);
 			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@data-book='licenseUrl']");
 		}
 
@@ -243,7 +244,8 @@ namespace BloomTests.Book
 		private  HtmlDom TestSetLicenseMetdataEffectOnDataDiv(Metadata metadata = null, string startingDataDivContent = "", string startingPageContent = "", string xpath = "", int expectedCount = 1)
 		{
 			var dom = new HtmlDom(@"<html><head><div id='bloomDataDiv'>" + startingDataDivContent + "</div><div id='credits'>" + startingPageContent + "</div></head><body></body></html>");
-			Bloom.Book.BookCopyrightAndLicense.SetMetadata(metadata, dom, null, _collectionSettings, false);
+			var bookData = new BookData(dom, _collectionSettings, null);
+			Bloom.Book.BookCopyrightAndLicense.SetMetadata(metadata, dom, null, bookData, false);
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, expectedCount);
 			return dom;
 		}
@@ -251,7 +253,8 @@ namespace BloomTests.Book
 		private Metadata GetMetadata(string dataDivContent, CollectionSettings collectionSettings = null)
 		{
 			var dom = MakeDom(dataDivContent);
-			return BookCopyrightAndLicense.GetMetadata(dom, collectionSettings ?? _collectionSettings);
+			var bookData = new BookData(dom, collectionSettings ?? _collectionSettings, null);
+			return BookCopyrightAndLicense.GetMetadata(dom, bookData);
 		}
 
 		private static HtmlDom MakeDom(string dataDivContent)
@@ -322,8 +325,9 @@ namespace BloomTests.Book
 							</div>
 						</body></html>";
 			var bookDom = new HtmlDom(html);
+			var bookData = new BookData(bookDom, _collectionSettings, null);
 
-			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", _collectionSettings, false);
+			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, false);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='test']/*[@data-derived='licenseDescription' and @lang='fr' and contains(text(),'French')]", 1);
 		}
 
@@ -348,8 +352,9 @@ namespace BloomTests.Book
 							</div>
 						</body></html>";
 			var bookDom = new HtmlDom(html);
+			var bookData = new BookData(bookDom, _collectionSettings, null);
 
-			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", _collectionSettings, false);
+			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, false);
 			// This is an abbreviated version of the text we expect in originalCopyrightAndLicense. Now that we have an embedded <cite> element, matching the whole thing
 			// is difficult. We have other tests that deal with exactly what goes in this field; here we're just concerned with getting the right number of copies.
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and @lang='*' and contains(text(),'Adapted from original')]", 2);
@@ -357,7 +362,7 @@ namespace BloomTests.Book
 
 			// Changing the useOriginalCopyright flag should empty out the data-derived='originalCopyrightAndLicense' divs.
 			// The #bloomDataDiv would have to change to change the data-derived='copyright' divs.
-			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", _collectionSettings, true);
+			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, true);
 			Console.WriteLine("DEBUG bookDom =\n{0}", bookDom.RawDom.OuterXml);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and @lang='*']");
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and .='']", 2);
@@ -385,9 +390,10 @@ namespace BloomTests.Book
 							</div>
 						</body></html>";
 			var bookDom = new HtmlDom(html);
-			var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, _collectionSettings);
+			var bookData = new BookData(bookDom, _collectionSettings, null);
+			var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, bookData);
 			metadata.CopyrightNotice = "Copyright © 2019, Foo-Bar Publishers";
-			BookCopyrightAndLicense.SetMetadata(metadata, bookDom, "", _collectionSettings, false);
+			BookCopyrightAndLicense.SetMetadata(metadata, bookDom, "", bookData, false);
 			// This is an abbreviated version of the text we expect in originalCopyrightAndLicense. Now that we have an embedded <cite> element, matching the whole thing
 			// is difficult. We have other tests that deal with exactly what goes in this field; here we're just concerned with generating it or not.
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and @lang='*' and contains(text(),'Adapted from original')]", 2);
@@ -399,8 +405,8 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='originalLicenseUrl' and contains(text(), 'http://creativecommons.org/licenses/by-nc/4.0/')]", 1);
 
 			// Change to use the original copyright and license.
-			var originalMetadata = BookCopyrightAndLicense.GetOriginalMetadata(bookDom, _collectionSettings);
-			BookCopyrightAndLicense.SetMetadata(originalMetadata, bookDom, "", _collectionSettings, true);
+			var originalMetadata = BookCopyrightAndLicense.GetOriginalMetadata(bookDom, bookData);
+			BookCopyrightAndLicense.SetMetadata(originalMetadata, bookDom, "", bookData, true);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and @lang='*']");
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and .='']", 2);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='copyright' and @lang='*' and contains(text(),'Copyright © 2007, Foo Publishers')]", 2);
@@ -449,8 +455,9 @@ namespace BloomTests.Book
 			html += existingLicenseBlockOnPage;
 			html += "</body></html>";
 			var bookDom = new HtmlDom(html);
+			var bookData = new BookData(bookDom, _collectionSettings, null);
 
-			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom,"", _collectionSettings, false);
+			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom,"", bookData, false);
 			string valuePredicate;
 			if (key == "licenseImage")
 			{
@@ -517,7 +524,8 @@ namespace BloomTests.Book
 
 		private string GetEnglishOriginalCopyrightAndLicense(HtmlDom dom)
 		{
-			return BookCopyrightAndLicense.GetOriginalCopyrightAndLicenseNotice(_collectionSettings, dom);
+			var bookData = new BookData(dom, _collectionSettings, null);
+			return BookCopyrightAndLicense.GetOriginalCopyrightAndLicenseNotice(bookData, dom);
 		}
 	}
 }

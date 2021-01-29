@@ -43,7 +43,7 @@ namespace Bloom.web.controllers
 				var visibleElements = imageContainer.SelectSingleNode(
 						$@"./div[contains(@class,'bloom-imageDescription')]
 								/div[contains(@class,'bloom-editable')
-								and @lang='{book.CollectionSettings.Language1Iso639Code}']")
+								and @lang='{book.BookData.Language1.Iso639Code}']")
 					as XmlElement;
 				if (visibleElements == null ||
 				    (visibleElements.InnerText.Trim().Length == 0))

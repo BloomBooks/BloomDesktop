@@ -174,7 +174,7 @@ namespace Bloom.Publish
 
 		private bool LayoutPagesForRightToLeft
 		{
-			get { return _collectionSettings.Language1.IsRightToLeft;  }
+			get { return _currentlyLoadedBook.BookData.Language1.IsRightToLeft;  }
 		}
 
 		private SimulatedPageFile MakeFinalHtmlForPdfMaker()
@@ -383,7 +383,7 @@ namespace Bloom.Publish
 						_currentlyLoadedBook.UserPrefs.CmykPdf || _currentlyLoadedBook.UserPrefs.FullBleed
 							? "-printshop"
 							: "";
-					string suggestedName = string.Format($"{Path.GetFileName(_currentlyLoadedBook.FolderPath)}-{_collectionSettings.GetFilesafeLanguage1Name("en")}-{portion}{forPrintShop}.pdf");
+					string suggestedName = string.Format($"{Path.GetFileName(_currentlyLoadedBook.FolderPath)}-{_currentlyLoadedBook.GetFilesafeLanguage1Name("en")}-{portion}{forPrintShop}.pdf");
 					dlg.FileName = suggestedName;
 					var pdfFileLabel = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.PdfFile",
 						"PDF File",
@@ -598,7 +598,7 @@ namespace Bloom.Publish
 				var container = new CompositionContainer(catalog);
 				//inject what we have to offer for the extension to consume
 				container.ComposeExportedValue<string>("PathToBookFolder",BookSelection.CurrentSelection.FolderPath);
-				container.ComposeExportedValue<string>("Language1Iso639Code", _collectionSettings.Language1Iso639Code);
+				container.ComposeExportedValue<string>("Language1Iso639Code", _currentlyLoadedBook.BookData.Language1.Iso639Code);
 				container.ComposeExportedValue<Func<IEnumerable<HtmlDom>>>(GetPageDoms);
 			  //  container.ComposeExportedValue<Func<string>>("pathToPublishedHtmlFile",GetFileForPrinting);
 				//get the original images, not compressed ones (just in case the thumbnails are, like, full-size & they want quality)
@@ -730,7 +730,7 @@ namespace Bloom.Publish
 						//	durations.AppendLine(accumulatedDuration.ToString() + "\t" + duration);
 						//}
 						var filename =
-							$"{this.BookSelection.CurrentSelection.Title}_{this._collectionSettings.Language1.Name}_{pageIndex:0000}.mp3".Replace(' ','_');
+							$"{this.BookSelection.CurrentSelection.Title}_{this._currentlyLoadedBook.BookData.Language1.Name}_{pageIndex:0000}.mp3".Replace(' ','_');
 						var combinedAudioPath = Path.Combine(folderForThisBook.FolderPath, filename);
 						var errorMessage = AudioProcessor.MergeAudioFiles(mergeFiles, combinedAudioPath);
 						if (errorMessage != null)

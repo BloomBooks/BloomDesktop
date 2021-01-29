@@ -41,7 +41,7 @@ namespace Bloom.web.controllers
 							translatedLabel = LocalizationManager.GetString("BookMetadata.name", "Name") },
 						numberOfPages = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.GetLastNumberedPageNumber().ToString(),
 							translatedLabel = LocalizationManager.GetString("BookMetadata.numberOfPages", "Number of pages") },
-						inLanguage =  new { type = "readOnlyText", value = _bookSelection.CurrentSelection.CollectionSettings.Language1Iso639Code,
+						inLanguage =  new { type = "readOnlyText", value = _bookSelection.CurrentSelection.BookData.Language1.Iso639Code,
 							translatedLabel = LocalizationManager.GetString("BookMetadata.inLanguage", "Language") },
 						// "All rights reserved" is purposely not localized, so it remains an accurate representation of
 						// the English information that will be put in the file in place of a License URL.

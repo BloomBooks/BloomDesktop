@@ -30,11 +30,13 @@ namespace BloomTests.Edit
 		[SetUp]
 		public void Setup()
 		{
-			var library = new Moq.Mock<CollectionSettings>();
-			library.SetupGet(x => x.IsSourceCollection).Returns(false);
-			library.SetupGet(x => x.Language2Iso639Code).Returns("en");
-			library.SetupGet(x => x.Language1Iso639Code).Returns("xyz");
-			library.SetupGet(x => x.XMatterPackName).Returns("Factory");
+			var library = new CollectionSettings
+			{
+				IsSourceCollection = false,
+				Language2Iso639Code = "en",
+				Language1Iso639Code = "xyz",
+				XMatterPackName = "Factory"
+			};
 
 			ErrorReport.IsOkToInteractWithUser = false;
 			_fileLocator = new FileLocator(new string[]
@@ -51,7 +53,7 @@ namespace BloomTests.Edit
 			var projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
 			var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
 
-			_starter = new BookStarter(_fileLocator, (dir, forSelectedBook) => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings), library.Object);
+			_starter = new BookStarter(_fileLocator, (dir, forSelectedBook) => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings), library);
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 			_libraryFolder = new TemporaryFolder("BookStarterTests_LibraryCollection");
 		}

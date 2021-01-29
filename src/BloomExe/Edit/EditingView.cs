@@ -369,7 +369,7 @@ namespace Bloom.Edit
 				//in case we were in this dialog already and made changes, which haven't found their way out to the Book yet
 
 				var metadata = _model.CurrentBook.GetLicenseMetadata();
-				var originalMetadata = BookCopyrightAndLicense.GetOriginalMetadata(_model.CurrentBook.Storage.Dom, _model.CurrentBook.CollectionSettings);
+				var originalMetadata = BookCopyrightAndLicense.GetOriginalMetadata(_model.CurrentBook.Storage.Dom, _model.CurrentBook.BookData);
 
 				Logger.WriteEvent("Showing Metadata Editor Dialog");
 				var isDerivedBook = BookCopyrightAndLicense.IsDerivative(originalMetadata);
