@@ -1,4 +1,5 @@
 using System.IO;
+using Bloom.Book;
 using Bloom.Collection;
 using NUnit.Framework;
 using SIL.IO;
@@ -130,20 +131,22 @@ namespace BloomTests.Collection
 		public void GetLanguagePrioritiesForTranslatedTextOnPage_GetsCorrectListOfLanguages(string lang1, string lang2, string lang3, string[] results)
 		{
 			var settings = CreateCollectionSettings(_folder.Path, "test");
+			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), settings, null);
 			settings.Language1Iso639Code = lang1;
 			settings.Language2Iso639Code = lang2;
 			settings.Language3Iso639Code = lang3;
-			Assert.That(settings.GetLanguagePrioritiesForTranslatedTextOnPage(), Is.EqualTo(results));
+			Assert.That(bookData.GetLanguagePrioritiesForTranslatedTextOnPage(), Is.EqualTo(results));
 		}
 
 		[TestCase("xyz", "abc", null, new[] { "abc", "en" })]
 		public void GetLanguagePrioritiesForTranslatedTextOnPage_DoNotIncludeLang1_GetsCorrectListOfLanguages(string lang1, string lang2, string lang3, string[] results)
 		{
 			var settings = CreateCollectionSettings(_folder.Path, "test");
+			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), settings, null);
 			settings.Language1Iso639Code = lang1;
 			settings.Language2Iso639Code = lang2;
 			settings.Language3Iso639Code = lang3;
-			Assert.That(settings.GetLanguagePrioritiesForTranslatedTextOnPage(false), Is.EqualTo(results));
+			Assert.That(bookData.GetLanguagePrioritiesForTranslatedTextOnPage(false), Is.EqualTo(results));
 		}
 
 		[TestCase("", "2")] // default

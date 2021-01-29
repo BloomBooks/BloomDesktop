@@ -423,19 +423,20 @@ namespace BloomTests.Book
 
 			_collectionSettings = new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"),
 				Language1Iso639Code = "th", Language2Iso639Code = "fr", Language3Iso639Code = "es" });
-			_collectionSettings.Language1.SetName("ไทย", false);
+			var bookData = new BookData(_bookDom, _collectionSettings, null);
+			bookData.Language1.SetName("ไทย", false);
 			var book =  new Bloom.Book.Book(_metadata, _storage.Object, _templateFinder.Object,
 				_collectionSettings,
 				_pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
 
-			book.SetMultilingualContentLanguages(_collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code);
+			book.SetMultilingualContentLanguages(bookData.Language2.Iso639Code, bookData.Language3.Iso639Code);
 
 			//note: our code currently only knows how to display Thai *in Thai*, French *in French*, and Spanish *in Spanish*.
 			//It may be better to be writing "Thai" and "Spanish" in French.
 			//That's not part of this test, and will have to be changed as we improve that aspect of things.
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[text()='ไทย, français, español']", 1);
 
-			book.SetMultilingualContentLanguages(_collectionSettings.Language2Iso639Code, null);
+			book.SetMultilingualContentLanguages(bookData.Language2.Iso639Code, null);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[text()='ไทย, français']", 1);
 
 			book.SetMultilingualContentLanguages("", null);
@@ -1584,7 +1585,7 @@ namespace BloomTests.Book
 					</body>
 				</html>");
 			var book = CreateBook();
-			book.CollectionSettings.Language1.SetName("My Language Name", true);
+			book.BookData.Language1.SetName("My Language Name", true);
 			book.BringBookUpToDate(new NullProgress());
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='languagesOfBook' and text()='My Language Name' and @lang='*']", 1);
 			// We need to specify the language for display: see https://issues.bloomlibrary.org/youtrack/issue/BL-7968.
@@ -1657,15 +1658,15 @@ namespace BloomTests.Book
 									</head><body></body></html>");
 			var book = CreateBook();
 			Assert.That(book.BookInfo.IsRtl, Is.False);
-			var old = _collectionSettings.Language1.IsRightToLeft;
+			var old = book.BookData.Language1.IsRightToLeft;
 			try
 			{
-				_collectionSettings.Language1.IsRightToLeft = true;
+				book.BookData.Language1.IsRightToLeft = true;
 				book.BringBookUpToDate(new NullProgress());
 			}
 			finally
 			{
-				_collectionSettings.Language1.IsRightToLeft = old;
+				book.BookData.Language1.IsRightToLeft = old;
 			}
 			Assert.That(book.BookInfo.IsRtl, Is.True);
 		}
