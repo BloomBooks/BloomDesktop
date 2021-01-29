@@ -90,7 +90,8 @@ namespace BloomTests.Book
 		[Test]
 		public void MakeLanguageUploadData_FindsDefaultInfo()
 		{
-			var results = _collectionSettings.MakeLanguageUploadData(new[] {"en", "tpi", "xy3"});
+			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), _collectionSettings, null);
+			var results = bookData.MakeLanguageUploadData(new[] {"en", "tpi", "xy3"});
 			Assert.That(results.Length, Is.EqualTo(3), "should get one result per input");
 			VerifyLangData(results[0], "en", "English", "eng");
 			VerifyLangData(results[1], "tpi", "Tok Pisin", "tpi");
@@ -100,9 +101,10 @@ namespace BloomTests.Book
 		[Test]
 		public void MakeLanguageUploadData_FindsOverriddenNames()
 		{
+			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), _collectionSettings, null);
 			_collectionSettings.Language1.SetName("Cockney", true);
 			// Note: no current way of overriding others; verify they aren't changed.
-			var results = _collectionSettings.MakeLanguageUploadData(new[] {"en", "tpi", "xyz"});
+			var results = bookData.MakeLanguageUploadData(new[] {"en", "tpi", "xyz"});
 			Assert.That(results.Length, Is.EqualTo(3), "should get one result per input");
 			VerifyLangData(results[0], "en", "English", "eng");
 			VerifyLangData(results[1], "tpi", "Tok Pisin", "tpi");
@@ -482,7 +484,7 @@ namespace BloomTests.Book
 }");
 				var data = new BookData(bookDom, _collectionSettings, null);
 				data.MergeBrandingSettings(tempFolder.Path);
-				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, _collectionSettings);
+				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, data);
 				Assert.AreEqual("http://creativecommons.org/licenses/by/3.0/igo/", metadata.License.Url);
 				Assert.AreEqual("These are custom notes.", metadata.License.RightsStatement);
 				Assert.That(metadata.CopyrightNotice, Is.Null.Or.Empty);
@@ -523,7 +525,7 @@ namespace BloomTests.Book
 }");
 				var data = new BookData(bookDom, _collectionSettings, null);
 				data.MergeBrandingSettings(tempFolder.Path);
-				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, _collectionSettings);
+				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, data);
 
 				Assert.AreEqual("http://creativecommons.org/licenses/by/3.0/igo/", metadata.License.Url);
 				Assert.AreEqual("These are custom notes.", metadata.License.RightsStatement);
@@ -559,7 +561,7 @@ namespace BloomTests.Book
 					}");
 				var data = new BookData(bookDom, _collectionSettings, null);
 				data.MergeBrandingSettings(tempFolder.Path);
-				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, _collectionSettings);
+				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, data);
 
 				Assert.AreEqual($"Copyright © {DateTime.Now.Year.ToString()} Chewtoys International",
 					metadata.CopyrightNotice);
@@ -601,7 +603,7 @@ namespace BloomTests.Book
 }");
 				var data = new BookData(bookDom, _collectionSettings, null);
 				data.MergeBrandingSettings(tempFolder.Path);
-				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, _collectionSettings);
+				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, data);
 				if (dataDivName == "copyright")
 					Assert.IsTrue(metadata.CopyrightNotice.Contains("2012")); // unchanged from testcase
 				else
@@ -654,7 +656,7 @@ namespace BloomTests.Book
 }");
 				var data = new BookData(bookDom, _collectionSettings, null);
 				data.MergeBrandingSettings(tempFolder.Path);
-				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, _collectionSettings);
+				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, data);
 
 				Assert.That(metadata.License, Is.InstanceOf<CustomLicense>());
 				Assert.That(metadata.License.Url, Is.Null.Or.Empty);
@@ -871,12 +873,12 @@ namespace BloomTests.Book
 				info.Tools.Add(decodableState);
 
 			var readerSettingsPath =
-					DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(_collectionSettings);
+					DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(data);
 				File.WriteAllText(readerSettingsPath, "{\"levels\":[{\"thingsToRemember\":[\"Simple Pictures\",\"Concrete Topics (e.g. animals, house hold objects)\"],\"maxWordsPerPage\":5,\"maxWordsPerSentence\":5,\"maxWordsPerBook\":23,\"maxUniqueWordsPerBook\":8,\"maxAverageWordsPerSentence\":0},{\"thingsToRemember\":[\"\"],\"maxWordsPerPage\":10,\"maxWordsPerSentence\":7,\"maxWordsPerBook\":72,\"maxUniqueWordsPerBook\":16,\"maxAverageWordsPerSentence\":0},{\"thingsToRemember\":[\"\"],\"maxWordsPerPage\":18,\"maxWordsPerSentence\":8,\"maxWordsPerBook\":206,\"maxUniqueWordsPerBook\":32,\"maxAverageWordsPerSentence\":0},{\"thingsToRemember\":[\"\"],\"maxWordsPerPage\":22,\"maxWordsPerSentence\":9,\"maxWordsPerBook\":294,\"maxUniqueWordsPerBook\":50,\"maxAverageWordsPerSentence\":0},{\"thingsToRemember\":[\"\"],\"maxWordsPerPage\":25,\"maxWordsPerSentence\":10,\"maxWordsPerBook\":500,\"maxUniqueWordsPerBook\":64,\"maxAverageWordsPerSentence\":0}],\"stages\":[{\"sightWords\":\"the of and to\",\"letters\":\"a e r\",\"allowedWordsFile\":\"\",\"name\":\"1\"},{\"sightWords\":\"is you that he\",\"letters\":\"i o\",\"allowedWordsFile\":\"\",\"name\":\"2\"},{\"sightWords\":\"was for as with\",\"letters\":\"n t\",\"allowedWordsFile\":\"\",\"name\":\"3\"},{\"sightWords\":\"his they I\",\"letters\":\"l s\",\"allowedWordsFile\":\"\",\"name\":\"4\"},{\"sightWords\":\"be this have from\",\"letters\":\"c u\",\"allowedWordsFile\":\"\",\"name\":\"5\"},{\"sightWords\":\"or one by what\",\"letters\":\"d ng\",\"allowedWordsFile\":\"\",\"name\":\"6\"},{\"sightWords\":\"all we when\",\"letters\":\"m p\",\"allowedWordsFile\":\"\",\"name\":\"7\"},{\"sightWords\":\"your said there\",\"letters\":\"g h\",\"allowedWordsFile\":\"\",\"name\":\"8\"},{\"sightWords\":\"she do how\",\"letters\":\"th\",\"allowedWordsFile\":\"\",\"name\":\"9\"},{\"sightWords\":\"were about out\",\"letters\":\"b sh\",\"allowedWordsFile\":\"\",\"name\":\"10\"},{\"sightWords\":\"then them little\",\"letters\":\"f y\",\"allowedWordsFile\":\"\",\"name\":\"11\"},{\"sightWords\":\"so some her\",\"letters\":\"ch w\",\"allowedWordsFile\":\"\",\"name\":\"12\"},{\"sightWords\":\"are make like\",\"letters\":\"k v\",\"allowedWordsFile\":\"\",\"name\":\"13\"},{\"sightWords\":\"into has look\",\"letters\":\"x z\",\"allowedWordsFile\":\"\",\"name\":\"14\"},{\"sightWords\":\"go see no\",\"letters\":\"j q\",\"allowedWordsFile\":\"\",\"name\":\"15\"}],\"letters\":\"a b c ch d e f g h i j k l m n ng o p q r s sh t th u v w x y z\",\"sentencePunct\":\"\",\"moreWords\":\"\",\"useAllowedWords\":0}");
 				data.UpdateVariablesAndDataDivThroughDOM(info);
 
 				AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath(
-				"//div[@id='bloomDataDiv']/div[@data-book='decodableStageLetters' and @lang='" +_collectionSettings.Language1Iso639Code +  "' and text()='a, e, r, i, o, n, t, l, s']",
+				"//div[@id='bloomDataDiv']/div[@data-book='decodableStageLetters' and @lang='" +data.GetLanguage(LanguageSlot.Language1).Iso639Code +  "' and text()='a, e, r, i, o, n, t, l, s']",
 				1);
 		}
 
@@ -904,7 +906,7 @@ namespace BloomTests.Book
 			var data = new BookData(dom, _collectionSettings, null);
 			data.UpdateVariablesAndDataDivThroughDOM();
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath(
-				"//div[@data-book='bookTitle' and @lang='" + _collectionSettings.Language1Iso639Code +
+				"//div[@data-book='bookTitle' and @lang='" + data.GetLanguage(LanguageSlot.Language1).Iso639Code +
 				"' and text()='the title']", 1);
 		}
 

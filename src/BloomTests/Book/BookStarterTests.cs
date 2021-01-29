@@ -27,18 +27,20 @@ namespace BloomTests.Book
 		private BookStarter _starter;
 		private TemporaryFolder _shellCollectionFolder;
 		private TemporaryFolder _projectFolder;
-		private Mock<CollectionSettings> _librarySettings;
+		private CollectionSettings _librarySettings;
 		private CollectionSettings _collectionSettings; // and a few tests need a real one
 
 		[SetUp]
 		public void Setup()
 		{
-			_librarySettings = new Mock<CollectionSettings>();
-			_librarySettings.SetupGet(x => x.IsSourceCollection).Returns(false);
-			_librarySettings.SetupGet(x => x.Language1Iso639Code).Returns("xyz");
-			_librarySettings.SetupGet(x => x.Language2Iso639Code).Returns("fr");
-			_librarySettings.SetupGet(x => x.Language3Iso639Code).Returns("es");
-			_librarySettings.SetupGet(x => x.XMatterPackName).Returns("Factory");
+			_librarySettings = new CollectionSettings
+			{
+				IsSourceCollection = false,
+				Language1Iso639Code = "xyz",
+				Language2Iso639Code = "fr",
+				Language3Iso639Code = "es",
+				XMatterPackName = "Factory"
+			};
 			ErrorReport.IsOkToInteractWithUser = false;
 			_projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
 			var collectionSettings = new CollectionSettings(Path.Combine(_projectFolder.Path, "test.bloomCollection"));
@@ -48,7 +50,7 @@ namespace BloomTests.Book
 			_fileLocator = new BloomFileLocator(collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(), ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
 
 
-			_starter = new BookStarter(_fileLocator, (dir, forSelectedBook) => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings), _librarySettings.Object);
+			_starter = new BookStarter(_fileLocator, (dir, forSelectedBook) => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings), _librarySettings);
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 
 			_collectionSettings = new CollectionSettings(new NewCollectionSettings()
@@ -1006,18 +1008,19 @@ namespace BloomTests.Book
 		[Test]
 		public void SetupPage_LanguageSettingsHaveChanged_LangAttributesUpdated()
 		{
-			var contents = @"<div class='bloom-page'>
+			var contents = @"<html><body><div class='bloom-page'>
 						<div class='bloom-translationGroup' data-book='foo'>
 							<div class='bloom-editable' lang='en'></div>
 							<div class='bloom-editable' lang='en'></div>
 							<div class='bloom-editable' lang='en'></div>
 						</div>
-					</div>";
+					</div></body></html>";
 
 			var dom = new XmlDocument();
 			dom.LoadXml(contents);
+			var bookData = new BookData(new HtmlDom(dom), _librarySettings, null);
 
-			BookStarter.SetupPage((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], _librarySettings.Object, "abc", "def");
+			BookStarter.SetupPage((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], bookData, "abc", "def");
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='fr']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='es']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='xyz']", 1);
@@ -1026,15 +1029,16 @@ namespace BloomTests.Book
 		[Test]
 		public void SetupPage_PageHadDescription_DescriptionClearedButEnglishStillThere()
 		{
-			var contents = @"<div class='bloom-page'>
+			var contents = @"<html><body><div class='bloom-page'>
 						 <div class='pageDescription' lang='en'>hello</div>
 						 <div class='pageDescription' lang='fr'>bonjour</div>
-					</div>";
+					</div></body></html>";
 
 			var dom = new XmlDocument();
 			dom.LoadXml(contents);
+			var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
 
-			BookStarter.SetupPage((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], _librarySettings.Object, "abc", "def");
+			BookStarter.SetupPage((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], bookData, "abc", "def");
 			//should remove the French (I don't see that we actually have any templates that have anything but English, but just in case)
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'pageDescription') and @lang != 'en']", 0);
 			//should leave English as a placeholder
@@ -1052,7 +1056,7 @@ namespace BloomTests.Book
 			// Modify it to have its own copyright and versionAcknowledgements.
 			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(derivedBook));
 			var source2 = Path.GetDirectoryName(derivedBook);
-			var bookdata = new BookData(dom, _librarySettings.Object,
+			var bookdata = new BookData(dom, _librarySettings,
 				imgNode => ImageUpdater.UpdateImgMetadataAttributesToMatchImage(source2, imgNode, new NullProgress()));
 			bookdata.Set("copyright", "Copyright 2018 some translator", "*");
 			bookdata.Set("versionAcknowledgments", "some translator worked on this", "en");
@@ -1249,16 +1253,17 @@ namespace BloomTests.Book
 				    </div>
 				  </body>
 				</html>");
-			var metadata = BookCopyrightAndLicense.GetMetadata(dom, _collectionSettings);
+			var bookData = new BookData(dom, _collectionSettings, null);
+
+			var metadata = BookCopyrightAndLicense.GetMetadata(dom, bookData);
 			var initialCopyright = metadata.CopyrightNotice;
 			Assert.AreEqual("Copyright © 2011, LASI & SILA", initialCopyright);
 
-			var bookData = new BookData(dom, _collectionSettings, null);
 			BookStarter.SetOriginalCopyrightAndLicense(dom, bookData, _collectionSettings);
 			var originalCopyright = GetEnglishOriginalCopyrightAndLicense(dom);
 			Assert.AreEqual("Adapted from original, <cite data-book=\"originalTitle\">HTML Lesson 1: <strong> & <em> tags</cite>, Copyright © 2011, LASI & SILA. Licensed under CC BY-NC-SA 4.0.", originalCopyright);
 
-			BookCopyrightAndLicense.UpdateDomFromDataDiv(dom, null, _collectionSettings, false);
+			BookCopyrightAndLicense.UpdateDomFromDataDiv(dom, null, bookData, false);
 			var nodes1 = dom.RawDom.SelectNodes("/html/body//div[@data-derived='originalCopyrightAndLicense']");
 			Assert.AreEqual(1, nodes1.Count);
 			Assert.AreEqual("Adapted from original, HTML Lesson 1: <strong> & <em> tags, Copyright © 2011, LASI & SILA. Licensed under CC BY-NC-SA 4.0.", nodes1.Item(0).InnerText);
@@ -1268,7 +1273,8 @@ namespace BloomTests.Book
 
 		private string GetEnglishOriginalCopyrightAndLicense(HtmlDom dom)
 		{
-			return BookCopyrightAndLicense.GetOriginalCopyrightAndLicenseNotice(_collectionSettings, dom);
+			var bookData = new BookData(dom, _collectionSettings, null);
+			return BookCopyrightAndLicense.GetOriginalCopyrightAndLicenseNotice(bookData, dom);
 		}
 
 		void AppendDataDivElement(XmlElement dataDiv, string dataBook, string lang, string val)
@@ -1290,7 +1296,7 @@ namespace BloomTests.Book
 			{
 				File.WriteAllText(Path.Combine(folder.Path, "TransformCreditPageData.htm"), XmlHtmlConverter.ConvertDomToHtml5(dom.RawDom));
 				var storage = new BookStorage(folder.Path, _fileLocator, new BookRenamedEvent(), _collectionSettings);
-				var bookData = new BookData(dom, _librarySettings.Object, null);
+				var bookData = new BookData(dom, _librarySettings, null);
 				BookStarter.TransformCreditPageData(dom, bookData, _collectionSettings, storage, true);
 			}
 			return dom;
@@ -1303,7 +1309,7 @@ namespace BloomTests.Book
 			var html = "<html><head><meta name='lockedDownAsShell' content='true'></meta></head><body>" + dataDivString + "</body></html>";
 			var dom = new HtmlDom(html);
 			var bookData = new BookData(dom, _collectionSettings, null);
-			BookStarter.SetOriginalCopyrightAndLicense(dom, bookData, _librarySettings.Object);
+			BookStarter.SetOriginalCopyrightAndLicense(dom, bookData, _librarySettings);
 			return dom;
 		}
 
