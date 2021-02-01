@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SIL.IO;
 
 namespace Bloom.ToPalaso
 {
@@ -53,5 +54,25 @@ namespace Bloom.ToPalaso
 
 			return true;
 		}
+
+		/// <summary>
+		/// Copy a folder's content to another folder, creating the destination folder if needed.
+		/// </summary>
+		/// <remarks>
+		/// It's hard to believe this isn't already standard somewhere.
+		/// </remarks>
+		public static void CopyFolder(string sourcePath, string destinationPath)
+		{
+			Directory.CreateDirectory(destinationPath);
+			foreach (var filePath in Directory.GetFiles(sourcePath))
+			{
+				RobustFile.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));
+			}
+			foreach (var dirPath in Directory.GetDirectories(sourcePath))
+			{
+				CopyFolder(dirPath, Path.Combine(destinationPath, Path.GetFileName(dirPath)));
+			}
+		}
+
 	}
 }

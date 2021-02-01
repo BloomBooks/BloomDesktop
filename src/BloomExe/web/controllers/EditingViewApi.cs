@@ -1,7 +1,9 @@
-﻿using System.Windows.Forms;
+﻿using System.IO;
+using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Edit;
 using L10NSharp;
+using SIL.IO;
 
 namespace Bloom.web.controllers
 {
@@ -40,24 +42,33 @@ namespace Bloom.web.controllers
 				return;
 			}
 
-			var fileType = ".wdgt";
-			var dlg = new DialogAdapters.OpenFileDialogAdapter
+			using (var dlg = new DialogAdapters.OpenFileDialogAdapter
 			{
 				Multiselect = false,
 				CheckFileExists = true,
-				Filter = $"{fileType} files|*{fileType}"
-			};
-			var result = dlg.ShowDialog();
-			if (result != DialogResult.OK)
+				Filter = "Widget files|*.wdgt;*.html;*.htm"
+			})
 			{
-				request.ReplyWithText("");
-				return;
-			}
+				var result = dlg.ShowDialog();
+				if (result != DialogResult.OK)
+				{
+					request.ReplyWithText("");
+					return;
+				}
 
-			var fullWidgetPath = dlg.FileName;
-			string activityName = View.Model.MakeActivity(fullWidgetPath);
-			var url = UrlPathString.CreateFromUnencodedString(activityName);
-			request.ReplyWithText(url.UrlEncodedForHttpPath);
+				var fullWidgetPath = dlg.FileName;
+				var ext = Path.GetExtension(fullWidgetPath);
+				if (ext.EndsWith("htm") || ext.EndsWith("html"))
+				{
+					fullWidgetPath = EditingModel.CreateWidgetFromHtmlFolder(fullWidgetPath);
+				}
+				string activityName = View.Model.MakeActivity(fullWidgetPath);
+				var url = UrlPathString.CreateFromUnencodedString(activityName);
+				request.ReplyWithText(url.UrlEncodedForHttpPath);
+				// clean up the temporary widget file we created.
+				if (fullWidgetPath != dlg.FileName)
+					RobustFile.Delete(fullWidgetPath);
+			}
 		}
 
 		private void HandleGetColors(ApiRequest request)
