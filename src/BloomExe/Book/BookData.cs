@@ -1003,7 +1003,8 @@ namespace Bloom.Book
 				"lang",
 				// If there's explicit formatting on an element, we probably don't want the same on every copy of
 				// the corresponding data-book.
-				"style"
+				// Remove "style" is normally what want to do, but there is one case where we do not. See BL-9460.
+				// "style"
 			});
 		// These bloom-managed attributes must actually be removed from the destination if the element we're copying from
 		// doesn't have them.
@@ -1194,6 +1195,7 @@ namespace Bloom.Book
 			if (attrs == null)
 				return;
 			var attrsToRemove = new HashSet<string>(_attributesToRemoveIfAbsent);
+
 			foreach (var tuple in attrs)
 			{
 				attrsToRemove.Remove(tuple.Item1); // won't remove this one!
@@ -1217,6 +1219,7 @@ namespace Bloom.Book
 					node.SetAttribute("class", string.Join(" ", classes.Where(x => !classesToRemove.Contains(x))));
 					continue;
 				}
+
 				node.SetAttribute(tuple.Item1, tuple.Item2);
 			}
 
@@ -1291,32 +1294,48 @@ namespace Bloom.Book
 		{
 			if (!HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
 				return false;
-
-			var getFirstAlt = data.TextVariables[key].TextAlternatives.GetFirstAlternative();
+			var variable = data.TextVariables[key];
+			var getFirstAlt = variable.TextAlternatives.GetFirstAlternative();
+			var otherAttributes = variable.GetAttributeList("*");
 			// Make sure we don't re-encode the new image url.
-			var newImageUrl = KeysOfVariablesThatAreUrlEncoded.Contains(key) ?
-				UrlPathString.CreateFromUrlEncodedString(getFirstAlt) :
-				UrlPathString.CreateFromHtmlXmlEncodedString(getFirstAlt);
+			var newImageUrl = KeysOfVariablesThatAreUrlEncoded.Contains(key)
+				? UrlPathString.CreateFromUrlEncodedString(getFirstAlt)
+				: UrlPathString.CreateFromHtmlXmlEncodedString(getFirstAlt);
 			var oldImageUrl = HtmlDom.GetImageElementUrl(node);
+			// This ElementProxy thing is here for unit testing
 			var imgOrDivWithBackgroundImage = new ElementProxy(node);
-			HtmlDom.SetImageElementUrl(imgOrDivWithBackgroundImage,newImageUrl);
+			HtmlDom.SetImageElementUrl(imgOrDivWithBackgroundImage, newImageUrl);
 
-			if (!newImageUrl.Equals(oldImageUrl))
+			if (_updateImgNode!=null && !newImageUrl.Equals(oldImageUrl))
 			{
-				Guard.AgainstNull(_updateImgNode, "_updateImgNode");
-
 				try
 				{
 					_updateImgNode(node);
 				}
 				catch (TagLib.CorruptFileException e)
 				{
-					NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Problem reading image metadata", newImageUrl.NotEncoded, e);
+					NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Problem reading image metadata",
+						newImageUrl.NotEncoded, e);
 					return false;
 				}
 			}
+
+			// Historically, we've gone back and forth about putting width/height on images. Normally if we find this,
+			// we want to remove it because we now use object-fit:contain instead. However in some styling cases (at least border),
+			// that wasn't sufficient so we need to keep using width/height. We indicate that we're in this situation with this
+			// class on the parent imageContainer. See BL-9460
+
+			// Note that these attributes were already run through the _attributesNotToCopy filter.
+			otherAttributes?.Where(a => a.Item1 != "src").ForEach(a =>
+			{
+				if (a.Item1 == "style" && node.ParentNode.GetOptionalStringAttribute("class", "")
+					    .Contains("bloom-scale-with-code"))
+				{
+					imgOrDivWithBackgroundImage.SetAttribute(a.Item1, a.Item2);
+				}
+			});
 			return true;
-		}
+	}
 
 		/// <summary>
 		/// In some cases, we're better off copying from another national language than leaving the field empty.
@@ -1511,7 +1530,7 @@ namespace Bloom.Book
 				// We just need to make the info, if any, consistent wit the bookdata
 				if (info != null)
 				{
-					string encodedTitle = GetVariableOrNull("originalTitle","*"); 
+					string encodedTitle = GetVariableOrNull("originalTitle","*");
 					info.OriginalTitle = HttpUtility.HtmlDecode(encodedTitle);
 				}
 			} else
@@ -1620,7 +1639,7 @@ namespace Bloom.Book
 					RemoveAllForms(key);
 				}
 			}
-			
+
 			var settings = BrandingSettings.GetSettings(brandingNameOrPath);
 
 			if (settings != null && settings.Presets != null)
