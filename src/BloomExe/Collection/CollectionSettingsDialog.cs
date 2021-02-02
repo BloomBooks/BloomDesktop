@@ -547,7 +547,7 @@ namespace Bloom.Collection
 
 		private void FontSettingsLinkClicked(string langName, int langNum1Based)
 		{ 
-			var langSpec = _collectionSettings.LanguagesZeroBased[langNum1Based - 1];
+			var langSpec = _collectionSettings.GetWritingSystemByIndexForUi(langNum1Based - 1);
 			using (var frm = new ScriptSettingsDialog())
 			{
 				frm.LanguageName = langName;

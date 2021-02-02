@@ -10,7 +10,6 @@ namespace Bloom.Collection
 {
 	public class WritingSystem
 	{
-		private readonly int _languageNumberInCollection;
 		private readonly Func<string> _codeOfDefaultLanguageForNaming;
 		public static LanguageLookupModel LookupIsoCode = new LanguageLookupModel();
 		private string _iso639Code;
@@ -37,15 +36,20 @@ namespace Bloom.Collection
 		public int GetBaseUIFontSizeInPointsForCss() => BaseUIFontSizeInPoints == 0 ? 12 : BaseUIFontSizeInPoints;
 
 		public decimal LineHeight;
-		public string FontName;
 
-		public WritingSystem(int languageNumberInCollection, Func<string> codeOfDefaultLanguageForNaming)
+		private string _fontName;
+		public string FontName
 		{
-			_languageNumberInCollection = languageNumberInCollection;
+			get => _fontName ?? (_fontName = GetDefaultFontName());
+			set => _fontName = value;
+		}
 
+		public WritingSystem(Func<string> codeOfDefaultLanguageForNaming)
+		{
 			//Note: I'm not convinced we actually ever rely on dynamic name lookups anymore?
 			//See: https://issues.bloomlibrary.org/youtrack/issue/BL-7832
 			_codeOfDefaultLanguageForNaming = codeOfDefaultLanguageForNaming;
+			_iso639Code = string.Empty;
 		}
 
 		public string Name { get; private set; }
@@ -95,7 +99,7 @@ namespace Bloom.Collection
 				{
 					string match;
 					if (!LookupIsoCode.GetBestLanguageName(Iso639Code, out match))
-						return $"L{_languageNumberInCollection}-Unknown-" + Iso639Code;
+						return "L1-Unknown-" + Iso639Code;
 					return match;
 				}
 				return name;
@@ -111,17 +115,42 @@ namespace Bloom.Collection
 			Iso639Code = value; // also sets the name
 		}
 
-		public void SaveToXElement(XElement xml)
+		/// <summary>
+		/// Save old-style settings for one writing system.
+		/// </summary>
+		/// <param name="indexInCollection">1-based index!</param>
+		public void SaveToXElement(XElement xml, int indexInCollection)
 		{
-			var pfx = "Language" + _languageNumberInCollection;
-			xml.Add(new XElement(pfx+"Name", Name));
-			xml.Add(new XElement(pfx+"IsCustomName", IsCustomName));
-			xml.Add(new XElement(pfx + "Iso639Code", Iso639Code));
-			xml.Add(new XElement($"DefaultLanguage{_languageNumberInCollection}FontName", FontName));
-			xml.Add(new XElement($"IsLanguage{_languageNumberInCollection}Rtl", IsRightToLeft));
-			xml.Add(new XElement(pfx + "LineHeight", LineHeight));
-			xml.Add(new XElement(pfx+"BreaksLinesOnlyAtSpaces", BreaksLinesOnlyAtSpaces));
-			xml.Add(new XElement(pfx+ "BaseUIFontSizeInPoints", BaseUIFontSizeInPoints));
+			var pfx = "Language" + indexInCollection;
+			xml.Add(new XElement(pfx+"Name",
+				new XAttribute("deprecated", "true"), Name));
+			xml.Add(new XElement(pfx+"IsCustomName",
+				new XAttribute("deprecated", "true"), IsCustomName));
+			xml.Add(new XElement(pfx + "Iso639Code",
+				new XAttribute("deprecated", "true"), Iso639Code));
+			xml.Add(new XElement($"DefaultLanguage{indexInCollection}FontName",
+				new XAttribute("deprecated", "true"), FontName));
+			xml.Add(new XElement($"IsLanguage{indexInCollection}Rtl",
+				new XAttribute("deprecated", "true"), IsRightToLeft));
+			xml.Add(new XElement(pfx + "LineHeight",
+				new XAttribute("deprecated", "true"), LineHeight));
+			xml.Add(new XElement(pfx+"BreaksLinesOnlyAtSpaces",
+				new XAttribute("deprecated", "true"), BreaksLinesOnlyAtSpaces));
+			xml.Add(new XElement(pfx+ "BaseUIFontSizeInPoints",
+				new XAttribute("deprecated", "true"), BaseUIFontSizeInPoints));
+		}
+
+		public void SaveAsLanguageXElement(XElement xml)
+		{
+			xml.Add(new XElement("Language",
+				new XAttribute("tag", Iso639Code),
+				new XAttribute("name", Name),
+				new XAttribute("direction", IsRightToLeft ? "rtl" : "ltr"),
+				new XAttribute("lineHeight", LineHeight),
+				new XAttribute("breakLinesOnlyAtSpaces", BreaksLinesOnlyAtSpaces),
+				new XAttribute("baseUIFontSizeInPoints", BaseUIFontSizeInPoints),
+				new XAttribute("defaultFontName", FontName),
+				new XAttribute("isCustomName", IsCustomName)));
 		}
 
 		public void AddSelectorCssRule(StringBuilder sb, bool omitDirection)
@@ -159,9 +188,11 @@ namespace Bloom.Collection
 		/// <param name="xml"></param>
 		/// <param name="defaultToEnglishIfMissing"></param>
 		/// <param name="languageForDefaultNameLookup">a code or "self" if we should use the iso code for this spec to look it up</param>
-		public void ReadFromXml(XElement xml, bool defaultToEnglishIfMissing,  string languageForDefaultNameLookup)
+		/// <param name="indexInCollection">1-based index!</param>
+		public void ReadFromXml(XElement xml, bool defaultToEnglishIfMissing, string languageForDefaultNameLookup,
+			int indexInCollection)
 		{
-			var pfx = "Language" + _languageNumberInCollection;
+			var pfx = "Language" + indexInCollection;
 
 			/* Enhance (from JT):
 			 When you do this for Language1, the Iso639 setter will initialize Name using _codeOfDefaultLanguageForNaming(). But that will retrieve the Language2 Iso639 code, which hasn't been set yet. I suppose it doesn't matter, since two lines down you overwrite that Name, typically with one saved in the file. If for some reason there isn't one saved in the file, you will look up an English name for it (since you pass that as languageForDefaultNameLookup for Language1).
@@ -171,24 +202,24 @@ namespace Bloom.Collection
 			By the time anything needs Name, Language2's ISO code should be set, so if you need to look up a default name you'll do it in the right language.
 			You could then get rid of the languageForDefaultNameLookup argument.*/
 
-			Iso639Code = ReadString(xml, $"Language{this._languageNumberInCollection}Iso639Code", defaultToEnglishIfMissing?"en":"");
-			IsRightToLeft = ReadBoolean(xml, $"IsLanguage{_languageNumberInCollection}Rtl", false);
+			Iso639Code = CollectionSettings.ReadString(xml, $"Language{indexInCollection}Iso639Code", defaultToEnglishIfMissing?"en":"");
+			IsRightToLeft = CollectionSettings.ReadBoolean(xml, $"IsLanguage{indexInCollection}Rtl", false);
 			
-			Name = ReadString(xml, pfx+"Name", "");
+			Name = CollectionSettings.ReadString(xml, pfx+"Name", "");
 			if (Name == "")
 			{
 				Name = GetLanguageName_NoCache(languageForDefaultNameLookup=="self"?Iso639Code:languageForDefaultNameLookup);
 			}
 			IsCustomName = ReadOrComputeIsCustomName(xml, pfx+"IsCustomName");
 			LineHeight = ReadDecimal(xml, pfx+"LineHeight", 0);
-			FontName = ReadString(xml, $"DefaultLanguage{_languageNumberInCollection}FontName", GetDefaultFontName());
-			BreaksLinesOnlyAtSpaces = ReadBoolean(xml, pfx+"BreaksLinesOnlyAtSpaces", false);
-			BaseUIFontSizeInPoints = ReadInt(xml, pfx + "BaseUIFontSizeInPoints", 0 /* 0 means "default" */);
+			FontName = CollectionSettings.ReadString(xml, $"DefaultLanguage{indexInCollection}FontName", GetDefaultFontName());
+			BreaksLinesOnlyAtSpaces = CollectionSettings.ReadBoolean(xml, pfx+"BreaksLinesOnlyAtSpaces", false);
+			BaseUIFontSizeInPoints = CollectionSettings.ReadInteger(xml, pfx + "BaseUIFontSizeInPoints", 0 /* 0 means "default" */);
 		}
 
 		private bool ReadOrComputeIsCustomName(XElement xml, string id)
 		{
-			string s = ReadString(xml, id, null);
+			string s = CollectionSettings.ReadString(xml, id, null);
 			if (s != null)
 			{
 				bool b;
@@ -214,40 +245,15 @@ namespace Bloom.Collection
 			return Name != language?.Names?.FirstOrDefault();
 		}
 
-		private bool ReadBoolean(XElement xml, string id, bool defaultValue)
+		private static decimal ReadDecimal(XElement xml, string id, decimal defaultValue)
 		{
-			string s = ReadString(xml, id, defaultValue.ToString());
-			bool b;
-			bool.TryParse(s, out b);
-			return b;
-		}
-
-		private decimal ReadDecimal(XElement xml, string id, decimal defaultValue)
-		{
-			var s = ReadString(xml, id, defaultValue.ToString(CultureInfo.InvariantCulture));
+			var s = CollectionSettings.ReadString(xml, id, defaultValue.ToString(CultureInfo.InvariantCulture));
 			decimal d;
 			// REVIEW: if we localize the display of decimal values in the line-height combo box, then this
 			// needs to handle the localized version of the number.  (This happens automatically by removing
 			// the middle two arguments.)
 			Decimal.TryParse(s, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out d);
 			return d;
-		}
-		private int ReadInt(XElement xml, string id, int defaultValue)
-		{
-			var s = ReadString(xml, id, defaultValue.ToString(CultureInfo.InvariantCulture));
-			int i;
-			return int.TryParse(s, out i) ? i : defaultValue;
-		}
-
-		private string ReadString(XElement document, string id, string defaultValue)
-		{
-			var nodes = document.Descendants(id);
-			if (nodes != null && nodes.Count() > 0)
-				return nodes.First().Value;
-			else
-			{
-				return defaultValue;
-			}
 		}
 
 		internal static string GetDefaultFontName()
@@ -266,5 +272,21 @@ namespace Bloom.Collection
 			// one language used in our current tools
 			 return $".lang1InATool[lang='{Iso639Code}']{{font-size: {(BaseUIFontSizeInPoints == 0 ? 10 : BaseUIFontSizeInPoints)}pt;}}";
 		}*/
+
+		public void ReadFromLanguageSubElement(XElement languageElement)
+		{
+			Iso639Code = CollectionSettings.ReadAttribute(languageElement, "tag", "");
+			Name = CollectionSettings.ReadAttribute(languageElement, "name", "Unknown Language");
+
+			IsRightToLeft = string.Equals(CollectionSettings.ReadAttribute(languageElement, "direction", "ltr"),"rtl");
+
+			LineHeight = CollectionSettings.ReadDecimalAttribute(languageElement, "lineHeight", 0);
+
+			BreaksLinesOnlyAtSpaces =
+				string.Equals(CollectionSettings.ReadAttribute(languageElement, "breakLinesOnlyAtSpaces", "false"),"true");
+			FontName = CollectionSettings.ReadAttribute(languageElement, "defaultFontName", GetDefaultFontName());
+			BaseUIFontSizeInPoints = CollectionSettings.ReadIntegerAttribute(languageElement, "baseUIFontSizeInPoints", 0);
+			IsCustomName = string.Equals(CollectionSettings.ReadAttribute(languageElement, "isCustomName", "false"),"true");
+		}
 	}
 }

@@ -5,7 +5,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using Bloom.Api;
@@ -38,11 +37,12 @@ namespace Bloom.Collection
 	{
 		private const int kCurrentOneTimeCheckVersionNumber = 1; // bumping this will trigger a new one time check
 		public const string kDefaultXmatterName = "Traditional";
-		public WritingSystem Language1;
+		public WritingSystem Language1; // TODO: These auto-props may still need to exist, but should just point to "Languages"
 		public WritingSystem Language2;
 		public WritingSystem Language3;
-		public WritingSystem[] LanguagesZeroBased;
-
+		public IEnumerable<WritingSystem> Languages;
+		public IEnumerable<LanguageRole> LanguageRoles;
+		// TODO: Probably sign language is best as a LanguageRole that points into the "Languages" collection.
 		private string _signLanguageIso639Code;
 
 		private const int kDefaultAudioRecordingTrimEndMilliseconds = 40;
@@ -99,19 +99,14 @@ namespace Bloom.Collection
 				{ "Tibetan", "༠༡༢༣༤༥༦༧༨༩"}, // from bo-CN
 			};
 
-
 		public CollectionSettings()
 		{
 			//Note: I'm not convinced we actually ever rely on dynamic name lookups anymore?
 			//See: https://issues.bloomlibrary.org/youtrack/issue/BL-7832
-			Func<string> getCodeOfDefaultLanguageForNaming = ()=> Language2.Iso639Code;
-			Language1 = new WritingSystem(1, getCodeOfDefaultLanguageForNaming);
-			Language2 = new WritingSystem(2,getCodeOfDefaultLanguageForNaming);
-			Language3 = new WritingSystem(3, getCodeOfDefaultLanguageForNaming);
-			LanguagesZeroBased = new WritingSystem[3];
-			this.LanguagesZeroBased[0] = Language1;
-			this.LanguagesZeroBased[1] = Language2;
-			this.LanguagesZeroBased[2] = Language3;
+			Func<string> getCodeOfDefaultLanguageForNaming = () => Language2.Iso639Code;
+			Language1 = new WritingSystem(getCodeOfDefaultLanguageForNaming);
+			Language2 = new WritingSystem(getCodeOfDefaultLanguageForNaming);
+			Language3 = new WritingSystem(getCodeOfDefaultLanguageForNaming);
 
 			BrandingProjectKey = "Default";
 			PageNumberStyle = "Decimal";
@@ -202,6 +197,11 @@ namespace Bloom.Collection
 			}
 		}
 
+		public WritingSystem GetWritingSystemByIndexForUi(int index)
+		{
+			return Languages.Skip(index).FirstOrDefault();
+		}
+
 		private string DefaultLanguageForNamingLanguages()
 		{
 			return Language2.Iso639Code?? "en";
@@ -217,6 +217,7 @@ namespace Bloom.Collection
 				Language1.ChangeIsoCode(value);
 			}
 		}
+
 		public virtual string Language2Iso639Code
 		{
 			get { return Language2.Iso639Code; }
@@ -225,6 +226,7 @@ namespace Bloom.Collection
 				Language2.ChangeIsoCode(value);
 			}
 		}
+
 		public virtual string Language3Iso639Code
 		{
 			get { return Language3.Iso639Code; }
@@ -233,6 +235,7 @@ namespace Bloom.Collection
 				Language3.ChangeIsoCode(value);
 			}
 		}
+
 		public virtual string SignLanguageIso639Code
 		{
 			get { return _signLanguageIso639Code; }
@@ -301,9 +304,9 @@ namespace Bloom.Collection
 
 			XElement xml = new XElement("Collection");
 			xml.Add(new XAttribute("version", "0.2"));
-			Language1.SaveToXElement(xml);
-			Language2.SaveToXElement(xml);
-			Language3.SaveToXElement(xml);
+			Language1.SaveToXElement(xml, 1);
+			Language2.SaveToXElement(xml, 2);
+			Language3.SaveToXElement(xml, 3);
 			xml.Add(new XElement("SignLanguageName", SignLanguageName));
 			xml.Add(new XElement("SignLanguageIso639Code", SignLanguageIso639Code));
 			xml.Add(new XElement("OneTimeCheckVersionNumber", OneTimeCheckVersionNumber));
@@ -318,7 +321,45 @@ namespace Bloom.Collection
 			xml.Add(new XElement("AllowNewBooks", AllowNewBooks.ToString()));
 			xml.Add(new XElement("AudioRecordingMode", AudioRecordingMode.ToString()));
 			xml.Add(new XElement("AudioRecordingTrimEndMilliseconds", AudioRecordingTrimEndMilliseconds));
+			SaveLanguagesToXElement(xml);
+			if (Languages != null && Languages.Any())
+				Logger.WriteEvent(" 1st Lg rtl = " + Languages.First().IsRightToLeft);
+			SaveLanguageRolesToXElement(xml);
 			SIL.IO.RobustIO.SaveXElement(xml, SettingsFilePath);
+		}
+
+		private void SaveLanguagesToXElement(XElement xml)
+		{
+			// If we're still setting up collection data, don't save Languages yet.
+			if (string.IsNullOrEmpty(Language1Iso639Code))
+				return;
+
+			if (Languages == null)
+				Languages = ConvertOldStyleSettingsToLanguageArray();
+
+			var languagesElt = new XElement("Languages");
+			foreach (var ws in Languages)
+			{
+				ws.SaveAsLanguageXElement(languagesElt);
+			}
+			xml.Add(languagesElt);
+		}
+
+		private void SaveLanguageRolesToXElement(XElement xml)
+		{
+			// If we're still setting up collection data, don't save LanguageRoles yet.
+			if (string.IsNullOrEmpty(Language1Iso639Code))
+				return;
+
+			if (LanguageRoles == null)
+				LanguageRoles = ConvertOldStyleSettingsToRoleArray();
+
+			var rolesElt = new XElement("LanguageRoles");
+			foreach (var role in LanguageRoles)
+			{
+				role.SaveAsLanguageRoleXElement(rolesElt);
+			}
+			xml.Add(rolesElt);
 		}
 
 		public string GetCollectionStylesCss(bool omitDirection)
@@ -372,9 +413,9 @@ namespace Bloom.Collection
 
 				var xml = XElement.Parse(settingsContent);
 				
-				Language1.ReadFromXml(xml, true, "en");
-				Language2.ReadFromXml(xml, true,"self");
-				Language3.ReadFromXml(xml, true,  Language2.Iso639Code);
+				Language1.ReadFromXml(xml, true, "en", 1);
+				Language2.ReadFromXml(xml, true,"self", 2);
+				Language3.ReadFromXml(xml, true,  Language2.Iso639Code, 3);
 
 				SignLanguageIso639Code = ReadString(xml, "SignLanguageIso639Code",  /* old name */
 				ReadString(xml, "SignLanguageIso639Code", ""));
@@ -415,10 +456,19 @@ namespace Bloom.Collection
 				AudioRecordingMode = parsedAudioRecordingMode;
 				AudioRecordingTrimEndMilliseconds = ReadInteger(xml, "AudioRecordingTrimEndMilliseconds",
 					kDefaultAudioRecordingTrimEndMilliseconds);
+
+				// BL-9456: Fill in the new Languages property
+				var languageElements = ReadArray(xml, "Languages", "Language");
+				Languages = languageElements.Any() ? ReadLanguages(languageElements) : ConvertOldStyleSettingsToLanguageArray();
+
+				// Fill in the new LanguageRoles property
+				var roleElements = ReadArray(xml, "LanguageRoles", "LanguageRole");
+				LanguageRoles = roleElements.Any() ? ReadLanguageRoles(roleElements) : ConvertOldStyleSettingsToRoleArray();
+
 			}
 			catch (Exception e)
 			{
-				string settingsContents = "";
+				string settingsContents;
 				try
 				{
 					settingsContents = RobustFile.ReadAllText(SettingsFilePath);
@@ -456,6 +506,92 @@ namespace Bloom.Collection
 			SetAnalyticsProperties();
 		}
 
+		private IEnumerable<WritingSystem> ConvertOldStyleSettingsToLanguageArray()
+		{
+			var results = new List<WritingSystem> { Language1 };
+			if (!string.IsNullOrEmpty(Language2Iso639Code))
+				results.Add(Language2);
+			if (!string.IsNullOrEmpty(Language3Iso639Code))
+				results.Add(Language3);
+			return results;
+		}
+
+		private IEnumerable<LanguageRole> ConvertOldStyleSettingsToRoleArray()
+		{
+			// The best we can probably do is assume that Language1 is equivalent to content1
+			// and Language2 is equivalent to contentNational1.
+			var results = new List<LanguageRole> {new LanguageRole("content1", Language1Iso639Code)};
+
+			if (!string.IsNullOrEmpty(Language2Iso639Code))
+			{
+				results.Add(new LanguageRole("contentNational1", Language2Iso639Code));
+			}
+			return results;
+		}
+
+		private static IEnumerable<LanguageRole> ReadLanguageRoles(IEnumerable<XElement> roleElements)
+		{
+			var results = new List<LanguageRole>();
+			foreach (var roleElement in roleElements)
+			{
+				var id = ReadAttribute(roleElement, "id", "unknown");
+				var isoCode = ReadAttribute(roleElement, "language", "");
+				var name = ReadAttribute(roleElement, "name", "");
+				var role = new LanguageRole(id, isoCode, name);
+				results.Add(role);
+			}
+
+			return results;
+		}
+
+		private IEnumerable<WritingSystem> ReadLanguages(IEnumerable<XElement> languageElements)
+		{
+			var results = new List<WritingSystem>();
+			foreach (var languageElement in languageElements)
+			{
+				var ws = new WritingSystem(() => Language2.Iso639Code);
+				ws.ReadFromLanguageSubElement(languageElement);
+				results.Add(ws);
+			}
+			// Eventually, perhaps we can get rid of this method when "everybody" has switched over to the new settings format.
+			UpdateOldStylePropsFromLanguages(results);
+
+			return results;
+		}
+
+		private void UpdateOldStylePropsFromLanguages(IEnumerable<WritingSystem> languages)
+		{
+			Func<string> getCodeOfDefaultLanguageForNaming = () => Language2.Iso639Code;
+			var langCount = languages.Count();
+			if (langCount > 0)
+			{
+				Language1 = languages.First();
+				if (Language1.Iso639Code != Language1Iso639Code)
+					Language1Iso639Code = Language1.Iso639Code;
+			}
+
+			Language2 = langCount > 1 ?
+				languages.Skip(1).First() :
+				new WritingSystem(getCodeOfDefaultLanguageForNaming);
+			if (Language2.Iso639Code != Language2Iso639Code)
+				Language2Iso639Code = Language2.Iso639Code;
+
+			Language3 = langCount > 2 ?
+				languages.Skip(2).First() :
+				new WritingSystem(getCodeOfDefaultLanguageForNaming);
+			if (Language3.Iso639Code != Language3Iso639Code)
+				Language3Iso639Code = Language3.Iso639Code;
+		}
+
+		private static IEnumerable<XElement> ReadArray(XContainer xml, string containerId, string subElementId)
+		{
+			var containerElements = xml.Descendants(containerId);
+			if (!containerElements.Any())
+				return new List<XElement>();
+			var subElements = containerElements.First().Descendants(subElementId);
+			return subElements.Any() ? subElements : new List<XElement>();
+		}
+
 		private void DoOneTimeCheck()
 		{
 			// We had a migration from Andika to Andika New Basic for a long time, but it's no longer useful.
@@ -465,7 +601,7 @@ namespace Bloom.Collection
 			Save(); // save updated settings
 		}
 
-		private bool ReadBoolean(XElement xml, string id, bool defaultValue)
+		internal static bool ReadBoolean(XElement xml, string id, bool defaultValue)
 		{
 			string s = ReadString(xml, id, defaultValue.ToString());
 			bool b;
@@ -473,7 +609,7 @@ namespace Bloom.Collection
 			return b;
 		}
 
-		private int ReadInteger(XElement xml, string id, int defaultValue)
+		internal static int ReadInteger(XElement xml, string id, int defaultValue)
 		{
 			var s = ReadString(xml, id, defaultValue.ToString(CultureInfo.InvariantCulture));
 			int i;
@@ -482,17 +618,32 @@ namespace Bloom.Collection
 		}
 
 
-		private string ReadString(XElement document, string id, string defaultValue)
+		internal static string ReadString(XElement document, string id, string defaultValue)
 		{
 			var nodes = document.Descendants(id);
-			if (nodes != null && nodes.Count() > 0)
-				return nodes.First().Value;
-			else
-			{
-				return defaultValue;
-			}
+
+			return nodes.Any() ? nodes.First().Value : defaultValue;
 		}
 
+		internal static string ReadAttribute(XElement mainElement, string attributeName, string defaultValue)
+		{
+			var xAttribute = mainElement.Attribute(attributeName);
+			return xAttribute?.Value ?? defaultValue;
+		}
+
+		internal static decimal ReadDecimalAttribute(XElement mainElement, string attributeName, decimal defaultValue)
+		{
+			var stringValue = ReadAttribute(mainElement, attributeName, defaultValue.ToString(CultureInfo.InvariantCulture));
+			decimal.TryParse(stringValue, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out decimal d);
+			return d;
+		}
+
+		internal static int ReadIntegerAttribute(XElement mainElement, string attributeName, int defaultValue)
+		{
+			var stringValue = ReadAttribute(mainElement, attributeName, defaultValue.ToString(CultureInfo.InvariantCulture));
+			int.TryParse(stringValue, out int intVal);
+			return intVal;
+		}
 
 		public virtual string CollectionName { get; protected set; }
 

@@ -320,6 +320,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Book\LicenseChecker.cs" />
+    <Compile Include="Collection\LanguageRole.cs" />
     <Compile Include="FatalExceptionHandler.cs" />
     <Compile Include="MiscUI\BrowserDialog.cs">
       <SubType>Form</SubType>
