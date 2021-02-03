@@ -196,13 +196,13 @@ namespace Bloom.Book
 		{
 			get
 			{
-				return GetBestTitleForDisplay(_bookData.GetMultiTextVariableOrEmpty("bookTitle"), _bookData, IsEditable);
+				return GetBestTitleForDisplay(_bookData.GetMultiTextVariableOrEmpty("bookTitle"), _bookData.GetBasicBookLanguageCodes().ToList(), IsEditable);
 			}
 		}
 
-		public static string GetBestTitleForDisplay(MultiTextBase title, BookData bookData, bool isEditable)
+		public static string GetBestTitleForDisplay(MultiTextBase title, List<string> langCodes, bool isEditable)
 		{
-			var display = title.GetExactAlternative(bookData.Language1.Iso639Code);
+			var display = title.GetExactAlternative(langCodes[0]);
 			if (string.IsNullOrEmpty(display))
 			{
 				//the SIL-LEAD project, SHRP (around 2012-2016) had books that just had an English name, before we changed Bloom
@@ -226,12 +226,9 @@ namespace Bloom.Book
 					var orderedPreferences = new List<string>();
 					orderedPreferences.Add(LocalizationManager.UILanguageId);
 
-					//already checked for this, previously. orderedPreferences.Add(<bookData.Language1.Iso639Code>);
-					if (!String.IsNullOrEmpty(bookData.Language2.Iso639Code))
-						orderedPreferences.Add(bookData.Language2.Iso639Code);
-					if (!String.IsNullOrEmpty(bookData.Language3.Iso639Code))
-						orderedPreferences.Add(bookData.Language3.Iso639Code);
-
+					// we already know that langCodes[0] does not have a title
+					for (int i = 1; i < langCodes.Count; ++i)
+						orderedPreferences.Add(langCodes[i]);
 					orderedPreferences.Add("en");
 					orderedPreferences.Add("fr");
 					orderedPreferences.Add("es");
@@ -825,16 +822,10 @@ namespace Bloom.Book
 				XmlElement groupElement in
 				bookDOM.Body.SafeSelectNodes("descendant::*[contains(@class,'bloom-translationGroup')]"))
 			{
-				// Even though the user only had duplicate vernacular divs, let's check all three
+				// Even though the user only had duplicate vernacular divs, let's check all the book
 				// languages just to be safe.
-				var lang1 = _bookData.Language1.Iso639Code;
-				TranslationGroupManager.FixDuplicateLanguageDivs(groupElement, lang1);
-				var lang2 = _bookData.Language2.Iso639Code;
-				if (!String.IsNullOrEmpty(lang2) && lang2 != lang1)
-					TranslationGroupManager.FixDuplicateLanguageDivs(groupElement, lang2);
-				var lang3 = _bookData.Language3.Iso639Code;
-				if (!String.IsNullOrEmpty(lang3) && lang3 != lang2 && lang3 != lang1)
-					TranslationGroupManager.FixDuplicateLanguageDivs(groupElement, lang3);
+				foreach (var lang in _bookData.GetAllBookLanguageCodes())
+					TranslationGroupManager.FixDuplicateLanguageDivs(groupElement, lang);
 			}
 		}
 
@@ -972,6 +963,8 @@ namespace Bloom.Book
 
 		private void AddLanguageAttributesToBody(HtmlDom bookDom)
 		{
+			// TODO: figure out what to do when we expand beyond three languages.  (Perhaps
+			// nothing? what are these attributes used for?)
 			bookDom.Body.SetAttribute("data-L1", this._bookData.Language1.Iso639Code);
 			bookDom.Body.SetAttribute("data-L2", this._bookData.Language2.Iso639Code);
 			bookDom.Body.SetAttribute("data-L3", this._bookData.Language3.Iso639Code );
@@ -1209,18 +1202,8 @@ namespace Bloom.Book
 			BookInfo.MetaData.PageNumberStyle = CollectionSettings.PageNumberStyle;
 			if (BookInfo.MetaData.DisplayNames == null)
 				BookInfo.MetaData.DisplayNames = new Dictionary<string,string>();
-			var language1 = GetLanguage(LanguageSlot.Language1);
-			var language2 = GetLanguage(LanguageSlot.Language2);
-			var language3 = GetLanguage(LanguageSlot.Language3);
-			BookInfo.MetaData.DisplayNames[language1.Iso639Code] = language1.Name;
-			if (language2.Iso639Code != language1.Iso639Code)
-				BookInfo.MetaData.DisplayNames[language2.Iso639Code] = language2.Name;
-			if (!String.IsNullOrEmpty(language3.Iso639Code) &&
-				language3.Iso639Code != language1.Iso639Code &&
-				language3.Iso639Code != language2.Iso639Code)
-			{
-				BookInfo.MetaData.DisplayNames[language3.Iso639Code] = language3.Name;
-			}
+			foreach (var lang in _bookData.GetAllBookLanguages())
+				BookInfo.MetaData.DisplayNames[lang.Iso639Code] = lang.Name;
 			// These settings will be saved to the meta.json file the next time the book itself is saved.
 		}
 
@@ -3891,7 +3874,7 @@ namespace Bloom.Book
 		/// <returns>A prioritized enumerable of language codes</returns>
 		public IEnumerable<string> GetLanguagePrioritiesForTranslatedTextOnPage(bool includeLang1 = true)
 		{
-			return _bookData.GetLanguagePrioritiesForTranslatedTextOnPage(includeLang1);
+			return _bookData.GetLanguagePrioritiesForLocalizedTextOnPage(includeLang1);
 		}
 
 		/// <summary>

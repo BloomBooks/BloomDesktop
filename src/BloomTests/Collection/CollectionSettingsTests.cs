@@ -135,7 +135,7 @@ namespace BloomTests.Collection
 			settings.Language1Iso639Code = lang1;
 			settings.Language2Iso639Code = lang2;
 			settings.Language3Iso639Code = lang3;
-			Assert.That(bookData.GetLanguagePrioritiesForTranslatedTextOnPage(), Is.EqualTo(results));
+			Assert.That(bookData.GetLanguagePrioritiesForLocalizedTextOnPage(), Is.EqualTo(results));
 		}
 
 		[TestCase("xyz", "abc", null, new[] { "abc", "en" })]
@@ -146,7 +146,7 @@ namespace BloomTests.Collection
 			settings.Language1Iso639Code = lang1;
 			settings.Language2Iso639Code = lang2;
 			settings.Language3Iso639Code = lang3;
-			Assert.That(bookData.GetLanguagePrioritiesForTranslatedTextOnPage(false), Is.EqualTo(results));
+			Assert.That(bookData.GetLanguagePrioritiesForLocalizedTextOnPage(false), Is.EqualTo(results));
 		}
 
 		[TestCase("", "2")] // default

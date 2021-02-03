@@ -37,19 +37,12 @@ namespace Bloom.Book
 			dictionaryScriptElement.SetAttribute("id", "ui-dictionary");
 			var d = new Dictionary<string, string>();
 
-			var language1 = bookData.Language1;
-			var language2 = bookData.Language2;
-			var language3 = bookData.Language3;
-			d.Add(language1.Iso639Code, language1.Name);
-			if (!String.IsNullOrEmpty(language2.Iso639Code))
-				SafelyAddLanguage(d, language2.Iso639Code, language2.GetNameInLanguage(language2.Iso639Code));
-			if (!String.IsNullOrEmpty(language3.Iso639Code))
-				SafelyAddLanguage(d, language3.Iso639Code, language3.GetNameInLanguage(language3.Iso639Code));
-
-			SafelyAddLanguage(d, "vernacularLang", language1.Iso639Code);//use for making the vernacular the first tab
-			SafelyAddLanguage(d, "{V}", language1.Name);
-			SafelyAddLanguage(d, "{N1}", language2.GetNameInLanguage(language2.Iso639Code));
-			SafelyAddLanguage(d, "{N2}", language3.GetNameInLanguage(language3.Iso639Code));
+			foreach (var lang in bookData.GetAllBookLanguages())
+				SafelyAddLanguage(d, lang.Iso639Code, lang.GetNameInLanguage(lang.Iso639Code));
+			SafelyAddLanguage(d, "vernacularLang", bookData.Language1.Iso639Code);//use for making the vernacular the first tab
+			SafelyAddLanguage(d, "{V}", bookData.Language1.Name);
+			SafelyAddLanguage(d, "{N1}", bookData.Language2.GetNameInLanguage(bookData.Language2.Iso639Code));
+			SafelyAddLanguage(d, "{N2}", bookData.Language3.GetNameInLanguage(bookData.Language3.Iso639Code));
 
 			// TODO: Eventually we need to look through all .bloom-translationGroup elements on the current page to determine
 			// whether there is text in a language not yet added to the dictionary.

@@ -25,7 +25,7 @@ namespace Bloom.Book
 	///	</div>
 
 	/// </summary>
-	public class TranslationGroupManager
+	public static class TranslationGroupManager
 	{
 		/// <summary>
 		/// For each group of editable elements in the div which have lang attributes  (normally, a .bloom-translationGroup div),
@@ -36,14 +36,9 @@ namespace Bloom.Book
 		{
 			GenerateEditableDivsWithPreTranslatedContent(pageOrDocumentNode);
 
-			PrepareElementsOnPageOneLanguage(pageOrDocumentNode, bookData.Language1.Iso639Code);
-			PrepareElementsOnPageOneLanguage(pageOrDocumentNode, bookData.Language2.Iso639Code);
+			foreach (var code in bookData.GetBasicBookLanguageCodes())
+				PrepareElementsOnPageOneLanguage(pageOrDocumentNode, code);
 
-			var language3 = bookData.Language3;
-			if (!string.IsNullOrEmpty(language3.Iso639Code))
-			{
-				PrepareElementsOnPageOneLanguage(pageOrDocumentNode, language3.Iso639Code);
-			}
 			FixGroupStyleSettings(pageOrDocumentNode);
 		}
 
@@ -144,6 +139,9 @@ namespace Bloom.Book
 		/// This is used when a book is first created from a source; without it, if the shell maker left the book as trilingual when working on it,
 		/// then every time someone created a new book based on it, it too would be trilingual.
 		/// </summary>
+		/// <remarks>
+		/// This method explicitly used the CollectionSettings languages in creating a new book.
+		/// </remarks>
 		public static void SetInitialMultilingualSetting(BookData bookData, int oneTwoOrThreeContentLanguages)
 		{
 			//var multilingualClass =  new string[]{"bloom-monolingual", "bloom-bilingual","bloom-trilingual"}[oneTwoOrThreeContentLanguages-1];
@@ -153,16 +151,16 @@ namespace Bloom.Book
 			if (oneTwoOrThreeContentLanguages < 2)
 				bookData.RemoveAllForms("contentLanguage2");
 
-			var language1 = bookData.Language1;
+			var language1 = bookData.CollectionSettings.Language1;
 			bookData.Set("contentLanguage1", language1.Iso639Code, false);
 			bookData.Set("contentLanguage1Rtl", language1.IsRightToLeft.ToString(), false);
 			if (oneTwoOrThreeContentLanguages > 1)
 			{
-				var language2 = bookData.Language2;
+				var language2 = bookData.CollectionSettings.Language2;
 				bookData.Set("contentLanguage2", language2.Iso639Code, false);
 				bookData.Set("contentLanguage2Rtl", language2.IsRightToLeft.ToString(), false);
 			}
-			var language3 = bookData.Language3;
+			var language3 = bookData.CollectionSettings.Language3;
 			if (oneTwoOrThreeContentLanguages > 2 && !string.IsNullOrEmpty(language3.Iso639Code))
 			{
 				bookData.Set("contentLanguage3", language3.Iso639Code, false);
@@ -291,7 +289,7 @@ namespace Bloom.Book
 				|| string.IsNullOrWhiteSpace(dataDefaultLanguages[0])
 				|| dataDefaultLanguages[0].Equals("auto",StringComparison.InvariantCultureIgnoreCase))
 			{
-					return lang == bookData.Language1.Iso639Code || lang == contentLanguageIso2 || lang == contentLanguageIso3;
+				return bookData.GetBasicBookLanguageCodes().Any(code => code == lang);
 			}
 			else
 			{

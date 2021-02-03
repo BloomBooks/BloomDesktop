@@ -274,7 +274,7 @@ namespace Bloom.Book
 				int stage;
 				if (int.TryParse(stageString, out stage) && CollectionSettings != null)
 				{
-					var settingsPath = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(this);
+					var settingsPath = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(CollectionSettings);
 					if (File.Exists(settingsPath))
 					{
 						try
@@ -775,7 +775,7 @@ namespace Bloom.Book
 				string location = "";
 				var separator = LocalizationManager.GetString("EditTab.FrontMatter.ListSeparator", ", ",
 					"This is used to separate items in a list, such as 'Province, District, Country' on the Title Page. For English, that means comma followed by a space. Don't forget the space if your script uses them.",
-					GetLanguagePrioritiesForTranslatedTextOnPage(false), out _);
+					GetLanguagePrioritiesForLocalizedTextOnPage(false), out _);
 				if (!String.IsNullOrEmpty(collectionSettings.District))
 					location += collectionSettings.District + separator;
 				if (!String.IsNullOrEmpty(collectionSettings.Province))
@@ -1558,13 +1558,14 @@ namespace Bloom.Book
 		{
 			get
 			{
-				return new string[]
+				var langs = new List<string>();
+				langs.AddRange(GetAllBookLanguageCodes());
+				foreach (var code in new[] { "en", "fr", "th", "pt", "*"})
 				{
-					Language1.Iso639Code??"",
-					Language2.Iso639Code??"",
-					Language3.Iso639Code ?? "",
-					"en", "fr", "th", "pt", "*"
-				};
+					if (!langs.Any(s => s == code))
+						langs.Add(code);
+				}
+				return langs.ToArray();
 			}
 		}
 
@@ -1736,15 +1737,92 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// Returns an ordered list of distinct languages actively used in this book (from L1,
+		/// L2, and L3).  Note that L1 and L2 are always defined, and L3 may or may not be
+		/// defined.  The returned list will have 1, 2, or 3 items in it.  L1 will always be
+		/// the first language, unless includeLanguage1 is set false.  Then L2 will be the first
+		/// language (even if it is the same as L1).
+		/// </summary>
+		/// <remarks>
+		/// Places where GetBasicBookLanguages is used should be examined to see if GetAllBookLanguages
+		/// should be used instead.  It's conceivable in the long run that this method may or may not
+		/// be needed.
+		/// </remarks>
+		public List<WritingSystem> GetBasicBookLanguages(bool includeLanguage1 = true)
+		{
+			var langs = new List<WritingSystem>();
+			if (includeLanguage1)
+				langs.Add(Language1);
+			if (!includeLanguage1 || Language2.Iso639Code != Language1.Iso639Code)
+				langs.Add(Language2);
+			if (!String.IsNullOrEmpty(Language3.Iso639Code) && !langs.Any(ws => ws.Iso639Code == Language3.Iso639Code))
+				langs.Add(Language3);
+			return langs;
+		}
+		/// <summary>
+		/// Returns an ordered list of codes of distinct languages actively used in this book
+		/// (from L1, L2, and L3).  Note that L1 and L2 are always defined, and L3 may or may
+		/// not be defined.  The returned list will have 1, 2, or 3 items in it.  L1 will always
+		/// be the first language, unless includeLanguage1 is set false.  Then L2 will be the
+		/// first language (even if it is the same as L1).
+		/// </summary>
+		/// <remarks>
+		/// Places where GetBasicBookLanguageCodes is used should be examined to see if
+		/// GetAllBookLanguageCodes should be used instead.  It's conceivable in the long run
+		/// that this method may or may not be needed.
+		/// </remarks>
+		public List<string> GetBasicBookLanguageCodes(bool includeLanguage1 = true)
+		{
+			var langCodes = new List<string>();
+			if (includeLanguage1)
+				langCodes.Add(Language1.Iso639Code);
+			if (!includeLanguage1 || Language2.Iso639Code != Language1.Iso639Code)
+				langCodes.Add(Language2.Iso639Code);
+			if (!String.IsNullOrEmpty(Language3.Iso639Code) && !langCodes.Any(code => code == Language3.Iso639Code))
+				langCodes.Add(Language3.Iso639Code);
+			return langCodes;
+		}
+
+		/// <summary>
+		/// Return an ordered list of distinct languages used in this book.
+		/// L1 will always be first, following by L2 if different, and then L3 if it exists and
+		/// is different.  The order of any remainng languages is (at the moment) undefined.
+		/// L1 will always be the first language, unless includeLanguage1 is set false.  Then
+		/// L2 will be the first language (even if it is the same as L1).
+		/// </summary>
+		/// <remarks>
+		/// This method obviously will need to be worked on...
+		/// </remarks>
+		public List<WritingSystem> GetAllBookLanguages(bool includeLanguage1 = true)
+		{
+			return GetBasicBookLanguages(includeLanguage1);	// until we get a better list to work with...
+		}
+		/// <summary>
+		/// Return an ordered list of codes of distinct languages used in this book.
+		/// L1 will always be first, following by L2 if different, and then L3 if it exists and
+		/// is different.  The order of any remainng languages is (at the moment) undefined.
+		/// L1 will always be the first language, unless includeLanguage1 is set false.  Then
+		/// L2 will be the first language (even if it is the same as L1).
+		/// </summary>
+		/// <remarks>
+		/// This method obviously will need to be worked on...
+		/// </remarks>
+		public List<string> GetAllBookLanguageCodes(bool includeLanguage1 = true)
+		{
+			return GetBasicBookLanguageCodes(includeLanguage1);	// until we get a better list to work with...
+		}
+
+		/// <summary>
 		/// Given a choice, what language should we use to display text on the page (not in the UI, which is controlled by the UI Language)
 		/// </summary>
 		/// <returns>A prioritized enumerable of language codes</returns>
-		public IEnumerable<string> GetLanguagePrioritiesForTranslatedTextOnPage(bool includeLang1 = true)
+		public IEnumerable<string> GetLanguagePrioritiesForLocalizedTextOnPage(bool includeLang1 = true)
 		{
-			List<string> langCodes = new List<string> { Language2.Iso639Code, Language3.Iso639Code, "en" };
-			if (includeLang1)
-				langCodes.Insert(0, Language1.Iso639Code);
-			langCodes = langCodes.Where(lc => !string.IsNullOrWhiteSpace(lc)).ToList();
+
+			var langCodes = new List<string>();
+			langCodes.AddRange(GetBasicBookLanguageCodes(includeLang1));
+			if (!langCodes.Contains("en"))
+				langCodes.Add("en");
 
 			// reverse-order loop so that given e.g. zh-Hans followed by zh-Hant we insert zh-CN after the second one.
 			// That is, we'll prefer either of the explicit variants to the fall-back.
@@ -1777,7 +1855,7 @@ namespace Bloom.Book
 			{
 				if (pashtoLanguages.Contains(langCodes[i]))
 				{
-					langCodes.InsertRange(i + 1, tryTheseLanguageCodes.Where(lc => !lc.Equals(langCodes[i])));
+					langCodes.InsertRange(i + 1, tryTheseLanguageCodes.Where(lc => !langCodes.Contains(lc)));
 					break;
 				}
 			}
@@ -1787,16 +1865,14 @@ namespace Bloom.Book
 		internal LanguageDescriptor[] MakeLanguageUploadData(string[] isoCodes)
 		{
 			var result = new LanguageDescriptor[isoCodes.Length];
+			var bookLangs = GetBasicBookLanguages();
 			for (int i = 0; i < isoCodes.Length; i++)
 			{
 				var code = isoCodes[i];
-				string name;
-				if (code == Language1.Iso639Code)
-					name = Language1.Name;
-				else if (code == Language2.Iso639Code)
-					name = Language2.Name;
-				else if (code == Language3.Iso639Code)
-					name = Language3.Name;
+				string name = null;
+				var lang = bookLangs.FirstOrDefault(ws => ws.Iso639Code == code);
+				if (lang != null)
+					name = lang.Name;
 				else
 					WritingSystem.LookupIsoCode.GetBestLanguageName(code, out name);
 				string ethCode;

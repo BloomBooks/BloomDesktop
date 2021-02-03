@@ -102,7 +102,7 @@ namespace Bloom.Api
 						request.ReplyWithJson(GetReaderSettings(request.CurrentBook.BookData));
 					else
 					{
-						var path = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(request.CurrentBook.BookData);
+						var path = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(request.CurrentCollectionSettings);
 						var content = request.RequiredPostJson();
 						RobustFile.WriteAllText(path, content, Encoding.UTF8);
 						request.PostSucceeded();
@@ -347,7 +347,7 @@ namespace Bloom.Api
 
 		private static string GetReaderSettings(BookData bookData)
 		{
-			var settingsPath = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(bookData);
+			var settingsPath = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(bookData.CollectionSettings);
 			var jsonSettings = "";
 			// if file exists, return current settings
 			if (RobustFile.Exists(settingsPath))

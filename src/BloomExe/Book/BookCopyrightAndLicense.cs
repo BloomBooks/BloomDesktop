@@ -98,15 +98,11 @@ namespace Bloom.Book
 
 			if (bookData != null)
 			{
-				var bestAltString = multiTextBase.GetBestAlternativeString(
-					new[]
-					{
-						bookData.Language1.Iso639Code,
-						bookData.Language2.Iso639Code,
-						bookData.Language3.Iso639Code,
-						"*", "en"
-					}
-				);
+				var langs = new List<string>();
+				langs.AddRange(bookData.GetAllBookLanguageCodes());
+				langs.Add("*");
+				langs.Add("en");
+				var bestAltString = multiTextBase.GetBestAlternativeString(langs);
 				if (!string.IsNullOrEmpty(bestAltString))
 					alternative = bestAltString;
 			}
@@ -155,7 +151,7 @@ namespace Bloom.Book
 			//could instead just be generated when we update the page. However, for backwards compatibility (prior to 3.6),
 			//we localize it and place it in the datadiv.
 			dom.RemoveBookSetting("licenseDescription");
-			var description = metadata.License.GetDescription(bookData.GetLanguagePrioritiesForTranslatedTextOnPage(), out languageUsedForDescription);
+			var description = metadata.License.GetDescription(bookData.GetLanguagePrioritiesForLocalizedTextOnPage(), out languageUsedForDescription);
 			dom.SetBookSetting("licenseDescription", languageUsedForDescription, ConvertNewLinesToHtmlBreaks(description));
 
 			// Book may have old licenseNotes, typically in 'en'. This can certainly show up again if licenseNotes in '*' is removed,
@@ -191,7 +187,7 @@ namespace Bloom.Book
 		{
 			CopyItemToFieldsInPages(dom, "copyright");
 			CopyItemToFieldsInPages(dom, "licenseUrl");
-			CopyItemToFieldsInPages(dom, "licenseDescription", languagePreferences:bookData.GetLanguagePrioritiesForTranslatedTextOnPage().ToArray());
+			CopyItemToFieldsInPages(dom, "licenseDescription", languagePreferences:bookData.GetLanguagePrioritiesForLocalizedTextOnPage().ToArray());
 			CopyItemToFieldsInPages(dom, "licenseNotes");
 			CopyItemToFieldsInPages(dom, "licenseImage", valueAttribute:"src");
 			// If we're using the original copyright, we don't need to show it separately.
@@ -352,11 +348,11 @@ namespace Bloom.Book
 			if (!IsDerivative(originalMetadata))
 				return null;
 
-			var languagePriorityIds = bookData.GetLanguagePrioritiesForTranslatedTextOnPage(true);
+			var languagePriorityIds = bookData.GetLanguagePrioritiesForLocalizedTextOnPage(true);
 
 			var license = originalMetadata.License.GetMinimalFormForCredits(languagePriorityIds, out _);
 			string originalLicenseSentence;
-			languagePriorityIds = bookData.GetLanguagePrioritiesForTranslatedTextOnPage(false);
+			languagePriorityIds = bookData.GetLanguagePrioritiesForLocalizedTextOnPage(false);
 			// The originalTitle strategy used here is not ideal. We would prefer to have a placeholder specifically for it
 			// in both EditTab.FrontMatter.OriginalCopyrightSentence and EditTab.FrontMatter.OriginalHadNoCopyrightSentence.
 			// But we don't want to require a new set of translations if we can avoid it.

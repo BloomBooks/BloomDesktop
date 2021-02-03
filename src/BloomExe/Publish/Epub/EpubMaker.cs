@@ -243,15 +243,7 @@ namespace Bloom.Publish.Epub
 
 			progress.Message("BuildingEPub", comment: "Shown in a progress box when Bloom is starting to create an ePUB",
 				message: "Building ePUB");
-			if (String.IsNullOrEmpty(Book.BookData.Language3.Iso639Code))
-				_langsForLocalization = new string[]
-					{Book.BookData.Language1.Iso639Code, Book.BookData.Language2.Iso639Code};
-			else
-				_langsForLocalization = new string[]
-				{
-					Book.BookData.Language1.Iso639Code, Book.BookData.Language2.Iso639Code,
-					Book.BookData.Language3.Iso639Code
-				};
+			_langsForLocalization = Book.BookData.GetBasicBookLanguageCodes().ToArray();
 
 			// robustly come up with a directory we can use, even if previously used directories are locked somehow
 			Directory.CreateDirectory(EpubExportRootFolder); // this is ok if it already exists
@@ -1034,14 +1026,10 @@ namespace Bloom.Publish.Epub
 			// REVIEW: is BODY always ltr, or should it be the same as Language1?  Having BODY be ltr for a book in Arabic or Hebrew
 			// seems counterintuitive even if all the div elements are marked correctly.
 			_directionSettings.Add("body", this.Book.BookData.Language1.IsRightToLeft ? "rtl" : "ltr");
-			_directionSettings.Add(this.Book.BookData.Language1.Iso639Code,
-				this.Book.BookData.Language1.IsRightToLeft ? "rtl" : "ltr");
-			if (!_directionSettings.ContainsKey(this.Book.BookData.Language2.Iso639Code))
-				_directionSettings.Add(this.Book.BookData.Language2.Iso639Code,
-					this.Book.BookData.Language2.IsRightToLeft ? "rtl" : "ltr");
-			if (!String.IsNullOrEmpty(this.Book.BookData.Language3.Iso639Code) && !_directionSettings.ContainsKey(this.Book.BookData.Language3.Iso639Code))
-				_directionSettings.Add(this.Book.BookData.Language3.Iso639Code,
-					this.Book.BookData.Language3.IsRightToLeft ? "rtl" : "ltr");
+			foreach (var lang in this.Book.BookData.GetBasicBookLanguages())
+			{
+				_directionSettings.Add(lang.Iso639Code, lang.IsRightToLeft ? "rtl" : "ltr");
+			}
 		}
 
 		private void SetDirAttributes(HtmlDom pageDom)

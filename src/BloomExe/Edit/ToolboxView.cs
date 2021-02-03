@@ -64,7 +64,7 @@ namespace Bloom.Edit
 		/// </summary>
 		public static void SetupToolboxForCollection(CollectionSettings settings)
 		{
-			DecodableReaderToolSettings.CopyRelevantNewReaderSettings(new BookData(new HtmlDom("<html><body></body></html>"), settings, null));
+			DecodableReaderToolSettings.CopyRelevantNewReaderSettings(settings);
 		}
 
 		public static IEnumerable<string> GetToolboxServerDirectories()

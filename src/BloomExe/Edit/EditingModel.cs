@@ -392,6 +392,8 @@ namespace Bloom.Edit
 				//_contentLanguages.Clear();		CAREFUL... the tags in the dropdown are ContentLanguage's, so changing them breaks that binding
 				if (_contentLanguages.Count() == 0)
 				{
+					// TODO: use BookData.GetAllBookLanguages() once we figure more out about how to handle more than
+					// the three traditional languages.
 					_contentLanguages.Add(new ContentLanguage(_bookSelection.CurrentSelection.BookData.Language1) { Locked = true, Selected = true });
 
 					//NB: these won't *always* be tied to the national and regional languages, but they are for now. We would need more UI, without making for extra complexity

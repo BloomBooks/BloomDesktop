@@ -519,6 +519,17 @@ namespace Bloom.Collection
 
 		public string PageNumberStyle { get; set; }
 
+		internal IEnumerable<string> GetAllLanguageCodes()
+		{
+			var langCodes = new List<string>();
+			langCodes.Add(Language1.Iso639Code);
+			if (Language2.Iso639Code != Language1.Iso639Code)
+				langCodes.Add(Language2.Iso639Code);
+			if (!String.IsNullOrEmpty(Language3.Iso639Code) && !langCodes.Any(code => code == Language3.Iso639Code))
+				langCodes.Add(Language3.Iso639Code);
+			return langCodes;
+		}
+
 		// e.g. "ABC2020" or "Kyrgyzstan2020[English]"
 		public string BrandingProjectKey { get;  set; }
 		public string GetBrandingFlavor()

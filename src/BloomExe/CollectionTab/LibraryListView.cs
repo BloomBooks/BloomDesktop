@@ -476,8 +476,8 @@ namespace Bloom.CollectionTab
 				// Actually getting the HtmlDom may be rather expensive due to finding the actual HTML file and
 				// converting it to XHTML first.
 				// Maybe in this context we can rely on the collection settings for the languages?
-				var bookData = new BookData(new HtmlDom("<html><body></body></html>"), _model.CollectionSettings, null);
-				var bestTitle = bookInfo.GetBestTitleForUserDisplay(bookData);
+				var langCodes = _model.CollectionSettings.GetAllLanguageCodes().ToList();
+				var bestTitle = bookInfo.GetBestTitleForUserDisplay(langCodes);
 				if (String.IsNullOrEmpty(bestTitle))
 				{
 					// Getting the book can be very slow for large books: do we really want to update the title enough to make the user wait?

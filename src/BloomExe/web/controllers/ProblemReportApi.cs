@@ -692,6 +692,7 @@ namespace Bloom.web.controllers
 			}
 			bldr.AppendLine("Collection name: " + settings.CollectionName);
 			bldr.AppendLine("xMatter pack name: " + settings.XMatterPackName);
+			// TODO: rethink how to display language information if we expand the languages available.
 			var language1 = book.BookData.Language1;
 			bldr.AppendLine("Language1 -> iso: '" + language1.Iso639Code + "',  font: " +
 							language1.FontName + (language1.IsRightToLeft ? " RTL" : string.Empty));

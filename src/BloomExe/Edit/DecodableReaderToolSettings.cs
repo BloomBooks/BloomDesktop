@@ -84,10 +84,10 @@ namespace Bloom.Edit
 		/// The file (currently at a fixed location in every settings folder) where we store any settings
 		/// related to Decodable and Leveled Readers.
 		/// </summary>
-		public static string GetReaderToolsSettingsFilePath(BookData bookData)
+		public static string GetReaderToolsSettingsFilePath(CollectionSettings settings)
 		{
-			return Path.Combine(Path.GetDirectoryName(bookData.CollectionSettings.SettingsFilePath),
-				DecodableReaderToolSettings.ReaderToolsSettingsPrefix + bookData.Language1.Iso639Code + ".json");
+			return Path.Combine(Path.GetDirectoryName(settings.SettingsFilePath),
+				DecodableReaderToolSettings.ReaderToolsSettingsPrefix + settings.Language1.Iso639Code + ".json");
 		}
 
 		/// <summary>
@@ -98,9 +98,9 @@ namespace Bloom.Edit
 		/// Basically this copies the same set of files as CopyReaderToolsSettingsToWhereTheyBelong creates
 		/// into the book's own folder.
 		/// </summary>
-		public static void CopyRelevantNewReaderSettings(BookData bookData)
+		public static void CopyRelevantNewReaderSettings(CollectionSettings settings)
 		{
-			var readerToolsPath = GetReaderToolsSettingsFilePath(bookData);
+			var readerToolsPath = GetReaderToolsSettingsFilePath(settings);
 			var bloomFolder = ProjectContext.GetBloomAppDataFolder();
 			var readerSettingsFileName = Path.GetFileName(readerToolsPath);
 			var newReaderTools = Path.Combine(bloomFolder, readerSettingsFileName);
