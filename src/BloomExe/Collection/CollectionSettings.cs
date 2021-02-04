@@ -5,11 +5,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
+using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.TeamCollection;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.web.controllers;
@@ -19,6 +20,7 @@ using SIL.Reporting;
 using SIL.WritingSystems;
 using SIL.Extensions;
 using SIL.IO;
+using Directory = System.IO.Directory;
 
 namespace Bloom.Collection
 {
@@ -42,6 +44,7 @@ namespace Bloom.Collection
 		public WritingSystem Language2;
 		public WritingSystem Language3;
 		public WritingSystem[] LanguagesZeroBased;
+		public string SharingFolder { get; set; }
 
 		private string _signLanguageIso639Code;
 
@@ -415,6 +418,7 @@ namespace Bloom.Collection
 				AudioRecordingMode = parsedAudioRecordingMode;
 				AudioRecordingTrimEndMilliseconds = ReadInteger(xml, "AudioRecordingTrimEndMilliseconds",
 					kDefaultAudioRecordingTrimEndMilliseconds);
+				SharingFolder = TeamRepo.GetSharedFolder(Path.GetDirectoryName(SettingsFilePath));
 			}
 			catch (Exception e)
 			{

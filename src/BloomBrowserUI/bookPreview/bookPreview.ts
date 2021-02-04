@@ -1,6 +1,7 @@
 import * as $ from "jquery";
 import "jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
 import "errorHandler";
+import { setupTeamCollection } from "../teamCollection/TeamCollectionPanel";
 
 $.fn.CenterVerticallyInParent = function() {
     return this.each(function(i) {
@@ -56,4 +57,6 @@ $(document).ready(() => {
     //Like I say, it doesn't work yet anyhow...
 
     $(".bloom-centerVertically").CenterVerticallyInParent();
+
+    setupTeamCollection();
 });

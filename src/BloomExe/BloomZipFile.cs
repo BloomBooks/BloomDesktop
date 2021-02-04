@@ -27,6 +27,11 @@ namespace Bloom
 			_zipStream.Close();
 		}
 
+		public void SetComment(string comment)
+		{
+			_zipStream.SetComment(comment);
+		}
+
 		public void AddTopLevelFile(string path, bool compress=true)
 		{
 			AddFile(path, Path.GetFileName(path), compress);
@@ -75,7 +80,7 @@ namespace Bloom
 			AddDirectory(directoryPath, dirNameOffset, extensionsToExclude);
 		}
 
-		private void AddDirectory(string directoryPath, int dirNameOffest, string[] extensionsToExclude)
+		public void AddDirectory(string directoryPath, int dirNameOffest, string[] extensionsToExclude)
 		{
 			var files = Directory.GetFiles(directoryPath);
 			foreach (var path in files)

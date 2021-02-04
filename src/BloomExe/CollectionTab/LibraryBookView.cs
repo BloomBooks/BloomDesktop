@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.TeamCollection;
 using Bloom.MiscUI;
 using Bloom.web.controllers;
 using Gecko;
@@ -104,7 +105,8 @@ namespace Bloom.CollectionTab
 
 		private void LoadBook(bool updatePreview = true)
 		{
-			_editBookButton.Visible = _addToCollectionButton.Visible =  _addToCollectionButton.Enabled = _bookSelection.CurrentSelection != null;
+			_addToCollectionButton.Visible =  _addToCollectionButton.Enabled = _bookSelection.CurrentSelection != null;
+			_editBookButton.Visible = TeamCollectionApi.TheOneInstance.CanEditBook();
 			ShowBook(updatePreview);
 			if (_bookSelection.CurrentSelection != null)
 			{
@@ -134,7 +136,7 @@ namespace Bloom.CollectionTab
 				Debug.WriteLine("LibraryBookView.ShowBook() currentselection ok");
 
 				_addToCollectionButton.Visible = _bookSelection.CurrentSelection.IsShellOrTemplate && !_bookSelection.CurrentSelection.HasFatalError;
-				_editBookButton.Visible = _bookSelection.CurrentSelection.IsEditable && !_bookSelection.CurrentSelection.HasFatalError;
+				_editBookButton.Visible = TeamCollectionApi.TheOneInstance.CanEditBook();
 				_readmeBrowser.Visible = false;
 				//_previewBrowser.Visible = true;
 				_splitContainerForPreviewAndAboutBrowsers.Visible = true;

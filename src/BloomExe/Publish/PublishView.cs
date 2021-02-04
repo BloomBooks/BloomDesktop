@@ -270,6 +270,10 @@ namespace Bloom.Publish
 		}
 
 		public Bitmap ToolStripBackground { get; set; }
+		public bool CanChangeTo()
+		{
+			return true;
+		}
 
 		void _makePdfBackgroundWorker_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{

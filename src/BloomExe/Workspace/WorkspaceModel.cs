@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Bloom.Book;
+using Bloom.TeamCollection;
 
 namespace Bloom.Workspace
 {
@@ -24,6 +25,8 @@ namespace Bloom.Workspace
 		{
 			get { return _bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.IsEditable && !_bookSelection.CurrentSelection.HasFatalError; }
 		}
+
+		public bool EditTabLocked => !TeamCollectionApi.TheOneInstance.CanEditBook();
 
 		public bool ShowPublishPage
 		{

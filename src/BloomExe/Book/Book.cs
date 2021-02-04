@@ -3441,7 +3441,11 @@ namespace Bloom.Book
 				foreach (var path in Directory.GetFiles(folder, "*", SearchOption.AllDirectories).OrderBy(x => x))
 				{
 					var ext = Path.GetExtension(path);
-					if (ext == ".pdf")
+					// PDF files are generated, we don't care whether they are identical.
+					// .status files contain the output of this function among other team collection
+					// information; counting them would mean that writing a new status with the
+					// new version code would immediately change the next version code computed.
+					if (ext == ".pdf" || ext == ".status")
 						continue;
 					if (path == filePath)
 						continue; // we already included a simplified version of the main HTML file

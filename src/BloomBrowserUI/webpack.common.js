@@ -49,6 +49,8 @@ module.exports = merge(core, {
             "!./publish/**/stories.tsx"
         ]),
         enterpriseSettingsBundle: "./collection/enterpriseSettings.tsx",
+        teamCollectionSettingsBundle:
+            "./teamCollection/teamCollectionSettings.tsx",
         testBundle: globule.find([
             "./bookEdit/**/*Spec.ts",
             "./bookEdit/**/*Spec.js",

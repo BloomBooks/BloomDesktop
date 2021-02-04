@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -260,6 +260,9 @@
     <Compile Include="Book\BookStorage_ReplacePageTests.cs" />
     <Compile Include="Book\LicenseCheckerTests.cs" />
     <Compile Include="CLI\CreateArtifactsCommandTests.cs" />
+    <Compile Include="TeamCollection\FolderTeamRepoTests.cs" />
+    <Compile Include="TeamCollection\TeamRepoTests.cs" />
+    <Compile Include="TeamCollection\TestFolderTeamRepo.cs" />
     <Compile Include="Edit\MakeActivityTests.cs" />
     <Compile Include="ExtensionsTests.cs" />
     <Compile Include="TestDoubles\Book\FakeBookServer.cs" />
@@ -414,6 +417,7 @@
     <RemoveForSILMedia Include="$(OutDir)lib\win-x64" />
     <RemoveForSILMedia Include="$(OutDir)lib" />
   </ItemGroup>
+  <ItemGroup />
   <Target Name="ReallyAfterBuild" AfterTargets="AfterBuild;CopyFilesToOutputDirectory" Condition="'$(OS)'=='Windows_NT'">
     <Copy SourceFiles="@(CopyForSILMedia)" DestinationFolder="$(OutDir)" />
     <Delete Files="@(DeleteForSILMedia)" TreatErrorsAsWarnings="true" />

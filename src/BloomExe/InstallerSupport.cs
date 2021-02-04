@@ -34,10 +34,14 @@ namespace Bloom
 		{
 			RemoveRegistryKey(null, ".BloomPack");
 			RemoveRegistryKey(null, ".BloomPackFile");
+			RemoveRegistryKey(null, ".JoinBloomTC");
+			RemoveRegistryKey(null, ".JoinBloomTCFile");
 			RemoveRegistryKey(null, ".BloomCollection");
 			RemoveRegistryKey(null, ".BloomCollectionFile");
 			RemoveRegistryKey(null, "Bloom.BloomPack");
 			RemoveRegistryKey(null, "Bloom.BloomPackFile");
+			RemoveRegistryKey(null, "Bloom.JoinBloomTC");
+			RemoveRegistryKey(null, "Bloom.JoinBloomTCFile");
 			RemoveRegistryKey(null, "Bloom.BloomCollection");
 			RemoveRegistryKey(null, "Bloom.BloomCollectionFile");
 			RemoveRegistryKey(null, "bloom");
@@ -272,6 +276,15 @@ namespace Bloom
 			EnsureRegistryValue(@".BloomPackFile\DefaultIcon", Path.Combine(iconDir, "BloomPack.ico, 0"));
 			EnsureRegistryValue(@"SOFTWARE\Classes\Bloom.BloomPack", "Bloom Book Pack", "FriendlyTypeName");
 
+			// And similarly for JoinBloomTC, though we haven't made an icon for it yet.
+			EnsureRegistryValue(".JoinBloomTC", "Bloom.JoinBloomTCFile");
+			EnsureRegistryValue("Bloom.JoinBloomTCFile", "Bloom Team Collection");
+			EnsureRegistryValue(".JoinBloomTCFile", "Bloom Team Collection");
+			// For now reuse bloom collection icon
+			EnsureRegistryValue(@"Bloom.JoinBloomTCFile\DefaultIcon", Path.Combine(iconDir, "BloomCollectionIcon.ico, 0"));
+			EnsureRegistryValue(@".JoinBloomTCFile\DefaultIcon", Path.Combine(iconDir, "BloomCollectionIcon.ico, 0"));
+
+
 			// This might be part of registering as the executable for various file types?
 			// I don't know what does it in wix but it's one of the things the old wix installer created.
 			var exe = Assembly.GetExecutingAssembly().Location;
@@ -279,6 +292,7 @@ namespace Bloom
 
 			BeTheExecutableFor(".BloomCollection", "BloomCollection file");
 			BeTheExecutableFor(".BloomPack", "BloomPack file");
+			BeTheExecutableFor(".JoinBloomTC", "JoinBloom file");
 			// Make the OS run Bloom when it sees bloom://somebooktodownload
 			BookDownloadSupport.RegisterForBloomUrlProtocol(_installInLocalMachine);
 

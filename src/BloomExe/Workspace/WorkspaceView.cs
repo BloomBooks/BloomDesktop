@@ -545,6 +545,7 @@ namespace Bloom.Workspace
 		{
 			SetTabVisibility(_editTab, _model.ShowEditPage);
 			SetTabVisibility(_publishTab, _model.ShowPublishPage);
+			_editTab.Enabled = !_model.EditTabLocked;
 		}
 
 		private void SetTabVisibility(TabStripButton page, bool visible)
