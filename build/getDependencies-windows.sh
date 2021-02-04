@@ -126,13 +126,13 @@ cd -
 #     revision: bloom-4.9.tcbuildtag
 #     paths: {"NAudio.dll"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/naudio.git [master]
-# [8] build: PdfDroplet-Win-master-Continuous (bt54)
+# [8] build: PdfDroplet-Win-PreNuGet-Continuous (PdfDroplet_PdfDropletWinPreNuGetContinuous)
 #     project: PdfDroplet
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=bt54
+#     URL: https://build.palaso.org/viewType.html?buildTypeId=PdfDroplet_PdfDropletWinPreNuGetContinuous
 #     clean: false
 #     revision: bloom-4.9.tcbuildtag
 #     paths: {"PdfDroplet.exe"=>"lib/dotnet", "PdfSharp.dll"=>"lib/dotnet"}
-#     VCS: https://github.com/sillsdev/pdfDroplet [master]
+#     VCS: https://github.com/sillsdev/pdfDroplet [PreNuGet]
 # [9] build: TidyManaged-master-win32-continuous (bt349)
 #     project: TidyManaged
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=bt349
@@ -217,8 +217,8 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharp_L10NSh
 copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharp_L10NSharpMasterContinuous/bloom-4.9.tcbuildtag/L10NSharp.pdb ../lib/dotnet/L10NSharp.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharp_L10NSharpMasterContinuous/bloom-4.9.tcbuildtag/CheckOrFixXliff.exe ../lib/dotnet/CheckOrFixXliff.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt402/bloom-4.9.tcbuildtag/NAudio.dll ../lib/dotnet/NAudio.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt54/bloom-4.9.tcbuildtag/PdfDroplet.exe ../lib/dotnet/PdfDroplet.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt54/bloom-4.9.tcbuildtag/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/PdfDroplet_PdfDropletWinPreNuGetContinuous/bloom-4.9.tcbuildtag/PdfDroplet.exe ../lib/dotnet/PdfDroplet.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/PdfDroplet_PdfDropletWinPreNuGetContinuous/bloom-4.9.tcbuildtag/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/bloom-4.9.tcbuildtag/TidyManaged.dll ../lib/dotnet/TidyManaged.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/bloom-4.9.tcbuildtag/TidyManaged.dll.config ../lib/dotnet/TidyManaged.dll.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/bloom-4.9.tcbuildtag/libtidy.dll ../lib/dotnet/libtidy.dll
