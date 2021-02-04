@@ -85,7 +85,7 @@ namespace Bloom.CollectionTab
 
 		public string LanguageName
 		{
-			get { return _collectionSettings.Language1.Name; }
+			get { return _collectionSettings.Language1.Name; }	// collection tab still uses collection language settings
 		}
 
 		public List<BookCollection> GetBookCollections()

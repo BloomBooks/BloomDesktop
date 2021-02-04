@@ -254,19 +254,6 @@ namespace Bloom.Collection
 		public virtual bool IsSourceCollection { get; set; }
 
 		/// <summary>
-		/// Get a name for Language1 that is safe for using as part of a file name.
-		/// (Currently used for suggesting a pdf filename when publishing.)
-		/// </summary>
-		/// <param name="inLanguage"></param>
-		/// <returns></returns>
-		public object GetFilesafeLanguage1Name(string inLanguage)
-		{
-			var languageName = Language1.GetNameInLanguage(inLanguage);
-			return Path.GetInvalidFileNameChars().Aggregate(
-				languageName, (current, character) => current.Replace(character, ' '));
-		}
-
-		/// <summary>
 		/// Get the name of the language whose code is the first argument, if possible in the language specified by the second.
 		/// If the language code is unknown, return it unchanged.
 		/// </summary>
@@ -536,6 +523,17 @@ namespace Bloom.Collection
 
 		public string PageNumberStyle { get; set; }
 
+		internal IEnumerable<string> GetAllLanguageCodes()
+		{
+			var langCodes = new List<string>();
+			langCodes.Add(Language1.Iso639Code);
+			if (Language2.Iso639Code != Language1.Iso639Code)
+				langCodes.Add(Language2.Iso639Code);
+			if (!String.IsNullOrEmpty(Language3.Iso639Code) && !langCodes.Any(code => code == Language3.Iso639Code))
+				langCodes.Add(Language3.Iso639Code);
+			return langCodes;
+		}
+
 		// e.g. "ABC2020" or "Kyrgyzstan2020[English]"
 		public string BrandingProjectKey { get;  set; }
 		public string GetBrandingFlavor()
@@ -627,86 +625,6 @@ namespace Bloom.Collection
 			{
 				throw new ApplicationException(string.Format("Bloom expected to find a .bloomCollectionFile in {0}, but there isn't one.", folderPath));
 			}
-		}
-
-		internal LanguageDescriptor[] MakeLanguageUploadData(string[] isoCodes)
-		{
-			var result = new LanguageDescriptor[isoCodes.Length];
-			for (int i = 0; i < isoCodes.Length; i++)
-			{
-				var code = isoCodes[i];
-				string name;
-				if (code == Language1.Iso639Code)
-					name = Language1.Name;
-				else if (code == Language2.Iso639Code)
-					name = Language2.Name;
-				else if (code == Language3.Iso639Code)
-					name = Language3.Name;
-				else
-					WritingSystem.LookupIsoCode.GetBestLanguageName(code, out name);
-				string ethCode;
-				LanguageSubtag data;
-				if (!StandardSubtags.RegisteredLanguages.TryGet(code.ToLowerInvariant(), out data))
-					ethCode = code;
-				else
-				{
-					ethCode = data.Iso3Code;
-					if (string.IsNullOrEmpty(ethCode))
-						ethCode = code;
-				}
-				result[i] = new LanguageDescriptor() { IsoCode = code, Name = name, EthnologueCode = ethCode };
-			}
-			return result;
-		}
-
-		/// <summary>
-		/// Given a choice, what language should we use to display text on the page (not in the UI, which is controlled by the UI Language)
-		/// </summary>
-		/// <returns>A prioritized enumerable of language codes</returns>
-		public IEnumerable<string> GetLanguagePrioritiesForTranslatedTextOnPage(bool includeLang1 = true)
-		{
-			List<string> langCodes = new List<string>{ Language2Iso639Code, Language3Iso639Code, "en" };
-			if (includeLang1)
-				langCodes.Insert(0, Language1Iso639Code);
-			langCodes = langCodes.Where(lc => !string.IsNullOrWhiteSpace(lc)).ToList();
-
-			// reverse-order loop so that given e.g. zh-Hans followed by zh-Hant we insert zh-CN after the second one.
-			// That is, we'll prefer either of the explicit variants to the fall-back.
-			// The part before the hyphen (if there is one) is the main language.
-			var count = langCodes.Count;
-			for (int i = count - 1; i >= 0; i--)
-			{
-				var fullLangTag = langCodes[i];
-				if (fullLangTag == null)
-					continue;
-				var language = fullLangTag.Split('-')[0]; // Generally insert corresponding language for longer culture
-				if (language == "zh")
-				{
-					language = "zh-CN"; // Insert this instead for Chinese
-				}
-
-				if (langCodes.IndexOf(language) >= 0)
-					continue;
-				langCodes.Insert(i + 1, language);
-			}
-
-			var pashtoLanguages = new[] {"ps", "pus", "pbu", "pst", "pbt"};
-			// As of Jun 2020, we have Crowdin translation for pbu,
-			// but that seems like a mistake. Some day, we should change it
-			// to the macrolanguage which is ps (2-letter) or pus (3-letter).
-			// So, when we have any of the Pashto codes above, look for a
-			// translation in one of the codes below.
-			var tryTheseLanguageCodes = new[] {"pbu", "ps", "pus"};
-			for (int i = 0; i < langCodes.Count; i++)
-			{
-				if (pashtoLanguages.Contains(langCodes[i]))
-				{
-					langCodes.InsertRange(i + 1, tryTheseLanguageCodes.Where(lc => !lc.Equals(langCodes[i])));
-					break;
-				}
-			}
-
-			return langCodes;
 		}
 
 		/// <summary>

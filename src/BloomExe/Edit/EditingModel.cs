@@ -392,40 +392,42 @@ namespace Bloom.Edit
 				//_contentLanguages.Clear();		CAREFUL... the tags in the dropdown are ContentLanguage's, so changing them breaks that binding
 				if (_contentLanguages.Count() == 0)
 				{
-					_contentLanguages.Add(new ContentLanguage(_collectionSettings.Language1) { Locked = true, Selected = true });
+					// TODO: use BookData.GetAllBookLanguages() once we figure more out about how to handle more than
+					// the three traditional languages.
+					_contentLanguages.Add(new ContentLanguage(_bookSelection.CurrentSelection.BookData.Language1) { Locked = true, Selected = true });
 
 					//NB: these won't *always* be tied to the national and regional languages, but they are for now. We would need more UI, without making for extra complexity
-					var item2 = new ContentLanguage(_collectionSettings.Language2);
+					var item2 = new ContentLanguage(_bookSelection.CurrentSelection.BookData.Language2);
 					_contentLanguages.Add(item2);
-					if (!String.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
+					if (!String.IsNullOrEmpty(_bookSelection.CurrentSelection.BookData.Language3.Iso639Code))
 					{
-						var item3 = new ContentLanguage(_collectionSettings.Language3);
+						var item3 = new ContentLanguage(_bookSelection.CurrentSelection.BookData.Language3);
 						_contentLanguages.Add(item3);
 					}
 				}
 				//update the selections
-				var lang2 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _collectionSettings.Language2Iso639Code);
+				var lang2 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _bookSelection.CurrentSelection.BookData.Language2.Iso639Code);
 				if (lang2 != null)
-					lang2.Selected = CurrentBook.MultilingualContentLanguage2 == _collectionSettings.Language2Iso639Code;
+					lang2.Selected = CurrentBook.MultilingualContentLanguage2 == _bookSelection.CurrentSelection.BookData.Language2.Iso639Code;
 				else
 					Logger.WriteEvent("Found no Lang2 in ContentLanguages; count= " + _contentLanguages.Count);
 
 				//the first language is always selected. This covers the common situation in shellbook collections where
 				//we have English as both the 1st and national language. https://jira.sil.org/browse/BL-756
-				var lang1 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _collectionSettings.Language1Iso639Code);
+				var lang1 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _bookSelection.CurrentSelection.BookData.Language1.Iso639Code);
 				if (lang1 != null)
 					lang1.Selected = true;
 				else
 					Logger.WriteEvent("Hit BL-2780 condition in ContentLanguages; count= " + _contentLanguages.Count);
 
 				var contentLanguageMatchingNatLan2 =
-					_contentLanguages.Where(l => l.Iso639Code == _collectionSettings.Language3Iso639Code).FirstOrDefault();
+					_contentLanguages.Where(l => l.Iso639Code == _bookSelection.CurrentSelection.BookData.Language3.Iso639Code).FirstOrDefault();
 
 				if(contentLanguageMatchingNatLan2!=null)
 				{
 					contentLanguageMatchingNatLan2.Selected =
-					CurrentBook.MultilingualContentLanguage2 ==_collectionSettings.Language3Iso639Code
-					|| CurrentBook.MultilingualContentLanguage3 == _collectionSettings.Language3Iso639Code;
+					CurrentBook.MultilingualContentLanguage2 ==_bookSelection.CurrentSelection.BookData.Language3.Iso639Code
+					|| CurrentBook.MultilingualContentLanguage3 == _bookSelection.CurrentSelection.BookData.Language3.Iso639Code;
 				}
 
 
@@ -1309,14 +1311,14 @@ namespace Bloom.Edit
 		public string GetFontAvailabilityMessage()
 		{
 			// REVIEW: does this ToLower() do the right thing on Linux, where filenames are case sensitive?
-			var name = _collectionSettings.Language1.FontName.ToLowerInvariant();
+			var name = _bookSelection.CurrentSelection.BookData.Language1.FontName.ToLowerInvariant();
 
 			if (null == FontFamily.Families.FirstOrDefault(f => f.Name.ToLowerInvariant() == name))
 			{
 				var s = LocalizationManager.GetString("EditTab.FontMissing",
 														   "The current selected " +
 														   "font is '{0}', but it is not installed on this computer. Some other font will be used.");
-				return String.Format(s, _collectionSettings.Language1.FontName);
+				return String.Format(s, _bookSelection.CurrentSelection.BookData.Language1.FontName);
 			}
 			return null;
 		}

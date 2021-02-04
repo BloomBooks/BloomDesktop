@@ -90,7 +90,8 @@ namespace BloomTests.Book
 		[Test]
 		public void MakeLanguageUploadData_FindsDefaultInfo()
 		{
-			var results = _collectionSettings.MakeLanguageUploadData(new[] {"en", "tpi", "xy3"});
+			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), _collectionSettings, null);
+			var results = bookData.MakeLanguageUploadData(new[] {"en", "tpi", "xy3"});
 			Assert.That(results.Length, Is.EqualTo(3), "should get one result per input");
 			VerifyLangData(results[0], "en", "English", "eng");
 			VerifyLangData(results[1], "tpi", "Tok Pisin", "tpi");
@@ -100,9 +101,10 @@ namespace BloomTests.Book
 		[Test]
 		public void MakeLanguageUploadData_FindsOverriddenNames()
 		{
+			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), _collectionSettings, null);
 			_collectionSettings.Language1.SetName("Cockney", true);
 			// Note: no current way of overriding others; verify they aren't changed.
-			var results = _collectionSettings.MakeLanguageUploadData(new[] {"en", "tpi", "xyz"});
+			var results = bookData.MakeLanguageUploadData(new[] {"en", "tpi", "xyz"});
 			Assert.That(results.Length, Is.EqualTo(3), "should get one result per input");
 			VerifyLangData(results[0], "en", "English", "eng");
 			VerifyLangData(results[1], "tpi", "Tok Pisin", "tpi");
@@ -482,7 +484,7 @@ namespace BloomTests.Book
 }");
 				var data = new BookData(bookDom, _collectionSettings, null);
 				data.MergeBrandingSettings(tempFolder.Path);
-				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, _collectionSettings);
+				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, data);
 				Assert.AreEqual("http://creativecommons.org/licenses/by/3.0/igo/", metadata.License.Url);
 				Assert.AreEqual("These are custom notes.", metadata.License.RightsStatement);
 				Assert.That(metadata.CopyrightNotice, Is.Null.Or.Empty);
@@ -523,7 +525,7 @@ namespace BloomTests.Book
 }");
 				var data = new BookData(bookDom, _collectionSettings, null);
 				data.MergeBrandingSettings(tempFolder.Path);
-				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, _collectionSettings);
+				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, data);
 
 				Assert.AreEqual("http://creativecommons.org/licenses/by/3.0/igo/", metadata.License.Url);
 				Assert.AreEqual("These are custom notes.", metadata.License.RightsStatement);
@@ -559,7 +561,7 @@ namespace BloomTests.Book
 					}");
 				var data = new BookData(bookDom, _collectionSettings, null);
 				data.MergeBrandingSettings(tempFolder.Path);
-				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, _collectionSettings);
+				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, data);
 
 				Assert.AreEqual($"Copyright © {DateTime.Now.Year.ToString()} Chewtoys International",
 					metadata.CopyrightNotice);
@@ -601,7 +603,7 @@ namespace BloomTests.Book
 }");
 				var data = new BookData(bookDom, _collectionSettings, null);
 				data.MergeBrandingSettings(tempFolder.Path);
-				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, _collectionSettings);
+				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, data);
 				if (dataDivName == "copyright")
 					Assert.IsTrue(metadata.CopyrightNotice.Contains("2012")); // unchanged from testcase
 				else
@@ -654,7 +656,7 @@ namespace BloomTests.Book
 }");
 				var data = new BookData(bookDom, _collectionSettings, null);
 				data.MergeBrandingSettings(tempFolder.Path);
-				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, _collectionSettings);
+				var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, data);
 
 				Assert.That(metadata.License, Is.InstanceOf<CustomLicense>());
 				Assert.That(metadata.License.Url, Is.Null.Or.Empty);
@@ -876,7 +878,7 @@ namespace BloomTests.Book
 				data.UpdateVariablesAndDataDivThroughDOM(info);
 
 				AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath(
-				"//div[@id='bloomDataDiv']/div[@data-book='decodableStageLetters' and @lang='" +_collectionSettings.Language1Iso639Code +  "' and text()='a, e, r, i, o, n, t, l, s']",
+				"//div[@id='bloomDataDiv']/div[@data-book='decodableStageLetters' and @lang='" +data.Language1.Iso639Code +  "' and text()='a, e, r, i, o, n, t, l, s']",
 				1);
 		}
 
@@ -904,7 +906,7 @@ namespace BloomTests.Book
 			var data = new BookData(dom, _collectionSettings, null);
 			data.UpdateVariablesAndDataDivThroughDOM();
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath(
-				"//div[@data-book='bookTitle' and @lang='" + _collectionSettings.Language1Iso639Code +
+				"//div[@data-book='bookTitle' and @lang='" + data.Language1.Iso639Code +
 				"' and text()='the title']", 1);
 		}
 

@@ -51,7 +51,8 @@ namespace BloomTests.Book
 
 		protected CollectionSettings CreateDefaultCollectionsSettings()
 		{
-			return new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(BookFolder, "test"), Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
+			return new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(BookFolder, "test"),
+				Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
 		}
 
 		// Since this is just for testing I didn't bother with the usual mess to catch/cleanup

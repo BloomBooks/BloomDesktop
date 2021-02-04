@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
+using Bloom.Book;
 using Bloom.Collection;
 using Bloom.web.controllers;
 using SIL.IO;
@@ -83,11 +84,10 @@ namespace Bloom.Edit
 		/// The file (currently at a fixed location in every settings folder) where we store any settings
 		/// related to Decodable and Leveled Readers.
 		/// </summary>
-		/// <param name="collectionSettings"></param>
-		public static string GetReaderToolsSettingsFilePath(CollectionSettings collectionSettings)
+		public static string GetReaderToolsSettingsFilePath(CollectionSettings settings)
 		{
-			return Path.Combine(Path.GetDirectoryName(collectionSettings.SettingsFilePath),
-				DecodableReaderToolSettings.ReaderToolsSettingsPrefix + collectionSettings.Language1Iso639Code + ".json");
+			return Path.Combine(Path.GetDirectoryName(settings.SettingsFilePath),
+				DecodableReaderToolSettings.ReaderToolsSettingsPrefix + settings.Language1.Iso639Code + ".json");
 		}
 
 		/// <summary>
@@ -98,7 +98,6 @@ namespace Bloom.Edit
 		/// Basically this copies the same set of files as CopyReaderToolsSettingsToWhereTheyBelong creates
 		/// into the book's own folder.
 		/// </summary>
-		/// <param name="settings"></param>
 		public static void CopyRelevantNewReaderSettings(CollectionSettings settings)
 		{
 			var readerToolsPath = GetReaderToolsSettingsFilePath(settings);

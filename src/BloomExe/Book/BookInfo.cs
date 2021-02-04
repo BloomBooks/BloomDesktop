@@ -641,7 +641,7 @@ namespace Bloom.Book
 			SafelyAddToIdSet(id, metaFileLastWriteTime, currentFolder, idToSortedFilepathsMap);
 		}
 
-		internal string GetBestTitleForUserDisplay(CollectionSettings settings)
+		internal string GetBestTitleForUserDisplay(List<string> langCodes)
 		{
 			try
 			{
@@ -652,7 +652,7 @@ namespace Bloom.Book
 				var multiText = new MultiTextBase();
 				foreach (var lang in langs)
 					multiText[lang] = titles[lang].Trim();
-				return Book.GetBestTitleForDisplay(multiText, settings, IsEditable);
+				return Book.GetBestTitleForDisplay(multiText, langCodes, IsEditable);
 			}
 			catch (Exception e)
 			{
