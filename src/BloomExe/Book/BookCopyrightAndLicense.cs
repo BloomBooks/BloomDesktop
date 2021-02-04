@@ -348,11 +348,6 @@ namespace Bloom.Book
 			if (!IsDerivative(originalMetadata))
 				return null;
 
-			var languagePriorityIds = bookData.GetLanguagePrioritiesForLocalizedTextOnPage(true);
-
-			var license = originalMetadata.License.GetMinimalFormForCredits(languagePriorityIds, out _);
-			string originalLicenseSentence;
-			languagePriorityIds = bookData.GetLanguagePrioritiesForLocalizedTextOnPage(false);
 			// The originalTitle strategy used here is not ideal. We would prefer to have a placeholder specifically for it
 			// in both EditTab.FrontMatter.OriginalCopyrightSentence and EditTab.FrontMatter.OriginalHadNoCopyrightSentence.
 			// But we don't want to require a new set of translations if we can avoid it.
@@ -363,14 +358,30 @@ namespace Bloom.Book
 			                    (string.IsNullOrEmpty(originalTitle) ? " class=\"missingOriginalTitle\">" : ">") + originalTitle +
 			                    "</cite>";
 
-			var languagePriorityIdsNotLang1 = collectionSettings.GetLanguagePrioritiesForTranslatedTextOnPage(false);
+			var languagePriorityIdsIncludeLang1 = bookData.GetLanguagePrioritiesForLocalizedTextOnPage();
+			var originalLicenseSentence = GetOriginalLicenseSentence(languagePriorityIdsIncludeLang1, originalMetadata.License, out string licenseOnly);
+
+			var languagePriorityIdsNotLang1 = bookData.GetLanguagePrioritiesForLocalizedTextOnPage(false);
+			var rawCopyright = originalMetadata.CopyrightNotice;
+			// If we have all the pieces available, we want to use this one.
+			// At the very least it's easier to localize into the format the language wants to use.
+			var fullFormatString = LocalizationManager.GetString(
+				"EditTab.FrontMatter.FullOriginalCopyrightLicenseSentence",
+				"Adapted from original, {0}, {1}. Licensed under {2}.",
+				"On the Credits page of a book being translated, Bloom shows the original copyright. {0} is original title, {1} is original copyright, and {2} is license information.",
+				languagePriorityIdsNotLang1,
+				out string langUsed);
+			// The last condition here (langUsed ==...) is meant to detect if the string has been translated
+			// into the current language or not.
+			if (!string.IsNullOrEmpty(originalTitle) && !string.IsNullOrEmpty(rawCopyright) &&
+			    !string.IsNullOrEmpty(licenseOnly) && langUsed == languagePriorityIdsNotLang1.First())
+			{
+				return string.Format(fullFormatString, titleCitation, rawCopyright, licenseOnly);
+			}
 			var copyrightNotice = GetOriginalCopyrightSentence(
 				languagePriorityIdsNotLang1,
-				originalMetadata.CopyrightNotice,
+				rawCopyright,
 				titleCitation).Trim();
-
-			var languagePriorityIdsIncludeLang1 = collectionSettings.GetLanguagePrioritiesForTranslatedTextOnPage();
-			var originalLicenseSentence = GetOriginalLicenseSentence(languagePriorityIdsIncludeLang1, originalMetadata.License);
 
 			return (copyrightNotice + " " + originalLicenseSentence).Trim();
 		}
@@ -400,22 +411,23 @@ namespace Bloom.Book
 
 		// This will USUALLY return something like "Licensed under {some license}.", but corner cases include empty string and
 		// whatever the user puts in as CustomLicense text.
-		private static string GetOriginalLicenseSentence(IEnumerable<string> languagePriorityIds, LicenseInfo licenseInfo)
+		// The out var is for use in the full format string only (FullOriginalCopyrightLicenseSentence).
+		private static string GetOriginalLicenseSentence(IEnumerable<string> languagePriorityIds, LicenseInfo licenseInfo, out string licenseOnly)
 		{
-			var originalLicenseString = licenseInfo.GetMinimalFormForCredits(languagePriorityIds, out _);
+			licenseOnly = licenseInfo.GetMinimalFormForCredits(languagePriorityIds, out _);
 			if (licenseInfo is CustomLicense)
 			{
 				// I can imagine being more fancy... something like "Licensed under custom license:", and get localizations
 				// for that... but sheesh, these are even now very rare in Bloom-land and should become more rare.
 				// So for now, let's just print the custom license contents.
-				return originalLicenseString;
+				return licenseOnly;
 			}
+			licenseOnly = licenseOnly.TrimEnd('.'); // in case we had notes which also had a period.
 			var licenseSentenceTemplate = LocalizationManager.GetString("EditTab.FrontMatter.OriginalLicenseSentence",
 				"Licensed under {0}.",
 				"On the Credits page of a book being translated, Bloom puts texts like 'Licensed under CC-BY', so that we have a record of what the license was for the original book. Put {0} in the translation, where the license should go in the sentence.",
 				languagePriorityIds, out _);
-			var origLicenseSentence = string.IsNullOrWhiteSpace(originalLicenseString) ? "" : string.Format(licenseSentenceTemplate, originalLicenseString);
-			return origLicenseSentence.Replace("..", "."); // in case had notes which also had a period.
+			return string.IsNullOrWhiteSpace(licenseOnly) ? "" : string.Format(licenseSentenceTemplate, licenseOnly);
 		}
 	}
 }
