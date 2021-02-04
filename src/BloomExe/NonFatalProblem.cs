@@ -32,7 +32,7 @@ namespace Bloom
 		/// <param name="showSendReport">Set to 'false' to eliminate yellow screens and "Report" links on toasts</param>
 		public static void Report(ModalIf modalThreshold, PassiveIf passiveThreshold, string shortUserLevelMessage = null,
 			string moreDetails = null,
-			Exception exception = null, bool showSendReport = true, bool isShortMessagePreEncoded = false)
+			Exception exception = null, bool showSendReport = true, bool isShortMessagePreEncoded = false, bool skipSentryReport = false)
 		{
 			var originalException = exception;
 			s_expectedByUnitTest?.ProblemWasReported();
@@ -68,7 +68,7 @@ namespace Bloom
 
 				try
 				{
-					if (!ApplicationUpdateSupport.IsDev)
+					if (!ApplicationUpdateSupport.IsDev && !skipSentryReport)
 					{
 						if (originalException != null)
 						{
