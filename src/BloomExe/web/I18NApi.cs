@@ -256,7 +256,7 @@ namespace Bloom.Api
 						"when the user has not encountered this part of the interface yet.",
 						id,
 						englishText);
-				NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "Missing l10n: " + englishText, longMsg);
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "Missing l10n: " + englishText, longMsg, skipSentryReport: true);
 			}
 			else
 			{
@@ -264,7 +264,7 @@ namespace Bloom.Api
 					"Ignore this if you are looking at a 3rd-party book that does not ship with Bloom directly. " +
 					"Otherwise, please report that " + id + " needs to be " +
 					"added to the en.xlf, so that it can show up in the list of things to be localized even " +
-					"when the user has not encountered this part of the interface yet.");
+					"when the user has not encountered this part of the interface yet.", skipSentryReport: true);
 			}
 		}
 	}
