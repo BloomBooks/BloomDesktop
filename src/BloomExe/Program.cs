@@ -26,6 +26,7 @@ using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Bloom.CLI;
+using Bloom.CollectionChoosing;
 using Bloom.TeamCollection;
 using Bloom.MiscUI;
 using Bloom.web;
@@ -246,7 +247,13 @@ namespace Bloom
 					{
 						var newCollection = FolderTeamRepo.JoinCollectionTeam(args[0]);
 						args = new string[] { }; // continue to open, but without args.
+						// Usually guaranteed to exist by ApplicationContainer, but we haven't created that yet.
+						if (Settings.Default.MruProjects == null)
+						{
+							Settings.Default.MruProjects = new MostRecentPathsList();
+						}
 						Settings.Default.MruProjects.AddNewPath(newCollection);
+						Settings.Default.Save();
 						// and now we need to get the lock as usual before going on to load the new collection.
 						if (!UniqueToken.AcquireToken(_mutexId, "Bloom"))
 							return 1;
@@ -790,10 +797,6 @@ namespace Bloom
 						return false;
 					}
 				*/
-				// Before we set up the project context, if the collection is shared, we need
-				// to fetch any new information from the Team Collection. (This might include new
-				// collection settings, so we need to sync before we load the settings file.)
-				TeamRepo.MergeSharedData(projectPath);
 				_projectContext = _applicationContainer.CreateProjectContext(projectPath);
 				_projectContext.ProjectWindow.Closed += HandleProjectWindowClosed;
 				_projectContext.ProjectWindow.Activated += HandleProjectWindowActivated;

@@ -261,6 +261,7 @@
     <Compile Include="Book\LicenseCheckerTests.cs" />
     <Compile Include="CLI\CreateArtifactsCommandTests.cs" />
     <Compile Include="TeamCollection\FolderTeamRepoTests.cs" />
+    <Compile Include="TeamCollection\FolderTeamRepoTests2.cs" />
     <Compile Include="TeamCollection\TeamRepoTests.cs" />
     <Compile Include="TeamCollection\TestFolderTeamRepo.cs" />
     <Compile Include="Edit\MakeActivityTests.cs" />

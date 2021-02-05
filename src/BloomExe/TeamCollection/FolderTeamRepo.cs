@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -18,7 +18,7 @@ namespace Bloom.TeamCollection
 	/// </summary>
 	public class FolderTeamRepo: TeamRepo
 	{
-		private string _sharedFolderPath; // the shared folder storing the repo
+		private string _sharedFolderPath; // the shared folder storing the repo; null if not shared
 		private FileSystemWatcher _watcher; // watches the _sharedFolderPath for changes
 
 		// These four variables work together to track the last book we modified and whether we
@@ -34,14 +34,30 @@ namespace Bloom.TeamCollection
 		private DateTime _lastWriteBookTime;
 		private object _lockObject = new object(); // used to lock access to _lastPutBookPath and _putBookInProgress
 
+		public const string TeamCollectionSettingsFileName = "TeamCollectionSettings.xml";
+
 		// When we last displayed a notification of a remote change to the repo.
 		// We avoid bothering the user about this frequently, especially because
 		// we can get several change notifications from an apparently atomic change
 		// like copying a new book over an existing one using Windows Explorer.
 		DateTime _lastNotificationTime = DateTime.MinValue;
-		public FolderTeamRepo(string localCollectionFolder, string folderPath) : base(localCollectionFolder)
+		public FolderTeamRepo(string localCollectionFolder) : base(localCollectionFolder)
 		{
-			_sharedFolderPath = folderPath;
+			var sharedSettingsPath = Path.Combine(localCollectionFolder, TeamCollectionSettingsFileName);
+			if (File.Exists(sharedSettingsPath))
+			{
+				try
+				{
+					var doc = new XmlDocument();
+					doc.Load(sharedSettingsPath);
+					_sharedFolderPath = doc.DocumentElement.GetElementsByTagName("TeamCollectionFolder").Cast<XmlElement>()
+						.First().InnerText;
+				}
+				catch (Exception ex)
+				{
+					NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom found team collection settings but could not process them", null, ex, true);
+				}
+			}
 		}
 
 		/// <summary>
@@ -161,7 +177,8 @@ namespace Bloom.TeamCollection
 		public override void GetFile(string pathName)
 		{
 			var sourcePath = Path.Combine(_sharedFolderPath, Path.GetFileName(pathName));
-			RobustFile.Copy(sourcePath, pathName, true);
+			if (File.Exists(sourcePath))
+				RobustFile.Copy(sourcePath, pathName, true);
 		}
 
 		// All the people who have something checked out in the repo.
@@ -185,6 +202,7 @@ namespace Bloom.TeamCollection
 		// books are added or modified.
 		protected internal override void StartMonitoring()
 		{
+			base.StartMonitoring();
 			_watcher = new FileSystemWatcher();
 
 			_watcher.Path = _sharedFolderPath;
@@ -275,6 +293,7 @@ namespace Bloom.TeamCollection
 		{
 			_watcher.EnableRaisingEvents = false;
 			_watcher.Dispose();
+			base.StopMonitoring();
 		}
 
 		/// <summary>
@@ -323,6 +342,8 @@ namespace Bloom.TeamCollection
 			}
 		}
 
+		public override bool HasTeamCollection => _sharedFolderPath != null;
+
 		/// <summary>
 		/// Used at program startup to decide whether the command line arguments represent
 		/// opening a file that triggers joining a team collection.
@@ -332,6 +353,23 @@ namespace Bloom.TeamCollection
 		public static bool IsJoinTeamCollectionFile(string[] args)
 		{
 			return args.Length == 1 && args[0].EndsWith(".JoinBloomTC");
+		}
+
+		/// <summary>
+		/// Used when the user asks to create a team collection from the existing local collection.
+		/// Assumes only that the folder we want to connect to exists (and, at least for now, expects
+		/// it to have nothing else in it). We set it up with all the files it needs to have,
+		/// including any books that already exist locally.
+		/// </summary>
+		/// <param name="sharedFolder"></param>
+		public void ConnectToTeamCollection(string sharedFolder)
+		{
+			_sharedFolderPath = sharedFolder;
+			CreateJoinCollectionFile();
+			CreateTeamCollectionSettingsFile(_localCollectionFolder, sharedFolder);
+			CopySharedCollectionFilesFromLocal(_localCollectionFolder);
+			SynchronizeBooksFromLocalToRepo();
+			StartMonitoring();
 		}
 
 		// Create a new local collection from the shared collection at the specified path.
@@ -349,12 +387,16 @@ namespace Bloom.TeamCollection
 			// However, if this collection has previously been in a TeamCollection, some books might
 			// already have status files? Maybe we should delete *.status from collectionFolder first?
 			Directory.CreateDirectory(localSharedFolder);
-			var repo = new FolderTeamRepo(localSharedFolder,sharedFolder);
-			repo.CreateJoinCollectionFile();
-			repo.CreateTeamSettingsFile(localSharedFolder);
-			repo.CopySharedCollectionFilesToLocal(localSharedFolder);
-			repo.CopyAllBooksFromSharedToLocalFolder(localSharedFolder);
-			return CollectionPath(localSharedFolder);
+			CreateTeamCollectionSettingsFile(localSharedFolder, sharedFolder);
+			// Most of the collection settings files will be copied later when we create the repo
+			// in TeamRepo.MakeInstance() and call CopySharedCollectionFilesToLocal.
+			// However, when we start up with a command line argument that causes JoinCollectionTeam,
+			// the next thing we do is push the newly created project into our MRU list so it will
+			// be the one that gets opened. The MRU list refuses to add a bloomCollection that doesn't
+			// exist; so we have to make it exist.
+			var localCollectionPath = CollectionPath(localSharedFolder);
+			RobustFile.Copy(CollectionPath(sharedFolder), localCollectionPath, true);
+			return localCollectionPath;
 		}
 
 		public void CreateJoinCollectionFile()
@@ -367,12 +409,12 @@ namespace Bloom.TeamCollection
 				+ @"You can rename this file but must keep the extension the same.");
 		}
 
-		public void CreateTeamSettingsFile(string collectionFolder) {
+		public static void CreateTeamCollectionSettingsFile(string collectionFolder, string teamCollectionFolder) {
 			var doc = new XDocument(
 				new XElement("settings",
-					new XElement("sharingFolder",
-						new XText(_sharedFolderPath))));
-			var teamSettingsPath = Path.Combine(collectionFolder, "TeamSettings.xml");
+					new XElement("TeamCollectionFolder",
+						new XText(teamCollectionFolder))));
+			var teamSettingsPath = Path.Combine(collectionFolder, TeamCollectionSettingsFileName);
 			using (var stream = new FileStream(teamSettingsPath, FileMode.Create))
 			{
 				using (var writer = new XmlTextWriter(stream, Encoding.UTF8))
