@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Api;
@@ -13,20 +13,20 @@ namespace Bloom.TeamCollection
 	// Review: should this be in web/controllers with all the other API classes, or here with all the other sharing code?
 	public class TeamCollectionApi
 	{
-		private TeamRepo _repo; // null if we are not sharing (no TeamCollection is configured)
+		private TeamRepo _repo;
 		private BookSelection _bookSelection; // configured by autofac, tells us what book is selected
-		private string CurrentUser => _repo?.CurrentUser;
+		private string CurrentUser => _repo.CurrentUser;
 		private string _collectionFolder;
 
 		public static TeamCollectionApi TheOneInstance { get; private set; }
 
 		// Called by autofac, which creates the one instance and registers it with the server.
-		public TeamCollectionApi(CollectionSettings settings, BookSelection bookSelection)
+		public TeamCollectionApi(CollectionSettings settings, BookSelection bookSelection, TeamRepo repo)
 		{
 			_collectionFolder = settings.FolderPath;
-			if (settings.SharingFolder != null)
+			_repo = repo;
+			if (_repo.HasTeamCollection)
 			{
-				_repo = new FolderTeamRepo(_collectionFolder, settings.SharingFolder);
 				_repo.SetupMonitoringBehavior();
 			}
 			_bookSelection = bookSelection;
@@ -46,7 +46,7 @@ namespace Bloom.TeamCollection
 		{
 			// We don't need any of the Sharing UI if the selected book isn't in the editable
 			// collection (or if the collection doesn't have a Team Collection at all).
-			request.ReplyWithBoolean(_repo != null && _bookSelection.CurrentSelection.IsEditable);
+			request.ReplyWithBoolean(_repo.HasTeamCollection && _bookSelection.CurrentSelection.IsEditable);
 		}
 
 		public void HandleCurrentBookStatus(ApiRequest request)
@@ -116,10 +116,8 @@ namespace Bloom.TeamCollection
 				// just chose a folder to get things started.
 				// We'll need a different API or something similar if we ever want to create
 				// some other kind of repo.
-				var repo = new FolderTeamRepo(_collectionFolder, sharingFolder);
-				repo.CreateJoinCollectionFile();
-				repo.CreateTeamSettingsFile(_collectionFolder);
-				repo.CopySharedCollectionFilesFromLocal(_collectionFolder);
+				var repo = _repo as FolderTeamRepo;
+				repo.ConnectToTeamCollection(sharingFolder);
 
 				_createCallback?.Invoke();
 			}
@@ -146,7 +144,7 @@ namespace Bloom.TeamCollection
 			{
 				return false; // no book, no editing
 			}
-			if (_repo == null)
+			if (!_repo.HasTeamCollection)
 			{
 				return true; // no team collection, no problem.
 			}

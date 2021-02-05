@@ -44,7 +44,6 @@ namespace Bloom.Collection
 		public WritingSystem Language2;
 		public WritingSystem Language3;
 		public WritingSystem[] LanguagesZeroBased;
-		public string SharingFolder { get; set; }
 
 		private string _signLanguageIso639Code;
 
@@ -405,7 +404,6 @@ namespace Bloom.Collection
 				AudioRecordingMode = parsedAudioRecordingMode;
 				AudioRecordingTrimEndMilliseconds = ReadInteger(xml, "AudioRecordingTrimEndMilliseconds",
 					kDefaultAudioRecordingTrimEndMilliseconds);
-				SharingFolder = TeamRepo.GetSharedFolder(Path.GetDirectoryName(SettingsFilePath));
 			}
 			catch (Exception e)
 			{

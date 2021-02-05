@@ -22,7 +22,8 @@ namespace BloomTests.TeamCollection
 		{
 			_sharedFolder = new TemporaryFolder("FolderTeamRepoTests_Shared");
 			_collectionFolder = new TemporaryFolder("FolderTeamRepoTests_Collection");
-			_repo = new TestFolderTeamRepo(_collectionFolder.FolderPath, _sharedFolder.FolderPath);
+			FolderTeamRepo.CreateTeamCollectionSettingsFile(_collectionFolder.FolderPath, _sharedFolder.FolderPath);
+			_repo = new TestFolderTeamRepo(_collectionFolder.FolderPath);
 
 			// Make some books and check them in. Individual tests verify the results.
 			// This book has an additional file, including a subfolder, to ensure they get

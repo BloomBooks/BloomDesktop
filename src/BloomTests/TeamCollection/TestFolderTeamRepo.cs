@@ -10,7 +10,7 @@ namespace BloomTests.TeamCollection
 {
 	public class TestFolderTeamRepo : FolderTeamRepo
 	{
-		public TestFolderTeamRepo(string localCollectionFolder, string folderPath) : base(localCollectionFolder, folderPath)
+		public TestFolderTeamRepo(string localCollectionFolder) : base(localCollectionFolder)
 		{
 		}
 

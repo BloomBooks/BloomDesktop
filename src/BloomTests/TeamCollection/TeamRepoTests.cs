@@ -28,7 +28,8 @@ namespace BloomTests.TeamCollection
 		{
 			_sharedFolder = new TemporaryFolder("TeamRepo_Shared");
 			_collectionFolder = new TemporaryFolder("TeamRepo_Local");
-			_repo = new FolderTeamRepo(_collectionFolder.FolderPath,_sharedFolder.FolderPath);
+			FolderTeamRepo.CreateTeamCollectionSettingsFile(_collectionFolder.FolderPath, _sharedFolder.FolderPath);
+			_repo = new FolderTeamRepo(_collectionFolder.FolderPath);
 			_originalUser = _repo.CurrentUser;
 			if (string.IsNullOrEmpty(_originalUser))
 			{
@@ -272,14 +273,22 @@ namespace BloomTests.TeamCollection
 
 		void MakeBook(string name, string content, bool toRepo=true, bool onlyRepo = false)
 		{
-			var folderPath = Path.Combine(_collectionFolder.FolderPath, name);
-			var bookPath = Path.Combine(folderPath, Path.ChangeExtension(name, "htm"));
-			Directory.CreateDirectory(folderPath);
-			RobustFile.WriteAllText(bookPath, "<html><body>"+ content + "</body></html>");
+			var folderPath = MakeFakeBook(_collectionFolder.FolderPath, name, content);
 			if (toRepo)
 				_repo.PutBook(folderPath);
 			if (onlyRepo)
 				SIL.IO.RobustIO.DeleteDirectoryAndContents(folderPath);
+		}
+
+		// Make a very trivial fake book. Not nearly good enough to make a Book object from,
+		// but enough for most purposes of testing TeamCollection.
+		public static string MakeFakeBook(string collectionFolder, string name, string content)
+		{
+			var folderPath = Path.Combine(collectionFolder, name);
+			var bookPath = Path.Combine(folderPath, Path.ChangeExtension(name, "htm"));
+			Directory.CreateDirectory(folderPath);
+			RobustFile.WriteAllText(bookPath, "<html><body>" + content + "</body></html>");
+			return folderPath;
 		}
 
 		void UpdateLocalBook(string name, string content, bool updateChecksum = true)

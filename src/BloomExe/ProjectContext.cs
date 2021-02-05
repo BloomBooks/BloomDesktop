@@ -190,6 +190,7 @@ namespace Bloom
 					try
 					{
 						builder.Register<CollectionSettings>(c => new CollectionSettings(projectSettingsPath)).InstancePerLifetimeScope();
+						builder.Register<TeamRepo>(c => TeamRepo.MakeInstance(projectSettingsPath));
 					}
 					catch (Exception)
 					{
@@ -205,7 +206,7 @@ namespace Bloom
 							#endif
 								c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(),
 								c.Resolve<EditBookCommand>(), c.Resolve<CreateFromSourceBookCommand>(), c.Resolve<BookServer>(),
-								c.Resolve<CurrentEditableCollectionSelection>(), c.Resolve<BookThumbNailer>())).InstancePerLifetimeScope();
+								c.Resolve<CurrentEditableCollectionSelection>(), c.Resolve<BookThumbNailer>(), c.Resolve<TeamRepo>())).InstancePerLifetimeScope();
 
 					// Keep in sync with OptimizedFileLocator: it wants to return the object created here.
 					builder.Register<IChangeableFileLocator>(

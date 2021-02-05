@@ -8,6 +8,7 @@ using System.Xml;
 using L10NSharp;
 using Sentry;
 using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom.TeamCollection
 {
@@ -18,11 +19,11 @@ namespace Bloom.TeamCollection
 	/// The idea is to leave open the possibility of other implementations, for example, based on
 	/// a DVCS.
 	/// </summary>
-	public abstract class TeamRepo
+	public abstract class TeamRepo: IDisposable
 	{
 		// special value for BookStatus.lockedBy when the book is newly created and not in the repo at all.
 		public const string FakeUserIndicatingNewBook = "this user";
-		private readonly string _localCollectionFolder; // The unshared folder that this repo syncs with
+		protected readonly string _localCollectionFolder; // The unshared folder that this repo syncs with
 
 		public TeamRepo(string localCollectionFolder)
 		{
@@ -71,6 +72,37 @@ namespace Bloom.TeamCollection
 			return status;
 		}
 
+		/// <summary>
+		/// Sync every book from the local collection (every folder that has a corresponding htm file) from local
+		/// to repo, unless status files exist indicating they are already in sync. (This is typically used when
+		/// creating a TeamCollection from an existing local collection. Usually it is a new folder and all
+		/// books are copied.)
+		/// </summary>
+		public void SynchronizeBooksFromLocalToRepo()
+		{
+			foreach (var path in Directory.EnumerateDirectories(_localCollectionFolder))
+			{
+				try
+				{
+					var fileName = Path.GetFileName(path);
+					var status = GetStatus(fileName);
+					var localStatus = GetLocalStatus(fileName);
+					var localHtmlFilePath = Path.Combine(path, Path.ChangeExtension(Path.GetFileName(path), "htm"));
+					if ((status?.checksum == null || status.checksum != localStatus?.checksum) && RobustFile.Exists(localHtmlFilePath))
+					{
+						PutBook(path);
+					}
+				}
+				catch (Exception ex)
+				{
+					// Something went wrong with dealing with this book, but we'd like to carry on with
+					// syncing the rest of the collection
+					var msg = String.Format("Something went wrong trying to copy the book {0} to your Team Collection.", path);
+					NonFatalProblem.Report(ModalIf.All, PassiveIf.All, msg, null, ex);
+				}
+			}
+		}
+
 		// Return a list of all the books in the collection (the shared one, not
 		// the local one)
 		public abstract string[] GetBookList();
@@ -95,14 +127,23 @@ namespace Bloom.TeamCollection
 		// Commented out as not yet used.
 		//public abstract string[] GetPeople();
 
+		private bool _monitoring = false;
+
 		/// <summary>
 		/// Start monitoring the repo so we can get notifications of new and changed books.
 		/// </summary>
-		protected internal abstract void StartMonitoring();
+		protected virtual internal void StartMonitoring()
+		{
+			_monitoring = true;
+		}
+
 		/// <summary>
 		/// Stop monitoring (new and changed book notifications will no longer be used).
 		/// </summary>
-		protected internal abstract void StopMonitoring();
+		protected virtual internal void StopMonitoring()
+		{
+			_monitoring = false;
+		}
 
 		/// <summary>
 		/// Common part of getting book status as recorded in the repo, or if it is not in the repo
@@ -269,9 +310,11 @@ namespace Bloom.TeamCollection
 		/// <param name="localCollectionFolder"></param>
 		public void CopySharedCollectionFilesFromLocal(string localCollectionFolder)
 		{
-			PutFile(Path.Combine(localCollectionFolder, "customCollectionStyles.css"));
-			var collectionHame = Path.GetFileName(localCollectionFolder);
-			PutFile(Path.Combine(localCollectionFolder, Path.ChangeExtension(collectionHame, "bloomCollection")));
+			var collectionStylesPath = Path.Combine(localCollectionFolder, "customCollectionStyles.css");
+			if (RobustFile.Exists(collectionStylesPath))
+				PutFile(collectionStylesPath);
+			var collectionName = Path.GetFileName(localCollectionFolder);
+			PutFile(Path.Combine(localCollectionFolder, Path.ChangeExtension(collectionName, "bloomCollection")));
 
 		}
 
@@ -601,56 +644,68 @@ namespace Bloom.TeamCollection
 			return warnings;
 		}
 
-
-		/// <summary>
-		/// Figure out where the specified local folder's team collection (shared) folder is, if
-		/// it has one...if not return null.
-		/// </summary>
-		public static string GetSharedFolder(string collectionFolder)
-		{
-			var sharedSettingsPath = Path.Combine(collectionFolder, "TeamSettings.xml");
-			if (File.Exists(sharedSettingsPath))
-			{
-				try
-				{
-					var doc = new XmlDocument();
-					doc.Load(sharedSettingsPath);
-					return doc.DocumentElement.GetElementsByTagName("sharingFolder").Cast<XmlElement>()
-						.First().InnerText;
-				}
-				catch (Exception ex)
-				{
-					NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom found shared collection settings but could not process them", null, ex, true);
-				}
-			}
-
-			return null;
-		}
-
 		/// <summary>
 		/// Main entry point called before creating CollectionSettings; updates local folder to match
 		/// shared one, if any.
 		/// </summary>
-		/// <param name="projectPath"></param>
-		public static void MergeSharedData(string projectPath)
+		public void SynchronizeSharedAndLocal()
 		{
-			var collectionFolder = Path.GetDirectoryName(projectPath);
-			var sharedSettingsPath = GetSharedFolder(collectionFolder);
-			if (sharedSettingsPath != null)
+			if (!HasTeamCollection)
+				return;
+
+			var problems = SyncAtStartup();
+			if (problems.Count > 0)
 			{
-				// This is a temporary repo to perform the SyncAtStartup. It will get garbage
-				// collected and we'll make a new one in SharingApi's constructor to be TheOneInstance
-				// (as long as we're working on this collection).
-				var repo = new FolderTeamRepo(collectionFolder, sharedSettingsPath);
-				var problems = repo.SyncAtStartup();
-				if (problems.Count > 0)
+				// Todo: localize. Not adding to XLF now because we want to move to a quite different UI.
+				// Todo: instead of returning an error list and using MessageBox, we want to pass an IProgress to SyncAtStartup,
+				// have it display messages and errors in a dialog, and make a permanent log of problems. See BL-9485.
+				MessageBox.Show("Bloom found some problems while loading changes from your team collection:"
+				                + Environment.NewLine + String.Join("," + Environment.NewLine, problems),
+					"Merge Problems");
+			}
+		}
+
+		/// <summary>
+	/// Returns true if this collection has a team collection.
+	/// Methods that need data from the team collection or modify it should not be called if this is false.
+	/// </summary>
+	public abstract bool HasTeamCollection { get; }
+
+		public static TeamRepo MakeInstance(string collectionSettingsPath)
+		{
+			// For now, we always make a FolderTeamRepo. If we eventually have more than one subclass,
+			// this will have to figure out which kind to create.
+			var localCollectionFolder = Path.GetDirectoryName(collectionSettingsPath);
+			var repo = new FolderTeamRepo(localCollectionFolder);
+			// We're doing this EVERY time we create a repo on opening the collection.
+			// One reason is to keep things in sync. But even more crucially, when we create a new
+			// local connection as part of joining a team collection, we won't have these
+			// files at all unless we create them here.
+			if (repo.HasTeamCollection)
+				repo.CopySharedCollectionFilesToLocal(localCollectionFolder);
+			return repo;
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				if (_monitoring)
 				{
-					// Todo: localize. Not adding to XLF now because I'm almost sure JohnH will want to design something better.
-					MessageBox.Show("Bloom found some problems while loading changes from your team collection:"
-					                + Environment.NewLine + String.Join("," + Environment.NewLine, problems),
-						"Merge Problems");
+					StopMonitoring();
 				}
 			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		~TeamRepo()
+		{
+			Dispose(false);
 		}
 	}
 }
