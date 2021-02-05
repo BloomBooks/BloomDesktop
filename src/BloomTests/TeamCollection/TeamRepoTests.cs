@@ -145,7 +145,7 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public void SyntAtStartup_ProducesNoUnexpectedMessages()
 		{
-			Assert.That(_syncMessages, Has.Count.EqualTo(2));
+			Assert.That(_syncMessages, Has.Count.EqualTo(2), "Unexpected number of error messages produced. Did you mean to add one?");
 		}
 		[Test]
 		public void SyncAtStartup_BookNeedsNothingDone_Survives()

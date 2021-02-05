@@ -93,7 +93,7 @@ namespace BloomTests.TeamCollection
 		}
 
 		[Test]
-		public void GetBooks_RetrievesExpectedBooks_AndChecksums()
+		public void CopyAllBooksFromSharedToLocalFolder_RetrievesExpectedBooks_AndChecksums()
 		{
 			using (var destFolder = new TemporaryFolder("GetBooks_Retrieves"))
 			{
