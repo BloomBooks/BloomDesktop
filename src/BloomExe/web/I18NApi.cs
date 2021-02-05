@@ -55,9 +55,24 @@ namespace Bloom.Api
 					string id = parameters["key"];
 					string englishText = parameters["englishText"];
 					string langId = parameters["langId"];
-					langId = langId.Replace("V", request.CurrentBook.BookData.Language1.Iso639Code);
-					langId = langId.Replace("N1", request.CurrentBook.BookData.Language2.Iso639Code);
-					langId = langId.Replace("N2", request.CurrentBook.BookData.Language3.Iso639Code);
+					string isoCode1 = null;
+					string isoCode2 = null;
+					string isoCode3 = null;
+					if (request.CurrentBook != null)
+					{
+						isoCode1 = request.CurrentBook.BookData.Language1.Iso639Code;
+						isoCode2 = request.CurrentBook.BookData.Language2.Iso639Code;
+						isoCode3 = request.CurrentBook.BookData.Language3.Iso639Code;
+					}
+					else
+					{
+						isoCode1 = request.CurrentCollectionSettings.Language1.Iso639Code;
+						isoCode2 = request.CurrentCollectionSettings.Language2.Iso639Code;
+						isoCode3 = request.CurrentCollectionSettings.Language3.Iso639Code;
+					}
+					langId = langId.Replace("V", isoCode1);
+					langId = langId.Replace("N1", isoCode2);
+					langId = langId.Replace("N2", isoCode3);
 					langId = langId.Replace("UI", LocalizationManager.UILanguageId);
 					string localizedString;
 					if (GetSomeTranslation(id, langId, out localizedString))
