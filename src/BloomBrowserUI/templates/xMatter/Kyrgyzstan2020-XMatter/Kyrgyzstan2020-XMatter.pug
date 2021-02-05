@@ -29,4 +29,12 @@ block front-cover-footer
 	+divider
 
 
+//- this is here only to add the bloom-scale-with-code class, which causes
+//-  code to compute the width and heigh of the image at runtime because we
+//-   cannot use object-fit: contain AND still get a tight white border.
+//- See https://issues.bloomlibrary.org/youtrack/issue/BL-9460
+block front-cover-image
+	.bloom-imageContainer.bloom-scale-with-code
+		img(data-book="coverImage", src="placeHolder.png")
+		+field-cover-image("auto").bloom-imageDescription.bloom-trailingElement
 

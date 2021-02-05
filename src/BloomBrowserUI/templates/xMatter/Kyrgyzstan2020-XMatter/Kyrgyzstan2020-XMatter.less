@@ -218,16 +218,18 @@ div.bloom-page.outsideBackCover.coverColor {
 
 /* Element | http://localhost:8089/bloom/C%3A/Users/hatto/Documents/Bloom/Kyrgyz%20Branding%20Test/Book/8444a5b9-4b6a-476a-90da-cc003fbc1fea-memsim-Preview.html */
 
-.frontCover div.bloom-imageContainer:nth-child(2) > img:nth-child(1) {
-    /* width: 446px; */
-    /* height: 367px; */
-    /* margin-left: 0px; */
-    /* margin-top: 84px; */
+//.frontCover div.bloom-imageContainer:nth-child(2) > img:nth-child(1) {
+.frontCover div.bloom-imageContainer > img {
+    // We use "contain" instead of "unset" so that when previewing a book
+    // that has not been edited yet, we don't get a distorted picture. Instead,
+    // we get a white border that doesn't tightly fit the image. Then in
+    // bloomImage.SetImageDisplaySizeIfCalledFor(), we overwrite this to become object-fit:cover.
     object-fit: contain;
-
-    /* white border that fits the image, not its container*/
-    filter: drop-shadow(0 -3px 0 white) drop-shadow(0 3px 0 white)
-        drop-shadow(-3px 0 0 white) drop-shadow(3px 0 0 white);
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    border: solid white 3px;
 }
 
 .A5Portrait,
