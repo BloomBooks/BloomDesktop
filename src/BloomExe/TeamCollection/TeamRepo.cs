@@ -112,7 +112,7 @@ namespace Bloom.TeamCollection
 		/// <returns></returns>
 		public BookStatus GetStatus(string bookName)
 		{
-			var statusString = GetBookStatusJson(bookName);
+			var statusString = GetBookStatusJsonFromRepo(bookName);
 
 			if (String.IsNullOrEmpty(statusString))
 			{
@@ -135,19 +135,19 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		public void WriteBookStatus(string bookName, BookStatus status)
 		{
-			WriteRepoStatusJson(bookName, status.ToJson());
+			WriteBookStatusJsonToRepo(bookName, status.ToJson());
 			WriteLocalStatus(bookName, status);
 		}
 
 		/// <summary>
 		/// Get the raw status data from however the repo implementation stores it.
 		/// </summary>
-		protected abstract string GetBookStatusJson(string bookName);
+		protected abstract string GetBookStatusJsonFromRepo(string bookName);
 
 		/// <summary>
 		/// Set the raw status data to however the repo implementation stores it.
 		/// </summary>
-		protected abstract void WriteRepoStatusJson(string bookName, string status);
+		protected abstract void WriteBookStatusJsonToRepo(string bookName, string status);
 
 		/// <summary>
 		/// Event raised when a new book is added to the repo remotely (that is, not by our own
@@ -422,7 +422,7 @@ namespace Bloom.TeamCollection
 				try
 				{
 					var fileName = Path.GetFileName(path);
-					var status = GetBookStatusJson(fileName);
+					var status = GetBookStatusJsonFromRepo(fileName);
 					if (status == null)
 					{
 						// no sign of book in repo...should we delete it?

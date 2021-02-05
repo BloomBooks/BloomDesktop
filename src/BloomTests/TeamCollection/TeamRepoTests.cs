@@ -142,10 +142,14 @@ namespace BloomTests.TeamCollection
 			SIL.Windows.Forms.Registration.Registration.Default.Email = _originalUser;
 		}
 
+		/// <summary>
+		/// The specific error messages we expect each have their own test. To make sure we don't get any
+		/// additional, unexpected ones we check the count here.
+		/// </summary>
 		[Test]
 		public void SyntAtStartup_ProducesNoUnexpectedMessages()
 		{
-			Assert.That(_syncMessages, Has.Count.EqualTo(2));
+			Assert.That(_syncMessages, Has.Count.EqualTo(2), "Unexpected number of error messages produced. Did you mean to add one?");
 		}
 		[Test]
 		public void SyncAtStartup_BookNeedsNothingDone_Survives()

@@ -11,18 +11,20 @@ import "./TeamCollectionPanel.less";
 // an iframe that contains the preview, rather than just inserting itself below it.
 
 export const TeamCollectionPanel: React.FunctionComponent = props => {
-    // One of initializing, lockedByMe, locked, or unlocked
-    // May also need lockedByMeElsewhere
-    const [state, setState] = useState("initializing");
+    const [state, setState] = useState<
+        // May also need lockedByMeElsewhere
+        "initializing" | "lockedByMe" | "locked" | "unlocked"
+    >("initializing");
     const [lockedBy, setLockedBy] = useState("");
     const [lockedWhen, setLockedWhen] = useState("");
     React.useEffect(() => {
         BloomApi.get("teamCollection/currentBookStatus", data => {
-            if (data.data.who) {
+            const bookStatus = data.data;
+            if (bookStatus.who) {
                 // locked by someone
                 if (
-                    data.data.who === data.data.currentUser &&
-                    data.data.where === data.data.currentMachine
+                    bookStatus.who === bookStatus.currentUser &&
+                    bookStatus.where === bookStatus.currentMachine
                 ) {
                     setState("lockedByMe");
                 } else {
@@ -30,12 +32,12 @@ export const TeamCollectionPanel: React.FunctionComponent = props => {
                     // Who it is locked by. If that is the current user, but it's not locked here, clarify by
                     // appending the machine name where this user has it locked.
                     setLockedBy(
-                        data.data.who +
-                            (data.data.who === data.data.currentUser
-                                ? " (" + data.data.where + ")"
+                        bookStatus.who +
+                            (bookStatus.who === bookStatus.currentUser
+                                ? " (" + bookStatus.where + ")"
                                 : "")
                     );
-                    setLockedWhen(data.data.when);
+                    setLockedWhen(bookStatus.when);
                 }
             } else {
                 setState("unlocked");
