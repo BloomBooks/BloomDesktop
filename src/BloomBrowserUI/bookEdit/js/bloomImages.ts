@@ -307,7 +307,6 @@ function SetImageDisplaySizeIfCalledFor(container: JQuery, img: JQuery) {
                                 Math.max(1, imageInfo.width))}px`
                     );
                     $(img).css("width", "100%");
-                    $(img).css("purpose", "for-bloom-scale-with-code");
                 }
                 // This isn't actually needed once we have the height and width
                 // here. However, when a new the book is previewed *before we've
