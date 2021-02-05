@@ -148,7 +148,7 @@ namespace Bloom.TeamCollection
 			}
 			catch (ZipException ex)
 			{
-				NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not unpack a file in your Team Collection:" + bookName + ".bloom");
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not unpack a file in your Team Collection: " + bookName + ".bloom");
 			}
 		}
 
@@ -281,7 +281,7 @@ namespace Bloom.TeamCollection
 		/// Get the raw (JSON) string that stores the status information. Currently stored
 		/// in the zip file comment.
 		/// </summary>
-		protected override string GetBookStatusJson(string bookName)
+		protected override string GetBookStatusJsonFromRepo(string bookName)
 		{
 			var bookPath = GetPathToBookFileInRepo(bookName);
 			if (!RobustFile.Exists(bookPath))
@@ -298,7 +298,7 @@ namespace Bloom.TeamCollection
 		/// Write the raw (JSON) string that stores the status information. Currently stored
 		/// in the zip file comment.
 		/// </summary>
-		protected override void WriteRepoStatusJson(string bookName, string status)
+		protected override void WriteBookStatusJsonToRepo(string bookName, string status)
 		{
 			var bookPath = GetPathToBookFileInRepo(bookName);
 			if (!RobustFile.Exists(bookPath))
