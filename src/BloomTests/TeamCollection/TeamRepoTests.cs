@@ -28,7 +28,8 @@ namespace BloomTests.TeamCollection
 		{
 			_sharedFolder = new TemporaryFolder("TeamRepo_Shared");
 			_collectionFolder = new TemporaryFolder("TeamRepo_Local");
-			_repo = new FolderTeamRepo(_collectionFolder.FolderPath,_sharedFolder.FolderPath);
+			FolderTeamRepo.CreateTeamSettingsFile(_collectionFolder.FolderPath, _sharedFolder.FolderPath);
+			_repo = new FolderTeamRepo(_collectionFolder.FolderPath);
 			_originalUser = _repo.CurrentUser;
 			if (string.IsNullOrEmpty(_originalUser))
 			{
