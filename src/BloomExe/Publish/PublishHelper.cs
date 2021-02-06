@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -105,15 +105,20 @@ namespace Bloom.Publish
 			// or PDF published books.)
 			foreach (XmlElement elt in dom.RawDom.SafeSelectNodes("//div"))
 			{
-				if (HasClass (elt, "pageLabel"))
-					elt.ParentNode.RemoveChild (elt);
-				if (HasClass (elt, "pageDescription"))
-					elt.ParentNode.RemoveChild (elt);
+				if (!book.IsTemplateBook)
+				{
+					if (HasClass(elt, "pageLabel"))
+						elt.ParentNode.RemoveChild(elt);
+
+					if (HasClass(elt, "pageDescription"))
+						elt.ParentNode.RemoveChild(elt);
+				}
+
 				// REVIEW: is this needed now with the new strategy?
 				if (HasClass (elt, "bloom-editable") && HasClass (elt, "bloom-visibility-user-off"))
 					elt.ParentNode.RemoveChild (elt);
 			}
-			// Our recordingmd5 attribute is not allowed
+			// Our recordingmd5 attribute is not allowed by epub
 			foreach (XmlElement elt in HtmlDom.SelectAudioSentenceElementsWithRecordingMd5(dom.RawDom.DocumentElement))
 			{
 				elt.RemoveAttribute ("recordingmd5");
@@ -138,19 +143,26 @@ namespace Bloom.Publish
 				var src = img.GetOptionalStringAttribute("src", null);
 				if (String.IsNullOrEmpty(src) || src == "placeHolder.png")
 				{
-					// If the image file doesn't exist, we want to find out about it.  But if there is no
-					// image file, epubcheck complains and it doesn't do any good anyway.
-					img.ParentNode.RemoveChild(img);
+
+					// If this is a template book, then the whole point of the book is to not have content. So then we want to preserve the placeholders so
+					// that people looking at the book on Bloom Library can see how the template pages are constructed.
+					if (!book.IsTemplateBook)
+					{
+						// If the image file doesn't exist, we want to find out about it.  But if there is no
+						// image file, epubcheck complains and it doesn't do any good anyway.
+						img.ParentNode.RemoveChild(img);
+					}
 				}
 				else
 				{
 					var parent = img.ParentNode as XmlElement;
-					parent.RemoveAttribute("title");	// We don't want this in published books.
-					img.RemoveAttribute("title");	// We don't want this in published books.  (probably doesn't exist)
-					img.RemoveAttribute("type");	// This is invalid, but has appeared for svg branding images.
+					parent.RemoveAttribute("title"); // We don't want this in published books.
+					img.RemoveAttribute(
+						"title"); // We don't want this in published books.  (probably doesn't exist)
+					img.RemoveAttribute("type"); // This is invalid, but has appeared for svg branding images.
 				}
 			}
-
+				
 			if (epubMaker != null)
 			{
 				// epub-check doesn't like these attributes (BL-6036).  I suppose BloomReader might find them useful.
@@ -213,13 +225,16 @@ namespace Bloom.Publish
 			if (this != _latestInstance)
 				return;
 
-			var toBeDeleted = new List<XmlElement>();
-			// Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't
-			// (See BL-5234). So we gather up the elements to be deleted and delete them afterwards.
-			foreach (XmlElement page in pageElts)
-			{
-				// As the constant's name here suggests, in theory, we could include divs
-				// that don't have .bloom-editable, and all their children.
+				var toBeDeleted = new List<XmlElement>();
+				// Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't
+				// (See BL-5234). So we gather up the elements to be deleted and delete them afterwards.
+				foreach (XmlElement page in pageElts)
+				{
+					// BL-9501 Don't remove pages from template books, which are often empty but we still want to show their components
+					if (!book.IsTemplateBook)
+					{
+						// As the constant's name here suggests, in theory, we could include divs
+						// that don't have .bloom-editable, and all their children.
 				// But I'm not smart enough to write that selector and for bloomds, all we're doing here is saving space,
 				// so those other divs we are missing doesn't seem to matter as far as I can think.
 				var kSelectThingsThatCanBeHiddenButAreNotText = ".//img";
@@ -227,13 +242,13 @@ namespace Bloom.Publish
 				foreach (XmlElement elt in page.SafeSelectNodes(selector))
 				{
 					// Even when they are not displayed we want to keep image descriptions if they aren't empty.
-					// This is necessary for retaining any associated audio files to play.
-					// (If they are empty, they won't have any audio and may trigger embedding an unneeded font.)
-					// See https://issues.bloomlibrary.org/youtrack/issue/BL-7237.
-					// As noted above, if the displayDom is not sufficiently loaded for a definitive
-					// answer to IsDisplayed, we will throw when making epubs but not for bloom reader.
-					if (!IsDisplayed(elt, epubMaker != null) && !IsNonEmptyImageDescription(elt))
-					{
+							// This is necessary for retaining any associated audio files to play.
+							// (If they are empty, they won't have any audio and may trigger embedding an unneeded font.)
+							// See https://issues.bloomlibrary.org/youtrack/issue/BL-7237.
+							// As noted above, if the displayDom is not sufficiently loaded for a definitive
+							// answer to IsDisplayed, we will throw when making epubs but not for bloom reader.
+							if (!IsDisplayed(elt, epubMaker != null) && !IsNonEmptyImageDescription(elt))
+							{
 						toBeDeleted.Add(elt);
 					}
 				}
@@ -241,6 +256,7 @@ namespace Bloom.Publish
 				{
 					elt.ParentNode.RemoveChild(elt);
 				}
+					}
 				// We need the font information for visible text elements as well.  This is a side-effect but related to
 				// unwanted elements in that we don't need fonts that are used only by unwanted elements.
 				foreach (XmlElement elt in page.SafeSelectNodes(".//div"))
