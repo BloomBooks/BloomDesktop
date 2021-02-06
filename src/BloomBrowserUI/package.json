@@ -34,6 +34,7 @@
         "watchTemplatesLess": "less-watch-compiler templates  ../../output/browser/templates",
         "watchBookEditLess": "less-watch-compiler bookEdit ../../output/browser/bookEdit",
         "watchBookLayoutLess": "less-watch-compiler bookLayout ../../output/browser/bookLayout",
+        "watchBookPreviewLess": "less-watch-compiler bookPreview ../../output/browser/bookPreview",
         "watchPageChooserLess": "less-watch-compiler pageChooser ../../output/browser/pageChooser",
         "watchProblemDialogLess": "less-watch-compiler problemDialog ../../output/browser/problemDialog",
         "watch": "npm-run-all --parallel watchBrandingLess watchTemplatesLess watchBookEditLess watchBookLayoutLess watchBrandingFiles watchPageChooserLess watchProblemDialogLess watchCode",
