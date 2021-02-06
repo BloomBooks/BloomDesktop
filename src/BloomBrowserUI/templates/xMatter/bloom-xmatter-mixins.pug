@@ -114,7 +114,8 @@ mixin standard-cover-contents
 			label.bubble Book title in {lang}
 			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
 
-	+standard-cover-image
+	block front-cover-image
+		+standard-cover-image
 
 	// 2 columns: first for an optional logo, then text content
 	.bottomBlock

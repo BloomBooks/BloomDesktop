@@ -66,8 +66,11 @@ export function SetupImagesInContainer(container) {
 export function SetupImage(image: JQuery) {
     // Remove any obsolete explicit image size and position left over from earlier versions of Bloom, before we had object-fit:contain.
     if (image.style) {
-        image.style.width = "";
-        image.style.height = "";
+        // Note, in BL-9460 we had to return to having width and height in some cases.
+        if (!$(image.parent).hasClass("bloom-scale-with-code")) {
+            image.style.width = "";
+            image.style.height = "";
+        }
         image.style.marginLeft = "";
         image.style.marginTop = "";
     }
@@ -112,6 +115,12 @@ function SetupImageContainer(containerDiv: any) {
     } else {
         containerDiv.classList.remove("hoverUp");
     }
+
+    // This will fix cover image on Kyrgyzstan books that we created before we switched to this
+    // new border system. Going forward, say 5.1, we could remove this and just
+    // rely on a call to SetImageDisplaySize() when the image is added.
+    const img = $(containerDiv).find("img");
+    SetImageDisplaySizeIfCalledFor($(containerDiv), img);
 
     $(containerDiv)
         .mouseenter(function() {
@@ -219,7 +228,7 @@ function SetupImageContainer(containerDiv: any) {
 }
 
 function SetImageTooltip(container, img) {
-    var url = GetRawImageUrl(img);
+    const url = GetRawImageUrl(img);
     // Don't try to go getting image info for a built in Bloom image (like cogGrey.svg).
     // It'll just throw an exception.
     if (url.startsWith("/bloom/")) {
@@ -230,12 +239,14 @@ function SetImageTooltip(container, img) {
         "image/info",
         { params: { image: GetRawImageUrl(img) } },
         result => {
-            var image: any = result.data;
+            const image: any = result.data;
             // This appears to be constant even on higher dpi screens.
             // (See http://www.w3.org/TR/css3-values/#absolute-lengths)
             const kBrowserDpi = 96;
-            var dpi = Math.round(image.width / ($(img).width() / kBrowserDpi));
-            var info =
+            const dpi = Math.round(
+                image.width / ($(img).width() / kBrowserDpi)
+            );
+            const info =
                 image.name +
                 "\n" +
                 getFileLengthString(image.bytes) +
@@ -251,6 +262,63 @@ function SetImageTooltip(container, img) {
             container.title = info;
         }
     );
+}
+
+function SetImageDisplaySizeIfCalledFor(container: JQuery, img: JQuery) {
+    //const $container = $(containerDiv);
+    // For Kyrgyzstan covers, we needed a white border around images.
+    // object-fit:contain would leave the border of the image around the inside
+    // of the parent, instead of around the fitted image. See
+    // https://issues.bloomlibrary.org/youtrack/issue/BL-9460.
+    // So this allows us to do things the old fashioned way, essentially
+    // implementing object-fit ourselves, so that a style can be applied to add
+    // a border that will fit snugly.
+
+    if (container.hasClass("bloom-scale-with-code")) {
+        const url = GetRawImageUrl(img);
+        // Don't touch images for a built in Bloom image (like cogGrey.svg).
+        if (url.startsWith("/bloom/")) {
+            return;
+        }
+        BloomApi.getWithConfig(
+            "image/info",
+            { params: { image: GetRawImageUrl(img) } },
+            result => {
+                const imageInfo: any = result.data;
+                const containerAspectRatio =
+                    container.width() / Math.max(1, container.height());
+                const imageAspectRatio =
+                    imageInfo.width / Math.max(1, imageInfo.height);
+
+                // image is skinnier than the container
+                if (imageAspectRatio < containerAspectRatio) {
+                    $(img).css(
+                        "width",
+                        `${container.height() * imageAspectRatio}px`
+                    );
+                    $(img).css("height", "100%");
+                }
+                // image is fatter than the container
+                else {
+                    $(img).css(
+                        "height",
+                        `${imageInfo.height *
+                            (container.width() /
+                                Math.max(1, imageInfo.width))}px`
+                    );
+                    $(img).css("width", "100%");
+                }
+                // This isn't actually needed once we have the height and width
+                // here. However, when a new the book is previewed *before we've
+                // had a chance to set this stuff*, it will look awful unless we
+                // can put object-fit:contain on it. That won't make the border
+                // fit tightly, but at least the image won't be distorted. So we
+                // do set it that way in the stylesheet, and then overwrite that here once
+                // we have the height and width set.
+                $(img).css("object-fit", "cover");
+            }
+        );
+    }
 }
 
 function getFileLengthString(bytes): String {
@@ -295,6 +363,8 @@ function GetRawImageUrl(imgOrDivWithBackgroundImage) {
     }
     return "";
 }
+
+/* appears to be unused
 export function SetImageElementUrl(imgOrDivWithBackgroundImage, url) {
     if (imgOrDivWithBackgroundImage.tagName.toLowerCase() === "img") {
         imgOrDivWithBackgroundImage.src = url;
@@ -303,6 +373,8 @@ export function SetImageElementUrl(imgOrDivWithBackgroundImage, url) {
             "background-image:url('" + url + "')";
     }
 }
+*/
+
 //While the actual metadata is embedded in the images (Bloom/palaso does that), Bloom sticks some metadata in data-* attributes
 // so that we can easily & quickly get to the here.
 export function SetOverlayForImagesWithoutMetadata(container) {
