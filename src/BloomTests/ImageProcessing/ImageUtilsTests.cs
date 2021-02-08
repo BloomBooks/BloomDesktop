@@ -18,15 +18,19 @@ namespace BloomTests.ImageProcessing
 		[Test]
 		public void ShouldChangeFormatToJpeg_Photo_True()
 		{
-			var path = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "man.jpg");
-			Assert.IsTrue(ImageUtils.ShouldChangeFormatToJpeg(ImageUtils.GetImageFromFile(path)));
+			var path = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "man.png");
+			string jpegPath;
+			Assert.IsTrue(ImageUtils.ShouldChangeFormatToJpeg(PalasoImage.FromFile(path), out jpegPath));
+			Assert.IsNotNull(jpegPath);
 		}
 
 		[Test]
 		public void ShouldChangeFormatToJpeg_OneColor_False()
 		{
 			var path = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "bird.png");
-			Assert.IsFalse(ImageUtils.ShouldChangeFormatToJpeg(ImageUtils.GetImageFromFile(path)));
+			string jpegPath;
+			Assert.IsFalse(ImageUtils.ShouldChangeFormatToJpeg(PalasoImage.FromFile(path), out jpegPath));
+			Assert.IsNull(jpegPath);
 		}
 
 		[Test]
