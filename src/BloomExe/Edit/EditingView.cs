@@ -30,6 +30,7 @@ using System.Globalization;
 using Bloom.web;
 using ICSharpCode.SharpZipLib.Zip;
 using SIL.Extensions;
+using System.Reflection;
 
 namespace Bloom.Edit
 {
@@ -1147,6 +1148,13 @@ namespace Bloom.Edit
 #endif
 				if (DialogResult.OK == result && dlg.ImageInfo != null)
 				{
+					// Avoid saving the Image data if possible.  A large PNG file can take 5-10 seconds to save.
+					// So check the current image dimensions against the original image dimensions to see if we
+					// can avoid saving.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9377.
+					var started = DateTime.Now;
+					int height, width;
+					GetOriginalImageDimension(dlg.ImageInfo, out height, out width);
+					var copyOriginalImage = height == dlg.ImageInfo.Image.Height && width == dlg.ImageInfo.Image.Width;
 					// Save the possibly modified (by cropping) image to a file before processing further.
 					// The code for ensuring non-transparency uses GraphicsMagick on the file content if possible, so the
 					// file must be in sync with the imageInfo.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8638.
@@ -1154,6 +1162,7 @@ namespace Bloom.Edit
 					if (newImagePath == null || dlg.ImageInfo.OriginalFilePath != newImagePath)
 					{
 						var originalImagePath = dlg.ImageInfo.OriginalFilePath;
+
 						var extension = Path.GetExtension(originalImagePath).ToLowerInvariant();
 						// ImageInfo.Save does throws an exception for .bmp files because they can't store metadata.
 						// ImageInfo.Save doesn't save .tif file properly, creating a blank image file.  So always
@@ -1168,7 +1177,10 @@ namespace Bloom.Edit
 					var exceptionMsg = "Bloom had a problem including that image";
 					try
 					{
-						dlg.ImageInfo.Save(newImagePath);
+						if (copyOriginalImage)
+							RobustFile.Copy(dlg.ImageInfo.OriginalFilePath, newImagePath);
+						else
+							dlg.ImageInfo.Image.Save(newImagePath);
 						dlg.ImageInfo.SetCurrentFilePath(newImagePath);
 						SaveChangedImage(imageElement, dlg.ImageInfo, exceptionMsg);
 					}
@@ -1186,6 +1198,8 @@ namespace Bloom.Edit
 						{
 							RobustFile.Delete(newImagePath);
 						}
+						var finished = DateTime.Now;
+						Debug.WriteLine($"total image preparation time = {finished - started}");
 					}
 #if MEMORYCHECK
 					// Warn the user if we're starting to use too much memory.
@@ -1208,6 +1222,31 @@ namespace Bloom.Edit
 			Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");
 			Cursor = Cursors.Default;
 			imageInfo.Dispose(); // ensure memory doesn't leak
+		}
+
+		/// <summary>
+		/// Get the original dimensions of the image if we can from the stored metadata.
+		/// </summary>
+		private void GetOriginalImageDimension(PalasoImage palasoImage, out int height, out int width)
+		{
+			height = -1;
+			width = -1;
+			try
+			{
+				// Yes, this is cheating, but why Taglib hides the original height and width is
+				// beyond me, and we know (and have control over) PalasoImage's internals.
+				BindingFlags bindFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+				var metaInfo = palasoImage.Metadata.GetType().GetField("_originalTaglibMetadata", bindFlags);
+				var taglibMetadata = metaInfo.GetValue(palasoImage.Metadata);
+				var widthInfo = taglibMetadata.GetType().GetField("width", bindFlags);
+				var heightInfo = taglibMetadata.GetType().GetField("height", bindFlags);
+				width = (int)widthInfo.GetValue(taglibMetadata);
+				height = (int)heightInfo.GetValue(taglibMetadata);
+			}
+			catch
+			{
+				// Ignore any errors.  We tried and failed...
+			}
 		}
 
 		void ReportFailureToLoadImage(string path, Exception ex)

@@ -58,10 +58,20 @@ namespace Bloom.ImageProcessing
 
 			return HasJpegExtension(imageInfo.FileName);
 		}
-
 		public static bool HasJpegExtension(string filename)
 		{
 			return new[] { ".jpg", ".jpeg" }.Contains(Path.GetExtension(filename)?.ToLowerInvariant());
+		}
+
+		public static bool AppearsToBePng(PalasoImage imageInfo)
+		{
+			if (imageInfo == null || imageInfo.Image == null)
+				return false;
+			if (ImageFormat.Png.Guid == imageInfo.Image.RawFormat.Guid)
+				return true;
+			if (String.IsNullOrEmpty(imageInfo.FileName))
+				return false;
+			return Path.GetExtension(imageInfo.FileName).ToLowerInvariant() == ".png";
 		}
 
 		/// <summary>
@@ -101,22 +111,32 @@ namespace Bloom.ImageProcessing
 				}
 
 				isEncodedAsJpeg = AppearsToBeJpeg(imageInfo);
-				var shouldConvertToJpeg = !isEncodedAsJpeg && !HasTransparency(imageInfo.Image) && ShouldChangeFormatToJpeg(imageInfo.Image);
+				bool isEncodedAsPng = !isEncodedAsJpeg && AppearsToBePng(imageInfo);
+				string jpegFilePath = null;
+				var shouldConvertToJpeg = !isEncodedAsJpeg && !HasTransparency(imageInfo.Image) && ShouldChangeFormatToJpeg(imageInfo, out jpegFilePath);
 				string imageFileName;
 				if (!shouldConvertToJpeg && isSameFile)
 					imageFileName = imageInfo.FileName;
 				else
 					imageFileName = GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, isEncodedAsJpeg || shouldConvertToJpeg);
+				string sourcePath;
+				if (shouldConvertToJpeg)
+					sourcePath = jpegFilePath;
+				else
+					sourcePath = imageInfo.GetCurrentFilePath();
 
 				if (!Directory.Exists(bookFolderPath))
 					throw new DirectoryNotFoundException(bookFolderPath + " does not exist");
 
 				var destinationPath = Path.Combine(bookFolderPath, imageFileName);
-				if (shouldConvertToJpeg)
-				{
-					SaveAsTopQualityJpeg(imageInfo.Image, destinationPath);
-				}
-				PalasoImage.SaveImageRobustly(imageInfo, destinationPath);
+				if (isEncodedAsJpeg || shouldConvertToJpeg || isEncodedAsPng)
+					RobustFile.Copy(sourcePath, destinationPath);
+				else
+					imageInfo.Image.Save(destinationPath, ImageFormat.Png); // destinationPath already has .png extension
+
+				// Clean up a temporary file that we no longer need since it's been copied.
+				if (jpegFilePath != null && RobustFile.Exists(jpegFilePath))
+					RobustFile.Delete(jpegFilePath);
 
 				return imageFileName;
 
@@ -673,6 +693,7 @@ namespace Bloom.ImageProcessing
 					var proc = RunGraphicsMagick(graphicsMagickPath, sourcePath, destPath, size, makeOpaque);
 					if (proc.ExitCode == 0)
 					{
+						imageInfo.SetCurrentFilePath(destPath);
 						return GetImageFromFile(destPath);
 					}
 					else
@@ -689,7 +710,7 @@ namespace Bloom.ImageProcessing
 					// Ignore any errors deleting temp files.  If we leak, we leak...
 					try
 					{
-						RobustFile.Delete(destPath);	// don't need this any longer
+						// don't need this any longer
 						if (sourcePath != imageInfo.GetCurrentFilePath())
 							RobustFile.Delete(sourcePath);
 					}
@@ -751,6 +772,10 @@ namespace Bloom.ImageProcessing
 				argsBldr.AppendFormat("convert \"{0}\"", safeSourcePath);
 				if (makeOpaque)
 					argsBldr.Append(" -background white -extent 0x0 +matte");
+				if (destPath.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase))
+					argsBldr.Append(" -quality 0"); // uses Huffman encoding which isn't bad for images, and fastest time
+				else if (destPath.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase))
+					argsBldr.Append(" -quality 99");	// still lossy, but not near as bad as the default (bigger file, however)
 				argsBldr.AppendFormat(" -scale {0}x{1} \"{2}\"", size.Width, size.Height, safeDestPath);
 				var arguments = argsBldr.ToString();
 				var proc = new Process
@@ -834,27 +859,38 @@ namespace Bloom.ImageProcessing
 		/// Note that even at 100%, we're still going to lose some quality. So this method is only going to recommend
 		/// doing that if the size would be at least 50% less.
 		/// </summary>
-		public static bool ShouldChangeFormatToJpeg(Image image)
+		public static bool ShouldChangeFormatToJpeg(PalasoImage image, out string jpegFilePath)
 		{
+			jpegFilePath = null;
 			try
 			{
-				using(var safetyImage = new Bitmap(image))
-					//nb: there are cases (notably http://jira.palaso.org/issues/browse/WS-34711, after cropping a jpeg) where we get out of memory if we are not operating on a copy
+				var graphicsMagickPath = GetGraphicsMagickPath();
+				if (RobustFile.Exists(graphicsMagickPath))
 				{
-					using(var jpegFile = new TempFile())
-					using(var pngFile = new TempFile())
+					var path = image.GetCurrentFilePath();
+					var jpegDest = TempFileUtils.GetTempFilepathWithExtension(".jpg");
+					var proc = RunGraphicsMagick(graphicsMagickPath, path, jpegDest, new Size(image.Image.Width, image.Image.Height), false);
+					if (proc.ExitCode == 0)
 					{
-						RobustImageIO.SaveImage(image, pngFile.Path, ImageFormat.Png);
-						SaveAsTopQualityJpeg(safetyImage, jpegFile.Path);
-						var jpegInfo = new FileInfo(jpegFile.Path);
-						var pngInfo = new FileInfo(pngFile.Path);
+						var pngInfo = new FileInfo(path);
+						var jpegInfo = new FileInfo(jpegDest);
 						// this is just our heuristic.
 						const double fractionOfTheOriginalThatWouldWarrantChangingToJpeg = .5;
-						return jpegInfo.Length < (pngInfo.Length*(1.0 - fractionOfTheOriginalThatWouldWarrantChangingToJpeg));
+						if (jpegInfo.Length < (pngInfo.Length*(1.0 - fractionOfTheOriginalThatWouldWarrantChangingToJpeg)))
+						{
+							jpegFilePath = jpegDest;
+							return true;
+						}
+						RobustFile.Delete(jpegDest);	// don't need it after all.
+					}
+					else
+					{
+						LogGraphicsMagickFailure(proc);
 					}
 				}
+				return false;
 			}
-			catch(OutOfMemoryException e)
+			catch (Exception e)
 			{
 				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All,"Could not attempt conversion to jpeg.", "ref BL-3387", exception: e);
 				return false;
@@ -1040,6 +1076,8 @@ namespace Bloom.ImageProcessing
 			var key = image.GetFileKey();
 			if (filePath == null)
 				_currentFilePaths.Remove(key);
+			else if (_currentFilePaths.ContainsKey(key))
+				_currentFilePaths[key] = filePath;
 			else
 				_currentFilePaths.Add(key, filePath);
 		}
