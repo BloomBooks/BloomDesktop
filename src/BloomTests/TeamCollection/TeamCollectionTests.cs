@@ -11,14 +11,17 @@ using File = System.IO.File;
 
 namespace BloomTests.TeamCollection
 {
-	// While this makes considerable use of FolderTeamRepo, the tests here are focused on the code in the TeamRepo class.
-	// Some of the code in TeamRepo is more easily tested by methods in FolderTeamRepoTests. Most of the tests
+	// While this makes considerable use of FolderTeamCollection, the tests here are focused on the code in the TeamCollection class.
+	// Some of the code in TeamCollection is more easily tested by methods in FolderTeamCollectionTests. Most of the tests
 	// here focus on SyncAtStartup.
-	public class TeamRepoTests
+	// Note: in a very early version, TeamCollection was called TeamRepo. While we've mostly gotten rid of the 'repo'
+	// name, it was extensively used in test comments to indicate "the version of X in the shared location". I don't have
+	// a better short name for that so for now I have kept it.
+	public class TeamCollectionTests
 	{
 		private TemporaryFolder _sharedFolder;
 		private TemporaryFolder _collectionFolder;
-		private FolderTeamRepo _repo;
+		private FolderTeamCollection _collection;
 		private string _originalUser;
 		private string _checkMeOutOriginalChecksum;
 		private List<string> _syncMessages;
@@ -26,10 +29,11 @@ namespace BloomTests.TeamCollection
 		[OneTimeSetUp]
 		public void OneTimeSetup()
 		{
-			_sharedFolder = new TemporaryFolder("TeamRepo_Shared");
-			_collectionFolder = new TemporaryFolder("TeamRepo_Local");
-			_repo = new FolderTeamRepo(_collectionFolder.FolderPath,_sharedFolder.FolderPath);
-			_originalUser = _repo.CurrentUser;
+			_sharedFolder = new TemporaryFolder("TeamCollection_Shared");
+			_collectionFolder = new TemporaryFolder("TeamCollection_Local");
+			FolderTeamCollection.CreateTeamCollectionSettingsFile(_collectionFolder.FolderPath, _sharedFolder.FolderPath);
+			_collection = new FolderTeamCollection(_collectionFolder.FolderPath, _sharedFolder.FolderPath);
+			_originalUser = Bloom.TeamCollection.TeamCollectionManager.CurrentUser;
 			if (string.IsNullOrEmpty(_originalUser))
 			{
 				SIL.Windows.Forms.Registration.Registration.Default.Email = "test@somewhere.org";
@@ -49,7 +53,7 @@ namespace BloomTests.TeamCollection
 			// Simulate a book that is checked out locally to the current user, but the file has
 			// been deleted on the repo.
 			MakeBook("Keep me too", "This also needs nothing done", false);
-			_repo.WriteLocalStatus("Keep me too", new BookStatus().WithLockedBy("test@somewhere.org"));
+			_collection.WriteLocalStatus("Keep me too", new BookStatus().WithLockedBy("test@somewhere.org"));
 
 			// Simlulate a book that is only in the team repo
 			MakeBook("Add me", "Fetch to local");
@@ -65,21 +69,21 @@ namespace BloomTests.TeamCollection
 			// typically indicate that someone remote forced a checkout, perhaps while this user was
 			// offline, but checked in again without making changes.
 			// Also pretend it has been modified locally.
-			// Test result: repo is updated to indicate the local checkout. Local changes are not lost.
+			// Test result: collection is updated to indicate the local checkout. Local changes are not lost.
 			MakeBook("Check me out", "Local and remote checksums correspond to this");
 			UpdateLocalBook("Check me out", "This is supposed to be a newer value from local editing", false);
-			var oldLocalStatus = _repo.GetLocalStatus("Check me out");
-			var newLocalStatus = oldLocalStatus.WithLockedBy(_repo.CurrentUser);
+			var oldLocalStatus = _collection.GetLocalStatus("Check me out");
+			var newLocalStatus = oldLocalStatus.WithLockedBy(Bloom.TeamCollection.TeamCollectionManager.CurrentUser);
 			_checkMeOutOriginalChecksum = oldLocalStatus.checksum;
-			_repo.WriteLocalStatus("Check me out", newLocalStatus);
+			_collection.WriteLocalStatus("Check me out", newLocalStatus);
 
 			// Simulate a book that appears newly-created locally (no local status) but is also in the
 			// repo. This would indicate two people coincidentally creating a book with the same name.
 			// Test result: the local book should get renamed (both folder and htm).
 			MakeBook("Rename local", "This content is on the server");
-			_repo.AttemptLock("Rename local", "fred@somewhere.org");
+			_collection.AttemptLock("Rename local", "fred@somewhere.org");
 			UpdateLocalBook("Rename local", "This is a new book created independently");
-			var statusFilePath = _repo.GetStatusFilePath("Rename local", _collectionFolder.FolderPath);
+			var statusFilePath = _collection.GetStatusFilePath("Rename local", _collectionFolder.FolderPath);
 			RobustFile.Delete(statusFilePath);
 
 
@@ -89,36 +93,36 @@ namespace BloomTests.TeamCollection
 			// status is out of date.
 			// Test result: local status is updated to reflect the remote checkout, book content updated to repo.
 			MakeBook("Update and undo checkout", "This content is everywhere");
-			_repo.AttemptLock("Update and undo checkout", "fred@somewhere.org");
-			_repo.WriteLocalStatus("Update and undo checkout", _repo.GetStatus("Update and undo checkout").WithLockedBy(_repo.CurrentUser));
+			_collection.AttemptLock("Update and undo checkout", "fred@somewhere.org");
+			_collection.WriteLocalStatus("Update and undo checkout", _collection.GetStatus("Update and undo checkout").WithLockedBy(Bloom.TeamCollection.TeamCollectionManager.CurrentUser));
 
 			// Simulate a book that is checked out locally and not on the server, but the repo and (old)
 			// local checksums are different. The book has not been edited locally.
 			// Test result: book is updated to match repo. Local and remote status should match...review: which wins?
 			MakeBook("Update and checkout", "This content is on the server");
 			UpdateLocalBook("Update and checkout", "This simulates older content changed remotely but not locally");
-			_repo.WriteLocalStatus("Update and checkout", _repo.GetLocalStatus("Update and checkout").WithLockedBy(_repo.CurrentUser));
+			_collection.WriteLocalStatus("Update and checkout", _collection.GetLocalStatus("Update and checkout").WithLockedBy(Bloom.TeamCollection.TeamCollectionManager.CurrentUser));
 
 			// Simulate a book that is checked out and modified locally, but has also been modified
 			// remotely.
 			// Test result: current local state is saved in lost-and-found. Repo version of book and state
 			// copied to local. Warning to user.
 			MakeBook("Update content and status and warn", "This simulates new content on server");
-			_repo.AttemptLock("Update content and status and warn", "fred@somewhere.org");
+			_collection.AttemptLock("Update content and status and warn", "fred@somewhere.org");
 			UpdateLocalBook("Update content and status and warn", "This is supposed to be the newest value from local editing");
-			var newStatus = _repo.GetStatus("Update content and status and warn").WithLockedBy(_repo.CurrentUser)
+			var newStatus = _collection.GetStatus("Update content and status and warn").WithLockedBy(Bloom.TeamCollection.TeamCollectionManager.CurrentUser)
 				.WithChecksum("different from either");
-			_repo.WriteLocalStatus("Update content and status and warn", newStatus);
+			_collection.WriteLocalStatus("Update content and status and warn", newStatus);
 
 			// Simulate a book that is checked out and modified locally, but is also checked out by another
 			// user or machine in the repo. It has not (yet) been modified remotely.
 			// Test result: current local state is saved in lost-and-found. Repo version of book and state
 			// copied to local. Warning to user.
 			MakeBook("Update content and status and warn2", "This simulates new content on server");
-			_repo.AttemptLock("Update content and status and warn2", "fred@somewhere.org");
+			_collection.AttemptLock("Update content and status and warn2", "fred@somewhere.org");
 			UpdateLocalBook("Update content and status and warn2", "This is supposed to be the newest value from local editing", false);
-			newStatus = _repo.GetStatus("Update content and status and warn2").WithLockedBy(_repo.CurrentUser);
-			_repo.WriteLocalStatus("Update content and status and warn2", newStatus);
+			newStatus = _collection.GetStatus("Update content and status and warn2").WithLockedBy(Bloom.TeamCollection.TeamCollectionManager.CurrentUser);
+			_collection.WriteLocalStatus("Update content and status and warn2", newStatus);
 
 			// Simulate a book which has no local status, but for which the computed checksum matches
 			// the shared one. This could happen if a user obtained the same book independently,
@@ -126,12 +130,12 @@ namespace BloomTests.TeamCollection
 			// was previously duplicated.
 			// Test result: status is copied to local
 			MakeBook("copy status", "Same content in both places");
-			_repo.AttemptLock("copy status", "fred@somewhere.org");
-			statusFilePath = _repo.GetStatusFilePath("copy status", _collectionFolder.FolderPath);
+			_collection.AttemptLock("copy status", "fred@somewhere.org");
+			statusFilePath = _collection.GetStatusFilePath("copy status", _collectionFolder.FolderPath);
 			RobustFile.Delete(statusFilePath);
 
 			// sut for much of suite!
-			_syncMessages = _repo.SyncAtStartup();
+			_syncMessages = _collection.SyncAtStartup();
 		}
 
 		[OneTimeTearDown]
@@ -169,7 +173,7 @@ namespace BloomTests.TeamCollection
 			Assert.That(Directory.Exists(Path.Combine(_collectionFolder.FolderPath, "Rename local1")), Is.True);
 			AssertLocalContent("Rename local1", "This is a new book created independently");
 			AssertLocalContent("Rename local", "This content is on the server");
-			Assert.That(_repo.GetLocalStatus("Rename local").lockedBy, Is.EqualTo("fred@somewhere.org"));
+			Assert.That(_collection.GetLocalStatus("Rename local").lockedBy, Is.EqualTo("fred@somewhere.org"));
 		}
 
 		[Test]
@@ -189,7 +193,7 @@ namespace BloomTests.TeamCollection
 		{
 			// We don't want to move the book to a new folder.
 			Assert.That(Directory.EnumerateDirectories(_collectionFolder.FolderPath, "copy status*").Count(),Is.EqualTo(1));
-			Assert.That(_repo.GetLocalStatus("copy status").lockedBy, Is.EqualTo("fred@somewhere.org"));
+			Assert.That(_collection.GetLocalStatus("copy status").lockedBy, Is.EqualTo("fred@somewhere.org"));
 		}
 
 		[Test]
@@ -201,21 +205,21 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public void SyncAtStartup_BookNotChangedButCheckoutUserConflicts_RemoteWins()
 		{
-			Assert.That(_repo.GetLocalStatus("Update and undo checkout").lockedBy, Is.EqualTo("fred@somewhere.org"));
+			Assert.That(_collection.GetLocalStatus("Update and undo checkout").lockedBy, Is.EqualTo("fred@somewhere.org"));
 		}
 
 		[Test]
 		public void SyncAtStartup_BookCheckedOutLocallyChangedRemotelyNotChangedLocally_RemoteContentAndLocalCheckoutWin()
 		{
 			AssertLocalContent("Update and checkout", "This content is on the server");
-			Assert.That(_repo.GetLocalStatus("Update and checkout").lockedBy, Is.EqualTo(_repo.CurrentUser));
+			Assert.That(_collection.GetLocalStatus("Update and checkout").lockedBy, Is.EqualTo(Bloom.TeamCollection.TeamCollectionManager.CurrentUser));
 		}
 
 		[Test]
 		public void SyncAtStartup_ConflictingEditsAndCheckout_RemoteWinsWithWarning()
 		{
 			AssertLocalContent("Update content and status and warn", "This simulates new content on server");
-			Assert.That(_repo.GetLocalStatus("Update content and status and warn").lockedBy, Is.EqualTo("fred@somewhere.org"));
+			Assert.That(_collection.GetLocalStatus("Update content and status and warn").lockedBy, Is.EqualTo("fred@somewhere.org"));
 			Assert.That(_syncMessages, Contains.Item("The book 'Update content and status and warn' was modified in the collection. Your changes are saved to Lost-and-found."));
 			AssertLostAndFound("Update content and status and warn");
 		}
@@ -224,7 +228,7 @@ namespace BloomTests.TeamCollection
 		public void SyncAtStartup_ConflictingCheckoutAndLocalEdit_RemoteWinsWithWarning()
 		{
 			AssertLocalContent("Update content and status and warn2", "This simulates new content on server");
-			Assert.That(_repo.GetLocalStatus("Update content and status and warn2").lockedBy, Is.EqualTo("fred@somewhere.org"));
+			Assert.That(_collection.GetLocalStatus("Update content and status and warn2").lockedBy, Is.EqualTo("fred@somewhere.org"));
 			Assert.That(_syncMessages, Contains.Item("The book 'Update content and status and warn2' is checked out to someone else. Your changes are saved to Lost-and-found."));
 			AssertLostAndFound("Update content and status and warn2");
 		}
@@ -233,12 +237,12 @@ namespace BloomTests.TeamCollection
 		public void SyncAtStartup_RepoNotShowingCheckoutButNoRemoteChanges_Checkout()
 		{
 			AssertLocalContent("Check me out", "This is supposed to be a newer value from local editing");
-			var localStatus = _repo.GetLocalStatus("Check me out");
+			var localStatus = _collection.GetLocalStatus("Check me out");
 			Assert.That(localStatus.checksum, Is.EqualTo(_checkMeOutOriginalChecksum));
-			Assert.That(localStatus.lockedBy, Is.EqualTo(_repo.CurrentUser));
-			var repoStatus = _repo.GetStatus("Check me out");
+			Assert.That(localStatus.lockedBy, Is.EqualTo(Bloom.TeamCollection.TeamCollectionManager.CurrentUser));
+			var repoStatus = _collection.GetStatus("Check me out");
 			Assert.That(localStatus.checksum, Is.EqualTo(_checkMeOutOriginalChecksum));
-			Assert.That(localStatus.lockedBy, Is.EqualTo(_repo.CurrentUser));
+			Assert.That(localStatus.lockedBy, Is.EqualTo(Bloom.TeamCollection.TeamCollectionManager.CurrentUser));
 		}
 
 		void AssertLocalContent(string bookName, string expectedContent)
@@ -272,14 +276,22 @@ namespace BloomTests.TeamCollection
 
 		void MakeBook(string name, string content, bool toRepo=true, bool onlyRepo = false)
 		{
-			var folderPath = Path.Combine(_collectionFolder.FolderPath, name);
-			var bookPath = Path.Combine(folderPath, Path.ChangeExtension(name, "htm"));
-			Directory.CreateDirectory(folderPath);
-			RobustFile.WriteAllText(bookPath, "<html><body>"+ content + "</body></html>");
+			var folderPath = MakeFakeBook(_collectionFolder.FolderPath, name, content);
 			if (toRepo)
-				_repo.PutBook(folderPath);
+				_collection.PutBook(folderPath);
 			if (onlyRepo)
 				SIL.IO.RobustIO.DeleteDirectoryAndContents(folderPath);
+		}
+
+		// Make a very trivial fake book. Not nearly good enough to make a Book object from,
+		// but enough for most purposes of testing TeamCollection.
+		public static string MakeFakeBook(string collectionFolder, string name, string content)
+		{
+			var folderPath = Path.Combine(collectionFolder, name);
+			var bookPath = Path.Combine(folderPath, Path.ChangeExtension(name, "htm"));
+			Directory.CreateDirectory(folderPath);
+			RobustFile.WriteAllText(bookPath, "<html><body>" + content + "</body></html>");
+			return folderPath;
 		}
 
 		void UpdateLocalBook(string name, string content, bool updateChecksum = true)
@@ -289,9 +301,9 @@ namespace BloomTests.TeamCollection
 			RobustFile.WriteAllText(bookPath, "<html><body>" + content + "</body></html>");
 			if (updateChecksum)
 			{
-				var status = _repo.GetLocalStatus(name);
-				status.checksum = TeamRepo.MakeChecksum(folderPath);
-				_repo.WriteLocalStatus(name, status);
+				var status = _collection.GetLocalStatus(name);
+				status.checksum = Bloom.TeamCollection.TeamCollection.MakeChecksum(folderPath);
+				_collection.WriteLocalStatus(name, status);
 			}
 		}
 
@@ -302,10 +314,10 @@ namespace BloomTests.TeamCollection
 			Directory.CreateDirectory(bookFolderPath);
 			var bookPath = Path.Combine(bookFolderPath, "My book.htm");
 			RobustFile.WriteAllText(bookPath, "This is just a dummy");
-			_repo.PutBook(bookFolderPath);
+			_collection.PutBook(bookFolderPath);
 			SIL.IO.RobustIO.DeleteDirectoryAndContents(bookFolderPath);
 
-			_repo.HandleNewBook(new NewBookEventArgs(){BookName="My book.bloom"});
+			_collection.HandleNewBook(new NewBookEventArgs(){BookName="My book.bloom"});
 
 			var destBookFolder = Path.Combine(_collectionFolder.FolderPath, "My book");
 			var destBookPath = Path.Combine(destBookFolder, "My book.htm");

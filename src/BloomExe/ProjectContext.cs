@@ -189,7 +189,14 @@ namespace Bloom
 					//settings file of the collections we're using for sources.
 					try
 					{
-						builder.Register<CollectionSettings>(c => new CollectionSettings(projectSettingsPath)).InstancePerLifetimeScope();
+						// It's important to create the TC manager before we create CollectionSettings, as its constructor makes sure
+						// we have a current version of the file that CollectionSettings is built from.
+						builder.Register<TeamCollectionManager>(c => new TeamCollectionManager(projectSettingsPath)).InstancePerLifetimeScope();
+						builder.Register<CollectionSettings>(c =>
+						{
+							c.Resolve<TeamCollectionManager>();
+							return new CollectionSettings(projectSettingsPath);
+						}).InstancePerLifetimeScope();
 					}
 					catch (Exception)
 					{
@@ -205,7 +212,7 @@ namespace Bloom
 							#endif
 								c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(),
 								c.Resolve<EditBookCommand>(), c.Resolve<CreateFromSourceBookCommand>(), c.Resolve<BookServer>(),
-								c.Resolve<CurrentEditableCollectionSelection>(), c.Resolve<BookThumbNailer>())).InstancePerLifetimeScope();
+								c.Resolve<CurrentEditableCollectionSelection>(), c.Resolve<BookThumbNailer>(), c.Resolve<TeamCollectionManager>())).InstancePerLifetimeScope();
 
 					// Keep in sync with OptimizedFileLocator: it wants to return the object created here.
 					builder.Register<IChangeableFileLocator>(

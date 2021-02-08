@@ -260,9 +260,10 @@
     <Compile Include="Book\BookStorage_ReplacePageTests.cs" />
     <Compile Include="Book\LicenseCheckerTests.cs" />
     <Compile Include="CLI\CreateArtifactsCommandTests.cs" />
-    <Compile Include="TeamCollection\FolderTeamRepoTests.cs" />
-    <Compile Include="TeamCollection\TeamRepoTests.cs" />
-    <Compile Include="TeamCollection\TestFolderTeamRepo.cs" />
+    <Compile Include="TeamCollection\FolderTeamCollectionTests.cs" />
+    <Compile Include="TeamCollection\FolderTeamCollectionTests2.cs" />
+    <Compile Include="TeamCollection\TeamCollectionTests.cs" />
+    <Compile Include="TeamCollection\TestFolderTeamCollection.cs" />
     <Compile Include="Edit\MakeActivityTests.cs" />
     <Compile Include="ExtensionsTests.cs" />
     <Compile Include="TestDoubles\Book\FakeBookServer.cs" />

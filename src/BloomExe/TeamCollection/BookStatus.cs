@@ -73,7 +73,7 @@ namespace Bloom.TeamCollection
 		/// <returns></returns>
 		public bool IsCheckedOutHereBy(string whoBy)
 		{
-			if (lockedBy == TeamRepo.FakeUserIndicatingNewBook)
+			if (lockedBy == TeamCollection.FakeUserIndicatingNewBook)
 				return true; // a new local book is always "checked out here"
 			return lockedBy == whoBy && lockedWhere == Environment.MachineName;
 		}
