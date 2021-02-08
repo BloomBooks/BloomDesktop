@@ -58,10 +58,20 @@ namespace Bloom.ImageProcessing
 
 			return HasJpegExtension(imageInfo.FileName);
 		}
-
 		public static bool HasJpegExtension(string filename)
 		{
 			return new[] { ".jpg", ".jpeg" }.Contains(Path.GetExtension(filename)?.ToLowerInvariant());
+		}
+
+		public static bool AppearsToBePng(PalasoImage imageInfo)
+		{
+			if (imageInfo == null || imageInfo.Image == null)
+				return false;
+			if (ImageFormat.Png.Guid == imageInfo.Image.RawFormat.Guid)
+				return true;
+			if (String.IsNullOrEmpty(imageInfo.FileName))
+				return false;
+			return Path.GetExtension(imageInfo.FileName).ToLowerInvariant() == ".png";
 		}
 
 		/// <summary>
@@ -86,38 +96,43 @@ namespace Bloom.ImageProcessing
 			{
 				return Path.GetFileName(imageInfo.OriginalFilePath);
 			}
+			if (!Directory.Exists(bookFolderPath))
+				throw new DirectoryNotFoundException(bookFolderPath + " does not exist");	// may as well check this early
 			bool isEncodedAsJpeg = false;
 			try
 			{
 				var size = GetDesiredImageSize(imageInfo.Image.Width, imageInfo.Image.Height);
 
-				if (size.Width != imageInfo.Image.Width || size.Height != imageInfo.Image.Height)
+				if (size.Width != imageInfo.Image.Width || size.Height != imageInfo.Image.Height ||
+					!(AppearsToBeJpeg(imageInfo) || AppearsToBePng(imageInfo)))
 				{
-					// need to shrink image file since it's larger than our maximum allowed size.
-
-					// The original imageInfo.Image is disposed of in the setter.
+					// Either need to shrink the image since it's larger than our maximum allowed size,
+					// or need to convert from a BMP or TIFF file to a PNG file (or both).
+					// NB: the original imageInfo.Image is disposed of in the setter below.
 					// As of now (9/2016) this is safe because there are no other references to it higher in the stack.
 					imageInfo.Image = ResizeImageWithGraphicsMagick(imageInfo, size);
 				}
 
 				isEncodedAsJpeg = AppearsToBeJpeg(imageInfo);
-				var shouldConvertToJpeg = !isEncodedAsJpeg && !HasTransparency(imageInfo.Image) && ShouldChangeFormatToJpeg(imageInfo.Image);
+				bool isEncodedAsPng = !isEncodedAsJpeg && AppearsToBePng(imageInfo);
+
+				string jpegFilePath = Path.Combine(bookFolderPath, GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, true));
+				var convertedToJpeg = !isEncodedAsJpeg && !HasTransparency(imageInfo.Image) && TryChangeFormatToJpegIfHelpful(imageInfo, jpegFilePath);
+				if (convertedToJpeg)
+					return Path.GetFileName(jpegFilePath);
+
 				string imageFileName;
-				if (!shouldConvertToJpeg && isSameFile)
+				if (isSameFile)
 					imageFileName = imageInfo.FileName;
 				else
-					imageFileName = GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, isEncodedAsJpeg || shouldConvertToJpeg);
-
-				if (!Directory.Exists(bookFolderPath))
-					throw new DirectoryNotFoundException(bookFolderPath + " does not exist");
-
+					imageFileName = GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, isEncodedAsJpeg);
+				string sourcePath;
+				sourcePath = imageInfo.GetCurrentFilePath();
 				var destinationPath = Path.Combine(bookFolderPath, imageFileName);
-				if (shouldConvertToJpeg)
-				{
-					SaveAsTopQualityJpeg(imageInfo.Image, destinationPath);
-				}
-				PalasoImage.SaveImageRobustly(imageInfo, destinationPath);
-
+				if (isEncodedAsJpeg || isEncodedAsPng)
+					RobustFile.Copy(sourcePath, destinationPath);
+				else
+					imageInfo.Image.Save(destinationPath, ImageFormat.Png); // destinationPath already has .png extension
 				return imageFileName;
 
 				/* I (Hatton) have decided to stop compressing images until we have a suite of
@@ -673,6 +688,7 @@ namespace Bloom.ImageProcessing
 					var proc = RunGraphicsMagick(graphicsMagickPath, sourcePath, destPath, size, makeOpaque);
 					if (proc.ExitCode == 0)
 					{
+						imageInfo.SetCurrentFilePath(destPath);
 						return GetImageFromFile(destPath);
 					}
 					else
@@ -689,7 +705,7 @@ namespace Bloom.ImageProcessing
 					// Ignore any errors deleting temp files.  If we leak, we leak...
 					try
 					{
-						RobustFile.Delete(destPath);	// don't need this any longer
+						// don't need this any longer
 						if (sourcePath != imageInfo.GetCurrentFilePath())
 							RobustFile.Delete(sourcePath);
 					}
@@ -751,6 +767,10 @@ namespace Bloom.ImageProcessing
 				argsBldr.AppendFormat("convert \"{0}\"", safeSourcePath);
 				if (makeOpaque)
 					argsBldr.Append(" -background white -extent 0x0 +matte");
+				if (destPath.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase))
+					argsBldr.Append(" -quality 0"); // uses Huffman encoding which isn't bad for images, and fastest time
+				else if (destPath.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase))
+					argsBldr.Append(" -quality 99");	// still lossy, but not near as bad as the default (bigger file, however)
 				argsBldr.AppendFormat(" -scale {0}x{1} \"{2}\"", size.Width, size.Height, safeDestPath);
 				var arguments = argsBldr.ToString();
 				var proc = new Process
@@ -830,33 +850,45 @@ namespace Bloom.ImageProcessing
 		/// When images are copied from LibreOffice, images that were jpegs there are converted to bitmaps for the clipboard.
 		/// So when we just saved them as bitmaps (pngs), we dramatically inflated the size of user's image files (and
 		/// this then led to memory problems).
-		/// So the idea here is just to try and detect that we should would be better off saving the image as a jpeg.
-		/// Note that even at 100%, we're still going to lose some quality. So this method is only going to recommend
-		/// doing that if the size would be at least 50% less.
+		/// So the idea here is to detect whether we would be better off saving the image as a jpeg, and to save the
+		/// jpeg file at the indicated path if so.
+		/// Note that even at 100%, we're still going to lose some quality. So this method is only going to return true
+		/// with the file existing at the given path if the file size would be at least 50% smaller as a jpeg.
+		/// WARNING: a previously existing file at the given path may cause this method to fail with a GraphicsMagick
+		/// failure.  If the process works, but the decision is to not use jpeg, any file at the given path will be
+		/// deleted.
 		/// </summary>
-		public static bool ShouldChangeFormatToJpeg(Image image)
+		public static bool TryChangeFormatToJpegIfHelpful(PalasoImage image, string jpegFilePath)
 		{
 			try
 			{
-				using(var safetyImage = new Bitmap(image))
-					//nb: there are cases (notably http://jira.palaso.org/issues/browse/WS-34711, after cropping a jpeg) where we get out of memory if we are not operating on a copy
+				var graphicsMagickPath = GetGraphicsMagickPath();
+				if (RobustFile.Exists(graphicsMagickPath))
 				{
-					using(var jpegFile = new TempFile())
-					using(var pngFile = new TempFile())
+					var path = image.GetCurrentFilePath();
+					var proc = RunGraphicsMagick(graphicsMagickPath, path, jpegFilePath, new Size(image.Image.Width, image.Image.Height), false);
+					if (proc.ExitCode == 0)
 					{
-						RobustImageIO.SaveImage(image, pngFile.Path, ImageFormat.Png);
-						SaveAsTopQualityJpeg(safetyImage, jpegFile.Path);
-						var jpegInfo = new FileInfo(jpegFile.Path);
-						var pngInfo = new FileInfo(pngFile.Path);
+						var pngInfo = new FileInfo(path);
+						var jpegInfo = new FileInfo(jpegFilePath);
 						// this is just our heuristic.
 						const double fractionOfTheOriginalThatWouldWarrantChangingToJpeg = .5;
-						return jpegInfo.Length < (pngInfo.Length*(1.0 - fractionOfTheOriginalThatWouldWarrantChangingToJpeg));
+						if (jpegInfo.Length < (pngInfo.Length*(1.0 - fractionOfTheOriginalThatWouldWarrantChangingToJpeg)))
+						{
+							return true;
+						}
+						RobustFile.Delete(jpegFilePath);	// don't need it after all.
+					}
+					else
+					{
+						LogGraphicsMagickFailure(proc);
 					}
 				}
+				return false;
 			}
-			catch(OutOfMemoryException e)
+			catch (Exception e)
 			{
-				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All,"Could not attempt conversion to jpeg.", "ref BL-3387", exception: e);
+				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All,"Could not convert image to jpeg.", "ref BL-3387", exception: e);
 				return false;
 			}
 		}
@@ -1041,7 +1073,7 @@ namespace Bloom.ImageProcessing
 			if (filePath == null)
 				_currentFilePaths.Remove(key);
 			else
-				_currentFilePaths.Add(key, filePath);
+				_currentFilePaths[key] = filePath;
 		}
 
 		/// <summary>
