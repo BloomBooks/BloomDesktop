@@ -85,13 +85,16 @@ namespace BloomTests
 			//This test can fail if the ISP "helpfully" returns a custom advertising filled access failure page.
 			Assert.IsTrue(e  == WebExceptionStatus.NameResolutionFailure || e == WebExceptionStatus.ProtocolError );
 		}
-		[Test]
-		[Platform(Exclude = "Linux", Reason = "Windows-specific, fails on Linux without special access setup")]
-		public void FileForThisChannelIsMissing_ErrorIsCorrect()
-		{
-			var t = new UpdateVersionTable { URLOfTable = "http://bloomlibrary.org/channels/UpgradeTableSomethingBogus.txt"};
-			Assert.AreEqual(WebExceptionStatus.ProtocolError, t.LookupURLOfUpdate().Error.Status);
-		}
+
+		// This started failing when we deployed the new bloomlibrary.org.
+		// Commenting out until we decide what to do about it.
+		//[Test]
+		//[Platform(Exclude = "Linux", Reason = "Windows-specific, fails on Linux without special access setup")]
+		//public void FileForThisChannelIsMissing_ErrorIsCorrect()
+		//{
+		//	var t = new UpdateVersionTable { URLOfTable = "http://bloomlibrary.org/channels/UpgradeTableSomethingBogus.txt"};
+		//	Assert.AreEqual(WebExceptionStatus.ProtocolError, t.LookupURLOfUpdate().Error.Status);
+		//}
 
 		[Test]
 		public void ValueOnLowerBound_ReturnsCorrectUrl()
