@@ -13,22 +13,17 @@ namespace Bloom.TeamCollection
 	// Review: should this be in web/controllers with all the other API classes, or here with all the other sharing code?
 	public class TeamCollectionApi
 	{
-		private TeamRepo _repo;
+		private TeamCollectionManager _tcManager;
 		private BookSelection _bookSelection; // configured by autofac, tells us what book is selected
-		private string CurrentUser => _repo.CurrentUser;
-		private string _collectionFolder;
+		private string CurrentUser => TeamCollectionManager.CurrentUser;
 
 		public static TeamCollectionApi TheOneInstance { get; private set; }
 
 		// Called by autofac, which creates the one instance and registers it with the server.
-		public TeamCollectionApi(CollectionSettings settings, BookSelection bookSelection, TeamRepo repo)
+		public TeamCollectionApi(CollectionSettings settings, BookSelection bookSelection, TeamCollectionManager tcManager)
 		{
-			_collectionFolder = settings.FolderPath;
-			_repo = repo;
-			if (_repo.HasTeamCollection)
-			{
-				_repo.SetupMonitoringBehavior();
-			}
+			_tcManager = tcManager;
+			_tcManager.CurrentCollection?.SetupMonitoringBehavior();
 			_bookSelection = bookSelection;
 			TheOneInstance = this;
 		}
@@ -46,24 +41,24 @@ namespace Bloom.TeamCollection
 		{
 			// We don't need any of the Sharing UI if the selected book isn't in the editable
 			// collection (or if the collection doesn't have a Team Collection at all).
-			request.ReplyWithBoolean(_repo.HasTeamCollection && _bookSelection.CurrentSelection.IsEditable);
+			request.ReplyWithBoolean(_tcManager.CurrentCollection != null && _bookSelection.CurrentSelection.IsEditable);
 		}
 
 		public void HandleCurrentBookStatus(ApiRequest request)
 		{
-			var whoHasBookLocked = _repo.WhoHasBookLocked(BookName);
-			var whenLocked = _repo.WhenWasBookLocked(BookName);
+			var whoHasBookLocked = _tcManager.CurrentCollection?.WhoHasBookLocked(BookName);
+			var whenLocked = _tcManager.CurrentCollection?.WhenWasBookLocked(BookName) ?? DateTime.MaxValue;
 			// review: or better to pass on to JS? We may want to show slightly different
 			// text like "This book is not yet shared. Check it in to make it part of the team collection"
-			if (whoHasBookLocked == TeamRepo.FakeUserIndicatingNewBook)
+			if (whoHasBookLocked == TeamCollection.FakeUserIndicatingNewBook)
 				whoHasBookLocked = CurrentUser;
 			request.ReplyWithJson(JsonConvert.SerializeObject(
 				new
 				{
 					who = whoHasBookLocked,
 					when=whenLocked.ToLocalTime().ToShortDateString(),
-					where=_repo.WhatComputerHasBookLocked(BookName),
-					currentUser=_repo.CurrentUser,
+					where= _tcManager.CurrentCollection?.WhatComputerHasBookLocked(BookName),
+					currentUser=CurrentUser,
 					currentMachine=Environment.MachineName
 				}));
 		}
@@ -74,7 +69,7 @@ namespace Bloom.TeamCollection
 		{
 			// Could be a problem if there's no current book or it's not in the collection folder.
 			// But in that case, we don't show the UI that leads to this being called.
-			var success = _repo.AttemptLock(BookName);
+			var success = _tcManager.CurrentCollection.AttemptLock(BookName);
 			if (success)
 				UpdateUiForBook();
 			request.ReplyWithBoolean(success);
@@ -83,7 +78,7 @@ namespace Bloom.TeamCollection
 		public void HandleCheckInCurrentBook(ApiRequest request)
 		{
 			_bookSelection.CurrentSelection.Save();
-			_repo.PutBook(_bookSelection.CurrentSelection.FolderPath, true);
+			_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, true);
 			UpdateUiForBook();
 			request.PostSucceeded();
 		}
@@ -116,7 +111,7 @@ namespace Bloom.TeamCollection
 				// just chose a folder to get things started.
 				// We'll need a different API or something similar if we ever want to create
 				// some other kind of repo.
-				var repo = _repo as FolderTeamRepo;
+				var repo = _tcManager.CurrentCollection as FolderTeamCollection;
 				repo.ConnectToTeamCollection(sharingFolder);
 
 				_createCallback?.Invoke();
@@ -144,12 +139,12 @@ namespace Bloom.TeamCollection
 			{
 				return false; // no book, no editing
 			}
-			if (!_repo.HasTeamCollection)
+			if (_tcManager.CurrentCollection == null)
 			{
 				return true; // no team collection, no problem.
 			}
 
-			return _repo.IsCheckedOutHereBy(_repo.GetStatus(bookName));
+			return _tcManager.CurrentCollection.IsCheckedOutHereBy(_tcManager.CurrentCollection.GetStatus(bookName));
 		}
 	}
 }

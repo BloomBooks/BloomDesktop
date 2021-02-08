@@ -8,9 +8,9 @@ using Bloom.TeamCollection;
 
 namespace BloomTests.TeamCollection
 {
-	public class TestFolderTeamRepo : FolderTeamRepo
+	public class TestFolderTeamCollection : FolderTeamCollection
 	{
-		public TestFolderTeamRepo(string localCollectionFolder) : base(localCollectionFolder)
+		public TestFolderTeamCollection(string localCollectionFolder, string sharedFolderPath) : base(localCollectionFolder, sharedFolderPath)
 		{
 		}
 

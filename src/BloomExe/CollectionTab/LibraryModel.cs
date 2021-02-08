@@ -35,7 +35,7 @@ namespace Bloom.CollectionTab
 		private readonly CurrentEditableCollectionSelection _currentEditableCollectionSelection;
 		private List<BookCollection> _bookCollections;
 		private readonly BookThumbNailer _thumbNailer;
-		private TeamRepo _repo;
+		private TeamCollectionManager _tcManager;
 
 		public LibraryModel(string pathToLibrary, CollectionSettings collectionSettings,
 			//SendReceiver sendReceiver,
@@ -47,7 +47,7 @@ namespace Bloom.CollectionTab
 			BookServer bookServer,
 			CurrentEditableCollectionSelection currentEditableCollectionSelection,
 			BookThumbNailer thumbNailer,
-			TeamRepo repo)
+			TeamCollectionManager tcManager)
 		{
 			_bookSelection = bookSelection;
 			_pathToLibrary = pathToLibrary;
@@ -59,7 +59,7 @@ namespace Bloom.CollectionTab
 			_bookServer = bookServer;
 			_currentEditableCollectionSelection = currentEditableCollectionSelection;
 			_thumbNailer = thumbNailer;
-			_repo = repo;
+			_tcManager = tcManager;
 
 			createFromSourceBookCommand.Subscribe(CreateFromSourceBook);
 		}
@@ -147,7 +147,7 @@ namespace Bloom.CollectionTab
 			// This may not be the final place to do this. And we have plans for showing a progress dialog
 			// and also using it to show any errors. But it's the latest we can do it without needing to reconcile
 			// the changes it makes with collection data we've loaded.
-			_repo.SynchronizeSharedAndLocal();
+			_tcManager.CurrentCollection?.SynchronizeSharedAndLocal();
 			var editableCollection = _bookCollectionFactory(_pathToLibrary, BookCollection.CollectionType.TheOneEditableCollection);
 			_currentEditableCollectionSelection.SelectCollection(editableCollection);
 			yield return editableCollection;

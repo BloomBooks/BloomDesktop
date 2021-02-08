@@ -16,7 +16,7 @@ namespace Bloom.TeamCollection
 	/// the folder implementation here, while behavior that is independent of how
 	/// the shared repo is stored should be in TeamRepo.cs.
 	/// </summary>
-	public class FolderTeamRepo: TeamRepo
+	public class FolderTeamCollection: TeamCollection
 	{
 		private string _sharedFolderPath; // the shared folder storing the repo; null if not shared
 		private FileSystemWatcher _watcher; // watches the _sharedFolderPath for changes
@@ -34,30 +34,14 @@ namespace Bloom.TeamCollection
 		private DateTime _lastWriteBookTime;
 		private object _lockObject = new object(); // used to lock access to _lastPutBookPath and _putBookInProgress
 
-		public const string TeamCollectionSettingsFileName = "TeamCollectionSettings.xml";
-
 		// When we last displayed a notification of a remote change to the repo.
 		// We avoid bothering the user about this frequently, especially because
 		// we can get several change notifications from an apparently atomic change
 		// like copying a new book over an existing one using Windows Explorer.
 		DateTime _lastNotificationTime = DateTime.MinValue;
-		public FolderTeamRepo(string localCollectionFolder) : base(localCollectionFolder)
+		public FolderTeamCollection(string localCollectionFolder, string sharedFolderPath) : base(localCollectionFolder)
 		{
-			var sharedSettingsPath = Path.Combine(localCollectionFolder, TeamCollectionSettingsFileName);
-			if (File.Exists(sharedSettingsPath))
-			{
-				try
-				{
-					var doc = new XmlDocument();
-					doc.Load(sharedSettingsPath);
-					_sharedFolderPath = doc.DocumentElement.GetElementsByTagName("TeamCollectionFolder").Cast<XmlElement>()
-						.First().InnerText;
-				}
-				catch (Exception ex)
-				{
-					NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom found team collection settings but could not process them", null, ex, true);
-				}
-			}
+			_sharedFolderPath = sharedFolderPath;
 		}
 
 		/// <summary>
@@ -241,8 +225,11 @@ namespace Bloom.TeamCollection
 		{
 			lock (_lockObject)
 			{
-				// Not the book we most recently wrote, so not an 'own write'
-				if (path != _lastWriteBookPath)
+				// Not the book we most recently wrote, so not an 'own write'.
+				// Note that our zip library sometimes creates a temp file by adding a suffix to the
+				// path, so it's very likely that a recent write of a path starting with the name of the book we
+				// wrote is a result of that.
+				if (!path.StartsWith(_lastWriteBookPath))
 					return false;
 				// We're still writing it...definitely an 'own write'
 				if (_writeBookInProgress)
@@ -335,14 +322,12 @@ namespace Bloom.TeamCollection
 				zipFile.BeginUpdate();
 				zipFile.SetComment(status);
 				zipFile.CommitUpdate();
-				lock (_lockObject)
-				{
-					_writeBookInProgress = false;
-				}
+			}
+			lock (_lockObject)
+			{
+				_writeBookInProgress = false;
 			}
 		}
-
-		public override bool HasTeamCollection => _sharedFolderPath != null;
 
 		/// <summary>
 		/// Used at program startup to decide whether the command line arguments represent
@@ -414,7 +399,7 @@ namespace Bloom.TeamCollection
 				new XElement("settings",
 					new XElement("TeamCollectionFolder",
 						new XText(teamCollectionFolder))));
-			var teamSettingsPath = Path.Combine(collectionFolder, TeamCollectionSettingsFileName);
+			var teamSettingsPath = Path.Combine(collectionFolder, TeamCollectionManager.TeamCollectionSettingsFileName);
 			using (var stream = new FileStream(teamSettingsPath, FileMode.Create))
 			{
 				using (var writer = new XmlTextWriter(stream, Encoding.UTF8))

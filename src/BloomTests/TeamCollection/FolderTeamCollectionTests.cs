@@ -9,21 +9,21 @@ using SIL.IO;
 
 namespace BloomTests.TeamCollection
 {
-	public class FolderTeamRepoTests
+	public class FolderTeamCollectionTests
 	{
 		private TemporaryFolder _sharedFolder;
 		private TemporaryFolder _collectionFolder;
-		private TestFolderTeamRepo _repo;
+		private TestFolderTeamCollection _collection;
 		private BookStatus _myBookStatus;
 		private BookStatus _anotherBookStatus;
 
 		[OneTimeSetUp]
 		public void OneTimeSetup()
 		{
-			_sharedFolder = new TemporaryFolder("FolderTeamRepoTests_Shared");
-			_collectionFolder = new TemporaryFolder("FolderTeamRepoTests_Collection");
-			FolderTeamRepo.CreateTeamCollectionSettingsFile(_collectionFolder.FolderPath, _sharedFolder.FolderPath);
-			_repo = new TestFolderTeamRepo(_collectionFolder.FolderPath);
+			_sharedFolder = new TemporaryFolder("FolderTeamCollectionTests_Shared");
+			_collectionFolder = new TemporaryFolder("FolderTeamCollectionTests_Collection");
+			FolderTeamCollection.CreateTeamCollectionSettingsFile(_collectionFolder.FolderPath, _sharedFolder.FolderPath);
+			_collection = new TestFolderTeamCollection(_collectionFolder.FolderPath, _sharedFolder.FolderPath);
 
 			// Make some books and check them in. Individual tests verify the results.
 			// This book has an additional file, including a subfolder, to ensure they get
@@ -44,12 +44,12 @@ namespace BloomTests.TeamCollection
 			var anotherBookPath = Path.Combine(secondBookFolderPath, "Another book.htm");
 			RobustFile.WriteAllText(anotherBookPath, "This is just a dummy for another book");
 
-			_myBookStatus = _repo.PutBook(bookFolderPath);
-			_anotherBookStatus = _repo.PutBook(secondBookFolderPath);
+			_myBookStatus = _collection.PutBook(bookFolderPath);
+			_anotherBookStatus = _collection.PutBook(secondBookFolderPath);
 
 			// Also put the book (twice!) into lost and found
-			_repo.PutBook(secondBookFolderPath, inLostAndFound:true);
-			_repo.PutBook(secondBookFolderPath, inLostAndFound:true);
+			_collection.PutBook(secondBookFolderPath, inLostAndFound:true);
+			_collection.PutBook(secondBookFolderPath, inLostAndFound:true);
 		}
 
 		[OneTimeTearDown]
@@ -63,14 +63,14 @@ namespace BloomTests.TeamCollection
 		public void TearDown()
 		{
 			// Several tests might leave something locked, especially if they fail.
-			_repo.UnlockBook("My book");
-			_repo.UnlockBook("Another book");
+			_collection.UnlockBook("My book");
+			_collection.UnlockBook("Another book");
 		}
 
 		[Test]
 		public void GetCheckSum_YieldsSameAsPutBook()
 		{
-			Assert.That(_repo.GetChecksum("My book"), Is.EqualTo(_myBookStatus.checksum));
+			Assert.That(_collection.GetChecksum("My book"), Is.EqualTo(_myBookStatus.checksum));
 		}
 
 		[Test]
@@ -89,8 +89,8 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public void PutBook_WritesLocalChecksum()
 		{
-			Assert.That(_repo.GetLocalStatus("My book").checksum, Is.EqualTo(_myBookStatus.checksum));
-			Assert.That(_repo.GetLocalStatus("Another book").checksum, Is.EqualTo(_anotherBookStatus.checksum));
+			Assert.That(_collection.GetLocalStatus("My book").checksum, Is.EqualTo(_myBookStatus.checksum));
+			Assert.That(_collection.GetLocalStatus("Another book").checksum, Is.EqualTo(_anotherBookStatus.checksum));
 		}
 
 		[Test]
@@ -98,7 +98,7 @@ namespace BloomTests.TeamCollection
 		{
 			using (var destFolder = new TemporaryFolder("GetBooks_Retrieves"))
 			{
-				_repo.CopyAllBooksFromSharedToLocalFolder(destFolder.FolderPath);
+				_collection.CopyAllBooksFromSharedToLocalFolder(destFolder.FolderPath);
 				var destBookFolder = Path.Combine(destFolder.FolderPath, "My book");
 				var destBookPath = Path.Combine(destBookFolder, "My book.htm");
 				Assert.That(RobustFile.ReadAllText(destBookPath), Is.EqualTo("This is just a dummy"));
@@ -121,8 +121,8 @@ namespace BloomTests.TeamCollection
 
 		void AssertStatusMatch(string destFolder, string bookName)
 		{
-			var repoStatus = _repo.GetStatus(bookName);
-			var localStatus = _repo.GetLocalStatus(bookName, destFolder);
+			var repoStatus = _collection.GetStatus(bookName);
+			var localStatus = _collection.GetLocalStatus(bookName, destFolder);
 			Assert.That(repoStatus.checksum, Is.EqualTo(localStatus.checksum));
 			Assert.That(repoStatus.lockedBy, Is.EqualTo(localStatus.lockedBy));
 			Assert.That(repoStatus.lockedWhen, Is.EqualTo(localStatus.lockedWhen));
@@ -136,28 +136,28 @@ namespace BloomTests.TeamCollection
 			var bookPath = Path.Combine(folderPath, "newly put book.htm");
 			Directory.CreateDirectory(folderPath);
 			RobustFile.WriteAllText(bookPath, "<html><body>This is our newly put book</body></html>");
-			_repo.StartMonitoring();
+			_collection.StartMonitoring();
 			// This is used to wait up to a second for the OS to notify us that the book changed.
 			// Only after that can we be sure the event is not going to be raised.
 			ManualResetEvent newbookRaised = new ManualResetEvent(false);
 			// This test-only callback is used to find out when we get the OS notification.
-			_repo.OnCreatedCalled = () => { newbookRaised.Set(); };
+			_collection.OnCreatedCalled = () => { newbookRaised.Set(); };
 			bool newBookWasCalled = false;
 			EventHandler<NewBookEventArgs>  monitorFunction = (sender, args) =>
 			{
 				// unexpected! We don't want the event in this case. But clean up before reporting.
 				newBookWasCalled = true;
 			};
-			_repo.NewBook += monitorFunction;
+			_collection.NewBook += monitorFunction;
 
 			//sut
-			_repo.PutBook(folderPath);
+			_collection.PutBook(folderPath);
 
 			var waitSucceeded = newbookRaised.WaitOne(1000);
 
 			// cleanup
-			_repo.NewBook -= monitorFunction;
-			_repo.StopMonitoring();
+			_collection.NewBook -= monitorFunction;
+			_collection.StopMonitoring();
 			var newBookPath = Path.Combine(_sharedFolder.FolderPath, "newly put book.bloom");
 			RobustFile.Delete(newBookPath);
 
@@ -170,17 +170,17 @@ namespace BloomTests.TeamCollection
 		{
 			var newBookPath = Path.Combine(_sharedFolder.FolderPath, "A new book.bloom");
 			var newBookName = "";
-			_repo.StartMonitoring();
+			_collection.StartMonitoring();
 			// used to wait for the OS notification to raise the event
 			ManualResetEvent newbookRaised = new ManualResetEvent(false);
-			_repo.NewBook += (sender, args) =>
+			_collection.NewBook += (sender, args) =>
 			{
 				newBookName = args.BookName;
 				newbookRaised.Set();
 			};
 			RobustFile.WriteAllText(newBookPath, @"Newly added book"); // no, not a zip at all
 			var waitSucceeded = newbookRaised.WaitOne(1000);
-			_repo.StopMonitoring();
+			_collection.StopMonitoring();
 			RobustFile.Delete(newBookPath);
 
 			Assert.IsTrue(waitSucceeded, "New book was not raised");
@@ -197,14 +197,14 @@ namespace BloomTests.TeamCollection
 
 			var modifiedBookName = "";
 
-			_repo.StartMonitoring();
+			_collection.StartMonitoring();
 			ManualResetEvent bookChangedRaised = new ManualResetEvent(false);
 			EventHandler<BookStateChangeEventArgs> monitorFunction = (sender, args) =>
 			{
 				modifiedBookName = args.BookName;
 				bookChangedRaised.Set();
 			};
-			_repo.BookStateChange += monitorFunction;
+			_collection.BookStateChange += monitorFunction;
 
 			// sut (at least, triggers it and waits for it)
 			RobustFile.WriteAllText(bloomBookPath, @"This is changed"); // no, not a zip at all
@@ -212,8 +212,8 @@ namespace BloomTests.TeamCollection
 			var waitSucceeded = bookChangedRaised.WaitOne(1000);
 
 			// To avoid messing up other tests, clean up before asserting.
-			_repo.BookStateChange -= monitorFunction;
-			_repo.StopMonitoring();
+			_collection.BookStateChange -= monitorFunction;
+			_collection.StopMonitoring();
 			RobustFile.Delete(bloomBookPath);
 
 			Assert.That(waitSucceeded, "book changed was not raised");
@@ -227,26 +227,26 @@ namespace BloomTests.TeamCollection
 			var bookPath = Path.Combine(folderPath, "put existing book.htm");
 			Directory.CreateDirectory(folderPath);
 			RobustFile.WriteAllText(bookPath, "<html><body>This is our newly put book</body></html>");
-			_repo.PutBook(folderPath); // create test situation without monitoring
+			_collection.PutBook(folderPath); // create test situation without monitoring
 
-			_repo.StartMonitoring();
+			_collection.StartMonitoring();
 			ManualResetEvent bookChangedRaised = new ManualResetEvent(false);
-			_repo.OnChangedCalled = () => { bookChangedRaised.Set(); };
+			_collection.OnChangedCalled = () => { bookChangedRaised.Set(); };
 			bool bookChangedWasCalled = false;
 			EventHandler<BookStateChangeEventArgs> monitorFunction = (sender, args) =>
 			{
 				bookChangedWasCalled = true;
 			};
-			_repo.BookStateChange += monitorFunction;
+			_collection.BookStateChange += monitorFunction;
 
 			//sut: put it again
-			_repo.PutBook(folderPath);
+			_collection.PutBook(folderPath);
 
 			var waitSucceeded = bookChangedRaised.WaitOne(1000);
 
 			// cleanup
-			_repo.BookStateChange -= monitorFunction;
-			_repo.StopMonitoring();
+			_collection.BookStateChange -= monitorFunction;
+			_collection.StopMonitoring();
 			var bloomBookPath = Path.Combine(_sharedFolder.FolderPath, "put existing book.bloom");
 			RobustFile.Delete(bloomBookPath);
 
@@ -272,25 +272,25 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public void WhoHasBookLocked_NotLocked_ReturnsNull()
 		{
-			Assert.That(_repo.WhoHasBookLocked("My book"), Is.Null);
+			Assert.That(_collection.WhoHasBookLocked("My book"), Is.Null);
 		}
 
 		[Test]
 		public void LockBook_WhoHasBookLocked_ReturnsLocker_UnlockClears()
 		{
-			Assert.That(_repo.AttemptLock("My book", "joe@somewhere.org"), Is.True);
-			Assert.That(_repo.WhoHasBookLocked("My book"), Is.EqualTo("joe@somewhere.org"));
-			Assert.That(_repo.WhatComputerHasBookLocked("My book"), Is.EqualTo(Environment.MachineName));
+			Assert.That(_collection.AttemptLock("My book", "joe@somewhere.org"), Is.True);
+			Assert.That(_collection.WhoHasBookLocked("My book"), Is.EqualTo("joe@somewhere.org"));
+			Assert.That(_collection.WhatComputerHasBookLocked("My book"), Is.EqualTo(Environment.MachineName));
 
 			// We need to combine these tests so we leave the book in the unlocked state
-			_repo.UnlockBook("My book");
-			Assert.That(_repo.WhoHasBookLocked("My book"), Is.Null);
+			_collection.UnlockBook("My book");
+			Assert.That(_collection.WhoHasBookLocked("My book"), Is.Null);
 		}
 
 		[Test]
 		public void WhoHasBookLocked_NotInRepoOrLocal_ReturnsNull()
 		{
-			Assert.That(_repo.WhoHasBookLocked("Some book that is nowhere"), Is.Null);
+			Assert.That(_collection.WhoHasBookLocked("Some book that is nowhere"), Is.Null);
 		}
 
 		[Test]
@@ -298,15 +298,15 @@ namespace BloomTests.TeamCollection
 		{
 			var bookFolder = Path.Combine(_collectionFolder.FolderPath, "newly created book");
 			Directory.CreateDirectory(bookFolder);
-			Assert.That(_repo.WhoHasBookLocked("newly created book"), Is.EqualTo(TeamRepo.FakeUserIndicatingNewBook));
+			Assert.That(_collection.WhoHasBookLocked("newly created book"), Is.EqualTo(Bloom.TeamCollection.TeamCollection.FakeUserIndicatingNewBook));
 		}
 
 		[Test]
 		public void AttemptLock_LockedToSame_Succeeds_Different_Fails()
 		{
-			Assert.That(_repo.AttemptLock("My book", "fred@somewhere.org"),Is.True);
-			Assert.That(_repo.AttemptLock("My book", "fred@somewhere.org"), Is.True);
-			Assert.That(_repo.AttemptLock("My book", "joe@somewhere.org"), Is.False);
+			Assert.That(_collection.AttemptLock("My book", "fred@somewhere.org"),Is.True);
+			Assert.That(_collection.AttemptLock("My book", "fred@somewhere.org"), Is.True);
+			Assert.That(_collection.AttemptLock("My book", "joe@somewhere.org"), Is.False);
 		}
 
 		[Test]
@@ -315,14 +315,14 @@ namespace BloomTests.TeamCollection
 			// We're saving it fairly accurately, but it's just possible rounding might make the output
 			// less than DateTime.Now
 			var beforeLock = DateTime.Now .AddSeconds(-0.1);
-			Assert.That(_repo.AttemptLock("My book", "fred@somewhere.org"), Is.True);
-			var lockTime = _repo.WhenWasBookLocked("My book");
+			Assert.That(_collection.AttemptLock("My book", "fred@somewhere.org"), Is.True);
+			var lockTime = _collection.WhenWasBookLocked("My book");
 			Assert.That(lockTime <= DateTime.Now);
 			Assert.That(lockTime >= beforeLock);
 		}
 
 		// This can be reinstated temporarily (with any necessary updates, including setting inputFile
-		// to an appropriate book that exists locally) to investigate how long various repo operations take.
+		// to an appropriate book that exists locally) to investigate how long various team collection operations take.
 		//[Test]
 		//public void TimeZipMaking()
 		//{
@@ -340,7 +340,7 @@ namespace BloomTests.TeamCollection
 		//	Debug.WriteLine("writing checksum took " + (watch.ElapsedMilliseconds - lastTime));
 		//	lastTime = watch.ElapsedMilliseconds;
 
-		//	_repo.PutBook(inputFolder);
+		//	_collection.PutBook(inputFolder);
 		//	Debug.WriteLine("writing zip took " + (watch.ElapsedMilliseconds - lastTime));
 		//	lastTime = watch.ElapsedMilliseconds;
 		//	using (var zipFile = new ZipFile(bookPath))
@@ -381,30 +381,30 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public void WhenWasBookLocked_NotLocked_ReturnsMaxTime()
 		{
-			var lockTime = _repo.WhenWasBookLocked("My book");
+			var lockTime = _collection.WhenWasBookLocked("My book");
 			Assert.That(lockTime, Is.EqualTo(DateTime.MaxValue));
 		}
 
 		//[Test]
 		//public void GetPeople_NothingLocked_ReturnsEmptyArray()
 		//{
-		//	Assert.That(_repo.GetPeople(), Is.EqualTo(new string[0]).AsCollection);
+		//	Assert.That(_collection.GetPeople(), Is.EqualTo(new string[0]).AsCollection);
 		//}
 
 		//[Test]
 		//public void GetPeople_TwoLocked_ReturnsUsers()
 		//{
-		//	_repo.AttemptLock("My book", "fred@somewhere.org");
-		//	_repo.AttemptLock("Another book", "joe@nowhere.org");
-		//	Assert.That(_repo.GetPeople(), Is.EqualTo(new [] { "fred@somewhere.org", "joe@nowhere.org" }).AsCollection);
+		//	_collection.AttemptLock("My book", "fred@somewhere.org");
+		//	_collection.AttemptLock("Another book", "joe@nowhere.org");
+		//	Assert.That(_collection.GetPeople(), Is.EqualTo(new [] { "fred@somewhere.org", "joe@nowhere.org" }).AsCollection);
 		//}
 
 		//[Test]
 		//public void GetPeople_TwoLockedBySame_ReturnsOneUser()
 		//{
-		//	_repo.AttemptLock("My book", "fred@somewhere.org");
-		//	_repo.AttemptLock("Another book", "fred@somewhere.org");
-		//	Assert.That(_repo.GetPeople(), Is.EqualTo(new[] { "fred@somewhere.org" }).AsCollection);
+		//	_collection.AttemptLock("My book", "fred@somewhere.org");
+		//	_collection.AttemptLock("Another book", "fred@somewhere.org");
+		//	Assert.That(_collection.GetPeople(), Is.EqualTo(new[] { "fred@somewhere.org" }).AsCollection);
 		//}
 	}
 }

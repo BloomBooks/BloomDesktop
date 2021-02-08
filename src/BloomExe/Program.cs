@@ -243,9 +243,9 @@ namespace Bloom
 						// Various other things will misinterpret the .bloompack argument if we leave it in args.
 						args = new string[] { };
 					}
-					if (FolderTeamRepo.IsJoinTeamCollectionFile(args))
+					if (FolderTeamCollection.IsJoinTeamCollectionFile(args))
 					{
-						var newCollection = FolderTeamRepo.JoinCollectionTeam(args[0]);
+						var newCollection = FolderTeamCollection.JoinCollectionTeam(args[0]);
 						args = new string[] { }; // continue to open, but without args.
 						// Usually guaranteed to exist by ApplicationContainer, but we haven't created that yet.
 						if (Settings.Default.MruProjects == null)

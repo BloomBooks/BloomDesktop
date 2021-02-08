@@ -19,20 +19,16 @@ namespace Bloom.TeamCollection
 	/// The idea is to leave open the possibility of other implementations, for example, based on
 	/// a DVCS.
 	/// </summary>
-	public abstract class TeamRepo: IDisposable
+	public abstract class TeamCollection: IDisposable
 	{
 		// special value for BookStatus.lockedBy when the book is newly created and not in the repo at all.
 		public const string FakeUserIndicatingNewBook = "this user";
-		protected readonly string _localCollectionFolder; // The unshared folder that this repo syncs with
+		protected readonly string _localCollectionFolder; // The unshared folder that this collection syncs with
 
-		public TeamRepo(string localCollectionFolder)
+		public TeamCollection(string localCollectionFolder)
 		{
 			_localCollectionFolder = localCollectionFolder;
 		}
-
-		// This is the value the book must be locked to for a local checkout.
-		// For all the Sharing code, this should be the one place we know how to find that user.
-		public string CurrentUser => SIL.Windows.Forms.Registration.Registration.Default.Email;
 
 		/// <summary>
 		/// The folder-implementation-specific part of PutBook, the public method below.
@@ -41,7 +37,7 @@ namespace Bloom.TeamCollection
 		/// <param name="sourceBookFolderPath">See PutBook</param>
 		/// <param name="newStatus">Updated status to write in new book</param>
 		/// <param name="inLostAndFound">See PutBook</param>
-		/// <remarks>Usually PutBook should be used; this method is meant for use by TeamRepo methods.</remarks>
+		/// <remarks>Usually PutBook should be used; this method is meant for use by TeamCollection methods.</remarks>
 		protected abstract void PutBookInRepo(string sourceBookFolderPath, BookStatus newStatus, bool inLostAndFound = false);
 
 		/// <summary>
@@ -224,7 +220,7 @@ namespace Bloom.TeamCollection
 		// Lock the book, making it available for the specified user to edit. Return true if successful.
 		public bool AttemptLock(string bookName, string email = null)
 		{
-			var whoBy = email ?? CurrentUser;
+			var whoBy = email ?? TeamCollectionManager.CurrentUser;
 			var status = GetStatus(bookName);
 			if (String.IsNullOrEmpty(status.lockedBy))
 			{
@@ -448,7 +444,7 @@ namespace Bloom.TeamCollection
 		/// <returns></returns>
 		internal bool IsCheckedOutHereBy(BookStatus status, string email = null)
 		{
-			var whoBy = email ?? CurrentUser;
+			var whoBy = email ?? TeamCollectionManager.CurrentUser;
 			return status.IsCheckedOutHereBy(whoBy);
 		}
 
@@ -478,7 +474,7 @@ namespace Bloom.TeamCollection
 							// Unless it's checked out to the current user on the current computer, delete
 							// the local version.
 							var statusLocal = GetLocalStatus(fileName);
-							if (statusLocal.lockedBy != CurrentUser
+							if (statusLocal.lockedBy != TeamCollectionManager.CurrentUser
 							    || statusLocal.lockedWhere != Environment.MachineName)
 							{
 								SIL.IO.RobustIO.DeleteDirectoryAndContents(path);
@@ -650,9 +646,6 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		public void SynchronizeSharedAndLocal()
 		{
-			if (!HasTeamCollection)
-				return;
-
 			var problems = SyncAtStartup();
 			if (problems.Count > 0)
 			{
@@ -663,27 +656,6 @@ namespace Bloom.TeamCollection
 				                + Environment.NewLine + String.Join("," + Environment.NewLine, problems),
 					"Merge Problems");
 			}
-		}
-
-		/// <summary>
-	/// Returns true if this collection has a team collection.
-	/// Methods that need data from the team collection or modify it should not be called if this is false.
-	/// </summary>
-	public abstract bool HasTeamCollection { get; }
-
-		public static TeamRepo MakeInstance(string collectionSettingsPath)
-		{
-			// For now, we always make a FolderTeamRepo. If we eventually have more than one subclass,
-			// this will have to figure out which kind to create.
-			var localCollectionFolder = Path.GetDirectoryName(collectionSettingsPath);
-			var repo = new FolderTeamRepo(localCollectionFolder);
-			// We're doing this EVERY time we create a repo on opening the collection.
-			// One reason is to keep things in sync. But even more crucially, when we create a new
-			// local connection as part of joining a team collection, we won't have these
-			// files at all unless we create them here.
-			if (repo.HasTeamCollection)
-				repo.CopySharedCollectionFilesToLocal(localCollectionFolder);
-			return repo;
 		}
 
 		protected virtual void Dispose(bool disposing)
@@ -703,7 +675,7 @@ namespace Bloom.TeamCollection
 			GC.SuppressFinalize(this);
 		}
 
-		~TeamRepo()
+		~TeamCollection()
 		{
 			Dispose(false);
 		}
