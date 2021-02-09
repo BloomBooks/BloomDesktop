@@ -176,6 +176,14 @@ namespace Bloom
 				return channel.Contains("developer") || channel.Contains("alpha") || channel.Contains("unstable");
 			}
 		}
+		public static bool IsDev
+		{
+			get
+			{
+				var channel = ApplicationUpdateSupport.ChannelName.ToLowerInvariant();
+				return channel.Contains("developer");
+			}
+		}
 		public static string ChannelName
 		{
 			get
@@ -269,7 +277,7 @@ namespace Bloom
 #if __MonoCS__
 			get { return false; }
 #else
-			get { return Platform.IsWindows && _bloomUpdateManager == null && !InstallerSupport.SharedByAllUsers(); }
+			get { return Platform.IsWindows && _bloomUpdateManager == null && !InstallerSupport.SharedByAllUsers() && !ApplicationUpdateSupport.IsDev; }
 #endif
 		}
 
