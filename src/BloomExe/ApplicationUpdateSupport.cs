@@ -281,7 +281,7 @@ namespace Bloom
 #if __MonoCS__
 			get { return false; }
 #else
-			get { return Platform.IsWindows && _bloomUpdateManager == null && !InstallerSupport.SharedByAllUsers(); }
+			get { return Platform.IsWindows && _bloomUpdateManager == null && !InstallerSupport.SharedByAllUsers() && !ApplicationUpdateSupport.IsDev; }
 #endif
 		}
 

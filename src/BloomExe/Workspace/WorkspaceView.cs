@@ -851,6 +851,10 @@ namespace Bloom.Workspace
 				MessageBox.Show(this, LocalizationManager.GetString("CollectionTab.AdminManagesUpdates",
 						"Your system administrator manages Bloom updates for this computer."));
 			}
+			else if (ApplicationUpdateSupport.IsDev)
+			{
+				MessageBox.Show(this, "Checking for updates is disabled on developer builds. No relevant channel.");
+			}
 			else
 			{
 				ApplicationUpdateSupport.CheckForASquirrelUpdate(ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Verbose,
