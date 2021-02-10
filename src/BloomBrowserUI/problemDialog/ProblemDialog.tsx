@@ -22,8 +22,10 @@ import { useDrawAttention } from "../react_components/UseDrawAttention";
 import ReactDOM = require("react-dom");
 import { PrivacyScreen } from "./PrivacyScreen";
 import { useL10n } from "../react_components/l10nHooks";
+import { NotifyDialog } from "./NotifyDialog";
 
 export enum ProblemKind {
+    Notify = "Notify",
     User = "User",
     NonFatal = "NonFatal",
     Fatal = "Fatal"
@@ -37,7 +39,7 @@ enum Mode {
     submissionFailed
 }
 
-export const ProblemDialog: React.FunctionComponent<{
+export const ReportDialog: React.FunctionComponent<{
     kind: ProblemKind;
 }> = props => {
     const [mode, setMode] = useState(Mode.gather);
@@ -164,28 +166,32 @@ export const ProblemDialog: React.FunctionComponent<{
     );
     const localizedDone = useL10n("Done", "Common.Done");
 
-    const needCancelButton = (): boolean => {
-        return mode === Mode.gather && props.kind === ProblemKind.User;
-    };
-
-    // Assuming we've tried to submit a report (no matter the result),
-    // this will give us either a Close or Quit button.
-    const getEndingButtonIfAppropriate = (): JSX.Element | null => {
-        if (mode !== Mode.submitted && mode !== Mode.submissionFailed) {
-            return null;
+    // Gives us a Cancel, Close, or Quit button.
+    const getEndingButton = (): JSX.Element | null => {
+        let l10nKey: string;
+        let text: string;
+        if (mode === Mode.gather && props.kind === ProblemKind.User) {
+            l10nKey = "Common.Cancel";
+            text = "Cancel";
+        } else {
+            // Note: At one point, we only included this button if mode was not Submitted nor SubmissionFailed.
+            // Now, we include it all the time. Since we have Sentry reporting too, there's less need to
+            // try to funnel people towards submitting.
+            text = props.kind === ProblemKind.Fatal ? "Quit" : "Close";
+            l10nKey = `ReportProblemDialog.${text}`;
         }
-        const keyword = props.kind === ProblemKind.Fatal ? "Quit" : "Close";
-        const l10nKey = `ReportProblemDialog.${keyword}`;
+
         return (
             <BloomButton
                 enabled={true}
                 l10nKey={l10nKey}
                 hasText={true}
+                variant="outlined"
                 onClick={() => {
                     BloomApi.post("dialog/close");
                 }}
             >
-                {keyword}
+                {text}
             </BloomButton>
         );
     };
@@ -197,7 +203,6 @@ export const ProblemDialog: React.FunctionComponent<{
     const getDialogActionButtons = (): JSX.Element => {
         return (
             <>
-                {getEndingButtonIfAppropriate()}
                 {mode === Mode.gather && (
                     <BloomButton
                         enabled={true}
@@ -211,19 +216,7 @@ export const ProblemDialog: React.FunctionComponent<{
                         Submit
                     </BloomButton>
                 )}
-                {needCancelButton() && (
-                    <BloomButton
-                        enabled={true}
-                        l10nKey="Common.Cancel"
-                        hasText={true}
-                        variant="outlined"
-                        onClick={() => {
-                            BloomApi.post("dialog/close");
-                        }}
-                    >
-                        Cancel
-                    </BloomButton>
-                )}
+                {getEndingButton()}
             </>
         );
     };
@@ -298,12 +291,12 @@ export const ProblemDialog: React.FunctionComponent<{
                             case Mode.gather:
                                 return (
                                     <>
-                                        <div
+                                        <Typography
                                             className="report-heading allowSelect"
                                             dangerouslySetInnerHTML={{
                                                 __html: reportHeadingHtml
                                             }}
-                                        />
+                                        ></Typography>
                                         <Typography id="please_help_us">
                                             {localizedPleaseHelpUs}
                                         </Typography>
@@ -417,13 +410,44 @@ function useCtrlEnterToSubmit(callback) {
 
 // allow plain 'ol javascript in the html to connect up react
 (window as any).connectProblemDialog = (element: Element | null) => {
-    const levelQuery = window.location.search;
-    const kind = levelQuery.length > 1 ? levelQuery.substring(1) : "fatal"; // strip off initial "?"
-    const kindProp =
-        kind === "fatal"
-            ? ProblemKind.Fatal
-            : kind === "nonfatal"
-            ? ProblemKind.NonFatal
-            : ProblemKind.User;
-    ReactDOM.render(<ProblemDialog kind={kindProp} />, element);
+    const queryStringWithoutQuestionMark = window.location.search.substring(1);
+    const params = new URLSearchParams(queryStringWithoutQuestionMark);
+    const levelStr = params.get("level");
+
+    let level = parseProblemLevel(levelStr);
+    console.assert(level, `Level "${levelStr}" could not be parsed.`);
+    level = level || ProblemKind.NonFatal; // Default to NonFatal if parsing error.
+
+    if (level === ProblemKind.Notify) {
+        // Expects loader.html?level=notify[&reportLabel={reportLabel}][&secondaryLabel={secondaryLabel}][&msg={message}]
+        // reportLabel - Optional. The localized text that goes on the Report button. Omit or pass "" to disable Report button.
+        // secondaryLabel - Optional. The localized text that goes on the secondary action button. Omit or pass "" to disable the secondary action button.
+        // msg - Optional. The localized message to notify the user about. If omitted, will be retrieved via the BloomAPI instead.
+        ReactDOM.render(
+            <NotifyDialog
+                reportLabel={params.get("reportLabel")}
+                secondaryLabel={params.get("secondaryLabel")}
+                messageParam={params.get("msg")}
+            />,
+            element
+        );
+    } else {
+        ReactDOM.render(<ReportDialog kind={level} />, element);
+    }
 };
+
+// Case-insensitive parsing of the problem level. (Typescript Enum parsing is case-sensitive).
+function parseProblemLevel(levelStr: string | null): ProblemKind | undefined {
+    switch (levelStr?.toLowerCase()) {
+        case "notify":
+            return ProblemKind.Notify;
+        case "user":
+            return ProblemKind.User;
+        case "nonfatal":
+            return ProblemKind.NonFatal;
+        case "fatal":
+            return ProblemKind.Fatal;
+        default:
+            return undefined;
+    }
+}

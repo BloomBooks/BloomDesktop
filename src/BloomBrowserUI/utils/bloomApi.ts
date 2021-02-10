@@ -213,6 +213,27 @@ export class BloomApi {
         return [value, fn];
     }
 
+    public static useApiStringIf(
+        urlSuffix: string,
+        defaultValue: string,
+        conditional: () => boolean
+    ): [string, (value: string) => void] {
+        const [value, setValue] = React.useState(defaultValue);
+        React.useEffect(() => {
+            if (conditional()) {
+                BloomApi.getString(urlSuffix, c => {
+                    setValue(c);
+                });
+            }
+        }, []);
+
+        const fn = (value: string) => {
+            BloomApi.postString(urlSuffix, value);
+            setValue(value);
+        };
+        return [value, fn];
+    }
+
     public static getBoolean(
         urlSuffix: string,
         successCallback: (value: boolean) => void

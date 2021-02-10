@@ -36,6 +36,7 @@ using Sentry.Protocol;
 using SIL.Windows.Forms.HtmlBrowser;
 using SIL.WritingSystems;
 using SIL.Xml;
+using Bloom.ErrorReporter;
 
 namespace Bloom
 {
@@ -86,6 +87,8 @@ namespace Bloom
 		public static CancellationTokenSource BloomThreadCancelService;
 
 		public static SynchronizationContext MainContext { get; private set; }
+
+		internal static bool AllowTracking { get; private set; }
 
 		[STAThread]
 		[HandleProcessCorruptedStateExceptions]
@@ -382,6 +385,8 @@ namespace Bloom
 			propertiesThatGoWithEveryEvent.Remove("UserDomainName");
 			propertiesThatGoWithEveryEvent.Add("channel", ApplicationUpdateSupport.ChannelName);
 
+			AllowTracking = IsFeedbackOn();
+
 #if DEBUG
 			_supressRegistrationDialog = true;
 			return new DesktopAnalytics.Analytics(
@@ -393,16 +398,25 @@ namespace Bloom
 			var feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
 
 			//default is to allow tracking
-			var allowTracking = string.IsNullOrEmpty(feedbackSetting) || feedbackSetting.ToLowerInvariant() == "yes"
-				|| feedbackSetting.ToLowerInvariant() == "true" || feedbackSetting.ToLowerInvariant() == "on";
-			_supressRegistrationDialog = _supressRegistrationDialog || !allowTracking;
+			_supressRegistrationDialog = _supressRegistrationDialog || !AllowTracking;
 
 			return new DesktopAnalytics.Analytics(
 				"c8ndqrrl7f0twbf2s6cv",
 				RegistrationDialog.GetAnalyticsUserInfo(),
 				propertiesThatGoWithEveryEvent,
-				allowTracking);
+				AllowTracking);
 #endif
+		}
+
+		private static bool IsFeedbackOn()
+		{
+			var feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
+
+			//default is to allow feedback/tracking
+			var isFeedbackOn = string.IsNullOrEmpty(feedbackSetting) || feedbackSetting.ToLowerInvariant() == "yes"
+				|| feedbackSetting.ToLowerInvariant() == "true" || feedbackSetting.ToLowerInvariant() == "on";
+
+			return isFeedbackOn;
 		}
 
 #if DEBUG
@@ -1216,7 +1230,9 @@ namespace Bloom
 				}
 			}
 
-			ErrorReport.SetErrorReporter(new NotifyUserOfProblemLogger());
+			var orderedReporters = new IErrorReporter[] { SentryErrorReporter.Instance, HtmlErrorReporter.Instance };
+			var htmlAndSentryReporter = new CompositeErrorReporter(orderedReporters, primaryReporter: HtmlErrorReporter.Instance);
+			ErrorReport.SetErrorReporter(htmlAndSentryReporter);
 
 
 			string issueTrackingUrl = UrlLookup.LookupUrl(UrlType.IssueTrackingSystem);
