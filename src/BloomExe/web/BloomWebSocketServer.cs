@@ -33,6 +33,11 @@ namespace Bloom.Api
 		private WebSocketServer _server;
 		private List<IWebSocketConnection> _allSockets;
 
+		public bool IsSocketOpen(string name)
+		{
+			return _allSockets.Exists(s => s.ConnectionInfo?.SubProtocol == name);
+		}
+
 		public void Init(string port)
 		{
 			FleckLog.Level = LogLevel.Warn;
