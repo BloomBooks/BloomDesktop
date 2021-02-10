@@ -345,7 +345,7 @@ namespace Bloom
 
 		private static HtmlThumbNailer.ThumbnailOptions.BorderStyles GetThumbnailBorderStyle(Book.Book book)
 		{
-			return book.IsSuitableForMakingShells
+			return book.IsTemplateBook
 				? HtmlThumbNailer.ThumbnailOptions.BorderStyles.Dashed
 				: HtmlThumbNailer.ThumbnailOptions.BorderStyles.None;
 		}
