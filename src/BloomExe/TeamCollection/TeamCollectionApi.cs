@@ -97,7 +97,8 @@ namespace Bloom.TeamCollection
 			using (var dlg = new FolderBrowserDialog())
 			{
 				dlg.ShowNewFolderButton = true;
-				dlg.Description = LocalizationManager.GetString("TeamCollection.SelectFolder","Select or create the folder where this collection will be shared");
+				dlg.Description = LocalizationManager.GetString("TeamCollection.SelectFolder",
+					"Select or create the folder where this collection will be shared");
 				if (DialogResult.OK != dlg.ShowDialog())
 				{
 					request.Failed();
@@ -111,11 +112,10 @@ namespace Bloom.TeamCollection
 				// just chose a folder to get things started.
 				// We'll need a different API or something similar if we ever want to create
 				// some other kind of repo.
-				var repo = _tcManager.CurrentCollection as FolderTeamCollection;
-				repo.ConnectToTeamCollection(sharingFolder);
-
+				_tcManager.ConnectToTeamCollection(sharingFolder);
 				_createCallback?.Invoke();
 			}
+
 			request.PostSucceeded();
 		}
 

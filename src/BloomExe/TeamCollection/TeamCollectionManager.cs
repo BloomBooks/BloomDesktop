@@ -17,11 +17,12 @@ namespace Bloom.TeamCollection
 	public class TeamCollectionManager: IDisposable
 	{
 		public TeamCollection CurrentCollection { get; private set; }
+		private string _localCollectionFolder;
 
 		public TeamCollectionManager(string localCollectionPath)
 		{
-			var localCollectionFolder = Path.GetDirectoryName(localCollectionPath);
-			var sharedSettingsPath = Path.Combine(localCollectionFolder, TeamCollectionSettingsFileName);
+			_localCollectionFolder = Path.GetDirectoryName(localCollectionPath);
+			var sharedSettingsPath = Path.Combine(_localCollectionFolder, TeamCollectionSettingsFileName);
 			if (File.Exists(sharedSettingsPath))
 			{
 				try
@@ -32,10 +33,10 @@ namespace Bloom.TeamCollection
 						.First().InnerText;
 					if (Directory.Exists(sharedFolderPath))
 					{
-						CurrentCollection = new FolderTeamCollection(localCollectionFolder, sharedFolderPath);
+						CurrentCollection = new FolderTeamCollection(_localCollectionFolder, sharedFolderPath);
 						// Later, we will sync everything else, but we want the current collection settings before
 						// we create the CollectionSettings object.
-						CurrentCollection.CopySharedCollectionFilesToLocal(localCollectionFolder);
+						CurrentCollection.CopySharedCollectionFilesToLocal(_localCollectionFolder);
 					}
 					else
 					{
@@ -47,6 +48,13 @@ namespace Bloom.TeamCollection
 					NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom found team collection settings but could not process them", null, ex, true);
 				}
 			}
+		}
+
+		public void ConnectToTeamCollection(string sharedFolderPath)
+		{
+			var newTc = new FolderTeamCollection(_localCollectionFolder, sharedFolderPath);
+			newTc.ConnectToTeamCollection(sharedFolderPath);
+			CurrentCollection = newTc;
 		}
 
 		public const string TeamCollectionSettingsFileName = "TeamCollectionSettings.xml";
