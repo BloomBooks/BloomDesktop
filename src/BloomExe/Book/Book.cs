@@ -959,6 +959,12 @@ namespace Bloom.Book
 			FixErrorsEncounteredByUsers(bookDOM);
 			AddReaderBodyClass(bookDOM);
 			AddLanguageAttributesToBody(bookDOM);
+
+			if (IsTemplateBook)
+			{
+				// this will turn on rules in previewMode.css that show the structure of the template and names of pages
+				HtmlDom.AddClassToBody(RawDom, "template");
+			}
 		}
 
 		private void AddLanguageAttributesToBody(HtmlDom bookDom)
@@ -1775,6 +1781,13 @@ namespace Bloom.Book
 			set { BookInfo.IsSuitableForMakingShells = value; }
 
 		}
+
+		/// <summary>
+		/// The name "IsSuitableForMakingShells" must have been the best at one point, but now that Template books are a built-in part of Bloom,
+		/// it makes code hard to read, when we just think in terms of "is this a template book"? If it turns out the semantics do not actually line up
+		/// well, then we will have to modify this and that's good.
+		/// </summary>
+		public bool IsTemplateBook => IsSuitableForMakingShells;
 
 		/// <summary>
 		/// A "Folio" document is one that acts as a wrapper for a number of other books
