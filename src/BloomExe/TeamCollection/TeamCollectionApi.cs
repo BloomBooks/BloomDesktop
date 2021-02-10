@@ -35,6 +35,14 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/attemptLockOfCurrentBook", HandleAttemptLockOfCurrentBook, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/checkInCurrentBook", HandleCheckInCurrentBook, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/createTeamCollection", HandleCreateTeamCollection, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/sendToClipboard", HandleSendToClibpard, true);
+		}
+
+		private void HandleSendToClibpard(ApiRequest request)
+		{
+			var text = request.RequiredPostString();
+			Clipboard.SetText(text);
+			request.PostSucceeded();
 		}
 
 		public void HandleIsTeamCollectionEnabled(ApiRequest request)

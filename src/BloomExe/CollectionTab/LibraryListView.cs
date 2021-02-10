@@ -47,7 +47,7 @@ namespace Bloom.CollectionTab
 
 		enum ButtonManagementStage
 		{
-			LoadPrimary, ImprovePrimary, LoadSourceCollections, ImproveAndRefresh, FinalizeSetup
+			LoadPrimary, ImprovePrimary, LoadSourceCollections, ImproveAndRefresh, FinalizeSetup, Reentering
 		}
 
 		private ButtonManagementStage _buttonManagementStage = ButtonManagementStage.LoadPrimary;
@@ -252,7 +252,13 @@ namespace Bloom.CollectionTab
 
 			switch (_buttonManagementStage)
 			{
+				case ButtonManagementStage.Reentering:
+					break;
 				case ButtonManagementStage.LoadPrimary:
+					// We may reenter this method during LoadPrimaryCollectionButtons(),
+					// due to raising idle in the progress dialog for team collection sync.
+					// If so, don't want to do anything until the original call finishes.
+					_buttonManagementStage = ButtonManagementStage.Reentering;
 					LoadPrimaryCollectionButtons();
 					_buttonManagementStage = ButtonManagementStage.ImprovePrimary;
 					_primaryCollectionFlow.Refresh();
