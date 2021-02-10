@@ -26,8 +26,8 @@ export function SetupImagesInContainer(container) {
 
     $(container)
         .find(".bloom-imageContainer")
-        .each(function() {
-            SetupImageContainer(this);
+        .each((index, element) => {
+            SetupImageContainer(element as HTMLHtmlElement);
         });
 
     //todo: this had problems. Check out the later approach, seen in draggableLabel (e.g. move handle on the inside, using a background image on a div)
@@ -103,7 +103,7 @@ export function GetButtonModifier(container) {
 //Bloom "imageContainer"s are <div>'s with wrap an <img>, and automatically proportionally resize
 //the img to fit the available space
 //Precondition: containerDiv must be just a single HTMLElement
-function SetupImageContainer(containerDiv: any) {
+function SetupImageContainer(containerDiv: HTMLElement) {
     // Initialize the value of the hoverUp class.
     // the hoverup class should be present whenever the mouse is over the containerDiv.
     // This is usually achieved by mouseenter/mouseleave event handlers,
@@ -127,9 +127,10 @@ function SetupImageContainer(containerDiv: any) {
             const $this = $(this);
             let img = $this.find("img");
             if (img.length === 0)
-                //TODO check for bloom-backgroundImage to make sure this isn't just a case of a missing <img>
-                // TODO: Looks like assigning an HTMLElement to a JQuery. I'd rather we not do this, although I think we manage to $() wrap our way out of this mess later.
-                img = containerDiv; //using a backgroundImage
+                // This case is probably a left over from some previous Bloom where
+                // we were using background images instead of <img>? But it does
+                // no harm so I'm leaving it in.
+                img = $(containerDiv); //using a backgroundImage
 
             if ($this.find(kPlaybackOrderContainerSelector).length > 0) {
                 return; // Playback order controls are active, deactivate image container stuff.
@@ -196,7 +197,7 @@ function SetupImageContainer(containerDiv: any) {
                 });
             }
 
-            SetImageTooltip(containerDiv, img);
+            SetImageTooltip(containerDiv);
 
             if (IsImageReal(img)) {
                 $this.prepend(
@@ -227,41 +228,55 @@ function SetupImageContainer(containerDiv: any) {
         });
 }
 
-function SetImageTooltip(container, img) {
-    const url = GetRawImageUrl(img);
+function SetImageTooltip(container: HTMLElement) {
+    const containerJQ = $(container);
+    const imgElement = $(container).find("img");
+
+    if (!imgElement) {
+        container.title = "";
+        return;
+    }
+    const url = GetRawImageUrl(imgElement);
     // Don't try to go getting image info for a built in Bloom image (like cogGrey.svg).
     // It'll just throw an exception.
     if (url.startsWith("/bloom/")) {
         container.title = "";
         return;
     }
-    BloomApi.getWithConfig(
-        "image/info",
-        { params: { image: GetRawImageUrl(img) } },
-        result => {
-            const image: any = result.data;
-            // This appears to be constant even on higher dpi screens.
-            // (See http://www.w3.org/TR/css3-values/#absolute-lengths)
-            const kBrowserDpi = 96;
-            const dpi = Math.round(
-                image.width / ($(img).width() / kBrowserDpi)
-            );
-            const info =
-                image.name +
-                "\n" +
-                getFileLengthString(image.bytes) +
-                "\n" +
-                image.width +
-                " x " +
-                image.height +
-                "\n" +
-                dpi +
-                " DPI (should be 300-600)\n" +
-                "Bit Depth: " +
-                image.bitDepth.toString();
-            container.title = info;
-        }
+    const kBrowserDpi = 96;
+    const targetDpiWidth = Math.ceil((300 * containerJQ.width()) / kBrowserDpi);
+    const targetDpiHeight = Math.ceil(
+        (300 * containerJQ.height()) / kBrowserDpi
     );
+    const isPlaceHolder = url.indexOf("placeHolder.png") > -1;
+
+    BloomApi.getWithConfig("image/info", { params: { image: url } }, result => {
+        const imageFileInfo: any = result.data;
+        // This appears to be constant even on higher dpi screens.
+        // (See http://www.w3.org/TR/css3-values/#absolute-lengths)
+        const dpi = Math.round(
+            imageFileInfo.width / ($(imgElement).width() / kBrowserDpi)
+        );
+        const bulletForDpi = dpi < 300 ? "⚠" : "✓";
+        // removed because only devs care! Bit Depth: ${imageFileInfo.bitDepth.toString()}
+        const linesAboutThisFile = `Name: ${
+            imageFileInfo.name
+        } Size: ${getFileLengthString(imageFileInfo.bytes)} Dots: ${
+            imageFileInfo.width
+        } x ${imageFileInfo.height}\n\n`;
+
+        const linesAboutThisContext =
+            `For the current paper size:\n` +
+            `  • The image container is ${containerJQ.width()} x ${containerJQ.height()} dots.\n` +
+            `  • For print publications, you want between 300-600 DPI (Dots Per Inch).\n` +
+            (isPlaceHolder
+                ? ""
+                : `  ${bulletForDpi} This image would print at ${dpi} DPI.\n`) +
+            `  • An image with ${targetDpiWidth} x ${targetDpiHeight} dots would fill this container at 300 DPI.`;
+
+        container.title =
+            (isPlaceHolder ? "" : linesAboutThisFile) + linesAboutThisContext;
+    });
 }
 
 function SetImageDisplaySizeIfCalledFor(container: JQuery, img: JQuery) {
@@ -322,7 +337,7 @@ function SetImageDisplaySizeIfCalledFor(container: JQuery, img: JQuery) {
 }
 
 function getFileLengthString(bytes): String {
-    const units = ["Bytes", "KB", "MB"];
+    const units = ["bytes", "kb", "mb"];
     for (let i = units.length; i-- > 0; ) {
         const unit = Math.pow(1024, i);
         if (bytes >= unit)
