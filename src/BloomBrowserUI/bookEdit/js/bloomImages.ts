@@ -248,34 +248,35 @@ function SetImageTooltip(container: HTMLElement) {
     const targetDpiHeight = Math.ceil(
         (300 * containerJQ.height()) / kBrowserDpi
     );
-    BloomApi.getWithConfig(
-        "image/info",
-        { params: { image: GetRawImageUrl(imgElement) } },
-        result => {
-            const imageFileInfo: any = result.data;
-            // This appears to be constant even on higher dpi screens.
-            // (See http://www.w3.org/TR/css3-values/#absolute-lengths)
-            const dpi = Math.round(
-                imageFileInfo.width / ($(imgElement).width() / kBrowserDpi)
-            );
-            const info =
-                `${imageFileInfo.name}\n` +
-                `Size: ${getFileLengthString(
-                    imageFileInfo.bytes
-                )}  Bit Depth: ${imageFileInfo.bitDepth.toString()}\n` +
-                `\n` +
-                `This image file has ${imageFileInfo.width} x ${
-                    imageFileInfo.height
-                } dots.\n` +
-                `\n` +
-                `For the current paper size:\n` +
-                `  • The image container is ${containerJQ.width()} x ${containerJQ.height()} dots.\n` +
-                `  • This image would print at ${dpi} DPI (Dots Per Inch).\n` +
-                `  • For print publications, you want between 300-600 DPI.\n` +
-                `  • An image with ${targetDpiWidth} x ${targetDpiHeight} would fill this container at 300 DPI.`;
-            container.title = info;
-        }
-    );
+    const isPlaceHolder = url.indexOf("placeHolder.png") > -1;
+
+    BloomApi.getWithConfig("image/info", { params: { image: url } }, result => {
+        const imageFileInfo: any = result.data;
+        // This appears to be constant even on higher dpi screens.
+        // (See http://www.w3.org/TR/css3-values/#absolute-lengths)
+        const dpi = Math.round(
+            imageFileInfo.width / ($(imgElement).width() / kBrowserDpi)
+        );
+        const bulletForDpi = dpi < 300 ? "⚠" : "✓";
+        // removed because only devs care! Bit Depth: ${imageFileInfo.bitDepth.toString()}
+        const linesAboutThisFile = `Name: ${
+            imageFileInfo.name
+        } Size: ${getFileLengthString(imageFileInfo.bytes)} Dots: ${
+            imageFileInfo.width
+        } x ${imageFileInfo.height}\n\n`;
+
+        const linesAboutThisContext =
+            `For the current paper size:\n` +
+            `  • The image container is ${containerJQ.width()} x ${containerJQ.height()} dots.\n` +
+            `  • For print publications, you want between 300-600 DPI (Dots Per Inch).\n` +
+            (isPlaceHolder
+                ? ""
+                : `  ${bulletForDpi} This image would print at ${dpi} DPI.\n`) +
+            `  • An image with ${targetDpiWidth} x ${targetDpiHeight} dots would fill this container at 300 DPI.`;
+
+        container.title =
+            (isPlaceHolder ? "" : linesAboutThisFile) + linesAboutThisContext;
+    });
 }
 
 function SetImageDisplaySizeIfCalledFor(container: JQuery, img: JQuery) {
@@ -336,7 +337,7 @@ function SetImageDisplaySizeIfCalledFor(container: JQuery, img: JQuery) {
 }
 
 function getFileLengthString(bytes): String {
-    const units = ["Bytes", "KB", "MB"];
+    const units = ["bytes", "kb", "mb"];
     for (let i = units.length; i-- > 0; ) {
         const unit = Math.pow(1024, i);
         if (bytes >= unit)
