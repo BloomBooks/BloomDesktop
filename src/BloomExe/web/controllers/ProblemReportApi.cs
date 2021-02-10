@@ -29,6 +29,7 @@ namespace Bloom.web.controllers
 		protected string YouTrackProjectKey = "BL";
 		private static Exception _currentException;
 		private static string _detailedMessage; // usually from Bloom itself
+		private static string _headingHtml;
 
 		/// <summary>
 		/// We want this name "different" enough that it's not likely to be supplied by a user in a book,
@@ -45,6 +46,12 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
+			// ProblemDialog.tsx uses this endpoint to get the string to show at the top of the main dialog
+			apiHandler.RegisterEndpointHandler("problemReport/reportHeadingHtml",
+				(ApiRequest request) =>
+				{
+					request.ReplyWithText(_headingHtml ?? "");
+				}, false);
 			// ProblemDialog.tsx uses this endpoint to get the screenshot image.
 			apiHandler.RegisterEndpointHandler("problemReport/screenshot",
 				(ApiRequest request) =>
@@ -307,6 +314,11 @@ namespace Bloom.web.controllers
 			_showingProblemReport = true;
 			_currentException = exception;
 			_detailedMessage = detailedMessage;
+			var heading = detailedMessage;
+			if (string.IsNullOrEmpty(heading) && exception != null)
+				heading = exception.Message;
+			if (!string.IsNullOrEmpty(heading))
+				_headingHtml = UrlPathString.CreateFromUnencodedString(heading).HtmlXmlEncoded;
 			if (controlForScreenshotting == null)
 				controlForScreenshotting = Form.ActiveForm;
 			if (controlForScreenshotting == null) // still possible if we come from a "Details" button
