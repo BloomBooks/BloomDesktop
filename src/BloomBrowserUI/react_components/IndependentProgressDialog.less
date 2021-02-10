@@ -1,0 +1,80 @@
+@import "../bloomUI.less";
+
+@body-margin: 10px;
+@copy-button-width: 15px;
+@copy-button-left-margin: 2px;
+@copy-button-right-margin: 3px;
+@main-margin: @copy-button-right-margin + @copy-button-left-margin +
+    @copy-button-width;
+
+html,
+body,
+#progress-box,
+#progress-root {
+    height: 100%; // to make progress-root fill the window all parents must do so.
+}
+
+body {
+    // these settings give us some padding around the outermost progress-box element,
+    // except on the left where we need to insert the copy button in what looks like the margin,
+    // but still allow all the parents to be simply height:100% without causing overflow.
+    box-sizing: border-box;
+    padding: 0 0 @body-margin 0;
+    padding-left: 0;
+    margin: 0;
+}
+
+#progress-root {
+    display: flex;
+    flex-direction: column;
+    .progress-box {
+        height: 100%;
+        width: 100%;
+        padding: 10px;
+        font-size: smaller;
+        background-color: @form-background;
+        overflow-y: scroll;
+        box-sizing: border-box;
+        margin-right: @main-margin;
+    }
+    .MuiDialogTitle-root {
+        color: white;
+        background-color: @bloom-purple;
+        margin-bottom: 15px;
+    }
+}
+
+#copy-progress-row {
+    display: flex;
+    width: 100%;
+    flex-grow: 1;
+}
+
+#copy-button {
+    background-image: url("../images/copy.svg");
+    height: 20px;
+    width: @copy-button-width;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-left: @copy-button-left-margin;
+    margin-right: @copy-button-right-margin;
+    background-color: white;
+    border: none;
+}
+
+#close-button {
+    background-color: @bloom-purple;
+}
+
+#progress-buttons {
+    display: flex;
+    justify-content: space-between;
+    flex-grow: 0;
+    margin-top: 20px;
+    margin-left: @main-margin;
+    margin-right: @main-margin;
+}
+#progress-report {
+    margin-top: 10px;
+}
