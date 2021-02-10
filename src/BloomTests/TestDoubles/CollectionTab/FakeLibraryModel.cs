@@ -17,7 +17,7 @@ namespace BloomTests.TestDoubles.CollectionTab
 
 		public FakeLibraryModel(TemporaryFolder testFolder)
 			: base(testFolder.Path, new CollectionSettings(), new BookSelection(), GetDefaultSourceCollectionsList(),
-			BookCollectionFactory, null, new CreateFromSourceBookCommand(), new FakeBookServer(), new CurrentEditableCollectionSelection(), null, new TeamCollectionManager(testFolder.FolderPath))
+			BookCollectionFactory, null, new CreateFromSourceBookCommand(), new FakeBookServer(), new CurrentEditableCollectionSelection(), null, new TeamCollectionManager(testFolder.FolderPath, null))
 		{
 			TestFolderPath = testFolder.Path;
 		}

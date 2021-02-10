@@ -323,6 +323,7 @@
     <Compile Include="TeamCollection\BookStateChangeEventArgs.cs" />
     <Compile Include="TeamCollection\BookStatus.cs" />
     <Compile Include="TeamCollection\FolderTeamCollection.cs" />
+    <Compile Include="TeamCollection\ProgressLogger.cs" />
     <Compile Include="TeamCollection\TeamCollection.cs" />
     <Compile Include="TeamCollection\NewBookEventArgs.cs" />
     <Compile Include="TeamCollection\TeamCollectionApi.cs" />

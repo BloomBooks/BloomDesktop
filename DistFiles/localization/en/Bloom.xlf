@@ -964,6 +964,11 @@
         <source xml:lang="en">Replace</source>
         <note>ID: Common.Replace</note>
       </trans-unit>
+      <trans-unit id="Common.Report">
+        <source xml:lang="en">REPORT</source>
+        <note>ID: Common.Report</note>
+        <note>Used for a link that signifies "Bring up a dialog for sending a report of a problem. We usually want all-caps, unless inappropriate in a particular language"</note>
+      </trans-unit>
       <trans-unit id="Common.SeeWebPage">
         <source xml:lang="en">See {0}.</source>
         <note>ID: Common.SeeWebPage</note>
@@ -4765,7 +4770,7 @@ Do you want to go ahead?</note>
         <note>ID: TeamCollection.ConflictingCheckout</note>
       </trans-unit>
       <trans-unit id="TeamCollection.ConflictingEdit" sil:dynamic="true">
-        <source xml:lang="en">The book '{0}' was modified in the collection. Your changes are saved to Lost-and-found.</source>
+        <source xml:lang="en">The book '{0}', which you have checked out and edited, was modified in the team collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.</source>
         <note>ID: TeamCollection.ConflictingEdit</note>
       </trans-unit>
       <trans-unit id="TeamCollection.CreateTeamCollection" sil:dynamic="true">

@@ -1,14 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using System.Xml;
+using Bloom.Api;
+using Bloom.MiscUI;
+using Bloom.web;
 using L10NSharp;
 using Sentry;
 using SIL.IO;
-using SIL.Reporting;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Text;
+using System.Threading;
+using System.Windows.Forms;
+using Bloom.ToPalaso;
+using SIL.Progress;
 
 namespace Bloom.TeamCollection
 {
@@ -452,7 +456,7 @@ namespace Bloom.TeamCollection
 		/// Run this when Bloom starts up to get the repo and local directories as sync'd as possible.
 		/// </summary>
 		/// <returns>List of warnings, if any problems occurred.</returns>
-		public List<string> SyncAtStartup()
+		public List<string> SyncAtStartup(IWebSocketProgress progress)
 		{
 			var warnings = new List<string>(); // accumulates any warning messages
 			// Delete books that we think have been deleted remotely from the repo.
@@ -477,6 +481,8 @@ namespace Bloom.TeamCollection
 							if (statusLocal.lockedBy != TeamCollectionManager.CurrentUser
 							    || statusLocal.lockedWhere != Environment.MachineName)
 							{
+								progress.Message("DeleteLocal", "{0} is a filename",
+									String.Format("Deleting '{0}' from local folder as it is no longer in the Team Collection", fileName), MessageKind.Progress);
 								SIL.IO.RobustIO.DeleteDirectoryAndContents(path);
 							}
 
@@ -493,6 +499,7 @@ namespace Bloom.TeamCollection
 					var msg = String.Format("Something went wrong trying to sync with the book {0} in your Team Collection.", path);
 					SentrySdk.AddBreadcrumb(msg);
 					SentrySdk.CaptureException(ex);
+					progress.MessageWithoutLocalizing(msg, MessageKind.Error);
 					warnings.Add(msg);
 				}
 			}
@@ -508,9 +515,13 @@ namespace Bloom.TeamCollection
 				if (!Directory.Exists(localFolderPath))
 				{
 					// brand new book! Get it.
+					var msg = String.Format(
+						"Fetching a new book '{0}' from the Team Collection", bookName);
+					progress.MessageWithoutLocalizing(msg);
 					CopyBookFromSharedToLocal(bookName);
 					continue;
 				}
+
 				var sharedStatus = GetStatus(bookName); // we know it's in the repo, so status will certainly be from there.
 				var statusFilePath = GetStatusFilePath(bookName, _localCollectionFolder);
 				if (!File.Exists(statusFilePath))
@@ -538,6 +549,9 @@ namespace Bloom.TeamCollection
 						var renamePath = Path.Combine(renameFolder,
 							Path.ChangeExtension(Path.GetFileName(renameFolder), "htm"));
 						var oldBookPath = Path.Combine(renameFolder, Path.ChangeExtension(bookName, "htm"));
+						var msg = String.Format(
+							"Renaming the local book '{0}' because there is a new one with the same name from the Team Collection", bookName);
+						progress.MessageWithoutLocalizing(msg);
 						RobustFile.Move(oldBookPath, renamePath);
 
 						CopyBookFromSharedToLocal(bookName); // Get shared book and status
@@ -550,11 +564,15 @@ namespace Bloom.TeamCollection
 				var localStatus = GetLocalStatus(bookName);
 
 				if (!IsCheckedOutHereBy(localStatus)) {
-				    if (localStatus.checksum != sharedStatus.checksum)
-				    {
-					    // Changed and not checked out. Just bring it up to date.
-					    CopyBookFromSharedToLocal(bookName); // updates everything local.
-				    }
+					if (localStatus.checksum != sharedStatus.checksum)
+					{
+						// Changed and not checked out. Just bring it up to date.
+						var msg = String.Format(
+							"Updating '{0}' to match the Team Collection", bookName);
+						progress.MessageWithoutLocalizing(msg);
+						CopyBookFromSharedToLocal(bookName); // updates everything local.
+					}
+
 					// whether or not we updated it, if it's not checked out there's no more to do.
 				    continue;
 				}
@@ -587,11 +605,13 @@ namespace Bloom.TeamCollection
 						if (currentChecksum != localStatus.checksum)
 						{
 							// Edited locally while someone else has it checked out. Copy current local to lost and found
-							PutBook(localFolderPath, inLostAndFound:true);
+							PutBook(localFolderPath, inLostAndFound: true);
 							// warn the user
 							var msgTemplate = LocalizationManager.GetString("TeamCollection.ConflictingCheckout",
-								"The book '{0}' is checked out to someone else. Your changes are saved to Lost-and-found.");
-							warnings.Add(string.Format(msgTemplate, bookName));
+								"The book '{0}', which you have checked out and edited, is checked out to someone else in the team collection. Your changes have been overwritten, but are saved to Lost-and-found.");
+							var msg = string.Format(msgTemplate, bookName);
+							warnings.Add(msg);
+							progress.MessageWithoutLocalizing(msg, MessageKind.Warning);
 							// Make the local folder match the repo (this is where 'they win')
 							CopyBookFromSharedToLocal(bookName);
 							continue;
@@ -611,18 +631,24 @@ namespace Bloom.TeamCollection
 					if (currentChecksum == localStatus.checksum)
 					{
 						// not edited locally. No warning needed, but we need to update it. We can keep local checkout.
+						var msg1 = String.Format(
+							"Updating '{0}' to match the Team Collection", bookName);
+						progress.MessageWithoutLocalizing(msg1);
 						CopyBookFromSharedToLocal(bookName);
 						WriteBookStatus(bookName, localStatus.WithChecksum(sharedStatus.checksum));
 						continue;
 					}
+
 					// Copy current local to lost and found
 					PutBook(Path.Combine(_localCollectionFolder, bookName), inLostAndFound:true);
 					// copy shared book and status to local
 					CopyBookFromSharedToLocal(bookName);
 					// warn the user
 					var msgTemplate = LocalizationManager.GetString("TeamCollection.ConflictingEdit",
-						"The book '{0}' was modified in the collection. Your changes are saved to Lost-and-found.");
-					warnings.Add(string.Format(msgTemplate, bookName));
+						"The book '{0}', which you have checked out and edited, was modified in the team collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.");
+					var msg = string.Format(msgTemplate, bookName);
+					progress.MessageWithoutLocalizing(msg, MessageKind.Warning);
+					warnings.Add(msg);
 					continue;
 				}
 				}
@@ -634,27 +660,91 @@ namespace Bloom.TeamCollection
 					SentrySdk.AddBreadcrumb(msg);
 					SentrySdk.CaptureException(ex);
 					warnings.Add(msg);
+					progress.MessageWithoutLocalizing(msg, MessageKind.Error);
 				}
 			}
 
 			return warnings;
 		}
 
+		// must match what is in IndependentProgressDialog.tsx passed as clientContext to ProgressBox.
+		// (At least until we generalize that dialog for different Progress tasks...then, it will need
+		// to be configured to use this.)
+		private const string kWebSocketContext = "teamCollectionMerge";
+
+		public BloomWebSocketServer SocketServer;
+
+
+
 		/// <summary>
 		/// Main entry point called before creating CollectionSettings; updates local folder to match
-		/// shared one, if any.
+		/// shared one, if any. Not unit tested, as it mainly handles wrapping SyncAtStartup with a
+		/// progress dialog.
 		/// </summary>
 		public void SynchronizeSharedAndLocal()
 		{
-			var problems = SyncAtStartup();
-			if (problems.Count > 0)
+			var url = BloomFileLocator.GetBrowserFile(false, "utils", "IndependentProgressDialog.html").ToLocalhost()
+			          + "?title=Team Collection Activity";
+			var progress = new WebSocketProgress(SocketServer, kWebSocketContext);
+			var logPath = Path.ChangeExtension(_localCollectionFolder + " Sync", "log");
+			Program.CloseSplashScreen(); // Enhance: maybe not right away? Maybe we can put our dialog on top? But it seems to work pretty well...
+			using (var progressLogger = new ProgressLogger(logPath, progress))
+			using (var dlg = new BrowserDialog(url))
 			{
-				// Todo: localize. Not adding to XLF now because we want to move to a quite different UI.
-				// Todo: instead of returning an error list and using MessageBox, we want to pass an IProgress to SyncAtStartup,
-				// have it display messages and errors in a dialog, and make a permanent log of problems. See BL-9485.
-				MessageBox.Show("Bloom found some problems while loading changes from your team collection:"
-				                + Environment.NewLine + String.Join("," + Environment.NewLine, problems),
-					"Merge Problems");
+				dlg.WebSocketServer = SocketServer;
+				dlg.Width = 500;
+				dlg.Height = 300;
+				// We REALLY don't want this dialog getting closed before the background task finishes.
+				// Waiting for this dialog to close is what keeps this thread from proceeding, typically
+				// to load the collection.
+				// Having a background task manipulating files in the collection while Bloom is loading
+				// it would be a recipe for rare race-condition bugs we can't reproduce.
+				dlg.ControlBox = false;
+				// With no title and no other title bar controls, the title bar disappears (good!) but
+				// we can't drag the dialog (bad!). (We don't WANT a title because we're doing a prettier
+				// one in HTML.) For now we decided to go with 'no drag'.
+				//dlg.Text = "  ";
+				var worker = new BackgroundWorker();
+				worker.DoWork += (sender, args) =>
+				{
+					// A way of waiting until the dialog is ready to receive progress messages
+					while (!SocketServer.IsSocketOpen(kWebSocketContext))
+						Thread.Sleep(50);
+					var now = DateTime.Now;
+					// Not useful to have the date and time in the progress dialog, but definitely
+					// handy to record at the start of each section in the saved log. Tells us when anything it
+					// had to do to sync things actually happened.
+					progress.Message("StartingSync", "",
+						"Starting sync with Team Collection", MessageKind.Progress);
+					progressLogger.Log("Starting sync with Team Collection at " + now.ToShortDateString() + " " +  now.ToShortTimeString(),
+						MessageKind.Progress);
+
+					var problems = SyncAtStartup(progressLogger);
+
+					progress.Message("Done", "Done");
+
+					// Review: are any of the cases we don't treat as warnings or errors important enough to wait
+					// for the user to read them and close the dialog manually?
+					if (problems.Count > 0)
+					{
+						// Now the user is allowed to close the dialog or report problems.
+						// (IndependentProgressDialog in JS-land is watching for this message, which causes it to turn
+						// on the buttons that allow the dialog to be manually closed (or a problem to be reported).
+						SocketServer.SendBundle(kWebSocketContext, "show-buttons", new DynamicJson());
+					}
+					else
+					{
+						// Nothing very important...close it automatically.
+						dlg.Invoke((Action)(() =>
+						{
+							dlg.Close();
+						}));
+					}
+
+				};
+
+				worker.RunWorkerAsync();
+				dlg.ShowDialog();
 			}
 		}
 

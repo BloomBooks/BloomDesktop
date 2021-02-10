@@ -1183,16 +1183,6 @@ namespace BloomTests.Publish
 			{
 				MessagesNotLocalized.Add(string.Format(message, parameters));
 			}
-
-			public override void ErrorWithParams(string id, string comment, string message, params object[] parameters)
-			{
-				ErrorsNotLocalized.Add(string.Format(message, parameters));
-			}
-
-			public override void MessageWithColorAndParams(string id, string comment, string color, string message, params object[] parameters)
-			{
-				MessagesNotLocalized.Add("<span style='color:" + color + "'>" + string.Format(message, parameters) + "</span>");
-			}
 		}
 
 		class StubFontFinder : IFontFinder {

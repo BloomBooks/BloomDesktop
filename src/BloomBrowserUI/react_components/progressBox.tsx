@@ -12,6 +12,7 @@ export interface IProgressBoxProps {
     testProgressHtml?: string;
     onGotErrorMessage?: () => void;
     progressBoxId?: string;
+    notifyProgressChange?: (progress: string) => void;
 }
 
 interface IProgressState {
@@ -33,7 +34,7 @@ export default class ProgressBox extends React.Component<
         //alert("constructing progress box for " + this.props.clientContext);
         //get progress messages from c#
         WebSocketManager.addListener(props.clientContext, e => {
-            if (e.id === "progress") {
+            if (e.id === "message") {
                 if (e.message!.indexOf("error") > -1) {
                     if (props.onGotErrorMessage) {
                         props.onGotErrorMessage();
@@ -43,6 +44,22 @@ export default class ProgressBox extends React.Component<
                     this.writeLine(
                         `<span style='${e.cssStyleRule}'>${e.message}</span>`
                     );
+                } else if (e.kind) {
+                    switch (e.kind) {
+                        default:
+                            this.writeLine(e.message || "");
+                            break;
+                        case "Error":
+                            this.writeLine(
+                                `<span style='color:red'>${e.message}</span>`
+                            );
+                            break;
+                        case "Warning":
+                            this.writeLine(
+                                `<span style='color:#da7903'>${e.message}</span>`
+                            );
+                            break;
+                    }
                 } else {
                     this.writeLine(e.message || "");
                 }
@@ -62,9 +79,13 @@ export default class ProgressBox extends React.Component<
     }
 
     public write(htmlToAdd: string) {
+        const newProgress = this.state.progress + htmlToAdd;
         this.setState({
-            progress: this.state.progress + htmlToAdd
+            progress: newProgress
         });
+        if (this.props.notifyProgressChange) {
+            this.props.notifyProgressChange(newProgress);
+        }
     }
     public writeLine(htmlToAdd: string) {
         this.write(htmlToAdd + "<br/>");
@@ -89,6 +110,7 @@ export default class ProgressBox extends React.Component<
     public render() {
         return (
             <div
+                className="progress-box"
                 id={this.props.progressBoxId || ""}
                 dangerouslySetInnerHTML={{ __html: this.state.progress }}
             />

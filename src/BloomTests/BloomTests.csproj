@@ -262,6 +262,8 @@
     <Compile Include="CLI\CreateArtifactsCommandTests.cs" />
     <Compile Include="TeamCollection\FolderTeamCollectionTests.cs" />
     <Compile Include="TeamCollection\FolderTeamCollectionTests2.cs" />
+    <Compile Include="TeamCollection\ProgressLoggerTests.cs" />
+    <Compile Include="TeamCollection\ProgressSpy.cs" />
     <Compile Include="TeamCollection\TeamCollectionTests.cs" />
     <Compile Include="TeamCollection\TestFolderTeamCollection.cs" />
     <Compile Include="Edit\MakeActivityTests.cs" />
