@@ -39,6 +39,7 @@ namespace Bloom.Api
 
 		public string LocalPathWithoutQuery { get; set; }
 
+		public string RequestContentType { get; }
 		public string ContentType { private get; set; }
 
 		/// <summary>

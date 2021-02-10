@@ -33,13 +33,23 @@ using ThreadState = System.Threading.ThreadState;
 
 namespace Bloom.Api
 {
+	// This interface allows the unit tests to mock the BloomServer
+	// when it doesn't want to spin up a real one.
+	public interface IBloomServer
+	{
+		void RegisterThreadBlocking();
+		void RegisterThreadUnblocked();
+
+		// ENHANCE: Add other methods as needed
+	}
+
 	/// <summary>
 	/// A local http server that can serve (low-res) images plus other files.
 	/// </summary>
 	/// <remarks>geckofx makes concurrent requests of URLs which this class handles. This means
 	/// that the methods of this class get called on different threads, so it has to be
 	/// thread-safe.</remarks>
-	public class BloomServer : IDisposable
+	public class BloomServer : IBloomServer, IDisposable
 	{
 		public static int portForHttp;
 
@@ -1372,7 +1382,7 @@ namespace Bloom.Api
 		/// is called by a BloomServer worker thread. The caller need not guarantee that
 		/// the current thread is a server thread. This method will check for that.
 		/// </summary>
-		internal void RegisterThreadBlocking()
+		public void RegisterThreadBlocking()
 		{
 			// Check if the current thread looks like a Server Worker
 			// If not, we can just ignore this request.
@@ -1388,7 +1398,7 @@ namespace Bloom.Api
 		/// Registers that the current thread is no longer blocked.
 		/// Should be called as a pair with RegisterThreadBlocking(), after any blocking work returns.
 		/// </summary>
-		internal void RegisterThreadUnblocked()
+		public void RegisterThreadUnblocked()
 		{
 			// Check if the current thread looks like a Server Worker
 			// If not, we can just ignore this request.
