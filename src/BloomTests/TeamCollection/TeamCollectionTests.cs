@@ -25,6 +25,7 @@ namespace BloomTests.TeamCollection
 		private string _originalUser;
 		private string _checkMeOutOriginalChecksum;
 		private List<string> _syncMessages;
+		private ProgressSpy _progressSpy;
 
 		[OneTimeSetUp]
 		public void OneTimeSetup()
@@ -134,8 +135,10 @@ namespace BloomTests.TeamCollection
 			statusFilePath = _collection.GetStatusFilePath("copy status", _collectionFolder.FolderPath);
 			RobustFile.Delete(statusFilePath);
 
+			_progressSpy = new ProgressSpy();
+
 			// sut for much of suite!
-			_syncMessages = _collection.SyncAtStartup();
+			_syncMessages = _collection.SyncAtStartup(_progressSpy);
 		}
 
 		[OneTimeTearDown]
@@ -154,6 +157,9 @@ namespace BloomTests.TeamCollection
 		public void SyntAtStartup_ProducesNoUnexpectedMessages()
 		{
 			Assert.That(_syncMessages, Has.Count.EqualTo(2), "Unexpected number of error messages produced. Did you mean to add one?");
+			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(2), "Unexpected number of progress warnings produced. Did you mean to add one?");
+			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(0), "Unexpected number of progress errors produced.");
+			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(5), "Unexpected number of progress messages produced. Did you mean to add one?");
 		}
 		[Test]
 		public void SyncAtStartup_BookNeedsNothingDone_Survives()
@@ -174,12 +180,14 @@ namespace BloomTests.TeamCollection
 			AssertLocalContent("Rename local1", "This is a new book created independently");
 			AssertLocalContent("Rename local", "This content is on the server");
 			Assert.That(_collection.GetLocalStatus("Rename local").lockedBy, Is.EqualTo("fred@somewhere.org"));
+			Assert.That(_progressSpy.ProgressMessages, Contains.Item("Renaming the local book 'Rename local' because there is a new one with the same name from the Team Collection"));
 		}
 
 		[Test]
 		public void SyncAtStartup_BookDeletedRemotely_GetsDeletedLocally()
 		{
 			Assert.That(Directory.Exists(Path.Combine(_collectionFolder.FolderPath, "Should be deleted")), Is.False);
+			Assert.That(_progressSpy.ProgressMessages, Contains.Item("Deleting 'Should be deleted' from local folder as it is no longer in the Team Collection"));
 		}
 
 		[Test]
@@ -200,6 +208,7 @@ namespace BloomTests.TeamCollection
 		public void SyncAtStartup_BookCreatedRemotely_CopiedLocal()
 		{
 			AssertLocalContent("Add me", "Fetch to local");
+			Assert.That(_progressSpy.ProgressMessages, Contains.Item("Fetching a new book 'Add me' from the Team Collection"));
 		}
 
 		[Test]
@@ -213,6 +222,7 @@ namespace BloomTests.TeamCollection
 		{
 			AssertLocalContent("Update and checkout", "This content is on the server");
 			Assert.That(_collection.GetLocalStatus("Update and checkout").lockedBy, Is.EqualTo(Bloom.TeamCollection.TeamCollectionManager.CurrentUser));
+			Assert.That(_progressSpy.ProgressMessages, Contains.Item("Updating 'Update and checkout' to match the Team Collection"));
 		}
 
 		[Test]
@@ -220,7 +230,9 @@ namespace BloomTests.TeamCollection
 		{
 			AssertLocalContent("Update content and status and warn", "This simulates new content on server");
 			Assert.That(_collection.GetLocalStatus("Update content and status and warn").lockedBy, Is.EqualTo("fred@somewhere.org"));
-			Assert.That(_syncMessages, Contains.Item("The book 'Update content and status and warn' was modified in the collection. Your changes are saved to Lost-and-found."));
+			var expectedWarning = "The book 'Update content and status and warn', which you have checked out and edited, was modified in the team collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.";
+			Assert.That(_syncMessages, Contains.Item(expectedWarning));
+			Assert.That(_progressSpy.Warnings, Contains.Item(expectedWarning));
 			AssertLostAndFound("Update content and status and warn");
 		}
 
@@ -229,7 +241,9 @@ namespace BloomTests.TeamCollection
 		{
 			AssertLocalContent("Update content and status and warn2", "This simulates new content on server");
 			Assert.That(_collection.GetLocalStatus("Update content and status and warn2").lockedBy, Is.EqualTo("fred@somewhere.org"));
-			Assert.That(_syncMessages, Contains.Item("The book 'Update content and status and warn2' is checked out to someone else. Your changes are saved to Lost-and-found."));
+			var expectedWarning = "The book 'Update content and status and warn2', which you have checked out and edited, is checked out to someone else in the team collection. Your changes have been overwritten, but are saved to Lost-and-found.";
+			Assert.That(_syncMessages, Contains.Item(expectedWarning));
+			Assert.That(_progressSpy.Warnings, Contains.Item(expectedWarning));
 			AssertLostAndFound("Update content and status and warn2");
 		}
 
@@ -272,6 +286,7 @@ namespace BloomTests.TeamCollection
 			var updateMeBookPath = Path.Combine(updateMePath, "Update me.htm");
 			Assert.That(File.Exists(updateMeBookPath));
 			Assert.That(File.ReadAllText(updateMeBookPath, Encoding.UTF8), Contains.Substring("Needs to be become this locally"));
+			Assert.That(_progressSpy.ProgressMessages, Contains.Item("Updating 'Update me' to match the Team Collection"));
 		}
 
 		void MakeBook(string name, string content, bool toRepo=true, bool onlyRepo = false)
