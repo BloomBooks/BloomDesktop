@@ -98,8 +98,19 @@ namespace Bloom.web.controllers
 			_bookSelection = bookSelection;
 		}
 
+		void HandleShowDialog(ApiRequest request)
+		{
+			var requestData = DynamicJson.Parse(request.RequiredPostJson());
+			ShowProblemDialog(null, null, requestData.message,"user",requestData.shortMessage);
+			request.PostSucceeded();
+		}
+
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
-		{			
+		{
+			// This one is an exception: it's not used BY the problem report dialog, but to launch one
+			// from Javascript. However, it also must not require the lock, because if it holds it,
+			// no calls that need it can run (such as one put forth by the Cancel button).
+			apiHandler.RegisterEndpointHandler("problemReport/showDialog", HandleShowDialog, true, false);
 			// For the paranoid - We could also have showProblemReport block these handlers while _reportInfo is being populated.
 			// I think it's unnecessary since the problem report dialog's URL isn't even set until after the _reportInfo is populated,
 			// and we assume that nothing sends problemReport API requests except the problemReportDialog that this class loads.

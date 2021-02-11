@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using Bloom.Api;
@@ -18,6 +19,8 @@ namespace Bloom.MiscUI
 		private Action _whenClosed;
 
 		public static BrowserDialog CurrentDialog;
+
+		private static List<BrowserDialog> _activeDialogs = new List<BrowserDialog>();
 		public IBloomWebSocketServer WebSocketServer { get; set; }
 		private const string kWebsocketContext = "dialog";
 
@@ -49,7 +52,7 @@ namespace Bloom.MiscUI
 
 					try
 					{
-						CurrentDialog.Close();
+						CurrentDialog.Invoke((Action) (() => CurrentDialog.Close()));
 					}
 					catch (Exception ex)
 					{
@@ -58,8 +61,6 @@ namespace Bloom.MiscUI
 
 					// caller will dispose of the dialog itself.
 				}
-
-				CurrentDialog = null;
 			}
 		}
 
@@ -108,6 +109,7 @@ namespace Bloom.MiscUI
 			_browser.Navigate(url, false);
 			_browser.Focus();
 			CurrentDialog = this;
+			_activeDialogs.Add(this);
 		}
 
 		private void BrowserDialog_FormClosing(object sender, FormClosingEventArgs e)
@@ -116,6 +118,17 @@ namespace Bloom.MiscUI
 			{
 				e.Cancel = true;
 				WebSocketServer.SendString(kWebsocketContext, "close", CloseMessage);
+				return;
+			}
+
+			_activeDialogs.Remove(this);
+			if (_activeDialogs.Count > 0)
+			{
+				CurrentDialog = _activeDialogs[_activeDialogs.Count - 1];
+			}
+			else
+			{
+				CurrentDialog = null;
 			}
 		}
 	}

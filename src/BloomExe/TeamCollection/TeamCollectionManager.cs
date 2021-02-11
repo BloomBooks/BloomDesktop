@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using Bloom.Api;
 
 namespace Bloom.TeamCollection
 {
@@ -16,11 +17,13 @@ namespace Bloom.TeamCollection
 	/// </summary>
 	public class TeamCollectionManager: IDisposable
 	{
+		private readonly BloomWebSocketServer _webSocketServer;
 		public TeamCollection CurrentCollection { get; private set; }
 		private string _localCollectionFolder;
 
-		public TeamCollectionManager(string localCollectionPath)
+		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer)
 		{
+			_webSocketServer = webSocketServer;
 			_localCollectionFolder = Path.GetDirectoryName(localCollectionPath);
 			var sharedSettingsPath = Path.Combine(_localCollectionFolder, TeamCollectionSettingsFileName);
 			if (File.Exists(sharedSettingsPath))
@@ -34,6 +37,7 @@ namespace Bloom.TeamCollection
 					if (Directory.Exists(sharedFolderPath))
 					{
 						CurrentCollection = new FolderTeamCollection(_localCollectionFolder, sharedFolderPath);
+						CurrentCollection.SocketServer = SocketServer;
 						// Later, we will sync everything else, but we want the current collection settings before
 						// we create the CollectionSettings object.
 						CurrentCollection.CopySharedCollectionFilesToLocal(_localCollectionFolder);
@@ -49,6 +53,8 @@ namespace Bloom.TeamCollection
 				}
 			}
 		}
+
+		public BloomWebSocketServer SocketServer => _webSocketServer;
 
 		public void ConnectToTeamCollection(string sharedFolderPath)
 		{

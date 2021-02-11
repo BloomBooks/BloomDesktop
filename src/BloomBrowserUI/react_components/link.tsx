@@ -7,6 +7,14 @@ interface ILinkProps extends ILocalizationProps {
     id?: string;
     href?: string;
     onClick?: any; // overrides following any href.
+    color?:
+        | "initial"
+        | "inherit"
+        | "primary"
+        | "secondary"
+        | "textPrimary"
+        | "textSecondary"
+        | "error";
 }
 
 // A link element that is localizable.
@@ -16,6 +24,7 @@ export class Link extends LocalizableElement<ILinkProps, {}> {
         return (<MUI.Link
                 className={this.props.className}
                 id={"" + this.props.id}
+                color={this.props.color}
                 // href must be defined in order to maintain normal link UI
                 // I tried to do like the 'id' attribute above, but it caused an error.
                 href={this.props.href ? this.props.href : ""}
