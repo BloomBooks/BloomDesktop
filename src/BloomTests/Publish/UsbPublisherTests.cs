@@ -63,8 +63,9 @@ namespace BloomTests.Publish
 			// Unfortunately, using the MockUsbPublisher to throw our Disk Full exception in SendBookDoWork also
 			// means we aren't testing the code that figures out the size of the book. At least it's predictable!
 			const string message =
-				"<span style='color:red'>The device reported that it does not have enough space for this book. The book is of unknown MB.</span>";
+				"The device reported that it does not have enough space for this book. The book is of unknown MB.";
 			Assert.AreEqual(message, spy.Events.First().Value.Item1);
+			Assert.That(spy.Events.First().Value.Item3, Is.EqualTo(MessageKind.Error));
 		}
 
 		[Test]
@@ -85,8 +86,9 @@ namespace BloomTests.Publish
 			// Unfortunately, using the MockUsbPublisher to throw our exception in SendBookDoWork also
 			// means we aren't testing the code that figures out the size of the book. At least it's predictable!
 			const string message =
-				"<span style='color:red'>The device reported that it does not have enough space for this book. The book is of unknown MB.</span>";
+				"The device reported that it does not have enough space for this book. The book is of unknown MB.";
 			Assert.AreEqual(message, spy.Events.First().Value.Item1);
+			Assert.That(spy.Events.First().Value.Item3, Is.EqualTo(MessageKind.Error));
 		}
 
 		[Test]

@@ -12,7 +12,7 @@ namespace BloomTests.web
 	internal class WebSocketServerSpy: IBloomWebSocketServer
 	{
 		private bool _isInitialized;
-		private List<KeyValuePair<string, Tuple<string, string>>> _events;
+		private List<KeyValuePair<string, Tuple<string, string, MessageKind>>> _events;
 
 		public WebSocketServerSpy()
 		{
@@ -24,21 +24,23 @@ namespace BloomTests.web
 			if (!_isInitialized)
 				throw new ApplicationException("WebSocketServerSpy: Send() attempted when not initialized!");
 
-			_events.Add(new KeyValuePair<string, Tuple<string, string>>(eventId, 
-				new Tuple<string, string>(message, clientContext)));
+			_events.Add(new KeyValuePair<string, Tuple<string, string, MessageKind>>(eventId, 
+				Tuple.Create(message, clientContext, MessageKind.Progress)));
 		}
 		public void SendBundle(string clientContext, string eventId, dynamic messageBundle)
 		{
-			_events.Add(new KeyValuePair<string, Tuple<string, string>>(eventId,
-				new Tuple<string, string>(messageBundle.message, clientContext)));
+			MessageKind kind;
+			MessageKind.TryParse(messageBundle.kind as string, out kind);
+			_events.Add(new KeyValuePair<string, Tuple<string, string,MessageKind>>(eventId,
+				Tuple.Create(messageBundle.message as string, clientContext, kind)));
 		}
 		public void Init(string dummy)
 		{
 			_isInitialized = true;
-			_events = new List<KeyValuePair<string, Tuple<string, string>>>();
+			_events = new List<KeyValuePair<string, Tuple<string, string, MessageKind>>>();
 		}
 
-		public List<KeyValuePair<string, Tuple<string, string>>> Events
+		public List<KeyValuePair<string, Tuple<string, string, MessageKind>>> Events
 		{
 			get
 			{
