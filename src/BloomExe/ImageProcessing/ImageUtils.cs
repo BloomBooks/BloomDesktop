@@ -53,6 +53,10 @@ namespace Bloom.ImageProcessing
 			if (ImageFormat.Jpeg.Guid == imageInfo.Image.RawFormat.Guid)
 				return true;
 
+			var currentPath = imageInfo.GetCurrentFilePath();
+			if (!String.IsNullOrEmpty(currentPath) && HasJpegExtension(currentPath))
+				return true;    // it must have been saved as a JPEG file even though loaded as something else
+
 			if (String.IsNullOrEmpty(imageInfo.FileName))
 				return false;
 
@@ -69,6 +73,9 @@ namespace Bloom.ImageProcessing
 				return false;
 			if (ImageFormat.Png.Guid == imageInfo.Image.RawFormat.Guid)
 				return true;
+			var currentPath = imageInfo.GetCurrentFilePath();
+			if (!String.IsNullOrEmpty(currentPath) && Path.GetExtension(currentPath).ToLowerInvariant() == ".png")
+				return true;	// it must have been saved as a PNG file even though loaded as something else
 			if (String.IsNullOrEmpty(imageInfo.FileName))
 				return false;
 			return Path.GetExtension(imageInfo.FileName).ToLowerInvariant() == ".png";

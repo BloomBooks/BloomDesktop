@@ -1248,7 +1248,7 @@ namespace Bloom.Edit
 			}
 			catch
 			{
-				// We tried and failed...
+				// We tried and failed... (could be BMP or TIFF file)
 				return false;
 			}
 		}
