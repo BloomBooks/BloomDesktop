@@ -18,15 +18,27 @@ namespace BloomTests.ImageProcessing
 		[Test]
 		public void ShouldChangeFormatToJpeg_Photo_True()
 		{
-			var path = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "man.jpg");
-			Assert.IsTrue(ImageUtils.ShouldChangeFormatToJpeg(ImageUtils.GetImageFromFile(path)));
+			var path = FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "man.png");
+			string jpegPath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName() + ".jpg");
+			try
+			{
+				Assert.IsTrue(ImageUtils.TryChangeFormatToJpegIfHelpful(PalasoImage.FromFile(path), jpegPath));
+				Assert.IsTrue(File.Exists(jpegPath));
+			}
+			finally
+			{
+				if (File.Exists(jpegPath))
+					File.Delete(jpegPath);
+			}
 		}
 
 		[Test]
 		public void ShouldChangeFormatToJpeg_OneColor_False()
 		{
-			var path = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "bird.png");
-			Assert.IsFalse(ImageUtils.ShouldChangeFormatToJpeg(ImageUtils.GetImageFromFile(path)));
+			var path = FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "bird.png");
+			string jpegPath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName() + ".jpg");
+			Assert.IsFalse(ImageUtils.TryChangeFormatToJpegIfHelpful(PalasoImage.FromFile(path), jpegPath));
+			Assert.IsFalse(File.Exists(jpegPath));
 		}
 
 		[Test]
