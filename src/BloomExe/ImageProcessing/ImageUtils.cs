@@ -53,11 +53,32 @@ namespace Bloom.ImageProcessing
 			if (ImageFormat.Jpeg.Guid == imageInfo.Image.RawFormat.Guid)
 				return true;
 
-			if (String.IsNullOrEmpty(imageInfo.FileName))
-				return false;
+			// If it's been saved with a current path assigned, it may have been saved as a JPEG file,
+			// and the caller will be using the current file, not the in-memory Image.
+			var currentPath = imageInfo.GetCurrentFilePath();
+			if (!String.IsNullOrEmpty(currentPath))
+				return IsJpegFile(currentPath);
 
-			return HasJpegExtension(imageInfo.FileName);
+			// Don't trust the filename extension if the RawFormat and current file don't tell us.
+			return false;
 		}
+
+		private static bool IsJpegFile(string path)
+		{
+			if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
+				return false;
+			byte[] bytes = new byte[10];
+			using (var file = System.IO.File.OpenRead(path))
+			{
+				file.Read(bytes, 0, 10);
+			}
+			// see https://www.sparkhound.com/blog/detect-image-file-types-through-byte-arrays
+			var jpeg = new byte[] { 255, 216, 255, 224 }; // jpeg
+			var jpeg2 = new byte[] { 255, 216, 255, 225 }; // jpeg canon
+
+			return jpeg.SequenceEqual(bytes.Take(jpeg.Length)) || jpeg2.SequenceEqual(bytes.Take(jpeg2.Length));
+		}
+
 		public static bool HasJpegExtension(string filename)
 		{
 			return new[] { ".jpg", ".jpeg" }.Contains(Path.GetExtension(filename)?.ToLowerInvariant());
@@ -69,9 +90,30 @@ namespace Bloom.ImageProcessing
 				return false;
 			if (ImageFormat.Png.Guid == imageInfo.Image.RawFormat.Guid)
 				return true;
-			if (String.IsNullOrEmpty(imageInfo.FileName))
+
+			// If it's been saved with a current path assigned, it may have been saved as a PNG file,
+			// and the caller will be using the current file, not the in-memory Image.
+			var currentPath = imageInfo.GetCurrentFilePath();
+			if (!String.IsNullOrEmpty(currentPath))
+				return IsPngFile(currentPath);
+
+			// Don't trust the original filename extension if the RawFormat and current file don't tell us.
+			return false;
+		}
+
+		private static bool IsPngFile(string path)
+		{
+			if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
 				return false;
-			return Path.GetExtension(imageInfo.FileName).ToLowerInvariant() == ".png";
+			byte[] bytes = new byte[10];
+			using (var file = System.IO.File.OpenRead(path))
+			{
+				file.Read(bytes, 0, 10);
+			}
+			// see https://www.sparkhound.com/blog/detect-image-file-types-through-byte-arrays
+			var png = new byte[] { 137, 80, 78, 71 };    // PNG
+
+			return png.SequenceEqual(bytes.Take(png.Length));
 		}
 
 		/// <summary>
