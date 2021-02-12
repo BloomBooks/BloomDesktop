@@ -56,6 +56,8 @@ namespace Bloom.Book
 		private readonly BookData _bookData;
 		public const string ReadMeImagesFolderName = "ReadMeImages";
 
+		int _duplicateAudioIdsFixed;
+
 		//for moq'ing only; parameterless ctor required by Moq
 		public Book()
 		{
@@ -835,7 +837,10 @@ namespace Bloom.Book
 			if (bookDOM != OurHtmlDom)
 				return;
 			var idSet = new HashSet<string>();
-			var duplicateAudioIdsFixed = 0;
+			_duplicateAudioIdsFixed = 0;
+			var xmatterIds = new Dictionary<string, Tuple<string, string>>();   // id => {data-book,lang}
+			var fixedXmatter = new Dictionary<Tuple<string, string, string>, string>(); // {id,data-book,lang} => new id
+			FixDuplicateAudioIdsInDataDiv(bookDOM, idSet, xmatterIds, fixedXmatter);
 			foreach (var contentPage in bookDOM.GetPageElements())
 			{
 				var nodeList = HtmlDom.SelectChildNarrationAudioElements(contentPage, true);
@@ -849,41 +854,124 @@ namespace Bloom.Book
 						continue;
 					if (HtmlDom.IsNodePartOfDataBookOrDataCollection(node))
 					{
-						// Title and author audio ids are duplicated in xmatter.
-						// But it's still an error if one of those is duplicated elsewhere.
-						idSet.Add(id);
+						FixAnyDuplicateAudioIdsFoundInXMatter(node, id, idSet, xmatterIds, fixedXmatter);
 						continue;
 					}
 					var isNewlyAdded = idSet.Add(id);
 					if (!isNewlyAdded)
 					{
 						// Uh-oh. That means an element like this already exists!?
-						// Create a new id value, and copy the audio file if it exists.
-						var newId = Guid.NewGuid().ToString();
-						if (Char.IsDigit(newId[0]))
-							newId = "i" + newId;
-						node.Attributes["id"].Value = newId;
-						if (!String.IsNullOrEmpty(FolderPath))
-						{
-							var oldAudioPath = Path.Combine(FolderPath, "audio", id + ".mp3");
-							if (RobustFile.Exists(oldAudioPath))
-							{
-								var newAudioPath = Path.Combine(FolderPath, "audio", newId + ".mp3");
-								RobustFile.Copy(oldAudioPath, newAudioPath);
-							}
-						}
-						++duplicateAudioIdsFixed;
-						var msg = $"Duplicate GUID {id} on recordable with text \"{node.InnerText}\" changed to {newId}.";
-						Logger.WriteEvent(msg);
+						FixDuplicateAudioId(node, id);
 					}
 				}
 			}
-			if (duplicateAudioIdsFixed > 0)
+			if (_duplicateAudioIdsFixed > 0)
 			{
 				// Inform user of need to rerecord audio.
-				var shortMsg = String.Format("Bloom fixed {0} duplicated audio id values.  You need to check the audio in this book and may need to record some pages again.", duplicateAudioIdsFixed);
+				var shortMsg = "Bloom had to clean up some problematic audio information in this book. As a result, you need to review all your audio in the Talking Book Tool. You may need to record some text again.";
 				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, shortMsg, null, null, false, true);
 			}
+		}
+
+		/// <summary>
+		/// Go through the #bloomDataDiv looking for duplicate audio ids.  If any are found, fix them
+		/// and record the fix.  The information for audio ids is recorded in three ways.
+		/// 1. idSet - hash set used to establish whether ids are unique.
+		/// 2. xmatterIds - dictionary mapping from the id to the data-book and lang attribute values,
+		///    used to check whether the id defined in the data div is used properly in the xmatter
+		/// 3. fixedXmatter - dictionary mapping from the old id, data-book, and lang to the new id,
+		///    used to fix xmatter errors the same as data-div errors.
+		/// </summary>
+		private void FixDuplicateAudioIdsInDataDiv(HtmlDom bookDOM,
+			HashSet<string> idSet,
+			Dictionary<string, Tuple<string, string>> xmatterIds,
+			Dictionary<Tuple<string, string, string>, string> fixedXmatter)
+		{
+			var dataDiv = bookDOM.SelectSingleNode("//div[@id='bloomDataDiv']");
+			if (dataDiv == null)
+				return;		// shouldn't happen, but paranoia sometimes pays off, especially in running tests.
+			var nodes = dataDiv.SafeSelectNodes("(.//div|.//span)[@id and contains(@class,'audio-sentence')]").Cast<XmlNode>().ToList();
+			foreach (var audioElement in nodes)
+			{
+				var div = audioElement.SelectSingleNode("./ancestor-or-self::div[@data-book and @lang]");
+				if (div != null)
+				{
+					var id = (audioElement as XmlElement).GetOptionalStringAttribute("id", null);
+					if (id != null)
+					{
+						idSet.Add(id);
+						var dataBook = (div as XmlElement).GetStringAttribute("data-book");
+						var lang = (div as XmlElement).GetStringAttribute("lang");
+						var checkValue = new Tuple<string, string>(dataBook, lang);
+						if (xmatterIds.ContainsKey(id))
+						{
+							// Audio ids used in xmatter are duplicated between the xmatter and
+							// the data div, but should have matching data-book and lang attribute
+							// values associated with the audio.
+							var newId = FixDuplicateAudioId(audioElement, id);
+							if (xmatterIds[id] == checkValue)
+							{
+								// This is a duplicate we can't fix in xMatter later due to insufficient information.
+								// But, it will get fixed the next time xMatter is rebuilt.
+								continue;
+							}
+							xmatterIds.Add(newId, checkValue);
+							var fixValue = new Tuple<string, string, string>(id, dataBook, lang);
+							fixedXmatter[fixValue] = newId;
+						}
+						else
+						{
+							xmatterIds.Add(id, checkValue);
+						}
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// If the node (which is known to be in xMatter) contains any duplicate audio ids, fix them.
+		/// </summary>
+		private void FixAnyDuplicateAudioIdsFoundInXMatter(XmlNode node, string id,
+			HashSet<string> idSet,
+			Dictionary<string, Tuple<string, string>> xmatterIds,
+			Dictionary<Tuple<string, string, string>, string> fixedXmatter)
+		{
+			idSet.Add(id);		// just in case...
+			var div = node.SelectSingleNode("./ancestor-or-self::div[@data-book and @lang]");
+			if (div == null)
+				return;   // not sure how to handle "data-collection" nodes, or if they need to be handled
+			var dataBook = div.GetStringAttribute("data-book");
+			var lang = div.GetStringAttribute("lang");
+			if (xmatterIds.TryGetValue(id, out Tuple<string, string> checkValue) &&
+				(checkValue.Item1 != dataBook || checkValue.Item2 != lang))
+			{
+				if (fixedXmatter.TryGetValue(new Tuple<string, string, string>(id, dataBook, lang), out string fixedId))
+					node.Attributes["id"].Value = fixedId;
+				else // This "else" shouldn't ever happen since the xmatter is recreated every time we open the book.
+					FixDuplicateAudioId(node, id);
+			}
+		}
+
+		private string FixDuplicateAudioId(XmlNode node, string id)
+		{
+			// Create a new id value, and copy the audio file if it exists.
+			var newId = Guid.NewGuid().ToString();
+			if (Char.IsDigit(newId[0]))
+				newId = "i" + newId;
+			node.Attributes["id"].Value = newId;
+			if (!String.IsNullOrEmpty(FolderPath))
+			{
+				var oldAudioPath = Path.Combine(FolderPath, "audio", id + ".mp3");
+				if (RobustFile.Exists(oldAudioPath))
+				{
+					var newAudioPath = Path.Combine(FolderPath, "audio", newId + ".mp3");
+					RobustFile.Copy(oldAudioPath, newAudioPath);
+				}
+			}
+			++_duplicateAudioIdsFixed;
+			var msg = $"Duplicate GUID {id} on recordable with text \"{node.InnerText.Trim()}\" changed to {newId}.";
+			Logger.WriteEvent(msg);
+			return newId;
 		}
 
 		class GuidAndPath

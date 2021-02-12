@@ -1857,6 +1857,17 @@ namespace BloomTests.Book
 				"//span[contains(@class,'audio-sentence') and @id='i4d78a211-e1cc-483c-8b54-4256967e683f']", 1);	// fixed!
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
 				"//span[contains(@class,'audio-sentence') and @id='ddcbbf14-445e-4bfa-ad0a-94a9223dff3d']", 1);		// fixed!
+
+			// Check that all the audio ids outside the data-div are unique.
+			var audioNodes = book.RawDom.SafeSelectNodes(
+				"(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]").Cast<XmlNode>().ToList();
+			HashSet<string> uniqueIds = new HashSet<string>();
+			foreach (var node in audioNodes)
+			{
+				var id = node.GetStringAttribute("id");
+				uniqueIds.Add(id);
+			}
+			Assert.That(audioNodes.Count, Is.EqualTo(uniqueIds.Count + 1));	// NB: bookTitle occurs twice
 		}
 
 		[Test]
@@ -1957,9 +1968,9 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
 				"//div[contains(@class,'audio-sentence') and @id='i07d27e74-f55e-4adf-b09e-16c3aae93789']", 2); // smallCoverCredits
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
-				"//div[contains(@class,'audio-sentence') and @id='i07d27e74-f55e-4adf-b09e-16c3aae93789']", 2); // funding
+				"//div[contains(@class,'audio-sentence') and @id='i1010a3ba-2abe-4a1b-a945-74b5cfbe0130']", 2); // funding
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
-				"//div[contains(@class,'audio-sentence') and @id='i07d27e74-f55e-4adf-b09e-16c3aae93789']", 2); // outsideBackCover
+				"//div[contains(@class,'audio-sentence') and @id='i98cce2ab-2618-43b2-b9b6-6437eb134501']", 2); // outsideBackCover
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
 				"//div[contains(@class,'audio-sentence') and @id='i8a56eaf1-f6ff-46c1-b973-c1a82360f40b']", 2); // ERROR!
 
@@ -1973,12 +1984,24 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
 				"//div[contains(@class,'audio-sentence') and @id='i07d27e74-f55e-4adf-b09e-16c3aae93789']", 2); // smallCoverCredits (same)
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
-				"//div[contains(@class,'audio-sentence') and @id='i07d27e74-f55e-4adf-b09e-16c3aae93789']", 2); // funding (same)
+				"//div[contains(@class,'audio-sentence') and @id='i1010a3ba-2abe-4a1b-a945-74b5cfbe0130']", 2); // funding (same)
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
-				"//div[contains(@class,'audio-sentence') and @id='i07d27e74-f55e-4adf-b09e-16c3aae93789']", 2); // outsideBackCover (same)
+				"//div[contains(@class,'audio-sentence') and @id='i98cce2ab-2618-43b2-b9b6-6437eb134501']", 2); // outsideBackCover (same)
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
 				"//div[contains(@class,'audio-sentence') and @id='i8a56eaf1-f6ff-46c1-b973-c1a82360f40b']", 1); // fixed!
+
+			// Check that all the audio ids outside the data-div are unique.
+			var audioNodes = book.RawDom.SafeSelectNodes(
+				"(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]").Cast<XmlNode>().ToList();
+			HashSet<string> uniqueIds = new HashSet<string>();
+			foreach (var node in audioNodes)
+			{
+				var id = node.GetStringAttribute("id");
+				uniqueIds.Add(id);
+			}
+			Assert.That(audioNodes.Count, Is.EqualTo(uniqueIds.Count + 1));	// NB: bookTitle occurs twice
 		}
+
 		[Test]
 		public void BringBookUpToDate_FixesDuplicateAudioIds_ManyDuplicates()
 		{
@@ -2138,6 +2161,171 @@ namespace BloomTests.Book
 				"//div[contains(@class,'audio-sentence') and @id!='']", 9);	// unchanged
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
 				"//div[contains(@class,'audio-sentence') and @id='i90ccd522-5d20-4ff7-b9b3-b32a83f2abeb']", 1); // fixed!
+
+			// Check that all the audio ids outside the data-div are unique.
+			var audioNodes = book.RawDom.SafeSelectNodes(
+				"(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]").Cast<XmlNode>().ToList();
+			HashSet<string> uniqueIds = new HashSet<string>();
+			foreach (var node in audioNodes)
+			{
+				var id = node.GetStringAttribute("id");
+				uniqueIds.Add(id);
+			}
+			Assert.That(audioNodes.Count, Is.EqualTo(uniqueIds.Count));
+		}
+
+		[Test]
+		public void BringBookUpToDate_FixesDuplicateAudioIds_DataDivProblems()
+		{
+			_bookDom = new HtmlDom(@"<html>
+  <head>
+    <meta charset='UTF-8'></meta>
+  </head>
+  <body>
+    <div id='bloomDataDiv'>
+      <div data-book='bookTitle' lang='en'>
+        <p><span id='i9af373c9-2959-43ee-b42b-93b958432bdb' class='audio-sentence'>A Book</span></p>
+      </div>
+      <div data-book='originalContributions' lang='en'>
+        <p><span id='ef8243d2-f98e-4a96-993d-8152069516e6' class='audio-sentence'>Images by Stephen McConnel, © 2011 Steve McConnel.</span>
+        <span id='da7f2387-28f5-4a43-a447-235850d6eaf6' class='audio-sentence'>CC BY-SA 1.0.</span></p>
+      </div>
+      <div data-book='smallCoverCredits' lang='en'>
+        <p><span id='i12cd55e7-8292-4c12-92ed-7616da631d0b' class='audio-sentence'>Stephen McConnel</span></p>
+      </div>
+      <div data-book='funding' lang='en' data-audiorecordingmode='Sentence'>
+        <p><span id='i256a477b-1dcb-4492-92fe-b0d82065a03c' class='audio-sentence'>thanks, everyone</span></p>
+        <p><span id='i082e977b-adca-4310-8841-1a78b0f44cbd' class='audio-sentence'>nobody paid for this!</span></p>
+      </div>
+      <div data-book='versionAcknowledgments' lang='en' data-audiorecordingmode='Sentence'>
+        <p><span id='i082e977b-adca-4310-8841-1a78b0f44cbd' class='audio-sentence'>nobody paid for this!</span></p>
+      </div>
+      <div data-book='originalAcknowledgments' lang='en' data-audiorecordingmode='Sentence'>
+        <p><span id='i256a477b-1dcb-4492-92fe-b0d82065a03c' class='audio-sentence'>thanks, everyone</span></p>
+      </div>
+    </div>
+    <div class=""bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover A5Portrait side-right"" data-page=""required singleton"" data-export=""front-matter-cover"" data-xmatter-page=""frontCover"" id=""0176b5a1-a52a-4efc-b512-ff8c06e6ca79"" data-page-number="""">
+      <div class='marginBox'>
+        <div class='bloom-translationGroup bookTitle' data-default-languages='V,N1'>
+          <div class='bloom-editable Title-On-Cover-style' lang='en' data-book='bookTitle' data-audiorecordingmode='Sentence'>
+            <p><span id='i9af373c9-2959-43ee-b42b-93b958432bdb' class='audio-sentence' recordingmd5='876a79b75646878799746fa21c5c7cb0'>A Book</span></p>
+          </div>
+        </div>
+        <div class='creditsRow' data-hint='You may use this space for author/illustrator, or anything else.'>
+          <div class='bloom-translationGroup' data-default-languages='V'>
+            <div data-audiorecordingmode='Sentence' class='bloom-editable smallCoverCredits' lang='en' data-book='smallCoverCredits'>
+              <p><span id='i12cd55e7-8292-4c12-92ed-7616da631d0b' class='audio-sentence'>Stephen McConnel</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class=""bloom-page titlePage bloom-frontMatter A5Portrait side-right"" data-page=""required singleton"" data-export=""front-matter-title-page"" data-xmatter-page=""titlePage"" id=""6ab095fa-7da3-48f3-9ae4-7a7196b94ba3"" data-page-number="""" lang="""">
+      <div class='marginBox'>
+        <div class='bloom-translationGroup' data-default-languages='V,N1' id='titlePageTitleBlock'>
+          <div data-audiorecordingmode='Sentence' class='bloom-editable Title-On-Title-Page-style' data-book='bookTitle' lang='en'>
+            <p><span id='i9af373c9-2959-43ee-b42b-93b958432bdb' class='audio-sentence' recordingmd5='876a79b75646878799746fa21c5c7cb0'>A Book</span></p>
+          </div>
+        </div>
+        <div class='bloom-translationGroup' data-default-languages='N1' id='originalContributions'>
+          <div data-audiorecordingmode='Sentence' class='bloom-editable credits' data-book='originalContributions' lang='en' contenteditable='true'>
+            <p><span id='ef8243d2-f98e-4a96-993d-8152069516e6' class='audio-sentence' >Images by Stephen McConnel, © 2011 Steve McConnel.</span>
+            <span id='da7f2387-28f5-4a43-a447-235850d6eaf6' class='audio-sentence' recordingmd5='10fa17363ea15ca65374451914c74717'>CC BY-SA 1.0.</span></p>
+          </div>
+	</div>
+        <div class='bloom-translationGroup' data-default-languages='N1' id='funding'>
+          <div data-audiorecordingmode='Sentence' class='bloom-editable funding' data-book='funding' lang='en'>
+            <p><span id='i256a477b-1dcb-4492-92fe-b0d82065a03c' class='audio-sentence' recordingmd5='undefined'>thanks, everyone</span></p>
+            <p><span id='i082e977b-adca-4310-8841-1a78b0f44cbd' class='audio-sentence' recordingmd5='undefined'>nobody paid for this!</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class=""bloom-page bloom-frontMatter credits A5Portrait side-left"" data-page=""required singleton"" data-export=""front-matter-credits"" data-xmatter-page=""credits"" id=""9bc79fb7-0c92-44a3-9d57-0d7ccbbaeb45"" data-page-number="""">
+      <div class='marginBox'>
+        <div class='bloom-translationGroup versionAcknowledgments' data-default-languages='N1'>
+          <div data-audiorecordingmode='Sentence' class='bloom-editable versionAcknowledgments' data-book='versionAcknowledgments' lang='en'>
+            <p><span id='i082e977b-adca-4310-8841-1a78b0f44cbd' class='audio-sentence'>nobody paid for this!</span></p>
+          </div>
+        </div>
+        <div class='bloom-translationGroup originalAcknowledgments' data-default-languages='N1'>
+          <div data-audiorecordingmode='Sentence' class='bloom-editable Credits-Page-style' data-book='originalAcknowledgments' lang='en'>
+            <p><span id='i256a477b-1dcb-4492-92fe-b0d82065a03c' class='audio-sentence'>thanks, everyone</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""1ca77759-6b00-4100-9edd-400b7e77d235"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""1"" lang=""en"">
+      <div class=""marginBox"">
+        <div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement"">
+          <div data-languagetipcontent=""English"" aria-label=""false"" role=""textbox"" spellcheck=""true"" tabindex=""0"" style=""min-height: 24px;"" class=""bloom-editable ImageDescriptionEdit-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" lang=""en"" contenteditable=""true"">
+            <p><span id=""i9af373c9-2959-43ee-b42b-93b958432bdb"" class=""audio-sentence"">This Is A Book</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+");
+			var book = CreateBook();
+
+			// Create a couple of fake audio files to test whether they get copied/renamed.
+			BookStorageTests.MakeSampleAudioFiles(_tempFolder.Path, "i9af373c9-2959-43ee-b42b-93b958432bdb", ".mp3");
+			BookStorageTests.MakeSampleAudioFiles(_tempFolder.Path, "i256a477b-1dcb-4492-92fe-b0d82065a03c", ".mp3");
+			Assert.That(Directory.EnumerateFiles(Path.Combine(_tempFolder.Path, "audio")).Count, Is.EqualTo(2));    // 2 files created
+
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[@lang='en']/p/span[contains(@class,'audio-sentence') and @id!='']", 18);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i256a477b-1dcb-4492-92fe-b0d82065a03c']", 4); // ERROR!
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i082e977b-adca-4310-8841-1a78b0f44cbd']", 4); // ERROR!
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='ef8243d2-f98e-4a96-993d-8152069516e6']", 2); // okay
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i12cd55e7-8292-4c12-92ed-7616da631d0b']", 2); // smallCoverCredits okay
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i9af373c9-2959-43ee-b42b-93b958432bdb']", 4); // bookTitle ERROR!
+
+			book.BringBookUpToDate(new NullProgress()); // SUT
+
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[@lang='en']/p/span[contains(@class,'audio-sentence') and @id!='']", 18);     // unchanged
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i256a477b-1dcb-4492-92fe-b0d82065a03c']", 2); // fixed
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i082e977b-adca-4310-8841-1a78b0f44cbd']", 2); // fixed
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='ef8243d2-f98e-4a96-993d-8152069516e6']", 2); // still okay
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i12cd55e7-8292-4c12-92ed-7616da631d0b']", 2); // smallCoverCredits still okay
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i9af373c9-2959-43ee-b42b-93b958432bdb']", 3); // bookTitle fixed
+
+			// Check that files have been copied/renamed.
+			Assert.That(Directory.EnumerateFiles(Path.Combine(_tempFolder.Path, "audio")).Count, Is.EqualTo(4));    // 2 more files created
+
+			// Check that all the audio ids outside the data-div are unique (except bookTitle is used twice).
+			var audioNodes = book.RawDom.SafeSelectNodes(
+				"(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]").Cast<XmlNode>().ToList();
+			var uniqueIds = new HashSet<string>();
+			foreach (var node in audioNodes)
+			{
+				var id = node.GetStringAttribute("id");
+				uniqueIds.Add(id);
+			}
+			Assert.That(audioNodes.Count, Is.EqualTo(uniqueIds.Count + 1));
+
+			// Check that all the audio ids inside the data-div are unique.
+			audioNodes = book.RawDom.SafeSelectNodes(
+				"(//div[@id='bloomDataDiv']//div|//div[@id='bloomDataDiv']//span)[contains(@class,'audio-sentence') and @id]").Cast<XmlNode>().ToList();
+			uniqueIds.Clear();
+			foreach (var node in audioNodes)
+			{
+				var id = node.GetStringAttribute("id");
+				uniqueIds.Add(id);
+			}
+			Assert.That(audioNodes.Count, Is.EqualTo(uniqueIds.Count));
 		}
 
 		[Test]
