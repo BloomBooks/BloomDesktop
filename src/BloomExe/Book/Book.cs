@@ -868,7 +868,9 @@ namespace Bloom.Book
 			if (_duplicateAudioIdsFixed > 0)
 			{
 				// Inform user of need to rerecord audio.
-				var shortMsg = "Bloom had to clean up some problematic audio information in this book. As a result, you need to review all your audio in the Talking Book Tool. You may need to record some text again.";
+				var shortMsg = "There was a problem with recordings in this Talking Book, which was caused by a bug in an older version of Bloom." +
+					" We have fixed the book, but now you will need to review all of your recordings in this book to see if you need to record some text again." +
+					" We are very sorry for our mistake and the inconvenience this might cause you.";
 				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, shortMsg, null, null, false, true);
 			}
 		}
