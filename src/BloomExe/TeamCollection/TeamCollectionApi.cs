@@ -13,15 +13,17 @@ namespace Bloom.TeamCollection
 	// Review: should this be in web/controllers with all the other API classes, or here with all the other sharing code?
 	public class TeamCollectionApi
 	{
-		private TeamCollectionManager _tcManager;
-		private BookSelection _bookSelection; // configured by autofac, tells us what book is selected
+		private readonly CollectionSettings _collectionSettings;
+		private readonly TeamCollectionManager _tcManager;
+		private readonly BookSelection _bookSelection; // configured by autofac, tells us what book is selected, if any
 		private string CurrentUser => TeamCollectionManager.CurrentUser;
 
 		public static TeamCollectionApi TheOneInstance { get; private set; }
 
 		// Called by autofac, which creates the one instance and registers it with the server.
-		public TeamCollectionApi(CollectionSettings settings, BookSelection bookSelection, TeamCollectionManager tcManager)
+		public TeamCollectionApi(CollectionSettings collectionSettings, BookSelection bookSelection, TeamCollectionManager tcManager)
 		{
+			_collectionSettings = collectionSettings;
 			_tcManager = tcManager;
 			_tcManager.CurrentCollection?.SetupMonitoringBehavior();
 			_bookSelection = bookSelection;
@@ -105,8 +107,11 @@ namespace Bloom.TeamCollection
 					return;
 				}
 
-				var sharingFolder = dlg.SelectedPath;
-				Directory.CreateDirectory(sharingFolder); // may not be needed, harmless.
+				var parentFolder = dlg.SelectedPath;
+				var collectionName = _collectionSettings.CollectionName;
+				var sharingFolder = Path.Combine(parentFolder, $"{collectionName} - TC");
+				Directory.CreateDirectory(sharingFolder);
+
 				// One of the few places that knows we're using a particular implementation
 				// of TeamRepo. But we have to know that to create it. And of course the user
 				// just chose a folder to get things started.
