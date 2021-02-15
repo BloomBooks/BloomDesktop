@@ -53,6 +53,7 @@ export const TeamCollectionPanel: React.FunctionComponent = props => {
                     <Div
                         l10nKey="TeamCollection.Available"
                         className="teamCollection-heading"
+                        temporarilyDisableI18nWarning={true}
                     >
                         This book is available for editing
                     </Div>
@@ -75,6 +76,7 @@ export const TeamCollectionPanel: React.FunctionComponent = props => {
                             );
                         }}
                         className="checkout-button teamCollection-button"
+                        temporarilyDisableI18nWarning={true}
                     >
                         Check out book
                     </BloomButton>
@@ -86,6 +88,7 @@ export const TeamCollectionPanel: React.FunctionComponent = props => {
                     <Div
                         l10nKey="TeamCollection.CheckedOutToYou"
                         className="teamCollection-heading"
+                        temporarilyDisableI18nWarning={true}
                     >
                         This book is checked out to you
                     </Div>
@@ -104,6 +107,7 @@ export const TeamCollectionPanel: React.FunctionComponent = props => {
                             );
                         }}
                         className="checkout-button teamCollection-button"
+                        temporarilyDisableI18nWarning={true}
                     >
                         Check in book
                     </BloomButton>
@@ -116,6 +120,7 @@ export const TeamCollectionPanel: React.FunctionComponent = props => {
                         className="teamCollection-heading"
                         l10nKey="TeamCollection.CheckedOutToSomeone"
                         l10nParam0={lockedBy}
+                        temporarilyDisableI18nWarning={true}
                     >
                         This book is checked out to %0
                     </Div>
@@ -123,6 +128,7 @@ export const TeamCollectionPanel: React.FunctionComponent = props => {
                         l10nKey="TeamCollection.CheckedOutOn"
                         l10nParam0={lockedBy}
                         l10nParam1={lockedWhen}
+                        temporarilyDisableI18nWarning={true}
                     >
                         %0 checked this book out on %1
                     </Div>
