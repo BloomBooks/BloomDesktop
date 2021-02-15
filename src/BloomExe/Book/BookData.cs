@@ -1369,6 +1369,28 @@ namespace Bloom.Book
 													  formToCopyFromSinceOursIsMissing.WritingSystemId);
 								}
 								 */
+			if (!String.IsNullOrEmpty(s) && s.StartsWith("<") && s.EndsWith(">"))
+			{
+				// Prevent a duplicate audio id from being created.
+				try
+				{
+					XmlDocument doc = new XmlDocument();
+					doc.LoadXml("<div>" + s + "</div>");	// may be multiple paragraphs
+					var nodes = doc.SafeSelectNodes("(.//div|.//span)[@id and contains(@class,'audio-sentence')]").Cast<XmlNode>().ToList();
+					foreach (var node in nodes)
+					{
+						var newId = Guid.NewGuid().ToString();
+						if (Char.IsDigit(newId[0]))
+							newId = "i" + newId;
+						node.Attributes["id"].Value = newId;
+					}
+					s = doc.InnerXml;	// exclude the outer div we introduced
+				}
+				catch (Exception e)
+				{
+					// Ignore any errors: maybe it's not really XML after all?
+				}
+			}
 			return s;
 		}
 
