@@ -5,9 +5,11 @@ import { Div } from "../react_components/l10nComponents";
 import Link from "../react_components/link";
 import "./teamCollectionSettings.less";
 
-// A device for getting its code into the team collection module
+// A device for getting code into the team collection module
 import { ProgressDialog } from "../react_components/IndependentProgressDialog";
 export { ProgressDialog };
+import { NewTeamCollection } from "./NewTeamCollection";
+export { NewTeamCollection };
 
 // The contents of the Team Collection panel of the Settings dialog.
 // Currently based on an early mock-up, now superceded.

@@ -94,7 +94,9 @@ export default class ProgressBox extends React.Component<
     private tryScrollToBottom() {
         // Must be done AFTER painting once, so we
         // get a real current scroll height.
-        const progressDiv = document.getElementById("progress-box");
+        const progressDiv = document.getElementById(
+            "independent-progress-screen"
+        );
 
         // in my testing in FF, this worked the first time
         if (progressDiv) progressDiv.scrollTop = progressDiv.scrollHeight;

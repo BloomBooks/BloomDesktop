@@ -6,11 +6,13 @@
     </head>
 
     <body style="background-color: white">
-        <div id="progress-box"></div>
+        <div id="independent-progress-screen"></div>
         <script src="../commonBundle.js"></script>
         <script src="../teamCollectionSettingsBundle.js"></script>
         <script type="text/javascript">
-            var reactRoot = document.getElementById("progress-box");
+            var reactRoot = document.getElementById(
+                "independent-progress-screen"
+            );
             //If we could do jsx here: ReactDOM.render(<ProgressBox/>, reactRoot);
             //If we could access ReactDOM here: ReactDOM.render(React.createElement(IndependentProgressDialog, null), reactRoot);
             // But without some new webpack wizardry, this will have to do in the meantime:

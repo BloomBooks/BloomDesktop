@@ -42,7 +42,16 @@ namespace Bloom
 
 		public string SettingsPath { get; private set; }
 
-		public ProjectContext(string projectSettingsPath, IContainer parentContainer)
+		/// <summary>
+		/// Start things up so all the collection-specific objects we need can be created.
+		/// </summary>
+		/// <param name="projectSettingsPath"></param>
+		/// <param name="parentContainer"></param>
+		/// <param name="justEnoughForHtmlDialog">If true, we're aiming for the minimum init that will
+		/// let us display an HTML dialog. Currently this will be the NewTeamCollection dialog.
+		/// We need the BloomServer running (so we can make API requests, including for localization).
+		/// We can avoid a lot of other expensive stuff.</param>
+		public ProjectContext(string projectSettingsPath, IContainer parentContainer, bool justEnoughForHtmlDialog = false)
 		{
 			SettingsPath = projectSettingsPath;
 			// BL-8019: A couple lines down, BuildSubContainerForThisProject() starts BloomServer with the new project.
@@ -58,13 +67,14 @@ namespace Bloom
 
 			_scope.Resolve<CollectionSettings>().CheckAndFixDependencies(_scope.Resolve<BloomFileLocator>());
 
-			ProjectWindow = _scope.Resolve <Shell>();
+			if (!justEnoughForHtmlDialog)
+				ProjectWindow = _scope.Resolve <Shell>();
 
 			string collectionDirectory = Path.GetDirectoryName(projectSettingsPath);
 
 			//should we save a link to this in the list of collections?
 			var collectionSettings = _scope.Resolve<CollectionSettings>();
-			if(collectionSettings.IsSourceCollection)
+			if(!justEnoughForHtmlDialog && collectionSettings.IsSourceCollection)
 			{
 				AddShortCutInComputersBloomCollections(collectionDirectory);
 			}
