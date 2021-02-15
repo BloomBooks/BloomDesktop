@@ -1835,7 +1835,8 @@ namespace BloomTests.Book
 </html>");
 			var book = CreateBook();
 
-			// initial conditions with title audio id found 3 times and two content audio ids found 2 times each
+			// This has a total of seven audio-sentence spans and no audio-sentence divs.
+			// check initial conditions
 			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[contains(@class,'audio-sentence')]");
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[contains(@class,'audio-sentence') and @id!='']", 7);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
@@ -1960,6 +1961,7 @@ namespace BloomTests.Book
 </html>");
 			var book = CreateBook();
 
+			// This has a total of no audio-sentence spans and eleven audio-sentence divs.
 			// check initial conditions
 			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//span[contains(@class,'audio-sentence')]");
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'audio-sentence') and @id!='']", 11);
@@ -1999,7 +2001,7 @@ namespace BloomTests.Book
 				var id = node.GetStringAttribute("id");
 				uniqueIds.Add(id);
 			}
-			Assert.That(audioNodes.Count, Is.EqualTo(uniqueIds.Count + 1));	// NB: bookTitle occurs twice
+			Assert.That(audioNodes.Count, Is.EqualTo(uniqueIds.Count + 1));	// NB: bookTitle occurs twice in xMatter pages
 		}
 
 		[Test]
@@ -2192,6 +2194,7 @@ namespace BloomTests.Book
       </div>
       <div data-book='smallCoverCredits' lang='en'>
         <p><span id='i12cd55e7-8292-4c12-92ed-7616da631d0b' class='audio-sentence'>Stephen McConnel</span></p>
+        <p><span id='i12cd55e7-8292-4c12-92ed-7616da631d0b' class='audio-sentence'>Somebody Else</span></p>
       </div>
       <div data-book='funding' lang='en' data-audiorecordingmode='Sentence'>
         <p><span id='i256a477b-1dcb-4492-92fe-b0d82065a03c' class='audio-sentence'>thanks, everyone</span></p>
@@ -2215,6 +2218,7 @@ namespace BloomTests.Book
           <div class='bloom-translationGroup' data-default-languages='V'>
             <div data-audiorecordingmode='Sentence' class='bloom-editable smallCoverCredits' lang='en' data-book='smallCoverCredits'>
               <p><span id='i12cd55e7-8292-4c12-92ed-7616da631d0b' class='audio-sentence'>Stephen McConnel</span></p>
+              <p><span id='i12cd55e7-8292-4c12-92ed-7616da631d0b' class='audio-sentence'>Somebody Else</span></p>
             </div>
           </div>
         </div>
@@ -2267,7 +2271,13 @@ namespace BloomTests.Book
   </body>
 </html>
 ");
-			var book = CreateBook();
+			// Set up book to cause automatic duplication of some English data-div strings into other languages.
+			var book = CreateBook(new CollectionSettings(new NewCollectionSettings {
+				PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"),
+				Language1Iso639Code = "en",
+				Language2Iso639Code = "fr",
+				Language3Iso639Code = "es"
+			}));
 
 			// Create a couple of fake audio files to test whether they get copied/renamed.
 			BookStorageTests.MakeSampleAudioFiles(_tempFolder.Path, "i9af373c9-2959-43ee-b42b-93b958432bdb", ".mp3");
@@ -2275,30 +2285,30 @@ namespace BloomTests.Book
 			Assert.That(Directory.EnumerateFiles(Path.Combine(_tempFolder.Path, "audio")).Count, Is.EqualTo(2));    // 2 files created
 
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
-				"//div[@lang='en']/p/span[contains(@class,'audio-sentence') and @id!='']", 18);
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[@lang='en']/p/span[contains(@class,'audio-sentence') and @id!='']", 20);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(								// funding/en AND originalAcknowledgements/en
 				"//span[contains(@class,'audio-sentence') and @id='i256a477b-1dcb-4492-92fe-b0d82065a03c']", 4); // ERROR!
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(								// funding/en AND versionAcknowledgements/en
 				"//span[contains(@class,'audio-sentence') and @id='i082e977b-adca-4310-8841-1a78b0f44cbd']", 4); // ERROR!
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
-				"//span[contains(@class,'audio-sentence') and @id='ef8243d2-f98e-4a96-993d-8152069516e6']", 2); // okay
+				"//span[contains(@class,'audio-sentence') and @id='ef8243d2-f98e-4a96-993d-8152069516e6']", 2); // originalContributions okay
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
-				"//span[contains(@class,'audio-sentence') and @id='i12cd55e7-8292-4c12-92ed-7616da631d0b']", 2); // smallCoverCredits okay
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i12cd55e7-8292-4c12-92ed-7616da631d0b']", 4); // smallCoverCredits internal duplicate ERROR!
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(								// three in data-book="book-title", one not
 				"//span[contains(@class,'audio-sentence') and @id='i9af373c9-2959-43ee-b42b-93b958432bdb']", 4); // bookTitle ERROR!
 
 			book.BringBookUpToDate(new NullProgress()); // SUT
 
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
-				"//div[@lang='en']/p/span[contains(@class,'audio-sentence') and @id!='']", 18);     // unchanged
+				"//div[@lang='en']/p/span[contains(@class,'audio-sentence') and @id!='']", 20);     // unchanged
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
-				"//span[contains(@class,'audio-sentence') and @id='i256a477b-1dcb-4492-92fe-b0d82065a03c']", 2); // fixed
+				"//span[contains(@class,'audio-sentence') and @id='i256a477b-1dcb-4492-92fe-b0d82065a03c']", 2); // funding/en fixed
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
-				"//span[contains(@class,'audio-sentence') and @id='i082e977b-adca-4310-8841-1a78b0f44cbd']", 2); // fixed
+				"//span[contains(@class,'audio-sentence') and @id='i082e977b-adca-4310-8841-1a78b0f44cbd']", 2); // funding/en fixed
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
-				"//span[contains(@class,'audio-sentence') and @id='ef8243d2-f98e-4a96-993d-8152069516e6']", 2); // still okay
+				"//span[contains(@class,'audio-sentence') and @id='ef8243d2-f98e-4a96-993d-8152069516e6']", 2); // originalContributions still okay
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
-				"//span[contains(@class,'audio-sentence') and @id='i12cd55e7-8292-4c12-92ed-7616da631d0b']", 2); // smallCoverCredits still okay
+				"//span[contains(@class,'audio-sentence') and @id='i12cd55e7-8292-4c12-92ed-7616da631d0b']", 2); // smallCoverCredits okay
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
 				"//span[contains(@class,'audio-sentence') and @id='i9af373c9-2959-43ee-b42b-93b958432bdb']", 3); // bookTitle fixed
 
@@ -2314,7 +2324,7 @@ namespace BloomTests.Book
 				var id = node.GetStringAttribute("id");
 				uniqueIds.Add(id);
 			}
-			Assert.That(audioNodes.Count, Is.EqualTo(uniqueIds.Count + 1));
+			Assert.That(audioNodes.Count, Is.EqualTo(uniqueIds.Count + 1));	// bookTitle shared by two xMatter pages
 
 			// Check that all the audio ids inside the data-div are unique.
 			audioNodes = book.RawDom.SafeSelectNodes(
@@ -2332,7 +2342,7 @@ namespace BloomTests.Book
 		public void FixBookIdAndLineageIfNeeded_WithPageTemplateSourceBasicBook_SetsMissingLineageToBasicBook()
 		{
 			_bookDom = new HtmlDom(
-				@" < html>
+				@" <html>
 				<head>
 					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
 					<meta name='pageTemplateSource' content='Basic Book' />
