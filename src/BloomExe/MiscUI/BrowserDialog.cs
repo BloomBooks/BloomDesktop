@@ -24,6 +24,17 @@ namespace Bloom.MiscUI
 		public IBloomWebSocketServer WebSocketServer { get; set; }
 		private const string kWebsocketContext = "dialog";
 
+		protected override void OnHandleCreated(EventArgs e)
+		{
+			base.OnHandleCreated(e);
+
+			// BL-552, BL-779: a bug in Mono requires us to wait to set Icon until handle created.
+			// Often the icon is not shown in the dialog as it has no title bar, nor in the
+			// task bar as it is not important enough. But for example the JoinTeamCollection dialog
+			// is the only Bloom window that is visible, so it needs an icon for the task bar.
+			this.Icon = global::Bloom.Properties.Resources.BloomIcon;
+		}
+
 		// called by BrowserDialogApi.Close()
 		public static void CloseDialog()
 		{

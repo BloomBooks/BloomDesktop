@@ -243,21 +243,56 @@ namespace Bloom
 						// Various other things will misinterpret the .bloompack argument if we leave it in args.
 						args = new string[] { };
 					}
+
 					if (FolderTeamCollection.IsJoinTeamCollectionFile(args))
 					{
-						var newCollection = FolderTeamCollection.JoinCollectionTeam(args[0]);
+						string newCollection;
+						// Since the New Team Collection dialog is an HTML/Typescript one, we need to spin up
+						// quite a lot of stuff so it can use a BloomServer to get localization information
+						// and otherwise communicate with the C# side of things. But we can't wait to do this
+						// until all this stuff is spun up normally, because it gets spun up for a specific
+						// collection, and we're in the process of creating the collection. In fact, we need
+						// to make a fake version of the collection in a temp folder that we can pretend to
+						// be editing in order to make a ProjectContext. We do manage to avoid building at
+						// least some of the unnecessary objects by passing justEnoughForHtmlDialog true.
+						using (_applicationContainer = new ApplicationContainer())
+						{
+							SetUpLocalization();
+							Browser.SetUpXulRunner();
+							using (var fakeProjectFolder = new TemporaryFolder("projectName"))
+							{
+								var fakeCollectionPath = FolderTeamCollection.CopyCollectionSettings(
+									Path.GetDirectoryName(args[0]), fakeProjectFolder.FolderPath);
+								using (var projectContext =
+									_applicationContainer.CreateProjectContext(fakeCollectionPath, true))
+								{
+									newCollection = FolderTeamCollection.ShowJoinCollectionTeamDialog(args[0]);
+								}
+							}
+						}
+
+						if (newCollection == null) // user canceled
+							return 1;
+
 						args = new string[] { }; // continue to open, but without args.
+
+						// Put the new TC's local collection into our MRU list so it will be the one we open.
+
 						// Usually guaranteed to exist by ApplicationContainer, but we haven't created that yet.
+						// (This might be redundant now we create one above for showing the dialog.)
 						if (Settings.Default.MruProjects == null)
 						{
 							Settings.Default.MruProjects = new MostRecentPathsList();
 						}
+
 						Settings.Default.MruProjects.AddNewPath(newCollection);
 						Settings.Default.Save();
+
 						// and now we need to get the lock as usual before going on to load the new collection.
 						if (!UniqueToken.AcquireToken(_mutexId, "Bloom"))
 							return 1;
-					} else
+					}
+					else
 					if (IsBloomBookOrder(args))
 					{
 						HandleDownload(args[0]);

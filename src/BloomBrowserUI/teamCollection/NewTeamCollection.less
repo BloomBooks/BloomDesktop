@@ -1,0 +1,78 @@
+@import "../bloomUI.less";
+
+// Note: because the IndependentProgressDialog.tsx is in the same webpack module and imports
+// IndependentProgressDialog.less, those styles also apply, so keep everything specific to this
+// inside #new-team-collection-screen except the very first rule, which necessarily applies to
+// everything outside, but is fortunately common to both.
+
+// Everything outside the first vertical flexbox we want to grow has to be 100%
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+}
+
+#new-team-collection-screen {
+    height: 100%;
+    * {
+        box-sizing: border-box;
+    }
+
+    #new-team-collection {
+        height: 100%;
+    }
+
+    #new-team-collection {
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        div:not(.no-space-below) {
+            margin-bottom: 10px;
+        }
+    }
+    .grow {
+        flex-grow: 1;
+    }
+    .join-heading {
+        font-weight: bold;
+        font-size: x-large;
+    }
+
+    #buttons {
+        display: flex;
+        justify-content: end;
+    }
+    #join-button {
+        margin-right: 10px;
+    }
+
+    .auto-pad {
+        flex-grow: 1;
+    }
+
+    .icon-row {
+        display: flex;
+        width: 100%;
+        svg {
+            height: 30px;
+            width: 45px;
+            margin-right: 15px;
+        }
+    }
+    .icon-row-grow {
+        flex-grow: 1;
+    }
+
+    // Mentioning the class twice is for specificity.
+    .join-buttons.join-buttons {
+        min-width: 120px;
+    }
+
+    .body-of-new {
+        display: flex;
+        flex-direction: column;
+    }
+}

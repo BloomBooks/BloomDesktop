@@ -84,9 +84,9 @@ namespace Bloom
 				GC.SuppressFinalize(this);
 			}
 
-			public ProjectContext CreateProjectContext(string projectPath)
+			public ProjectContext CreateProjectContext(string projectPath, bool justEnoughForHtmlDialog = false)
 			{
-				return new ProjectContext(projectPath, _container);
+				return new ProjectContext(projectPath, _container, justEnoughForHtmlDialog);
 			}
 		}
 	}
