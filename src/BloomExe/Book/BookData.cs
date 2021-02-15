@@ -1369,6 +1369,42 @@ namespace Bloom.Book
 													  formToCopyFromSinceOursIsMissing.WritingSystemId);
 								}
 								 */
+			if (!String.IsNullOrEmpty(s) && s.StartsWith("<") && s.EndsWith(">"))
+			{
+				// Prevent a duplicate audio id from being created.
+				try
+				{
+					XmlDocument doc = new XmlDocument();
+					doc.LoadXml("<div>" + s + "</div>");    // may be multiple paragraphs
+					var nodes = doc.SafeSelectNodes("(.//div|.//span)[@id and contains(@class,'audio-sentence')]").Cast<XmlElement>().ToList();
+					foreach (var node in nodes)
+					{
+						// Remove all audio related attributes dependent on a specific recording
+						// and the "audio-sentence" class.
+						node.RemoveAttribute("id");
+						node.RemoveAttribute("recordingmd5");
+						node.RemoveAttribute("data-duration");
+						node.RemoveAttribute("data-audiorecordingendtimes");
+						var classNames = node.GetStringAttribute("class");
+						if (classNames.Trim() == "audio-sentence")
+							node.RemoveAttribute("class");
+						else
+							node.SetAttribute("class", classNames.Replace("audio-sentence", "").Replace("  ", " ").Trim());
+						// Replace the span/div with its contents if we've removed all its attributes.
+						if (!node.HasAttributes)
+						{
+							foreach (var child in node.ChildNodes.Cast<XmlNode>())
+								node.ParentNode.InsertBefore(child, node);
+							node.ParentNode.RemoveChild(node);
+						}
+					}
+					s = doc.FirstChild.InnerXml;   // exclude the outer div we introduced
+				}
+				catch (Exception e)
+				{
+					// Ignore any errors: maybe it's not really XML after all?
+				}
+			}
 			return s;
 		}
 
