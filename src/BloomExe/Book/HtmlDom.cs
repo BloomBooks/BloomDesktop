@@ -117,6 +117,18 @@ namespace Bloom.Book
 			}
 		}
 
+		public static void SetNewHtmlIdValue(XmlElement element)
+		{
+			if (element == null)
+				return;
+			// HTML ids must start with a letter.  This is true of audio ids in Bloom, and possibly
+			// other id attribute values.  Page id values do not have this requirement.
+			var newId = Guid.NewGuid().ToString();
+			if (char.IsDigit(newId[0]))
+				newId = "i" + newId;
+			element.SetAttribute("id", newId);
+		}
+
 		/// <summary>
 		/// If the user added any custom pages in a version of bloom before 3.9 to a user defined template book created by
 		/// Bloom 3.9, that page is unusable as a template page later in Bloom 3.9.  Fix it so that is is useable.

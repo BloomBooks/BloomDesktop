@@ -838,12 +838,10 @@ namespace Bloom.Book
 				return;
 			var idSet = new HashSet<string>();
 			_duplicateAudioIdsFixed = 0;
-			var xmatterIds = new Dictionary<string, Tuple<string, string>>();   // id => {data-book,lang}
-			var fixedXmatter = new Dictionary<Tuple<string, string, string>, string>(); // {id,data-book,lang} => new id
-			FixDuplicateAudioIdsInDataDiv(bookDOM, idSet, xmatterIds, fixedXmatter);
-			foreach (var contentPage in bookDOM.GetPageElements())
+			FixDuplicateAudioIdsInDataDiv(bookDOM, idSet);
+			foreach (var page in bookDOM.GetPageElements())
 			{
-				var nodeList = HtmlDom.SelectChildNarrationAudioElements(contentPage, true);
+				var nodeList = HtmlDom.SelectChildNarrationAudioElements(page, true);
 				for (int i = 0; i < nodeList.Count; ++i)
 				{
 					var node = nodeList.Item(i);
@@ -853,10 +851,7 @@ namespace Bloom.Book
 					if (id == null)
 						continue;
 					if (HtmlDom.IsNodePartOfDataBookOrDataCollection(node))
-					{
-						FixAnyDuplicateAudioIdsFoundInXMatter(node, id, idSet, xmatterIds, fixedXmatter);
 						continue;
-					}
 					var isNewlyAdded = idSet.Add(id);
 					if (!isNewlyAdded)
 					{
@@ -877,90 +872,35 @@ namespace Bloom.Book
 
 		/// <summary>
 		/// Go through the #bloomDataDiv looking for duplicate audio ids.  If any are found, fix them
-		/// and record the fix.  The information for audio ids is recorded in three ways.
-		/// 1. idSet - hash set used to establish whether ids are unique.
-		/// 2. xmatterIds - dictionary mapping from the id to the data-book and lang attribute values,
-		///    used to check whether the id defined in the data div is used properly in the xmatter
-		/// 3. fixedXmatter - dictionary mapping from the old id, data-book, and lang to the new id,
-		///    used to fix xmatter errors the same as data-div errors.
+		/// and at the end update the DOM to reflect the fixes.
 		/// </summary>
-		private void FixDuplicateAudioIdsInDataDiv(HtmlDom bookDOM,
-			HashSet<string> idSet,
-			Dictionary<string, Tuple<string, string>> xmatterIds,
-			Dictionary<Tuple<string, string, string>, string> fixedXmatter)
+		private void FixDuplicateAudioIdsInDataDiv(HtmlDom bookDOM, HashSet<string> idSet)
 		{
 			var dataDiv = bookDOM.SelectSingleNode("//div[@id='bloomDataDiv']");
 			if (dataDiv == null)
 				return;		// shouldn't happen, but paranoia sometimes pays off, especially in running tests.
 			var nodes = dataDiv.SafeSelectNodes("(.//div|.//span)[@id and contains(@class,'audio-sentence')]").Cast<XmlNode>().ToList();
+			_duplicateAudioIdsFixed = 0;
 			foreach (var audioElement in nodes)
 			{
-				var div = audioElement.SelectSingleNode("./ancestor-or-self::div[@data-book and @lang]");
-				if (div != null)
+				var id = (audioElement as XmlElement).GetOptionalStringAttribute("id", null);
+				var isNewlyAdded = idSet.Add(id);
+				if (!isNewlyAdded)
 				{
-					var id = (audioElement as XmlElement).GetOptionalStringAttribute("id", null);
-					if (id != null)
-					{
-						idSet.Add(id);
-						var dataBook = (div as XmlElement).GetStringAttribute("data-book");
-						var lang = (div as XmlElement).GetStringAttribute("lang");
-						var checkValue = new Tuple<string, string>(dataBook, lang);
-						if (xmatterIds.ContainsKey(id))
-						{
-							// Audio ids used in xmatter are duplicated between the xmatter and
-							// the data div, but should have matching data-book and lang attribute
-							// values associated with the audio.
-							var newId = FixDuplicateAudioId(audioElement, id);
-							if (xmatterIds[id] == checkValue)
-							{
-								// This is a duplicate we can't fix in xMatter later due to insufficient information.
-								// But, it will get fixed the next time xMatter is rebuilt.
-								continue;
-							}
-							xmatterIds.Add(newId, checkValue);
-							var fixValue = new Tuple<string, string, string>(id, dataBook, lang);
-							fixedXmatter[fixValue] = newId;
-						}
-						else
-						{
-							xmatterIds.Add(id, checkValue);
-						}
-					}
+					var newId = FixDuplicateAudioId(audioElement, id);
+					idSet.Add(newId);
 				}
 			}
-		}
-
-		/// <summary>
-		/// If the node (which is known to be in xMatter) contains any duplicate audio ids, fix them.
-		/// </summary>
-		private void FixAnyDuplicateAudioIdsFoundInXMatter(XmlNode node, string id,
-			HashSet<string> idSet,
-			Dictionary<string, Tuple<string, string>> xmatterIds,
-			Dictionary<Tuple<string, string, string>, string> fixedXmatter)
-		{
-			idSet.Add(id);		// just in case...
-			var div = node.SelectSingleNode("./ancestor-or-self::div[@data-book and @lang]");
-			if (div == null)
-				return;   // not sure how to handle "data-collection" nodes, or if they need to be handled
-			var dataBook = div.GetStringAttribute("data-book");
-			var lang = div.GetStringAttribute("lang");
-			if (xmatterIds.TryGetValue(id, out Tuple<string, string> checkValue) &&
-				(checkValue.Item1 != dataBook || checkValue.Item2 != lang))
-			{
-				if (fixedXmatter.TryGetValue(new Tuple<string, string, string>(id, dataBook, lang), out string fixedId))
-					node.Attributes["id"].Value = fixedId;
-				else // This "else" shouldn't ever happen since the xmatter is recreated every time we open the book.
-					FixDuplicateAudioId(node, id);
-			}
+			// OK, now fix all the places any duplicates were used in the book's pages.
+			if (_duplicateAudioIdsFixed > 0)
+				_bookData.SynchronizeDataItemsThroughoutDOM();
 		}
 
 		private string FixDuplicateAudioId(XmlNode node, string id)
 		{
 			// Create a new id value, and copy the audio file if it exists.
-			var newId = Guid.NewGuid().ToString();
-			if (Char.IsDigit(newId[0]))
-				newId = "i" + newId;
-			node.Attributes["id"].Value = newId;
+			HtmlDom.SetNewHtmlIdValue(node as XmlElement);
+			var newId = node.GetStringAttribute("id");
 			if (!String.IsNullOrEmpty(FolderPath))
 			{
 				var oldAudioPath = Path.Combine(FolderPath, "audio", id + ".mp3");
@@ -2713,17 +2653,11 @@ namespace Bloom.Book
 		{
 			foreach (var audioElement in HtmlDom.SelectRecordableDivOrSpans(newpageDiv).Cast<XmlElement>().ToList())
 			{
-				// The "i" makes sure that the ID does not start with digit. It's unnecessary but harmless
-				// if it already starts with a non-digit. The JS code that usually generates these only
-				// adds it if necessary, but nothing knows enough about the nature of the IDs to make
-				// consistency about that necessary. It just needs to be unique (and a valid ID).
-				// (It would be pretty easy to make it consistent, but considerably harder to cover
-				// the new path adequately with unit tests.)
-				var id = "i" + Guid.NewGuid();
-				var oldId = audioElement.Attributes["id"]?.Value;
-				audioElement.SetAttribute("id", id);
+				var oldId = audioElement.GetStringAttribute("id");
+				HtmlDom.SetNewHtmlIdValue(audioElement);
 				if (string.IsNullOrEmpty(oldId))
 					continue;
+				var id = audioElement.GetStringAttribute("id");
 				var sourceAudioFilePath = Path.Combine(Path.Combine(sourceBookFolder, "audio"), oldId + ".wav");
 				var newAudioFolderPath = Path.Combine(FolderPath, "audio");
 				var newAudioFilePath = Path.Combine(newAudioFolderPath, id + ".wav");
