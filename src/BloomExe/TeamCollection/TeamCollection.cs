@@ -410,7 +410,10 @@ namespace Bloom.TeamCollection
 		internal string GetStatusFilePath(string bookName, string collectionFolder)
 		{
 			var bookFolderName = Path.GetFileNameWithoutExtension(bookName);
-			var statusFile = Path.Combine(collectionFolder, bookFolderName, "book.status");
+			var bookFolderPath = Path.Combine(collectionFolder, bookFolderName);
+			if (!Directory.Exists(bookFolderPath))
+				Directory.CreateDirectory(bookFolderPath);
+			var statusFile = Path.Combine(bookFolderPath, "book.status");
 			return statusFile;
 		}
 
