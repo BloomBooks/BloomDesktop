@@ -25,7 +25,7 @@ namespace BloomTests.TeamCollection
 			using (var collectionFolder = new TemporaryFolder("FolderTeamCollectionTests2_Collection")) {
 				using (var sharedFolder = new TemporaryFolder("FolderTeamCollectionTests2_Shared"))
 				{
-					TeamCollectionTests.MakeFakeBook(collectionFolder.FolderPath, "Some book", "Something");
+					SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, "Some book", "Something");
 					var settingsFileName = Path.ChangeExtension(Path.GetFileName(collectionFolder.FolderPath), "bloomCollection");
 					var settingsPath = Path.Combine(collectionFolder.FolderPath, settingsFileName);
 

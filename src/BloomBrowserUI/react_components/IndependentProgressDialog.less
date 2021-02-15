@@ -1,6 +1,6 @@
 @import "../bloomUI.less";
 
-@body-margin: 10px;
+@outer-margin: 10px;
 @copy-button-width: 15px;
 @copy-button-left-margin: 2px;
 @copy-button-right-margin: 3px;
@@ -15,13 +15,13 @@ body,
 }
 
 body {
-    // these settings give us some padding around the outermost progress-box element,
-    // except on the left where we need to insert the copy button in what looks like the margin,
-    // but still allow all the parents to be simply height:100% without causing overflow.
     box-sizing: border-box;
-    padding: 0 0 @body-margin 0;
-    padding-left: 0;
+    padding: 0;
     margin: 0;
+}
+
+#progress-box {
+    padding-bottom: @outer-margin;
 }
 
 #progress-root {
