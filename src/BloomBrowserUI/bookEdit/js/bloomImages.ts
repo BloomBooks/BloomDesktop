@@ -12,6 +12,10 @@ declare function ResetRememberedSize(element: HTMLElement);
 const kPlaybackOrderContainerSelector: string =
     ".bloom-playbackOrderControlsContainer";
 
+// This appears to be constant even on higher dpi screens.
+// (See http://www.w3.org/TR/css3-values/#absolute-lengths)
+const kBrowserDpi = 96;
+
 export function cleanupImages() {
     $(".bloom-imageContainer").css("opacity", ""); //comes in on img containers from an old version of myimgscale, and is a major problem if the image is missing
     $(".bloom-imageContainer").css("overflow", ""); //review: also comes form myimgscale; is it a problem?
@@ -243,7 +247,7 @@ function SetImageTooltip(container: HTMLElement) {
         container.title = "";
         return;
     }
-    const kBrowserDpi = 96;
+
     const targetDpiWidth = Math.ceil((300 * containerJQ.width()) / kBrowserDpi);
     const targetDpiHeight = Math.ceil(
         (300 * containerJQ.height()) / kBrowserDpi
@@ -252,10 +256,11 @@ function SetImageTooltip(container: HTMLElement) {
 
     BloomApi.getWithConfig("image/info", { params: { image: url } }, result => {
         const imageFileInfo: any = result.data;
-        // This appears to be constant even on higher dpi screens.
-        // (See http://www.w3.org/TR/css3-values/#absolute-lengths)
-        const dpi = Math.round(
-            imageFileInfo.width / ($(imgElement).width() / kBrowserDpi)
+
+        const dpi = getDpi(
+            container,
+            imageFileInfo.width,
+            imageFileInfo.height
         );
         const bulletForDpi = dpi < 300 ? "⚠" : "✓";
         // removed because only devs care! Bit Depth: ${imageFileInfo.bitDepth.toString()}
@@ -277,6 +282,28 @@ function SetImageTooltip(container: HTMLElement) {
         container.title =
             (isPlaceHolder ? "" : linesAboutThisFile) + linesAboutThisContext;
     });
+}
+function getDpi(
+    container: HTMLElement,
+    imageWidth: number,
+    imageHeight: number
+): number {
+    const containerJQ = $(container);
+
+    const containerAspectRatio =
+        containerJQ.width() / Math.max(1, containerJQ.height());
+    const imageAspectRatio = imageWidth / Math.max(1, imageHeight);
+
+    // Image is skinnier than the container, so the image will be
+    // stretched/squeezed to fit the height of the container.
+    if (imageAspectRatio < containerAspectRatio) {
+        return Math.round(imageHeight / (containerJQ.height() / kBrowserDpi));
+    }
+    // Image is fatter than the container, so the image will be
+    // stretched/squeezed to fit the width of the container.
+    else {
+        return Math.round(imageWidth / (containerJQ.width() / kBrowserDpi));
+    }
 }
 
 function SetImageDisplaySizeIfCalledFor(container: JQuery, img: JQuery) {
