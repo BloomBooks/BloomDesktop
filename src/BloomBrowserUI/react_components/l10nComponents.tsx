@@ -42,6 +42,11 @@ export interface ILocalizationProps extends IUILanguageAwareProps {
     l10nParam0?: string;
     l10nParam1?: string;
     onClick?: () => void; // not yet implemented by String subclass and maybe others outside this file
+
+    // Set to true if we don't want the yellow highlighting in the UI for now.
+    // Typically this is used when the UI is still is such flux that we
+    // don't want the strings in Crowdin yet.
+    temporarilyDisableI18nWarning?: boolean;
 }
 
 export interface ILocalizationState {
@@ -156,7 +161,10 @@ export class LocalizableElement<
             return;
         }
         this.isComponentMounted = true;
-        if (this.props.alreadyLocalized) {
+        if (
+            this.props.alreadyLocalized ||
+            this.props.temporarilyDisableI18nWarning
+        ) {
             return;
         }
         const english = this.getOriginalStringContent();
@@ -241,7 +249,10 @@ export class LocalizableElement<
     } {
         let l10nClass = "untranslated";
         let text = this.getOriginalStringContent();
-        if (this.props.alreadyLocalized) {
+        if (
+            this.props.alreadyLocalized ||
+            this.props.temporarilyDisableI18nWarning
+        ) {
             l10nClass = "assumedTranslated";
         } else if (
             this.state &&
