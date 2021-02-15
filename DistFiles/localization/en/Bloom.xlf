@@ -4742,7 +4742,7 @@ Do you want to go ahead?</note>
         <note>ID: TeamCollection.Available</note>
       </trans-unit>
 <!--
-// Don't want these actually translated until things stabilize.
+// Don't want these actually translated until things stabilize. Will need re-ordering.
       <trans-unit id="TeamCollection.CheckIn" sil:dynamic="true">
         <source xml:lang="en">Check in book</source>
         <note>ID: TeamCollection.CheckIn</note>
@@ -4808,6 +4808,38 @@ Do you want to go ahead?</note>
       <trans-unit id="TeamCollection.StartingInstructions" sil:dynamic="true">
         <source xml:lang="en">Only one person on the team should create the Team Collection. Before creating it, you will need to have Dropbox installed on your computer.</source>
         <note>ID: TeamCollection.StartingInstructions</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Creating" sil:dynamic="true">
+        <source xml:lang="en">Bloom will create a new collection on your computer based on this Team Collection.</source>
+        <note>ID: TeamCollection.Creating</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Join" sil:dynamic="true">
+        <source xml:lang="en">Join</source>
+        <note>ID: TeamCollection.Join</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.JoinAndMerge" sil:dynamic="true">
+        <source xml:lang="en">Join and Merge</source>
+        <note>ID: TeamCollection.JoinAndMerge</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.JoinHeading" sil:dynamic="true">
+        <source xml:lang="en">Join the Team Collection "{0}"</source>
+        <note>ID: TeamCollection.JoinHeading</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Merging" sil:dynamic="true">
+        <source xml:lang="en">Bloom will merge your existing "{0}" collection with this Team Collection.</source>
+        <note>ID: TeamCollection.Merging</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.MergingExplanation" sil:dynamic="true">
+        <source xml:lang="en">The rest of the team will receive any unique books found in that collection. Any books you have that are already in this Team Collection will be moved to the "Lost and Found" folder, unless Bloom can determine that they are the same.</source>
+        <note>ID: TeamCollection.MergingExplanation</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.MergeInstead" sil:dynamic="true">
+        <source xml:lang="en">If instead you want to merge a collection you already have into this Team Collection, click Cancel and rename the collection you want to merge to the same as the Team Collection you are joining. Then try to join again.</source>
+        <note>ID: TeamCollection.MergeInstead</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.StartFresh" sil:dynamic="true">
+        <source xml:lang="en">If instead you want to start fresh, click Cancel and rename your existing "{0}" collection to something different. Then try to join again.</source>
+        <note>ID: TeamCollection.StartFresh</note>
       </trans-unit>
 -->
       <trans-unit id="TemplateBooks.BookName.Arithmetic Template" sil:dynamic="true">
