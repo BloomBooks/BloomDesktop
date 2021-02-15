@@ -146,7 +146,7 @@ namespace Bloom.TeamCollection
 					}
 				}
 			}
-			catch (ZipException ex)
+			catch (Exception e) when (e is ZipException || e is IOException)
 			{
 				NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not unpack a file in your Team Collection: " + bookName + ".bloom");
 			}
@@ -229,7 +229,7 @@ namespace Bloom.TeamCollection
 				// Note that our zip library sometimes creates a temp file by adding a suffix to the
 				// path, so it's very likely that a recent write of a path starting with the name of the book we
 				// wrote is a result of that.
-				if (!path.StartsWith(_lastWriteBookPath))
+				if (!string.IsNullOrWhiteSpace(_lastWriteBookPath) && !path.StartsWith(_lastWriteBookPath))
 					return false;
 				// We're still writing it...definitely an 'own write'
 				if (_writeBookInProgress)
