@@ -292,13 +292,14 @@ namespace Bloom.TeamCollection
 
 		/// <summary>
 		/// Gets the path to the bloomCollection file, given the folder.
+		/// If the folder name ends in " - TC" we will strip that off.
 		/// </summary>
-		/// <param name="localCollectionFolder"></param>
+		/// <param name="parentFolder"></param>
 		/// <returns></returns>
-		public static string CollectionPath(string localCollectionFolder)
+		public static string CollectionPath(string parentFolder)
 		{
-			var collectionHame = Path.GetFileName(localCollectionFolder);
-			var collectionPath = Path.Combine(localCollectionFolder, Path.ChangeExtension(collectionHame, "bloomCollection"));
+			var collectionHame = GetLocalCollectionNameFromTcName(Path.GetFileName(parentFolder));
+			var collectionPath = Path.Combine(parentFolder, Path.ChangeExtension(collectionHame, "bloomCollection"));
 			return collectionPath;
 		}
 
@@ -454,12 +455,15 @@ namespace Bloom.TeamCollection
 
 		/// <summary>
 		/// Run this when Bloom starts up to get the repo and local directories as sync'd as possible.
+		/// Also run when first joining an existing collection to merge them. A few behaviors are
+		/// different in this case.
 		/// </summary>
 		/// <returns>List of warnings, if any problems occurred.</returns>
-		public List<string> SyncAtStartup(IWebSocketProgress progress)
+		public List<string> SyncAtStartup(IWebSocketProgress progress, bool firstTimeJoin = false)
 		{
 			var warnings = new List<string>(); // accumulates any warning messages
 			// Delete books that we think have been deleted remotely from the repo.
+			// If it's a join collection merge, check new books in instead.
 			foreach (var path in Directory.EnumerateDirectories(_localCollectionFolder))
 			{
 				try
@@ -468,6 +472,12 @@ namespace Bloom.TeamCollection
 					var status = GetBookStatusJsonFromRepo(fileName);
 					if (status == null)
 					{
+						if (firstTimeJoin)
+						{
+							// We want to copy all local books into the repo
+							PutBook(path, true);
+							continue;
+						}
 						// no sign of book in repo...should we delete it?
 						var statusFilePath = GetStatusFilePath(fileName, _localCollectionFolder);
 						if (File.Exists(statusFilePath))
@@ -536,27 +546,47 @@ namespace Bloom.TeamCollection
 					}
 					else
 					{
-						// The remote book has the same name as an independently-created new local book. Move the new local book
-						int count = 0;
-						string renameFolder = "";
-						do
+						// The remote book has the same name as a local book that is not known to be in the team collection.
+						if (firstTimeJoin)
 						{
-							count++;
-							renameFolder = localFolderPath + count;
-						} while (Directory.Exists(renameFolder));
+							// We don't know the previous history of the collection. Quite likely it was duplicated some
+							// other way and these books have been edited independently. Treat it as a conflict.
+							PutBook(localFolderPath, inLostAndFound: true);
+							// warn the user
+							var msgTemplate = LocalizationManager.GetString("TeamCollection.ConflictingCheckout",
+								"Found different versions of '{0}' in both collections. The team version has been copied to your local collection, and the old local version to Lost and Found");
+							var msg = String.Format(msgTemplate, bookName);
+							warnings.Add(msg);
+							progress.MessageWithoutLocalizing(msg, MessageKind.Warning);
+							// Make the local folder match the repo (this is where 'they win')
+							CopyBookFromSharedToLocal(bookName);
+							continue;
+							}
+						else
+						{
+							// Presume it is newly created locally, coincidentally with the same name. Move the new local book
+							int count = 0;
+							string renameFolder = "";
+							do
+							{
+								count++;
+								renameFolder = localFolderPath + count;
+							} while (Directory.Exists(renameFolder));
 
-						Directory.Move(localFolderPath, renameFolder);
-						var renamePath = Path.Combine(renameFolder,
-							Path.ChangeExtension(Path.GetFileName(renameFolder), "htm"));
-						var oldBookPath = Path.Combine(renameFolder, Path.ChangeExtension(bookName, "htm"));
-						var msg = String.Format(
-							"Renaming the local book '{0}' because there is a new one with the same name from the Team Collection", bookName);
-						progress.MessageWithoutLocalizing(msg);
-						RobustFile.Move(oldBookPath, renamePath);
+							Directory.Move(localFolderPath, renameFolder);
+							var renamePath = Path.Combine(renameFolder,
+								Path.ChangeExtension(Path.GetFileName(renameFolder), "htm"));
+							var oldBookPath = Path.Combine(renameFolder, Path.ChangeExtension(bookName, "htm"));
+							var msg = String.Format(
+								"Renaming the local book '{0}' because there is a new one with the same name from the Team Collection",
+								bookName);
+							progress.MessageWithoutLocalizing(msg);
+							RobustFile.Move(oldBookPath, renamePath);
 
-						CopyBookFromSharedToLocal(bookName); // Get shared book and status
-						// Review: does this deserve a warning?
-						continue;
+							CopyBookFromSharedToLocal(bookName); // Get shared book and status
+							// Review: does this deserve a warning?
+							continue;
+						}
 					}
 				}
 
@@ -590,7 +620,7 @@ namespace Bloom.TeamCollection
 				// book don't match.
 				if (localStatus.checksum == sharedStatus.checksum)
 				{
-					if (string.IsNullOrEmpty(sharedStatus.lockedBy))
+					if (String.IsNullOrEmpty(sharedStatus.lockedBy))
 					{
 						// Likely someone started a checkout remotely, but changed their mind without making edits.
 						// Just restore our checkout.
@@ -609,7 +639,7 @@ namespace Bloom.TeamCollection
 							// warn the user
 							var msgTemplate = LocalizationManager.GetString("TeamCollection.ConflictingCheckout",
 								"The book '{0}', which you have checked out and edited, is checked out to someone else in the team collection. Your changes have been overwritten, but are saved to Lost-and-found.");
-							var msg = string.Format(msgTemplate, bookName);
+							var msg = String.Format(msgTemplate, bookName);
 							warnings.Add(msg);
 							progress.MessageWithoutLocalizing(msg, MessageKind.Warning);
 							// Make the local folder match the repo (this is where 'they win')
@@ -646,7 +676,7 @@ namespace Bloom.TeamCollection
 					// warn the user
 					var msgTemplate = LocalizationManager.GetString("TeamCollection.ConflictingEdit",
 						"The book '{0}', which you have checked out and edited, was modified in the team collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.");
-					var msg = string.Format(msgTemplate, bookName);
+					var msg = String.Format(msgTemplate, bookName);
 					progress.MessageWithoutLocalizing(msg, MessageKind.Warning);
 					warnings.Add(msg);
 					continue;
@@ -719,7 +749,20 @@ namespace Bloom.TeamCollection
 					progressLogger.Log("Starting sync with Team Collection at " + now.ToShortDateString() + " " +  now.ToShortTimeString(),
 						MessageKind.Progress);
 
-					var problems = SyncAtStartup(progressLogger);
+					bool doingJoinCollectionMerge = TeamCollectionManager.NextMergeIsJoinCollection;
+					TeamCollectionManager.NextMergeIsJoinCollection = false;
+					// don't want messages about the collection being changed while we're synchronizing,
+					// and in some cases we might be the source of several changes (for example, multiple
+					// check ins while joining a collection). Normally we suppress notifications for
+					// our own checkins, but remembering the last thing we checked in might not be
+					// enough when we do several close together.
+					StopMonitoring();
+
+					var problems = SyncAtStartup(progressLogger, doingJoinCollectionMerge);
+
+					// It's just possible there are one, or even more, file change notifications we
+					// haven't yet received from the OS. Wait till things settle down to start monitoring again.
+					Application.Idle += StartMonitoringOnIdle;
 
 					progress.Message("Done", "Done");
 
@@ -748,6 +791,12 @@ namespace Bloom.TeamCollection
 			}
 		}
 
+		private void StartMonitoringOnIdle(object sender, EventArgs e)
+		{
+			Application.Idle -= StartMonitoringOnIdle;
+			StartMonitoring();
+		}
+
 		protected virtual void Dispose(bool disposing)
 		{
 			if (disposing)
@@ -769,5 +818,25 @@ namespace Bloom.TeamCollection
 		{
 			Dispose(false);
 		}
+
+		/// <summary>
+		/// Given the name (with or without preceding path) of a team collection folder,
+		/// or at least the folder that contains the .JoinBloomTC file,
+		/// get the name of the corresponding .bloomCollection file. Currently this involves
+		/// removing the trailing " - TC" if present, and adding the .bloomcollection
+		/// extension. Although I've made this abstract and put the implementation in
+		/// FolderTeamCollection, just knowing that we are starting from a team collection
+		/// folder and finding a .bloomCollection in it is a leak of the FolderTeamCollection
+		/// implementation than I don't like. (And implied is knowledge that the .JoinBloomTC
+		/// file is in a known location relative to the .bloomCollection.)
+		/// If we ever get another implementation, thought will be needed as to
+		/// how to get a local collection name from the .JoinBloomTC file path, assuming we
+		/// even use such a file to kick off the joining process. At least,
+		/// callers of this will indicate where we need to adjust things, and the fact that it
+		/// is abstract will prevent ignoring the issue altogether.
+		/// </summary>
+		/// <param name="tcName"></param>
+		/// <returns></returns>
+		public abstract string GetLocalCollectionNameFromTcName(string tcName);
 	}
 }

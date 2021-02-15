@@ -54,10 +54,18 @@ namespace Bloom.TeamCollection
 			}
 		}
 
+		/// <summary>
+		/// This gets set when we join a new TeamCollection so that the merge we do
+		/// later as we open it gets the special behavior for this case.
+		/// </summary>
+		public static bool NextMergeIsJoinCollection { get; set; }
+
 		public BloomWebSocketServer SocketServer => _webSocketServer;
 
-		public void ConnectToTeamCollection(string sharedFolderPath)
+		public void ConnectToTeamCollection(string sharedFolderParentPath)
 		{
+			var sharedFolderPath = Path.Combine(sharedFolderParentPath, Path.GetFileName(_localCollectionFolder)+ " - TC");
+			Directory.CreateDirectory(sharedFolderPath);
 			var newTc = new FolderTeamCollection(_localCollectionFolder, sharedFolderPath);
 			newTc.ConnectToTeamCollection(sharedFolderPath);
 			CurrentCollection = newTc;
