@@ -5,6 +5,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using Bloom.CollectionCreating;
+using Bloom.MiscUI;
 using ICSharpCode.SharpZipLib.Zip;
 using SIL.IO;
 
@@ -357,31 +358,72 @@ namespace Bloom.TeamCollection
 			StartMonitoring();
 		}
 
+		private static string _joinCollectionPath;
+		private static string _newCollectionToJoin;
+
 		// Create a new local collection from the shared collection at the specified path.
 		// Return the path to its settings (not team settings) file...the path we need to
 		// open the new collection. This is the method that gets called when we open a
 		// JoinTeamCollection file.
-		public static string JoinCollectionTeam(string path)
+		public static string ShowJoinCollectionTeamDialog(string path)
 		{
+			_joinCollectionPath = path;
+			_newCollectionToJoin = null; // set if JoinCollectionTeam called successfully
 			var sharedFolder = Path.GetDirectoryName(path);
-			var collectionName = Path.GetFileName(sharedFolder);
+			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(sharedFolder));
 			var localSharedFolder =
 				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, collectionName);
-			// todo: if collection exists, merge. Most (all?) of the logic is in TeamRepo.SyncAtStartup(),
-			// given that nothing local has status so all will be treated as newly created locally.
-			// However, if this collection has previously been in a TeamCollection, some books might
-			// already have status files? Maybe we should delete *.status from collectionFolder first?
-			Directory.CreateDirectory(localSharedFolder);
-			CreateTeamCollectionSettingsFile(localSharedFolder, sharedFolder);
+			var url = BloomFileLocator.GetBrowserFile(false, "teamCollection", "NewTeamCollection.html").ToLocalhost()
+			          + $"?name={collectionName}";
+			if (Directory.Exists(localSharedFolder))
+			{
+				url += "&existingCollection=true"; // any 'truthy' value in JS will do
+			}
+
+			using (var dlg = new BrowserDialog(url))
+			{
+				dlg.Width = 560;
+				dlg.Height = 400;
+				// This dialog is neater without a task bar. We don't need to be able to
+				// drag it around. There's nothing left to give it one if we don't set a title
+				// and remove the control box.
+				dlg.ControlBox = false;
+				dlg.ShowDialog();
+			}
+
+			// Unless the user canceled, this will have been set in JoinCollectionTeam()
+			// before the dialog closes.
+			return _newCollectionToJoin;
+		}
+
+		/// <summary>
+		/// Called when the user clicks the Join{ and Merge} button in the dialog.
+		/// </summary>
+		public static void JoinCollectionTeam()
+		{
+			var sharedFolder = Path.GetDirectoryName(_joinCollectionPath);
+			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(sharedFolder));
+			var localSharedFolder =
+				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, collectionName);
 			// Most of the collection settings files will be copied later when we create the repo
 			// in TeamRepo.MakeInstance() and call CopySharedCollectionFilesToLocal.
 			// However, when we start up with a command line argument that causes JoinCollectionTeam,
 			// the next thing we do is push the newly created project into our MRU list so it will
 			// be the one that gets opened. The MRU list refuses to add a bloomCollection that doesn't
 			// exist; so we have to make it exist.
-			var localCollectionPath = CollectionPath(localSharedFolder);
-			RobustFile.Copy(CollectionPath(sharedFolder), localCollectionPath, true);
-			return localCollectionPath;
+			_newCollectionToJoin = CopyCollectionSettings(sharedFolder, localSharedFolder);
+			// Soon we will open the new collection, and do a SyncAtStartup. We want that to have some
+			// special behavior.
+			TeamCollectionManager.NextMergeIsJoinCollection = true;
+		}
+
+		public static string CopyCollectionSettings(string sharedFolder, string localSharedFolder)
+		{
+			Directory.CreateDirectory(localSharedFolder);
+			CreateTeamCollectionSettingsFile(localSharedFolder, sharedFolder);
+			var newSettingsPath = CollectionPath(localSharedFolder);
+			RobustFile.Copy(CollectionPath(sharedFolder), newSettingsPath, true);
+			return newSettingsPath;
 		}
 
 		public void CreateJoinCollectionFile()

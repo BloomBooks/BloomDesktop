@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.MiscUI;
 using L10NSharp;
 using Newtonsoft.Json;
 
@@ -35,6 +36,14 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/attemptLockOfCurrentBook", HandleAttemptLockOfCurrentBook, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/checkInCurrentBook", HandleCheckInCurrentBook, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/createTeamCollection", HandleCreateTeamCollection, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/joinTeamCollection", HandleJoinTeamCollection, true);
+		}
+
+		private void HandleJoinTeamCollection(ApiRequest request)
+		{
+			FolderTeamCollection.JoinCollectionTeam();
+			BrowserDialog.CloseDialog();
+			request.PostSucceeded();
 		}
 
 		public void HandleIsTeamCollectionEnabled(ApiRequest request)
@@ -106,7 +115,6 @@ namespace Bloom.TeamCollection
 				}
 
 				var sharingFolder = dlg.SelectedPath;
-				Directory.CreateDirectory(sharingFolder); // may not be needed, harmless.
 				// One of the few places that knows we're using a particular implementation
 				// of TeamRepo. But we have to know that to create it. And of course the user
 				// just chose a folder to get things started.
