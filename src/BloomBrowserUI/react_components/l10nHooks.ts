@@ -28,6 +28,10 @@ export function useL10n(
                 callback: (t, lookupSuccessful) => {
                     if (lookupSuccessful) {
                         setLocalizedText(t);
+                    } else {
+                        // Enhance: maybe we should do something here if temporarilyDisableI18nWarning is false?
+                        // But we should also check for being in debug or possibly alpha...how?
+                        setLocalizedText(t);
                     }
                 }
             });
