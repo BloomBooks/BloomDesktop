@@ -3,11 +3,13 @@ import theme from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { useState } from "react";
 import ReactDOM = require("react-dom");
+import Avatar from "react-avatar";
 import { BloomApi } from "../utils/bloomApi";
 import { useL10n } from "../react_components/l10nHooks";
 import "./TeamCollectionBookStatusPanel.less";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import BloomButton from "../react_components/bloomButton";
+import { getMd5 } from "../bookEdit/toolbox/talkingBook/md5Util";
 
 // The panel that appears at the bottom of the preview in the collection tab in a Team Collection.
 // Todo: JohnH wants this component to wrap an iframe that contains the preview,
@@ -23,7 +25,7 @@ export type LockState =
 export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [state, setState] = useState<LockState>("initializing");
     const [lockedBy, setLockedBy] = useState("");
-    //const [lockedByEmail, setLockedByEmail] = useState(""); // will need this for Avatar
+    const [lockedByDisplay, setLockedByDisplay] = useState("");
     const [lockedWhen, setLockedWhen] = useState("");
     const [lockedMachine, setLockedMachine] = useState("");
     React.useEffect(() => {
@@ -31,6 +33,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
             const bookStatus = data.data;
             if (bookStatus.who) {
                 // locked by someone
+                setLockedBy(bookStatus.who);
                 if (
                     bookStatus.who === bookStatus.currentUser &&
                     bookStatus.where === bookStatus.currentMachine
@@ -41,12 +44,12 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         bookStatus.who === bookStatus.currentUser;
                     if (isCurrentUser) {
                         setState("lockedByMeElsewhere");
-                        setLockedBy(
+                        setLockedByDisplay(
                             bookStatus.who + " (" + bookStatus.where + ")"
                         );
                     } else {
                         setState("locked");
-                        setLockedBy(bookStatus.who);
+                        setLockedByDisplay(bookStatus.who);
                     }
                     setLockedWhen(bookStatus.when);
                     setLockedMachine(bookStatus.where);
@@ -56,17 +59,19 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
             }
         });
     }, []);
-    // const Avatar = React.lazy(() => import("react-avatar"));
-    // const AvatarIconWrapper = (
-    //     <React.Suspense fallback={<div></div>}>
-    //         <Avatar
-    //             email={lockedByEmail ?? ""}
-    //             name={lockedBy ?? ""}
-    //             size="48px"
-    //             color={""}
-    //         />
-    //     </React.Suspense>
-    // );
+
+    let avatar;
+    if (state.startsWith("locked")) {
+        avatar = (
+            <React.Suspense fallback={<></>}>
+                <Avatar
+                    md5Email={getMd5(lockedBy)}
+                    size={"48px"}
+                    round={true}
+                />
+            </React.Suspense>
+        );
+    }
 
     // Rules of hooks mean we need to useL10N() on ALL of the strings we might use for each lockState.
     // N.B. When placeholders are needed, we use %0 instead of {0}. Why? See BL-9490.
@@ -106,7 +111,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         "This book is checked out to %0",
         "TeamCollection.CheckedOutToSomeone",
         "The %0 is the name of the person who checked out the book (or possibly email).",
-        lockedBy,
+        lockedByDisplay,
         undefined,
         true
     );
@@ -114,7 +119,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         "You cannot edit the book until %0 checks it in.",
         "TeamCollection.CheckedOutToSomeoneDescription",
         "The %0 is the name of the person who checked out the book.",
-        lockedBy,
+        lockedByDisplay,
         undefined,
         true
     );
@@ -122,7 +127,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         "%0 checked out this book on %1.",
         "TeamCollection.CheckedOutOn",
         "The %0 is a person's name, and the %1 is a date.",
-        lockedBy,
+        lockedByDisplay,
         lockedWhen,
         true
     );
@@ -175,7 +180,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         lockState={state}
                         title={mainTitleUnlocked}
                         subTitle={subTitleUnlocked}
-                        icon={"Available.svg"}
+                        icon={<img src={"Available.svg"} alt="available" />}
                         button={getBloomButton(
                             "Check out book",
                             "TeamCollection.Checkout",
@@ -187,12 +192,9 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                 );
             case "lockedByMe":
                 const checkinHandler = () => {
-                    BloomApi.post(
-                        "teamCollection/checkInCurrentBook",
-                        response => {
-                            setState("unlocked");
-                        }
-                    );
+                    BloomApi.post("teamCollection/checkInCurrentBook", () => {
+                        setState("unlocked");
+                    });
                 };
 
                 return (
@@ -200,7 +202,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         lockState={state}
                         title={mainTitleLockedByMe}
                         subTitle={subTitleLockedByMe}
-                        //icon={} // eventually this should be an avatar
+                        icon={avatar}
                         //menu={} // eventually the "About my Avatar..." and "Forget Changes" menu gets passed in here.
                         button={getBloomButton(
                             "Check in book",
@@ -217,7 +219,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         lockState={state}
                         title={mainTitleLockedElsewhere}
                         subTitle={subTitleLockedElsewhere}
-                        //icon={} // eventually this should be an avatar
+                        icon={avatar}
                         children={getLockedInfoChild(lockedElsewhereInfo)}
                     />
                 );
@@ -227,7 +229,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         lockState={state}
                         title={mainTitleLocked}
                         subTitle={subTitleLocked}
-                        //icon={} // eventually this should be an avatar
+                        icon={avatar}
                         children={getLockedInfoChild(lockedInfo)}
                     />
                 );
@@ -251,6 +253,7 @@ export const getBloomButton = (
         enabled={true}
         className={buttonClass}
         onClick={clickHandler}
+        temporarilyDisableI18nWarning={true}
     >
         {english}
     </BloomButton>

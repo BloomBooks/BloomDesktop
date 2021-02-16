@@ -101,6 +101,7 @@
         "pug-cli": "^1.0.0-alpha6",
         "rc-slider": "^8.6.9",
         "react": "16.8.6",
+        "react-avatar": "~3.7.0",
         "react-close-on-escape": "^3.0.0",
         "react-color": "^2.18.1",
         "react-desktop": "^0.3.9",
