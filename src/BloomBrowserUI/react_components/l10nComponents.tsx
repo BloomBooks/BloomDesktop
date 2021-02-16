@@ -254,12 +254,10 @@ export class LocalizableElement<
             this.props.temporarilyDisableI18nWarning
         ) {
             l10nClass = "assumedTranslated";
-        } else if (
-            this.state &&
-            this.state.translation &&
-            this.state.lookupSuccessful
-        ) {
-            l10nClass = "translated";
+        } else if (this.state && this.state.translation) {
+            if (this.state.lookupSuccessful) {
+                l10nClass = "translated";
+            }
             text = theOneLocalizationManager.processSimpleMarkdown(
                 this.state.translation
             );
