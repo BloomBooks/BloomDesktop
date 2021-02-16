@@ -3,6 +3,7 @@ import theme from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import * as React from "react";
 import { storiesOf, addDecorator } from "@storybook/react";
+import Avatar from "react-avatar";
 import { StorybookContext } from "../.storybook/StoryBookContext";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import { getBloomButton } from "./TeamCollectionBookStatusPanel";
@@ -46,6 +47,15 @@ const checkinButton = getBloomButton(
     "Check In.svg"
 );
 
+const avatar = (
+    <React.Suspense fallback={<></>}>
+        <Avatar
+            md5Email={"a5e59e90237da2c858802c1bb106e56c"}
+            size={"48px"}
+            round={true}
+        />
+    </React.Suspense>
+);
 storiesOf("Team Collection components", module)
     .add("Available", () =>
         testPage(
@@ -53,7 +63,7 @@ storiesOf("Team Collection components", module)
                 lockState="unlocked"
                 title="This book is available for editing"
                 subTitle="When you check it out, no one on the team will be able to modify it or see your changes until you check it back in."
-                icon={"Available.svg"}
+                icon={<img src={"Available.svg"} alt="available" />}
                 button={getBloomButton(
                     "Check out book",
                     "TeamCollection.Checkout",
@@ -69,6 +79,7 @@ storiesOf("Team Collection components", module)
                 lockState="lockedByMe"
                 title="This book is checked out to you"
                 subTitle="Are you done for now? Click this button to send your changes to your team."
+                icon={avatar}
                 button={checkinButton}
                 children={
                     <div className="userChanges">
@@ -87,6 +98,7 @@ storiesOf("Team Collection components", module)
                 lockState="locked"
                 title="This book is checked out to Fred"
                 subTitle="You cannot edit the book until Fred checks it in."
+                icon={avatar}
                 children={getLockedInfoChild(
                     "Fred checked out this book on 10 February 2021."
                 )}
@@ -99,6 +111,7 @@ storiesOf("Team Collection components", module)
                 lockState="lockedByMeElsewhere"
                 title="This book is checked out to you, but on a different computer"
                 subTitle="You cannot edit the book on this computer, until you check it in on MyTablet."
+                icon={avatar}
                 children={getLockedInfoChild(
                     "You checked out this book on 14 February 2021."
                 )}
