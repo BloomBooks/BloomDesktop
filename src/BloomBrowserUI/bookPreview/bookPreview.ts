@@ -1,7 +1,7 @@
 import * as $ from "jquery";
 import "jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
 import "errorHandler";
-import { setupTeamCollection } from "../teamCollection/TeamCollectionPanel";
+import { setupTeamCollection } from "../teamCollection/TeamCollectionBookStatusPanel";
 
 $.fn.CenterVerticallyInParent = function() {
     return this.each(function(i) {

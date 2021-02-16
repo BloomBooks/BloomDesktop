@@ -15,10 +15,8 @@
         "testWatch": "karma start --browsers Firefox",
         "testWatchChrome": "karma start --browsers Chrome",
         "teamcitytest": "karma start karma.conf.js --browsers Chrome --reporters teamcity --single-run",
-        "//": {
-            "build": "does a nice new clean build of the output/browser folder.",
-            "watch": "compiles TS, Less, Pug, etc automatically. Doesn't handle all non-code things like 'build' does."
-        },
+        "// 'build': 'does a nice new clean build of the output/browser folder.'": "",
+        "// 'watch': 'compiles TS, Less, Pug, etc automatically. Doesn't handle all non-code things like 'build' does.'": "",
         "buildBrandingFiles": "cpx \"branding/**/!(source)/*.{png,jpg,svg,css,json,htm}\" ../../output/browser/branding",
         "buildBrandingLess": "lessc-glob branding/**/*.less ../../output/browser/branding",
         "buildBrandings": "npm-run-all --parallel buildBrandingLess buildBrandingFiles ",
@@ -42,7 +40,7 @@
         "gitSemiCleanForReal": "git clean -fX --exclude='!node_modules'",
         "tslint": "tslint --project tsconfig.json",
         "// use output/browser as the root of the storybook-provided server": "",
-        "storybook": "start-storybook -s ../../output/browser",
+        "storybook": "start-storybook -s ../../output/browser --static-dir ./,./react_components,./teamCollection",
         "// xmatter development": "",
         "// I haven't figured out how to generalize this to all pug, but it's a helpful template for future xmatter work": "",
         "abcpug": "pug templates/xMatter/ABC-Reader-XMatter/ABC-Reader-Xmatter.pug --pretty --watch -o ../../output/browser/templates/xMatter/ABC-Reader-XMatter --pretty",

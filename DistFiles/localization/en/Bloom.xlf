@@ -4743,27 +4743,56 @@ Do you want to go ahead?</note>
       </trans-unit>
 <!--
 // Don't want these actually translated until things stabilize. Will need re-ordering.
-      <trans-unit id="TeamCollection.CheckIn" sil:dynamic="true">
-        <source xml:lang="en">Check in book</source>
-        <note>ID: TeamCollection.CheckIn</note>
-      </trans-unit>
-      <trans-unit id="TeamCollection.CheckedOutOn" sil:dynamic="true">
-        <source xml:lang="en">%0 checked this book out on %1</source>
-        <note>ID: TeamCollection.CheckedOutOn</note>
-        <note>Must contain %0, a person's name, and %1, a date</note>
+      <trans-unit id="TeamCollection.AvailableDescription" sil:dynamic="true">
+        <source xml:lang="en">When you check it out, no one on the team will be able to modify it or see your changes until you check it back in.</source>
+        <note>ID: TeamCollection.AvailableDescription</note>
       </trans-unit>
       <trans-unit id="TeamCollection.CheckedOutToYou" sil:dynamic="true">
         <source xml:lang="en">This book is checked out to you</source>
         <note>ID: TeamCollection.CheckedOutToYou</note>
       </trans-unit>
-      <trans-unit id="TeamCollection.CheckedOutToSomeone" sil:dynamic="true">
-        <source xml:lang="en">This book is checked out to %0</source>
-        <note>ID: TeamCollection.CheckedOutToSomeone</note>
-        <note>Must contain %0, a person's name (or possibly email)</note>
+      <trans-unit id="TeamCollection.CheckedOutToYouDescription" sil:dynamic="true">
+        <source xml:lang="en">Are you done for now? Click this button to send your changes to your team.</source>
+        <note>ID: TeamCollection.CheckedOutToYouDescription</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutToYouElsewhere" sil:dynamic="true">
+        <source xml:lang="en">This book is checked out to you, but on a different computer</source>
+        <note>ID: TeamCollection.CheckedOutToYouElsewhere</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutToYouElsewhereDescription" sil:dynamic="true">
+        <source xml:lang="en">You cannot edit the book on this computer, until you check it in on %0.</source>
+        <note>ID: TeamCollection.CheckedOutToYouElsewhereDescription</note>
+        <note>The %0 is the name of the computer where the book is checked out.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckIn" sil:dynamic="true">
+        <source xml:lang="en">Check in book</source>
+        <note>ID: TeamCollection.CheckIn</note>
+        <note>On button to check in a book</note>
       </trans-unit>
       <trans-unit id="TeamCollection.Checkout" sil:dynamic="true">
         <source xml:lang="en">Check out book</source>
         <note>ID: TeamCollection.Checkout</note>
+        <note>On button to check out a book</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutOn" sil:dynamic="true">
+        <source xml:lang="en">%0 checked out this book on %1.</source>
+        <note>ID: TeamCollection.CheckedOutOn</note>
+        <note>The %0 is a person's name, and the %1 is a date.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.YouCheckedOutOn" sil:dynamic="true">
+        <source xml:lang="en">You checked out this book on %0.</source>
+        <note>ID: TeamCollection.YouCheckedOutOn</note>
+        <note>The %0 is a date.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutToSomeone" sil:dynamic="true">
+        <source xml:lang="en">This book is checked out to %0</source>
+        <note>ID: TeamCollection.CheckedOutToSomeone</note>
+        <note>The %0 is the name of the person who checked out the book (or possibly email).</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutToSomeoneDescription" sil:dynamic="true">
+        <source xml:lang="en">You cannot edit the book until %0 checks it in.</source>
+        <note>ID: TeamCollection.CheckedOutToSomeoneDescription</note>
+        <note>The %0 is the name of the person who checked out the book.</note>
       </trans-unit>
       <trans-unit id="TeamCollection.ConflictingCheckout" sil:dynamic="true">
         <source xml:lang="en">The book '{0}' is checked out to someone else. Your changes are saved to Lost-and-found.</source>
