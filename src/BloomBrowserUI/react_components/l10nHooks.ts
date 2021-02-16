@@ -31,6 +31,8 @@ export function useL10n(
                     } else {
                         // Enhance: maybe we should do something here if temporarilyDisableI18nWarning is false?
                         // But we should also check for being in debug or possibly alpha...how?
+                        // In any case, if we don't set the text to the output of getLocalization(), we don't
+                        // get param insertion, which makes things broken even in English
                         setLocalizedText(t);
                     }
                 }
