@@ -161,10 +161,7 @@ export class LocalizableElement<
             return;
         }
         this.isComponentMounted = true;
-        if (
-            this.props.alreadyLocalized ||
-            this.props.temporarilyDisableI18nWarning
-        ) {
+        if (this.props.alreadyLocalized) {
             return;
         }
         const english = this.getOriginalStringContent();
@@ -180,6 +177,8 @@ export class LocalizableElement<
                 l10nComment: this.props.l10nComment,
                 l10nParam0: this.props.l10nParam0,
                 l10nParam1: this.props.l10nParam1,
+                temporarilyDisableI18nWarning: this.props
+                    .temporarilyDisableI18nWarning,
                 callback: (localizedText, success) => {
                     this.localizedText = localizedText;
                     if (this.isComponentMounted) {
@@ -249,14 +248,13 @@ export class LocalizableElement<
     } {
         let l10nClass = "untranslated";
         let text = this.getOriginalStringContent();
-        if (
-            this.props.alreadyLocalized ||
-            this.props.temporarilyDisableI18nWarning
-        ) {
+        if (this.props.alreadyLocalized) {
             l10nClass = "assumedTranslated";
         } else if (this.state && this.state.translation) {
             if (this.state.lookupSuccessful) {
                 l10nClass = "translated";
+            } else if (this.props.temporarilyDisableI18nWarning) {
+                l10nClass = "assumedTranslated";
             }
             text = theOneLocalizationManager.processSimpleMarkdown(
                 this.state.translation

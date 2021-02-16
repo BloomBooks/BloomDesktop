@@ -6,6 +6,7 @@ export function getLocalization({
     l10nComment,
     l10nParam0,
     l10nParam1,
+    temporarilyDisableI18nWarning,
     callback
 }: {
     english: string;
@@ -13,10 +14,18 @@ export function getLocalization({
     l10nComment?: string;
     l10nParam0?: string;
     l10nParam1?: string;
+    temporarilyDisableI18nWarning?: boolean;
     callback: (localizedText: string, success: boolean) => void;
 }) {
+    if (temporarilyDisableI18nWarning === undefined)
+        temporarilyDisableI18nWarning = false;
     theOneLocalizationManager
-        .asyncGetTextAndSuccessInfo(l10nKey, english, l10nComment)
+        .asyncGetTextAndSuccessInfo(
+            l10nKey,
+            english,
+            l10nComment,
+            temporarilyDisableI18nWarning
+        )
         .done(result => {
             let text = result.text;
             if (l10nParam0) {
