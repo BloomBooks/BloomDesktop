@@ -12,7 +12,7 @@ export interface IStatusPanelProps {
     lockState: LockState;
     title: string;
     subTitle: string;
-    icon?: string;
+    icon: JSX.Element;
     button?: JSX.Element;
     children?: JSX.Element;
     menu?: JSX.Element; // when book is checked out, About my Avatar... and Forget Changes and Check in Book
@@ -41,14 +41,7 @@ export const StatusPanelCommon: React.FunctionComponent<IStatusPanelProps> = (
     return (
         <div className="status-panel">
             <div className="panel-top">
-                <div className="icon-or-avatar">
-                    {props.icon && (
-                        <img
-                            src={props.icon}
-                            alt="Cloud icon (book available) or avatar of person using the file"
-                        />
-                    )}
-                </div>
+                <div className="icon-or-avatar">{props.icon}</div>
                 <div className="panel-titles">
                     <Typography
                         className="main-title"
