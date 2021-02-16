@@ -9,7 +9,8 @@ export function useL10n(
     l10nKey: string | null,
     l10nComment?: string,
     l10nParam0?: string,
-    l10nParam1?: string
+    l10nParam1?: string,
+    temporarilyDisableI18nWarning?: boolean
 ) {
     const [localizedText, setLocalizedText] = React.useState(english);
     React.useEffect(() => {
@@ -22,6 +23,7 @@ export function useL10n(
                 l10nComment,
                 l10nParam0,
                 l10nParam1,
+                temporarilyDisableI18nWarning,
                 // Enhance: if lookupSuccessful is false AND we're in the debug/alpha etc (see l10ncomponents), prefix with *** or something.
                 callback: (t, lookupSuccessful) => {
                     if (lookupSuccessful) {

@@ -1,0 +1,19 @@
+@status-panel-height: 200px;
+
+html,
+body {
+    height: 100%; // required so we can do percents on #preview-wrapper
+}
+
+#preview-wrapper {
+    height: calc(100% - @status-panel-height);
+    overflow-y: scroll;
+}
+
+#teamCollection {
+    color: white;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: @status-panel-height;
+}

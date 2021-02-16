@@ -1,0 +1,64 @@
+@import "../bloomUI.less";
+// used from bloomUI so far: bloom-panelBackground
+@icon-size: 60px;
+@icon-top-padding: 4px; // Headings have top space which we want to match
+@icon-side-padding: 8px;
+@panel-button-height: 40px;
+@panel-button-width: 200px;
+@panel-button-padding: 15px;
+@panel-button-icon-space: 20px;
+@panel-button-icon-size: 24px;
+
+.status-panel {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    background-color: @bloom-panelBackground;
+    .panel-top {
+        display: flex;
+        flex-direction: row;
+        flex: 1;
+        padding-top: 12px;
+        .icon-or-avatar {
+            width: @icon-size;
+            padding-top: @icon-top-padding;
+            padding-left: @icon-side-padding;
+            padding-right: @icon-side-padding;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            img {
+                width: 90%;
+            }
+        }
+        .panel-titles {
+            display: flex;
+            flex-direction: column;
+        }
+        .status-panel-menu {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+    }
+    .lockedInfo {
+        margin-left: calc(@icon-size + 2 * @icon-side-padding);
+    }
+    .panel-button {
+        width: @panel-button-width;
+        height: @panel-button-height;
+        padding-right: @panel-button-padding;
+        padding-bottom: @panel-button-padding;
+        align-self: flex-end;
+        display: flex;
+        justify-content: flex-end;
+        button {
+            width: 100%; // fill out width of box for button
+            img {
+                width: @panel-button-icon-size;
+                margin-right: @panel-button-icon-space; // add some space between the icon and the text
+            }
+        }
+    }
+}
