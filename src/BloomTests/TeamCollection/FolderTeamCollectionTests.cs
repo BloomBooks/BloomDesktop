@@ -82,7 +82,7 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public void PutBook_CreatesExpectedBloomFile()
 		{
-			var destPath = Path.Combine(_sharedFolder.FolderPath, "My book.bloom");
+			var destPath = Path.Combine(_sharedFolder.FolderPath, "Books" ,"My book.bloom");
 			Assert.That(RobustFile.Exists(destPath));
 		}
 
@@ -168,7 +168,7 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public void NewBook_RaisesNewBookEvent()
 		{
-			var newBookPath = Path.Combine(_sharedFolder.FolderPath, "A new book.bloom");
+			var newBookPath = Path.Combine(_sharedFolder.FolderPath, "Books", "A new book.bloom");
 			var newBookName = "";
 			_collection.StartMonitoring();
 			// used to wait for the OS notification to raise the event
@@ -190,7 +190,7 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public void ChangedBook_RaisesBookChangedEvent()
 		{
-			var bloomBookPath = Path.Combine(_sharedFolder.FolderPath, "put book to modify.bloom");
+			var bloomBookPath = Path.Combine(_sharedFolder.FolderPath, "Books", "put book to modify.bloom");
 			// Don't use PutBook here...changing the file immediately after putting it won't work,
 			// because of the code that tries to prevent notifications of our own checkins.
 			RobustFile.WriteAllText(bloomBookPath, @"This is original"); // no, not a zip at all
@@ -383,6 +383,25 @@ namespace BloomTests.TeamCollection
 		{
 			var lockTime = _collection.WhenWasBookLocked("My book");
 			Assert.That(lockTime, Is.EqualTo(DateTime.MaxValue));
+		}
+
+		[Test]
+		public void CopySharedCollectionFilesToLocal_RetrievesFilesPut()
+		{
+			var collectionFilePath = Bloom.TeamCollection.TeamCollection.CollectionPath(_collectionFolder.FolderPath);
+			File.WriteAllText(collectionFilePath, "This is a fake collection");
+			var customStylesPath = Path.Combine(_collectionFolder.FolderPath, "customCollectionStyles.css");
+			File.WriteAllText(customStylesPath, "Fake collection styles");
+			_collection.CopySharedCollectionFilesFromLocal(_collectionFolder.FolderPath);
+			using (var tempDest = new TemporaryFolder("CopySharedCollectionFilesToLocal_RetrievesFilePut"))
+			{
+
+				_collection.CopySharedCollectionFilesToLocal(tempDest.FolderPath);
+				var destCollectionFilePath = Path.Combine(tempDest.FolderPath, Path.GetFileName(collectionFilePath));
+				Assert.That(File.ReadAllText(destCollectionFilePath), Is.EqualTo("This is a fake collection"));
+				var destStylesPath = Path.Combine(tempDest.FolderPath, "customCollectionStyles.css");
+				Assert.That(File.ReadAllText(destStylesPath), Is.EqualTo("Fake collection styles"));
+			}
 		}
 
 		//[Test]

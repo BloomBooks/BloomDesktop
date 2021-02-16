@@ -36,7 +36,7 @@ namespace BloomTests.TeamCollection
 
 			// Simulate a book that was once shared, but has been deleted from the shared folder.
 			MakeBook("Should be deleted", "This should be deleted as it has local status but is not shared", true);
-			var delPath = Path.Combine(_sharedFolder.FolderPath, "Should be deleted.bloom");
+			var delPath = Path.Combine(_sharedFolder.FolderPath, "Books", "Should be deleted.bloom");
 			RobustFile.Delete(delPath);
 
 			// Simulate a book newly created locally. Not in repo, but should not be deleted.
@@ -200,7 +200,7 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public virtual void SyncAtStartup_BookCreatedLocallyNotCheckedIn_CopiedLocalOnlyOnJoin()
 		{
-			Assert.That(File.Exists(Path.Combine(_sharedFolder.FolderPath, "New book.bloom")), Is.EqualTo(FirstTimeJoin()));
+			Assert.That(File.Exists(Path.Combine(_sharedFolder.FolderPath, "Books" ,"New book.bloom")), Is.EqualTo(FirstTimeJoin()));
 		}
 
 		[Test]

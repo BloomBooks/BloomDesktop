@@ -116,11 +116,17 @@ namespace Bloom.TeamCollection
 			WriteLocalStatus(bookName, GetStatus(bookName), destinationCollectionFolder ?? _localCollectionFolder);
 		}
 
-		// Write the specified file, typically collection settings, to the repo.
-		public abstract void PutFile(string pathName);
+		// Write the specified file to the repo's collection files.
+		public abstract void PutCollectionFile(string pathName);
 
-		// Read the specified file, typically collection settings, from the repo.
-		public abstract void GetFile(string pathName);
+		// Read the specified file from the repo's collection files.
+		public abstract void GetCollectionFile(string pathName);
+
+		/// <summary>
+		/// Get the names of all collection files
+		/// </summary>
+		/// <returns></returns>
+		public abstract string[] CollectionFiles();
 
 		// Get a list of all the email addresses of people who have locked books
 		// in the collection.
@@ -286,8 +292,10 @@ namespace Bloom.TeamCollection
 		/// <param name="localCollectionFolder"></param>
 		public void CopySharedCollectionFilesToLocal(string localCollectionFolder)
 		{
-			GetFile(Path.Combine(localCollectionFolder, "customCollectionStyles.css"));
-			GetFile(CollectionPath(localCollectionFolder));
+			foreach (var name in CollectionFiles())
+			{
+				GetCollectionFile(Path.Combine(localCollectionFolder, name));
+			}
 		}
 
 		/// <summary>
@@ -313,9 +321,9 @@ namespace Bloom.TeamCollection
 		{
 			var collectionStylesPath = Path.Combine(localCollectionFolder, "customCollectionStyles.css");
 			if (RobustFile.Exists(collectionStylesPath))
-				PutFile(collectionStylesPath);
+				PutCollectionFile(collectionStylesPath);
 			var collectionName = Path.GetFileName(localCollectionFolder);
-			PutFile(Path.Combine(localCollectionFolder, Path.ChangeExtension(collectionName, "bloomCollection")));
+			PutCollectionFile(Path.Combine(localCollectionFolder, Path.ChangeExtension(collectionName, "bloomCollection")));
 
 		}
 
