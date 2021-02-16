@@ -55,9 +55,11 @@ namespace Bloom.Api
 					string id = parameters["key"];
 					string englishText = parameters["englishText"];
 					string langId = parameters["langId"];
-					string isoCode1 = null;
-					string isoCode2 = null;
-					string isoCode3 = null;
+					string dontWarnIfMissing = parameters["dontWarnIfMissing"];
+					bool isDontWarnIfMissing = dontWarnIfMissing != null && dontWarnIfMissing.Equals("true");
+					string isoCode1;
+					string isoCode2;
+					string isoCode3;
 					if (request.CurrentBook != null)
 					{
 						isoCode1 = request.CurrentBook.BookData.Language1.Iso639Code;
@@ -74,8 +76,7 @@ namespace Bloom.Api
 					langId = langId.Replace("N1", isoCode2);
 					langId = langId.Replace("N2", isoCode3);
 					langId = langId.Replace("UI", LocalizationManager.UILanguageId);
-					string localizedString;
-					if (GetSomeTranslation(id, langId, out localizedString))
+					if (GetSomeTranslation(id, langId, out var localizedString))
 					{
 						// Ensure that we actually have a value for localized string.  (This should already be true, but I'm paranoid.)
 						if (localizedString == null)
@@ -107,7 +108,8 @@ namespace Bloom.Api
 								// then we want to remind the developer to add it to the english xlf file.
 								if (!LocalizationManager.GetIsStringAvailableForLangId(id, "en"))
 								{
-									ReportL10NMissingString(id, englishText, UrlPathString.CreateFromUrlEncodedString(parameters["comment"]??"").NotEncoded);
+									if (!isDontWarnIfMissing)
+										ReportL10NMissingString(id, englishText, UrlPathString.CreateFromUrlEncodedString(parameters["comment"]??"").NotEncoded);
 									idFound = false;
 								}
 								else

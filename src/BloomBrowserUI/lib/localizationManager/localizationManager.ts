@@ -194,6 +194,7 @@ export class LocalizationManager {
             comment,
             false,
             false,
+            false,
             args
         );
     }
@@ -225,6 +226,7 @@ export class LocalizationManager {
             comment,
             true,
             false,
+            false,
             args
         );
     }
@@ -232,6 +234,7 @@ export class LocalizationManager {
         id: string,
         englishText: string,
         comment: string | undefined,
+        temporarilyDisableI18nWarning: boolean,
         ...args
     ): JQueryPromise<any> {
         return this.asyncGetTextInLangCommon(
@@ -241,6 +244,7 @@ export class LocalizationManager {
             comment,
             true,
             true,
+            temporarilyDisableI18nWarning,
             args
         );
     }
@@ -252,12 +256,13 @@ export class LocalizationManager {
         comment: string | undefined,
         englishDefault: boolean,
         includeSuccessInfo: boolean,
+        temporarilyDisableI18nWarning: boolean,
         args
     ): JQueryPromise<any> {
         // We already get a promise from the async call, and could just return that.
         // But we want to first massage the data we get back from the ajax call, before we re - "send" the result along
         //to the caller. So, we do that by making our *own* deferred object, and "resolve" it with the massaged value.
-        var deferred = $.Deferred();
+        const deferred = $.Deferred();
 
         //when the async call comes back, we massage the text
         // Using axios directly because we have specific catch behavior
@@ -267,7 +272,8 @@ export class LocalizationManager {
                     key: id,
                     englishText: englishText,
                     langId: langId,
-                    comment: comment || ""
+                    comment: comment || "",
+                    dontWarnIfMissing: temporarilyDisableI18nWarning
                 }
             })
             .then(response => {

@@ -33,7 +33,8 @@ export class BloomSelect extends React.Component<IProps> {
                     .asyncGetTextAndSuccessInfo(
                         item.l10nKey,
                         item.label,
-                        item.comment ? item.comment : ""
+                        item.comment ? item.comment : "",
+                        false
                     )
                     .done(result => {
                         item.label = result.text;
