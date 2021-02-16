@@ -56,7 +56,7 @@ namespace BloomTests.TeamCollection
 					Assert.That(RobustFile.ReadAllText(teamCollectionSettingsPath), Contains.Substring("<TeamCollectionFolder>" + sharedFolder.FolderPath+"</TeamCollectionFolder>"));
 					var sharedSettingsPath = Path.Combine(collectionFolder.FolderPath, settingsFileName);
 					Assert.That(RobustFile.ReadAllText(sharedSettingsPath), Is.EqualTo("This is a fake settings file"));
-					var bookPath = Path.Combine(sharedFolder.FolderPath, "Some book.bloom");
+					var bookPath = Path.Combine(sharedFolder.FolderPath, "Books", "Some book.bloom");
 					Assert.That(File.Exists(bookPath));
 
 				}
