@@ -478,7 +478,7 @@ namespace Bloom.web.controllers
 				isHeadingPreEncoded = false;
 			}
 
-			var book = _bookSelection.CurrentSelection;
+			var book = _bookSelection?.CurrentSelection;
 			var bestBookName = book?.TitleBestForUserDisplay;
 
 			var userEmail = SIL.Windows.Forms.Registration.Registration.Default.Email;

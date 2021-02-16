@@ -158,38 +158,61 @@ namespace Bloom.TeamCollection
 			}
 		}
 
-		public override void PutCollectionFile(string pathName)
+		public override void PutCollectionFiles(string[] names)
 		{
-			var destFolder = GetRepoProjectFilesFolder(_repoFolderPath);
-			Directory.CreateDirectory(destFolder);
-			var destPath = Path.Combine(destFolder, Path.GetFileName(pathName));
-			RobustFile.Copy(pathName, destPath, true);
+			var destPath = GetRepoProjectFilesZipPath(_repoFolderPath);
+			var zipFile = new BloomZipFile(destPath);
+			foreach (var name in names)
+			{
+				var path = Path.Combine(_localCollectionFolder, name);
+				if (!File.Exists(path))
+					continue;
+				zipFile.AddTopLevelFile(path, true);
+			}
+
+			zipFile.Save();
 		}
 
-		private static string GetRepoProjectFilesFolder(string repoFolderPath)
+		private static string GetRepoProjectFilesZipPath(string repoFolderPath)
 		{
-			return Path.Combine(repoFolderPath, "Other Project Files");
+			return Path.Combine(repoFolderPath, "Other Project Files.zip");
 		}
 
-		public override void FetchCollectionFile(string pathName)
+
+		public override void CopyRepoCollectionFilesToLocal(string destFolder)
 		{
-			CopyCollectionFileTo(pathName, _repoFolderPath);
+			CopyRepoCollectionFilesTo(destFolder, _repoFolderPath);
 		}
 
-		private static void CopyCollectionFileTo(string destPath, string repoFolderPath)
+		private static void CopyRepoCollectionFilesTo(string destFolder, string repoFolder)
 		{
-			var sourcePath = Path.Combine(GetRepoProjectFilesFolder(repoFolderPath), Path.GetFileName(destPath));
-			if (File.Exists(sourcePath))
-				RobustFile.Copy(sourcePath, destPath, true);
-		}
+			var collectionZipPath = GetRepoProjectFilesZipPath(repoFolder);
+			if (!File.Exists(collectionZipPath))
+				return;
+			byte[] buffer = new byte[4096];     // 4K is optimum
+			try
+			{
+				using (var zipFile = new ZipFile(collectionZipPath))
+				{
+					foreach (ZipEntry entry in zipFile)
+					{
+						var fullOutputPath = Path.Combine(destFolder, entry.Name);
 
-		public override string[] CollectionFiles()
-		{
-			var collectionFilesDir = GetRepoProjectFilesFolder(_repoFolderPath);
-			if (!Directory.Exists(collectionFilesDir))
-				return new string[0];
-			return Directory.GetFiles(collectionFilesDir)
-				.Select(p => Path.GetFileName(p)).ToArray();
+						var directoryName = Path.GetDirectoryName(fullOutputPath);
+						if (!String.IsNullOrEmpty(directoryName))
+							Directory.CreateDirectory(directoryName);
+						using (var instream = zipFile.GetInputStream(entry))
+						using (var writer = RobustFile.Create(fullOutputPath))
+						{
+							ICSharpCode.SharpZipLib.Core.StreamUtils.Copy(instream, writer, buffer);
+						}
+					}
+				}
+			}
+			catch (Exception e) when (e is ZipException || e is IOException)
+			{
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not unpack the collection files in your Team Collection");
+			}
 		}
 
 		// All the people who have something checked out in the repo.
@@ -447,7 +470,8 @@ namespace Bloom.TeamCollection
 
 		/// <summary>
 		/// Setup the bare minimum files in localCollectionFolder so that it can join the team collection
-		/// in the specified repoFolder.
+		/// in the specified repoFolder. (We could get away without unpacking more than the .bloomCollection
+		/// file, but we'll want the others soon, and typically it's not a lot.)
 		/// </summary>
 		/// <returns></returns>
 		public static string SetupMinimumLocalCollectionFilesForRepo(string repoFolder, string localCollectionFolder)
@@ -455,7 +479,7 @@ namespace Bloom.TeamCollection
 			Directory.CreateDirectory(localCollectionFolder);
 			CreateTeamCollectionSettingsFile(localCollectionFolder, repoFolder);
 			var newSettingsPath = CollectionPath(localCollectionFolder);
-			CopyCollectionFileTo(newSettingsPath, repoFolder);
+			CopyRepoCollectionFilesTo(localCollectionFolder, repoFolder);
 			return newSettingsPath;
 		}
 

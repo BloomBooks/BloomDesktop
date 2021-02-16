@@ -117,16 +117,7 @@ namespace Bloom.TeamCollection
 		}
 
 		// Write the specified file to the repo's collection files.
-		public abstract void PutCollectionFile(string pathName);
-
-		// Read the specified file from the repo's collection files.
-		public abstract void FetchCollectionFile(string pathName);
-
-		/// <summary>
-		/// Get the names of all collection files
-		/// </summary>
-		/// <returns></returns>
-		public abstract string[] CollectionFiles();
+		public abstract void PutCollectionFiles(string[] names);
 
 		// Get a list of all the email addresses of people who have locked books
 		// in the collection.
@@ -290,13 +281,7 @@ namespace Bloom.TeamCollection
 		/// retrieve it all.
 		/// </summary>
 		/// <param name="localCollectionFolder"></param>
-		public void CopyRepoCollectionFilesToLocal(string localCollectionFolder)
-		{
-			foreach (var name in CollectionFiles())
-			{
-				FetchCollectionFile(Path.Combine(localCollectionFolder, name));
-			}
-		}
+		public abstract void CopyRepoCollectionFilesToLocal(string destFolder);
 
 		/// <summary>
 		/// Gets the path to the bloomCollection file, given the folder.
@@ -319,12 +304,8 @@ namespace Bloom.TeamCollection
 		/// <param name="localCollectionFolder"></param>
 		public void CopyRepoCollectionFilesFromLocal(string localCollectionFolder)
 		{
-			var collectionStylesPath = Path.Combine(localCollectionFolder, "customCollectionStyles.css");
-			if (RobustFile.Exists(collectionStylesPath))
-				PutCollectionFile(collectionStylesPath);
 			var collectionName = Path.GetFileName(localCollectionFolder);
-			PutCollectionFile(Path.Combine(localCollectionFolder, Path.ChangeExtension(collectionName, "bloomCollection")));
-
+			PutCollectionFiles(new [] { "customCollectionStyles.css", Path.ChangeExtension(collectionName, "bloomCollection") });
 		}
 
 		protected void RaiseNewBook(string bookName)
