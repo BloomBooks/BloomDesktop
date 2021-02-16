@@ -60,7 +60,7 @@ namespace Bloom.TeamCollection
 			else
 			{
 				result.lockedWhen = string.Format("{0:yyyy-MM-ddTHH:mm:ss.fffZ}", DateTime.UtcNow);
-				result.lockedWhere = Environment.MachineName;
+				result.lockedWhere = TeamCollectionManager.CurrentMachine;
 			}
 
 			return result;
@@ -75,7 +75,7 @@ namespace Bloom.TeamCollection
 		{
 			if (lockedBy == TeamCollection.FakeUserIndicatingNewBook)
 				return true; // a new local book is always "checked out here"
-			return lockedBy == whoBy && lockedWhere == Environment.MachineName;
+			return lockedBy == whoBy && lockedWhere == TeamCollectionManager.CurrentMachine;
 		}
 	}
 }

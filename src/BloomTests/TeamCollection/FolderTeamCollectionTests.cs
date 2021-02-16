@@ -280,7 +280,7 @@ namespace BloomTests.TeamCollection
 		{
 			Assert.That(_collection.AttemptLock("My book", "joe@somewhere.org"), Is.True);
 			Assert.That(_collection.WhoHasBookLocked("My book"), Is.EqualTo("joe@somewhere.org"));
-			Assert.That(_collection.WhatComputerHasBookLocked("My book"), Is.EqualTo(Environment.MachineName));
+			Assert.That(_collection.WhatComputerHasBookLocked("My book"), Is.EqualTo(TeamCollectionManager.CurrentMachine));
 
 			// We need to combine these tests so we leave the book in the unlocked state
 			_collection.UnlockBook("My book");

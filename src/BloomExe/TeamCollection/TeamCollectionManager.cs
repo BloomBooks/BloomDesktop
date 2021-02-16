@@ -18,6 +18,7 @@ namespace Bloom.TeamCollection
 		public TeamCollection CurrentCollection { get; private set; }
 		private string _localCollectionFolder;
 		private static string _overrideCurrentUser;
+		private static string _overrideMachineName;
 
 		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer)
 		{
@@ -25,7 +26,15 @@ namespace Bloom.TeamCollection
 			_localCollectionFolder = Path.GetDirectoryName(localCollectionPath);
 			var impersonatePath = Path.Combine(_localCollectionFolder, "impersonate.txt");
 			if (File.Exists(impersonatePath))
-				_overrideCurrentUser = File.ReadAllLines(impersonatePath).FirstOrDefault();
+			{
+				var lines = File.ReadAllLines(impersonatePath);
+				_overrideCurrentUser = lines.FirstOrDefault();
+				if (lines.Length > 1)
+				{
+					_overrideMachineName = lines[1];
+				}
+			}
+
 			var localSettingsPath = Path.Combine(_localCollectionFolder, TeamCollectionSettingsFileName);
 			if (File.Exists(localSettingsPath))
 			{
@@ -77,6 +86,12 @@ namespace Bloom.TeamCollection
 		// This is the value the book must be locked to for a local checkout.
 		// For all the Sharing code, this should be the one place we know how to find that user.
 		public static string CurrentUser => _overrideCurrentUser ?? SIL.Windows.Forms.Registration.Registration.Default.Email;
+
+		/// <summary>
+		/// This is what the BookStatus.lockedWhere must be for a book to be considered
+		/// checked out locally. For all sharing code, this should be the one place to get this.
+		/// </summary>
+		public static string CurrentMachine => _overrideMachineName ?? Environment.MachineName;
 
 		public void Dispose()
 		{

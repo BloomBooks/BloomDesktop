@@ -158,7 +158,7 @@ namespace Bloom.TeamCollection
 				if (Directory.Exists(bookFolder))
 				{
 					// book exists only locally. Treat as checked out to FakeUserIndicatingNewBook
-					return new BookStatus() { lockedBy = FakeUserIndicatingNewBook, lockedWhere = Environment.MachineName};
+					return new BookStatus() { lockedBy = FakeUserIndicatingNewBook, lockedWhere = TeamCollectionManager.CurrentMachine };
 				}
 				else
 				{
@@ -481,7 +481,7 @@ namespace Bloom.TeamCollection
 							// the local version.
 							var statusLocal = GetLocalStatus(fileName);
 							if (statusLocal.lockedBy != TeamCollectionManager.CurrentUser
-							    || statusLocal.lockedWhere != Environment.MachineName)
+							    || statusLocal.lockedWhere != TeamCollectionManager.CurrentMachine)
 							{
 								progress.Message("DeleteLocal", "{0} is a filename",
 									String.Format("Deleting '{0}' from local folder as it is no longer in the Team Collection", fileName), MessageKind.Progress);
