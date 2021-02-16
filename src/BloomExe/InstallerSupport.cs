@@ -257,33 +257,12 @@ namespace Bloom
 				return;
 			}
 
-			// This is what I (JohnT) think should make Bloom display the right icon for .BloomCollection files.
-			EnsureRegistryValue(@".BloomCollection\DefaultIcon", Path.Combine(iconDir, "BloomCollectionIcon.ico"));
-			EnsureRegistryValue(@".BloomPack\DefaultIcon", Path.Combine(iconDir, "BloomPack.ico"));
-
-			// These may also be connected with making BloomCollection files display the correct icon.
-			// Based on things found in (or done by) the old wix installer.
-			EnsureRegistryValue(".BloomCollection", "Bloom.BloomCollectionFile");
-			EnsureRegistryValue(".BloomCollectionFile", "Bloom.BloomCollectionFile");
-			EnsureRegistryValue("Bloom.BloomCollectionFile", "Bloom Book Collection");
-			EnsureRegistryValue(@"Bloom.BloomCollectionFile\DefaultIcon", Path.Combine(iconDir, "BloomCollectionIcon.ico, 0"));
-
-			// I think these help BloomPack files display the correct icon.
-			EnsureRegistryValue(".BloomPack", "Bloom.BloomPackFile");
-			EnsureRegistryValue("Bloom.BloomPackFile", "Bloom Book Collection");
-			EnsureRegistryValue(".BloomPackFile", "Bloom Book Collection");
-			EnsureRegistryValue(@"Bloom.BloomPackFile\DefaultIcon", Path.Combine(iconDir, "BloomPack.ico, 0"));
-			EnsureRegistryValue(@".BloomPackFile\DefaultIcon", Path.Combine(iconDir, "BloomPack.ico, 0"));
-			EnsureRegistryValue(@"SOFTWARE\Classes\Bloom.BloomPack", "Bloom Book Pack", "FriendlyTypeName");
-
-			// And similarly for JoinBloomTC, though we haven't made an icon for it yet.
-			EnsureRegistryValue(".JoinBloomTC", "Bloom.JoinBloomTCFile");
-			EnsureRegistryValue("Bloom.JoinBloomTCFile", "Bloom Team Collection");
-			EnsureRegistryValue(".JoinBloomTCFile", "Bloom Team Collection");
-			// For now reuse bloom collection icon
-			EnsureRegistryValue(@"Bloom.JoinBloomTCFile\DefaultIcon", Path.Combine(iconDir, "BloomCollectionIcon.ico, 0"));
-			EnsureRegistryValue(@".JoinBloomTCFile\DefaultIcon", Path.Combine(iconDir, "BloomCollectionIcon.ico, 0"));
-
+			// BloomCollection icon
+			CreateIconRegistrySettings("BloomCollection", iconDir, "BloomCollectionIcon.ico", "Bloom Book Collection");
+			// BloomPack icon
+			CreateIconRegistrySettings("BloomPack", iconDir, "BloomPack.ico", "Bloom Book Pack", "FriendlyTypeName");
+			// JoinBloomTC icon
+			CreateIconRegistrySettings("JoinBloomTC", iconDir, "JoinBloomTC.ico", "Join Bloom Team Collection");
 
 			// This might be part of registering as the executable for various file types?
 			// I don't know what does it in wix but it's one of the things the old wix installer created.
@@ -296,6 +275,23 @@ namespace Bloom
 			// Make the OS run Bloom when it sees bloom://somebooktodownload
 			BookDownloadSupport.RegisterForBloomUrlProtocol(_installInLocalMachine);
 
+		}
+
+		private static void CreateIconRegistrySettings(string extension, string iconDir, string iconFileName, string description, string softwareClassesName = null)
+		{
+			// This is what I (JohnT) think should make Bloom display the right icon for .{extension} files.
+			EnsureRegistryValue($@".{extension}\DefaultIcon", Path.Combine(iconDir, iconFileName));
+
+			// These may also be connected with making files display the correct icon.
+			// Based on things found in (or done by) the old wix installer.
+			EnsureRegistryValue($".{extension}", $"Bloom.{extension}File");
+			EnsureRegistryValue($".{extension}File", $"Bloom.{extension}File");
+			EnsureRegistryValue($"Bloom.{extension}File", description);
+			EnsureRegistryValue($@"Bloom.{extension}File\DefaultIcon", Path.Combine(iconDir, $"{iconFileName}, 0"));
+			EnsureRegistryValue($@".{extension}File\DefaultIcon", Path.Combine(iconDir, $"{iconFileName}, 0"));
+
+			if (softwareClassesName != null)
+				EnsureRegistryValue($@"SOFTWARE\Classes\Bloom.{extension}", description, softwareClassesName);
 		}
 
 		internal static void BeTheExecutableFor(string extension, string description)
