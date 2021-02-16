@@ -13,7 +13,7 @@ namespace BloomTests.TeamCollection
 {
 	public class SyncAtStartupTests
 	{
-		private TemporaryFolder _sharedFolder;
+		private TemporaryFolder _repoFolder;
 		protected TemporaryFolder _collectionFolder;
 		protected FolderTeamCollection _collection;
 		private string _originalUser;
@@ -24,19 +24,19 @@ namespace BloomTests.TeamCollection
 		[OneTimeSetUp]
 		public void OneTimeSetup()
 		{
-			_sharedFolder = new TemporaryFolder("SyncAtStartup_Shared");
+			_repoFolder = new TemporaryFolder("SyncAtStartup_Repo");
 			_collectionFolder = new TemporaryFolder("SyncAtStartup_Local");
-			FolderTeamCollection.CreateTeamCollectionSettingsFile(_collectionFolder.FolderPath, _sharedFolder.FolderPath);
-			_collection = new FolderTeamCollection(_collectionFolder.FolderPath, _sharedFolder.FolderPath);
+			FolderTeamCollection.CreateTeamCollectionSettingsFile(_collectionFolder.FolderPath, _repoFolder.FolderPath);
+			_collection = new FolderTeamCollection(_collectionFolder.FolderPath, _repoFolder.FolderPath);
 			_originalUser = Bloom.TeamCollection.TeamCollectionManager.CurrentUser;
 			if (string.IsNullOrEmpty(_originalUser))
 			{
 				SIL.Windows.Forms.Registration.Registration.Default.Email = "test@somewhere.org";
 			}
 
-			// Simulate a book that was once shared, but has been deleted from the shared folder.
+			// Simulate a book that was once shared, but has been deleted from the repo folder.
 			MakeBook("Should be deleted", "This should be deleted as it has local status but is not shared", true);
-			var delPath = Path.Combine(_sharedFolder.FolderPath, "Books", "Should be deleted.bloom");
+			var delPath = Path.Combine(_repoFolder.FolderPath, "Books", "Should be deleted.bloom");
 			RobustFile.Delete(delPath);
 
 			// Simulate a book newly created locally. Not in repo, but should not be deleted.
@@ -121,8 +121,8 @@ namespace BloomTests.TeamCollection
 			_collection.WriteLocalStatus("Update content and status and warn2", newStatus);
 
 			// Simulate a book which has no local status, but for which the computed checksum matches
-			// the shared one. This could happen if a user obtained the same book independently,
-			// or during initial merging of a local and shared collection, where much of the material
+			// the repo one. This could happen if a user obtained the same book independently,
+			// or during initial merging of a local and team collection, where much of the material
 			// was previously duplicated.
 			// Test result: status is copied to local
 			MakeBook("copy status", "Same content in both places");
@@ -145,7 +145,7 @@ namespace BloomTests.TeamCollection
 		public void OneTimeTearDown()
 		{
 			_collectionFolder.Dispose();
-			_sharedFolder.Dispose();
+			_repoFolder.Dispose();
 			SIL.Windows.Forms.Registration.Registration.Default.Email = _originalUser;
 		}
 
@@ -200,7 +200,7 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public virtual void SyncAtStartup_BookCreatedLocallyNotCheckedIn_CopiedLocalOnlyOnJoin()
 		{
-			Assert.That(File.Exists(Path.Combine(_sharedFolder.FolderPath, "Books" ,"New book.bloom")), Is.EqualTo(FirstTimeJoin()));
+			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books" ,"New book.bloom")), Is.EqualTo(FirstTimeJoin()));
 		}
 
 		[Test]
@@ -278,7 +278,7 @@ namespace BloomTests.TeamCollection
 
 		public void AssertLostAndFound(string bookName)
 		{
-			var bookPath = Path.Combine(_sharedFolder.FolderPath, "Lost and Found", Path.ChangeExtension(bookName, "bloom"));
+			var bookPath = Path.Combine(_repoFolder.FolderPath, "Lost and Found", Path.ChangeExtension(bookName, "bloom"));
 			Assert.That(File.Exists(bookPath));
 			// We could try to check the content (from an extra argument). However, there's no plausible path
 			// for the book to get to lost-and-found except by PutBook, and we have other tests to check

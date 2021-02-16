@@ -261,7 +261,7 @@ namespace Bloom
 							Browser.SetUpXulRunner();
 							using (var fakeProjectFolder = new TemporaryFolder("projectName"))
 							{
-								var fakeCollectionPath = FolderTeamCollection.SetupMinimumSharedCollectionFiles(
+								var fakeCollectionPath = FolderTeamCollection.SetupMinimumLocalCollectionFilesForRepo(
 									Path.GetDirectoryName(args[0]), fakeProjectFolder.FolderPath);
 								using (var projectContext =
 									_applicationContainer.CreateProjectContext(fakeCollectionPath, true))

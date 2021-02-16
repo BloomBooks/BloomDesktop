@@ -11,7 +11,7 @@ namespace BloomTests.TeamCollection
 {
 	public class FolderTeamCollectionTests
 	{
-		private TemporaryFolder _sharedFolder;
+		private TemporaryFolder _repoFolder;
 		private TemporaryFolder _collectionFolder;
 		private TestFolderTeamCollection _collection;
 		private BookStatus _myBookStatus;
@@ -20,10 +20,10 @@ namespace BloomTests.TeamCollection
 		[OneTimeSetUp]
 		public void OneTimeSetup()
 		{
-			_sharedFolder = new TemporaryFolder("FolderTeamCollectionTests_Shared");
-			_collectionFolder = new TemporaryFolder("FolderTeamCollectionTests_Collection");
-			FolderTeamCollection.CreateTeamCollectionSettingsFile(_collectionFolder.FolderPath, _sharedFolder.FolderPath);
-			_collection = new TestFolderTeamCollection(_collectionFolder.FolderPath, _sharedFolder.FolderPath);
+			_repoFolder = new TemporaryFolder("FolderTeamCollectionTests_Repo");
+			_collectionFolder = new TemporaryFolder("FolderTeamCollectionTests_Local");
+			FolderTeamCollection.CreateTeamCollectionSettingsFile(_collectionFolder.FolderPath, _repoFolder.FolderPath);
+			_collection = new TestFolderTeamCollection(_collectionFolder.FolderPath, _repoFolder.FolderPath);
 
 			// Make some books and check them in. Individual tests verify the results.
 			// This book has an additional file, including a subfolder, to ensure they get
@@ -56,7 +56,7 @@ namespace BloomTests.TeamCollection
 		public void OneTimeTearDown()
 		{
 			_collectionFolder.Dispose();
-			_sharedFolder.Dispose();
+			_repoFolder.Dispose();
 		}
 
 		[TearDown]
@@ -82,7 +82,7 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public void PutBook_CreatesExpectedBloomFile()
 		{
-			var destPath = Path.Combine(_sharedFolder.FolderPath, "Books" ,"My book.bloom");
+			var destPath = Path.Combine(_repoFolder.FolderPath, "Books" ,"My book.bloom");
 			Assert.That(RobustFile.Exists(destPath));
 		}
 
@@ -98,7 +98,7 @@ namespace BloomTests.TeamCollection
 		{
 			using (var destFolder = new TemporaryFolder("GetBooks_Retrieves"))
 			{
-				_collection.CopyAllBooksFromSharedToLocalFolder(destFolder.FolderPath);
+				_collection.CopyAllBooksFromRepoToLocalFolder(destFolder.FolderPath);
 				var destBookFolder = Path.Combine(destFolder.FolderPath, "My book");
 				var destBookPath = Path.Combine(destBookFolder, "My book.htm");
 				Assert.That(RobustFile.ReadAllText(destBookPath), Is.EqualTo("This is just a dummy"));
@@ -158,7 +158,7 @@ namespace BloomTests.TeamCollection
 			// cleanup
 			_collection.NewBook -= monitorFunction;
 			_collection.StopMonitoring();
-			var newBookPath = Path.Combine(_sharedFolder.FolderPath, "newly put book.bloom");
+			var newBookPath = Path.Combine(_repoFolder.FolderPath, "newly put book.bloom");
 			RobustFile.Delete(newBookPath);
 
 			Assert.IsTrue(waitSucceeded, "New book was not raised");
@@ -168,7 +168,7 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public void NewBook_RaisesNewBookEvent()
 		{
-			var newBookPath = Path.Combine(_sharedFolder.FolderPath, "Books", "A new book.bloom");
+			var newBookPath = Path.Combine(_repoFolder.FolderPath, "Books", "A new book.bloom");
 			var newBookName = "";
 			_collection.StartMonitoring();
 			// used to wait for the OS notification to raise the event
@@ -190,7 +190,7 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public void ChangedBook_RaisesBookChangedEvent()
 		{
-			var bloomBookPath = Path.Combine(_sharedFolder.FolderPath, "Books", "put book to modify.bloom");
+			var bloomBookPath = Path.Combine(_repoFolder.FolderPath, "Books", "put book to modify.bloom");
 			// Don't use PutBook here...changing the file immediately after putting it won't work,
 			// because of the code that tries to prevent notifications of our own checkins.
 			RobustFile.WriteAllText(bloomBookPath, @"This is original"); // no, not a zip at all
@@ -247,7 +247,7 @@ namespace BloomTests.TeamCollection
 			// cleanup
 			_collection.BookStateChange -= monitorFunction;
 			_collection.StopMonitoring();
-			var bloomBookPath = Path.Combine(_sharedFolder.FolderPath, "put existing book.bloom");
+			var bloomBookPath = Path.Combine(_repoFolder.FolderPath, "put existing book.bloom");
 			RobustFile.Delete(bloomBookPath);
 
 			Assert.That(waitSucceeded, "OnChanged was not called");
@@ -258,14 +258,14 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public void PutBook_InLostAndFound_DoesSo()
 		{
-			var lfPath = Path.Combine(_sharedFolder.FolderPath, "Lost and Found", "Another Book.bloom");
+			var lfPath = Path.Combine(_repoFolder.FolderPath, "Lost and Found", "Another Book.bloom");
 			Assert.That(RobustFile.Exists(lfPath));
 		}
 
 		[Test]
 		public void PutBook_InLostAndFoundTwice_KeepsBoth()
 		{
-			var lfPath = Path.Combine(_sharedFolder.FolderPath, "Lost and Found", "Another Book2.bloom");
+			var lfPath = Path.Combine(_repoFolder.FolderPath, "Lost and Found", "Another Book2.bloom");
 			Assert.That(RobustFile.Exists(lfPath));
 		}
 
@@ -329,7 +329,7 @@ namespace BloomTests.TeamCollection
 		//	var inputFile = "C:\\Users\\thomson\\Documents\\Bloom\\English books 1\\003 Widow’s Gift\\003 Widow’s Gift.htm";
 		//	var inputFolder = Path.GetDirectoryName(inputFile);
 		//	var checksumPath = Path.Combine(inputFolder, "checksum.sha");
-		//	var bookPath = Path.Combine(_sharedFolder.FolderPath, Path.ChangeExtension(Path.GetFileName(inputFile), "bloom"));
+		//	var bookPath = Path.Combine(_repoFolder.FolderPath, Path.ChangeExtension(Path.GetFileName(inputFile), "bloom"));
 		//	var watch = new Stopwatch();
 		//	watch.Start();
 		//	var checksum = Bloom.Book.Book.MakeVersionCode(File.ReadAllText(inputFile), inputFile);
@@ -392,12 +392,14 @@ namespace BloomTests.TeamCollection
 			File.WriteAllText(collectionFilePath, "This is a fake collection");
 			var customStylesPath = Path.Combine(_collectionFolder.FolderPath, "customCollectionStyles.css");
 			File.WriteAllText(customStylesPath, "Fake collection styles");
-			_collection.CopySharedCollectionFilesFromLocal(_collectionFolder.FolderPath);
+			_collection.CopyRepoCollectionFilesFromLocal(_collectionFolder.FolderPath);
 			using (var tempDest = new TemporaryFolder("CopySharedCollectionFilesToLocal_RetrievesFilePut"))
 			{
-
-				_collection.CopySharedCollectionFilesToLocal(tempDest.FolderPath);
 				var destCollectionFilePath = Path.Combine(tempDest.FolderPath, Path.GetFileName(collectionFilePath));
+				File.WriteAllText(destCollectionFilePath, "This should get overwritten");
+
+				_collection.CopyRepoCollectionFilesToLocal(tempDest.FolderPath);
+				
 				Assert.That(File.ReadAllText(destCollectionFilePath), Is.EqualTo("This is a fake collection"));
 				var destStylesPath = Path.Combine(tempDest.FolderPath, "customCollectionStyles.css");
 				Assert.That(File.ReadAllText(destStylesPath), Is.EqualTo("Fake collection styles"));

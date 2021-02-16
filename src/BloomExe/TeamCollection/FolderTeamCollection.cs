@@ -12,15 +12,15 @@ using SIL.IO;
 namespace Bloom.TeamCollection
 {
 	/// <summary>
-	/// Implementation of a team collection repository implemented as a shared folder.
+	/// Implementation of a team collection repository implemented as a shared (herein called repo) folder.
 	/// As far as possible we are attempting to keep behavior that is specific to
 	/// the folder implementation here, while behavior that is independent of how
 	/// the shared repo is stored should be in TeamRepo.cs.
 	/// </summary>
 	public class FolderTeamCollection: TeamCollection
 	{
-		private string _sharedFolderPath; // the shared folder storing the repo; null if not shared
-		private FileSystemWatcher _watcher; // watches the _sharedFolderPath for changes
+		private string _repoFolderPath; // the (presumably somehow shared) folder storing the repo
+		private FileSystemWatcher _watcher; // watches the _repoFolderPath for changes
 
 		// These four variables work together to track the last book we modified and whether we
 		// are still doing so (and to lock access to the other two). They are manipulated
@@ -40,9 +40,9 @@ namespace Bloom.TeamCollection
 		// we can get several change notifications from an apparently atomic change
 		// like copying a new book over an existing one using Windows Explorer.
 		DateTime _lastNotificationTime = DateTime.MinValue;
-		public FolderTeamCollection(string localCollectionFolder, string sharedFolderPath) : base(localCollectionFolder)
+		public FolderTeamCollection(string localCollectionFolder, string repoFolderPath) : base(localCollectionFolder)
 		{
-			_sharedFolderPath = sharedFolderPath;
+			_repoFolderPath = repoFolderPath;
 		}
 
 		/// <summary>
@@ -53,7 +53,7 @@ namespace Bloom.TeamCollection
 		///     typically in the current collection folder.</param>
 		/// <param name="newStatus"></param>
 		/// <param name="inLostAndFound">If true, put the book into the Lost-and-found folder,
-		///     if necessary generating a unique name for it. If false, put it into the main shared
+		///     if necessary generating a unique name for it. If false, put it into the main repo
 		///     folder, overwriting any existing book.</param>
 		/// <returns>The book's new status, with the new VersionCode</returns>
 		protected override void PutBookInRepo(string sourceBookFolderPath, BookStatus status,
@@ -64,7 +64,7 @@ namespace Bloom.TeamCollection
 
 			if (inLostAndFound)
 			{
-				var lfPath = Path.Combine(_sharedFolderPath, "Lost and Found");
+				var lfPath = Path.Combine(_repoFolderPath, "Lost and Found");
 				Directory.CreateDirectory(lfPath);
 				int counter = 0;
 				do
@@ -99,7 +99,7 @@ namespace Bloom.TeamCollection
 
 		private string GetPathToBookFileInRepo(string bookName)
 		{
-			return Path.ChangeExtension(Path.Combine(_sharedFolderPath, "Books", bookName), ".bloom");
+			return Path.ChangeExtension(Path.Combine(_repoFolderPath, "Books", bookName), ".bloom");
 		}
 
 		/// <summary>
@@ -110,7 +110,7 @@ namespace Bloom.TeamCollection
 		/// <returns></returns>
 		public override string[] GetBookList()
 		{
-			return Directory.EnumerateFiles(Path.Combine(_sharedFolderPath, "Books"), "*.bloom")
+			return Directory.EnumerateFiles(Path.Combine(_repoFolderPath, "Books"), "*.bloom")
 				.Select(path => Path.GetFileNameWithoutExtension(path)).ToArray();
 		}
 
@@ -120,7 +120,7 @@ namespace Bloom.TeamCollection
 		/// <param name="destinationCollectionFolder">Where to put the retrieved book folder,
 		/// typically the local collection folder.</param>
 		/// <param name="bookName"></param>
-		protected override void GetBookFromRepo(string destinationCollectionFolder, string bookName)
+		protected override void FetchBookFromRepo(string destinationCollectionFolder, string bookName)
 		{
 			var bookPath = GetPathToBookFileInRepo(bookName);
 			byte[] buffer = new byte[4096];     // 4K is optimum
@@ -160,27 +160,32 @@ namespace Bloom.TeamCollection
 
 		public override void PutCollectionFile(string pathName)
 		{
-			var destFolder = Path.Combine(_sharedFolderPath, "Other Project Files");
+			var destFolder = GetRepoProjectFilesFolder(_repoFolderPath);
 			Directory.CreateDirectory(destFolder);
 			var destPath = Path.Combine(destFolder, Path.GetFileName(pathName));
 			RobustFile.Copy(pathName, destPath, true);
 		}
 
-		public override void GetCollectionFile(string pathName)
+		private static string GetRepoProjectFilesFolder(string repoFolderPath)
 		{
-			CopyCollectionFileTo(pathName, _sharedFolderPath);
+			return Path.Combine(repoFolderPath, "Other Project Files");
 		}
 
-		private static void CopyCollectionFileTo(string destPath, string sharedFolderPath)
+		public override void FetchCollectionFile(string pathName)
 		{
-			var sourcePath = Path.Combine(sharedFolderPath, "Other Project Files", Path.GetFileName(destPath));
+			CopyCollectionFileTo(pathName, _repoFolderPath);
+		}
+
+		private static void CopyCollectionFileTo(string destPath, string repoFolderPath)
+		{
+			var sourcePath = Path.Combine(GetRepoProjectFilesFolder(repoFolderPath), Path.GetFileName(destPath));
 			if (File.Exists(sourcePath))
 				RobustFile.Copy(sourcePath, destPath, true);
 		}
 
 		public override string[] CollectionFiles()
 		{
-			var collectionFilesDir = Path.Combine(_sharedFolderPath, "Other Project Files");
+			var collectionFilesDir = GetRepoProjectFilesFolder(_repoFolderPath);
 			if (!Directory.Exists(collectionFilesDir))
 				return new string[0];
 			return Directory.GetFiles(collectionFilesDir)
@@ -192,7 +197,7 @@ namespace Bloom.TeamCollection
 		//public override string[] GetPeople()
 		//{
 		//	var users = new HashSet<string>();
-		//	foreach (var path in Directory.EnumerateFiles(_sharedFolderPath, "*.bloom"))
+		//	foreach (var path in Directory.EnumerateFiles(_repoFolderPath, "*.bloom"))
 		//	{
 		//		var whoHasBookLocked = WhoHasBookLocked(Path.GetFileNameWithoutExtension(path));
 		//		if (whoHasBookLocked != null)
@@ -211,7 +216,7 @@ namespace Bloom.TeamCollection
 			base.StartMonitoring();
 			_watcher = new FileSystemWatcher();
 
-			_watcher.Path = Path.Combine(_sharedFolderPath, "Books");
+			_watcher.Path = Path.Combine(_repoFolderPath, "Books");
 
 			// Enhance: maybe one day we want to watch collection files too?
 
@@ -370,13 +375,13 @@ namespace Bloom.TeamCollection
 		/// it to have nothing else in it). We set it up with all the files it needs to have,
 		/// including any books that already exist locally.
 		/// </summary>
-		/// <param name="sharedFolder"></param>
-		public void ConnectToTeamCollection(string sharedFolder)
+		/// <param name="repoFolder"></param>
+		public void ConnectToTeamCollection(string repoFolder)
 		{
-			_sharedFolderPath = sharedFolder;
+			_repoFolderPath = repoFolder;
 			CreateJoinCollectionFile();
-			CreateTeamCollectionSettingsFile(_localCollectionFolder, sharedFolder);
-			CopySharedCollectionFilesFromLocal(_localCollectionFolder);
+			CreateTeamCollectionSettingsFile(_localCollectionFolder, repoFolder);
+			CopyRepoCollectionFilesFromLocal(_localCollectionFolder);
 			SynchronizeBooksFromLocalToRepo();
 			StartMonitoring();
 		}
@@ -384,7 +389,7 @@ namespace Bloom.TeamCollection
 		private static string _joinCollectionPath;
 		private static string _newCollectionToJoin;
 
-		// Create a new local collection from the shared collection at the specified path.
+		// Create a new local collection from the team collection at the specified path.
 		// Return the path to its settings (not team settings) file...the path we need to
 		// open the new collection. This is the method that gets called when we open a
 		// JoinTeamCollection file.
@@ -392,13 +397,13 @@ namespace Bloom.TeamCollection
 		{
 			_joinCollectionPath = path;
 			_newCollectionToJoin = null; // set if JoinCollectionTeam called successfully
-			var sharedFolder = Path.GetDirectoryName(path);
-			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(sharedFolder));
-			var localSharedFolder =
+			var repoFolder = Path.GetDirectoryName(path);
+			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(repoFolder));
+			var localCollectionFolder =
 				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, collectionName);
 			var url = BloomFileLocator.GetBrowserFile(false, "teamCollection", "NewTeamCollection.html").ToLocalhost()
 			          + $"?name={collectionName}";
-			if (Directory.Exists(localSharedFolder))
+			if (Directory.Exists(localCollectionFolder))
 			{
 				url += "&existingCollection=true"; // any 'truthy' value in JS will do
 			}
@@ -424,34 +429,39 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		public static void JoinCollectionTeam()
 		{
-			var sharedFolder = Path.GetDirectoryName(_joinCollectionPath);
-			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(sharedFolder));
+			var repoFolder = Path.GetDirectoryName(_joinCollectionPath);
+			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(repoFolder));
 			var localCollectionFolder =
 				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, collectionName);
 			// Most of the collection settings files will be copied later when we create the repo
-			// in TeamRepo.MakeInstance() and call CopySharedCollectionFilesToLocal.
+			// in TeamRepo.MakeInstance() and call CopyRepoCollectionFilesToLocal.
 			// However, when we start up with a command line argument that causes JoinCollectionTeam,
 			// the next thing we do is push the newly created project into our MRU list so it will
 			// be the one that gets opened. The MRU list refuses to add a bloomCollection that doesn't
 			// exist; so we have to make it exist.
-			_newCollectionToJoin = SetupMinimumSharedCollectionFiles(sharedFolder, localCollectionFolder);
+			_newCollectionToJoin = SetupMinimumLocalCollectionFilesForRepo(repoFolder, localCollectionFolder);
 			// Soon we will open the new collection, and do a SyncAtStartup. We want that to have some
 			// special behavior.
 			TeamCollectionManager.NextMergeIsJoinCollection = true;
 		}
 
-		public static string SetupMinimumSharedCollectionFiles(string sharedFolder, string localCollectionFolder)
+		/// <summary>
+		/// Setup the bare minimum files in localCollectionFolder so that it can join the team collection
+		/// in the specified repoFolder.
+		/// </summary>
+		/// <returns></returns>
+		public static string SetupMinimumLocalCollectionFilesForRepo(string repoFolder, string localCollectionFolder)
 		{
 			Directory.CreateDirectory(localCollectionFolder);
-			CreateTeamCollectionSettingsFile(localCollectionFolder, sharedFolder);
+			CreateTeamCollectionSettingsFile(localCollectionFolder, repoFolder);
 			var newSettingsPath = CollectionPath(localCollectionFolder);
-			CopyCollectionFileTo(newSettingsPath, sharedFolder);
+			CopyCollectionFileTo(newSettingsPath, repoFolder);
 			return newSettingsPath;
 		}
 
 		public void CreateJoinCollectionFile()
 		{
-			var joinCollectionPath = Path.Combine(_sharedFolderPath, "Join this Team Collection.JoinBloomTC");
+			var joinCollectionPath = Path.Combine(_repoFolderPath, "Join this Team Collection.JoinBloomTC");
 			// Don't think this needs to be localized. It's not really meant to be seen, just to provide some clue if anyone
 			// is curious about this file.
 			RobustFile.WriteAllText(joinCollectionPath,

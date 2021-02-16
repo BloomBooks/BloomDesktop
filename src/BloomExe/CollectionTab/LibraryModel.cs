@@ -147,7 +147,7 @@ namespace Bloom.CollectionTab
 			// This may not be the final place to do this. And we have plans for showing a progress dialog
 			// and also using it to show any errors. But it's the latest we can do it without needing to reconcile
 			// the changes it makes with collection data we've loaded.
-			_tcManager.CurrentCollection?.SynchronizeSharedAndLocal();
+			_tcManager.CurrentCollection?.SynchronizeRepoAndLocal();
 			var editableCollection = _bookCollectionFactory(_pathToLibrary, BookCollection.CollectionType.TheOneEditableCollection);
 			_currentEditableCollectionSelection.SelectCollection(editableCollection);
 			yield return editableCollection;
