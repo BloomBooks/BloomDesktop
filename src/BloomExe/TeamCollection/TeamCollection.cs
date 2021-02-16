@@ -52,7 +52,7 @@ namespace Bloom.TeamCollection
 		///     typically in the current collection folder.</param>
 		/// <param name="checkin">If true, the book will no longer be checked out</param>
 		/// <param name="inLostAndFound">If true, put the book into the Lost-and-found folder,
-		///     if necessary generating a unique name for it. If false, put it into the main shared
+		///     if necessary generating a unique name for it. If false, put it into the main repo
 		///     folder, overwriting any existing book.</param>
 		/// <returns>Updated book status</returns>
 		public BookStatus PutBook(string folderPath, bool checkin = false, bool inLostAndFound = false)
@@ -103,24 +103,21 @@ namespace Bloom.TeamCollection
 			}
 		}
 
-		// Return a list of all the books in the collection (the shared one, not
+		// Return a list of all the books in the collection (the repo one, not
 		// the local one)
 		public abstract string[] GetBookList();
 
 		// Unzip one book in the collection to the specified destination. Usually GetBook should be used
-		protected abstract void GetBookFromRepo(string destinationCollectionFolder, string bookName);
+		protected abstract void FetchBookFromRepo(string destinationCollectionFolder, string bookName);
 
-		public void CopyBookFromSharedToLocal(string bookName, string destinationCollectionFolder = null)
+		public void CopyBookFromRepoToLocal(string bookName, string destinationCollectionFolder = null)
 		{
-			GetBookFromRepo(destinationCollectionFolder ?? _localCollectionFolder, bookName);
+			FetchBookFromRepo(destinationCollectionFolder ?? _localCollectionFolder, bookName);
 			WriteLocalStatus(bookName, GetStatus(bookName), destinationCollectionFolder ?? _localCollectionFolder);
 		}
 
-		// Write the specified file, typically collection settings, to the repo.
-		public abstract void PutFile(string pathName);
-
-		// Read the specified file, typically collection settings, from the repo.
-		public abstract void GetFile(string pathName);
+		// Write the specified file to the repo's collection files.
+		public abstract void PutCollectionFiles(string[] names);
 
 		// Get a list of all the email addresses of people who have locked books
 		// in the collection.
@@ -172,7 +169,7 @@ namespace Bloom.TeamCollection
 		}
 
 		/// <summary>
-		/// Write the book's status, both in shared repo and in its own folder
+		/// Write the book's status, both in repo and in its own folder
 		/// </summary>
 		public void WriteBookStatus(string bookName, BookStatus status)
 		{
@@ -206,12 +203,12 @@ namespace Bloom.TeamCollection
 		/// Get all the books in the repo copied into the local folder.
 		/// </summary>
 		/// <param name="destinationCollectionFolder">Default null means the local collection folder.</param>
-		public void CopyAllBooksFromSharedToLocalFolder(string destinationCollectionFolder = null)
+		public void CopyAllBooksFromRepoToLocalFolder(string destinationCollectionFolder = null)
 		{
 			var dest = destinationCollectionFolder ?? _localCollectionFolder;
 			foreach (var path in GetBookList())
 			{
-				CopyBookFromSharedToLocal(Path.GetFileNameWithoutExtension(path), dest);
+				CopyBookFromRepoToLocal(Path.GetFileNameWithoutExtension(path), dest);
 			}
 		}
 
@@ -284,11 +281,7 @@ namespace Bloom.TeamCollection
 		/// retrieve it all.
 		/// </summary>
 		/// <param name="localCollectionFolder"></param>
-		public void CopySharedCollectionFilesToLocal(string localCollectionFolder)
-		{
-			GetFile(Path.Combine(localCollectionFolder, "customCollectionStyles.css"));
-			GetFile(CollectionPath(localCollectionFolder));
-		}
+		public abstract void CopyRepoCollectionFilesToLocal(string destFolder);
 
 		/// <summary>
 		/// Gets the path to the bloomCollection file, given the folder.
@@ -305,18 +298,14 @@ namespace Bloom.TeamCollection
 
 		/// <summary>
 		/// Send anything other than books that should be shared from local to the repo.
-		/// Enhance: as for CopySharedCollectionFilesToLocal, also, we want this to be
+		/// Enhance: as for CopyRepoCollectionFilesToLocal, also, we want this to be
 		/// restricted to a specified set of emails, by default, the creator of the repo.
 		/// </summary>
 		/// <param name="localCollectionFolder"></param>
-		public void CopySharedCollectionFilesFromLocal(string localCollectionFolder)
+		public void CopyRepoCollectionFilesFromLocal(string localCollectionFolder)
 		{
-			var collectionStylesPath = Path.Combine(localCollectionFolder, "customCollectionStyles.css");
-			if (RobustFile.Exists(collectionStylesPath))
-				PutFile(collectionStylesPath);
 			var collectionName = Path.GetFileName(localCollectionFolder);
-			PutFile(Path.Combine(localCollectionFolder, Path.ChangeExtension(collectionName, "bloomCollection")));
-
+			PutCollectionFiles(new [] { "customCollectionStyles.css", Path.ChangeExtension(collectionName, "bloomCollection") });
 		}
 
 		protected void RaiseNewBook(string bookName)
@@ -353,7 +342,7 @@ namespace Bloom.TeamCollection
 				if (!IsCheckedOutHereBy(GetLocalStatus(args.BookName)))
 				{
 					// Just update things locally.
-					CopyBookFromSharedToLocal(args.BookName);
+					CopyBookFromRepoToLocal(args.BookName);
 					return;
 				}
 			}
@@ -381,7 +370,7 @@ namespace Bloom.TeamCollection
 				var bookFolder = Path.Combine(_localCollectionFolder, newBookName);
 				if (!Directory.Exists(bookFolder))
 				{
-					CopyBookFromSharedToLocal(newBookName, _localCollectionFolder);
+					CopyBookFromRepoToLocal(newBookName, _localCollectionFolder);
 					// Enhance: add it to the local collection
 					return;
 				}
@@ -398,7 +387,7 @@ namespace Bloom.TeamCollection
 			// Enhance: there are cases where we need to force a restart immediately.
 			// For example, if the user is editing the book that has been modified elsewhere.
 			// If this happens, when the user returns to the collection tab, Bloom will show who currently
-			// has it checked out on the shared folder, so the user will in that case be prevented
+			// has it checked out on the repo folder, so the user will in that case be prevented
 			// from checking in (though probably puzzled). But, if it's been modified elsewhere and is no longer checked
 			// out there, this user would be still allowed to check it in. That's unlikely because we should have
 			// detected either at startup on on checkout that it got checked out. But the user might have been
@@ -531,21 +520,21 @@ namespace Bloom.TeamCollection
 					var msg = String.Format(
 						"Fetching a new book '{0}' from the Team Collection", bookName);
 					progress.MessageWithoutLocalizing(msg);
-					CopyBookFromSharedToLocal(bookName);
+					CopyBookFromRepoToLocal(bookName);
 					continue;
 				}
 
-				var sharedStatus = GetStatus(bookName); // we know it's in the repo, so status will certainly be from there.
+				var repoStatus = GetStatus(bookName); // we know it's in the repo, so status will certainly be from there.
 				var statusFilePath = GetStatusFilePath(bookName, _localCollectionFolder);
 				if (!File.Exists(statusFilePath))
 				{
 					var currentChecksum = MakeChecksum(localFolderPath);
-					if (currentChecksum == sharedStatus.checksum)
+					if (currentChecksum == repoStatus.checksum)
 					{
 						// We have the same book with the same name and content in both places, but no local status.
 						// Somehow the book was copied not using the TeamCollection. Possibly, we are merging
 						// two versions of the same collection. Clean up by copying status.
-						WriteLocalStatus(bookName, sharedStatus);
+						WriteLocalStatus(bookName, repoStatus);
 					}
 					else
 					{
@@ -562,7 +551,7 @@ namespace Bloom.TeamCollection
 							warnings.Add(msg);
 							progress.MessageWithoutLocalizing(msg, MessageKind.Warning);
 							// Make the local folder match the repo (this is where 'they win')
-							CopyBookFromSharedToLocal(bookName);
+							CopyBookFromRepoToLocal(bookName);
 							continue;
 							}
 						else
@@ -586,7 +575,7 @@ namespace Bloom.TeamCollection
 							progress.MessageWithoutLocalizing(msg);
 							RobustFile.Move(oldBookPath, renamePath);
 
-							CopyBookFromSharedToLocal(bookName); // Get shared book and status
+							CopyBookFromRepoToLocal(bookName); // Get repo book and status
 							// Review: does this deserve a warning?
 							continue;
 						}
@@ -597,13 +586,13 @@ namespace Bloom.TeamCollection
 				var localStatus = GetLocalStatus(bookName);
 
 				if (!IsCheckedOutHereBy(localStatus)) {
-					if (localStatus.checksum != sharedStatus.checksum)
+					if (localStatus.checksum != repoStatus.checksum)
 					{
 						// Changed and not checked out. Just bring it up to date.
 						var msg = String.Format(
 							"Updating '{0}' to match the Team Collection", bookName);
 						progress.MessageWithoutLocalizing(msg);
-						CopyBookFromSharedToLocal(bookName); // updates everything local.
+						CopyBookFromRepoToLocal(bookName); // updates everything local.
 					}
 
 					// whether or not we updated it, if it's not checked out there's no more to do.
@@ -612,7 +601,7 @@ namespace Bloom.TeamCollection
 
 				// At this point, we know there's a version of the book in the repo
 				// and a local version that is checked out here according to local status.
-				if (IsCheckedOutHereBy(sharedStatus))
+				if (IsCheckedOutHereBy(repoStatus))
 				{
 					// the repo agrees. We could check that the checksums match, but there's no
 					// likely scenario for them not to. Everything is consistent, so we can move on
@@ -621,9 +610,9 @@ namespace Bloom.TeamCollection
 
 				// Now we know there's some sort of conflict. The local and repo status of this
 				// book don't match.
-				if (localStatus.checksum == sharedStatus.checksum)
+				if (localStatus.checksum == repoStatus.checksum)
 				{
-					if (String.IsNullOrEmpty(sharedStatus.lockedBy))
+					if (String.IsNullOrEmpty(repoStatus.lockedBy))
 					{
 						// Likely someone started a checkout remotely, but changed their mind without making edits.
 						// Just restore our checkout.
@@ -632,7 +621,7 @@ namespace Bloom.TeamCollection
 					}
 					else
 					{
-						// Checked out by someone else in the shared folder. They win.
+						// Checked out by someone else in the repo folder. They win.
 						// Do we need to save local edits?
 						var currentChecksum = MakeChecksum(localFolderPath);
 						if (currentChecksum != localStatus.checksum)
@@ -646,13 +635,13 @@ namespace Bloom.TeamCollection
 							warnings.Add(msg);
 							progress.MessageWithoutLocalizing(msg, MessageKind.Warning);
 							// Make the local folder match the repo (this is where 'they win')
-							CopyBookFromSharedToLocal(bookName);
+							CopyBookFromRepoToLocal(bookName);
 							continue;
 						}
 						else
 						{
 							// No local edits yet. Just correct the local checkout status.
-							WriteBookStatus(bookName, sharedStatus);
+							WriteBookStatus(bookName, repoStatus);
 							continue;
 						}
 					}
@@ -667,15 +656,15 @@ namespace Bloom.TeamCollection
 						var msg1 = String.Format(
 							"Updating '{0}' to match the Team Collection", bookName);
 						progress.MessageWithoutLocalizing(msg1);
-						CopyBookFromSharedToLocal(bookName);
-						WriteBookStatus(bookName, localStatus.WithChecksum(sharedStatus.checksum));
+						CopyBookFromRepoToLocal(bookName);
+						WriteBookStatus(bookName, localStatus.WithChecksum(repoStatus.checksum));
 						continue;
 					}
 
 					// Copy current local to lost and found
 					PutBook(Path.Combine(_localCollectionFolder, bookName), inLostAndFound:true);
-					// copy shared book and status to local
-					CopyBookFromSharedToLocal(bookName);
+					// copy repo book and status to local
+					CopyBookFromRepoToLocal(bookName);
 					// warn the user
 					var msgTemplate = LocalizationManager.GetString("TeamCollection.ConflictingEdit",
 						"The book '{0}', which you have checked out and edited, was modified in the team collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.");
@@ -711,10 +700,10 @@ namespace Bloom.TeamCollection
 
 		/// <summary>
 		/// Main entry point called before creating CollectionSettings; updates local folder to match
-		/// shared one, if any. Not unit tested, as it mainly handles wrapping SyncAtStartup with a
+		/// repo one, if any. Not unit tested, as it mainly handles wrapping SyncAtStartup with a
 		/// progress dialog.
 		/// </summary>
-		public void SynchronizeSharedAndLocal()
+		public void SynchronizeRepoAndLocal()
 		{
 			var url = BloomFileLocator.GetBrowserFile(false, "utils", "IndependentProgressDialog.html").ToLocalhost()
 			          + "?title=Team Collection Activity";
