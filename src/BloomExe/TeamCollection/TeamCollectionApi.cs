@@ -68,7 +68,7 @@ namespace Bloom.TeamCollection
 					when=whenLocked.ToLocalTime().ToShortDateString(),
 					where= _tcManager.CurrentCollection?.WhatComputerHasBookLocked(BookName),
 					currentUser=CurrentUser,
-					currentMachine=Environment.MachineName
+					currentMachine= TeamCollectionManager.CurrentMachine
 				}));
 		}
 
