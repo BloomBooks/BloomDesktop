@@ -522,6 +522,31 @@ namespace BloomTests.Book
 			Assert.AreEqual("Adapted from original without a copyright notice, <cite data-book=\"originalTitle\" class=\"missingOriginalTitle\"></cite>. Licensed under CC BY-NC 3.0.", GetEnglishOriginalCopyrightAndLicense(dom));
 		}
 
+		[Test]
+		public void GetOriginalCopyrightAndLicense_HasAllParts_InFrench()
+		{
+			var dom = new HtmlDom(
+				@" <div id='bloomDataDiv'>
+					<div data-book='bookTitle' lang='en'>An interesting book</div>
+					<div data-book='originalTitle' lang='*'> How to manage titles </div>
+					<div data-book='copyright' lang='*'> Copyright © 2017, Foo-bar Publishing </div>
+					<div data-book='licenseUrl' lang='*'> http://creativecommons.org/licenses/by/4.0/ </div>
+					<div data-book='originalCopyright' lang='*'> Copyright © 2007, Foo Publishing </div>
+					<div data-book='originalLicenseUrl' lang='*'> http://creativecommons.org/licenses/by/4.0/ </div>
+				</div>");
+			var result = GetFrenchOriginalCopyrightAndLicense(dom);
+			Assert.That(result.StartsWith("Adapté de l’original, "));
+			Assert.That(result.Contains("Sous licence CC BY 4.0"));
+		}
+
+		private string GetFrenchOriginalCopyrightAndLicense(HtmlDom dom)
+		{
+			var bookData = new BookData(dom, _collectionSettings, null);
+			bookData.SetLanguage(LanguageSlot.Language1, "en");
+			bookData.SetLanguage(LanguageSlot.Language2, "fr");
+			return BookCopyrightAndLicense.GetOriginalCopyrightAndLicenseNotice(bookData, dom);
+		}
+
 		private string GetEnglishOriginalCopyrightAndLicense(HtmlDom dom)
 		{
 			var bookData = new BookData(dom, _collectionSettings, null);

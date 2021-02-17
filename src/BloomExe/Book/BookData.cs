@@ -1832,7 +1832,8 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Given a choice, what language should we use to display text on the page (not in the UI, which is controlled by the UI Language)
+		/// Given a choice, what language should we use to display text on the page
+		/// (not in the UI, which is controlled by the UI Language).
 		/// </summary>
 		/// <returns>A prioritized enumerable of language codes</returns>
 		public IEnumerable<string> GetLanguagePrioritiesForLocalizedTextOnPage(bool includeLang1 = true)

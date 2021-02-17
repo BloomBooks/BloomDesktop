@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Xml;
-using Bloom.Collection;
 using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
@@ -358,10 +357,9 @@ namespace Bloom.Book
 			                    (string.IsNullOrEmpty(originalTitle) ? " class=\"missingOriginalTitle\">" : ">") + originalTitle +
 			                    "</cite>";
 
-			var languagePriorityIdsIncludeLang1 = bookData.GetLanguagePrioritiesForLocalizedTextOnPage();
-			var originalLicenseSentence = GetOriginalLicenseSentence(languagePriorityIdsIncludeLang1, originalMetadata.License, out string licenseOnly);
-
 			var languagePriorityIdsNotLang1 = bookData.GetLanguagePrioritiesForLocalizedTextOnPage(false);
+			var originalLicenseSentence = GetOriginalLicenseSentence(languagePriorityIdsNotLang1, originalMetadata.License, out string licenseOnly);
+
 			var rawCopyright = originalMetadata.CopyrightNotice;
 			// If we have all the pieces available, we want to use this one.
 			// At the very least it's easier to localize into the format the language wants to use.
