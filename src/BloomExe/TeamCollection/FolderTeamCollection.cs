@@ -405,6 +405,7 @@ namespace Bloom.TeamCollection
 			CreateJoinCollectionFile();
 			CreateTeamCollectionSettingsFile(_localCollectionFolder, repoFolder);
 			CopyRepoCollectionFilesFromLocal(_localCollectionFolder);
+			Directory.CreateDirectory(Path.Combine(repoFolder, "Books"));
 			SynchronizeBooksFromLocalToRepo();
 			StartMonitoring();
 		}
