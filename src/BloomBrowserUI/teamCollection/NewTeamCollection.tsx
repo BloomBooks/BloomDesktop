@@ -4,7 +4,7 @@ import { BloomApi } from "../utils/bloomApi";
 import { Div } from "../react_components/l10nComponents";
 import "./NewTeamCollection.less";
 import BloomButton from "../react_components/bloomButton";
-import { ExclaimTriangle } from "../react_components/exclaimTriangle";
+import { ExclaimTriangle } from "../react_components/ExclaimTriangle";
 import theme from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 
