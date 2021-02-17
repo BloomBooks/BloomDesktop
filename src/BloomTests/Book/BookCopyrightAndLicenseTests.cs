@@ -522,6 +522,32 @@ namespace BloomTests.Book
 			Assert.AreEqual("Adapted from original without a copyright notice, <cite data-book=\"originalTitle\" class=\"missingOriginalTitle\"></cite>. Licensed under CC BY-NC 3.0.", GetEnglishOriginalCopyrightAndLicense(dom));
 		}
 
+		[Test]
+		public void GetOriginalCopyrightAndLicense_HasAllParts_InFrench()
+		{
+			var dom = new HtmlDom(
+				@" <div id='bloomDataDiv'>
+					<div data-book='bookTitle' lang='en'>An interesting book</div>
+					<div data-book='originalTitle' lang='*'> How to manage titles </div>
+					<div data-book='copyright' lang='*'> Copyright © 2017, Foo-bar Publishing </div>
+					<div data-book='licenseUrl' lang='*'> http://creativecommons.org/licenses/by/4.0/ </div>
+					<div data-book='originalCopyright' lang='*'> Copyright © 2007, Foo Publishing </div>
+					<div data-book='originalLicenseUrl' lang='*'> http://creativecommons.org/licenses/by/4.0/ </div>
+				</div>");
+			var result = GetFrenchOriginalCopyrightAndLicense(dom);
+			// We could try to mock what L10NSharp returns for this one test..., or we could just test that it's not using English.
+			Assert.That(result.StartsWith("Adapted from original"), Is.False);
+			Assert.That(result.Contains("Licensed under CC BY 4.0"), Is.False);
+		}
+
+		private string GetFrenchOriginalCopyrightAndLicense(HtmlDom dom)
+		{
+			var bookData = new BookData(dom, _collectionSettings, null);
+			bookData.SetLanguage(LanguageSlot.Language1, "en");
+			bookData.SetLanguage(LanguageSlot.Language2, "fr");
+			return BookCopyrightAndLicense.GetOriginalCopyrightAndLicenseNotice(bookData, dom);
+		}
+
 		private string GetEnglishOriginalCopyrightAndLicense(HtmlDom dom)
 		{
 			var bookData = new BookData(dom, _collectionSettings, null);
