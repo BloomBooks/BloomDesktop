@@ -11,12 +11,19 @@ export const kindParams = {
         l10nKey: "ReportProblemDialog.UserTitle"
     },
     Fatal: {
-        dialogHeaderColor: "#f44336",
-        primaryColor: "#2F58EA",
+        dialogHeaderColor: "#f44336", // bright red
+        primaryColor: "#f44336", // FYI, we originally had #2F58EA (bright blue), but now we decided to have it all one color
         title: "Bloom encountered an error and needs to quit",
         l10nKey: "ReportProblemDialog.FatalTitle"
     },
     NonFatal: {
+        dialogHeaderColor: kNonFatalColor,
+        primaryColor: kNonFatalColor,
+        title: "Bloom had a problem",
+        l10nKey: "ReportProblemDialog.NonFatalTitle"
+    },
+    // Notify uses many of the same settings as NonFatal
+    Notify: {
         dialogHeaderColor: kNonFatalColor,
         primaryColor: kNonFatalColor,
         title: "Bloom had a problem",
@@ -60,6 +67,12 @@ export function makeTheme(kind: ProblemKind): Theme {
                     backgroundColor: "#FFFFFF",
                     paddingRight: 20,
                     paddingBottom: 20
+                }
+            },
+            MuiButton: {
+                // Set the text colors of NotifyDialog's DialogAction buttons
+                containedPrimary: {
+                    color: "#FFFFFF"
                 }
             }
         }
