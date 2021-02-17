@@ -50,6 +50,13 @@ namespace Bloom.Api
 			}
 		}
 
+		// Gets the Content Type of the REQUEST
+		public string RequestContentType
+		{
+			get => _actualContext.Request.ContentType;
+		}
+
+		// Sets the Content Type of the RESPONSE
 		public string ContentType
 		{
 			set { _actualContext.Response.ContentType = value; }

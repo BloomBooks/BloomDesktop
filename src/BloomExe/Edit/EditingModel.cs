@@ -28,6 +28,8 @@ using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Windows.Forms.Reporting;
 using SIL.Xml;
+using Bloom.ErrorReporter;
+using Bloom.WebLibraryIntegration;
 
 namespace Bloom.Edit
 {
@@ -584,6 +586,8 @@ namespace Bloom.Edit
 				return;
 			}
 
+			CheckForFakeTestErrorsIfNotRealUser();
+
 			// BL-2339: try to choose the last edited page
 			var page = _currentlyDisplayedBook.GetPageByIndex(_currentlyDisplayedBook.UserPrefs.MostRecentPage) ?? _currentlyDisplayedBook.FirstPage;
 			try
@@ -600,6 +604,129 @@ namespace Bloom.Edit
 			finally
 			{
 				_inProcessOfLoading = false;
+			}
+		}
+
+		private void CheckForFakeTestErrorsIfNotRealUser()
+		{
+			// A real user is defined as one using a Release build and not using Sandbox mode.
+			// Skip these checks for real users, so there's no possibility of them getting spurious error reports
+			// from this code (even if the titles required are unlikely real titles)
+			#if DEBUG
+				bool checkAllowed = true;
+			#else
+				bool checkAllowed = BookTransfer.UseSandbox;
+			#endif
+
+			if (checkAllowed)
+			{
+				CheckForFakeTestErrors();
+			}
+		}
+
+		/// <summary>
+		/// Generates Error Reports for books with specific titles
+		/// Facilitates testing of error reporting.
+		/// </summary>
+		private void CheckForFakeTestErrors()
+		{
+			const string fakeProblemMessage = "Fake problem for development/testing purposes";
+			var fakeException = new ApplicationException("Fake exception for development/testing purposes");
+			
+			var title = _currentlyDisplayedBook.Title;
+			if (title == "Error NotifyUser NoReport")
+			{
+				// Tests a path through libPalaso directly (goes thru overloads 1, 2, 5)
+				ErrorReport.NotifyUserOfProblem(fakeProblemMessage);
+			}
+			else if (title == "Error NotifyUser LongMessage")
+			{
+				var longMessageBuilder = new StringBuilder();
+				while (longMessageBuilder.Length < 3000)
+				{
+					longMessageBuilder.AppendLine(fakeProblemMessage);
+				}
+
+				ErrorReport.NotifyUserOfProblem(longMessageBuilder.ToString());
+			}
+			else if (title == "Error NotifyUser Report NoRetry")
+			{
+				// Tests another path through libPalaso directly (goes thru overloads 3, 4, 5)
+				ErrorReport.NotifyUserOfProblem((Exception)null, fakeProblemMessage);
+			}
+			else if (title == "Error NotifyUser Report NoRetry 2")
+			{
+				// Tests a path where you need to go through the ErrorReportUtils adapters
+				// (follow-up actions automatically invoked)
+				ErrorReportUtils.NotifyUserOfProblem("", null, null, fakeProblemMessage);
+			}
+			else if (title == "Error NotifyUser Report Retry")
+			{
+				// Tests a path where you need to go through the ErrorReportUtils adapters
+				// (follow-up actions automatically invoked)
+				var secondaryButtonLabel = LocalizationManager.GetString("ErrorReportDialog.Retry", "Retry");
+				ErrorReportUtils.NotifyUserOfProblem(secondaryButtonLabel, ErrorReportUtils.TestAction, fakeException, fakeProblemMessage);
+			}
+			else if (title == "Error NotifyUser Custom")
+			{
+				// Tests another path where you need to go through the ErrorReportUtils adapters
+				// (follow-up actions are NOT auto-invoked)
+				var result = ErrorReportUtils.NotifyUserOfProblem(new ShowAlwaysPolicy(), "CustomReport", ErrorResult.Yes, "CustomRetry", ErrorResult.Retry, fakeProblemMessage);
+
+				string message = null;
+				switch (result)
+				{
+					case ErrorResult.Yes:
+						message = "Report button clicked.";
+						break;
+					case ErrorResult.Retry:
+						message = "Retry button clicked.";
+						break;
+					default:
+						break;
+				}
+				if (message != null)
+				{
+					MessageBox.Show(message);
+				}
+			}
+			else if (title == "Error ReportNonFatalException")
+			{
+				ErrorReport.ReportNonFatalException(fakeException);
+			}
+			else if (title == "Error ReportNonFatalExceptionWithMessage")
+			{
+				ErrorReport.ReportNonFatalExceptionWithMessage(fakeException, fakeProblemMessage);
+			}
+			else if (title == "Error ReportNonFatalExceptionWithMessage Scrollbar")
+			{
+				var longMessageBuilder = new StringBuilder();
+				while (longMessageBuilder.Length < 500)
+				{
+					longMessageBuilder.AppendLine(fakeProblemMessage);
+				}
+				ErrorReport.ReportNonFatalExceptionWithMessage(fakeException, longMessageBuilder.ToString());
+			}
+			else if (title == "Error ReportNonFatalMessageWithStackTrace")
+			{
+				ErrorReport.ReportNonFatalMessageWithStackTrace(fakeProblemMessage);
+			}
+			else if (title == "Error ReportFatalException")
+			{
+				ErrorReport.ReportFatalException(fakeException);
+			}
+			else if (title == "Error ReportFatalMessageWithStackTrace")
+			{
+				ErrorReport.ReportFatalMessageWithStackTrace(fakeProblemMessage);
+			}
+			else if (title == "Error ReportFatalMessageWithStackTrace Scrollbar")
+			{
+				var longMessageBuilder = new StringBuilder();
+				while (longMessageBuilder.Length < 500)
+				{
+					longMessageBuilder.AppendLine(fakeProblemMessage);
+				}
+				ErrorReport.ReportFatalMessageWithStackTrace(longMessageBuilder.ToString());
 			}
 		}
 
