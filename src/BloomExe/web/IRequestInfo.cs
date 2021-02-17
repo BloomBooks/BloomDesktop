@@ -16,7 +16,8 @@ namespace Bloom.Api
 	public interface IRequestInfo
 	{
 		string LocalPathWithoutQuery { get; }
-		string ContentType { set; }
+		string RequestContentType { get; }
+		string ResponseContentType { set; }
 		string RawUrl { get; }
 		bool HaveOutput { get; }
 		void WriteCompleteOutput(string s);

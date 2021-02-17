@@ -28,6 +28,8 @@ using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Windows.Forms.Reporting;
 using SIL.Xml;
+using Bloom.ErrorReporter;
+using Bloom.WebLibraryIntegration;
 
 namespace Bloom.Edit
 {
@@ -583,6 +585,8 @@ namespace Bloom.Edit
 				ErrorReport.NotifyUserOfProblem(errors);
 				return;
 			}
+			
+			ErrorReportUtils.CheckForFakeTestErrorsIfNotRealUser(_currentlyDisplayedBook.Title);
 
 			// BL-2339: try to choose the last edited page
 			var page = _currentlyDisplayedBook.GetPageByIndex(_currentlyDisplayedBook.UserPrefs.MostRecentPage) ?? _currentlyDisplayedBook.FirstPage;
