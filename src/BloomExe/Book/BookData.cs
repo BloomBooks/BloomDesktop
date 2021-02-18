@@ -1370,23 +1370,7 @@ namespace Bloom.Book
 								}
 								 */
 			// Prevent a duplicate (audio) id from being created.
-			try
-			{
-				XmlDocument doc = new XmlDocument();
-				doc.LoadXml("<div>" + s + "</div>");    // may be multiple paragraphs
-				var nodes = doc.SafeSelectNodes("(.//div|.//span)[@id]").Cast<XmlElement>().ToList();
-				foreach (var node in nodes)
-				{
-					// Change the id since every element must have a different id value.
-					HtmlDom.SetNewHtmlIdValue(node);
-				}
-				s = doc.FirstChild.InnerXml;   // exclude the outer div we introduced
-			}
-			catch (Exception e)
-			{
-				// Ignore any errors: maybe it's not really XML after all?
-			}
-			return s;
+			return HtmlDom.ReplaceAllIdValues(s);
 		}
 
 		private LanguageForm GetBestUnwrappedAlternative(MultiTextBase textAlternatives, IEnumerable<string> languagesToTry)

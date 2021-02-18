@@ -899,8 +899,7 @@ namespace Bloom.Book
 		private string FixDuplicateAudioId(XmlNode node, string id)
 		{
 			// Create a new id value, and copy the audio file if it exists.
-			HtmlDom.SetNewHtmlIdValue(node as XmlElement);
-			var newId = node.GetStringAttribute("id");
+			var newId = HtmlDom.SetNewHtmlIdValue(node as XmlElement);
 			if (!String.IsNullOrEmpty(FolderPath))
 			{
 				var oldAudioPath = Path.Combine(FolderPath, "audio", id + ".mp3");
@@ -2654,10 +2653,9 @@ namespace Bloom.Book
 			foreach (var audioElement in HtmlDom.SelectRecordableDivOrSpans(newpageDiv).Cast<XmlElement>().ToList())
 			{
 				var oldId = audioElement.GetStringAttribute("id");
-				HtmlDom.SetNewHtmlIdValue(audioElement);
+				var id = HtmlDom.SetNewHtmlIdValue(audioElement);
 				if (string.IsNullOrEmpty(oldId))
 					continue;
-				var id = audioElement.GetStringAttribute("id");
 				var sourceAudioFilePath = Path.Combine(Path.Combine(sourceBookFolder, "audio"), oldId + ".wav");
 				var newAudioFolderPath = Path.Combine(FolderPath, "audio");
 				var newAudioFilePath = Path.Combine(newAudioFolderPath, id + ".wav");

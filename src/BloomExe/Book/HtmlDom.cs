@@ -117,16 +117,39 @@ namespace Bloom.Book
 			}
 		}
 
-		public static void SetNewHtmlIdValue(XmlElement element)
+		public static string ReplaceAllIdValues(string xmlContent)
 		{
-			if (element == null)
-				return;
+			if (String.IsNullOrEmpty(xmlContent))
+				return xmlContent;
+			try
+			{
+				XmlDocument doc = new XmlDocument();
+				doc.LoadXml("<div>" + xmlContent + "</div>");    // may be multiple paragraphs
+				var nodes = doc.FirstChild.SafeSelectNodes("(.//div|.//span)[@id]").Cast<XmlElement>().ToList();
+				foreach (var node in nodes)
+				{
+					// Change the id since every element must have a different id value.
+					HtmlDom.SetNewHtmlIdValue(node);
+				}
+				Console.WriteLine("DEBUG ReplaceAllIdValues(\"{0}\") => \"{1}\"", xmlContent, doc.FirstChild.InnerXml);
+				xmlContent = doc.FirstChild.InnerXml;   // exclude the outer div we introduced
+			}
+			catch (Exception e)
+			{
+				// Ignore any errors: maybe it's not really XML after all?
+			}
+			return xmlContent;
+		}
+
+		public static string SetNewHtmlIdValue(XmlElement element)
+		{
 			// HTML ids must start with a letter.  This is true of audio ids in Bloom, and possibly
 			// other id attribute values.  Page id values do not have this requirement.
 			var newId = Guid.NewGuid().ToString();
 			if (char.IsDigit(newId[0]))
 				newId = "i" + newId;
 			element.SetAttribute("id", newId);
+			return newId;
 		}
 
 		/// <summary>
