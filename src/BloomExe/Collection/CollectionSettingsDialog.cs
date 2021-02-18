@@ -11,9 +11,11 @@ using SIL.Extensions;
 using SIL.WritingSystems;
 using System.Collections.Generic;
 using Bloom.Api;
+using Bloom.CollectionTab;
 using Bloom.TeamCollection;
 using Bloom.MiscUI;
 using Bloom.web.controllers;
+using Gecko;
 
 namespace Bloom.Collection
 {
@@ -31,16 +33,18 @@ namespace Bloom.Collection
 		// Enhance: when all the tabs are in Typescript, we should be able to move the tabs themselves there and
 		// have one browser for the whole dialog.
 		private Browser _enterpriseBrowser;
-		private Browser _sharingBrowser;
+		private Browser _teamCollectionPanelBrowser;
 		private string _subscriptionCode;
 		private string _brand;
+		private TeamCollectionManager _tcManager;
 
-		public CollectionSettingsDialog(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder, QueueRenameOfCollection queueRenameOfCollection, PageRefreshEvent pageRefreshEvent)
+		public CollectionSettingsDialog(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder, QueueRenameOfCollection queueRenameOfCollection, PageRefreshEvent pageRefreshEvent, TeamCollectionManager tcManager)
 		{
 			_collectionSettings = collectionSettings;
 			_xmatterPackFinder = xmatterPackFinder;
 			_queueRenameOfCollection = queueRenameOfCollection;
 			_pageRefreshEvent = pageRefreshEvent;
+			_tcManager = tcManager;
 			InitializeComponent();
 			// moved from the Designer where it was deleted if the Designer was touched
 			_xmatterList.Columns.AddRange(new[] { new ColumnHeader() { Width = 250 } });
@@ -71,7 +75,7 @@ namespace Bloom.Collection
 			CollectionSettingsApi.BrandingChangeHandler = ChangeBranding;
 
 			SetupEnterpriseBrowser();
-			SetupSharingBrowser();
+			SetupTeamCollectionBrowser();
 
 			UpdateDisplay();
 
@@ -103,29 +107,40 @@ namespace Bloom.Collection
 			_enterpriseBrowser.Navigate(rootFile.ToLocalhost(), false);
 		}
 
-		private void SetupSharingBrowser()
+		private void SetupTeamCollectionBrowser()
 		{
-			if (_sharingBrowser != null)
+			if (_teamCollectionPanelBrowser != null)
 				return; // Seems to help performance.
 			// The Size setting is needed on Linux to keep the browser from coming up as a small
 			// rectangle in the upper left corner when the dialog is initialized to open on the
 			// Enterprise tab.
-			_sharingBrowser = new Browser { Dock = DockStyle.Fill, Location = new Point(3, 3), Size = new Size(_sharingTab.Width - 6, _sharingTab.Height - 6) };
-			_sharingBrowser.BackColor = Color.White;
+			_teamCollectionPanelBrowser = new Browser { Dock = DockStyle.Fill, Location = new Point(3, 3), Size = new Size(_teamCollectionTab.Width - 6, _teamCollectionTab.Height - 6) };
+			_teamCollectionPanelBrowser.BackColor = Color.White;
 
 			var rootFile = BloomFileLocator.GetBrowserFile(false, "teamCollection", "teamCollectionSettings.html");
-			var dummy = _sharingBrowser.Handle; // gets the WebBrowser created
-			_sharingBrowser.WebBrowser.DocumentCompleted += (sender, args) =>
+			var dummy = _teamCollectionPanelBrowser.Handle; // gets the WebBrowser created
+			_teamCollectionPanelBrowser.WebBrowser.DocumentCompleted += (sender, args) =>
 			{
 				// If the control gets added to the tab before it has navigated somewhere,
 				// it shows as solid black, despite setting the BackColor to white.
 				// So just don't show it at all until it contains what we want to see.
-				_sharingTab.Controls.Add(_sharingBrowser);
+				_teamCollectionTab.Controls.Add(_teamCollectionPanelBrowser);
 			};
-			_sharingBrowser.Navigate(rootFile.ToLocalhost(), false);
-			// If the SharingApi gets a callback from HTML that results in setting up
-			// a team collection for this collection, we need to restart afterwards.
-			TeamCollectionApi.TheOneInstance.SetCreateCallback(() => _restartRequired = true);
+			
+			var currentTcFolder = (_tcManager.CurrentCollection as FolderTeamCollection)?.RepoFolderPath;
+			var url = rootFile.ToLocalhost();
+			if (!string.IsNullOrEmpty(currentTcFolder))
+			{
+				url += "?folder=" + currentTcFolder;
+			}
+			_teamCollectionPanelBrowser.Navigate(url, false);
+			// If the TeamCollectionApi gets a callback from HTML that tells it to go ahead
+			// and create the TC it does so and then calls this. We need a restart right now.
+			TeamCollectionApi.TheOneInstance.SetCreateCallback(() =>
+			{
+				_restartRequired = true;
+				_okButton_Click(null, null);
+			});
 		}
 
 		protected override void OnHandleCreated(EventArgs e)
