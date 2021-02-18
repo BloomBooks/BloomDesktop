@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Bloom.TeamCollection;
 using BloomTemp;
 using NUnit.Framework;
@@ -307,9 +305,9 @@ namespace BloomTests.TeamCollection
 
 		// Make a very trivial fake book. Not nearly good enough to make a Book object from,
 		// but enough for most purposes of testing TeamCollection.
-		public static string MakeFakeBook(string collectionFolder, string name, string content)
+		public static string MakeFakeBook(string collectionFolder, string name, string content, string folderNameIfDifferent="")
 		{
-			var folderPath = Path.Combine(collectionFolder, name);
+			var folderPath = Path.Combine(collectionFolder, string.IsNullOrEmpty(folderNameIfDifferent) ? name : folderNameIfDifferent);
 			var bookPath = Path.Combine(folderPath, Path.ChangeExtension(name, "htm"));
 			Directory.CreateDirectory(folderPath);
 			RobustFile.WriteAllText(bookPath, "<html><body>" + content + "</body></html>");

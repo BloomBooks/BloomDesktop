@@ -55,8 +55,8 @@ namespace Bloom.TeamCollection
 
 		public void HandleCurrentBookStatus(ApiRequest request)
 		{
-			var whoHasBookLocked = _tcManager.CurrentCollection?.WhoHasBookLocked(BookName);
-			var whenLocked = _tcManager.CurrentCollection?.WhenWasBookLocked(BookName) ?? DateTime.MaxValue;
+			var whoHasBookLocked = _tcManager.CurrentCollection?.WhoHasBookLocked(BookFolderName);
+			var whenLocked = _tcManager.CurrentCollection?.WhenWasBookLocked(BookFolderName) ?? DateTime.MaxValue;
 			// review: or better to pass on to JS? We may want to show slightly different
 			// text like "This book is not yet shared. Check it in to make it part of the team collection"
 			if (whoHasBookLocked == TeamCollection.FakeUserIndicatingNewBook)
@@ -65,22 +65,22 @@ namespace Bloom.TeamCollection
 				new
 				{
 					who = whoHasBookLocked,
-					whoFirstName = _tcManager.CurrentCollection?.WhoHasBookLockedFirstName(BookName),
-					whoSurname = _tcManager.CurrentCollection?.WhoHasBookLockedSurname(BookName),
+					whoFirstName = _tcManager.CurrentCollection?.WhoHasBookLockedFirstName(BookFolderName),
+					whoSurname = _tcManager.CurrentCollection?.WhoHasBookLockedSurname(BookFolderName),
 					when = whenLocked.ToLocalTime().ToShortDateString(),
-					where = _tcManager.CurrentCollection?.WhatComputerHasBookLocked(BookName),
+					where = _tcManager.CurrentCollection?.WhatComputerHasBookLocked(BookFolderName),
 					currentUser = CurrentUser,
 					currentMachine = TeamCollectionManager.CurrentMachine
 				}));
 		}
 
-		private string BookName => Path.GetFileNameWithoutExtension(_bookSelection.CurrentSelection?.FolderPath);
+		private string BookFolderName => Path.GetFileNameWithoutExtension(_bookSelection.CurrentSelection?.FolderPath);
 
 		public void HandleAttemptLockOfCurrentBook(ApiRequest request)
 		{
 			// Could be a problem if there's no current book or it's not in the collection folder.
 			// But in that case, we don't show the UI that leads to this being called.
-			var success = _tcManager.CurrentCollection.AttemptLock(BookName);
+			var success = _tcManager.CurrentCollection.AttemptLock(BookFolderName);
 			if (success)
 				UpdateUiForBook();
 			request.ReplyWithBoolean(success);
@@ -144,8 +144,8 @@ namespace Bloom.TeamCollection
 		// that it is checked-out to this user 
 		public bool CanEditBook()
 		{
-			var bookName = BookName;
-			if (string.IsNullOrEmpty(bookName) || !_bookSelection.CurrentSelection.IsEditable || _bookSelection.CurrentSelection.HasFatalError)
+			var folderName = BookFolderName;
+			if (string.IsNullOrEmpty(folderName) || !_bookSelection.CurrentSelection.IsEditable || _bookSelection.CurrentSelection.HasFatalError)
 			{
 				return false; // no book, no editing
 			}
@@ -154,7 +154,7 @@ namespace Bloom.TeamCollection
 				return true; // no team collection, no problem.
 			}
 
-			return _tcManager.CurrentCollection.IsCheckedOutHereBy(_tcManager.CurrentCollection.GetStatus(bookName));
+			return _tcManager.CurrentCollection.IsCheckedOutHereBy(_tcManager.CurrentCollection.GetStatus(folderName));
 		}
 	}
 }

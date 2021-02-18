@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Bloom.TeamCollection;
+﻿using Bloom.TeamCollection;
 using Bloom.web;
-using Gecko.WebIDL;
 using NUnit.Framework;
 using SIL.IO;
-using SIL.Progress;
 
 namespace BloomTests.TeamCollection
 {
