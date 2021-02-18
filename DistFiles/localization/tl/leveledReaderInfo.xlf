@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="leveled.reader.start.simple">
         <source xml:lang="en">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</source>
-        <target xml:lang="tl" state="needs-translation">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</target>
+        <target xml:lang="tl" state="translated">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</target>
         <note>ID: leveled.reader.start.simple</note>
       </trans-unit>
       <trans-unit id="leveled.reader.formatting">
@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="leveled.reader.start.large">
         <source xml:lang="en">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</source>
-        <target xml:lang="tl" state="needs-translation">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</target>
+        <target xml:lang="tl" state="translated">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</target>
         <note>ID: leveled.reader.start.large</note>
       </trans-unit>
       <trans-unit id="leveled.reader.increase.sizes">

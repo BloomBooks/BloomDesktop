@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="leveled.levels">
         <source xml:lang="en">After you have defined a sequence of <g id="genid-2" ctype="x-html-em">levels</g>, you can assign a level to books you create either with this template or the "Decodable Reader Template". As you type into the book, Bloom will help you keep the level in mind and point out when you exceed the limits of the level.</source>
-        <target xml:lang="tl" state="needs-translation">After you have defined a sequence of <g id="genid-2" ctype="x-html-em">levels</g>, you can assign a level to books you create either with this template or the "Decodable Reader Template". As you type into the book, Bloom will help you keep the level in mind and point out when you exceed the limits of the level.</target>
+        <target xml:lang="tl" state="translated">After you have defined a sequence of <g id="genid-2" ctype="x-html-em">levels</g>, you can assign a level to books you create either with this template or the "Decodable Reader Template". As you type into the book, Bloom will help you keep the level in mind and point out when you exceed the limits of the level.</target>
         <note>ID: leveled.levels</note>
       </trans-unit>
       <trans-unit id="leveled.templates">

@@ -12,9 +12,9 @@
         <target xml:lang="es-ES" state="final">Iniciar un punto de acceso telefónico</target>
         <note>ID: publish.help.tips.tempWiFi.hotspot</note>
       </trans-unit>
-      <trans-unit id="publish.help.tips.tempWiFi.hotspot.text">
+      <trans-unit id="publish.help.tips.tempWiFi.hotspot.text" approved="yes">
         <source xml:lang="en">Many mobile phones have a feature called a 'hotspot' that creates a Wi-Fi network. First disconnect from the mobile network (so that there are no data charges). Next, enable the hotspot. Finally, set your laptop and other phones to join that network.</source>
-        <target xml:lang="es-ES" state="translated">Muchos teléfonos móviles tienen una función llamada "hotspot" que crea una red Wi-Fi. Primero se desconecta de la red móvil (para que no haya cargos por datos). A continuación, habilita el hotspot. Finalmente, configure su computadora portátil y otros celulares para que se unan a esa red.</target>
+        <target xml:lang="es-ES" state="final">Muchos teléfonos móviles tienen una función llamada "hotspot" que crea una red Wi-Fi. Primero se desconecta de la red móvil (para que no haya cargos por datos). A continuación, habilita el hotspot. Finalmente, configure su computadora portátil y otros celulares para que se unan a esa red.</target>
         <note>ID: publish.help.tips.tempWiFi.hotspot.text</note>
       </trans-unit>
       <trans-unit id="publish.help.tips.tempWiFi.hostednetwork" approved="yes">
@@ -22,9 +22,9 @@
         <target xml:lang="es-ES" state="final">Inicie una red utilizando su computadora</target>
         <note>ID: publish.help.tips.tempWiFi.hostednetwork</note>
       </trans-unit>
-      <trans-unit id="publish.help.tips.tempWiFi.hostednetwork.text">
+      <trans-unit id="publish.help.tips.tempWiFi.hostednetwork.text" approved="yes">
         <source xml:lang="en">Windows 10 laptops can also create local Wi-Fi networks. Do a web search for "windows netsh hostednetwork". If your laptop does not support this, you can get inexpensive USB Wi-Fi adaptors that do. When shopping, make sure the adaptor supports "hosted network".</source>
-        <target xml:lang="es-ES" state="translated">Las computadoras portátiles con Windows 10 también pueden crear redes locales de Wi-Fi. Haz una búsqueda en la web de "windows netsh hostednetwork". Si su portátil no es compatible con esto, puede obtener adaptadores USB Wi-Fi económicos que sí lo son. Al comprar, asegúrese de que el adaptador es compatible con "red alojada".</target>
+        <target xml:lang="es-ES" state="final">Las computadoras portátiles con Windows 10 también pueden crear redes locales de Wi-Fi. Haz una búsqueda en la web de "windows netsh hostednetwork". Si su portátil no es compatible con esto, puede obtener adaptadores USB Wi-Fi económicos que sí lo son. Al comprar, asegúrese de que el adaptador es compatible con "red alojada".</target>
         <note>ID: publish.help.tips.tempWiFi.hostednetwork.text</note>
       </trans-unit>
     </body>
