@@ -752,6 +752,9 @@ namespace Bloom.CollectionTab
 			Image thumbnail = Resources.PagePlaceHolder;
 			_bookThumbnails.Images.Add(bookInfo.Id, thumbnail);
 			button.ImageIndex = _bookThumbnails.Images.Count - 1;
+
+			AddTCCheckoutStatusIcon(button);
+
 			flowLayoutPanel.Controls.Add(button); // important to add it before RefreshOneThumbnail; uses parent flow to decide whether primary
 
 			// Can't use this test until after we add button (uses parent info)
@@ -768,10 +771,41 @@ namespace Bloom.CollectionTab
 			else
 			{
 				//show this one for now, in the background someone will do the slow work of getting us a better one
-				RefreshOneThumbnail(bookInfo,Resources.placeHolderBookThumbnail);
+				RefreshOneThumbnail(bookInfo, Resources.placeHolderBookThumbnail);
 				refreshThumbnail = true;
 			}
 			_buttonsNeedingSlowUpdate.Enqueue(new ButtonRefreshInfo(button, refreshThumbnail));
+		}
+
+		private void AddTCCheckoutStatusIcon(Button parentButton)
+		{
+			var diameter = 29;
+			var padding = 1;
+
+			var label = new Label();
+			var imageSize = diameter + padding * 2;
+			label.Size = new Size(imageSize, imageSize);
+			var bitmap = new Bitmap(imageSize, imageSize);
+			using (Graphics g = Graphics.FromImage(bitmap))
+			{
+				var bloomYellow = Color.FromArgb(255, 254, 191, 0);
+				var pen = new Pen(bloomYellow);
+				var brush = new SolidBrush(bloomYellow);
+				
+				var left = padding;
+				var top = padding;
+
+				g.DrawEllipse(pen, left, top, diameter, diameter);
+				g.FillEllipse(brush, left, top, diameter, diameter);
+			}
+			label.Image = bitmap;
+			label.BackColor = Color.Transparent;
+
+			label.Location = new Point(parentButton.Width - label.Width - 3, 3);
+
+			// FYI, in order for the label to be transparent with the pixels falling back to the button image,
+			// the button does need to be the parent.
+			parentButton.Controls.Add(label);
 		}
 
 		private string ShortenTitleIfNeeded(string title, Button button)
