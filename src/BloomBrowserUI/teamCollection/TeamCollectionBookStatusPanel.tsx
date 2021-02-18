@@ -3,13 +3,12 @@ import theme from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { useState } from "react";
 import ReactDOM = require("react-dom");
-import Avatar from "react-avatar";
 import { BloomApi } from "../utils/bloomApi";
 import { useL10n } from "../react_components/l10nHooks";
 import "./TeamCollectionBookStatusPanel.less";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import BloomButton from "../react_components/bloomButton";
-import { getMd5 } from "../bookEdit/toolbox/talkingBook/md5Util";
+import { BloomAvatar } from "../react_components/bloomAvatar";
 
 // The panel that appears at the bottom of the preview in the collection tab in a Team Collection.
 // Todo: JohnH wants this component to wrap an iframe that contains the preview,
@@ -34,6 +33,8 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
             if (bookStatus.who) {
                 // locked by someone
                 setLockedBy(bookStatus.who);
+                const lockedByFullName = `${bookStatus.whoFirstName} ${bookStatus.whoSurname}`.trim();
+                setLockedByDisplay(lockedByFullName || lockedBy);
                 if (
                     bookStatus.who === bookStatus.currentUser &&
                     bookStatus.where === bookStatus.currentMachine
@@ -44,12 +45,8 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         bookStatus.who === bookStatus.currentUser;
                     if (isCurrentUser) {
                         setState("lockedByMeElsewhere");
-                        setLockedByDisplay(
-                            bookStatus.who + " (" + bookStatus.where + ")"
-                        );
                     } else {
                         setState("locked");
-                        setLockedByDisplay(bookStatus.who);
                     }
                     setLockedWhen(bookStatus.when);
                     setLockedMachine(bookStatus.where);
@@ -63,13 +60,13 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     let avatar;
     if (state.startsWith("locked")) {
         avatar = (
-            <React.Suspense fallback={<></>}>
-                <Avatar
-                    md5Email={getMd5(lockedBy)}
-                    size={"48px"}
-                    round={true}
-                />
-            </React.Suspense>
+            <BloomAvatar
+                email={lockedBy}
+                name={lockedByDisplay}
+                borderColor={
+                    state === "lockedByMe" && theme.palette.warning.main
+                }
+            />
         );
     }
 

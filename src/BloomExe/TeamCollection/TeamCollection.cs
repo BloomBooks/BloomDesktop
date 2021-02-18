@@ -11,8 +11,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using Bloom.ToPalaso;
-using SIL.Progress;
 
 namespace Bloom.TeamCollection
 {
@@ -225,7 +223,7 @@ namespace Bloom.TeamCollection
 			var status = GetStatus(bookName);
 			if (String.IsNullOrEmpty(status.lockedBy))
 			{
-				status = status.WithLockedBy(whoBy);
+				status = status.WithLockedBy(whoBy, TeamCollectionManager.CurrentUserFirstName, TeamCollectionManager.CurrentUserSurname);
 				WriteBookStatus(bookName, status);
 			}
 
@@ -239,12 +237,29 @@ namespace Bloom.TeamCollection
 			return GetStatus(bookName).lockedBy;
 		}
 
+		// Get the first name of the user, if any, who has the book locked.
+		// Returns null if not locked or we don't know the first name.
+		public string WhoHasBookLockedFirstName(string bookName)
+		{
+			if (WhoHasBookLocked(bookName) == FakeUserIndicatingNewBook)
+				return TeamCollectionManager.CurrentUserFirstName;
+			return GetStatus(bookName).lockedByFirstName;
+		}
+
+		// Get the surname of the user, if any, who has the book locked.
+		// Returns null if not locked or we don't know the surname.
+		public string WhoHasBookLockedSurname(string bookName)
+		{
+			if (WhoHasBookLocked(bookName) == FakeUserIndicatingNewBook)
+				return TeamCollectionManager.CurrentUserSurname;
+			return GetStatus(bookName).lockedBySurname;
+		}
+
 		// Gives the time when someone locked the book. DateTime.MaxValue if not locked.
 		public DateTime WhenWasBookLocked(string bookName)
 		{
 			var status = GetStatus(bookName);
-			DateTime result;
-			if (DateTime.TryParse(status.lockedWhen, out result))
+			if (DateTime.TryParse(status.lockedWhen, out var result))
 				return result;
 			return DateTime.MaxValue;
 		}

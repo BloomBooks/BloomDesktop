@@ -16,8 +16,10 @@ namespace Bloom.TeamCollection
 	{
 		private readonly BloomWebSocketServer _webSocketServer;
 		public TeamCollection CurrentCollection { get; private set; }
-		private string _localCollectionFolder;
+		private readonly string _localCollectionFolder;
 		private static string _overrideCurrentUser;
+		private static string _overrideCurrentUserFirstName;
+		private static string _overrideCurrentUserSurname;
 		private static string _overrideMachineName;
 
 		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer)
@@ -30,9 +32,11 @@ namespace Bloom.TeamCollection
 				var lines = File.ReadAllLines(impersonatePath);
 				_overrideCurrentUser = lines.FirstOrDefault();
 				if (lines.Length > 1)
-				{
 					_overrideMachineName = lines[1];
-				}
+				if (lines.Length > 2)
+					_overrideCurrentUserFirstName = lines[2];
+				if (lines.Length > 3)
+					_overrideCurrentUserSurname = lines[3];
 			}
 
 			var localSettingsPath = Path.Combine(_localCollectionFolder, TeamCollectionSettingsFileName);
@@ -84,8 +88,18 @@ namespace Bloom.TeamCollection
 		public const string TeamCollectionSettingsFileName = "TeamCollectionSettings.xml";
 
 		// This is the value the book must be locked to for a local checkout.
-		// For all the Sharing code, this should be the one place we know how to find that user.
+		// For all the Team Collection code, this should be the one place we know how to find that user.
 		public static string CurrentUser => _overrideCurrentUser ?? SIL.Windows.Forms.Registration.Registration.Default.Email;
+
+		// CurrentUser is the email address and is used as the key, but this is
+		// used to display a more friendly name and avatar initials.
+		// For all the Team Collection code, this should be the one place we know how to find the current user's first name.
+		public static string CurrentUserFirstName => _overrideCurrentUserFirstName ?? SIL.Windows.Forms.Registration.Registration.Default.FirstName;
+
+		// CurrentUser is the email address and is used as the key, but this is
+		// used to display a more friendly name and avatar initials.
+		// For all the Team Collection code, this should be the one place we know how to find the current user's surname.
+		public static string CurrentUserSurname => _overrideCurrentUserSurname ?? SIL.Windows.Forms.Registration.Registration.Default.Surname;
 
 		/// <summary>
 		/// This is what the BookStatus.lockedWhere must be for a book to be considered
