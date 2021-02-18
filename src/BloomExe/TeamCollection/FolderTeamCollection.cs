@@ -45,6 +45,8 @@ namespace Bloom.TeamCollection
 			_repoFolderPath = repoFolderPath;
 		}
 
+		public string RepoFolderPath => _repoFolderPath;
+
 		/// <summary>
 		/// The folder-implementation-specific part of PutBook, the public method in TeamRepo.
 		/// Write the book as a .bloom by zipping the specified folder (and use its name).

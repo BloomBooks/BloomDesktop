@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<!--  This is loaded by c# TeamCollectionManager class into a BrowserDialog -->
+<html class="create-team-collection" lang="en">
+    <head>
+        <meta charset="UTF-8" />
+    </head>
+
+    <body style="background-color: white">
+        <div id="create-team-collection-screen"></div>
+        <script src="../commonBundle.js"></script>
+        <script src="../teamCollectionSettingsBundle.js"></script>
+        <script type="text/javascript">
+            var reactRoot = document.getElementById(
+                "create-team-collection-screen"
+            );
+            //If we could do jsx here: ReactDOM.render(<CreateTeamCollection/>, reactRoot);
+            //If we could access ReactDOM here: ReactDOM.render(React.createElement(CreateTeamCollection, null), reactRoot);
+            // But withtout some new webpack wizardry, this will have to do in the meantime:
+            window.connectCreateTeamCollectionScreen(reactRoot);
+        </script>
+    </body>
+</html>

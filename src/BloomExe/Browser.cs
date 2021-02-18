@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
@@ -20,6 +21,8 @@ using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.Miscellaneous;
 using L10NSharp;
+using RestSharp.Extensions;
+using SIL.PlatformUtilities;
 using SimulatedPageFileSource = Bloom.Api.BloomServer.SimulatedPageFileSource;
 
 namespace Bloom
@@ -60,7 +63,7 @@ namespace Bloom
 			{
 				var asm = Assembly.GetExecutingAssembly();
 				var file = asm.CodeBase.Replace("file://", String.Empty);
-				if (SIL.PlatformUtilities.Platform.IsWindows)
+				if (Platform.IsWindows)
 					file = file.TrimStart('/');
 				var folder = Path.GetDirectoryName(file);
 				xulRunnerPath = Path.Combine(folder, "Firefox");
@@ -75,7 +78,7 @@ namespace Bloom
 
 			// BL-535: 404 error if system proxy settings not configured to bypass proxy for localhost
 			// See: https://developer.mozilla.org/en-US/docs/Mozilla/Preferences/Mozilla_networking_preferences
-			GeckoPreferences.User["network.proxy.http"] = string.Empty;
+			GeckoPreferences.User["network.proxy.http"] = String.Empty;
 			GeckoPreferences.User["network.proxy.http_port"] = 80;
 			GeckoPreferences.User["network.proxy.type"] = 1; // 0 = direct (uses system settings on Windows), 1 = manual configuration
 			// Try some settings to reduce memory consumption by the mozilla browser engine.
@@ -117,7 +120,7 @@ namespace Bloom
 			// run a 64-bit version of of Bloom, while Bloom on Windows is still a 32-bit program regardless of the
 			// system.  Since Windows Bloom uses Adobe Acrobat code to display PDF files, it doesn't need the larger
 			// size for surfacecache, and that memory may be needed elsewhere.
-			if (SIL.PlatformUtilities.Platform.IsLinux)
+			if (Platform.IsLinux)
 				GeckoPreferences.User["image.mem.surfacecache.max_size_kb"] = 102400;	// 100MB
 			else
 				GeckoPreferences.User["image.mem.surfacecache.max_size_kb"] = 40960;	// 40MB
@@ -163,7 +166,7 @@ namespace Bloom
 			// BasicImageFactory, as composing is cheap (since FF is now using LAYERS_OPENGL on Linux instead of
 			// LAYERS_BASIC).  [analysis courtesy of Tom Hindle]
 			// This setting is needed only on Linux as far as we can tell.
-			if (SIL.PlatformUtilities.Platform.IsLinux)
+			if (Platform.IsLinux)
 				GeckoPreferences.User["layers.acceleration.force-enabled"] = true;
 
 			// Save the default system language tags for later use.
@@ -542,7 +545,7 @@ namespace Bloom
 			// On Windows, Form.ProcessCmdKey (intercepted in Shell) seems to get ctrl messages even when the browser
 			// has focus.  But on Mono, it doesn't.  So we just do the same thing as that Shell.ProcessCmdKey function
 			// does, which is to raise this event.
-			if (SIL.PlatformUtilities.Platform.IsMono && ControlKeyEvent != null && e.CtrlKey && e.KeyChar == 'n')
+			if (Platform.IsMono && ControlKeyEvent != null && e.CtrlKey && e.KeyChar == 'n')
 			{
 				Keys keyData = Keys.Control | Keys.N;
 				ControlKeyEvent.Raise(keyData);
@@ -699,7 +702,7 @@ namespace Bloom
 		public void OnOpenPageInSystemBrowser(object sender, EventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
-			bool isWindows = SIL.PlatformUtilities.Platform.IsWindows;
+			bool isWindows = Platform.IsWindows;
 			string genericError = "Something went wrong trying to open this page in ";
 			try
 			{
@@ -1083,7 +1086,7 @@ namespace Bloom
 				var thisPageId = browserDomPage.Attributes["id"].Value;
 				if(expectedPageId != thisPageId)
 				{
-					SIL.Reporting.ErrorReport.NotifyUserOfProblem(LocalizationManager.GetString("Browser.ProblemSaving",
+					ErrorReport.NotifyUserOfProblem(LocalizationManager.GetString("Browser.ProblemSaving",
 						"There was a problem while saving. Please return to the previous page and make sure it looks correct."));
 					return;
 				}
@@ -1324,7 +1327,7 @@ namespace Bloom
 
 			var longMsg = ex.Message;
 			if (script != null)
-				longMsg = string.Format("Script=\"{0}\"{1}Exception message = {2}", script, Environment.NewLine, ex.Message);
+				longMsg = String.Format("Script=\"{0}\"{1}Exception message = {2}", script, Environment.NewLine, ex.Message);
 			NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "A JavaScript error occurred and was missed by our onerror handler", longMsg, ex);
 		}
 
@@ -1399,6 +1402,23 @@ namespace Bloom
 				eventArgs.Handled = true;
 				return;
 			}
+
+			var directoryPrefix = "file://///";
+			if (anchor.Href.ToLowerInvariant().StartsWith(directoryPrefix))
+			{
+				// trying to get to a directory.
+				var path = anchor.Href.Substring(directoryPrefix.Length).UrlDecode().Replace("/",Path.DirectorySeparatorChar.ToString());
+				eventArgs.Handled = true;
+				try
+				{
+					PathUtilities.SelectFileInExplorer(path);
+				}
+				catch (COMException e)
+				{
+					ErrorReport.NotifyUserOfProblem(e,
+						"Bloom had a problem asking your operating system to show that folder. Sorry!");
+				}
+			}
 			if (anchor.Href.ToLowerInvariant().StartsWith("file"))
 			//links to files are handled externally if we can tell they aren't html/javascript related
 			{
@@ -1432,6 +1452,14 @@ namespace Bloom
 				ErrorReport.NotifyUserOfProblem("Bloom did not understand this link: " + anchor.Href);
 				eventArgs.Handled = true;
 			}
+		}
+
+		public static string GetAnchorHref(EventArgs e)
+		{
+			var element = (GeckoHtmlElement)(e as DomEventArgs).Target.CastToGeckoElement();
+			//nb: it might not be an actual anchor; could be an input-button that we've stuck href on
+			return element == null ? "" :
+				element.GetAttribute("href") ?? "";
 		}
 
 		/*
@@ -1536,7 +1564,7 @@ namespace Bloom
 			    // Handle only http(s) and mailto protocols.
 			    (anchor.Href.ToLowerInvariant().StartsWith("http") || anchor.Href.ToLowerInvariant().StartsWith("mailto")) &&
 			    // Don't try to handle localhost Bloom requests.
-			    !anchor.Href.ToLowerInvariant().StartsWith(Api.BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
+			    !anchor.Href.ToLowerInvariant().StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
 			{
 				SIL.Program.Process.SafeStart(anchor.Href);
 				ge.Handled = true;

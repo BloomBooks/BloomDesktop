@@ -224,7 +224,7 @@ namespace Bloom.CollectionTab
 			var ge = e as DomEventArgs;
 			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
 			var anchor = target as Gecko.DOM.GeckoAnchorElement;
-			if (GetAnchorHref(e) != "" && GetAnchorHref(e) != "#")
+			if (Browser.GetAnchorHref(e) != "" && Browser.GetAnchorHref(e) != "#")
 			{
 				_readmeBrowser.HandleLinkClick(anchor, ge, _bookSelection.CurrentSelection.FolderPath);
 			}
@@ -236,18 +236,10 @@ namespace Bloom.CollectionTab
 		/// </summary>
 		private void _previewBrowser_OnBrowserClick(object sender, EventArgs e)
 		{
-			if (GetAnchorHref(e).EndsWith("ReportProblem"))
+			if (Browser.GetAnchorHref(e).EndsWith("ReportProblem"))
 			{
 				ProblemReportApi.ShowProblemDialog(_previewBrowser, null, "", "nonfatal");
 			}
-		}
-
-		private static string GetAnchorHref(EventArgs e)
-		{
-			var element = (GeckoHtmlElement) (e as DomEventArgs).Target.CastToGeckoElement();
-			//nb: it might not be an actual anchor; could be an input-button that we've stuck href on
-			return element == null ? "" :
-					element.GetAttribute("href") ?? "";
 		}
 
 		private void _splitContainerForPreviewAndAboutBrowsers_SplitterMoved(object sender, SplitterEventArgs e)

@@ -11,9 +11,11 @@ using SIL.Extensions;
 using SIL.WritingSystems;
 using System.Collections.Generic;
 using Bloom.Api;
+using Bloom.CollectionTab;
 using Bloom.TeamCollection;
 using Bloom.MiscUI;
 using Bloom.web.controllers;
+using Gecko;
 
 namespace Bloom.Collection
 {
@@ -34,13 +36,15 @@ namespace Bloom.Collection
 		private Browser _sharingBrowser;
 		private string _subscriptionCode;
 		private string _brand;
+		private TeamCollectionManager _tcManager;
 
-		public CollectionSettingsDialog(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder, QueueRenameOfCollection queueRenameOfCollection, PageRefreshEvent pageRefreshEvent)
+		public CollectionSettingsDialog(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder, QueueRenameOfCollection queueRenameOfCollection, PageRefreshEvent pageRefreshEvent, TeamCollectionManager tcManager)
 		{
 			_collectionSettings = collectionSettings;
 			_xmatterPackFinder = xmatterPackFinder;
 			_queueRenameOfCollection = queueRenameOfCollection;
 			_pageRefreshEvent = pageRefreshEvent;
+			_tcManager = tcManager;
 			InitializeComponent();
 			// moved from the Designer where it was deleted if the Designer was touched
 			_xmatterList.Columns.AddRange(new[] { new ColumnHeader() { Width = 250 } });
@@ -122,10 +126,33 @@ namespace Bloom.Collection
 				// So just don't show it at all until it contains what we want to see.
 				_sharingTab.Controls.Add(_sharingBrowser);
 			};
-			_sharingBrowser.Navigate(rootFile.ToLocalhost(), false);
+			_sharingBrowser.OnBrowserClick += delegate(object sender, EventArgs args)
+			{
+				var ge = args as DomEventArgs;
+				var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
+				var anchor = target as Gecko.DOM.GeckoAnchorElement;
+				var anchorHref = Browser.GetAnchorHref(args);
+				if (anchorHref != "" && anchorHref != "#")
+				{
+					// Currently the only one we expect is an absolute directory link, so we don't
+					// need a real working directory.
+					_sharingBrowser.HandleLinkClick(anchor, ge, "");
+				}
+			};
+			var currentTcFolder = (_tcManager.CurrentCollection as FolderTeamCollection)?.RepoFolderPath;
+			var url = rootFile.ToLocalhost();
+			if (!string.IsNullOrEmpty(currentTcFolder))
+			{
+				url += "?folder=" + currentTcFolder;
+			}
+			_sharingBrowser.Navigate(url, false);
 			// If the SharingApi gets a callback from HTML that results in setting up
 			// a team collection for this collection, we need to restart afterwards.
-			TeamCollectionApi.TheOneInstance.SetCreateCallback(() => _restartRequired = true);
+			TeamCollectionApi.TheOneInstance.SetCreateCallback(() =>
+			{
+				_restartRequired = true;
+				_okButton_Click(null, null);
+			});
 		}
 
 		protected override void OnHandleCreated(EventArgs e)
