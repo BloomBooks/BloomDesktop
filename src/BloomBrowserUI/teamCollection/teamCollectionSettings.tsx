@@ -2,7 +2,6 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { BloomApi } from "../utils/bloomApi";
 import { Div } from "../react_components/l10nComponents";
-import Link from "../react_components/link";
 import "./teamCollectionSettings.less";
 
 // A device for getting code into the team collection module
@@ -10,63 +9,146 @@ import { ProgressDialog } from "../react_components/IndependentProgressDialog";
 export { ProgressDialog };
 import { NewTeamCollection } from "./NewTeamCollection";
 export { NewTeamCollection };
+import { CreateTeamCollection } from "./CreateTeamCollection";
+export { CreateTeamCollection };
+
+import BloomButton from "../react_components/bloomButton";
+import { Dialog } from "@material-ui/core";
+import { useState } from "react";
+
+//import joiningImage from "../images/joining-team-collection.png";
 
 // The contents of the Team Collection panel of the Settings dialog.
-// Currently based on an early mock-up, now superceded.
 
 export const TeamCollectionSettings: React.FunctionComponent = props => {
+    // Because this is the top level component in a C# web browser, there is nothing outside it that can
+    // provide any props. We instead use a url param to communicate from C# to this whether we are showing settings
+    // for a collection that is already part of a team collection (and if so, to provide the collection path).
+    const urlParams = new URLSearchParams(window.location.search);
+    const existingTcPath = urlParams.get("folder");
+    const [createDlgOpen, setCreateDlgOpen] = useState(false);
     return (
         <div id="teamCollection-settings">
             <Div
                 l10nKey="TeamCollection.Intro"
+                l10nParam0="https://docs.google.com/document/d/1DOhy7hnmG37NzcQN8oP6NkXW_X3WU7YH4ez_P1hV1mo/edit?usp=sharing"
+                // Todo: once we have an actual video this should link to it! For now just another link to the document.
+                l10nParam1="https://docs.google.com/document/d/1DOhy7hnmG37NzcQN8oP6NkXW_X3WU7YH4ez_P1hV1mo/edit?usp=sharing"
                 temporarilyDisableI18nWarning={true}
             >
                 Bloom's Team Collection system helps your team collaborate as
-                you create, translate, and edit books.
+                you create, translate, and edit books. Read about how it works
+                [here]({0}), or view this [video]({1}).
             </Div>
-            <Div
-                l10nKey="TeamCollection.Starting"
-                className="teamCollection-heading"
-                temporarilyDisableI18nWarning={true}
+            {existingTcPath ? (
+                <div>
+                    <Div
+                        l10nKey="TeamCollection.ThisIsATC"
+                        className="teamCollection-heading no-space-below"
+                        temporarilyDisableI18nWarning={true}
+                    >
+                        This is a Team Collection
+                    </Div>
+                    <Div
+                        l10nKey="TeamCollection.CloudLocation"
+                        temporarilyDisableI18nWarning={true}
+                        className="no-space-below"
+                    >
+                        Cloud Storage Folder Location:
+                    </Div>
+                    <a
+                        className="directory-link"
+                        href=""
+                        onClick={e => {
+                            e.preventDefault();
+                            BloomApi.postJson("common/showInFolder", {
+                                folderPath: existingTcPath
+                            });
+                        }}
+                    >
+                        {existingTcPath}
+                    </a>
+                    <Div
+                        l10nKey="TeamCollection.AddingHelp"
+                        temporarilyDisableI18nWarning={true}
+                    >
+                        Need help adding someone to your Team Collection?
+                    </Div>
+                    <div className="align-right">
+                        <BloomButton
+                            l10nKey="TeamCollection.HowToAddSomeone"
+                            temporarilyDisableI18nWarning={true}
+                            variant="text"
+                            enabled={true}
+                            hasText={true}
+                            onClick={() =>
+                                BloomApi.post(
+                                    "help/Tasks/Team_collection/Add_teammate"
+                                )
+                            }
+                        >
+                            How to add someone to this Team Collection
+                        </BloomButton>
+                    </div>
+                </div>
+            ) : (
+                // No existing team collection
+                <div>
+                    <Div
+                        l10nKey="TeamCollection.StartingInstructions"
+                        className="extra-space-above"
+                        temporarilyDisableI18nWarning={true}
+                    >
+                        It is important that **only one person** on the team
+                        create the Team Collection.
+                    </Div>
+                    <div className="align-right">
+                        <BloomButton
+                            className="align-right"
+                            l10nKey="TeamCollection.CreateTeamCollection"
+                            enabled={true}
+                            hasText={true}
+                            variant="outlined"
+                            onClick={() => setCreateDlgOpen(true)}
+                            temporarilyDisableI18nWarning={true}
+                        >
+                            Create a Team Collection
+                        </BloomButton>
+                    </div>
+                    <Div
+                        l10nKey="TeamCollection.JoiningHelp"
+                        className="extra-space-above"
+                        temporarilyDisableI18nWarning={true}
+                    >
+                        Has someone in your team already created a Team
+                        Collection for your Team?
+                    </Div>
+                    <div className="align-right">
+                        <BloomButton
+                            l10nKey="TeamCollection.Joining"
+                            enabled={true}
+                            hasText={true}
+                            variant="text"
+                            temporarilyDisableI18nWarning={true}
+                            onClick={() =>
+                                BloomApi.post(
+                                    "help/Tasks/Team_collection/Join_team"
+                                )
+                            }
+                        >
+                            How to join an existing Team Collection
+                        </BloomButton>
+                    </div>
+                </div>
+            )}
+            <Dialog
+                open={createDlgOpen}
+                onBackdropClick={() => setCreateDlgOpen(false)}
             >
-                Starting a new Team Collection
-            </Div>
-            <Div
-                l10nKey="TeamCollection.StartingInstructions"
-                temporarilyDisableI18nWarning={true}
-            >
-                Only one person on the team should create the Team Collection.
-                Before creating it, you will need to have Dropbox installed on
-                your computer.
-            </Div>
-            <Link
-                l10nKey="TeamCollection.CreateTeamCollection"
-                onClick={() =>
-                    BloomApi.post("teamCollection/createTeamCollection")
-                }
-                temporarilyDisableI18nWarning={true}
-            >
-                Create a Team Collection
-            </Link>
-            <Div
-                l10nKey="TeamCollection.Joining"
-                className="teamCollection-heading"
-                temporarilyDisableI18nWarning={true}
-            >
-                How to join an existing Team Collection
-            </Div>
-            <Div
-                l10nKey="TeamCollection.JoiningInstructions"
-                temporarilyDisableI18nWarning={true}
-            >
-                First, the team leader should share the Team Collection's
-                Dropbox folder with you. After that folder is synchronizing on
-                your computer, open it and double click on "Join this Team
-                Collection.JoinBloomTC" file.
-            </Div>
-            {/* <div className="button-row">
-
-            </div> */}
+                <CreateTeamCollection
+                    closeDlg={() => setCreateDlgOpen(false)}
+                ></CreateTeamCollection>
+            </Dialog>
         </div>
     );
 };

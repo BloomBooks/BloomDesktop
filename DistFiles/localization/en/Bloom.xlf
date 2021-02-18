@@ -4807,16 +4807,18 @@ Do you want to go ahead?</note>
         <note>ID: TeamCollection.CreateTeamCollection</note>
       </trans-unit>
       <trans-unit id="TeamCollection.Intro" sil:dynamic="true">
-        <source xml:lang="en">Bloom's Team Collection system helps your team collaborate as you create, translate, and edit books.</source>
+        <source xml:lang="en">Bloom's Team Collection system helps your team collaborate as you create, translate, and edit books. Read about how it works
+                [here]({0}), or view this [video]({1}).</source>
         <note>ID: TeamCollection.Intro</note>
+        <note>The part in [] will be hot links to the URL {0} and {1}. Please don't change the URL, unless you know a link to a more suitable translation of the relevant document or video.</note>
       </trans-unit>
       <trans-unit id="TeamCollection.Joining" sil:dynamic="true">
         <source xml:lang="en">How to join an existing Team Collection</source>
         <note>ID: TeamCollection.Joining</note>
       </trans-unit>
-      <trans-unit id="TeamCollection.JoiningInstructions" sil:dynamic="true">
-        <source xml:lang="en">First, the team leader should share the Team Collection's Dropbox folder with you. After that folder is synchronizing on your computer, open it and double click on "Join this Team Collection.JoinBloomTC" file.</source>
-        <note>ID: TeamCollection.JoiningInstructions</note>
+      <trans-unit id="TeamCollection.JoiningHelp" sil:dynamic="true">
+        <source xml:lang="en">Has someone in your team already created a Team Collection for your Team?</source>
+        <note>ID: TeamCollection.JoiningHelp</note>
       </trans-unit>
       <trans-unit id="TeamCollection.RemoteChanges" sil:dynamic="true">
         <source xml:lang="en">Remote Changes</source>
@@ -4830,13 +4832,10 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Select or create the folder where this collection will be shared</source>
         <note>ID: TeamCollection.SelectFolder</note>
       </trans-unit>
-      <trans-unit id="TeamCollection.Starting" sil:dynamic="true">
-        <source xml:lang="en">Starting a new Team Collection</source>
-        <note>ID: TeamCollection.Starting</note>
-      </trans-unit>
       <trans-unit id="TeamCollection.StartingInstructions" sil:dynamic="true">
-        <source xml:lang="en">Only one person on the team should create the Team Collection. Before creating it, you will need to have Dropbox installed on your computer.</source>
+        <source xml:lang="en">It is important that **only one person** on the team create the Team Collection.</source>
         <note>ID: TeamCollection.StartingInstructions</note>
+        <note>Whatever you put between double asterisks will be bold.</note>
       </trans-unit>
       <trans-unit id="TeamCollection.Creating" sil:dynamic="true">
         <source xml:lang="en">Bloom will create a new collection on your computer based on this Team Collection.</source>

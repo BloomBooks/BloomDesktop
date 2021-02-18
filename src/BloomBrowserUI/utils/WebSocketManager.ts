@@ -20,11 +20,12 @@ export function useWebSocketListener(
 export function useWebSocketListenerForOneEvent(
     clientContext: string,
     messageId: string,
-    listener: (e: IBloomWebSocketEvent) => void
+    listener: (e: IBloomWebSocketEvent) => void,
+    requireMessage?: boolean
 ) {
     useEffect(() => {
         WebSocketManager.addListener(clientContext, e => {
-            if (e.id === messageId && e.message) {
+            if (e.id === messageId && (!requireMessage || e.message)) {
                 listener(e);
             }
         });

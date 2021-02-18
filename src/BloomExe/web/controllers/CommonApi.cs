@@ -134,7 +134,9 @@ namespace Bloom.web.controllers
 			{
 				var requestData = DynamicJson.Parse(request.RequiredPostJson());
 				string partialFolderPath = requestData.folderPath;
-				var folderPath = Path.Combine(_bookSelection.CurrentSelection.FolderPath, partialFolderPath);
+				string folderPath = partialFolderPath;
+				if (!Path.IsPathRooted(partialFolderPath))
+					folderPath = Path.Combine(_bookSelection.CurrentSelection.FolderPath, partialFolderPath);
 				SelectFileInExplorer(folderPath);
 				// It may or may not have succeeded but nothing in JS wants to know it didn't, and hiding
 				// the failure there is a nuisance.
