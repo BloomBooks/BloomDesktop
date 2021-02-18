@@ -17,6 +17,7 @@ import {
     IColorPickerDialogProps
 } from "./colorPickerDialog";
 import SmallNumberPicker from "./smallNumberPicker";
+import { BloomAvatar } from "./bloomAvatar";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -260,6 +261,38 @@ storiesOf("Misc", module)
                         </div>
                     </div>
                 </div>
+            );
+        })
+    )
+    .add("BloomAvatars", () =>
+        React.createElement(() => {
+            return (
+                <>
+                    <BloomAvatar
+                        email="test@example.com"
+                        name={"A B C D E F G"}
+                    />
+                    <BloomAvatar
+                        email="test@example.com"
+                        name={"A B C D E F G"}
+                        borderColor="green"
+                    />
+                    <BloomAvatar
+                        email="test@example.com"
+                        name={"A B C D E F G"}
+                        borderColor="#1d94a4"
+                    />
+                    <BloomAvatar email="test@example.com" name={"D E F G"} />
+                    <BloomAvatar
+                        email={"andrew" + "_polk" + "@sil.org"}
+                        name={"A B C D E F G"}
+                    />
+                    <BloomAvatar
+                        email={"andrew" + "_polk" + "@sil.org"}
+                        name={"A B C"}
+                        borderColor="#1d94a4"
+                    />
+                </>
             );
         })
     );

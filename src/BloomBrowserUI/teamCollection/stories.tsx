@@ -3,12 +3,12 @@ import theme from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import * as React from "react";
 import { storiesOf, addDecorator } from "@storybook/react";
-import Avatar from "react-avatar";
 import { StorybookContext } from "../.storybook/StoryBookContext";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import { getBloomButton } from "./TeamCollectionBookStatusPanel";
 import "./TeamCollectionBookStatusPanel.less";
 import { Typography } from "@material-ui/core";
+import { BloomAvatar } from "../react_components/bloomAvatar";
 
 addDecorator(storyFn => (
     <ThemeProvider theme={theme}>
@@ -47,15 +47,7 @@ const checkinButton = getBloomButton(
     "Check In.svg"
 );
 
-const avatar = (
-    <React.Suspense fallback={<></>}>
-        <Avatar
-            md5Email={"a5e59e90237da2c858802c1bb106e56c"}
-            size={"48px"}
-            round={true}
-        />
-    </React.Suspense>
-);
+const avatar = <BloomAvatar email={"test@example.com"} name={"A B"} />;
 storiesOf("Team Collection components", module)
     .add("Available", () =>
         testPage(

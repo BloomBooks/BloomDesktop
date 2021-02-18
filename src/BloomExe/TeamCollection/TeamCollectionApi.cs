@@ -65,10 +65,12 @@ namespace Bloom.TeamCollection
 				new
 				{
 					who = whoHasBookLocked,
-					when=whenLocked.ToLocalTime().ToShortDateString(),
-					where= _tcManager.CurrentCollection?.WhatComputerHasBookLocked(BookName),
-					currentUser=CurrentUser,
-					currentMachine= TeamCollectionManager.CurrentMachine
+					whoFirstName = _tcManager.CurrentCollection?.WhoHasBookLockedFirstName(BookName),
+					whoSurname = _tcManager.CurrentCollection?.WhoHasBookLockedSurname(BookName),
+					when = whenLocked.ToLocalTime().ToShortDateString(),
+					where = _tcManager.CurrentCollection?.WhatComputerHasBookLocked(BookName),
+					currentUser = CurrentUser,
+					currentMachine = TeamCollectionManager.CurrentMachine
 				}));
 		}
 

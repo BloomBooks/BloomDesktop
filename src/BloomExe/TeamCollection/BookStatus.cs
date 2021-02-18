@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace Bloom.TeamCollection
@@ -16,6 +12,8 @@ namespace Bloom.TeamCollection
 	{
 		public string checksum; // a checksum that helps us detect whether the book has been modified
 		public string lockedBy; // email
+		public string lockedByFirstName; // registration first name
+		public string lockedBySurname; // registration surname
 		public string lockedWhen; // string.Format("{0:yyyy-MM-ddTHH:mm:ss.fffZ}", DateTime.UtcNow)
 		public string lockedWhere; // Environment.MachineName
 
@@ -47,19 +45,20 @@ namespace Bloom.TeamCollection
 		/// by the specified user on this machine now (or not locked at all if lockedBy
 		/// is null).
 		/// </summary>
-		/// <param name="lockedBy"></param>
 		/// <returns></returns>
-		public BookStatus WithLockedBy(string lockedBy)
+		public BookStatus WithLockedBy(string lockedBy, string firstName = null, string surname = null)
 		{
 			var result = (BookStatus)this.MemberwiseClone();
 			result.lockedBy = lockedBy;
+			result.lockedByFirstName = firstName;
+			result.lockedBySurname = surname;
 			if (String.IsNullOrEmpty(lockedBy))
 			{
 				result.lockedWhen = result.lockedWhere = null;
 			}
 			else
 			{
-				result.lockedWhen = string.Format("{0:yyyy-MM-ddTHH:mm:ss.fffZ}", DateTime.UtcNow);
+				result.lockedWhen = $"{DateTime.UtcNow:yyyy-MM-ddTHH:mm:ss.fffZ}";
 				result.lockedWhere = TeamCollectionManager.CurrentMachine;
 			}
 
