@@ -11,6 +11,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using Bloom.Book;
 
 namespace Bloom.TeamCollection
 {
@@ -441,8 +442,8 @@ namespace Bloom.TeamCollection
 		// Original calculation, from content, of the version code we store in book status.
 		internal static string MakeChecksum(string folderPath)
 		{
-			var bookFolderName = Path.GetFileName(folderPath);
-			var sourceBookPath = Path.Combine(folderPath, Path.ChangeExtension(bookFolderName, "htm"));
+			var sourceBookName = BookStorage.FindBookHtmlInFolder(folderPath);
+			var sourceBookPath = Path.Combine(folderPath, sourceBookName);
 			return Book.Book.MakeVersionCode(RobustFile.ReadAllText(sourceBookPath), sourceBookPath);
 		}
 
