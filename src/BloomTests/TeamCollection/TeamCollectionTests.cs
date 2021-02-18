@@ -1,11 +1,7 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.IO;
 using Bloom.TeamCollection;
 using BloomTemp;
 using NUnit.Framework;
-using NUnit.Framework.Internal;
 using SIL.IO;
 using Directory = System.IO.Directory;
 using File = System.IO.File;

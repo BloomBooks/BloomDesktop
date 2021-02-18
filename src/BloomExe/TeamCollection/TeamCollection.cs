@@ -11,6 +11,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using Bloom.Book;
 
 namespace Bloom.TeamCollection
 {
@@ -66,7 +67,7 @@ namespace Bloom.TeamCollection
 			if (checkin)
 				status = status.WithLockedBy(null);
 			PutBookInRepo(folderPath, status, inLostAndFound);
-			WriteLocalStatus(Path.GetFileName(folderPath), status);
+			WriteLocalStatus(bookFolderName, status);
 			return status;
 		}
 
@@ -82,10 +83,10 @@ namespace Bloom.TeamCollection
 			{
 				try
 				{
-					var fileName = Path.GetFileName(path);
-					var status = GetStatus(fileName);
-					var localStatus = GetLocalStatus(fileName);
-					var localHtmlFilePath = Path.Combine(path, Path.ChangeExtension(Path.GetFileName(path), "htm"));
+					var bookFolderName = Path.GetFileName(path);
+					var status = GetStatus(bookFolderName);
+					var localStatus = GetLocalStatus(bookFolderName);
+					var localHtmlFilePath = Path.Combine(path, BookStorage.FindBookHtmlInFolder(path));
 					if ((status?.checksum == null || status.checksum != localStatus?.checksum) && RobustFile.Exists(localHtmlFilePath))
 					{
 						PutBook(path);
@@ -144,15 +145,15 @@ namespace Bloom.TeamCollection
 		/// Common part of getting book status as recorded in the repo, or if it is not in the repo
 		/// but there is such a book locally, treat as locked by FakeUserIndicatingNewBook.
 		/// </summary>
-		/// <param name="bookName"></param>
+		/// <param name="bookFolderName"></param>
 		/// <returns></returns>
-		public BookStatus GetStatus(string bookName)
+		public BookStatus GetStatus(string bookFolderName)
 		{
-			var statusString = GetBookStatusJsonFromRepo(bookName);
+			var statusString = GetBookStatusJsonFromRepo(bookFolderName);
 
 			if (String.IsNullOrEmpty(statusString))
 			{
-				var bookFolder = Path.Combine(_localCollectionFolder, Path.GetFileNameWithoutExtension(bookName));
+				var bookFolder = Path.Combine(_localCollectionFolder, Path.GetFileNameWithoutExtension(bookFolderName));
 				if (Directory.Exists(bookFolder))
 				{
 					// book exists only locally. Treat as checked out to FakeUserIndicatingNewBook
@@ -178,7 +179,7 @@ namespace Bloom.TeamCollection
 		/// <summary>
 		/// Get the raw status data from however the repo implementation stores it.
 		/// </summary>
-		protected abstract string GetBookStatusJsonFromRepo(string bookName);
+		protected abstract string GetBookStatusJsonFromRepo(string bookFolderName);
 
 		/// <summary>
 		/// Set the raw status data to however the repo implementation stores it.
@@ -422,15 +423,15 @@ namespace Bloom.TeamCollection
 			return statusFile;
 		}
 
-		internal void WriteLocalStatus(string bookName, BookStatus status, string collectionFolder = null)
+		internal void WriteLocalStatus(string bookFolderName, BookStatus status, string collectionFolder = null)
 		{
-			var statusFilePath = GetStatusFilePath(bookName, collectionFolder ?? _localCollectionFolder);
+			var statusFilePath = GetStatusFilePath(bookFolderName, collectionFolder ?? _localCollectionFolder);
 			RobustFile.WriteAllText(statusFilePath, status.ToJson(), Encoding.UTF8);
 		}
 
-		internal BookStatus GetLocalStatus(string bookName, string collectionFolder = null)
+		internal BookStatus GetLocalStatus(string bookFolderName, string collectionFolder = null)
 		{
-			var statusFilePath = GetStatusFilePath(bookName, collectionFolder ?? _localCollectionFolder);
+			var statusFilePath = GetStatusFilePath(bookFolderName, collectionFolder ?? _localCollectionFolder);
 			if (File.Exists(statusFilePath))
 			{
 				return BookStatus.FromJson(RobustFile.ReadAllText(statusFilePath, Encoding.UTF8));
@@ -441,8 +442,8 @@ namespace Bloom.TeamCollection
 		// Original calculation, from content, of the version code we store in book status.
 		internal static string MakeChecksum(string folderPath)
 		{
-			var bookFolderName = Path.GetFileName(folderPath);
-			var sourceBookPath = Path.Combine(folderPath, Path.ChangeExtension(bookFolderName, "htm"));
+			var sourceBookName = BookStorage.FindBookHtmlInFolder(folderPath);
+			var sourceBookPath = Path.Combine(folderPath, sourceBookName);
 			return Book.Book.MakeVersionCode(RobustFile.ReadAllText(sourceBookPath), sourceBookPath);
 		}
 
@@ -475,8 +476,8 @@ namespace Bloom.TeamCollection
 			{
 				try
 				{
-					var fileName = Path.GetFileName(path);
-					var status = GetBookStatusJsonFromRepo(fileName);
+					var bookFolderName = Path.GetFileName(path);
+					var status = GetBookStatusJsonFromRepo(bookFolderName);
 					if (status == null)
 					{
 						if (firstTimeJoin)
@@ -486,7 +487,7 @@ namespace Bloom.TeamCollection
 							continue;
 						}
 						// no sign of book in repo...should we delete it?
-						var statusFilePath = GetStatusFilePath(fileName, _localCollectionFolder);
+						var statusFilePath = GetStatusFilePath(bookFolderName, _localCollectionFolder);
 						if (File.Exists(statusFilePath))
 						{
 							// If there's no local status, presume it's a newly created local file and keep it
@@ -494,12 +495,12 @@ namespace Bloom.TeamCollection
 							// Since it's now missing from the repo, we assume it's been deleted.
 							// Unless it's checked out to the current user on the current computer, delete
 							// the local version.
-							var statusLocal = GetLocalStatus(fileName);
+							var statusLocal = GetLocalStatus(bookFolderName);
 							if (statusLocal.lockedBy != TeamCollectionManager.CurrentUser
 							    || statusLocal.lockedWhere != TeamCollectionManager.CurrentMachine)
 							{
 								progress.Message("DeleteLocal", "{0} is a filename",
-									String.Format("Deleting '{0}' from local folder as it is no longer in the Team Collection", fileName), MessageKind.Progress);
+									String.Format("Deleting '{0}' from local folder as it is no longer in the Team Collection", bookFolderName), MessageKind.Progress);
 								SIL.IO.RobustIO.DeleteDirectoryAndContents(path);
 							}
 

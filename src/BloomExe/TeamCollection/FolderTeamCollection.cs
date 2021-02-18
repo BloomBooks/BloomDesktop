@@ -59,8 +59,8 @@ namespace Bloom.TeamCollection
 		protected override void PutBookInRepo(string sourceBookFolderPath, BookStatus status,
 			bool inLostAndFound = false)
 		{
-			var bookName = Path.GetFileName(sourceBookFolderPath);
-			var bookPath = GetPathToBookFileInRepo(bookName);
+			var bookFolderName = Path.GetFileName(sourceBookFolderPath);
+			var bookPath = GetPathToBookFileInRepo(bookFolderName);
 
 			if (inLostAndFound)
 			{
@@ -71,7 +71,7 @@ namespace Bloom.TeamCollection
 				{
 					counter++;
 					bookPath = Path.ChangeExtension(
-						Path.Combine(lfPath, bookName + (counter == 1 ? "" : counter.ToString())), ".bloom");
+						Path.Combine(lfPath, bookFolderName + (counter == 1 ? "" : counter.ToString())), ".bloom");
 				} while (RobustFile.Exists(bookPath));
 			}
 			else
@@ -97,9 +97,9 @@ namespace Bloom.TeamCollection
 			}
 		}
 
-		private string GetPathToBookFileInRepo(string bookName)
+		private string GetPathToBookFileInRepo(string bookFolderName)
 		{
-			return Path.ChangeExtension(Path.Combine(_repoFolderPath, "Books", bookName), ".bloom");
+			return Path.ChangeExtension(Path.Combine(_repoFolderPath, "Books", bookFolderName), ".bloom");
 		}
 
 		/// <summary>
@@ -339,9 +339,9 @@ namespace Bloom.TeamCollection
 		/// Get the raw (JSON) string that stores the status information. Currently stored
 		/// in the zip file comment.
 		/// </summary>
-		protected override string GetBookStatusJsonFromRepo(string bookName)
+		protected override string GetBookStatusJsonFromRepo(string bookFolderName)
 		{
-			var bookPath = GetPathToBookFileInRepo(bookName);
+			var bookPath = GetPathToBookFileInRepo(bookFolderName);
 			if (!RobustFile.Exists(bookPath))
 			{
 				return null;
