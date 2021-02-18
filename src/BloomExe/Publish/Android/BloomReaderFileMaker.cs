@@ -124,7 +124,8 @@ namespace Bloom.Publish.Android
 				PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
 				fontsUsed = helper.FontsUsed;
 			}
-			modifiedBook.RemoveBlankPages(settings?.LanguagesToInclude);
+			if (!modifiedBook.IsTemplateBook)
+				modifiedBook.RemoveBlankPages(settings?.LanguagesToInclude);
 
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6835.
 			RemoveInvisibleImageElements(modifiedBook);

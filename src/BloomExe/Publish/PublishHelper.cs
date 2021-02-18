@@ -225,42 +225,42 @@ namespace Bloom.Publish
 			if (this != _latestInstance)
 				return;
 
-				var toBeDeleted = new List<XmlElement>();
-				// Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't
-				// (See BL-5234). So we gather up the elements to be deleted and delete them afterwards.
-				foreach (XmlElement page in pageElts)
+			var toBeDeleted = new List<XmlElement>();
+			// Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't
+			// (See BL-5234). So we gather up the elements to be deleted and delete them afterwards.
+			foreach (XmlElement page in pageElts)
+			{
+				// BL-9501 Don't remove pages from template books, which are often empty but we still want to show their components
+				if (!book.IsTemplateBook)
 				{
-					// BL-9501 Don't remove pages from template books, which are often empty but we still want to show their components
-					if (!book.IsTemplateBook)
+					// As the constant's name here suggests, in theory, we could include divs
+					// that don't have .bloom-editable, and all their children.
+					// But I'm not smart enough to write that selector and for bloomds, all we're doing here is saving space,
+					// so those other divs we are missing doesn't seem to matter as far as I can think.
+					var kSelectThingsThatCanBeHiddenButAreNotText = ".//img";
+					var selector = removeInactiveLanguages
+						? kSelectThingsThatCanBeHidden
+						: kSelectThingsThatCanBeHiddenButAreNotText;
+					foreach (XmlElement elt in page.SafeSelectNodes(selector))
 					{
-						// As the constant's name here suggests, in theory, we could include divs
-						// that don't have .bloom-editable, and all their children.
-						// But I'm not smart enough to write that selector and for bloomds, all we're doing here is saving space,
-						// so those other divs we are missing doesn't seem to matter as far as I can think.
-						var kSelectThingsThatCanBeHiddenButAreNotText = ".//img";
-						var selector = removeInactiveLanguages
-							? kSelectThingsThatCanBeHidden
-							: kSelectThingsThatCanBeHiddenButAreNotText;
-						foreach (XmlElement elt in page.SafeSelectNodes(selector))
+						// Even when they are not displayed we want to keep image descriptions if they aren't empty.
+						// This is necessary for retaining any associated audio files to play.
+						// (If they are empty, they won't have any audio and may trigger embedding an unneeded font.)
+						// See https://issues.bloomlibrary.org/youtrack/issue/BL-7237.
+						// As noted above, if the displayDom is not sufficiently loaded for a definitive
+						// answer to IsDisplayed, we will throw when making epubs but not for bloom reader.
+						if (!IsDisplayed(elt, epubMaker != null) && !IsNonEmptyImageDescription(elt))
 						{
-							// Even when they are not displayed we want to keep image descriptions if they aren't empty.
-							// This is necessary for retaining any associated audio files to play.
-							// (If they are empty, they won't have any audio and may trigger embedding an unneeded font.)
-							// See https://issues.bloomlibrary.org/youtrack/issue/BL-7237.
-							// As noted above, if the displayDom is not sufficiently loaded for a definitive
-							// answer to IsDisplayed, we will throw when making epubs but not for bloom reader.
-							if (!IsDisplayed(elt, epubMaker != null) && !IsNonEmptyImageDescription(elt))
-							{
-								toBeDeleted.Add(elt);
-							}
-						}
-
-						foreach (var elt in toBeDeleted)
-						{
-							elt.ParentNode.RemoveChild(elt);
+							toBeDeleted.Add(elt);
 						}
 					}
-					// We need the font information for visible text elements as well.  This is a side-effect but related to
+
+					foreach (var elt in toBeDeleted)
+					{
+						elt.ParentNode.RemoveChild(elt);
+					}
+				}
+				// We need the font information for visible text elements as well.  This is a side-effect but related to
 				// unwanted elements in that we don't need fonts that are used only by unwanted elements.
 				foreach (XmlElement elt in page.SafeSelectNodes(".//div"))
 				{
