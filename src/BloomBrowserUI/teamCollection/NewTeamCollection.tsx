@@ -26,6 +26,7 @@ export const NewTeamCollection: React.FunctionComponent = props => {
                     className="join-heading"
                     l10nKey="TeamCollection.JoinHeading"
                     l10nParam0={collectionName}
+                    temporarilyDisableI18nWarning={true}
                 >
                     Join the Team Collection "{0}"
                 </Div>
@@ -34,6 +35,7 @@ export const NewTeamCollection: React.FunctionComponent = props => {
                         <Div
                             l10nKey="TeamCollection.Merging"
                             l10nParam0={collectionName}
+                            temporarilyDisableI18nWarning={true}
                         >
                             Bloom will merge your existing "{0}" collection with
                             this Team Collection.
@@ -56,6 +58,7 @@ export const NewTeamCollection: React.FunctionComponent = props => {
                             <Div
                                 l10nKey="TeamCollection.StartFresh"
                                 l10nParam0={collectionName}
+                                temporarilyDisableI18nWarning={true}
                             >
                                 If instead you want to start fresh, click Cancel
                                 and rename your existing "{0}" collection to
