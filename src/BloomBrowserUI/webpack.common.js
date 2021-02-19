@@ -50,7 +50,7 @@ module.exports = merge(core, {
         ]),
         enterpriseSettingsBundle: "./collection/enterpriseSettings.tsx",
         teamCollectionSettingsBundle:
-            "./teamCollection/teamCollectionSettings.tsx",
+            "./teamCollection/TeamCollectionSettingsPanel.tsx",
         testBundle: globule.find([
             "./bookEdit/**/*Spec.ts",
             "./bookEdit/**/*Spec.js",

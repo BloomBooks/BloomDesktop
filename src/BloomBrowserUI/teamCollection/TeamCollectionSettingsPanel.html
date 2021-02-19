@@ -13,8 +13,8 @@
             var reactRoot = document.getElementById(
                 "teamCollectionSettingsScreen"
             );
-            //If we could do jsx here: ReactDOM.render(<TeamCollectionSettings/>, reactRoot);
-            //If we could access ReactDOM here: ReactDOM.render(React.createElement(TeamCollectionSettings, null), reactRoot);
+            //If we could do jsx here: ReactDOM.render(<TeamCollectionSettingsPanel/>, reactRoot);
+            //If we could access ReactDOM here: ReactDOM.render(React.createElement(TeamCollectionSettingsPanel, null), reactRoot);
             // But withtout some new webpack wizardry, this will have to do in the meantime:
             window.connectTeamCollectionSettingsScreen(reactRoot);
         </script>

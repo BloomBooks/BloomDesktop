@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { BloomApi } from "../utils/bloomApi";
 import { Div } from "../react_components/l10nComponents";
-import "./teamCollectionSettings.less";
+import "./TeamCollectionSettingsPanel.less";
 
 // A device for getting code into the team collection module
 import { ProgressDialog } from "../react_components/IndependentProgressDialog";
@@ -20,7 +20,7 @@ import { useState } from "react";
 
 // The contents of the Team Collection panel of the Settings dialog.
 
-export const TeamCollectionSettings: React.FunctionComponent = props => {
+export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
     // Because this is the top level component in a C# web browser, there is nothing outside it that can
     // provide any props. We instead use a url param to communicate from C# to this whether we are showing settings
     // for a collection that is already part of a team collection (and if so, to provide the collection path).
@@ -155,5 +155,5 @@ export const TeamCollectionSettings: React.FunctionComponent = props => {
 
 // allow plain 'ol javascript in the html to connect up react
 (window as any).connectTeamCollectionSettingsScreen = element => {
-    ReactDOM.render(<TeamCollectionSettings />, element);
+    ReactDOM.render(<TeamCollectionSettingsPanel />, element);
 };

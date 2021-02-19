@@ -117,7 +117,7 @@ namespace Bloom.Collection
 			_teamCollectionPanelBrowser = new Browser { Dock = DockStyle.Fill, Location = new Point(3, 3), Size = new Size(_teamCollectionTab.Width - 6, _teamCollectionTab.Height - 6) };
 			_teamCollectionPanelBrowser.BackColor = Color.White;
 
-			var rootFile = BloomFileLocator.GetBrowserFile(false, "teamCollection", "teamCollectionSettings.html");
+			var rootFile = BloomFileLocator.GetBrowserFile(false, "teamCollection", "TeamCollectionSettingsPanel.html");
 			var dummy = _teamCollectionPanelBrowser.Handle; // gets the WebBrowser created
 			_teamCollectionPanelBrowser.WebBrowser.DocumentCompleted += (sender, args) =>
 			{
