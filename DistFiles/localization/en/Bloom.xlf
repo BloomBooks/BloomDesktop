@@ -573,10 +573,6 @@
         <source xml:lang="en">Bloom will close and re-open this project with the new settings.</source>
         <note>ID: CollectionSettingsDialog.RestartMessage</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.TeamCollectionTab.TabLabel">
-        <source xml:lang="en">Team Collection</source>
-        <note>ID: CollectionSettingsDialog.TeamCollectionTab.TabLabel</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>
         <note>ID: CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem</note>
@@ -977,6 +973,10 @@
       <trans-unit id="Common.Settings">
         <source xml:lang="en">Settings</source>
         <note>ID: Common.Settings</note>
+      </trans-unit>
+      <trans-unit id="Common.TeamCollection">
+        <source xml:lang="en">Team Collection</source>
+        <note>ID: Common.TeamCollection</note>
       </trans-unit>
       <trans-unit id="Common.Warning">
         <source xml:lang="en">Info</source>
