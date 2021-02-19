@@ -43,6 +43,35 @@ namespace Bloom.TeamCollection
 		/// <remarks>Usually PutBook should be used; this method is meant for use by TeamCollection methods.</remarks>
 		protected abstract void PutBookInRepo(string sourceBookFolderPath, BookStatus newStatus, bool inLostAndFound = false);
 
+		public bool OkToCheckIn(string bookName)
+		{
+			var repoStatus = GetStatus(bookName);
+			var localStatus = GetLocalStatus(bookName);
+			if (repoStatus.checksum != localStatus.checksum)
+			{
+				// The book has changed elsewhere while we were editing.
+				// We should not overwrite those changes.
+				return false;
+			}
+
+			if (repoStatus.lockedBy == TeamCollectionManager.CurrentUser
+			    && repoStatus.lockedWhere == TeamCollectionManager.CurrentMachine)
+			{
+				// normal case, repo still shows it checked out here.
+				return true;
+			}
+
+			if (string.IsNullOrEmpty(repoStatus.lockedBy))
+			{
+				// Someone else stole the checkout, but they have undone that without changing
+				// the book. We can go ahead.
+				return true;
+			}
+			// It's checked out somewhere else according to the repo. They haven't changed it yet,
+			// but the repo says they have the right to.
+			return false;
+		}
+
 		/// <summary>
 		/// Put the book into the repo. Usually includes unlocking it. Its new status, with new checksum,
 		/// is written to the repo and also to a file in the local collection for later comparisons.
