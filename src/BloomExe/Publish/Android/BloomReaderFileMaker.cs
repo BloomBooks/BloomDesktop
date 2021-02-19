@@ -34,16 +34,18 @@ namespace Bloom.Publish.Android
 
 		public static void CreateBloomDigitalBook(string outputPath, Book.Book book, BookServer bookServer, Color backColor, WebSocketProgress progress, AndroidPublishSettings settings = null)
 		{
-			CreateBloomDigitalBook(outputPath, book.FolderPath, bookServer, backColor, progress, settings:settings);
+			CreateBloomDigitalBook(outputPath, book.FolderPath, bookServer, backColor, progress, book.IsTemplateBook, settings:settings);
 		}
 
 		// Create a BloomReader book while also creating the temporary folder for it (according to the specified parameter) and disposing of it
-		public static void CreateBloomDigitalBook(string outputPath, string bookFolderPath, BookServer bookServer, Color backColor,
-			WebSocketProgress progress, string tempFolderName = BRExportFolder, string creator = kCreatorBloom, AndroidPublishSettings settings = null)
+		public static void CreateBloomDigitalBook(string outputPath, string bookFolderPath, BookServer bookServer,
+			Color backColor,
+			WebSocketProgress progress, bool isTemplateBook, string tempFolderName = BRExportFolder,
+			string creator = kCreatorBloom, AndroidPublishSettings settings = null)
 		{
 			using (var temp = new TemporaryFolder(tempFolderName))
 			{
-				CreateBloomDigitalBook(outputPath, bookFolderPath, bookServer, backColor, progress, temp, creator, settings);
+				CreateBloomDigitalBook(outputPath, bookFolderPath, bookServer, backColor, progress, temp, creator, isTemplateBook, settings);
 			}
 		}
 
@@ -57,11 +59,15 @@ namespace Bloom.Publish.Android
 		/// <param name="progress"></param>
 		/// <param name="tempFolder">A temporary folder. This function will not dispose of it when done</param>
 		/// <param name="creator">value for &lt;meta name="creator" content="..."/&gt; (defaults to "bloom")</param>
+		/// <param name="isTemplateBook"></param>
+		/// <param name="settings"></param>
 		/// <returns>Path to the unzipped .bloomd</returns>
-		public static string CreateBloomDigitalBook(string outputPath, string bookFolderPath, BookServer bookServer, Color backColor,
-			WebSocketProgress progress, TemporaryFolder tempFolder, string creator=kCreatorBloom, AndroidPublishSettings settings = null)
+		public static string CreateBloomDigitalBook(string outputPath, string bookFolderPath, BookServer bookServer,
+			Color backColor,
+			WebSocketProgress progress, TemporaryFolder tempFolder, string creator = kCreatorBloom, bool isTemplateBook=false,
+			AndroidPublishSettings settings = null)
 		{
-			var modifiedBook = PrepareBookForBloomReader(bookFolderPath, bookServer, tempFolder, progress, creator, settings);
+			var modifiedBook = PrepareBookForBloomReader(bookFolderPath, bookServer, tempFolder, progress, isTemplateBook, creator, settings);
 			// We want at least 256 for Bloom Reader, because the screens have a high pixel density. And (at the moment) we are asking for
 			// 64dp in Bloom Reader.
 
@@ -73,15 +79,18 @@ namespace Bloom.Publish.Android
 			return modifiedBook.FolderPath;
 		}
 
-		public static Book.Book PrepareBookForBloomReader(string bookFolderPath, BookServer bookServer, TemporaryFolder temp,
-			WebSocketProgress progress, string creator=kCreatorBloom, AndroidPublishSettings settings = null)
+		public static Book.Book PrepareBookForBloomReader(string bookFolderPath, BookServer bookServer,
+			TemporaryFolder temp,
+			WebSocketProgress progress, bool isTemplateBook,
+			string creator = kCreatorBloom,
+			AndroidPublishSettings settings = null)
 		{
 			// MakeDeviceXmatterTempBook needs to be able to copy customCollectionStyles.css etc into parent of bookFolderPath
 			// And bloom-player expects folder name to match html file name.
 			var htmPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
 			var tentativeBookFolderPath = Path.Combine(temp.FolderPath, Path.GetFileNameWithoutExtension(htmPath));
 			Directory.CreateDirectory(tentativeBookFolderPath);
-			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer, tentativeBookFolderPath);
+			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer, tentativeBookFolderPath, isTemplateBook);
 
 			// Although usually tentativeBookFolderPath and modifiedBook.FolderPath are the same, there are some exceptions
 			// In the process of bringing a book up-to-date (called by MakeDeviceXmatterTempBook), the folder path may change.

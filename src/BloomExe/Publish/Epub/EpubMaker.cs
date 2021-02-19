@@ -271,7 +271,7 @@ namespace Bloom.Publish.Epub
 			if (_bookServer != null)
 			{
 				// It should only be null while running unit tests which don't create a physical file.
-				_book = PublishHelper.MakeDeviceXmatterTempBook(_book.FolderPath, _bookServer, tempBookPath, _omittedPageLabels);
+				_book = PublishHelper.MakeDeviceXmatterTempBook(_book.FolderPath, _bookServer, tempBookPath, _book.IsTemplateBook, _omittedPageLabels);
 			}
 
 			// The readium control remembers the current page for each book.

@@ -1324,8 +1324,9 @@ namespace BloomTests.Publish
 
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
 			{
-				BloomReaderFileMaker.CreateBloomDigitalBook(bloomdTempFile.Path, testBook.FolderPath, _bookServer, Color.Azure, new NullWebSocketProgress(), creator: creator,
-					settings:new AndroidPublishSettings() {LanguagesToInclude = languagesToInclude});
+				BloomReaderFileMaker.CreateBloomDigitalBook(bloomdTempFile.Path, testBook.FolderPath, _bookServer, Color.Azure, new NullWebSocketProgress(),
+					isTemplateBook: false, creator: creator, 
+					settings: new AndroidPublishSettings() {LanguagesToInclude = languagesToInclude});
 				var zip = new ZipFile(bloomdTempFile.Path);
 				var newHtml = GetEntryContents(zip, bookFileName);
 				var paramObj = new ZipHtmlObj(zip, newHtml);

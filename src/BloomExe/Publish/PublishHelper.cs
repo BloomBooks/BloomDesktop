@@ -405,11 +405,11 @@ namespace Bloom.Publish
 		/// are copied into its parent in order to be in the expected location relative to the book,
 		/// so that needs to be a folder we can write in.
 		/// </summary>
-		public static Book.Book MakeDeviceXmatterTempBook(string bookFolderPath, BookServer bookServer, string tempFolderPath,
+		public static Book.Book MakeDeviceXmatterTempBook(string bookFolderPath, BookServer bookServer, string tempFolderPath, bool isTemplateBook,
 			HashSet<string> omittedPageLabels = null)
 		{
 			BookStorage.CopyDirectory(bookFolderPath, tempFolderPath);
-			var bookInfo = new BookInfo(tempFolderPath, true) {UseDeviceXMatter = true};
+			var bookInfo = new BookInfo(tempFolderPath, true) {UseDeviceXMatter = !isTemplateBook};
 			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
 			modifiedBook.BringBookUpToDate(new NullProgress(), true);
 			modifiedBook.RemoveNonPublishablePages(omittedPageLabels);
