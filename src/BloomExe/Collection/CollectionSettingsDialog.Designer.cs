@@ -674,11 +674,11 @@ namespace Bloom.Collection
 			this._enterpriseTab.Text = "Bloom Enterprise";
 			this._enterpriseTab.UseVisualStyleBackColor = true;
 			// 
-			// _sharingTab
+			// _teamCollectionTab
 			// 
 			this._L10NSharpExtender.SetLocalizableToolTip(this._teamCollectionTab, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._teamCollectionTab, null);
-			this._L10NSharpExtender.SetLocalizingId(this._teamCollectionTab, "CollectionSettingsDialog.SharingTab.TabLabel");
+			this._L10NSharpExtender.SetLocalizingId(this._teamCollectionTab, "TeamCollection.TeamCollection");
 			this._teamCollectionTab.Location = new System.Drawing.Point(4, 26);
 			this._teamCollectionTab.Name = "_teamCollectionTab";
 			this._teamCollectionTab.Padding = new System.Windows.Forms.Padding(3);
