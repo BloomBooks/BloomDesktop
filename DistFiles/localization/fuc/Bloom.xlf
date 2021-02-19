@@ -119,6 +119,28 @@
         <note>ID: AccessibilityCheck.WindowTitle</note>
         <target xml:lang="fuc" state="needs-translation">Bloom Accessibility Checker</target>
       </trans-unit>
+      <trans-unit id="AutoUpdateSoftwareDialog.SoftwareUpdates" sil:dynamic="true">
+        <source xml:lang="en">Software Updates</source>
+        <note>ID: AutoUpdateSoftwareDialog.SoftwareUpdates</note>
+        <target xml:lang="fuc" state="needs-translation">Software Updates</target>
+      </trans-unit>
+      <trans-unit id="AutoUpdateSoftwareDialog.WhatShouldBloomDo" sil:dynamic="true">
+        <source xml:lang="en">What should Bloom do when a new version is available?</source>
+        <note>ID: AutoUpdateSoftwareDialog.WhatShouldBloomDo</note>
+        <target xml:lang="fuc" state="needs-translation">What should Bloom do when a new version is available?</target>
+      </trans-unit>
+      <trans-unit id="AutoUpdateSoftwareDialog.AutomaticUpdate" sil:dynamic="true">
+        <source xml:lang="en">Automatically download and install it</source>
+        <note>ID: AutoUpdateSoftwareDialog.AutomaticUpdate</note>
+        <note>Radio button label</note>
+        <target xml:lang="fuc" state="needs-translation">Automatically download and install it</target>
+      </trans-unit>
+      <trans-unit id="AutoUpdateSoftwareDialog.LetMeKnow" sil:dynamic="true">
+        <source xml:lang="en">Just let me know about the new version</source>
+        <note>ID: AutoUpdateSoftwareDialog.LetMeKnow</note>
+        <note>Radio button label</note>
+        <target xml:lang="fuc" state="needs-translation">Just let me know about the new version</target>
+      </trans-unit>
       <trans-unit id="BloomIntegrity.WindowTitle">
         <source xml:lang="en">Bloom Problem</source>
         <note>ID: BloomIntegrity.WindowTitle</note>
@@ -377,21 +399,24 @@
         <target xml:lang="fuc" state="needs-translation">Advanced Program Settings</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate">
-        <source xml:lang="en">Automatically update Bloom</source>
+        <source xml:lang="en">Automatically Update Bloom</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AutoUpdate</note>
-        <target xml:lang="fuc" state="needs-translation">Automatically update Bloom</target>
+        <target xml:lang="fuc" state="needs-translation">Automatically Update Bloom</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
-        <source xml:lang="en">Show Experimental Features</source>
-        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands</note>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ExperimentalFeatures">
+        <source xml:lang="en">Experimental Features</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ExperimentalFeatures</note>
+        <note>This string is now a heading for a collection of checkboxes rather than a checkbox itself.</note>
+        <note xml:lang="en">OLD TEXT (before 5.0): Show Experimental Features</note>
         <note xml:lang="en">OLD TEXT (before 4.3): Show Experimental Commands</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Show Experimental Commands (e.g. Export XML for InDesign)</note>
-        <target xml:lang="fuc" state="needs-translation">Show Experimental Features</target>
+        <target xml:lang="fuc" state="needs-translation">Experimental Features</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
-        <source xml:lang="en">Show Experimental Templates (e.g. Picture Dictionary)</source>
-        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates</note>
-        <target xml:lang="fuc" state="needs-translation">Show Experimental Templates (e.g. Picture Dictionary)</target>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalBookSources">
+        <source xml:lang="en">Show Experimental Book Sources</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalBookSources</note>
+        <note>OLD TEXT (before 5.0/3.9): Show Experimental Templates (e.g. Picture Dictionary)</note>
+        <target xml:lang="fuc" state="needs-translation">Show Experimental Book Sources</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
@@ -707,11 +732,6 @@
         <source xml:lang="en">Bloom will close and re-open this project with the new settings.</source>
         <note>ID: CollectionSettingsDialog.RestartMessage</note>
         <target xml:lang="fuc" state="needs-translation">Bloom will close and re-open this project with the new settings.</target>
-      </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.TeamCollectionTab.TabLabel">
-        <source xml:lang="en">Team Collection</source>
-        <note>ID: CollectionSettingsDialog.TeamCollectionTab.TabLabel</note>
-        <target xml:lang="fuc" state="needs-translation">Team Collection</target>
       </trans-unit>
       <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>
@@ -1057,6 +1077,12 @@
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
         <target xml:lang="fuc" state="needs-translation">&amp;Cancel</target>
+      </trans-unit>
+      <trans-unit id="Common.Close">
+        <source xml:lang="en">Close</source>
+        <note>ID: Common.Close</note>
+        <note>Used typically for a button that closes a dialog (where OK or Cancel are not really appropriate)</note>
+        <target xml:lang="fuc" state="needs-translation">Close</target>
       </trans-unit>
       <trans-unit id="Common.Colors.Black">
         <source xml:lang="en">Black</source>
@@ -2186,6 +2212,16 @@
         <note>ID: EditTab.TextBoxProperties.BordersAndBackground</note>
         <target xml:lang="fuc" state="needs-translation">Borders &amp; Background</target>
       </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.CollectionLanguage2" sil:dynamic="true">
+        <source xml:lang="en">Collection Language 2</source>
+        <note>ID: EditTab.TextBoxProperties.CollectionLanguage2</note>
+        <target xml:lang="fuc" state="needs-translation">Collection Language 2</target>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.CollectionLanguage3" sil:dynamic="true">
+        <source xml:lang="en">Collection Language 3</source>
+        <note>ID: EditTab.TextBoxProperties.CollectionLanguage3</note>
+        <target xml:lang="fuc" state="needs-translation">Collection Language 3</target>
+      </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.HintBubbles" sil:dynamic="true">
         <source xml:lang="en">Hint Bubbles</source>
         <note>ID: EditTab.TextBoxProperties.HintBubbles</note>
@@ -2206,11 +2242,13 @@
       <trans-unit id="EditTab.TextBoxProperties.LocalLanguage" sil:dynamic="true">
         <source xml:lang="en">Local Language</source>
         <note>ID: EditTab.TextBoxProperties.LocalLanguage</note>
+        <note>Obsolete for Bloom 5.1 and later</note>
         <target xml:lang="fuc" state="needs-translation">Local Language</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.NationalLanguage" sil:dynamic="true">
         <source xml:lang="en">National Language</source>
         <note>ID: EditTab.TextBoxProperties.NationalLanguage</note>
+        <note>Obsolete for Bloom 5.1 and later</note>
         <target xml:lang="fuc" state="needs-translation">National Language</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.Normal" sil:dynamic="true">
@@ -2219,9 +2257,9 @@
         <target xml:lang="fuc" state="needs-translation">Normal</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.NormalLabel" sil:dynamic="true">
-        <source xml:lang="en">"Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.</source>
+        <source xml:lang="en">"Normal" will show the languages you have checked in the Languages control. Use this for most content.</source>
         <note>ID: EditTab.TextBoxProperties.NormalLabel</note>
-        <target xml:lang="fuc" state="needs-translation">"Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.</target>
+        <target xml:lang="fuc" state="needs-translation">"Normal" will show the languages you have checked in the Languages control. Use this for most content.</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.OtherLanguagesLabel" sil:dynamic="true">
         <source xml:lang="en">Use one of these for simple text boxes that are always in only one language.</source>
@@ -2231,7 +2269,13 @@
       <trans-unit id="EditTab.TextBoxProperties.RegionalLanguage" sil:dynamic="true">
         <source xml:lang="en">Regional Language</source>
         <note>ID: EditTab.TextBoxProperties.RegionalLanguage</note>
+        <note>Obsolete for Bloom 5.1 and later</note>
         <target xml:lang="fuc" state="needs-translation">Regional Language</target>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.SelectedLanguage" sil:dynamic="true">
+        <source xml:lang="en">Selected Language 1</source>
+        <note>ID: EditTab.TextBoxProperties.SelectedLanguage</note>
+        <target xml:lang="fuc" state="needs-translation">Selected Language 1</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.ShowHintBubble" sil:dynamic="true">
         <source xml:lang="en">Show the hint bubble</source>
@@ -2360,6 +2404,12 @@
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents a description which is not directly stated by any characters.</note>
         <target xml:lang="fuc" state="needs-translation">Caption</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Circle" sil:dynamic="true">
+        <source xml:lang="en">Circle</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Circle</note>
+        <note>Refers to the shape of a comic bubble </note>
+        <target xml:lang="fuc" state="needs-translation">Circle</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Ellipse" sil:dynamic="true">
         <source xml:lang="en">Ellipse</source>
@@ -2806,6 +2856,17 @@
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Max</note>
         <target xml:lang="fuc" state="needs-translation">Max</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.MaxInBook" sil:dynamic="true">
+        <source xml:lang="en">max in book</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.MaxInBook</note>
+        <target xml:lang="fuc" state="needs-translation">max in book</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.MaxSentenceLength" sil:dynamic="true">
+        <source xml:lang="en">longest sentence</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.MaxSentenceLength</note>
+        <note>length of the longest sentence (in the book)</note>
+        <target xml:lang="fuc" state="needs-translation">longest sentence</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerPage" sil:dynamic="true">
         <source xml:lang="en">per page</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.PerPage</note>
@@ -2851,6 +2912,11 @@
         <source xml:lang="en">total</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Total</note>
         <target xml:lang="fuc" state="needs-translation">total</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.TotalInBook" sil:dynamic="true">
+        <source xml:lang="en">total in book</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.TotalInBook</note>
+        <target xml:lang="fuc" state="needs-translation">total in book</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Unique" sil:dynamic="true">
         <source xml:lang="en">unique</source>
@@ -3217,6 +3283,12 @@
         <note>ID: EditTab.Widget.ChooseWidget</note>
         <note>User is supposed to choose a file containing HTML that can be embedded in an element of the book.</note>
         <target xml:lang="fuc" state="needs-translation">Choose Widget</target>
+      </trans-unit>
+      <trans-unit id="ErrorReport.Report">
+        <source xml:lang="en">Report</source>
+        <note>ID: ErrorReport.Report</note>
+        <note>"Report" as in "Report this problem to Bloom Support"</note>
+        <target xml:lang="fuc" state="needs-translation">Report</target>
       </trans-unit>
       <trans-unit id="Errors.BookProblem">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
@@ -4297,9 +4369,9 @@
         <target xml:lang="fuc" state="needs-translation">Share on the Web</target>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm-tooltip" sil:dynamic="true">
-        <source xml:lang="en">Upload to BloomLibrary.org, where others can download and localize into their own language.</source>
+        <source xml:lang="en">Upload your book to BloomLibrary.org so that other people can read it, download it to their devices and share it with other people.</source>
         <note>ID: PublishTab.ButtonThatShowsUploadForm-tooltip</note>
-        <target xml:lang="fuc" state="needs-translation">Upload to BloomLibrary.org, where others can download and localize into their own language.</target>
+        <target xml:lang="fuc" state="needs-translation">Upload your book to BloomLibrary.org so that other people can read it, download it to their devices and share it with other people.</target>
       </trans-unit>
       <trans-unit id="PublishTab.CoverOnlyRadio">
         <source xml:lang="en">Booklet Cover</source>
@@ -5824,6 +5896,11 @@ Do you want to go ahead?</note>
         <note>ID: Settings.Enterprise.SubscriptionCode</note>
         <target xml:lang="fuc" state="needs-translation">Subscription Code:</target>
       </trans-unit>
+      <trans-unit id="TeamCollection.TeamCollection">
+        <source xml:lang="en">Team Collection</source>
+        <note>ID: TeamCollection.TeamCollection</note>
+        <target xml:lang="fuc" state="needs-translation">Team Collection</target>
+      </trans-unit>
       <trans-unit id="TeamCollection.Available" sil:dynamic="true">
         <source xml:lang="en">This book is available for editing</source>
         <note>ID: TeamCollection.Available</note>
@@ -5894,17 +5971,46 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Create a Team Collection</source>
         <note>ID: TeamCollection.CreateTeamCollection</note>
       </trans-unit>
+      <trans-unit id="TeamCollection.Creating" sil:dynamic="true">
+        <source xml:lang="en">Bloom will create a new collection on your computer based on this Team Collection.</source>
+        <note>ID: TeamCollection.Creating</note>
+      </trans-unit>
       <trans-unit id="TeamCollection.Intro" sil:dynamic="true">
-        <source xml:lang="en">Bloom's Team Collection system helps your team collaborate as you create, translate, and edit books.</source>
+        <source xml:lang="en">Bloom's Team Collection system helps your team collaborate as you create, translate, and edit books. Read about how it works [here]({0}), or view this [video]({1}).</source>
         <note>ID: TeamCollection.Intro</note>
+        <note>The part in [] will be hot links to the URL {0} and {1}. Please don't change the URL, unless you know a link to a more suitable translation of the relevant document or video.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Join" sil:dynamic="true">
+        <source xml:lang="en">Join</source>
+        <note>ID: TeamCollection.Join</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.JoinAndMerge" sil:dynamic="true">
+        <source xml:lang="en">Join and Merge</source>
+        <note>ID: TeamCollection.JoinAndMerge</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.JoinHeading" sil:dynamic="true">
+        <source xml:lang="en">Join the Team Collection "%0"</source>
+        <note>ID: TeamCollection.JoinHeading</note>
       </trans-unit>
       <trans-unit id="TeamCollection.Joining" sil:dynamic="true">
         <source xml:lang="en">How to join an existing Team Collection</source>
         <note>ID: TeamCollection.Joining</note>
       </trans-unit>
-      <trans-unit id="TeamCollection.JoiningInstructions" sil:dynamic="true">
-        <source xml:lang="en">First, the team leader should share the Team Collection's Dropbox folder with you. After that folder is synchronizing on your computer, open it and double click on "Join this Team Collection.JoinBloomTC" file.</source>
-        <note>ID: TeamCollection.JoiningInstructions</note>
+      <trans-unit id="TeamCollection.JoiningHelp" sil:dynamic="true">
+        <source xml:lang="en">Has someone in your team already created a Team Collection for your Team?</source>
+        <note>ID: TeamCollection.JoiningHelp</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Merging" sil:dynamic="true">
+        <source xml:lang="en">Bloom will merge your existing "%0" collection with this Team Collection.</source>
+        <note>ID: TeamCollection.Merging</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.MergingExplanation" sil:dynamic="true">
+        <source xml:lang="en">The rest of the team will receive any unique books found in that collection. Any books you have that are already in this Team Collection will be moved to the "Lost and Found" folder, unless Bloom can determine that they are the same.</source>
+        <note>ID: TeamCollection.MergingExplanation</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.MergeInstead" sil:dynamic="true">
+        <source xml:lang="en">If instead you want to merge a collection you already have into this Team Collection, click Cancel and rename the collection you want to merge to the same as the Team Collection you are joining. Then try to join again.</source>
+        <note>ID: TeamCollection.MergeInstead</note>
       </trans-unit>
       <trans-unit id="TeamCollection.RemoteChanges" sil:dynamic="true">
         <source xml:lang="en">Remote Changes</source>
@@ -5918,45 +6024,36 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Select or create the folder where this collection will be shared</source>
         <note>ID: TeamCollection.SelectFolder</note>
       </trans-unit>
-      <trans-unit id="TeamCollection.Starting" sil:dynamic="true">
-        <source xml:lang="en">Starting a new Team Collection</source>
-        <note>ID: TeamCollection.Starting</note>
+      <trans-unit id="TeamCollection.StartFresh" sil:dynamic="true">
+        <source xml:lang="en">If instead you want to start fresh, click Cancel and rename your existing "%0" collection to something different. Then try to join again.</source>
+        <note>ID: TeamCollection.StartFresh</note>
       </trans-unit>
       <trans-unit id="TeamCollection.StartingInstructions" sil:dynamic="true">
-        <source xml:lang="en">Only one person on the team should create the Team Collection. Before creating it, you will need to have Dropbox installed on your computer.</source>
+        <source xml:lang="en">It is important that **only one person** on the team create the Team Collection.</source>
         <note>ID: TeamCollection.StartingInstructions</note>
+        <note>Whatever you put between double asterisks will be bold.</note>
       </trans-unit>
-      <trans-unit id="TeamCollection.Creating" sil:dynamic="true">
-        <source xml:lang="en">Bloom will create a new collection on your computer based on this Team Collection.</source>
-        <note>ID: TeamCollection.Creating</note>
+      <trans-unit id="TeamCollection.ErrorCheckingBookIn">
+        <source xml:lang="en">Error checking in {0}: {1}</source>
+        <note>ID: TeamCollection.ErrorCheckingBookIn</note>
+        <note>{0} is the path to the book's folder</note>
+        <note>{1} is the error message from the system</note>
       </trans-unit>
-      <trans-unit id="TeamCollection.Join" sil:dynamic="true">
-        <source xml:lang="en">Join</source>
-        <note>ID: TeamCollection.Join</note>
+      <trans-unit id="TeamCollection.ErrorCreating>
+        <source xml:lang="en">Error creating team collection {0}: {1}</source>
+        <note>ID: TeamCollection.ErrorCreating</note>
+        <note>{0} is the path to the collection folder</note>
+        <note>{1} is the error message from the system</note>
       </trans-unit>
-      <trans-unit id="TeamCollection.JoinAndMerge" sil:dynamic="true">
-        <source xml:lang="en">Join and Merge</source>
-        <note>ID: TeamCollection.JoinAndMerge</note>
+      <trans-unit id="TeamCollection.ErrorJoining">
+        <source xml:lang="en">Could not join team collection</source>
+        <note>ID: TeamCollection.ErrorJoining</note>
       </trans-unit>
-      <trans-unit id="TeamCollection.JoinHeading" sil:dynamic="true">
-        <source xml:lang="en">Join the Team Collection "{0}"</source>
-        <note>ID: TeamCollection.JoinHeading</note>
-      </trans-unit>
-      <trans-unit id="TeamCollection.Merging" sil:dynamic="true">
-        <source xml:lang="en">Bloom will merge your existing "{0}" collection with this Team Collection.</source>
-        <note>ID: TeamCollection.Merging</note>
-      </trans-unit>
-      <trans-unit id="TeamCollection.MergingExplanation" sil:dynamic="true">
-        <source xml:lang="en">The rest of the team will receive any unique books found in that collection. Any books you have that are already in this Team Collection will be moved to the "Lost and Found" folder, unless Bloom can determine that they are the same.</source>
-        <note>ID: TeamCollection.MergingExplanation</note>
-      </trans-unit>
-      <trans-unit id="TeamCollection.MergeInstead" sil:dynamic="true">
-        <source xml:lang="en">If instead you want to merge a collection you already have into this Team Collection, click Cancel and rename the collection you want to merge to the same as the Team Collection you are joining. Then try to join again.</source>
-        <note>ID: TeamCollection.MergeInstead</note>
-      </trans-unit>
-      <trans-unit id="TeamCollection.StartFresh" sil:dynamic="true">
-        <source xml:lang="en">If instead you want to start fresh, click Cancel and rename your existing "{0}" collection to something different. Then try to join again.</source>
-        <note>ID: TeamCollection.StartFresh</note>
+      <trans-unit id="TeamCollection.ErrorLockingBook">
+        <source xml:lang="en">Error locking access to {0}: {1}</source>
+        <note>ID: TeamCollection.ErrorLockingBook</note>
+        <note>{0} is the path to the book's folder</note>
+        <note>{1} is the error message from the system</note>
       </trans-unit>
 -->
       <trans-unit id="TemplateBooks.BookName.Arithmetic Template" sil:dynamic="true">
