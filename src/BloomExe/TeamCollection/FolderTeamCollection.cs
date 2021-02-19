@@ -163,6 +163,7 @@ namespace Bloom.TeamCollection
 		public override void PutCollectionFiles(string[] names)
 		{
 			var destPath = GetRepoProjectFilesZipPath(_repoFolderPath);
+			Directory.CreateDirectory(Path.GetDirectoryName(destPath));
 			var zipFile = new BloomZipFile(destPath);
 			foreach (var name in names)
 			{
@@ -177,7 +178,7 @@ namespace Bloom.TeamCollection
 
 		private static string GetRepoProjectFilesZipPath(string repoFolderPath)
 		{
-			return Path.Combine(repoFolderPath, "Other Project Files.zip");
+			return Path.Combine(repoFolderPath, "Other", "Other Collection Files.zip");
 		}
 
 
