@@ -18,6 +18,8 @@ interface ILinkProps extends ILocalizationProps {
 }
 
 // A link element that is localizable.
+// Note: if you find yourself looking for a way to make one of these with the text forced to
+// upper case, you may be really wanting a BloomButton with variant={text}
 export class Link extends LocalizableElement<ILinkProps, {}> {
     public render() {
         // prettier-ignore

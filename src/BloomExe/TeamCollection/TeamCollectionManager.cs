@@ -78,11 +78,16 @@ namespace Bloom.TeamCollection
 
 		public void ConnectToTeamCollection(string repoFolderParentPath)
 		{
-			var repoFolderPath = Path.Combine(repoFolderParentPath, Path.GetFileName(_localCollectionFolder)+ " - TC");
+			var repoFolderPath = PlannedRepoFolderPath(repoFolderParentPath);
 			Directory.CreateDirectory(repoFolderPath);
 			var newTc = new FolderTeamCollection(_localCollectionFolder, repoFolderPath);
 			newTc.ConnectToTeamCollection(repoFolderPath);
 			CurrentCollection = newTc;
+		}
+
+		public string PlannedRepoFolderPath(string repoFolderParentPath)
+		{
+			return Path.Combine(repoFolderParentPath, Path.GetFileName(_localCollectionFolder)+ " - TC");
 		}
 
 		public const string TeamCollectionSettingsFileName = "TeamCollectionSettings.xml";

@@ -1,17 +1,48 @@
-.teamCollection-heading {
-    font-weight: bold;
-}
+@import "../bloomUI.less";
 .button-row {
     display: flex;
 }
 
 #teamCollection-settings {
-    padding-top: 10px;
-    div {
+    padding: 10px;
+    div:not(.no-space-below) {
         margin-bottom: 10px;
     }
     .teamCollection-heading {
         margin-bottom: 0;
-        margin-top: 10px;
+        margin-top: 20px;
+        font-weight: bold;
+        font-size: larger;
+    }
+
+    a.directory-link {
+        display: block; // saves making another div and allows margin to work
+        margin-bottom: 40px;
+        color: black;
+    }
+
+    a {
+        color: @bloom-blue;
+    }
+}
+
+.extra-space-above {
+    margin-top: 40px;
+}
+
+.align-right {
+    display: flex;
+    justify-content: right;
+}
+
+.join-help-dialog {
+    .MuiPaper-root {
+        padding: 10px;
+    }
+    .teamCollection-heading {
+        margin-bottom: 10px;
+    }
+    img {
+        margin-top: 5px;
     }
 }

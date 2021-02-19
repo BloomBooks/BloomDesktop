@@ -264,7 +264,8 @@ export class BloomApi {
     // This method is used to post something from Bloom.
     public static post(
         urlSuffix: string,
-        successCallback?: (r: AxiosResponse) => void
+        successCallback?: (r: AxiosResponse) => void,
+        failureCallback?: (r: AxiosResponse) => void
     ) {
         if ((window as any).__karma__) {
             console.log(`skipping post to ${urlSuffix} because in unit tests`);
@@ -274,7 +275,15 @@ export class BloomApi {
         BloomApi.wrapAxios(
             axios
                 .post(this.kBloomApiPrefix + urlSuffix)
-                .then(successCallback ? successCallback : () => {})
+                .then(successCallback ? successCallback : () => {}) // do nothing on success if no callback
+                .catch(
+                    failureCallback
+                        ? failureCallback
+                        : // leave failure unhandled if no callback
+                          r => {
+                              throw r;
+                          }
+                )
         );
     }
 

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -17,15 +18,18 @@ namespace Bloom.TeamCollection
 		private TeamCollectionManager _tcManager;
 		private BookSelection _bookSelection; // configured by autofac, tells us what book is selected
 		private string CurrentUser => TeamCollectionManager.CurrentUser;
+		private string _folderForCreateTC;
+		private BloomWebSocketServer _socketServer;
 
 		public static TeamCollectionApi TheOneInstance { get; private set; }
 
 		// Called by autofac, which creates the one instance and registers it with the server.
-		public TeamCollectionApi(CollectionSettings settings, BookSelection bookSelection, TeamCollectionManager tcManager)
+		public TeamCollectionApi(CollectionSettings settings, BookSelection bookSelection, TeamCollectionManager tcManager, BloomWebSocketServer socketServer)
 		{
 			_tcManager = tcManager;
 			_tcManager.CurrentCollection?.SetupMonitoringBehavior();
 			_bookSelection = bookSelection;
+			_socketServer = socketServer;
 			TheOneInstance = this;
 		}
 
@@ -35,6 +39,7 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/currentBookStatus", HandleCurrentBookStatus, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/attemptLockOfCurrentBook", HandleAttemptLockOfCurrentBook, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/checkInCurrentBook", HandleCheckInCurrentBook, false);
+			apiHandler.RegisterEndpointHandler("teamCollection/chooseFolderLocation", HandleChooseFolderLocation, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/createTeamCollection", HandleCreateTeamCollection, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/joinTeamCollection", HandleJoinTeamCollection, true);
 		}
@@ -103,7 +108,7 @@ namespace Bloom.TeamCollection
 			_createCallback = callback;
 		}
 
-		public void HandleCreateTeamCollection(ApiRequest request)
+		public void HandleChooseFolderLocation(ApiRequest request)
 		{
 			// One of the few places that knows we're using a particular implementation
 			// of TeamRepo. But we have to know that to create it. And of course the user
@@ -121,10 +126,78 @@ namespace Bloom.TeamCollection
 					return;
 				}
 
-				var parentFolder = dlg.SelectedPath;
-				_tcManager.ConnectToTeamCollection(parentFolder);
-				_createCallback?.Invoke();
+				_folderForCreateTC = dlg.SelectedPath;
 			}
+			// We send the result through a websocket rather than simply returning it because
+			// if the user is very slow (one site said FF times out after 90s) the browser may
+			// abandon the request before it completes. The POST result is ignored and the
+			// browser simply listens to the socket.
+			// We'd prefer this request to return immediately and set a callback to run
+			// when the dialog closes and handle the results, but FolderBrowserDialog
+			// does not offer such an API. Instead, we just ignore any timeout
+			// in our Javascript code.
+			dynamic messageBundle = new DynamicJson();
+			messageBundle.repoFolderPath = _folderForCreateTC;
+			messageBundle.problem = ProblemsWithLocation(_folderForCreateTC);
+			// This clientContext must match what is being listened for in CreateTeamCollection.tsx
+			_socketServer.SendBundle("teamCollectionCreate", "shared-folder-path", messageBundle);
+
+			request.PostSucceeded();
+		}
+
+		private string ProblemsWithLocation(string sharedFolder)
+		{
+			// For now we use this generic message, because it's too hard to come up with concise
+			// understandable messages explaining why these locations are a problem.
+			var defaultMessage = LocalizationManager.GetString("TeamCollection.ProblemLocation",
+				"There is a problem with this location");
+			try
+			{
+				if (Directory.EnumerateFiles(sharedFolder, "*.JoinBloomTC").Any())
+				{
+					return defaultMessage;
+					//return LocalizationManager.GetString("TeamCollection.AlreadyTC",
+					//	"This folder appears to already be in use as a Team Collection");
+				}
+
+				if (Directory.EnumerateFiles(sharedFolder, "*.bloomCollection").Any())
+				{
+					return defaultMessage;
+					//return LocalizationManager.GetString("TeamCollection.LocalCollection",
+					//	"This appears to be a local Bloom collection. The Team Collection must be created in a distinct place.");
+				}
+
+				if (Directory.Exists(_tcManager.PlannedRepoFolderPath(sharedFolder)))
+				{
+					return defaultMessage;
+					//return LocalizationManager.GetString("TeamCollection.TCExists",
+					//	"There is already a Folder in that location with the same name as this collection");
+				}
+
+				// We're not in a big hurry here, and the most decisive test that we can actually put things in this
+				// folder is to do it.
+				var testFolder = Path.Combine(sharedFolder, "test");
+				Directory.CreateDirectory(testFolder);
+				File.WriteAllText(Path.Combine(testFolder, "test"), "This is a test");
+				SIL.IO.RobustIO.DeleteDirectoryAndContents(testFolder);
+			}
+			catch (Exception ex)
+			{
+				// This might also catch errors such as not having permission to enumerate things
+				// in the directory.
+				return LocalizationManager.GetString("TeamCollection.NoWriteAccess",
+					"Bloom does not have permission to write to the selected folder. The system reported " +
+					ex.Message);
+			}
+
+			return "";
+		}
+
+		public void HandleCreateTeamCollection(ApiRequest request)
+		{
+			_tcManager.ConnectToTeamCollection(_folderForCreateTC);
+			BrowserDialog.CloseDialog();
+			_createCallback?.Invoke();
 
 			request.PostSucceeded();
 		}

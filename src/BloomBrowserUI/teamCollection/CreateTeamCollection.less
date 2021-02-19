@@ -1,0 +1,45 @@
+@import "../bloomUI.less";
+
+#create-team-collection-root {
+    box-sizing: border-box;
+    min-height: 370px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    div:not(.no-space-below) {
+        margin-bottom: 10px;
+    }
+    * {
+        box-sizing: border-box;
+    }
+    .heading {
+        font-weight: bold;
+        font-size: larger;
+    }
+    .align-right {
+        display: flex;
+        justify-content: right;
+    }
+    .icon-row {
+        display: flex;
+        width: 100%;
+        svg {
+            height: 30px;
+            width: 45px;
+            margin-right: 15px;
+        }
+    }
+    .icon-row-grow {
+        flex-grow: 1;
+    }
+
+    #create-and-restart {
+        margin-right: 15px;
+    }
+    .grow {
+        flex-grow: 1;
+    }
+    .problem-report {
+        color: red;
+    }
+}
