@@ -58,7 +58,8 @@ namespace Bloom.TeamCollection
 		{
 			// We don't need any of the Sharing UI if the selected book isn't in the editable
 			// collection (or if the collection doesn't have a Team Collection at all).
-			request.ReplyWithBoolean(_tcManager.CurrentCollection != null && _bookSelection.CurrentSelection.IsEditable);
+			request.ReplyWithBoolean(_tcManager.CurrentCollection != null &&
+				(_bookSelection.CurrentSelection == null || _bookSelection.CurrentSelection.IsEditable));
 		}
 
 		public void HandleCurrentBookStatus(ApiRequest request)
