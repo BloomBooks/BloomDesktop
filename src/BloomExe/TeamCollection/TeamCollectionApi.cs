@@ -8,6 +8,7 @@ using Bloom.Collection;
 using Bloom.MiscUI;
 using L10NSharp;
 using Newtonsoft.Json;
+using SIL.Reporting;
 
 namespace Bloom.TeamCollection
 {
@@ -17,6 +18,7 @@ namespace Bloom.TeamCollection
 	{
 		private TeamCollectionManager _tcManager;
 		private BookSelection _bookSelection; // configured by autofac, tells us what book is selected
+		private BookServer _bookServer;
 		private string CurrentUser => TeamCollectionManager.CurrentUser;
 		private string _folderForCreateTC;
 		private BloomWebSocketServer _socketServer;
@@ -24,12 +26,13 @@ namespace Bloom.TeamCollection
 		public static TeamCollectionApi TheOneInstance { get; private set; }
 
 		// Called by autofac, which creates the one instance and registers it with the server.
-		public TeamCollectionApi(CollectionSettings settings, BookSelection bookSelection, TeamCollectionManager tcManager, BloomWebSocketServer socketServer)
+		public TeamCollectionApi(CollectionSettings settings, BookSelection bookSelection, TeamCollectionManager tcManager, BookServer bookServer, BloomWebSocketServer socketServer)
 		{
 			_tcManager = tcManager;
 			_tcManager.CurrentCollection?.SetupMonitoringBehavior();
 			_bookSelection = bookSelection;
 			_socketServer = socketServer;
+			_bookServer = bookServer;
 			TheOneInstance = this;
 		}
 
@@ -38,7 +41,7 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/isTeamCollectionEnabled", HandleIsTeamCollectionEnabled, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/currentBookStatus", HandleCurrentBookStatus, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/attemptLockOfCurrentBook", HandleAttemptLockOfCurrentBook, false);
-			apiHandler.RegisterEndpointHandler("teamCollection/checkInCurrentBook", HandleCheckInCurrentBook, false);
+			apiHandler.RegisterEndpointHandler("teamCollection/checkInCurrentBook", HandleCheckInCurrentBook, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/chooseFolderLocation", HandleChooseFolderLocation, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/createTeamCollection", HandleCreateTeamCollection, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/joinTeamCollection", HandleJoinTeamCollection, true);
@@ -94,7 +97,25 @@ namespace Bloom.TeamCollection
 		public void HandleCheckInCurrentBook(ApiRequest request)
 		{
 			_bookSelection.CurrentSelection.Save();
-			_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, true);
+			var bookName = Path.GetFileName(_bookSelection.CurrentSelection.FolderPath);
+			if (_tcManager.CurrentCollection.OkToCheckIn(bookName))
+			{
+				_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, true);
+			}
+			else
+			{
+				// We can't check in! The system has broken down...perhaps conflicting checkouts while offline.
+				// Save our version in Lost-and-Found
+				_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, false,true);
+				// overwrite it with the current repo version.
+				_tcManager.CurrentCollection.CopyBookFromRepoToLocal(bookName);
+				// Force a full reload of the book from disk and update the UI to match.
+				_bookSelection.SelectBook(_bookServer.GetBookFromBookInfo(_bookSelection.CurrentSelection.BookInfo, true));
+				var msg = LocalizationManager.GetString("TeamCollection.ConflictingEditOrCheckout",
+					"Someone else has edited this book or checked it out even though you were editing it! Your changes have been saved to Lost and Found");
+				ErrorReport.NotifyUserOfProblem(msg);
+			}
+
 			UpdateUiForBook();
 			request.PostSucceeded();
 		}
