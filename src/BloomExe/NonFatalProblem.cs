@@ -32,7 +32,7 @@ namespace Bloom
 		/// <param name="showSendReport">Set to 'false' to eliminate yellow screens and "Report" links on toasts</param>
 		public static void Report(ModalIf modalThreshold, PassiveIf passiveThreshold, string shortUserLevelMessage = null,
 			string moreDetails = null,
-			Exception exception = null, bool showSendReport = true, bool isShortMessagePreEncoded = false, bool skipSentryReport = false)
+			Exception exception = null, bool showSendReport = true, bool isShortMessagePreEncoded = false, bool skipSentryReport = false, bool showRequestDetails = false)
 		{
 			var originalException = exception;
 			s_expectedByUnitTest?.ProblemWasReported();
@@ -153,7 +153,7 @@ namespace Bloom
 
 				if(!string.IsNullOrEmpty(shortUserLevelMessage) && Matches(passive).Any(s => channel.Contains(s)))
 				{
-					ShowToast(shortUserLevelMessage, exception, fullDetailedMessage, showSendReport);
+					ShowToast(shortUserLevelMessage, exception, fullDetailedMessage, showSendReport, showRequestDetails);
 				}
 			}
 			catch(Exception errorWhileReporting)
@@ -168,7 +168,7 @@ namespace Bloom
 			}
 		}
 
-		private static void ShowToast(string shortUserLevelMessage, Exception exception, string fullDetailedMessage, bool showSendReport = true)
+		private static void ShowToast(string shortUserLevelMessage, Exception exception, string fullDetailedMessage, bool showSendReport = true, bool showDetailsOnRequest = false)
 		{
 			// The form is used for the screen shot as well as for synchronizing, so get the shell if possible.
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-8348.
@@ -196,6 +196,17 @@ namespace Bloom
 						ProblemReportApi.ShowProblemDialog(formForSynchronizing, exception, fullDetailedMessage, "nonfatal", shortUserLevelMessage);
 					};
 				callToAction = "Report";
+			}
+			else if (showDetailsOnRequest)
+			{
+				toast.ToastClicked +=
+					(s, e) =>
+					{
+						ErrorReport.NotifyUserOfProblem(new ShowAlwaysPolicy(), null, default(ErrorResult), "{0}",
+							string.Join(Environment.NewLine,    // handle Linux newlines on Windows (and vice-versa)
+								fullDetailedMessage.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)));
+					};
+				callToAction = "Details";
 			}
 			toast.Image.Image = ToastNotifier.WarningBitmap;
 			toast.Show(shortUserLevelMessage, callToAction, 5);
