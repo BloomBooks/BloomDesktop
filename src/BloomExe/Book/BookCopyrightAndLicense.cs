@@ -280,6 +280,16 @@ namespace Bloom.Book
 				return;
 			try
 			{
+				// Almost all of the reports for BL-3227 that have been generated are for an UnauthorizedAccessException
+				// in the FileStream constructor.  This can happen if the file has become read-only for some reason.
+				// Changing the FileAttribute is easy.  THe more complicated security settings are probably too difficult
+				// to fix, and fixing them even likelier to not be allowed.
+				if (RobustFile.Exists(imagePath))
+				{
+					var attr = File.GetAttributes(imagePath);
+					if ((attr & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+						File.SetAttributes(imagePath, FileAttributes.Normal);
+				}
 				if(licenseImage != null)
 				{
 					using(Stream fs = new FileStream(imagePath, FileMode.Create))
@@ -296,12 +306,14 @@ namespace Bloom.Book
 			catch(Exception error)
 			{
 				// BL-3227 Occasionally get The process cannot access the file '...\license.png' because it is being used by another process.
-				// That's worth a toast, since the user might like a hint why the license image isn't up to date.
+				// That's worth reporting, since the user might like a hint why the license image isn't up to date.
 				// However, if the problem is a MISSING icon in the installed templates, which on Linux or if an allUsers install
 				// the system will never let us write, is not worth bothering the user at all. We can't fix it. Too bad.
 				if (BloomFileLocator.IsInstalledFileOrDirectory(imagePath))
 					return;
-				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Could not update license image (BL-3227).", "Image was at" +imagePath, exception: error);
+				// BL-9533: these errors keep happening, but we can't help users who respond to a toast and send in an error report.
+				// Logging it will allow us to possibly correlate an error here with another problem that does get reported.
+				Logger.WriteError($"Could not update license image (BL-3227) at {imagePath}", error);
 			}
 		}
 
