@@ -1,4 +1,4 @@
-﻿var path = require("path");
+var path = require("path");
 const merge = require("webpack-merge");
 var node_modules = path.resolve(__dirname, "node_modules");
 var pathToOriginalJavascriptFilesInLib = path.resolve(__dirname, "lib");
@@ -32,6 +32,7 @@ module.exports = merge(core, {
     // The root file for each bundle should import errorHandler.ts to enable Bloom's custom
     // error handling for that web page.
     entry: {
+        wireUpBundle: "./utils/WireUpReact.ts",
         problemReportBundle: "./problemDialog/ProblemDialog.tsx",
         editTabRootBundle: "./bookEdit/editViewFrame.ts",
         readerSetupBundle:
