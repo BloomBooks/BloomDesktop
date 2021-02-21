@@ -34,6 +34,10 @@ namespace Bloom.Collection
 			this.components = new System.ComponentModel.Container();
 			this._tab = new System.Windows.Forms.TabControl();
 			this.tabPage1 = new System.Windows.Forms.TabPage();
+			this._removeSignLanguageLink = new System.Windows.Forms.LinkLabel();
+			this._changeSignLanguageLink = new System.Windows.Forms.LinkLabel();
+			this._signLanguageName = new System.Windows.Forms.Label();
+			this._signLanguageLabel = new System.Windows.Forms.Label();
 			this._removeLanguage3Link = new System.Windows.Forms.LinkLabel();
 			this._changeLanguage3Link = new System.Windows.Forms.LinkLabel();
 			this._changeLanguage2Link = new System.Windows.Forms.LinkLabel();
@@ -81,14 +85,12 @@ namespace Bloom.Collection
 			this.settingsProtectionLauncherButton1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton();
 			this._helpButton = new System.Windows.Forms.Button();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this._signLanguageLabel = new System.Windows.Forms.Label();
-			this._signLanguageName = new System.Windows.Forms.Label();
-			this._removeSignLanguageLink = new System.Windows.Forms.LinkLabel();
-			this._changeSignLanguageLink = new System.Windows.Forms.LinkLabel();
+			this.reactControl1 = new Bloom.web.ReactControl();
 			this._tab.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.tabPage2.SuspendLayout();
 			this.tabPage3.SuspendLayout();
+			this._teamCollectionTab.SuspendLayout();
 			this.tabPage4.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
@@ -139,33 +141,6 @@ namespace Bloom.Collection
 			this.tabPage1.Text = "Languages";
 			this.tabPage1.UseVisualStyleBackColor = true;
 			// 
-			// _signLanguageLabel
-			// 
-			this._signLanguageLabel.AutoSize = true;
-			this._signLanguageLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._L10NSharpExtender.SetLocalizableToolTip(this._signLanguageLabel, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._signLanguageLabel, null);
-			this._L10NSharpExtender.SetLocalizingId(this._signLanguageLabel, "CollectionSettingsDialog.LanguageTab.SignLanguageOptional");
-			this._signLanguageLabel.Location = new System.Drawing.Point(27, 288);
-			this._signLanguageLabel.Name = "_signLanguageLabel";
-			this._signLanguageLabel.Size = new System.Drawing.Size(101, 19);
-			this._signLanguageLabel.TabIndex = 19;
-			this._signLanguageLabel.Text = "Sign Language   (Optional)";
-			// 
-			// _signLanguageName
-			// 
-			this._signLanguageName.AutoSize = true;
-			this._signLanguageName.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._L10NSharpExtender.SetLocalizableToolTip(this._signLanguageName, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._signLanguageName, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._signLanguageName, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._signLanguageName, "CollectionSettingsDialog._signLanguageLabel");
-			this._signLanguageName.Location = new System.Drawing.Point(26, 307);
-			this._signLanguageName.Name = "_signLanguageName";
-			this._signLanguageName.Size = new System.Drawing.Size(49, 19);
-			this._signLanguageName.TabIndex = 20;
-			this._signLanguageName.Text = "foobar";
-			// 
 			// _removeSignLanguageLink
 			// 
 			this._removeSignLanguageLink.AutoSize = true;
@@ -193,6 +168,33 @@ namespace Bloom.Collection
 			this._changeSignLanguageLink.TabStop = true;
 			this._changeSignLanguageLink.Text = "Change...";
 			this._changeSignLanguageLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._signLanguageChangeLink_LinkClicked);
+			// 
+			// _signLanguageName
+			// 
+			this._signLanguageName.AutoSize = true;
+			this._signLanguageName.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this._signLanguageName, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._signLanguageName, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._signLanguageName, L10NSharp.LocalizationPriority.NotLocalizable);
+			this._L10NSharpExtender.SetLocalizingId(this._signLanguageName, "CollectionSettingsDialog._signLanguageLabel");
+			this._signLanguageName.Location = new System.Drawing.Point(26, 307);
+			this._signLanguageName.Name = "_signLanguageName";
+			this._signLanguageName.Size = new System.Drawing.Size(49, 19);
+			this._signLanguageName.TabIndex = 20;
+			this._signLanguageName.Text = "foobar";
+			// 
+			// _signLanguageLabel
+			// 
+			this._signLanguageLabel.AutoSize = true;
+			this._signLanguageLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this._signLanguageLabel, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._signLanguageLabel, null);
+			this._L10NSharpExtender.SetLocalizingId(this._signLanguageLabel, "CollectionSettingsDialog.LanguageTab.SignLanguageOptional");
+			this._signLanguageLabel.Location = new System.Drawing.Point(27, 288);
+			this._signLanguageLabel.Name = "_signLanguageLabel";
+			this._signLanguageLabel.Size = new System.Drawing.Size(178, 19);
+			this._signLanguageLabel.TabIndex = 19;
+			this._signLanguageLabel.Text = "Sign Language   (Optional)";
 			// 
 			// _removeLanguage3Link
 			// 
@@ -353,7 +355,7 @@ namespace Bloom.Collection
 			this.tabPage2.Location = new System.Drawing.Point(4, 26);
 			this.tabPage2.Name = "tabPage2";
 			this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage2.Size = new System.Drawing.Size(610, 426);
+			this.tabPage2.Size = new System.Drawing.Size(642, 452);
 			this.tabPage2.TabIndex = 1;
 			this.tabPage2.Text = "Book Making";
 			this.tabPage2.UseVisualStyleBackColor = true;
@@ -559,7 +561,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizingId(this.tabPage3, "CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel");
 			this.tabPage3.Location = new System.Drawing.Point(4, 26);
 			this.tabPage3.Name = "tabPage3";
-			this.tabPage3.Size = new System.Drawing.Size(610, 426);
+			this.tabPage3.Size = new System.Drawing.Size(642, 452);
 			this.tabPage3.TabIndex = 2;
 			this.tabPage3.Text = "Project Information";
 			this.tabPage3.UseVisualStyleBackColor = true;
@@ -669,20 +671,21 @@ namespace Bloom.Collection
 			this._enterpriseTab.Location = new System.Drawing.Point(4, 26);
 			this._enterpriseTab.Name = "_enterpriseTab";
 			this._enterpriseTab.Padding = new System.Windows.Forms.Padding(3);
-			this._enterpriseTab.Size = new System.Drawing.Size(610, 426);
+			this._enterpriseTab.Size = new System.Drawing.Size(642, 452);
 			this._enterpriseTab.TabIndex = 4;
 			this._enterpriseTab.Text = "Bloom Enterprise";
 			this._enterpriseTab.UseVisualStyleBackColor = true;
 			// 
-			// _sharingTab
+			// _teamCollectionTab
 			// 
+			this._teamCollectionTab.Controls.Add(this.reactControl1);
 			this._L10NSharpExtender.SetLocalizableToolTip(this._teamCollectionTab, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._teamCollectionTab, null);
 			this._L10NSharpExtender.SetLocalizingId(this._teamCollectionTab, "CollectionSettingsDialog.SharingTab.TabLabel");
 			this._teamCollectionTab.Location = new System.Drawing.Point(4, 26);
 			this._teamCollectionTab.Name = "_teamCollectionTab";
 			this._teamCollectionTab.Padding = new System.Windows.Forms.Padding(3);
-			this._teamCollectionTab.Size = new System.Drawing.Size(610, 426);
+			this._teamCollectionTab.Size = new System.Drawing.Size(642, 452);
 			this._teamCollectionTab.TabIndex = 4;
 			this._teamCollectionTab.Text = "Team Collection";
 			this._teamCollectionTab.UseVisualStyleBackColor = true;
@@ -698,7 +701,7 @@ namespace Bloom.Collection
 			this.tabPage4.Location = new System.Drawing.Point(4, 26);
 			this.tabPage4.Name = "tabPage4";
 			this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage4.Size = new System.Drawing.Size(610, 426);
+			this.tabPage4.Size = new System.Drawing.Size(642, 452);
 			this.tabPage4.TabIndex = 3;
 			this.tabPage4.Text = "Advanced Program Settings";
 			this.tabPage4.UseVisualStyleBackColor = true;
@@ -825,6 +828,20 @@ namespace Bloom.Collection
 			this._helpButton.UseVisualStyleBackColor = true;
 			this._helpButton.Click += new System.EventHandler(this._helpButton_Click);
 			// 
+			// reactControl1
+			// 
+			this.reactControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.reactControl1.JavascriptBundleName = "teamCollectionSettingsBundle.js";
+			this._L10NSharpExtender.SetLocalizableToolTip(this.reactControl1, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.reactControl1, null);
+			this._L10NSharpExtender.SetLocalizingId(this.reactControl1, "ReactControl");
+			this.reactControl1.Location = new System.Drawing.Point(3, 3);
+			this.reactControl1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+			this.reactControl1.Name = "reactControl1";
+			this.reactControl1.ReactComponentName = "TeamCollectionSettingsPanel";
+			this.reactControl1.Size = new System.Drawing.Size(636, 446);
+			this.reactControl1.TabIndex = 0;
+			// 
 			// CollectionSettingsDialog
 			// 
 			this.AcceptButton = this._okButton;
@@ -855,6 +872,7 @@ namespace Bloom.Collection
 			this.tabPage2.PerformLayout();
 			this.tabPage3.ResumeLayout(false);
 			this.tabPage3.PerformLayout();
+			this._teamCollectionTab.ResumeLayout(false);
 			this.tabPage4.ResumeLayout(false);
 			this.tabPage4.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
@@ -918,5 +936,6 @@ namespace Bloom.Collection
 		private LinkLabel _changeSignLanguageLink;
 		protected Label _signLanguageName;
 		protected Label _signLanguageLabel;
+		private web.ReactControl reactControl1;
 	}
 }

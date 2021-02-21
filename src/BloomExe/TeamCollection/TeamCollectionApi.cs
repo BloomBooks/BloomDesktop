@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -38,6 +39,7 @@ namespace Bloom.TeamCollection
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
+			apiHandler.RegisterEndpointHandler("teamCollection/repoFolderPath", HandleRepoFolderPath, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/isTeamCollectionEnabled", HandleIsTeamCollectionEnabled, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/currentBookStatus", HandleCurrentBookStatus, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/attemptLockOfCurrentBook", HandleAttemptLockOfCurrentBook, false);
@@ -45,6 +47,14 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/chooseFolderLocation", HandleChooseFolderLocation, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/createTeamCollection", HandleCreateTeamCollection, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/joinTeamCollection", HandleJoinTeamCollection, true);
+		}
+
+		public void HandleRepoFolderPath(ApiRequest request)
+		{
+			Debug.Assert(request.HttpMethod == HttpMethods.Get, "only get is implemented for the teamCollection/repoFolderPath api endpoint");
+			request.ReplyWithText(_tcManager.CurrentCollection == null
+				? ""
+				: (_tcManager.CurrentCollection as FolderTeamCollection).RepoFolderPath);
 		}
 
 		private void HandleJoinTeamCollection(ApiRequest request)
@@ -121,13 +131,12 @@ namespace Bloom.TeamCollection
 			request.PostSucceeded();
 		}
 
-		// This supports sending a notification to the CollectionSettings dialog when the Create link is used
-		// to connect to a newly created shared folder and make this collection a Team Collection.
-		private Action _createCallback;
+		// Tell the CollectionSettingsDialog that we should reopen the collection now
+		private Action _callbackToReopenCollection;
 
-		public void SetCreateCallback(Action callback)
+		public void SetCallbackToReopenCollection(Action callback)
 		{
-			_createCallback = callback;
+			_callbackToReopenCollection = callback;
 		}
 
 		public void HandleChooseFolderLocation(ApiRequest request)
@@ -219,7 +228,7 @@ namespace Bloom.TeamCollection
 		{
 			_tcManager.ConnectToTeamCollection(_folderForCreateTC);
 			BrowserDialog.CloseDialog();
-			_createCallback?.Invoke();
+			_callbackToReopenCollection?.Invoke();
 
 			request.PostSucceeded();
 		}
