@@ -33,6 +33,7 @@ module.exports = merge(core, {
     // error handling for that web page.
     entry: {
         wireUpBundle: "./utils/WireUpReact.ts",
+        collectionTabBundle: "./collectionTab/CollectionTabPane.tsx",
         problemReportBundle: "./problemDialog/ProblemDialog.tsx",
         editTabRootBundle: "./bookEdit/editViewFrame.ts",
         readerSetupBundle:

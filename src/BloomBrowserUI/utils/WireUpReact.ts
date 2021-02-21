@@ -1,5 +1,6 @@
 import React = require("react");
 import * as ReactDOM from "react-dom";
+import { BookListPane } from "../collectionTab/BookListPane";
 import { TeamCollectionSettingsPanel } from "../teamCollection/TeamCollectionSettingsPanel";
 import { TeamCollectionDialog } from "../teamCollection/TeamCollectionDialog";
 import { AutoUpdateSoftwareDialog } from "../react_components/AutoUpdateSoftwareDialog";
@@ -12,7 +13,8 @@ const knownComponents = {
     TeamCollectionDialog: TeamCollectionDialog,
     AutoUpdateSoftwareDialog: AutoUpdateSoftwareDialog,
     ProblemDialog: ProblemDialog,
-    ProgressDialog: ProgressDialog
+    ProgressDialog: ProgressDialog,
+    BookListPane: BookListPane
 };
 
 // This is called from an html file created in the c# ReactControl class.

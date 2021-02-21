@@ -9,6 +9,7 @@ using System.Drawing;
 using Bloom.MiscUI;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
+using Bloom.web;
 using SIL.Windows.Forms.SettingProtection;
 
 namespace Bloom.CollectionTab
@@ -18,7 +19,7 @@ namespace Bloom.CollectionTab
 		private readonly LibraryModel _model;
 
 
-		private LibraryListView _collectionListView;
+		private Control _collectionListView;
 		private LibraryBookView _bookView;
 
 		public LibraryView(LibraryModel model, LibraryListView.Factory libraryListViewFactory,
@@ -33,8 +34,13 @@ namespace Bloom.CollectionTab
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 			_toolStripLeft.Renderer = new NoBorderToolStripRenderer();
 
-			_collectionListView = libraryListViewFactory();
-			_collectionListView.Dock = DockStyle.Fill;
+			_collectionListView = new ReactControl
+			{
+				JavascriptBundleName = "collectionTabBundle.js",
+				ReactComponentName = "BookListPane",
+				Dock = DockStyle.Fill
+			};
+
 			splitContainer1.Panel1.Controls.Add(_collectionListView);
 
 			_bookView = templateBookViewFactory();
@@ -47,7 +53,7 @@ namespace Bloom.CollectionTab
 			// This essentially makes the TC Status button's zIndex less than the buttons on the right side.
 			_toolStripLeft.SendToBack();
 
-			splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
+			//TODO splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
 			_makeBloomPackButton.Visible = model.IsShellProject;
 			_sendReceiveButton.Visible = Settings.Default.ShowSendReceive;
 
@@ -145,13 +151,15 @@ namespace Bloom.CollectionTab
 			if (SIL.PlatformUtilities.Platform.IsMono)
 				Application.Idle += DeferredBloompackFileChooser;
 			else
-				_collectionListView.MakeBloomPack(false);
+				//_collectionListView.MakeBloomPack(false);
+			{
+			}
 		}
 
 		private void DeferredBloompackFileChooser(object sender, EventArgs e)
 		{
 			Application.Idle -= DeferredBloompackFileChooser;
-			_collectionListView.MakeBloomPack(false);
+			//TODO _collectionListView.MakeBloomPack(false);
 		}
 
 		public string HelpTopicUrl
