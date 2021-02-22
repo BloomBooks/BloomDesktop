@@ -654,6 +654,7 @@ namespace Bloom.Workspace
 			{
 				CurrentTabView.PlaceTopBarControl();
 				_toolSpecificPanel.Controls.Add(CurrentTabView.TopBarControl);
+				CurrentTabView.TopBarControl.Dock = DockStyle.Fill;
 			}
 
 			_selectedTabAboutToChangeEvent.Raise(new TabChangedDetails()
