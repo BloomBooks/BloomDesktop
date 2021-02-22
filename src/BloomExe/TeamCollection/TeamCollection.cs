@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.ToPalaso;
 
 namespace Bloom.TeamCollection
 {
@@ -799,7 +800,10 @@ namespace Bloom.TeamCollection
 
 					// It's just possible there are one, or even more, file change notifications we
 					// haven't yet received from the OS. Wait till things settle down to start monitoring again.
-					Application.Idle += StartMonitoringOnIdle;
+					SafeInvoke.InvokeIfPossible("Add StartMonitoringOnIdle", Form.ActiveForm, false,(Action) (() =>
+						// Needs to be invoked on the main thread in order for the event handler to be invoked.
+						Application.Idle += StartMonitoringOnIdle
+					));
 
 					progress.Message("Done", "Done");
 
