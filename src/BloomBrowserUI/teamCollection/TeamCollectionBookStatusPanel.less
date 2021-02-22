@@ -1,4 +1,7 @@
-@status-panel-height: 200px;
+@import "../bloomUI.less";
+// used from bloomUI so far: bloom-panelBackground
+
+@status-panel-height: 168px;
 
 html,
 body {
@@ -12,6 +15,7 @@ body {
 
 #teamCollection {
     color: white;
+    background-color: @bloom-panelBackground;
     display: flex;
     flex-direction: column;
     flex: 1;
