@@ -258,7 +258,7 @@ export const getBloomButton = (
 
 // This function gets the teamCollection panel going, iff the collection is shared.
 // It wraps another div around the whole current contents of the window,
-// then adds an instance of TeamCollectionPanel below it.
+// then adds an instance of TeamCollectionBookStatusPanel below it.
 export function setupTeamCollection() {
     BloomApi.getBoolean(
         "teamCollection/isTeamCollectionEnabled",

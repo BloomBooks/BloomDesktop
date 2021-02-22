@@ -20,7 +20,7 @@ addDecorator(storyFn => (
 
 // Try to simulate the environment of the page preview
 const wrapperStyles: React.CSSProperties = {
-    width: "500px",
+    width: "560px", // imitate A5 page width
     border: "1px solid green",
     backgroundColor: "lightgreen"
 };
@@ -28,7 +28,7 @@ const pageStyles: React.CSSProperties = {
     height: "100%",
     flexDirection: "column",
     display: "flex",
-    width: "750px"
+    width: "100%" // imitate the whole Bloom Edit window
 };
 
 const testPage = (statusPanel: JSX.Element) => (
