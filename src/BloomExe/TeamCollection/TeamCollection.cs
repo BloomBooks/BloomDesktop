@@ -798,13 +798,6 @@ namespace Bloom.TeamCollection
 
 					var problems = SyncAtStartup(progressLogger, doingJoinCollectionMerge);
 
-					// It's just possible there are one, or even more, file change notifications we
-					// haven't yet received from the OS. Wait till things settle down to start monitoring again.
-					SafeInvoke.InvokeIfPossible("Add StartMonitoringOnIdle", Form.ActiveForm, false,(Action) (() =>
-						// Needs to be invoked on the main thread in order for the event handler to be invoked.
-						Application.Idle += StartMonitoringOnIdle
-					));
-
 					progress.Message("Done", "Done");
 
 					// Review: are any of the cases we don't treat as warnings or errors important enough to wait
@@ -829,6 +822,16 @@ namespace Bloom.TeamCollection
 
 				worker.RunWorkerAsync();
 				dlg.ShowDialog();
+
+				// It's just possible there are one, or even more, file change notifications we
+				// haven't yet received from the OS. Wait till things settle down to start monitoring again.
+				//
+				// FYI, Needs to be invoked on the main thread in order for the event handler to be invoked.
+				// Easier to have this after the dialog is closed (the dialog also requires the main thread and will block the main thread until closed),
+				// rather than SafeInvoking it from {worker}, because that has way more risk of accidental deadlock...
+				//    the worker would have some work that requires being on the main thread, but it also is the gatekeeper for the main thread being released.
+				//    There was an issue where it would deadlock when the debugger breakpoints were set a certain way (presumably influencing the thread execution)
+				Application.Idle += StartMonitoringOnIdle;
 			}
 		}
 
