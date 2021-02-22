@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using SIL.IO;
@@ -16,6 +17,7 @@ namespace Bloom.web
 		public ReactControl()
 		{
 			InitializeComponent();
+			this.BackColor = Color.White;// we use a different color in design mode
 		}
 
 		[Browsable(true), Category("Setup")]
@@ -35,7 +37,13 @@ namespace Bloom.web
 		private void ReactControl_Load(object sender, System.EventArgs e)
 		{
 			if (this.DesignModeAtAll())
+			{
+				_settingsDisplay.Visible = true;
+				_settingsDisplay.Text = $"ReactControl{Environment.NewLine}{Environment.NewLine}Javascript Bundle: {_javascriptBundleName}{Environment.NewLine}React Component Name: {_reactComponentName}{Environment.NewLine}{Environment.NewLine}Remember to add the component to the map in WireUpReact.ts";
 				return;
+			}
+
+			_settingsDisplay.Visible = false;
 
 			var tempFile = TempFile.WithExtension("htm");
 			RobustFile.WriteAllText(tempFile.Path, $@"<!DOCTYPE html>
@@ -57,14 +65,19 @@ namespace Bloom.web
 				</body>
 				</html>");
 
-			var url = tempFile.Path.ToLocalhost();
+			var url = tempFile.Path;
+			tempFile.Detach();
 
 			// The Size setting is needed on Linux to keep the browser from coming up as a small
 			// rectangle in the upper left corner...
 			var browser = new Browser
-				{ Dock = DockStyle.Fill, Location = new Point(3, 3), Size = new Size(this.Width - 6, this.Height - 6) };
-			browser.BackColor = Color.White;
-			
+			{
+				Dock = DockStyle.Fill,
+				Location = new Point(3, 3),
+				Size = new Size(this.Width - 6, this.Height - 6),
+				BackColor = Color.White
+			};
+
 			var dummy = browser.Handle; // gets the WebBrowser created
 
 			// If the control gets added before it has navigated somewhere,
@@ -75,7 +88,7 @@ namespace Bloom.web
 				this.Controls.Add(browser);
 				//browser.Focus();
 			};
-			browser.Navigate(url, cleanupFileAfterNavigating: false /* TODO: I was getting errors*/);
+			browser.NavigateToTempFileThenRemoveIt(tempFile.Path);
 		}
 	}
 }
