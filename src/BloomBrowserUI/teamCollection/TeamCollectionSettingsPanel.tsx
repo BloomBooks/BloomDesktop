@@ -176,8 +176,3 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
         </div>
     );
 };
-
-// allow plain 'ol javascript in the html to connect up react
-(window as any).connectTeamCollectionSettingsScreen = element => {
-    ReactDOM.render(<TeamCollectionSettingsPanel />, element);
-};
