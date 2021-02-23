@@ -22,6 +22,11 @@ namespace Bloom.TeamCollection
 		private static string _overrideCurrentUserSurname;
 		private static string _overrideMachineName;
 
+		/// <summary>
+		/// Force the startup sync of collection files to be FROM the repo TO local.
+		/// </summary>
+		public static bool ForceNextSyncToLocal { set; get; }
+
 		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer)
 		{
 			_webSocketServer = webSocketServer;
@@ -54,7 +59,15 @@ namespace Bloom.TeamCollection
 						CurrentCollection.SocketServer = SocketServer;
 						// Later, we will sync everything else, but we want the current collection settings before
 						// we create the CollectionSettings object.
-						CurrentCollection.CopyRepoCollectionFilesToLocal(_localCollectionFolder);
+						if (ForceNextSyncToLocal)
+						{
+							ForceNextSyncToLocal = false;
+							CurrentCollection.CopyRepoCollectionFilesToLocal(_localCollectionFolder);
+						}
+						else
+						{
+							CurrentCollection.SyncLocalAndRepoCollectionFiles();
+						}
 					}
 					else
 					{

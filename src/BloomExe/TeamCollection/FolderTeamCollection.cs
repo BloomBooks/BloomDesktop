@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -7,6 +8,7 @@ using System.Xml.Linq;
 using Bloom.CollectionCreating;
 using Bloom.MiscUI;
 using ICSharpCode.SharpZipLib.Zip;
+using NuGet;
 using SIL.IO;
 
 namespace Bloom.TeamCollection
@@ -176,29 +178,95 @@ namespace Bloom.TeamCollection
 			zipFile.Save();
 		}
 
-		private static string GetRepoProjectFilesZipPath(string repoFolderPath)
+		protected override DateTime LastRepoCollectionFileModifyTime
+		{
+			get
+			{
+				var repoProjectFilesZipPath = GetRepoProjectFilesZipPath(_repoFolderPath);
+				if (!File.Exists(repoProjectFilesZipPath))
+					return DateTime.MinValue; // brand new repo, want to copy TO it.
+				var collectionFilesModTime = new FileInfo(repoProjectFilesZipPath).LastWriteTime;
+				GetMaxModifyTime("Allowed Words", ref collectionFilesModTime);
+				GetMaxModifyTime("Sample Texts", ref collectionFilesModTime);
+				return collectionFilesModTime;
+			}
+		}
+
+		private void GetMaxModifyTime(string folderName, ref DateTime max)
+		{
+			var zipPath =Path.Combine(_repoFolderPath, "Other", Path.ChangeExtension(folderName,"zip"));
+			if (File.Exists(zipPath))
+			{
+				var thisModTime = new FileInfo(zipPath).LastWriteTime;
+				if (thisModTime > max)
+					max = thisModTime;
+			}
+		}
+
+		// Make a zip file (in our standard location in the Other directory) of the top-level
+		// files in the specified folder. The zip file has the same name as the folder.
+		// At this point, we are not handling child folders.
+		protected override void CopyLocalFolderToRepo(string folderName)
+		{
+			var sourceDir = Path.Combine(_localCollectionFolder, folderName);
+			if (!Directory.Exists(sourceDir))
+				return;
+			var destPath = GetZipFileForFolder(folderName, _repoFolderPath);
+			Directory.CreateDirectory(Path.GetDirectoryName(destPath));
+			var zipFile = new BloomZipFile(destPath);
+			foreach (var path in Directory.EnumerateFiles(sourceDir))
+			{
+				zipFile.AddTopLevelFile(path);
+			}
+
+			zipFile.Save();
+		}
+
+		// The standard place where we store zip files for a collection-level folder.
+		private static string GetZipFileForFolder(string folderName, string repoFolderPath)
+		{
+			return Path.Combine(repoFolderPath, "Other", Path.ChangeExtension(folderName, "zip"));
+		}
+
+		// The standard place where we store the top level collection files.
+		internal static string GetRepoProjectFilesZipPath(string repoFolderPath)
 		{
 			return Path.Combine(repoFolderPath, "Other", "Other Collection Files.zip");
 		}
 
-
-		public override void CopyRepoCollectionFilesToLocal(string destFolder)
+		/// <summary>
+		/// Copy collection level files from the repo to the local directory
+		/// </summary>
+		/// <param name="destFolder"></param>
+		protected override void CopyRepoCollectionFilesToLocalImpl(string destFolder)
 		{
 			CopyRepoCollectionFilesTo(destFolder, _repoFolderPath);
+			ExtractFolder(destFolder, _repoFolderPath, "Allowed Words");
+			ExtractFolder(destFolder, _repoFolderPath, "Sample Texts");
 		}
 
 		private static void CopyRepoCollectionFilesTo(string destFolder, string repoFolder)
 		{
 			var collectionZipPath = GetRepoProjectFilesZipPath(repoFolder);
-			if (!File.Exists(collectionZipPath))
+			if (!RobustFile.Exists(collectionZipPath))
 				return;
-			byte[] buffer = new byte[4096];     // 4K is optimum
+			ExtractFolderFromZip(destFolder, collectionZipPath, () => new HashSet<string>(RootLevelCollectionFilesIn(destFolder,
+				Path.GetFileNameWithoutExtension(GetLocalCollectionNameFromTcName(repoFolder)))));
+		}
+
+		// Extract files from the given zip to the given destination folder. Delete any files in the destFolder which
+		// are identified by filesToDeleteIfNotInZip() and which were not found in the zip file.
+		private static void ExtractFolderFromZip(string destFolder, string collectionZipPath, Func<HashSet<string>> filesToDeleteIfNotInZip)
+		{
+			byte[] buffer = new byte[4096]; // 4K is optimum
 			try
 			{
+				var filesInZip = new HashSet<string>();
 				using (var zipFile = new ZipFile(collectionZipPath))
 				{
 					foreach (ZipEntry entry in zipFile)
 					{
+						filesInZip.Add(entry.Name);
 						var fullOutputPath = Path.Combine(destFolder, entry.Name);
 
 						var directoryName = Path.GetDirectoryName(fullOutputPath);
@@ -211,11 +279,37 @@ namespace Bloom.TeamCollection
 						}
 					}
 				}
+
+				// Remove any sharing-eligible files that are NOT in the zip
+				var filesToDelete = filesToDeleteIfNotInZip();
+				filesToDelete.ExceptWith(filesInZip);
+				foreach (var discard in filesToDelete)
+				{
+					RobustFile.Delete(Path.Combine(destFolder, discard));
+				}
 			}
 			catch (Exception e) when (e is ZipException || e is IOException)
 			{
-				NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not unpack the collection files in your Team Collection");
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
+					"Bloom could not unpack the collection files in your Team Collection");
 			}
+		}
+
+		/// <summary>
+		/// Extract files from the repo zip identified by the folderName to a folder of the same
+		/// name in the collection folder, deleting any files already present that are not in the zip.
+		/// </summary>
+		/// <param name="collectionFolder"></param>
+		/// <param name="repoFolder"></param>
+		/// <param name="folderName"></param>
+		static void ExtractFolder(string collectionFolder, string repoFolder, string folderName)
+		{
+			var sourceZip = GetZipFileForFolder(folderName, repoFolder);
+			if (!File.Exists(sourceZip))
+				return;
+			var destFolder = Path.Combine(collectionFolder, folderName);
+			ExtractFolderFromZip(destFolder, sourceZip,
+				() => new HashSet<string>(Directory.EnumerateFiles(destFolder).Select(p => Path.GetFileName(p))));
 		}
 
 		// All the people who have something checked out in the repo.
@@ -246,10 +340,9 @@ namespace Bloom.TeamCollection
 
 			// Enhance: maybe one day we want to watch collection files too?
 
-			// Watch for changes in LastAccess and LastWrite times, and
+			// Watch for changes in LastWrite times, and
 			// the renaming of files or directories.
-			_watcher.NotifyFilter = NotifyFilters.LastAccess
-			                       | NotifyFilters.LastWrite
+			_watcher.NotifyFilter =  NotifyFilters.LastWrite
 			                       | NotifyFilters.FileName
 			                       | NotifyFilters.DirectoryName;
 

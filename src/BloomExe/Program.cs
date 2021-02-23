@@ -247,6 +247,9 @@ namespace Bloom
 					if (FolderTeamCollection.IsJoinTeamCollectionFile(args))
 					{
 						string newCollection;
+						// When we're spinning up a fake local collection in "projectName", we don't want
+						// any chance of copying FROM there to the repo.
+						TeamCollectionManager.ForceNextSyncToLocal = true;
 						// Since the New Team Collection dialog is an HTML/Typescript one, we need to spin up
 						// quite a lot of stuff so it can use a BloomServer to get localization information
 						// and otherwise communicate with the C# side of things. But we can't wait to do this
