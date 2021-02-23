@@ -8,4 +8,4 @@ Terminal=false
 Type=Application
 Categories=Education;
 X-Desktop-File-Install-Version=0.21
-MimeType=application/bloom;x-scheme-handler/bloom;application/bloom-collection;x-scheme-handler/bloom-collection;
+MimeType=application/bloom;x-scheme-handler/bloom;application/bloom-collection;x-scheme-handler/bloom-collection;application/bloom-join-team;x-scheme-handler/bloom-join-team;

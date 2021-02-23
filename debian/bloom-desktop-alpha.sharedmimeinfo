@@ -4,6 +4,10 @@
 		<comment>Bloom Book Collection</comment>
 		<glob pattern="*.bloomCollection"/>
 	</mime-type>
+	<mime-type type="application/bloom-join-team">
+		<comment>Join Bloom Team Collection</comment>
+		<glob pattern="*.JoinBloomTC"/>
+	</mime-type>
 	<mime-type type="application/bloom">
 		<comment>Bloom books</comment>
 		<sub-class-of type="application/zip"/>

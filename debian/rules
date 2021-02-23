@@ -98,6 +98,9 @@ override_dh_auto_install:
 	# Add bloom-collection mime type
 	install -m 644 debian/bloom-collection.png $(DESTDIR)/usr/share/icons/hicolor/48x48/mimetypes/application-bloom-collection.png
 	install -m 644 debian/bloom-collection.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/mimetypes/application-bloom-collection.svg
+	# Add bloom-join-team mime type
+	install -m 644 debian/JoinBloomTC.png $(DESTDIR)/usr/share/icons/hicolor/48x48/mimetypes/application-bloom-join-team.png
+	install -m 644 debian/JoinBloomTC.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/mimetypes/application-bloom-join-team.svg
 	# Add AppStream metadata file
 	# REVIEW: the specs are not completely clear where the file should go: /usr/share/appdata,
 	# /usr/share/app-info/xmls, or /usr/share/metainfo.
