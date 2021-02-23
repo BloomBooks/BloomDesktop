@@ -1704,5 +1704,48 @@ p {
 			assertThatDoc.HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-mediaBox " + pageSizeClass + "']/div[contains(@class, 'bloom-page')]", 2);
 			assertThatDoc.HasSpecifiedNumberOfMatchesForXpath("//body[@class='bloom-fullBleed']",1);
 		}
+
+		[Test]
+		public void ReplaceAllIdValues_ReplacesIdValuesProperly1()
+		{
+			var id1 = "77bd6b91-91e4-45c2-bff1-73a9ca0b5500";
+			var id2 = "77bd6b91-91e4-45c2-bff1-73a9ca0b5501";
+			var input = $"<p><span id='{id1}' class='audio-sentence'>First</span></p>\n"+
+				$"<p><span id='{id2}' class='audio-sentence'>Second</span></p>";
+			var output = HtmlDom.ReplaceAllIdValues(input);
+
+			Assert.That(input, Does.Contain(id1));
+			Assert.That(input, Does.Contain(id2));
+			Assert.That(output, Does.Not.Contain(id1));
+			Assert.That(output, Does.Not.Contain(id2));
+			Assert.That(output, Does.Match("id=\"[a-fi][-a-z0-9]+\".*id=\"[a-fi][-a-z0-9]+\""));
+		}
+
+		[Test]
+		public void ReplaceAllIdValues_ReplacesIdValuesProperly2()
+		{
+			var id1 = "i71251a41-a5ac-4697-83e1-7fdebc2cdc3f";
+			var id2 = "e2c7260f-f3ee-4cbc-ae9d-79144f3ae22f";
+			var id3 = "i854cc216-ba49-4e91-b79b-c3f92d62239f";
+			var input = $"<p><span id='{id1}' class='bloom-highlightSegment' recordingmd5='undefined'>Images on pages Front Cover, 1 by Stephen McConnel.</span>" +
+				$" <span id='{id2}' class='bloom-highlightSegment' recordingmd5='undefined'>CC0 1.0.</span></p>\n" +
+				$"<p><span id='{id3}' class='bloom-highlightSegment' recordingmd5='undefined'>Image on page 2 CC0 1.0.</span></p>";
+			var output = HtmlDom.ReplaceAllIdValues(input);
+			Assert.That(input, Does.Contain(id1));
+			Assert.That(input, Does.Contain(id2));
+			Assert.That(input, Does.Contain(id3));
+			Assert.That(output, Does.Not.Contain(id1));
+			Assert.That(output, Does.Not.Contain(id2));
+			Assert.That(output, Does.Not.Contain(id3));
+			Assert.That(output, Does.Match("id=\"[a-fi][-a-z0-9]+\".*id=\"[a-fi][-a-z0-9]+\".*id=\"[a-fi][-a-z0-9]+\""));
+		}
+
+		[Test]
+		public void ReplaceAllIdValues_HandlesPlainText()
+		{
+			var input = "This is a test.";
+			var output = HtmlDom.ReplaceAllIdValues(input);
+			Assert.That(output, Is.EqualTo(input));
+		}
 	}
 }

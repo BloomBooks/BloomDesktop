@@ -1781,10 +1781,568 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void FixBookIdAndLineageIfNeeded_WithPageTemplateSourceBasicBook_SetsMissingLineageToBasicBook()
+		public void BringBookUpToDate_FixesDuplicateAudioIds_SentenceRecording()
 		{
 			_bookDom = new HtmlDom(
 				@"<html>
+  <head>
+    <meta content='text/html; charset=utf-8' http-equiv='content-type' />
+  </head>
+  <body>
+    <div id=""bloomDataDiv"">
+      <div data-book=""bookTitle"" lang=""tpi"" class="" bloom-editable bloom-nodefaultstylerule bloom-padForOverflow"" contenteditable=""true"">
+        <p><span id=""c22315e7-c8f7-4d9d-89a5-d4f5c79d8777"" class=""audio-sentence"" recordingmd5=""undefined"">Primer 1 <span class=""bloom-linebreak""></span>﻿Ritim stori</span> i kam long <span class=""bloom-linebreak""></span>﻿buk bilong Mak</p>
+      </div>
+    </div>
+    <div class=""bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover A4Portrait side-right"" data-page=""required singleton"" data-export=""front-matter-cover"" data-xmatter-page=""frontCover"" id=""918c80f9-8ecf-4656-b4a9-e4c757459df6"" data-page-number="""" lang="""">
+      <div class=""marginBox"">
+        <div class=""bloom-translationGroup bookTitle"" data-default-languages=""V,N1"">
+          <div class=""bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-padForOverflow bloom-content1 bloom-contentNational2 bloom-visibility-code-on"" data-book=""bookTitle"" data-languagetipcontent=""Tok Pisin"" style=""padding-bottom: 0px;"" data-hasqtip=""true"" aria-describedby=""qtip-3"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" lang=""tpi"" contenteditable=""true"">
+            <p><span id=""c22315e7-c8f7-4d9d-89a5-d4f5c79d8777"" class=""audio-sentence"" recordingmd5=""undefined"">Primer 1 <span class=""bloom-linebreak""></span>﻿Ritim stori</span> i kam long <span class=""bloom-linebreak""></span>﻿buk bilong Mak</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class=""bloom-page titlePage bloom-frontMatter countPageButDoNotShowNumber A4Portrait side-right"" data-page=""required singleton"" data-export=""front-matter-title-page"" data-xmatter-page=""titlePage"" id=""6901d777-3338-4296-945e-877b9bf73b8b"" data-page-number="""" lang="""">
+      <div class=""marginBox"">
+        <div class=""bloom-translationGroup"" data-default-languages=""V,N1"" id=""titlePageTitleBlock"">
+          <div class=""bloom-editable bloom-nodefaultstylerule Title-On-Title-Page-style bloom-padForOverflow bloom-content1 bloom-contentNational2 bloom-visibility-code-on"" data-book=""bookTitle"" data-languagetipcontent=""Tok Pisin"" style=""padding-bottom: 0px;"" data-hasqtip=""true"" aria-describedby=""qtip-0"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" lang=""tpi"" contenteditable=""true"">
+            <p><span id=""c22315e7-c8f7-4d9d-89a5-d4f5c79d8777"" class=""audio-sentence"" recordingmd5=""undefined"">Primer 1 <span class=""bloom-linebreak""></span>﻿Ritim stori</span> i kam long <span class=""bloom-linebreak""></span>﻿buk bilong Mak</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class='bloom-page numberedPage' data-page='' id='ff4335b6-07d9-4b7a-b2fe-f836c9da4c96' data-pagelineage='5dcd48df-e9ab-4a07-afd4-6a24d0398386' lang='' data-page-number='8'>
+      <div class='marginBox'>
+        <div class='bloom-translationGroup bloom-trailingElement'>
+          <div data-languagetipcontent='Tok Pisin' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable normal-style bloom-content1 bloom-contentNational2 bloom-visibility-code-on' contenteditable='true' lang='tpi'>
+            <p><span id='i4d78a211-e1cc-483c-8b54-4256967e683f' class='audio-sentence' recordingmd5='undefined'>Jisas i wokabaut arere long raunwara Galili, orait, em i lukim tupela brata, Saimon, narapela nem em Pita, na brata bilong en Andru.</span><span id='ddcbbf14-445e-4bfa-ad0a-94a9223dff3d' class='audio-sentence' recordingmd5='undefined'>Olsem na em i kam tokim tupela, 'E, yutupela i kam bihainim mi, na bai mi lainim yutupela long kisim manmeri ol i ken bihainim mi.'</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class='bloom-page numberedPage customPage A4Portrait side-right bloom-monolingual' data-page='' id='c430b078-b953-495e-a19c-db34d0a4789b' data-pagelineage='5dcd48df-e9ab-4a07-afd4-6a24d0398386;ff4335b6-07d9-4b7a-b2fe-f836c9da4c96' lang='' data-page-number='28'>
+      <div class='marginBox'>
+        <div class='bloom-translationGroup bloom-trailingElement'>
+          <div data-languagetipcontent='Tok Pisin' data-hasqtip='true' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable normal-style bloom-content1 bloom-contentNational2 bloom-visibility-code-on' contenteditable='true' lang='tpi'>
+            <p><span id='i4d78a211-e1cc-483c-8b54-4256967e683f' class='audio-sentence' recordingmd5='undefined'></span>Na klostu long dua tu i no gat hap ples i stap nating.</p>
+            <p><span id='ddcbbf14-445e-4bfa-ad0a-94a9223dff3d' class='audio-sentence' recordingmd5='undefined'></span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>");
+			var book = CreateBook();
+
+			// This has a total of seven audio-sentence spans and no audio-sentence divs.
+			// check initial conditions
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[contains(@class,'audio-sentence')]");
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[contains(@class,'audio-sentence') and @id!='']", 7);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='c22315e7-c8f7-4d9d-89a5-d4f5c79d8777']", 3);		// bookTitle
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i4d78a211-e1cc-483c-8b54-4256967e683f']", 2);	// ERROR!
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='ddcbbf14-445e-4bfa-ad0a-94a9223dff3d']", 2);		// ERROR!
+
+
+			book.BringBookUpToDate(new NullProgress()); // SUT
+
+			// final condition with title audio id found 3 times and no duplication in content audio ids
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[contains(@class,'audio-sentence')]");
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[contains(@class,'audio-sentence') and @id!='']", 7);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='c22315e7-c8f7-4d9d-89a5-d4f5c79d8777']", 3);		// bookTitle (same)
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i4d78a211-e1cc-483c-8b54-4256967e683f']", 1);	// fixed!
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='ddcbbf14-445e-4bfa-ad0a-94a9223dff3d']", 1);		// fixed!
+
+			// Check that all the audio ids outside the data-div are unique.
+			var audioNodes = book.RawDom.SafeSelectNodes(
+				"(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]").Cast<XmlNode>().ToList();
+			HashSet<string> uniqueIds = new HashSet<string>();
+			foreach (var node in audioNodes)
+			{
+				var id = node.GetStringAttribute("id");
+				uniqueIds.Add(id);
+			}
+			Assert.That(audioNodes.Count, Is.EqualTo(uniqueIds.Count + 1));	// NB: bookTitle occurs twice
+		}
+
+		[Test]
+		public void BringBookUpToDate_FixesDuplicateAudioIds_TextboxRecording()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+  <head>
+    <meta content='text/html; charset=utf-8' http-equiv='content-type' />
+  </head>
+  <body>
+    <div id='bloomDataDiv'>
+      <div data-book='bookTitle' lang='en' class=' bloom-editable bloom-nodefaultstylerule bloom-padForOverflow audio-sentence bloom-postAudioSplit' contenteditable='true' data-audiorecordingmode='TextBox' data-duration='1.227734' id='ee2f4638-8892-4a13-9abd-be43417236cc' data-audiorecordingendtimes='1.16'>
+        <p><span id='i03ce4c5d-c70d-4702-9d69-9ed6ccd5a9a1' class='bloom-highlightSegment'>I am sick</span></p>
+      </div>
+      <div data-book='smallCoverCredits' lang='en' class=' bloom-editable smallCoverCredits audio-sentence bloom-postAudioSplit' contenteditable='true' data-audiorecordingmode='TextBox' data-audiorecordingendtimes='4.000 7.560' data-duration='7.641882' id='i07d27e74-f55e-4adf-b09e-16c3aae93789'>
+        <p><span id='cd909d76-2eac-4c2c-a646-449535de6d55' class='bloom-highlightSegment' recordingmd5='undefined'>Author: Namita Jacob</span></p>
+        <p><span id='i178b7798-3923-4fb4-a816-136e6c9010a7' class='bloom-highlightSegment' recordingmd5='undefined'>Illustrator: Teresa Antony</span></p>
+      </div>
+      <div data-book='funding' lang='en' class=' bloom-editable funding bloom-copyFromOtherLanguageIfNecessary audio-sentence bloom-postAudioSplit thisOverflowingParent' contenteditable='true' data-audiorecordingmode='TextBox' data-audiorecordingendtimes='3.8' data-duration='3.880249' id='i1010a3ba-2abe-4a1b-a945-74b5cfbe0130'>
+        <p><span id='c1e48f12-0270-4a40-98b4-35917b459207' class='bloom-highlightSegment'>Published by Chetana Trust, INDIA</span></p>
+      </div>
+      <div data-book='outsideBackCover' lang='en' data-hint='If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.' class=' bloom-editable audio-sentence bloom-postAudioSplit' contenteditable='true' data-audiorecordingmode='TextBox' data-audiorecordingendtimes='8.840 11.600 14.400' data-duration='14.49771' id='i98cce2ab-2618-43b2-b9b6-6437eb134501'>
+        <p><span id='i745d1faa-fb1a-4580-a19b-8cfed3f3042a' class='bloom-highlightSegment'>Written during the Pandemic of 2020, this book was created to help children who are ill or who have loved ones who are ill.</span></p>
+        <p><span id='i3d292196-dab5-41c5-bb62-dcefb8ab2531' class='bloom-highlightSegment'>This is an original creation of</span></p>
+        <p><span id='i9bc70333-4f50-47d3-9763-c5fb92922640' class='bloom-highlightSegment'><strong>Chetana Charitable Trust, Chennai</strong></span></p>
+      </div>
+    </div>
+    <div class='bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover Device16x9Portrait side-right' data-page='required singleton' data-export='front-matter-cover' data-xmatter-page='frontCover' id='cf4a0b00-6ef1-46ff-b883-ce68fa4140c8' data-page-number='' lang=''>
+      <div class='marginBox'>
+        <div class='bloom-translationGroup bookTitle' data-default-languages='V,N1'>
+          <div aria-describedby='qtip-2' data-hasqtip='true' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 44.01px; padding-bottom: 0px;' data-languagetipcontent='English' class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-padForOverflow audio-sentence bloom-postAudioSplit bloom-content1 bloom-contentNational1 bloom-visibility-code-on' data-book='bookTitle' data-audiorecordingmode='TextBox' data-duration='1.227734' id='ee2f4638-8892-4a13-9abd-be43417236cc' data-audiorecordingendtimes='1.16' contenteditable='true' lang='en'>
+            <p><span id='i03ce4c5d-c70d-4702-9d69-9ed6ccd5a9a1' class='bloom-highlightSegment'>I am sick</span></p>
+          </div>
+        </div>
+        <div class='bottomTextContent'>
+          <div class='bloom-translationGroup' data-default-languages='V'>
+            <div aria-label='false' role='textbox' spellcheck='true' tabindex='0' data-languagetipcontent='English' class='bloom-editable smallCoverCredits Cover-Default-style audio-sentence bloom-postAudioSplit bloom-content1 bloom-contentNational1 bloom-visibility-code-on' data-book='smallCoverCredits' data-audiorecordingmode='TextBox' data-audiorecordingendtimes='4.000 7.560' data-duration='7.641882' id='i07d27e74-f55e-4adf-b09e-16c3aae93789' contenteditable='true' lang='en'>
+              <p><span id='cd909d76-2eac-4c2c-a646-449535de6d55' class='bloom-highlightSegment' recordingmd5='undefined'>Author: Namita Jacob</span></p>
+              <p><span id='i178b7798-3923-4fb4-a816-136e6c9010a7' class='bloom-highlightSegment' recordingmd5='undefined'>Illustrator: Teresa Antony</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class='bloom-page titlePage bloom-frontMatter countPageButDoNotShowNumber Device16x9Portrait side-right' data-page='required singleton' data-export='front-matter-title-page' data-xmatter-page='titlePage' id='3b22b321-bed6-4797-8b5d-638798a43d08' data-page-number='' lang=''>
+      <div class='marginBox'>
+        <div class='bloom-translationGroup' data-default-languages='V,N1' id='titlePageTitleBlock'>
+          <div aria-describedby='qtip-2' data-languagetipcontent='English' data-hasqtip='true' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='padding-bottom: 0px;' class='bloom-editable bloom-nodefaultstylerule Title-On-Title-Page-style bloom-padForOverflow audio-sentence bloom-postAudioSplit bloom-content1 bloom-contentNational1 bloom-visibility-code-on' data-book='bookTitle' data-audiorecordingmode='TextBox' data-duration='1.227734' id='ee2f4638-8892-4a13-9abd-be43417236cc' data-audiorecordingendtimes='1.16' contenteditable='true' lang='en'>
+            <p><span id='i03ce4c5d-c70d-4702-9d69-9ed6ccd5a9a1' class='bloom-highlightSegment'>I am sick</span></p>
+          </div>
+        </div>
+        <div class='bloom-translationGroup' data-default-languages='N1' id='funding'>
+          <div aria-describedby='qtip-1' data-languagetipcontent='English' data-audiorecordingendtimes='3.8' data-hasqtip='true' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable funding Content-On-Title-Page-style bloom-copyFromOtherLanguageIfNecessary audio-sentence bloom-postAudioSplit bloom-content1 bloom-contentNational1 bloom-visibility-code-on thisOverflowingParent' data-book='funding' data-audiorecordingmode='TextBox' data-duration='3.880249' id='i1010a3ba-2abe-4a1b-a945-74b5cfbe0130' contenteditable='true' lang='en'>
+            <p><span id='c1e48f12-0270-4a40-98b4-35917b459207' class='bloom-highlightSegment'>Published by Chetana Trust, INDIA</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class='bloom-page numberedPage customPage Device16x9Portrait side-left bloom-monolingual' data-page='' id='4abdbd70-9922-48ca-98e3-900917fed9e7' data-pagelineage='a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb' data-page-number='2' lang=''>
+      <div class='marginBox'>
+        <div tabindex='1' class='bloom-translationGroup bloom-trailingElement' data-default-languages='auto'>
+          <div data-audiorecordingendtimes='3.800 5.860 7.340 9.120' data-languagetipcontent='English' data-duration='9.209229' id='i8a56eaf1-f6ff-46c1-b973-c1a82360f40b' data-audiorecordingmode='TextBox' data-hasqtip='true' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 62.4px;' class='bloom-editable normal-style audio-sentence bloom-postAudioSplit bloom-content1 bloom-contentNational1 bloom-visibility-code-on' contenteditable='true' lang='en'>
+            <p><span id='ff22a080-da1a-40c2-9c2b-44889eb60766' class='bloom-highlightSegment'>Today when I woke up, I had a headache.</span> <span id='e5cba82b-8313-46c6-a729-2804f0afca03' class='bloom-highlightSegment'>I had a runny nose.</span> <span id='i3b5c447b-89b6-4f9e-95e7-f97836d7ad35' class='bloom-highlightSegment'>I had fever.</span> <span id='i16ef936a-0cca-4247-9c07-63034d2e1803' class='bloom-highlightSegment'>I am sick!</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class='bloom-page numberedPage customPage Device16x9Portrait side-right bloom-monolingual' data-page='' id='3d75bc11-3938-481b-9d29-1a162f7fea33' data-pagelineage='a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb;4abdbd70-9922-48ca-98e3-900917fed9e7' data-page-number='3' lang=''>
+      <div class='marginBox'>
+        <div class='bloom-translationGroup bloom-trailingElement' data-default-languages='auto'>
+          <div data-languagetipcontent='English' data-audiorecordingendtimes='2.160 4.380 7.800' id='i8a56eaf1-f6ff-46c1-b973-c1a82360f40b' data-audiorecordingmode='TextBox' data-hasqtip='true' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 62.4px;' class='bloom-editable normal-style audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on' contenteditable='true' lang='en'>
+            <p><span id='i64ca42d8-6742-4e1b-89a8-8a1c85249ec6' class='bloom-highlightSegment' recordingmd5='undefined'>But, I am not worried!</span> <span id='i9656ff07-29c6-4961-9f62-b78e596f95f5' class='bloom-highlightSegment' recordingmd5='undefined'>I have been sick before!</span> <span id='i9dd5cac2-e700-4e6b-9c1e-e9d4b94b06c2' class='bloom-highlightSegment' recordingmd5='undefined'>I can stay in bed <em>all</em> day!</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class='bloom-page cover coverColor outsideBackCover bloom-backMatter Device16x9Portrait side-right' data-page='required singleton' data-export='back-matter-back-cover' data-xmatter-page='outsideBackCover' id='411e063b-50a4-4f92-beb6-5c248cded6b1' data-page-number='' lang=''>
+      <div class='marginBox'>
+        <div class='bloom-translationGroup' data-default-languages='N1'>
+          <div aria-describedby='qtip-0' data-languagetipcontent='English' data-audiorecordingendtimes='8.840 11.600 14.400' aria-label='false' role='textbox' spellcheck='true' tabindex='0' data-hasqtip='true' class='bloom-editable Outside-Back-Cover-style audio-sentence bloom-postAudioSplit bloom-content1 bloom-contentNational1 bloom-visibility-code-on' data-book='outsideBackCover' data-hint='If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.' data-audiorecordingmode='TextBox' data-duration='14.49771' id='i98cce2ab-2618-43b2-b9b6-6437eb134501' contenteditable='true' lang='en'>
+            <p><span id='i745d1faa-fb1a-4580-a19b-8cfed3f3042a' class='bloom-highlightSegment'>Written during the Pandemic of 2020, this book was created to help children who are ill or who have loved ones who are ill.</span></p>
+            <p><span id='i3d292196-dab5-41c5-bb62-dcefb8ab2531' class='bloom-highlightSegment'>This is an original creation of</span></p>
+            <p><span id='i9bc70333-4f50-47d3-9763-c5fb92922640' class='bloom-highlightSegment'><strong>Chetana Charitable Trust, Chennai</strong></span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>");
+			var book = CreateBook();
+
+			// This has a total of no audio-sentence spans and eleven audio-sentence divs.
+			// check initial conditions
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//span[contains(@class,'audio-sentence')]");
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'audio-sentence') and @id!='']", 11);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class,'audio-sentence') and @id='ee2f4638-8892-4a13-9abd-be43417236cc']", 3);  // bookTitle
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class,'audio-sentence') and @id='i07d27e74-f55e-4adf-b09e-16c3aae93789']", 2); // smallCoverCredits
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class,'audio-sentence') and @id='i1010a3ba-2abe-4a1b-a945-74b5cfbe0130']", 2); // funding
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class,'audio-sentence') and @id='i98cce2ab-2618-43b2-b9b6-6437eb134501']", 2); // outsideBackCover
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class,'audio-sentence') and @id='i8a56eaf1-f6ff-46c1-b973-c1a82360f40b']", 2); // ERROR!
+
+			book.BringBookUpToDate(new NullProgress()); // SUT
+
+			// check final condition
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//span[contains(@class,'audio-sentence')]");
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'audio-sentence') and @id!='']", 11);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class,'audio-sentence') and @id='ee2f4638-8892-4a13-9abd-be43417236cc']", 3);  // bookTitle (same)
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class,'audio-sentence') and @id='i07d27e74-f55e-4adf-b09e-16c3aae93789']", 2); // smallCoverCredits (same)
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class,'audio-sentence') and @id='i1010a3ba-2abe-4a1b-a945-74b5cfbe0130']", 2); // funding (same)
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class,'audio-sentence') and @id='i98cce2ab-2618-43b2-b9b6-6437eb134501']", 2); // outsideBackCover (same)
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class,'audio-sentence') and @id='i8a56eaf1-f6ff-46c1-b973-c1a82360f40b']", 1); // fixed!
+
+			// Check that all the audio ids outside the data-div are unique.
+			var audioNodes = book.RawDom.SafeSelectNodes(
+				"(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]").Cast<XmlNode>().ToList();
+			HashSet<string> uniqueIds = new HashSet<string>();
+			foreach (var node in audioNodes)
+			{
+				var id = node.GetStringAttribute("id");
+				uniqueIds.Add(id);
+			}
+			Assert.That(audioNodes.Count, Is.EqualTo(uniqueIds.Count + 1));	// NB: bookTitle occurs twice in xMatter pages
+		}
+
+		[Test]
+		public void BringBookUpToDate_FixesDuplicateAudioIds_ManyDuplicates()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+  <head>
+    <meta content='text/html; charset=utf-8' http-equiv='content-type' />
+  </head>
+  <body>
+    <div class='bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual' data-page='' data-page-number='1' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398382' id='8065f807-769f-4e50-9a45-f329ce05dd32' lang=''>
+      <div class='bloom-translationGroup bloom-trailingElement' data-default-languages='auto'>
+        <div aria-label='false' class='bloom-editable normal-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on' data-hasqtip='true' role='textbox' spellcheck='true' style='min-height: 60px;' tabindex='0' data-languagetipcontent='English' lang='en' contenteditable='true'>
+          <p><span class='audio-sentence' id='i0a52e794-9191-49df-8bb0-49fd2d7403e6'>Test!</span>
+             <span class='audio-sentence' id='i2a5c5a6c-8e4c-4557-8f8f-3e4689d10e21'>Something recorded?</span>
+             <span class='audio-sentence' id='i2a5c5a6c-8e4c-4557-8f8f-3e4689d10e21'>Something else.</span></p>
+        </div>
+      </div>
+    </div>
+    <div class='bloom-page numberedPage customPage A4Portrait side-right bloom-monolingual' data-page='' id='ff4335b6-07d9-4b7a-b2fe-f836c9da4c96' data-pagelineage='5dcd48df-e9ab-4a07-afd4-6a24d0398386' lang='' data-page-number='2'>
+      <div class='bloom-translationGroup bloom-trailingElement'>
+        <div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable Title-On-Title-Page-style bloom-content1 bloom-contentNational2 bloom-visibility-code-on' contenteditable='true' lang='en'>
+          <p><span id='i546e558f-7fc2-4504-a771-dfcce32be0fb' class='audio-sentence' recordingmd5='undefined'>This is test data.</span></p>
+          <p><span class='audio-sentence' recordingmd5='undefined'></span>
+             <span id='i8b5d14ac-0056-4469-8db4-11d4da8c4c9d' class='audio-sentence' recordingmd5='undefined'>more data</span></p>
+        </div>
+      </div>
+      <div class='bloom-translationGroup bloom-trailingElement'>
+        <div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable normal-style bloom-content1 bloom-contentNational2 bloom-visibility-code-on' contenteditable='true' lang='en'>
+          <p><span id='i4d78a211-e1cc-483c-8b54-4256967e683f' class='audio-sentence' recordingmd5='undefined'>This is a test.</span>
+             <span id='i785e181c-1b45-4404-82a6-fd9104dcd768' class='audio-sentence' recordingmd5='undefined'>This is still a test.</span>
+             <span id='i2adf83a8-c689-4aa6-8603-b2ef8f3d0efe' class='audio-sentence' recordingmd5='undefined'>Testing is hard work!</span>
+             <span id='ddcbbf14-445e-4bfa-ad0a-94a9223dff3d' class='audio-sentence' recordingmd5='undefined'>But it has to be done.</span></p>
+        </div>
+      </div>
+    </div>
+    <div class='bloom-page numberedPage customPage A4Portrait side-right bloom-monolingual' data-page='' id='c430b078-b953-495e-a19c-db34d0a4789b' data-pagelineage='5dcd48df-e9ab-4a07-afd4-6a24d0398386;ff4335b6-07d9-4b7a-b2fe-f836c9da4c96' lang='' data-page-number='2'>
+      <div class='bloom-translationGroup bloom-trailingElement'>
+        <div data-languagetipcontent='English' data-hasqtip='true' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable Title-On-Title-Page-style bloom-content1 bloom-contentNational2 bloom-visibility-code-on' contenteditable='true' lang='en'>
+          <p><strong>This is text.</strong>
+             <span id='i8b5d14ac-0056-4469-8db4-11d4da8c4c9d' class='audio-sentence' recordingmd5='undefined'>So is this!</span></p>
+        </div>
+      </div>
+      <div class='bloom-translationGroup bloom-trailingElement'>
+        <div data-languagetipcontent='English' data-hasqtip='true' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable normal-style bloom-content1 bloom-contentNational2 bloom-visibility-code-on' contenteditable='true' lang='en'>
+          <p><span id='i4d78a211-e1cc-483c-8b54-4256967e683f' class='audio-sentence' recordingmd5='undefined'></span>This is another random sentence.</p>
+          <p><span id='ddcbbf14-445e-4bfa-ad0a-94a9223dff3d' class='audio-sentence' recordingmd5='undefined'></span></p>
+        </div>
+      </div>
+    </div>
+    <div class='bloom-page numberedPage customPage Device16x9Landscape side-right bloom-monolingual' id='a5fbba26-4852-48ac-a777-3af30c3bdc3f' data-pagelineage='a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb;1fb20cfe-a762-4df8-94ad-ac4bea5b1a96;d9b4e525-aab7-4c86-a62c-2e8eca084e61' lang='' data-page-number='3' data-page=''>
+      <div class='bloom-translationGroup bloom-trailingElement' data-default-languages='auto'>
+        <div data-audiorecordingmode='Sentence' data-hasqtip='true' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 20px;' class='bloom-editable Heading1-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on' data-languagetipcontent='English' lang='en' contenteditable='true'>
+          <p><span id='i390ae479-61d7-4843-9998-2df7650ddeed' class='audio-sentence' recordingmd5='undefined'></span></p>
+          <p><span id='i390ae479-61d7-4843-9998-2df7650ddeed' class='audio-sentence' recordingmd5='undefined'><strong>Secretary's Message</strong></span></p>
+          <p><span id='c0d82e47-a45c-4546-9406-45ad0ce70eab' class='audio-sentence' recordingmd5='undefined'>collection of writing</span></p>
+        </div>
+      </div>
+    </div>
+    <div class='bloom-page numberedPage customPage bloom-combinedPage Device16x9Portrait side-left bloom-monolingual' data-page='' id='de7abe8a-3b05-43ae-a2f1-cd123306e4e4' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398383;...' data-page-number='8' lang=''>
+      <div data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement'>
+        <div data-duration='1.549' data-languagetipcontent='English' id='i90ccd522-5d20-4ff7-b9b3-b32a83f2abeb' data-audiorecordingmode='TextBox' data-hasqtip='true' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 130px;' class='bloom-editable BigWords-style audio-sentence bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='en'>
+          <p>Ii</p>
+        </div>
+      </div>
+    </div>
+    <div class='bloom-page numberedPage customPage bloom-combinedPage Device16x9Portrait side-right bloom-monolingual' data-page='' id='23688af4-8649-4ae3-8c05-6cdc5a3c83d8' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398383;...' data-page-number='9' lang=''>
+      <div data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement'>
+        <div data-languagetipcontent='English' data-duration='1.872' id='i90ccd522-5d20-4ff7-b9b3-b32a83f2abeb' data-audiorecordingmode='TextBox' data-hasqtip='true' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 130px;' class='bloom-editable BigWords-style audio-sentence bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='en'>
+          <p>Jj</p>
+        </div>
+      </div>
+    </div>
+    <div class='bloom-page numberedPage customPage bloom-combinedPage Device16x9Portrait side-left bloom-monolingual' data-page='' id='b6275eca-7d34-4089-bc0b-bae2a1936ce3' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398383;...' data-page-number='10' lang=''>
+      <div data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement'>
+        <div data-languagetipcontent='English' data-duration='1.872' id='i90ccd522-5d20-4ff7-b9b3-b32a83f2abeb' data-audiorecordingmode='TextBox' data-hasqtip='true' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 130px;' class='bloom-editable BigWords-style audio-sentence bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='en'>
+          <p>Kk</p>
+        </div>
+      </div>
+    </div>
+    <div class='bloom-page numberedPage customPage bloom-combinedPage Device16x9Portrait side-right bloom-monolingual' data-page='' id='9185a9e9-aa3b-4510-8aa4-145e40fdcf04' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398383;...' data-page-number='11' lang=''>
+      <div data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement'>
+        <div data-languagetipcontent='English' data-duration='2.136' id='i90ccd522-5d20-4ff7-b9b3-b32a83f2abeb' data-audiorecordingmode='TextBox' data-hasqtip='true' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 130px;' class='bloom-editable BigWords-style audio-sentence bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='en'>
+          <p>Ll</p>
+        </div>
+      </div>
+    </div>
+    <div class='bloom-page numberedPage customPage bloom-combinedPage Device16x9Portrait side-left bloom-monolingual' data-page='' id='bf6260b7-5e06-4172-ad01-5b7f9beac48a' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398383;...' data-page-number='12' lang=''>
+      <div data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement'>
+        <div data-duration='2.605' data-languagetipcontent='English' id='i90ccd522-5d20-4ff7-b9b3-b32a83f2abeb' data-audiorecordingmode='TextBox' data-hasqtip='true' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 130px;' class='bloom-editable BigWords-style audio-sentence bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='en'>
+          <p>Mm</p>
+        </div>
+      </div>
+    </div>
+    <div class='bloom-page numberedPage customPage bloom-combinedPage Device16x9Portrait side-right bloom-monolingual' data-page='' id='4bb50bde-63f9-4770-be83-1bdc9d01396e' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398383;...' data-page-number='13' lang=''>
+      <div data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement'>
+        <div data-duration='1.885' data-languagetipcontent='English' id='i90ccd522-5d20-4ff7-b9b3-b32a83f2abeb' data-audiorecordingmode='TextBox' data-hasqtip='true' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 130px;' class='bloom-editable BigWords-style audio-sentence bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='en'>
+          <p>Nn</p>
+        </div>
+      </div>
+    </div>
+    <div class='bloom-page numberedPage customPage bloom-combinedPage Device16x9Portrait side-left bloom-monolingual' data-page='' id='a625a19c-17d4-4fc5-b7ba-bd760c0a34c1' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398383;...' data-page-number='14' lang=''>
+      <div data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement'>
+        <div data-duration='2.317' data-languagetipcontent='English' id='i90ccd522-5d20-4ff7-b9b3-b32a83f2abeb' data-audiorecordingmode='TextBox' data-hasqtip='true' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 130px;' class='bloom-editable BigWords-style audio-sentence bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='en'>
+          <p>Oo</p>
+        </div>
+      </div>
+    </div>
+    <div class='bloom-page numberedPage customPage bloom-combinedPage Device16x9Portrait side-right bloom-monolingual' data-page='' id='22376a27-1e84-40d1-9f49-086a0957919a' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398383;...' data-page-number='15' lang=''>
+      <div data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement'>
+        <div data-duration='1.909' data-languagetipcontent='English' id='i90ccd522-5d20-4ff7-b9b3-b32a83f2abeb' data-audiorecordingmode='TextBox' data-hasqtip='true' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 130px;' class='bloom-editable BigWords-style audio-sentence bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='en'>
+          <p>Pp</p>
+        </div>
+      </div>
+    </div>
+    <div class='bloom-page numberedPage customPage bloom-combinedPage Device16x9Portrait side-left bloom-monolingual' data-page='' id='bb2bb8bc-f92b-452b-9ed3-fe7a3a5632c3' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398383;...' data-page-number='16' lang=''>
+      <div data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement'>
+        <div data-duration='1.573' data-languagetipcontent='English' id='i90ccd522-5d20-4ff7-b9b3-b32a83f2abeb' data-audiorecordingmode='TextBox' data-hasqtip='true' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 130px;' class='bloom-editable BigWords-style audio-sentence bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='en'>
+          <p>Qq</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>");
+			var book = CreateBook();
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[@lang='en']/p/span[contains(@class,'audio-sentence') and @id!='']", 15);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i2a5c5a6c-8e4c-4557-8f8f-3e4689d10e21']", 2); // ERROR!
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i8b5d14ac-0056-4469-8db4-11d4da8c4c9d']", 2); // ERROR!
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i4d78a211-e1cc-483c-8b54-4256967e683f']", 2); // ERROR!
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='ddcbbf14-445e-4bfa-ad0a-94a9223dff3d']", 2); // ERROR!
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i390ae479-61d7-4843-9998-2df7650ddeed']", 2); // ERROR!
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class,'audio-sentence') and @id!='']", 9);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class,'audio-sentence') and @id='i90ccd522-5d20-4ff7-b9b3-b32a83f2abeb']", 9); // ERROR!
+
+			book.BringBookUpToDate(new NullProgress()); // SUT
+
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[@lang='en']/p/span[contains(@class,'audio-sentence') and @id!='']", 15); // unchanged
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i2a5c5a6c-8e4c-4557-8f8f-3e4689d10e21']", 1); // fixed!
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i8b5d14ac-0056-4469-8db4-11d4da8c4c9d']", 1); // fixed!
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i4d78a211-e1cc-483c-8b54-4256967e683f']", 1); // fixed!
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='ddcbbf14-445e-4bfa-ad0a-94a9223dff3d']", 1); // fixed!
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i390ae479-61d7-4843-9998-2df7650ddeed']", 1); // fixed!
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class,'audio-sentence') and @id!='']", 9);	// unchanged
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class,'audio-sentence') and @id='i90ccd522-5d20-4ff7-b9b3-b32a83f2abeb']", 1); // fixed!
+
+			// Check that all the audio ids outside the data-div are unique.
+			var audioNodes = book.RawDom.SafeSelectNodes(
+				"(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]").Cast<XmlNode>().ToList();
+			HashSet<string> uniqueIds = new HashSet<string>();
+			foreach (var node in audioNodes)
+			{
+				var id = node.GetStringAttribute("id");
+				uniqueIds.Add(id);
+			}
+			Assert.That(audioNodes.Count, Is.EqualTo(uniqueIds.Count));
+		}
+
+		[Test]
+		public void BringBookUpToDate_FixesDuplicateAudioIds_DataDivProblems()
+		{
+			_bookDom = new HtmlDom(@"<html>
+  <head>
+    <meta charset='UTF-8'></meta>
+  </head>
+  <body>
+    <div id='bloomDataDiv'>
+      <div data-book='bookTitle' lang='en'>
+        <p><span id='i9af373c9-2959-43ee-b42b-93b958432bdb' class='audio-sentence'>A Book</span></p>
+      </div>
+      <div data-book='originalContributions' lang='en'>
+        <p><span id='ef8243d2-f98e-4a96-993d-8152069516e6' class='audio-sentence'>Images by Stephen McConnel, © 2011 Steve McConnel.</span>
+        <span id='da7f2387-28f5-4a43-a447-235850d6eaf6' class='audio-sentence'>CC BY-SA 1.0.</span></p>
+      </div>
+      <div data-book='smallCoverCredits' lang='en'>
+        <p><span id='i12cd55e7-8292-4c12-92ed-7616da631d0b' class='audio-sentence'>Stephen McConnel</span></p>
+        <p><span id='i12cd55e7-8292-4c12-92ed-7616da631d0b' class='audio-sentence'>Somebody Else</span></p>
+      </div>
+      <div data-book='funding' lang='en' data-audiorecordingmode='Sentence'>
+        <p><span id='i256a477b-1dcb-4492-92fe-b0d82065a03c' class='audio-sentence'>thanks, everyone</span></p>
+        <p><span id='i082e977b-adca-4310-8841-1a78b0f44cbd' class='audio-sentence'>nobody paid for this!</span></p>
+      </div>
+      <div data-book='versionAcknowledgments' lang='en' data-audiorecordingmode='Sentence'>
+        <p><span id='i082e977b-adca-4310-8841-1a78b0f44cbd' class='audio-sentence'>nobody paid for this!</span></p>
+      </div>
+      <div data-book='originalAcknowledgments' lang='en' data-audiorecordingmode='Sentence'>
+        <p><span id='i256a477b-1dcb-4492-92fe-b0d82065a03c' class='audio-sentence'>thanks, everyone</span></p>
+      </div>
+    </div>
+    <div class=""bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover A5Portrait side-right"" data-page=""required singleton"" data-export=""front-matter-cover"" data-xmatter-page=""frontCover"" id=""0176b5a1-a52a-4efc-b512-ff8c06e6ca79"" data-page-number="""">
+      <div class='marginBox'>
+        <div class='bloom-translationGroup bookTitle' data-default-languages='V,N1'>
+          <div class='bloom-editable Title-On-Cover-style' lang='en' data-book='bookTitle' data-audiorecordingmode='Sentence'>
+            <p><span id='i9af373c9-2959-43ee-b42b-93b958432bdb' class='audio-sentence' recordingmd5='876a79b75646878799746fa21c5c7cb0'>A Book</span></p>
+          </div>
+        </div>
+        <div class='creditsRow' data-hint='You may use this space for author/illustrator, or anything else.'>
+          <div class='bloom-translationGroup' data-default-languages='V'>
+            <div data-audiorecordingmode='Sentence' class='bloom-editable smallCoverCredits' lang='en' data-book='smallCoverCredits'>
+              <p><span id='i12cd55e7-8292-4c12-92ed-7616da631d0b' class='audio-sentence'>Stephen McConnel</span></p>
+              <p><span id='i12cd55e7-8292-4c12-92ed-7616da631d0b' class='audio-sentence'>Somebody Else</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class=""bloom-page titlePage bloom-frontMatter A5Portrait side-right"" data-page=""required singleton"" data-export=""front-matter-title-page"" data-xmatter-page=""titlePage"" id=""6ab095fa-7da3-48f3-9ae4-7a7196b94ba3"" data-page-number="""" lang="""">
+      <div class='marginBox'>
+        <div class='bloom-translationGroup' data-default-languages='V,N1' id='titlePageTitleBlock'>
+          <div data-audiorecordingmode='Sentence' class='bloom-editable Title-On-Title-Page-style' data-book='bookTitle' lang='en'>
+            <p><span id='i9af373c9-2959-43ee-b42b-93b958432bdb' class='audio-sentence' recordingmd5='876a79b75646878799746fa21c5c7cb0'>A Book</span></p>
+          </div>
+        </div>
+        <div class='bloom-translationGroup' data-default-languages='N1' id='originalContributions'>
+          <div data-audiorecordingmode='Sentence' class='bloom-editable credits' data-book='originalContributions' lang='en' contenteditable='true'>
+            <p><span id='ef8243d2-f98e-4a96-993d-8152069516e6' class='audio-sentence' >Images by Stephen McConnel, © 2011 Steve McConnel.</span>
+            <span id='da7f2387-28f5-4a43-a447-235850d6eaf6' class='audio-sentence' recordingmd5='10fa17363ea15ca65374451914c74717'>CC BY-SA 1.0.</span></p>
+          </div>
+	</div>
+        <div class='bloom-translationGroup' data-default-languages='N1' id='funding'>
+          <div data-audiorecordingmode='Sentence' class='bloom-editable funding' data-book='funding' lang='en'>
+            <p><span id='i256a477b-1dcb-4492-92fe-b0d82065a03c' class='audio-sentence' recordingmd5='undefined'>thanks, everyone</span></p>
+            <p><span id='i082e977b-adca-4310-8841-1a78b0f44cbd' class='audio-sentence' recordingmd5='undefined'>nobody paid for this!</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class=""bloom-page bloom-frontMatter credits A5Portrait side-left"" data-page=""required singleton"" data-export=""front-matter-credits"" data-xmatter-page=""credits"" id=""9bc79fb7-0c92-44a3-9d57-0d7ccbbaeb45"" data-page-number="""">
+      <div class='marginBox'>
+        <div class='bloom-translationGroup versionAcknowledgments' data-default-languages='N1'>
+          <div data-audiorecordingmode='Sentence' class='bloom-editable versionAcknowledgments' data-book='versionAcknowledgments' lang='en'>
+            <p><span id='i082e977b-adca-4310-8841-1a78b0f44cbd' class='audio-sentence'>nobody paid for this!</span></p>
+          </div>
+        </div>
+        <div class='bloom-translationGroup originalAcknowledgments' data-default-languages='N1'>
+          <div data-audiorecordingmode='Sentence' class='bloom-editable Credits-Page-style' data-book='originalAcknowledgments' lang='en'>
+            <p><span id='i256a477b-1dcb-4492-92fe-b0d82065a03c' class='audio-sentence'>thanks, everyone</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""1ca77759-6b00-4100-9edd-400b7e77d235"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""1"" lang=""en"">
+      <div class=""marginBox"">
+        <div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement"">
+          <div data-languagetipcontent=""English"" aria-label=""false"" role=""textbox"" spellcheck=""true"" tabindex=""0"" style=""min-height: 24px;"" class=""bloom-editable ImageDescriptionEdit-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" lang=""en"" contenteditable=""true"">
+            <p><span id=""i9af373c9-2959-43ee-b42b-93b958432bdb"" class=""audio-sentence"">This Is A Book</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+");
+			// Set up book to cause automatic duplication of some English data-div strings into other languages.
+			var book = CreateBook(new CollectionSettings(new NewCollectionSettings {
+				PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"),
+				Language1Iso639Code = "en",
+				Language2Iso639Code = "fr",
+				Language3Iso639Code = "es"
+			}));
+
+			// Create a couple of fake audio files to test whether they get copied/renamed.
+			BookStorageTests.MakeSampleAudioFiles(_tempFolder.Path, "i9af373c9-2959-43ee-b42b-93b958432bdb", ".mp3");
+			BookStorageTests.MakeSampleAudioFiles(_tempFolder.Path, "i256a477b-1dcb-4492-92fe-b0d82065a03c", ".mp3");
+			Assert.That(Directory.EnumerateFiles(Path.Combine(_tempFolder.Path, "audio")).Count, Is.EqualTo(2));    // 2 files created
+
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[@lang='en']/p/span[contains(@class,'audio-sentence') and @id!='']", 20);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(								// funding/en AND originalAcknowledgements/en
+				"//span[contains(@class,'audio-sentence') and @id='i256a477b-1dcb-4492-92fe-b0d82065a03c']", 4); // ERROR!
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(								// funding/en AND versionAcknowledgements/en
+				"//span[contains(@class,'audio-sentence') and @id='i082e977b-adca-4310-8841-1a78b0f44cbd']", 4); // ERROR!
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='ef8243d2-f98e-4a96-993d-8152069516e6']", 2); // originalContributions okay
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i12cd55e7-8292-4c12-92ed-7616da631d0b']", 4); // smallCoverCredits internal duplicate ERROR!
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(								// three in data-book="book-title", one not
+				"//span[contains(@class,'audio-sentence') and @id='i9af373c9-2959-43ee-b42b-93b958432bdb']", 4); // bookTitle ERROR!
+
+			book.BringBookUpToDate(new NullProgress()); // SUT
+
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[@lang='en']/p/span[contains(@class,'audio-sentence') and @id!='']", 20);     // unchanged
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i256a477b-1dcb-4492-92fe-b0d82065a03c']", 2); // funding/en fixed
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i082e977b-adca-4310-8841-1a78b0f44cbd']", 2); // funding/en fixed
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='ef8243d2-f98e-4a96-993d-8152069516e6']", 2); // originalContributions still okay
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i12cd55e7-8292-4c12-92ed-7616da631d0b']", 2); // smallCoverCredits okay
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//span[contains(@class,'audio-sentence') and @id='i9af373c9-2959-43ee-b42b-93b958432bdb']", 3); // bookTitle fixed
+
+			// Check that files have been copied/renamed.
+			Assert.That(Directory.EnumerateFiles(Path.Combine(_tempFolder.Path, "audio")).Count, Is.EqualTo(4));    // 2 more files created
+
+			// Check that all the audio ids outside the data-div are unique (except bookTitle is used twice).
+			var audioNodes = book.RawDom.SafeSelectNodes(
+				"(//div[contains(@class,'bloom-page')]//div|//div[contains(@class,'bloom-page')]//span)[contains(@class,'audio-sentence') and @id]").Cast<XmlNode>().ToList();
+			var uniqueIds = new HashSet<string>();
+			foreach (var node in audioNodes)
+			{
+				var id = node.GetStringAttribute("id");
+				uniqueIds.Add(id);
+			}
+			Assert.That(audioNodes.Count, Is.EqualTo(uniqueIds.Count + 1));	// bookTitle shared by two xMatter pages
+
+			// Check that all the audio ids inside the data-div are unique.
+			audioNodes = book.RawDom.SafeSelectNodes(
+				"(//div[@id='bloomDataDiv']//div|//div[@id='bloomDataDiv']//span)[contains(@class,'audio-sentence') and @id]").Cast<XmlNode>().ToList();
+			uniqueIds.Clear();
+			foreach (var node in audioNodes)
+			{
+				var id = node.GetStringAttribute("id");
+				uniqueIds.Add(id);
+			}
+			Assert.That(audioNodes.Count, Is.EqualTo(uniqueIds.Count));
+		}
+
+		[Test]
+		public void FixBookIdAndLineageIfNeeded_WithPageTemplateSourceBasicBook_SetsMissingLineageToBasicBook()
+		{
+			_bookDom = new HtmlDom(
+				@" <html>
 				<head>
 					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
 					<meta name='pageTemplateSource' content='Basic Book' />
