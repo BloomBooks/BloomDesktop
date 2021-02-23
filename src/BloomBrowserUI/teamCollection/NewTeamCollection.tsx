@@ -28,7 +28,7 @@ export const NewTeamCollection: React.FunctionComponent = props => {
                     l10nParam0={collectionName}
                     temporarilyDisableI18nWarning={true}
                 >
-                    Join the Team Collection "{0}"
+                    Join the Team Collection "{collectionName}"
                 </Div>
                 {existingCollection ? (
                     <div className="grow">
