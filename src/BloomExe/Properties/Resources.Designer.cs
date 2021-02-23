@@ -222,14 +222,21 @@ namespace Bloom.Properties {
         
         /// <summary>
         ///   Looks up a localized string similar to {
-        ///	urls:[
-        ///		{id:&quot;parse&quot;, url: &quot;https://bloom-parse-server-production.azurewebsites.net/parse/&quot;},
-        ///		{id:&quot;parseSandbox&quot;, url: &quot;https://bloom-parse-server-develop.azurewebsites.net/parse/&quot;},
-        ///		{id:&quot;librarySite&quot;, url: &quot;http://bloomlibrary.org&quot;},
-        ///		{id:&quot;librarySiteSandbox&quot;, url: &quot;http://dev.bloomlibrary.org&quot;},
-        ///        {id:&quot;userSuggestions&quot;, url: &quot;https://community.software.sil.org/c/bloom/featurerequests&quot;},
-        ///        {id:&quot;support&quot;,&quot;url&quot;: &quot;https://community.software.sil.org/c/bloom&quot;},
-        ///		{id:&quot;issueTrackingSy [rest of string was truncated]&quot;;.
+        ///    &quot;urls&quot;: [
+        ///        {
+        ///            &quot;id&quot;: &quot;parse&quot;,
+        ///            &quot;url&quot;:
+        ///                &quot;https://bloom-parse-server-production.azurewebsites.net/parse/&quot;
+        ///        },
+        ///        {
+        ///            &quot;id&quot;: &quot;parseSandbox&quot;,
+        ///            &quot;url&quot;: &quot;https://bloom-parse-server-develop.azurewebsites.net/parse/&quot;
+        ///        },
+        ///        { &quot;id&quot;: &quot;librarySite&quot;, &quot;url&quot;: &quot;http://bloomlibrary.org&quot; },
+        ///        { &quot;id&quot;: &quot;librarySiteSandbox&quot;, &quot;url&quot;: &quot;http://dev.bloomlibrary.org&quot; },
+        ///        {
+        ///            &quot;id&quot;: &quot;userSuggestions&quot;,
+        ///      [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string CurrentServiceUrls {
             get {
@@ -793,6 +800,16 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap spinner {
             get {
                 object obj = ResourceManager.GetObject("spinner", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap TCStatusOK32x32 {
+            get {
+                object obj = ResourceManager.GetObject("TCStatusOK32x32", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

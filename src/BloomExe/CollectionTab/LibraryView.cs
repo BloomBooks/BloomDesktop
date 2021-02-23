@@ -6,6 +6,7 @@ using Bloom.Workspace;
 using L10NSharp;
 using SIL.Reporting;
 using System.Drawing;
+using Bloom.TeamCollection;
 using SIL.Windows.Forms.SettingProtection;
 
 namespace Bloom.CollectionTab
@@ -21,12 +22,14 @@ namespace Bloom.CollectionTab
 		public LibraryView(LibraryModel model, LibraryListView.Factory libraryListViewFactory,
 			LibraryBookView.Factory templateBookViewFactory,
 			SelectedTabChangedEvent selectedTabChangedEvent,
-			SendReceiveCommand sendReceiveCommand)
+			SendReceiveCommand sendReceiveCommand,
+			TeamCollectionManager tcManager)
 		{
 			_model = model;
 			InitializeComponent();
 			splitContainer1.BackColor = Palette.BookListSplitterColor; // controls the left vs. right splitter
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
+			_toolStripLeft.Renderer = new NoBorderToolStripRenderer();
 
 			_collectionListView = libraryListViewFactory();
 			_collectionListView.Dock = DockStyle.Fill;
@@ -35,6 +38,11 @@ namespace Bloom.CollectionTab
 			_bookView = templateBookViewFactory();
 			_bookView.Dock = DockStyle.Fill;
 			splitContainer1.Panel2.Controls.Add(_bookView);
+
+			// When going down to Shrink Stage 3 (see WorkspaceView), we want the right-side toolstrip to take precedence
+			// (Settings, Other Collection).
+			// This essentially makes the TC Status button's zIndex less than the buttons on the right side.
+			_toolStripLeft.SendToBack();
 
 			splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
 			_makeBloomPackButton.Visible = model.IsShellProject;
@@ -62,6 +70,7 @@ namespace Bloom.CollectionTab
 														Logger.WriteEvent("Entered Collections Tab");
 													}
 												});
+			SetTeamCollectionStatusImage(tcManager);
 		}
 
 		internal void ManageSettings(SettingsProtectionHelper settingsLauncherHelper)
@@ -144,7 +153,8 @@ namespace Bloom.CollectionTab
 		/// (b) the Make Bloompack button only shows in source collections.
 		/// </summary>
 		public int WidthToReserveForTopBarControl => _openCreateCollectionButton.Width + _settingsButton.Width +
-			(_makeBloomPackButton.Visible ? _makeBloomPackButton.Width : 0);
+			(_makeBloomPackButton.Visible ? _makeBloomPackButton.Width : 0) +
+		    (_tcStatusButton.Visible ? _tcStatusButton.Width : 0);
 
 		public void PlaceTopBarControl()
 		{
@@ -169,6 +179,27 @@ namespace Bloom.CollectionTab
 		private void _openCreateCollectionButton_Click(object sender, EventArgs e)
 		{
 			GetWorkspaceView().OpenCreateLibrary();
+		}
+
+		/// <summary>
+		/// Set a new TC status image.
+		/// </summary>
+		public void SetTeamCollectionStatusImage(TeamCollectionManager tcManager)
+		{
+			var tcCollection = tcManager.CurrentCollection;
+			if (tcCollection == null)
+			{
+				_tcStatusButton.Visible = false;
+				return;
+			}
+			// TODO: Eventually we want to update the TC status with other possibilities. For now, just assume all is well.
+			_tcStatusButton.Image = Resources.TCStatusOK32x32;
+			_tcStatusButton.Visible = true;
+		}
+
+		private void _tcStatusButton_Click(object sender, EventArgs e)
+		{
+			// probably will do GetWorkspaceView().OpenTCStatus();
 		}
 	}
 }

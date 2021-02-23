@@ -121,6 +121,9 @@
   <data name="settingsbw16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\settingsbw16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="sad_large" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\sad_large.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="paste32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\paste32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -151,8 +154,8 @@
   <data name="menuButton" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\menuButton.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="sad_large" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\sad_large.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="epubPublishButton" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ePUBPublishButton.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="CurrentServiceUrls" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\current-service-urls.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
@@ -181,8 +184,8 @@
   <data name="Copy16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Copy16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="newLibrary32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\newLibrary32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="multilingualSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\multilingualSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="DeletePageDisabled32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DeletePageDisabled32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -208,8 +211,8 @@
   <data name="Error70x701" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Error70x701.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="RecycleBin" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\RecycleBin.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="pdf16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\pdf16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="cloneFromUsb" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\cloneFromUsb.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -274,9 +277,6 @@
   <data name="Cut16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Cut16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="pdf16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\pdf16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="help16x16Darker" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\help16x16Darker.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -307,17 +307,14 @@
   <data name="print" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\print.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="epubPublishButton" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\ePUBPublishButton.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="newLibrary32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\newLibrary32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Undo16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Undo16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Error70x70" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Error70x70.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="multilingualSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\multilingualSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="cloud" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\cloud.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -340,11 +337,17 @@
   <data name="copyDisable16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\copyDisable16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="RecycleBin" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RecycleBin.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="duplicatePageDisabled32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\duplicatePageDisabled32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="videos" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\videos.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="LogoForSplashScreen" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\LogoForSplashScreen.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="OpenCreateLibrary24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\OpenCreateLibrary24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -358,7 +361,7 @@
   <data name="edit" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\edit.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="LogoForSplashScreen" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\LogoForSplashScreen.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="TCStatusOK32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\TCStatusOK32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

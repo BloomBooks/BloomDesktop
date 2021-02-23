@@ -1451,6 +1451,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Content Include="Firefox\sandboxbroker.dll" />
     <Content Include="Firefox\softokn3.dll" />
     <Content Include="Firefox\xul.dll" />
+    <None Include="Resources\TCStatusOK32x32.png" />
     <None Include="Resources\lock.bmp" />
     <None Include="Resources\LogoForSplashScreen.png" />
     <None Include="Resources\help16x16Darker.png" />
