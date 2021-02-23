@@ -7,12 +7,16 @@ using SIL.IO;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.ToPalaso;
+using SIL.Reporting;
 
 namespace Bloom.TeamCollection
 {
@@ -161,6 +165,57 @@ namespace Bloom.TeamCollection
 		protected virtual internal void StartMonitoring()
 		{
 			_monitoring = true;
+
+			// Set up monitoring for the local folder. Here we are looking for changes
+			// to collection-level files that need to be saved to the repo.
+			// Watching for changes to the repoFolder (or other similar store) are handled
+			// by an override in the concrete subclass.
+			_localFolderWatcher = new FileSystemWatcher();
+
+			_localFolderWatcher.Path = _localCollectionFolder;
+			// for AllowedWords, etc, though unfortunately it means we also get notifications
+			// for changes within book folders.
+			_localFolderWatcher.IncludeSubdirectories = true;
+
+			// Watch for changes in LastWrite times. This seems to include creating files.
+			// Conceivably we should do something to make sure we also see deletions.
+			_localFolderWatcher.NotifyFilter = NotifyFilters.LastWrite;
+
+			_localFolderWatcher.Changed += OnChanged;
+			_localFolderWatcher.Created += OnChanged;
+
+			// Begin watching.
+			_localFolderWatcher.EnableRaisingEvents = true;
+		}
+
+		private void OnChanged(object sender, FileSystemEventArgs e)
+		{
+			// If it's in a book folder (any subfolder except the two we save as settings) ignore it.
+			if (e.Name.Contains(Path.DirectorySeparatorChar))
+			{
+				if (!e.Name.StartsWith("Allowed Words") && !e.Name.StartsWith("Sample Texts"))
+					return;
+			}
+
+			if (e.Name == kLastcollectionfilesynctimeTxt)
+				return; // side effect of doing a sync!
+			if (Directory.Exists(e.FullPath))
+				return; // we seem to get frequent notifications that seem to be spurious for book folders.
+			// We'll wait for the system to be idle before writing to the repo. This helps to ensure things
+			// are in a consistent state, as we may get multiple write notifications during the process of
+			// writing a file. It may also help to ensure that repo writing doesn't interfere somehow with
+			// whatever is changing things.
+			SafeInvoke.InvokeIfPossible("Add SyncCollectionFilesToRepoOnIdle", Form.ActiveForm, false, (Action)(() =>
+					// Needs to be invoked on the main thread in order for the event handler to be invoked.
+					Application.Idle += SyncCollectionFilesToRepoOnIdle
+				));
+		}
+
+		private void SyncCollectionFilesToRepoOnIdle(object sender, EventArgs e)
+		{
+			Application.Idle -= SyncCollectionFilesToRepoOnIdle;
+			// We want to do this after all changes are finished.
+			SyncLocalAndRepoCollectionFiles(false);
 		}
 
 		/// <summary>
@@ -169,6 +224,8 @@ namespace Bloom.TeamCollection
 		protected virtual internal void StopMonitoring()
 		{
 			_monitoring = false;
+			_localFolderWatcher.EnableRaisingEvents = false;
+			_localFolderWatcher.Dispose();
 		}
 
 		/// <summary>
@@ -320,14 +377,207 @@ namespace Bloom.TeamCollection
 			return GetStatus(bookName).checksum;
 		}
 
+		private bool _haveShownRemoteSettingsChangeWarning;
+
+		/// <summary>
+		/// Bring the collection-level files in the repo and the local collection into sync.
+		/// If the repo has been changed since the last sync, update the local files.
+		/// Otherwise, if local files have been changed since the last sync, update the repo.
+		/// (Updating the repo will eventually be conditional on a permission file.)
+		/// This is done both when Bloom is starting up, before we create the local collection
+		/// file, and when we detect a possibly-significant change to a local file while Bloom
+		/// is running. Only at startup are we allowed to copy changes TO the local system,
+		/// since changes to the collection-level files normally require a restart.
+		/// </summary>
+		/// <param name="atStartup"></param>
+		public void SyncLocalAndRepoCollectionFiles(bool atStartup = true)
+		{
+			var repoModTime = LastRepoCollectionFileModifyTime;
+			var savedSyncTime = LocalCollectionFilesRecordedSyncTime();
+			if (repoModTime > savedSyncTime)
+			{
+				// We only modify local stuff at startup.
+				if (atStartup)
+				{
+					// Theoretically, it's possible that localModTime is also greater than savedLocalModTime.
+					// However, we monitor local changes and try to save them immediately, so it's highly unlikely,
+					// except when the warning below has already been seen.
+					CopyRepoCollectionFilesToLocal(_localCollectionFolder);
+				}
+				else if (!_haveShownRemoteSettingsChangeWarning)
+				{
+					_haveShownRemoteSettingsChangeWarning = true;
+					// if it's not a startup sync, it's happening because of a local change. It will get lost.
+					// Not sure this is worth localizing. Eventually only one or two users per collection will be
+					// allowed to make such changes. Collection settings should rarely be changed at all
+					// in team collections. This message will hopefully be seen rarely if at all.
+					ErrorReport.NotifyUserOfProblem(
+						"Collection settings have been changed remotely. Your recent changes will be lost when Bloom syncs the next time it starts up");
+				}
+			}
+			else if (LocalCollectionFilesUpdated())
+			{
+				CopyRepoCollectionFilesFromLocal(_localCollectionFolder);
+			}
+			// Otherwise, nothing has changed since we last synced. Do nothing.
+		}
+
+		/// <summary>
+		/// The files that we consider to be collection-wide settings files.
+		/// These are
+		/// - ones we care about changes to for deciding whether to Sync collection files to the repo
+		/// - ones we will delete when syncing from the repo to local, if no longer in the repo
+		/// </summary>
+		/// <returns></returns>
+		private List<string> FilesToMonitorForCollection()
+		{
+			var collectionName = Path.GetFileName(_localCollectionFolder);
+			var files = RootLevelCollectionFilesIn(_localCollectionFolder, collectionName);
+			AddFiles(files, "Allowed Words");
+			AddFiles(files, "Sample Texts");
+			return files.Select(f => Path.Combine(_localCollectionFolder, f)).ToList();
+		}
+
+		private void AddFiles(List<string> accumulator, string folderName)
+		{
+			var folderPath = Path.Combine(_localCollectionFolder, folderName);
+			if (!Directory.Exists(folderPath))
+				return;
+			accumulator.AddRange(Directory.EnumerateFiles(folderPath));
+		}
+
+		/// <summary>
+		/// Name of a file we maintain to reduce spurious writes to repo collection files.
+		/// </summary>
+		const string kLastcollectionfilesynctimeTxt = "lastCollectionFileSyncData.txt";
+
+		private string GetCollectionFileSyncLocation()
+		{
+			
+			return Path.Combine(_localCollectionFolder, kLastcollectionfilesynctimeTxt);
+		}
+
+		private string MakeChecksumOnFiles(IEnumerable<string> files)
+		{
+			var sha = SHA256Managed.Create();
+
+			// Order must be predictable but does not otherwise matter.
+			foreach (var path in files.OrderBy(x => x))
+			{
+				using (var input = new FileStream(path, FileMode.Open))
+				{
+					byte[] buffer = new byte[4096];
+					int count;
+					while ((count = input.Read(buffer, 0, 4096)) > 0)
+					{
+						sha.TransformBlock(buffer, 0, count, buffer, 0);
+					}
+				}
+			}
+
+			sha.TransformFinalBlock(new byte[0], 0, 0);
+			return Convert.ToBase64String(sha.Hash);
+		}
+
+		private void RecordCollectionFilesSyncData()
+		{
+			var files = FilesToMonitorForCollection();
+			var checksum = MakeChecksumOnFiles(files);
+			RecordCollectionFilesSyncDataInternal(checksum);
+		}
+
+		/// <summary>
+		/// Record two pieces of data useful for determining whether collection-level files
+		/// have changed, given that they are currently in sync. We record the current time,
+		/// which allows an efficient check that nothing has changed, if none of the interesting
+		/// files has a later modify time. However, Bloom rather too frequently writes files
+		/// without really changing anything. To guard against this, we also record a sha of
+		/// the files, and only consider that something has really changed if the sha does
+		/// not match.
+		/// </summary>
+		/// <param name="checksum"></param>
+		private void RecordCollectionFilesSyncDataInternal(string checksum)
+		{
+			var path = GetCollectionFileSyncLocation();
+			var nowString = DateTime.UtcNow.ToString("o"); // good for round-tripping
+			File.WriteAllText(path, nowString + @";" + checksum);
+		}
+
+		/// <summary>
+		/// Return true if local collection-level files have changed and need to be copied
+		/// to the repo. Usually we can determine this by a quick check of modify times.
+		/// If that indicates a change, we verify it by comparing sha values.
+		/// (If we need to check sha values and determine that there is NOT a real change,
+		/// we update the time record to make the next check faster.)
+		/// </summary>
+		/// <returns></returns>
+		internal bool LocalCollectionFilesUpdated()
+		{
+			var files = FilesToMonitorForCollection();
+			var localModTime = files.Select(f => new FileInfo(f).LastWriteTime).Max();
+			var savedModTime = LocalCollectionFilesRecordedSyncTime();
+			if (localModTime <= savedModTime)
+				return false;
+			var currentChecksum = MakeChecksumOnFiles(files);
+			var localFilesReallyUpdated = currentChecksum != LocalCollectionFilesSavedChecksum();
+			if (!localFilesReallyUpdated && savedModTime >= LastRepoCollectionFileModifyTime)
+			{
+				// no need to sync either way; we can update the file to save computing
+				// the checksum next time.
+				// Review: Technically there may be a race condition here where the repo
+				// collection gets modified between when we read LastRepoCollectionFileModifyTime
+				// and the new sync time we are here writing. I think the chance is small
+				// enough to live with. A wise team should be coordinating changes at the
+				// collection level anyway.
+				RecordCollectionFilesSyncDataInternal(currentChecksum);
+			}
+			return localFilesReallyUpdated;
+		}
+
+		internal DateTime LocalCollectionFilesRecordedSyncTime()
+		{
+			var path = GetCollectionFileSyncLocation();
+			if (!File.Exists(path))
+				return DateTime.MinValue; // assume local files are really old!
+			DateTime result;
+			if (DateTime.TryParse(File.ReadAllText(path).Split(';')[0], out result))
+				return result;
+			return DateTime.MinValue;
+		}
+
+		internal string LocalCollectionFilesSavedChecksum()
+		{
+			var path = GetCollectionFileSyncLocation();
+			if (!File.Exists(path))
+				return "";
+			var parts = File.ReadAllText(path).Split(';');
+			if (parts.Length > 1)
+				return parts[1];
+			return "";
+		}
+
 		/// <summary>
 		/// Get anything we need from the repo to the local folder (except actual books).
 		/// Enhance: at least, also whatever we need for decodable and leveled readers.
 		/// Most likely we should have a way to ask the repo for all non-book content and
 		/// retrieve it all.
 		/// </summary>
-		/// <param name="localCollectionFolder"></param>
-		public abstract void CopyRepoCollectionFilesToLocal(string destFolder);
+		public void CopyRepoCollectionFilesToLocal(string destFolder)
+		{
+			var wasMonitoring = _localFolderWatcher != null && _localFolderWatcher.EnableRaisingEvents;
+			if (_localFolderWatcher != null)
+				_localFolderWatcher.EnableRaisingEvents = false;
+			try
+			{
+				CopyRepoCollectionFilesToLocalImpl(destFolder);
+				RecordCollectionFilesSyncData();
+			} finally
+			{
+				if (_localFolderWatcher != null)
+					_localFolderWatcher.EnableRaisingEvents = wasMonitoring;
+			}
+		}
+		protected abstract void CopyRepoCollectionFilesToLocalImpl(string destFolder);
 
 		/// <summary>
 		/// Gets the path to the bloomCollection file, given the folder.
@@ -342,6 +592,25 @@ namespace Bloom.TeamCollection
 			return collectionPath;
 		}
 
+		public static List<string> RootLevelCollectionFilesIn(string folder, string collectionNameOrNull = null)
+		{
+			var collectionName = collectionNameOrNull ?? Path.GetFileName(folder);
+			var files = new List<string>();
+			files.Add(Path.ChangeExtension(collectionName, "bloomCollection"));
+			foreach (var file in new[] {"customCollectionStyles.css", "configuration.txt"})
+			{
+				if (File.Exists(Path.Combine(folder, file)))
+					files.Add(file);
+			}
+			foreach (var path in Directory.EnumerateFiles(folder, "ReaderTools*.json"))
+			{
+				files.Add(Path.GetFileName(path));
+			}
+			return files;
+		}
+
+		protected abstract DateTime LastRepoCollectionFileModifyTime { get; }
+
 		/// <summary>
 		/// Send anything other than books that should be shared from local to the repo.
 		/// Enhance: as for CopyRepoCollectionFilesToLocal, also, we want this to be
@@ -351,8 +620,16 @@ namespace Bloom.TeamCollection
 		public void CopyRepoCollectionFilesFromLocal(string localCollectionFolder)
 		{
 			var collectionName = Path.GetFileName(localCollectionFolder);
-			PutCollectionFiles(new [] { "customCollectionStyles.css", Path.ChangeExtension(collectionName, "bloomCollection") });
+			var files = RootLevelCollectionFilesIn(localCollectionFolder, collectionName);
+			// Review: there would be some benefit to atomicity in saving all of this to a single zip file.
+			// But it feels cleaner to have a distinct repo store for each folder we need.
+			PutCollectionFiles(files.ToArray());
+			CopyLocalFolderToRepo("Allowed Words");
+			CopyLocalFolderToRepo("Sample Texts");
+			RecordCollectionFilesSyncData();
 		}
+
+		protected abstract void CopyLocalFolderToRepo(string folderName);
 
 		protected void RaiseNewBook(string bookName)
 		{
@@ -491,6 +768,11 @@ namespace Bloom.TeamCollection
 			return status.IsCheckedOutHereBy(whoBy);
 		}
 
+		bool IsBloomBookFolder(string folderPath)
+		{
+			return !string.IsNullOrEmpty(BookStorage.FindBookHtmlInFolder(folderPath));
+		}
+
 		/// <summary>
 		/// Run this when Bloom starts up to get the repo and local directories as sync'd as possible.
 		/// Also run when first joining an existing collection to merge them. A few behaviors are
@@ -506,6 +788,8 @@ namespace Bloom.TeamCollection
 			{
 				try
 				{
+					if (!IsBloomBookFolder(path))
+						continue;
 					var bookFolderName = Path.GetFileName(path);
 					var status = GetBookStatusJsonFromRepo(bookFolderName);
 					if (status == null)
@@ -741,7 +1025,7 @@ namespace Bloom.TeamCollection
 		private const string kWebSocketContext = "teamCollectionMerge";
 
 		public BloomWebSocketServer SocketServer;
-
+		private FileSystemWatcher _localFolderWatcher;
 
 
 		/// <summary>

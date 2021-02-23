@@ -392,17 +392,79 @@ namespace BloomTests.TeamCollection
 			File.WriteAllText(collectionFilePath, "This is a fake collection");
 			var customStylesPath = Path.Combine(_collectionFolder.FolderPath, "customCollectionStyles.css");
 			File.WriteAllText(customStylesPath, "Fake collection styles");
+			var otherFileNames = new[]
+			{
+				"ReaderToolsWords-en.json", "ReaderToolsSettings-en.json", "ReaderToolsWords-tok.json",
+				"ReaderToolsSettings-tok.json", "configuration.txt"
+			};
+			foreach (var name in otherFileNames)
+			{
+				File.WriteAllText(Path.Combine(_collectionFolder.FolderPath, name), @"contents of " + name);
+			}
+
+			// Make an AllowedWords folder
+			var allowedWordsSource = Path.Combine(_collectionFolder.FolderPath, "Allowed Words");
+			Directory.CreateDirectory(allowedWordsSource);
+			var tokWords1 = Path.Combine(allowedWordsSource, "words1.txt");
+			File.WriteAllText(tokWords1, "these are the first word list for tok pisin");
+			var tokWords2 = Path.Combine(allowedWordsSource, "words2.txt");
+			File.WriteAllText(tokWords2, "these are the second word list for tok pisin");
+
+			// Make a Sample Texts folder
+			var sampleTextsSource = Path.Combine(_collectionFolder.FolderPath, "Sample Texts");
+			Directory.CreateDirectory(sampleTextsSource);
+			var samples1 = Path.Combine(sampleTextsSource, "texts1.txt");
+			File.WriteAllText(samples1, "this is the first sample text for tok pisin");
+			
+
+			// First SUT: copy from local to repo
 			_collection.CopyRepoCollectionFilesFromLocal(_collectionFolder.FolderPath);
+
 			using (var tempDest = new TemporaryFolder("CopySharedCollectionFilesToLocal_RetrievesFilePut"))
 			{
-				var destCollectionFilePath = Path.Combine(tempDest.FolderPath, Path.GetFileName(collectionFilePath));
+				var destCollectionFilePath =
+					Path.Combine(tempDest.FolderPath, Path.GetFileName(collectionFilePath));
 				File.WriteAllText(destCollectionFilePath, "This should get overwritten");
 
+				var removeMePath = Path.Combine(tempDest.FolderPath,
+					Path.GetFileName("ReaderToolsSettings-de.json"));
+				File.WriteAllText(removeMePath, "This should get deleted");
+
+				var allowedWordsDest = Path.Combine(tempDest.FolderPath, "Allowed Words");
+				var allowedWords1DestPath = Path.Combine(allowedWordsDest, "words1.txt");
+				Directory.CreateDirectory(allowedWordsDest);
+				File.WriteAllText(allowedWords1DestPath, @"Should be overwritten");
+
+				var allowedWords3DestPath = Path.Combine(allowedWordsDest, "words3.txt");
+				Directory.CreateDirectory(allowedWordsDest);
+				File.WriteAllText(allowedWords1DestPath, @"Should be deleted...not in repo");
+
+				// Second SUT: copy back
 				_collection.CopyRepoCollectionFilesToLocal(tempDest.FolderPath);
-				
+
 				Assert.That(File.ReadAllText(destCollectionFilePath), Is.EqualTo("This is a fake collection"));
 				var destStylesPath = Path.Combine(tempDest.FolderPath, "customCollectionStyles.css");
 				Assert.That(File.ReadAllText(destStylesPath), Is.EqualTo("Fake collection styles"));
+				foreach (var name in otherFileNames)
+				{
+					Assert.That(File.ReadAllText(Path.Combine(tempDest.FolderPath, name)),
+						Is.EqualTo(@"contents of " + name));
+				}
+
+				Assert.That(File.Exists(Path.Combine(tempDest.FolderPath, "ReaderToolsSettings-de.json")),
+					Is.False);
+
+				Assert.That(File.ReadAllText(allowedWords1DestPath),
+					Is.EqualTo("these are the first word list for tok pisin"),
+					"copied first tok allowed words file");
+				Assert.That(
+					File.ReadAllText(Path.Combine(allowedWordsDest, "words2.txt")),
+					Is.EqualTo("these are the second word list for tok pisin"),
+					"copied second tok allowed words file");
+				Assert.That(File.Exists(allowedWords3DestPath), Is.False, "failed to delete allowed words not in repo");
+				Assert.That(File.ReadAllText(Path.Combine(tempDest.FolderPath, "Sample Texts", "texts1.txt")),
+					Is.EqualTo("this is the first sample text for tok pisin"),
+					"copied the sample texts file");
 			}
 		}
 
