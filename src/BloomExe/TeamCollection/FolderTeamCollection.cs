@@ -101,9 +101,15 @@ namespace Bloom.TeamCollection
 			}
 		}
 
-		private string GetPathToBookFileInRepo(string bookFolderName)
+		internal string GetPathToBookFileInRepo(string bookFolderName)
 		{
 			return Path.ChangeExtension(Path.Combine(_repoFolderPath, "Books", bookFolderName), ".bloom");
+		}
+
+		public override void RemoveBook(string bookName)
+		{
+			var path = GetPathToBookFileInRepo(bookName);
+			RobustFile.Delete(path);
 		}
 
 		/// <summary>

@@ -202,7 +202,7 @@ namespace Bloom
 						// It's important to create the TC manager before we create CollectionSettings, as its constructor makes sure
 						// we have a current version of the file that CollectionSettings is built from.
 						builder.Register<TeamCollectionManager>(c => new TeamCollectionManager(projectSettingsPath,
-							c.Resolve<BloomWebSocketServer>())).InstancePerLifetimeScope();
+							c.Resolve<BloomWebSocketServer>(), c.Resolve<BookRenamedEvent>())).InstancePerLifetimeScope();
 						builder.Register<CollectionSettings>(c =>
 						{
 							c.Resolve<TeamCollectionManager>();
