@@ -5,6 +5,7 @@ using System.Text;
 using Bloom.TeamCollection;
 using BloomTemp;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 using SIL.IO;
 
 namespace BloomTests.TeamCollection
@@ -128,6 +129,14 @@ namespace BloomTests.TeamCollection
 			statusFilePath = _collection.GetStatusFilePath("copy status", _collectionFolder.FolderPath);
 			RobustFile.Delete(statusFilePath);
 
+			// Make a couple of folders that are legitimately present, but not books.
+			var allowedWords = Path.Combine(_collectionFolder.FolderPath, "Allowed Words");
+			Directory.CreateDirectory(allowedWords);
+			File.WriteAllText(Path.Combine(allowedWords, "some sample.txt"), "This a fake word list");
+			var sampleTexts = Path.Combine(_collectionFolder.FolderPath, "Sample Texts");
+			Directory.CreateDirectory(sampleTexts);
+			File.WriteAllText(Path.Combine(sampleTexts, "a sample.txt"), "This a fake sample text");
+
 			_progressSpy = new ProgressSpy();
 
 			// sut for the whole suite!
@@ -145,6 +154,13 @@ namespace BloomTests.TeamCollection
 			_collectionFolder.Dispose();
 			_repoFolder.Dispose();
 			SIL.Windows.Forms.Registration.Registration.Default.Email = _originalUser;
+		}
+
+		[Test]
+		public virtual void SyncAtStartup_FoldersWithoutHtml_NotTurnedIntoBooks()
+		{
+			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", "Allowed Words.bloom")), Is.False);
+			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", "Sample Texts.bloom")), Is.False);
 		}
 
 		/// <summary>
