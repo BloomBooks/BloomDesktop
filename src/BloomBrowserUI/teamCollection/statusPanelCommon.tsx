@@ -60,7 +60,9 @@ export const StatusPanelCommon: React.FunctionComponent<IStatusPanelProps> = (
                 </div>
                 <div className="status-panel-menu">{props.menu}</div>
             </div>
-            {props.children}
+            {props.children && (
+                <div className="panel-children">{props.children}</div>
+            )}
             <ThemeProvider theme={buttonTheme}>
                 <div className="panel-button">{props.button}</div>
             </ThemeProvider>

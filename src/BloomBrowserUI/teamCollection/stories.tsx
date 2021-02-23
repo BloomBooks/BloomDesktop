@@ -30,6 +30,9 @@ const pageStyles: React.CSSProperties = {
     display: "flex",
     width: "100%" // imitate the whole Bloom Edit window
 };
+const menuStyles: React.CSSProperties = {
+    border: "1px solid red"
+};
 
 const testPage = (statusPanel: JSX.Element) => (
     <div style={pageStyles}>
@@ -47,7 +50,14 @@ const checkinButton = getBloomButton(
     "Check In.svg"
 );
 
-const avatar = <BloomAvatar email={"test@example.com"} name={"A B"} />;
+const avatar = (lockedByMe: boolean) => (
+    <BloomAvatar
+        email={"test@example.com"}
+        name={"A B"}
+        borderColor={lockedByMe && theme.palette.warning.main}
+    />
+);
+
 storiesOf("Team Collection components", module)
     .add("Available", () =>
         testPage(
@@ -71,7 +81,7 @@ storiesOf("Team Collection components", module)
                 lockState="lockedByMe"
                 title="This book is checked out to you"
                 subTitle="Are you done for now? Click this button to send your changes to your team."
-                icon={avatar}
+                icon={avatar(true)}
                 button={checkinButton}
                 children={
                     <div className="userChanges">
@@ -80,7 +90,7 @@ storiesOf("Team Collection components", module)
                         </Typography>
                     </div>
                 }
-                menu={<div>Menu</div>}
+                menu={<div style={menuStyles}>Menu</div>}
             />
         )
     )
@@ -90,7 +100,7 @@ storiesOf("Team Collection components", module)
                 lockState="locked"
                 title="This book is checked out to Fred"
                 subTitle="You cannot edit the book until Fred checks it in."
-                icon={avatar}
+                icon={avatar(false)}
                 children={getLockedInfoChild(
                     "Fred checked out this book on 10 February 2021."
                 )}
@@ -103,7 +113,7 @@ storiesOf("Team Collection components", module)
                 lockState="lockedByMeElsewhere"
                 title="This book is checked out to you, but on a different computer"
                 subTitle="You cannot edit the book on this computer, until you check it in on MyTablet."
-                icon={avatar}
+                icon={avatar(false)}
                 children={getLockedInfoChild(
                     "You checked out this book on 14 February 2021."
                 )}
