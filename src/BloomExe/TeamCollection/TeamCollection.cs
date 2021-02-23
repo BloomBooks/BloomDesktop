@@ -102,10 +102,17 @@ namespace Bloom.TeamCollection
 
 			if (checkin)
 				status = status.WithLockedBy(null);
+			var oldName = GetLocalStatus(bookFolderName).oldName;
 			PutBookInRepo(folderPath, status, inLostAndFound);
 			WriteLocalStatus(bookFolderName, status);
+			if (!string.IsNullOrEmpty(oldName))
+			{
+				RemoveBook(oldName);
+			}
 			return status;
 		}
+
+		public abstract void RemoveBook(string bookName);
 
 		/// <summary>
 		/// Sync every book from the local collection (every folder that has a corresponding htm file) from local
@@ -720,6 +727,14 @@ namespace Bloom.TeamCollection
 			// and checked in again (ignoring both warnings).
 			// I'm thinking that for version 0.1, we can maybe get away with warning users not to ignore
 			// this warning!
+		}
+
+		public void HandleBookRename(string oldName, string newName)
+		{
+			var status = GetLocalStatus(newName); // folder has already moved!
+			if (status.lockedBy == TeamCollection.FakeUserIndicatingNewBook)
+				return; // new, no need to delete old in repo
+			WriteLocalStatus(newName, status.WithOldName(oldName));
 		}
 
 		internal string GetStatusFilePath(string bookName, string collectionFolder)
