@@ -47,6 +47,8 @@ namespace Bloom.TeamCollection
 		public bool OkToCheckIn(string bookName)
 		{
 			var repoStatus = GetStatus(bookName);
+			if (repoStatus.lockedBy == TeamCollection.FakeUserIndicatingNewBook)
+				return true; // we can always check in a book that isn't in the repo at all.
 			var localStatus = GetLocalStatus(bookName);
 			if (repoStatus.checksum != localStatus.checksum)
 			{
