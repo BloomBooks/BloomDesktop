@@ -39,7 +39,12 @@
             flex: 1;
             flex-direction: column;
             align-items: flex-end;
+            padding-right: @panel-button-padding; // match right alignment of button below
         }
+    }
+    .panel-children {
+        padding-left: @icon-side-padding + 4px; // to match the alignment of the icon or avatar above
+        padding-right: @panel-button-padding; // to match alignment of the button below
     }
     .lockedInfo {
         margin-left: calc(@icon-size + 2 * @icon-side-padding);
