@@ -8,8 +8,6 @@ import { ExclaimTriangle } from "../react_components/ExclaimTriangle";
 import theme from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 
-const kBloomBlue = "#1d94a4";
-
 // The contents of the dialog that comes up when double-clicking a .JoinBloomTC file.
 // Two versions (create new local collection, and merge with existing local) are both handled here.
 // The class is rendered by the connectNewTeamCollectionScreen into the root element in
@@ -28,7 +26,7 @@ export const NewTeamCollection: React.FunctionComponent = props => {
                     l10nParam0={collectionName}
                     temporarilyDisableI18nWarning={true}
                 >
-                    Join the Team Collection "{0}"
+                    Join the Team Collection "%0"
                 </Div>
                 {existingCollection ? (
                     <div className="grow">
@@ -37,7 +35,7 @@ export const NewTeamCollection: React.FunctionComponent = props => {
                             l10nParam0={collectionName}
                             temporarilyDisableI18nWarning={true}
                         >
-                            Bloom will merge your existing "{0}" collection with
+                            Bloom will merge your existing "%0" collection with
                             this Team Collection.
                         </Div>
                         <Div
@@ -52,7 +50,7 @@ export const NewTeamCollection: React.FunctionComponent = props => {
                         </Div>
                         <div className="icon-row">
                             <ExclaimTriangle
-                                triangleColor={kBloomBlue}
+                                triangleColor={theme.palette.primary.main}
                                 exclaimColor="white"
                             />
                             <Div
@@ -61,7 +59,7 @@ export const NewTeamCollection: React.FunctionComponent = props => {
                                 temporarilyDisableI18nWarning={true}
                             >
                                 If instead you want to start fresh, click Cancel
-                                and rename your existing "{0}" collection to
+                                and rename your existing "%0" collection to
                                 something different. Then try to join again.
                             </Div>
                         </div>
@@ -78,7 +76,7 @@ export const NewTeamCollection: React.FunctionComponent = props => {
                         <div className="auto-pad" />
                         <div className="icon-row">
                             <ExclaimTriangle
-                                triangleColor={kBloomBlue}
+                                triangleColor={theme.palette.primary.main}
                                 exclaimColor="white"
                             />
                             <Div
