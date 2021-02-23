@@ -270,7 +270,7 @@ namespace Bloom.TeamCollection
 		// notification for a SINGLE change.
 		protected virtual bool CheckRecentNotification()
 		{
-			if (DateTime.Now - _lastNotificationTime > new TimeSpan(0, 2, 0))
+			if (DateTime.Now - _lastNotificationTime < new TimeSpan(0, 2, 0))
 				return true;
 			_lastNotificationTime = DateTime.Now;
 			return false;
