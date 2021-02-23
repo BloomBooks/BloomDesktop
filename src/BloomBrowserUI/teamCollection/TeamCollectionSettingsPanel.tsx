@@ -30,8 +30,13 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
     // settings for a collection that is already part of a team collection
     // (and if so, to provide the collection path).
     const urlParams = new URLSearchParams(window.location.search);
-    const existingTcPath = urlParams.get("folder");
+    //const existingTcPath = urlParams.get("folder");
     const [createDlgOpen, setCreateDlgOpen] = useState(false);
+
+    const [repoFolderPath] = BloomApi.useApiString(
+        "teamCollection/repoFolderPath",
+        ""
+    );
 
     const intro: JSX.Element = (
         <Div
@@ -69,11 +74,11 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                 onClick={e => {
                     e.preventDefault();
                     BloomApi.postJson("common/showInFolder", {
-                        folderPath: existingTcPath
+                        folderPath: repoFolderPath
                     });
                 }}
             >
-                {existingTcPath}
+                {repoFolderPath}
             </a>
             <Div
                 l10nKey="TeamCollection.AddingHelp"
@@ -153,7 +158,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                     {enterpriseAvailable => (
                         <React.Fragment>
                             {intro}
-                            {existingTcPath
+                            {repoFolderPath
                                 ? isTeamCollection
                                 : isNotTeamCollection}
                             <Dialog
@@ -162,7 +167,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                             >
                                 <CreateTeamCollection
                                     closeDlg={() => setCreateDlgOpen(false)}
-                                ></CreateTeamCollection>
+                                />
                             </Dialog>
                         </React.Fragment>
                     )}
@@ -170,9 +175,4 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
             </RequiresBloomEnterpriseWrapper>
         </div>
     );
-};
-
-// allow plain 'ol javascript in the html to connect up react
-(window as any).connectTeamCollectionSettingsScreen = element => {
-    ReactDOM.render(<TeamCollectionSettingsPanel />, element);
 };

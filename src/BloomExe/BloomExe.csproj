@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -388,6 +388,12 @@
     <Compile Include="ToPalaso\BackgroundWorkerProgressAdapter.cs" />
     <Compile Include="Utils\BloomUnauthorizedAccessException.cs" />
     <Compile Include="WebLibraryIntegration\FirebaseLoginDialog.cs" />
+    <Compile Include="web\ReactControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="web\ReactControl.Designer.cs">
+      <DependentUpon>ReactControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="web\WebProgressAdapter.cs" />
     <Compile Include="Publish\HtmlPublishPanel.cs">
       <SubType>UserControl</SubType>
@@ -956,6 +962,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="WebLibraryIntegration\OverwriteWarningDialog.resx">
       <DependentUpon>OverwriteWarningDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="web\ReactControl.resx">
+      <DependentUpon>ReactControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="web\WebLibraryView.resx">
       <DependentUpon>WebLibraryView.cs</DependentUpon>

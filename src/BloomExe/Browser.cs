@@ -805,6 +805,23 @@ namespace Bloom
 			Application.Idle -= new EventHandler(Application_Idle);
 		}
 
+		// The normal Navigate() has a similar capability, but I'm not clear where it works
+		// or how it can work, since it expects an actual url, and once you have an actual
+		// url, how do you get back to the file path That you need to delete the temp file?
+		// So in any case, this version takes a path and handles making a url out of it as
+		// well as deleting it when this browser component is disposed of.
+		public void NavigateToTempFileThenRemoveIt(string path)
+		{
+			if (InvokeRequired)
+			{
+				Invoke(new Action<string>(NavigateToTempFileThenRemoveIt), path);
+				return;
+			}
+			_url = path.ToLocalhost();
+			SetNewDependent(TempFile.TrackExisting(path));
+			UpdateDisplay();
+		}
+
 		public void Navigate(string url, bool cleanupFileAfterNavigating)
 		{
 			// BL-513: Navigating to "about:blank" is causing the Pages panel to not be updated for a new book on Linux.
