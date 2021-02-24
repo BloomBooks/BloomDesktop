@@ -8,7 +8,6 @@ using System.Xml.Linq;
 using Bloom.CollectionCreating;
 using Bloom.MiscUI;
 using ICSharpCode.SharpZipLib.Zip;
-using NuGet;
 using SIL.IO;
 
 namespace Bloom.TeamCollection
