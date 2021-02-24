@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -7,6 +8,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Bloom.CollectionCreating;
 using Bloom.MiscUI;
+using Bloom.Utils;
 using ICSharpCode.SharpZipLib.Zip;
 using SIL.IO;
 
@@ -35,12 +37,7 @@ namespace Bloom.TeamCollection
 		private bool _writeBookInProgress;
 		private DateTime _lastWriteBookTime;
 		private object _lockObject = new object(); // used to lock access to _lastPutBookPath and _putBookInProgress
-
-		// When we last displayed a notification of a remote change to the repo.
-		// We avoid bothering the user about this frequently, especially because
-		// we can get several change notifications from an apparently atomic change
-		// like copying a new book over an existing one using Windows Explorer.
-		DateTime _lastNotificationTime = DateTime.MinValue;
+		
 		public FolderTeamCollection(ITeamCollectionManager manager, string localCollectionFolder, string repoFolderPath) : base(manager, localCollectionFolder)
 		{
 			_repoFolderPath = repoFolderPath;
@@ -351,27 +348,16 @@ namespace Bloom.TeamCollection
 			                       | NotifyFilters.FileName
 			                       | NotifyFilters.DirectoryName;
 
-			_watcher.Changed += OnChanged;
-			_watcher.Created += OnCreated;
+			const int debouncePeriodInMs = 100;
+			_watcher.DebounceChanged(OnChanged, debouncePeriodInMs);
+			_watcher.DebounceCreated(OnCreated, debouncePeriodInMs);
+			_watcher.DebounceRenamed(OnRenamed, debouncePeriodInMs);
+
 			// I think if the book was deleted we can afford to wait and let the next restart clean it up.
-			//_watcher.Deleted += OnChanged;
-			_watcher.Renamed += OnRenamed;
+			// _watcher.DebounceDeleted(OnChanged, debouncePeriodInMs);
 
 			// Begin watching.
 			_watcher.EnableRaisingEvents = true;
-		}
-
-		// Return true if we have notified the user of changes recently. If we have NOT done so,
-		// update the most-recent-notification time. Overridden in tests to always return false.
-		// Two minutes is arbitrary, and probably not long enough if changes are coming in frequently
-		// from outside. The main purpose with such a short timeout is to be sure we only get one
-		// notification for a SINGLE change.
-		protected virtual bool CheckRecentNotification()
-		{
-			if (DateTime.Now - _lastNotificationTime < new TimeSpan(0, 2, 0))
-				return true;
-			_lastNotificationTime = DateTime.Now;
-			return false;
 		}
 
 		private bool CheckOwnWriteNotification(string path)
@@ -398,8 +384,6 @@ namespace Bloom.TeamCollection
 
 		protected virtual void OnChanged(object sender, FileSystemEventArgs e)
 		{
-			if (CheckRecentNotification())
-				return;
 			if (CheckOwnWriteNotification(e.FullPath))
 				return;
 
@@ -416,10 +400,11 @@ namespace Bloom.TeamCollection
 
 		// I'm not sure this can even happen with DropBox and remote users. But team collection could just
 		// involve a local shared folder, or something local might do a rename...?
-		private void OnRenamed(object sender, RenamedEventArgs e)
+		private void OnRenamed(object sender, FileSystemEventArgs e)
 		{
-			if (CheckRecentNotification())
-				return;
+			// Note: if needed, e should be able to be successfully cast to RenamedEventArgs
+			// But this type is listed as FileSystemEventArgs due to make life easier for FileSystemWatcherExtensions DebounceRenamed.
+
 			// No renames in our PutBook, so we don't need to check for that here.
 			RaiseBookStateChange(Path.GetFileName(e.Name));
 			// Perhaps we should also do something about e.OldName? We don't want to

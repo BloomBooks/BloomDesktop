@@ -35,6 +35,12 @@ namespace Bloom.TeamCollection
 		protected readonly ITeamCollectionManager _tcManager;
 		protected readonly string _localCollectionFolder; // The unshared folder that this collection syncs with
 
+		// When we last prompted the user to restart (due to a change in the Team Collection)
+		private DateTime LastRestartPromptTime { get; set; } = DateTime.MinValue;
+
+		// Two minutes is arbitrary, and probably not long enough if changes are coming in frequently from outside.
+		private static readonly TimeSpan kMaxRestartPromptFrequency = new TimeSpan(0, 2, 0);
+
 		public TeamCollection(ITeamCollectionManager manager, string localCollectionFolder)
 		{
 			_tcManager = manager;
@@ -726,9 +732,19 @@ namespace Bloom.TeamCollection
 
 		private void AskUserToRestart()
 		{
+			if (DateTime.Now - LastRestartPromptTime  < kMaxRestartPromptFrequency)
+				return;
+
+			// Reset the time before prompting... in case of multiple threads or something.
+			LastRestartPromptTime = DateTime.Now;
+
 			MessageBox.Show(LocalizationManager.GetString("TeamCollection.RequestRestart",
 					"Bloom has detected that other users have made changes in your team collection folder. When convenient, please restart Bloom to see the changes."),
 				LocalizationManager.GetString("TeamCollection.RemoteChanges", "Remote Changes"));
+
+			// Update the time again to start from when the user closed the MessageBox.
+			LastRestartPromptTime = DateTime.Now;
+
 			// Enhance: there are cases where we need to force a restart immediately.
 			// For example, if the user is editing the book that has been modified elsewhere.
 			// If this happens, when the user returns to the collection tab, Bloom will show who currently
