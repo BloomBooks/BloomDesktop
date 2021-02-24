@@ -326,6 +326,7 @@
     <Compile Include="Book\LicenseChecker.cs" />
     <Compile Include="TeamCollection\BookStateChangeEventArgs.cs" />
     <Compile Include="TeamCollection\BookStatus.cs" />
+    <Compile Include="TeamCollection\FileSystemEventRecord.cs" />
     <Compile Include="TeamCollection\FolderTeamCollection.cs" />
     <Compile Include="TeamCollection\ProgressLogger.cs" />
     <Compile Include="TeamCollection\TeamCollection.cs" />

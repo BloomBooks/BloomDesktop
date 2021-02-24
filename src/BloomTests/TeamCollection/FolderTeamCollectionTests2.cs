@@ -100,7 +100,11 @@ namespace BloomTests.TeamCollection
 				using (var repoFolder =
 					new TemporaryFolder("SyncLocalAndRepoCollectionFiles_SyncsInRightDirection_Shared"))
 				{
-					var tc = new FolderTeamCollection(collectionFolder.FolderPath, repoFolder.FolderPath);
+					var settingsFileName =
+						Path.ChangeExtension(Path.GetFileName(collectionFolder.FolderPath), "bloomCollection");
+					var settingsPath = Path.Combine(collectionFolder.FolderPath, settingsFileName);
+					var tcManager = new TeamCollectionManager(settingsPath, null, new Bloom.TeamCollectionCheckoutStatusChangeEvent());					
+					var tc = new FolderTeamCollection(tcManager, collectionFolder.FolderPath, repoFolder.FolderPath);
 					var bloomCollectionPath = Bloom.TeamCollection.TeamCollection.CollectionPath(collectionFolder.FolderPath);
 					Assert.That(tc.LocalCollectionFilesRecordedSyncTime, Is.EqualTo(DateTime.MinValue));
 					File.WriteAllText(bloomCollectionPath, "This is a fake collection file");

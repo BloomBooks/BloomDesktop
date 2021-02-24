@@ -13,15 +13,15 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
+using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.web;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using DesktopAnalytics;
-using SIL.Reporting;
 using L10NSharp;
 using SIL.IO;
-using Bloom.TeamCollection;
+using SIL.Reporting;
 
 namespace Bloom.CollectionTab
 {
@@ -1111,11 +1111,14 @@ namespace Bloom.CollectionTab
 			if (_primaryCollection == null)
 				return;
 
-			// TODO: I think the Assert is triggered if somebody else creates a new book. What should we do during these cases?
 			var bookInfos = _primaryCollection.GetBookInfos();
 			// QuickTitle relies just on the folder name, so I think that should align better with eventArgs.BookName than {bookInfo.Title} would.
 			var targetBookInfo = bookInfos.Where(bookInfo => bookInfo.QuickTitleUserDisplay == eventArgs.BookName).FirstOrDefault();
-			Debug.Assert(targetBookInfo != null, $"Failed to find book \"{eventArgs.BookName}\". Investigate why.");
+
+			// Note: It could fail to find when a new book is created.
+			// A new book can actually cause both a Created and a Changed file system event to be raised.
+			// While we attempt to filter out the spurious change, it's not a sure thing... especially if network latency is involved.
+			// In those cases, it's totally fine to just ignore this event and exit early.
 			if (targetBookInfo == null)
 				return;
 

@@ -37,7 +37,9 @@ namespace Bloom.TeamCollection
 		private bool _writeBookInProgress;
 		private DateTime _lastWriteBookTime;
 		private object _lockObject = new object(); // used to lock access to _lastPutBookPath and _putBookInProgress
-		
+
+		private const int kDebouncePeriodInMs = 100;
+		private FileSystemEventRecord _lastCreateEvent = null;
 		public FolderTeamCollection(ITeamCollectionManager manager, string localCollectionFolder, string repoFolderPath) : base(manager, localCollectionFolder)
 		{
 			_repoFolderPath = repoFolderPath;
@@ -352,10 +354,9 @@ namespace Bloom.TeamCollection
 			                       | NotifyFilters.FileName
 			                       | NotifyFilters.DirectoryName;
 
-			const int debouncePeriodInMs = 100;
-			_watcher.DebounceChanged(OnChanged, debouncePeriodInMs);
-			_watcher.DebounceCreated(OnCreated, debouncePeriodInMs);
-			_watcher.DebounceRenamed(OnRenamed, debouncePeriodInMs);
+			_watcher.DebounceChanged(OnChanged, kDebouncePeriodInMs);
+			_watcher.DebounceCreated(OnCreated, kDebouncePeriodInMs);
+			_watcher.DebounceRenamed(OnRenamed, kDebouncePeriodInMs);
 
 			// I think if the book was deleted we can afford to wait and let the next restart clean it up.
 			// _watcher.DebounceDeleted(OnChanged, debouncePeriodInMs);
@@ -386,9 +387,33 @@ namespace Bloom.TeamCollection
 			}
 		}
 
+		/// <summary>
+		/// Returns true if a FileSystemWatcher Create event was recently raised.
+		/// </summary>
+		/// <param name="fullPath">The path of the relevant file/directory</param>
+		/// <param name="timeThreshold">Defines what "recently" means</param>
+		/// <returns>Returns true if a Create event for the same {fullPath} was raised within {timeThreshold} amount of time.
+		/// Otherwise, returns false</returns>
+		private bool CheckRecentCreateEvent(string fullPath, TimeSpan timeThreshold)
+		{
+			if (_lastCreateEvent != null && _lastCreateEvent.EventArgs.FullPath == fullPath)
+			{
+				// Note: The timestamps are going to be too far apart if it got stopped in the debugger, but...
+				// I don't know how to get the timestamps onto this earlier.
+				DateTime now = DateTime.Now;
+				if (now - _lastCreateEvent.Timestamp <= timeThreshold)
+					return true;
+			}
+
+			return false;
+		}
+
 		protected virtual void OnChanged(object sender, FileSystemEventArgs e)
 		{
 			if (CheckOwnWriteNotification(e.FullPath))
+				return;
+
+			if (CheckRecentCreateEvent(e.FullPath, new TimeSpan(0, 0, 1)))
 				return;
 
 			RaiseBookStateChange(Path.GetFileName(e.Name));
@@ -396,6 +421,8 @@ namespace Bloom.TeamCollection
 
 		protected virtual void OnCreated(object sender, FileSystemEventArgs e)
 		{
+			_lastCreateEvent = new FileSystemEventRecord(e);
+
 			if (CheckOwnWriteNotification(e.FullPath))
 				return;
 
