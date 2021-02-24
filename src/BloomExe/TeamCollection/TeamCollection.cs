@@ -17,7 +17,6 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.ToPalaso;
 using SIL.Reporting;
-using System.Diagnostics;
 
 namespace Bloom.TeamCollection
 {
