@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -30,6 +30,7 @@ namespace Bloom.Collection
 		//for moq only
 		public BookCollection()
 		{
+			_bookInfos = null;
 		}
 
 		// For unit tests only.

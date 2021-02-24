@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Bloom.TeamCollection;
 using BloomTemp;
+using Moq;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using SIL.IO;
@@ -14,6 +15,7 @@ namespace BloomTests.TeamCollection
 	{
 		private TemporaryFolder _repoFolder;
 		protected TemporaryFolder _collectionFolder;
+		protected Mock<ITeamCollectionManager> _mockTcManager;
 		protected FolderTeamCollection _collection;
 		private string _originalUser;
 		private string _checkMeOutOriginalChecksum;
@@ -26,7 +28,8 @@ namespace BloomTests.TeamCollection
 			_repoFolder = new TemporaryFolder("SyncAtStartup_Repo");
 			_collectionFolder = new TemporaryFolder("SyncAtStartup_Local");
 			FolderTeamCollection.CreateTeamCollectionSettingsFile(_collectionFolder.FolderPath, _repoFolder.FolderPath);
-			_collection = new FolderTeamCollection(_collectionFolder.FolderPath, _repoFolder.FolderPath);
+			_mockTcManager = new Mock<ITeamCollectionManager>();
+			_collection = new FolderTeamCollection(_mockTcManager.Object, _collectionFolder.FolderPath, _repoFolder.FolderPath);
 			_originalUser = Bloom.TeamCollection.TeamCollectionManager.CurrentUser;
 			if (string.IsNullOrEmpty(_originalUser))
 			{

@@ -10,7 +10,8 @@ namespace Bloom
 		public static Color DisabledTextAgainstDarkBackColor = Color.Gray;
 
 		public static Color BloomRed = GetColor("#FFD65649");
-		public static Color BloomYellow = GetColor("#FEBF00");
+		public static Color BloomYellow = GetColor("#FEBF00");	// RGB: 254, 191, 0
+		public static Color BloomPurple = GetColor("#96668f");	// RGB: 150, 102, 43
 		public static Color GeneralBackground = GetColor("#2E2E2E");
 		public static Color SidePanelBackgroundColor = GeneralBackground;
 		public static Color SelectedTabBackground = SidePanelBackgroundColor;

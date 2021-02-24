@@ -52,7 +52,7 @@ namespace Bloom.TeamCollection
 			result.lockedBy = lockedBy;
 			result.lockedByFirstName = firstName;
 			result.lockedBySurname = surname;
-			if (String.IsNullOrEmpty(lockedBy))
+			if (!result.IsCheckedOut())
 			{
 				result.lockedWhen = result.lockedWhere = null;
 			}
@@ -76,5 +76,10 @@ namespace Bloom.TeamCollection
 				return true; // a new local book is always "checked out here"
 			return lockedBy == whoBy && lockedWhere == TeamCollectionManager.CurrentMachine;
 		}
+
+		// <summary>
+		/// Returns true is the book is checked out by anybody, false otherwise
+		/// </summary>
+		public bool IsCheckedOut() => !String.IsNullOrEmpty(lockedBy);
 	}
 }

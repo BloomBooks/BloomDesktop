@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using Bloom.TeamCollection;
 using BloomTemp;
+using Moq;
 using NUnit.Framework;
 using SIL.IO;
 using Directory = System.IO.Directory;
@@ -20,6 +21,7 @@ namespace BloomTests.TeamCollection
 		private TemporaryFolder _sharedFolder;
 		private TemporaryFolder _collectionFolder;
 		private FolderTeamCollection _collection;
+		private Mock<ITeamCollectionManager> _mockTcManager;
 
 		[OneTimeSetUp]
 		public void OneTimeSetup()
@@ -28,7 +30,9 @@ namespace BloomTests.TeamCollection
 			_collectionFolder = new TemporaryFolder("TeamCollection_Local");
 			FolderTeamCollection.CreateTeamCollectionSettingsFile(_collectionFolder.FolderPath,
 				_sharedFolder.FolderPath);
-			_collection = new FolderTeamCollection(_collectionFolder.FolderPath, _sharedFolder.FolderPath);
+
+			_mockTcManager = new Mock<ITeamCollectionManager>();
+			_collection = new FolderTeamCollection(_mockTcManager.Object, _collectionFolder.FolderPath, _sharedFolder.FolderPath);
 		}
 
 		[OneTimeTearDown]
