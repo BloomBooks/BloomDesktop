@@ -574,9 +574,8 @@ namespace Bloom.TeamCollection
 		{
 			Directory.CreateDirectory(localCollectionFolder);
 			CreateTeamCollectionSettingsFile(localCollectionFolder, repoFolder);
-			var newSettingsPath = CollectionPath(localCollectionFolder);
 			CopyRepoCollectionFilesTo(localCollectionFolder, repoFolder);
-			return newSettingsPath;
+			return CollectionPath(localCollectionFolder);
 		}
 
 		public void CreateJoinCollectionFile()

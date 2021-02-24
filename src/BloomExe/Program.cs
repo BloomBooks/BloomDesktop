@@ -246,6 +246,7 @@ namespace Bloom
 
 					if (FolderTeamCollection.IsJoinTeamCollectionFile(args))
 					{
+						SetUpErrorHandling();
 						string newCollection;
 						// When we're spinning up a fake local collection in "projectName", we don't want
 						// any chance of copying FROM there to the repo.
@@ -269,6 +270,8 @@ namespace Bloom
 								using (var projectContext =
 									_applicationContainer.CreateProjectContext(fakeCollectionPath, true))
 								{
+									if (projectContext.TeamCollectionManager.CurrentCollection == null)
+										return 1; // something went wrong processing it, hopefully already reported.
 									newCollection = FolderTeamCollection.ShowJoinCollectionTeamDialog(args[0]);
 								}
 							}

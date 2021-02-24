@@ -77,6 +77,7 @@ namespace Bloom.TeamCollection
 				catch (Exception ex)
 				{
 					NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom found team collection settings but could not process them", null, ex, true);
+					CurrentCollection = null;
 				}
 			}
 		}

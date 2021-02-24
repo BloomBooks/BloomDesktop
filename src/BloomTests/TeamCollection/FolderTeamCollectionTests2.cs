@@ -72,6 +72,24 @@ namespace BloomTests.TeamCollection
 		}
 
 		[Test]
+		public void FilesToMonitorForCollection_NonStandardCollectionFileName_FindsIt()
+		{
+			using (var collectionFolder =
+				new TemporaryFolder("SyncLocalAndRepoCollectionFiles_SyncsInRightDirection_Collection"))
+			{
+				using (var repoFolder =
+					new TemporaryFolder("SyncLocalAndRepoCollectionFiles_SyncsInRightDirection_Shared"))
+				{
+					var tc = new FolderTeamCollection(collectionFolder.FolderPath, repoFolder.FolderPath);
+					var bcPath = Path.Combine(collectionFolder.FolderPath, "mybooks.bloomCollection");
+					File.WriteAllText(bcPath, "something");
+					var files = tc.FilesToMonitorForCollection();
+					Assert.That(files, Contains.Item(bcPath));
+				}
+			}
+		}
+
+		[Test]
 		public void SyncLocalAndRepoCollectionFiles_SyncsInRightDirection()
 		{
 			using (var collectionFolder = new TemporaryFolder("SyncLocalAndRepoCollectionFiles_SyncsInRightDirection_Collection"))
