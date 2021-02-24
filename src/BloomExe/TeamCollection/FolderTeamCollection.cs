@@ -134,7 +134,9 @@ namespace Bloom.TeamCollection
 			{
 				using (var zipFile = new ZipFile(bookPath))
 				{
-					var destFolder = Path.Combine(destinationCollectionFolder, bookName);
+					var destFolder = Path.Combine(destinationCollectionFolder, GetBookNameWithoutSuffix(bookName));
+					Debug.Assert(!destFolder.EndsWith(".bloom"), $"Copying zipFile to folder \"{destFolder}\", which ends with .bloom. This is probably an error, unless the book title literally contains .bloom");
+
 					foreach (ZipEntry entry in zipFile)
 					{
 						var fullOutputPath = Path.Combine(destFolder, entry.Name);
@@ -151,9 +153,11 @@ namespace Bloom.TeamCollection
 						if (!String.IsNullOrEmpty(directoryName))
 							Directory.CreateDirectory(directoryName);
 						using (var instream = zipFile.GetInputStream(entry))
-						using (var writer = RobustFile.Create(fullOutputPath))
 						{
-							ICSharpCode.SharpZipLib.Core.StreamUtils.Copy(instream, writer, buffer);
+							using (var writer = RobustFile.Create(fullOutputPath))
+							{
+								ICSharpCode.SharpZipLib.Core.StreamUtils.Copy(instream, writer, buffer);
+							}
 						}
 					}
 				}

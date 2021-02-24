@@ -637,6 +637,19 @@ namespace Bloom.TeamCollection
 		protected abstract DateTime LastRepoCollectionFileModifyTime { get; }
 
 		/// <summary>
+		/// Gets the book name without the .bloom suffix
+		/// </summary>
+		/// <param name="bookName">A book name, with our without the .bloom suffix</param>
+		/// <returns>A string which is the book name without the .bloom suffix</returns>
+		protected static string GetBookNameWithoutSuffix(string bookName)
+		{
+			if (bookName.EndsWith(".bloom"))
+				return Path.GetFileNameWithoutExtension(bookName);
+
+			return bookName;
+		}
+
+		/// <summary>
 		/// Send anything other than books that should be shared from local to the repo.
 		/// Enhance: as for CopyRepoCollectionFilesToLocal, also, we want this to be
 		/// restricted to a specified set of emails, by default, the creator of the repo.
@@ -661,6 +674,7 @@ namespace Bloom.TeamCollection
 			NewBook?.Invoke(this, new NewBookEventArgs() {BookName = bookName});
 		}
 
+		/// <param name="bookName">The book name, including the .bloom suffix</param>
 		protected void RaiseBookStateChange(string bookName)
 		{
 			BookStateChange?.Invoke(this, new BookStateChangeEventArgs() { BookName = bookName });
@@ -689,10 +703,11 @@ namespace Bloom.TeamCollection
 			{
 				if (!IsCheckedOutHereBy(GetLocalStatus(args.BookName)))
 				{
-					// Just update things locally.
-					CopyBookFromRepoToLocal(args.BookName);
+					var bookBaseName = GetBookNameWithoutSuffix(args.BookName);
 
-					var bookBaseName = Path.GetFileNameWithoutExtension(args.BookName);
+					// Just update things locally.
+					CopyBookFromRepoToLocal(bookBaseName);
+
 					UpdateCheckoutStatusIcon(bookBaseName, true);
 					return;
 				}
