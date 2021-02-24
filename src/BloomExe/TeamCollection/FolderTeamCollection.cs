@@ -41,7 +41,7 @@ namespace Bloom.TeamCollection
 		// we can get several change notifications from an apparently atomic change
 		// like copying a new book over an existing one using Windows Explorer.
 		DateTime _lastNotificationTime = DateTime.MinValue;
-		public FolderTeamCollection(string localCollectionFolder, string repoFolderPath) : base(localCollectionFolder)
+		public FolderTeamCollection(ITeamCollectionManager manager, string localCollectionFolder, string repoFolderPath) : base(manager, localCollectionFolder)
 		{
 			_repoFolderPath = repoFolderPath;
 		}
@@ -128,7 +128,7 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		/// <param name="destinationCollectionFolder">Where to put the retrieved book folder,
 		/// typically the local collection folder.</param>
-		/// <param name="bookName"></param>
+		/// <param name="bookName">The name of the book, with or without the .bloom suffix - either way is fine</param>
 		protected override void FetchBookFromRepo(string destinationCollectionFolder, string bookName)
 		{
 			var bookPath = GetPathToBookFileInRepo(bookName);
@@ -163,7 +163,7 @@ namespace Bloom.TeamCollection
 			}
 			catch (Exception e) when (e is ZipException || e is IOException)
 			{
-				NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not unpack a file in your Team Collection: " + bookName + ".bloom");
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not unpack a file in your Team Collection: " + bookPath, exception: e);
 			}
 		}
 

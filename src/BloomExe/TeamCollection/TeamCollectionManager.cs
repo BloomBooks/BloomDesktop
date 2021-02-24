@@ -6,15 +6,21 @@ using Bloom.Api;
 
 namespace Bloom.TeamCollection
 {
+	public interface ITeamCollectionManager
+	{
+		void RaiseCheckoutStatusChanged(CheckoutStatusChangeEventArgs eventInfo);
+	}
+
 	/// <summary>
 	/// This class, created by autofac as part of the project context, handles determining
 	/// whether the current collection has an associated TeamCollection, and if so, creating it.
 	/// Autofac classes needing access to the TeamCollection (if any) should be constructed
 	/// with an instance of this.
 	/// </summary>
-	public class TeamCollectionManager: IDisposable
+	public class TeamCollectionManager: IDisposable, ITeamCollectionManager
 	{
 		private readonly BloomWebSocketServer _webSocketServer;
+		private readonly TeamCollectionCheckoutStatusChangeEvent _checkoutStatusChangeEvent;
 		public TeamCollection CurrentCollection { get; private set; }
 		private readonly string _localCollectionFolder;
 		private static string _overrideCurrentUser;
@@ -28,8 +34,10 @@ namespace Bloom.TeamCollection
 		public static bool ForceNextSyncToLocal { set; get; }
 
 		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer, BookRenamedEvent bookRenamedEvent)
+		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer, TeamCollectionCheckoutStatusChangeEvent checkoutStatusChangeEvent)
 		{
 			_webSocketServer = webSocketServer;
+			_checkoutStatusChangeEvent = checkoutStatusChangeEvent;
 			_localCollectionFolder = Path.GetDirectoryName(localCollectionPath);
 			bookRenamedEvent.Subscribe(pair =>
 			{
@@ -59,7 +67,7 @@ namespace Bloom.TeamCollection
 						.First().InnerText;
 					if (Directory.Exists(repoFolderPath))
 					{
-						CurrentCollection = new FolderTeamCollection(_localCollectionFolder, repoFolderPath);
+						CurrentCollection = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath);
 						CurrentCollection.SocketServer = SocketServer;
 						// Later, we will sync everything else, but we want the current collection settings before
 						// we create the CollectionSettings object.
@@ -98,7 +106,7 @@ namespace Bloom.TeamCollection
 		{
 			var repoFolderPath = PlannedRepoFolderPath(repoFolderParentPath);
 			Directory.CreateDirectory(repoFolderPath);
-			var newTc = new FolderTeamCollection(_localCollectionFolder, repoFolderPath);
+			var newTc = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath);
 			newTc.ConnectToTeamCollection(repoFolderPath);
 			CurrentCollection = newTc;
 		}
@@ -133,6 +141,11 @@ namespace Bloom.TeamCollection
 		public void Dispose()
 		{
 			CurrentCollection?.Dispose();
+		}
+
+		public void RaiseCheckoutStatusChanged(CheckoutStatusChangeEventArgs eventInfo)
+		{
+			_checkoutStatusChangeEvent.Raise(eventInfo);
 		}
 	}
 }

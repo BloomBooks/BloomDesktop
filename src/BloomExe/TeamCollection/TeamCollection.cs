@@ -17,6 +17,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.ToPalaso;
 using SIL.Reporting;
+using System.Diagnostics;
 
 namespace Bloom.TeamCollection
 {
@@ -31,10 +32,12 @@ namespace Bloom.TeamCollection
 	{
 		// special value for BookStatus.lockedBy when the book is newly created and not in the repo at all.
 		public const string FakeUserIndicatingNewBook = "this user";
+		protected readonly ITeamCollectionManager _tcManager;
 		protected readonly string _localCollectionFolder; // The unshared folder that this collection syncs with
 
-		public TeamCollection(string localCollectionFolder)
+		public TeamCollection(ITeamCollectionManager manager, string localCollectionFolder)
 		{
+			_tcManager = manager;
 			_localCollectionFolder = localCollectionFolder;
 		}
 
@@ -682,6 +685,9 @@ namespace Bloom.TeamCollection
 				{
 					// Just update things locally.
 					CopyBookFromRepoToLocal(args.BookName);
+
+					var bookBaseName = Path.GetFileNameWithoutExtension(args.BookName);
+					UpdateCheckoutStatusIcon(bookBaseName, true);
 					return;
 				}
 			}
@@ -744,6 +750,12 @@ namespace Bloom.TeamCollection
 			WriteLocalStatus(newName, status.WithOldName(oldName));
 		}
 
+		/// <summary>
+		/// Returns a string representing a path to the book.status file of the specified book in the specified collection.
+		/// </summary>
+		/// <param name="bookName">Can have it the .bloom extension or not, either way is fine.</param>
+		/// <param name="collectionFolder">The collection that contains the book</param>
+		/// <returns></returns>
 		internal string GetStatusFilePath(string bookName, string collectionFolder)
 		{
 			var bookFolderName = Path.GetFileNameWithoutExtension(bookName);
@@ -1065,6 +1077,9 @@ namespace Bloom.TeamCollection
 			var logPath = Path.ChangeExtension(_localCollectionFolder + " Sync", "log");
 			Program.CloseSplashScreen(); // Enhance: maybe not right away? Maybe we can put our dialog on top? But it seems to work pretty well...
 			using (var progressLogger = new ProgressLogger(logPath, progress))
+
+			// NOTE: This (specifically ShowDialog) blocks the main thread until the dialog is closed.
+			// Be careful to avoid deadlocks.
 			using (var dlg = new BrowserDialog(url))
 			{
 				dlg.WebSocketServer = SocketServer;
@@ -1105,6 +1120,10 @@ namespace Bloom.TeamCollection
 					StopMonitoring();
 
 					var problems = SyncAtStartup(progressLogger, doingJoinCollectionMerge);
+
+					// Now that we've finished synchronizing, update these icons based on the post-sync result
+					// REVIEW: What do we want to happen if exception throw here? Should we add to {problems} list?
+					UpdateAllCheckoutStatusIcons();
 
 					progress.Message("Done", "Done");
 
@@ -1197,6 +1216,41 @@ namespace Bloom.TeamCollection
 			if (tcName.EndsWith(" - TC"))
 				return tcName.Substring(0, tcName.Length - 5);
 			return tcName;
+		}
+
+		public void UpdateAllCheckoutStatusIcons()
+		{
+			foreach (var bookName in GetBookList())
+			{
+				UpdateCheckoutStatusIcon(bookName, false);
+			}
+		}
+
+		/// <summary>
+		/// Causes a notification to be sent to the UI to update the checkout status icon for {bookName}
+		/// </summary>
+		/// <param name="bookName">The name of the book</param>
+		/// <param name="shouldNotifyIfNotCheckedOut">If true, will also send an event that a book isn't checked out (This is necessary when books are checked in)</param>
+		public void UpdateCheckoutStatusIcon(string bookName, bool shouldNotifyIfNotCheckedOut)
+		{
+			Debug.Assert(!bookName.EndsWith(".bloom"), $"UpdateCheckoutStatusIcon was passed bookName=\"{bookName}\", which has a .bloom suffix. This is probably incorrect. This function wants only the bookBaseName");
+			
+			var status = GetStatus(bookName);
+			if (IsCheckedOutHereBy(status))
+				MarkCheckedOut(bookName, CheckedOutBy.Self);
+			else if (status.IsCheckedOut())
+				MarkCheckedOut(bookName, CheckedOutBy.Other);
+			else if (shouldNotifyIfNotCheckedOut)
+				MarkCheckedOut(bookName, CheckedOutBy.None);
+		}
+
+		/// <summary>
+		/// Notifies that the book is checked out.
+		/// </summary>
+		/// <param name="isCheckedOutByCurrent">Should be true if checked out by current user/machine</param>
+		private void MarkCheckedOut(string bookName, CheckedOutBy checkedOutByWhom)
+		{
+			_tcManager.RaiseCheckoutStatusChanged(new CheckoutStatusChangeEventArgs(bookName, checkedOutByWhom));
 		}
 	}
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.TeamCollection;
 
 namespace Bloom
 {
@@ -245,6 +246,14 @@ namespace Bloom
 
 		public ControlKeyEvent()
 			: base("ControlKeyEvent", LoggingLevel.Minor)
+		{
+		}
+	}
+
+	public class TeamCollectionCheckoutStatusChangeEvent : Event<CheckoutStatusChangeEventArgs>
+	{
+		public TeamCollectionCheckoutStatusChangeEvent()
+			: base("TeamCollectionCheckoutStatusChange", LoggingLevel.Minor)
 		{
 		}
 	}
