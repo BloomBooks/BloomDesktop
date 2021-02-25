@@ -52,16 +52,38 @@ namespace Bloom.TeamCollection
 		public void HandleRepoFolderPath(ApiRequest request)
 		{
 			Debug.Assert(request.HttpMethod == HttpMethods.Get, "only get is implemented for the teamCollection/repoFolderPath api endpoint");
-			request.ReplyWithText(_tcManager.CurrentCollection == null
+			request.ReplyWithText((_tcManager.CurrentCollection as FolderTeamCollection) == null
 				? ""
 				: (_tcManager.CurrentCollection as FolderTeamCollection).RepoFolderPath);
 		}
 
 		private void HandleJoinTeamCollection(ApiRequest request)
 		{
-			FolderTeamCollection.JoinCollectionTeam();
-			BrowserDialog.CloseDialog();
-			request.PostSucceeded();
+			try
+			{
+				FolderTeamCollection.JoinCollectionTeam();	// can fail writing to disk
+				BrowserDialog.CloseDialog();
+				request.PostSucceeded();
+			}
+			catch (Exception e)
+			{
+				var bundle = CreateExceptionJson(e);
+				var jsonString = JsonConvert.SerializeObject(bundle);
+				request.Failed(e.Message, jsonString);
+			}
+		}
+
+		private dynamic CreateExceptionJson(Exception e)
+		{
+			dynamic bundle = new DynamicJson();
+			bundle.type = e.GetType().FullName;
+			bundle.message = e.Message;
+			bundle.stackTrace = e.StackTrace;
+			bundle.source = e.Source;
+			bundle.targetSite = e.TargetSite?.Name;
+			if (e.InnerException != null)
+				bundle.inner = CreateExceptionJson(e.InnerException);
+			return bundle;
 		}
 
 		public void HandleIsTeamCollectionEnabled(ApiRequest request)
@@ -97,38 +119,56 @@ namespace Bloom.TeamCollection
 
 		public void HandleAttemptLockOfCurrentBook(ApiRequest request)
 		{
-			// Could be a problem if there's no current book or it's not in the collection folder.
-			// But in that case, we don't show the UI that leads to this being called.
-			var success = _tcManager.CurrentCollection.AttemptLock(BookFolderName);
-			if (success)
-				UpdateUiForBook();
-			request.ReplyWithBoolean(success);
+			try
+			{
+				// Could be a problem if there's no current book or it's not in the collection folder.
+				// But in that case, we don't show the UI that leads to this being called.
+				var success = _tcManager.CurrentCollection.AttemptLock(BookFolderName);
+				if (success)
+					UpdateUiForBook();
+				request.ReplyWithBoolean(success);
+			}
+			catch (Exception e)
+			{
+				var bundle = CreateExceptionJson(e);
+				var jsonString = JsonConvert.SerializeObject(bundle);
+				request.Failed(e.Message, jsonString);
+			}
 		}
 
 		public void HandleCheckInCurrentBook(ApiRequest request)
 		{
-			_bookSelection.CurrentSelection.Save();
-			var bookName = Path.GetFileName(_bookSelection.CurrentSelection.FolderPath);
-			if (_tcManager.CurrentCollection.OkToCheckIn(bookName))
+			try
 			{
-				_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, true);
-			}
-			else
-			{
-				// We can't check in! The system has broken down...perhaps conflicting checkouts while offline.
-				// Save our version in Lost-and-Found
-				_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, false,true);
-				// overwrite it with the current repo version.
-				_tcManager.CurrentCollection.CopyBookFromRepoToLocal(bookName);
-				// Force a full reload of the book from disk and update the UI to match.
-				_bookSelection.SelectBook(_bookServer.GetBookFromBookInfo(_bookSelection.CurrentSelection.BookInfo, true));
-				var msg = LocalizationManager.GetString("TeamCollection.ConflictingEditOrCheckout",
-					"Someone else has edited this book or checked it out even though you were editing it! Your changes have been saved to Lost and Found");
-				ErrorReport.NotifyUserOfProblem(msg);
-			}
+				_bookSelection.CurrentSelection.Save();
+				var bookName = Path.GetFileName(_bookSelection.CurrentSelection.FolderPath);
+				if (_tcManager.CurrentCollection.OkToCheckIn(bookName))
+				{
+					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, true);
+				}
+				else
+				{
+					// We can't check in! The system has broken down...perhaps conflicting checkouts while offline.
+					// Save our version in Lost-and-Found
+					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, false, true);
+					// overwrite it with the current repo version.
+					_tcManager.CurrentCollection.CopyBookFromRepoToLocal(bookName);
+					// Force a full reload of the book from disk and update the UI to match.
+					_bookSelection.SelectBook(_bookServer.GetBookFromBookInfo(_bookSelection.CurrentSelection.BookInfo, true));
+					var msg = LocalizationManager.GetString("TeamCollection.ConflictingEditOrCheckout",
+						"Someone else has edited this book or checked it out even though you were editing it! Your changes have been saved to Lost and Found");
+					ErrorReport.NotifyUserOfProblem(msg);
+				}
 
-			UpdateUiForBook();
-			request.PostSucceeded();
+				UpdateUiForBook();
+				request.PostSucceeded();
+			}
+			catch (Exception e)
+			{
+				var bundle = CreateExceptionJson(e);
+				var jsonString = JsonConvert.SerializeObject(bundle);
+				request.Failed(e.Message, jsonString);
+			}
 		}
 
 		// Tell the CollectionSettingsDialog that we should reopen the collection now
@@ -226,11 +266,20 @@ namespace Bloom.TeamCollection
 
 		public void HandleCreateTeamCollection(ApiRequest request)
 		{
-			_tcManager.ConnectToTeamCollection(_folderForCreateTC);
-			BrowserDialog.CloseDialog();
-			_callbackToReopenCollection?.Invoke();
+			try
+			{
+				_tcManager.ConnectToTeamCollection(_folderForCreateTC);
+				BrowserDialog.CloseDialog();
+				_callbackToReopenCollection?.Invoke();
 
-			request.PostSucceeded();
+				request.PostSucceeded();
+			}
+			catch (Exception e)
+			{
+				var bundle = CreateExceptionJson(e);
+				var jsonString = JsonConvert.SerializeObject(bundle);
+				request.Failed(e.Message, jsonString);
+			}
 		}
 
 

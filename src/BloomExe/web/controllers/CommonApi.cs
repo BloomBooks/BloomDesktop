@@ -54,6 +54,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("common/enterpriseFeaturesEnabled", HandleEnterpriseFeaturesEnabled, false);
 			apiHandler.RegisterEndpointHandler("common/error", HandleJavascriptError, false);
 			apiHandler.RegisterEndpointHandler("common/preliminaryError", HandlePreliminaryJavascriptError, false);
+			apiHandler.RegisterEndpointHandler("common/notifyUserOfProblem", HandleNotifyUserOfProblem, false);
 			apiHandler.RegisterEndpointHandler("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true);
 			apiHandler.RegisterEndpointHandler("common/requestTranslationGroups", RequestTranslationGroups, true);
 			apiHandler.RegisterEndpointHandler("common/showInFolder", HandleShowInFolderRequest, true);
@@ -413,6 +414,16 @@ namespace Bloom.web.controllers
 						jsErrorTimer.Start();
 					}));
 				}
+				request.PostSucceeded();
+			}
+		}
+
+		public void HandleNotifyUserOfProblem(ApiRequest request)
+		{
+			lock (request)
+			{
+				var jsonString = request.RequiredPostJson();
+				dynamic js = JsonConvert.DeserializeObject(jsonString);
 				request.PostSucceeded();
 			}
 		}

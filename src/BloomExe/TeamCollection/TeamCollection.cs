@@ -104,7 +104,8 @@ namespace Bloom.TeamCollection
 				status = status.WithLockedBy(null);
 			PutBookInRepo(folderPath, status, inLostAndFound);
 			WriteLocalStatus(bookFolderName, status);
-			return status;
+			throw new Exception("THIS IS A TEST!");
+//			return status;
 		}
 
 		/// <summary>

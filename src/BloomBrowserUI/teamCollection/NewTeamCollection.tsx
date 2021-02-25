@@ -110,7 +110,18 @@ export const NewTeamCollection: React.FunctionComponent = props => {
                         hasText={true}
                         enabled={true}
                         onClick={() => {
-                            BloomApi.post("teamCollection/joinTeamCollection");
+                            BloomApi.post(
+                                "teamCollection/joinTeamCollection",
+                                () => {},
+                                response => {
+                                    if (response.data) {
+                                        BloomApi.postJson(
+                                            "common/notifyUserOfProblem",
+                                            response.data
+                                        );
+                                    }
+                                }
+                            );
                         }}
                     >
                         {existingCollection ? "Join and Merge" : "Join"}

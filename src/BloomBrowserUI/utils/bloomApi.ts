@@ -69,6 +69,9 @@ export class BloomApi {
                 if (error.response && error.response.statusText) {
                     msg += " (response: " + error.response.statusText + ")";
                 }
+                if (error.response && error.response.data) {
+                    msg += " [[ " + JSON.stringify(error.response.data) + " ]]";
+                }
             } else {
                 msg = "Unexpected promise failure: " + error;
             }

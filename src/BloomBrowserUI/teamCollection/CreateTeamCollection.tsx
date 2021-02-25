@@ -119,7 +119,16 @@ export const CreateTeamCollection: React.FunctionComponent<IProps> = props => {
                         temporarilyDisableI18nWarning={true}
                         onClick={() => {
                             BloomApi.post(
-                                "teamCollection/createTeamCollection"
+                                "teamCollection/createTeamCollection",
+                                () => {},
+                                response => {
+                                    if (response.data) {
+                                        BloomApi.postJson(
+                                            "common/notifyUserOfProblem",
+                                            response.data
+                                        );
+                                    }
+                                }
                             );
                         }}
                     >

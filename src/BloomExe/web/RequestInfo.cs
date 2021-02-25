@@ -268,7 +268,7 @@ namespace Bloom.Api
 			ReplyWithFileContent(path, originalPath);
 		}
 
-		public void WriteError(int errorCode, string errorDescription)
+		public void WriteError(int errorCode, string errorDescription, string jsonDetails = null)
 		{
 			_actualContext.Response.StatusCode = errorCode;
 			// This is an area where HTTP is stuck in pre-Unicode ASCII days.
@@ -277,8 +277,10 @@ namespace Bloom.Api
 			// and tries to parse it as such if we don't specify that it is actually json.
 			// This happens before we even see the data in the axios.get().then().catch() code!
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-7900.
-			if (LocalPathWithoutQuery.ToLowerInvariant().EndsWith(".json"))
+			if (!String.IsNullOrEmpty(jsonDetails) || LocalPathWithoutQuery.ToLowerInvariant().EndsWith(".json"))
 				_actualContext.Response.ContentType = "application/json";
+			if (!String.IsNullOrEmpty(jsonDetails))
+				WriteCompleteOutput(jsonDetails);
 			_actualContext.Response.Close();
 			HaveOutput = true;
 		}

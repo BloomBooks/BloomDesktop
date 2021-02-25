@@ -19,6 +19,7 @@ namespace Bloom.Api
 		//public HttpListenerContext Context; //todo: could we mock a context and then all but do away with this pretend class by subclassing the real one?
 		public long StatusCode;
 		public string StatusDescription;
+		public string ErrorDetailsJson;
 
 		public PretendRequestInfo(string url, HttpMethods httpMethod = HttpMethods.Get, bool forPrinting = false, bool forSrcAttr = false)
 		{
@@ -72,10 +73,11 @@ namespace Bloom.Api
 			ReplyImagePath = path;
 		}
 
-		public void WriteError(int errorCode, string errorDescription)
+		public void WriteError(int errorCode, string errorDescription, string jsonDetails = null)
 		{
 			StatusCode = errorCode;
 			StatusDescription = errorDescription;
+			ErrorDetailsJson = jsonDetails;
 			HaveOutput = true;
 		}
 

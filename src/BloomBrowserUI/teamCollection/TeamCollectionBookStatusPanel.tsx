@@ -168,6 +168,14 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                                 // Todo: fetch teamCollection/currentBookStatus, show who does have it.
                                 alert("Check out failed");
                             }
+                        },
+                        response => {
+                            if (response.data) {
+                                BloomApi.postJson(
+                                    "common/notifyUserOfProblem",
+                                    response.data
+                                );
+                            }
                         }
                     );
                 };
@@ -189,9 +197,20 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                 );
             case "lockedByMe":
                 const checkinHandler = () => {
-                    BloomApi.post("teamCollection/checkInCurrentBook", () => {
-                        setState("unlocked");
-                    });
+                    BloomApi.post(
+                        "teamCollection/checkInCurrentBook",
+                        () => {
+                            setState("unlocked");
+                        },
+                        response => {
+                            if (response.data) {
+                                BloomApi.postJson(
+                                    "common/notifyUserOfProblem",
+                                    response.data
+                                );
+                            }
+                        }
+                    );
                 };
 
                 return (

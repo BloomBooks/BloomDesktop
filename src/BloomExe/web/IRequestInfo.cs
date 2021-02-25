@@ -23,7 +23,7 @@ namespace Bloom.Api
 		void ReplyWithFileContent(string path, string originalPath = null);
 		void ReplyWithImage(string path, string originalPath = null);
 		void WriteError(int errorCode);
-		void WriteError(int errorCode, string errorDescription);
+		void WriteError(int errorCode, string errorDescription, string jsonDetails = null);
 		System.Collections.Specialized.NameValueCollection GetQueryParameters();
 		System.Collections.Specialized.NameValueCollection GetPostDataWhenFormEncoded();
 		string GetPostJson();
