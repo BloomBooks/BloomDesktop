@@ -100,7 +100,8 @@ namespace BloomTests.TeamCollection
 					new TemporaryFolder("SyncLocalAndRepoCollectionFiles_SyncsInRightDirection_Shared"))
 				{
 					var tc = new FolderTeamCollection(collectionFolder.FolderPath, repoFolder.FolderPath);
-					var bloomCollectionPath = Bloom.TeamCollection.TeamCollection.CollectionPath(collectionFolder.FolderPath);
+					var bloomCollectionPath =
+						Bloom.TeamCollection.TeamCollection.CollectionPath(collectionFolder.FolderPath);
 					Assert.That(tc.LocalCollectionFilesRecordedSyncTime, Is.EqualTo(DateTime.MinValue));
 					File.WriteAllText(bloomCollectionPath, "This is a fake collection file");
 
@@ -197,7 +198,8 @@ namespace BloomTests.TeamCollection
 					new TemporaryFolder("Checkin_RenamedBook_DeletesOriginal_Shared"))
 				{
 					var tc = new FolderTeamCollection(collectionFolder.FolderPath, repoFolder.FolderPath);
-					var oldFolderPath = SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, "old name", "book content");
+					var oldFolderPath =
+						SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, "old name", "book content");
 					tc.PutBook(oldFolderPath);
 					tc.AttemptLock("old name");
 					SIL.IO.RobustIO.MoveDirectory(Path.Combine(collectionFolder.FolderPath, "old name"), Path.Combine(collectionFolder.FolderPath, "new name"));
@@ -205,6 +207,43 @@ namespace BloomTests.TeamCollection
 					tc.PutBook(Path.Combine(collectionFolder.FolderPath,"new name"), true);
 					Assert.That(File.Exists(tc.GetPathToBookFileInRepo("new name")),Is.True);
 					Assert.That(File.Exists(tc.GetPathToBookFileInRepo("old name")), Is.False, "old name was not deleted");
+				}
+			}
+		}
+
+		[Test]
+		public void OkToCheckIn_GivesCorrectResults()
+		{
+			using (var collectionFolder =
+				new TemporaryFolder("OkToCheckIn_GivesCorrectResults_Collection"))
+			{
+				using (var repoFolder =
+					new TemporaryFolder("OkToCheckIn_GivesCorrectResults_Shared"))
+				{
+					var tc = new FolderTeamCollection(collectionFolder.FolderPath, repoFolder.FolderPath);
+					var bookFolderPath =
+						SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, "some name", "book content");
+					Assert.That(tc.OkToCheckIn("some name"), Is.True, "can check in new book");
+
+					tc.PutBook(bookFolderPath, true);
+					tc.AttemptLock("some name");
+					Assert.That(tc.OkToCheckIn("some name"), Is.True, "can check in unmodified book with normal checkout status");
+
+					var status = tc.GetStatus("some name");
+					var altStatus = status.WithChecksum("some random thing");
+					tc.WriteBookStatus("some name", altStatus);
+					tc.WriteLocalStatus("some name", status);
+					Assert.That(tc.OkToCheckIn("some name"), Is.False, "can't check in, mysteriously modified in repo");
+
+					altStatus = status.WithLockedBy(null);
+					tc.WriteBookStatus("some name", altStatus);
+					tc.WriteLocalStatus("some name", status);
+					Assert.That(tc.OkToCheckIn("some name"), Is.True, "special case, repo has lost checkout status, but not locked or modified");
+
+					altStatus = status.WithLockedBy("fred@somewhere.org");
+					tc.WriteBookStatus("some name", altStatus);
+					tc.WriteLocalStatus("some name", status);
+					Assert.That(tc.OkToCheckIn("some name"), Is.False, "conflicting lock in repo");
 				}
 			}
 		}
