@@ -201,7 +201,7 @@ namespace BloomTests.TeamCollection
 					tc.PutBook(oldFolderPath);
 					tc.AttemptLock("old name");
 					SIL.IO.RobustIO.MoveDirectory(Path.Combine(collectionFolder.FolderPath, "old name"), Path.Combine(collectionFolder.FolderPath, "new name"));
-					tc.BookHasBeenRenamed("old name", "new name");
+					tc.HandleBookRename("old name", "new name");
 					tc.PutBook(Path.Combine(collectionFolder.FolderPath,"new name"), true);
 					Assert.That(File.Exists(tc.GetPathToBookFileInRepo("new name")),Is.True);
 					Assert.That(File.Exists(tc.GetPathToBookFileInRepo("old name")), Is.False, "old name was not deleted");
