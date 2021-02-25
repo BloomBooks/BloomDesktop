@@ -2131,6 +2131,8 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
 				"//div[@lang='en']/p/span[contains(@class,'audio-sentence') and @id!='']", 15);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[@lang='en']/p/span[contains(@class,'audio-sentence') and not(@id)]", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
 				"//span[contains(@class,'audio-sentence') and @id='i2a5c5a6c-8e4c-4557-8f8f-3e4689d10e21']", 2); // ERROR!
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
 				"//span[contains(@class,'audio-sentence') and @id='i8b5d14ac-0056-4469-8db4-11d4da8c4c9d']", 2); // ERROR!
@@ -2148,7 +2150,8 @@ namespace BloomTests.Book
 			book.BringBookUpToDate(new NullProgress()); // SUT
 
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
-				"//div[@lang='en']/p/span[contains(@class,'audio-sentence') and @id!='']", 15); // unchanged
+				"//div[@lang='en']/p/span[contains(@class,'audio-sentence') and @id!='']", 16); // one missing id added
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@lang='en']/p/span[contains(@class,'audio-sentence') and not(@id)]");
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
 				"//span[contains(@class,'audio-sentence') and @id='i2a5c5a6c-8e4c-4557-8f8f-3e4689d10e21']", 1); // fixed!
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(
