@@ -215,5 +215,53 @@ namespace BloomTests.TeamCollection
 				}
 			}
 		}
+
+		[Test]
+		public void OkToCheckIn_GivesCorrectResults()
+		{
+			using (var collectionFolder =
+				new TemporaryFolder("OkToCheckIn_GivesCorrectResults_Collection"))
+			{
+				using (var repoFolder =
+					new TemporaryFolder("OkToCheckIn_GivesCorrectResults_Shared"))
+				{
+					var mockTcManager = new Mock<ITeamCollectionManager>();
+					TeamCollectionManager.ForceCurrentUserForTests("");
+					var tc = new FolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath, repoFolder.FolderPath);
+					var bookFolderPath =
+						SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, "some name", "book content");
+					Assert.That(tc.OkToCheckIn("some name"), Is.False, "can't check in new book when not registered");
+
+					TeamCollectionManager.ForceCurrentUserForTests("fred@somewhere.com");
+					Assert.That(tc.OkToCheckIn("some name"), Is.True, "can check in new book");
+
+					tc.PutBook(bookFolderPath, true);
+					tc.AttemptLock("some name");
+					Assert.That(tc.OkToCheckIn("some name"), Is.True, "can check in unmodified book with normal checkout status");
+
+					TeamCollectionManager.ForceCurrentUserForTests("");
+					Assert.That(tc.OkToCheckIn("some name"), Is.False, "normally permitted checkin is forbidden with no registration");
+					TeamCollectionManager.ForceCurrentUserForTests("fred@somewhere.com");
+
+					var status = tc.GetStatus("some name");
+					var altStatus = status.WithChecksum("some random thing");
+					tc.WriteBookStatus("some name", altStatus);
+					tc.WriteLocalStatus("some name", status);
+					Assert.That(tc.OkToCheckIn("some name"), Is.False, "can't check in, mysteriously modified in repo");
+
+					altStatus = status.WithLockedBy(null);
+					tc.WriteBookStatus("some name", altStatus);
+					tc.WriteLocalStatus("some name", status);
+					Assert.That(tc.OkToCheckIn("some name"), Is.True, "special case, repo has lost checkout status, but not locked or modified");
+
+					altStatus = status.WithLockedBy("fred@somewhere.org");
+					tc.WriteBookStatus("some name", altStatus);
+					tc.WriteLocalStatus("some name", status);
+					Assert.That(tc.OkToCheckIn("some name"), Is.False, "conflicting lock in repo");
+
+					TeamCollectionManager.ForceCurrentUserForTests("null");
+				}
+			}
+		}
 	}
 }

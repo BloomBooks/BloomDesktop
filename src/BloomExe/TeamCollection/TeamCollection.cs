@@ -68,6 +68,8 @@ namespace Bloom.TeamCollection
 
 		public bool OkToCheckIn(string bookName)
 		{
+			if (!IsRegistrationSufficient())
+				return false; // under no circumstances allow checkin if we don't know who is doing it.
 			var repoStatus = GetStatus(bookName);
 			if (repoStatus.lockedBy == TeamCollection.FakeUserIndicatingNewBook)
 				return true; // we can always check in a book that isn't in the repo at all.
@@ -78,9 +80,6 @@ namespace Bloom.TeamCollection
 				// We should not overwrite those changes.
 				return false;
 			}
-
-			if (!IsRegistrationSufficient())
-				return false;
 
 			if (repoStatus.lockedBy == TeamCollectionManager.CurrentUser
 			    && repoStatus.lockedWhere == TeamCollectionManager.CurrentMachine)
@@ -863,8 +862,7 @@ namespace Bloom.TeamCollection
 		{
 			var bookFolderName = Path.GetFileNameWithoutExtension(bookName);
 			var bookFolderPath = Path.Combine(collectionFolder, bookFolderName);
-			if (!Directory.Exists(bookFolderPath))
-				Directory.CreateDirectory(bookFolderPath);
+			Directory.CreateDirectory(bookFolderPath);
 			var statusFile = Path.Combine(bookFolderPath, "book.status");
 			return statusFile;
 		}
@@ -1395,7 +1393,9 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		public static bool IsRegistrationSufficient()
 		{
-			return !string.IsNullOrWhiteSpace(SIL.Windows.Forms.Registration.Registration.Default.Email);
+			// We're normally checking SIL.Windows.Forms.Registration.Registration.Default.Email,
+			// but getting it via TCM.CurrentUser allows overriding for testing.
+			return !string.IsNullOrWhiteSpace(TeamCollectionManager.CurrentUser);
 		}
 	}
 }
