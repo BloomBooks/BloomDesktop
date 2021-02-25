@@ -623,6 +623,7 @@ namespace Bloom
 
 		public BookThumbNailer ThumbNailer => _scope.Resolve<BookThumbNailer>();
 
+		public TeamCollectionManager TeamCollectionManager => _scope.Resolve<TeamCollectionManager>();
 
 		public static string GetBloomAppDataFolder()
 		{

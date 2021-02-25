@@ -431,7 +431,7 @@ namespace Bloom.TeamCollection
 		/// - ones we will delete when syncing from the repo to local, if no longer in the repo
 		/// </summary>
 		/// <returns></returns>
-		private List<string> FilesToMonitorForCollection()
+		internal List<string> FilesToMonitorForCollection()
 		{
 			var collectionName = Path.GetFileName(_localCollectionFolder);
 			var files = RootLevelCollectionFilesIn(_localCollectionFolder, collectionName);
@@ -589,16 +589,23 @@ namespace Bloom.TeamCollection
 		/// <returns></returns>
 		public static string CollectionPath(string parentFolder)
 		{
-			var collectionHame = GetLocalCollectionNameFromTcName(Path.GetFileName(parentFolder));
-			var collectionPath = Path.Combine(parentFolder, Path.ChangeExtension(collectionHame, "bloomCollection"));
-			return collectionPath;
+			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(parentFolder));
+			var collectionPath = Path.Combine(parentFolder, Path.ChangeExtension(collectionName, "bloomCollection"));
+			if (File.Exists(collectionPath))
+				return collectionPath;
+			// occasionally, mainly when making a temp folder during joining, the bloomCollection file may not
+			// have the expected name
+			var result = Directory.EnumerateFiles(parentFolder, "*.bloomCollection").FirstOrDefault();
+			if (result == null)
+				return collectionPath; // sometimes we use this method to get the expected path where there is no .bloomCollection
+			return result;
 		}
 
 		public static List<string> RootLevelCollectionFilesIn(string folder, string collectionNameOrNull = null)
 		{
 			var collectionName = collectionNameOrNull ?? Path.GetFileName(folder);
 			var files = new List<string>();
-			files.Add(Path.ChangeExtension(collectionName, "bloomCollection"));
+			files.Add(Path.GetFileName(CollectionPath(folder)));
 			foreach (var file in new[] {"customCollectionStyles.css", "configuration.txt"})
 			{
 				if (File.Exists(Path.Combine(folder, file)))

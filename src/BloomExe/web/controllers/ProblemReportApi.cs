@@ -407,6 +407,14 @@ namespace Bloom.web.controllers
 			// Now we use SafeInvoke only inside of this extracted method.
 			TryGetScreenshot(controlForScreenshotting);
 
+			if (BloomServer._theOneInstance == null)
+			{
+				// We got an error really early, before we can use HTML dialogs. Report using the old dialog.
+				// Hopefully we're still on the one main thread.
+				ErrorReport.ReportNonFatalExceptionWithMessage(exception, shortUserLevelMessage);
+				return;
+			}
+
 			SafeInvoke.InvokeIfPossible("Show Problem Dialog", controlForScreenshotting, false, () =>
 			{
 				// Uses a browser dialog to show the problem report
@@ -496,6 +504,11 @@ namespace Bloom.web.controllers
 
 		private static void TryGetScreenshot(Control controlForScreenshotting)
 		{
+			if (controlForScreenshotting == null)
+			{
+				Logger.WriteEvent("Bloom was unable to create a screenshot as no active form could be found");
+				return;
+			}
 			_takingScreenshotLock.Wait();	// Acquire the lock
 
 			try
