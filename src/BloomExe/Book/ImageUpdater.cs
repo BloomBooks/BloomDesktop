@@ -63,7 +63,7 @@ namespace Bloom.Book
 		{
 			foreach (var path in Directory.EnumerateFiles(folderPath).Where(s => s.EndsWith(".png", StringComparison.OrdinalIgnoreCase) || s.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)))
 			{
-				if (ExcludedFiles.Contains(path.ToLowerInvariant()))
+				if (ExcludedFiles.Contains(Path.GetFileName(path).ToLowerInvariant()))
 					continue;
 				var metaData = Metadata.FromFile(path);
 				if (metaData != null && ImageIsFromOfficialCollection(metaData))

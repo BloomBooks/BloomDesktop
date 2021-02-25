@@ -110,5 +110,26 @@ namespace Bloom.Utils
 			}
 			return result;
 		}
+
+
+		public static string GetExtendedFileCopyErrorInformation(string path, string firstLine=null)
+		{
+			var bldr = new StringBuilder();
+			if (!String.IsNullOrEmpty(firstLine))
+				bldr.AppendLine(firstLine);
+			if (RobustFile.Exists(path))
+			{
+				bldr.AppendLine($"You may find help for this problem at https://community.software.sil.org/t/when-bloom-is-prevented-from-changing-png-image-files/4445.");
+				bldr.AppendLine($"The following specific information may also be helpful.");
+				bldr.Append(CollectFilePermissionInformation(path));
+			}
+			else
+			{
+				bldr.AppendLine($"The file ({path}) does not exist!?");
+				bldr.AppendLine($"The following specific information may be helpful.");
+			}
+			bldr.Append(InstalledAntivirusPrograms());
+			return bldr.ToString();
+		}
 	}
 }

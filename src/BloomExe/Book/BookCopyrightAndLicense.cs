@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Web;
 using System.Xml;
+using Bloom.ImageProcessing;
 using Bloom.Utils;
 using L10NSharp;
 using SIL.Extensions;
@@ -280,69 +281,8 @@ namespace Bloom.Book
 			// Don't try to overwrite the license image for a template book.  (See BL-3284.)
 			if (RobustFile.Exists(imagePath) && BloomFileLocator.IsInstalledFileOrDirectory(imagePath))
 				return;
-			var originalReadOnly = FileAttributes.Normal;
-			try
-			{
-				// Almost all of the reports for BL-3227 that have been generated are for an UnauthorizedAccessException
-				// in the FileStream constructor (which is different than the original error reported in BL-3227).  This
-				// can happen if the file has become read-only for some reason.  Changing the FileAttribute is easy.  The
-				// more complicated permission settings are probably too difficult to fix, and fixing them even likelier
-				// to not be allowed.
-				if (RobustFile.Exists(imagePath))
-				{
-					var originalFileAttributes= RobustFile.GetAttributes(imagePath);
-					originalReadOnly = originalFileAttributes & FileAttributes.ReadOnly;
-					if (originalReadOnly == FileAttributes.ReadOnly)
-						RobustFile.SetAttributes(imagePath, FileAttributes.Normal);
-				}
-				if(licenseImage != null)
-				{
-					using(Stream fs = new FileStream(imagePath, FileMode.Create))
-					{
-						RobustImageIO.SaveImage(licenseImage, fs, ImageFormat.Png);
-					}
-					if (originalReadOnly == FileAttributes.ReadOnly)
-					{
-						// This may be useful to know even if only reported with other issues happening elsewhere.
-						Logger.WriteEvent($"Updating {imagePath} required turning off the ReadOnly attribute (BL-3227).");
-					}
-				}
-				else
-				{
-					if(RobustFile.Exists(imagePath))
-						RobustFile.Delete(imagePath);
-				}
-			}
-			catch(Exception error)
-			{
-				// BL-3227 Occasionally get The process cannot access the file '...\license.png' because it is being used by another process.
-				// That's worth a toast, since the user might like a hint why the license image isn't up to date.
-				// However, if the problem is a MISSING icon in the installed templates, which on Linux or if an allUsers install
-				// the system will never let us write, is not worth bothering the user at all. We can't fix it. Too bad.
-				if (BloomFileLocator.IsInstalledFileOrDirectory(imagePath))
-					return;
-				// BL-9533: these errors keep happening, but we can't help users who respond to a toast and send in an error report.
-				// Logging it will allow us to possibly correlate an error here with another problem that does get reported.
-				var message = $"Could not update license image (BL-3227) at {imagePath}";
-				string details;
-				if (RobustFile.Exists(imagePath))
-				{
-					var bldr = new StringBuilder();
-					bldr.AppendLine($"You may find help for this problem at https://community.software.sil.org/t/when-bloom-is-prevented-from-changing-png-image-files/4445.");
-					bldr.AppendLine($"The following specific information may also be helpful.");
-					bldr.Append(MiscUtils.CollectFilePermissionInformation(imagePath));
-					bldr.Append(MiscUtils.InstalledAntivirusPrograms());
-					details = bldr.ToString();
-				}
-				else
-				{
-					details = $"The file ({imagePath}) does not exist!?";
-				}
-				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, message, details, exception: error, showSendReport:false, showRequestDetails:true);
-			}
+			ImageUtils.SaveOrDeletePngImageToPath(licenseImage, imagePath);
 		}
-
-
 
 		public static void RemoveLicense(BookStorage storage)
 		{
