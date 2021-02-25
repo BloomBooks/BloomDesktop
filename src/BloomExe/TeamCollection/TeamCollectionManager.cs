@@ -27,10 +27,14 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		public static bool ForceNextSyncToLocal { set; get; }
 
-		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer)
+		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer, BookRenamedEvent bookRenamedEvent)
 		{
 			_webSocketServer = webSocketServer;
 			_localCollectionFolder = Path.GetDirectoryName(localCollectionPath);
+			bookRenamedEvent.Subscribe(pair =>
+			{
+				CurrentCollection?.HandleBookRename(Path.GetFileName(pair.Key), Path.GetFileName(pair.Value));
+			});
 			var impersonatePath = Path.Combine(_localCollectionFolder, "impersonate.txt");
 			if (File.Exists(impersonatePath))
 			{

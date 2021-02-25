@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Bloom;
 using Bloom.TeamCollection;
 using BloomTemp;
 using NUnit.Framework;
@@ -34,7 +35,7 @@ namespace BloomTests.TeamCollection
 
 					// As an aside, this is a convenient place to check that a TC manager created when TC settings does not exist
 					// functions and does not have a current collection.
-					var tcManager = new TeamCollectionManager(settingsPath, null);
+					var tcManager = new TeamCollectionManager(settingsPath, null, new BookRenamedEvent());
 					Assert.That(tcManager.CurrentCollection, Is.Null);
 
 					RobustFile.WriteAllText(settingsPath, "This is a fake settings file");
@@ -43,7 +44,7 @@ namespace BloomTests.TeamCollection
 
 					var nonBookFolder = Path.Combine(collectionFolder.FolderPath, "Some other folder");
 					Directory.CreateDirectory(nonBookFolder);
-					tcManager = new TeamCollectionManager(settingsPath, null);
+					tcManager = new TeamCollectionManager(settingsPath, null, new BookRenamedEvent());
 					var collection = tcManager.CurrentCollection;
 
 					// sut
@@ -92,9 +93,11 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public void SyncLocalAndRepoCollectionFiles_SyncsInRightDirection()
 		{
-			using (var collectionFolder = new TemporaryFolder("SyncLocalAndRepoCollectionFiles_SyncsInRightDirection_Collection"))
+			using (var collectionFolder =
+				new TemporaryFolder("SyncLocalAndRepoCollectionFiles_SyncsInRightDirection_Collection"))
 			{
-				using (var repoFolder = new TemporaryFolder("SyncLocalAndRepoCollectionFiles_SyncsInRightDirection_Shared"))
+				using (var repoFolder =
+					new TemporaryFolder("SyncLocalAndRepoCollectionFiles_SyncsInRightDirection_Shared"))
 				{
 					var tc = new FolderTeamCollection(collectionFolder.FolderPath, repoFolder.FolderPath);
 					var bloomCollectionPath = Bloom.TeamCollection.TeamCollection.CollectionPath(collectionFolder.FolderPath);
@@ -106,7 +109,7 @@ namespace BloomTests.TeamCollection
 
 					var localWriteTime1 = tc.LocalCollectionFilesRecordedSyncTime();
 					Assert.That(localWriteTime1, Is.LessThan(DateTime.Now));
-					Assert.That(localWriteTime1, Is.GreaterThan(DateTime.Now.Subtract(new TimeSpan(0,0,5,0))));
+					Assert.That(localWriteTime1, Is.GreaterThan(DateTime.Now.Subtract(new TimeSpan(0, 0, 5, 0))));
 					var otherFilesPath = FolderTeamCollection.GetRepoProjectFilesZipPath(repoFolder.FolderPath);
 					Assert.That(File.Exists(otherFilesPath));
 					var anotherPlace = Path.Combine(repoFolder.FolderPath, "anotherPlace.zip");
@@ -180,6 +183,28 @@ namespace BloomTests.TeamCollection
 					Assert.That(localWriteTime7, Is.GreaterThan(localWriteTime6));
 					var repoWriteTime7 = new FileInfo(otherFilesPath).LastWriteTime;
 					Assert.That(repoWriteTime7, Is.EqualTo(repoWriteTime6));
+				}
+			}
+		}
+
+		[Test]
+		public void Checkin_RenamedBook_DeletesOriginal()
+		{
+			using (var collectionFolder =
+				new TemporaryFolder("Checkin_RenamedBook_DeletesOriginal_Collection"))
+			{
+				using (var repoFolder =
+					new TemporaryFolder("Checkin_RenamedBook_DeletesOriginal_Shared"))
+				{
+					var tc = new FolderTeamCollection(collectionFolder.FolderPath, repoFolder.FolderPath);
+					var oldFolderPath = SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, "old name", "book content");
+					tc.PutBook(oldFolderPath);
+					tc.AttemptLock("old name");
+					SIL.IO.RobustIO.MoveDirectory(Path.Combine(collectionFolder.FolderPath, "old name"), Path.Combine(collectionFolder.FolderPath, "new name"));
+					tc.BookHasBeenRenamed("old name", "new name");
+					tc.PutBook(Path.Combine(collectionFolder.FolderPath,"new name"), true);
+					Assert.That(File.Exists(tc.GetPathToBookFileInRepo("new name")),Is.True);
+					Assert.That(File.Exists(tc.GetPathToBookFileInRepo("old name")), Is.False, "old name was not deleted");
 				}
 			}
 		}

@@ -16,6 +16,7 @@ namespace Bloom.TeamCollection
 		public string lockedBySurname; // registration surname
 		public string lockedWhen; // string.Format("{0:yyyy-MM-ddTHH:mm:ss.fffZ}", DateTime.UtcNow)
 		public string lockedWhere; // Environment.MachineName
+		public string oldName; // When a book is renamed, we store the previous name here until checkin.
 
 		public string ToJson()
 		{
@@ -62,6 +63,13 @@ namespace Bloom.TeamCollection
 				result.lockedWhere = TeamCollectionManager.CurrentMachine;
 			}
 
+			return result;
+		}
+
+		public BookStatus WithOldName(string oldName)
+		{
+			var result = (BookStatus) MemberwiseClone();
+			result.oldName = oldName;
 			return result;
 		}
 
