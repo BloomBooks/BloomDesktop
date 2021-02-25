@@ -748,8 +748,7 @@ namespace Bloom.TeamCollection
 		{
 			var bookFolderName = Path.GetFileNameWithoutExtension(bookName);
 			var bookFolderPath = Path.Combine(collectionFolder, bookFolderName);
-			if (!Directory.Exists(bookFolderPath))
-				Directory.CreateDirectory(bookFolderPath);
+			Directory.CreateDirectory(bookFolderPath);
 			var statusFile = Path.Combine(bookFolderPath, "book.status");
 			return statusFile;
 		}
