@@ -2107,8 +2107,10 @@ namespace Bloom.Book
 				if(_alreadyNotifiedAboutOneFailedCopy)
 					return;//don't keep bugging them
 				_alreadyNotifiedAboutOneFailedCopy = true;
-				var msg = $"Could not update one of the support files in this document ({documentPath} to {factoryPath}).";
-				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Can't Update Support File", msg, exception: e);
+				// We probably can't help the user if they create an issue, but we can display a bit more information to help local tech support.
+				var msg = MiscUtils.GetExtendedFileCopyErrorInformation(documentPath,
+					$"Could not update one of the support files in this document ({documentPath} from {factoryPath}).");
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Can't Update Support File", msg, exception: e, false, showRequestDetails:true);
 			}
 		}
 

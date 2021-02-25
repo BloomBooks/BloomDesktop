@@ -269,7 +269,10 @@ namespace Bloom.ImageProcessing
 							GraphicsUnit.Pixel,
 							imageAttributes); // changing white to transparent if a png
 					}
-					RobustImageIO.SaveImage(thumbnail, pathToProcessedImage);
+					if (!appearsToBeJpeg || Path.GetExtension(pathToProcessedImage) == ".png")
+						ImageUtils.SaveOrDeletePngImageToPath(thumbnail, pathToProcessedImage);
+					else
+						RobustImageIO.SaveImage(thumbnail, pathToProcessedImage);
 					// PNG thumbnails created from jpeg files seem to often be way too big, so try to save them as jpeg
 					// files instead if it saves space.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-5605.
 					if (appearsToBeJpeg && Path.GetFileName(pathToProcessedImage) == "thumbnail.png")

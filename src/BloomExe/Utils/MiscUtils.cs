@@ -5,6 +5,9 @@ using SIL.IO;
 
 namespace Bloom.Utils
 {
+	/// <summary>
+	/// Collection of static utility methods that don't fit comfortably anywhere else.
+	/// </summary>
 	public static class MiscUtils
 	{
 		public static string CollectFilePermissionInformation(string filePath)
@@ -109,6 +112,36 @@ namespace Bloom.Utils
 				}
 			}
 			return result;
+		}
+
+		/// <summary>
+		/// Get what information we can about why a given file could not be written to the filesystem.
+		/// This includes the identity of the current user, the identity of the file owner, the file
+		/// permission information, and (grasping at straws) the system's anti-virus programs, if any.
+		/// This information may be helpful for local technical support people even if we can't help
+		/// users at a distance.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-9533.
+		/// </remarks>
+		public static string GetExtendedFileCopyErrorInformation(string path, string firstLine=null)
+		{
+			var bldr = new StringBuilder();
+			if (!String.IsNullOrEmpty(firstLine))
+				bldr.AppendLine(firstLine);
+			if (RobustFile.Exists(path))
+			{
+				bldr.AppendLine($"You may find help for this problem at https://community.software.sil.org/t/when-bloom-is-prevented-from-changing-png-image-files/4445.");
+				bldr.AppendLine($"The following specific information may also be helpful.");
+				bldr.Append(CollectFilePermissionInformation(path));
+			}
+			else
+			{
+				bldr.AppendLine($"The file ({path}) does not exist!?");
+				bldr.AppendLine($"The following specific information may be helpful.");
+			}
+			bldr.Append(InstalledAntivirusPrograms());
+			return bldr.ToString();
 		}
 	}
 }
