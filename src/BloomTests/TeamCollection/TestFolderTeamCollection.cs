@@ -10,7 +10,7 @@ namespace BloomTests.TeamCollection
 {
 	public class TestFolderTeamCollection : FolderTeamCollection
 	{
-		public TestFolderTeamCollection(string localCollectionFolder, string repoFolderPath) : base(localCollectionFolder, repoFolderPath)
+		public TestFolderTeamCollection(ITeamCollectionManager tcManager, string localCollectionFolder, string repoFolderPath) : base(tcManager, localCollectionFolder, repoFolderPath)
 		{
 		}
 
@@ -27,12 +27,6 @@ namespace BloomTests.TeamCollection
 		{
 			base.OnChanged(sender, e);
 			OnChangedCalled?.Invoke();
-		}
-
-		protected override bool CheckRecentNotification()
-		{
-			// For unit testing we don't want to ignore rapid sequences of changes.
-			return false;
 		}
 	}
 }

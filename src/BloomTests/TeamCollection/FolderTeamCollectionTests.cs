@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Bloom.TeamCollection;
 using BloomTemp;
+using Moq;
 using NUnit.Framework;
 using SIL.IO;
 
@@ -13,6 +14,7 @@ namespace BloomTests.TeamCollection
 	{
 		private TemporaryFolder _repoFolder;
 		private TemporaryFolder _collectionFolder;
+		private Mock<ITeamCollectionManager> _mockTcManager;
 		private TestFolderTeamCollection _collection;
 		private BookStatus _myBookStatus;
 		private BookStatus _anotherBookStatus;
@@ -23,7 +25,8 @@ namespace BloomTests.TeamCollection
 			_repoFolder = new TemporaryFolder("FolderTeamCollectionTests_Repo");
 			_collectionFolder = new TemporaryFolder("FolderTeamCollectionTests_Local");
 			FolderTeamCollection.CreateTeamCollectionSettingsFile(_collectionFolder.FolderPath, _repoFolder.FolderPath);
-			_collection = new TestFolderTeamCollection(_collectionFolder.FolderPath, _repoFolder.FolderPath);
+			_mockTcManager = new Mock<ITeamCollectionManager>();
+			_collection = new TestFolderTeamCollection(_mockTcManager.Object, _collectionFolder.FolderPath, _repoFolder.FolderPath);
 
 			// Make some books and check them in. Individual tests verify the results.
 			// This book has an additional file, including a subfolder, to ensure they get
@@ -201,7 +204,7 @@ namespace BloomTests.TeamCollection
 			ManualResetEvent bookChangedRaised = new ManualResetEvent(false);
 			EventHandler<BookStateChangeEventArgs> monitorFunction = (sender, args) =>
 			{
-				modifiedBookName = args.BookName;
+				modifiedBookName = args.BookFileName;
 				bookChangedRaised.Set();
 			};
 			_collection.BookStateChange += monitorFunction;

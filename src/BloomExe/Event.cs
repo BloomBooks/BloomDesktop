@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.TeamCollection;
 
 namespace Bloom
 {
@@ -245,6 +246,16 @@ namespace Bloom
 
 		public ControlKeyEvent()
 			: base("ControlKeyEvent", LoggingLevel.Minor)
+		{
+		}
+	}
+
+	// An event that signals that the checked-in vs. checked out status
+	// of a book in a Team Collection has changed.
+	public class BookCheckoutStatusChangeEvent : Event<CheckoutStatusChangeEventArgs>
+	{
+		public BookCheckoutStatusChangeEvent()
+			: base("TeamCollectionCheckoutStatusChange", LoggingLevel.Minor)
 		{
 		}
 	}

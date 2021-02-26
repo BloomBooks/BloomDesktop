@@ -10,6 +10,6 @@ namespace Bloom.TeamCollection
 	public class BookStateChangeEventArgs
 		: EventArgs
 	{
-		public string BookName;
+		public string BookFileName;
 	}
 }

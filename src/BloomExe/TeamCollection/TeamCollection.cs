@@ -31,10 +31,18 @@ namespace Bloom.TeamCollection
 	{
 		// special value for BookStatus.lockedBy when the book is newly created and not in the repo at all.
 		public const string FakeUserIndicatingNewBook = "this user";
+		protected readonly ITeamCollectionManager _tcManager;
 		protected readonly string _localCollectionFolder; // The unshared folder that this collection syncs with
 
-		public TeamCollection(string localCollectionFolder)
+		// When we last prompted the user to restart (due to a change in the Team Collection)
+		private DateTime LastRestartPromptTime { get; set; } = DateTime.MinValue;
+
+		// Two minutes is arbitrary, and probably not long enough if changes are coming in frequently from outside.
+		private static readonly TimeSpan kMaxRestartPromptFrequency = new TimeSpan(0, 2, 0);
+
+		public TeamCollection(ITeamCollectionManager manager, string localCollectionFolder)
 		{
+			_tcManager = manager;
 			_localCollectionFolder = localCollectionFolder;
 		}
 
@@ -628,6 +636,19 @@ namespace Bloom.TeamCollection
 		protected abstract DateTime LastRepoCollectionFileModifyTime { get; }
 
 		/// <summary>
+		/// Gets the book name without the .bloom suffix
+		/// </summary>
+		/// <param name="bookName">A book name, with our without the .bloom suffix</param>
+		/// <returns>A string which is the book name without the .bloom suffix</returns>
+		protected static string GetBookNameWithoutSuffix(string bookName)
+		{
+			if (bookName.EndsWith(".bloom"))
+				return Path.GetFileNameWithoutExtension(bookName);
+
+			return bookName;
+		}
+
+		/// <summary>
 		/// Send anything other than books that should be shared from local to the repo.
 		/// Enhance: as for CopyRepoCollectionFilesToLocal, also, we want this to be
 		/// restricted to a specified set of emails, by default, the creator of the repo.
@@ -652,9 +673,10 @@ namespace Bloom.TeamCollection
 			NewBook?.Invoke(this, new NewBookEventArgs() {BookName = bookName});
 		}
 
-		protected void RaiseBookStateChange(string bookName)
+		/// <param name="bookFileName">The book name, including the .bloom suffix</param>
+		protected void RaiseBookStateChange(string bookFileName)
 		{
-			BookStateChange?.Invoke(this, new BookStateChangeEventArgs() { BookName = bookName });
+			BookStateChange?.Invoke(this, new BookStateChangeEventArgs() { BookFileName = bookFileName });
 		}
 
 		/// <summary>
@@ -674,14 +696,20 @@ namespace Bloom.TeamCollection
 		/// are probably things that can go wrong if he doesn't.
 		/// </summary>
 		/// <param name="args"></param>
-		private void HandleModifiedFile(BookStateChangeEventArgs args)
+		public void HandleModifiedFile(BookStateChangeEventArgs args)
 		{
-			if (args.BookName.EndsWith(".bloom"))
+			if (args.BookFileName.EndsWith(".bloom"))
 			{
-				if (!IsCheckedOutHereBy(GetLocalStatus(args.BookName)))
+				if (!IsCheckedOutHereBy(GetLocalStatus(args.BookFileName)))
 				{
-					// Just update things locally.
-					CopyBookFromRepoToLocal(args.BookName);
+					var bookBaseName = GetBookNameWithoutSuffix(args.BookFileName);
+
+					// Commenting out for now, because of concerns about whether the write is even finished
+					// or if we successfully debounce events from FileSystemWatcher
+					//// Just update things locally.
+					//CopyBookFromRepoToLocal(bookBaseName);
+
+					UpdateCheckoutStatusIcon(bookBaseName, true);
 					return;
 				}
 			}
@@ -720,9 +748,19 @@ namespace Bloom.TeamCollection
 
 		private void AskUserToRestart()
 		{
+			if (DateTime.Now - LastRestartPromptTime  < kMaxRestartPromptFrequency)
+				return;
+
+			// Reset the time before prompting... in case of multiple threads or something.
+			LastRestartPromptTime = DateTime.Now;
+
 			MessageBox.Show(LocalizationManager.GetString("TeamCollection.RequestRestart",
 					"Bloom has detected that other users have made changes in your team collection folder. When convenient, please restart Bloom to see the changes."),
 				LocalizationManager.GetString("TeamCollection.RemoteChanges", "Remote Changes"));
+
+			// Update the time again to start from when the user closed the MessageBox.
+			LastRestartPromptTime = DateTime.Now;
+
 			// Enhance: there are cases where we need to force a restart immediately.
 			// For example, if the user is editing the book that has been modified elsewhere.
 			// If this happens, when the user returns to the collection tab, Bloom will show who currently
@@ -744,6 +782,12 @@ namespace Bloom.TeamCollection
 			WriteLocalStatus(newName, status.WithOldName(oldName));
 		}
 
+		/// <summary>
+		/// Returns a string representing a path to the book.status file of the specified book in the specified collection.
+		/// </summary>
+		/// <param name="bookName">Can have it the .bloom extension or not, either way is fine.</param>
+		/// <param name="collectionFolder">The collection that contains the book</param>
+		/// <returns></returns>
 		internal string GetStatusFilePath(string bookName, string collectionFolder)
 		{
 			var bookFolderName = Path.GetFileNameWithoutExtension(bookName);
@@ -1065,6 +1109,9 @@ namespace Bloom.TeamCollection
 			var logPath = Path.ChangeExtension(_localCollectionFolder + " Sync", "log");
 			Program.CloseSplashScreen(); // Enhance: maybe not right away? Maybe we can put our dialog on top? But it seems to work pretty well...
 			using (var progressLogger = new ProgressLogger(logPath, progress))
+
+			// NOTE: This (specifically ShowDialog) blocks the main thread until the dialog is closed.
+			// Be careful to avoid deadlocks.
 			using (var dlg = new BrowserDialog(url))
 			{
 				dlg.WebSocketServer = SocketServer;
@@ -1105,6 +1152,10 @@ namespace Bloom.TeamCollection
 					StopMonitoring();
 
 					var problems = SyncAtStartup(progressLogger, doingJoinCollectionMerge);
+
+					// Now that we've finished synchronizing, update these icons based on the post-sync result
+					// REVIEW: What do we want to happen if exception throw here? Should we add to {problems} list?
+					UpdateAllCheckoutStatusIcons();
 
 					progress.Message("Done", "Done");
 
@@ -1197,6 +1248,45 @@ namespace Bloom.TeamCollection
 			if (tcName.EndsWith(" - TC"))
 				return tcName.Substring(0, tcName.Length - 5);
 			return tcName;
+		}
+
+		public void UpdateAllCheckoutStatusIcons()
+		{
+			foreach (var bookName in GetBookList())
+			{
+				UpdateCheckoutStatusIcon(bookName, false);
+			}
+		}
+
+		/// <summary>
+		/// Causes a notification to be sent to the UI to update the checkout status icon for {bookName}
+		/// </summary>
+		/// <param name="bookName">The name of the book</param>
+		/// <param name="shouldNotifyIfNotCheckedOut">If true, will also send an event that a book isn't checked out (This is necessary when books are checked in)</param>
+		public void UpdateCheckoutStatusIcon(string bookName, bool shouldNotifyIfNotCheckedOut)
+		{
+			Debug.Assert(!bookName.EndsWith(".bloom"), $"UpdateCheckoutStatusIcon was passed bookName=\"{bookName}\", which has a .bloom suffix. This is probably incorrect. This function wants only the bookBaseName");
+			
+			var status = GetStatus(bookName);
+			if (IsCheckedOutHereBy(status))
+				MarkCheckedOut(bookName, CheckedOutBy.Self);
+			else if (status.IsCheckedOut())
+				MarkCheckedOut(bookName, CheckedOutBy.Other);
+			else if (shouldNotifyIfNotCheckedOut)
+				MarkCheckedOut(bookName, CheckedOutBy.None);
+		}
+
+		/// <summary>
+		/// Notifies that the book is checked out.
+		/// </summary>
+		/// <param name="isCheckedOutByCurrent">Should be true if checked out by current user/machine</param>
+		private void MarkCheckedOut(string bookName, CheckedOutBy checkedOutByWhom)
+		{
+			_tcManager.RaiseCheckoutStatusChanged(new CheckoutStatusChangeEventArgs(bookName, checkedOutByWhom));
+
+			// ENHANCE: Right now, if the book selection is checked in or checked out by another user,
+			// we will update the icon in LibraryListView, but not the one in the book preview pane.
+			// It'd be nice to update the book preview pane data too.
 		}
 	}
 }

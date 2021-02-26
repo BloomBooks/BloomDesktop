@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -7,6 +8,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Bloom.CollectionCreating;
 using Bloom.MiscUI;
+using Bloom.Utils;
 using ICSharpCode.SharpZipLib.Zip;
 using SIL.IO;
 
@@ -36,12 +38,10 @@ namespace Bloom.TeamCollection
 		private DateTime _lastWriteBookTime;
 		private object _lockObject = new object(); // used to lock access to _lastPutBookPath and _putBookInProgress
 
-		// When we last displayed a notification of a remote change to the repo.
-		// We avoid bothering the user about this frequently, especially because
-		// we can get several change notifications from an apparently atomic change
-		// like copying a new book over an existing one using Windows Explorer.
-		DateTime _lastNotificationTime = DateTime.MinValue;
-		public FolderTeamCollection(string localCollectionFolder, string repoFolderPath) : base(localCollectionFolder)
+		private const int kDebouncePeriodInMs = 100;
+		private Dictionary<string, FileSystemEventRecord> _lastCreateEventByFile = new Dictionary<string, FileSystemEventRecord>();
+		 
+		public FolderTeamCollection(ITeamCollectionManager manager, string localCollectionFolder, string repoFolderPath) : base(manager, localCollectionFolder)
 		{
 			_repoFolderPath = repoFolderPath;
 		}
@@ -128,7 +128,7 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		/// <param name="destinationCollectionFolder">Where to put the retrieved book folder,
 		/// typically the local collection folder.</param>
-		/// <param name="bookName"></param>
+		/// <param name="bookName">The name of the book, with or without the .bloom suffix - either way is fine</param>
 		protected override void FetchBookFromRepo(string destinationCollectionFolder, string bookName)
 		{
 			var bookPath = GetPathToBookFileInRepo(bookName);
@@ -137,7 +137,9 @@ namespace Bloom.TeamCollection
 			{
 				using (var zipFile = new ZipFile(bookPath))
 				{
-					var destFolder = Path.Combine(destinationCollectionFolder, bookName);
+					var destFolder = Path.Combine(destinationCollectionFolder, GetBookNameWithoutSuffix(bookName));
+					Debug.Assert(!destFolder.EndsWith(".bloom"), $"Copying zipFile to folder \"{destFolder}\", which ends with .bloom. This is probably an error, unless the book title literally contains .bloom");
+
 					foreach (ZipEntry entry in zipFile)
 					{
 						var fullOutputPath = Path.Combine(destFolder, entry.Name);
@@ -154,16 +156,18 @@ namespace Bloom.TeamCollection
 						if (!String.IsNullOrEmpty(directoryName))
 							Directory.CreateDirectory(directoryName);
 						using (var instream = zipFile.GetInputStream(entry))
-						using (var writer = RobustFile.Create(fullOutputPath))
 						{
-							ICSharpCode.SharpZipLib.Core.StreamUtils.Copy(instream, writer, buffer);
+							using (var writer = RobustFile.Create(fullOutputPath))
+							{
+								ICSharpCode.SharpZipLib.Core.StreamUtils.Copy(instream, writer, buffer);
+							}
 						}
 					}
 				}
 			}
 			catch (Exception e) when (e is ZipException || e is IOException)
 			{
-				NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not unpack a file in your Team Collection: " + bookName + ".bloom");
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not unpack a file in your Team Collection: " + bookPath, exception: e);
 			}
 		}
 
@@ -351,27 +355,15 @@ namespace Bloom.TeamCollection
 			                       | NotifyFilters.FileName
 			                       | NotifyFilters.DirectoryName;
 
-			_watcher.Changed += OnChanged;
-			_watcher.Created += OnCreated;
+			_watcher.DebounceChanged(OnChanged, kDebouncePeriodInMs);
+			_watcher.DebounceCreated(OnCreated, kDebouncePeriodInMs);
+			_watcher.DebounceRenamed(OnRenamed, kDebouncePeriodInMs);
+
 			// I think if the book was deleted we can afford to wait and let the next restart clean it up.
-			//_watcher.Deleted += OnChanged;
-			_watcher.Renamed += OnRenamed;
+			// _watcher.DebounceDeleted(OnChanged, debouncePeriodInMs);
 
 			// Begin watching.
 			_watcher.EnableRaisingEvents = true;
-		}
-
-		// Return true if we have notified the user of changes recently. If we have NOT done so,
-		// update the most-recent-notification time. Overridden in tests to always return false.
-		// Two minutes is arbitrary, and probably not long enough if changes are coming in frequently
-		// from outside. The main purpose with such a short timeout is to be sure we only get one
-		// notification for a SINGLE change.
-		protected virtual bool CheckRecentNotification()
-		{
-			if (DateTime.Now - _lastNotificationTime < new TimeSpan(0, 2, 0))
-				return true;
-			_lastNotificationTime = DateTime.Now;
-			return false;
 		}
 
 		private bool CheckOwnWriteNotification(string path)
@@ -396,11 +388,36 @@ namespace Bloom.TeamCollection
 			}
 		}
 
+		/// <summary>
+		/// Returns true if a FileSystemWatcher Create event was recently raised.
+		/// </summary>
+		/// <param name="fullPath">The path of the relevant file/directory</param>
+		/// <param name="timeThreshold">Defines what "recently" means</param>
+		/// <returns>Returns true if a Create event for the same {fullPath} was raised within {timeThreshold} amount of time.
+		/// Otherwise, returns false</returns>
+		private bool CheckRecentCreateEvent(string fullPath, TimeSpan timeThreshold)
+		{
+			if (_lastCreateEventByFile.TryGetValue(fullPath, out FileSystemEventRecord lastCreateEvent) && lastCreateEvent != null)
+			{
+				// Note: The timestamps are going to be too far apart if it got stopped in the debugger, but...
+				// I don't know how to get the timestamps onto this earlier.
+				DateTime now = DateTime.Now;
+				if (now - lastCreateEvent.Timestamp <= timeThreshold)
+				{
+					lastCreateEvent.Timestamp = now;	// Update the time while the file is still being modified
+					return true;
+				}
+			}
+
+			return false;
+		}
+
 		protected virtual void OnChanged(object sender, FileSystemEventArgs e)
 		{
-			if (CheckRecentNotification())
-				return;
 			if (CheckOwnWriteNotification(e.FullPath))
+				return;
+
+			if (CheckRecentCreateEvent(e.FullPath, new TimeSpan(0, 0, 1)))
 				return;
 
 			RaiseBookStateChange(Path.GetFileName(e.Name));
@@ -408,6 +425,9 @@ namespace Bloom.TeamCollection
 
 		protected virtual void OnCreated(object sender, FileSystemEventArgs e)
 		{
+			var createEvent = new FileSystemEventRecord(e);
+			_lastCreateEventByFile[e.FullPath] = createEvent;
+
 			if (CheckOwnWriteNotification(e.FullPath))
 				return;
 
@@ -416,10 +436,11 @@ namespace Bloom.TeamCollection
 
 		// I'm not sure this can even happen with DropBox and remote users. But team collection could just
 		// involve a local shared folder, or something local might do a rename...?
-		private void OnRenamed(object sender, RenamedEventArgs e)
+		private void OnRenamed(object sender, FileSystemEventArgs e)
 		{
-			if (CheckRecentNotification())
-				return;
+			// Note: if needed, e should be able to be successfully cast to RenamedEventArgs
+			// But this type is listed as FileSystemEventArgs due to make life easier for FileSystemWatcherExtensions DebounceRenamed.
+
 			// No renames in our PutBook, so we don't need to check for that here.
 			RaiseBookStateChange(Path.GetFileName(e.Name));
 			// Perhaps we should also do something about e.OldName? We don't want to

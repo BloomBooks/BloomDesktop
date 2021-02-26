@@ -7,19 +7,21 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
+using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.web;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using DesktopAnalytics;
-using SIL.Reporting;
 using L10NSharp;
 using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom.CollectionTab
 {
@@ -33,12 +35,14 @@ namespace Bloom.CollectionTab
 
 		private readonly LibraryModel _model;
 		private readonly BookSelection _bookSelection;
+		private BookCheckoutStatusChangeEvent _tcCheckoutStatusChangeEvent;
 		//private readonly HistoryAndNotesDialog.Factory _historyAndNotesDialogFactory;
 		private Font _headerFont;
 		private Font _editableBookFont;
 		private Font _collectionBookFont;
 		private bool _thumbnailRefreshPending;
 		private DateTime _lastClickTime;
+		private BookCollection _primaryCollection;
 		private bool _primaryCollectionReloadPending;
 		private bool _disposed;
 		private BookCollection _downloadedBookCollection;
@@ -61,12 +65,14 @@ namespace Bloom.CollectionTab
 
 		private bool _alreadyReportedErrorDuringImproveAndRefreshBookButtons;
 
-		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent)
+		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookCheckoutStatusChangeEvent tcStatusChangeEvent)
 			//HistoryAndNotesDialog.Factory historyAndNotesDialogFactory)
 		{
 			_model = model;
 			_bookSelection = bookSelection;
 			localizationChangedEvent.Subscribe(unused=>LoadSourceCollectionButtons());
+			_tcCheckoutStatusChangeEvent = tcStatusChangeEvent;
+			tcStatusChangeEvent.Subscribe(OnTeamCollectionCheckoutStatusChange);
 			//_historyAndNotesDialogFactory = historyAndNotesDialogFactory;
 			_buttonsNeedingSlowUpdate = new ConcurrentQueue<ButtonRefreshInfo>();
 			selectedTabChangedEvent.Subscribe(OnSelectedTabChanged);
@@ -245,7 +251,7 @@ namespace Bloom.CollectionTab
 			Application.Idle += ManageButtonsAtIdleTime;
 		}
 
-		private void ManageButtonsAtIdleTime(object sender, EventArgs e)
+		internal void ManageButtonsAtIdleTime(object sender, EventArgs e)
 		{
 			if (_disposed) //could happen if a version update was detected on app launch
 				return;
@@ -326,7 +332,8 @@ namespace Bloom.CollectionTab
 			_primaryCollectionFlow.Controls.Add(primaryCollectionHeader);
 			//_primaryCollectionFlow.SetFlowBreak(primaryCollectionHeader, true);
 			_primaryCollectionFlow.Controls.Add(_menuTriangle);//NB: we're using a picture box instead of a button because the former can have transparency.
-			LoadOneCollection(_model.GetBookCollections().First(), _primaryCollectionFlow);
+			_primaryCollection = _model.GetBookCollections().First();
+			LoadOneCollection(_primaryCollection, _primaryCollectionFlow);
 			_primaryCollectionFlow.ResumeLayout();
 		}
 
@@ -752,6 +759,7 @@ namespace Bloom.CollectionTab
 			Image thumbnail = Resources.PagePlaceHolder;
 			_bookThumbnails.Images.Add(bookInfo.Id, thumbnail);
 			button.ImageIndex = _bookThumbnails.Images.Count - 1;
+
 			flowLayoutPanel.Controls.Add(button); // important to add it before RefreshOneThumbnail; uses parent flow to decide whether primary
 
 			// Can't use this test until after we add button (uses parent info)
@@ -768,11 +776,13 @@ namespace Bloom.CollectionTab
 			else
 			{
 				//show this one for now, in the background someone will do the slow work of getting us a better one
-				RefreshOneThumbnail(bookInfo,Resources.placeHolderBookThumbnail);
+				RefreshOneThumbnail(bookInfo, Resources.placeHolderBookThumbnail);
 				refreshThumbnail = true;
 			}
 			_buttonsNeedingSlowUpdate.Enqueue(new ButtonRefreshInfo(button, refreshThumbnail));
 		}
+
+		
 
 		private string ShortenTitleIfNeeded(string title, Button button)
 		{
@@ -1062,6 +1072,145 @@ namespace Bloom.CollectionTab
 				throw;
 #endif
 			}
+		}
+
+		private bool IsPrimaryCollectionAddingButtons()
+		{
+			return _buttonManagementStage == ButtonManagementStage.LoadPrimary || _buttonManagementStage  == ButtonManagementStage.Reentering;
+		}
+
+		internal void OnTeamCollectionCheckoutStatusChange(CheckoutStatusChangeEventArgs eventArgs)
+		{
+			if (_disposed)
+				return;
+
+			// Need to wait for the button objects to be loaded.
+			// (The button text doesn't need to be finalized, but the button controls need to exist)
+			if (IsPrimaryCollectionAddingButtons())
+			{
+				// NOTE: I guess it's possible for events to be finally processed out of order.
+				// Suppose event 1 for a book comes in while the buttons are still being added. We delay for 100 ms.
+				// After 25 ms, the buttons are done being added.
+				// Then event 2 for the same book comes in 50 ms later. It is now able to process it, so it goes ahead and does so.
+				// Then at the 100ms mark, the 1st event is processed.
+				// Now we have the incorrect state :(
+				// However, I think this scenario is not likely enough to be worth fixing. I think it would require a book being changed in the repo
+				// as Bloom is starting up.
+				Task.Delay(100).ContinueWith(unused =>
+					_tcCheckoutStatusChangeEvent.Raise(eventArgs)
+				);
+				return;
+			}
+
+			// Note: This needs to happen on the thread that owns this control.
+			SafeInvoke.InvokeIfPossible("LibraryListView update checkout status icons",this,true, () =>
+				OnTeamCollectionCheckoutStatusChangeInternal(eventArgs)
+			);
+		}
+
+		/// <summary>
+		/// Updates the UI with icons indicating the checkout status of a team collection.
+		/// </summary>
+		/// <param name="eventArgs"></param>
+		/// <remarks>Precondition: Must be on the thread that owns this control</remarks>
+		private void OnTeamCollectionCheckoutStatusChangeInternal(CheckoutStatusChangeEventArgs eventArgs)
+		{
+			Debug.Assert(_primaryCollection != null, "_primaryCollection expected to be non-null but was null. Investigate why it's not assigned (or has been nulled out)");
+			if (_primaryCollection == null)
+				return;
+
+			var bookInfos = _primaryCollection.GetBookInfos();
+			// Using {FolderName} is better than {Title} because {BookName} is based on the name of the folder, not the language-dependent title
+			var targetBookInfo = bookInfos.Where(bookInfo => bookInfo.FolderName == eventArgs.BookName).FirstOrDefault();
+
+			// Note: It could fail to find when a new book is created.
+			// A new book can actually cause both a Created and a Changed file system event to be raised.
+			// While we attempt to filter out the spurious change, it's not a sure thing... especially if network latency is involved.
+			// In those cases, we may receive a spurious Changed event for a book we don't have a button for.
+			//    (A new book in the Team Collection repo does not on-the-fly add a new book button in LibraryListView, at least right now)
+			// For these spurious Changed events, it's totally fine to just ignore this event and exit early.
+			if (targetBookInfo == null)
+				return;
+
+			var targetButton = FindBookButton(targetBookInfo);
+
+			// Don't expect targetButton to be null, but check just in case.
+			Debug.Assert(targetButton != null, $"Unexpectedly failed to find button for book {targetBookInfo.FolderName}");
+			if (targetButton == null)
+				return;
+
+			UpdateTCCheckoutStatusIcon(targetButton, eventArgs.CheckedOutByWhom);
+		}
+
+		private void UpdateTCCheckoutStatusIcon(Button bookButton, CheckedOutBy checkedOutByWhom)
+		{
+			if (checkedOutByWhom == CheckedOutBy.None)
+			{
+				RemoveTcCheckoutStatusIconFromButton(bookButton);
+				return;
+			}
+
+			var diameter = 29;
+			var padding = 1;
+
+			var label = new Label();
+			var imageSize = diameter + padding * 2;
+			label.Size = new Size(imageSize, imageSize);
+			var bitmap = new Bitmap(imageSize, imageSize);
+			using (Graphics g = Graphics.FromImage(bitmap))
+			{
+				var color = checkedOutByWhom == CheckedOutBy.Self ? Palette.BloomYellow : Palette.BloomPurple;
+				var pen = new Pen(color);
+				var brush = new SolidBrush(color);
+				
+				var left = padding;
+				var top = padding;
+
+				g.DrawEllipse(pen, left, top, diameter, diameter);
+				g.FillEllipse(brush, left, top, diameter, diameter);
+			}
+			label.Image = bitmap;
+			label.BackColor = Color.Transparent;
+
+			label.Location = new Point(bookButton.Width - label.Width - 3, 3);
+
+			// FYI, in order for the label to be transparent with the pixels falling back to the button image,
+			// the button does need to be the parent.
+
+			// Precondition: We only allow this button to have one label right now. So, clear out all the other labels
+			// (This is for ease of figuring out what label to remove)
+			RemoveAndDisposeControlsOfType(bookButton.Controls, typeof(Label));
+
+			bookButton.Controls.Add(label);
+		}
+
+		// Modifies controlCollection to not have any controls of the specified {type}
+		private static void RemoveAndDisposeControlsOfType(ControlCollection controlCollection, Type type)
+		{
+			// Note: Probably O(n^2), but since we don't expect to there to be many controls to remove, probably not a concern.
+			foreach (var control in controlCollection.Cast<Control>())
+			{
+				if (control.GetType() == type)
+				{
+					controlCollection.Remove(control);
+					control.Dispose();
+				}
+			}
+		}
+
+		private void RemoveTcCheckoutStatusIconFromButton(Button button)
+		{
+			var iconLabels = button.Controls.OfType<Label>();
+			var count = iconLabels.Count();
+			Debug.Assert(count <= 1, $"Button for \"{button.Text}\" was only expected to have 1 label, but it had {count} instead.");
+
+			if (count >= 1)
+			{
+				var label = iconLabels.First();
+				button.Controls.Remove(label);
+				label.Dispose();
+			}
+			// If the count was 0, that's fine too. We don't need to remove anything at all.
 		}
 
 		bool IsUsableBook(Button bookButton)

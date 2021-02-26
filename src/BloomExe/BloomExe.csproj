@@ -326,6 +326,7 @@
     <Compile Include="Book\LicenseChecker.cs" />
     <Compile Include="TeamCollection\BookStateChangeEventArgs.cs" />
     <Compile Include="TeamCollection\BookStatus.cs" />
+    <Compile Include="TeamCollection\FileSystemEventRecord.cs" />
     <Compile Include="TeamCollection\FolderTeamCollection.cs" />
     <Compile Include="TeamCollection\ProgressLogger.cs" />
     <Compile Include="TeamCollection\TeamCollection.cs" />
@@ -388,9 +389,11 @@
     <Compile Include="Publish\Android\usb\UsbPublisher.cs" />
     <Compile Include="Publish\Epub\EpubPublishUiSettings.cs" />
     <Compile Include="Publish\Epub\PublishEpubApi.cs" />
+    <Compile Include="TeamCollection\CheckoutStatusChangeEventArgs.cs" />
     <Compile Include="TeamCollection\TeamCollectionManager.cs" />
     <Compile Include="ToPalaso\BackgroundWorkerProgressAdapter.cs" />
     <Compile Include="Utils\BloomUnauthorizedAccessException.cs" />
+    <Compile Include="Utils\FileSystemWatcherExtensions.cs" />
     <Compile Include="Utils\MiscUtils.cs" />
     <Compile Include="WebLibraryIntegration\FirebaseLoginDialog.cs" />
     <Compile Include="web\ReactControl.cs">
