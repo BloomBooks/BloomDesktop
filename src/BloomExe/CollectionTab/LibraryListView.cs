@@ -35,7 +35,7 @@ namespace Bloom.CollectionTab
 
 		private readonly LibraryModel _model;
 		private readonly BookSelection _bookSelection;
-		private TeamCollectionCheckoutStatusChangeEvent _tcCheckoutStatusChangeEvent;
+		private BookCheckoutStatusChangeEvent _tcCheckoutStatusChangeEvent;
 		//private readonly HistoryAndNotesDialog.Factory _historyAndNotesDialogFactory;
 		private Font _headerFont;
 		private Font _editableBookFont;
@@ -65,7 +65,7 @@ namespace Bloom.CollectionTab
 
 		private bool _alreadyReportedErrorDuringImproveAndRefreshBookButtons;
 
-		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, TeamCollectionCheckoutStatusChangeEvent tcStatusChangeEvent)
+		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookCheckoutStatusChangeEvent tcStatusChangeEvent)
 			//HistoryAndNotesDialog.Factory historyAndNotesDialogFactory)
 		{
 			_model = model;
@@ -1088,7 +1088,15 @@ namespace Bloom.CollectionTab
 			// (The button text doesn't need to be finalized, but the button controls need to exist)
 			if (IsPrimaryCollectionAddingButtons())
 			{
-				Task.Delay(100).ContinueWith(unused =>					
+				// NOTE: I guess it's possible for events to be finally processed out of order.
+				// Suppose event 1 for a book comes in while the buttons are still being added. We delay for 100 ms.
+				// After 25 ms, the buttons are done being added.
+				// Then event 2 for the same book comes in 50 ms later. It is now able to process it, so it goes ahead and does so.
+				// Then at the 100ms mark, the 1st event is processed.
+				// Now we have the incorrect state :(
+				// However, I think this scenario is not likely enough to be worth fixing. I think it would require a book being changed in the repo
+				// as Bloom is starting up.
+				Task.Delay(100).ContinueWith(unused =>
 					_tcCheckoutStatusChangeEvent.Raise(eventArgs)
 				);
 				return;
@@ -1112,26 +1120,33 @@ namespace Bloom.CollectionTab
 				return;
 
 			var bookInfos = _primaryCollection.GetBookInfos();
-			// QuickTitle relies just on the folder name, so I think that should align better with eventArgs.BookName than {bookInfo.Title} would.
-			var targetBookInfo = bookInfos.Where(bookInfo => bookInfo.QuickTitleUserDisplay == eventArgs.BookName).FirstOrDefault();
+			// Using {FolderName} is better than {Title} because {BookName} is based on the name of the folder, not the language-dependent title
+			var targetBookInfo = bookInfos.Where(bookInfo => bookInfo.FolderName == eventArgs.BookName).FirstOrDefault();
 
 			// Note: It could fail to find when a new book is created.
 			// A new book can actually cause both a Created and a Changed file system event to be raised.
 			// While we attempt to filter out the spurious change, it's not a sure thing... especially if network latency is involved.
-			// In those cases, it's totally fine to just ignore this event and exit early.
+			// In those cases, we may receive a spurious Changed event for a book we don't have a button for.
+			//    (A new book in the Team Collection repo does not on-the-fly add a new book button in LibraryListView, at least right now)
+			// For these spurious Changed events, it's totally fine to just ignore this event and exit early.
 			if (targetBookInfo == null)
 				return;
 
 			var targetButton = FindBookButton(targetBookInfo);
+
+			// Don't expect targetButton to be null, but check just in case.
+			Debug.Assert(targetButton != null, $"Unexpectedly failed to find button for book {targetBookInfo.FolderName}");
+			if (targetButton == null)
+				return;
+
 			UpdateTCCheckoutStatusIcon(targetButton, eventArgs.CheckedOutByWhom);
-			_primaryCollectionFlow.Refresh();
 		}
 
-		private void UpdateTCCheckoutStatusIcon(Button parentButton, CheckedOutBy checkedOutByWhom)
+		private void UpdateTCCheckoutStatusIcon(Button bookButton, CheckedOutBy checkedOutByWhom)
 		{
 			if (checkedOutByWhom == CheckedOutBy.None)
 			{
-				RemoveTcCheckoutStatusIconFromButton(parentButton);
+				RemoveTcCheckoutStatusIconFromButton(bookButton);
 				return;
 			}
 
@@ -1157,25 +1172,30 @@ namespace Bloom.CollectionTab
 			label.Image = bitmap;
 			label.BackColor = Color.Transparent;
 
-			label.Location = new Point(parentButton.Width - label.Width - 3, 3);
+			label.Location = new Point(bookButton.Width - label.Width - 3, 3);
 
 			// FYI, in order for the label to be transparent with the pixels falling back to the button image,
 			// the button does need to be the parent.
 
 			// Precondition: We only allow this button to have one label right now. So, clear out all the other labels
 			// (This is for ease of figuring out what label to remove)
-			RemoveControlsOfType(parentButton.Controls, typeof(Label));
+			RemoveAndDisposeControlsOfType(bookButton.Controls, typeof(Label));
 
-			parentButton.Controls.Add(label);
+			bookButton.Controls.Add(label);
 		}
 
 		// Modifies controlCollection to not have any controls of the specified {type}
-		private static void RemoveControlsOfType(ControlCollection controlCollection, Type type)
+		private static void RemoveAndDisposeControlsOfType(ControlCollection controlCollection, Type type)
 		{
-			var originalControls = controlCollection.Cast<Control>();
-			var desiredControls = originalControls.Where(control => control.GetType() != type);
-			controlCollection.Clear();
-			controlCollection.AddRange(desiredControls.ToArray());
+			// Note: Probably O(n^2), but since we don't expect to there to be many controls to remove, probably not a concern.
+			foreach (var control in controlCollection.Cast<Control>())
+			{
+				if (control.GetType() == type)
+				{
+					controlCollection.Remove(control);
+					control.Dispose();
+				}
+			}
 		}
 
 		private void RemoveTcCheckoutStatusIconFromButton(Button button)
@@ -1188,6 +1208,7 @@ namespace Bloom.CollectionTab
 			{
 				var label = iconLabels.First();
 				button.Controls.Remove(label);
+				label.Dispose();
 			}
 			// If the count was 0, that's fine too. We don't need to remove anything at all.
 		}

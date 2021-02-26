@@ -11,7 +11,8 @@ namespace Bloom.Utils
 	// * OnAnyEvent -> DebounceAnyEvent. Likewise for OnAllEvents, OnChanged, etc.
 
 	/// <summary>
-	/// This class is like FileSystemWatcher, but if multiple events of the specified {changeTypes} happen within the delay ,
+	/// This class adds extensions to FileSystemWatcher to debounce FileSystemWatcher events.
+	/// The debouncing basically means if multiple events of the specified {changeTypes} happen within the delay ,
 	/// {handler} will only be invoked once, and it is for the last one.
 	/// </summary>
 	public static class FileSystemWatcherExtensions

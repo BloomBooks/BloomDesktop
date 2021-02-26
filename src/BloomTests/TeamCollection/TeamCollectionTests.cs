@@ -60,6 +60,61 @@ namespace BloomTests.TeamCollection
 			//AssertChecksumsMatch(_collectionFolder.FolderPath, "My book");
 		}
 
+		// TODO: Add a test for GivenModifiedToCheckedOutByOther. But, getting it set up has been proving more thorny than worth right now
+		[Test]
+		public void HandleModifiedFile_GivenModifiedToCheckedIn_RaisesCheckedOutByNone()
+		{
+			// Setup //
+			// Simulate (sort of) that a book was just overwritten with the following new contents,
+			// including that book.status does not indicate it's checked out
+			const string bookFolderName = "My book";
+			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
+			Directory.CreateDirectory(bookFolderPath);
+			var bookPath = Path.Combine(bookFolderPath, "My book.htm");
+			RobustFile.WriteAllText(bookPath, "This is just a dummy");
+
+			_collection.PutBook(bookFolderPath);
+
+			// System Under Test //
+			_collection.HandleModifiedFile(new BookStateChangeEventArgs() { BookFileName = $"{bookFolderName}.bloom" } );
+
+			// Verification
+			var eventArgs = (CheckoutStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];
+			Assert.That(eventArgs.CheckedOutByWhom, Is.EqualTo(CheckedOutBy.None));
+		}
+		
+		//[Test]
+		//public void HandleModifiedFile_GivenCheckedOutBySelf_RaisesCheckedOutBySelf()
+		//{
+		//	// TeamCollectionManager._overrideCurrentUser = "currentUser@example.com";
+
+		//	const string bookFolderName = "My book";
+		//	var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
+		//	Directory.CreateDirectory(bookFolderPath);
+		//	var bookPath = Path.Combine(bookFolderPath, "My book.htm");
+		//	RobustFile.WriteAllText(bookPath, "This is just a dummy");
+		//	_collection.PutBook(bookFolderPath);
+
+		//	// TODO: Figure out how to set it up such that the local and repo files are in the correct state
+		//	// NOTE: Wonder if it'd be easier to implement these tests in FolderTeamCollectionTests with its Setup?
+		//	_collection.AttemptLock(bookFolderName);
+		//	_collection.CopyBookFromRepoToLocal(bookFolderName, _collectionFolder.FolderPath);
+
+		//	// System Under Test //
+		//	_collection.HandleModifiedFile(new BookStateChangeEventArgs() { BookName = $"{bookFolderName}.bloom" } );
+
+		//	// Verification
+		//	_mockTcManager.Verify(mock => mock.RaiseCheckoutStatusChanged(It.IsAny<CheckoutStatusChangeEventArgs>()), Times.Once);
+
+		//	// TODO: Get this check to work instead. (It checks that it has the right args too)
+		//	//var eventArgs = (CheckoutStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];
+		//	//Assert.That(eventArgs.CheckedOutByWhom, Is.EqualTo(CheckedOutBy.Self));
+
+		//	// Cleanup
+		//	TeamCollectionManager._overrideCurrentUser = null;
+		//}
+		
+
 		//void AssertChecksumsMatch(string destFolder, string bookName)
 		//{
 		//	var checksumFileName = Path.ChangeExtension(bookName, "checksum");
