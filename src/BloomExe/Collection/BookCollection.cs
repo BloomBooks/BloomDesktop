@@ -30,7 +30,6 @@ namespace Bloom.Collection
 		//for moq only
 		public BookCollection()
 		{
-			_bookInfos = null;
 		}
 
 		// For unit tests only.

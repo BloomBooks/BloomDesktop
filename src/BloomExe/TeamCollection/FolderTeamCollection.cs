@@ -39,7 +39,8 @@ namespace Bloom.TeamCollection
 		private object _lockObject = new object(); // used to lock access to _lastPutBookPath and _putBookInProgress
 
 		private const int kDebouncePeriodInMs = 100;
-		private FileSystemEventRecord _lastCreateEvent = null;
+		private Dictionary<string, FileSystemEventRecord> _lastCreateEventByFile = new Dictionary<string, FileSystemEventRecord>();
+		 
 		public FolderTeamCollection(ITeamCollectionManager manager, string localCollectionFolder, string repoFolderPath) : base(manager, localCollectionFolder)
 		{
 			_repoFolderPath = repoFolderPath;
@@ -396,13 +397,16 @@ namespace Bloom.TeamCollection
 		/// Otherwise, returns false</returns>
 		private bool CheckRecentCreateEvent(string fullPath, TimeSpan timeThreshold)
 		{
-			if (_lastCreateEvent != null && _lastCreateEvent.EventArgs.FullPath == fullPath)
+			if (_lastCreateEventByFile.TryGetValue(fullPath, out FileSystemEventRecord lastCreateEvent) && lastCreateEvent != null)
 			{
 				// Note: The timestamps are going to be too far apart if it got stopped in the debugger, but...
 				// I don't know how to get the timestamps onto this earlier.
 				DateTime now = DateTime.Now;
-				if (now - _lastCreateEvent.Timestamp <= timeThreshold)
+				if (now - lastCreateEvent.Timestamp <= timeThreshold)
+				{
+					lastCreateEvent.Timestamp = now;	// Update the time while the file is still being modified
 					return true;
+				}
 			}
 
 			return false;
@@ -421,7 +425,8 @@ namespace Bloom.TeamCollection
 
 		protected virtual void OnCreated(object sender, FileSystemEventArgs e)
 		{
-			_lastCreateEvent = new FileSystemEventRecord(e);
+			var createEvent = new FileSystemEventRecord(e);
+			_lastCreateEventByFile[e.FullPath] = createEvent;
 
 			if (CheckOwnWriteNotification(e.FullPath))
 				return;

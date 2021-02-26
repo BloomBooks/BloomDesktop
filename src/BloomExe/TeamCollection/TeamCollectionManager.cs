@@ -20,7 +20,7 @@ namespace Bloom.TeamCollection
 	public class TeamCollectionManager: IDisposable, ITeamCollectionManager
 	{
 		private readonly BloomWebSocketServer _webSocketServer;
-		private readonly TeamCollectionCheckoutStatusChangeEvent _checkoutStatusChangeEvent;
+		private readonly BookCheckoutStatusChangeEvent _checkoutStatusChangeEvent;
 		public TeamCollection CurrentCollection { get; private set; }
 		private readonly string _localCollectionFolder;
 		private static string _overrideCurrentUser;
@@ -33,8 +33,7 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		public static bool ForceNextSyncToLocal { set; get; }
 
-		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer, BookRenamedEvent bookRenamedEvent)
-		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer, TeamCollectionCheckoutStatusChangeEvent checkoutStatusChangeEvent)
+		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer, BookRenamedEvent bookRenamedEvent, BookCheckoutStatusChangeEvent checkoutStatusChangeEvent)
 		{
 			_webSocketServer = webSocketServer;
 			_checkoutStatusChangeEvent = checkoutStatusChangeEvent;

@@ -204,7 +204,7 @@ namespace BloomTests.TeamCollection
 			ManualResetEvent bookChangedRaised = new ManualResetEvent(false);
 			EventHandler<BookStateChangeEventArgs> monitorFunction = (sender, args) =>
 			{
-				modifiedBookName = args.BookName;
+				modifiedBookName = args.BookFileName;
 				bookChangedRaised.Set();
 			};
 			_collection.BookStateChange += monitorFunction;

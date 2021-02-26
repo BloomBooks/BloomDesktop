@@ -673,10 +673,10 @@ namespace Bloom.TeamCollection
 			NewBook?.Invoke(this, new NewBookEventArgs() {BookName = bookName});
 		}
 
-		/// <param name="bookName">The book name, including the .bloom suffix</param>
-		protected void RaiseBookStateChange(string bookName)
+		/// <param name="bookFileName">The book name, including the .bloom suffix</param>
+		protected void RaiseBookStateChange(string bookFileName)
 		{
-			BookStateChange?.Invoke(this, new BookStateChangeEventArgs() { BookName = bookName });
+			BookStateChange?.Invoke(this, new BookStateChangeEventArgs() { BookFileName = bookFileName });
 		}
 
 		/// <summary>
@@ -696,16 +696,18 @@ namespace Bloom.TeamCollection
 		/// are probably things that can go wrong if he doesn't.
 		/// </summary>
 		/// <param name="args"></param>
-		private void HandleModifiedFile(BookStateChangeEventArgs args)
+		public void HandleModifiedFile(BookStateChangeEventArgs args)
 		{
-			if (args.BookName.EndsWith(".bloom"))
+			if (args.BookFileName.EndsWith(".bloom"))
 			{
-				if (!IsCheckedOutHereBy(GetLocalStatus(args.BookName)))
+				if (!IsCheckedOutHereBy(GetLocalStatus(args.BookFileName)))
 				{
-					var bookBaseName = GetBookNameWithoutSuffix(args.BookName);
+					var bookBaseName = GetBookNameWithoutSuffix(args.BookFileName);
 
-					// Just update things locally.
-					CopyBookFromRepoToLocal(bookBaseName);
+					// Commenting out for now, because of concerns about whether the write is even finished
+					// or if we successfully debounce events from FileSystemWatcher
+					//// Just update things locally.
+					//CopyBookFromRepoToLocal(bookBaseName);
 
 					UpdateCheckoutStatusIcon(bookBaseName, true);
 					return;
@@ -1281,6 +1283,10 @@ namespace Bloom.TeamCollection
 		private void MarkCheckedOut(string bookName, CheckedOutBy checkedOutByWhom)
 		{
 			_tcManager.RaiseCheckoutStatusChanged(new CheckoutStatusChangeEventArgs(bookName, checkedOutByWhom));
+
+			// ENHANCE: Right now, if the book selection is checked in or checked out by another user,
+			// we will update the icon in LibraryListView, but not the one in the book preview pane.
+			// It'd be nice to update the book preview pane data too.
 		}
 	}
 }

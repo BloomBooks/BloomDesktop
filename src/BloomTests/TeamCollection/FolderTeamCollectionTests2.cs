@@ -3,6 +3,7 @@ using System.IO;
 using Bloom;
 using Bloom.TeamCollection;
 using BloomTemp;
+using Moq;
 using NUnit.Framework;
 using SIL.IO;
 
@@ -35,7 +36,7 @@ namespace BloomTests.TeamCollection
 
 					// As an aside, this is a convenient place to check that a TC manager created when TC settings does not exist
 					// functions and does not have a current collection.
-					var tcManager = new TeamCollectionManager(settingsPath, null, new BookRenamedEvent(), new Bloom.TeamCollectionCheckoutStatusChangeEvent());
+					var tcManager = new TeamCollectionManager(settingsPath, null, new BookRenamedEvent(), new BookCheckoutStatusChangeEvent());
 					Assert.That(tcManager.CurrentCollection, Is.Null);
 
 					RobustFile.WriteAllText(settingsPath, "This is a fake settings file");
@@ -44,8 +45,7 @@ namespace BloomTests.TeamCollection
 
 					var nonBookFolder = Path.Combine(collectionFolder.FolderPath, "Some other folder");
 					Directory.CreateDirectory(nonBookFolder);
-					tcManager = new TeamCollectionManager(settingsPath, null, new BookRenamedEvent());
-					tcManager = new TeamCollectionManager(settingsPath, null, new Bloom.TeamCollectionCheckoutStatusChangeEvent());
+					tcManager = new TeamCollectionManager(settingsPath, null, new BookRenamedEvent(), new BookCheckoutStatusChangeEvent());
 					var collection = tcManager.CurrentCollection;
 
 					// sut
@@ -82,7 +82,8 @@ namespace BloomTests.TeamCollection
 				using (var repoFolder =
 					new TemporaryFolder("SyncLocalAndRepoCollectionFiles_SyncsInRightDirection_Shared"))
 				{
-					var tc = new FolderTeamCollection(collectionFolder.FolderPath, repoFolder.FolderPath);
+					var mockTcManager = new Mock<ITeamCollectionManager>();
+					var tc = new FolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath, repoFolder.FolderPath);
 					var bcPath = Path.Combine(collectionFolder.FolderPath, "mybooks.bloomCollection");
 					File.WriteAllText(bcPath, "something");
 					var files = tc.FilesToMonitorForCollection();
@@ -103,7 +104,7 @@ namespace BloomTests.TeamCollection
 					var settingsFileName =
 						Path.ChangeExtension(Path.GetFileName(collectionFolder.FolderPath), "bloomCollection");
 					var settingsPath = Path.Combine(collectionFolder.FolderPath, settingsFileName);
-					var tcManager = new TeamCollectionManager(settingsPath, null, new Bloom.TeamCollectionCheckoutStatusChangeEvent());					
+					var tcManager = new TeamCollectionManager(settingsPath, null, new BookRenamedEvent(), new BookCheckoutStatusChangeEvent());
 					var tc = new FolderTeamCollection(tcManager, collectionFolder.FolderPath, repoFolder.FolderPath);
 					var bloomCollectionPath = Bloom.TeamCollection.TeamCollection.CollectionPath(collectionFolder.FolderPath);
 					Assert.That(tc.LocalCollectionFilesRecordedSyncTime, Is.EqualTo(DateTime.MinValue));
@@ -201,7 +202,8 @@ namespace BloomTests.TeamCollection
 				using (var repoFolder =
 					new TemporaryFolder("Checkin_RenamedBook_DeletesOriginal_Shared"))
 				{
-					var tc = new FolderTeamCollection(collectionFolder.FolderPath, repoFolder.FolderPath);
+					var mockTcManager = new Mock<ITeamCollectionManager>();
+					var tc = new FolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath, repoFolder.FolderPath);
 					var oldFolderPath = SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, "old name", "book content");
 					tc.PutBook(oldFolderPath);
 					tc.AttemptLock("old name");

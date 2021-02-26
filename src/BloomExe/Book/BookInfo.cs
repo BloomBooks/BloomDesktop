@@ -265,12 +265,14 @@ namespace Bloom.Book
 		public bool UseDeviceXMatter { get; set; }
 
 		/// <summary>
+		/// The name of the folder that contains the book. (not the full path, just the folder name)
+		/// </summary>
+		public string FolderName => Path.GetFileName(FolderPath);
+
+		/// <summary>
 		/// This one knows nothing of what language the user speaks... currently using that requires actually reading in the html, which is beyond what this class can do
 		/// </summary>
-		public string QuickTitleUserDisplay
-		{
-			get { return Path.GetFileName(FolderPath); }
-		}
+		public string QuickTitleUserDisplay => FolderName;
 
 		public bool TryGetPremadeThumbnail(out Image image)
 		{

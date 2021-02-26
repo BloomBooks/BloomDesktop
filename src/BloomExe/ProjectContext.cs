@@ -129,7 +129,7 @@ namespace Bloom
 							typeof (PageSelection),
 							typeof (LocalizationChangedEvent),
 							typeof (ControlKeyEvent),
-							typeof (TeamCollectionCheckoutStatusChangeEvent),
+							typeof (BookCheckoutStatusChangeEvent),
 							typeof (EditingModel),
 							typeof (AudioRecording),
 							typeof(BookSettingsApi),
@@ -203,7 +203,7 @@ namespace Bloom
 						// It's important to create the TC manager before we create CollectionSettings, as its constructor makes sure
 						// we have a current version of the file that CollectionSettings is built from.
 						builder.Register<TeamCollectionManager>(c => new TeamCollectionManager(projectSettingsPath,
-							c.Resolve<BloomWebSocketServer>(), c.Resolve<BookRenamedEvent>(), c.Resolve<TeamCollectionCheckoutStatusChangeEvent>())).InstancePerLifetimeScope();
+							c.Resolve<BloomWebSocketServer>(), c.Resolve<BookRenamedEvent>(), c.Resolve<BookCheckoutStatusChangeEvent>())).InstancePerLifetimeScope();
 						builder.Register<CollectionSettings>(c =>
 						{
 							c.Resolve<TeamCollectionManager>();
