@@ -20,20 +20,20 @@ namespace Bloom.TeamCollection
 	public class TeamCollectionManager: IDisposable, ITeamCollectionManager
 	{
 		private readonly BloomWebSocketServer _webSocketServer;
-		private readonly TeamCollectionCheckoutStatusChangeEvent _checkoutStatusChangeEvent;
+		private readonly BookCheckoutStatusChangeEvent _checkoutStatusChangeEvent;
 		public TeamCollection CurrentCollection { get; private set; }
 		private readonly string _localCollectionFolder;
-		private static string _overrideCurrentUser;
+		internal static string _overrideCurrentUser;
 		private static string _overrideCurrentUserFirstName;
 		private static string _overrideCurrentUserSurname;
-		private static string _overrideMachineName;
+		internal static string _overrideMachineName;
 
 		/// <summary>
 		/// Force the startup sync of collection files to be FROM the repo TO local.
 		/// </summary>
 		public static bool ForceNextSyncToLocal { set; get; }
 
-		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer, TeamCollectionCheckoutStatusChangeEvent checkoutStatusChangeEvent)
+		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer, BookCheckoutStatusChangeEvent checkoutStatusChangeEvent)
 		{
 			_webSocketServer = webSocketServer;
 			_checkoutStatusChangeEvent = checkoutStatusChangeEvent;
