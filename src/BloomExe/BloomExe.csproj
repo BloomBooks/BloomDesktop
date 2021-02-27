@@ -423,6 +423,7 @@
     <Compile Include="Utils\RobustZip.cs" />
     <Compile Include="WebLibraryIntegration\FirebaseLoginDialog.cs" />
     <Compile Include="WebLibraryIntegration\S3Extensions.cs" />
+    <Compile Include="web\controllers\CollectionApi.cs" />
     <Compile Include="web\ReactControl.cs">
       <SubType>UserControl</SubType>
     </Compile>

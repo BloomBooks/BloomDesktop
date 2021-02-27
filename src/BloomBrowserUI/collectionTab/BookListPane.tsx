@@ -2,11 +2,16 @@ import Grid from "@material-ui/core/Grid";
 import React = require("react");
 import "BookListPane.less";
 import Paper from "@material-ui/core/Paper";
+import { BloomApi } from "../utils/bloomApi";
 
 export const BookListPane: React.FunctionComponent<{}> = () => {
+    const [collectionName] = BloomApi.useApiString(
+        "collection/name",
+        "unknown"
+    );
     return (
         <div className="bookButtonPane">
-            <h1>FooBar Books</h1>
+            <h1>{collectionName}</h1>
             <Grid
                 container={true}
                 spacing={3}
