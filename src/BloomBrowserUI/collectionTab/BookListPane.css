@@ -1,0 +1,191 @@
+/* Common Bloom UI styling */
+@font-face {
+    font-family: "Roboto";
+    src: url("/bloom/fonts/Roboto-Regular.woff2") format("woff2");
+    font-weight: normal;
+}
+@font-face {
+    font-family: "Roboto";
+    src: url("/bloom/fonts/Roboto-Bold.woff2") format("woff2");
+    font-weight: bold;
+}
+@font-face {
+    font-family: "NotoSans";
+    src: url("/bloom/fonts/NotoSansDevanagari-Regular.woff2") format("woff2");
+    unicode-range: U+0900-097F, U+A8E0-A8FF;
+    font-weight: normal;
+}
+@font-face {
+    font-family: "NotoSans";
+    src: url("/bloom/fonts/NotoSansDevanagari-Bold.woff2") format("woff2");
+    unicode-range: U+0900-097F, U+A8E0-A8FF;
+    font-weight: bold;
+}
+@font-face {
+    font-family: "NotoSans";
+    src: url("/bloom/fonts/NotoSansThai-Regular.woff2") format("woff2");
+    unicode-range: U+0E00-0E7F;
+    font-weight: normal;
+}
+@font-face {
+    font-family: "NotoSans";
+    src: url("/bloom/fonts/NotoSansThai-Bold.woff2") format("woff2");
+    unicode-range: U+0E00-0E7F;
+    font-weight: bold;
+}
+@font-face {
+    font-family: "NotoSans";
+    src: url("/bloom/fonts/NotoSansBengali-Regular.woff2") format("woff2");
+    unicode-range: U+0980-09FF;
+    font-weight: normal;
+}
+@font-face {
+    font-family: "NotoSans";
+    src: url("/bloom/fonts/NotoSansBengali-Bold.woff2") format("woff2");
+    unicode-range: U+0980-09FF;
+    font-weight: bold;
+}
+@font-face {
+    font-family: "NotoSans";
+    src: url("/bloom/fonts/NotoSansSc-Regular.woff2") format("woff2");
+    unicode-range: U+3000-303F, U+FF00-FFEF, U+4E00-9FFF;
+    font-weight: normal;
+}
+@font-face {
+    font-family: "NotoSans";
+    src: url("/bloom/fonts/NotoSansSc-Regular.woff2") format("woff2");
+    unicode-range: U+3000-303F, U+FF00-FFEF, U+4E00-9FFF;
+    font-weight: bold;
+}
+@font-face {
+    font-family: "NotoSans";
+    src: url("/bloom/fonts/NotoSansArabic-Regular.woff2") format("woff2");
+    unicode-range: U+0600-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+    font-weight: normal;
+}
+@font-face {
+    font-family: "NotoSans";
+    src: url("/bloom/fonts/NotoSansArabic-Bold.woff2") format("woff2");
+    unicode-range: U+0600-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+    font-weight: bold;
+}
+body {
+    font-family: Roboto, NotoSans, sans-serif;
+}
+.react-tabs {
+    margin: 20px;
+}
+.react-tabs__tab-list {
+    margin-bottom: 0;
+}
+.react-tabs__tab {
+    background-color: lightgray;
+    margin-right: 5px;
+}
+.react-tabs__tab--selected {
+    background-color: white;
+    font-weight: bold;
+}
+.react-tabs__tab-panel--selected > div {
+    padding-right: 20px;
+    padding-bottom: 20px;
+    padding-left: 20px;
+    background-color: white;
+}
+.invisible {
+    display: none !important;
+}
+body.developer .untranslated,
+body.alpha .untranslated {
+    color: darkred;
+    background-color: yellow;
+}
+body.highlightTranslatedStrings.developer .translated {
+    color: green;
+}
+body.highlightTranslatedStrings.developer .assumedTranslated {
+    color: lightgreen;
+}
+/* all of this worked in the latest firefox, but not Bloom.
+    We may want it someday, as it sure seems clearer to put
+    in a ? than the black box that FF normally uses, to mean
+    indeterminate.
+
+input[type="checkbox"]:indeterminate {
+    background: white;
+    -moz-appearance: none;
+    appearance: none;
+    outline: 0;
+    height: 14px;
+    width: 14px;
+    border: 1px solid black;
+}
+input[type="checkbox"]:indeterminate::after {
+    content: "?";
+    position: absolute;
+    top: -2px;
+    left: 2px;
+    font-family: sans;
+    font-weight: bold;
+    //color: gray;
+}
+*/
+:not(html) {
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+input,
+textarea,
+[contenteditable="true"] *,
+*[contenteditable="true"] {
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+.enterprise-only-flag::after {
+    content: "\25cf";
+    cursor: default;
+    color: #96668f;
+    font-size: 14px;
+    position: absolute;
+    top: -8px;
+}
+.drawAttention {
+    animation: shakeMe 75ms 5 ease-in alternate;
+}
+@keyframes shakeMe {
+    0% {
+        margin-left: 10px;
+    }
+    100% {
+        margin-left: 0;
+    }
+}
+.bookButtonPane {
+    padding: 25px;
+    background-color: #2e2e2e;
+    color: white;
+    font-family: "Andika New Basic";
+}
+.bookButtonPane h1 {
+    font-size: 20px;
+    margin: 0;
+}
+.bookButtonPane .bookButton {
+    margin-top: 16px;
+    height: 100px;
+    width: 75px;
+}
+.bookButtonPane .bookButton .imgFake {
+    background-color: brown;
+    height: 75px;
+    width: 75px;
+}
+.bookButtonPane .bookButton .bookTitle {
+    margin-top: 5px;
+    width: 75px;
+    text-align: center;
+    font-size: 12px;
+    line-height: 14px;
+}
