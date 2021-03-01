@@ -174,18 +174,27 @@ textarea,
 }
 .bookButtonPane .bookButton {
     margin-top: 16px;
-    height: 100px;
-    width: 75px;
+    height: 150px;
+    width: 125px;
+    border: none;
 }
-.bookButtonPane .bookButton .imgFake {
-    background-color: brown;
-    height: 75px;
-    width: 75px;
+.bookButtonPane .bookButton:hover {
+    background-color: #444444;
 }
-.bookButtonPane .bookButton .bookTitle {
-    margin-top: 5px;
-    width: 75px;
-    text-align: center;
+.bookButtonPane .bookButton.selected {
+    border: solid thin gold;
+}
+.bookButtonPane .bookButton .MuiButton-label {
+    color: white;
+    display: flex;
+    flex-direction: column;
+    text-transform: none;
     font-size: 12px;
     line-height: 14px;
+    margin-top: 5px;
+    width: 75px;
+}
+.bookButtonPane .bookButton img {
+    height: 75px;
+    width: 75px;
 }

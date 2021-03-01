@@ -40,7 +40,7 @@ export class BloomApi {
         // Save the place where the original axios call was made.
         // The stack in the error passed to catch is usually not very
         // useful, containing just a few levels from the axios code
-        // that handle the rejection of a promise, thoug it might contain
+        // that handle the rejection of a promise, though it might contain
         // useful information about a problem within the '.then' block.
         // The stack that we would get by throwing in the catch function
         // itself is even less useful, typically containing nothing but
@@ -251,7 +251,19 @@ export class BloomApi {
         });
     }
 
-    // This method is used to get a result from Bloom, passing paramaters to the nested axios call.
+    public static useApiJson(urlSuffix: string): [any | undefined] {
+        const [value, setValue] = React.useState<any | undefined>();
+        React.useEffect(() => {
+            BloomApi.get(urlSuffix, c => {
+                console.log(c.data);
+                //                console.log(JSON.parse(c.data));
+                setValue(c.data);
+            });
+        }, []);
+        return [value];
+    }
+
+    // This method is used to get a result from Bloom, passing parameters to the nested axios call.
     public static getWithConfig(
         urlSuffix: string,
         config: AxiosRequestConfig,
