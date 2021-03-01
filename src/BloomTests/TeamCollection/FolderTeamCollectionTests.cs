@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -178,7 +178,7 @@ namespace BloomTests.TeamCollection
 			ManualResetEvent newbookRaised = new ManualResetEvent(false);
 			_collection.NewBook += (sender, args) =>
 			{
-				newBookName = args.BookName;
+				newBookName = args.BookFileName;
 				newbookRaised.Set();
 			};
 			RobustFile.WriteAllText(newBookPath, @"Newly added book"); // no, not a zip at all

@@ -7,6 +7,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
+using BloomTests.TeamCollection;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Reporting;
@@ -47,6 +48,42 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/chooseFolderLocation", HandleChooseFolderLocation, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/createTeamCollection", HandleCreateTeamCollection, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/joinTeamCollection", HandleJoinTeamCollection, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/closeDialog", HandleCloseDialog, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/reload", HandleReload, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/getLog", HandleGetLog, false);
+		}
+
+		public Action ReloadProjectAction { get; set; }
+
+		public TeamCollectionDialog CurrentDialog { get; set; }
+
+		private void HandleCloseDialog(ApiRequest request)
+		{
+			CurrentDialog?.Close();
+			request.PostSucceeded();
+		}
+
+		private void HandleReload(ApiRequest request)
+		{
+			CurrentDialog?.Close();
+			ReloadProjectAction?.Invoke();
+			request.PostSucceeded();
+		}
+
+		private void HandleGetLog(ApiRequest request)
+		{
+			var log = _tcManager.CurrentCollection?.MessageLog;
+			if (log == null)
+			{
+				request.Failed();
+				return;
+			}
+
+			request.ReplyWithJson(JsonConvert.SerializeObject(
+				new
+				{
+					messages= log.PrettyPrintMessages // Enhance: include types
+				}));
 		}
 
 		public void HandleRepoFolderPath(ApiRequest request)

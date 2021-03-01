@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Bloom.TeamCollection;
 using BloomTemp;
 using Moq;
@@ -22,47 +23,53 @@ namespace BloomTests.TeamCollection
 		private TemporaryFolder _collectionFolder;
 		private FolderTeamCollection _collection;
 		private Mock<ITeamCollectionManager> _mockTcManager;
+		private TeamCollectionMessageLog _tcLog;
 
-		[OneTimeSetUp]
-		public void OneTimeSetup()
+		[SetUp]
+		public void Setup()
 		{
+			TeamCollectionManager.ForceCurrentUserForTests("me@somewhere.org");
+
 			_sharedFolder = new TemporaryFolder("TeamCollection_Shared");
 			_collectionFolder = new TemporaryFolder("TeamCollection_Local");
+			_tcLog = new TeamCollectionMessageLog(TeamCollectionManager.GetTcLogPathFromLcPath(_collectionFolder.FolderPath));
 			FolderTeamCollection.CreateTeamCollectionSettingsFile(_collectionFolder.FolderPath,
 				_sharedFolder.FolderPath);
 
 			_mockTcManager = new Mock<ITeamCollectionManager>();
-			_collection = new FolderTeamCollection(_mockTcManager.Object, _collectionFolder.FolderPath, _sharedFolder.FolderPath);
+			_collection = new FolderTeamCollection(_mockTcManager.Object, _collectionFolder.FolderPath, _sharedFolder.FolderPath, _tcLog);
 		}
 
-		[OneTimeTearDown]
-		public void OneTimeTearDown()
+		[TearDown]
+		public void TearDown()
 		{
+			TeamCollectionManager.ForceCurrentUserForTests(null);
 			_collectionFolder.Dispose();
 			_sharedFolder.Dispose();
 		}
 
 		[Test]
-		public void HandleNewBook_CopiesBookAndShaToLocal()
+		public void HandleNewBook_CreatesNewStuffMessage()
 		{
-			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, "My book");
+			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, "My new book");
 			Directory.CreateDirectory(bookFolderPath);
-			var bookPath = Path.Combine(bookFolderPath, "My book.htm");
+			var bookPath = Path.Combine(bookFolderPath, "My new book.htm");
 			RobustFile.WriteAllText(bookPath, "This is just a dummy");
 			_collection.PutBook(bookFolderPath);
 			SIL.IO.RobustIO.DeleteDirectoryAndContents(bookFolderPath);
+			var prevMessages = _tcLog.Messages.Count;
 
-			_collection.HandleNewBook(new NewBookEventArgs(){BookName="My book.bloom"});
+			// SUT: We're mainly testing HandleNewbook, but it's convenient to check that this method calls it properly.
+			_collection.QueuePendingBookChange(new NewBookEventArgs() { BookFileName = "My new book.bloom" });
+			_collection.HandleRemoteBookChangesOnIdle(null, new EventArgs());
 
-			var destBookFolder = Path.Combine(_collectionFolder.FolderPath, "My book");
-			var destBookPath = Path.Combine(destBookFolder, "My book.htm");
-			Assert.That(File.ReadAllText(destBookPath), Is.EqualTo("This is just a dummy"));
-			//AssertChecksumsMatch(_collectionFolder.FolderPath, "My book");
+
+			Assert.That(_tcLog.Messages[prevMessages].MessageType, Is.EqualTo(MessageAndMilestoneType.NewStuff));
 		}
 
 		// TODO: Add a test for GivenModifiedToCheckedOutByOther. But, getting it set up has been proving more thorny than worth right now
 		[Test]
-		public void HandleModifiedFile_GivenModifiedToCheckedIn_RaisesCheckedOutByNone()
+		public void HandleModifiedFile_NoConflictBookNotCheckedOut_RaisesCheckedOutByNoneAndNewStuffMessage()
 		{
 			// Setup //
 			// Simulate (sort of) that a book was just overwritten with the following new contents,
@@ -74,55 +81,120 @@ namespace BloomTests.TeamCollection
 			RobustFile.WriteAllText(bookPath, "This is just a dummy");
 
 			_collection.PutBook(bookFolderPath);
+			var prevMessages = _tcLog.Messages.Count;
 
 			// System Under Test //
 			_collection.HandleModifiedFile(new BookStateChangeEventArgs() { BookFileName = $"{bookFolderName}.bloom" } );
 
 			// Verification
-			var eventArgs = (CheckoutStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];
+			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];
 			Assert.That(eventArgs.CheckedOutByWhom, Is.EqualTo(CheckedOutBy.None));
+
+			Assert.That(_tcLog.Messages[prevMessages].MessageType, Is.EqualTo(MessageAndMilestoneType.NewStuff));
 		}
-		
-		//[Test]
-		//public void HandleModifiedFile_GivenCheckedOutBySelf_RaisesCheckedOutBySelf()
-		//{
-		//	// TeamCollectionManager._overrideCurrentUser = "currentUser@example.com";
 
-		//	const string bookFolderName = "My book";
-		//	var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
-		//	Directory.CreateDirectory(bookFolderPath);
-		//	var bookPath = Path.Combine(bookFolderPath, "My book.htm");
-		//	RobustFile.WriteAllText(bookPath, "This is just a dummy");
-		//	_collection.PutBook(bookFolderPath);
+		[Test]
+		public void HandleModifiedFile_NoConflictBookCheckedOutRemotely_RaisesCheckedOutByOtherAndNewStuffMessage()
+		{
+			// Setup //
+			// Simulate (sort of) that a book was just overwritten with the following new contents,
+			// including that book.status indicates a remote checkout
+			const string bookFolderName = "My other book";
+			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
+			Directory.CreateDirectory(bookFolderPath);
+			var bookPath = Path.Combine(bookFolderPath, "My other book.htm");
+			RobustFile.WriteAllText(bookPath, "This is just a dummy");
 
-		//	// TODO: Figure out how to set it up such that the local and repo files are in the correct state
-		//	// NOTE: Wonder if it'd be easier to implement these tests in FolderTeamCollectionTests with its Setup?
-		//	_collection.AttemptLock(bookFolderName);
-		//	_collection.CopyBookFromRepoToLocal(bookFolderName, _collectionFolder.FolderPath);
+			_collection.PutBook(bookFolderPath);
+			_collection.AttemptLock("My other book", "nancy@somewhere.com");
+			// Enhance: to make it more realistic, we could write a not-checked-out-here local status,
+			// but it's not necessary for producing the effects we want to test here.
+			var prevMessages = _tcLog.Messages.Count;
 
-		//	// System Under Test //
-		//	_collection.HandleModifiedFile(new BookStateChangeEventArgs() { BookName = $"{bookFolderName}.bloom" } );
+			// System Under Test //
+			_collection.HandleModifiedFile(new BookStateChangeEventArgs() { BookFileName = $"{bookFolderName}.bloom" });
 
-		//	// Verification
-		//	_mockTcManager.Verify(mock => mock.RaiseCheckoutStatusChanged(It.IsAny<CheckoutStatusChangeEventArgs>()), Times.Once);
+			// Verification
+			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];
+			Assert.That(eventArgs.CheckedOutByWhom, Is.EqualTo(CheckedOutBy.Other));
 
-		//	// TODO: Get this check to work instead. (It checks that it has the right args too)
-		//	//var eventArgs = (CheckoutStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];
-		//	//Assert.That(eventArgs.CheckedOutByWhom, Is.EqualTo(CheckedOutBy.Self));
+			Assert.That(_tcLog.Messages[prevMessages].MessageType, Is.EqualTo(MessageAndMilestoneType.NewStuff));
+		}
 
-		//	// Cleanup
-		//	TeamCollectionManager._overrideCurrentUser = null;
-		//}
-		
+		[Test]
+		public void HandleModifiedFile_CheckedOutToMe_RemotelyToOther_RaisesCheckedOutByOtherAndErrorMessage()
+		{
+			// Setup //
+			// Simulate a book was just overwritten with contents indicating a remote checkout,
+			// while locally it is checked out to me.
+			const string bookFolderName = "My conflict book";
+			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
+			Directory.CreateDirectory(bookFolderPath);
+			var bookPath = Path.Combine(bookFolderPath, "My conflict book.htm");
+			RobustFile.WriteAllText(bookPath, "This is just a dummy");
 
-		//void AssertChecksumsMatch(string destFolder, string bookName)
-		//{
-		//	var checksumFileName = Path.ChangeExtension(bookName, "checksum");
-		//	var path1 = Path.Combine(_sharedFolder.FolderPath, checksumFileName);
-		//	var path2 = Path.Combine(destFolder, checksumFileName);
-		//	Assert.That(File.Exists(path1));
-		//	Assert.That(File.Exists(path2));
-		//	Assert.That(File.ReadAllBytes(path1), Is.EqualTo(File.ReadAllBytes(path2)));
-		//}
+			_collection.PutBook(bookFolderPath);
+			// Temporarily, it looks locked by Nancy in both places.
+			_collection.AttemptLock("My conflict book", "nancy@somewhere.com");
+			var status = _collection.GetStatus("My conflict book").WithLockedBy(TeamCollectionManager.CurrentUser);
+			// Now it is locally checked out to me. (The state changes are in the opposite order to what
+			// we're trying to simulate, because we don't have an easy way to change remote checkout status without
+			// changing local status to match at the same time.)
+			_collection.WriteLocalStatus("My conflict book", status);
+			var prevMessages = _tcLog.Messages.Count;
+
+			// System Under Test...basically HandleModifiedFile, but this is a convenient place to
+			// make sure we take the right path through this calling method.
+			_collection.QueuePendingBookChange(
+				new BookStateChangeEventArgs() {BookFileName = $"{bookFolderName}.bloom"});
+			_collection.HandleRemoteBookChangesOnIdle(null, new EventArgs());
+
+			// Verification
+			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];
+			Assert.That(eventArgs.CheckedOutByWhom, Is.EqualTo(CheckedOutBy.Other));
+
+			Assert.That(_tcLog.Messages[prevMessages].MessageType, Is.EqualTo(MessageAndMilestoneType.Error));
+			Assert.That(_tcLog.Messages[prevMessages].L10NId, Is.EqualTo("TeamCollection.ConflictingCheckout"));
+		}
+
+		[Test]
+		public void HandleModifiedFile_CheckedOutToMe_ContentChangedRemotely_RaisesCheckedOutByNoneAndErrorMessage()
+		{
+			// Setup //
+			// Simulate a book that was checked out and modified by me, but then we get a remote change
+			// notification.
+			const string bookFolderName = "My conflicting change book";
+			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
+			Directory.CreateDirectory(bookFolderPath);
+			var bookPath = Path.Combine(bookFolderPath, bookFolderName + ".htm");
+			RobustFile.WriteAllText(bookPath, "We will be simulating a remote change to this.");
+
+			_collection.PutBook(bookFolderPath);
+			var pathToBookFileInRepo = _collection.GetPathToBookFileInRepo(bookFolderName);
+			// Save the data we will eventually write back to the .bloom file to simulate the remote change.
+			var remoteContent = RobustFile.ReadAllBytes(pathToBookFileInRepo);
+
+			_collection.AttemptLock(bookFolderName);
+			RobustFile.WriteAllText(bookPath, "Pretend this was the state when we checked it out.");
+			_collection.PutBook(bookFolderPath);
+
+			RobustFile.WriteAllText(bookPath, "This is a further change locally, not checked in anywhere");
+
+			// But now it's been changed remotely to the other state. (Ignore the fact that it was a previous local state;
+			// that was just a trick to get a valid alternative state.)
+			RobustFile.WriteAllBytes(pathToBookFileInRepo, remoteContent);
+
+			var prevMessages = _tcLog.Messages.Count;
+
+			// System Under Test //
+			_collection.HandleModifiedFile(new BookStateChangeEventArgs() { BookFileName = $"{bookFolderName}.bloom" });
+
+			// Verification
+			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];
+			Assert.That(eventArgs.CheckedOutByWhom, Is.EqualTo(CheckedOutBy.None));
+
+			Assert.That(_tcLog.Messages[prevMessages].MessageType, Is.EqualTo(MessageAndMilestoneType.Error));
+			Assert.That(_tcLog.Messages[prevMessages].L10NId, Is.EqualTo("TeamCollection.EditedFileChangedRemotely"));
+		}
 	}
 }

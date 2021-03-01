@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -389,8 +389,16 @@
     <Compile Include="Publish\Android\usb\UsbPublisher.cs" />
     <Compile Include="Publish\Epub\EpubPublishUiSettings.cs" />
     <Compile Include="Publish\Epub\PublishEpubApi.cs" />
-    <Compile Include="TeamCollection\CheckoutStatusChangeEventArgs.cs" />
+    <Compile Include="TeamCollection\BookStatusChangeEventArgs.cs" />
+    <Compile Include="TeamCollection\TeamCollectionDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TeamCollection\TeamCollectionDialog.Designer.cs">
+      <DependentUpon>TeamCollectionDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="TeamCollection\TeamCollectionManager.cs" />
+    <Compile Include="TeamCollection\TeamCollectionMessage.cs" />
+    <Compile Include="TeamCollection\TeamCollectionMessageLog.cs" />
     <Compile Include="ToPalaso\BackgroundWorkerProgressAdapter.cs" />
     <Compile Include="Utils\BloomUnauthorizedAccessException.cs" />
     <Compile Include="Utils\FileSystemWatcherExtensions.cs" />
@@ -940,6 +948,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Registration\RegistrationDialog.resx">
       <DependentUpon>RegistrationDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TeamCollection\TeamCollectionDialog.resx">
+      <DependentUpon>TeamCollectionDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\BetterSplitContainer.resx">
       <DependentUpon>BetterSplitContainer.cs</DependentUpon>

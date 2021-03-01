@@ -5,6 +5,7 @@ using L10NSharp;
 using Sentry;
 using SIL.IO;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -32,7 +33,11 @@ namespace Bloom.TeamCollection
 		// special value for BookStatus.lockedBy when the book is newly created and not in the repo at all.
 		public const string FakeUserIndicatingNewBook = "this user";
 		protected readonly ITeamCollectionManager _tcManager;
+		private readonly TeamCollectionMessageLog _tcLog;
 		protected readonly string _localCollectionFolder; // The unshared folder that this collection syncs with
+		// These arrive on background threads from a FileSystemWatcher, but we want to process them
+		// in idle time on the main UI thread.
+		private ConcurrentQueue<BookStateChangeEventArgs> _pendingBookStateChanges = new ConcurrentQueue<BookStateChangeEventArgs>();
 
 		// When we last prompted the user to restart (due to a change in the Team Collection)
 		private DateTime LastRestartPromptTime { get; set; } = DateTime.MinValue;
@@ -40,11 +45,15 @@ namespace Bloom.TeamCollection
 		// Two minutes is arbitrary, and probably not long enough if changes are coming in frequently from outside.
 		private static readonly TimeSpan kMaxRestartPromptFrequency = new TimeSpan(0, 2, 0);
 
-		public TeamCollection(ITeamCollectionManager manager, string localCollectionFolder)
+		public TeamCollection(ITeamCollectionManager manager, string localCollectionFolder,
+			TeamCollectionMessageLog tcLog = null)
 		{
 			_tcManager = manager;
 			_localCollectionFolder = localCollectionFolder;
+			_tcLog = tcLog ?? new TeamCollectionMessageLog(TeamCollectionManager.GetTcLogPathFromLcPath(localCollectionFolder));
 		}
+
+		public TeamCollectionMessageLog MessageLog => _tcLog;
 
 		/// <summary>
 		/// The folder-implementation-specific part of PutBook, the public method below.
@@ -222,10 +231,16 @@ namespace Bloom.TeamCollection
 			// are in a consistent state, as we may get multiple write notifications during the process of
 			// writing a file. It may also help to ensure that repo writing doesn't interfere somehow with
 			// whatever is changing things.
-			SafeInvoke.InvokeIfPossible("Add SyncCollectionFilesToRepoOnIdle", Form.ActiveForm, false, (Action)(() =>
-					// Needs to be invoked on the main thread in order for the event handler to be invoked.
-					Application.Idle += SyncCollectionFilesToRepoOnIdle
-				));
+			// (Form.ActiveForm should not be null in normal use. However, it can be when we're displaying
+			// a page in Firefox.)
+			if (Form.ActiveForm != null)
+			{
+				SafeInvoke.InvokeIfPossible("Add SyncCollectionFilesToRepoOnIdle", Form.ActiveForm, false,
+					(Action) (() =>
+						// Needs to be invoked on the main thread in order for the event handler to be invoked.
+						Application.Idle += SyncCollectionFilesToRepoOnIdle
+					));
+			}
 		}
 
 		private void SyncCollectionFilesToRepoOnIdle(object sender, EventArgs e)
@@ -670,7 +685,7 @@ namespace Bloom.TeamCollection
 
 		protected void RaiseNewBook(string bookName)
 		{
-			NewBook?.Invoke(this, new NewBookEventArgs() {BookName = bookName});
+			NewBook?.Invoke(this, new NewBookEventArgs() {BookFileName = bookName});
 		}
 
 		/// <param name="bookFileName">The book name, including the .bloom suffix</param>
@@ -684,37 +699,110 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		public void SetupMonitoringBehavior()
 		{
-			NewBook += (sender, args) => { HandleNewBook(args); };
-			BookStateChange += (sender, args) => HandleModifiedFile(args);
+			NewBook += (sender, args) => { QueuePendingBookChange(args); };
+			BookStateChange += (sender, args) => QueuePendingBookChange(args);
+			Application.Idle += HandleRemoteBookChangesOnIdle;
 			StartMonitoring();
+		}
+
+		internal void QueuePendingBookChange(BookStateChangeEventArgs args)
+		{
+			_pendingBookStateChanges.Enqueue(args);
+		}
+
+		internal void HandleRemoteBookChangesOnIdle(object sender, EventArgs e)
+		{
+			if(_pendingBookStateChanges.TryDequeue(out BookStateChangeEventArgs args))
+			{
+				var newBookArgs = args as NewBookEventArgs;
+				if (newBookArgs == null)
+					HandleModifiedFile(args);
+				else
+					HandleNewBook(newBookArgs);
+			}
+		}
+
+		/// <summary>
+		/// Return true if the book is in a state that should cause it to be 'clobbered'...
+		/// that is, the local version will be written to Lost and Found and replaced with
+		/// the repo version.
+		/// This is true if there are local edits and either
+		/// (a) the repo checksum is different from the local checksum
+		/// (b) the repo lock status is not locked out here.
+		/// </summary>
+		/// <param name="bookName"></param>
+		/// <returns></returns>
+		public bool HasLocalChangesThatMustBeClobbered(string bookName)
+		{
+			var localStatus = GetLocalStatus(bookName);
+			// We don't bother to check for this sort of problem unless we think the book is checked out locally
+			// Not being checked out locally should guarantee that it has no local changes.
+			if (!IsCheckedOutHereBy(localStatus))
+				return false;
+			var repoStatus = GetStatus(bookName);
+			var currentChecksum = MakeChecksum(Path.Combine(_localCollectionFolder,bookName));
+			// If it hasn't actually been edited locally, we might have a problem, but not one that
+			// requires clobbering.
+			if (repoStatus.checksum == currentChecksum)
+				return false;
+			// We've checked it out and edited it...there's a problem if the repo disagrees
+			// about either content or status
+			return (!IsCheckedOutHereBy(repoStatus) || repoStatus.checksum != localStatus.checksum);
+		}
+
+		private bool HasCheckoutConflict(string bookName)
+		{
+			return IsCheckedOutHereBy(GetLocalStatus(bookName)) && !IsCheckedOutHereBy(GetStatus(bookName));
+		}
+
+		/// <summary>
+		/// Book has a clobber promlem...we can't go on editing until we sort it out...
+		/// if there are either conflicting edits or conflicting lock status.
+		/// </summary>
+		/// <param name="bookName"></param>
+		/// <returns></returns>
+		public bool HasClobberProblem(string bookName)
+		{
+			return HasLocalChangesThatMustBeClobbered(bookName) || HasCheckoutConflict(bookName);
 		}
 
 		/// <summary>
 		/// Handle a notification that a file has been modified. If it's a bloom book file
-		/// that we don't have checked out, we can just update it in the local folder.
-		/// For now, more complex cases are handled by asking the user to restart. There
-		/// are probably things that can go wrong if he doesn't.
+		/// and there is no problem, add a NewStuff message. If there is a problem,
+		/// add an error message. Send an UpdateBookStatus. (If it's the current book,
+		/// a handler for book status may upgrade the problem to 'clobber pending'.)
 		/// </summary>
 		/// <param name="args"></param>
 		public void HandleModifiedFile(BookStateChangeEventArgs args)
 		{
 			if (args.BookFileName.EndsWith(".bloom"))
 			{
-				if (!IsCheckedOutHereBy(GetLocalStatus(args.BookFileName)))
+				var bookBaseName = GetBookNameWithoutSuffix(args.BookFileName);
+
+				// The most serious concern is that there are local changes to the book that must be clobbered.
+				if (HasLocalChangesThatMustBeClobbered(bookBaseName))
 				{
-					var bookBaseName = GetBookNameWithoutSuffix(args.BookFileName);
+					_tcLog.WriteMessage(MessageAndMilestoneType.Error, "TeamCollection.EditedFileChangedRemotely",
+						"One of your teammates has modified or checked out the book '{0}', which you have edited but not checked in. You need to reload the collection to sort things out.",
+						bookBaseName, null);
+				} else
 
-					// Commenting out for now, because of concerns about whether the write is even finished
-					// or if we successfully debounce events from FileSystemWatcher
-					//// Just update things locally.
-					//CopyBookFromRepoToLocal(bookBaseName);
+				// A lesser but still Error condition is that the repo has a conflicting notion of checkout status.
+				if (HasCheckoutConflict(bookBaseName))
+				{
+					_tcLog.WriteMessage(MessageAndMilestoneType.Error, "TeamCollection.ConflictingCheckout",
+						"One of your teammates has checked out the book '{0}'. This undoes your checkout.",
+						bookBaseName, null);
 
-					UpdateCheckoutStatusIcon(bookBaseName, true);
-					return;
 				}
+				else
+				{
+					_tcLog.WriteMessage(MessageAndMilestoneType.NewStuff, "TeamCollection.BookModifiedRemotely",
+						"One of your teammates has made changes to the book '{0}'", bookBaseName, null);
+				}
+				// This needs to be AFTER we update the message log, data which it may use.
+				UpdateBookStatus(bookBaseName, true);
 			}
-
-			AskUserToRestart();
 		}
 
 		/// <summary>
@@ -730,48 +818,16 @@ namespace Bloom.TeamCollection
 		/// <param name="args"></param>
 		public void HandleNewBook(NewBookEventArgs args)
 		{
-			var newBookPath = args.BookName;
+			var newBookPath = args.BookFileName;
 			var newBookName = Path.GetFileNameWithoutExtension(newBookPath);
-			if (args.BookName.EndsWith(".bloom"))
+			var bookBaseName = GetBookNameWithoutSuffix(args.BookFileName);
+			if (args.BookFileName.EndsWith(".bloom"))
 			{
-				var bookFolder = Path.Combine(_localCollectionFolder, newBookName);
-				if (!Directory.Exists(bookFolder))
-				{
-					CopyBookFromRepoToLocal(newBookName, _localCollectionFolder);
-					// Enhance: add it to the local collection
-					return;
-				}
+				_tcLog.WriteMessage(MessageAndMilestoneType.NewStuff, "TeamCollection.NewBookArrived",
+					"A new book called '{0}' was added by a teammate.", newBookName, null);
 			}
-
-			AskUserToRestart();
-		}
-
-		private void AskUserToRestart()
-		{
-			if (DateTime.Now - LastRestartPromptTime  < kMaxRestartPromptFrequency)
-				return;
-
-			// Reset the time before prompting... in case of multiple threads or something.
-			LastRestartPromptTime = DateTime.Now;
-
-			MessageBox.Show(LocalizationManager.GetString("TeamCollection.RequestRestart",
-					"Bloom has detected that other users have made changes in your team collection folder. When convenient, please restart Bloom to see the changes."),
-				LocalizationManager.GetString("TeamCollection.RemoteChanges", "Remote Changes"));
-
-			// Update the time again to start from when the user closed the MessageBox.
-			LastRestartPromptTime = DateTime.Now;
-
-			// Enhance: there are cases where we need to force a restart immediately.
-			// For example, if the user is editing the book that has been modified elsewhere.
-			// If this happens, when the user returns to the collection tab, Bloom will show who currently
-			// has it checked out on the repo folder, so the user will in that case be prevented
-			// from checking in (though probably puzzled). But, if it's been modified elsewhere and is no longer checked
-			// out there, this user would be still allowed to check it in. That's unlikely because we should have
-			// detected either at startup on on checkout that it got checked out. But the user might have been
-			// offline then, or stayed in edit mode through the whole time some other user checked out, modified content,
-			// and checked in again (ignoring both warnings).
-			// I'm thinking that for version 0.1, we can maybe get away with warning users not to ignore
-			// this warning!
+			// This needs to be AFTER we update the message log, data which it may use.
+			UpdateBookStatus(bookBaseName, true);
 		}
 
 		public void HandleBookRename(string oldName, string newName)
@@ -841,6 +897,19 @@ namespace Bloom.TeamCollection
 			return !string.IsNullOrEmpty(BookStorage.FindBookHtmlInFolder(folderPath));
 		}
 
+		// Many messages want to go to both the current progress dialog and the permanent
+		// change log. This method handles sending to both.
+		string Report(IWebSocketProgress progress, string l10nIdprefix, string message,
+			string param0 = null, string param1= null, MessageKind kind = MessageKind.Progress)
+		{
+			var fullL10nId = "TeamCollection." + l10nIdprefix;
+			var msg = string.Format(LocalizationManager.GetString(fullL10nId, message), param0, param1);
+			progress.MessageWithoutLocalizing(msg, kind);
+			_tcLog.WriteMessage((kind == MessageKind.Progress) ? MessageAndMilestoneType.History : MessageAndMilestoneType.Error,
+				fullL10nId, message, param0, param1);
+			return msg;
+		}
+
 		/// <summary>
 		/// Run this when Bloom starts up to get the repo and local directories as sync'd as possible.
 		/// Also run when first joining an existing collection to merge them. A few behaviors are
@@ -849,6 +918,7 @@ namespace Bloom.TeamCollection
 		/// <returns>List of warnings, if any problems occurred.</returns>
 		public List<string> SyncAtStartup(IWebSocketProgress progress, bool firstTimeJoin = false)
 		{
+			_tcLog.WriteMilestone(MessageAndMilestoneType.Reloaded);
 			var warnings = new List<string>(); // accumulates any warning messages
 			// Delete books that we think have been deleted remotely from the repo.
 			// If it's a join collection merge, check new books in instead.
@@ -881,8 +951,9 @@ namespace Bloom.TeamCollection
 							if (statusLocal.lockedBy != TeamCollectionManager.CurrentUser
 							    || statusLocal.lockedWhere != TeamCollectionManager.CurrentMachine)
 							{
-								progress.Message("DeleteLocal", "{0} is a filename",
-									String.Format("Deleting '{0}' from local folder as it is no longer in the Team Collection", bookFolderName), MessageKind.Progress);
+								Report(progress, "DeleteLocal",
+									"Deleting '{0}' from local folder as it is no longer in the Team Collection",
+									bookFolderName);
 								SIL.IO.RobustIO.DeleteDirectoryAndContents(path);
 							}
 
@@ -896,10 +967,10 @@ namespace Bloom.TeamCollection
 				{
 					// Something went wrong with dealing with this book, but we'd like to carry on with
 					// syncing the rest of the collection
-					var msg = String.Format("Something went wrong trying to sync with the book {0} in your Team Collection.", path);
+					var msg = Report(progress, "SomethingWentWrong","Something went wrong trying to sync with the book {0} in your Team Collection.",
+						path, null, MessageKind.Error);
 					SentrySdk.AddBreadcrumb(msg);
 					SentrySdk.CaptureException(ex);
-					progress.MessageWithoutLocalizing(msg, MessageKind.Error);
 					warnings.Add(msg);
 				}
 			}
@@ -915,9 +986,8 @@ namespace Bloom.TeamCollection
 				if (!Directory.Exists(localFolderPath))
 				{
 					// brand new book! Get it.
-					var msg = String.Format(
+					Report(progress, "FetchedNewBook",
 						"Fetching a new book '{0}' from the Team Collection", bookName);
-					progress.MessageWithoutLocalizing(msg);
 					CopyBookFromRepoToLocal(bookName);
 					continue;
 				}
@@ -943,15 +1013,13 @@ namespace Bloom.TeamCollection
 							// other way and these books have been edited independently. Treat it as a conflict.
 							PutBook(localFolderPath, inLostAndFound: true);
 							// warn the user
-							var msgTemplate = LocalizationManager.GetString("TeamCollection.ConflictingCheckout",
-								"Found different versions of '{0}' in both collections. The team version has been copied to your local collection, and the old local version to Lost and Found");
-							var msg = String.Format(msgTemplate, bookName);
-							warnings.Add(msg);
-							progress.MessageWithoutLocalizing(msg, MessageKind.Warning);
+							warnings.Add(Report(progress, "ConflictingCheckout",
+								"Found different versions of '{0}' in both collections. The team version has been copied to your local collection, and the old local version to Lost and Found"
+								, bookName, null, MessageKind.Warning));
 							// Make the local folder match the repo (this is where 'they win')
 							CopyBookFromRepoToLocal(bookName);
 							continue;
-							}
+						}
 						else
 						{
 							// Presume it is newly created locally, coincidentally with the same name. Move the new local book
@@ -967,10 +1035,9 @@ namespace Bloom.TeamCollection
 							var renamePath = Path.Combine(renameFolder,
 								Path.ChangeExtension(Path.GetFileName(renameFolder), "htm"));
 							var oldBookPath = Path.Combine(renameFolder, Path.ChangeExtension(bookName, "htm"));
-							var msg = String.Format(
+							Report(progress, "RenamingBook",
 								"Renaming the local book '{0}' because there is a new one with the same name from the Team Collection",
 								bookName);
-							progress.MessageWithoutLocalizing(msg);
 							RobustFile.Move(oldBookPath, renamePath);
 
 							CopyBookFromRepoToLocal(bookName); // Get repo book and status
@@ -987,9 +1054,8 @@ namespace Bloom.TeamCollection
 					if (localStatus.checksum != repoStatus.checksum)
 					{
 						// Changed and not checked out. Just bring it up to date.
-						var msg = String.Format(
+						Report(progress,"Updating",
 							"Updating '{0}' to match the Team Collection", bookName);
-						progress.MessageWithoutLocalizing(msg);
 						CopyBookFromRepoToLocal(bookName); // updates everything local.
 					}
 
@@ -1027,11 +1093,9 @@ namespace Bloom.TeamCollection
 							// Edited locally while someone else has it checked out. Copy current local to lost and found
 							PutBook(localFolderPath, inLostAndFound: true);
 							// warn the user
-							var msgTemplate = LocalizationManager.GetString("TeamCollection.ConflictingCheckout",
-								"The book '{0}', which you have checked out and edited, is checked out to someone else in the team collection. Your changes have been overwritten, but are saved to Lost-and-found.");
-							var msg = String.Format(msgTemplate, bookName);
-							warnings.Add(msg);
-							progress.MessageWithoutLocalizing(msg, MessageKind.Warning);
+							warnings.Add(Report(progress, "ConflictingCheckout",
+								"The book '{0}', which you have checked out and edited, is checked out to someone else in the team collection. Your changes have been overwritten, but are saved to Lost-and-found.",
+								bookName, null, MessageKind.Warning));
 							// Make the local folder match the repo (this is where 'they win')
 							CopyBookFromRepoToLocal(bookName);
 							continue;
@@ -1051,9 +1115,8 @@ namespace Bloom.TeamCollection
 					if (currentChecksum == localStatus.checksum)
 					{
 						// not edited locally. No warning needed, but we need to update it. We can keep local checkout.
-						var msg1 = String.Format(
+						Report(progress, "Updating",
 							"Updating '{0}' to match the Team Collection", bookName);
-						progress.MessageWithoutLocalizing(msg1);
 						CopyBookFromRepoToLocal(bookName);
 						WriteBookStatus(bookName, localStatus.WithChecksum(repoStatus.checksum));
 						continue;
@@ -1063,27 +1126,32 @@ namespace Bloom.TeamCollection
 					PutBook(Path.Combine(_localCollectionFolder, bookName), inLostAndFound:true);
 					// copy repo book and status to local
 					CopyBookFromRepoToLocal(bookName);
-					// warn the user
-					var msgTemplate = LocalizationManager.GetString("TeamCollection.ConflictingEdit",
-						"The book '{0}', which you have checked out and edited, was modified in the team collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.");
-					var msg = String.Format(msgTemplate, bookName);
-					progress.MessageWithoutLocalizing(msg, MessageKind.Warning);
-					warnings.Add(msg);
-					continue;
+						// warn the user
+						warnings.Add(Report(progress, "ConflictingEdit",
+						"The book '{0}', which you have checked out and edited, was modified in the team collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.",
+						bookName, null, MessageKind.Warning));
+						continue;
 				}
 				}
 				catch (Exception ex)
 				{
 					// Something went wrong with dealing with this book, but we'd like to carry on with
 					// syncing the rest of the collection
-					var msg = String.Format("Something went wrong trying to sync with the book {0} in your Team Collection.", bookName);
+					var msg = Report(progress, "SomethingWentWrong", "Something went wrong trying to sync with the book {0} in your Team Collection.",
+						bookName, null, MessageKind.Error);
 					SentrySdk.AddBreadcrumb(msg);
 					SentrySdk.CaptureException(ex);
 					warnings.Add(msg);
-					progress.MessageWithoutLocalizing(msg, MessageKind.Error);
 				}
 			}
 
+			if (warnings.Count > 0)
+			{
+				// Not sure this is the best place for this. But currently the warnings/errors are
+				// shown in the progress dialog if we return any, so a reasonable assumption is
+				// that any we return here are immediately shown.
+				_tcLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
+			}
 			return warnings;
 		}
 
@@ -1155,7 +1223,7 @@ namespace Bloom.TeamCollection
 
 					// Now that we've finished synchronizing, update these icons based on the post-sync result
 					// REVIEW: What do we want to happen if exception throw here? Should we add to {problems} list?
-					UpdateAllCheckoutStatusIcons();
+					UpdateStatusOfAllCheckedOutBooks();
 
 					progress.Message("Done", "Done");
 
@@ -1208,6 +1276,8 @@ namespace Bloom.TeamCollection
 				{
 					StopMonitoring();
 				}
+
+				Application.Idle -= HandleRemoteBookChangesOnIdle;
 			}
 		}
 
@@ -1250,39 +1320,45 @@ namespace Bloom.TeamCollection
 			return tcName;
 		}
 
-		public void UpdateAllCheckoutStatusIcons()
+		/// <summary>
+		/// Mainly to update the checkout status on startup. There's nothing to do to the ones that
+		/// are not checked out.
+		/// </summary>
+		public void UpdateStatusOfAllCheckedOutBooks()
 		{
 			foreach (var bookName in GetBookList())
 			{
-				UpdateCheckoutStatusIcon(bookName, false);
+				UpdateBookStatus(bookName, false);
 			}
 		}
+
+		public TeamCollectionStatus TeamCollectionStatus => _tcLog.TeamCollectionStatus;
 
 		/// <summary>
 		/// Causes a notification to be sent to the UI to update the checkout status icon for {bookName}
 		/// </summary>
 		/// <param name="bookName">The name of the book</param>
 		/// <param name="shouldNotifyIfNotCheckedOut">If true, will also send an event that a book isn't checked out (This is necessary when books are checked in)</param>
-		public void UpdateCheckoutStatusIcon(string bookName, bool shouldNotifyIfNotCheckedOut)
+		public void UpdateBookStatus(string bookName, bool shouldNotifyIfNotCheckedOut)
 		{
-			Debug.Assert(!bookName.EndsWith(".bloom"), $"UpdateCheckoutStatusIcon was passed bookName=\"{bookName}\", which has a .bloom suffix. This is probably incorrect. This function wants only the bookBaseName");
+			Debug.Assert(!bookName.EndsWith(".bloom"), $"UpdateBookStatus was passed bookName=\"{bookName}\", which has a .bloom suffix. This is probably incorrect. This function wants only the bookBaseName");
 			
 			var status = GetStatus(bookName);
 			if (IsCheckedOutHereBy(status))
-				MarkCheckedOut(bookName, CheckedOutBy.Self);
+				RaiseBookStatusChanged(bookName, CheckedOutBy.Self);
 			else if (status.IsCheckedOut())
-				MarkCheckedOut(bookName, CheckedOutBy.Other);
+				RaiseBookStatusChanged(bookName, CheckedOutBy.Other);
 			else if (shouldNotifyIfNotCheckedOut)
-				MarkCheckedOut(bookName, CheckedOutBy.None);
+				RaiseBookStatusChanged(bookName, CheckedOutBy.None);
 		}
 
 		/// <summary>
 		/// Notifies that the book is checked out.
 		/// </summary>
 		/// <param name="isCheckedOutByCurrent">Should be true if checked out by current user/machine</param>
-		private void MarkCheckedOut(string bookName, CheckedOutBy checkedOutByWhom)
+		private void RaiseBookStatusChanged(string bookName, CheckedOutBy checkedOutByWhom)
 		{
-			_tcManager.RaiseCheckoutStatusChanged(new CheckoutStatusChangeEventArgs(bookName, checkedOutByWhom));
+			_tcManager.RaiseBookStatusChanged(new BookStatusChangeEventArgs(bookName, checkedOutByWhom));
 
 			// ENHANCE: Right now, if the book selection is checked in or checked out by another user,
 			// we will update the icon in LibraryListView, but not the one in the book preview pane.

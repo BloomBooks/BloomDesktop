@@ -35,7 +35,7 @@ namespace Bloom.CollectionTab
 
 		private readonly LibraryModel _model;
 		private readonly BookSelection _bookSelection;
-		private BookCheckoutStatusChangeEvent _tcCheckoutStatusChangeEvent;
+		private BookStatusChangeEvent _tcBookStatusChangeEvent;
 		//private readonly HistoryAndNotesDialog.Factory _historyAndNotesDialogFactory;
 		private Font _headerFont;
 		private Font _editableBookFont;
@@ -65,14 +65,14 @@ namespace Bloom.CollectionTab
 
 		private bool _alreadyReportedErrorDuringImproveAndRefreshBookButtons;
 
-		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookCheckoutStatusChangeEvent tcStatusChangeEvent)
+		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookStatusChangeEvent tcStatusChangeEvent)
 			//HistoryAndNotesDialog.Factory historyAndNotesDialogFactory)
 		{
 			_model = model;
 			_bookSelection = bookSelection;
 			localizationChangedEvent.Subscribe(unused=>LoadSourceCollectionButtons());
-			_tcCheckoutStatusChangeEvent = tcStatusChangeEvent;
-			tcStatusChangeEvent.Subscribe(OnTeamCollectionCheckoutStatusChange);
+			_tcBookStatusChangeEvent = tcStatusChangeEvent;
+			tcStatusChangeEvent.Subscribe(OnTeamCollectionBookStatusChange);
 			//_historyAndNotesDialogFactory = historyAndNotesDialogFactory;
 			_buttonsNeedingSlowUpdate = new ConcurrentQueue<ButtonRefreshInfo>();
 			selectedTabChangedEvent.Subscribe(OnSelectedTabChanged);
@@ -1079,7 +1079,7 @@ namespace Bloom.CollectionTab
 			return _buttonManagementStage == ButtonManagementStage.LoadPrimary || _buttonManagementStage  == ButtonManagementStage.Reentering;
 		}
 
-		internal void OnTeamCollectionCheckoutStatusChange(CheckoutStatusChangeEventArgs eventArgs)
+		internal void OnTeamCollectionBookStatusChange(BookStatusChangeEventArgs eventArgs)
 		{
 			if (_disposed)
 				return;
@@ -1097,14 +1097,14 @@ namespace Bloom.CollectionTab
 				// However, I think this scenario is not likely enough to be worth fixing. I think it would require a book being changed in the repo
 				// as Bloom is starting up.
 				Task.Delay(100).ContinueWith(unused =>
-					_tcCheckoutStatusChangeEvent.Raise(eventArgs)
+					_tcBookStatusChangeEvent.Raise(eventArgs)
 				);
 				return;
 			}
 
 			// Note: This needs to happen on the thread that owns this control.
 			SafeInvoke.InvokeIfPossible("LibraryListView update checkout status icons",this,true, () =>
-				OnTeamCollectionCheckoutStatusChangeInternal(eventArgs)
+				OnTeamCollectionBookStatusChangeInternal(eventArgs)
 			);
 		}
 
@@ -1113,7 +1113,7 @@ namespace Bloom.CollectionTab
 		/// </summary>
 		/// <param name="eventArgs"></param>
 		/// <remarks>Precondition: Must be on the thread that owns this control</remarks>
-		private void OnTeamCollectionCheckoutStatusChangeInternal(CheckoutStatusChangeEventArgs eventArgs)
+		private void OnTeamCollectionBookStatusChangeInternal(BookStatusChangeEventArgs eventArgs)
 		{
 			Debug.Assert(_primaryCollection != null, "_primaryCollection expected to be non-null but was null. Investigate why it's not assigned (or has been nulled out)");
 			if (_primaryCollection == null)

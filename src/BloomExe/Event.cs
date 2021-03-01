@@ -252,10 +252,10 @@ namespace Bloom
 
 	// An event that signals that the checked-in vs. checked out status
 	// of a book in a Team Collection has changed.
-	public class BookCheckoutStatusChangeEvent : Event<CheckoutStatusChangeEventArgs>
+	public class BookStatusChangeEvent : Event<BookStatusChangeEventArgs>
 	{
-		public BookCheckoutStatusChangeEvent()
-			: base("TeamCollectionCheckoutStatusChange", LoggingLevel.Minor)
+		public BookStatusChangeEvent()
+			: base("TeamCollectionBookStatusChange", LoggingLevel.Minor)
 		{
 		}
 	}
