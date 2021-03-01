@@ -24,14 +24,13 @@ import { MuiCheckbox } from "../../../react_components/muiCheckBox";
 import { ColorBar } from "./colorBar";
 import { ISwatchDefn } from "../../../react_components/colorSwatch";
 import {
-    specialColors,
     defaultBackgroundColors,
     defaultTextColors,
     getSwatchFromBubbleSpecColor,
-    isSpecialColorName,
     getSpecialColorName
 } from "./comicToolColorHelper";
 import { IColorPickerDialogProps } from "../../../react_components/colorPickerDialog";
+import * as tinycolor from "tinycolor2";
 
 const ComicToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
@@ -152,7 +151,17 @@ const ComicToolControls: React.FunctionComponent = () => {
         // Update the Comical canvas on the page frame
         const bubbleMgr = ComicTool.bubbleManager();
         if (bubbleMgr) {
+            // BL-8537: If we are choosing "caption" style, we make sure that the background color is opaque.
+            let backgroundColorArray = currentBubbleSpec?.backgroundColors;
+            if (
+                newStyle === "caption" &&
+                backgroundColorArray &&
+                backgroundColorArray.length === 1
+            ) {
+                backgroundColorArray[0] = setOpaque(backgroundColorArray[0]);
+            }
             const newSpec = bubbleMgr.updateSelectedItemBubbleSpec({
+                backgroundColors: backgroundColorArray,
                 style: newStyle
             });
             setCurrentBubbleSpec(newSpec); // we do this because the new style's spec may affect Show Tail too
@@ -385,8 +394,9 @@ const ComicToolControls: React.FunctionComponent = () => {
     // The background color chooser uses an alpha slider for transparency.
     // Unfortunately, with an alpha slider, the hex input will automatically switch to rgb
     // the moment the user sets alpha to anything but max opacity.
-    const launchBackgroundColorChooser = () => {
+    const launchBackgroundColorChooser = (noAlpha: boolean) => {
         const colorPickerDialogProps: IColorPickerDialogProps = {
+            noAlphaSlider: noAlpha,
             localizedTitle: backgroundColorTitle,
             initialColor: backgroundColorSwatch,
             defaultSwatchColors: defaultBackgroundColors,
@@ -426,6 +436,10 @@ const ComicToolControls: React.FunctionComponent = () => {
         "Duplicate",
         "EditTab.Toolbox.ComicTool.Options.Duplicate"
     );
+
+    // BL-8537 Because of the black shadow background, partly transparent backgrounds don't work for
+    // captions. We'll use this to tell the color chooser not to show the alpha option.
+    const isCaption = currentBubbleSpec?.style === "caption";
 
     return (
         <div id="comicToolControls">
@@ -579,7 +593,9 @@ const ComicToolControls: React.FunctionComponent = () => {
                         </InputLabel>
                         <ColorBar
                             id="background-color-bar"
-                            onClick={launchBackgroundColorChooser}
+                            onClick={() =>
+                                launchBackgroundColorChooser(isCaption)
+                            }
                             name={backgroundColorSwatch.name}
                             text={percentTransparencyString()}
                             colors={backgroundColorSwatch.colors}
@@ -771,4 +787,10 @@ export class ComicTool extends ToolboxToolReactAdaptor {
 
         return [offsetX, offsetY];
     }
+}
+
+function setOpaque(color: string) {
+    let firstColor = new tinycolor(color);
+    firstColor.setAlpha(1.0);
+    return firstColor.toHexString();
 }
