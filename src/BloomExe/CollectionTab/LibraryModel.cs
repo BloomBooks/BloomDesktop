@@ -194,7 +194,10 @@ namespace Bloom.CollectionTab
 		{
 			 _bookSelection.SelectBook(book);
 		}
-
+		public Book.Book GetSelectedBookOrNull()
+		{
+			return _bookSelection.CurrentSelection;
+		}
 		public bool DeleteBook(Book.Book book)//, BookCollection collection)
 		{
 			Debug.Assert(book == _bookSelection.CurrentSelection);
