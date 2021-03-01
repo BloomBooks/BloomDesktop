@@ -344,17 +344,6 @@ const ComicToolControls: React.FunctionComponent = () => {
         }
     };
 
-    const styleSupportsShowTail = (style: string) => {
-        // Enhance: When tails only show outside of content rectangle, we can just return 'true' here always.
-        switch (style) {
-            case "none":
-            case "":
-                return false;
-            default:
-                return true;
-        }
-    };
-
     const styleSupportsRoundedCorners = (
         currentBubbleSpec: BubbleSpec | undefined
     ) => {
@@ -546,7 +535,6 @@ const ComicToolControls: React.FunctionComponent = () => {
                             <MuiCheckbox
                                 label="Show Tail"
                                 l10nKey="EditTab.Toolbox.ComicTool.Options.ShowTail"
-                                disabled={!styleSupportsShowTail(style)}
                                 checked={showTailChecked}
                                 onCheckChanged={v => {
                                     handleShowTailChanged(v as boolean);
