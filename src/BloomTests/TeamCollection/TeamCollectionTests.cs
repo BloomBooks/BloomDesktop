@@ -84,7 +84,7 @@ namespace BloomTests.TeamCollection
 			var prevMessages = _tcLog.Messages.Count;
 
 			// System Under Test //
-			_collection.HandleModifiedFile(new BookStateChangeEventArgs() { BookFileName = $"{bookFolderName}.bloom" } );
+			_collection.HandleModifiedFile(new BookRepoChangeEventArgs() { BookFileName = $"{bookFolderName}.bloom" } );
 
 			// Verification
 			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];
@@ -112,7 +112,7 @@ namespace BloomTests.TeamCollection
 			var prevMessages = _tcLog.Messages.Count;
 
 			// System Under Test //
-			_collection.HandleModifiedFile(new BookStateChangeEventArgs() { BookFileName = $"{bookFolderName}.bloom" });
+			_collection.HandleModifiedFile(new BookRepoChangeEventArgs() { BookFileName = $"{bookFolderName}.bloom" });
 
 			// Verification
 			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];
@@ -146,7 +146,7 @@ namespace BloomTests.TeamCollection
 			// System Under Test...basically HandleModifiedFile, but this is a convenient place to
 			// make sure we take the right path through this calling method.
 			_collection.QueuePendingBookChange(
-				new BookStateChangeEventArgs() {BookFileName = $"{bookFolderName}.bloom"});
+				new BookRepoChangeEventArgs() {BookFileName = $"{bookFolderName}.bloom"});
 			_collection.HandleRemoteBookChangesOnIdle(null, new EventArgs());
 
 			// Verification
@@ -187,7 +187,7 @@ namespace BloomTests.TeamCollection
 			var prevMessages = _tcLog.Messages.Count;
 
 			// System Under Test //
-			_collection.HandleModifiedFile(new BookStateChangeEventArgs() { BookFileName = $"{bookFolderName}.bloom" });
+			_collection.HandleModifiedFile(new BookRepoChangeEventArgs() { BookFileName = $"{bookFolderName}.bloom" });
 
 			// Verification
 			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];

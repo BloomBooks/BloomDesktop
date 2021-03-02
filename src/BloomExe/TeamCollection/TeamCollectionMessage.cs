@@ -91,7 +91,7 @@ namespace Bloom.TeamCollection
 						// Or perhaps some or all don't need to show in the log at all?
 						case MessageAndMilestoneType.Reloaded: return leadIn + "Reloaded collection";
 						case MessageAndMilestoneType.LogDisplayed:
-							return leadIn + "Displayed error log"; // review: or show nothing at all??
+							return leadIn + "Displayed log"; // review: or show nothing at all??
 						case MessageAndMilestoneType.ShowedClobbered:
 							return leadIn + "Repaired conflict"; // review: or show nothing at all??
 					}

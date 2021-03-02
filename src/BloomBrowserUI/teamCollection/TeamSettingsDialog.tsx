@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 export const TeamCollectionDialog: React.FunctionComponent = props => {
     const dialogTitle = useL10n(
         "Team Collection",
-        "TeamCollection.DialogTitle"
+        "TeamCollection.TeamCollection"
     );
     const [messages, setMessages] = useState([""]);
     useEffect(() => {
