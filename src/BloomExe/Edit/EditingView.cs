@@ -791,7 +791,7 @@ namespace Bloom.Edit
 						//update so any overlays on the image are brought up to data
 						PageEditingModel.UpdateMetadataAttributesOnImage(new ElementProxy(imageElement), imageInfo);
 						imageElement.Click(); //wake up javascript to update overlays
-						SaveChangedImage(imageElement, imageInfo, "Bloom had a problem updating the image metadata");
+						imageInfo.SaveUpdatedMetadataIfItMakesSense();
 
 						var answer =
 							MessageBox.Show(
