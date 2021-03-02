@@ -56,6 +56,8 @@ namespace Bloom.Book
 		private readonly BookData _bookData;
 		public const string ReadMeImagesFolderName = "ReadMeImages";
 
+		int _audioFilesCopiedForDuplication;
+
 		//for moq'ing only; parameterless ctor required by Moq
 		public Book()
 		{
@@ -810,14 +812,17 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Fix errors that users have encountered.  For now, this is only a duplication of language div elements
-		/// inside of translationGroup divs.
+		/// Fix errors that users have encountered.
+		/// 1) duplication of language div elements inside of translationGroup divs.
+		/// 2) duplication of audio id values in the book.
 		/// </summary>
 		/// <remarks>
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-6923.
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-9503 and several other issues.
 		/// </remarks>
 		private void FixErrorsEncounteredByUsers(HtmlDom bookDOM)
 		{
+			// Fix bug reported in BL-6923: duplicate language div elements inside translationGroup divs.
 			foreach (
 				XmlElement groupElement in
 				bookDOM.Body.SafeSelectNodes("descendant::*[contains(@class,'bloom-translationGroup')]"))
@@ -826,6 +831,136 @@ namespace Bloom.Book
 				// languages just to be safe.
 				foreach (var lang in _bookData.GetAllBookLanguageCodes())
 					TranslationGroupManager.FixDuplicateLanguageDivs(groupElement, lang);
+			}
+			// Fix bug reported in BL-9503 and several other issues: duplicate audio ids.
+			// This does not need to be fixed for preview, and in fact can cause a warning
+			// dialog to pop up behind the splash screen if it is fixed there.  (and will
+			// fix things again with a second warning dialog when the book is edited or
+			// published.)
+			if (bookDOM != OurHtmlDom)
+				return;
+			var idSet = new HashSet<string>();
+			_audioFilesCopiedForDuplication = 0;
+			FixDuplicateAudioIdsInDataDiv(bookDOM, idSet);
+			var audioFilesCopiedForDataDiv = _audioFilesCopiedForDuplication;
+			FixDuplicateAudioIdInBookPages(bookDOM, idSet);
+			if (_audioFilesCopiedForDuplication > 0)
+			{
+				// Inform user of need to rerecord audio.  (If no audio files got copied, then there's nothing to rerecord, just lots to record!)
+				// If the only files copied were found in the data-div, then restrict the message for where to rerecord.
+				var shortMsg = "There was a problem with recordings in this Talking Book, which was caused by a bug in an older version of Bloom." +
+					((audioFilesCopiedForDataDiv == _audioFilesCopiedForDuplication) ?
+						" We have fixed the book, but now you will need to review the Cover, Title, and Credits pages to see if you need to record some text again." :
+						" We have fixed the book, but now you will need to review all of your recordings in this book to see if you need to record some text again.") +
+					" We are very sorry for our mistake and the inconvenience this might cause you.";
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, shortMsg, null, null, false, true);
+			}
+			// Fix bug reported in BL-8599 (and possibly other issues): missing audio ids.
+			FixMissingAudioIdsInDataDiv(bookDOM);
+			FixMissingAudioIdsInBookPages(bookDOM);
+		}
+
+		/// <summary>
+		/// Go through the #bloomDataDiv looking for duplicate audio ids.  If any are found, fix them
+		/// and at the end update the DOM to reflect the fixes.
+		/// </summary>
+		private void FixDuplicateAudioIdsInDataDiv(HtmlDom bookDOM, HashSet<string> idSet)
+		{
+			var dataDiv = bookDOM.SelectSingleNode("//div[@id='bloomDataDiv']");
+			if (dataDiv == null)
+				return;		// shouldn't happen, but paranoia sometimes pays off, especially in running tests.
+			var nodes = dataDiv.SafeSelectNodes("(.//div|.//span)[@id and contains(@class,'audio-sentence')]").Cast<XmlNode>().ToList();
+			var duplicateAudioIdsFixed = 0;
+			foreach (var audioElement in nodes)
+			{
+				var id = (audioElement as XmlElement).GetOptionalStringAttribute("id", null);
+				var isNewlyAdded = idSet.Add(id);
+				if (!isNewlyAdded)
+				{
+					var newId = FixDuplicateAudioId(audioElement, id);
+					idSet.Add(newId);
+				}
+			}
+			// OK, now fix all the places any duplicates were used in the book's pages.
+			if (duplicateAudioIdsFixed > 0)
+				_bookData.SynchronizeDataItemsThroughoutDOM();
+		}
+
+		private void FixDuplicateAudioIdInBookPages(HtmlDom bookDOM, HashSet<string> idSet)
+		{
+			foreach (var page in bookDOM.GetPageElements())
+			{
+				var nodeList = HtmlDom.SelectChildNarrationAudioElements(page, true);
+				for (int i = 0; i < nodeList.Count; ++i)
+				{
+					var node = nodeList.Item(i);
+					if (node.Attributes == null)
+						continue;   // No id exists if no attributes exist.
+					var id = node.GetOptionalStringAttribute("id", null);
+					if (id == null)
+						continue;
+					if (HtmlDom.IsNodePartOfDataBookOrDataCollection(node))
+						continue;
+					var isNewlyAdded = idSet.Add(id);
+					if (!isNewlyAdded)
+					{
+						// Uh-oh. That means an element like this already exists!?
+						FixDuplicateAudioId(node, id);
+					}
+				}
+			}
+		}
+
+		private string FixDuplicateAudioId(XmlNode node, string id)
+		{
+			// Create a new id value, and copy the audio file if it exists.
+			var newId = HtmlDom.SetNewHtmlIdValue(node as XmlElement);
+			if (!String.IsNullOrEmpty(FolderPath))
+			{
+				var oldAudioPath = Path.Combine(FolderPath, "audio", id + ".mp3");
+				if (RobustFile.Exists(oldAudioPath))
+				{
+					var newAudioPath = Path.Combine(FolderPath, "audio", newId + ".mp3");
+					RobustFile.Copy(oldAudioPath, newAudioPath);
+					++_audioFilesCopiedForDuplication;
+				}
+			}
+			var msg = $"Duplicate GUID {id} on recordable with text \"{node.InnerText.Trim()}\" changed to {newId}.";
+			Logger.WriteEvent(msg);
+			return newId;
+		}
+
+		private void FixMissingAudioIdsInDataDiv(HtmlDom bookDOM)
+		{
+			var dataDiv = bookDOM.SelectSingleNode("//div[@id='bloomDataDiv']");
+			if (dataDiv == null)
+				return;     // shouldn't happen, but paranoia sometimes pays off, especially in running tests.
+			var nodeList = dataDiv.SafeSelectNodes("(.//div|.//span)[not(@id) and contains(@class,'audio-sentence')]").Cast<XmlElement>().ToList();
+			foreach (var node in nodeList)
+				HtmlDom.SetNewHtmlIdValue(node);
+			// Fix all the places where the data-div original is missing an id value.
+			if (nodeList.Count > 0)
+			{
+				_bookData.SynchronizeDataItemsThroughoutDOM();
+				var msg = $"Fixed {nodeList.Count} missing audio ids in the book's data div.";
+				Logger.WriteEvent(msg);
+			}
+		}
+
+		private void FixMissingAudioIdsInBookPages(HtmlDom bookDOM)
+		{
+			var idsAdded = 0;
+			foreach (var page in bookDOM.GetPageElements())
+			{
+				var nodeList = page.SafeSelectNodes("(.//div|.//span)[not(@id) and contains(@class,'audio-sentence')]").Cast<XmlElement>().ToList();
+				foreach (var node in nodeList)
+					HtmlDom.SetNewHtmlIdValue(node);
+				idsAdded += nodeList.Count;
+			}
+			if (idsAdded > 0)
+			{
+				var msg = $"Fixed {idsAdded} missing audio ids in the book's pages.";
+				Logger.WriteEvent(msg);
 			}
 		}
 
@@ -2603,15 +2738,8 @@ namespace Bloom.Book
 		{
 			foreach (var audioElement in HtmlDom.SelectRecordableDivOrSpans(newpageDiv).Cast<XmlElement>().ToList())
 			{
-				// The "i" makes sure that the ID does not start with digit. It's unnecessary but harmless
-				// if it already starts with a non-digit. The JS code that usually generates these only
-				// adds it if necessary, but nothing knows enough about the nature of the IDs to make
-				// consistency about that necessary. It just needs to be unique (and a valid ID).
-				// (It would be pretty easy to make it consistent, but considerably harder to cover
-				// the new path adequately with unit tests.)
-				var id = "i" + Guid.NewGuid();
-				var oldId = audioElement.Attributes["id"]?.Value;
-				audioElement.SetAttribute("id", id);
+				var oldId = audioElement.GetStringAttribute("id");
+				var id = HtmlDom.SetNewHtmlIdValue(audioElement);
 				if (string.IsNullOrEmpty(oldId))
 					continue;
 				var sourceAudioFilePath = Path.Combine(Path.Combine(sourceBookFolder, "audio"), oldId + ".wav");

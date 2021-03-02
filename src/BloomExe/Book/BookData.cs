@@ -1389,7 +1389,8 @@ namespace Bloom.Book
 													  formToCopyFromSinceOursIsMissing.WritingSystemId);
 								}
 								 */
-			return s;
+			// Prevent a duplicate (audio) id from being created.
+			return HtmlDom.ReplaceAllIdValues(s);
 		}
 
 		private LanguageForm GetBestUnwrappedAlternative(MultiTextBase textAlternatives, IEnumerable<string> languagesToTry)
