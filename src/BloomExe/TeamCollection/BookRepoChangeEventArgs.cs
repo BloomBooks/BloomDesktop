@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Bloom.TeamCollection
 {
 	// Arguments for the BookStateChange event in ITeamRepo
-	public class BookStateChangeEventArgs
+	public class BookRepoChangeEventArgs
 		: EventArgs
 	{
 		public string BookFileName;

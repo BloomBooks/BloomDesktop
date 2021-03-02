@@ -41,7 +41,7 @@ namespace Bloom.MiscUI
 			this.reactControl1.Size = new System.Drawing.Size(800, 450);
 			this.reactControl1.TabIndex = 0;
 			// 
-			// TeamCollectionDialog
+			// ReactDialog
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -51,7 +51,7 @@ namespace Bloom.MiscUI
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 			this.Name = "ReactDialog";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-			this.Text = "TeamCollectionDialog";
+			this.Text = "ReactDialog";
 			this.ResumeLayout(false);
 
 		}
