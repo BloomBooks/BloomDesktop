@@ -71,7 +71,6 @@ namespace Bloom.TeamCollection
 						.First().InnerText;
 					if (Directory.Exists(repoFolderPath))
 					{
-						var tcLogPath = GetTcLogPathFromLcPath(_localCollectionFolder);
 						CurrentCollection = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath);
 						CurrentCollection.SocketServer = SocketServer;
 						// Later, we will sync everything else, but we want the current collection settings before

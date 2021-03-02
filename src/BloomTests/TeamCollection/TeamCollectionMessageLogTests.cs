@@ -416,7 +416,7 @@ namespace BloomTests.TeamCollection
 			Assert.That(prettyMessages[1], Is.EqualTo(today + ": A new book called I am new was added to the collection"));
 			Assert.That(prettyMessages[2], Is.EqualTo(today + ": Reloaded collection"));
 			Assert.That(prettyMessages[3], Is.EqualTo(today + ": The book 'Joe hunts pigs' is checked out to someone else. Your changes are saved to Lost-and-found."));
-			Assert.That(prettyMessages[4], Is.EqualTo(today + ": Displayed error log"));
+			Assert.That(prettyMessages[4], Is.EqualTo(today + ": Displayed log"));
 			Assert.That(prettyMessages[5], Is.EqualTo(today + ": The book called I am different was changed"));
 			Assert.That(prettyMessages[6], Is.EqualTo(today + ": Repaired conflict"));
 			// Enhance: Do we want colors? If so, should the output of this be HTML,

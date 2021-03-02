@@ -35,9 +35,9 @@ namespace Bloom.TeamCollection
 		protected readonly ITeamCollectionManager _tcManager;
 		private readonly TeamCollectionMessageLog _tcLog;
 		protected readonly string _localCollectionFolder; // The unshared folder that this collection syncs with
-		// These arrive on background threads from a FileSystemWatcher, but we want to process them
+		// These arrive on background threads (currently from a FileSystemWatcher), but we want to process them
 		// in idle time on the main UI thread.
-		private ConcurrentQueue<BookStateChangeEventArgs> _pendingBookStateChanges = new ConcurrentQueue<BookStateChangeEventArgs>();
+		private ConcurrentQueue<BookRepoChangeEventArgs> _pendingRepoChanges = new ConcurrentQueue<BookRepoChangeEventArgs>();
 
 		// When we last prompted the user to restart (due to a change in the Team Collection)
 		private DateTime LastRestartPromptTime { get; set; } = DateTime.MinValue;
@@ -313,9 +313,14 @@ namespace Bloom.TeamCollection
 
 		/// <summary>
 		/// Event raised when a book is modified in the repo remotely (that is, not by our own
-		/// PutBook or SetStatus code).
+		/// PutBook or SetStatus code). This is a low-level event that is currently normally
+		/// only used to push data into the _pendingRepoChanges queue. Add handlers to this
+		/// cautiously...they are raised on background threads. Usually it is better to subscribe
+		/// to the BookStatusChangeEvent (available from AutoFac), which is raised during idle
+		/// time on the UI thread (by pulling from the queue) after we have done some basic
+		/// analysis of the effect of the change.
 		/// </summary>
-		public event EventHandler<BookStateChangeEventArgs> BookStateChange;
+		public event EventHandler<BookRepoChangeEventArgs> BookRepoChange;
 
 		/// <summary>
 		/// Get all the books in the repo copied into the local folder.
@@ -691,7 +696,7 @@ namespace Bloom.TeamCollection
 		/// <param name="bookFileName">The book name, including the .bloom suffix</param>
 		protected void RaiseBookStateChange(string bookFileName)
 		{
-			BookStateChange?.Invoke(this, new BookStateChangeEventArgs() { BookFileName = bookFileName });
+			BookRepoChange?.Invoke(this, new BookRepoChangeEventArgs() { BookFileName = bookFileName });
 		}
 
 		/// <summary>
@@ -700,19 +705,19 @@ namespace Bloom.TeamCollection
 		public void SetupMonitoringBehavior()
 		{
 			NewBook += (sender, args) => { QueuePendingBookChange(args); };
-			BookStateChange += (sender, args) => QueuePendingBookChange(args);
+			BookRepoChange += (sender, args) => QueuePendingBookChange(args);
 			Application.Idle += HandleRemoteBookChangesOnIdle;
 			StartMonitoring();
 		}
 
-		internal void QueuePendingBookChange(BookStateChangeEventArgs args)
+		internal void QueuePendingBookChange(BookRepoChangeEventArgs args)
 		{
-			_pendingBookStateChanges.Enqueue(args);
+			_pendingRepoChanges.Enqueue(args);
 		}
 
 		internal void HandleRemoteBookChangesOnIdle(object sender, EventArgs e)
 		{
-			if(_pendingBookStateChanges.TryDequeue(out BookStateChangeEventArgs args))
+			if(_pendingRepoChanges.TryDequeue(out BookRepoChangeEventArgs args))
 			{
 				var newBookArgs = args as NewBookEventArgs;
 				if (newBookArgs == null)
@@ -773,7 +778,7 @@ namespace Bloom.TeamCollection
 		/// a handler for book status may upgrade the problem to 'clobber pending'.)
 		/// </summary>
 		/// <param name="args"></param>
-		public void HandleModifiedFile(BookStateChangeEventArgs args)
+		public void HandleModifiedFile(BookRepoChangeEventArgs args)
 		{
 			if (args.BookFileName.EndsWith(".bloom"))
 			{
@@ -899,10 +904,10 @@ namespace Bloom.TeamCollection
 
 		// Many messages want to go to both the current progress dialog and the permanent
 		// change log. This method handles sending to both.
-		string Report(IWebSocketProgress progress, string l10nIdprefix, string message,
+		string Report(IWebSocketProgress progress, string l10nIdSuffix, string message,
 			string param0 = null, string param1= null, MessageKind kind = MessageKind.Progress)
 		{
-			var fullL10nId = "TeamCollection." + l10nIdprefix;
+			var fullL10nId = "TeamCollection." + l10nIdSuffix;
 			var msg = string.Format(LocalizationManager.GetString(fullL10nId, message), param0, param1);
 			progress.MessageWithoutLocalizing(msg, kind);
 			_tcLog.WriteMessage((kind == MessageKind.Progress) ? MessageAndMilestoneType.History : MessageAndMilestoneType.Error,

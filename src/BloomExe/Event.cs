@@ -250,8 +250,9 @@ namespace Bloom
 		}
 	}
 
-	// An event that signals that the checked-in vs. checked out status
-	// of a book in a Team Collection has changed.
+	// An event that signals that the status of a book in a Team Collection has changed.
+	// This could be that it has been checked in or out (here or elsewhere), or some
+	// other remote change like a modification to the book itself (checksum changed).
 	public class BookStatusChangeEvent : Event<BookStatusChangeEventArgs>
 	{
 		public BookStatusChangeEvent()
