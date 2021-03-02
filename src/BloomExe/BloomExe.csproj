@@ -390,11 +390,11 @@
     <Compile Include="Publish\Epub\EpubPublishUiSettings.cs" />
     <Compile Include="Publish\Epub\PublishEpubApi.cs" />
     <Compile Include="TeamCollection\BookStatusChangeEventArgs.cs" />
-    <Compile Include="TeamCollection\TeamCollectionDialog.cs">
+    <Compile Include="MiscUI\ReactDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="TeamCollection\TeamCollectionDialog.Designer.cs">
-      <DependentUpon>TeamCollectionDialog.cs</DependentUpon>
+    <Compile Include="MiscUI\ReactDialog.Designer.cs">
+      <DependentUpon>ReactDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="TeamCollection\TeamCollectionManager.cs" />
     <Compile Include="TeamCollection\TeamCollectionMessage.cs" />
@@ -949,8 +949,8 @@
     <EmbeddedResource Include="Registration\RegistrationDialog.resx">
       <DependentUpon>RegistrationDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="TeamCollection\TeamCollectionDialog.resx">
-      <DependentUpon>TeamCollectionDialog.cs</DependentUpon>
+    <EmbeddedResource Include="MiscUI\ReactDialog.resx">
+      <DependentUpon>ReactDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\BetterSplitContainer.resx">
       <DependentUpon>BetterSplitContainer.cs</DependentUpon>

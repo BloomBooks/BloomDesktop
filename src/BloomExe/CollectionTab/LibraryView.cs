@@ -6,8 +6,8 @@ using Bloom.Workspace;
 using L10NSharp;
 using SIL.Reporting;
 using System.Drawing;
+using Bloom.MiscUI;
 using Bloom.TeamCollection;
-using BloomTests.TeamCollection;
 using SIL.Windows.Forms.SettingProtection;
 
 namespace Bloom.CollectionTab
@@ -80,11 +80,8 @@ namespace Bloom.CollectionTab
 				// Enhance: possibly it would be useful to control this with a button in the dialog?
 				// Users will typically be interested mainly in new ones.
 				tcManager.CurrentCollection?.MessageLog?.LoadSavedMessages();
-				var dlg = new TeamCollectionDialog();
-				// An api message will come in response to the Close button; api needs access to the dialog to close it.
-				TeamCollectionApi.TheOneInstance.CurrentDialog = dlg;
+				var dlg = new ReactDialog("teamCollectionSettingsBundle.js", "TeamCollectionDialog");
 				dlg.ShowDialog(this);
-				TeamCollectionApi.TheOneInstance.CurrentDialog = null;
 				tcManager.CurrentCollection?.MessageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
 			};
 		}

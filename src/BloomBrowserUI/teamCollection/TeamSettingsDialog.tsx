@@ -38,7 +38,7 @@ export const TeamCollectionDialog: React.FunctionComponent = props => {
                         //variant="text"
                         enabled={true}
                         hasText={true}
-                        onClick={() => BloomApi.post("teamCollection/reload")}
+                        onClick={() => BloomApi.post("common/reloadCollection")}
                     >
                         Reload Collection
                     </BloomButton>
@@ -48,9 +48,7 @@ export const TeamCollectionDialog: React.FunctionComponent = props => {
                         enabled={true}
                         variant="outlined"
                         temporarilyDisableI18nWarning={true}
-                        onClick={() =>
-                            BloomApi.post("teamCollection/closeDialog")
-                        }
+                        onClick={() => BloomApi.post("common/closeReactDialog")}
                     >
                         Cancel
                     </BloomButton>

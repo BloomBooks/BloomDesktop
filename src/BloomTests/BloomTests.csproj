@@ -266,12 +266,6 @@
     <Compile Include="TeamCollection\ProgressLoggerTests.cs" />
     <Compile Include="TeamCollection\ProgressSpy.cs" />
     <Compile Include="TeamCollection\SyncAtStartupTests.cs" />
-    <Compile Include="TeamCollection\TeamCollectionDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="TeamCollection\TeamCollectionDialog.Designer.cs">
-      <DependentUpon>TeamCollectionDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="TeamCollection\TeamCollectionMessageLogTests.cs" />
     <Compile Include="TeamCollection\TeamCollectionMessageTests.cs" />
     <Compile Include="TeamCollection\TeamCollectionTests.cs" />

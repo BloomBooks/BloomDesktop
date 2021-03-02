@@ -9,6 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
+using Bloom.MiscUI;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
@@ -115,6 +116,23 @@ namespace Bloom.web.controllers
 					_doWhenLoggedIn?.Invoke();
 					request.PostSucceeded();
 				}, false);
+			apiHandler.RegisterEndpointHandler("common/closeReactDialog", request =>
+			{
+				CurrentDialog?.Close();
+				request.PostSucceeded();
+			}, true);
+			apiHandler.RegisterEndpointHandler("common/reloadCollection", HandleReloadCollection, true);
+		}
+
+		public static ReactDialog CurrentDialog { get; set; }
+
+		public Action ReloadProjectAction { get; set; }
+
+		private void HandleReloadCollection(ApiRequest request)
+		{
+			CurrentDialog?.Close();
+			ReloadProjectAction?.Invoke();
+			request.PostSucceeded();
 		}
 
 		private static Action _doWhenLoggedIn;

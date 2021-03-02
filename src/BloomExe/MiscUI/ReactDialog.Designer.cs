@@ -1,7 +1,7 @@
 ﻿
-namespace BloomTests.TeamCollection
+namespace Bloom.MiscUI
 {
-	partial class TeamCollectionDialog
+	partial class ReactDialog
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -36,10 +36,8 @@ namespace BloomTests.TeamCollection
 			// 
 			this.reactControl1.BackColor = System.Drawing.Color.White;
 			this.reactControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.reactControl1.JavascriptBundleName = "teamCollectionSettingsBundle.js";
 			this.reactControl1.Location = new System.Drawing.Point(0, 0);
 			this.reactControl1.Name = "reactControl1";
-			this.reactControl1.ReactComponentName = "TeamCollectionDialog";
 			this.reactControl1.Size = new System.Drawing.Size(800, 450);
 			this.reactControl1.TabIndex = 0;
 			// 
@@ -51,7 +49,7 @@ namespace BloomTests.TeamCollection
 			this.ControlBox = false;
 			this.Controls.Add(this.reactControl1);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-			this.Name = "TeamCollectionDialog";
+			this.Name = "ReactDialog";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "TeamCollectionDialog";
 			this.ResumeLayout(false);

@@ -80,7 +80,7 @@ namespace Bloom.Workspace
 							//ChorusSystem chorusSystem,
 							ILocalizationManager localizationManager,
 							CollectionSettings collectionSettings,
-							TeamCollectionApi tcApi
+							CommonApi commonApi
 			)
 		{
 			_model = model;
@@ -90,12 +90,12 @@ namespace Bloom.Workspace
 			_localizationChangedEvent = localizationChangedEvent;
 
 			_collectionSettings = collectionSettings;
-			// This provides the team collection API with a hook it can use to reload
+			// This provides the common API with a hook it can use to reload
 			// the project. Another option would be to make Autofac pass a WorkspaceView
-			// to the TeamCollectionApi constructor so it could raise the event more
+			// to the CommonApi constructor so it could raise the event more
 			// directly. But I'm concerned about circularity: something that needs
-			// the TCApi may be needed itself by the WorkspaceView.
-			tcApi.ReloadProjectAction = () => { Invoke(ReopenCurrentProject); };
+			// the CommonApi may be needed itself by the WorkspaceView.
+			commonApi.ReloadProjectAction = () => { Invoke(ReopenCurrentProject); };
 
 			//_chorusSystem = chorusSystem;
 			_localizationManager = localizationManager;
