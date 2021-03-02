@@ -1271,6 +1271,9 @@ export class BubbleManager {
         const activeBubble = new Bubble(this.activeElement);
         activeBubble.mergeWithNewBubbleProps(newBubbleProps);
         Comical.update(this.activeElement.parentElement!);
+        // BL-9548: Interaction with the toolbox panel makes the bubble lose focus, which requires
+        // we re-activate the current comical element.
+        Comical.activateElement(this.activeElement);
         return activeBubble.getBubbleSpec() as BubbleSpec;
     }
 
@@ -1837,10 +1840,7 @@ export class BubbleManager {
         );
     }
 
-    private makeTOPBoxesDraggableAndClickable(
-        thisTOPBoxes: JQuery,
-        scale: number
-    ): void {
+    private makeTOPBoxesDraggableAndClickable(thisTOPBoxes: JQuery): void {
         thisTOPBoxes.each((index, element) => {
             const thisTOPBox = $(element);
             const imageContainer = this.getImageContainer(thisTOPBox);
@@ -2097,7 +2097,7 @@ export class BubbleManager {
 
                     // There was a problem where resizing a box messed up its draggable containment,
                     // so now after we resize we go back through making it draggable and clickable again.
-                    this.makeTOPBoxesDraggableAndClickable($(target), scale);
+                    this.makeTOPBoxesDraggableAndClickable($(target));
 
                     // Clear the custom class used to indicate that a resize action may have been started
                     BubbleManager.clearResizingClass(target);
@@ -2151,7 +2151,7 @@ export class BubbleManager {
             }
         }
 
-        this.makeTOPBoxesDraggableAndClickable(textOverPictureElems, scale);
+        this.makeTOPBoxesDraggableAndClickable(textOverPictureElems);
     }
 
     // BL-8134: Keeps mouse movement in sync with bubble resizing when scale is not 100%.
