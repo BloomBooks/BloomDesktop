@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 using Bloom.Properties;
 //using Bloom.SendReceive;
@@ -6,6 +6,7 @@ using Bloom.Workspace;
 using L10NSharp;
 using SIL.Reporting;
 using System.Drawing;
+using Bloom.MiscUI;
 using Bloom.TeamCollection;
 using SIL.Windows.Forms.SettingProtection;
 
@@ -23,7 +24,8 @@ namespace Bloom.CollectionTab
 			LibraryBookView.Factory templateBookViewFactory,
 			SelectedTabChangedEvent selectedTabChangedEvent,
 			SendReceiveCommand sendReceiveCommand,
-			TeamCollectionManager tcManager)
+			TeamCollectionManager tcManager,
+			BookStatusChangeEvent bookStatusChangeEvent)
 		{
 			_model = model;
 			InitializeComponent();
@@ -71,6 +73,18 @@ namespace Bloom.CollectionTab
 													}
 												});
 			SetTeamCollectionStatusImage(tcManager);
+			bookStatusChangeEvent.Subscribe((args) => SetTeamCollectionStatusImage(tcManager));
+			_tcStatusButton.Click += (sender, args) =>
+			{
+				// Reinstate this to see messages from before we started up.
+				// We think it might be too expensive to show a list as long as this might get.
+				// Instead, in the short term we may add a button to show the file.
+				// Later we may implement some efficient way to scroll through them.
+				// tcManager.CurrentCollection?.MessageLog?.LoadSavedMessages();
+				var dlg = new ReactDialog("teamCollectionSettingsBundle.js", "TeamCollectionDialog");
+				dlg.ShowDialog(this);
+				tcManager.CurrentCollection?.MessageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
+			};
 		}
 
 		internal void ManageSettings(SettingsProtectionHelper settingsLauncherHelper)
@@ -192,9 +206,16 @@ namespace Bloom.CollectionTab
 				_tcStatusButton.Visible = false;
 				return;
 			}
+			else
+			{
+				// Todo: when we get the real icons, button update will get more complicated.
+				// Message should be localizable.
+				_tcStatusButton.Text = tcCollection.TeamCollectionStatus.ToString();
+			}
 			// TODO: Eventually we want to update the TC status with other possibilities. For now, just assume all is well.
 			_tcStatusButton.Image = Resources.TCStatusOK32x32;
 			_tcStatusButton.Visible = true;
+
 		}
 
 		private void _tcStatusButton_Click(object sender, EventArgs e)

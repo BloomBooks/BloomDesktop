@@ -41,7 +41,7 @@ namespace Bloom.TeamCollection
 		private const int kDebouncePeriodInMs = 100;
 		private Dictionary<string, FileSystemEventRecord> _lastCreateEventByFile = new Dictionary<string, FileSystemEventRecord>();
 		 
-		public FolderTeamCollection(ITeamCollectionManager manager, string localCollectionFolder, string repoFolderPath) : base(manager, localCollectionFolder)
+		public FolderTeamCollection(ITeamCollectionManager manager, string localCollectionFolder, string repoFolderPath, TeamCollectionMessageLog tcLog=null) : base(manager, localCollectionFolder, tcLog)
 		{
 			_repoFolderPath = repoFolderPath;
 		}
@@ -441,7 +441,11 @@ namespace Bloom.TeamCollection
 			// Note: if needed, e should be able to be successfully cast to RenamedEventArgs
 			// But this type is listed as FileSystemEventArgs due to make life easier for FileSystemWatcherExtensions DebounceRenamed.
 
-			// No renames in our PutBook, so we don't need to check for that here.
+			// No obvious renames in our PutBook, but in fact SharpZipLib makes a temp file
+			// by appending to our path, and then renames it, so we can get spurious ones.
+			if (CheckOwnWriteNotification(e.FullPath))
+				return;
+
 			RaiseBookStateChange(Path.GetFileName(e.Name));
 			// Perhaps we should also do something about e.OldName? We don't want to
 			// bother the user with two notifications. But it is (pathologically)

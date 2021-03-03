@@ -262,6 +262,7 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Diagnostics.DiagnosticSource.4.7.1\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
     </Reference>
@@ -324,11 +325,10 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Book\LicenseChecker.cs" />
-    <Compile Include="TeamCollection\BookStateChangeEventArgs.cs" />
+    <Compile Include="TeamCollection\BookRepoChangeEventArgs.cs" />
     <Compile Include="TeamCollection\BookStatus.cs" />
     <Compile Include="TeamCollection\FileSystemEventRecord.cs" />
     <Compile Include="TeamCollection\FolderTeamCollection.cs" />
-    <Compile Include="TeamCollection\ProgressLogger.cs" />
     <Compile Include="TeamCollection\TeamCollection.cs" />
     <Compile Include="TeamCollection\NewBookEventArgs.cs" />
     <Compile Include="TeamCollection\TeamCollectionApi.cs" />
@@ -389,8 +389,16 @@
     <Compile Include="Publish\Android\usb\UsbPublisher.cs" />
     <Compile Include="Publish\Epub\EpubPublishUiSettings.cs" />
     <Compile Include="Publish\Epub\PublishEpubApi.cs" />
-    <Compile Include="TeamCollection\CheckoutStatusChangeEventArgs.cs" />
+    <Compile Include="TeamCollection\BookStatusChangeEventArgs.cs" />
+    <Compile Include="MiscUI\ReactDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MiscUI\ReactDialog.Designer.cs">
+      <DependentUpon>ReactDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="TeamCollection\TeamCollectionManager.cs" />
+    <Compile Include="TeamCollection\TeamCollectionMessage.cs" />
+    <Compile Include="TeamCollection\TeamCollectionMessageLog.cs" />
     <Compile Include="ToPalaso\BackgroundWorkerProgressAdapter.cs" />
     <Compile Include="Utils\BloomUnauthorizedAccessException.cs" />
     <Compile Include="Utils\FileSystemWatcherExtensions.cs" />
@@ -940,6 +948,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Registration\RegistrationDialog.resx">
       <DependentUpon>RegistrationDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MiscUI\ReactDialog.resx">
+      <DependentUpon>ReactDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\BetterSplitContainer.resx">
       <DependentUpon>BetterSplitContainer.cs</DependentUpon>

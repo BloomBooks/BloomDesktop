@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -178,7 +178,7 @@ namespace BloomTests.TeamCollection
 			ManualResetEvent newbookRaised = new ManualResetEvent(false);
 			_collection.NewBook += (sender, args) =>
 			{
-				newBookName = args.BookName;
+				newBookName = args.BookFileName;
 				newbookRaised.Set();
 			};
 			RobustFile.WriteAllText(newBookPath, @"Newly added book"); // no, not a zip at all
@@ -202,12 +202,12 @@ namespace BloomTests.TeamCollection
 
 			_collection.StartMonitoring();
 			ManualResetEvent bookChangedRaised = new ManualResetEvent(false);
-			EventHandler<BookStateChangeEventArgs> monitorFunction = (sender, args) =>
+			EventHandler<BookRepoChangeEventArgs> monitorFunction = (sender, args) =>
 			{
 				modifiedBookName = args.BookFileName;
 				bookChangedRaised.Set();
 			};
-			_collection.BookStateChange += monitorFunction;
+			_collection.BookRepoChange += monitorFunction;
 
 			// sut (at least, triggers it and waits for it)
 			RobustFile.WriteAllText(bloomBookPath, @"This is changed"); // no, not a zip at all
@@ -215,7 +215,7 @@ namespace BloomTests.TeamCollection
 			var waitSucceeded = bookChangedRaised.WaitOne(1000);
 
 			// To avoid messing up other tests, clean up before asserting.
-			_collection.BookStateChange -= monitorFunction;
+			_collection.BookRepoChange -= monitorFunction;
 			_collection.StopMonitoring();
 			RobustFile.Delete(bloomBookPath);
 
@@ -236,11 +236,11 @@ namespace BloomTests.TeamCollection
 			ManualResetEvent bookChangedRaised = new ManualResetEvent(false);
 			_collection.OnChangedCalled = () => { bookChangedRaised.Set(); };
 			bool bookChangedWasCalled = false;
-			EventHandler<BookStateChangeEventArgs> monitorFunction = (sender, args) =>
+			EventHandler<BookRepoChangeEventArgs> monitorFunction = (sender, args) =>
 			{
 				bookChangedWasCalled = true;
 			};
-			_collection.BookStateChange += monitorFunction;
+			_collection.BookRepoChange += monitorFunction;
 
 			//sut: put it again
 			_collection.PutBook(folderPath);
@@ -248,7 +248,7 @@ namespace BloomTests.TeamCollection
 			var waitSucceeded = bookChangedRaised.WaitOne(1000);
 
 			// cleanup
-			_collection.BookStateChange -= monitorFunction;
+			_collection.BookRepoChange -= monitorFunction;
 			_collection.StopMonitoring();
 			var bloomBookPath = Path.Combine(_repoFolder.FolderPath, "put existing book.bloom");
 			RobustFile.Delete(bloomBookPath);

@@ -10,7 +10,8 @@ namespace BloomTests.TeamCollection
 {
 	public class TestFolderTeamCollection : FolderTeamCollection
 	{
-		public TestFolderTeamCollection(ITeamCollectionManager tcManager, string localCollectionFolder, string repoFolderPath) : base(tcManager, localCollectionFolder, repoFolderPath)
+		public TestFolderTeamCollection(ITeamCollectionManager tcManager, string localCollectionFolder,
+			string repoFolderPath, TeamCollectionMessageLog tcLog = null) : base(tcManager, localCollectionFolder, repoFolderPath, tcLog)
 		{
 		}
 

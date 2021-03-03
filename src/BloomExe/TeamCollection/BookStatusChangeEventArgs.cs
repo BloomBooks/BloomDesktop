@@ -9,12 +9,12 @@ namespace Bloom.TeamCollection
 		Other
 	}
 
-	public class CheckoutStatusChangeEventArgs
+	public class BookStatusChangeEventArgs
 	{
 		public string BookName { get; set; }
 		public CheckedOutBy CheckedOutByWhom { get; set; }
 
-		public CheckoutStatusChangeEventArgs(string bookName, CheckedOutBy checkedOutByWhom)
+		public BookStatusChangeEventArgs(string bookName, CheckedOutBy checkedOutByWhom)
 		{
 			BookName = bookName;
 			CheckedOutByWhom = checkedOutByWhom;

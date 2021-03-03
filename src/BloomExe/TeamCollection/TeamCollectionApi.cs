@@ -47,6 +47,23 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/chooseFolderLocation", HandleChooseFolderLocation, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/createTeamCollection", HandleCreateTeamCollection, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/joinTeamCollection", HandleJoinTeamCollection, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/getLog", HandleGetLog, false);
+		}
+
+		private void HandleGetLog(ApiRequest request)
+		{
+			var log = _tcManager.CurrentCollection?.MessageLog;
+			if (log == null)
+			{
+				request.Failed();
+				return;
+			}
+
+			request.ReplyWithJson(JsonConvert.SerializeObject(
+				new
+				{
+					messages= log.PrettyPrintMessages // Enhance: include types
+				}));
 		}
 
 		public void HandleRepoFolderPath(ApiRequest request)

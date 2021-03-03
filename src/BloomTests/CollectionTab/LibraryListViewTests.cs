@@ -44,7 +44,7 @@ namespace BloomTests.CollectionTab
 			BloomTests.Book.BookCollectionTests.AddBook(collectionFolder, "book1");
 
 			BookSelection bookSelection = new BookSelection();
-			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), bookSelection, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookCheckoutStatusChangeEvent());
+			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), bookSelection, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent());
 
 			Bloom.Properties.Settings.Default.CurrentBookPath = Path.Combine(collectionFolder.Path, "book1");
 
@@ -65,7 +65,7 @@ namespace BloomTests.CollectionTab
 			BloomTests.Book.BookCollectionTests.AddBook(collectionFolder, "book1");
 
 			BookSelection bookSelection = new BookSelection();
-			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), bookSelection, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookCheckoutStatusChangeEvent());
+			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), bookSelection, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent());
 
 			Bloom.Properties.Settings.Default.CurrentBookPath = Path.Combine(collectionFolder.Path, "book1");
 			var expectedBookPath = Bloom.Properties.Settings.Default.CurrentBookPath;
@@ -80,13 +80,13 @@ namespace BloomTests.CollectionTab
 		}
 
 		[Test]
-		public void OnTeamCollectionCheckoutStatusChange_TeamCollection_CheckedOutBySelf()
+		public void OnTeamCollectionBookStatusChange_TeamCollection_CheckedOutBySelf()
 		{
 			// Setup //
 			var collectionFolder = new TemporaryFolder("LibraryListViewTests");
 			Book.BookCollectionTests.AddBook(collectionFolder, "book1");
 
-			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), new BookSelection(), new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookCheckoutStatusChangeEvent());
+			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), new BookSelection(), new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent());
 
 			var primaryCollectionFlow = new FlowLayoutPanel();
 			var obj = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateObject(_view);
@@ -94,7 +94,7 @@ namespace BloomTests.CollectionTab
 			_view.ManageButtonsAtIdleTime(null, null);	// Load primary buttons
 
 			// System Under Test //
-			_view.OnTeamCollectionCheckoutStatusChange(new CheckoutStatusChangeEventArgs("book1", CheckedOutBy.Self));
+			_view.OnTeamCollectionBookStatusChange(new BookStatusChangeEventArgs("book1", CheckedOutBy.Self));
 
 			// Verification //
 			var button = primaryCollectionFlow.Controls.OfType<Button>().First();
@@ -103,13 +103,13 @@ namespace BloomTests.CollectionTab
 		}
 
 		[Test]
-		public void OnTeamCollectionCheckoutStatusChange_TeamCollection_CheckedOutByOther()
+		public void OnTeamCollectionBookStatusChange_TeamCollection_CheckedOutByOther()
 		{
 			// Setup //
 			var collectionFolder = new TemporaryFolder("LibraryListViewTests");
 			Book.BookCollectionTests.AddBook(collectionFolder, "book1");
 
-			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), new BookSelection(), new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookCheckoutStatusChangeEvent());
+			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), new BookSelection(), new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent());
 
 			var primaryCollectionFlow = new FlowLayoutPanel();
 			var obj = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateObject(_view);
@@ -117,7 +117,7 @@ namespace BloomTests.CollectionTab
 			_view.ManageButtonsAtIdleTime(null, null);	// Load primary buttons
 
 			// System Under Test //
-			_view.OnTeamCollectionCheckoutStatusChange(new CheckoutStatusChangeEventArgs("book1", CheckedOutBy.Other));
+			_view.OnTeamCollectionBookStatusChange(new BookStatusChangeEventArgs("book1", CheckedOutBy.Other));
 
 			// Verification //
 			var button = primaryCollectionFlow.Controls.OfType<Button>().First();
@@ -126,24 +126,24 @@ namespace BloomTests.CollectionTab
 		}
 
 		[Test]
-		public void OnTeamCollectionCheckoutStatusChange_TeamCollection_GivenCheckedOutByOther_WhenCheckedOutByNone_RemovesIcon()
+		public void OnTeamCollectionBookStatusChange_TeamCollection_GivenCheckedOutByOther_WhenCheckedOutByNone_RemovesIcon()
 		{
 			// Setup //
 			var collectionFolder = new TemporaryFolder("LibraryListViewTests");
 			Book.BookCollectionTests.AddBook(collectionFolder, "book1");
 
-			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), new BookSelection(), new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookCheckoutStatusChangeEvent());
+			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), new BookSelection(), new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent());
 
 			var primaryCollectionFlow = new FlowLayoutPanel();
 			var obj = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateObject(_view);
 			obj.SetField("_primaryCollectionFlow", primaryCollectionFlow);
 			_view.ManageButtonsAtIdleTime(null, null);	// Load primary buttons
-			_view.OnTeamCollectionCheckoutStatusChange(new CheckoutStatusChangeEventArgs("book1", CheckedOutBy.Other));
+			_view.OnTeamCollectionBookStatusChange(new BookStatusChangeEventArgs("book1", CheckedOutBy.Other));
 			var button = primaryCollectionFlow.Controls.OfType<Button>().First();
 			Assert.AreEqual(1, button.Controls.OfType<Label>().Count(), "Test was not set up properly. Wrong number of labels.");
 
 			// System Under Test //
-			_view.OnTeamCollectionCheckoutStatusChange(new CheckoutStatusChangeEventArgs("book1", CheckedOutBy.None));
+			_view.OnTeamCollectionBookStatusChange(new BookStatusChangeEventArgs("book1", CheckedOutBy.None));
 
 			// Verification //			
 			var labelOfButton = button.Controls.OfType<Label>().FirstOrDefault();

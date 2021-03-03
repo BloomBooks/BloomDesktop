@@ -8,7 +8,7 @@ namespace Bloom.TeamCollection
 {
 	public interface ITeamCollectionManager
 	{
-		void RaiseCheckoutStatusChanged(CheckoutStatusChangeEventArgs eventInfo);
+		void RaiseBookStatusChanged(BookStatusChangeEventArgs eventInfo);
 	}
 
 	/// <summary>
@@ -20,7 +20,7 @@ namespace Bloom.TeamCollection
 	public class TeamCollectionManager: IDisposable, ITeamCollectionManager
 	{
 		private readonly BloomWebSocketServer _webSocketServer;
-		private readonly BookCheckoutStatusChangeEvent _checkoutStatusChangeEvent;
+		private readonly BookStatusChangeEvent _bookStatusChangeEvent;
 		public TeamCollection CurrentCollection { get; private set; }
 		private readonly string _localCollectionFolder;
 		private static string _overrideCurrentUser;
@@ -33,10 +33,15 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		public static bool ForceNextSyncToLocal { set; get; }
 
-		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer, BookRenamedEvent bookRenamedEvent, BookCheckoutStatusChangeEvent checkoutStatusChangeEvent)
+		internal static void ForceCurrentUserForTests(string user)
+		{
+			_overrideCurrentUser = user;
+		}
+
+		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer, BookRenamedEvent bookRenamedEvent, BookStatusChangeEvent bookStatusChangeEvent)
 		{
 			_webSocketServer = webSocketServer;
-			_checkoutStatusChangeEvent = checkoutStatusChangeEvent;
+			_bookStatusChangeEvent = bookStatusChangeEvent;
 			_localCollectionFolder = Path.GetDirectoryName(localCollectionPath);
 			bookRenamedEvent.Subscribe(pair =>
 			{
@@ -93,6 +98,11 @@ namespace Bloom.TeamCollection
 			}
 		}
 
+		public static string GetTcLogPathFromLcPath(string localCollectionFolder)
+		{
+			return Path.Combine(localCollectionFolder, "log.txt");
+		}
+
 		/// <summary>
 		/// This gets set when we join a new TeamCollection so that the merge we do
 		/// later as we open it gets the special behavior for this case.
@@ -142,9 +152,9 @@ namespace Bloom.TeamCollection
 			CurrentCollection?.Dispose();
 		}
 
-		public void RaiseCheckoutStatusChanged(CheckoutStatusChangeEventArgs eventInfo)
+		public void RaiseBookStatusChanged(BookStatusChangeEventArgs eventInfo)
 		{
-			_checkoutStatusChangeEvent.Raise(eventInfo);
+			_bookStatusChangeEvent.Raise(eventInfo);
 		}
 	}
 }
