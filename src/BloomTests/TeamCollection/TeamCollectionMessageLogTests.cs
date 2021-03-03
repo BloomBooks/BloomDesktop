@@ -279,42 +279,43 @@ namespace BloomTests.TeamCollection
 		{
 			MakeNewBookMessage();
 			var msg = _messageLog.Messages[0];
-			Assert.That(msg.When, Is.InRange(DateTime.Now - new TimeSpan(0, 0, 0, 1), DateTime.Now));
+			Assert.That(msg.When, Is.InRange(DateTime.UtcNow - new TimeSpan(0, 0, 0, 1), DateTime.UtcNow));
 		}
 
-		[Test]
-		public void RestoreFromFile_RecoversEarlierMessages()
-		{
-			MakeNewBookMessage();
-			MakeError1();
-			_messageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
-			MakeError1("after error milestone");
-			MakeChangedBookMessage();
+		// Reinstate this test if we reintroduce the LoadSavedMessages method.
+		//[Test]
+		//public void LoadSavedMessages_RecoversEarlierMessages()
+		//{
+		//	MakeNewBookMessage();
+		//	MakeError1();
+		//	_messageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
+		//	MakeError1("after error milestone");
+		//	MakeChangedBookMessage();
 
-			_messageLog = new TeamCollectionMessageLog(_logFile.Path);
-			Assert.That(_messageLog.Messages, Has.Count.EqualTo(0),
-				"should not automatically load from file");
-			MakeNewBookMessage("another new book");
-			MakeError1("Problem after save");
-			Assert.That(_messageLog.Messages, Has.Count.EqualTo(2));
-			var timeAfterCreation = DateTime.Now; // reloaded messages should show as created before this
-			_messageLog.LoadSavedMessages();
-			var allMessages = _messageLog.Messages;
-			Assert.That(allMessages, Has.Count.EqualTo(7));
-			AssertNewBookMessage(allMessages, 0);
-			AssertError1(allMessages, 1);
-			AssertNewBookMessage(allMessages, 5, "another new book");
+		//	_messageLog = new TeamCollectionMessageLog(_logFile.Path);
+		//	Assert.That(_messageLog.Messages, Has.Count.EqualTo(0),
+		//		"should not automatically load from file");
+		//	MakeNewBookMessage("another new book");
+		//	MakeError1("Problem after save");
+		//	Assert.That(_messageLog.Messages, Has.Count.EqualTo(2));
+		//	var timeAfterCreation = DateTime.Now; // reloaded messages should show as created before this
+		//	_messageLog.LoadSavedMessages();
+		//	var allMessages = _messageLog.Messages;
+		//	Assert.That(allMessages, Has.Count.EqualTo(7));
+		//	AssertNewBookMessage(allMessages, 0);
+		//	AssertError1(allMessages, 1);
+		//	AssertNewBookMessage(allMessages, 5, "another new book");
 
-			Assert.That(allMessages[0].When, Is.LessThan(timeAfterCreation));
+		//	Assert.That(allMessages[0].When, Is.LessThan(timeAfterCreation));
 
-			var errors = _messageLog.CurrentErrors;
-			Assert.That(errors, Has.Count.EqualTo(2));
-			AssertError1(errors, 0, "after error milestone");
-			AssertError1(errors, 1, "Problem after save");
+		//	var errors = _messageLog.CurrentErrors;
+		//	Assert.That(errors, Has.Count.EqualTo(2));
+		//	AssertError1(errors, 0, "after error milestone");
+		//	AssertError1(errors, 1, "Problem after save");
 
-			_messageLog.LoadSavedMessages(); // should not insert them again
-			Assert.That(_messageLog.Messages, Has.Count.EqualTo(7));
-		}
+		//	_messageLog.LoadSavedMessages(); // should not insert them again
+		//	Assert.That(_messageLog.Messages, Has.Count.EqualTo(7));
+		//}
 
 		[Test]
 		public void ClobberMessage_NoneInList_ReturnsNull()
@@ -414,11 +415,9 @@ namespace BloomTests.TeamCollection
 			var today = DateTime.Now.ToShortDateString();
 			Assert.That(prettyMessages[0], Is.EqualTo(today + ": joe@somewhere.org checked out the book Joe hunts pigs"));
 			Assert.That(prettyMessages[1], Is.EqualTo(today + ": A new book called I am new was added to the collection"));
-			Assert.That(prettyMessages[2], Is.EqualTo(today + ": Reloaded collection"));
-			Assert.That(prettyMessages[3], Is.EqualTo(today + ": The book 'Joe hunts pigs' is checked out to someone else. Your changes are saved to Lost-and-found."));
-			Assert.That(prettyMessages[4], Is.EqualTo(today + ": Displayed log"));
-			Assert.That(prettyMessages[5], Is.EqualTo(today + ": The book called I am different was changed"));
-			Assert.That(prettyMessages[6], Is.EqualTo(today + ": Repaired conflict"));
+			Assert.That(prettyMessages[2], Is.EqualTo(today + ": The book 'Joe hunts pigs' is checked out to someone else. Your changes are saved to Lost-and-found."));
+			Assert.That(prettyMessages[3], Is.EqualTo(today + ": The book called I am different was changed"));
+			Assert.That(prettyMessages[4], Is.EqualTo(today + ": Repaired conflict"));
 			// Enhance: Do we want colors? If so, should the output of this be HTML,
 			// or something else that supports that? Or should some other component handle formatting?
 		}

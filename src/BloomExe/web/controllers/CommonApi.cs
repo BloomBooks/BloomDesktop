@@ -47,18 +47,18 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler("uiLanguages", HandleUiLanguages, false);
-			apiHandler.RegisterEndpointHandler("currentUiLanguage", HandleCurrentUiLanguage, false);
-			apiHandler.RegisterEndpointHandler("bubbleLanguages", HandleBubbleLanguages, false);
-			apiHandler.RegisterEndpointHandler("authorMode", HandleAuthorMode, false);
-			apiHandler.RegisterEndpointHandler("topics", HandleTopics, false);
-			apiHandler.RegisterEndpointHandler("common/enterpriseFeaturesEnabled", HandleEnterpriseFeaturesEnabled, false);
-			apiHandler.RegisterEndpointHandler("common/error", HandleJavascriptError, false);
-			apiHandler.RegisterEndpointHandler("common/preliminaryError", HandlePreliminaryJavascriptError, false);
-			apiHandler.RegisterEndpointHandler("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true);
-			apiHandler.RegisterEndpointHandler("common/requestTranslationGroups", RequestTranslationGroups, true);
-			apiHandler.RegisterEndpointHandler("common/showInFolder", HandleShowInFolderRequest, true);
-			apiHandler.RegisterEndpointHandler("common/showSettingsDialog", HandleShowSettingsDialog, false);
+			apiHandler.RegisterEndpointHandler("uiLanguages", HandleUiLanguages, false); // App
+			apiHandler.RegisterEndpointHandler("currentUiLanguage", HandleCurrentUiLanguage, false); // App
+			apiHandler.RegisterEndpointHandler("bubbleLanguages", HandleBubbleLanguages, false); // Move to EditingViewApi
+			apiHandler.RegisterEndpointHandler("authorMode", HandleAuthorMode, false); // Move to EditingViewApi
+			apiHandler.RegisterEndpointHandler("topics", HandleTopics, false); // Move to EditingViewApi
+			apiHandler.RegisterEndpointHandler("common/enterpriseFeaturesEnabled", HandleEnterpriseFeaturesEnabled, false); // App? (and eventually Collection?)
+			apiHandler.RegisterEndpointHandler("common/error", HandleJavascriptError, false); // Common
+			apiHandler.RegisterEndpointHandler("common/preliminaryError", HandlePreliminaryJavascriptError, false); // Common
+			apiHandler.RegisterEndpointHandler("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true); // Move to EditingViewApi
+			apiHandler.RegisterEndpointHandler("common/requestTranslationGroups", RequestTranslationGroups, true); // Move to EditingViewApi
+			apiHandler.RegisterEndpointHandler("common/showInFolder", HandleShowInFolderRequest, true); // Common
+			apiHandler.RegisterEndpointHandler("common/showSettingsDialog", HandleShowSettingsDialog, false); // Common
 			// Used when something in JS land wants to copy text to or from the clipboard. For POST, the text to be put on the
 			// clipboard is passed as the 'text' property of a JSON requestData.
 			apiHandler.RegisterEndpointHandler("common/clipboardText",
@@ -116,11 +116,16 @@ namespace Bloom.web.controllers
 					_doWhenLoggedIn?.Invoke();
 					request.PostSucceeded();
 				}, false);
+
+			// At this point we open dialogs from c# code; if we opened dialog from javascript, we wouldn't need this
+			// api to do it. We just need a way to close a c#-opened dialog from javascript (e.g. the Close button of the dialog).
 			apiHandler.RegisterEndpointHandler("common/closeReactDialog", request =>
 			{
 				CurrentDialog?.Close();
 				request.PostSucceeded();
 			}, true);
+
+			// TODO: move to the new App API (BL-9635)
 			apiHandler.RegisterEndpointHandler("common/reloadCollection", HandleReloadCollection, true);
 		}
 

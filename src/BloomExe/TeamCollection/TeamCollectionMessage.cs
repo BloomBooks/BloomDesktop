@@ -73,8 +73,11 @@ namespace Bloom.TeamCollection
 		public string Param0 { get; set; }
 		public string Param1 { get; set; }
 
+		// Tab-delimited format:
+		// TIME TYPE StringId EnglishMessageWithParameterPlaceholders Param0 Param1
+		// Milestones only have the first two.
 		public string ToPersistedForm =>
-			When.ToString("o") // A format that is supposed to round-trip the DT.
+			When.ToString("o") // ISO 8601
 			+ "\t" + MessageType + "\t" + (L10NId ?? "") + "\t" + (Message ?? "") + "\t" +
 			(Param0 ?? "") + "\t" + (Param1 ?? "");
 
@@ -89,11 +92,11 @@ namespace Bloom.TeamCollection
 					{
 						// Review: need localization, unless maybe we just want to show an icon?
 						// Or perhaps some or all don't need to show in the log at all?
-						case MessageAndMilestoneType.Reloaded: return leadIn + "Reloaded collection";
+						case MessageAndMilestoneType.Reloaded: return null;
 						case MessageAndMilestoneType.LogDisplayed:
-							return leadIn + "Displayed log"; // review: or show nothing at all??
+							return null; // review: or show nothing at all??
 						case MessageAndMilestoneType.ShowedClobbered:
-							return leadIn + "Repaired conflict"; // review: or show nothing at all??
+							return leadIn + "Repaired conflict"; // eventually remove when adequately conveyed in error message
 					}
 				}
 

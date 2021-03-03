@@ -145,7 +145,7 @@ namespace BloomTests.TeamCollection
 			_progressSpy = new ProgressSpy();
 
 			// sut for the whole suite!
-			_syncMessages = _collection.SyncAtStartup(_progressSpy, FirstTimeJoin());
+			Assert.That(_collection.SyncAtStartup(_progressSpy, FirstTimeJoin()), Is.True);
 		}
 
 		protected virtual bool FirstTimeJoin()
@@ -175,7 +175,6 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public virtual void SyncAtStartup_ProducesNoUnexpectedMessages()
 		{
-			Assert.That(_syncMessages, Has.Count.EqualTo(2), "Unexpected number of error messages produced. Did you mean to add one?");
 			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(2), "Unexpected number of progress warnings produced. Did you mean to add one?");
 			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(0), "Unexpected number of progress errors produced.");
 			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(5), "Unexpected number of progress messages produced. Did you mean to add one?");
@@ -332,7 +331,6 @@ namespace BloomTests.TeamCollection
 			if (expectedType == MessageAndMilestoneType.Error)
 			{
 				Assert.That(_progressSpy.Warnings, Contains.Item(expectedMsg));
-				Assert.That(_syncMessages, Contains.Item(expectedMsg));
 			}
 			else
 			{
@@ -403,7 +401,6 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public override void SyncAtStartup_ProducesNoUnexpectedMessages()
 		{
-			Assert.That(_syncMessages, Has.Count.EqualTo(3), "Unexpected number of error messages produced. Did you mean to add one?");
 			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(3), "Unexpected number of progress warnings produced. Did you mean to add one?");
 			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(0), "Unexpected number of progress errors produced.");
 			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(3), "Unexpected number of progress messages produced. Did you mean to add one?");

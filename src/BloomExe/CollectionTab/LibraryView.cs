@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 using Bloom.Properties;
 //using Bloom.SendReceive;
@@ -76,10 +76,11 @@ namespace Bloom.CollectionTab
 			bookStatusChangeEvent.Subscribe((args) => SetTeamCollectionStatusImage(tcManager));
 			_tcStatusButton.Click += (sender, args) =>
 			{
-				// We're going to display the messages, we should have them all.
-				// Enhance: possibly it would be useful to control this with a button in the dialog?
-				// Users will typically be interested mainly in new ones.
-				tcManager.CurrentCollection?.MessageLog?.LoadSavedMessages();
+				// Reinstate this to see messages from before we started up.
+				// We think it might be too expensive to show a list as long as this might get.
+				// Instead, in the short term we may add a button to show the file.
+				// Later we may implement some efficient way to scroll through them.
+				// tcManager.CurrentCollection?.MessageLog?.LoadSavedMessages();
 				var dlg = new ReactDialog("teamCollectionSettingsBundle.js", "TeamCollectionDialog");
 				dlg.ShowDialog(this);
 				tcManager.CurrentCollection?.MessageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
