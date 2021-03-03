@@ -185,6 +185,9 @@ namespace Bloom.Registration
 		/// <param name="message">An optional message which appears below the heading</param>
 		public static bool RequireRegistrationEmail(string message = null)
 		{
+			if (Program.RunningUnitTests)
+				return true;
+
 			if (!string.IsNullOrWhiteSpace(SIL.Windows.Forms.Registration.Registration.Default.Email))
 				return true;
 
