@@ -267,13 +267,23 @@ namespace Bloom.Api
 		}
 		public string RequiredPostString()
 		{
-			Debug.Assert(_requestInfo.HttpMethod == HttpMethods.Post);
-			var s = _requestInfo.GetPostString();
+			var s = GetPostStringOrNull();
 			if (!string.IsNullOrWhiteSpace(s))
 			{
 				return s;
 			}
 			throw new ApplicationException("The query " + _requestInfo.RawUrl + " should have post string");
+		}
+		public string GetPostStringOrNull()
+		{
+			string contentType = RequestContentType;
+			if (contentType == null)
+			{
+				return null;
+			}
+
+			Debug.Assert(_requestInfo.HttpMethod == HttpMethods.Post);
+			return _requestInfo.GetPostString();			
 		}
 
 		/// <summary>
