@@ -1,4 +1,9 @@
-import axios, { AxiosResponse, AxiosRequestConfig, AxiosPromise } from "axios";
+import axios, {
+    AxiosResponse,
+    AxiosRequestConfig,
+    AxiosPromise,
+    AxiosError
+} from "axios";
 import * as StackTrace from "stacktrace-js";
 import { reportError, reportPreliminaryError } from "../lib/errorHandler";
 import React = require("react");
@@ -145,7 +150,7 @@ export class BloomApi {
     public static get(
         urlSuffix: string,
         successCallback: (r: AxiosResponse) => void,
-        errorCallback?: (r: AxiosResponse) => void
+        errorCallback?: (r: AxiosError) => void
     ) {
         if (mockReplies[urlSuffix]) {
             // like the "real thing", this is going to return and

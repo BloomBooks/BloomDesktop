@@ -74,6 +74,12 @@ namespace Bloom.TeamCollection
 
 		public void HandleCurrentBookStatus(ApiRequest request)
 		{
+			if (!TeamCollection.IsRegistrationSufficient())
+			{
+				request.Failed("not registered");
+				return;
+			}
+
 			var whoHasBookLocked = _tcManager.CurrentCollection?.WhoHasBookLocked(BookFolderName);
 			var whenLocked = _tcManager.CurrentCollection?.WhenWasBookLocked(BookFolderName) ?? DateTime.MaxValue;
 			// review: or better to pass on to JS? We may want to show slightly different
@@ -248,6 +254,9 @@ namespace Bloom.TeamCollection
 		// that it is checked-out to this user 
 		public bool CanEditBook()
 		{
+			if (!TeamCollection.IsRegistrationSufficient())
+				return false;
+
 			var folderName = BookFolderName;
 			if (string.IsNullOrEmpty(folderName) || !_bookSelection.CurrentSelection.IsEditable || _bookSelection.CurrentSelection.HasFatalError)
 			{
