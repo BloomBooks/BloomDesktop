@@ -54,7 +54,6 @@ ENDLAYOUTS
     font-size: inherit; //override the (later to be removed) "143%" we get from basePage.css
     line-height: inherit; //override the (later to be removed) rule we get from basePage.css
     display: table-cell;
-    height: 72px; // NB: have to allow for up to 6 rows of calendar, not 5!!!!!!!!!!!!
     width: 101px; //103 is good during editing
 
     vertical-align: top;
@@ -66,7 +65,7 @@ ENDLAYOUTS
     line-height: 1.3em;
     text-indent: 2.3em;
     margin-top: 4px;
-    height: 65px;
+    height: 62px; // leave room for 6 rows, not 5!!!
 }
 
 .calendarMonthBottom td p {
