@@ -399,6 +399,9 @@
     <Compile Include="TeamCollection\TeamCollectionManager.cs" />
     <Compile Include="TeamCollection\TeamCollectionMessage.cs" />
     <Compile Include="TeamCollection\TeamCollectionMessageLog.cs" />
+    <Compile Include="TeamCollection\TeamCollectionStatusButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="ToPalaso\BackgroundWorkerProgressAdapter.cs" />
     <Compile Include="Utils\BloomUnauthorizedAccessException.cs" />
     <Compile Include="Utils\FileSystemWatcherExtensions.cs" />
@@ -1470,7 +1473,10 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Content Include="Firefox\sandboxbroker.dll" />
     <Content Include="Firefox\softokn3.dll" />
     <Content Include="Firefox\xul.dll" />
-    <None Include="Resources\TCStatusOK32x32.png" />
+    <None Include="Resources\TC Button Grey Small Team.png" />
+    <None Include="Resources\TC Button Warning.png" />
+    <None Include="Resources\TC Button Updates Available.png" />
+    <None Include="Resources\Team32x32.png" />
     <None Include="Resources\lock.bmp" />
     <None Include="Resources\LogoForSplashScreen.png" />
     <None Include="Resources\help16x16Darker.png" />

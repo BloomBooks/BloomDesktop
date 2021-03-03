@@ -1348,7 +1348,7 @@ namespace Bloom.TeamCollection
 			}
 		}
 
-		public TeamCollectionStatus TeamCollectionStatus => _tcLog.TeamCollectionStatus;
+		public TeamCollectionStatus CollectionStatus => _tcLog.TeamCollectionStatus;
 
 		/// <summary>
 		/// Causes a notification to be sent to the UI to update the checkout status icon for {bookName}

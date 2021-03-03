@@ -1,3 +1,5 @@
+using Bloom.TeamCollection;
+
 namespace Bloom.CollectionTab
 {
     partial class LibraryView
@@ -31,7 +33,7 @@ namespace Bloom.CollectionTab
 			this.components = new System.ComponentModel.Container();
 			this._topBarControl = new System.Windows.Forms.Panel();
 			this._toolStripLeft = new System.Windows.Forms.ToolStrip();
-			this._tcStatusButton = new System.Windows.Forms.ToolStripButton();
+			this._tcStatusButton = new Bloom.TeamCollection.TeamCollectionStatusButton();
 			this._toolStrip = new System.Windows.Forms.ToolStrip();
 			this._sendReceiveButton = new System.Windows.Forms.ToolStripButton();
 			this._makeBloomPackButton = new System.Windows.Forms.ToolStripButton();
@@ -74,22 +76,26 @@ namespace Bloom.CollectionTab
 			this._toolStripLeft.Location = new System.Drawing.Point(0, 0);
 			this._toolStripLeft.Name = "_toolStripLeft";
 			this._toolStripLeft.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this._toolStripLeft.Size = new System.Drawing.Size(130, 69);
+			this._toolStripLeft.Size = new System.Drawing.Size(150, 69);
 			this._toolStripLeft.TabIndex = 32;
 			this._toolStripLeft.Text = "_toolStripLeft";
 			// 
 			// _tcStatusButton
 			// 
-			this._tcStatusButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._tcStatusButton.Image = global::Bloom.Properties.Resources.TCStatusOK32x32;
+			this._tcStatusButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+			this._tcStatusButton.ForeColor = System.Drawing.Color.White;
+			this._tcStatusButton.Image = global::Bloom.Properties.Resources.Team32x32;
 			this._tcStatusButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
 			this._tcStatusButton.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._tcStatusButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._tcStatusButton, null);
 			this._L10NSharpExtender.SetLocalizingId(this._tcStatusButton, "TeamCollection.TeamCollection");
 			this._tcStatusButton.Name = "_tcStatusButton";
-			this._tcStatusButton.Size = new System.Drawing.Size(96, 66);
+			this._tcStatusButton.Padding = new System.Windows.Forms.Padding(10, 0, 10, 0);
+			this._tcStatusButton.ShowExtraIcon = false;
+			this._tcStatusButton.Size = new System.Drawing.Size(116, 66);
 			this._tcStatusButton.Text = "Team Collection";
+			this._tcStatusButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
 			this._tcStatusButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._tcStatusButton.ToolTipText = "Team Collection Status";
 			this._tcStatusButton.Click += new System.EventHandler(this._tcStatusButton_Click);
@@ -232,6 +238,6 @@ namespace Bloom.CollectionTab
 		private System.Windows.Forms.ToolStripButton _settingsButton;
 		private System.Windows.Forms.ToolStripButton _openCreateCollectionButton;
 		private System.Windows.Forms.ToolStrip _toolStripLeft;
-		private System.Windows.Forms.ToolStripButton _tcStatusButton;
+		private TeamCollectionStatusButton _tcStatusButton;
 	}
 }

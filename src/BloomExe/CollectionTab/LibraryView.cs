@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows.Forms;
 using Bloom.Properties;
 //using Bloom.SendReceive;
@@ -72,8 +72,8 @@ namespace Bloom.CollectionTab
 														Logger.WriteEvent("Entered Collections Tab");
 													}
 												});
-			SetTeamCollectionStatusImage(tcManager);
-			bookStatusChangeEvent.Subscribe((args) => SetTeamCollectionStatusImage(tcManager));
+			SetTeamCollectionStatus(tcManager);
+			bookStatusChangeEvent.Subscribe((args) => SetTeamCollectionStatus(tcManager));
 			_tcStatusButton.Click += (sender, args) =>
 			{
 				// Reinstate this to see messages from before we started up.
@@ -196,26 +196,11 @@ namespace Bloom.CollectionTab
 		}
 
 		/// <summary>
-		/// Set a new TC status image.
+		/// Set a new TC status image. Called at Idle time or startup, on the UI thread.
 		/// </summary>
-		public void SetTeamCollectionStatusImage(TeamCollectionManager tcManager)
+		public void SetTeamCollectionStatus(TeamCollectionManager tcManager)
 		{
-			var tcCollection = tcManager.CurrentCollection;
-			if (tcCollection == null)
-			{
-				_tcStatusButton.Visible = false;
-				return;
-			}
-			else
-			{
-				// Todo: when we get the real icons, button update will get more complicated.
-				// Message should be localizable.
-				_tcStatusButton.Text = tcCollection.TeamCollectionStatus.ToString();
-			}
-			// TODO: Eventually we want to update the TC status with other possibilities. For now, just assume all is well.
-			_tcStatusButton.Image = Resources.TCStatusOK32x32;
-			_tcStatusButton.Visible = true;
-
+			_tcStatusButton.Update(tcManager.CollectionStatus);
 		}
 
 		private void _tcStatusButton_Click(object sender, EventArgs e)

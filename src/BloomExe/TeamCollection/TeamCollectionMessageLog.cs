@@ -15,7 +15,8 @@ namespace Bloom.TeamCollection
 		Nominal, // all is well
 		NewStuff, // New remote stuff to see after reload
 		Error, // Errors you should check into sometime
-		ClobberPending // Your current work is about to be overwritten, drop everything!
+		ClobberPending, // Your current work is about to be overwritten, drop everything!
+		None // The current collection is not a team collection.
 	}
 
 	/// <summary>
