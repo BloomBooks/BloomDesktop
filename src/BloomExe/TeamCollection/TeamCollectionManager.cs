@@ -38,6 +38,10 @@ namespace Bloom.TeamCollection
 			_overrideCurrentUser = user;
 		}
 
+		public TeamCollectionStatus CollectionStatus => CurrentCollection == null
+			? TeamCollectionStatus.None
+			: CurrentCollection.CollectionStatus;
+
 		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer, BookRenamedEvent bookRenamedEvent, BookStatusChangeEvent bookStatusChangeEvent)
 		{
 			_webSocketServer = webSocketServer;
