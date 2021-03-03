@@ -1,20 +1,28 @@
 @import "../bloomUI.less";
 
-.bookButtonPane {
-    padding: 25px;
+body {
     background-color: @bloom-panelBackground;
     color: white;
-    font-family: "Andika New Basic";
-
+    padding: 25px;
     h1 {
+        font-size: 16px;
+        margin: 0;
+    }
+    h2 {
         font-size: 20px;
         margin: 0;
     }
+}
+.bookButtonPane {
+    font-family: "Andika New Basic";
+    overflow: hidden;
+    margin-bottom: 20px;
     .bookButton {
-        margin-top: 16px;
-        height: 150px;
-        width: 125px;
+        //margin-top: 16px;
+        height: 120px;
+        width: 90px;
         border: none;
+        overflow: hidden;
         &:hover {
             //you want this to be the same as the backgroundColor above
             background-color: rgb(68, 68, 68);

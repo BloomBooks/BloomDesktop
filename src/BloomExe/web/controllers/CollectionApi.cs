@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Dynamic;
 using System.IO;
@@ -8,8 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
-using Bloom.Edit;
-using Bloom.Properties;
+using Gecko.WebIDL;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Linq;
@@ -23,7 +23,7 @@ namespace Bloom.web.controllers
 	{
 		private readonly CollectionSettings _settings;
 		private readonly LibraryModel _libraryModel;
-		public const string kApiUrlPart = "collection/";
+		public const string kApiUrlPart = "collections/";
 		public 	 CollectionApi(CollectionSettings settings, LibraryModel libraryModel)
 		{
 			_settings = settings;
@@ -32,6 +32,8 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "list", HandleListRequest, true);
+
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "name", request =>
 			{
 				// always null? request.ReplyWithText(_collection.Name);
@@ -57,27 +59,68 @@ namespace Bloom.web.controllers
 			}, true);
 		}
 
+		// List out all the collections we have loaded
+		public void HandleListRequest(ApiRequest request)
+		{
+			dynamic output = new List<dynamic>();
+			_libraryModel.GetBookCollections().ForEach(c =>
+			{
+				Debug.WriteLine($"collection: {c.Name}-->{c.PathToDirectory}");
+				output.Add(
+					new
+					{
+						id = c.PathToDirectory,
+						name = c.Name
+					});
+			});
+			request.ReplyWithJson(JsonConvert.SerializeObject(output));
+		}
 		public void HandleBooksRequest(ApiRequest request)
 		{
-			var infos = _libraryModel.TheOneEditableCollection.GetBookInfos()
+			var collection = GetCollectionOfRequest(request);
+			if (collection == null)
+			{
+				return; // have already called request failed at this point
+			}
+			var infos = collection.GetBookInfos()
 				.Select(info =>
 				{
-					var book = _libraryModel.GetBookFromBookInfo(info);
+					//var book = _libraryModel.GetBookFromBookInfo(info);
 					return new
-						{id = info.Id, title = info.Title};
+						{id = info.Id, title = info.Title, collectionId = collection.PathToDirectory };
 				});
 			var json = DynamicJson.Serialize(infos);
 			request.ReplyWithJson(json);
 		}
+
+		private BookCollection GetCollectionOfRequest(ApiRequest request)
+		{
+			var id = request.RequiredParam("collection-id").Trim();
+			var collection = _libraryModel.GetBookCollections().Find(c => c.PathToDirectory == id);
+			if (collection == null)
+			{
+				request.Failed($"Collection named '{id}' was not found.");
+			}
+
+			return collection;
+		}
+
 		public void HandleThumbnailRequest(ApiRequest request)
 		{
-			var bookInfo = GetBookInfoFromRequestParam(request);
+			//try
+			//{
+				var bookInfo = GetBookInfoFromRequestParam(request);
 
-			// TODO: This is just a hack to get something showing. It can't make new thumbnails
-			string path = Path.Combine(bookInfo.FolderPath, "thumbnail.png");
-			if (RobustFile.Exists(path))
-				request.ReplyWithImage(path);
-			else request.Failed("Thumbnail doesn't exist, and making a new thumbnail is not yet implemented.");
+				// TODO: This is just a hack to get something showing. It can't make new thumbnails
+				string path = Path.Combine(bookInfo.FolderPath, "thumbnail.png");
+				if (RobustFile.Exists(path))
+					request.ReplyWithImage(path);
+				else request.Failed("Thumbnail doesn't exist, and making a new thumbnail is not yet implemented.");
+			//}
+			//catch(Exception e)
+			//{
+			//	request.Failed(e.Message);
+			//}
 		}
 
 		private BookInfo GetBookInfoFromRequestParam(ApiRequest request)
@@ -85,14 +128,14 @@ namespace Bloom.web.controllers
 			var bookId = request.RequiredParam("book-id");
 			// TODO don't assume what collection it is
 			//var collectionId = request.RequiredParam("collection-id");
-			return _libraryModel.TheOneEditableCollection.GetBookInfos().FirstOrDefault(info => info.Id == bookId);
+			return GetCollectionOfRequest(request).GetBookInfos().FirstOrDefault(info => info.Id == bookId);
 		}
 		private BookInfo GetBookInfoFromPost(ApiRequest request)
 		{
 			var bookId = request.RequiredPostString();
 			// TODO don't assume what collection it is
 			//var collectionId = request.RequiredParam("collection-id");
-			return _libraryModel.TheOneEditableCollection.GetBookInfos().FirstOrDefault(info => info.Id == bookId);
+			return GetCollectionOfRequest(request).GetBookInfos().FirstOrDefault(info => info.Id == bookId);
 		}
 
 		private Book.Book GetBookObjectFromPost(ApiRequest request)
