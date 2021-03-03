@@ -67,6 +67,16 @@
                 margin-top: -12px; // want first checkbox to line up with the start of the other column
                 label {
                     display: block;
+
+                    // Prevent long book titles from causing either vertical or horizontal scrollbars to be added
+                    // Vertical - By limiting to one line, not as many lines as needed (white-space: nowrap)
+                    // Horizontal - By truncating (overflow: hidden) and replacing with ellipsis (text-overflow: ellipsis)
+                    &.includeBook {
+                        width: 250px;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
                 }
                 img {
                     margin-left: 30px; // indent

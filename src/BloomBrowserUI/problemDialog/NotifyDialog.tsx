@@ -136,9 +136,10 @@ export const NotifyDialog: React.FunctionComponent<{
                             hasText={true}
                             variant="text"
                             onClick={() => {
-                                BloomApi.postData("dialog/close", {
-                                    source: "alternate"
-                                });
+                                BloomApi.postString(
+                                    "dialog/close",
+                                    "alternate" // The value is the close source
+                                );
                             }}
                         >
                             {props.secondaryLabel}
@@ -158,9 +159,7 @@ export const NotifyDialog: React.FunctionComponent<{
                             hasText={true}
                             variant="text"
                             onClick={() => {
-                                BloomApi.postData("dialog/close", {
-                                    source: "report"
-                                });
+                                BloomApi.postString("dialog/close", "report"); // The value is the close source
                             }}
                         >
                             {props.reportLabel}
