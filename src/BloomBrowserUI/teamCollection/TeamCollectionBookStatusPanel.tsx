@@ -28,33 +28,41 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [lockedWhen, setLockedWhen] = useState("");
     const [lockedMachine, setLockedMachine] = useState("");
     React.useEffect(() => {
-        BloomApi.get("teamCollection/currentBookStatus", data => {
-            const bookStatus = data.data;
-            if (bookStatus.who) {
-                // locked by someone
-                setLockedBy(bookStatus.who);
-                const lockedByFullName = `${bookStatus.whoFirstName} ${bookStatus.whoSurname}`.trim();
-                setLockedByDisplay(lockedByFullName || lockedBy);
-                if (
-                    bookStatus.who === bookStatus.currentUser &&
-                    bookStatus.where === bookStatus.currentMachine
-                ) {
-                    setState("lockedByMe");
-                } else {
-                    const isCurrentUser =
-                        bookStatus.who === bookStatus.currentUser;
-                    if (isCurrentUser) {
-                        setState("lockedByMeElsewhere");
+        BloomApi.get(
+            "teamCollection/currentBookStatus",
+            data => {
+                const bookStatus = data.data;
+                if (bookStatus.who) {
+                    // locked by someone
+                    setLockedBy(bookStatus.who);
+                    const lockedByFullName = `${bookStatus.whoFirstName} ${bookStatus.whoSurname}`.trim();
+                    setLockedByDisplay(lockedByFullName || lockedBy);
+                    if (
+                        bookStatus.who === bookStatus.currentUser &&
+                        bookStatus.where === bookStatus.currentMachine
+                    ) {
+                        setState("lockedByMe");
                     } else {
-                        setState("locked");
+                        const isCurrentUser =
+                            bookStatus.who === bookStatus.currentUser;
+                        if (isCurrentUser) {
+                            setState("lockedByMeElsewhere");
+                        } else {
+                            setState("locked");
+                        }
+                        setLockedWhen(bookStatus.when);
+                        setLockedMachine(bookStatus.where);
                     }
-                    setLockedWhen(bookStatus.when);
-                    setLockedMachine(bookStatus.where);
+                } else {
+                    setState("unlocked");
                 }
-            } else {
-                setState("unlocked");
+            },
+            err => {
+                // If the user is not sufficiently registered, just show nothing rather than throwing a js error.
+                // Enhance: we could display a message telling them to register and perhaps a link to the registration dialog.
+                if (err?.response?.statusText !== "not registered") throw err;
             }
-        });
+        );
     }, []);
 
     let avatar;

@@ -4,15 +4,17 @@ using System.ComponentModel.Design;
 using System.Windows.Forms;
 using Bloom.Properties;
 using DesktopAnalytics;
-using L10NSharp;
 
 namespace Bloom.Registration
 {
 	public partial class RegistrationDialog : SIL.Windows.Forms.Miscellaneous.FormForUsingPortableClipboard
 	{
-		private readonly bool _registrationIsOptional;
-		private bool _hadEmailAlready;
 		private static bool _haveRegisteredLaunch;
+
+		protected string AdditionalText { set => _additionalTextLabel.Text = value; }
+		protected bool IsEmailRequired { get; set; }
+
+		private readonly bool _hadEmailAlready;
 
 		public RegistrationDialog(bool registrationIsOptional)
 		{
@@ -21,25 +23,25 @@ namespace Bloom.Registration
 			if (ReallyDesignMode)
 				return;
 
-			_registrationIsOptional = registrationIsOptional;
 			_hadEmailAlready = !string.IsNullOrWhiteSpace(SIL.Windows.Forms.Registration.Registration.Default.Email);
 
-			_cancelButton.Visible = _registrationIsOptional;
+			_cancelButton.Visible = registrationIsOptional;
 
-			//Text = LocalizationManager.GetString("RegisterDialog.WindowTitle", "not used");
 			Text = string.Format(Text, Application.ProductName);
 			_headingLabel.Text = string.Format(_headingLabel.Text, Application.ProductName);
 			_howUsingLabel.Text = string.Format(_howUsingLabel.Text, Application.ProductName);
+			_additionalTextLabel.Text = null;
 		}
 
-		protected bool ReallyDesignMode
+		protected override void OnFormClosing(FormClosingEventArgs e)
 		{
-			get
-			{
-				return (base.DesignMode || GetService(typeof(IDesignerHost)) != null) ||
-					(LicenseManager.UsageMode == LicenseUsageMode.Designtime);
-			}
+			base.OnFormClosing(e);
+			_additionalTextLabel = null;
 		}
+
+		protected bool ReallyDesignMode =>
+			(DesignMode || GetService(typeof(IDesignerHost)) != null) ||
+			(LicenseManager.UsageMode == LicenseUsageMode.Designtime);
 
 		private void _userIsStuckDetector_Tick(object sender, EventArgs e)
 		{
@@ -60,9 +62,10 @@ namespace Bloom.Registration
 		private void UpdateDisplay()
 		{
 			_okButton.Enabled = !string.IsNullOrWhiteSpace(_firstName.Text) &&
-								!string.IsNullOrWhiteSpace(_surname.Text) &&
-								!string.IsNullOrWhiteSpace(_organization.Text) &&
-								!string.IsNullOrWhiteSpace(_howAreYouUsing.Text);
+			                    !string.IsNullOrWhiteSpace(_surname.Text) &&
+			                    !string.IsNullOrWhiteSpace(_organization.Text) &&
+			                    !string.IsNullOrWhiteSpace(_howAreYouUsing.Text) &&
+			                    (!IsEmailRequired || !string.IsNullOrWhiteSpace(_email.Text));
 
 			//reset the stuck detection timer
 			_userIsStuckDetector.Stop();
@@ -89,7 +92,7 @@ namespace Bloom.Registration
 				SIL.Windows.Forms.Registration.Registration.Default.Save();
 			}
 			//there is no point registering if we are are developer/tester
-			string feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
+			string feedbackSetting = Environment.GetEnvironmentVariable("FEEDBACK");
 			if (!string.IsNullOrEmpty(feedbackSetting) && feedbackSetting.ToLowerInvariant() != "yes" &&
 				feedbackSetting.ToLowerInvariant() != "true")
 				return false;
@@ -139,13 +142,13 @@ namespace Bloom.Registration
 
 		public static UserInfo GetAnalyticsUserInfo()
 		{
-			UserInfo userInfo = new UserInfo()
-				{
-					FirstName = SIL.Windows.Forms.Registration.Registration.Default.FirstName,
-					LastName = SIL.Windows.Forms.Registration.Registration.Default.Surname,
-					Email = SIL.Windows.Forms.Registration.Registration.Default.Email,
-					UILanguageCode = Settings.Default.UserInterfaceLanguage
-				};
+			UserInfo userInfo = new UserInfo
+			{
+				FirstName = SIL.Windows.Forms.Registration.Registration.Default.FirstName,
+				LastName = SIL.Windows.Forms.Registration.Registration.Default.Surname,
+				Email = SIL.Windows.Forms.Registration.Registration.Default.Email,
+				UILanguageCode = Settings.Default.UserInterfaceLanguage
+			};
 			userInfo.OtherProperties.Add("Organization", SIL.Windows.Forms.Registration.Registration.Default.Organization);
 			userInfo.OtherProperties.Add("HowUsing", SIL.Windows.Forms.Registration.Registration.Default.HowUsing);
 			return userInfo;
@@ -160,7 +163,7 @@ namespace Bloom.Registration
 			_howAreYouUsing.Text = SIL.Windows.Forms.Registration.Registration.Default.HowUsing;
 			UpdateDisplay();
 			//only need to do this now
-			_email.TextChanged += new System.EventHandler(this.OnTextChanged);
+			_email.TextChanged += OnTextChanged;
 		}
 
 		private void _cancelButton_Click(object sender, EventArgs e)
@@ -174,6 +177,21 @@ namespace Bloom.Registration
 
 			// BL-832: a bug in Mono requires us to wait to set Icon until handle created.
 			this.Icon = global::Bloom.Properties.Resources.BloomIcon;
+		}
+
+		/// <summary>
+		/// Returns true if registration has email address (after prompting the user if needed); false otherwise
+		/// </summary>
+		/// <param name="message">An optional message which appears below the heading</param>
+		public static bool RequireRegistrationEmail(string message = null)
+		{
+			if (!string.IsNullOrWhiteSpace(SIL.Windows.Forms.Registration.Registration.Default.Email))
+				return true;
+
+			using (var registrationDialog = new RegistrationDialog(false) { AdditionalText = message, IsEmailRequired = true })
+				registrationDialog.ShowDialog();
+
+			return !string.IsNullOrWhiteSpace(SIL.Windows.Forms.Registration.Registration.Default.Email);
 		}
 	}
 }

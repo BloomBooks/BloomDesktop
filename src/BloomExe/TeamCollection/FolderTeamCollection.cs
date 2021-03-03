@@ -541,6 +541,9 @@ namespace Bloom.TeamCollection
 		// JoinTeamCollection file.
 		public static string ShowJoinCollectionTeamDialog(string path)
 		{
+			if (!PromptForSufficientRegistrationIfNeeded())
+				return null;
+
 			_joinCollectionPath = path;
 			_newCollectionToJoin = null; // set if JoinCollectionTeam called successfully
 			var repoFolder = Path.GetDirectoryName(path);

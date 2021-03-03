@@ -45,6 +45,7 @@
 			this.label5 = new System.Windows.Forms.Label();
 			this._firstName = new System.Windows.Forms.TextBox();
 			this._surname = new System.Windows.Forms.TextBox();
+			this._additionalTextLabel = new SIL.Windows.Forms.Widgets.AutoHeightLabel();
 			this._okButton = new System.Windows.Forms.Button();
 			this.l10NSharpExtender1 = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._iAmStuckLabel = new System.Windows.Forms.LinkLabel();
@@ -64,22 +65,21 @@
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.tableLayoutPanel1.ColumnCount = 1;
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-			this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel4, 0, 4);
-			this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel3, 0, 3);
+			this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel4, 0, 5);
+			this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel3, 0, 4);
 			this.tableLayoutPanel1.Controls.Add(this._headingLabel, 0, 0);
-			this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel2, 0, 2);
+			this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel2, 0, 3);
+			this.tableLayoutPanel1.Controls.Add(this._additionalTextLabel, 0, 1);
 			this.tableLayoutPanel1.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.tableLayoutPanel1.Location = new System.Drawing.Point(22, 23);
 			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-			this.tableLayoutPanel1.RowCount = 5;
+			this.tableLayoutPanel1.RowCount = 6;
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.Size = new System.Drawing.Size(404, 333);
 			this.tableLayoutPanel1.TabIndex = 1;
 			// 
@@ -89,7 +89,7 @@
 			this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.tableLayoutPanel4.Controls.Add(this._howUsingLabel, 0, 0);
 			this.tableLayoutPanel4.Controls.Add(this._howAreYouUsing, 0, 1);
-			this.tableLayoutPanel4.Location = new System.Drawing.Point(3, 178);
+			this.tableLayoutPanel4.Location = new System.Drawing.Point(3, 205);
 			this.tableLayoutPanel4.Name = "tableLayoutPanel4";
 			this.tableLayoutPanel4.RowCount = 2;
 			this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -134,7 +134,7 @@
 			this.tableLayoutPanel3.Controls.Add(this.label3, 0, 0);
 			this.tableLayoutPanel3.Controls.Add(this._email, 0, 1);
 			this.tableLayoutPanel3.Controls.Add(this._organization, 1, 1);
-			this.tableLayoutPanel3.Location = new System.Drawing.Point(3, 101);
+			this.tableLayoutPanel3.Location = new System.Drawing.Point(3, 128);
 			this.tableLayoutPanel3.Name = "tableLayoutPanel3";
 			this.tableLayoutPanel3.RowCount = 2;
 			this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -218,7 +218,7 @@
 			this.tableLayoutPanel2.Controls.Add(this.label5, 0, 0);
 			this.tableLayoutPanel2.Controls.Add(this._firstName, 0, 1);
 			this.tableLayoutPanel2.Controls.Add(this._surname, 1, 1);
-			this.tableLayoutPanel2.Location = new System.Drawing.Point(3, 24);
+			this.tableLayoutPanel2.Location = new System.Drawing.Point(3, 51);
 			this.tableLayoutPanel2.Name = "tableLayoutPanel2";
 			this.tableLayoutPanel2.RowCount = 2;
 			this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -280,6 +280,23 @@
 			this._surname.TabIndex = 1;
 			this._surname.TextChanged += new System.EventHandler(this.OnTextChanged);
 			// 
+			// _additionalTextLabel
+			// 
+			this._additionalTextLabel.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this._additionalTextLabel.Enabled = false;
+			this._additionalTextLabel.ForeColor = System.Drawing.SystemColors.ControlText;
+			this.l10NSharpExtender1.SetLocalizableToolTip(this._additionalTextLabel, null);
+			this.l10NSharpExtender1.SetLocalizationComment(this._additionalTextLabel, null);
+			this.l10NSharpExtender1.SetLocalizationPriority(this._additionalTextLabel, L10NSharp.LocalizationPriority.NotLocalizable);
+			this.l10NSharpExtender1.SetLocalizingId(this._additionalTextLabel, "RegistrationDialog._additionalTextLabel");
+			this._additionalTextLabel.Location = new System.Drawing.Point(3, 31);
+			this._additionalTextLabel.Margin = new System.Windows.Forms.Padding(3, 10, 3, 0);
+			this._additionalTextLabel.Name = "_additionalTextLabel";
+			this._additionalTextLabel.Size = new System.Drawing.Size(398, 17);
+			this._additionalTextLabel.TabIndex = 14;
+			this._additionalTextLabel.TabStop = false;
+			this._additionalTextLabel.Text = "additionalText";
+			// 
 			// _okButton
 			// 
 			this._okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -336,7 +353,7 @@
 			// 
 			// _userIsStuckDetector
 			// 
-			this._userIsStuckDetector.Interval = 10000;
+			this._userIsStuckDetector.Interval = 100;
 			this._userIsStuckDetector.Tick += new System.EventHandler(this._userIsStuckDetector_Tick);
 			// 
 			// RegistrationDialog
@@ -397,5 +414,6 @@
 		private System.Windows.Forms.LinkLabel _iAmStuckLabel;
 		private System.Windows.Forms.Timer _userIsStuckDetector;
 		private System.Windows.Forms.Button _cancelButton;
+		private SIL.Windows.Forms.Widgets.AutoHeightLabel _additionalTextLabel;
 	}
 }
