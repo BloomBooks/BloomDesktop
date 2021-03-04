@@ -129,6 +129,7 @@ namespace Bloom.TeamCollection
 			{
 				RemoveBook(oldName);
 			}
+			UpdateBookStatus(bookFolderName, true);
 			return status;
 		}
 
@@ -357,6 +358,12 @@ namespace Bloom.TeamCollection
 				status = status.WithLockedBy(whoBy, TeamCollectionManager.CurrentUserFirstName, TeamCollectionManager.CurrentUserSurname);
 				WriteBookStatus(bookName, status);
 			}
+
+			// If we succeeded, we definitely want various things to update to show it.
+			// But there may be status changes to show if we failed, too...for example,
+			// probably it's because the book was discovered to be checked out to
+			// someone else, and we'd like things to show that.
+			UpdateBookStatus(bookName, true);
 
 			return IsCheckedOutHereBy(status, whoBy);
 		}
@@ -769,6 +776,11 @@ namespace Bloom.TeamCollection
 			return IsCheckedOutHereBy(GetLocalStatus(bookName)) && !IsCheckedOutHereBy(GetStatus(bookName));
 		}
 
+		private bool HasBeenChangedRemotely(string bookName)
+		{
+			return GetLocalStatus(bookName).checksum != GetStatus(bookName).checksum;
+		}
+
 		/// <summary>
 		/// Book has a clobber promlem...we can't go on editing until we sort it out...
 		/// if there are either conflicting edits or conflicting lock status.
@@ -809,7 +821,7 @@ namespace Bloom.TeamCollection
 						bookBaseName, null);
 
 				}
-				else
+				else if (HasBeenChangedRemotely(bookBaseName))
 				{
 					_tcLog.WriteMessage(MessageAndMilestoneType.NewStuff, "TeamCollection.BookModifiedRemotely",
 						"One of your teammates has made changes to the book '{0}'", bookBaseName, null);

@@ -9,6 +9,9 @@ import "./TeamCollectionBookStatusPanel.less";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import BloomButton from "../react_components/bloomButton";
 import { BloomAvatar } from "../react_components/bloomAvatar";
+import WebSocketManager, {
+    useWebSocketListenerForOneMessage
+} from "../utils/WebSocketManager";
 
 // The panel that appears at the bottom of the preview in the collection tab in a Team Collection.
 // Todo: JohnH wants this component to wrap an iframe that contains the preview,
@@ -19,7 +22,8 @@ export type LockState =
     | "unlocked"
     | "locked"
     | "lockedByMe"
-    | "lockedByMeElsewhere";
+    | "lockedByMeElsewhere"
+    | "needsReload";
 
 export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [state, setState] = useState<LockState>("initializing");
@@ -27,12 +31,15 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [lockedByDisplay, setLockedByDisplay] = useState("");
     const [lockedWhen, setLockedWhen] = useState("");
     const [lockedMachine, setLockedMachine] = useState("");
+    const [reload, setReload] = useState(0);
     React.useEffect(() => {
         BloomApi.get(
             "teamCollection/currentBookStatus",
             data => {
                 const bookStatus = data.data;
-                if (bookStatus.who) {
+                if (bookStatus.problem) {
+                    setState("needsReload");
+                } else if (bookStatus.who) {
                     // locked by someone
                     setLockedBy(bookStatus.who);
                     const lockedByFullName = `${bookStatus.whoFirstName} ${bookStatus.whoSurname}`.trim();
@@ -63,7 +70,11 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                 if (err?.response?.statusText !== "not registered") throw err;
             }
         );
-    }, []);
+    }, [reload]);
+
+    useWebSocketListenerForOneMessage("bookStatus", "reload", () =>
+        setReload(oldValue => oldValue + 1)
+    );
 
     let avatar;
     if (state.startsWith("locked")) {
@@ -161,6 +172,24 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         true
     );
 
+    const mainTitleNeedsReload = useL10n(
+        "The Team Collection folder received a changed version of the book you were editing.",
+        "TeamCollection.ConflictingChange",
+        "",
+        undefined,
+        undefined,
+        true
+    );
+
+    const subTitleNeedsReload = useL10n(
+        "The Checkin/Checkout system should normally prevent this, but it has happened. Bloom cannot automatically join the work that came in with the work you were doing; you will need Bloom team support for that. Bloom will move your version of the book to the Team Collection Lost & Found when you Reload.",
+        "TeamCollection.ConflictingChangeDetails",
+        "",
+        undefined,
+        undefined,
+        true
+    );
+
     const panelContents = (state: LockState): JSX.Element => {
         switch (state) {
             default:
@@ -170,12 +199,9 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                     BloomApi.post(
                         "teamCollection/attemptLockOfCurrentBook",
                         response => {
-                            if (response.data) {
-                                setState("lockedByMe");
-                            } else {
-                                // Todo: fetch teamCollection/currentBookStatus, show who does have it.
-                                alert("Check out failed");
-                            }
+                            // nothing to do. Change of state is handled by websocket notifications.
+                            // We want to keep it that way, so we don't have to worry about here about
+                            // whether the checkout attempt succeeded or not.
                         }
                     );
                 };
@@ -198,7 +224,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
             case "lockedByMe":
                 const checkinHandler = () => {
                     BloomApi.post("teamCollection/checkInCurrentBook", () => {
-                        setState("unlocked");
+                        // nothing to do. Change of state is handled by websocket notifications.
                     });
                 };
 
@@ -236,6 +262,23 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         subTitle={subTitleLocked}
                         icon={avatar}
                         children={getLockedInfoChild(lockedInfo)}
+                    />
+                );
+            case "needsReload":
+                return (
+                    <StatusPanelCommon
+                        lockState={state}
+                        title={mainTitleNeedsReload}
+                        subTitle={subTitleNeedsReload}
+                        icon={avatar}
+                        children={getLockedInfoChild("")}
+                        button={getBloomButton(
+                            "Reload",
+                            "TeamCollection.Reload",
+                            "reload-button",
+                            undefined,
+                            () => BloomApi.post("common/reloadCollection")
+                        )}
                     />
                 );
         }

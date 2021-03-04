@@ -23,7 +23,7 @@ export const StatusPanelCommon: React.FunctionComponent<IStatusPanelProps> = (
 ) => {
     const outerTheme = useTheme();
     const buttonColor =
-        props.lockState === "lockedByMe"
+        props.lockState === "lockedByMe" || props.lockState === "needsReload"
             ? outerTheme.palette.warning.main
             : outerTheme.palette.primary.main;
     const buttonTheme = createMuiTheme({
@@ -41,7 +41,9 @@ export const StatusPanelCommon: React.FunctionComponent<IStatusPanelProps> = (
     return (
         <div className="status-panel">
             <div className="panel-top">
-                <div className="icon-or-avatar">{props.icon}</div>
+                {props.icon && (
+                    <div className="icon-or-avatar">{props.icon}</div>
+                )}
                 <div className="panel-titles">
                     <Typography
                         className="main-title"

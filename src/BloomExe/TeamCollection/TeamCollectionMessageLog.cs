@@ -169,9 +169,9 @@ namespace Bloom.TeamCollection
 		//	_oldMessageLength = 0;
 		//}
 
-		public string[] PrettyPrintMessages
+		public Tuple<MessageAndMilestoneType, String>[] PrettyPrintMessages
 		{
-			get { return Messages.Select(m => m.PrettyPrint).Where(s => !String.IsNullOrEmpty(s)).ToArray(); }
+			get { return Messages.Select(m => Tuple.Create(m.MessageType, m.PrettyPrint)).Where(t => !String.IsNullOrEmpty(t.Item2)).ToArray(); }
 		}
 	}
 }
