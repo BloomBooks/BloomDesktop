@@ -32,11 +32,7 @@ namespace BloomTests.TeamCollection
 			_mockTcManager = new Mock<ITeamCollectionManager>();
 			_tcLog = new TeamCollectionMessageLog(TeamCollectionManager.GetTcLogPathFromLcPath(_collectionFolder.FolderPath));
 			_collection = new FolderTeamCollection(_mockTcManager.Object, _collectionFolder.FolderPath, _repoFolder.FolderPath, _tcLog);
-			_originalUser = Bloom.TeamCollection.TeamCollectionManager.CurrentUser;
-			if (string.IsNullOrEmpty(_originalUser))
-			{
-				SIL.Windows.Forms.Registration.Registration.Default.Email = "test@somewhere.org";
-			}
+			TeamCollectionManager.ForceCurrentUserForTests("test@somewhere.org");
 
 			// Simulate a book that was once shared, but has been deleted from the repo folder.
 			MakeBook("Should be deleted", "This should be deleted as it has local status but is not shared", true);
@@ -158,7 +154,7 @@ namespace BloomTests.TeamCollection
 		{
 			_collectionFolder.Dispose();
 			_repoFolder.Dispose();
-			SIL.Windows.Forms.Registration.Registration.Default.Email = _originalUser;
+			TeamCollectionManager.ForceCurrentUserForTests(null);
 		}
 
 		[Test]

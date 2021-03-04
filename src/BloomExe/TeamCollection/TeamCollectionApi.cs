@@ -199,7 +199,7 @@ namespace Bloom.TeamCollection
 			request.PostSucceeded();
 		}
 
-		private string ProblemsWithLocation(string sharedFolder)
+		internal string ProblemsWithLocation(string sharedFolder)
 		{
 			// For now we use this generic message, because it's too hard to come up with concise
 			// understandable messages explaining why these locations are a problem.
