@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using Bloom.TeamCollection;
 using BloomTemp;
 using Moq;
@@ -69,7 +70,7 @@ namespace BloomTests.TeamCollection
 
 		// TODO: Add a test for GivenModifiedToCheckedOutByOther. But, getting it set up has been proving more thorny than worth right now
 		[Test]
-		public void HandleModifiedFile_NoConflictBookNotCheckedOut_RaisesCheckedOutByNoneAndNewStuffMessage()
+		public void HandleModifiedFile_NoConflictBookNotChangedCheckedOutRemoved_RaisesCheckedOutByNoneButNoNewStuffMessage()
 		{
 			// Setup //
 			// Simulate (sort of) that a book was just overwritten with the following new contents,
@@ -80,7 +81,9 @@ namespace BloomTests.TeamCollection
 			var bookPath = Path.Combine(bookFolderPath, "My book.htm");
 			RobustFile.WriteAllText(bookPath, "This is just a dummy");
 
-			_collection.PutBook(bookFolderPath);
+			var status = _collection.PutBook(bookFolderPath);
+			// pretending this is what it was before the change.
+			_collection.WriteLocalStatus(bookFolderName, status.WithLockedBy("fred@somewhere.org"));
 			var prevMessages = _tcLog.Messages.Count;
 
 			// System Under Test //
@@ -90,11 +93,38 @@ namespace BloomTests.TeamCollection
 			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];
 			Assert.That(eventArgs.CheckedOutByWhom, Is.EqualTo(CheckedOutBy.None));
 
+			Assert.That(_tcLog.Messages.Count, Is.EqualTo(prevMessages));
+		}
+
+		[Test]
+		public void HandleModifiedFile_NoConflictBookChangedNotCheckedOut_RaisesCheckedOutByNoneAndNewStuffMessage()
+		{
+			// Simulate (sort of) that a book was just overwritten with the following new contents,
+			// including that book.status does not indicate it's checked out
+			const string bookFolderName = "My book";
+			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
+			Directory.CreateDirectory(bookFolderPath);
+			var bookPath = Path.Combine(bookFolderPath, "My book.htm");
+			RobustFile.WriteAllText(bookPath, "This is pretending to be new content from remote");
+
+			var status = _collection.PutBook(bookFolderPath);
+			RobustFile.WriteAllText(bookPath, "This is pretending to be old content");
+			// pretending this is what it was before the change.
+			_collection.WriteLocalStatus(bookFolderName, status.WithChecksum(Bloom.TeamCollection.TeamCollection.MakeChecksum(bookFolderPath)));
+			var prevMessages = _tcLog.Messages.Count;
+
+			// System Under Test //
+			_collection.HandleModifiedFile(new BookRepoChangeEventArgs() { BookFileName = $"{bookFolderName}.bloom" });
+
+			// Verification
+			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];
+			Assert.That(eventArgs.CheckedOutByWhom, Is.EqualTo(CheckedOutBy.None));
+
 			Assert.That(_tcLog.Messages[prevMessages].MessageType, Is.EqualTo(MessageAndMilestoneType.NewStuff));
 		}
 
 		[Test]
-		public void HandleModifiedFile_NoConflictBookCheckedOutRemotely_RaisesCheckedOutByOtherAndNewStuffMessage()
+		public void HandleModifiedFile_NoConflictBookCheckedOutRemotely_RaisesCheckedOutByOtherButNoNewStuffMessage()
 		{
 			// Setup //
 			// Simulate (sort of) that a book was just overwritten with the following new contents,
@@ -115,10 +145,10 @@ namespace BloomTests.TeamCollection
 			_collection.HandleModifiedFile(new BookRepoChangeEventArgs() { BookFileName = $"{bookFolderName}.bloom" });
 
 			// Verification
-			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];
+			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations.Last().Arguments[0];
 			Assert.That(eventArgs.CheckedOutByWhom, Is.EqualTo(CheckedOutBy.Other));
 
-			Assert.That(_tcLog.Messages[prevMessages].MessageType, Is.EqualTo(MessageAndMilestoneType.NewStuff));
+			Assert.That(_tcLog.Messages.Count, Is.EqualTo(prevMessages)); // checksums didn't change
 		}
 
 		[Test]
@@ -132,6 +162,8 @@ namespace BloomTests.TeamCollection
 			Directory.CreateDirectory(bookFolderPath);
 			var bookPath = Path.Combine(bookFolderPath, "My conflict book.htm");
 			RobustFile.WriteAllText(bookPath, "This is just a dummy");
+
+			TeamCollectionManager.ForceCurrentUserForTests("me@somewhere.org");
 
 			_collection.PutBook(bookFolderPath);
 			// Temporarily, it looks locked by Nancy in both places.
@@ -150,11 +182,12 @@ namespace BloomTests.TeamCollection
 			_collection.HandleRemoteBookChangesOnIdle(null, new EventArgs());
 
 			// Verification
-			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];
+			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations.Last().Arguments[0];
 			Assert.That(eventArgs.CheckedOutByWhom, Is.EqualTo(CheckedOutBy.Other));
 
 			Assert.That(_tcLog.Messages[prevMessages].MessageType, Is.EqualTo(MessageAndMilestoneType.Error));
 			Assert.That(_tcLog.Messages[prevMessages].L10NId, Is.EqualTo("TeamCollection.ConflictingCheckout"));
+			TeamCollectionManager.ForceCurrentUserForTests(null);
 		}
 
 		[Test]
