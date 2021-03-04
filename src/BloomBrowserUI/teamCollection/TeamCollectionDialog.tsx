@@ -13,7 +13,7 @@ export const TeamCollectionDialog: React.FunctionComponent = props => {
         "Team Collection",
         "TeamCollection.TeamCollection"
     );
-    const [messages, setMessages] = useState([""]);
+    const [messages, setMessages] = useState([{ type: "", message: "" }]);
     useEffect(() => {
         BloomApi.get("teamCollection/getLog", result => {
             setMessages(result.data.messages);
@@ -27,7 +27,9 @@ export const TeamCollectionDialog: React.FunctionComponent = props => {
                 </DialogTitle>
                 <div id="messages">
                     {messages.map((m, index) => (
-                        <div key={index}>{m}</div>
+                        <div key={index}>
+                            {<div className={m.type}>{m.message}</div>}
+                        </div>
                     ))}
                 </div>
                 <div className="align-right no-space-below">

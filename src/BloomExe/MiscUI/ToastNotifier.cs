@@ -173,6 +173,16 @@ namespace Bloom.MiscUI
 			CloseThisLater();
 		}
 
+		public void CloseSafely()
+		{
+			// It's only safe to close after we're sure the dialog will not get any more messages
+			// (e.g., a tick after it's disposed)
+			_goUpTimer.Tick -= GoUpTimerTick;
+			_goDownTimer.Tick -= GoDownTimerTick; //_goDownTimer.Stop() didn't work for some reason
+			Application.Idle -= CloseThisCalledFromIdle;
+			CloseThisLater();
+		}
+
 		private void CloseThisLater()
 		{
 			Application.Idle += CloseThisCalledFromIdle;

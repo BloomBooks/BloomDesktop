@@ -42,7 +42,7 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/repoFolderPath", HandleRepoFolderPath, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/isTeamCollectionEnabled", HandleIsTeamCollectionEnabled, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/currentBookStatus", HandleCurrentBookStatus, false);
-			apiHandler.RegisterEndpointHandler("teamCollection/attemptLockOfCurrentBook", HandleAttemptLockOfCurrentBook, false);
+			apiHandler.RegisterEndpointHandler("teamCollection/attemptLockOfCurrentBook", HandleAttemptLockOfCurrentBook, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/checkInCurrentBook", HandleCheckInCurrentBook, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/chooseFolderLocation", HandleChooseFolderLocation, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/createTeamCollection", HandleCreateTeamCollection, true);
@@ -62,7 +62,7 @@ namespace Bloom.TeamCollection
 			request.ReplyWithJson(JsonConvert.SerializeObject(
 				new
 				{
-					messages= log.PrettyPrintMessages // Enhance: include types
+					messages= log.PrettyPrintMessages.Select(t => new {type = t.Item1.ToString(), message = t.Item2}).ToArray()
 				}));
 		}
 
@@ -103,6 +103,7 @@ namespace Bloom.TeamCollection
 			// text like "This book is not yet shared. Check it in to make it part of the team collection"
 			if (whoHasBookLocked == TeamCollection.FakeUserIndicatingNewBook)
 				whoHasBookLocked = CurrentUser;
+			var problem = _tcManager.CurrentCollection?.HasLocalChangesThatMustBeClobbered(BookFolderName);
 			request.ReplyWithJson(JsonConvert.SerializeObject(
 				new
 				{
@@ -112,7 +113,8 @@ namespace Bloom.TeamCollection
 					when = whenLocked.ToLocalTime().ToShortDateString(),
 					where = _tcManager.CurrentCollection?.WhatComputerHasBookLocked(BookFolderName),
 					currentUser = CurrentUser,
-					currentMachine = TeamCollectionManager.CurrentMachine
+					currentMachine = TeamCollectionManager.CurrentMachine,
+					problem= problem
 				}));
 		}
 

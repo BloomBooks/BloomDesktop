@@ -413,13 +413,19 @@ namespace BloomTests.TeamCollection
 			_messageLog.WriteMilestone(MessageAndMilestoneType.ShowedClobbered);
 			var prettyMessages = _messageLog.PrettyPrintMessages;
 			var today = DateTime.Now.ToShortDateString();
-			Assert.That(prettyMessages[0], Is.EqualTo(today + ": joe@somewhere.org checked out the book Joe hunts pigs"));
-			Assert.That(prettyMessages[1], Is.EqualTo(today + ": A new book called I am new was added to the collection"));
-			Assert.That(prettyMessages[2], Is.EqualTo(today + ": The book 'Joe hunts pigs' is checked out to someone else. Your changes are saved to Lost-and-found."));
-			Assert.That(prettyMessages[3], Is.EqualTo(today + ": The book called I am different was changed"));
-			Assert.That(prettyMessages[4], Is.EqualTo(today + ": Repaired conflict"));
+			VerifyPrettyMessage(prettyMessages[0], MessageAndMilestoneType.History,today + ": joe@somewhere.org checked out the book Joe hunts pigs");
+			VerifyPrettyMessage(prettyMessages[1], MessageAndMilestoneType.NewStuff, today + ": A new book called I am new was added to the collection");
+			VerifyPrettyMessage(prettyMessages[2], MessageAndMilestoneType.Error, today + ": The book 'Joe hunts pigs' is checked out to someone else. Your changes are saved to Lost-and-found.");
+			VerifyPrettyMessage(prettyMessages[3], MessageAndMilestoneType.NewStuff, today + ": The book called I am different was changed");
+			VerifyPrettyMessage(prettyMessages[4], MessageAndMilestoneType.ShowedClobbered,today + ": Repaired conflict");
 			// Enhance: Do we want colors? If so, should the output of this be HTML,
 			// or something else that supports that? Or should some other component handle formatting?
+		}
+
+		void VerifyPrettyMessage(Tuple<MessageAndMilestoneType, String> pretty, MessageAndMilestoneType type, string message)
+		{
+			Assert.That(pretty.Item1, Is.EqualTo(type));
+			Assert.That(pretty.Item2, Is.EqualTo(message));
 		}
 	}
 }

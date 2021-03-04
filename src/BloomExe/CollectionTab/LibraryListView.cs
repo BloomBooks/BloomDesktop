@@ -1097,8 +1097,10 @@ namespace Bloom.CollectionTab
 				// However, I think this scenario is not likely enough to be worth fixing. I think it would require a book being changed in the repo
 				// as Bloom is starting up.
 				Task.Delay(100).ContinueWith(unused =>
+					// We may have been on the UI thread, but that doesn't guarantee that the continueWith task is.
+					SafeInvoke.InvokeIfPossible("LibraryListView update checkout status icons",this,true, () =>
 					_tcBookStatusChangeEvent.Raise(eventArgs)
-				);
+				));
 				return;
 			}
 

@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.TeamCollection;
 using Bloom.MiscUI;
+using Bloom.Properties;
+using Bloom.ToPalaso;
 using Bloom.web.controllers;
+using Bloom.Workspace;
 using Gecko;
+using L10NSharp;
 using MarkdownDeep;
 using SIL.IO;
 
@@ -32,7 +37,9 @@ namespace Bloom.CollectionTab
 			CreateFromSourceBookCommand createFromSourceBookCommand,
 			EditBookCommand editBookCommand,
 			SelectedTabChangedEvent selectedTabChangedEvent,
-			SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent)
+			SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
+			BloomWebSocketServer webSocketServer,
+			BookStatusChangeEvent bookStatusChangeEvent)
 		{
 			InitializeComponent();
 			_bookSelection = bookSelection;
@@ -64,6 +71,22 @@ namespace Bloom.CollectionTab
 			});
 
 			_editBookButton.Visible = false;
+			bookStatusChangeEvent.Subscribe((args) =>
+			{
+				if (_bookSelection.CurrentSelection == null)
+					return;
+				if (Path.GetFileNameWithoutExtension(args.BookName) ==
+				    Path.GetFileName(_bookSelection.CurrentSelection.FolderPath))
+				{
+					// This may not need to be on the UI thread, but let's play safe.
+					SafeInvoke.Invoke("sending reload status", this, false, true,
+						() =>
+						{
+							webSocketServer.SendEvent("bookStatus", "reload");
+							SetEditButtonVisibility();
+						});
+				}
+			});
 		}
 
 		protected override void OnLoad(EventArgs e)
@@ -106,12 +129,17 @@ namespace Bloom.CollectionTab
 		private void LoadBook(bool updatePreview = true)
 		{
 			_addToCollectionButton.Visible =  _addToCollectionButton.Enabled = _bookSelection.CurrentSelection != null;
-			_editBookButton.Visible = TeamCollectionApi.TheOneInstance.CanEditBook();
+			SetEditButtonVisibility();
 			ShowBook(updatePreview);
 			if (_bookSelection.CurrentSelection != null)
 			{
 				_bookSelection.CurrentSelection.ContentsChanged += new EventHandler(CurrentSelection_ContentsChanged);
 			}
+		}
+
+		private void SetEditButtonVisibility()
+		{
+			_editBookButton.Visible = TeamCollectionApi.TheOneInstance.CanEditBook();
 		}
 
 		void CurrentSelection_ContentsChanged(object sender, EventArgs e)

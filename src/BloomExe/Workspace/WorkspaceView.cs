@@ -19,6 +19,8 @@ using SIL.Reporting;
 using SIL.Windows.Forms.ReleaseNotes;
 using SIL.Windows.Forms.SettingProtection;
 using System.Collections.Generic;
+using Bloom.Book;
+using Bloom.MiscUI;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.web.controllers;
@@ -65,7 +67,11 @@ namespace Bloom.Workspace
 
 		public delegate WorkspaceView Factory(Control libraryView);
 
-//autofac uses this
+		private TeamCollectionManager _tcManager;
+		private BookSelection _bookSelection;
+		private ToastNotifier _returnToCollectionTabNotifier;
+
+		//autofac uses this
 
 		public WorkspaceView(WorkspaceModel model,
 							Control libraryView,
@@ -80,14 +86,19 @@ namespace Bloom.Workspace
 							//ChorusSystem chorusSystem,
 							ILocalizationManager localizationManager,
 							CollectionSettings collectionSettings,
-							CommonApi commonApi
+							CommonApi commonApi,
+							BookSelection bookSelection,
+							BookStatusChangeEvent bookStatusChangeEvent,
+							TeamCollectionManager tcManager
 			)
 		{
 			_model = model;
 			_settingsDialogFactory = settingsDialogFactory;
 			_selectedTabAboutToChangeEvent = selectedTabAboutToChangeEvent;
 			_selectedTabChangedEvent = selectedTabChangedEvent;
+			_bookSelection = bookSelection;
 			_localizationChangedEvent = localizationChangedEvent;
+			_tcManager = tcManager;
 
 			_collectionSettings = collectionSettings;
 			// This provides the common API with a hook it can use to reload
@@ -181,6 +192,38 @@ namespace Bloom.Workspace
 			AdjustButtonTextsForLocale();
 			_viewInitialized = false;
 			CommonApi.WorkspaceView = this;
+
+			bookStatusChangeEvent.Subscribe(args => { HandleBookStatusChange(args); });
+		}
+
+
+		private void HandleBookStatusChange(BookStatusChangeEventArgs args)
+		{
+			var bookName = args.BookName;
+			if (_bookSelection.CurrentSelection == null)
+				return;
+			if (bookName != Path.GetFileName(_bookSelection.CurrentSelection?.FolderPath))
+				return; // change is not to the book we're interested in.
+			if (_tabStrip.SelectedTab == _collectionTab)
+				return; // this toast is all about returning to the collection tab
+			if (_returnToCollectionTabNotifier != null)
+				return; // notification already up
+			if (_tcManager.CurrentCollection.HasClobberProblem(bookName))
+			{
+				SafeInvoke.Invoke("sending reload status", this, false, true, () =>
+				{
+					var msg = LocalizationManager.GetString("TeamCollection.ClobberProblem",
+						"The Team Collection has a newer version of this book. Return to the Collection Tab for more information.");
+					_returnToCollectionTabNotifier = new ToastNotifier();
+					_returnToCollectionTabNotifier.Image.Image = Resources.Error32x32;
+					_returnToCollectionTabNotifier.ToastClicked += (sender, _) =>
+					{
+						_returnToCollectionTabNotifier.CloseSafely();
+						_tabStrip.SelectedTab = _collectionTab;
+					};
+					_returnToCollectionTabNotifier.Show(msg, "", -1);
+				});
+			}
 		}
 
 		private void SetupZoomControl()
@@ -725,6 +768,11 @@ namespace Bloom.Workspace
 
 		private void _tabStrip_SelectedTabChanged(object sender, SelectedTabChangedEventArgs e)
 		{
+			if (_returnToCollectionTabNotifier != null && _tabStrip.SelectedTab == _collectionTab)
+			{
+				_returnToCollectionTabNotifier.CloseSafely();
+				_returnToCollectionTabNotifier = null;
+			}
 			TabStripButton btn = (TabStripButton)e.SelectedTab;
 			_tabStrip.BackColor = btn.BarColor;
 			_toolSpecificPanel.BackColor = _panelHoldingToolStrip.BackColor = _tabStrip.BackColor;

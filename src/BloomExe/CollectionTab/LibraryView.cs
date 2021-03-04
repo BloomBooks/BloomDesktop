@@ -8,6 +8,7 @@ using SIL.Reporting;
 using System.Drawing;
 using Bloom.MiscUI;
 using Bloom.TeamCollection;
+using Bloom.ToPalaso;
 using SIL.Windows.Forms.SettingProtection;
 
 namespace Bloom.CollectionTab
@@ -73,7 +74,7 @@ namespace Bloom.CollectionTab
 													}
 												});
 			SetTeamCollectionStatus(tcManager);
-			bookStatusChangeEvent.Subscribe((args) => SetTeamCollectionStatus(tcManager));
+			bookStatusChangeEvent.Subscribe((args) => SafeInvoke.Invoke("update TC status", this, false, true, () => SetTeamCollectionStatus(tcManager)));
 			_tcStatusButton.Click += (sender, args) =>
 			{
 				// Reinstate this to see messages from before we started up.
