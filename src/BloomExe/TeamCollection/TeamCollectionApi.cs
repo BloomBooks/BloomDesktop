@@ -249,6 +249,12 @@ namespace Bloom.TeamCollection
 
 		public void HandleCreateTeamCollection(ApiRequest request)
 		{
+			if (!TeamCollection.PromptForSufficientRegistrationIfNeeded())
+			{
+				request.PostSucceeded();
+				return;
+			}
+
 			_tcManager.ConnectToTeamCollection(_folderForCreateTC);
 			BrowserDialog.CloseDialog();
 			_callbackToReopenCollection?.Invoke();
