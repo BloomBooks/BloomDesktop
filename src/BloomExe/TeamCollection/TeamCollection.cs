@@ -859,8 +859,14 @@ namespace Bloom.TeamCollection
 		public void HandleBookRename(string oldName, string newName)
 		{
 			var status = GetLocalStatus(newName); // folder has already moved!
-			if (status.lockedBy == TeamCollection.FakeUserIndicatingNewBook)
-				return; // new, no need to delete old in repo
+			if (status.lockedBy == TeamCollection.FakeUserIndicatingNewBook || string.IsNullOrEmpty(status.lockedBy))
+			{
+				// new, no need to delete old in repo; more important, we do NOT want it
+				// to have a local status until it is checked in, since that's how we know
+				// it is new rather than deleted remotely.
+				return;
+			}
+
 			WriteLocalStatus(newName, status.WithOldName(oldName));
 		}
 
@@ -881,6 +887,13 @@ namespace Bloom.TeamCollection
 
 		internal void WriteLocalStatus(string bookFolderName, BookStatus status, string collectionFolder = null)
 		{
+#if DEBUG
+			// Except in unit tests, where we do all sorts of weird things to simulate particular situations,
+			// it is VERY bad to give a book a local status file when it is not in the repo. Bloom will
+			// delete the book the next time it starts up!
+			if (!Program.RunningUnitTests)
+				Debug.Assert(GetBookStatusJsonFromRepo(bookFolderName) != null, "Should never write local status for a book that's not in repo");
+#endif
 			var statusFilePath = GetStatusFilePath(bookFolderName, collectionFolder ?? _localCollectionFolder);
 			RobustFile.WriteAllText(statusFilePath, status.ToJson(), Encoding.UTF8);
 		}
