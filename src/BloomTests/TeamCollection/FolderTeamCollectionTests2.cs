@@ -203,6 +203,7 @@ namespace BloomTests.TeamCollection
 					new TemporaryFolder("Checkin_RenamedBook_DeletesOriginal_Shared"))
 				{
 					var mockTcManager = new Mock<ITeamCollectionManager>();
+					TeamCollectionManager.ForceCurrentUserForTests("me@somewhere.org");
 					var tc = new FolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath, repoFolder.FolderPath);
 					var oldFolderPath = SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, "old name", "book content");
 					tc.PutBook(oldFolderPath);
@@ -212,6 +213,7 @@ namespace BloomTests.TeamCollection
 					tc.PutBook(Path.Combine(collectionFolder.FolderPath,"new name"), true);
 					Assert.That(File.Exists(tc.GetPathToBookFileInRepo("new name")),Is.True);
 					Assert.That(File.Exists(tc.GetPathToBookFileInRepo("old name")), Is.False, "old name was not deleted");
+					TeamCollectionManager.ForceCurrentUserForTests(null);
 				}
 			}
 		}

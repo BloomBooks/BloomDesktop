@@ -40,7 +40,13 @@ namespace BloomTests.TeamCollection
 			RobustFile.Delete(delPath);
 
 			// Simulate a book newly created locally. Not in repo, but should not be deleted.
-			MakeBook("New book", "This should survive as it has no local status", false);
+			MakeBook("A book", "This should survive as it has no local status", false);
+			// By the way, like most new books, it got renamed early in life
+			var oldPath = Path.Combine(_collectionFolder.FolderPath, "A book");
+			var newPath = Path.Combine(_collectionFolder.FolderPath, "New Book");
+			RobustIO.MoveDirectory(oldPath, newPath);
+			RobustFile.Move(Path.Combine(newPath, "A book.htm"), Path.Combine(newPath, "New Book.htm"));
+			_collection.HandleBookRename("A book", "New Book");
 
 			// Simulate a book that needs nothing done to it. It's the same locally and on the repo.
 			MakeBook("Keep me", "This needs nothing done to it");
