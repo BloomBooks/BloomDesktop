@@ -350,7 +350,7 @@ namespace Bloom.Publish.Android
 					_languagesToPublish.Clear();
 					foreach (var kvp in _allLanguages)
 					{
-						if (kvp.Value)
+						if (kvp.Value || kvp.Key == request.CurrentCollectionSettings?.Language1Iso639Code)
 							_languagesToPublish.Add(kvp.Key);
 					}
 				}
