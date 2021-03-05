@@ -25,12 +25,6 @@ namespace Bloom.TeamCollection
 	/// </summary>
 	public class TeamCollectionMessageLog
 	{
-		/// <summary>
-		/// Raised when the status of the whole collection (this.TeamCollectionStatus) might have changed.
-		/// (That is, when a new message or milestone arrives...currently we don't ensure that the status
-		/// actually IS different from before.)
-		/// </summary>
-		public event EventHandler TeamCollectionStatusChanged;
 		private string _logFilePath;
 		// Length of the log file at the time the TC was created, indicating the length of
 		// old messages that LoadSavedMessages must prepend. Set to zero if that is called.
@@ -108,7 +102,7 @@ namespace Bloom.TeamCollection
 			msg.Param0 = param0;
 			msg.Param1 = param1;
 			Messages.Add(msg);
-			TeamCollectionStatusChanged?.Invoke(this, new EventArgs());
+			TeamCollectionManager.RaiseTeamCollectionStatusChanged();
 			// Using Environment.NewLine here means the format of the file will be appropriate for the
 			// computer we are running on. It's possible a shared collection might be used by both
 			// Linux and Windows. But that's OK, because .NET line reading accepts either line

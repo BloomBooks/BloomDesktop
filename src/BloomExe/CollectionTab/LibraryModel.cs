@@ -143,6 +143,14 @@ namespace Bloom.CollectionTab
 
 		private IEnumerable<BookCollection> GetBookCollectionsOnce()
 		{
+			// It would be nice if this was just in the  TCManager constructor. But TCManager has important
+			// work to do before we can create a CollectionSettings object, and that's the object that
+			// knows whether we have enterprise enabled, so there is something of a circularity.
+			// This means that even with enterprise disabled, we will still pick up the latest
+			// shared collection-level files each startup. So if the shared collection is updated with
+			// new enterprise credentials, things will self-heal. We decided it's OK for that much
+			// TC functionality to go on working even with enterprise disabled.
+			_tcManager.CheckDisablingTeamCollections(_collectionSettings);
 			// Before loading up the collection, update with anything new from any TeamCollection we are linked to.
 			// This may not be the final place to do this. And we have plans for showing a progress dialog
 			// and also using it to show any errors. But it's the latest we can do it without needing to reconcile

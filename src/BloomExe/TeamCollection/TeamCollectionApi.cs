@@ -52,7 +52,7 @@ namespace Bloom.TeamCollection
 
 		private void HandleGetLog(ApiRequest request)
 		{
-			var log = _tcManager.CurrentCollection?.MessageLog;
+			var log = _tcManager.MessageLog;
 			if (log == null)
 			{
 				request.Failed();

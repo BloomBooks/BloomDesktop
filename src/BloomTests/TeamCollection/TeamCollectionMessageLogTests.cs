@@ -260,8 +260,10 @@ namespace BloomTests.TeamCollection
 		public void WriteMessage_RaisesStatusChanged()
 		{
 			bool notificationRecieved = false;
-			_messageLog.TeamCollectionStatusChanged += (sender, args) => notificationRecieved = true;
+			EventHandler handler = (sender, args) => notificationRecieved = true;
+			TeamCollectionManager.TeamCollectionStatusChanged += handler;
 			MakeNewBookMessage();
+			TeamCollectionManager.TeamCollectionStatusChanged -= handler;
 			Assert.That(notificationRecieved, Is.True, "TeamCollectionStatusChanged should have been raised");
 		}
 
@@ -269,8 +271,10 @@ namespace BloomTests.TeamCollection
 		public void WriteMilestone_RaisesStatusChanged()
 		{
 			bool notificationRecieved = false;
-			_messageLog.TeamCollectionStatusChanged += (sender, args) => notificationRecieved = true;
+			EventHandler handler = (sender, args) => notificationRecieved = true;
+			TeamCollectionManager.TeamCollectionStatusChanged += handler;
 			_messageLog.WriteMilestone(MessageAndMilestoneType.Reloaded);
+			TeamCollectionManager.TeamCollectionStatusChanged -= handler;
 			Assert.That(notificationRecieved, Is.True, "TeamCollectionStatusChanged should have been raised");
 		}
 
