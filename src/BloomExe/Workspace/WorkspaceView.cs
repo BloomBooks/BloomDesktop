@@ -634,6 +634,8 @@ namespace Bloom.Workspace
 			OpenSettingsDialog();
 		}
 
+		private CollectionSettingsDialog _currentlyOpenSettingsDialog;
+
 		public void OpenSettingsDialog(string tab=null)
 		{
 			if (InvokeRequired)
@@ -642,10 +644,19 @@ namespace Bloom.Workspace
 			}
 			else
 			{
+				if (_currentlyOpenSettingsDialog != null)
+				{
+					_currentlyOpenSettingsDialog.SetDesiredTab(tab);
+					return;
+				}
 				DialogResult result = _settingsLauncherHelper.LaunchSettingsIfAppropriate (() => {
-					using (var dlg = _settingsDialogFactory ()) {
+					using (var dlg = _settingsDialogFactory ())
+					{
+						_currentlyOpenSettingsDialog = dlg;
 						dlg.SetDesiredTab(tab);
-						return dlg.ShowDialog (this);
+						var temp = dlg.ShowDialog (this);
+						_currentlyOpenSettingsDialog = null;
+						return temp;
 					}
 				});
 				if(result==DialogResult.Yes)
