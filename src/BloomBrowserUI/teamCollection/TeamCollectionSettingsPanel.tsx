@@ -7,6 +7,8 @@ import {
     RequiresBloomEnterpriseWrapper
 } from "../react_components/requiresBloomEnterprise";
 import "./TeamCollectionSettingsPanel.less";
+import theme from "../bloomMaterialUITheme";
+import { ThemeProvider } from "@material-ui/styles";
 
 // A device for getting code into the team collection module
 import { ProgressDialog } from "../react_components/IndependentProgressDialog";
@@ -152,27 +154,31 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
     );
 
     return (
-        <div id="teamCollection-settings">
-            <RequiresBloomEnterpriseWrapper>
-                <BloomEnterpriseAvailableContext.Consumer>
-                    {enterpriseAvailable => (
-                        <React.Fragment>
-                            {intro}
-                            {repoFolderPath
-                                ? isTeamCollection
-                                : isNotTeamCollection}
-                            <Dialog
-                                open={createDlgOpen}
-                                onBackdropClick={() => setCreateDlgOpen(false)}
-                            >
-                                <CreateTeamCollection
-                                    closeDlg={() => setCreateDlgOpen(false)}
-                                />
-                            </Dialog>
-                        </React.Fragment>
-                    )}
-                </BloomEnterpriseAvailableContext.Consumer>
-            </RequiresBloomEnterpriseWrapper>
-        </div>
+        <ThemeProvider theme={theme}>
+            <div id="teamCollection-settings">
+                <RequiresBloomEnterpriseWrapper>
+                    <BloomEnterpriseAvailableContext.Consumer>
+                        {enterpriseAvailable => (
+                            <React.Fragment>
+                                {intro}
+                                {repoFolderPath
+                                    ? isTeamCollection
+                                    : isNotTeamCollection}
+                                <Dialog
+                                    open={createDlgOpen}
+                                    onBackdropClick={() =>
+                                        setCreateDlgOpen(false)
+                                    }
+                                >
+                                    <CreateTeamCollection
+                                        closeDlg={() => setCreateDlgOpen(false)}
+                                    />
+                                </Dialog>
+                            </React.Fragment>
+                        )}
+                    </BloomEnterpriseAvailableContext.Consumer>
+                </RequiresBloomEnterpriseWrapper>
+            </div>
+        </ThemeProvider>
     );
 };
