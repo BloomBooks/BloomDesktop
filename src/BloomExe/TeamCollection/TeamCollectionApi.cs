@@ -9,6 +9,7 @@ using Bloom.Collection;
 using Bloom.MiscUI;
 using L10NSharp;
 using Newtonsoft.Json;
+using Sentry;
 using SIL.Reporting;
 
 namespace Bloom.TeamCollection
@@ -52,109 +53,197 @@ namespace Bloom.TeamCollection
 
 		private void HandleGetLog(ApiRequest request)
 		{
-			var log = _tcManager.MessageLog;
-			if (log == null)
+			try
 			{
-				request.Failed();
-				return;
-			}
-
-			request.ReplyWithJson(JsonConvert.SerializeObject(
-				new
+				var log = _tcManager.MessageLog;
+				if (log == null)
 				{
-					messages= log.PrettyPrintMessages.Select(t => new {type = t.Item1.ToString(), message = t.Item2}).ToArray()
-				}));
+					request.Failed();
+					return;
+				}
+
+				request.ReplyWithJson(JsonConvert.SerializeObject(
+					new
+					{
+						messages = log.PrettyPrintMessages.Select(t => new { type = t.Item1.ToString(), message = t.Item2 }).ToArray()
+					}));
+			}
+			catch (Exception e)
+			{
+				// Not sure what to do here: getting the log should never crash.
+				Logger.WriteError("TeamCollectionApi.HandleGetLog() crashed", e);
+				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
+				SentrySdk.CaptureException(e);
+				request.Failed("get log failed");
+			}
 		}
 
 		public void HandleRepoFolderPath(ApiRequest request)
 		{
-			Debug.Assert(request.HttpMethod == HttpMethods.Get, "only get is implemented for the teamCollection/repoFolderPath api endpoint");
-			request.ReplyWithText(_tcManager.CurrentCollection == null
-				? ""
-				: (_tcManager.CurrentCollection as FolderTeamCollection).RepoFolderPath);
+			try
+			{
+				Debug.Assert(request.HttpMethod == HttpMethods.Get, "only get is implemented for the teamCollection/repoFolderPath api endpoint");
+				request.ReplyWithText(_tcManager.CurrentCollection == null
+					? ""
+					: (_tcManager.CurrentCollection as FolderTeamCollection).RepoFolderPath);
+			}
+			catch (Exception e)
+			{
+				// Not sure what to do here: getting the repo's folder path should never crash.
+				Logger.WriteError("TeamCollectionApi.HandleRepoFolderPath() crashed", e);
+				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
+				SentrySdk.CaptureException(e);
+				request.Failed("get repo folder path failed");
+			}
 		}
 
 		private void HandleJoinTeamCollection(ApiRequest request)
 		{
-			FolderTeamCollection.JoinCollectionTeam();
-			BrowserDialog.CloseDialog();
-			request.PostSucceeded();
+			try
+			{
+				FolderTeamCollection.JoinCollectionTeam();
+				BrowserDialog.CloseDialog();
+				request.PostSucceeded();
+			}
+			catch (Exception e)
+			{
+				// Not sure what to do here: joining the collection crashed.
+				Logger.WriteError("TeamCollectionApi.HandleJoinTeamCollection() crashed", e);
+				var msg = LocalizationManager.GetString("TeamCollection.ErrorJoining", "Could not join team collection");
+				ErrorReport.NotifyUserOfProblem(e, msg);
+				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
+				SentrySdk.CaptureException(e);
+				request.Failed("join team failed");
+			}
 		}
 
 		public void HandleIsTeamCollectionEnabled(ApiRequest request)
 		{
-			// We don't need any of the Sharing UI if the selected book isn't in the editable
-			// collection (or if the collection doesn't have a Team Collection at all).
-			request.ReplyWithBoolean(_tcManager.CurrentCollection != null &&
-				(_bookSelection.CurrentSelection == null || _bookSelection.CurrentSelection.IsEditable));
+			try
+			{
+				// We don't need any of the Sharing UI if the selected book isn't in the editable
+				// collection (or if the collection doesn't have a Team Collection at all).
+				request.ReplyWithBoolean(_tcManager.CurrentCollection != null &&
+					(_bookSelection.CurrentSelection == null || _bookSelection.CurrentSelection.IsEditable));
+			}
+			catch (Exception e)
+			{
+				// Not sure what to do here: checking whether TeamCollection is enabled should never crash.
+				Logger.WriteError("TeamCollectionApi.HandleIsTeamCollectionEnabled() crashed", e);
+				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
+				SentrySdk.CaptureException(e);
+				request.Failed("checking if team collections are enabled failed");
+			}
 		}
 
 		public void HandleCurrentBookStatus(ApiRequest request)
 		{
-			if (!TeamCollectionManager.IsRegistrationSufficient())
+			try
 			{
-				request.Failed("not registered");
-				return;
-			}
-
-			var whoHasBookLocked = _tcManager.CurrentCollection?.WhoHasBookLocked(BookFolderName);
-			var whenLocked = _tcManager.CurrentCollection?.WhenWasBookLocked(BookFolderName) ?? DateTime.MaxValue;
-			// review: or better to pass on to JS? We may want to show slightly different
-			// text like "This book is not yet shared. Check it in to make it part of the team collection"
-			if (whoHasBookLocked == TeamCollection.FakeUserIndicatingNewBook)
-				whoHasBookLocked = CurrentUser;
-			var problem = _tcManager.CurrentCollection?.HasLocalChangesThatMustBeClobbered(BookFolderName);
-			request.ReplyWithJson(JsonConvert.SerializeObject(
-				new
+				if (!TeamCollectionManager.IsRegistrationSufficient())
 				{
-					who = whoHasBookLocked,
-					whoFirstName = _tcManager.CurrentCollection?.WhoHasBookLockedFirstName(BookFolderName),
-					whoSurname = _tcManager.CurrentCollection?.WhoHasBookLockedSurname(BookFolderName),
-					when = whenLocked.ToLocalTime().ToShortDateString(),
-					where = _tcManager.CurrentCollection?.WhatComputerHasBookLocked(BookFolderName),
-					currentUser = CurrentUser,
-					currentMachine = TeamCollectionManager.CurrentMachine,
-					problem,
-					changedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(BookFolderName)
-				}));
+					request.Failed("not registered");
+					return;
+				}
+
+				var whoHasBookLocked = _tcManager.CurrentCollection?.WhoHasBookLocked(BookFolderName);
+				var whenLocked = _tcManager.CurrentCollection?.WhenWasBookLocked(BookFolderName) ?? DateTime.MaxValue;
+				// review: or better to pass on to JS? We may want to show slightly different
+				// text like "This book is not yet shared. Check it in to make it part of the team collection"
+				if (whoHasBookLocked == TeamCollection.FakeUserIndicatingNewBook)
+					whoHasBookLocked = CurrentUser;
+				var problem = _tcManager.CurrentCollection?.HasLocalChangesThatMustBeClobbered(BookFolderName);
+				request.ReplyWithJson(JsonConvert.SerializeObject(
+					new
+					{
+						who = whoHasBookLocked,
+						whoFirstName = _tcManager.CurrentCollection?.WhoHasBookLockedFirstName(BookFolderName),
+						whoSurname = _tcManager.CurrentCollection?.WhoHasBookLockedSurname(BookFolderName),
+						when = whenLocked.ToLocalTime().ToShortDateString(),
+						where = _tcManager.CurrentCollection?.WhatComputerHasBookLocked(BookFolderName),
+						currentUser = CurrentUser,
+						currentMachine = TeamCollectionManager.CurrentMachine,
+						problem,
+						changedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(BookFolderName)
+					}));
+			}
+			catch (Exception e)
+			{
+				// Not sure what to do here: getting the current book status crashed.
+				Logger.WriteError("TeamCollectionApi.HandleCurrentBookStatus() crashed", e);
+				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
+				SentrySdk.CaptureException(e);
+				request.Failed("getting the current book status failed");
+			}
 		}
 
 		private string BookFolderName => Path.GetFileNameWithoutExtension(_bookSelection.CurrentSelection?.FolderPath);
 
 		public void HandleAttemptLockOfCurrentBook(ApiRequest request)
 		{
-			// Could be a problem if there's no current book or it's not in the collection folder.
-			// But in that case, we don't show the UI that leads to this being called.
-			var success = _tcManager.CurrentCollection.AttemptLock(BookFolderName);
-			if (success)
-				UpdateUiForBook();
-			request.ReplyWithBoolean(success);
+			try
+			{
+				// Could be a problem if there's no current book or it's not in the collection folder.
+				// But in that case, we don't show the UI that leads to this being called.
+				var success = _tcManager.CurrentCollection.AttemptLock(BookFolderName);
+				if (success)
+					UpdateUiForBook();
+				request.ReplyWithBoolean(success);
+			}
+			catch (Exception e)
+			{
+				var msgId = "TeamCollection.ErrorLockingBook";
+				var msgEnglish = "Error locking access to {0}: {1}";
+				var log = _tcManager?.CurrentCollection?.MessageLog;
+				if (log != null)
+					log.WriteMessage(MessageAndMilestoneType.Error, msgId, msgEnglish, BookFolderName, e.Message);
+				Logger.WriteError(String.Format(msgEnglish, BookFolderName, e.Message), e);
+				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
+				SentrySdk.CaptureException(e);
+				request.Failed("lock failed");
+			}
 		}
 
 		public void HandleCheckInCurrentBook(ApiRequest request)
 		{
-			_bookSelection.CurrentSelection.Save();
-			var bookName = Path.GetFileName(_bookSelection.CurrentSelection.FolderPath);
-			if (_tcManager.CurrentCollection.OkToCheckIn(bookName))
+			try
 			{
-				_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, true);
-			}
-			else
-			{
-				// We can't check in! The system has broken down...perhaps conflicting checkouts while offline.
-				// Save our version in Lost-and-Found
-				_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, false,true);
-				// overwrite it with the current repo version.
-				_tcManager.CurrentCollection.CopyBookFromRepoToLocal(bookName);
-				// Force a full reload of the book from disk and update the UI to match.
-				_bookSelection.SelectBook(_bookServer.GetBookFromBookInfo(_bookSelection.CurrentSelection.BookInfo, true));
-				var msg = LocalizationManager.GetString("TeamCollection.ConflictingEditOrCheckout",
-					"Someone else has edited this book or checked it out even though you were editing it! Your changes have been saved to Lost and Found");
-				ErrorReport.NotifyUserOfProblem(msg);
-			}
+				_bookSelection.CurrentSelection.Save();
+				var bookName = Path.GetFileName(_bookSelection.CurrentSelection.FolderPath);
+				if (_tcManager.CurrentCollection.OkToCheckIn(bookName))
+				{
+					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, true);
+				}
+				else
+				{
+					// We can't check in! The system has broken down...perhaps conflicting checkouts while offline.
+					// Save our version in Lost-and-Found
+					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, false, true);
+					// overwrite it with the current repo version.
+					_tcManager.CurrentCollection.CopyBookFromRepoToLocal(bookName);
+					// Force a full reload of the book from disk and update the UI to match.
+					_bookSelection.SelectBook(_bookServer.GetBookFromBookInfo(_bookSelection.CurrentSelection.BookInfo, true));
+					var msg = LocalizationManager.GetString("TeamCollection.ConflictingEditOrCheckout",
+						"Someone else has edited this book or checked it out even though you were editing it! Your changes have been saved to Lost and Found");
+					ErrorReport.NotifyUserOfProblem(msg);
+				}
 
-			UpdateUiForBook();
-			request.PostSucceeded();
+				UpdateUiForBook();
+				request.PostSucceeded();
+			}
+			catch (Exception e)
+			{
+				var msgId = "TeamCollection.ErrorCheckingBookIn";
+				var msgEnglish = "Error checking in {0}: {1}";
+				var log = _tcManager?.CurrentCollection?.MessageLog;
+				if (log != null)
+					log.WriteMessage(MessageAndMilestoneType.Error, msgId, msgEnglish, _bookSelection?.CurrentSelection?.FolderPath, e.Message);
+				Logger.WriteError(String.Format(msgEnglish, _bookSelection?.CurrentSelection?.FolderPath, e.Message), e);
+				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0} ({1})",
+					request.LocalPath(), _bookSelection?.CurrentSelection?.FolderPath));
+				SentrySdk.CaptureException(e);
+				request.Failed("checkin failed");
+			}
 		}
 
 		// Tell the CollectionSettingsDialog that we should reopen the collection now
@@ -167,39 +256,50 @@ namespace Bloom.TeamCollection
 
 		public void HandleChooseFolderLocation(ApiRequest request)
 		{
-			// One of the few places that knows we're using a particular implementation
-			// of TeamRepo. But we have to know that to create it. And of course the user
-			// has to chose a folder to get things started.
-			// We'll need a different API or something similar if we ever want to create
-			// some other kind of repo.
-			using (var dlg = new FolderBrowserDialog())
+			try
 			{
-				dlg.ShowNewFolderButton = true;
-				dlg.Description = LocalizationManager.GetString("TeamCollection.SelectFolder",
-					"Select or create the folder where this collection will be shared");
-				if (DialogResult.OK != dlg.ShowDialog())
+				// One of the few places that knows we're using a particular implementation
+				// of TeamRepo. But we have to know that to create it. And of course the user
+				// has to chose a folder to get things started.
+				// We'll need a different API or something similar if we ever want to create
+				// some other kind of repo.
+				using (var dlg = new FolderBrowserDialog())
 				{
-					request.Failed();
-					return;
+					dlg.ShowNewFolderButton = true;
+					dlg.Description = LocalizationManager.GetString("TeamCollection.SelectFolder",
+						"Select or create the folder where this collection will be shared");
+					if (DialogResult.OK != dlg.ShowDialog())
+					{
+						request.Failed();
+						return;
+					}
+
+					_folderForCreateTC = dlg.SelectedPath;
 				}
+				// We send the result through a websocket rather than simply returning it because
+				// if the user is very slow (one site said FF times out after 90s) the browser may
+				// abandon the request before it completes. The POST result is ignored and the
+				// browser simply listens to the socket.
+				// We'd prefer this request to return immediately and set a callback to run
+				// when the dialog closes and handle the results, but FolderBrowserDialog
+				// does not offer such an API. Instead, we just ignore any timeout
+				// in our Javascript code.
+				dynamic messageBundle = new DynamicJson();
+				messageBundle.repoFolderPath = _folderForCreateTC;
+				messageBundle.problem = ProblemsWithLocation(_folderForCreateTC);
+				// This clientContext must match what is being listened for in CreateTeamCollection.tsx
+				_socketServer.SendBundle("teamCollectionCreate", "shared-folder-path", messageBundle);
 
-				_folderForCreateTC = dlg.SelectedPath;
+				request.PostSucceeded();
 			}
-			// We send the result through a websocket rather than simply returning it because
-			// if the user is very slow (one site said FF times out after 90s) the browser may
-			// abandon the request before it completes. The POST result is ignored and the
-			// browser simply listens to the socket.
-			// We'd prefer this request to return immediately and set a callback to run
-			// when the dialog closes and handle the results, but FolderBrowserDialog
-			// does not offer such an API. Instead, we just ignore any timeout
-			// in our Javascript code.
-			dynamic messageBundle = new DynamicJson();
-			messageBundle.repoFolderPath = _folderForCreateTC;
-			messageBundle.problem = ProblemsWithLocation(_folderForCreateTC);
-			// This clientContext must match what is being listened for in CreateTeamCollection.tsx
-			_socketServer.SendBundle("teamCollectionCreate", "shared-folder-path", messageBundle);
-
-			request.PostSucceeded();
+			catch (Exception e)
+			{
+				// Not sure what to do here: choosing the collection folder should never crash.
+				Logger.WriteError("TeamCollectionApi.HandleChooseFolderLocation() crashed", e);
+				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
+				SentrySdk.CaptureException(e);
+				request.Failed("choose folder location failed");
+			}
 		}
 
 		internal string ProblemsWithLocation(string sharedFolder)
@@ -252,17 +352,30 @@ namespace Bloom.TeamCollection
 
 		public void HandleCreateTeamCollection(ApiRequest request)
 		{
-			if (!TeamCollection.PromptForSufficientRegistrationIfNeeded())
+			try
 			{
+				if (!TeamCollection.PromptForSufficientRegistrationIfNeeded())
+				{
+					request.PostSucceeded();
+					return;
+				}
+
+				_tcManager.ConnectToTeamCollection(_folderForCreateTC);
+				BrowserDialog.CloseDialog();
+				_callbackToReopenCollection?.Invoke();
+
 				request.PostSucceeded();
-				return;
 			}
-
-			_tcManager.ConnectToTeamCollection(_folderForCreateTC);
-			BrowserDialog.CloseDialog();
-			_callbackToReopenCollection?.Invoke();
-
-			request.PostSucceeded();
+			catch (Exception e)
+			{
+				var msgEnglish = "Error creating team collection {0}: {1}";
+				var msgFmt = LocalizationManager.GetString("TeamCollection.ErrorCreating", msgEnglish);
+				ErrorReport.NotifyUserOfProblem(e, msgFmt, _folderForCreateTC, e.Message);
+				Logger.WriteError(String.Format(msgEnglish, _folderForCreateTC, e.Message), e);
+				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
+				SentrySdk.CaptureException(e);
+				request.Failed("create team failed");
+			}
 		}
 
 

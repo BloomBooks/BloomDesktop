@@ -4886,6 +4886,28 @@ Do you want to go ahead?</note>
         <note>ID: TeamCollection.StartingInstructions</note>
         <note>Whatever you put between double asterisks will be bold.</note>
       </trans-unit>
+      <trans-unit id="TeamCollection.ErrorCheckingBookIn">
+        <source xml:lang="en">Error checking in {0}: {1}</source>
+        <note>ID: TeamCollection.ErrorCheckingBookIn</note>
+        <note>{0} is the path to the book's folder</note>
+        <note>{1} is the error message from the system</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ErrorCreating>
+        <source xml:lang="en">Error creating team collection {0}: {1}</source>
+        <note>ID: TeamCollection.ErrorCreating</note>
+        <note>{0} is the path to the collection folder</note>
+        <note>{1} is the error message from the system</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ErrorJoining">
+        <source xml:lang="en">Could not join team collection</source>
+        <note>ID: TeamCollection.ErrorJoining</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ErrorLockingBook">
+        <source xml:lang="en">Error locking access to {0}: {1}</source>
+        <note>ID: TeamCollection.ErrorLockingBook</note>
+        <note>{0} is the path to the book's folder</note>
+        <note>{1} is the error message from the system</note>
+      </trans-unit>
 -->
       <trans-unit id="TemplateBooks.BookName.Arithmetic Template" sil:dynamic="true">
         <source xml:lang="en">Arithmetic Template</source>
