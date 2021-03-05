@@ -3,16 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Windows.Forms;
 using Bloom.Api;
-using Bloom.Book;
-using Bloom.Publish.AccessibilityChecker;
-using Bloom.Publish.Epub;
-using Bloom.Workspace;
-using SIL.CommandLineProcessing;
-using SIL.PlatformUtilities;
-using SIL.Progress;
 
 namespace Bloom.web.controllers
 {
@@ -132,11 +123,9 @@ namespace Bloom.web.controllers
 			var summaryFile = BloomFileLocator.GetOptionalBrandingFile(baseKey, "summary.htm");
 			if (summaryFile == null)
 				return "";
-			else
-			{
-				var html = File.ReadAllText(summaryFile, Encoding.UTF8);
-				return html.Replace("{flavor}", flavor);
-			}
+
+			var html = File.ReadAllText(summaryFile, Encoding.UTF8);
+			return html.Replace("{flavor}", flavor);
 		}
 
 		public static void PrepareForFixEnterpriseBranding(string invalidBranding, string subscriptionCode)

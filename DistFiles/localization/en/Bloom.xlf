@@ -4733,6 +4733,24 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Subscription Code:</source>
         <note>ID: Settings.Enterprise.SubscriptionCode</note>
       </trans-unit>
+      <trans-unit id="SoftwareUpdateDialog.SoftwareUpdates" sil:dynamic="true">
+        <source xml:lang="en">Software Updates</source>
+        <note>ID: SoftwareUpdateDialog.SoftwareUpdates</note>
+      </trans-unit>
+      <trans-unit id="SoftwareUpdateDialog.WhatShouldBloomDo" sil:dynamic="true">
+        <source xml:lang="en">What should Bloom do when a new version is available?</source>
+        <note>ID: SoftwareUpdateDialog.WhatShouldBloomDo</note>
+      </trans-unit>
+      <trans-unit id="SoftwareUpdateDialog.AutomaticUpdate" sil:dynamic="true">
+        <source xml:lang="en">Automatically download and install it</source>
+        <note>ID: SoftwareUpdateDialog.AutomaticUpdate</note>
+        <note>Radio button label</note>
+      </trans-unit>
+      <trans-unit id="SoftwareUpdateDialog.LetMeKnow" sil:dynamic="true">
+        <source xml:lang="en">Just let me know about the new version</source>
+        <note>ID: SoftwareUpdateDialog.LetMeKnow</note>
+        <note>Radio button label</note>
+      </trans-unit>
       <trans-unit id="TeamCollection.TeamCollection">
         <source xml:lang="en">Team Collection</source>
         <note>ID: TeamCollection.TeamCollection</note>

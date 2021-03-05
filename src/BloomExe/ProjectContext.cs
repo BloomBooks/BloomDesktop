@@ -151,6 +151,7 @@ namespace Bloom
 							typeof(ToolboxApi),
 							typeof(CommonApi),
 							typeof(TeamCollectionApi),
+							typeof(InstallationSettingsApi),
 							typeof(BrandingSettings),
 							typeof(FeatureControlApi),
 							typeof(I18NApi),
@@ -351,6 +352,7 @@ namespace Bloom
 			_scope.Resolve<ToolboxApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<CommonApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<TeamCollectionApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<InstallationSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<FeatureControlApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<SignLanguageApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<AudioSegmentationApi>().RegisterWithApiHandler(server.ApiHandler);

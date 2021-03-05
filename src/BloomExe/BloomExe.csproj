@@ -407,6 +407,7 @@
     <Compile Include="Utils\FileSystemWatcherExtensions.cs" />
     <Compile Include="Utils\MiscUtils.cs" />
     <Compile Include="WebLibraryIntegration\FirebaseLoginDialog.cs" />
+    <Compile Include="web\controllers\InstallationSettingsApi.cs" />
     <Compile Include="web\ReactControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
