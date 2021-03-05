@@ -25,8 +25,7 @@ namespace Bloom.CollectionTab
 			LibraryBookView.Factory templateBookViewFactory,
 			SelectedTabChangedEvent selectedTabChangedEvent,
 			SendReceiveCommand sendReceiveCommand,
-			TeamCollectionManager tcManager,
-			BookStatusChangeEvent bookStatusChangeEvent)
+			TeamCollectionManager tcManager)
 		{
 			_model = model;
 			InitializeComponent();
@@ -74,7 +73,14 @@ namespace Bloom.CollectionTab
 													}
 												});
 			SetTeamCollectionStatus(tcManager);
-			bookStatusChangeEvent.Subscribe((args) => SafeInvoke.Invoke("update TC status", this, false, true, () => SetTeamCollectionStatus(tcManager)));
+			TeamCollectionManager.TeamCollectionStatusChanged += (sender, args) =>
+			{
+				if (!IsDisposed)
+				{
+					SafeInvoke.InvokeIfPossible("update TC status", this, false,
+						() => SetTeamCollectionStatus(tcManager));
+				}
+			};
 			_tcStatusButton.Click += (sender, args) =>
 			{
 				// Reinstate this to see messages from before we started up.

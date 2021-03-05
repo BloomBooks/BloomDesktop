@@ -52,7 +52,7 @@ namespace Bloom.TeamCollection
 
 		private void HandleGetLog(ApiRequest request)
 		{
-			var log = _tcManager.CurrentCollection?.MessageLog;
+			var log = _tcManager.MessageLog;
 			if (log == null)
 			{
 				request.Failed();
@@ -91,7 +91,7 @@ namespace Bloom.TeamCollection
 
 		public void HandleCurrentBookStatus(ApiRequest request)
 		{
-			if (!TeamCollection.IsRegistrationSufficient())
+			if (!TeamCollectionManager.IsRegistrationSufficient())
 			{
 				request.Failed("not registered");
 				return;
@@ -279,7 +279,7 @@ namespace Bloom.TeamCollection
 		// that it is checked-out to this user 
 		public bool CanEditBook()
 		{
-			if (!TeamCollection.IsRegistrationSufficient())
+			if (!TeamCollectionManager.IsRegistrationSufficient())
 				return false;
 
 			var folderName = BookFolderName;
