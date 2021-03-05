@@ -68,7 +68,7 @@ namespace Bloom.TeamCollection
 
 		public bool OkToCheckIn(string bookName)
 		{
-			if (!IsRegistrationSufficient())
+			if (!TeamCollectionManager.IsRegistrationSufficient())
 				return false; // under no circumstances allow checkin if we don't know who is doing it.
 			var repoStatus = GetStatus(bookName);
 			if (repoStatus.lockedBy == TeamCollection.FakeUserIndicatingNewBook)
@@ -1411,16 +1411,6 @@ namespace Bloom.TeamCollection
 		{
 			return RegistrationDialog.RequireRegistrationEmail(
 				"You will need to register this copy of Bloom with an email address before participating in a Team Collection");
-		}
-
-		/// <summary>
-		/// Returns true if registration is sufficient to use Team Collections; false otherwise
-		/// </summary>
-		public static bool IsRegistrationSufficient()
-		{
-			// We're normally checking SIL.Windows.Forms.Registration.Registration.Default.Email,
-			// but getting it via TCM.CurrentUser allows overriding for testing.
-			return !string.IsNullOrWhiteSpace(TeamCollectionManager.CurrentUser);
 		}
 	}
 }
