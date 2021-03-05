@@ -76,9 +76,18 @@ namespace Bloom.TeamCollection
 
 		private void HandleJoinTeamCollection(ApiRequest request)
 		{
-			FolderTeamCollection.JoinCollectionTeam();
-			BrowserDialog.CloseDialog();
-			request.PostSucceeded();
+			try
+			{
+				FolderTeamCollection.JoinCollectionTeam();
+				BrowserDialog.CloseDialog();
+				request.PostSucceeded();
+			}
+			catch (Exception e)
+			{
+				// Not sure what to do here: joining the collection failed.
+				Logger.WriteError("TeamCollection.JoinCollectionTeam() failed", e);
+				request.Failed("join team failed");
+			}
 		}
 
 		public void HandleIsTeamCollectionEnabled(ApiRequest request)
@@ -122,38 +131,64 @@ namespace Bloom.TeamCollection
 
 		public void HandleAttemptLockOfCurrentBook(ApiRequest request)
 		{
-			// Could be a problem if there's no current book or it's not in the collection folder.
-			// But in that case, we don't show the UI that leads to this being called.
-			var success = _tcManager.CurrentCollection.AttemptLock(BookFolderName);
-			if (success)
-				UpdateUiForBook();
-			request.ReplyWithBoolean(success);
+			try
+			{
+				// Could be a problem if there's no current book or it's not in the collection folder.
+				// But in that case, we don't show the UI that leads to this being called.
+				var success = _tcManager.CurrentCollection.AttemptLock(BookFolderName);
+				if (success)
+					UpdateUiForBook();
+				request.ReplyWithBoolean(success);
+			}
+			catch (Exception e)
+			{
+				var msgId = "TeamCollection.ErrorLockingBook";
+				var msgEnglish = "Error locking access to {0}: {1}";
+				var log = _tcManager?.CurrentCollection?.MessageLog;
+				if (log != null)
+					log.WriteMessage(MessageAndMilestoneType.Error, msgId, msgEnglish, BookFolderName, e.Message);
+				Logger.WriteError(String.Format(msgEnglish, BookFolderName, e.Message), e);
+				request.Failed("lock failed");
+			}
 		}
 
 		public void HandleCheckInCurrentBook(ApiRequest request)
 		{
-			_bookSelection.CurrentSelection.Save();
-			var bookName = Path.GetFileName(_bookSelection.CurrentSelection.FolderPath);
-			if (_tcManager.CurrentCollection.OkToCheckIn(bookName))
+			try
 			{
-				_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, true);
-			}
-			else
-			{
-				// We can't check in! The system has broken down...perhaps conflicting checkouts while offline.
-				// Save our version in Lost-and-Found
-				_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, false,true);
-				// overwrite it with the current repo version.
-				_tcManager.CurrentCollection.CopyBookFromRepoToLocal(bookName);
-				// Force a full reload of the book from disk and update the UI to match.
-				_bookSelection.SelectBook(_bookServer.GetBookFromBookInfo(_bookSelection.CurrentSelection.BookInfo, true));
-				var msg = LocalizationManager.GetString("TeamCollection.ConflictingEditOrCheckout",
-					"Someone else has edited this book or checked it out even though you were editing it! Your changes have been saved to Lost and Found");
-				ErrorReport.NotifyUserOfProblem(msg);
-			}
+				_bookSelection.CurrentSelection.Save();
+				var bookName = Path.GetFileName(_bookSelection.CurrentSelection.FolderPath);
+				if (_tcManager.CurrentCollection.OkToCheckIn(bookName))
+				{
+					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, true);
+				}
+				else
+				{
+					// We can't check in! The system has broken down...perhaps conflicting checkouts while offline.
+					// Save our version in Lost-and-Found
+					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, false, true);
+					// overwrite it with the current repo version.
+					_tcManager.CurrentCollection.CopyBookFromRepoToLocal(bookName);
+					// Force a full reload of the book from disk and update the UI to match.
+					_bookSelection.SelectBook(_bookServer.GetBookFromBookInfo(_bookSelection.CurrentSelection.BookInfo, true));
+					var msg = LocalizationManager.GetString("TeamCollection.ConflictingEditOrCheckout",
+						"Someone else has edited this book or checked it out even though you were editing it! Your changes have been saved to Lost and Found");
+					ErrorReport.NotifyUserOfProblem(msg);
+				}
 
-			UpdateUiForBook();
-			request.PostSucceeded();
+				UpdateUiForBook();
+				request.PostSucceeded();
+			}
+			catch (Exception e)
+			{
+				var msgId = "TeamCollection.ErrorCheckingBookIn";
+				var msgEnglish = "Error checking in {0}: {1}";
+				var log = _tcManager?.CurrentCollection?.MessageLog;
+				if (log != null)
+					log.WriteMessage(MessageAndMilestoneType.Error, msgId, msgEnglish, _bookSelection?.CurrentSelection?.FolderPath, e.Message);
+				Logger.WriteError(String.Format(msgEnglish, _bookSelection?.CurrentSelection?.FolderPath, e.Message), e);
+				request.Failed("checkin failed");
+			}
 		}
 
 		// Tell the CollectionSettingsDialog that we should reopen the collection now
@@ -251,17 +286,30 @@ namespace Bloom.TeamCollection
 
 		public void HandleCreateTeamCollection(ApiRequest request)
 		{
-			if (!TeamCollection.PromptForSufficientRegistrationIfNeeded())
+			try
 			{
+				if (!TeamCollection.PromptForSufficientRegistrationIfNeeded())
+				{
+					request.PostSucceeded();
+					return;
+				}
+
+				_tcManager.ConnectToTeamCollection(_folderForCreateTC);
+				BrowserDialog.CloseDialog();
+				_callbackToReopenCollection?.Invoke();
+
 				request.PostSucceeded();
-				return;
 			}
-
-			_tcManager.ConnectToTeamCollection(_folderForCreateTC);
-			BrowserDialog.CloseDialog();
-			_callbackToReopenCollection?.Invoke();
-
-			request.PostSucceeded();
+			catch (Exception e)
+			{
+				var msgId = "TeamCollection.ErrorCreating";
+				var msgEnglish = "Error creating team collection {0}: {1}";
+				var log = _tcManager?.CurrentCollection?.MessageLog;
+				if (log != null)
+					log.WriteMessage(MessageAndMilestoneType.Error, msgId, msgEnglish, _folderForCreateTC, e.Message);
+				Logger.WriteError(String.Format(msgEnglish, _folderForCreateTC, e.Message), e);
+				request.Failed("create team failed");
+			}
 		}
 
 
