@@ -530,22 +530,23 @@ namespace Bloom.WebLibraryIntegration
 			if (endsToAvoid.Any(end => objectKey.ToLowerInvariant().EndsWith(end)))
 				return true;
 
-			if (!Program.RunningHarvesterMode)
-			{
-				// Except when harvesting, we only want to download audio for "music", not narration.
-				// The way we determine the difference is that narration audio files are guids. (but also see comment on the regex)
-				// This isn't 100% accurate because, in theory, someone could choose a music file which has a guid file name.
-				// But we are living with that possibility for now.
-				if (AudioProcessor.MusicFileExtensions.Any(end => objectKey.ToLowerInvariant().EndsWith(end)))
-				{
-					var match = NarrationFileNameRegex.Match(objectKey);
-					if (match.Success)
-					{
-						Guid dummy;
-						return Guid.TryParse(match.Groups[2].Value, out dummy);
-					}
-				}
-			}
+			// Removing this restriction on downloading narration per BL-9652
+			//if (!Program.RunningHarvesterMode)
+			//{
+			//	// Except when harvesting, we only want to download audio for "music", not narration.
+			//	// The way we determine the difference is that narration audio files are guids. (but also see comment on the regex)
+			//	// This isn't 100% accurate because, in theory, someone could choose a music file which has a guid file name.
+			//	// But we are living with that possibility for now.
+			//	if (AudioProcessor.MusicFileExtensions.Any(end => objectKey.ToLowerInvariant().EndsWith(end)))
+			//	{
+			//		var match = NarrationFileNameRegex.Match(objectKey);
+			//		if (match.Success)
+			//		{
+			//			Guid dummy;
+			//			return Guid.TryParse(match.Groups[2].Value, out dummy);
+			//		}
+			//	}
+			//}
 
 			return false;
 		}
