@@ -11,9 +11,9 @@ $(() => {
 });
 
 export function setupOrigami(isBookLocked: boolean) {
-    BloomApi.get("featurecontrol/showAdvancedFeatures", result => {
+    BloomApi.get("system/showAdvancedFeatures", result => {
         const showAdvanced: boolean = result.data;
-        BloomApi.get("featurecontrol/enterpriseEnabled", result2 => {
+        BloomApi.get("system/enterpriseEnabled", result2 => {
             const isEnterpriseEnabled: boolean = result2.data;
             const customPages = document.getElementsByClassName("customPage");
             if (customPages.length > 0) {

@@ -97,6 +97,24 @@
         <source xml:lang="en">Bloom Accessibility Checker</source>
         <note>ID: AccessibilityCheck.WindowTitle</note>
       </trans-unit>
+      <trans-unit id="AutoUpdateSoftwareDialog.SoftwareUpdates" sil:dynamic="true">
+        <source xml:lang="en">Software Updates</source>
+        <note>ID: AutoUpdateSoftwareDialog.SoftwareUpdates</note>
+      </trans-unit>
+      <trans-unit id="AutoUpdateSoftwareDialog.WhatShouldBloomDo" sil:dynamic="true">
+        <source xml:lang="en">What should Bloom do when a new version is available?</source>
+        <note>ID: AutoUpdateSoftwareDialog.WhatShouldBloomDo</note>
+      </trans-unit>
+      <trans-unit id="AutoUpdateSoftwareDialog.AutomaticUpdate" sil:dynamic="true">
+        <source xml:lang="en">Automatically download and install it</source>
+        <note>ID: AutoUpdateSoftwareDialog.AutomaticUpdate</note>
+        <note>Radio button label</note>
+      </trans-unit>
+      <trans-unit id="AutoUpdateSoftwareDialog.LetMeKnow" sil:dynamic="true">
+        <source xml:lang="en">Just let me know about the new version</source>
+        <note>ID: AutoUpdateSoftwareDialog.LetMeKnow</note>
+        <note>Radio button label</note>
+      </trans-unit>
       <trans-unit id="BloomIntegrity.WindowTitle">
         <source xml:lang="en">Bloom Problem</source>
         <note>ID: BloomIntegrity.WindowTitle</note>
