@@ -717,7 +717,7 @@
     <Compile Include="web\I18NApi.cs" />
     <Compile Include="web\ReadersApi.cs" />
     <Compile Include="web\controllers\ExternalLinkController.cs" />
-    <Compile Include="web\controllers\FeatureControlApi.cs" />
+    <Compile Include="web\controllers\AppApi.cs" />
     <Compile Include="web\UrlLookup.cs" />
     <Compile Include="web\WebSocketProgress.cs" />
     <Compile Include="web\YouTrackIssueSubmission.cs" />

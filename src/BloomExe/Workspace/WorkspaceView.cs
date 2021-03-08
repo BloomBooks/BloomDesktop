@@ -863,6 +863,28 @@ namespace Bloom.Workspace
 			CheckDPISettings();
 			_originalToolStripPanelWidth = 0;
 			_viewInitialized = true;
+			ShowAutoUpdateDialogIfNeeded();
+		}
+
+		private const int kCurrentAutoUpdateVersion = 1;
+		private void ShowAutoUpdateDialogIfNeeded()
+		{
+			try
+			{
+				// If Bloom is newly installed or we only had old versions before, this should be 0.
+				var isShown = Settings.Default.AutoUpdateDialogShown;
+				if (isShown < kCurrentAutoUpdateVersion)
+				{
+					Program.CloseSplashScreen(); // Otherwise it will stay in front!
+					var dlg = new ReactDialog("autoUpdateSoftwareDlgBundle.js", "AutoUpdateSoftwareDialog");
+					dlg.ShowDialog(this);
+				}
+			}
+			finally
+			{
+				// Whether we showed the dialog or not we'll check for a new version in 1 minute.
+				_applicationUpdateCheckTimer.Enabled = true;
+			}
 		}
 
 		private void OnRegistrationMenuItem_Click(object sender, EventArgs e)
