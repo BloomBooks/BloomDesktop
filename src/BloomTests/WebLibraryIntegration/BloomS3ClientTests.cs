@@ -61,15 +61,6 @@ namespace BloomTests.WebLibraryIntegration
 		[TestCase("bucket/my.PDF")]
 		[TestCase("bucket/thumbs.db")]
 		[TestCase("bucket/Basic Book.css.map")]
-		// We don't download narration audio (for now)
-		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.mp3")]
-		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.MP3")]
-		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.wav")]
-		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.WAV")]
-		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.ogg")]
-		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.OGG")]
-		// We sometimes prepend a guid which starts with a number with "i" to make epubs happy.
-		[TestCase("bucket/i1EC14CB3-CAEC-4C83-8092-74C78CA7C515.mp3")]
 		public void AvoidThisFile_ShouldAvoid(string objectKey)
 		{
 			Assert.True(BloomS3Client.AvoidThisFile(objectKey));
@@ -85,6 +76,15 @@ namespace BloomTests.WebLibraryIntegration
 		[TestCase("bucket/music.ogg")]
 		[TestCase("bucket/music.OGG")]
 		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.css")]
+		// We now DO download narration audio (for now)
+		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.mp3")]
+		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.MP3")]
+		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.wav")]
+		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.WAV")]
+		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.ogg")]
+		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.OGG")]
+		// We sometimes prepend a guid which starts with a number with "i" to make epubs happy.
+		[TestCase("bucket/i1EC14CB3-CAEC-4C83-8092-74C78CA7C515.mp3")]
 		public void AvoidThisFile_ShouldNotAvoid(string objectKey)
 		{
 			Assert.False(BloomS3Client.AvoidThisFile(objectKey));
