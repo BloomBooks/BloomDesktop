@@ -3,6 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using Bloom.Api;
+using Bloom.Collection;
+using L10NSharp;
 
 namespace Bloom.TeamCollection
 {
@@ -22,6 +24,23 @@ namespace Bloom.TeamCollection
 		private readonly BloomWebSocketServer _webSocketServer;
 		private readonly BookStatusChangeEvent _bookStatusChangeEvent;
 		public TeamCollection CurrentCollection { get; private set; }
+		// Normally the same as CurrentCollection, but when TC behavior is disabled
+		// (See CheckDisablingTeamCollections) but we actually DO have a TC, this
+		// hangs on to it. A few things, mainly showing the TC status button
+		// and launching the TC dialog, are permitted and need it.
+		public TeamCollection CurrentCollectionEvenIfDisabled { get; private set; }
+
+		/// <summary>
+		/// Raised when the status of the whole collection (this.TeamCollectionStatus) might have changed.
+		/// (That is, when a new message or milestone arrives...currently we don't ensure that the status
+		/// actually IS different from before.)
+		/// </summary>
+		public static event EventHandler TeamCollectionStatusChanged;
+		// When we find a TeamCollectionSettings.xml but the repo it refers to is not found, we
+		// can't create a TC object. But we want to use the TC status button to radiate the problem
+		// and to allow the TC dialog to report the details, so we need a log. This is used only
+		// in this one case.
+		private TeamCollectionMessageLog _specialLogForMissingRepo;
 		private readonly string _localCollectionFolder;
 		private static string _overrideCurrentUser;
 		private static string _overrideCurrentUserFirstName;
@@ -38,9 +57,37 @@ namespace Bloom.TeamCollection
 			_overrideCurrentUser = user;
 		}
 
-		public TeamCollectionStatus CollectionStatus => CurrentCollection == null
-			? TeamCollectionStatus.None
-			: CurrentCollection.CollectionStatus;
+		public static void RaiseTeamCollectionStatusChanged()
+		{
+			TeamCollectionStatusChanged?.Invoke(null, new EventArgs());
+		}
+
+		public TeamCollectionStatus CollectionStatus
+		{
+			get
+			{
+				if (CurrentCollectionEvenIfDisabled != null)
+				{
+					return CurrentCollectionEvenIfDisabled.CollectionStatus;
+				}
+
+				if (_specialLogForMissingRepo != null)
+				{
+					return TeamCollectionStatus.Error;
+				}
+				return TeamCollectionStatus.None;
+			}
+		}
+
+		public TeamCollectionMessageLog MessageLog
+		{
+			get
+			{
+				if (CurrentCollectionEvenIfDisabled != null)
+					return CurrentCollectionEvenIfDisabled.MessageLog;
+				return _specialLogForMissingRepo; // may be null
+			}
+		}
 
 		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer, BookRenamedEvent bookRenamedEvent, BookStatusChangeEvent bookStatusChangeEvent)
 		{
@@ -76,6 +123,7 @@ namespace Bloom.TeamCollection
 					if (Directory.Exists(repoFolderPath))
 					{
 						CurrentCollection = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath);
+						CurrentCollectionEvenIfDisabled = CurrentCollection;
 						CurrentCollection.SocketServer = SocketServer;
 						// Later, we will sync everything else, but we want the current collection settings before
 						// we create the CollectionSettings object.
@@ -91,13 +139,17 @@ namespace Bloom.TeamCollection
 					}
 					else
 					{
-						NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom found team collection settings but could not find the team collection folder " + repoFolderPath, null, null, true);
+						// This will show the TC icon in error state, and if the dialog is shown it will have this one message.
+						_specialLogForMissingRepo = new TeamCollectionMessageLog(GetTcLogPathFromLcPath(_localCollectionFolder));
+						_specialLogForMissingRepo.WriteMessage(MessageAndMilestoneType.Error, "TeamCollection.MissingRepo",
+							"Team Collection functions will not work because Bloom could not find the team collection folder '{0}'",repoFolderPath, null);
 					}
 				}
 				catch (Exception ex)
 				{
 					NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom found team collection settings but could not process them", null, ex, true);
 					CurrentCollection = null;
+					CurrentCollectionEvenIfDisabled = null;
 				}
 			}
 		}
@@ -122,6 +174,7 @@ namespace Bloom.TeamCollection
 			var newTc = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath);
 			newTc.ConnectToTeamCollection(repoFolderPath);
 			CurrentCollection = newTc;
+			CurrentCollectionEvenIfDisabled = newTc;
 		}
 
 		public string PlannedRepoFolderPath(string repoFolderParentPath)
@@ -159,6 +212,46 @@ namespace Bloom.TeamCollection
 		public void RaiseBookStatusChanged(BookStatusChangeEventArgs eventInfo)
 		{
 			_bookStatusChangeEvent.Raise(eventInfo);
+		}
+
+		/// <summary>
+		/// Disable most TC functionality under various conditions. Put a warning in
+		/// the log.
+		/// </summary>
+		public void CheckDisablingTeamCollections(CollectionSettings settings)
+		{
+			if (CurrentCollection == null)
+				return; // already disabled, or not a TC
+			string msg = null;
+			string l10nId = null;
+			if (!settings.HaveEnterpriseFeatures)
+			{
+				l10nId = "TeamCollection.DisabledForEnterprise";
+				msg = "Most Team Collection functions are unavailable because Bloom Enterprise is not enabled.";
+			}
+
+			if (!IsRegistrationSufficient())
+			{
+				l10nId = "TeamCollection.DisabledForRegistration";
+				msg = "Most Team Collection functions are unavailable because you have not registered Bloom with at least an email address to identify who is making changes.";
+			}
+
+			if (msg != null)
+			{
+				CurrentCollection = null; // This neatly disables almost everything
+				CurrentCollectionEvenIfDisabled.MessageLog.WriteMessage(MessageAndMilestoneType.Error, l10nId, msg,
+					null, null);
+			}
+		}
+
+		/// <summary>
+		/// Returns true if registration is sufficient to use Team Collections; false otherwise
+		/// </summary>
+		public static bool IsRegistrationSufficient()
+		{
+			// We're normally checking SIL.Windows.Forms.Registration.Registration.Default.Email,
+			// but getting it via TCM.CurrentUser allows overriding for testing.
+			return !String.IsNullOrWhiteSpace(CurrentUser);
 		}
 	}
 }
