@@ -2,7 +2,7 @@
 // See https://storybook.js.org/docs/configurations/custom-webpack-config/
 
 const bloomCompilationCoreStuff = require("../webpack.core.js");
-const merge = require("webpack-merge");
+const { merge } = require("webpack-merge");
 
 // Here `config` is storybook's own webpack settings. We want to combine those
 // with what Bloom requires
