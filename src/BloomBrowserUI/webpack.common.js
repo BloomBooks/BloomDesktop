@@ -1,5 +1,5 @@
 var path = require("path");
-const merge = require("webpack-merge");
+const { merge } = require("webpack-merge");
 var node_modules = path.resolve(__dirname, "node_modules");
 var pathToOriginalJavascriptFilesInLib = path.resolve(__dirname, "lib");
 var pathToBookEditJS = path.resolve(__dirname, "bookEdit/js");
