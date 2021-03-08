@@ -880,7 +880,6 @@ namespace Bloom.TeamCollection
 		{
 			var bookFolderName = Path.GetFileNameWithoutExtension(bookName);
 			var bookFolderPath = Path.Combine(collectionFolder, bookFolderName);
-			Directory.CreateDirectory(bookFolderPath);
 			var statusFile = Path.Combine(bookFolderPath, "book.status");
 			return statusFile;
 		}
@@ -912,6 +911,12 @@ namespace Bloom.TeamCollection
 		internal static string MakeChecksum(string folderPath)
 		{
 			var sourceBookName = BookStorage.FindBookHtmlInFolder(folderPath);
+			if (string.IsNullOrEmpty(sourceBookName))
+			{
+				// we sometimes may have an empty folder or one that, as yet, isn't a bloom book at all.
+				// An empty checksum will cause it not to match.
+				return "";
+			}
 			var sourceBookPath = Path.Combine(folderPath, sourceBookName);
 			return Book.Book.MakeVersionCode(RobustFile.ReadAllText(sourceBookPath), sourceBookPath);
 		}
