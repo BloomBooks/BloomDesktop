@@ -869,6 +869,8 @@ namespace Bloom.Workspace
 		private const int kCurrentAutoUpdateVersion = 1;
 		private void ShowAutoUpdateDialogIfNeeded()
 		{
+			if (Platform.IsLinux)
+				return;
 			try
 			{
 				// If Bloom is newly installed or we only had old versions before, this should be 0.
