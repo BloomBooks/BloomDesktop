@@ -5,6 +5,7 @@ import { useL10n } from "./l10nHooks";
 
 // wrap up the complex material-ui checkbox in something simple and make it handle tristate
 export const MuiCheckbox: React.FunctionComponent<{
+    className?: string;
     label: string;
     l10nKey: string;
     l10nComment?: string;
@@ -30,8 +31,10 @@ export const MuiCheckbox: React.FunctionComponent<{
 
     return (
         <FormControlLabel
+            className={props.className}
             control={
                 <Checkbox
+                    className={props.className}
                     disabled={props.disabled}
                     checked={!!props.checked}
                     indeterminate={props.checked == null}

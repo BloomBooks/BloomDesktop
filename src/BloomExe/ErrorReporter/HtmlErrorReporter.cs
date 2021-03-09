@@ -424,7 +424,7 @@ namespace Bloom.ErrorReporter
 							dlg.ShowDialog();
 
 							// Take action if the user clicked a button other than Close
-							if (BrowserDialogApi.LastCloseSource == "alternate")
+							if (BrowserDialogApi.LastCloseSource == "closedByAlternateButton")
 							{
 								// OnShowDetails will be invoked if this method returns {resultIfAlternateButtonPressed}
 								// FYI, setting to null is OK. It should cause ErrorReport to reset to default handler.
@@ -432,7 +432,7 @@ namespace Bloom.ErrorReporter
 
 								returnResult = secondaryPressedResult ?? reportPressedResult;
 							}
-							else if (BrowserDialogApi.LastCloseSource == "report")
+							else if (BrowserDialogApi.LastCloseSource == "closedByReportButton")
 							{
 								ErrorReport.OnShowDetails = OnReportPressed;
 								returnResult = reportPressedResult;

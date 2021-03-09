@@ -339,6 +339,7 @@ export const ReportDialog: React.FunctionComponent<{
                                             </div>
                                             <div className="column2">
                                                 <MuiCheckbox
+                                                    className="includeBook"
                                                     label="Include Book '{0}'"
                                                     l10nKey="ReportProblemDialog.IncludeBookButton"
                                                     l10nParam0={bookName}

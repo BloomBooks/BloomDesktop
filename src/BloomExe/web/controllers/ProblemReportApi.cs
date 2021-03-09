@@ -443,8 +443,7 @@ namespace Bloom.web.controllers
 					using (var dlg = new BrowserDialog(url))
 					{
 						// The default height is not quite enough to show the contents without scrolling.
-						// (Note: This has enough room for the book title to take up 2 lines.)
-						dlg.Height += 45;
+						dlg.Height += 30;
 
 						// ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
 						BloomServer._theOneInstance.RegisterThreadBlocking();

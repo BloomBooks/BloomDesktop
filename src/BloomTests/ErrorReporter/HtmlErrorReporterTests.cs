@@ -195,7 +195,7 @@ namespace BloomTests.ErrorReporter
 			var mockFactory = new Mock<IBrowserDialogFactory>();
 			var mockBrowserDialog = new Mock<IBrowserDialog>();
 			mockBrowserDialog.Setup(x => x.ShowDialog()).Callback(delegate {
-				BrowserDialogApi.LastCloseSource = "alternate";
+				BrowserDialogApi.LastCloseSource = "closedByAlternateButton";
 			});
 			mockFactory.Setup(x => x.CreateBrowserDialog(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<Action>())).Returns(mockBrowserDialog.Object);
 
@@ -233,7 +233,7 @@ namespace BloomTests.ErrorReporter
 			var mockFactory = new Mock<IBrowserDialogFactory>();
 			var mockBrowserDialog = new Mock<IBrowserDialog>();
 			mockBrowserDialog.Setup(x => x.ShowDialog()).Callback(delegate {
-				BrowserDialogApi.LastCloseSource = "alternate";
+				BrowserDialogApi.LastCloseSource = "closedByAlternateButton";
 			});
 			mockFactory.Setup(x => x.CreateBrowserDialog(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<Action>())).Returns(mockBrowserDialog.Object);
 
@@ -265,7 +265,7 @@ namespace BloomTests.ErrorReporter
 			var mockFactory = new Mock<IBrowserDialogFactory>();
 			var mockBrowserDialog = new Mock<IBrowserDialog>();
 			mockBrowserDialog.Setup(x => x.ShowDialog()).Callback(delegate {
-				BrowserDialogApi.LastCloseSource = "report";
+				BrowserDialogApi.LastCloseSource = "closedByReportButton";
 			});
 			mockFactory.Setup(x => x.CreateBrowserDialog(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<Action>())).Returns(mockBrowserDialog.Object);
 
