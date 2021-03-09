@@ -114,7 +114,8 @@ namespace Bloom.TeamCollection
 					where = _tcManager.CurrentCollection?.WhatComputerHasBookLocked(BookFolderName),
 					currentUser = CurrentUser,
 					currentMachine = TeamCollectionManager.CurrentMachine,
-					problem= problem
+					problem,
+					changedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(BookFolderName)
 				}));
 		}
 
