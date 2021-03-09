@@ -776,7 +776,7 @@ namespace Bloom.TeamCollection
 			return IsCheckedOutHereBy(GetLocalStatus(bookName)) && !IsCheckedOutHereBy(GetStatus(bookName));
 		}
 
-		private bool HasBeenChangedRemotely(string bookName)
+		public bool HasBeenChangedRemotely(string bookName)
 		{
 			return GetLocalStatus(bookName).checksum != GetStatus(bookName).checksum;
 		}

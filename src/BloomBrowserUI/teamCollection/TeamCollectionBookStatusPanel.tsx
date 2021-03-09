@@ -10,7 +10,7 @@ import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import BloomButton from "../react_components/bloomButton";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import WebSocketManager, {
-    useWebSocketListenerForOneMessage
+    useWebSocketListenerForOneEvent
 } from "../utils/WebSocketManager";
 
 // The panel that appears at the bottom of the preview in the collection tab in a Team Collection.
@@ -23,7 +23,8 @@ export type LockState =
     | "locked"
     | "lockedByMe"
     | "lockedByMeElsewhere"
-    | "needsReload";
+    | "needsReload"
+    | "problem";
 
 export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [state, setState] = useState<LockState>("initializing");
@@ -38,6 +39,8 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
             data => {
                 const bookStatus = data.data;
                 if (bookStatus.problem) {
+                    setState("problem");
+                } else if (bookStatus.changedRemotely) {
                     setState("needsReload");
                 } else if (bookStatus.who) {
                     // locked by someone
@@ -72,7 +75,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         );
     }, [reload]);
 
-    useWebSocketListenerForOneMessage("bookStatus", "reload", () =>
+    useWebSocketListenerForOneEvent("bookStatus", "reload", () =>
         setReload(oldValue => oldValue + 1)
     );
 
@@ -172,9 +175,19 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         true
     );
 
+    // Also used for problem.
     const mainTitleNeedsReload = useL10n(
         "The Team Collection folder received a changed version of the book you were editing.",
-        "TeamCollection.ConflictingChange",
+        "TeamCollection.NeedsReload",
+        "",
+        undefined,
+        undefined,
+        true
+    );
+
+    const subTitleHasProblem = useL10n(
+        "The Checkin/Checkout system should normally prevent this, but it has happened. Bloom cannot automatically join the work that came in with the work you were doing; you will need Bloom team support for that. Bloom will move your version of the book to the Team Collection Lost & Found when you Reload.",
+        "TeamCollection.ConflictingChangeDetails",
         "",
         undefined,
         undefined,
@@ -182,8 +195,8 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     );
 
     const subTitleNeedsReload = useL10n(
-        "The Checkin/Checkout system should normally prevent this, but it has happened. Bloom cannot automatically join the work that came in with the work you were doing; you will need Bloom team support for that. Bloom will move your version of the book to the Team Collection Lost & Found when you Reload.",
-        "TeamCollection.ConflictingChangeDetails",
+        "You need to reload the collection to get the latest version before you can check out and edit",
+        "TeamCollection.YouShouldReload",
         "",
         undefined,
         undefined,
@@ -262,6 +275,23 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         subTitle={subTitleLocked}
                         icon={avatar}
                         children={getLockedInfoChild(lockedInfo)}
+                    />
+                );
+            case "problem":
+                return (
+                    <StatusPanelCommon
+                        lockState={state}
+                        title={mainTitleNeedsReload}
+                        subTitle={subTitleHasProblem}
+                        icon={avatar}
+                        children={getLockedInfoChild("")}
+                        button={getBloomButton(
+                            "Reload",
+                            "TeamCollection.Reload",
+                            "reload-button",
+                            undefined,
+                            () => BloomApi.post("common/reloadCollection")
+                        )}
                     />
                 );
             case "needsReload":
