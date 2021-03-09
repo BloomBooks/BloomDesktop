@@ -193,8 +193,16 @@ namespace Bloom.CollectionTab
 
 		public void DoubleClickedBook()
 		{
-			if(_bookSelection.CurrentSelection.IsEditable && ! _bookSelection.CurrentSelection.HasFatalError)
+			if (_bookSelection.CurrentSelection.IsEditable && !_bookSelection.CurrentSelection.HasFatalError)
+			{
+				// If we need the book to be checked out for editing, make sure it is. If necessary
+				// and possible, check it out.
+				if (_tcManager.CurrentCollection != null &&
+				    !_tcManager.CurrentCollection.AttemptLock(
+					    Path.GetFileName(_bookSelection.CurrentSelection.FolderPath)))
+					return;
 				_editBookCommand.Raise(_bookSelection.CurrentSelection);
+			}
 		}
 
 		public void OpenFolderOnDisk()
