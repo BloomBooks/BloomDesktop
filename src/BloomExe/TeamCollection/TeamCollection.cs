@@ -1070,7 +1070,7 @@ namespace Bloom.TeamCollection
 							warnings = true;
 							ReportProgressAndLog(progress, "ConflictingCheckout",
 								"Found different versions of '{0}' in both collections. The team version has been copied to your local collection, and the old local version to Lost and Found"
-								, bookName, null, MessageKind.Warning);
+								, bookName, null, MessageKind.Error);
 							// Make the local folder match the repo (this is where 'they win')
 							CopyBookFromRepoToLocal(bookName);
 							continue;
@@ -1151,7 +1151,7 @@ namespace Bloom.TeamCollection
 							warnings= true;
 							ReportProgressAndLog(progress, "ConflictingCheckout",
 								"The book '{0}', which you have checked out and edited, is checked out to someone else in the team collection. Your changes have been overwritten, but are saved to Lost-and-found.",
-								bookName, null, MessageKind.Warning);
+								bookName, null, MessageKind.Error);
 							// Make the local folder match the repo (this is where 'they win')
 							CopyBookFromRepoToLocal(bookName);
 							continue;
@@ -1186,7 +1186,7 @@ namespace Bloom.TeamCollection
 						warnings = true;
 						ReportProgressAndLog(progress, "ConflictingEdit",
 						"The book '{0}', which you have checked out and edited, was modified in the team collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.",
-						bookName, null, MessageKind.Warning);
+						bookName, null, MessageKind.Error);
 						continue;
 				}
 				}
