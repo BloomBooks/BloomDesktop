@@ -7,7 +7,6 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
-using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.MiscUI;
 using Bloom.WebLibraryIntegration;
@@ -27,7 +26,6 @@ namespace Bloom.web.controllers
 	/// </summary>
 	public class CommonApi
 	{
-		private readonly CollectionSettings _settings;
 		private readonly BookSelection _bookSelection;
 		private BloomParseClient _parseClient;
 		public static bool AuthorMode { get; set; }
@@ -38,9 +36,8 @@ namespace Bloom.web.controllers
 		public static WorkspaceView WorkspaceView { get; set; }
 
 		// Called by autofac, which creates the one instance and registers it with the server.
-		public CommonApi(CollectionSettings settings, BookSelection bookSelection, BloomParseClient parseClient)
+		public CommonApi(BookSelection bookSelection, BloomParseClient parseClient)
 		{
-			_settings = settings;
 			_bookSelection = bookSelection;
 			_parseClient = parseClient;
 		}
@@ -52,7 +49,6 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("bubbleLanguages", HandleBubbleLanguages, false); // Move to EditingViewApi
 			apiHandler.RegisterEndpointHandler("authorMode", HandleAuthorMode, false); // Move to EditingViewApi
 			apiHandler.RegisterEndpointHandler("topics", HandleTopics, false); // Move to EditingViewApi
-			apiHandler.RegisterEndpointHandler("common/enterpriseFeaturesEnabled", HandleEnterpriseFeaturesEnabled, false); // App? (and eventually Collection?)
 			apiHandler.RegisterEndpointHandler("common/error", HandleJavascriptError, false); // Common
 			apiHandler.RegisterEndpointHandler("common/preliminaryError", HandlePreliminaryJavascriptError, false); // Common
 			apiHandler.RegisterEndpointHandler("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true); // Move to EditingViewApi
@@ -332,14 +328,6 @@ namespace Bloom.web.controllers
 			var data = string.Format("{{\"NoTopic\": \"{0}\", {1} }}", localizedNoTopic, pairs);
 
 			request.ReplyWithJson(data);
-		}
-
-		public void HandleEnterpriseFeaturesEnabled(ApiRequest request)
-		{
-			lock (request)
-			{
-				request.ReplyWithText(_settings.HaveEnterpriseFeatures ? "true" : "false");
-			}
 		}
 
 		public void HandleJavascriptError(ApiRequest request)

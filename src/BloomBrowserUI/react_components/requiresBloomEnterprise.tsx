@@ -14,7 +14,7 @@ export interface IThemeProps {
 // This element displays a notice saying that a certain feature requires a Bloom Enterprise subscription,
 // if a bloom enterprise project has not been selected; if one has, it displays nothing at all.
 // Typically, it is displayed along with a div that shows all the controls requiring the subscription,
-// which is visible when this is not, that is, when enterpriseFeaturesEnabled(), a function in this
+// which is visible when this is not, that is, when enterpriseEnabled(), a function in this
 // module, returns true. Currently this is detected by looking for the class enterprise-on being set
 // on the content page body.
 // Often it will be convenient to use this by embedding the controls to be hidden in a
@@ -25,7 +25,7 @@ export const RequiresBloomEnterprise: React.FunctionComponent<IThemeProps> = ({
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
-        BloomApi.get("common/enterpriseFeaturesEnabled", response => {
+        BloomApi.get("settings/enterpriseEnabled", response => {
             setVisible(!response.data);
         });
     }, []);
@@ -76,7 +76,7 @@ export const RequiresBloomEnterpriseWrapper: React.FunctionComponent = props => 
     const [enterpriseAvailable, setEnterpriseAvailable] = useState(true);
 
     useEffect(() => {
-        BloomApi.get("common/enterpriseFeaturesEnabled", response => {
+        BloomApi.get("settings/enterpriseEnabled", response => {
             setEnterpriseAvailable(response.data);
         });
     }, []);
@@ -106,7 +106,7 @@ export function checkIfEnterpriseAvailable(): EnterpriseEnabledPromise {
 // The function will be called with argument true if enterprise features are enabled, false otherwise.
 class EnterpriseEnabledPromise {
     public then(resolve: (enterpriseAvailable: boolean) => void) {
-        BloomApi.get("common/enterpriseFeaturesEnabled", response => {
+        BloomApi.get("settings/enterpriseEnabled", response => {
             resolve(response.data);
         });
     }

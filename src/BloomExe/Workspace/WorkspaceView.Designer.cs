@@ -433,7 +433,7 @@
 			// 
 			// _applicationUpdateCheckTimer
 			// 
-			this._applicationUpdateCheckTimer.Enabled = true;
+			this._applicationUpdateCheckTimer.Enabled = false;
 			this._applicationUpdateCheckTimer.Interval = 60000;
 			this._applicationUpdateCheckTimer.Tick += new System.EventHandler(this._applicationUpdateCheckTimer_Tick);
 			// 

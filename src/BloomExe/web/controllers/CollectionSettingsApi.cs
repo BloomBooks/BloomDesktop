@@ -3,21 +3,14 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Windows.Forms;
 using Bloom.Api;
-using Bloom.Book;
-using Bloom.Publish.AccessibilityChecker;
-using Bloom.Publish.Epub;
-using Bloom.Workspace;
-using SIL.CommandLineProcessing;
-using SIL.PlatformUtilities;
-using SIL.Progress;
+using Bloom.Collection;
 
 namespace Bloom.web.controllers
 {
 	/// <summary>
-	/// Used by the settings dialog (currently just the EnterpriseSettings tab)
+	/// Used by the settings dialog (currently just the EnterpriseSettings tab) and various places that need to know
+	/// if Enterprise is enabled or not.
 	/// </summary>
 	public class CollectionSettingsApi
 	{
@@ -45,9 +38,36 @@ namespace Bloom.web.controllers
 		// (because the subscription code is missing or incomplete rather than wrong or expired or unknown),
 		// this keeps track of the branding the collection file specified but which was not validated by a current code.
 		public static string LegacyBrandingName { get; set; }
-		
+
+		private readonly CollectionSettings _collectionSettings;
+
+		public CollectionSettingsApi(CollectionSettings collectionSettings)
+		{
+			_collectionSettings = collectionSettings;
+		}
+
+		private bool IsEnterpriseEnabled
+		{
+			get { return _collectionSettings.HaveEnterpriseFeatures; }
+		}
+
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
-		{	
+		{
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "enterpriseEnabled", request =>
+			{
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					lock (request)
+					{
+						request.ReplyWithBoolean(IsEnterpriseEnabled);
+					}
+				}
+				else // post
+				{
+					System.Diagnostics.Debug.Fail("We shouldn't ever be using the 'post' version.");
+					request.PostSucceeded();
+				}
+			}, true);
 			apiHandler.RegisterEnumEndpointHandler(kApiUrlPart + "enterpriseStatus",
 				request => _enterpriseStatus,
 				(request, status) =>
@@ -132,11 +152,9 @@ namespace Bloom.web.controllers
 			var summaryFile = BloomFileLocator.GetOptionalBrandingFile(baseKey, "summary.htm");
 			if (summaryFile == null)
 				return "";
-			else
-			{
-				var html = File.ReadAllText(summaryFile, Encoding.UTF8);
-				return html.Replace("{flavor}", flavor);
-			}
+
+			var html = File.ReadAllText(summaryFile, Encoding.UTF8);
+			return html.Replace("{flavor}", flavor);
 		}
 
 		public static void PrepareForFixEnterpriseBranding(string invalidBranding, string subscriptionCode)

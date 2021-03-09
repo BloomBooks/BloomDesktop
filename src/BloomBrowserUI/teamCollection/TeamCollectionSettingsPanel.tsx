@@ -1,5 +1,4 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import { BloomApi } from "../utils/bloomApi";
 import { Div } from "../react_components/l10nComponents";
 import {

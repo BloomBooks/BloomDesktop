@@ -203,7 +203,7 @@ export class ToolBox {
 
     private getShowAdvancedFeatures() {
         // Using axios directly because api calls for returning the promise.
-        return axios.get("/bloom/api/featurecontrol/showAdvancedFeatures");
+        return axios.get("/bloom/api/app/showAdvancedFeatures");
     }
     private getEnabledTools() {
         // Using axios directly because api calls for returning the promise.

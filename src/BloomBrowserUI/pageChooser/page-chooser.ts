@@ -60,7 +60,7 @@ export class PageChooser {
         this._selectedGridItem = undefined;
         this._indexOfPageToSelect = 0;
         // I was hoping to confine this to 'selectedTemplatePageControls.tsx', but we need it for the double-click handler.
-        BloomApi.get("common/enterpriseFeaturesEnabled", enterpriseResult => {
+        BloomApi.get("settings/enterpriseEnabled", enterpriseResult => {
             this._enterpriseAvailable = enterpriseResult.data;
         });
     }

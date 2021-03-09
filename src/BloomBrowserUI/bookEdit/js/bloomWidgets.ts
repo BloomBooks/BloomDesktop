@@ -13,7 +13,7 @@ import { BloomApi } from "../../utils/bloomApi";
 
 // Initialization function, sets up all the editing functions we support for these elements.
 export function SetupWidgetEditing(container: HTMLElement): void {
-    BloomApi.get("featurecontrol/enterpriseEnabled", result => {
+    BloomApi.get("settings/enterpriseEnabled", result => {
         const isEnterpriseEnabled: boolean = result.data;
         if (isEnterpriseEnabled) {
             const widgets = Array.from(
