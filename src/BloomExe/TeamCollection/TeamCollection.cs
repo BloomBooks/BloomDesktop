@@ -821,6 +821,15 @@ namespace Bloom.TeamCollection
 						bookBaseName, null);
 
 				}
+				else if (!Directory.Exists(Path.Combine(_localCollectionFolder, bookBaseName)))
+				{
+					// No local version at all. Possibly it was just now created, and we will get a
+					// new book notification any moment, or already have one. Possibly there have
+					// been additional checkins between creation and when this user reloads.
+					// In any case, we don't need any new messages or status change beyond
+					// the NewBook message that should be generated at some point.
+					return;
+				}
 				else if (HasBeenChangedRemotely(bookBaseName))
 				{
 					_tcLog.WriteMessage(MessageAndMilestoneType.NewStuff, "TeamCollection.BookModifiedRemotely",

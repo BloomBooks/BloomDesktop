@@ -68,6 +68,35 @@ namespace BloomTests.TeamCollection
 			Assert.That(_tcLog.Messages[prevMessages].MessageType, Is.EqualTo(MessageAndMilestoneType.NewStuff));
 		}
 
+		[Test]
+		public void HandleModifiedFile_NoLocalBook_DoesNothing()
+		{
+			// Setup //
+			// Simulate that a book appeared remotely. We should eventually get a created notice.
+			// Sometimes, for reasons we don't fully understand, we get a modified notice
+			// first. Or the book might be modified again before we fetch it. In any case,
+			// we don't need modify messages until we fetch a local copy.
+			const string bookFolderName = "My book";
+			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
+			Directory.CreateDirectory(bookFolderPath);
+			var bookPath = Path.Combine(bookFolderPath, "My book.htm");
+			RobustFile.WriteAllText(bookPath, "This is just a dummy");
+			var status = _collection.PutBook(bookFolderPath);
+			// pretending we had nothing local before the change.
+			RobustIO.DeleteDirectory(bookFolderPath, true);
+
+			// Anticipate verification
+			var prevMessages = _tcLog.Messages.Count;
+			_mockTcManager.Setup(m => m.RaiseBookStatusChanged(It.IsAny<BookStatusChangeEventArgs>()))
+				.Throws(new ArgumentException("RaiseBookStatus should not be called"));
+
+			// System Under Test //
+			_collection.HandleModifiedFile(new BookRepoChangeEventArgs() { BookFileName = $"{bookFolderName}.bloom" });
+
+			// Verification
+			Assert.That(_tcLog.Messages.Count, Is.EqualTo(prevMessages));
+		}
+
 		// TODO: Add a test for GivenModifiedToCheckedOutByOther. But, getting it set up has been proving more thorny than worth right now
 		[Test]
 		public void HandleModifiedFile_NoConflictBookNotChangedCheckedOutRemoved_RaisesCheckedOutByNoneButNoNewStuffMessage()
