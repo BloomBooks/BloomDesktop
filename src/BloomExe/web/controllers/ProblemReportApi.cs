@@ -18,6 +18,7 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
+using SIL.Windows.Forms.Reporting;
 
 namespace Bloom.web.controllers
 {
@@ -81,6 +82,8 @@ namespace Bloom.web.controllers
 
 		private static BookSelection _bookSelection;
 
+		internal static string NotifyMessage { get; set; }
+
 		private BloomZipFile _bookZipFile;
 		private TempFile _bookZipFileTemp;
 		protected string YouTrackProjectKey = "BL";
@@ -111,6 +114,14 @@ namespace Bloom.web.controllers
 			// from Javascript. However, it also must not require the lock, because if it holds it,
 			// no calls that need it can run (such as one put forth by the Cancel button).
 			apiHandler.RegisterEndpointHandler("problemReport/showDialog", HandleShowDialog, true, false);
+
+			apiHandler.RegisterEndpointHandlerUsedByOthers("problemReport/notify/message",
+				(ApiRequest request) =>
+				{
+					request.ReplyWithText(NotifyMessage ?? "");
+				}, false);
+
+
 			// For the paranoid - We could also have showProblemReport block these handlers while _reportInfo is being populated.
 			// I think it's unnecessary since the problem report dialog's URL isn't even set until after the _reportInfo is populated,
 			// and we assume that nothing sends problemReport API requests except the problemReportDialog that this class loads.
@@ -359,13 +370,17 @@ namespace Bloom.web.controllers
 		// Extra locking object because 1) you can't lock primitives directly, and 2) you shouldn't use the object whose value you'll be reading as the lock object (reads to the object are not blocked)
 		static object _showingProblemReportLock = new object();	
 
+		// ENHANCE: Reduce duplication in HtmlErrorReporter and ProblemReportApi code. Some of the ProblemReportApi code can move to HtmlErrorReporter code.
+
+		// ENHANCE: I think levelOfProblem would benefit from being required and being an enum.
+
 		/// <summary>
 		/// Shows a problem dialog.
 		/// </summary>
 		/// <param name="controlForScreenshotting"></param>
 		/// <param name="exception"></param>
 		/// <param name="detailedMessage"></param>
-		/// <param name="levelOfProblem"></param>
+		/// <param name="levelOfProblem">"user", "nonfatal", or "fatal"</param>
 		public static void ShowProblemDialog(Control controlForScreenshotting, Exception exception,
 			string detailedMessage = "", string levelOfProblem = "user", string shortUserLevelMessage = "", bool isShortMessagePreEncoded = false)
 		{
@@ -420,7 +435,7 @@ namespace Bloom.web.controllers
 				// Uses a browser dialog to show the problem report
 				try
 				{
-					var query = "?" + levelOfProblem;
+					var query = $"?level={levelOfProblem}";
 					var problemDialogRootPath = BloomFileLocator.GetBrowserFile(false, "problemDialog", "loader.html");
 					var url = problemDialogRootPath.ToLocalhost() + query;
 
@@ -428,7 +443,8 @@ namespace Bloom.web.controllers
 					using (var dlg = new BrowserDialog(url))
 					{
 						// The default height is not quite enough to show the contents without scrolling.
-						dlg.Height += 30;
+						// (Note: This has enough room for the book title to take up 2 lines.)
+						dlg.Height += 45;
 
 						// ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
 						BloomServer._theOneInstance.RegisterThreadBlocking();
@@ -453,7 +469,11 @@ namespace Bloom.web.controllers
 					// old WinForms fatal exception report directly.
 					// In any case, both of the errors will be logged by now.
 					var message = "Bloom's error reporting failed: " + problemReportException.Message;
-					ErrorReport.ReportFatalException(new ApplicationException(message, _reportInfo.Exception ?? problemReportException));
+
+					// Fallback to Winforms in case of trouble getting the browser up					
+					var fallbackReporter = new WinFormsErrorReporter();
+					// ENHANCE?: If reporting a non-fatal problem failed, why is the program required to abort? It might be able to handle other tasks successfully
+					fallbackReporter.ReportFatalException(new ApplicationException(message, exception ?? problemReportException));
 				}
 				finally
 				{
@@ -555,7 +575,7 @@ namespace Bloom.web.controllers
 			}
 		}
 
-		private static void LogProblem(Exception exception, string detailedMessage, string levelOfProblem)
+		internal static void LogProblem(Exception exception, string detailedMessage, string levelOfProblem)
 		{
 			var sb = new StringBuilder();
 			sb.AppendLine("*** ProblemReportApi is about to report:");

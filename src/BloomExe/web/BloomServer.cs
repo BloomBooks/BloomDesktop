@@ -33,13 +33,23 @@ using ThreadState = System.Threading.ThreadState;
 
 namespace Bloom.Api
 {
+	// This interface allows the unit tests to mock the BloomServer
+	// when it doesn't want to spin up a real one.
+	public interface IBloomServer
+	{
+		void RegisterThreadBlocking();
+		void RegisterThreadUnblocked();
+
+		// ENHANCE: Add other methods as needed
+	}
+
 	/// <summary>
 	/// A local http server that can serve (low-res) images plus other files.
 	/// </summary>
 	/// <remarks>geckofx makes concurrent requests of URLs which this class handles. This means
 	/// that the methods of this class get called on different threads, so it has to be
 	/// thread-safe.</remarks>
-	public class BloomServer : IDisposable
+	public class BloomServer : IBloomServer, IDisposable
 	{
 		public static int portForHttp;
 
@@ -393,7 +403,7 @@ namespace Bloom.Api
 
 			if (localPath.Contains("writingSystemDisplayForUI.css"))
 			{
-				info.ContentType = "text/css";
+				info.ResponseContentType = "text/css";
 				info.WriteCompleteOutput(CurrentCollectionSettings.GetWritingSystemDisplayForUICss());
 				return true;
 			}
@@ -406,7 +416,7 @@ namespace Bloom.Api
 			}
 			if (gotSimulatedPage)
 			{
-				info.ContentType = "text/html";
+				info.ResponseContentType = "text/html";
 				info.WriteCompleteOutput(content ?? "");
 				return true;
 			}
@@ -555,15 +565,15 @@ namespace Bloom.Api
 			switch (localPath)
 			{
 				case "currentPageContent":
-					info.ContentType = "text/html";
+					info.ResponseContentType = "text/html";
 					info.WriteCompleteOutput(CurrentPageContent ?? "");
 					return true;
 				case "toolboxContent":
-					info.ContentType = "text/html";
+					info.ResponseContentType = "text/html";
 					info.WriteCompleteOutput(ToolboxContent ?? "");
 					return true;
 				case "availableFontNames":
-					info.ContentType = "application/json";
+					info.ResponseContentType = "application/json";
 					var list = new List<string>(Browser.NamesOfFontsThatBrowserCanRender());
 					list.Sort();
 					info.WriteCompleteOutput(JsonConvert.SerializeObject(new{fonts = list}));
@@ -718,7 +728,7 @@ namespace Bloom.Api
 				}
 				return false; // from here we head off to BloomServer.MakeReply() which now uses the same ShouldReportFailedRequest() method.
 			}
-			info.ContentType = GetContentType(Path.GetExtension(modPath));
+			info.ResponseContentType = GetContentType(Path.GetExtension(modPath));
 			info.ReplyWithFileContent(path);
 			return true;
 		}
@@ -799,7 +809,7 @@ namespace Bloom.Api
 				var cssFile = Path.GetFileName(localPath);
 				if ((cssFile == "defaultLangStyles.css") || (cssFile == "customCollectionStyles.css"))
 				{
-					info.ContentType = "text/css";
+					info.ResponseContentType = "text/css";
 					info.ReplyWithFileContent(localPath);
 					return true;
 				}
@@ -864,7 +874,7 @@ namespace Bloom.Api
 			// return false if the file was not found
 			if (String.IsNullOrEmpty(path)) return false;
 
-			info.ContentType = "text/css";
+			info.ResponseContentType = "text/css";
 			info.ReplyWithFileContent(path);
 			return true;
 		}
@@ -1372,7 +1382,7 @@ namespace Bloom.Api
 		/// is called by a BloomServer worker thread. The caller need not guarantee that
 		/// the current thread is a server thread. This method will check for that.
 		/// </summary>
-		internal void RegisterThreadBlocking()
+		public void RegisterThreadBlocking()
 		{
 			// Check if the current thread looks like a Server Worker
 			// If not, we can just ignore this request.
@@ -1388,7 +1398,7 @@ namespace Bloom.Api
 		/// Registers that the current thread is no longer blocked.
 		/// Should be called as a pair with RegisterThreadBlocking(), after any blocking work returns.
 		/// </summary>
-		internal void RegisterThreadUnblocked()
+		public void RegisterThreadUnblocked()
 		{
 			// Check if the current thread looks like a Server Worker
 			// If not, we can just ignore this request.

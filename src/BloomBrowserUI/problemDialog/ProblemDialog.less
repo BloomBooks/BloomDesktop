@@ -4,13 +4,15 @@
     .dialog-title {
         flex-direction: row;
         display: flex;
-        justify-content: space-between; // right-justifies close X
+        justify-content: space-between; // right-justifies close X (If close X in the JSX, but we moved it to Winforms)
         .close-in-title {
             padding-top: 4px;
         }
     }
     .report-heading {
         font-style: italic;
+        max-height: 60px;
+        overflow-y: auto; // Adds a scrollbar if there is too much content. However, it's better if we just keep the shortMessage short.
     }
     .content {
         #please_help_us {

@@ -2,13 +2,25 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
-using Bloom.Api;
 using Bloom.web;
 using SIL.Reporting;
 
 namespace Bloom.MiscUI
 {
-	public partial class BrowserDialog : Form
+	// This interface allows the unit tests to mock a BrowserDialog
+	// when it's undesirable to spin up a real one.
+	public interface IBrowserDialog : IDisposable
+	{
+		int Width { get; set; }
+		int Height { get; set; }
+
+		DialogResult ShowDialog();
+
+		// ENHANCE: Add other methods as needed
+	}
+
+	
+	public partial class BrowserDialog : Form, IBrowserDialog
 	{
 		private Browser _browser;
 		private Boolean _hidden;
@@ -91,6 +103,7 @@ namespace Bloom.MiscUI
 		/// In the normal case where the dialog is shown, it is up to the caller to dispose of it when it is closed.
 		/// When hidden, it gets disposed in the CloseDialog code (since the caller would typically have
 		/// no way to know when whatever we wanted to happen in the browser is finished).
+		/// The "whenClosed" action is only invoked if "hidden" is true.
 		/// </summary>
 		public BrowserDialog(string url, bool hidden = false, Action whenClosed = null)
 		{

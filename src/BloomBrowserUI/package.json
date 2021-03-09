@@ -79,6 +79,7 @@
         "firebase": "^8.2.2",
         "firebaseui": "^4.6.1",
         "global": "^4.3.2",
+        "html-entities": "^2.1.0",
         "jquery": "^1.12.4",
         "jquery.hotkeys": "^0.1.0",
         "markdown-it": "^8.4.2",
