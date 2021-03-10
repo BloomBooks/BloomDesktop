@@ -54,16 +54,6 @@ export interface IPage {
     content: string;
 }
 
-const handleGridItemClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    e.stopPropagation();
-    e.preventDefault();
-    if (e.currentTarget) {
-        const pageId = (e.currentTarget.parentElement!.parentElement!
-            .parentElement as HTMLElement)!.getAttribute("id");
-        BloomApi.postJson("pageList/pageClicked", { pageId }, () => {});
-    }
-};
-
 // This map goes from page ID to a callback that we get from the page thumbnail
 // which should be called when the main Bloom program informs us that
 // the thumbnail needs to be updated.
@@ -177,11 +167,58 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
         });
     }, [reloadValue]);
 
+    // Ensure that the thumbnail of the selected page is scrolled into view when a book
+    // is opened for editing.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8701.
+    useEffect(() => {
+        if (selectedPageId) {
+            const pageElement = window.document.getElementById(selectedPageId);
+            // nearest causes the minimum possible scroll to make it visible,
+            // importantly including not scrolling at all if it's already visible.
+            // if (pageElement)
+            //     pageElement.scrollIntoView({
+            //         block: "nearest"
+            //     });
+        }
+        // Make LazyLoad component re-check for elements in viewport
+        // to make visible. (See this article that says forceCheck() should be in a 'useEffect':
+        // https://stackoverflow.com/questions/61191496/why-is-my-react-lazyload-component-not-working)
+        // This actually runs each time a page is deleted.
+        //forceCheck();
+    }, [realPageList]);
+
+    // this is embedded so that we have access to realPageList
+    const handleGridItemClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        // for manual testing
+        if (e.getModifierState("Control")) {
+            ContinueAutomatedPageClicking(realPageList);
+        } else {
+            if (e.currentTarget) {
+                const pageId = (e.currentTarget.parentElement!.parentElement!
+                    .parentElement as HTMLElement)!.getAttribute("id");
+
+                BloomApi.postJson(
+                    "pageList/pageClicked",
+                    {
+                        pageId
+                    },
+                    () => {}
+                );
+            }
+        }
+    };
+
     // We insert a dummy invisible page to make the outside cover a 'right' page
     // and all the others correctly paired. (Probably should remove if we ever fully
     // support single-column.)
     const pageList: IPage[] = [
-        { key: "placeholder", caption: "", content: "" },
+        {
+            key: "placeholder",
+            caption: "",
+            content: ""
+        },
         ...realPageList
     ];
     const pages = useMemo(() => {
@@ -241,13 +278,20 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
         });
         return pages1;
     }, [pageList]);
+
     // Set up some objects and functions we need as params for our main element.
     // Some of them come in sets "lg" and "sm". Currently the "lg" (two-column)
     // version is always used; the other would be for single column.
 
     // not currently used.
     const singleColLayout = pageList.map((page, index) => {
-        return { i: page.key, x: 0, y: index, w: 1, h: 1 };
+        return {
+            i: page.key,
+            x: 0,
+            y: index,
+            w: 1,
+            h: 1
+        };
     });
     const twoColLayout = pageList.map((page, index) => {
         const left = !(index % 2);
@@ -270,7 +314,10 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
             draggable // todo: not working.
         };
     });
-    const layouts = { lg: twoColLayout, sm: singleColLayout };
+    const layouts = {
+        lg: twoColLayout,
+        sm: singleColLayout
+    };
 
     // Useful if we get responsive...figures out whether the responsive grid has
     // decided to be single-column or double-column.
@@ -287,10 +334,16 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
             // looks strange if there's any extra white space, with the thumbnails staggered
             // left and right. So for now we've fixed the width of the thumbnail pane, making
             // it big enough for two full columns always.
-            breakpoints={{ lg: 90, sm: 0 }}
+            breakpoints={{
+                lg: 90,
+                sm: 0
+            }}
             rowHeight={rowHeight}
             compactType="wrap"
-            cols={{ lg: 2, sm: 1 }}
+            cols={{
+                lg: 2,
+                sm: 1
+            }}
             onLayoutChange={onLayoutChange}
             onDragStop={onDragStop}
         >
@@ -345,5 +398,20 @@ function onDragStop(
         "pageList/pageMoved",
         { movedPageId, newIndex },
         () => {}
+    );
+}
+
+function ContinueAutomatedPageClicking(pagesRemaining: IPage[]) {
+    BloomApi.postJson(
+        "pageList/pageClicked",
+        { pageId: pagesRemaining[0].key },
+        () => {
+            const remaining = pagesRemaining.slice(1);
+            if (remaining.length > 0)
+                window.setTimeout(() => {
+                    ContinueAutomatedPageClicking(remaining);
+                }, 3 * 1000);
+            else window.alert("Done with automated page clicking");
+        }
     );
 }

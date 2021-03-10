@@ -13,6 +13,7 @@ using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.ToPalaso;
+using Bloom.Utils;
 using Bloom.web;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
@@ -913,20 +914,24 @@ namespace Bloom.CollectionTab
 		{
 			try
 			{
-				_bookSelection.SelectBook(_model.GetBookFromBookInfo(bookInfo, true));
+				using (PerformanceMeasurement.Global.Measure("select book", bookInfo.QuickTitleUserDisplay))
+				{
+					_bookSelection.SelectBook(_model.GetBookFromBookInfo(bookInfo, true));
 
-				_bookContextMenu.Enabled = true;
-				//Debug.WriteLine("before selecting " + SelectedBook.Title);
-				_model.SelectBook(SelectedBook);
-				//Debug.WriteLine("after selecting " + SelectedBook.Title);
-				//didn't help: _listView.Focus();//hack we were losing clicks
-				SelectedBook.ContentsChanged -= new EventHandler(OnContentsOfSelectedBookChanged); //in case we're already subscribed
-				SelectedBook.ContentsChanged += new EventHandler(OnContentsOfSelectedBookChanged);
+					_bookContextMenu.Enabled = true;
+					//Debug.WriteLine("before selecting " + SelectedBook.Title);
+					_model.SelectBook(SelectedBook);
+					//Debug.WriteLine("after selecting " + SelectedBook.Title);
+					//didn't help: _listView.Focus();//hack we were losing clicks
+					SelectedBook.ContentsChanged -=
+						new EventHandler(OnContentsOfSelectedBookChanged); //in case we're already subscribed
+					SelectedBook.ContentsChanged += new EventHandler(OnContentsOfSelectedBookChanged);
 
-				deleteMenuItem.Enabled = _model.CanDeleteSelection;
-				_updateThumbnailMenu.Visible = _model.CanUpdateSelection;
-				exportToWordOrLibreOfficeToolStripMenuItem.Visible = _model.CanExportSelection;
-				_updateFrontMatterToolStripMenu.Visible = _model.CanUpdateSelection;
+					deleteMenuItem.Enabled = _model.CanDeleteSelection;
+					_updateThumbnailMenu.Visible = _model.CanUpdateSelection;
+					exportToWordOrLibreOfficeToolStripMenuItem.Visible = _model.CanExportSelection;
+					_updateFrontMatterToolStripMenu.Visible = _model.CanUpdateSelection;
+				}
 			}
 			catch (Exception error)
 			{

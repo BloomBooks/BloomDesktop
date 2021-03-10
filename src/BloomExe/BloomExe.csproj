@@ -369,6 +369,7 @@
     <Compile Include="Publish\Android\usb\UsbPublisher.cs" />
     <Compile Include="Publish\Epub\EpubPublishUiSettings.cs" />
     <Compile Include="Publish\Epub\PublishEpubApi.cs" />
+    <Compile Include="Utils\PerformanceMeasurement.cs" />
     <Compile Include="Publish\HtmlPublishPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>

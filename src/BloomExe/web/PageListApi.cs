@@ -9,6 +9,7 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
+using Bloom.Utils;
 using Newtonsoft.Json;
 
 namespace Bloom.web
@@ -43,11 +44,15 @@ namespace Bloom.web
 
 		private void HandlePageClickedRequest(ApiRequest request)
 		{
-			var requestData = DynamicJson.Parse(request.RequiredPostJson());
-			string pageId = requestData.pageId;
-			IPage page = PageFromId(pageId);
-			if (page != null)
-				PageList.PageClicked(page);
+			using (PerformanceMeasurement.Global.Measure("select page"))
+			{
+				var requestData = DynamicJson.Parse(request.RequiredPostJson());
+				string pageId = requestData.pageId;
+				IPage page = PageFromId(pageId);
+				if (page != null)
+					PageList.PageClicked(page);
+			}
+
 			request.PostSucceeded();
 		}
 
