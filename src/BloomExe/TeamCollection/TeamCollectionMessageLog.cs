@@ -94,6 +94,8 @@ namespace Bloom.TeamCollection
 
 		public void WriteMessage(MessageAndMilestoneType messageType, string l10nId, string message, string param0, string param1)
 		{
+			if (IsRedundantMessage(messageType, l10nId, param0, param1))
+				return;
 			var msg = new TeamCollectionMessage();
 			msg.When = DateTime.UtcNow;
 			msg.MessageType = messageType;
@@ -111,6 +113,15 @@ namespace Bloom.TeamCollection
 			// There ought to be a RobustFile.AppendAllText, but there isn't.
 			// However, as this promises to close the file each call, it should be pretty reliable.
 			RetryUtility.Retry(() => File.AppendAllText(_logFilePath, toPersist));
+		}
+
+		private bool IsRedundantMessage(MessageAndMilestoneType messageType, string l10nId, string param0, string param1)
+		{
+			if (messageType == MessageAndMilestoneType.NewStuff)
+			{
+				return CurrentNewStuff.Any((msg) => msg.MessageType == messageType && msg.L10NId == l10nId && msg.Param0 == param0 && msg.Param1 == param1);
+			}
+			return false;
 		}
 
 		public void WriteMilestone(MessageAndMilestoneType milestoneType)
