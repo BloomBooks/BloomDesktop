@@ -863,6 +863,24 @@ div[data-book*="branding"] {
 .bloomPlayer-page .bloom-textOverPicture[data-bubble] {
     height: auto !important;
 }
+
+// Custom Widget template page and Digital Comic Book both use this to make the page have no margins.
+.no-margin-page {
+    &::after {
+        /* Hide page number */
+        display: none;
+    }
+    & .marginBox img {
+        max-width: unset; // device.less sets this, presumably expecting a margin
+    }
+    .marginBox {
+        left: 0 !important;
+        top: 0 !important;
+        height: 100% !important;
+        width: 100% !important;
+    }
+}
+
 //... to be continued. We sandwich most other sheets between this one and the langVisibility.css, which comes last-ish
 
 // now apply any book features
