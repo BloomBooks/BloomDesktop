@@ -177,8 +177,8 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public virtual void SyncAtStartup_ProducesNoUnexpectedMessages()
 		{
-			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(2), "Unexpected number of progress warnings produced. Did you mean to add one?");
-			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(0), "Unexpected number of progress errors produced.");
+			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(0), "Unexpected number of progress warnings produced. We're no longer using warning.");
+			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(2), "Unexpected number of progress errors produced. Did you mean to add one?");
 			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(5), "Unexpected number of progress messages produced. Did you mean to add one?");
 		}
 
@@ -332,7 +332,7 @@ namespace BloomTests.TeamCollection
 			
 			if (expectedType == MessageAndMilestoneType.Error)
 			{
-				Assert.That(_progressSpy.Warnings, Contains.Item(expectedMsg));
+				Assert.That(_progressSpy.Errors, Contains.Item(expectedMsg));
 			}
 			else
 			{
@@ -403,8 +403,8 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public override void SyncAtStartup_ProducesNoUnexpectedMessages()
 		{
-			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(3), "Unexpected number of progress warnings produced. Did you mean to add one?");
-			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(0), "Unexpected number of progress errors produced.");
+			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(0), "Unexpected number of progress warnings produced. We're not using warning any more");
+			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(3), "Unexpected number of progress errors produced. Did you mean to add one?");
 			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(3), "Unexpected number of progress messages produced. Did you mean to add one?");
 		}
 
