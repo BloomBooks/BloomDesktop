@@ -41,12 +41,9 @@ namespace BloomTests.TeamCollection
 
 			// Simulate a book newly created locally. Not in repo, but should not be deleted.
 			MakeBook("A book", "This should survive as it has no local status", false);
-			// By the way, like most new books, it got renamed early in life
-			var oldPath = Path.Combine(_collectionFolder.FolderPath, "A book");
-			var newPath = Path.Combine(_collectionFolder.FolderPath, "New Book");
-			RobustIO.MoveDirectory(oldPath, newPath);
-			RobustFile.Move(Path.Combine(newPath, "A book.htm"), Path.Combine(newPath, "New Book.htm"));
-			_collection.HandleBookRename("A book", "New Book");
+			// By the way, like most new books, it got renamed early in life...twice
+			SimulateRename(_collection, "A book", "An early name");
+			SimulateRename(_collection, "An early name", "New Book");
 
 			// Simulate a book that needs nothing done to it. It's the same locally and on the repo.
 			MakeBook("Keep me", "This needs nothing done to it");
@@ -60,6 +57,14 @@ namespace BloomTests.TeamCollection
 			MakeBook("Add me", "Fetch to local");
 			var delPathAddMe = Path.Combine(_collectionFolder.FolderPath, "Add me");
 			SIL.IO.RobustIO.DeleteDirectoryAndContents(delPathAddMe);
+
+			// Simulate a book that was checked in, then checked out again and renamed,
+			// but not yet checked in. Both "A renamed book" folder and content and "An old name.bloom"
+			// should survive. (Except for an obscure reason when joining a TC...see comment in the test.)
+			MakeBook("An old name", "Should be kept in both places with different names");
+			_collection.AttemptLock("An old name", "test@somewhere.org");
+			SimulateRename(_collection, "An old name", "an intermediate name");
+			SimulateRename(_collection, "an intermediate name", "A renamed book");
 
 			// Simulate a book that is not checked out locally and has been modified elsewhere
 			MakeBook("Update me", "Needs to be become this locally");
@@ -150,6 +155,15 @@ namespace BloomTests.TeamCollection
 			Assert.That(_collection.SyncAtStartup(_progressSpy, FirstTimeJoin()), Is.True);
 		}
 
+		public static void SimulateRename(Bloom.TeamCollection.TeamCollection tc, string oldName, string newName)
+		{
+			var oldPath = Path.Combine(tc.LocalCollectionFolder, oldName);
+			var newPath = Path.Combine(tc.LocalCollectionFolder, newName);
+			RobustIO.MoveDirectory(oldPath, newPath);
+			RobustFile.Move(Path.Combine(newPath, oldName + ".htm"), Path.Combine(newPath, newName + ".htm"));
+			tc.HandleBookRename(oldName, newName);
+		}
+
 		protected virtual bool FirstTimeJoin()
 		{
 			return false;
@@ -195,6 +209,31 @@ namespace BloomTests.TeamCollection
 		public void SyncAtStartup_BookNeedsNothingDone_Survives()
 		{
 			Assert.That(Directory.Exists(Path.Combine(_collectionFolder.FolderPath, "Keep me")), Is.True);
+		}
+
+		[Test]
+		public void SyncAtStartup_CheckedOutBookRenamed_SurvivesBothPlaces()
+		{
+			var renamedBookFolder = Path.Combine(_collectionFolder.FolderPath, "A renamed book");
+			Assert.That(Directory.Exists(renamedBookFolder), Is.True);
+			Assert.That(File.Exists(Path.Combine(renamedBookFolder, "A renamed book.htm")));
+			// This is debatable. We definitely should not delete the old repo book that has been renamed
+			// in a normal sync. If we're doing a 'first time join', then it's weird to find a book in
+			// the state of being checked out at all...that implies we're already connected to the repo.
+			// Weirder still to find it checked out AND renamed. What currently happens is that the renamed
+			// book looks new, and in a first time join, new books get checked in, and in the course of
+			// the checkin, the old repo file gets deleted. Not certain this is the right behavior,
+			// but it's plausible and falls naturally out of other decisions we made, so I'm leaving
+			// both the code and the test that way. However, I'm not adding additional tests to verify
+			// the the checkin happened, since I'm not sure we want it to.
+			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", "An old name.bloom")),
+				Is.EqualTo(!FirstTimeJoin()));
+		}
+
+		[Test]
+		public void SyncAtStartup_CheckedOutBookRenamed_OldLocalNotReinstated()
+		{
+			Assert.That(Directory.Exists(Path.Combine(_collectionFolder.FolderPath, "An old name")), Is.False);
 		}
 
 		[Test]
