@@ -73,8 +73,9 @@ namespace Bloom.TeamCollection
 				do
 				{
 					counter++;
-					bookPath = Path.ChangeExtension(
-						Path.Combine(lfPath, bookFolderName + (counter == 1 ? "" : counter.ToString())), ".bloom");
+					// Don't use ChangeExtension here, bookFolderName may have arbitrary period
+					bookPath = 
+						Path.Combine(lfPath, bookFolderName + (counter == 1 ? "" : counter.ToString())) + ".bloom";
 				} while (RobustFile.Exists(bookPath));
 			}
 			else
@@ -102,7 +103,9 @@ namespace Bloom.TeamCollection
 
 		internal string GetPathToBookFileInRepo(string bookFolderName)
 		{
-			return Path.ChangeExtension(Path.Combine(_repoFolderPath, "Books", bookFolderName), ".bloom");
+			// Don't use ChangeExtension here, it will fail if the folderName contains
+			// some arbitrary period.
+			return Path.Combine(_repoFolderPath, "Books", bookFolderName) + ".bloom";
 		}
 
 		public override void RemoveBook(string bookName)
@@ -120,6 +123,8 @@ namespace Bloom.TeamCollection
 		public override string[] GetBookList()
 		{
 			return Directory.EnumerateFiles(Path.Combine(_repoFolderPath, "Books"), "*.bloom")
+				// We are usually wary of stripping extensions for fear of periods in book names,
+				// but it's OK here because we KNOW path ends in .bloom, so exactly that will be removed.
 				.Select(path => Path.GetFileNameWithoutExtension(path)).ToArray();
 		}
 
