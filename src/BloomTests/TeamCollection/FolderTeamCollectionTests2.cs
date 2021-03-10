@@ -208,11 +208,13 @@ namespace BloomTests.TeamCollection
 					var oldFolderPath = SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, "old name", "book content");
 					tc.PutBook(oldFolderPath);
 					tc.AttemptLock("old name");
-					SIL.IO.RobustIO.MoveDirectory(Path.Combine(collectionFolder.FolderPath, "old name"), Path.Combine(collectionFolder.FolderPath, "new name"));
-					tc.HandleBookRename("old name", "new name");
+					SyncAtStartupTests.SimulateRename(tc, "old name", "middle name");
+					SyncAtStartupTests.SimulateRename(tc,  "middle name", "new name");
 					tc.PutBook(Path.Combine(collectionFolder.FolderPath,"new name"), true);
 					Assert.That(File.Exists(tc.GetPathToBookFileInRepo("new name")),Is.True);
 					Assert.That(File.Exists(tc.GetPathToBookFileInRepo("old name")), Is.False, "old name was not deleted");
+					var status = tc.GetLocalStatus("new name");
+					Assert.That(status.oldName??"", Is.Empty, "Should stop tracking previous name once we cleaned it up");
 					TeamCollectionManager.ForceCurrentUserForTests(null);
 				}
 			}
