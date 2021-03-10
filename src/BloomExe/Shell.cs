@@ -8,7 +8,9 @@ using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Collection;
+using Bloom.MiscUI;
 using Bloom.Properties;
+using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.Workspace;
 using SIL.Extensions;
@@ -368,6 +370,17 @@ namespace Bloom
 				}
 			}
 			SIL.Reporting.ErrorReport.NotifyUserOfProblem(message, args);
+		}
+
+		private void startMeasuringPerformanceToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			var dlg = new ReactDialog("performanceLogBundle.js", "PerformanceLogControl");
+			dlg.FormBorderStyle = FormBorderStyle.Sizable;
+			dlg.ControlBox = true;
+			dlg.SizeGripStyle = SizeGripStyle.Show;
+			dlg.Text = "Performance Log";
+			dlg.Closing += (s, args) => PerformanceMeasurement.Global.StopMeasuring();
+			dlg.Show();
 		}
 	}
 }

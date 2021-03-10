@@ -9,6 +9,7 @@ using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using SIL.Reporting;
 using System.Windows.Forms;
+using Bloom.Utils;
 
 
 namespace Bloom
@@ -36,13 +37,13 @@ namespace Bloom
 					.Where(t => t.GetInterfaces().Contains(typeof(ICommand))).InstancePerLifetimeScope();
 
 				builder.Register(c => LocalizationManager).SingleInstance();
-
-				if (Settings.Default.MruProjects==null)
+				
+			if (Settings.Default.MruProjects==null)
 				{
 					Settings.Default.MruProjects = new MostRecentPathsList();
 				}
 				builder.RegisterInstance(Settings.Default.MruProjects).SingleInstance();
-
+				
 			//this is to prevent some problems we were getting while waiting for a browser to navigate and being forced to call Application.DoEvents().
 			//HtmlThumbnailer & ConfigurationDialog, at least, use this.
 			// June 2018: we decided that actually no code other than the Browser class even needs to know that
@@ -70,6 +71,7 @@ namespace Bloom
 			}
 
 			public ILocalizationManager LocalizationManager;
+
 
 			public HtmlThumbNailer HtmlThumbnailer { get { return _container.Resolve<HtmlThumbNailer>();}}
 

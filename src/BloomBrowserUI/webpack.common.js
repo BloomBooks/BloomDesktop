@@ -52,6 +52,8 @@ module.exports = merge(core, {
         enterpriseSettingsBundle: "./collection/enterpriseSettings.tsx",
         teamCollectionSettingsBundle:
             "./teamCollection/TeamCollectionSettingsPanel.tsx",
+        performanceLogBundle:
+            "./react_components/Performance/PerformanceLogControl.tsx",
         testBundle: globule.find([
             "./bookEdit/**/*Spec.ts",
             "./bookEdit/**/*Spec.js",
