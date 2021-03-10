@@ -132,9 +132,21 @@ namespace Bloom.web.controllers
 		private void HandleReloadCollection(ApiRequest request)
 		{
 			CurrentDialog?.Close();
-			ReloadProjectAction?.Invoke();
+			// On Linux, the main window doesn't close if we invoke ReloadProjectAction immediately here.
+			// Waiting for Idle processing allows the underlying dialog to actually close before its parent
+			// tries to close.  Without this slight delay on Linux, the user has to manually close the main
+			// window before the program reopens and reloads the collection.
+			Application.Idle += ReloadOnIdle;
 			request.PostSucceeded();
 		}
+
+		private void ReloadOnIdle(object sender, EventArgs e)
+		{
+			Application.Idle -= ReloadOnIdle;
+			ReloadProjectAction?.Invoke();
+		}
+
+
 
 		private static Action _doWhenLoggedIn;
 

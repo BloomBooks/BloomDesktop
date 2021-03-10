@@ -386,6 +386,19 @@ namespace Bloom.TeamCollection
 		{
 			// Todo: This is not how we want to do this. Probably the UI should listen for changes to the status of books,
 			// whether selected or not, talking to the repo directly.
+			if (Form.ActiveForm == null)
+			{
+				// On Linux (at least for Bionic), Form.ActiveForm can sometimes be null when
+				// this executes.  The following loop seems to be as simple a fix as possible.
+				foreach (var form in Application.OpenForms)
+				{
+					if (form is Shell shell)
+					{
+						shell.Invoke((Action)(() => _bookSelection.InvokeSelectionChanged(false)));
+						return;
+					}
+				}
+			}
 			Form.ActiveForm.Invoke((Action) (() => _bookSelection.InvokeSelectionChanged(false)));
 		}
 
