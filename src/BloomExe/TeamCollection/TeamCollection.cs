@@ -46,6 +46,8 @@ namespace Bloom.TeamCollection
 		// Two minutes is arbitrary, and probably not long enough if changes are coming in frequently from outside.
 		private static readonly TimeSpan kMaxRestartPromptFrequency = new TimeSpan(0, 2, 0);
 
+		internal string LocalCollectionFolder => _localCollectionFolder;
+
 		public TeamCollection(ITeamCollectionManager manager, string localCollectionFolder,
 			TeamCollectionMessageLog tcLog = null)
 		{
@@ -124,6 +126,16 @@ namespace Bloom.TeamCollection
 				status = status.WithLockedBy(null);
 			var oldName = GetLocalStatus(bookFolderName).oldName;
 			PutBookInRepo(folderPath, status, inLostAndFound);
+			// We want the local status to reflect the latest repo status.
+			// In particular, it should have the correct checksum, and if
+			// we've renamed the book, we should no longer record the old name.
+			// For one thing, we're about to delete that repo file, so we don't need
+			// its name any more. For another, if someone creates a book by the old name,
+			// we don't want it to get deleted the next time this one is checked in.
+			// For a third, if we rename this book again, we need to record the
+			// current repo name as the thing to clean up, not something it once was.
+			// All this is achieved by writing the new repo status to local, since we just
+			// gave it the right checksum, and the repo status never has oldName.
 			WriteLocalStatus(bookFolderName, status);
 			if (!string.IsNullOrEmpty(oldName))
 			{
@@ -876,6 +888,13 @@ namespace Bloom.TeamCollection
 				return;
 			}
 
+			if (!string.IsNullOrEmpty(status.oldName))
+			{
+				// We've already renamed this book in the current session!
+				// We need to keep the ORIGINAL name of the repo book that needs deleting.
+				return;
+			}
+
 			WriteLocalStatus(newName, status.WithOldName(oldName));
 		}
 
@@ -976,6 +995,7 @@ namespace Bloom.TeamCollection
 			// Delete books that we think have been deleted remotely from the repo.
 			// If it's a join collection merge, check new books in instead.
 			var englishSomethingWrongMessage = "Something went wrong trying to sync with the book {0} in your Team Collection.";
+			var oldBookNames = new HashSet<string>();
 			foreach (var path in Directory.EnumerateDirectories(_localCollectionFolder))
 			{
 				try
@@ -983,8 +1003,8 @@ namespace Bloom.TeamCollection
 					if (!IsBloomBookFolder(path))
 						continue;
 					var bookFolderName = Path.GetFileName(path);
-					var status = GetBookStatusJsonFromRepo(bookFolderName);
-					if (status == null)
+					var statusJson = GetBookStatusJsonFromRepo(bookFolderName);
+					if (statusJson == null)
 					{
 						if (firstTimeJoin)
 						{
@@ -1009,6 +1029,17 @@ namespace Bloom.TeamCollection
 									"Deleting '{0}' from local folder as it is no longer in the Team Collection",
 									bookFolderName);
 								SIL.IO.RobustIO.DeleteDirectoryAndContents(path);
+								continue;
+							}
+							// existing book folder checked out with status file, but nothing matching in repo.
+							// Most likely it is in the process of being renamed. In that case, not only
+							// should we not delete it, we should avoid re-creating the local book it was
+							// renamed from, for which we most likely have a .bloom in the repo.
+							// Here we just remember the name.
+							var oldName = GetLocalStatus(bookFolderName).oldName;
+							if (!string.IsNullOrEmpty(oldName))
+							{
+								oldBookNames.Add(oldName);
 							}
 
 							// If it's checked out here, assume current user wants it and keep it.
@@ -1039,6 +1070,12 @@ namespace Bloom.TeamCollection
 				var localFolderPath = Path.Combine(_localCollectionFolder, bookName);
 				if (!Directory.Exists(localFolderPath))
 				{
+					if (oldBookNames.Contains(bookName))
+					{
+						// it's a book we're in the process of renaming, but hasn't yet been
+						// checked in using the new name. Leave it alone.
+						continue;
+					}
 					// brand new book! Get it.
 					ReportProgressAndLog(progress, "FetchedNewBook",
 						"Fetching a new book '{0}' from the Team Collection", bookName);
