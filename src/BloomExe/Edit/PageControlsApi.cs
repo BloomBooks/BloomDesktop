@@ -50,20 +50,20 @@ namespace Bloom.Edit
 			{
 				AddPageButton_Click();
 				request.PostSucceeded();
-			}, true);
+			}, true).Measureable();
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "duplicatePage", request =>
 			{
 				_editingModel.OnDuplicatePage();
 				request.PostSucceeded();
-			}, true);
+			}, true).Measureable();
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "deletePage", request =>
 			{
 				if (ConfirmRemovePageDialog.Confirm())
 					_editingModel.OnDeletePage();
 				request.PostSucceeded();
-			}, true);
+			}, true).Measureable();
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "lockBook", request =>
 			{

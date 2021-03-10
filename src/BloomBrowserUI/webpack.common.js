@@ -54,6 +54,8 @@ module.exports = merge(core, {
             "./teamCollection/TeamCollectionSettingsPanel.tsx",
         autoUpdateSoftwareDlgBundle:
             "./react_components/AutoUpdateSoftwareDialog.tsx",
+        performanceLogBundle:
+            "./react_components/Performance/PerformanceLogControl.tsx",
         testBundle: globule.find([
             "./bookEdit/**/*Spec.ts",
             "./bookEdit/**/*Spec.js",

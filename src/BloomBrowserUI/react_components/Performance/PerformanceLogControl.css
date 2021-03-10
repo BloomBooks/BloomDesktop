@@ -1,0 +1,22 @@
+body {
+    height: 90vh;
+}
+#performanceLogControl {
+    height: 90vh;
+    padding: 20px;
+}
+table {
+    display: block;
+    height: 100%;
+    overflow-y: scroll;
+    border: solid thin black;
+}
+td {
+    padding-right: 10px;
+}
+td.negative {
+    color: red;
+}
+td:nth-child(n + 3) {
+    text-align: right;
+}
