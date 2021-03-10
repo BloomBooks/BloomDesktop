@@ -1,37 +1,32 @@
 .auto-update-dialog {
-    .MuiPaper-rounded {
-        border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding-left: 30px;
+    height: 350px;
+    .dialog-title {
+        padding-top: 40px;
     }
-    .dialog-contents {
+    .main-question {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+    .inform-label {
+        padding-top: 10px;
+    }
+    .spacer {
+        flex: 2;
+    }
+    .align-right-bottom {
         display: flex;
-        flex-direction: column;
-        flex: 1;
-        padding-left: 30px;
-        min-height: 350px;
-        .dialog-title {
-            padding-top: 40px;
-        }
-        .main-question {
-            margin-top: 20px;
-            margin-bottom: 20px;
-        }
-        .inform-label {
-            padding-top: 10px;
-        }
-        .spacer {
-            flex: 2;
-        }
-        .align-right-bottom {
-            display: flex;
-            justify-content: right;
-            margin-right: 25px;
-            margin-bottom: 25px;
-            .ok-button {
-                width: 150px;
-                height: 50px;
-                .MuiButton-label {
-                    font-size: large;
-                }
+        justify-content: right;
+        margin-right: 25px;
+        margin-bottom: 25px;
+        .ok-button {
+            width: 150px;
+            height: 50px;
+            .MuiButton-label {
+                font-size: large;
             }
         }
     }

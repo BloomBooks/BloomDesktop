@@ -5,7 +5,6 @@ import "./AutoUpdateSoftwareDialog.less";
 import theme from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import {
-    Dialog,
     FormControlLabel,
     Radio,
     RadioGroup,
@@ -50,68 +49,56 @@ export const AutoUpdateSoftwareDialog: React.FunctionComponent = () => {
 
     return (
         <ThemeProvider theme={theme}>
-            <Dialog
-                className="auto-update-dialog"
-                open={true}
-                fullWidth={true}
-                maxWidth="lg"
-            >
-                <div className="dialog-contents">
-                    <Typography variant="h4" className="dialog-title">
-                        {dialogTitle}
-                    </Typography>
-                    <Typography variant="h5" className="main-question">
-                        {whatShouldBloomDo}
-                    </Typography>
-                    <RadioGroup
-                        aria-label="software update choices"
-                        name="choices"
-                        value={chosenRadio}
-                        onChange={handleChange}
+            <div className="auto-update-dialog">
+                <Typography variant="h4" className="dialog-title">
+                    {dialogTitle}
+                </Typography>
+                <Typography variant="h5" className="main-question">
+                    {whatShouldBloomDo}
+                </Typography>
+                <RadioGroup
+                    aria-label="software update choices"
+                    name="choices"
+                    value={chosenRadio}
+                    onChange={handleChange}
+                >
+                    <FormControlLabel
+                        value="automatic"
+                        control={<Radio color="primary" />}
+                        label={
+                            <Typography variant="h5">
+                                {downloadInstall}
+                            </Typography>
+                        }
+                    />
+                    <FormControlLabel
+                        className="inform-label"
+                        value="inform"
+                        control={<Radio color="primary" />}
+                        label={
+                            <Typography variant="h5">{informOnly}</Typography>
+                        }
+                    />
+                </RadioGroup>
+                <div className="spacer" />
+                <div className="align-right-bottom">
+                    <BloomButton
+                        className="ok-button"
+                        l10nKey="Common.OK"
+                        enabled={true}
+                        hasText={true}
+                        onClick={() => {
+                            BloomApi.postData("app/autoUpdateSoftwareChoice", {
+                                dialogShown: 1,
+                                autoUpdate: isAutoUpdate
+                            });
+                            BloomApi.post("common/closeReactDialog");
+                        }}
                     >
-                        <FormControlLabel
-                            value="automatic"
-                            control={<Radio color="primary" />}
-                            label={
-                                <Typography variant="h5">
-                                    {downloadInstall}
-                                </Typography>
-                            }
-                        />
-                        <FormControlLabel
-                            className="inform-label"
-                            value="inform"
-                            control={<Radio color="primary" />}
-                            label={
-                                <Typography variant="h5">
-                                    {informOnly}
-                                </Typography>
-                            }
-                        />
-                    </RadioGroup>
-                    <div className="spacer" />
-                    <div className="align-right-bottom">
-                        <BloomButton
-                            className="ok-button"
-                            l10nKey="Common.OK"
-                            enabled={true}
-                            hasText={true}
-                            onClick={() => {
-                                BloomApi.postData(
-                                    "app/autoUpdateSoftwareChoice",
-                                    {
-                                        dialogShown: 1,
-                                        autoUpdate: isAutoUpdate
-                                    }
-                                );
-                                BloomApi.post("common/closeReactDialog");
-                            }}
-                        >
-                            OK
-                        </BloomButton>
-                    </div>
+                        OK
+                    </BloomButton>
                 </div>
-            </Dialog>
+            </div>
         </ThemeProvider>
     );
 };
