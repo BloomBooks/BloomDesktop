@@ -11,8 +11,10 @@ namespace Bloom.MiscUI
 	/// All the interesting content and behavior is in the tsx file of the component.
 	/// The connection is through the child ReactControl, which entirely fills the dialog.
 	/// </summary>
-	/// <remarks>Unfortunately we haven't yet found a good way to make a Form with its
-	/// title rendered in HTML draggable.</remarks>
+	/// <remarks>To make a Form with its title rendered in HTML draggable, the caller
+	/// can (after calling the ReactDialog constructor) just modify the instance's
+	/// FormBorderStyle and ControlBox properties
+	/// </remarks>
 	public partial class ReactDialog : Form, IBrowserDialog
 	{
 		public string CloseSource { get; set; } = null;

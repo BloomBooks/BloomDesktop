@@ -1,5 +1,7 @@
 @import "../bloomUI.less";
 
+@kEdgePadding: 24px;
+
 .problem-dialog {
     .dialog-title {
         flex-direction: row;
@@ -8,6 +10,10 @@
         .close-in-title {
             padding-top: 4px;
         }
+        padding: 6px @kEdgePadding;
+    }
+    .dialog-content {
+        padding: 27px @kEdgePadding;
     }
     .report-heading {
         font-style: italic;
@@ -132,6 +138,28 @@
         }
         #report {
             white-space: pre;
+        }
+    }
+
+    .twoColumnHolder {
+        display: flex;
+        // Use space-between so that when we have both #leftColumn and #rightColumn, they are split out to the outside edges
+        justify-content: space-between;
+        // Use row-reverse instead of row so that when not reportable, the only DialogActions group
+        // will be placed at the start (that is, the right). In standard "row", the start is the left
+        // but that's not where we want it to go.
+        flex-direction: row-reverse;
+
+        padding-left: @kEdgePadding;
+        padding-right: @kEdgePadding;
+
+        #leftColumn,
+        #errorReportButton {
+            padding-left: 0px;
+        }
+
+        #rightColumn {
+            padding-right: 0px;
         }
     }
 

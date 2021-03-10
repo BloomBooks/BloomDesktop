@@ -153,7 +153,7 @@ namespace Bloom.ErrorReporter
 			{
 				var longMessageBuilder = new StringBuilder();
 				while (longMessageBuilder.Length < 3000)
-					longMessageBuilder.AppendLine(fakeProblemMessage);
+					longMessageBuilder.Append(fakeProblemMessage + " ");
 
 				ErrorReport.NotifyUserOfProblem(longMessageBuilder.ToString());
 			}
