@@ -42,7 +42,7 @@ namespace Bloom.ErrorReporter
 		static object _lock = new object();
 
 		#region Dependencies exposed for unit tests to mock
-		internal IBrowserDialogFactory BrowserDialogFactory = new BrowserDialogFactory();
+		internal IReactDialogFactory BrowserDialogFactory = new ReactDialogFactory();
 
 		internal Control Control { get; set; }
 
@@ -399,13 +399,16 @@ namespace Bloom.ErrorReporter
 				{
 					var message = GetMessage(messageText, exception);
 
-					string url = CreateNotifyUrl(message, reportButtonLabel, secondaryButtonLabel);
+					string urlQueryString = CreateNotifyUrlQueryString(message, reportButtonLabel, secondaryButtonLabel);
 
 					
 					// Precondition: we must be on the UI thread for Gecko to work.
-					//using (var dlg = new BrowserDialog(url))
-					using (var dlg = BrowserDialogFactory.CreateBrowserDialog(url))
+					using (var dlg = BrowserDialogFactory.CreateReactDialog("problemReportBundle.js", "ProblemDialog", urlQueryString))
 					{
+						dlg.FormBorderStyle = FormBorderStyle.FixedToolWindow;	// Allows the window to be dragged around
+						dlg.ControlBox = true;	// Add controls like the X button back to the top bar
+						dlg.Text = "";	// Remove the title from the WinForms top bar
+
 						dlg.Width = 620;
 
 						// 360px was experimentally determined as what was needed for the longest known text for NotifyUserOfProblem
@@ -417,14 +420,12 @@ namespace Bloom.ErrorReporter
 						// ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
 						BloomServer.RegisterThreadBlocking();
 
-						BrowserDialogApi.LastCloseSource = null;	// Make sure it will close by default and won't have anything leftover from last notification
-
 						try
 						{
 							dlg.ShowDialog();
 
 							// Take action if the user clicked a button other than Close
-							if (BrowserDialogApi.LastCloseSource == "closedByAlternateButton")
+							if (dlg.CloseSource == "closedByAlternateButton")
 							{
 								// OnShowDetails will be invoked if this method returns {resultIfAlternateButtonPressed}
 								// FYI, setting to null is OK. It should cause ErrorReport to reset to default handler.
@@ -432,7 +433,7 @@ namespace Bloom.ErrorReporter
 
 								returnResult = secondaryPressedResult ?? reportPressedResult;
 							}
-							else if (BrowserDialogApi.LastCloseSource == "closedByReportButton")
+							else if (dlg.CloseSource == "closedByReportButton")
 							{
 								ErrorReport.OnShowDetails = OnReportPressed;
 								returnResult = reportPressedResult;
@@ -479,16 +480,15 @@ namespace Bloom.ErrorReporter
 		}
 				
 		/// <summary>
-		/// Generates the URL that will bring up the Notify Dialog
+		/// Generates the query component for the URL to bring up the Notify Dialog
+		/// (The query component is the optional part after the "?" in the URL)
 		/// </summary>
 		/// <param name="message">The final message to show the user, as a UrlPathString</param>
 		/// <param name="reportButtonLabel">Optional. The localized text for the Report button. Pass null/"" to disable.</param>
 		/// <param name="secondaryActionButtonLabel">Optional. The localized text for the Secondary Action button. Pass null/"" to disable</param>
 		/// <returns></returns>
-		protected static string CreateNotifyUrl(UrlPathString message, string reportButtonLabel, string secondaryActionButtonLabel)
+		protected static string CreateNotifyUrlQueryString(UrlPathString message, string reportButtonLabel, string secondaryActionButtonLabel)
 		{
-			var problemDialogRootPath = BloomFileLocator.GetBrowserFile(false, "problemDialog", "loader.html");
-
 			var queryComponents = new List<string>();
 			queryComponents.Add($"level={ProblemLevel.kNotify}");
 
@@ -505,24 +505,22 @@ namespace Bloom.ErrorReporter
 			}
 
 			var query = String.Join("&", queryComponents);
-			var url = problemDialogRootPath.ToLocalhost() + '?' + query;
-
 			// Prefer putting the message in the URL parameters, so it can just be a simple one-and-done GET request.
 			//   (IMO, this makes debugging easier and simplifies the rendering process).
 			// But very long URL's cause our BrowserDialog problems.
 			// Although there are suggestions that Firefox based browsers could have URL's about 60k in length,
 			// we'll just stick to <2k because that was recommended as a length with basically universal support across browser platforms
 			string encodedMessage = message.UrlEncoded;
-			if (url.Length + encodedMessage.Length < 2048)
+			if (query.Length + encodedMessage.Length < 2048)
 			{
-				url += $"&msg={encodedMessage}";
+				query += $"&msg={encodedMessage}";
 			}
 			else
 			{
 				ProblemReportApi.NotifyMessage = message.NotEncoded;
 			}
 
-			return url;
+			return query;
 		}
 
 		public static void OnReportPressed(Exception error, string message)

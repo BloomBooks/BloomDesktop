@@ -436,14 +436,16 @@ namespace Bloom.web.controllers
 				try
 				{
 					var query = $"?level={levelOfProblem}";
-					var problemDialogRootPath = BloomFileLocator.GetBrowserFile(false, "problemDialog", "loader.html");
-					var url = problemDialogRootPath.ToLocalhost() + query;
 
 					// Precondition: we must be on the UI thread for Gecko to work.
-					using (var dlg = new BrowserDialog(url))
+					using (var dlg = new ReactDialog("problemReportBundle.js", "ProblemDialog", query))
 					{
-						// The default height is not quite enough to show the contents without scrolling.
-						dlg.Height += 30;
+						dlg.FormBorderStyle = FormBorderStyle.FixedToolWindow;	// Allows the window to be dragged around
+						dlg.ControlBox = true;	// Add controls like the X button back to the top bar
+						dlg.Text = "";	// Remove the title from the WinForms top bar
+
+						dlg.Width = 731;
+						dlg.Height = 616;
 
 						// ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
 						BloomServer._theOneInstance.RegisterThreadBlocking();

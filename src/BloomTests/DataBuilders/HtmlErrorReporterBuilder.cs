@@ -22,7 +22,7 @@ namespace BloomTests.DataBuilders
 		/// </summary>
 		public HtmlErrorReporterBuilder WithTestValues()
 		{
-			BrowserDialogFactory(new Mock<IBrowserDialogFactory>().Object);
+			BrowserDialogFactory(new Mock<IReactDialogFactory>().Object);
 
 			var mockBloomServer = new Mock<IBloomServer>();
 			BloomServer(mockBloomServer.Object);
@@ -34,7 +34,7 @@ namespace BloomTests.DataBuilders
 			return this;
 		}
 
-		public HtmlErrorReporterBuilder BrowserDialogFactory(IBrowserDialogFactory factory)
+		public HtmlErrorReporterBuilder BrowserDialogFactory(IReactDialogFactory factory)
 		{
 			_reporter.BrowserDialogFactory = factory;
 			return this;

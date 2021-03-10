@@ -117,7 +117,20 @@ namespace Bloom.web.controllers
 			// api to do it. We just need a way to close a c#-opened dialog from javascript (e.g. the Close button of the dialog).
 			apiHandler.RegisterEndpointHandler("common/closeReactDialog", request =>
 			{
-				CurrentDialog?.Close();
+				// Closes the current dialog.
+				if (CurrentDialog != null)
+				{
+					// Optionally, the caller may provide a string value in the payload.  This string can be used to determine which button/etc that initiated the close action.
+
+					// TODO: Probably unnecessary
+					CurrentDialog.CloseSource = null;	// First reset the source, in case of any parsing errors
+
+					// If desired, the close source should be sent as a Post String
+					CurrentDialog.CloseSource = request.GetPostStringOrNull();
+
+					CurrentDialog.Close();
+				}
+
 				request.PostSucceeded();
 			}, true);
 

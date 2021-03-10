@@ -18,11 +18,11 @@ namespace BloomTests.ErrorReporter
 	{
 		private string _testValue = "";
 
-		private Mock<IBrowserDialogFactory> GetDefaultMockBrowserDialogFactory()
+		private Mock<IReactDialogFactory> GetDefaultMockReactDialogFactory()
 		{
-			var mockFactory = new Mock<IBrowserDialogFactory>();
+			var mockFactory = new Mock<IReactDialogFactory>();
 			var mockBrowserDialog = new Mock<IBrowserDialog>();
-			mockFactory.Setup(x => x.CreateBrowserDialog(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<Action>())).Returns(mockBrowserDialog.Object);
+			mockFactory.Setup(x => x.CreateReactDialog(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(mockBrowserDialog.Object);
 
 			return mockFactory;
 		}
@@ -57,7 +57,7 @@ namespace BloomTests.ErrorReporter
 		[Test]
 		public void NotifyUserOfProblem_UnsafeMessage()
 		{
-			var mockFactory = GetDefaultMockBrowserDialogFactory();
+			var mockFactory = GetDefaultMockReactDialogFactory();
 			var reporter = new HtmlErrorReporterBuilder()
 				.WithTestValues()
 				.BrowserDialogFactory(mockFactory.Object)
@@ -67,9 +67,10 @@ namespace BloomTests.ErrorReporter
 			reporter.NotifyUserOfProblem(new ShowAlwaysPolicy(), "", ErrorResult.Yes, "<b>Tags should be encoded</b>");
 
 			// FYI: The URL uses a substring specific to the actual directory, so use .Contains() instead of an equality check
-			mockFactory.Verify(x => x.CreateBrowserDialog(
-				It.Is<string>(url => url.Contains("/browser/problemDialog/loader.html?level=notify&msg=%3cb%3eTags%20should%20be%20encoded%3c%2fb%3e")),
-				It.IsAny<bool>(), It.IsAny<Action>()));
+			mockFactory.Verify(x => x.CreateReactDialog(
+				It.Is<string>(jsBundle => jsBundle == "problemReportBundle.js"),
+				It.Is<string>(name => name == "ProblemDialog"),
+				It.Is<string>(url => url.Contains("level=notify&msg=%3cb%3eTags%20should%20be%20encoded%3c%2fb%3e"))));
 		}
 
 		[Test]
@@ -82,7 +83,7 @@ namespace BloomTests.ErrorReporter
 			}
 			var messageText = messageTextBuilder.ToString();
 
-			var mockFactory = GetDefaultMockBrowserDialogFactory();
+			var mockFactory = GetDefaultMockReactDialogFactory();
 			var reporter = new HtmlErrorReporterBuilder()
 				.WithTestValues()
 				.BrowserDialogFactory(mockFactory.Object)
@@ -92,9 +93,10 @@ namespace BloomTests.ErrorReporter
 			reporter.NotifyUserOfProblem(new ShowAlwaysPolicy(), "", ErrorResult.Yes, messageText);
 
 			// Verification
-			mockFactory.Verify(x => x.CreateBrowserDialog(
-				It.Is<string>(url => url.Contains("/browser/problemDialog/loader.html?level=notify")),
-				It.IsAny<bool>(), It.IsAny<Action>()));
+			mockFactory.Verify(x => x.CreateReactDialog(
+				It.Is<string>(jsBundle => jsBundle == "problemReportBundle.js"),
+				It.Is<string>(name => name == "ProblemDialog"),
+				It.Is<string>(url => url.Contains("level=notify"))));
 
 			Assert.AreEqual(messageText, ProblemReportApi.NotifyMessage);
 		}
@@ -103,7 +105,7 @@ namespace BloomTests.ErrorReporter
 		[TestCase("CustomReport")]
 		public void NotifyUserOfProblem_ReportButton(string reportLabel)
 		{
-			var mockFactory = GetDefaultMockBrowserDialogFactory();
+			var mockFactory = GetDefaultMockReactDialogFactory();
 			var reporter = new HtmlErrorReporterBuilder()
 				.WithTestValues()
 				.BrowserDialogFactory(mockFactory.Object)
@@ -112,9 +114,10 @@ namespace BloomTests.ErrorReporter
 			// System Under Test
 			reporter.NotifyUserOfProblem(new ShowAlwaysPolicy(), reportLabel, ErrorResult.Yes, "message");
 
-			mockFactory.Verify(x => x.CreateBrowserDialog(
-				It.Is<string>(url => url.Contains($"/browser/problemDialog/loader.html?level=notify&reportLabel={reportLabel}&msg=message")),
-				It.IsAny<bool>(), It.IsAny<Action>()));
+			mockFactory.Verify(x => x.CreateReactDialog(
+				It.Is<string>(jsBundle => jsBundle == "problemReportBundle.js"),
+				It.Is<string>(name => name == "ProblemDialog"),
+				It.Is<string>(url => url.Contains($"level=notify&reportLabel={reportLabel}&msg=message"))));
 		}
 
 		/// <summary>
@@ -124,7 +127,7 @@ namespace BloomTests.ErrorReporter
 		[Test]
 		public void NotifyUserOfProblem_IfParamIsDetailsThenConvertedToReport()
 		{
-			var mockFactory = GetDefaultMockBrowserDialogFactory();
+			var mockFactory = GetDefaultMockReactDialogFactory();
 			var reporter = new HtmlErrorReporterBuilder()
 				.WithTestValues()
 				.BrowserDialogFactory(mockFactory.Object)
@@ -133,9 +136,10 @@ namespace BloomTests.ErrorReporter
 			// System Under Test
 			reporter.NotifyUserOfProblem(new ShowAlwaysPolicy(), "Details", ErrorResult.Yes, "message");
 
-			mockFactory.Verify(x => x.CreateBrowserDialog(
-				It.Is<string>(url => url.Contains("/browser/problemDialog/loader.html?level=notify&reportLabel=Report&msg=message")),
-				It.IsAny<bool>(), It.IsAny<Action>()));
+			mockFactory.Verify(x => x.CreateReactDialog(
+				It.Is<string>(jsBundle => jsBundle == "problemReportBundle.js"),
+				It.Is<string>(name => name == "ProblemDialog"),
+				It.Is<string>(url => url.Contains("level=notify&reportLabel=Report&msg=message"))));
 		}
 		#endregion
 
@@ -147,7 +151,7 @@ namespace BloomTests.ErrorReporter
 		[Test]
 		public void CustomNotifyUserAuto_IfInstanceVarIsDetailsThenStaysDetails()
 		{
-			var mockFactory = GetDefaultMockBrowserDialogFactory();
+			var mockFactory = GetDefaultMockReactDialogFactory();
 			var reporter = new HtmlErrorReporterBuilder()
 				.WithTestValues()
 				.BrowserDialogFactory(mockFactory.Object)
@@ -159,9 +163,10 @@ namespace BloomTests.ErrorReporter
 			// System Under Test
 			reporter.CustomNotifyUserAuto("Details", null, null, null, "message");
 
-			mockFactory.Verify(x => x.CreateBrowserDialog(
-				It.Is<string>(url => url.Contains("/browser/problemDialog/loader.html?level=notify&reportLabel=Details&msg=message")),
-				It.IsAny<bool>(), It.IsAny<Action>()));
+			mockFactory.Verify(x => x.CreateReactDialog(
+				It.Is<string>(jsBundle => jsBundle == "problemReportBundle.js"),
+				It.Is<string>(name => name == "ProblemDialog"),
+				It.Is<string>(url => url.Contains("level=notify&reportLabel=Details&msg=message"))));
 		}
 
 		/// <summary>
@@ -170,7 +175,7 @@ namespace BloomTests.ErrorReporter
 		[Test]
 		public void CustomNotifyUserAuto_SecondaryActionButtonLabel()
 		{
-			var mockFactory = GetDefaultMockBrowserDialogFactory();
+			var mockFactory = GetDefaultMockReactDialogFactory();
 			var reporter = new HtmlErrorReporterBuilder()
 				.WithTestValues()
 				.BrowserDialogFactory(mockFactory.Object)
@@ -183,21 +188,24 @@ namespace BloomTests.ErrorReporter
 			reporter.CustomNotifyUserAuto("", "Retry", null, null, "message");
 
 			// Verification
-			mockFactory.Verify(x => x.CreateBrowserDialog(
-				It.Is<string>(url => url.Contains("/browser/problemDialog/loader.html?level=notify&secondaryLabel=Retry&msg=message")),
-				It.IsAny<bool>(), It.IsAny<Action>()));
+			mockFactory.Verify(x => x.CreateReactDialog(
+				It.Is<string>(jsBundle => jsBundle == "problemReportBundle.js"),
+				It.Is<string>(name => name == "ProblemDialog"),
+				It.Is<string>(url => url.Contains("level=notify&secondaryLabel=Retry&msg=message"))));
 		}
 
 		[Test]
 		public void CustomNotifyUserAuto_SecondaryActionAutoInvoked()
 		{
 			// Simulate click on a button
-			var mockFactory = new Mock<IBrowserDialogFactory>();
+			var mockFactory = new Mock<IReactDialogFactory>();
 			var mockBrowserDialog = new Mock<IBrowserDialog>();
+			mockBrowserDialog.SetupAllProperties();	// This is necessary for properties like CloseSource to set their values.
 			mockBrowserDialog.Setup(x => x.ShowDialog()).Callback(delegate {
-				BrowserDialogApi.LastCloseSource = "closedByAlternateButton";
+				mockBrowserDialog.Object.CloseSource = "closedByAlternateButton";
 			});
-			mockFactory.Setup(x => x.CreateBrowserDialog(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<Action>())).Returns(mockBrowserDialog.Object);
+			mockFactory.Setup(x => x.CreateReactDialog(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+				.Returns(mockBrowserDialog.Object);
 
 			var reporter = new HtmlErrorReporterBuilder()
 				.WithTestValues()
@@ -220,7 +228,6 @@ namespace BloomTests.ErrorReporter
 			Assert.AreEqual("Retry was pressed", _testValue);
 
 			// Cleanup
-			BrowserDialogApi.LastCloseSource = null;
 			_testValue = "";
 		}
 		#endregion
@@ -230,12 +237,14 @@ namespace BloomTests.ErrorReporter
 		public void CustomNotifyUserManual_WhenSecondaryActionButtonClicked_ThenSecondaryActionResultReturned()
 		{
 			// Simulate click on a button
-			var mockFactory = new Mock<IBrowserDialogFactory>();
+			var mockFactory = new Mock<IReactDialogFactory>();
 			var mockBrowserDialog = new Mock<IBrowserDialog>();
-			mockBrowserDialog.Setup(x => x.ShowDialog()).Callback(delegate {
-				BrowserDialogApi.LastCloseSource = "closedByAlternateButton";
+			mockBrowserDialog.SetupAllProperties(); // This is necessary for properties like CloseSource to set their values.
+			mockBrowserDialog.Setup(x => x.ShowDialog()).Callback(delegate
+			{
+				mockBrowserDialog.Object.CloseSource = "closedByAlternateButton";
 			});
-			mockFactory.Setup(x => x.CreateBrowserDialog(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<Action>())).Returns(mockBrowserDialog.Object);
+			mockFactory.Setup(x => x.CreateReactDialog(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(mockBrowserDialog.Object);
 
 			var reporter = new HtmlErrorReporterBuilder()
 				.WithTestValues()
@@ -255,19 +264,21 @@ namespace BloomTests.ErrorReporter
 			Assert.AreEqual(ErrorResult.Retry, result);
 
 			// Cleanup
-			BrowserDialogApi.LastCloseSource = null;
 		}
 
 		[Test]
 		public void CustomNotifyUserManual_WhenReportButtonClicked_ThenReportResultReturned()
 		{
 			// Simulate click on a button
-			var mockFactory = new Mock<IBrowserDialogFactory>();
+			var mockFactory = new Mock<IReactDialogFactory>();
 			var mockBrowserDialog = new Mock<IBrowserDialog>();
-			mockBrowserDialog.Setup(x => x.ShowDialog()).Callback(delegate {
-				BrowserDialogApi.LastCloseSource = "closedByReportButton";
+			mockBrowserDialog.SetupAllProperties(); // This is necessary for properties like CloseSource to set their values.
+			mockBrowserDialog.Setup(x => x.ShowDialog()).Callback(delegate
+			{
+				mockBrowserDialog.Object.CloseSource = "closedByReportButton";
 			});
-			mockFactory.Setup(x => x.CreateBrowserDialog(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<Action>())).Returns(mockBrowserDialog.Object);
+			mockFactory.Setup(x => x.CreateReactDialog(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+				.Returns(mockBrowserDialog.Object);
 
 			var reporter = new HtmlErrorReporterBuilder()
 				.WithTestValues()
@@ -285,21 +296,20 @@ namespace BloomTests.ErrorReporter
 
 			// Verification
 			Assert.AreEqual(ErrorResult.Yes, result);
-
-			// Cleanup
-			BrowserDialogApi.LastCloseSource = null;
 		}
-		
+
 		[Test]
 		public void CustomNotifyUserManual_WhenCloseButtonClicked_ThenOKReturned()
 		{
 			// Simulate click on a button
-			var mockFactory = new Mock<IBrowserDialogFactory>();
+			var mockFactory = new Mock<IReactDialogFactory>();
 			var mockBrowserDialog = new Mock<IBrowserDialog>();
-			mockBrowserDialog.Setup(x => x.ShowDialog()).Callback(delegate {
-				BrowserDialogApi.LastCloseSource = null;
+			mockBrowserDialog.Setup(x => x.ShowDialog()).Callback(delegate
+			{
+				mockBrowserDialog.Object.CloseSource = null;
 			});
-			mockFactory.Setup(x => x.CreateBrowserDialog(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<Action>())).Returns(mockBrowserDialog.Object);
+			mockFactory.Setup(x => x.CreateReactDialog(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+				.Returns(mockBrowserDialog.Object);
 
 			var reporter = new HtmlErrorReporterBuilder()
 				.WithTestValues()
@@ -309,8 +319,6 @@ namespace BloomTests.ErrorReporter
 			// CustomNotifyUserManual calls ErrorReport, so we should set it up
 			ErrorReport.SetErrorReporter(reporter);
 
-			BrowserDialogApi.LastCloseSource = null;
-
 			// System Under Test
 			var result = reporter.CustomNotifyUserManual(new ShowAlwaysPolicy(),
 				"Report", ErrorResult.Yes,
@@ -319,38 +327,6 @@ namespace BloomTests.ErrorReporter
 
 			// Verification
 			Assert.AreEqual(ErrorResult.OK, result);
-
-			// Cleanup
-			BrowserDialogApi.LastCloseSource = null;
-		}
-
-		/// <summary>
-		/// Tests a bug that assumed LastCloseSource would get reset automatically, but it wouldn't if the user clicked the WinForms X button to close.
-		/// </summary>
-		[Test]
-		public void CustomNotifyUserManual_GivenPreviousNotificationWasReported_WhenUserClosesNextNotification_ThenActuallyClose()
-		{
-			var reporter = new HtmlErrorReporterBuilder()
-				.WithTestValues()
-				.BrowserDialogFactory(GetDefaultMockBrowserDialogFactory().Object)
-				.Build();
-
-			// CustomNotifyUserManual calls ErrorReport, so we should set it up
-			ErrorReport.SetErrorReporter(reporter);
-
-			// Simulate that on the prior notification, the user clicked "Report"
-			BrowserDialogApi.LastCloseSource = "report";
-
-			// System Under Test
-			var result = reporter.CustomNotifyUserManual(new ShowAlwaysPolicy(),
-				"Report", ErrorResult.Yes,
-				"Retry", ErrorResult.Retry,
-				"message");
-
-			Assert.AreEqual(ErrorResult.OK, result);
-
-			// Cleanup
-			BrowserDialogApi.LastCloseSource = null;
 		}
 		#endregion
 	}

@@ -11,15 +11,24 @@ namespace Bloom.MiscUI
 	// when it's undesirable to spin up a real one.
 	public interface IBrowserDialog : IDisposable
 	{
-		int Width { get; set; }
+		string CloseSource { get; set; }
+
+		// Various properties/methods from the Form class (Sadly, it doesn't have an interface)
+		// ENHANCE: Add more methods from Form as needed, or if you have patience to add all of them
+		#region Properties from Form class
+		bool ControlBox { get; set; }
+		FormBorderStyle FormBorderStyle { get; set; }
 		int Height { get; set; }
+		string Text { get; set; }
+		int Width { get; set; }
+		#endregion
 
-		DialogResult ShowDialog();
-
-		// ENHANCE: Add other methods as needed
+		#region Methods from Form class
+		DialogResult ShowDialog();  // Desirable to be mocked out by unit tests
+		#endregion
 	}
 
-	
+
 	public partial class BrowserDialog : Form, IBrowserDialog
 	{
 		private Browser _browser;
@@ -35,6 +44,8 @@ namespace Bloom.MiscUI
 		private static List<BrowserDialog> _activeDialogs = new List<BrowserDialog>();
 		public IBloomWebSocketServer WebSocketServer { get; set; }
 		private const string kWebsocketContext = "dialog";
+
+		public string CloseSource { get; set; } = null;
 
 		protected override void OnHandleCreated(EventArgs e)
 		{

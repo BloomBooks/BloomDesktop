@@ -45,7 +45,7 @@ export const NotifyDialog: React.FunctionComponent<{
                 //fullWidth={true}
                 maxWidth={"md"}
                 fullScreen={true}
-                onClose={() => BloomApi.post("dialog/close")}
+                onClose={() => BloomApi.post("common/closeReactDialog")}
             >
                 {/* The whole disableTypography and Typography thing gets around Material-ui putting the
                     Close icon inside of the title's Typography element, where we don't have control over its CSS. */}
@@ -59,7 +59,7 @@ export const NotifyDialog: React.FunctionComponent<{
                     {/* We moved the X up to the winforms dialog so that it is draggable
                          <Close
                         className="close-in-title"
-                        onClick={() => BloomApi.post("dialog/close")}
+                        onClick={() => BloomApi.post("common/closeReactDialog")}
                     /> */}
                 </DialogTitle>
                 <DialogContent className={useContentStyle().root}>
@@ -137,7 +137,7 @@ export const NotifyDialog: React.FunctionComponent<{
                             variant="text"
                             onClick={() => {
                                 BloomApi.postString(
-                                    "dialog/close",
+                                    "common/closeReactDialog",
                                     "closedByAlternateButton" // The value is the close source
                                 );
                             }}
@@ -160,7 +160,7 @@ export const NotifyDialog: React.FunctionComponent<{
                             variant="text"
                             onClick={() => {
                                 BloomApi.postString(
-                                    "dialog/close",
+                                    "common/closeReactDialog",
                                     "closedByReportButton" // The value is the close source
                                 );
                             }}
@@ -180,7 +180,7 @@ export const NotifyDialog: React.FunctionComponent<{
                 l10nKey={"ReportProblemDialog.Close"}
                 hasText={true}
                 onClick={() => {
-                    BloomApi.post("dialog/close");
+                    BloomApi.post("common/closeReactDialog");
                 }}
             >
                 Close
