@@ -880,6 +880,7 @@ namespace Bloom.Workspace
 					Program.CloseSplashScreen(); // Otherwise it will stay in front!
 					using (var dlg = new ReactDialog("autoUpdateSoftwareDlgBundle.js", "AutoUpdateSoftwareDialog"))
 					{
+                        dlg.Height = 350;
 						dlg.ShowDialog(this);
 					}
 				}
