@@ -423,6 +423,18 @@ namespace Bloom.TeamCollection
 			RaiseBookStateChange(Path.GetFileName(e.Name));
 		}
 
+		/// <summary>
+		/// Delete the indicated book from the repo (if it's there...not a problem if it's
+		/// only local).
+		/// </summary>
+		/// <param name="bookFolderPath"></param>
+		public override void DeleteBookFromRepo(string bookFolderPath)
+		{
+			var pathToBookFileInRepo = GetPathToBookFileInRepo(Path.GetFileName(bookFolderPath));
+			if (RobustFile.Exists(pathToBookFileInRepo))
+				RobustFile.Delete(pathToBookFileInRepo);
+		}
+
 		protected virtual void OnCreated(object sender, FileSystemEventArgs e)
 		{
 			var createEvent = new FileSystemEventRecord(e);

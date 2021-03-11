@@ -62,6 +62,13 @@ namespace Bloom.TeamCollection
 			TeamCollectionStatusChanged?.Invoke(null, new EventArgs());
 		}
 
+		public bool ConfirmOkToDelete(string bookFolderPath)
+		{
+			if (CurrentCollection == null)
+				return true;
+			return CurrentCollection.ConfirmOkToDelete(bookFolderPath);
+		}
+
 		public TeamCollectionStatus CollectionStatus
 		{
 			get

@@ -176,12 +176,15 @@ namespace Bloom.CollectionTab
 
 			if (_bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanDelete)
 			{
+				if (!_tcManager.ConfirmOkToDelete(_bookSelection.CurrentSelection.FolderPath))
+					return false;
 				var title = _bookSelection.CurrentSelection.TitleBestForUserDisplay;
 				var confirmRecycleDescription = L10NSharp.LocalizationManager.GetString("CollectionTab.ConfirmRecycleDescription", "The book '{0}'");
 				if (ConfirmRecycleDialog.JustConfirm(string.Format(confirmRecycleDescription, title), false, "Palaso"))
 				{
 					TheOneEditableCollection.DeleteBook(book.BookInfo);
 					_bookSelection.SelectBook(null);
+					_tcManager.CurrentCollection.DeleteBookFromRepo(book.FolderPath);
 					#if Chorus
 					_sendReceiver.CheckInNow(string.Format("Deleted '{0}'", title));
 					#endif

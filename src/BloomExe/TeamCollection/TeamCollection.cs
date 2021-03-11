@@ -18,6 +18,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Registration;
 using Bloom.ToPalaso;
+using Bloom.web.controllers;
 using SIL.Reporting;
 
 namespace Bloom.TeamCollection
@@ -258,6 +259,18 @@ namespace Bloom.TeamCollection
 					));
 			}
 		}
+
+		public bool ConfirmOkToDelete(string bookFolderPath)
+		{
+			if (IsCheckedOutHereBy(GetStatus(Path.GetFileName(bookFolderPath))))
+				return true;
+			var msg = LocalizationManager.GetString("TeamCollection.CheckOutForDelete",
+				"Please check out the book before deleting it.");
+			ErrorReport.NotifyUserOfProblem(msg);
+			return false;
+		}
+
+		public abstract void DeleteBookFromRepo(string bookFolderPath);
 
 		private void SyncCollectionFilesToRepoOnIdle(object sender, EventArgs e)
 		{
