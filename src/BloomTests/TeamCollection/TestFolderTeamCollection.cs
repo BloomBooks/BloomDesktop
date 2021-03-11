@@ -17,6 +17,7 @@ namespace BloomTests.TeamCollection
 
 		public Action OnCreatedCalled;
 		public Action OnChangedCalled;
+		public Action OnCollectionChangedCalled;
 
 		protected override void OnCreated(object sender, FileSystemEventArgs e)
 		{
@@ -28,6 +29,12 @@ namespace BloomTests.TeamCollection
 		{
 			base.OnChanged(sender, e);
 			OnChangedCalled?.Invoke();
+		}
+
+		protected override void OnCollectionFilesChanged(object sender, FileSystemEventArgs e)
+		{
+			base.OnCollectionFilesChanged(sender, e);
+			OnCollectionChangedCalled?.Invoke();
 		}
 	}
 }

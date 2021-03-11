@@ -11,7 +11,7 @@ namespace Bloom.TeamCollection
 	/// </summary>
 	/// <remarks>Don't confuse with the higher-level BookStatusChangeEventArgs</remarks>
 	public class BookRepoChangeEventArgs
-		: EventArgs
+		: RepoChangeEventArgs
 	{
 		public string BookFileName;
 	}

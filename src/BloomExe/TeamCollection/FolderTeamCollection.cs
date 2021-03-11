@@ -10,6 +10,7 @@ using Bloom.CollectionCreating;
 using Bloom.MiscUI;
 using Bloom.Utils;
 using ICSharpCode.SharpZipLib.Zip;
+using Sentry;
 using SIL.IO;
 
 namespace Bloom.TeamCollection
@@ -23,7 +24,8 @@ namespace Bloom.TeamCollection
 	public class FolderTeamCollection: TeamCollection
 	{
 		private string _repoFolderPath; // the (presumably somehow shared) folder storing the repo
-		private FileSystemWatcher _watcher; // watches the _repoFolderPath for changes
+		private FileSystemWatcher _booksWatcher; // watches the _repoFolderPath/Books for changes
+		private FileSystemWatcher _otherWatcher; // watches the _repoFolderPath/Other for changes
 
 		// These four variables work together to track the last book we modified and whether we
 		// are still doing so (and to lock access to the other two). They are manipulated
@@ -244,6 +246,31 @@ namespace Bloom.TeamCollection
 		}
 
 		/// <summary>
+		/// Have any collection-level files in the repo been modified since we last
+		/// synced? Note, this might need some refining if we start storing things like
+		/// history in 'other' that are not collection level settings files.
+		/// </summary>
+		/// <returns></returns>
+		private bool GetRepoCollectionFilesUpdatedSinceSync()
+		{
+			var savedModTime = LocalCollectionFilesRecordedSyncTime();
+			try
+			{
+				// We don't have a robust version of this function and I don't think it's
+				// important enough to try to synthesize one here. Worst that happens from
+				// just returning false is the user doesn't see that there are new remote
+				// changes until reloading for some other reason.
+				return Directory.EnumerateFiles(Path.Combine(_repoFolderPath, "Other"))
+					.Any(p => new FileInfo(p).LastWriteTime > savedModTime);
+			}
+			catch (Exception ex)
+			{
+				SentrySdk.CaptureException(ex);
+				return false;
+			}
+		}
+
+		/// <summary>
 		/// Copy collection level files from the repo to the local directory
 		/// </summary>
 		/// <param name="destFolder"></param>
@@ -343,27 +370,32 @@ namespace Bloom.TeamCollection
 		protected internal override void StartMonitoring()
 		{
 			base.StartMonitoring();
-			_watcher = new FileSystemWatcher();
+			_booksWatcher = new FileSystemWatcher();
 
-			_watcher.Path = Path.Combine(_repoFolderPath, "Books");
+			_booksWatcher.Path = Path.Combine(_repoFolderPath, "Books");
 
 			// Enhance: maybe one day we want to watch collection files too?
 
 			// Watch for changes in LastWrite times, and
 			// the renaming of files or directories.
-			_watcher.NotifyFilter =  NotifyFilters.LastWrite
+			_booksWatcher.NotifyFilter =  NotifyFilters.LastWrite
 			                       | NotifyFilters.FileName
 			                       | NotifyFilters.DirectoryName;
 
-			_watcher.DebounceChanged(OnChanged, kDebouncePeriodInMs);
-			_watcher.DebounceCreated(OnCreated, kDebouncePeriodInMs);
-			_watcher.DebounceRenamed(OnRenamed, kDebouncePeriodInMs);
+			_booksWatcher.DebounceChanged(OnChanged, kDebouncePeriodInMs);
+			_booksWatcher.DebounceCreated(OnCreated, kDebouncePeriodInMs);
+			_booksWatcher.DebounceRenamed(OnRenamed, kDebouncePeriodInMs);
 
 			// I think if the book was deleted we can afford to wait and let the next restart clean it up.
 			// _watcher.DebounceDeleted(OnChanged, debouncePeriodInMs);
 
 			// Begin watching.
-			_watcher.EnableRaisingEvents = true;
+			_booksWatcher.EnableRaisingEvents = true;
+
+			_otherWatcher = new FileSystemWatcher(Path.Combine(_repoFolderPath, "Other"));
+			_otherWatcher.NotifyFilter = NotifyFilters.LastWrite;
+			_otherWatcher.DebounceChanged(OnCollectionFilesChanged, kDebouncePeriodInMs);
+			_otherWatcher.EnableRaisingEvents = true;
 		}
 
 		private bool CheckOwnWriteNotification(string path)
@@ -412,6 +444,20 @@ namespace Bloom.TeamCollection
 			return false;
 		}
 
+		protected virtual void OnCollectionFilesChanged(object sender, FileSystemEventArgs e)
+		{
+			// This prevents most notifications while we are doing updates ourselves.
+			if (_updatingCollectionFiles)
+				return;
+			// To prevent any notifications of our own updates that might arrive after we
+			// turn off _updatingCollectionFiles, we take advantage of the fact that before
+			// we turn it off we write a modify time record. If the files haven't actually
+			// been modified since then, we can ignore the change. This seems simpler and
+			// more reliable than trying to track what files we actually wrote how recently.
+			if (GetRepoCollectionFilesUpdatedSinceSync())
+				RaiseRepoCollectionFilesChanged();
+		}
+
 		protected virtual void OnChanged(object sender, FileSystemEventArgs e)
 		{
 			if (CheckOwnWriteNotification(e.FullPath))
@@ -456,8 +502,20 @@ namespace Bloom.TeamCollection
 
 		protected internal override void StopMonitoring()
 		{
-			_watcher.EnableRaisingEvents = false;
-			_watcher.Dispose();
+			if (_booksWatcher != null)
+			{
+				_booksWatcher.EnableRaisingEvents = false;
+				_booksWatcher.Dispose();
+				_booksWatcher = null;
+			}
+
+			if (_otherWatcher != null)
+			{
+				_otherWatcher.EnableRaisingEvents = false;
+				_otherWatcher.Dispose();
+				_otherWatcher = null;
+			}
+
 			base.StopMonitoring();
 		}
 
