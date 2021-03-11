@@ -125,6 +125,22 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void BringBookUpToDate_ComicPageGetsNoMarginClass()
+		{
+			// Digital Comic Book pages have a .comic class, but as part of BL-9320 some of the css for that class
+			// was pulled out to a common place and attached to the .no-margin-page class.
+			// Here we make sure the bring book up-to-date code adds that class.
+			SetDom(@"
+					<div class='bloom-page comic numberedPage customPage Device16x9Landscape'>
+					</div>");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.BringBookUpToDate(new NullProgress());
+			var pageNode = dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'comic')]");
+			Assert.IsTrue(pageNode.Attributes["class"].Value.Contains("no-margin-page"));
+		}
+
+		[Test]
 		public void BringBookUpToDate_DataCkeTempRemoved()
 		{
 			// Some books got corrupted with CKE temp data, possibly before we prevented this happening when

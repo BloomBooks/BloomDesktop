@@ -1170,6 +1170,7 @@ namespace Bloom.Book
 
 			progress.WriteStatus("Repair possible messed up Questions pages and migrate classes");
 			RepairQuestionsPages(bookDOM);
+			RepairComicPages(bookDOM);
 			MigrateNonstandardClassNames(bookDOM);
 
 			progress.WriteStatus("Gathering Data...");
@@ -1233,6 +1234,24 @@ namespace Bloom.Book
 
 			//we've removed and possible added pages, so our page cache is invalid
 			_pagesCache = null;
+		}
+
+		/// <summary>
+		/// When we added a new Widget template page we pulled some of the Digital Comic Book template page's
+		/// css out to basePage.less so both could use it. Unfortunately, the new class .no-margin-page, which is
+		/// now part of the Digital Comic's structure isn't there in existing DCBs. So we'll add it here.
+		/// </summary>
+		/// <param name="bookDom"></param>
+		private static void RepairComicPages(HtmlDom bookDom)
+		{
+			if (bookDom?.Body == null)
+				return;     // must be a test running...
+
+			var comicPages = bookDom.Body.SelectNodes("//div[contains(@class,'comic')]");
+			foreach (XmlElement comicPageElement in comicPages)
+			{
+				HtmlDom.AddClassIfMissing(comicPageElement, "no-margin-page");
+			}
 		}
 
 		const string kCustomStyles = "customCollectionStyles.css";
