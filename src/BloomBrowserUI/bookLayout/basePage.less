@@ -865,7 +865,9 @@ div[data-book*="branding"] {
 }
 
 // Custom Widget template page and Digital Comic Book both use this to make the page have no margins.
-.no-margin-page {
+// The .comic keeps pre-existing Digital Comic Books working.
+.no-margin-page,
+.comic {
     &::after {
         /* Hide page number */
         display: none;
