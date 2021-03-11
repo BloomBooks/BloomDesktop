@@ -878,8 +878,10 @@ namespace Bloom.Workspace
 				if (isShown < kCurrentAutoUpdateVersion)
 				{
 					Program.CloseSplashScreen(); // Otherwise it will stay in front!
-					var dlg = new ReactDialog("autoUpdateSoftwareDlgBundle.js", "AutoUpdateSoftwareDialog");
-					dlg.ShowDialog(this);
+					using (var dlg = new ReactDialog("autoUpdateSoftwareDlgBundle.js", "AutoUpdateSoftwareDialog"))
+					{
+						dlg.ShowDialog(this);
+					}
 				}
 			}
 			finally
