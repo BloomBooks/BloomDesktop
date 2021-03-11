@@ -407,9 +407,12 @@ function ContinueAutomatedPageClicking(pagesRemaining: IPage[]) {
         () => {
             const remaining = pagesRemaining.slice(1);
             if (remaining.length > 0)
-                window.setTimeout(() => {
-                    ContinueAutomatedPageClicking(remaining);
-                }, 1 * 1000);
+                window.setTimeout(
+                    () => {
+                        ContinueAutomatedPageClicking(remaining);
+                    },
+                    3 * 1000 // leave time for the browser to redraw
+                );
             else window.alert("Done with automated page clicking");
         }
     );
