@@ -41,7 +41,7 @@ namespace Bloom.Utils
 		{
 			this.CurrentlyMeasuring = true;
 
-			var columnNames = "Action,Details,Seconds,Private Bytes,Wk Set,Wk Set Private,Paged";
+			var columnNames = "Action,Details,Seconds,Private Bytes KB, Δ Private Bytes KB";
 			_webSocketServer.SendString(kWebsocketContext, "columns", columnNames);
 
 
@@ -166,17 +166,18 @@ namespace Bloom.Utils
 		{
 			TimeSpan diff = _end.when - _start.when;
 			var time = diff.ToString(@"ss\.f");
-			return $"{_action},{_details},{time},{(_end.privateBytesMb - _start.privateBytesMb)},{(_end.workingSetMb - _start.workingSetMb)},{(_end.workingSetPrivateMb - _start.workingSetPrivateMb)},{(_end.pagedMemoryMb - _start.pagedMemoryMb)}";
+			//return $"{_action},{_details},{time},{(_end.privateBytesKb - _start.privateBytesKb)},{(_end.workingSetKb - _start.workingSetKb)},{(_end.workingSetPrivateKb - _start.workingSetPrivateKb)},{(_end.pagedMemoryKb - _start.pagedMemoryKb)}";
+			return $"{_action},{_details},{time},{_end.privateBytesKb},{(_end.privateBytesKb - _start.privateBytesKb)}";
 		}
 
 		public class PerfPoint
 	{
 		const int bytesPerMegabyte = 1048576;
 		public long pagedMemoryMb;
-		public long workingSetMb;
+		public long workingSetKb;
 		public DateTime when;
-		public long workingSetPrivateMb;
-		public long privateBytesMb;
+		public long workingSetPrivateKb;
+		public long privateBytesKb;
 
 		public PerfPoint()
 		{
@@ -186,9 +187,9 @@ namespace Bloom.Utils
 				pagedMemoryMb = proc.PagedMemorySize64 / bytesPerMegabyte;
 			}
 
-			this.workingSetMb = GetWorkingSet();
-			this.workingSetPrivateMb = GetWorkingSetPrivate();
-			privateBytesMb = GetPrivateBytes();
+			this.workingSetKb = GetWorkingSet();
+			this.workingSetPrivateKb = GetWorkingSetPrivate();
+			privateBytesKb = GetPrivateBytes();
 		}
 
 		// Significance: This counter indicates the current number of bytes allocated to this process that cannot be shared with
