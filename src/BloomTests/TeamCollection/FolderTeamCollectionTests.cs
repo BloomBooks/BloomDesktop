@@ -27,6 +27,8 @@ namespace BloomTests.TeamCollection
 			FolderTeamCollection.CreateTeamCollectionSettingsFile(_collectionFolder.FolderPath, _repoFolder.FolderPath);
 			_mockTcManager = new Mock<ITeamCollectionManager>();
 			_collection = new TestFolderTeamCollection(_mockTcManager.Object, _collectionFolder.FolderPath, _repoFolder.FolderPath);
+			// Some monitoring tests now require this to exist
+			Directory.CreateDirectory(Path.Combine(_repoFolder.FolderPath, "Other"));
 
 			// Make some books and check them in. Individual tests verify the results.
 			// This book has an additional file, including a subfolder, to ensure they get

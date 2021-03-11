@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using Bloom;
 using Bloom.TeamCollection;
 using BloomTemp;
@@ -264,6 +266,121 @@ namespace BloomTests.TeamCollection
 					Assert.That(tc.OkToCheckIn("some name"), Is.False, "conflicting lock in repo");
 
 					TeamCollectionManager.ForceCurrentUserForTests("null");
+				}
+			}
+		}
+
+		[Test]
+		public void ChangeToFileInOther_RaisesRepoCollectionFilesChanged()
+		{
+			using (var collectionFolder =
+				new TemporaryFolder("ChangeToFileInOther_RaisesRepoCollectionFilesChanged"))
+			{
+				using (var repoFolder =
+					new TemporaryFolder("ChangeToFileInOther_RaisesRepoCollectionFilesChanged"))
+				{
+					var mockTcManager = new Mock<ITeamCollectionManager>();
+					var tc = new TestFolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath,
+						repoFolder.FolderPath);
+					var otherPath = Path.Combine(collectionFolder.FolderPath, Path.GetFileName(collectionFolder.FolderPath) + ".bloomCollection");
+					Directory.CreateDirectory(Path.GetDirectoryName(otherPath));
+					// this test doesn't need this folder except that StartMonitoring does.
+					Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+					File.WriteAllText(otherPath, "This is the initial value");
+					tc.CopyRepoCollectionFilesFromLocal(collectionFolder.FolderPath);
+
+					var eventWasRaised = false;
+
+					tc.SetupMonitoringBehavior();
+					ManualResetEvent collectionChangedRaised = new ManualResetEvent(false);
+					EventHandler<EventArgs> monitorFunction = (sender, args) =>
+					{
+						eventWasRaised = true;
+						collectionChangedRaised.Set();
+					};
+					tc.RepoCollectionFilesChanged += monitorFunction;
+
+					// sut (at least, triggers it and waits for it)
+					var otherRepoPath = FolderTeamCollection.GetRepoProjectFilesZipPath(repoFolder.FolderPath);
+					RobustFile.WriteAllText(otherRepoPath, @"This is changed"); // no, not a zip at all
+
+					var waitSucceeded = collectionChangedRaised.WaitOne(1000);
+
+					// To avoid messing up other tests, clean up before asserting.
+					tc.RepoCollectionFilesChanged -= monitorFunction;
+					tc.StopMonitoring();
+
+					Assert.That(eventWasRaised, Is.True, "event was not raised");
+				}
+			}
+		}
+
+		[Test]
+		public void HandleCollectionSettingsChange_ProducesMessageInLog_AndStatusEvent()
+		{
+			using (var collectionFolder =
+				new TemporaryFolder("HandleCollectionSettingsChange_ProducesMessageInLog"))
+			{
+				using (var repoFolder =
+					new TemporaryFolder("HandleCollectionSettingsChange_ProducesMessageInLog"))
+				{
+					var mockTcManager = new Mock<ITeamCollectionManager>();
+					var tc = new TestFolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath,
+						repoFolder.FolderPath);
+					tc.HandleCollectionSettingsChange(new RepoChangeEventArgs());
+					var msg = tc.MessageLog.CurrentNewStuff.First();
+					Assert.That(msg.MessageType, Is.EqualTo(MessageAndMilestoneType.NewStuff));
+					Assert.That(msg.Message, Is.EqualTo("One of your teammates has made changes to the collection settings."));
+				}
+			}
+		}
+
+		[Test]
+		public void ChangeToFileInOther_FromLocal_DoesNothingUnexpected()
+		{
+			using (var collectionFolder =
+				new TemporaryFolder("ChangeToFileInOther_FromLocal_DoesNothingUnexpected"))
+			{
+				using (var repoFolder =
+					new TemporaryFolder("ChangeToFileInOther_FromLocal_DoesNothingUnexpected"))
+				{
+					var mockTcManager = new Mock<ITeamCollectionManager>();
+					var tc = new TestFolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath,
+						repoFolder.FolderPath);
+					var otherPath = Path.Combine(collectionFolder.FolderPath, Path.GetFileName(collectionFolder.FolderPath) + ".bloomCollection");
+					// this test doesn't need this folder except that StartMonitoring does.
+					Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+					File.WriteAllText(otherPath, "This is the initial value");
+					tc.CopyRepoCollectionFilesFromLocal(collectionFolder.FolderPath);
+
+					var eventWasRaised = false;
+
+					tc.StartMonitoring();
+					
+					ManualResetEvent collectionChangedRaised = new ManualResetEvent(false);
+					// This action should be invoked (by test code, due to an override handler on the
+					// low-level event handler for the watcher).
+					tc.OnCollectionChangedCalled = () => collectionChangedRaised.Set();
+					EventHandler<EventArgs> monitorFunction = (sender, args) =>
+					{
+						// This should not happen because we should know we're writing locally.
+						eventWasRaised = true;
+						collectionChangedRaised.Set();
+					};
+					tc.RepoCollectionFilesChanged += monitorFunction;
+
+					// sut (at least, triggers it and waits for it)
+					RobustFile.WriteAllText(otherPath, @"This is changed");
+					tc.CopyRepoCollectionFilesFromLocal(collectionFolder.FolderPath);
+
+					var waitSucceeded = collectionChangedRaised.WaitOne(1000);
+
+					// To avoid messing up other tests, clean up before asserting.
+					tc.RepoCollectionFilesChanged -= monitorFunction;
+					tc.StopMonitoring();
+
+					Assert.That(waitSucceeded, "file change was not detected");
+					Assert.That(eventWasRaised, Is.False, "event was wrongly raised");
 				}
 			}
 		}
