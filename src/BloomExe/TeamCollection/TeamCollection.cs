@@ -38,7 +38,7 @@ namespace Bloom.TeamCollection
 		protected readonly string _localCollectionFolder; // The unshared folder that this collection syncs with
 		// These arrive on background threads (currently from a FileSystemWatcher), but we want to process them
 		// in idle time on the main UI thread.
-		private ConcurrentQueue<BookRepoChangeEventArgs> _pendingRepoChanges = new ConcurrentQueue<BookRepoChangeEventArgs>();
+		private ConcurrentQueue<RepoChangeEventArgs> _pendingRepoChanges = new ConcurrentQueue<RepoChangeEventArgs>();
 
 		// When we last prompted the user to restart (due to a change in the Team Collection)
 		private DateTime LastRestartPromptTime { get; set; } = DateTime.MinValue;
@@ -47,6 +47,8 @@ namespace Bloom.TeamCollection
 		private static readonly TimeSpan kMaxRestartPromptFrequency = new TimeSpan(0, 2, 0);
 
 		internal string LocalCollectionFolder => _localCollectionFolder;
+
+		protected bool _updatingCollectionFiles;
 
 		public TeamCollection(ITeamCollectionManager manager, string localCollectionFolder,
 			TeamCollectionMessageLog tcLog = null)
@@ -272,8 +274,12 @@ namespace Bloom.TeamCollection
 		protected virtual internal void StopMonitoring()
 		{
 			_monitoring = false;
-			_localFolderWatcher.EnableRaisingEvents = false;
-			_localFolderWatcher.Dispose();
+			if (_localFolderWatcher != null)
+			{
+				_localFolderWatcher.EnableRaisingEvents = false;
+				_localFolderWatcher.Dispose();
+				_localFolderWatcher = null;
+			}
 		}
 
 		/// <summary>
@@ -337,6 +343,8 @@ namespace Bloom.TeamCollection
 		/// analysis of the effect of the change.
 		/// </summary>
 		public event EventHandler<BookRepoChangeEventArgs> BookRepoChange;
+
+		public event EventHandler<EventArgs> RepoCollectionFilesChanged;
 
 		/// <summary>
 		/// Get all the books in the repo copied into the local folder.
@@ -701,14 +709,22 @@ namespace Bloom.TeamCollection
 		/// <param name="localCollectionFolder"></param>
 		public void CopyRepoCollectionFilesFromLocal(string localCollectionFolder)
 		{
-			var collectionName = Path.GetFileName(localCollectionFolder);
-			var files = RootLevelCollectionFilesIn(localCollectionFolder, collectionName);
-			// Review: there would be some benefit to atomicity in saving all of this to a single zip file.
-			// But it feels cleaner to have a distinct repo store for each folder we need.
-			PutCollectionFiles(files.ToArray());
-			CopyLocalFolderToRepo("Allowed Words");
-			CopyLocalFolderToRepo("Sample Texts");
-			RecordCollectionFilesSyncData();
+			try
+			{
+				_updatingCollectionFiles = true;
+				var collectionName = Path.GetFileName(localCollectionFolder);
+				var files = RootLevelCollectionFilesIn(localCollectionFolder, collectionName);
+				// Review: there would be some benefit to atomicity in saving all of this to a single zip file.
+				// But it feels cleaner to have a distinct repo store for each folder we need.
+				PutCollectionFiles(files.ToArray());
+				CopyLocalFolderToRepo("Allowed Words");
+				CopyLocalFolderToRepo("Sample Texts");
+				RecordCollectionFilesSyncData();
+			}
+			finally
+			{
+				_updatingCollectionFiles = false;
+			}
 		}
 
 		protected abstract void CopyLocalFolderToRepo(string folderName);
@@ -724,6 +740,11 @@ namespace Bloom.TeamCollection
 			BookRepoChange?.Invoke(this, new BookRepoChangeEventArgs() { BookFileName = bookFileName });
 		}
 
+		protected void RaiseRepoCollectionFilesChanged()
+		{
+			RepoCollectionFilesChanged?.Invoke(this, new EventArgs());
+		}
+
 		/// <summary>
 		/// Gets things going so that Bloom will be notified of remote changes to the repo.
 		/// </summary>
@@ -731,18 +752,19 @@ namespace Bloom.TeamCollection
 		{
 			NewBook += (sender, args) => { QueuePendingBookChange(args); };
 			BookRepoChange += (sender, args) => QueuePendingBookChange(args);
+			RepoCollectionFilesChanged += (sender, args) => QueuePendingBookChange(new RepoChangeEventArgs());
 			Application.Idle += HandleRemoteBookChangesOnIdle;
 			StartMonitoring();
 		}
 
-		internal void QueuePendingBookChange(BookRepoChangeEventArgs args)
+		internal void QueuePendingBookChange(RepoChangeEventArgs args)
 		{
 			_pendingRepoChanges.Enqueue(args);
 		}
 
 		internal void HandleRemoteBookChangesOnIdle(object sender, EventArgs e)
 		{
-			if(_pendingRepoChanges.TryDequeue(out BookRepoChangeEventArgs args))
+			if(_pendingRepoChanges.TryDequeue(out RepoChangeEventArgs args))
 			{
 				// _pendingChanges is a single queue of things that happened in the Repo,
 				// including both new books arriving and existing books changing.
@@ -750,9 +772,16 @@ namespace Bloom.TeamCollection
 				// to split them here and handle each type differently.
 				if (args is NewBookEventArgs)
 					HandleNewBook((NewBookEventArgs)args);
-				else
-					HandleModifiedFile(args);
+				else if (args is BookRepoChangeEventArgs)
+					HandleModifiedFile((BookRepoChangeEventArgs) args);
+				else HandleCollectionSettingsChange(args);
 			}
+		}
+
+		internal void HandleCollectionSettingsChange(RepoChangeEventArgs result)
+		{
+			_tcLog.WriteMessage(MessageAndMilestoneType.NewStuff, "TeamCollection.SettingsModifiedRemotely",
+				"One of your teammates has made changes to the collection settings.", null, null);
 		}
 
 		/// <summary>
