@@ -320,7 +320,7 @@ namespace Bloom.Publish.BloomLibrary
 
 		private void _termsLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			SIL.Program.Process.SafeStart(BloomLibraryUrlPrefix + "/terms");
+			SIL.Program.Process.SafeStart(BloomLibraryUrlPrefix + "/page/termsOfUse");
 		}
 
 		private void SetStateOfNonUploadControls(bool enable)
@@ -457,7 +457,7 @@ namespace Bloom.Publish.BloomLibrary
 					}
 					else
 					{
-						var url = BloomLibraryUrlPrefix + "/browse/detail/" + _parseId;
+						var url = BloomLibraryUrlPrefix + "/my-books/book/" + _parseId;
 						string congratsMessage = LocalizationManager.GetString("PublishTab.Upload.UploadCompleteNotice",
 							"Congratulations, \"{0}\" is now available on BloomLibrary.org ({1})",
 							"{0} is the book title; {1} is a clickable url which will display the book on the website");
@@ -493,7 +493,7 @@ namespace Bloom.Publish.BloomLibrary
 
 		public static string BloomLibraryUrlPrefix
 		{
-			get { return UrlLookup.LookupUrl(UrlType.LibrarySite, BookTransfer.UseSandbox) + "/#"; }
+			get { return UrlLookup.LookupUrl(UrlType.LibrarySite, BookTransfer.UseSandbox); }
 		}
 
 		string _parseId;
