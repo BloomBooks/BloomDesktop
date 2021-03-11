@@ -18,6 +18,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Registration;
 using Bloom.ToPalaso;
+using Bloom.web.controllers;
 using SIL.Reporting;
 
 namespace Bloom.TeamCollection
@@ -258,6 +259,19 @@ namespace Bloom.TeamCollection
 					));
 			}
 		}
+
+		/// <summary>
+		/// Returns true if the book must be checked out before editing it (etc.),
+		/// that is, if it is NOT already checked out on this machine by this user.
+		/// </summary>
+		/// <param name="bookFolderPath"></param>
+		/// <returns></returns>
+		public bool NeedCheckoutToEdit(string bookFolderPath)
+		{
+			return !IsCheckedOutHereBy(GetStatus(Path.GetFileName(bookFolderPath)));
+		}
+
+		public abstract void DeleteBookFromRepo(string bookFolderPath);
 
 		private void SyncCollectionFilesToRepoOnIdle(object sender, EventArgs e)
 		{

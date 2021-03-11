@@ -13,6 +13,7 @@ using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
 using DesktopAnalytics;
+using L10NSharp;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
@@ -176,12 +177,29 @@ namespace Bloom.CollectionTab
 
 			if (_bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanDelete)
 			{
+				if (_tcManager.NeedCheckoutToEdit(_bookSelection.CurrentSelection.FolderPath))
+				{
+					var msg = LocalizationManager.GetString("TeamCollection.CheckOutForDelete",
+						"Please check out the book before deleting it.");
+					ErrorReport.NotifyUserOfProblem(msg);
+					return false;
+				}
+
 				var title = _bookSelection.CurrentSelection.TitleBestForUserDisplay;
 				var confirmRecycleDescription = L10NSharp.LocalizationManager.GetString("CollectionTab.ConfirmRecycleDescription", "The book '{0}'");
 				if (ConfirmRecycleDialog.JustConfirm(string.Format(confirmRecycleDescription, title), false, "Palaso"))
 				{
-					TheOneEditableCollection.DeleteBook(book.BookInfo);
+					// The sequence of these is a bit arbitrary. We'd like to delete the book in both places.
+					// Either could conceivably fail. If something goes wrong with removing the selection
+					// from it (very unlikely), we may as well leave nothing changed. If we delete it from
+					// the local collection but fail to delete it from the repo, it will come back at the
+					// next startup. If we delete it from the repo but fail to delete it locally,
+					// it will just stick around, and at least the desired team collection result has
+					// been achieved and the local result won't be a surprise later. So it seems marginally
+					// better to do them in this order.
 					_bookSelection.SelectBook(null);
+					_tcManager.CurrentCollection?.DeleteBookFromRepo(book.FolderPath);
+					TheOneEditableCollection.DeleteBook(book.BookInfo);
 					#if Chorus
 					_sendReceiver.CheckInNow(string.Format("Deleted '{0}'", title));
 					#endif
