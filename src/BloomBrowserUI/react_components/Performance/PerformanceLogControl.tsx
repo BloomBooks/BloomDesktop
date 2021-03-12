@@ -26,6 +26,7 @@ export const PerformanceLogControl: React.FunctionComponent = props => {
         },
         [] // run only once
     );
+    const textColumns = [0, 1, 2, 5, 6, 7];
 
     return (
         <div id="performanceLogControl">
@@ -41,7 +42,7 @@ export const PerformanceLogControl: React.FunctionComponent = props => {
                     {rows.map((row, index) => (
                         <tr key={index}>
                             {row.map((item, columnIndex) =>
-                                columnIndex < 3 ? ( // 1st 3 columns are not memory values
+                                textColumns.includes(columnIndex) ? ( // 1st 3 columns are not memory values
                                     <td>{item}</td>
                                 ) : (
                                     <td
