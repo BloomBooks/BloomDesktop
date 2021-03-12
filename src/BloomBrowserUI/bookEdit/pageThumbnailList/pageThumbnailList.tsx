@@ -166,7 +166,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
             if (callback) callback();
 
             // auto walk for experiment
-            ContinueAutomatedPageClicking(realPageList);
+            //ContinueAutomatedPageClicking(realPageList);
         });
     }, [reloadValue]);
 
