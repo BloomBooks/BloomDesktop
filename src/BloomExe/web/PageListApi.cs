@@ -39,11 +39,7 @@ namespace Bloom.web
 			apiHandler.RegisterEndpointHandler("pageList/pages", HandlePagesRequest, false).Measureable();
 			apiHandler.RegisterEndpointHandler("pageList/pageContent", HandlePageContentRequest, false);
 			apiHandler.RegisterEndpointHandler("pageList/pageMoved", HandlePageMovedRequest, true).Measureable();
-			apiHandler.RegisterEndpointHandler("pageList/pageClicked", HandlePageClickedRequest, true).Measureable(()=>
-			{
-				var shiftIsDown = (Control.ModifierKeys & Keys.Shift) == Keys.Shift;
-				return shiftIsDown ? "Select Page (SHIFT)" : "Select Page";
-			});
+			apiHandler.RegisterEndpointHandler("pageList/pageClicked", HandlePageClickedRequest, true);
 			apiHandler.RegisterEndpointHandler("pageList/menuClicked", HandleShowMenuRequest, true).Measureable(); 
 		}
 
@@ -52,9 +48,20 @@ namespace Bloom.web
 			var requestData = DynamicJson.Parse(request.RequiredPostJson());
 			string pageId = requestData.pageId;
 
-			IPage page = PageFromId(pageId);
-			if (page != null)
-				PageList.PageClicked(page);
+			var shiftIsDown = (Control.ModifierKeys & Keys.Shift) == Keys.Shift;
+			var label = shiftIsDown ? "Select Page (SHIFT)" : "Select Page";
+
+			using (PerformanceMeasurement.Global.Measure(label, requestData.detail ?? ""))
+			{
+				//using (PerformanceMeasurement.Global.Measure(label, requestData.detail ?? ""))
+				//{
+					IPage page = PageFromId(pageId);
+				//}
+
+				if (page != null)
+					PageList.PageClicked(page);
+			}
+
 			request.PostSucceeded();
 
 		}

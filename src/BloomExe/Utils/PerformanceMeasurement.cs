@@ -22,6 +22,7 @@ namespace Bloom.Utils
 		private StreamWriter _stream;
 		private const string kWebsocketContext = "performance";
 		public bool CurrentlyMeasuring { get; private set; }
+		private Measurement _topMeasurement;
 
 		// The only instance of this is created by autofac
 		public PerformanceMeasurement(BloomWebSocketServer webSocketServer)
@@ -101,17 +102,34 @@ namespace Bloom.Utils
 		{
 			if (!CurrentlyMeasuring)
 				return null;
-			
-			return new Lifespan(new Measurement(action, details), StepEnded);
+			var m = new Measurement(action, details);
+			if (_topMeasurement == null)
+			{
+				_topMeasurement = m;
+				// for a child, don't call us back at the end. The parent will get the child results when *it* ends.
+				return new Lifespan(m, TopMeasurementEnded);
+			}
+			else
+			{
+				_topMeasurement.child = m;
+				return new Lifespan(m, unused => { });
+			}
 		}
 
 		// This is only called if there is a Lifespan generated (and it gets disposed) and that will only happen
 		// if Measure() decided that we are in measuring mode.
-		private void StepEnded(Measurement step)
+		private void TopMeasurementEnded(Measurement measure)
 		{
-			_stream.WriteLine(step.GetCsv());
-			_webSocketServer.SendString(kWebsocketContext, "event", step.GetCsv());
+			var csv = measure.GetCsv();
+			if (measure.child !=null)
+			{
+				csv += "," + measure.child.GetCsv();
+			}
+			_stream.WriteLine(csv);
+			_webSocketServer.SendString(kWebsocketContext, "event", csv);
 			//Debug.WriteLine(step.GetCsv());
+
+			_topMeasurement = null;
 		}
 
 		public void Dispose()
@@ -148,6 +166,8 @@ namespace Bloom.Utils
 		private readonly string _details;
 		private readonly PerfPoint _start;
 		private PerfPoint _end;
+		// a measurement of an activity inside of the lifetime of this activity
+		public Measurement child;
 
 		public Measurement(string action, string details)
 		{
