@@ -393,6 +393,9 @@ namespace Bloom.TeamCollection
 		// that it is checked-out to this user 
 		public bool CanEditBook()
 		{
+			if (_tcManager.CollectionStatus == TeamCollectionStatus.None)
+				return true;	// not a team collection
+
 			if (!TeamCollectionManager.IsRegistrationSufficient())
 				return false;
 
