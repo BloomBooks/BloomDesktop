@@ -50,7 +50,14 @@ namespace Bloom.Api
 			}
 		}
 
-		public string ContentType
+		// Gets the Content Type of the REQUEST (as opposed to the response). No point having a setter for the request.
+		public string RequestContentType
+		{
+			get => _actualContext.Request.ContentType;
+		}
+
+		// Sets the Content Type of the RESPONSE
+		public string ResponseContentType
 		{
 			set { _actualContext.Response.ContentType = value; }
 		}

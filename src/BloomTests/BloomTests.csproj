@@ -261,6 +261,7 @@
     <Compile Include="Book\BookStorage_ReplacePageTests.cs" />
     <Compile Include="Book\LicenseCheckerTests.cs" />
     <Compile Include="CLI\CreateArtifactsCommandTests.cs" />
+    <Compile Include="DataBuilders\HtmlErrorReporterBuilder.cs" />
     <Compile Include="TeamCollection\FolderTeamCollectionTests.cs" />
     <Compile Include="TeamCollection\FolderTeamCollectionTests2.cs" />
     <Compile Include="TeamCollection\ProgressSpy.cs" />
@@ -272,6 +273,7 @@
     <Compile Include="TeamCollection\TestFolderTeamCollection.cs" />
     <Compile Include="Edit\MakeActivityTests.cs" />
     <Compile Include="ExtensionsTests.cs" />
+    <Compile Include="ErrorReporter\HtmlErrorReporterTests.cs" />
     <Compile Include="TestDoubles\Book\FakeBookServer.cs" />
     <Compile Include="CollectionTab\LibraryListViewTests.cs" />
     <Compile Include="Publish\BloomReaderPublishTests.cs" />

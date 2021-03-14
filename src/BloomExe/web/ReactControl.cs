@@ -23,6 +23,7 @@ namespace Bloom.web
 	{
 		private string _javascriptBundleName;
 		private string _reactComponentName;
+		private string _urlQueryString;
 		public ReactControl()
 		{
 			InitializeComponent();
@@ -41,6 +42,13 @@ namespace Bloom.web
 		{
 			get { return _reactComponentName; }
 			set { _reactComponentName = value; }
+		}
+
+		[Browsable(true), Category("Setup")]
+		public string UrlQueryString
+		{
+			get { return _urlQueryString; }
+			set { _urlQueryString = value; }
 		}
 
 		private void ReactControl_Load(object sender, System.EventArgs e)
@@ -96,7 +104,7 @@ namespace Bloom.web
 			{
 				this.Controls.Add(browser);
 			};
-			browser.NavigateToTempFileThenRemoveIt(tempFile.Path);
+			browser.NavigateToTempFileThenRemoveIt(tempFile.Path, _urlQueryString);
 		}
 	}
 }

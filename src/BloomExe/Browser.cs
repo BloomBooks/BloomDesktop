@@ -805,19 +805,34 @@ namespace Bloom
 			Application.Idle -= new EventHandler(Application_Idle);
 		}
 
-		// The normal Navigate() has a similar capability, but I'm not clear where it works
-		// or how it can work, since it expects an actual url, and once you have an actual
-		// url, how do you get back to the file path That you need to delete the temp file?
-		// So in any case, this version takes a path and handles making a url out of it as
-		// well as deleting it when this browser component is disposed of.
-		public void NavigateToTempFileThenRemoveIt(string path)
+		/// <summary>
+		/// The normal Navigate() has a similar capability, but I'm not clear where it works
+		/// or how it can work, since it expects an actual url, and once you have an actual
+		/// url, how do you get back to the file path That you need to delete the temp file?
+		/// So in any case, this version takes a path and handles making a url out of it as
+		/// well as deleting it when this browser component is disposed of.
+		/// </summary>
+		/// <param name="path">The path to the temp file. Should be a valid Filesystem path.</param>
+		/// <param name="urlQueryParams">The query component of a URL (that is, the part after the "?" char in a URL).
+		/// This string should be a valid, appropriately encoded string ready to insert into a URL
+		/// You may include or omit the "?" at the beginning, either way is fine.
+		/// </param>
+		public void NavigateToTempFileThenRemoveIt(string path, string urlQueryParams = "")
 		{
 			if (InvokeRequired)
 			{
-				Invoke(new Action<string>(NavigateToTempFileThenRemoveIt), path);
+				Invoke(new Action<string, string>(NavigateToTempFileThenRemoveIt), path, urlQueryParams);
 				return;
 			}
-			_url = path.ToLocalhost();
+
+			// Convert from path to URL
+			if (!String.IsNullOrEmpty(urlQueryParams))
+			{
+				if (!urlQueryParams.StartsWith("?"))
+					urlQueryParams = '?' + urlQueryParams;
+			}
+			_url = path.ToLocalhost() + urlQueryParams;
+
 			SetNewDependent(TempFile.TrackExisting(path));
 			UpdateDisplay();
 		}

@@ -39,7 +39,8 @@ namespace Bloom.Api
 
 		public string LocalPathWithoutQuery { get; set; }
 
-		public string ContentType { private get; set; }
+		public string RequestContentType { get; }
+		public string ResponseContentType { private get; set; }
 
 		/// <summary>
 		/// wrap so that it is easily consumed by our standard xml unit test stuff, which can't handled fragments

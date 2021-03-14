@@ -28,6 +28,7 @@ using SIL.Progress;
 using SIL.Reporting;
 using SIL.Xml;
 using Bloom.Utils;
+using Bloom.ErrorReporter;
 
 namespace Bloom.Book
 {
@@ -395,10 +396,12 @@ namespace Bloom.Book
 					RobustFile.ReadAllText(badFilePath));
 				var ex = new XmlSyntaxException(errors);
 
+				// ENHANCE: If it's going to kill the process right afterward, seems like we could call the FatalMessage version instead...
 				ErrorReport.NotifyUserOfProblem(ex,
 					"Before saving, Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " +
 					badFilePath +
 					".  Bloom will now exit, and your book will probably not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
+
 				Process.GetCurrentProcess().Kill();
 			}
 			else

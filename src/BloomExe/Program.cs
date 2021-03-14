@@ -36,6 +36,7 @@ using Sentry.Protocol;
 using SIL.Windows.Forms.HtmlBrowser;
 using SIL.WritingSystems;
 using SIL.Xml;
+using Bloom.ErrorReporter;
 
 namespace Bloom
 {
@@ -434,8 +435,7 @@ namespace Bloom
 			var feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
 
 			//default is to allow tracking
-			var allowTracking = string.IsNullOrEmpty(feedbackSetting) || feedbackSetting.ToLowerInvariant() == "yes"
-				|| feedbackSetting.ToLowerInvariant() == "true" || feedbackSetting.ToLowerInvariant() == "on";
+			var allowTracking = IsFeedbackOn();
 			_supressRegistrationDialog = _supressRegistrationDialog || !allowTracking;
 
 			return new DesktopAnalytics.Analytics(
@@ -444,6 +444,17 @@ namespace Bloom
 				propertiesThatGoWithEveryEvent,
 				allowTracking);
 #endif
+		}
+
+		private static bool IsFeedbackOn()
+		{
+			var feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
+
+			//default is to allow feedback/tracking
+			var isFeedbackOn = string.IsNullOrEmpty(feedbackSetting) || feedbackSetting.ToLowerInvariant() == "yes"
+				|| feedbackSetting.ToLowerInvariant() == "true" || feedbackSetting.ToLowerInvariant() == "on";
+
+			return isFeedbackOn;
 		}
 
 #if DEBUG
@@ -1257,7 +1268,9 @@ namespace Bloom
 				}
 			}
 
-			ErrorReport.SetErrorReporter(new NotifyUserOfProblemLogger());
+			var orderedReporters = new IErrorReporter[] { SentryErrorReporter.Instance, HtmlErrorReporter.Instance };
+			var htmlAndSentryReporter = new CompositeErrorReporter(orderedReporters, primaryReporter: HtmlErrorReporter.Instance);
+			ErrorReport.SetErrorReporter(htmlAndSentryReporter);
 
 
 			string issueTrackingUrl = UrlLookup.LookupUrl(UrlType.IssueTrackingSystem);

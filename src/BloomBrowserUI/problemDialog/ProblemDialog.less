@@ -1,16 +1,24 @@
 @import "../bloomUI.less";
 
+@kEdgePadding: 24px;
+
 .problem-dialog {
     .dialog-title {
         flex-direction: row;
         display: flex;
-        justify-content: space-between; // right-justifies close X
+        justify-content: space-between; // right-justifies close X (If close X in the JSX, but we moved it to Winforms)
         .close-in-title {
             padding-top: 4px;
         }
+        padding: 6px @kEdgePadding;
+    }
+    .dialog-content {
+        padding: 27px @kEdgePadding;
     }
     .report-heading {
         font-style: italic;
+        max-height: 60px;
+        overflow-y: auto; // Adds a scrollbar if there is too much content. However, it's better if we just keep the shortMessage short.
     }
     .content {
         #please_help_us {
@@ -65,6 +73,16 @@
                 margin-top: -12px; // want first checkbox to line up with the start of the other column
                 label {
                     display: block;
+
+                    // Prevent long book titles from causing either vertical or horizontal scrollbars to be added
+                    // Vertical - By limiting to one line, not as many lines as needed (white-space: nowrap)
+                    // Horizontal - By truncating (overflow: hidden) and replacing with ellipsis (text-overflow: ellipsis)
+                    &.includeBook {
+                        width: 250px;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
                 }
                 img {
                     margin-left: 30px; // indent
@@ -120,6 +138,28 @@
         }
         #report {
             white-space: pre;
+        }
+    }
+
+    .twoColumnHolder {
+        display: flex;
+        // Use space-between so that when we have both #leftColumn and #rightColumn, they are split out to the outside edges
+        justify-content: space-between;
+        // Use row-reverse instead of row so that when not reportable, the only DialogActions group
+        // will be placed at the start (that is, the right). In standard "row", the start is the left
+        // but that's not where we want it to go.
+        flex-direction: row-reverse;
+
+        padding-left: @kEdgePadding;
+        padding-right: @kEdgePadding;
+
+        #leftColumn,
+        #errorReportButton {
+            padding-left: 0px;
+        }
+
+        #rightColumn {
+            padding-right: 0px;
         }
     }
 

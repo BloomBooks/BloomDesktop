@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -325,6 +325,9 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Book\LicenseChecker.cs" />
+    <Compile Include="ErrorReporter\CompositeErrorReporter.cs" />
+    <Compile Include="ErrorReporter\ErrorReportUtils.cs" />
+    <Compile Include="ErrorReporter\ProblemLevel.cs" />
     <Compile Include="TeamCollection\BookRepoChangeEventArgs.cs" />
     <Compile Include="TeamCollection\BookStatus.cs" />
     <Compile Include="TeamCollection\FileSystemEventRecord.cs" />
@@ -341,7 +344,9 @@
     </Compile>
     <Compile Include="CLI\CreateArtifactsCommand.cs" />
     <Compile Include="Collection\WritingSystem.cs" />
-    <Compile Include="NotifyUserOfProblemLogger.cs" />
+    <Compile Include="ErrorReporter\SentryErrorReporter.cs" />
+    <Compile Include="ErrorReporter\HtmlErrorReporter.cs" />
+    <Compile Include="MiscUI\ReactDialogFactory.cs" />
     <Compile Include="Publish\Android\AndroidPublishSettings.cs" />
     <Compile Include="Publish\Android\BloomReaderFileMaker.cs" />
     <Compile Include="Book\BookSelectionChangedEventArgs.cs" />

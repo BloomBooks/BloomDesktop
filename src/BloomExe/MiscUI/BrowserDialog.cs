@@ -2,13 +2,34 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
-using Bloom.Api;
 using Bloom.web;
 using SIL.Reporting;
 
 namespace Bloom.MiscUI
 {
-	public partial class BrowserDialog : Form
+	// This interface allows the unit tests to mock a BrowserDialog
+	// when it's undesirable to spin up a real one.
+	public interface IBrowserDialog : IDisposable
+	{
+		string CloseSource { get; set; }
+
+		// Various properties/methods from the Form class (Sadly, it doesn't have an interface)
+		// ENHANCE: Add more methods from Form as needed, or if you have patience to add all of them
+		#region Properties from Form class
+		bool ControlBox { get; set; }
+		FormBorderStyle FormBorderStyle { get; set; }
+		int Height { get; set; }
+		string Text { get; set; }
+		int Width { get; set; }
+		#endregion
+
+		#region Methods from Form class
+		DialogResult ShowDialog();  // Desirable to be mocked out by unit tests
+		#endregion
+	}
+
+
+	public partial class BrowserDialog : Form, IBrowserDialog
 	{
 		private Browser _browser;
 		private Boolean _hidden;
@@ -23,6 +44,8 @@ namespace Bloom.MiscUI
 		private static List<BrowserDialog> _activeDialogs = new List<BrowserDialog>();
 		public IBloomWebSocketServer WebSocketServer { get; set; }
 		private const string kWebsocketContext = "dialog";
+
+		public string CloseSource { get; set; } = null;
 
 		protected override void OnHandleCreated(EventArgs e)
 		{
@@ -91,6 +114,7 @@ namespace Bloom.MiscUI
 		/// In the normal case where the dialog is shown, it is up to the caller to dispose of it when it is closed.
 		/// When hidden, it gets disposed in the CloseDialog code (since the caller would typically have
 		/// no way to know when whatever we wanted to happen in the browser is finished).
+		/// The "whenClosed" action is only invoked if "hidden" is true.
 		/// </summary>
 		public BrowserDialog(string url, bool hidden = false, Action whenClosed = null)
 		{

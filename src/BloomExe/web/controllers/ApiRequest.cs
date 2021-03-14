@@ -68,7 +68,7 @@ namespace Bloom.Api
 		/// </summary>
 		public void PostSucceeded()
 		{
-			_requestInfo.ContentType = "text/plain";
+			_requestInfo.ResponseContentType = "text/plain";
 			_requestInfo.WriteCompleteOutput("OK");
 		}
 
@@ -83,33 +83,33 @@ namespace Bloom.Api
 		public void ReplyWithText(string text)
 		{
 			//Debug.WriteLine(this.Requestinfo.LocalPathWithoutQuery + ": " + text);
-			_requestInfo.ContentType = "text/plain";
+			_requestInfo.ResponseContentType = "text/plain";
 			_requestInfo.WriteCompleteOutput(text);
 		}
 
 		public void ReplyWithAudioFileContents(string path)
 		{
-			_requestInfo.ContentType = path.EndsWith(".mp3") ? "audio/mpeg" : "audio/wav";
+			_requestInfo.ResponseContentType = path.EndsWith(".mp3") ? "audio/mpeg" : "audio/wav";
 			_requestInfo.ReplyWithFileContent(path);
 		}
 
 		public void ReplyWithHtml(string html)
 		{
-			_requestInfo.ContentType = "text/html";
+			_requestInfo.ResponseContentType = "text/html";
 			_requestInfo.WriteCompleteOutput(html);
 		}
 
 		public void ReplyWithJson(string json)
 		{
 			//Debug.WriteLine(this.Requestinfo.LocalPathWithoutQuery + ": " + json);
-			_requestInfo.ContentType = "application/json";
+			_requestInfo.ResponseContentType = "application/json";
 			_requestInfo.WriteCompleteOutput(json);
 		}
 
 		public void ReplyWithJson(object objectToMakeJson)
 		{
 			//Debug.WriteLine(this.Requestinfo.LocalPathWithoutQuery + ": " + json);
-			_requestInfo.ContentType = "application/json";
+			_requestInfo.ResponseContentType = "application/json";
 			_requestInfo.WriteCompleteOutput(JsonConvert.SerializeObject(objectToMakeJson));
 		}
 
@@ -129,7 +129,7 @@ namespace Bloom.Api
 
 		public void Failed(HttpStatusCode statusCode, string text = null)
 		{			
-			_requestInfo.ContentType = "text/plain";
+			_requestInfo.ResponseContentType = "text/plain";
 			int statusCodeInt = (int)statusCode;
 			if (text == null)
 			{
@@ -221,6 +221,8 @@ namespace Bloom.Api
 			return true;
 		}
 
+		public string RequestContentType => _requestInfo.RequestContentType;
+		
 		public UrlPathString RequiredFileNameOrPath(string name)
 		{
 			if (Parameters.AllKeys.Contains(name))
@@ -236,23 +238,52 @@ namespace Bloom.Api
 		}
 		public string RequiredPostJson()
 		{
-			Debug.Assert(_requestInfo.HttpMethod == HttpMethods.Post, "Expected HttpMethod to be Post but instead got: " + _requestInfo.HttpMethod.ToString());
-			var json = _requestInfo.GetPostJson();
+			var json = GetPostJson();
 			if (!string.IsNullOrWhiteSpace(json))
 			{
 				return json;
 			}
 			throw new ApplicationException("The query " + _requestInfo.RawUrl + " should have post json");
 		}
+		/// <summary>
+		/// Gets the JSON data from a POST request
+		/// </summary>
+		/// <returns>If the request's content type is "application/json", returns the data as a JSON string
+		/// If the request's content type is not "application/json", returns null instead</returns>
+		public string GetPostJsonOrNull()
+		{
+			string contentType = RequestContentType;	// Note: could contain suffixes like charset=[...]
+			if (contentType == null || !contentType.ToLowerInvariant().Contains("application/json"))
+			{
+				return null;
+			}
+
+			return GetPostJson();
+		}
+		public string GetPostJson()
+		{
+			Debug.Assert(_requestInfo.HttpMethod == HttpMethods.Post, "Expected HttpMethod to be Post but instead got: " + _requestInfo.HttpMethod.ToString());
+			return _requestInfo.GetPostJson();
+		}
 		public string RequiredPostString()
 		{
-			Debug.Assert(_requestInfo.HttpMethod == HttpMethods.Post);
-			var s = _requestInfo.GetPostString();
+			var s = GetPostStringOrNull();
 			if (!string.IsNullOrWhiteSpace(s))
 			{
 				return s;
 			}
 			throw new ApplicationException("The query " + _requestInfo.RawUrl + " should have post string");
+		}
+		public string GetPostStringOrNull()
+		{
+			string contentType = RequestContentType;
+			if (contentType == null)
+			{
+				return null;
+			}
+
+			Debug.Assert(_requestInfo.HttpMethod == HttpMethods.Post);
+			return _requestInfo.GetPostString();			
 		}
 
 		/// <summary>

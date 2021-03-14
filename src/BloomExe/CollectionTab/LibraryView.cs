@@ -88,9 +88,11 @@ namespace Bloom.CollectionTab
 				// Instead, in the short term we may add a button to show the file.
 				// Later we may implement some efficient way to scroll through them.
 				// tcManager.CurrentCollection?.MessageLog?.LoadSavedMessages();
-				var dlg = new ReactDialog("teamCollectionSettingsBundle.js", "TeamCollectionDialog");
-				dlg.ShowDialog(this);
-				tcManager.CurrentCollection?.MessageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
+				using (var dlg = new ReactDialog("teamCollectionSettingsBundle.js", "TeamCollectionDialog"))
+				{
+					dlg.ShowDialog(this);
+					tcManager.CurrentCollection?.MessageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
+				}
 			};
 		}
 

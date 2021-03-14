@@ -200,15 +200,21 @@ export class BloomApi {
     // When you call the returned function, two things happen: 1) we POST the value to the Bloom API
     // and 2) we tell react that the value changed. It will then re-render the component;
     // the component will call this again, but this time the tuple will contain the new value.
+    //
+    // The conditional parameter is optional.
+    // If defined, the string will be retrieved only if calling conditional() returns true.
     public static useApiString(
         urlSuffix: string,
-        defaultValue: string
+        defaultValue: string,
+        conditional?: () => boolean
     ): [string, (value: string) => void] {
         const [value, setValue] = React.useState(defaultValue);
         React.useEffect(() => {
-            BloomApi.getString(urlSuffix, c => {
-                setValue(c);
-            });
+            if (!conditional || conditional()) {
+                BloomApi.getString(urlSuffix, c => {
+                    setValue(c);
+                });
+            }
         }, []);
 
         const fn = (value: string) => {

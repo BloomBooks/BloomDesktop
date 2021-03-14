@@ -1,5 +1,6 @@
 ﻿using Bloom.Api;
 using Bloom.MiscUI;
+using Newtonsoft.Json;
 
 namespace Bloom.web.controllers
 {
@@ -10,6 +11,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("dialog/close",
 				(ApiRequest request) =>
 				{
+					// Closes the current dialog.
 					BrowserDialog.CloseDialog();
 					request.PostSucceeded();
 				}, true);
