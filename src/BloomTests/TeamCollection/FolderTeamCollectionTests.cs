@@ -12,6 +12,10 @@ namespace BloomTests.TeamCollection
 {
 	public class FolderTeamCollectionTests
 	{
+		// used as a book name in many tests, having a period in it catches many possible
+		// errors from using ChangeExtension and GetFilenameWithoutExtension to convert names
+		// that might or might not have extensions.
+		private const string kAnotherBook = "Some.other book";
 		private TemporaryFolder _repoFolder;
 		private TemporaryFolder _collectionFolder;
 		private Mock<ITeamCollectionManager> _mockTcManager;
@@ -42,9 +46,9 @@ namespace BloomTests.TeamCollection
 			var mp3Path = Path.Combine(audioDirectory, "rubbish.mp3");
 			RobustFile.WriteAllText(mp3Path, "Fake mp3");
 
-			var secondBookFolderPath = Path.Combine(_collectionFolder.FolderPath, "Another book");
+			var secondBookFolderPath = Path.Combine(_collectionFolder.FolderPath, kAnotherBook);
 			Directory.CreateDirectory(secondBookFolderPath);
-			var anotherBookPath = Path.Combine(secondBookFolderPath, "Another book.htm");
+			var anotherBookPath = Path.Combine(secondBookFolderPath, kAnotherBook + ".htm");
 			RobustFile.WriteAllText(anotherBookPath, "This is just a dummy for another book");
 
 			_myBookStatus = _collection.PutBook(bookFolderPath);
@@ -67,7 +71,7 @@ namespace BloomTests.TeamCollection
 		{
 			// Several tests might leave something locked, especially if they fail.
 			_collection.UnlockBook("My book");
-			_collection.UnlockBook("Another book");
+			_collection.UnlockBook(kAnotherBook);
 		}
 
 		[Test]
@@ -93,7 +97,7 @@ namespace BloomTests.TeamCollection
 		public void PutBook_WritesLocalChecksum()
 		{
 			Assert.That(_collection.GetLocalStatus("My book").checksum, Is.EqualTo(_myBookStatus.checksum));
-			Assert.That(_collection.GetLocalStatus("Another book").checksum, Is.EqualTo(_anotherBookStatus.checksum));
+			Assert.That(_collection.GetLocalStatus(kAnotherBook).checksum, Is.EqualTo(_anotherBookStatus.checksum));
 		}
 
 		[Test]
@@ -111,14 +115,14 @@ namespace BloomTests.TeamCollection
 				var destMp3Path = Path.Combine(destAudioDirectory, "rubbish.mp3");
 				Assert.That(RobustFile.ReadAllText(destMp3Path), Is.EqualTo("Fake mp3"));
 
-				var anotherDestBookFolder = Path.Combine(destFolder.FolderPath, "Another book");
-				var anotherDestBookPath = Path.Combine(anotherDestBookFolder, "Another book.htm");
+				var anotherDestBookFolder = Path.Combine(destFolder.FolderPath, kAnotherBook);
+				var anotherDestBookPath = Path.Combine(anotherDestBookFolder, kAnotherBook + ".htm");
 				Assert.That(RobustFile.ReadAllText(anotherDestBookPath), Is.EqualTo("This is just a dummy for another book"));
 
 				Assert.That(Directory.EnumerateDirectories(destFolder.FolderPath).Count(), Is.EqualTo(2));
 
 				AssertStatusMatch(destFolder.FolderPath, "My book");
-				AssertStatusMatch(destFolder.FolderPath, "Another book");
+				AssertStatusMatch(destFolder.FolderPath, kAnotherBook);
 			}
 		}
 
@@ -261,14 +265,14 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public void PutBook_InLostAndFound_DoesSo()
 		{
-			var lfPath = Path.Combine(_repoFolder.FolderPath, "Lost and Found", "Another Book.bloom");
+			var lfPath = Path.Combine(_repoFolder.FolderPath, "Lost and Found", kAnotherBook + ".bloom");
 			Assert.That(RobustFile.Exists(lfPath));
 		}
 
 		[Test]
 		public void PutBook_InLostAndFoundTwice_KeepsBoth()
 		{
-			var lfPath = Path.Combine(_repoFolder.FolderPath, "Lost and Found", "Another Book2.bloom");
+			var lfPath = Path.Combine(_repoFolder.FolderPath, "Lost and Found", kAnotherBook + "2.bloom");
 			Assert.That(RobustFile.Exists(lfPath));
 		}
 
@@ -481,7 +485,7 @@ namespace BloomTests.TeamCollection
 		//public void GetPeople_TwoLocked_ReturnsUsers()
 		//{
 		//	_collection.AttemptLock("My book", "fred@somewhere.org");
-		//	_collection.AttemptLock("Another book", "joe@nowhere.org");
+		//	_collection.AttemptLock(kAnotherBook, "joe@nowhere.org");
 		//	Assert.That(_collection.GetPeople(), Is.EqualTo(new [] { "fred@somewhere.org", "joe@nowhere.org" }).AsCollection);
 		//}
 
@@ -489,7 +493,7 @@ namespace BloomTests.TeamCollection
 		//public void GetPeople_TwoLockedBySame_ReturnsOneUser()
 		//{
 		//	_collection.AttemptLock("My book", "fred@somewhere.org");
-		//	_collection.AttemptLock("Another book", "fred@somewhere.org");
+		//	_collection.AttemptLock(kAnotherBook, "fred@somewhere.org");
 		//	Assert.That(_collection.GetPeople(), Is.EqualTo(new[] { "fred@somewhere.org" }).AsCollection);
 		//}
 	}

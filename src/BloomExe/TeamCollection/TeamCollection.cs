@@ -345,9 +345,9 @@ namespace Bloom.TeamCollection
 		public void CopyAllBooksFromRepoToLocalFolder(string destinationCollectionFolder = null)
 		{
 			var dest = destinationCollectionFolder ?? _localCollectionFolder;
-			foreach (var path in GetBookList())
+			foreach (var bookName in GetBookList())
 			{
-				CopyBookFromRepoToLocal(Path.GetFileNameWithoutExtension(path), dest);
+				CopyBookFromRepoToLocal(bookName, dest);
 			}
 		}
 
@@ -650,7 +650,8 @@ namespace Bloom.TeamCollection
 		public static string CollectionPath(string parentFolder)
 		{
 			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(parentFolder));
-			var collectionPath = Path.Combine(parentFolder, Path.ChangeExtension(collectionName, "bloomCollection"));
+			// Avoiding use of ChangeExtension as it's just possible the collectionName could have period.
+			var collectionPath = Path.Combine(parentFolder, collectionName + ".bloomCollection");
 			if (File.Exists(collectionPath))
 				return collectionPath;
 			// occasionally, mainly when making a temp folder during joining, the bloomCollection file may not
@@ -865,13 +866,11 @@ namespace Bloom.TeamCollection
 		/// <param name="args"></param>
 		public void HandleNewBook(NewBookEventArgs args)
 		{
-			var newBookPath = args.BookFileName;
-			var newBookName = Path.GetFileNameWithoutExtension(newBookPath);
 			var bookBaseName = GetBookNameWithoutSuffix(args.BookFileName);
 			if (args.BookFileName.EndsWith(".bloom"))
 			{
 				_tcLog.WriteMessage(MessageAndMilestoneType.NewStuff, "TeamCollection.NewBookArrived",
-					"A new book called '{0}' was added by a teammate.", newBookName, null);
+					"A new book called '{0}' was added by a teammate.", bookBaseName, null);
 			}
 			// This needs to be AFTER we update the message log, data which it may use.
 			UpdateBookStatus(bookBaseName, true);
@@ -901,12 +900,18 @@ namespace Bloom.TeamCollection
 		/// <summary>
 		/// Returns a string representing a path to the book.status file of the specified book in the specified collection.
 		/// </summary>
-		/// <param name="bookName">Can have it the .bloom extension or not, either way is fine.</param>
+		/// <param name="bookName">Can have the .bloom extension or not, either way is fine.
+		/// Other extensions are not supported, because of the possibility of getting simple
+		/// folder names containing periods.</param>
 		/// <param name="collectionFolder">The collection that contains the book</param>
 		/// <returns></returns>
 		internal string GetStatusFilePath(string bookName, string collectionFolder)
 		{
-			var bookFolderName = Path.GetFileNameWithoutExtension(bookName);
+			// Don't use GetFileNameWithoutExtension here, what comes in might be a plain folder name
+			// that doesn't have an extension, but might contain a period if the book title does.
+			var bookFolderName = Path.GetFileName(bookName);
+			if (bookFolderName.EndsWith(".bloom"))
+				bookFolderName = bookFolderName.Substring(0, bookFolderName.Length - ".bloom".Length);
 			var bookFolderPath = Path.Combine(collectionFolder, bookFolderName);
 			var statusFile = Path.Combine(bookFolderPath, "book.status");
 			return statusFile;
@@ -1124,9 +1129,9 @@ namespace Bloom.TeamCollection
 							} while (Directory.Exists(renameFolder));
 
 							Directory.Move(localFolderPath, renameFolder);
-							var renamePath = Path.Combine(renameFolder,
-								Path.ChangeExtension(Path.GetFileName(renameFolder), "htm"));
-							var oldBookPath = Path.Combine(renameFolder, Path.ChangeExtension(bookName, "htm"));
+							// Don't use ChangeExtension here, bookName may have arbitrary periods.
+							var renamePath = Path.Combine(renameFolder, Path.GetFileName(renameFolder) + ".htm");
+							var oldBookPath = Path.Combine(renameFolder, bookName +  ".htm");
 							ReportProgressAndLog(progress, "RenamingBook",
 								"Renaming the local book '{0}' because there is a new one with the same name from the Team Collection",
 								bookName);
