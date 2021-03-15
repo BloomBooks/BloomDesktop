@@ -350,7 +350,12 @@ namespace Bloom.Publish.Android
 					_languagesToPublish.Clear();
 					foreach (var kvp in _allLanguages)
 					{
-						if (kvp.Value)
+						if (kvp.Value ||
+							// We always select L1 by default because we assume the user wants to publish the language he is currently working on.
+							// It may be incomplete if he just wants to preview his work so far.
+							// If he really doesn't want to publish L1, he can deselect it.
+							// See BL-9587.
+							kvp.Key == request.CurrentCollectionSettings?.Language1Iso639Code)
 							_languagesToPublish.Add(kvp.Key);
 					}
 				}
