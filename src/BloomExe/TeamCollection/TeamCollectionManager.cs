@@ -62,6 +62,20 @@ namespace Bloom.TeamCollection
 			TeamCollectionStatusChanged?.Invoke(null, new EventArgs());
 		}
 
+		/// <summary>
+		/// Return true if the user must check this book out before editing it,
+		/// deleting it, etc. This is automatically false if the collection is not
+		/// a TC; if it is a TC, it's true if the books is NOT checked out.
+		/// </summary>
+		/// <param name="bookFolderPath"></param>
+		/// <returns></returns>
+		public bool NeedCheckoutToEdit(string bookFolderPath)
+		{
+			if (CurrentCollection == null)
+				return false;
+			return CurrentCollection.NeedCheckoutToEdit(bookFolderPath);
+		}
+
 		public TeamCollectionStatus CollectionStatus
 		{
 			get

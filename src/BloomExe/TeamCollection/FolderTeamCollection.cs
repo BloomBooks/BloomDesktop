@@ -428,6 +428,22 @@ namespace Bloom.TeamCollection
 			RaiseBookStateChange(Path.GetFileName(e.Name));
 		}
 
+		/// <summary>
+		/// Delete the indicated book from the repo (if it's there...not a problem if it's
+		/// only local).
+		/// </summary>
+		/// <param name="bookFolderPath"></param>
+		public override void DeleteBookFromRepo(string bookFolderPath)
+		{
+			var pathToBookFileInRepo = GetPathToBookFileInRepo(Path.GetFileName(bookFolderPath));
+			// The test here is mostly unnecessary, since Delete won't throw if the file doesn't exist
+			// (as indeed it might not, even after the test, in a rare race condition with someone else
+			// deleting it). It does serve to make sure at least the containing folder exists, which
+			// WOULD cause an exception if by any chance it did not.
+			if (RobustFile.Exists(pathToBookFileInRepo))
+				RobustFile.Delete(pathToBookFileInRepo);
+		}
+
 		protected virtual void OnCreated(object sender, FileSystemEventArgs e)
 		{
 			var createEvent = new FileSystemEventRecord(e);
