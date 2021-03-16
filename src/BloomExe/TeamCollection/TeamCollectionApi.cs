@@ -389,6 +389,11 @@ namespace Bloom.TeamCollection
 			Form.ActiveForm.Invoke((Action) (() => _bookSelection.InvokeSelectionChanged(false)));
 		}
 
+		public bool IsTeamCollection
+		{
+			get { return _tcManager.CollectionStatus != TeamCollectionStatus.None; }
+		}
+
 		// Some pre-existing logic for whether the user can edit the book, combined with checking
 		// that it is checked-out to this user 
 		public bool CanEditBook()

@@ -139,7 +139,11 @@ namespace Bloom.CollectionTab
 
 		private void SetEditButtonVisibility()
 		{
-			_editBookButton.Visible = TeamCollectionApi.TheOneInstance.CanEditBook();
+			// A book in a Team Collection may not be editable for multiple reasons,
+			// but outside Team Collections the selected book should know whether it is editable.
+			_editBookButton.Visible = TeamCollectionApi.TheOneInstance.IsTeamCollection ?
+				TeamCollectionApi.TheOneInstance.CanEditBook() :
+				_bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.IsEditable;
 		}
 
 		void CurrentSelection_ContentsChanged(object sender, EventArgs e)
@@ -164,7 +168,7 @@ namespace Bloom.CollectionTab
 				Debug.WriteLine("LibraryBookView.ShowBook() currentselection ok");
 
 				_addToCollectionButton.Visible = _bookSelection.CurrentSelection.IsShellOrTemplate && !_bookSelection.CurrentSelection.HasFatalError;
-				_editBookButton.Visible = TeamCollectionApi.TheOneInstance.CanEditBook();
+				SetEditButtonVisibility();
 				_readmeBrowser.Visible = false;
 				//_previewBrowser.Visible = true;
 				_splitContainerForPreviewAndAboutBrowsers.Visible = true;
