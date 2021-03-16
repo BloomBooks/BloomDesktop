@@ -881,6 +881,12 @@ namespace Bloom.Workspace
 					using (var dlg = new ReactDialog("autoUpdateSoftwareDlgBundle.js", "AutoUpdateSoftwareDialog"))
 					{
                         dlg.Height = 350;
+						dlg.FormBorderStyle = FormBorderStyle.FixedDialog;
+						dlg.ControlBox = false;
+						dlg.Text = ""; // Don't show a title on the dialog
+						// FWIW: We don't want this dialog draggable, but if I didn't set Text to empty string,
+						// the dialog is draggable, but says "ReactDialog" in the upper left corner.
+						// If we need a draggable one sometime, we can just set the Text to what we want.
 						dlg.ShowDialog(this);
 					}
 				}
