@@ -183,20 +183,6 @@ export class ToolBox {
         );
     }
 
-    /**
-     * Fires an event for C# to handle
-     * @param {String} eventName
-     * @param {String} eventData
-     */
-    public static fireCSharpToolboxEvent(eventName: string, eventData: string) {
-        const event = new MessageEvent(eventName, {
-            bubbles: true,
-            cancelable: true,
-            data: eventData
-        });
-        top.document.dispatchEvent(event);
-    }
-
     public static registerTool(tool: ITool) {
         masterToolList.push(tool);
     }
@@ -457,8 +443,8 @@ export function showOrHideTool_click(chkbox) {
 
     if (chkbox.innerHTML === "") {
         chkbox.innerHTML = checkMarkString;
-        ToolBox.fireCSharpToolboxEvent(
-            "saveToolboxSettingsEvent",
+        BloomApi.postString(
+            "editView/saveToolboxSetting",
             "active\t" + chkbox.id + "\t1"
         );
         if (tool) {
@@ -466,8 +452,8 @@ export function showOrHideTool_click(chkbox) {
         }
     } else {
         chkbox.innerHTML = "";
-        ToolBox.fireCSharpToolboxEvent(
-            "saveToolboxSettingsEvent",
+        BloomApi.postString(
+            "editView/saveToolboxSetting",
             "active\t" + chkbox.id + "\t0"
         );
         $("*[data-toolId]")
@@ -607,8 +593,8 @@ export function removeToolboxMarkup() {
 
 function switchTool(newToolName: string): void {
     // Have Bloom remember which tool is active. (Might be none)
-    ToolBox.fireCSharpToolboxEvent(
-        "saveToolboxSettingsEvent",
+    BloomApi.postString(
+        "editView/saveToolboxSetting",
         "current\t" + newToolName
     );
     let newTool: ITool | null = null;
@@ -1073,8 +1059,8 @@ function loadToolboxTool(
 }
 
 function showToolboxChanged(wasShowing: boolean): void {
-    ToolBox.fireCSharpToolboxEvent(
-        "saveToolboxSettingsEvent",
+    BloomApi.postString(
+        "editView/saveToolboxSetting",
         "visibility\t" + (wasShowing ? "" : "visible")
     );
     if (currentTool) {

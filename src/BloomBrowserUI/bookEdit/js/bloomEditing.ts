@@ -36,20 +36,6 @@ import { BloomApi } from "../../utils/bloomApi";
 import { showRequestStringDialog } from "../../react_components/RequestStringDialog";
 import { fixUpDownArrowEventHandler } from "./arrowKeyWorkaroundManager";
 
-/**
- * Fires an event for C# to handle
- * @param {String} eventName
- * @param {String} eventData
- */
-export function fireCSharpEditEvent(eventName, eventData) {
-    const event = new MessageEvent(eventName, {
-        /*'view' : window,*/ bubbles: true,
-        cancelable: true,
-        data: eventData
-    });
-    top.document.dispatchEvent(event);
-}
-
 export function GetDifferenceBetweenHeightAndParentHeight(jqueryNode) {
     // function also declared and used in StyleEditor
     if (!jqueryNode) {
@@ -352,10 +338,12 @@ function IsInTranslationMode() {
 }
 
 let onLoadHappenedNormally = false;
+let cancelHandle = 0;
 
 const windowLoadedHandler = () => {
     onLoadHappenedNormally = true;
-    fireCSharpEditEvent("jsNotification", "editPagePainted");
+    window.cancelAnimationFrame(cancelHandle);
+    BloomApi.post("editView/editPagePainted");
 };
 
 // When we don't already have a video (either a new page, or it has been deleted),
@@ -375,7 +363,7 @@ window.setTimeout(() => {
 window.onload = () => {
     // onload means we have all the parts, and waiting for one more animation frame
     // seems to mean it has actually been painted.
-    window.requestAnimationFrame(windowLoadedHandler);
+    cancelHandle = window.requestAnimationFrame(windowLoadedHandler);
 };
 
 // Originally, all this code was in document.load and the selectors were acting
