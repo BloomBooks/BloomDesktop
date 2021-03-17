@@ -1,4 +1,6 @@
-﻿using System.Windows.Forms;
+﻿using System;
+using System.IO;
+using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Edit;
 using L10NSharp;
@@ -17,6 +19,9 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("editView/setModalState", HandleSetModalState, true);
 			apiHandler.RegisterEndpointHandler("editView/chooseWidget", HandleChooseWidget, true);
 			apiHandler.RegisterEndpointHandler("editView/getBookColors", HandleGetColors, true);
+			apiHandler.RegisterEndpointHandler("editView/editPagePainted", HandleEditPagePainted, true);
+			apiHandler.RegisterEndpointHandler("editView/saveToolboxSetting", HandleSaveToolboxSetting, false);
+			apiHandler.RegisterEndpointHandler("editView/setTopic", HandleSetTopic, true);
 		}
 
 		public void HandleSetModalState(ApiRequest request)
@@ -75,6 +80,32 @@ namespace Bloom.web.controllers
 			var currentBookDom = currentBook.OurHtmlDom;
 			var colors = currentBookDom.GetColorsUsedInBookBubbleElements();
 			request.ReplyWithText(colors);
+		}
+
+		public Action NotifyEditPagePainted;
+		public static Action NotifyEditPagePaintedFinished;
+
+		private void HandleEditPagePainted(ApiRequest request)
+		{
+			NotifyEditPagePainted?.Invoke();
+			NotifyEditPagePaintedFinished?.Invoke();
+			request.PostSucceeded();
+		}
+
+		private void HandleSaveToolboxSetting(ApiRequest request)
+		{
+			var settingString = request.RequiredPostString();
+			View.Model.SaveToolboxSettings(settingString);
+			request.PostSucceeded();
+		}
+
+		private void HandleSetTopic(ApiRequest request)
+		{
+			var topicString = request.RequiredPostString();
+			if (topicString == "<NONE>")
+				topicString = "";	// required string cannot be empty
+			View.Model.SetTopic(topicString);
+			request.PostSucceeded();
 		}
 	}
 }

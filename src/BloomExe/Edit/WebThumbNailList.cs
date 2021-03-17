@@ -139,13 +139,13 @@ namespace Bloom.Edit
 			if (handler != null && /*REVIEW */ page != null)
 			{
 				var stopwatch = Stopwatch.StartNew();
-				Browser.RequestJsNotification("editPagePainted", () =>
-				{
+				web.controllers.EditingViewApi.NotifyEditPagePaintedFinished = () => {
 					var paintTime = stopwatch.ElapsedMilliseconds;
 					if (reportsSent++ >= 2)
 						stopwatch.Stop();
 					TroubleShooterDialog.Report($"page change to paint complete took {paintTime} milliseconds");
-				});
+					web.controllers.EditingViewApi.NotifyEditPagePaintedFinished = null;
+				};
 				handler(page, null);
 				var time = stopwatch.ElapsedMilliseconds;
 				if (reportsSent++ >= 2)
