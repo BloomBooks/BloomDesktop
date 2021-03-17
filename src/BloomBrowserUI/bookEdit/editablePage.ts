@@ -40,7 +40,8 @@ export interface IPageFrameExports {
 // For example, FrameExports.getPageFrameExports().pageSelectionChanging() can be called.
 import {
     pageSelectionChanging,
-    prepareToSavePage,
+    getBodyContentForSavePage,
+    userStylesheetContent,
     pageUnloading,
     disconnectForGarbageCollection,
     makeElement,
@@ -49,7 +50,8 @@ import {
 } from "./js/bloomEditing";
 export {
     pageSelectionChanging,
-    prepareToSavePage,
+    getBodyContentForSavePage,
+    userStylesheetContent,
     pageUnloading,
     disconnectForGarbageCollection,
     makeElement,

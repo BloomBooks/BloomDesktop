@@ -1350,9 +1350,10 @@ namespace Bloom.Edit
 		/// </summary>
 		public void CleanHtmlAndCopyToPageDom()
 		{
-			RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getToolboxFrameExports().removeToolboxMarkup();}");
-			RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getPageFrameExports().prepareToSavePage();}");
-			_browser1.ReadEditableAreasNow();
+			RunJavaScript("if (typeof(FrameExports) !=='undefined' && typeof(FrameExports.getPageFrameExports()) !=='undefined') {FrameExports.getToolboxFrameExports().removeToolboxMarkup();}");
+			var bodyHtml = RunJavaScript("if (typeof(FrameExports && typeof(FrameExports.getPageFrameExports()) !=='undefined') !=='undefined') {return FrameExports.getPageFrameExports().getBodyContentForSavePage();}");
+			var userCssContent = RunJavaScript("if (typeof(FrameExports) !=='undefined' && typeof(FrameExports.getPageFrameExports()) !=='undefined') {return FrameExports.getPageFrameExports().userStylesheetContent();}");
+			_browser1.ReadEditableAreasNow(bodyHtml, userCssContent);
 		}
 
 		public GeckoInputElement GetShowToolboxCheckbox()

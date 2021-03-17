@@ -1197,9 +1197,24 @@ export const pageSelectionChanging = () => {
     marginBox.find(".bloom-translationGroup .textBox-identifier").remove();
 };
 
-// For usage, see editViewFrame.switchContentPage()
-export const prepareToSavePage = () => {
+// Called from C# in EditingView.CleanHtmlAndCopyToPageDom via FrameExports.getPageFrameExports()
+export const getBodyContentForSavePage = () => {
     theOneBubbleManager.turnOffBubbleEditing();
+    // Active element should be forced to blur
+    if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+    }
+    return document.body.innerHTML;
+};
+
+export const userStylesheetContent = () => {
+    const ss = Array.from(document.styleSheets).find(
+        s => s.title === "userModifiedStyles"
+    ) as CSSStyleSheet | undefined;
+    if (!ss) return "";
+    return Array.from(ss.cssRules)
+        .map(rule => rule.cssText)
+        .join("\n");
 };
 
 export const pageUnloading = () => {

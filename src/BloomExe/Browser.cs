@@ -1037,48 +1037,25 @@ namespace Bloom
 		/// <summary>
 		/// What's going on here: the browser is just editing/displaying a copy of one page of the document.
 		/// So we need to copy any changes back to the real DOM.
+		/// We're now obtaining the new content another way, so this code doesn't have any reason
+		/// to be in this class...but we're aiming for a minimal change, maximal safety fix for 4.9
 		/// </summary>
-		private void LoadPageDomFromBrowser()
+		private void LoadPageDomFromBrowser(string bodyHtml, string userCssContent)
 		{
 			Debug.Assert(!InvokeRequired);
 			if (_pageEditDom == null)
 				return;
 
-			GeckoDocument contentDocument = null;
 			try
 			{
-				if (_pageEditDom == _rootDom)
-					contentDocument = _browser.Document;
-				else
-				{
-					// Assume _editDom corresponds to a frame called 'page' in the root. This may eventually need to be more configurable.
-					var frameElement = _browser.Window?.Document?.GetElementById("page") as GeckoIFrameElement;
-					if (frameElement == null)
-						return;
-					// contentDocument = frameElement.ContentDocument; unreliable in Gecko45
-					contentDocument = (GeckoDocument) frameElement.ContentWindow.Document; // TomH says this will always succeed
-				}
-				if (contentDocument == null)
-					return; // can this happen?
-				// As of august 2012 textareas only occur in the Calendar
-				if (_pageEditDom.SelectNodes("//textarea").Count > 0)
-				{
-					//This approach was to force an onblur so that we can get at the actual user-edited value.
-					//This caused problems, with Bloom itself (the Shell) not knowing that it is active.
-					//_browser.WebBrowserFocus.Deactivate();
-					//_browser.WebBrowserFocus.Activate();
-
-					// Now, we just do the blur directly.
-					var activeElement = contentDocument.ActiveElement;
-					if (activeElement != null)
-						activeElement.Blur();
-				}
-
-				var body = contentDocument.GetElementsByTagName("body");
-				if (body.Length ==0)	//review: a previous comment said this could happen in OnValidating, but that is gone...may be obsolete
+				// unlikely, but if we somehow couldn't get the new content, better keep the old.
+				// This MIGHT be able to happen in some cases of very fast page clicking, where
+				// the page isn't fully enough loaded to expose the functions we use to get the
+				// content. In that case, the user can't have made changes, so not saving is fine.
+				if (string.IsNullOrEmpty(bodyHtml))
 					return;
 
-				var content = body[0].InnerHtml;
+				var content = bodyHtml;
 				XmlDocument dom;
 
 				//todo: deal with exception that can come out of this
@@ -1106,31 +1083,17 @@ namespace Bloom
 				}
 				_pageEditDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
 
-				var userModifiedStyleSheet = contentDocument.StyleSheets.FirstOrDefault(s =>
-					{
-						// We used to have a workaround here for a bug in geckofx-29, but since newer geckos work fine
-						// I'd (gjm) like to go with what's clearer now.
-						//var titleNode = s.OwnerNode.EvaluateXPath("@title").GetNodes().FirstOrDefault();
-						var titleNode = s.OwnerNode.EvaluateXPath("@title").GetSingleNodeValue();
-						if (titleNode == null)
-							return false;
-						return titleNode.NodeValue == "userModifiedStyles";
-					});
-
-				if (userModifiedStyleSheet != null)
-				{
-					SaveCustomizedCssRules(userModifiedStyleSheet);
-				}
+				SaveCustomizedCssRules(userCssContent);
 
 				//enhance: we have jscript for this: cleanup()... but running jscript in this method was leading the browser to show blank screen
-//				foreach (XmlElement j in _editDom.SafeSelectNodes("//div[contains(@class, 'ui-tooltip')]"))
-//				{
-//					j.ParentNode.RemoveChild(j);
-//				}
-//				foreach (XmlAttribute j in _editDom.SafeSelectNodes("//@ariasecondary-describedby | //@aria-describedby"))
-//				{
-//					j.OwnerElement.RemoveAttributeNode(j);
-//				}
+				//				foreach (XmlElement j in _editDom.SafeSelectNodes("//div[contains(@class, 'ui-tooltip')]"))
+				//				{
+				//					j.ParentNode.RemoveChild(j);
+				//				}
+				//				foreach (XmlAttribute j in _editDom.SafeSelectNodes("//@ariasecondary-describedby | //@aria-describedby"))
+				//				{
+				//					j.OwnerElement.RemoveAttributeNode(j);
+				//				}
 
 			}
 			catch(Exception e)
@@ -1139,11 +1102,6 @@ namespace Bloom
 #if DEBUG
 				throw;
 #endif
-			}
-			finally
-			{
-				if (contentDocument != null)
-					contentDocument.Dispose();
 			}
 
 			try
@@ -1163,7 +1121,7 @@ namespace Bloom
 		public const string  CdataPrefix = "/*<![CDATA[*/";
 		public const string CdataSuffix = "/*]]>*/";
 
-		private void SaveCustomizedCssRules(GeckoStyleSheet userModifiedStyleSheet)
+		private void SaveCustomizedCssRules(string userCssContent)
 		{
 			try
 			{
@@ -1174,14 +1132,11 @@ namespace Bloom
 				 */
 				var outerStyleElementString = new StringBuilder();
 				outerStyleElementString.AppendLine("<style title='userModifiedStyles' type='text/css'>");
-				var innerCssStylesString = new StringBuilder();
-				foreach (var cssRule in userModifiedStyleSheet.CssRules)
-				{
-					innerCssStylesString.AppendLine(cssRule.CssText);
-				}
-				outerStyleElementString.Append(WrapUserStyleInCdata(innerCssStylesString.ToString()));
+				outerStyleElementString.Append(WrapUserStyleInCdata(userCssContent));
 				outerStyleElementString.AppendLine("</style>");
 				//Debug.WriteLine("*User Modified Stylesheet in browser:" + styles);
+				// Yes, this wipes out everything else in the head. At this point, the only things
+				// we need in _pageEditDom are the user defined style sheet and the bloom-page element in the body.
 				_pageEditDom.GetElementsByTagName("head")[0].InnerXml = outerStyleElementString.ToString();
 			}
 			catch (GeckoJavaScriptException jsex)
@@ -1227,13 +1182,13 @@ namespace Bloom
 		/// <summary>
 		/// This is needed if we want to save before getting a natural Validating event.
 		/// </summary>
-		public void ReadEditableAreasNow()
+		public void ReadEditableAreasNow(string bodyHtml, string userCssContent)
 		{
 			if (_url != "about:blank")
 			{
 		//		RunJavaScript("Cleanup()");
 					//nb: it's important not to move this into LoadPageDomFromBrowser(), which is also called during validation, becuase it isn't allowed then
-				LoadPageDomFromBrowser();
+				LoadPageDomFromBrowser(bodyHtml, userCssContent);
 			}
 		}
 
