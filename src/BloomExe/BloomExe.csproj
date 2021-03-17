@@ -332,6 +332,7 @@
     <Compile Include="TeamCollection\BookStatus.cs" />
     <Compile Include="TeamCollection\FileSystemEventRecord.cs" />
     <Compile Include="TeamCollection\FolderTeamCollection.cs" />
+    <Compile Include="TeamCollection\RepoChangeEventArgs.cs" />
     <Compile Include="TeamCollection\TeamCollection.cs" />
     <Compile Include="TeamCollection\NewBookEventArgs.cs" />
     <Compile Include="TeamCollection\TeamCollectionApi.cs" />
