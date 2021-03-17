@@ -5,27 +5,30 @@ import AudioRecording, {
     AudioMode,
     getAllAudioModes
 } from "./audioRecording";
-import { runAsyncTest } from "../../test/testUtil";
 import axios from "axios";
 import * as $ from "jquery";
 
 // Notes:
 // For any async tests:
-//   Either async/await or promises work fine.
-//        I think async/await with try/catch/finally is more readable than promises. (Less nesting and more consistent levels of nesting). But either works
-//   Ideally, for either paradigm, you should have try/catch/finally
-//        Catch can call fail(error).  Finally calls done();
-//        This will report a failure explicitly, although the stack trace is not ideal - it'll show the line where you called fail();
-//        The logs may include an actual stack trace for exceptions.
-//   For less work, it is fine to just have await with a done at the end. Or a .then() that calls done() at the end of the then callback.
-//        The error message will only say that a Timeout error occurred, which is very much not ideal
+//   I recommend using async/await syntax, without the done() callback.
+//     The done callback() is trickier to get right if an exception is thrown. You need to add try/catch/finally
+//     If you don't catch it, the error message will only say a Timeout error occurred, not the actual error.
+//     If you do catch it and then call fail(error), that's better but the stack trace won't be quite right.
+//     It'll show the line where fail() was called.
+//     Easier to just let Jasmine handle it (you get that by not having done() callback).
+//   There's also a promise based syntax available,
+//     but I think async/await with try/catch/finally is more readable than promises. (Less nesting and more consistent levels of nesting).
+//   Summary: Use Async/Await with NO done callback
+//   * Just add async() in front of the anonymous function passed to it().
+//   * The anonymous function should have no input parameters
+//   * Await whatever async stuff needs to be awaited.
+//   * Let Jasmine handle the rest
 
 describe("audio recording tests", () => {
-    beforeAll(async (done: () => void) => {
+    beforeAll(async () => {
         SetupTalkingBookUIElements();
         await SetupIFrameAsync();
         await initializeTalkingBookToolAsync();
-        done();
     });
 
     // Returns the HTML for a single text box for a variety of recording modes
@@ -251,24 +254,22 @@ describe("audio recording tests", () => {
     });
 
     describe("- PlayingMultipleAudio()", () => {
-        it("returns true while in listen to whole page with multiple text boxes", async done => {
+        it("returns true while in listen to whole page with multiple text boxes", async () => {
             SetupIFrameFromHtml(
                 "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div>"
             );
             const recording = new AudioRecording();
             await recording.listenAsync();
             expect(recording.playingAudio()).toBe(true);
-            done();
         });
 
-        it("returns true while in listen to whole page with only one box", async done => {
+        it("returns true while in listen to whole page with only one box", async () => {
             SetupIFrameFromHtml(
                 "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div></div>"
             );
             const recording = new AudioRecording();
             await recording.listenAsync();
             expect(recording.playingAudio()).toBe(true);
-            done();
         });
 
         it("returns false while preloading", () => {
@@ -1209,7 +1210,7 @@ describe("audio recording tests", () => {
             spyOn(axios, "post").and.returnValue(Promise.resolve());
         }
 
-        it("toggleRecordingMode(): converts from RecordSentence/PlaySentence to RecordTextBox/PlayTextBox upon recording", async done => {
+        it("toggleRecordingMode(): converts from RecordSentence/PlaySentence to RecordTextBox/PlayTextBox upon recording", async () => {
             // Setup
             const div1Html =
                 '<div class="bloom-editable" id="div1" data-audiorecordingmode="Sentence"><p><span id="1.1" class="audio-sentence" recordingmd5="undefined">This text box should be unchanged.</span> <span id="1.2" class="audio-sentence" recordingmd5="undefined">That is, in sentence mode.</span></p></div>';
@@ -1230,18 +1231,12 @@ describe("audio recording tests", () => {
             });
 
             // System under test
-            try {
-                await recording.toggleRecordingModeAsync();
+            await recording.toggleRecordingModeAsync();
 
-                // Simulate the user recording audio
-                setupMockRecording();
-                await recording.startRecordCurrentAsync();
-                await recording.endRecordCurrentAsync();
-            } catch (error) {
-                fail(error);
-                done();
-                return;
-            }
+            // Simulate the user recording audio
+            setupMockRecording();
+            await recording.startRecordCurrentAsync();
+            await recording.endRecordCurrentAsync();
 
             // Verification
             const div1 = getFrameElementById("page", "div1");
@@ -1260,11 +1255,9 @@ describe("audio recording tests", () => {
             expect(StripPlayerSrcNoCacheSuffix(player.src)).toBe(
                 "http://localhost:9876/bloom/api/audio/wavFile?id=audio/div2.wav"
             );
-
-            done();
         });
 
-        it("toggleRecordingMode(): converts from RecordSentence/PlaySentence to RecordTextBox/PlaySentence", async done => {
+        it("toggleRecordingMode(): converts from RecordSentence/PlaySentence to RecordTextBox/PlaySentence", async () => {
             const textBoxDivHtml =
                 '<div id="textBox1" class="bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on normal-style cke_editable cke_editable_inline cke_contents_ltr" data-languagetipcontent="English" data-audiorecordingmode="Sentence" style="min-height: 24px;" tabindex="0" spellcheck="true" role="textbox" aria-label="false" lang="en" contenteditable="true">';
             const paragraphsMarkedBySentenceHtml =
@@ -1279,13 +1272,7 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.Sentence; // Should be the old state, toggleRecordingMode() will flip the state
-            try {
-                await recording.toggleRecordingModeAsync();
-            } catch (error) {
-                fail(error);
-                done();
-                return;
-            }
+            await recording.toggleRecordingModeAsync();
 
             // Tests of the state
             expect(recording.audioRecordingMode).toBe(
@@ -1324,11 +1311,9 @@ describe("audio recording tests", () => {
                     .find(".ui-audioCurrent")
                     .text()
             ).toBe("Sentence 1. Sentence 2.", "Current text box text");
-
-            done();
         });
 
-        it("toggleRecordingMode(): converts from RecordTextBox/PlaySentence to RecordSentence/PlaySentence", async done => {
+        it("toggleRecordingMode(): converts from RecordTextBox/PlaySentence to RecordSentence/PlaySentence", async () => {
             const textBoxDivHtml =
                 '<div id="textBox1" class="bloom-editable ui-audioCurrent" data-audiorecordingmode="TextBox">';
             const paragraphsMarkedBySentenceHtml =
@@ -1343,14 +1328,11 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox; // Should be the old state, toggleRecordingMode() will flip the state
-            try {
-                await recording.toggleRecordingModeAsync();
-            } catch (error) {
-                fail(error);
-                done();
-                return;
-            }
 
+            // System Under Test
+            await recording.toggleRecordingModeAsync();
+
+            // Verification
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.Sentence
             );
@@ -1388,11 +1370,9 @@ describe("audio recording tests", () => {
                     .find(".ui-audioCurrent")
                     .text()
             ).toBe("Sentence 1.", "Current sentence text");
-
-            done();
         });
 
-        it("toggleRecordingMode(): converts from RecordSentence/PlaySentence to RecordTextBox/PlayTextBox and back, if not recorded", async done => {
+        it("toggleRecordingMode(): converts from RecordSentence/PlaySentence to RecordTextBox/PlayTextBox and back, if not recorded", async () => {
             // Setup
             const div1Html =
                 '<div class="bloom-editable" id="div1" data-audiorecordingmode="Sentence"><p><span id="1.1" class="audio-sentence" recordingmd5="undefined">This text box should be unchanged.</span> <span id="1.2" class="audio-sentence" recordingmd5="undefined">That is, in sentence mode.</span></p></div>';
@@ -1413,14 +1393,8 @@ describe("audio recording tests", () => {
             });
 
             // System under test
-            try {
-                await recording.toggleRecordingModeAsync();
-                await recording.toggleRecordingModeAsync();
-            } catch (error) {
-                fail(error);
-                done();
-                return;
-            }
+            await recording.toggleRecordingModeAsync();
+            await recording.toggleRecordingModeAsync();
 
             // Verification
             const div1 = getFrameElementById("page", "div1");
@@ -1439,11 +1413,9 @@ describe("audio recording tests", () => {
             expect(StripPlayerSrcNoCacheSuffix(player.src)).toBe(
                 "http://localhost:9876/bloom/api/audio/wavFile?id=audio/2.1.wav"
             );
-
-            done();
         });
 
-        it("toggleRecordingMode(): converts from RecordTextBox/PlayTextBox to RecordSentence/PlaySentence", async done => {
+        it("toggleRecordingMode(): converts from RecordTextBox/PlayTextBox to RecordSentence/PlaySentence", async () => {
             const textBoxDivHtml =
                 '<div id="textBox1" class="audio-sentence ui-audioCurrent bloom-editable data-audiorecordingmode="TextBox">';
             const paragraphHtml = "<p>Sentence 1. Sentence 2.<br></p>";
@@ -1457,14 +1429,11 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox; // Should be the old state, toggleRecordingMode() will flip the state
-            try {
-                await recording.toggleRecordingModeAsync();
-            } catch (error) {
-                fail(error);
-                done();
-                return;
-            }
 
+            // System Under Test
+            await recording.toggleRecordingModeAsync();
+
+            // Verification
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.Sentence
             );
@@ -1505,8 +1474,6 @@ describe("audio recording tests", () => {
                     .find(".ui-audioCurrent")
                     .text()
             ).toBe("Sentence 1.", "Current sentence text");
-
-            done();
         });
     });
 
@@ -1683,17 +1650,14 @@ describe("audio recording tests", () => {
             }
         }
 
-        it("clearRecording() disables button", async done => {
-            const run = async () => {
-                return runClearRecordingAsync(AudioMode.PureSentence);
-            };
-            const verify = () => {
-                const clearButton = document.getElementById("audio-clear")!;
-                expect(clearButton).not.toHaveClass("enabled");
-                expect(clearButton).toHaveClass("disabled");
-            };
+        it("clearRecording() disables button", async () => {
+            setupClearRecordingTest();
 
-            runAsyncTest(done, setupClearRecordingTest, run, verify);
+            await runClearRecordingAsync(AudioMode.PureSentence);
+
+            const clearButton = document.getElementById("audio-clear")!;
+            expect(clearButton).not.toHaveClass("enabled");
+            expect(clearButton).toHaveClass("disabled");
         });
 
         getAllAudioModes().forEach(scenario => {
@@ -1921,7 +1885,7 @@ describe("audio recording tests", () => {
     describe("- setupAndUpdateMarkupAsync()", () => {
         // BL-8425 The Jonah SuperBible comic book was found with data-audioRecordingMode, but no audio-sentences.
         // Not sure how that happened, but now the Talking Book Tool will repair this case.
-        it("setupAndUpdateMarkupAsync() repairs faulty setup, TextBox div has no audio-sentence class", async done => {
+        it("setupAndUpdateMarkupAsync() repairs faulty setup, TextBox div has no audio-sentence class", async () => {
             const textBox1 =
                 "<div id='testId1' data-audioRecordingMode='TextBox' class='bloom-editable' lang='en' tabindex='-1'><p>Sentence 1.</p></div>";
             const textBox2 =
@@ -1956,11 +1920,9 @@ describe("audio recording tests", () => {
 
                 expect(div).toHaveClass("audio-sentence");
             });
-
-            done();
         });
 
-        it("setupAndUpdateMarkupAsync() repairs faulty setup, Sentence div has no spans", async done => {
+        it("setupAndUpdateMarkupAsync() repairs faulty setup, Sentence div has no spans", async () => {
             SetupIFrameFromHtml(
                 "<div><div id='testId' data-audioRecordingMode='Sentence' class='bloom-editable' lang='en'><p>Sentence 1.</p></div></div>"
             );
@@ -1980,8 +1942,6 @@ describe("audio recording tests", () => {
             expect(
                 currentDiv!.querySelectorAll("span.audio-sentence").length
             ).toBe(1);
-
-            done();
         });
     });
 
@@ -2185,7 +2145,7 @@ describe("audio recording tests", () => {
         }
 
         // Also Refer to BloomExe tests "CopyFile_InputWithSpecialChars_CompletesSuccessfully"
-        it("importRecording() encodes special characters", async done => {
+        it("importRecording() encodes special characters", async () => {
             // Setup
             const div1 =
                 '<div class="bloom-editable audio-sentence ui-audioCurrent" data-audiorecordingmode="TextBox" id="div1"><p>One. Two. Three.</p></div>';
@@ -2224,8 +2184,6 @@ describe("audio recording tests", () => {
                     to: encodedDestPath
                 }
             );
-
-            done();
         });
     });
 
