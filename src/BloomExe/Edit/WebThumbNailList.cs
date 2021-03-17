@@ -126,6 +126,8 @@ namespace Bloom.Edit
 			(base.DesignMode || GetService(typeof(IDesignerHost)) != null) ||
 			(LicenseManager.UsageMode == LicenseUsageMode.Designtime);
 
+		private Stopwatch _stopwatch;
+		private int _reportsSent;
 		private void InvokePageSelectedChanged(IPage page)
 		{
 			EventHandler handler = PageSelectedChanged;
@@ -134,25 +136,29 @@ namespace Bloom.Edit
 			// since there is SOME stuff that happens in C# after telling the browser
 			// to navigate to the new page. This counts how many of the two reports have
 			// been sent, so we can stop the watch when we're done with it.
-			int reportsSent = 0;
+			_reportsSent = 0;
 
 			if (handler != null && /*REVIEW */ page != null)
 			{
-				var stopwatch = Stopwatch.StartNew();
-				Browser.RequestJsNotification("editPagePainted", () =>
-				{
-					var paintTime = stopwatch.ElapsedMilliseconds;
-					if (reportsSent++ >= 2)
-						stopwatch.Stop();
-					TroubleShooterDialog.Report($"page change to paint complete took {paintTime} milliseconds");
-				});
+				_stopwatch = Stopwatch.StartNew();
+				Model.EditPagePainted += HandleEditPagePainted;
 				handler(page, null);
-				var time = stopwatch.ElapsedMilliseconds;
-				if (reportsSent++ >= 2)
-					stopwatch.Stop();
+				var time = _stopwatch.ElapsedMilliseconds;
+				if (_reportsSent++ >= 2)
+					_stopwatch.Stop();
 				TroubleShooterDialog.Report($"C# part of page change took {time} milliseconds");
 			}
 		}
+
+		void HandleEditPagePainted(object sender, EventArgs e)
+		{
+			var paintTime = _stopwatch.ElapsedMilliseconds;
+			if (_reportsSent++ >= 2)
+				_stopwatch.Stop();
+			TroubleShooterDialog.Report($"page change to paint complete took {paintTime} milliseconds");
+			Model.EditPagePainted -= HandleEditPagePainted;
+		}
+
 
 		public RelocatePageEvent RelocatePageEvent { get; set; }
 		public void EmptyThumbnailCache()
