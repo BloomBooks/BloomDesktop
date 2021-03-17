@@ -1,4 +1,6 @@
-﻿using System.Windows.Forms;
+﻿using System;
+using System.IO;
+using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Edit;
 using L10NSharp;
@@ -17,6 +19,9 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("editView/setModalState", HandleSetModalState, true);
 			apiHandler.RegisterEndpointHandler("editView/chooseWidget", HandleChooseWidget, true);
 			apiHandler.RegisterEndpointHandler("editView/getBookColors", HandleGetColors, true);
+			apiHandler.RegisterEndpointHandler("editView/editPagePainted", HandleEditPagePainted, true);
+			apiHandler.RegisterEndpointHandler("editView/saveToolboxSetting", HandleSaveToolboxSetting, true);
+			apiHandler.RegisterEndpointHandler("editView/setTopic", HandleSetTopic, true);
 		}
 
 		public void HandleSetModalState(ApiRequest request)
@@ -75,6 +80,29 @@ namespace Bloom.web.controllers
 			var currentBookDom = currentBook.OurHtmlDom;
 			var colors = currentBookDom.GetColorsUsedInBookBubbleElements();
 			request.ReplyWithText(colors);
+		}
+
+		private void HandleEditPagePainted(ApiRequest request)
+		{
+			View.Model.HandleEditPagePaintedEvent(this, new EventArgs());
+			request.PostSucceeded();
+		}
+
+		private void HandleSaveToolboxSetting(ApiRequest request)
+		{
+			var settingString = request.RequiredPostString();
+			View.Model.SaveToolboxSettings(settingString);
+			request.PostSucceeded();
+		}
+
+		private void HandleSetTopic(ApiRequest request)
+		{
+			var topicString = request.RequiredPostString();
+			// RequiredPostString cannot be empty, so we use a substitute value for empty.
+			if (topicString == "<NONE>")
+				topicString = "";
+			View.Model.SetTopic(topicString);
+			request.PostSucceeded();
 		}
 	}
 }
