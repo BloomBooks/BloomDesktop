@@ -444,51 +444,7 @@ namespace Bloom
 
 			_browser.FrameEventsPropagateToMainWindow = true; // we want clicks in iframes to propagate all the way up to C#
 
-			AddMessageEventListener("jsNotification", ReceiveJsNotification);
-
 			RaiseGeckoReady();
-		}
-
-		static Dictionary<string, List<Action>> _jsNotificationRequests = new Dictionary<string, List<Action>>();
-
-		/// <summary>
-		/// Allows some C# to receive a notification when Javascript (on any page) raises the jsNotification event,
-		/// typically by calling fireCSharpEditEvent('jsNotification', id), where id corresponds to the string
-		/// passed to this method.
-		/// fireCSharpEditEvent is usually implemented as
-		/// top.document.dispatchEvent(new MessageEvent(eventName, {"bubbles": true, "cancelable": true, "data": eventData });
-		/// When that event is raised all the Actions queued for it are invoked once (and then forgotten).
-		/// Thus, the expectation is that the caller is wanting to know about one single instance of the
-		/// event occurring. There is therefore no need to clean up as with an event handler.
-		/// </summary>
-		/// <param name="id"></param>
-		/// <param name="action"></param>
-		public static void RequestJsNotification(string id, Action action)
-		{
-			List<Action> list;
-			if (!_jsNotificationRequests.TryGetValue(id, out list))
-			{
-				list = new List<Action>();
-				_jsNotificationRequests[id] = list;
-			}
-			list.Add(action);
-		}
-
-		/// <summary>
-		/// This event is raised
-		/// </summary>
-		public event EventHandler PaintedPageNotificationFromJavaScript;
-
-		private void ReceiveJsNotification(string id)
-		{
-			if (id == "editPagePainted")
-				PaintedPageNotificationFromJavaScript?.Invoke(this, new EventArgs());
-			List<Action> list;
-			if (!_jsNotificationRequests.TryGetValue(id, out list))
-				return;
-			foreach (var action in list)
-				action();
-			_jsNotificationRequests.Remove(id);
 		}
 
 		// We'd like to suppress them just in one browser. But it seems to be unpredictable which
@@ -1280,36 +1236,6 @@ namespace Bloom
 			if (script != null)
 				longMsg = string.Format("Script=\"{0}\"{1}Exception message = {2}", script, Environment.NewLine, ex.Message);
 			NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "A JavaScript error occurred and was missed by our onerror handler", longMsg, ex);
-		}
-
-		HashSet<string> _knownEvents = new HashSet<string>();
-
-		/// <summary>
-		/// Only the first call per browser per event name takes effect.
-		/// (Unless RemoveMessageEventListener is called explicitly for the event name.)
-		/// </summary>
-		/// <param name="eventName"></param>
-		/// <param name="action"></param>
-		public void AddMessageEventListener(string eventName, Action<string> action)
-		{
-			Debug.Assert(!InvokeRequired);
-			if (_knownEvents.Contains(eventName))
-				return; // This browser already knows what to do about this; hopefully we don't have a conflict.
-			_browser.AddMessageEventListener(eventName, action);
-			_knownEvents.Add(eventName);
-		}
-
-		/// <summary>
-		/// Remove a previously installed event handler.
-		/// </summary>
-		/// <param name="eventName"></param>
-		public void RemoveMessageEventListener(string eventName)
-		{
-			if (_browser != null)
-			{
-				_browser.RemoveMessageEventListener(eventName);
-				_knownEvents.Remove(eventName);
-			}
 		}
 
 		/* snippets
