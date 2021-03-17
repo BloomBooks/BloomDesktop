@@ -1661,16 +1661,16 @@ export class ReaderToolsModel {
         const active = toolbox.accordion("option", "active");
         if (isNaN(active)) return;
 
-        ToolBox.fireCSharpToolboxEvent(
-            "saveToolboxSettingsEvent",
+        BloomApi.postString(
+            "editView/saveToolboxSetting",
             "state\tdecodableReader\t" +
                 "stage:" +
                 this.stageNumber +
                 ";sort:" +
                 this.sort
         );
-        ToolBox.fireCSharpToolboxEvent(
-            "saveToolboxSettingsEvent",
+        BloomApi.postString(
+            "editView/saveToolboxSetting",
             "state\tleveledReader\t" + this.levelNumber
         );
     }

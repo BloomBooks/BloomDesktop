@@ -358,7 +358,6 @@ namespace Bloom.Edit
 #if TooExpensive
 			_browser1.WebBrowser.DomFocus += new EventHandler<GeckoDomEventArgs>(OnBrowserFocusChanged);
 #endif
-			//_browser1.WebBrowser.AddMessageEventListener("PreserveHtmlOfElement", elementHtml => _model.PreserveHtmlOfElement(elementHtml));
 		}
 
 		private void OnShowBookMetadataEditor()
@@ -481,7 +480,6 @@ namespace Bloom.Edit
 			}
 			else
 			{
-				RemoveMessageEventListener("setModalStateEvent");
 				Application.Idle -= new EventHandler(VisibleNowAddSlowContents); //make sure
 				_browser1.Navigate("about:blank", false); //so we don't see the old one for moment, the next time we open this tab
 				_model.ClearBookForToolboxContent(); // there's no longer a frame ready for a new page displayed in the browser.
@@ -515,7 +513,6 @@ namespace Bloom.Edit
 				// We only get one notification per call to this function, so we need
 				// to set it up again each time we load a page. It's important to set it up before we start
 				// navigation; otherwise, we might miss the event and never enable saving for this page.
-				Browser.RequestJsNotification("editPagePainted", () => _model.NavigatingSoSuspendSaving = false);
 				_model.NavigatingSoSuspendSaving = true;
 				if (_model.AreToolboxAndOuterFrameCurrent() && !ShouldDoFullReload())
 				{
@@ -529,7 +526,6 @@ namespace Bloom.Edit
 					// Set everything up and navigate the top browser to a new root document.
 					_model.SetupServerWithCurrentBookToolboxContents();
 					var dom = _model.GetXmlDocumentForEditScreenWebPage();
-					_model.RemoveStandardEventListeners();
 					_browser1.Navigate(dom, domForCurrentPage, setAsCurrentPageForDebugging: true, source:BloomServer.SimulatedPageFileSource.Frame);
 				}
 				_model.CheckForBL2634("navigated to page");
@@ -605,16 +601,6 @@ namespace Bloom.Edit
 			// Check memory for the benefit of developers.
 			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "EditingView - display page updated", false);
 #endif
-		}
-
-		public void AddMessageEventListener(string eventName, Action<string> action)
-		{
-			_browser1.AddMessageEventListener(eventName, action);
-		}
-
-		public void RemoveMessageEventListener(string eventName)
-		{
-			_browser1.RemoveMessageEventListener(eventName);
 		}
 
 		public void UpdatePageList(bool emptyThumbnailCache)
