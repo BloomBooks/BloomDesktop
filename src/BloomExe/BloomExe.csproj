@@ -390,6 +390,7 @@
     <Compile Include="Publish\Epub\EpubPublishUiSettings.cs" />
     <Compile Include="Publish\Epub\PublishEpubApi.cs" />
     <Compile Include="ToPalaso\BackgroundWorkerProgressAdapter.cs" />
+    <Compile Include="Utils\MemoryUtils.cs" />
     <Compile Include="WebLibraryIntegration\FirebaseLoginDialog.cs" />
     <Compile Include="web\WebProgressAdapter.cs" />
     <Compile Include="Publish\HtmlPublishPanel.cs">
