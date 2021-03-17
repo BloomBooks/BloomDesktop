@@ -521,8 +521,9 @@ namespace Bloom.Edit
 				// navigation; otherwise, we might miss the event and never enable saving for this page.
 				Browser.RequestJsNotification("editPagePainted", () => _model.NavigatingSoSuspendSaving = false);
 				_model.NavigatingSoSuspendSaving = true;
-				if (_model.AreToolboxAndOuterFrameCurrent())
+				if (_model.AreToolboxAndOuterFrameCurrent() && !ShouldDoFullReload())
 				{
+					// Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
 					_browser1.SetEditDom(domForCurrentPage);
 					if (ReloadCurrentPage())
 					{
@@ -538,6 +539,7 @@ namespace Bloom.Edit
 				}
 				else
 				{
+					// Set everything up and navigate the top browser to a new root document.
 					_model.SetupServerWithCurrentBookToolboxContents();
 					var dom = _model.GetXmlDocumentForEditScreenWebPage();
 					_model.RemoveStandardEventListeners();
@@ -586,6 +588,18 @@ namespace Bloom.Edit
 		{
 			// Note that ModifierKeys does not seem to work on Linux.
 			return ((ModifierKeys & Keys.Alt) == Keys.Alt) || RobustFile.Exists("/tmp/UseBackgroundGC");
+		}
+
+		// This method supports an approach of doing a reload of the top page only if we are short of memory,
+		// because we get large memory leaks just reloading the iframe, but can recover most of it
+		// by occasionally reloading everything.
+		// Currently we're planning to do it always, for more predictable behavior and more
+		// extensive testing to discover any problems with the full reload.
+		// Easy to change to never, or if-shift-key-is-down, or as originally planned,
+		// if MemoryUtils.SystemIsShortOfMemory().
+		private bool ShouldDoFullReload()
+		{
+			return true;
 		}
 
 #if __MonoCS__
