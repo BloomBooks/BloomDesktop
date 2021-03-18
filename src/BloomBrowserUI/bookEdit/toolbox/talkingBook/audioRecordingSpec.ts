@@ -25,6 +25,7 @@ import * as $ from "jquery";
 //   * Let Jasmine handle the rest
 
 describe("audio recording tests", () => {
+    const extendedTimeoutInMs = 15000; // 15,000 = 15 seconds
     beforeAll(async () => {
         SetupTalkingBookUIElements();
         await SetupIFrameAsync();
@@ -1210,271 +1211,338 @@ describe("audio recording tests", () => {
             spyOn(axios, "post").and.returnValue(Promise.resolve());
         }
 
-        it("toggleRecordingMode(): converts from RecordSentence/PlaySentence to RecordTextBox/PlayTextBox upon recording", async () => {
-            // Setup
-            const div1Html =
-                '<div class="bloom-editable" id="div1" data-audiorecordingmode="Sentence"><p><span id="1.1" class="audio-sentence" recordingmd5="undefined">This text box should be unchanged.</span> <span id="1.2" class="audio-sentence" recordingmd5="undefined">That is, in sentence mode.</span></p></div>';
-            const div2Html =
-                '<div class="bloom-editable" id="div2" data-audiorecordingmode="Sentence"><p><span id="2.1" class="audio-sentence">Sentence 2.1.</span> <span id="2.2" class="audio-sentence">Sentence 2.2.</span></p></div>';
-            SetupIFrameFromHtml(`<div id='page1'>${div1Html}${div2Html}</div>`);
+        it(
+            "toggleRecordingMode(): converts from RecordSentence/PlaySentence to RecordTextBox/PlayTextBox upon recording",
+            async () => {
+                // Setup
+                const div1Html =
+                    '<div class="bloom-editable" id="div1" data-audiorecordingmode="Sentence"><p><span id="1.1" class="audio-sentence" recordingmd5="undefined">This text box should be unchanged.</span> <span id="1.2" class="audio-sentence" recordingmd5="undefined">That is, in sentence mode.</span></p></div>';
+                const div2Html =
+                    '<div class="bloom-editable" id="div2" data-audiorecordingmode="Sentence"><p><span id="2.1" class="audio-sentence">Sentence 2.1.</span> <span id="2.2" class="audio-sentence">Sentence 2.2.</span></p></div>';
+                SetupIFrameFromHtml(
+                    `<div id='page1'>${div1Html}${div2Html}</div>`
+                );
 
-            const player = <HTMLMediaElement>document.getElementById("player")!;
-            player.src = "sentence1.mp3";
+                const player = <HTMLMediaElement>(
+                    document.getElementById("player")!
+                );
+                player.src = "sentence1.mp3";
 
-            const recording = new AudioRecording();
-            recording.audioRecordingMode = AudioRecordingMode.Sentence; // Should be the old state, toggleRecordingMode() will flip the state
+                const recording = new AudioRecording();
+                recording.audioRecordingMode = AudioRecordingMode.Sentence; // Should be the old state, toggleRecordingMode() will flip the state
 
-            const div2 = getFrameElementById("page", "div2")!;
-            await recording.setSoundAndHighlightAsync({
-                newElement: div2,
-                shouldScrollToElement: false
-            });
+                const div2 = getFrameElementById("page", "div2")!;
+                await recording.setSoundAndHighlightAsync({
+                    newElement: div2,
+                    shouldScrollToElement: false
+                });
 
-            // System under test
-            await recording.toggleRecordingModeAsync();
+                // System under test
+                await recording.toggleRecordingModeAsync();
 
-            // Simulate the user recording audio
-            setupMockRecording();
-            await recording.startRecordCurrentAsync();
-            await recording.endRecordCurrentAsync();
+                // Simulate the user recording audio
+                setupMockRecording();
+                await recording.startRecordCurrentAsync();
+                await recording.endRecordCurrentAsync();
 
-            // Verification
-            const div1 = getFrameElementById("page", "div1");
-            expect(div1!.outerHTML).toBe(
-                div1Html,
-                "Div1 HTML should not change."
-            );
+                // Verification
+                const div1 = getFrameElementById("page", "div1");
+                expect(div1!.outerHTML).toBe(
+                    div1Html,
+                    "Div1 HTML should not change."
+                );
 
-            const expectedDiv2Result =
-                '<div class="bloom-editable ui-audioCurrent audio-sentence" id="div2" data-audiorecordingmode="TextBox"><p>Sentence 2.1. Sentence 2.2.</p></div>';
-            expect(StripRecordingMd5(div2.outerHTML)).toBe(
-                expectedDiv2Result,
-                "Div2 HTML should switch to textbox mode"
-            );
+                const expectedDiv2Result =
+                    '<div class="bloom-editable ui-audioCurrent audio-sentence" id="div2" data-audiorecordingmode="TextBox"><p>Sentence 2.1. Sentence 2.2.</p></div>';
+                expect(StripRecordingMd5(div2.outerHTML)).toBe(
+                    expectedDiv2Result,
+                    "Div2 HTML should switch to textbox mode"
+                );
 
-            expect(StripPlayerSrcNoCacheSuffix(player.src)).toBe(
-                "http://localhost:9876/bloom/api/audio/wavFile?id=audio/div2.wav"
-            );
-        });
+                expect(StripPlayerSrcNoCacheSuffix(player.src)).toBe(
+                    "http://localhost:9876/bloom/api/audio/wavFile?id=audio/div2.wav"
+                );
+            },
+            extendedTimeoutInMs
+        );
 
-        it("toggleRecordingMode(): converts from RecordSentence/PlaySentence to RecordTextBox/PlaySentence", async () => {
-            const textBoxDivHtml =
-                '<div id="textBox1" class="bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on normal-style cke_editable cke_editable_inline cke_contents_ltr" data-languagetipcontent="English" data-audiorecordingmode="Sentence" style="min-height: 24px;" tabindex="0" spellcheck="true" role="textbox" aria-label="false" lang="en" contenteditable="true">';
-            const paragraphsMarkedBySentenceHtml =
-                '<p><span id="sentence1" class="audio-sentence ui-audioCurrent">Sentence 1.</span> <span id="sentence2" class="audio-sentence">Sentence 2.</span><br></p>';
-            const formatButtonHtml =
-                '<div id="formatButton" class="bloom-ui" style="bottom: 0px;" contenteditable="false"><img data-cke-saved-src="/bloom/bookEdit/img/cogGrey.svg" contenteditable="false"></div>';
-            const originalHtml = `<div id="numberedPage">${textBoxDivHtml}${paragraphsMarkedBySentenceHtml}${formatButtonHtml}</div>`;
-            SetupIFrameFromHtml(originalHtml);
+        it(
+            "toggleRecordingMode(): converts from RecordSentence/PlaySentence to RecordTextBox/PlaySentence",
+            async () => {
+                const textBoxDivHtml =
+                    '<div id="textBox1" class="bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on normal-style cke_editable cke_editable_inline cke_contents_ltr" data-languagetipcontent="English" data-audiorecordingmode="Sentence" style="min-height: 24px;" tabindex="0" spellcheck="true" role="textbox" aria-label="false" lang="en" contenteditable="true">';
+                const paragraphsMarkedBySentenceHtml =
+                    '<p><span id="sentence1" class="audio-sentence ui-audioCurrent">Sentence 1.</span> <span id="sentence2" class="audio-sentence">Sentence 2.</span><br></p>';
+                const formatButtonHtml =
+                    '<div id="formatButton" class="bloom-ui" style="bottom: 0px;" contenteditable="false"><img data-cke-saved-src="/bloom/bookEdit/img/cogGrey.svg" contenteditable="false"></div>';
+                const originalHtml = `<div id="numberedPage">${textBoxDivHtml}${paragraphsMarkedBySentenceHtml}${formatButtonHtml}</div>`;
+                SetupIFrameFromHtml(originalHtml);
 
-            const player = <HTMLMediaElement>document.getElementById("player")!;
-            player.src = "sentence1.mp3";
+                const player = <HTMLMediaElement>(
+                    document.getElementById("player")!
+                );
+                player.src = "sentence1.mp3";
 
-            const recording = new AudioRecording();
-            recording.audioRecordingMode = AudioRecordingMode.Sentence; // Should be the old state, toggleRecordingMode() will flip the state
-            await recording.toggleRecordingModeAsync();
+                const recording = new AudioRecording();
+                recording.audioRecordingMode = AudioRecordingMode.Sentence; // Should be the old state, toggleRecordingMode() will flip the state
+                await recording.toggleRecordingModeAsync();
 
-            // Tests of the state
-            expect(recording.audioRecordingMode).toBe(
-                AudioRecordingMode.TextBox
-            );
-            expect(
-                document
-                    .getElementById("audio-split-wrapper")!
-                    .classList.contains("hide-countable")
-            ).toBe(false);
+                // Tests of the state
+                expect(recording.audioRecordingMode).toBe(
+                    AudioRecordingMode.TextBox
+                );
+                expect(
+                    document
+                        .getElementById("audio-split-wrapper")!
+                        .classList.contains("hide-countable")
+                ).toBe(false);
 
-            const pageFrame = parent.window.document.getElementById("page");
-            const myDoc = (<HTMLIFrameElement>pageFrame).contentDocument!;
-            const textBox1 = myDoc.getElementById("textBox1")!;
-            expect(textBox1.getAttribute("data-audiorecordingmode")).toBe(
-                AudioRecordingMode.TextBox.toString()
-            );
-            expect(textBox1.classList.contains("ui-audioCurrent")).toBe(true);
-            expect(textBox1.classList.contains("audio-sentence")).toBe(false);
+                const pageFrame = parent.window.document.getElementById("page");
+                const myDoc = (<HTMLIFrameElement>pageFrame).contentDocument!;
+                const textBox1 = myDoc.getElementById("textBox1")!;
+                expect(textBox1.getAttribute("data-audiorecordingmode")).toBe(
+                    AudioRecordingMode.TextBox.toString()
+                );
+                expect(textBox1.classList.contains("ui-audioCurrent")).toBe(
+                    true
+                );
+                expect(textBox1.classList.contains("audio-sentence")).toBe(
+                    false
+                );
 
-            const sentence1 = myDoc.getElementById("sentence1")!;
-            expect(sentence1.classList.contains("ui-audioCurrent")).toBe(false);
-            expect(sentence1.classList.contains("audio-sentence")).toBe(true);
+                const sentence1 = myDoc.getElementById("sentence1")!;
+                expect(sentence1.classList.contains("ui-audioCurrent")).toBe(
+                    false
+                );
+                expect(sentence1.classList.contains("audio-sentence")).toBe(
+                    true
+                );
 
-            expect(StripPlayerSrcNoCacheSuffix(player.src)).toBe(
-                "http://localhost:9876/bloom/api/audio/wavFile?id=audio/sentence1.wav"
-            );
+                expect(StripPlayerSrcNoCacheSuffix(player.src)).toBe(
+                    "http://localhost:9876/bloom/api/audio/wavFile?id=audio/sentence1.wav"
+                );
 
-            const parentDiv = myDoc.getElementById("numberedPage")!;
-            const divs = parentDiv.getElementsByTagName("DIV");
-            expect(divs.length).toBe(2, "number of divs");
-            expect(divs.item(1)!.id).toBe("formatButton", "formatButton's id");
+                const parentDiv = myDoc.getElementById("numberedPage")!;
+                const divs = parentDiv.getElementsByTagName("DIV");
+                expect(divs.length).toBe(2, "number of divs");
+                expect(divs.item(1)!.id).toBe(
+                    "formatButton",
+                    "formatButton's id"
+                );
 
-            expect(
-                $(parentDiv)
-                    .find(".ui-audioCurrent")
-                    .text()
-            ).toBe("Sentence 1. Sentence 2.", "Current text box text");
-        });
+                expect(
+                    $(parentDiv)
+                        .find(".ui-audioCurrent")
+                        .text()
+                ).toBe("Sentence 1. Sentence 2.", "Current text box text");
+            },
+            extendedTimeoutInMs
+        );
 
-        it("toggleRecordingMode(): converts from RecordTextBox/PlaySentence to RecordSentence/PlaySentence", async () => {
-            const textBoxDivHtml =
-                '<div id="textBox1" class="bloom-editable ui-audioCurrent" data-audiorecordingmode="TextBox">';
-            const paragraphsMarkedBySentenceHtml =
-                '<p><span id="sentence1" class="audio-sentence">Sentence 1.</span> <span id="sentence2" class="audio-sentence">Sentence 2.</span><br></p>';
-            const formatButtonHtml =
-                '<div id="formatButton" class="bloom-ui" style="bottom: 0px;" contenteditable="false"><img data-cke-saved-src="/bloom/bookEdit/img/cogGrey.svg" contenteditable="false"></div>';
-            const originalHtml = `<div id="numberedPage">${textBoxDivHtml}${paragraphsMarkedBySentenceHtml}${formatButtonHtml}</div>`;
-            SetupIFrameFromHtml(originalHtml);
+        it(
+            "toggleRecordingMode(): converts from RecordTextBox/PlaySentence to RecordSentence/PlaySentence",
+            async () => {
+                const textBoxDivHtml =
+                    '<div id="textBox1" class="bloom-editable ui-audioCurrent" data-audiorecordingmode="TextBox">';
+                const paragraphsMarkedBySentenceHtml =
+                    '<p><span id="sentence1" class="audio-sentence">Sentence 1.</span> <span id="sentence2" class="audio-sentence">Sentence 2.</span><br></p>';
+                const formatButtonHtml =
+                    '<div id="formatButton" class="bloom-ui" style="bottom: 0px;" contenteditable="false"><img data-cke-saved-src="/bloom/bookEdit/img/cogGrey.svg" contenteditable="false"></div>';
+                const originalHtml = `<div id="numberedPage">${textBoxDivHtml}${paragraphsMarkedBySentenceHtml}${formatButtonHtml}</div>`;
+                SetupIFrameFromHtml(originalHtml);
 
-            const player = <HTMLMediaElement>document.getElementById("player")!;
-            player.src = "sentence1.mp3";
+                const player = <HTMLMediaElement>(
+                    document.getElementById("player")!
+                );
+                player.src = "sentence1.mp3";
 
-            const recording = new AudioRecording();
-            recording.audioRecordingMode = AudioRecordingMode.TextBox; // Should be the old state, toggleRecordingMode() will flip the state
+                const recording = new AudioRecording();
+                recording.audioRecordingMode = AudioRecordingMode.TextBox; // Should be the old state, toggleRecordingMode() will flip the state
 
-            // System Under Test
-            await recording.toggleRecordingModeAsync();
+                // System Under Test
+                await recording.toggleRecordingModeAsync();
 
-            // Verification
-            expect(recording.audioRecordingMode).toBe(
-                AudioRecordingMode.Sentence
-            );
-            expect(
-                document
-                    .getElementById("audio-split-wrapper")!
-                    .classList.contains("hide-countable")
-            ).toBe(true);
+                // Verification
+                expect(recording.audioRecordingMode).toBe(
+                    AudioRecordingMode.Sentence
+                );
+                expect(
+                    document
+                        .getElementById("audio-split-wrapper")!
+                        .classList.contains("hide-countable")
+                ).toBe(true);
 
-            const pageFrame = parent.window.document.getElementById("page");
-            const myDoc = (<HTMLIFrameElement>pageFrame).contentDocument!;
+                const pageFrame = parent.window.document.getElementById("page");
+                const myDoc = (<HTMLIFrameElement>pageFrame).contentDocument!;
 
-            const textBox1 = myDoc.getElementById("textBox1")!;
-            expect(textBox1.getAttribute("data-audiorecordingmode")).toBe(
-                AudioRecordingMode.Sentence.toString()
-            );
-            expect(textBox1.classList.contains("ui-audioCurrent")).toBe(false);
-            expect(textBox1.classList.contains("audio-sentence")).toBe(false);
+                const textBox1 = myDoc.getElementById("textBox1")!;
+                expect(textBox1.getAttribute("data-audiorecordingmode")).toBe(
+                    AudioRecordingMode.Sentence.toString()
+                );
+                expect(textBox1.classList.contains("ui-audioCurrent")).toBe(
+                    false
+                );
+                expect(textBox1.classList.contains("audio-sentence")).toBe(
+                    false
+                );
 
-            const sentence1 = myDoc.getElementById("sentence1")!;
-            expect(sentence1.classList.contains("ui-audioCurrent")).toBe(true);
-            expect(sentence1.classList.contains("audio-sentence")).toBe(true);
+                const sentence1 = myDoc.getElementById("sentence1")!;
+                expect(sentence1.classList.contains("ui-audioCurrent")).toBe(
+                    true
+                );
+                expect(sentence1.classList.contains("audio-sentence")).toBe(
+                    true
+                );
 
-            expect(StripPlayerSrcNoCacheSuffix(player.src)).toBe(
-                "http://localhost:9876/bloom/api/audio/wavFile?id=audio/sentence1.wav"
-            );
+                expect(StripPlayerSrcNoCacheSuffix(player.src)).toBe(
+                    "http://localhost:9876/bloom/api/audio/wavFile?id=audio/sentence1.wav"
+                );
 
-            const parentDiv = myDoc.getElementById("numberedPage")!;
-            const divs = parentDiv.getElementsByTagName("DIV");
-            expect(divs.length).toBe(2, "number of divs");
-            expect(divs.item(1)!.id).toBe("formatButton", "formatButton's id");
+                const parentDiv = myDoc.getElementById("numberedPage")!;
+                const divs = parentDiv.getElementsByTagName("DIV");
+                expect(divs.length).toBe(2, "number of divs");
+                expect(divs.item(1)!.id).toBe(
+                    "formatButton",
+                    "formatButton's id"
+                );
 
-            expect(
-                $(parentDiv)
-                    .find(".ui-audioCurrent")
-                    .text()
-            ).toBe("Sentence 1.", "Current sentence text");
-        });
+                expect(
+                    $(parentDiv)
+                        .find(".ui-audioCurrent")
+                        .text()
+                ).toBe("Sentence 1.", "Current sentence text");
+            },
+            extendedTimeoutInMs
+        );
 
-        it("toggleRecordingMode(): converts from RecordSentence/PlaySentence to RecordTextBox/PlayTextBox and back, if not recorded", async () => {
-            // Setup
-            const div1Html =
-                '<div class="bloom-editable" id="div1" data-audiorecordingmode="Sentence"><p><span id="1.1" class="audio-sentence" recordingmd5="undefined">This text box should be unchanged.</span> <span id="1.2" class="audio-sentence" recordingmd5="undefined">That is, in sentence mode.</span></p></div>';
-            const div2Html =
-                '<div class="bloom-editable" id="div2" data-audiorecordingmode="Sentence"><p><span id="2.1" class="audio-sentence">Sentence 2.1.</span> <span id="2.2" class="audio-sentence">Sentence 2.2.</span></p></div>';
-            SetupIFrameFromHtml(`<div id='page1'>${div1Html}${div2Html}</div>`);
+        it(
+            "toggleRecordingMode(): converts from RecordSentence/PlaySentence to RecordTextBox/PlayTextBox and back, if not recorded",
+            async () => {
+                // Setup
+                const div1Html =
+                    '<div class="bloom-editable" id="div1" data-audiorecordingmode="Sentence"><p><span id="1.1" class="audio-sentence" recordingmd5="undefined">This text box should be unchanged.</span> <span id="1.2" class="audio-sentence" recordingmd5="undefined">That is, in sentence mode.</span></p></div>';
+                const div2Html =
+                    '<div class="bloom-editable" id="div2" data-audiorecordingmode="Sentence"><p><span id="2.1" class="audio-sentence">Sentence 2.1.</span> <span id="2.2" class="audio-sentence">Sentence 2.2.</span></p></div>';
+                SetupIFrameFromHtml(
+                    `<div id='page1'>${div1Html}${div2Html}</div>`
+                );
 
-            const player = <HTMLMediaElement>document.getElementById("player")!;
-            player.src = "sentence1.mp3";
+                const player = <HTMLMediaElement>(
+                    document.getElementById("player")!
+                );
+                player.src = "sentence1.mp3";
 
-            const recording = new AudioRecording();
-            recording.audioRecordingMode = AudioRecordingMode.Sentence; // Should be the old state, toggleRecordingMode() will flip the state
+                const recording = new AudioRecording();
+                recording.audioRecordingMode = AudioRecordingMode.Sentence; // Should be the old state, toggleRecordingMode() will flip the state
 
-            const div2 = getFrameElementById("page", "div2")!;
-            await recording.setSoundAndHighlightAsync({
-                newElement: div2,
-                shouldScrollToElement: false
-            });
+                const div2 = getFrameElementById("page", "div2")!;
+                await recording.setSoundAndHighlightAsync({
+                    newElement: div2,
+                    shouldScrollToElement: false
+                });
 
-            // System under test
-            await recording.toggleRecordingModeAsync();
-            await recording.toggleRecordingModeAsync();
+                // System under test
+                await recording.toggleRecordingModeAsync();
+                await recording.toggleRecordingModeAsync();
 
-            // Verification
-            const div1 = getFrameElementById("page", "div1");
-            expect(div1!.outerHTML).toBe(
-                div1Html,
-                "Div1 HTML should not change."
-            );
+                // Verification
+                const div1 = getFrameElementById("page", "div1");
+                expect(div1!.outerHTML).toBe(
+                    div1Html,
+                    "Div1 HTML should not change."
+                );
 
-            const expectedDiv2Result =
-                '<div class="bloom-editable" id="div2" data-audiorecordingmode="Sentence"><p><span id="2.1" class="audio-sentence ui-audioCurrent" recordingmd5="undefined">Sentence 2.1.</span> <span id="2.2" class="audio-sentence" recordingmd5="undefined">Sentence 2.2.</span></p></div>';
-            expect(div2.outerHTML).toBe(
-                expectedDiv2Result,
-                "Div2 HTML should switch back to sentence mode"
-            );
+                const expectedDiv2Result =
+                    '<div class="bloom-editable" id="div2" data-audiorecordingmode="Sentence"><p><span id="2.1" class="audio-sentence ui-audioCurrent" recordingmd5="undefined">Sentence 2.1.</span> <span id="2.2" class="audio-sentence" recordingmd5="undefined">Sentence 2.2.</span></p></div>';
+                expect(div2.outerHTML).toBe(
+                    expectedDiv2Result,
+                    "Div2 HTML should switch back to sentence mode"
+                );
 
-            expect(StripPlayerSrcNoCacheSuffix(player.src)).toBe(
-                "http://localhost:9876/bloom/api/audio/wavFile?id=audio/2.1.wav"
-            );
-        });
+                expect(StripPlayerSrcNoCacheSuffix(player.src)).toBe(
+                    "http://localhost:9876/bloom/api/audio/wavFile?id=audio/2.1.wav"
+                );
+            },
+            extendedTimeoutInMs
+        );
 
-        it("toggleRecordingMode(): converts from RecordTextBox/PlayTextBox to RecordSentence/PlaySentence", async () => {
-            const textBoxDivHtml =
-                '<div id="textBox1" class="audio-sentence ui-audioCurrent bloom-editable data-audiorecordingmode="TextBox">';
-            const paragraphHtml = "<p>Sentence 1. Sentence 2.<br></p>";
-            const formatButtonHtml =
-                '<div id="formatButton" class="bloom-ui" style="bottom: 0px;" contenteditable="false"><img data-cke-saved-src="/bloom/bookEdit/img/cogGrey.svg" contenteditable="false"></div>';
-            const originalHtml = `<div id="numberedPage">${textBoxDivHtml}${paragraphHtml}${formatButtonHtml}</div>`;
-            SetupIFrameFromHtml(originalHtml);
+        it(
+            "toggleRecordingMode(): converts from RecordTextBox/PlayTextBox to RecordSentence/PlaySentence",
+            async () => {
+                const textBoxDivHtml =
+                    '<div id="textBox1" class="audio-sentence ui-audioCurrent bloom-editable data-audiorecordingmode="TextBox">';
+                const paragraphHtml = "<p>Sentence 1. Sentence 2.<br></p>";
+                const formatButtonHtml =
+                    '<div id="formatButton" class="bloom-ui" style="bottom: 0px;" contenteditable="false"><img data-cke-saved-src="/bloom/bookEdit/img/cogGrey.svg" contenteditable="false"></div>';
+                const originalHtml = `<div id="numberedPage">${textBoxDivHtml}${paragraphHtml}${formatButtonHtml}</div>`;
+                SetupIFrameFromHtml(originalHtml);
 
-            const player = <HTMLMediaElement>document.getElementById("player")!;
-            player.src = "textBox1.mp3";
+                const player = <HTMLMediaElement>(
+                    document.getElementById("player")!
+                );
+                player.src = "textBox1.mp3";
 
-            const recording = new AudioRecording();
-            recording.audioRecordingMode = AudioRecordingMode.TextBox; // Should be the old state, toggleRecordingMode() will flip the state
+                const recording = new AudioRecording();
+                recording.audioRecordingMode = AudioRecordingMode.TextBox; // Should be the old state, toggleRecordingMode() will flip the state
 
-            // System Under Test
-            await recording.toggleRecordingModeAsync();
+                // System Under Test
+                await recording.toggleRecordingModeAsync();
 
-            // Verification
-            expect(recording.audioRecordingMode).toBe(
-                AudioRecordingMode.Sentence
-            );
-            expect(
-                document
-                    .getElementById("audio-split-wrapper")!
-                    .classList.contains("hide-countable")
-            ).toBe(true);
+                // Verification
+                expect(recording.audioRecordingMode).toBe(
+                    AudioRecordingMode.Sentence
+                );
+                expect(
+                    document
+                        .getElementById("audio-split-wrapper")!
+                        .classList.contains("hide-countable")
+                ).toBe(true);
 
-            const pageFrame = parent.window.document.getElementById("page");
-            const myDoc = (<HTMLIFrameElement>pageFrame).contentDocument!;
+                const pageFrame = parent.window.document.getElementById("page");
+                const myDoc = (<HTMLIFrameElement>pageFrame).contentDocument!;
 
-            const textBox1 = myDoc.getElementById("textBox1")!;
-            expect(textBox1.getAttribute("data-audiorecordingmode")).toBe(
-                AudioRecordingMode.Sentence.toString()
-            );
-            expect(textBox1.classList.contains("ui-audioCurrent")).toBe(false);
-            expect(textBox1.classList.contains("audio-sentence")).toBe(false);
+                const textBox1 = myDoc.getElementById("textBox1")!;
+                expect(textBox1.getAttribute("data-audiorecordingmode")).toBe(
+                    AudioRecordingMode.Sentence.toString()
+                );
+                expect(textBox1.classList.contains("ui-audioCurrent")).toBe(
+                    false
+                );
+                expect(textBox1.classList.contains("audio-sentence")).toBe(
+                    false
+                );
 
-            const sentences = textBox1.getElementsByTagName("SPAN");
-            expect(sentences.length).toBe(2);
-            const sentence1 = sentences.item(0)!;
-            expect(sentence1.classList.contains("ui-audioCurrent")).toBe(true);
-            expect(sentence1.classList.contains("audio-sentence")).toBe(true);
-            expect(sentence1.id.length).toBeGreaterThan(31);
+                const sentences = textBox1.getElementsByTagName("SPAN");
+                expect(sentences.length).toBe(2);
+                const sentence1 = sentences.item(0)!;
+                expect(sentence1.classList.contains("ui-audioCurrent")).toBe(
+                    true
+                );
+                expect(sentence1.classList.contains("audio-sentence")).toBe(
+                    true
+                );
+                expect(sentence1.id.length).toBeGreaterThan(31);
 
-            expect(StripPlayerSrcNoCacheSuffix(player.src)).toBe(
-                `http://localhost:9876/bloom/api/audio/wavFile?id=audio/${sentence1.id}.wav`
-            );
+                expect(StripPlayerSrcNoCacheSuffix(player.src)).toBe(
+                    `http://localhost:9876/bloom/api/audio/wavFile?id=audio/${sentence1.id}.wav`
+                );
 
-            const parentDiv = myDoc.getElementById("numberedPage")!;
-            const divs = parentDiv.getElementsByTagName("DIV");
-            expect(divs.length).toBe(2, "number of divs");
-            expect(divs.item(1)!.id).toBe("formatButton", "formatButton's id");
+                const parentDiv = myDoc.getElementById("numberedPage")!;
+                const divs = parentDiv.getElementsByTagName("DIV");
+                expect(divs.length).toBe(2, "number of divs");
+                expect(divs.item(1)!.id).toBe(
+                    "formatButton",
+                    "formatButton's id"
+                );
 
-            expect(
-                $(parentDiv)
-                    .find(".ui-audioCurrent")
-                    .text()
-            ).toBe("Sentence 1.", "Current sentence text");
-        });
+                expect(
+                    $(parentDiv)
+                        .find(".ui-audioCurrent")
+                        .text()
+                ).toBe("Sentence 1.", "Current sentence text");
+            },
+            extendedTimeoutInMs
+        );
     });
 
     describe("endRecordCurrentAsync", () => {
