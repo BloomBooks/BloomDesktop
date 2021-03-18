@@ -37,7 +37,10 @@ export const ProgressDialog: React.FunctionComponent = props => {
                 <DialogTitle className="dialog-title">
                     <Typography variant="h6">{dialogTitle}</Typography>
                 </DialogTitle>
-                <div id="copy-progress-row">
+                <div
+                    id="copy-progress-row"
+                    className={showButtons ? "with-buttons" : ""}
+                >
                     <button
                         id="copy-button"
                         onClick={sendToClipboard}
