@@ -156,7 +156,7 @@ namespace Bloom.TeamCollection
 		/// creating a TeamCollection from an existing local collection. Usually it is a new folder and all
 		/// books are copied.)
 		/// </summary>
-		public void SynchronizeBooksFromLocalToRepo()
+		public void SynchronizeBooksFromLocalToRepo(WebSocketProgress progress)
 		{
 			foreach (var path in Directory.EnumerateDirectories(_localCollectionFolder))
 			{
@@ -168,6 +168,7 @@ namespace Bloom.TeamCollection
 					var localHtmlFilePath = Path.Combine(path, BookStorage.FindBookHtmlInFolder(path));
 					if ((status?.checksum == null || status.checksum != localStatus?.checksum) && RobustFile.Exists(localHtmlFilePath))
 					{
+						progress.MessageWithParams("SendingFile", "", "Adding {0} to the collection", MessageKind.Progress, bookFolderName);
 						PutBook(path);
 					}
 				}
@@ -1300,7 +1301,7 @@ namespace Bloom.TeamCollection
 		// must match what is in IndependentProgressDialog.tsx passed as clientContext to ProgressBox.
 		// (At least until we generalize that dialog for different Progress tasks...then, it will need
 		// to be configured to use this.)
-		private const string kWebSocketContext = "teamCollectionMerge";
+		internal const string kWebSocketContext = "teamCollectionMerge";
 
 		public BloomWebSocketServer SocketServer;
 		private FileSystemWatcher _localFolderWatcher;

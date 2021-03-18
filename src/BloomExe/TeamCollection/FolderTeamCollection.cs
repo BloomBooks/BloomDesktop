@@ -1,14 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
+using Bloom.Api;
 using Bloom.CollectionCreating;
 using Bloom.MiscUI;
 using Bloom.Utils;
+using Bloom.web;
 using ICSharpCode.SharpZipLib.Zip;
 using Sentry;
 using SIL.IO;
@@ -604,15 +609,53 @@ namespace Bloom.TeamCollection
 		/// including any books that already exist locally.
 		/// </summary>
 		/// <param name="repoFolder"></param>
-		public void ConnectToTeamCollection(string repoFolder)
+		public void ConnectToTeamCollection(string repoFolder, WebSocketProgress progress)
 		{
 			_repoFolderPath = repoFolder;
+			progress.Message("SettingUpCore", "Setting up the core team collection files");
 			CreateJoinCollectionFile();
 			CreateTeamCollectionSettingsFile(_localCollectionFolder, repoFolder);
 			CopyRepoCollectionFilesFromLocal(_localCollectionFolder);
 			Directory.CreateDirectory(Path.Combine(repoFolder, "Books"));
-			SynchronizeBooksFromLocalToRepo();
+			SynchronizeBooksFromLocalToRepo(progress);
 			StartMonitoring();
+		}
+
+		public void ConnectToTeamCollectionWithProgressDialog(string repoFolder)
+		{
+			var url = BloomFileLocator.GetBrowserFile(false, "utils", "IndependentProgressDialog.html").ToLocalhost()
+					  + "?title=Team Collection Activity";
+			var progress = new WebSocketProgress(SocketServer, TeamCollection.kWebSocketContext);
+
+			// NOTE: This (specifically ShowDialog) blocks the main thread until the dialog is closed.
+			// Be careful to avoid deadlocks.
+			using (var dlg = new BrowserDialog(url))
+			{
+				dlg.WebSocketServer = SocketServer;
+				dlg.Width = 500;
+				dlg.Height = 300;
+				// This is not as critical as for a startup sync, but for now let's not try to
+				// handle letting the user abort.
+				dlg.ControlBox = false;
+				var worker = new BackgroundWorker();
+				worker.DoWork += (sender, args) =>
+				{
+					// A way of waiting until the dialog is ready to receive progress messages
+					while (!SocketServer.IsSocketOpen(kWebSocketContext))
+						Thread.Sleep(50);
+					progress.Message("StartingCopy", "",
+						"Starting to set up the Team Collection", MessageKind.Progress);
+
+					ConnectToTeamCollection(repoFolder, progress);
+
+					progress.Message("Done", "Done");
+
+					dlg.Invoke((Action) (() => { dlg.Close(); }));
+				};
+
+				worker.RunWorkerAsync();
+				dlg.ShowDialog(); // returns when dialog closed
+			}
 		}
 
 		private static string _joinCollectionPath;

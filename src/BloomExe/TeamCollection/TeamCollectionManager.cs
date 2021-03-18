@@ -186,7 +186,8 @@ namespace Bloom.TeamCollection
 			var repoFolderPath = PlannedRepoFolderPath(repoFolderParentPath);
 			Directory.CreateDirectory(repoFolderPath);
 			var newTc = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath);
-			newTc.ConnectToTeamCollection(repoFolderPath);
+			newTc.SocketServer = SocketServer;
+			newTc.ConnectToTeamCollectionWithProgressDialog(repoFolderPath);
 			CurrentCollection = newTc;
 			CurrentCollectionEvenIfDisabled = newTc;
 		}

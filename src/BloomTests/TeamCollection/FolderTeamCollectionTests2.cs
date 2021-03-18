@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Bloom;
 using Bloom.TeamCollection;
+using Bloom.web;
 using BloomTemp;
 using Moq;
 using NUnit.Framework;
@@ -51,7 +52,7 @@ namespace BloomTests.TeamCollection
 					var collection = tcManager.CurrentCollection;
 
 					// sut
-					(collection as FolderTeamCollection)?.ConnectToTeamCollection(sharedFolder.FolderPath);
+					(collection as FolderTeamCollection)?.ConnectToTeamCollection(sharedFolder.FolderPath, new NullWebSocketProgress());
 
 					Assert.That(collection, Is.Not.Null);
 					var joinCollectionPath =
