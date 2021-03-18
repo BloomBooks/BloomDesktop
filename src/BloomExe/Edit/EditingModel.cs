@@ -178,7 +178,7 @@ namespace Bloom.Edit
 			if (details.From == _view)
 			{
 				SaveNow();
-				_view.RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getPageFrameExports().disconnectForGarbageCollection();}");
+				_view.RunJavaScript("if (typeof(FrameExports) !=='undefined' && typeof(FrameExports.getPageFrameExports()) !=='undefined') {FrameExports.getPageFrameExports().disconnectForGarbageCollection();}");
 				// This bizarre behavior prevents BL-2313 and related problems.
 				// For some reason I cannot discover, switching tabs when focus is in the Browser window
 				// causes Bloom to get deactivated, which prevents various controls from working.
@@ -626,9 +626,9 @@ namespace Bloom.Edit
 			if (_view != null && !_inProcessOfDeleting && !_inProcessOfLoading)
 			{
 				_view.ChangingPages = true;
-				_view.RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getPageFrameExports().pageSelectionChanging();}");
+				_view.RunJavaScript("if (typeof(FrameExports) !=='undefined' && typeof(FrameExports.getPageFrameExports()) !=='undefined') {FrameExports.getPageFrameExports().pageSelectionChanging();}");
 				FinishSavingPage();
-				_view.RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getPageFrameExports().disconnectForGarbageCollection();}");
+				_view.RunJavaScript("if (typeof(FrameExports) !=='undefined' && typeof(FrameExports.getPageFrameExports()) !=='undefined') {FrameExports.getPageFrameExports().disconnectForGarbageCollection();}");
 			}
 		}
 
