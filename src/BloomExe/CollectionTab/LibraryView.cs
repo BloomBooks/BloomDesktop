@@ -38,6 +38,7 @@ namespace Bloom.CollectionTab
 			splitContainer1.Panel1.Controls.Add(_collectionListView);
 
 			_bookView = templateBookViewFactory();
+			_bookView.TeamCollectionMgr = tcManager;
 			_bookView.Dock = DockStyle.Fill;
 			splitContainer1.Panel2.Controls.Add(_bookView);
 
