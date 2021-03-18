@@ -1,5 +1,6 @@
 import * as React from "react";
 import WebSocketManager from "../utils/WebSocketManager";
+import "./progressBox.less";
 
 export interface IProgressBoxProps {
     clientContext: string;
@@ -25,6 +26,7 @@ export default class ProgressBox extends React.Component<
     IProgressBoxProps,
     IProgressState
 > {
+    progressDiv: HTMLElement | null;
     public readonly state: IProgressState = {
         progress: this.props.testProgressHtml || ""
     };
@@ -94,10 +96,7 @@ export default class ProgressBox extends React.Component<
     private tryScrollToBottom() {
         // Must be done AFTER painting once, so we
         // get a real current scroll height.
-        const progressDiv = document.getElementById(
-            "independent-progress-screen"
-        );
-
+        const progressDiv = this.progressDiv;
         // in my testing in FF, this worked the first time
         if (progressDiv) progressDiv.scrollTop = progressDiv.scrollHeight;
         // but there apparently have been times when the div wasn't around
@@ -115,6 +114,7 @@ export default class ProgressBox extends React.Component<
                 className="progress-box"
                 id={this.props.progressBoxId || ""}
                 dangerouslySetInnerHTML={{ __html: this.state.progress }}
+                ref={div => (this.progressDiv = div)}
             />
         );
     }
