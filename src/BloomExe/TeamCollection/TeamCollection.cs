@@ -306,19 +306,33 @@ namespace Bloom.TeamCollection
 		public BookStatus GetStatus(string bookFolderName)
 		{
 			var statusString = GetBookStatusJsonFromRepo(bookFolderName);
-
 			if (String.IsNullOrEmpty(statusString))
 			{
-				var bookFolder = Path.Combine(_localCollectionFolder, Path.GetFileNameWithoutExtension(bookFolderName));
-				if (Directory.Exists(bookFolder))
+				// a book that doesn't exist (by this name) in the repo should only exist locally if it's new
+				// (no status file) or renamed (the corresponding repo file is called oldName).
+				var statusFilePath = GetStatusFilePath(bookFolderName, _localCollectionFolder);
+				if (File.Exists(statusFilePath))
+				{
+					// The book has to have been renamed since it has a status file.
+					var bookStatus = BookStatus.FromJson(RobustFile.ReadAllText(statusFilePath, Encoding.UTF8));
+					Debug.Assert(bookStatus.oldName != null, "book should have been renamed and have oldName set for book.status to exist");
+					if (!String.IsNullOrEmpty(bookStatus.oldName))
+					{
+						// Use the book's original name to access the repo status.  (BL-9680)
+						statusString = GetBookStatusJsonFromRepo(bookStatus.oldName);
+						if (!String.IsNullOrEmpty(statusString))
+							return BookStatus.FromJson(statusString);
+					}
+					// This is a bizarre situation that should get corrected the next time Bloom starts up.
+					// For now, just return what we have by way of local status.
+					return bookStatus;
+				}
+				else if (Directory.Exists(Path.GetDirectoryName(statusFilePath)))
 				{
 					// book exists only locally. Treat as checked out to FakeUserIndicatingNewBook
 					return new BookStatus() { lockedBy = FakeUserIndicatingNewBook, lockedWhere = TeamCollectionManager.CurrentMachine };
 				}
-				else
-				{
-					return new BookStatus();
-				}
+				return new BookStatus();
 			}
 			return BookStatus.FromJson(statusString);
 		}
@@ -839,11 +853,9 @@ namespace Bloom.TeamCollection
 		}
 
 		/// <summary>
-		/// Book has a clobber promlem...we can't go on editing until we sort it out...
+		/// Book has a clobber problem...we can't go on editing until we sort it out...
 		/// if there are either conflicting edits or conflicting lock status.
 		/// </summary>
-		/// <param name="bookName"></param>
-		/// <returns></returns>
 		public bool HasClobberProblem(string bookName)
 		{
 			return HasLocalChangesThatMustBeClobbered(bookName) || HasCheckoutConflict(bookName);
@@ -968,7 +980,13 @@ namespace Bloom.TeamCollection
 			// it is VERY bad to give a book a local status file when it is not in the repo. Bloom will
 			// delete the book the next time it starts up!
 			if (!Program.RunningUnitTests)
-				Debug.Assert(GetBookStatusJsonFromRepo(bookFolderName) != null, "Should never write local status for a book that's not in repo");
+			{
+				// Check for a book being renamed.
+				if (!String.IsNullOrEmpty(status.oldName))
+					Debug.Assert(GetBookStatusJsonFromRepo(status.oldName) != null, "Should never write local status for a renamed book that's not in repo for previous name");
+				else
+					Debug.Assert(GetBookStatusJsonFromRepo(bookFolderName) != null, "Should never write local status for a book that's not in repo");
+			}
 #endif
 			var statusFilePath = GetStatusFilePath(bookFolderName, collectionFolder ?? _localCollectionFolder);
 			RobustFile.WriteAllText(statusFilePath, status.ToJson(), Encoding.UTF8);
@@ -1426,9 +1444,11 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		public void UpdateStatusOfAllCheckedOutBooks()
 		{
-			foreach (var bookName in GetBookList())
+			foreach (var path in Directory.EnumerateDirectories(_localCollectionFolder))
 			{
-				UpdateBookStatus(bookName, false);
+				if (!IsBloomBookFolder(path))
+					continue;
+				UpdateBookStatus(Path.GetFileName(path), false);
 			}
 		}
 
