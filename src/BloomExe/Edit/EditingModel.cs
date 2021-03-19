@@ -25,7 +25,6 @@ using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
-using SIL.Windows.Forms.Reporting;
 using SIL.Xml;
 
 namespace Bloom.Edit
@@ -1030,7 +1029,7 @@ namespace Bloom.Edit
 			{
 #if MEMORYCHECK
 				// Check memory for the benefit of developers.
-				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "before EditingModel.SaveNow()", false);
+				MemoryManagement.CheckMemory(false, "before EditingModel.SaveNow()", false);
 #endif
 				var watch = Stopwatch.StartNew();
 				try
@@ -1105,7 +1104,7 @@ namespace Bloom.Edit
 				TroubleShooterDialog.Report($"Saving changes took {watch.ElapsedMilliseconds} milliseconds");
 #if MEMORYCHECK
 				// Check memory for the benefit of developers.
-				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "after EditingModel.SaveNow()", false);
+				MemoryManagement.CheckMemory(false, "after EditingModel.SaveNow()", false);
 #endif
 			}
 		}

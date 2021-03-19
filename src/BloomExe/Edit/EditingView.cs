@@ -497,7 +497,7 @@ namespace Bloom.Edit
 
 #if MEMORYCHECK
 			// Check memory for the benefit of developers.
-			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "EditingView - about to update the displayed page", false);
+			Bloom.Utils.MemoryManagement.CheckMemory(false, "EditingView - about to update the displayed page", false);
 #endif
 			if(_model.HaveCurrentEditableBook)
 			{
@@ -554,12 +554,12 @@ namespace Bloom.Edit
 			}
 #if MEMORYCHECK
 			// Check memory for the benefit of developers.
-			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "EditingView - UpdateSingleDisplayedPage() about to call UpdateDisplay()", false);
+			Bloom.Utils.MemoryManagement.CheckMemory(false, "EditingView - UpdateSingleDisplayedPage() about to call UpdateDisplay()", false);
 #endif
 			UpdateDisplay();
 #if MEMORYCHECK
 			// Check memory for the benefit of developers.
-			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "EditingView - UpdateSingleDisplayedPage() finished", false);
+			Bloom.Utils.MemoryManagement.CheckMemory(false, "EditingView - UpdateSingleDisplayedPage() finished", false);
 #endif
 		}
 
@@ -589,7 +589,7 @@ namespace Bloom.Edit
 			MemoryService.MinimizeHeap(true);
 #if MEMORYCHECK
 			// Check memory for the benefit of developers.
-			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "EditingView - display page updated", false);
+			Bloom.Utils.MemoryManagement.CheckMemory(false, "EditingView - display page updated", false);
 #endif
 		}
 
@@ -1071,7 +1071,7 @@ namespace Bloom.Edit
 			Logger.WriteEvent("Showing ImageToolboxDialog Editor Dialog");
 #if MEMORYCHECK
 			// Check memory for the benefit of developers.  The user won't see anything.
-			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "about to choose picture", false);
+			Bloom.Utils.MemoryManagement.CheckMemory(false, "about to choose picture", false);
 #endif
 			// Deep in the ImageToolboxDialog, when the user asks to see images from the ArtOfReading,
 			// We need to use the Gecko version of the thumbnail viewer, since the original ListView
@@ -1105,7 +1105,7 @@ namespace Bloom.Edit
 				var result = dlg.ShowDialog();
 #if MEMORYCHECK
 				// Check memory for the benefit of developers.  The user won't see anything.
-				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "picture chosen or canceled", false);
+				Bloom.Utils.MemoryManagement.CheckMemory(false, "picture chosen or canceled", false);
 #endif
 				if (DialogResult.OK == result && dlg.ImageInfo != null)
 				{
@@ -1151,7 +1151,7 @@ namespace Bloom.Edit
 					}
 #if MEMORYCHECK
 					// Warn the user if we're starting to use too much memory.
-					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "picture chosen and saved", true);
+					Bloom.Utils.MemoryManagement.CheckMemory(false, "picture chosen and saved", true);
 #endif
 				}
 

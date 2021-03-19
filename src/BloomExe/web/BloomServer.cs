@@ -1212,7 +1212,7 @@ namespace Bloom.Api
 #if MEMORYCHECK
 			// Check memory for the benefit of developers.  (Also see all requests as a side benefit.)
 			var debugMsg = String.Format("after BloomServer.ProcessRequest(\"{0}\")", info.RawUrl);
-			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, debugMsg, false);
+			Bloom.Utils.MemoryManagement.CheckMemory(false, debugMsg, false);
 #endif
 		}
 
