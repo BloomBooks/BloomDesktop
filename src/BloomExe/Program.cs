@@ -338,7 +338,7 @@ namespace Bloom
 			finally
 			{
 				// Check memory one final time for the benefit of developers.  The user won't see anything.
-				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "Bloom finished and exiting", false);
+				Bloom.Utils.MemoryManagement.CheckMemory(true, "Bloom finished and exiting", false);
 				UniqueToken.ReleaseToken();
 
 				_sentry?.Dispose();

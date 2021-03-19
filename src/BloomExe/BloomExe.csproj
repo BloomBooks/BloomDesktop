@@ -657,6 +657,7 @@
     </Compile>
     <Compile Include="ApplicationUpdateSupport.cs" />
     <Compile Include="UpdateVersionTable.cs" />
+    <Compile Include="Utils\MemoryManagement.cs" />
     <Compile Include="Utils\TextUtils.cs" />
     <Compile Include="Utils\ZipUtils.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
