@@ -128,7 +128,7 @@ namespace Bloom.Publish
 					BookletLayoutMethod layoutMethod = GetBookletLayoutMethod();
 
 					// Check memory for the benefit of developers.  The user won't see anything.
-					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "about to create PDF file", false);
+					Bloom.Utils.MemoryManagement.CheckMemory(true, "about to create PDF file", false);
 					_pdfMaker.MakePdf(new PdfMakingSpecs() {InputHtmlPath = tempHtml.Key,
 							OutputPdfPath=PdfFilePath,
 							PaperSizeName=PageLayout.SizeAndOrientation.PageSizeName,
@@ -142,7 +142,7 @@ namespace Bloom.Publish
 							Cmyk = _currentlyLoadedBook.UserPrefs.CmykPdf},
 						worker, doWorkEventArgs, View );
 					// Warn the user if we're starting to use too much memory.
-					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "finished creating PDF file", true);
+					Bloom.Utils.MemoryManagement.CheckMemory(false, "finished creating PDF file", true);
 				}
 			}
 			catch (Exception e)
