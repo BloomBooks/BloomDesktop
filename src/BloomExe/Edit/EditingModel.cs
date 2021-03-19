@@ -59,6 +59,7 @@ namespace Bloom.Edit
 		internal IPage PageChangingLayout; // used to save the page on which the choose different layout command was invoked while the dialog is active.
 		// This event fires after the EditingModel has finished responding to a PageSelection change.
 		internal event EventHandler PageSelectModelChangesComplete;
+		private static bool s_memoryWarningShown;
 
 		// These variables are not thread-safe. Access only on UI thread.
 		private bool _inProcessOfSaving;
@@ -641,7 +642,32 @@ namespace Bloom.Edit
 			// First see if we seem to have a problem without taking time (~100ms in a large book/fast computer) to force GC.
 			// If we seem to have a problem do it again forcing the GC and possibly warning the user.
 			if (MemoryManagement.CheckMemory(false, "switched page in edit", false, false))
-				MemoryManagement.CheckMemory(false, "switched page in edit", true);
+			{
+				MemoryManagement.CheckMemory(false, "switched page in edit", false, true);  // force GC
+				if (!s_memoryWarningShown)
+				{
+					long bytesUsed;
+					using (var proc = Process.GetCurrentProcess())
+					{
+						bytesUsed = proc.PrivateMemorySize64;
+					}
+					// Bloom is "Large Address Aware", so we won't complain until we're using about half
+					// (or two/thirds?) of the possible maximum for 32-bit systems.
+					var is64BitProcess = IntPtr.Size == 8; // according to MSDN
+					var safeLimit = is64BitProcess ? 4000000000L : 2000000000L;
+					Debug.WriteLine($"Checking memory used ({bytesUsed}) against upper safe limit ({safeLimit}).");
+					if (bytesUsed > safeLimit)
+					{
+						s_memoryWarningShown = true;
+						// These strings are in the Palaso xliff files.
+						var warning = LocalizationManager.GetString("MemoryWarning",
+							"Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.");
+						var caption = LocalizationManager.GetString("Warning", "Warning");
+						MessageBox.Show(null, string.Format(warning, Application.ProductName), caption, MessageBoxButtons.OK,
+							MessageBoxIcon.Warning);
+					}
+				}
+			}
 
 			if (_view != null)
 			{
