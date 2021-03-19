@@ -311,6 +311,22 @@ namespace Bloom.TeamCollection
 				var bookFolder = Path.Combine(_localCollectionFolder, Path.GetFileNameWithoutExtension(bookFolderName));
 				if (Directory.Exists(bookFolder))
 				{
+					var statusFilePath = Path.Combine(bookFolder, "book.status");
+					if (File.Exists(statusFilePath))
+					{
+						var bookStatus = BookStatus.FromJson(RobustFile.ReadAllText(statusFilePath, Encoding.UTF8));
+						Debug.Assert(bookStatus.oldName != null);
+						if (!String.IsNullOrEmpty(bookStatus.oldName))
+						{
+							// The book has been renamed.  Use the original name to try to access the repo
+							// status.  (BL-9680)
+							statusString = GetBookStatusJsonFromRepo(bookStatus.oldName);
+							if (!String.IsNullOrEmpty(statusString))
+								return BookStatus.FromJson(statusString);
+						}
+						// REVIEW: this shouldn't exist unless the book has been renamed.
+						return bookStatus;
+					}
 					// book exists only locally. Treat as checked out to FakeUserIndicatingNewBook
 					return new BookStatus() { lockedBy = FakeUserIndicatingNewBook, lockedWhere = TeamCollectionManager.CurrentMachine };
 				}
@@ -838,11 +854,9 @@ namespace Bloom.TeamCollection
 		}
 
 		/// <summary>
-		/// Book has a clobber promlem...we can't go on editing until we sort it out...
+		/// Book has a clobber problem...we can't go on editing until we sort it out...
 		/// if there are either conflicting edits or conflicting lock status.
 		/// </summary>
-		/// <param name="bookName"></param>
-		/// <returns></returns>
 		public bool HasClobberProblem(string bookName)
 		{
 			return HasLocalChangesThatMustBeClobbered(bookName) || HasCheckoutConflict(bookName);
@@ -967,7 +981,13 @@ namespace Bloom.TeamCollection
 			// it is VERY bad to give a book a local status file when it is not in the repo. Bloom will
 			// delete the book the next time it starts up!
 			if (!Program.RunningUnitTests)
-				Debug.Assert(GetBookStatusJsonFromRepo(bookFolderName) != null, "Should never write local status for a book that's not in repo");
+			{
+				// Check for a book being renamed.
+				if (!String.IsNullOrEmpty(status.oldName))
+					Debug.Assert(GetBookStatusJsonFromRepo(status.oldName) != null, "Should never write local status for a renamed book that's not in repo for previous name");
+				else
+					Debug.Assert(GetBookStatusJsonFromRepo(bookFolderName) != null, "Should never write local status for a book that's not in repo");
+			}
 #endif
 			var statusFilePath = GetStatusFilePath(bookFolderName, collectionFolder ?? _localCollectionFolder);
 			RobustFile.WriteAllText(statusFilePath, status.ToJson(), Encoding.UTF8);
@@ -1464,9 +1484,28 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		public void UpdateStatusOfAllCheckedOutBooks()
 		{
-			foreach (var bookName in GetBookList())
+			// Books checked out locally may have been renamed, so that the book name derived from
+			// the remote repository may not match the name in the local collection folder.  For
+			// renamed books, we need to map the original name (from the repo) to the new name in
+			// order for the proper Checkout Icon to be overlaid on the book button in the library
+			// list.  (BL-9680)
+			var repoNames = GetBookList();
+			var mapNames = new Dictionary<string,string>();
+			foreach (var localName in Directory.EnumerateDirectories(_localCollectionFolder).Select(path => Path.GetFileNameWithoutExtension(path)))
 			{
-				UpdateBookStatus(bookName, false);
+				if (!repoNames.Contains(localName))
+				{
+					var status = GetLocalStatus(localName);
+					if (!String.IsNullOrEmpty(status.oldName) && repoNames.Contains(status.oldName))
+						mapNames.Add(status.oldName, localName);
+				}
+			}
+			foreach (var bookName in repoNames)
+			{
+				if (mapNames.ContainsKey(bookName))
+					UpdateBookStatus(mapNames[bookName], false);
+				else
+					UpdateBookStatus(bookName, false);
 			}
 		}
 
