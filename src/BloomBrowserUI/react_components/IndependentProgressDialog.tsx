@@ -11,7 +11,7 @@ import "./IndependentProgressDialog.less";
 import theme from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 
-// Root element rendered to progress dialog, using BrowserDialog in C#
+// Root element rendered to progress dialog, using ReactDialog in C#
 
 export const ProgressDialog: React.FunctionComponent = props => {
     const urlParams = new URLSearchParams(window.location.search);

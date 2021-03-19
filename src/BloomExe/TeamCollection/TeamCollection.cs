@@ -156,7 +156,7 @@ namespace Bloom.TeamCollection
 		/// creating a TeamCollection from an existing local collection. Usually it is a new folder and all
 		/// books are copied.)
 		/// </summary>
-		public void SynchronizeBooksFromLocalToRepo(WebSocketProgress progress)
+		public void SynchronizeBooksFromLocalToRepo(IWebSocketProgress progress)
 		{
 			foreach (var path in Directory.EnumerateDirectories(_localCollectionFolder))
 			{
@@ -1314,16 +1314,14 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		public void SynchronizeRepoAndLocal()
 		{
-			var url = BloomFileLocator.GetBrowserFile(false, "utils", "IndependentProgressDialog.html").ToLocalhost()
-			          + "?title=Team Collection Activity";
 			var progress = new WebSocketProgress(SocketServer, kWebSocketContext);
 			Program.CloseSplashScreen(); // Enhance: maybe not right away? Maybe we can put our dialog on top? But it seems to work pretty well...
 
 			// NOTE: This (specifically ShowDialog) blocks the main thread until the dialog is closed.
 			// Be careful to avoid deadlocks.
-			using (var dlg = new BrowserDialog(url))
+			using (var dlg = new ReactDialog("teamCollectionSettingsBundle.js",
+				"ProgressDialog", "title=Team Collection Activity"))
 			{
-				dlg.WebSocketServer = SocketServer;
 				dlg.Width = 500;
 				dlg.Height = 300;
 				// We REALLY don't want this dialog getting closed before the background task finishes.

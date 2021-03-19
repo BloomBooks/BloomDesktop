@@ -52,7 +52,7 @@ namespace BloomTests.TeamCollection
 					var collection = tcManager.CurrentCollection;
 
 					// sut
-					(collection as FolderTeamCollection)?.ConnectToTeamCollection(sharedFolder.FolderPath, new NullWebSocketProgress());
+					(collection as FolderTeamCollection)?.SetupTeamCollection(sharedFolder.FolderPath, new NullWebSocketProgress());
 
 					Assert.That(collection, Is.Not.Null);
 					var joinCollectionPath =

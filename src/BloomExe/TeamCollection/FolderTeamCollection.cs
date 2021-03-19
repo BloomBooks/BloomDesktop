@@ -603,13 +603,12 @@ namespace Bloom.TeamCollection
 		}
 
 		/// <summary>
-		/// Used when the user asks to create a team collection from the existing local collection.
-		/// Assumes only that the folder we want to connect to exists (and, at least for now, expects
-		/// it to have nothing else in it). We set it up with all the files it needs to have,
-		/// including any books that already exist locally.
+		/// Set up a team collection created from the existing local collection in the specified
+		/// (typically newly created) folder (and links the local collection to it so it becomes a TC).
+		/// We set it up with all the files it needs to have, including any books that already exist locally.
 		/// </summary>
 		/// <param name="repoFolder"></param>
-		public void ConnectToTeamCollection(string repoFolder, WebSocketProgress progress)
+		public void SetupTeamCollection(string repoFolder, IWebSocketProgress progress)
 		{
 			_repoFolderPath = repoFolder;
 			progress.Message("SettingUpCore", "Setting up the core team collection files");
@@ -621,17 +620,20 @@ namespace Bloom.TeamCollection
 			StartMonitoring();
 		}
 
-		public void ConnectToTeamCollectionWithProgressDialog(string repoFolder)
+		/// <summary>
+		/// Wraps SetupTeamCollection() with a dialog showing progress.
+		/// </summary>
+		/// <param name="repoFolder"></param>
+		public void SetupTeamCollectionWithProgressDialog(string repoFolder)
 		{
-			var url = BloomFileLocator.GetBrowserFile(false, "utils", "IndependentProgressDialog.html").ToLocalhost()
-					  + "?title=Team Collection Activity";
 			var progress = new WebSocketProgress(SocketServer, TeamCollection.kWebSocketContext);
 
 			// NOTE: This (specifically ShowDialog) blocks the main thread until the dialog is closed.
 			// Be careful to avoid deadlocks.
-			using (var dlg = new BrowserDialog(url))
+			using (var dlg = new ReactDialog("teamCollectionSettingsBundle.js",
+				"ProgressDialog", "title=Team Collection Activity"))
 			{
-				dlg.WebSocketServer = SocketServer;
+				//dlg.WebSocketServer = SocketServer;
 				dlg.Width = 500;
 				dlg.Height = 300;
 				// This is not as critical as for a startup sync, but for now let's not try to
@@ -646,7 +648,7 @@ namespace Bloom.TeamCollection
 					progress.Message("StartingCopy", "",
 						"Starting to set up the Team Collection", MessageKind.Progress);
 
-					ConnectToTeamCollection(repoFolder, progress);
+					SetupTeamCollection(repoFolder, progress);
 
 					progress.Message("Done", "Done");
 
