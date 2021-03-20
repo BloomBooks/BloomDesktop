@@ -1314,32 +1314,12 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		public void SynchronizeRepoAndLocal()
 		{
-			var progress = new WebSocketProgress(SocketServer, kWebSocketContext);
 			Program.CloseSplashScreen(); // Enhance: maybe not right away? Maybe we can put our dialog on top? But it seems to work pretty well...
 
-			// NOTE: This (specifically ShowDialog) blocks the main thread until the dialog is closed.
-			// Be careful to avoid deadlocks.
-			using (var dlg = new ReactDialog("teamCollectionSettingsBundle.js",
-				"ProgressDialog", "title=Team Collection Activity"))
-			{
-				dlg.Width = 500;
-				dlg.Height = 300;
-				// We REALLY don't want this dialog getting closed before the background task finishes.
-				// Waiting for this dialog to close is what keeps this thread from proceeding, typically
-				// to load the collection.
-				// Having a background task manipulating files in the collection while Bloom is loading
-				// it would be a recipe for rare race-condition bugs we can't reproduce.
-				dlg.ControlBox = false;
-				// With no title and no other title bar controls, the title bar disappears (good!) but
-				// we can't drag the dialog (bad!). (We don't WANT a title because we're doing a prettier
-				// one in HTML.) For now we decided to go with 'no drag'.
-				//dlg.Text = "  ";
-				var worker = new BackgroundWorker();
-				worker.DoWork += (sender, args) =>
+			BrowserProgressDialog.DoWorkWithProgressDialog(SocketServer, TeamCollection.kWebSocketContext,
+				"Team Collection Activity",
+				progress =>
 				{
-					// A way of waiting until the dialog is ready to receive progress messages
-					while (!SocketServer.IsSocketOpen(kWebSocketContext))
-						Thread.Sleep(50);
 					var now = DateTime.Now;
 					// Not useful to have the date and time in the progress dialog, but definitely
 					// handy to record at the start of each section in the saved log. Tells us when anything it
@@ -1366,37 +1346,19 @@ namespace Bloom.TeamCollection
 
 					// Review: are any of the cases we don't treat as warnings or errors important enough to wait
 					// for the user to read them and close the dialog manually?
-					if (problems)
-					{
-						// Now the user is allowed to close the dialog or report problems.
-						// (IndependentProgressDialog in JS-land is watching for this message, which causes it to turn
-						// on the buttons that allow the dialog to be manually closed (or a problem to be reported).
-						SocketServer.SendBundle(kWebSocketContext, "show-buttons", new DynamicJson());
-					}
-					else
-					{
-						// Nothing very important...close it automatically.
-						dlg.Invoke((Action)(() =>
-						{
-							dlg.Close();
-						}));
-					}
+					// Currently it stays open only if we detected problems.
+					return problems;
+				});
 
-				};
-
-				worker.RunWorkerAsync();
-				dlg.ShowDialog();
-
-				// It's just possible there are one, or even more, file change notifications we
-				// haven't yet received from the OS. Wait till things settle down to start monitoring again.
-				//
-				// FYI, Needs to be invoked on the main thread in order for the event handler to be invoked.
-				// Easier to have this after the dialog is closed (the dialog also requires the main thread and will block the main thread until closed),
-				// rather than SafeInvoking it from {worker}, because that has way more risk of accidental deadlock...
-				//    the worker would have some work that requires being on the main thread, but it also is the gatekeeper for the main thread being released.
-				//    There was an issue where it would deadlock when the debugger breakpoints were set a certain way (presumably influencing the thread execution)
-				Application.Idle += StartMonitoringOnIdle;
-			}
+			// It's just possible there are one, or even more, file change notifications we
+			// haven't yet received from the OS. Wait till things settle down to start monitoring again.
+			//
+			// FYI, Needs to be invoked on the main thread in order for the event handler to be invoked.
+			// Easier to have this after the dialog is closed (the dialog also requires the main thread and will block the main thread until closed),
+			// rather than SafeInvoking it from {worker}, because that has way more risk of accidental deadlock...
+			//    the worker would have some work that requires being on the main thread, but it also is the gatekeeper for the main thread being released.
+			//    There was an issue where it would deadlock when the debugger breakpoints were set a certain way (presumably influencing the thread execution)
+			Application.Idle += StartMonitoringOnIdle;
 		}
 
 		private void StartMonitoringOnIdle(object sender, EventArgs e)

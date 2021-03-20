@@ -626,38 +626,17 @@ namespace Bloom.TeamCollection
 		/// <param name="repoFolder"></param>
 		public void SetupTeamCollectionWithProgressDialog(string repoFolder)
 		{
-			var progress = new WebSocketProgress(SocketServer, TeamCollection.kWebSocketContext);
-
-			// NOTE: This (specifically ShowDialog) blocks the main thread until the dialog is closed.
-			// Be careful to avoid deadlocks.
-			using (var dlg = new ReactDialog("teamCollectionSettingsBundle.js",
-				"ProgressDialog", "title=Team Collection Activity"))
+			BrowserProgressDialog.DoWorkWithProgressDialog(SocketServer, TeamCollection.kWebSocketContext, "Team Collection Activity",
+			progress =>
 			{
-				//dlg.WebSocketServer = SocketServer;
-				dlg.Width = 500;
-				dlg.Height = 300;
-				// This is not as critical as for a startup sync, but for now let's not try to
-				// handle letting the user abort.
-				dlg.ControlBox = false;
-				var worker = new BackgroundWorker();
-				worker.DoWork += (sender, args) =>
-				{
-					// A way of waiting until the dialog is ready to receive progress messages
-					while (!SocketServer.IsSocketOpen(kWebSocketContext))
-						Thread.Sleep(50);
-					progress.Message("StartingCopy", "",
-						"Starting to set up the Team Collection", MessageKind.Progress);
+				progress.Message("StartingCopy", "",
+					"Starting to set up the Team Collection", MessageKind.Progress);
 
-					SetupTeamCollection(repoFolder, progress);
+				SetupTeamCollection(repoFolder, progress);
 
-					progress.Message("Done", "Done");
-
-					dlg.Invoke((Action) (() => { dlg.Close(); }));
-				};
-
-				worker.RunWorkerAsync();
-				dlg.ShowDialog(); // returns when dialog closed
-			}
+				progress.Message("Done", "Done");
+				return false; // always close dialog when done
+			});
 		}
 
 		private static string _joinCollectionPath;
