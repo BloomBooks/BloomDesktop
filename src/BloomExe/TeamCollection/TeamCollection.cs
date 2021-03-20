@@ -1036,11 +1036,12 @@ namespace Bloom.TeamCollection
 		/// Also run when first joining an existing collection to merge them. A few behaviors are
 		/// different in this case.
 		/// </summary>
-		/// <returns>true if there were problems serious enough to keep the progress dialog open</returns>
+		/// <returns>true if progress messages were reported that are severe enough to warrant
+		/// keeping the progress dialog open until the user responds</returns>
 		public bool SyncAtStartup(IWebSocketProgress progress, bool firstTimeJoin = false)
 		{
 			_tcLog.WriteMilestone(MessageAndMilestoneType.Reloaded);
-			var warnings = false; //set true if we get any problems
+			var hasProblems = false; //set true if we get any problems
 			// Delete books that we think have been deleted remotely from the repo.
 			// If it's a join collection merge, check new books in instead.
 			var englishSomethingWrongMessage = "Something went wrong trying to sync with the book {0} in your Team Collection.";
@@ -1105,7 +1106,7 @@ namespace Bloom.TeamCollection
 						path, null, MessageKind.Error);
 					SentrySdk.AddBreadcrumb(string.Format(englishSomethingWrongMessage, path));
 					SentrySdk.CaptureException(ex);
-					warnings= true;
+					hasProblems= true;
 				}
 			}
 
@@ -1153,7 +1154,7 @@ namespace Bloom.TeamCollection
 							// other way and these books have been edited independently. Treat it as a conflict.
 							PutBook(localFolderPath, inLostAndFound: true);
 							// warn the user
-							warnings = true;
+							hasProblems = true;
 							ReportProgressAndLog(progress, "ConflictingCheckout",
 								"Found different versions of '{0}' in both collections. The team version has been copied to your local collection, and the old local version to Lost and Found"
 								, bookName, null, MessageKind.Error);
@@ -1234,7 +1235,7 @@ namespace Bloom.TeamCollection
 							// Edited locally while someone else has it checked out. Copy current local to lost and found
 							PutBook(localFolderPath, inLostAndFound: true);
 							// warn the user
-							warnings= true;
+							hasProblems= true;
 							ReportProgressAndLog(progress, "ConflictingCheckout",
 								"The book '{0}', which you have checked out and edited, is checked out to someone else in the team collection. Your changes have been overwritten, but are saved to Lost-and-found.",
 								bookName, null, MessageKind.Error);
@@ -1269,7 +1270,7 @@ namespace Bloom.TeamCollection
 					// copy repo book and status to local
 					CopyBookFromRepoToLocal(bookName);
 						// warn the user
-						warnings = true;
+						hasProblems = true;
 						ReportProgressAndLog(progress, "ConflictingEdit",
 						"The book '{0}', which you have checked out and edited, was modified in the team collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.",
 						bookName, null, MessageKind.Error);
@@ -1284,18 +1285,18 @@ namespace Bloom.TeamCollection
 						bookName, null, MessageKind.Error);
 					SentrySdk.AddBreadcrumb(string.Format(englishSomethingWrongMessage, bookName));
 					SentrySdk.CaptureException(ex);
-					warnings = true;
+					hasProblems = true;
 				}
 			}
 
-			if (warnings)
+			if (hasProblems)
 			{
 				// Not sure this is the best place for this. But currently the warnings/errors are
 				// shown in the progress dialog if we return any, so a reasonable assumption is
 				// that any we return here are immediately shown.
 				_tcLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
 			}
-			return warnings;
+			return hasProblems;
 		}
 
 		// must match what is in IndependentProgressDialog.tsx passed as clientContext to ProgressBox.
@@ -1314,32 +1315,12 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		public void SynchronizeRepoAndLocal()
 		{
-			var progress = new WebSocketProgress(SocketServer, kWebSocketContext);
 			Program.CloseSplashScreen(); // Enhance: maybe not right away? Maybe we can put our dialog on top? But it seems to work pretty well...
 
-			// NOTE: This (specifically ShowDialog) blocks the main thread until the dialog is closed.
-			// Be careful to avoid deadlocks.
-			using (var dlg = new ReactDialog("teamCollectionSettingsBundle.js",
-				"ProgressDialog", "title=Team Collection Activity"))
-			{
-				dlg.Width = 500;
-				dlg.Height = 300;
-				// We REALLY don't want this dialog getting closed before the background task finishes.
-				// Waiting for this dialog to close is what keeps this thread from proceeding, typically
-				// to load the collection.
-				// Having a background task manipulating files in the collection while Bloom is loading
-				// it would be a recipe for rare race-condition bugs we can't reproduce.
-				dlg.ControlBox = false;
-				// With no title and no other title bar controls, the title bar disappears (good!) but
-				// we can't drag the dialog (bad!). (We don't WANT a title because we're doing a prettier
-				// one in HTML.) For now we decided to go with 'no drag'.
-				//dlg.Text = "  ";
-				var worker = new BackgroundWorker();
-				worker.DoWork += (sender, args) =>
+			BrowserProgressDialog.DoWorkWithProgressDialog(SocketServer, TeamCollection.kWebSocketContext,
+				"Team Collection Activity",
+				progress =>
 				{
-					// A way of waiting until the dialog is ready to receive progress messages
-					while (!SocketServer.IsSocketOpen(kWebSocketContext))
-						Thread.Sleep(50);
 					var now = DateTime.Now;
 					// Not useful to have the date and time in the progress dialog, but definitely
 					// handy to record at the start of each section in the saved log. Tells us when anything it
@@ -1356,7 +1337,7 @@ namespace Bloom.TeamCollection
 					// enough when we do several close together.
 					StopMonitoring();
 
-					var problems = SyncAtStartup(progress, doingJoinCollectionMerge);
+					var waitForUserToCloseDialogOrReportProblems = SyncAtStartup(progress, doingJoinCollectionMerge);
 
 					// Now that we've finished synchronizing, update these icons based on the post-sync result
 					// REVIEW: What do we want to happen if exception throw here? Should we add to {problems} list?
@@ -1366,37 +1347,19 @@ namespace Bloom.TeamCollection
 
 					// Review: are any of the cases we don't treat as warnings or errors important enough to wait
 					// for the user to read them and close the dialog manually?
-					if (problems)
-					{
-						// Now the user is allowed to close the dialog or report problems.
-						// (IndependentProgressDialog in JS-land is watching for this message, which causes it to turn
-						// on the buttons that allow the dialog to be manually closed (or a problem to be reported).
-						SocketServer.SendBundle(kWebSocketContext, "show-buttons", new DynamicJson());
-					}
-					else
-					{
-						// Nothing very important...close it automatically.
-						dlg.Invoke((Action)(() =>
-						{
-							dlg.Close();
-						}));
-					}
+					// Currently it stays open only if we detected problems.
+					return waitForUserToCloseDialogOrReportProblems;
+				});
 
-				};
-
-				worker.RunWorkerAsync();
-				dlg.ShowDialog();
-
-				// It's just possible there are one, or even more, file change notifications we
-				// haven't yet received from the OS. Wait till things settle down to start monitoring again.
-				//
-				// FYI, Needs to be invoked on the main thread in order for the event handler to be invoked.
-				// Easier to have this after the dialog is closed (the dialog also requires the main thread and will block the main thread until closed),
-				// rather than SafeInvoking it from {worker}, because that has way more risk of accidental deadlock...
-				//    the worker would have some work that requires being on the main thread, but it also is the gatekeeper for the main thread being released.
-				//    There was an issue where it would deadlock when the debugger breakpoints were set a certain way (presumably influencing the thread execution)
-				Application.Idle += StartMonitoringOnIdle;
-			}
+			// It's just possible there are one, or even more, file change notifications we
+			// haven't yet received from the OS. Wait till things settle down to start monitoring again.
+			//
+			// FYI, Needs to be invoked on the main thread in order for the event handler to be invoked.
+			// Easier to have this after the dialog is closed (the dialog also requires the main thread and will block the main thread until closed),
+			// rather than SafeInvoking it from {worker}, because that has way more risk of accidental deadlock...
+			//    the worker would have some work that requires being on the main thread, but it also is the gatekeeper for the main thread being released.
+			//    There was an issue where it would deadlock when the debugger breakpoints were set a certain way (presumably influencing the thread execution)
+			Application.Idle += StartMonitoringOnIdle;
 		}
 
 		private void StartMonitoringOnIdle(object sender, EventArgs e)
