@@ -5,6 +5,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
@@ -39,16 +40,24 @@ namespace Bloom.web
 			apiHandler.RegisterEndpointHandler("pageList/pageContent", HandlePageContentRequest, false);
 			apiHandler.RegisterEndpointHandler("pageList/pageMoved", HandlePageMovedRequest, true);
 			apiHandler.RegisterEndpointHandler("pageList/pageClicked", HandlePageClickedRequest, true);
-			apiHandler.RegisterEndpointHandler("pageList/menuClicked", HandleShowMenuRequest, true);
+			apiHandler.RegisterEndpointHandler("pageList/menuClicked", HandleShowMenuRequest, true); 
 		}
 
 		private void HandlePageClickedRequest(ApiRequest request)
 		{
-			using (PerformanceMeasurement.Global.Measure("select page"))
+			var requestData = DynamicJson.Parse(request.RequiredPostJson());
+			string pageId = requestData.pageId;
+
+			var shiftIsDown = (Control.ModifierKeys & Keys.Shift) == Keys.Shift;
+			var label = shiftIsDown ? "Select Page (SHIFT)" : "Select Page";
+
+			using (PerformanceMeasurement.Global.Measure(label, requestData.detail ?? ""))
 			{
-				var requestData = DynamicJson.Parse(request.RequiredPostJson());
-				string pageId = requestData.pageId;
-				IPage page = PageFromId(pageId);
+				//using (PerformanceMeasurement.Global.Measure(label, requestData.detail ?? ""))
+				//{
+					IPage page = PageFromId(pageId);
+				//}
+
 				if (page != null)
 					PageList.PageClicked(page);
 			}

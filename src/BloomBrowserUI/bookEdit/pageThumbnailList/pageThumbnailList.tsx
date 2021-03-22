@@ -164,6 +164,9 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                 response.data.selectedPageId
             );
             if (callback) callback();
+
+            // auto walk for experiment
+            ContinueAutomatedPageClicking(realPageList);
         });
     }, [reloadValue]);
 
@@ -198,11 +201,15 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
             if (e.currentTarget) {
                 const pageId = (e.currentTarget.parentElement!.parentElement!
                     .parentElement as HTMLElement)!.getAttribute("id");
-
+                const caption = (e.currentTarget.parentElement!.parentElement!
+                    .parentElement as HTMLElement)!.getAttribute(
+                    "data-caption"
+                );
                 BloomApi.postJson(
                     "pageList/pageClicked",
                     {
-                        pageId
+                        pageId,
+                        detail: caption
                     },
                     () => {}
                 );
@@ -227,6 +234,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                 <div
                     key={pageContent.key} // for efficient react manipulation of list
                     id={pageContent.key} // used by C# code to identify page
+                    data-caption={pageContent.caption}
                     className={
                         "gridItem " +
                         (pageContent.key === "placeholder"
@@ -386,7 +394,7 @@ function onDragStop(
         // click events than we really want.)
         BloomApi.postJson(
             "pageList/pageClicked",
-            { pageId: movedPageId },
+            { pageId: movedPageId, detail: "unknown" },
             () => {}
         );
         return;
@@ -401,16 +409,24 @@ function onDragStop(
     );
 }
 
-function ContinueAutomatedPageClicking(pagesRemaining: IPage[]) {
+function ContinueAutomatedPageClicking(
+    pagesRemaining: IPage[],
+    count: number = 0
+) {
+    const kHowManyPages = 10; // no way other than code to change this at the moment
+    if (count > kHowManyPages) return;
     BloomApi.postJson(
         "pageList/pageClicked",
-        { pageId: pagesRemaining[0].key },
+        { pageId: pagesRemaining[0].key, detail: pagesRemaining[0].caption },
         () => {
             const remaining = pagesRemaining.slice(1);
             if (remaining.length > 0)
-                window.setTimeout(() => {
-                    ContinueAutomatedPageClicking(remaining);
-                }, 3 * 1000);
+                window.setTimeout(
+                    () => {
+                        ContinueAutomatedPageClicking(remaining, count + 1);
+                    },
+                    3 * 1000 // leave time for the browser to redraw
+                );
             else window.alert("Done with automated page clicking");
         }
     );
