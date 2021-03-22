@@ -1,0 +1,10 @@
+{
+    "presets": [
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='fdpm back cover.svg'/>",
+            "condition": "always"
+        }
+    ]
+}
