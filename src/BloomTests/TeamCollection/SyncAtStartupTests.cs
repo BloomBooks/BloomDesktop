@@ -43,7 +43,7 @@ namespace BloomTests.TeamCollection
 			MakeBook("A book", "This should survive as it has no local status", false);
 			// By the way, like most new books, it got renamed early in life...twice
 			SimulateRename(_collection, "A book", "An early name");
-			SimulateRename(_collection, "An early name", "New Book");
+			SimulateRename(_collection, "An early name", "New book");
 
 			// Simulate a book that needs nothing done to it. It's the same locally and on the repo.
 			MakeBook("Keep me", "This needs nothing done to it");
