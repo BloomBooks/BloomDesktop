@@ -23,6 +23,7 @@ namespace Bloom.Utils
 		
 		public bool CurrentlyMeasuring { get; private set; }
 		private Measurement _topMeasurement;
+		private Measurement _previousMeasurement;
 
 		// The only instance of this is created by autofac
 		public PerformanceMeasurement()
@@ -39,7 +40,7 @@ namespace Bloom.Utils
 		{
 			this.CurrentlyMeasuring = true;
 
-			var columnNames = "Action,Details,Seconds,Private Bytes KB, Δ Private Bytes KB";
+			var columnNames = "Action,Details,Seconds,Private Bytes KB, Δ Private Bytes KB (since last measured)";
 
 			
 						if (_stream != null)
@@ -95,7 +96,9 @@ namespace Bloom.Utils
 		{
 			if (!CurrentlyMeasuring)
 				return null;
-			var m = new Measurement(action, details);
+			var previousSize = _previousMeasurement?.LastKnownSize ?? 0L;
+			var m = new Measurement(action, details, previousSize);
+			_previousMeasurement = m;
 			if (_topMeasurement == null)
 			{
 				_topMeasurement = m;
@@ -133,7 +136,7 @@ namespace Bloom.Utils
 	}
 
 	/// <summary>
-	/// Just something to stop a particular measurement at then end of a using() block.
+	/// Just something to stop a particular measurement at the end of a using() block.
 	/// </summary>
 	class Lifespan : IDisposable
 	{
@@ -160,11 +163,18 @@ namespace Bloom.Utils
 		private PerfPoint _end;
 		// a measurement of an activity inside of the lifetime of this activity
 		public Measurement child;
+		private long _previousSizeKb;
 
-		public Measurement(string action, string details)
+		public long LastKnownSize
+		{
+			get { return _end?.privateBytesKb ?? _start?.privateBytesKb ?? 0L; }
+		}
+
+		public Measurement(string action, string details, long previousSizeKb)
 		{
 			_action = action;
 			_details = details;
+			_previousSizeKb = previousSizeKb;
 			_start = new PerfPoint();
 		}
 
@@ -173,76 +183,92 @@ namespace Bloom.Utils
 			this._end = new PerfPoint();
 		}
 	
-
 		public string GetCsv()
 		{
 			TimeSpan diff = _end.when - _start.when;
 			var time = diff.ToString(@"ss\.f");
-			//return $"{_action},{_details},{time},{(_end.privateBytesKb - _start.privateBytesKb)},{(_end.workingSetKb - _start.workingSetKb)},{(_end.workingSetPrivateKb - _start.workingSetPrivateKb)},{(_end.pagedMemoryKb - _start.pagedMemoryKb)}";
-			return $"{_action},{_details},{time},{_end.privateBytesKb},{(_end.privateBytesKb - _start.privateBytesKb)}";
+			return $"{_action},{_details},{time},{_end.privateBytesKb},{(_end.privateBytesKb - _previousSizeKb)}";
+		}
+
+		public override string ToString()
+		{
+			// For a ToString() summary, the delta/previousSizeKb is not important.
+			return $"Measurement: details=\"{_details}\"; start={_start.privateBytesKb}KB ({_start.when}); end={_end?.privateBytesKb}KB ({_end?.when})";
 		}
 
 		public class PerfPoint
-	{
-		const int bytesPerMegabyte = 1048576;
-		public long pagedMemoryMb;
-		public long workingSetKb;
-		public DateTime when;
-		public long workingSetPrivateKb;
-		public long privateBytesKb;
-
-		public PerfPoint()
 		{
-			this.when = DateTime.Now;
-			using (var proc = Process.GetCurrentProcess())
+			const int bytesPerMegabyte = 1048576;
+			public long pagedMemoryMb;
+			public long workingSetKb;
+			public DateTime when;
+			public long workingSetPrivateKb;
+			public long privateBytesKb;
+
+			public PerfPoint()
 			{
-				pagedMemoryMb = proc.PagedMemorySize64 / bytesPerMegabyte;
+				this.when = DateTime.Now;
+				using (var proc = Process.GetCurrentProcess())
+				{
+					pagedMemoryMb = proc.PagedMemorySize64 / bytesPerMegabyte;
+				}
+
+				this.workingSetKb = GetWorkingSet();
+				this.workingSetPrivateKb = GetWorkingSetPrivate();
+				privateBytesKb = GetPrivateBytes();
 			}
 
-			this.workingSetKb = GetWorkingSet();
-			this.workingSetPrivateKb = GetWorkingSetPrivate();
-			privateBytesKb = GetPrivateBytes();
-		}
-
-		// Significance: This counter indicates the current number of bytes allocated to this process that cannot be shared with
-		// other processes.This counter is used for identifying memory leaks.
-		private long GetPrivateBytes()
-		{
-			using (var perfCounter = new PerformanceCounter("Process", "Private Bytes",
-				Process.GetCurrentProcess().ProcessName))
+			// Significance: This counter indicates the current number of bytes allocated to this process that cannot be shared with
+			// other processes.This counter is used for identifying memory leaks.
+			private long GetPrivateBytes()
 			{
-				return perfCounter.RawValue / 1024;
+				if (SIL.PlatformUtilities.Platform.IsLinux)
+				{
+					using (var proc = Process.GetCurrentProcess())
+					{
+						return proc.PrivateMemorySize64 / 1024;
+					}
+				}
+				using (var perfCounter = new PerformanceCounter("Process", "Private Bytes",
+					Process.GetCurrentProcess().ProcessName))
+				{
+					return perfCounter.RawValue / 1024;
+				}
 			}
-		}
 
-		/* Significance: The working set is the set of memory pages currently loaded in RAM. If the system has sufficient memory, it can maintain enough space in the working set so that it does not need to perform the disk operations. However, if there is insufficient memory, the system tries to reduce the working set by taking away the memory from the processes which results in an increase in page faults. When the rate of page faults rises, the system tries to increase the working set of the process. If you observe wide fluctuations in the working set, it might indicate a memory shortage. Higher values in the working set may also be due to multiple assemblies in your application. You can improve the working set by using assemblies shared in the global assembly cache.
-		 */
-		private long GetWorkingSet()
-		{
-			using (var perfCounter = new PerformanceCounter("Process", "Working Set",
-				Process.GetCurrentProcess().ProcessName))
+			/* Significance: The working set is the set of memory pages currently loaded in RAM. If the system has sufficient memory, it can maintain enough space in the working set so that it does not need to perform the disk operations. However, if there is insufficient memory, the system tries to reduce the working set by taking away the memory from the processes which results in an increase in page faults. When the rate of page faults rises, the system tries to increase the working set of the process. If you observe wide fluctuations in the working set, it might indicate a memory shortage. Higher values in the working set may also be due to multiple assemblies in your application. You can improve the working set by using assemblies shared in the global assembly cache.
+			 */
+			private long GetWorkingSet()
 			{
-				return perfCounter.RawValue / 1024;
+				if (SIL.PlatformUtilities.Platform.IsLinux)
+				{
+					using (var proc = Process.GetCurrentProcess())
+					{
+						return proc.WorkingSet64 / 1024;
+					}
+				}
+				using (var perfCounter = new PerformanceCounter("Process", "Working Set",
+					Process.GetCurrentProcess().ProcessName))
+				{
+					return perfCounter.RawValue / 1024;
+				}
 			}
-		}
-		private long GetWorkingSetPrivate()
-		{
-			using (var perfCounter = new PerformanceCounter("Process", "Working Set - Private",
-				Process.GetCurrentProcess().ProcessName))
+			private long GetWorkingSetPrivate()
 			{
-				return perfCounter.RawValue / 1024;
+				if (SIL.PlatformUtilities.Platform.IsLinux)
+				{
+					// Can't get "private" working set on Linux.
+					using (var proc = Process.GetCurrentProcess())
+					{
+						return proc.WorkingSet64 / 1024;
+					}
+				}
+				using (var perfCounter = new PerformanceCounter("Process", "Working Set - Private",
+					Process.GetCurrentProcess().ProcessName))
+				{
+					return perfCounter.RawValue / 1024;
+				}
 			}
-		}
-
-
-		//Gave 0 except for the very start of page switching
-		// private long GetWorkingSetPeak()
-		//{
-		//	using (var perfCounter = new PerformanceCounter("Process", "Working Set Peak",
-		//		Process.GetCurrentProcess().ProcessName))
-		//	{
-		//		return perfCounter.RawValue / 1024;
-		//	}
 		}
 	}
 }
