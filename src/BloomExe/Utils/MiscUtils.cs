@@ -10,6 +10,22 @@ namespace Bloom.Utils
 	/// </summary>
 	public static class MiscUtils
 	{
+
+		/// <summary>
+		/// Action will be invoked on the calling, typically UI thread, after approximately
+		/// the requested number of milliseconds, or when events are next handled.
+		/// </summary>
+		public static void SetTimeout(Action action, int timeout)
+		{
+			var timer = new System.Windows.Forms.Timer();
+			timer.Interval = timeout;
+			timer.Tick += delegate (object sender, EventArgs args)
+			{
+				timer.Stop();
+				action();
+			};
+			timer.Start();
+		}
 		public static string CollectFilePermissionInformation(string filePath)
 		{
 			var bldr = new StringBuilder();

@@ -395,9 +395,7 @@ namespace Bloom.TeamCollection
 			_booksWatcher.DebounceChanged(OnChanged, kDebouncePeriodInMs);
 			_booksWatcher.DebounceCreated(OnCreated, kDebouncePeriodInMs);
 			_booksWatcher.DebounceRenamed(OnRenamed, kDebouncePeriodInMs);
-
-			// I think if the book was deleted we can afford to wait and let the next restart clean it up.
-			// _watcher.DebounceDeleted(OnChanged, debouncePeriodInMs);
+			_booksWatcher.DebounceDeleted(OnDeleted, kDebouncePeriodInMs);
 
 			// Begin watching.
 			_booksWatcher.EnableRaisingEvents = true;
@@ -406,6 +404,17 @@ namespace Bloom.TeamCollection
 			_otherWatcher.NotifyFilter = NotifyFilters.LastWrite;
 			_otherWatcher.DebounceChanged(OnCollectionFilesChanged, kDebouncePeriodInMs);
 			_otherWatcher.EnableRaisingEvents = true;
+		}
+
+		private void OnDeleted(object sender, FileSystemEventArgs e)
+		{
+			if (CheckOwnWriteNotification(e.FullPath))
+				return;
+
+			if (CheckRecentCreateEvent(e.FullPath, new TimeSpan(0, 0, 1)))
+				return;
+
+			RaiseDeleteRepoBookFile(Path.GetFileName(e.Name));
 		}
 
 		private bool CheckOwnWriteNotification(string path)
@@ -560,6 +569,15 @@ namespace Bloom.TeamCollection
 			{
 				return zipFile.ZipFileComment;
 			}
+		}
+
+		/// <summary>
+		/// Return true if the book exists in the repo.
+		/// </summary>
+		protected override bool IsBookPresentInRepo(string bookFolderName)
+		{
+			var bookPath = GetPathToBookFileInRepo(bookFolderName);
+			return RobustFile.Exists(bookPath);
 		}
 
 		/// <summary>

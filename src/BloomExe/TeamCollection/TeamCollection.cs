@@ -18,6 +18,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Registration;
 using Bloom.ToPalaso;
+using Bloom.Utils;
 using Bloom.web.controllers;
 using SIL.Reporting;
 
@@ -352,6 +353,12 @@ namespace Bloom.TeamCollection
 		protected abstract string GetBookStatusJsonFromRepo(string bookFolderName);
 
 		/// <summary>
+		/// Return true if the book exists in the repo.
+		/// </summary>
+		/// <returns></returns>
+		protected abstract bool IsBookPresentInRepo(string bookFolderName);
+
+		/// <summary>
 		/// Set the raw status data to however the repo implementation stores it.
 		/// </summary>
 		protected abstract void WriteBookStatusJsonToRepo(string bookName, string status);
@@ -372,6 +379,20 @@ namespace Bloom.TeamCollection
 		/// analysis of the effect of the change.
 		/// </summary>
 		public event EventHandler<BookRepoChangeEventArgs> BookRepoChange;
+
+		/// <summary>
+		/// Event raised when a book is deleted from the repo. Be careful, it's possible
+		/// DropBox or other file sharing programs or our own zip file writing code
+		/// does a 'delete' on a file as part of the process of writing a new version of it.
+		/// This is a low-level event that is currently normally
+		/// only used to push data into the _pendingRepoChanges queue. Add handlers to this
+		/// cautiously...they are raised on background threads. Usually it is better to subscribe
+		/// to the BookStatusChangeEvent (available from AutoFac), which is raised during idle
+		/// time on the UI thread (by pulling from the queue) after we have done some basic
+		/// analysis of the effect of the change. (It will be called with CheckedOutBy.Deleted
+		/// if the book is really gone.)
+		/// </summary>
+		public event EventHandler<DeleteRepoBookFileEventArgs> DeleteRepoBookFile;
 
 		public event EventHandler<EventArgs> RepoCollectionFilesChanged;
 
@@ -770,6 +791,11 @@ namespace Bloom.TeamCollection
 			BookRepoChange?.Invoke(this, new BookRepoChangeEventArgs() { BookFileName = bookFileName });
 		}
 
+		protected void RaiseDeleteRepoBookFile(string bookFileName)
+		{
+			DeleteRepoBookFile?.Invoke(this, new DeleteRepoBookFileEventArgs() { BookFileName = bookFileName });
+		}
+
 		protected void RaiseRepoCollectionFilesChanged()
 		{
 			RepoCollectionFilesChanged?.Invoke(this, new EventArgs());
@@ -783,6 +809,7 @@ namespace Bloom.TeamCollection
 			NewBook += (sender, args) => { QueuePendingBookChange(args); };
 			BookRepoChange += (sender, args) => QueuePendingBookChange(args);
 			RepoCollectionFilesChanged += (sender, args) => QueuePendingBookChange(new RepoChangeEventArgs());
+			DeleteRepoBookFile += (sender, args) => QueuePendingBookChange(args);
 			Application.Idle += HandleRemoteBookChangesOnIdle;
 			StartMonitoring();
 		}
@@ -800,14 +827,45 @@ namespace Bloom.TeamCollection
 				// including both new books arriving and existing books changing.
 				// The two event types have different classes of event args, which allows us
 				// to split them here and handle each type differently.
-				if (args is NewBookEventArgs)
-					HandleNewBook((NewBookEventArgs)args);
-				else if (args is BookRepoChangeEventArgs)
-					HandleModifiedFile((BookRepoChangeEventArgs) args);
+				if (args is NewBookEventArgs newArgs)
+					HandleNewBook(newArgs);
+				else if (args is DeleteRepoBookFileEventArgs delArgs)
+					HandleDeletedRepoFileAfterPause(delArgs);
+				else if (args is BookRepoChangeEventArgs changeArgs)
+					HandleModifiedFile(changeArgs);
 				else HandleCollectionSettingsChange(args);
 			}
 		}
 
+		private void HandleDeletedRepoFileAfterPause(DeleteRepoBookFileEventArgs delArgs)
+		{
+			// I'm nervous about allegedly deleted files. It's a common pattern to update a file
+			// by writing a temp file, deleting the original, and renaming the temp. We're not
+			// in any hurry to update the UI when a repo file is deleted. So let's wait...and
+			// then check it's really gone. This is too slow to unit test, so all the logic
+			// is in the HandleDeletedRepoFile method.
+			MiscUtils.SetTimeout(() => HandleDeletedRepoFile(delArgs.BookFileName), 5000);
+		}
+
+		internal void HandleDeletedRepoFile(string fileName)
+		{
+			var bookBaseName = GetBookNameWithoutSuffix(fileName);
+			// Maybe the deletion was just a temporary part of an update?
+			if (IsBookPresentInRepo(bookBaseName))
+				return;
+			var status = GetLocalStatus(bookBaseName);
+			if (status.IsCheckedOut())
+			{
+				// Argh! Somebody deleted the book I'm working on!
+				_tcLog.WriteMessage(MessageAndMilestoneType.Error, "TeamCollection.RemoteDeleteConflict",
+					"One of your teammates has deleted the book \"{0}\". Since you have this book checked out, it has not been deleted locally. You can delete your copy if you wish, or restore it to the team collection by just checking in what you have.",
+					bookBaseName, null);
+				// Don't delete it; and there's been no local status change we need to worry about.
+				return;
+			}
+			SIL.IO.RobustIO.DeleteDirectory(Path.Combine(_localCollectionFolder, bookBaseName), true);
+			UpdateBookStatus(bookBaseName, true);
+		}
 		internal void HandleCollectionSettingsChange(RepoChangeEventArgs result)
 		{
 			_tcLog.WriteMessage(MessageAndMilestoneType.NewStuff, "TeamCollection.SettingsModifiedRemotely",
@@ -923,6 +981,9 @@ namespace Bloom.TeamCollection
 		public void HandleNewBook(NewBookEventArgs args)
 		{
 			var bookBaseName = GetBookNameWithoutSuffix(args.BookFileName);
+			// Bizarrely, we can get a new book notification when a book is being deleted.
+			if (!IsBookPresentInRepo(bookBaseName))
+				return;
 			if (args.BookFileName.EndsWith(".bloom"))
 			{
 				_tcLog.WriteMessage(MessageAndMilestoneType.NewStuff, "TeamCollection.NewBookArrived",
@@ -1463,6 +1524,12 @@ namespace Bloom.TeamCollection
 		{
 			Debug.Assert(!bookName.EndsWith(".bloom"), $"UpdateBookStatus was passed bookName=\"{bookName}\", which has a .bloom suffix. This is probably incorrect. This function wants only the bookBaseName");
 
+			var bookFolder = Path.Combine(_localCollectionFolder, bookName);
+			if (!Directory.Exists(bookFolder))
+			{
+				RaiseBookStatusChanged(bookName, CheckedOutBy.Deleted);
+				return;
+			}
 			var status = GetStatus(bookName);
 			if (IsCheckedOutHereBy(status))
 				RaiseBookStatusChanged(bookName, CheckedOutBy.Self);

@@ -294,5 +294,84 @@ namespace BloomTests.TeamCollection
 			Assert.That(newStatus.oldName, Is.EqualTo(originalBookName), "local status has original name in oldName field after rename");
 			Assert.That(repoStatus.oldName, Is.Null, "repo status still has null oldName field after rename");
 		}
+
+		[Test]
+		public void HandleDeletedFile_NoConflictBook_DeletesAndRaisesCheckedOutByDeletedButNoMessage()
+		{
+			// Simulate that a book was just deleted in the repo
+			const string bookFolderName = "My book";
+			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
+			Directory.CreateDirectory(bookFolderPath);
+			var bookPath = Path.Combine(bookFolderPath, "My book.htm");
+			RobustFile.WriteAllText(bookPath, "This is just a dummy");
+
+			var status = _collection.PutBook(bookFolderPath);
+			_collection.DeleteBookFromRepo(bookFolderPath);
+
+			var prevMessages = _tcLog.Messages.Count;
+			var prevInvocations = _mockTcManager.Invocations.Count;
+
+			// System Under Test //
+			_collection.HandleDeletedRepoFile($"{bookFolderName}.bloom" );
+
+			// Verification
+			Assert.That(_mockTcManager.Invocations.Count, Is.EqualTo(prevInvocations + 1));
+			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[prevInvocations].Arguments[0];
+			Assert.That(eventArgs.CheckedOutByWhom, Is.EqualTo(CheckedOutBy.Deleted));
+			Assert.That(_tcLog.Messages.Count, Is.EqualTo(prevMessages));
+			Assert.That(Directory.Exists(bookFolderPath), Is.False, "The local book should have been deleted");
+		}
+
+		[Test]
+		public void HandleDeletedFile_BookNotDeleted_DoesNothing()
+		{
+			// Simulate that a book was reported as deleted in the repo, but actually, it's still there
+			const string bookFolderName = "My book";
+			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
+			Directory.CreateDirectory(bookFolderPath);
+			var bookPath = Path.Combine(bookFolderPath, "My book.htm");
+			RobustFile.WriteAllText(bookPath, "This is just a dummy");
+
+			var status = _collection.PutBook(bookFolderPath);
+
+			var prevMessages = _tcLog.Messages.Count;
+			var prevInvocations = _mockTcManager.Invocations.Count;
+
+			// System Under Test: a spurious notification //
+			_collection.HandleDeletedRepoFile($"{bookFolderName}.bloom");
+
+			// Verification
+			Assert.That(_mockTcManager.Invocations.Count, Is.EqualTo(prevInvocations));
+			Assert.That(_tcLog.Messages.Count, Is.EqualTo(prevMessages));
+			Assert.That(Directory.Exists(bookFolderPath), Is.True, "The local book should not have been deleted");
+		}
+
+		[Test]
+		public void HandleDeletedFile_ConflictBookDeleted_LogsProblem()
+		{
+			// Simulate that a book which is checked out here was just deleted in the repo
+			const string bookFolderName = "My book";
+			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
+			Directory.CreateDirectory(bookFolderPath);
+			var bookPath = Path.Combine(bookFolderPath, "My book.htm");
+			RobustFile.WriteAllText(bookPath, "This is just a dummy");
+
+			var status = _collection.PutBook(bookFolderPath);
+			_collection.AttemptLock(bookFolderName);
+			// But, in spite of that, it's gone!
+			_collection.DeleteBookFromRepo(bookFolderPath);
+
+			var prevMessages = _tcLog.Messages.Count;
+			var prevInvocations = _mockTcManager.Invocations.Count;
+
+			// System Under Test //
+			_collection.HandleDeletedRepoFile($"{bookFolderName}.bloom");
+
+			// Verification
+			Assert.That(_mockTcManager.Invocations.Count, Is.EqualTo(prevInvocations));
+			Assert.That(_tcLog.Messages.Count, Is.EqualTo(prevMessages + 1));
+			Assert.That(_tcLog.Messages[prevMessages].MessageType, Is.EqualTo(MessageAndMilestoneType.Error));
+			Assert.That(Directory.Exists(bookFolderPath), Is.True, "The local book should not have been deleted");
+		}
 	}
 }
