@@ -230,7 +230,39 @@ namespace BloomTests.TeamCollection
 		}
 
 		[Test]
-		public void PutBook_DoesNotRaiseBookChangedEvent()
+		public void DeletedBook_RaisesDeleteRepoBookFileEvent()
+		{
+			var bloomBookPath = Path.Combine(_repoFolder.FolderPath, "Books", "put book to delete.bloom");
+			// Don't use PutBook here...changing the file immediately after putting it won't work,
+			// because of the code that tries to prevent notifications of our own checkins.
+			RobustFile.WriteAllText(bloomBookPath, @"This is original"); // no, not a zip at all
+
+			var deletedBookName = "";
+
+			_collection.StartMonitoring();
+			ManualResetEvent bookDeletedRaised = new ManualResetEvent(false);
+			EventHandler<DeleteRepoBookFileEventArgs> monitorFunction = (sender, args) =>
+			{
+				deletedBookName = args.BookFileName;
+				bookDeletedRaised.Set();
+			};
+			_collection.DeleteRepoBookFile += monitorFunction;
+
+			// sut (at least, triggers it and waits for it)
+			RobustFile.Delete(bloomBookPath);
+
+			var waitSucceeded = bookDeletedRaised.WaitOne(1000);
+
+			// To avoid messing up other tests, clean up before asserting.
+			_collection.DeleteRepoBookFile -= monitorFunction;
+			_collection.StopMonitoring();
+
+			Assert.That(waitSucceeded, "book deleted was not raised");
+			Assert.That(deletedBookName, Is.EqualTo("put book to delete.bloom"));
+		}
+
+		[Test]
+		public void PutBook_DoesNotRaiseBookChangedEvent_OrDeletedEvent()
 		{
 			var folderPath = Path.Combine(_collectionFolder.FolderPath, "put existing book");
 			var bookPath = Path.Combine(folderPath, "put existing book.htm");
@@ -242,11 +274,17 @@ namespace BloomTests.TeamCollection
 			ManualResetEvent bookChangedRaised = new ManualResetEvent(false);
 			_collection.OnChangedCalled = () => { bookChangedRaised.Set(); };
 			bool bookChangedWasCalled = false;
+			bool bookDeletedWasCalled = false;
 			EventHandler<BookRepoChangeEventArgs> monitorFunction = (sender, args) =>
 			{
 				bookChangedWasCalled = true;
 			};
 			_collection.BookRepoChange += monitorFunction;
+			EventHandler<DeleteRepoBookFileEventArgs> monitorFunction2 = (sender, args) =>
+			{
+				bookDeletedWasCalled = true;
+			};
+			_collection.DeleteRepoBookFile += monitorFunction2;
 
 			//sut: put it again
 			_collection.PutBook(folderPath);
@@ -255,12 +293,14 @@ namespace BloomTests.TeamCollection
 
 			// cleanup
 			_collection.BookRepoChange -= monitorFunction;
+			_collection.DeleteRepoBookFile -= monitorFunction2;
 			_collection.StopMonitoring();
 			var bloomBookPath = Path.Combine(_repoFolder.FolderPath, "put existing book.bloom");
 			RobustFile.Delete(bloomBookPath);
 
 			Assert.That(waitSucceeded, "OnChanged was not called");
 			Assert.That(bookChangedWasCalled, Is.False, "BookChanged wrongly called");
+			Assert.That(bookDeletedWasCalled, Is.False, "BookDeleted wrongly called");
 
 		}
 

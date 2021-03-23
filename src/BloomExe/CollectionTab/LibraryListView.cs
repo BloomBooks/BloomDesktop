@@ -1146,6 +1146,11 @@ namespace Bloom.CollectionTab
 
 		private void UpdateTCCheckoutStatusIcon(Button bookButton, CheckedOutBy checkedOutByWhom)
 		{
+			if (checkedOutByWhom == CheckedOutBy.Deleted)
+			{
+				_primaryCollectionFlow.Controls.Remove(bookButton);
+				return;
+			}
 			if (checkedOutByWhom == CheckedOutBy.None)
 			{
 				RemoveTcCheckoutStatusIconFromButton(bookButton);
