@@ -578,10 +578,12 @@ namespace Bloom.Edit
 		// This method supports an approach of doing a reload of the top page only if we are short of memory,
 		// because we get large memory leaks just reloading the iframe, but can recover most of it
 		// by occasionally reloading everything.
-		// Currently we're planning to do it always, for more predictable behavior and more
-		// extensive testing to discover any problems with the full reload.
-		// Easy to change to never, or if-shift-key-is-down, or always
-		private bool ShouldDoFullReload() => MemoryUtils.SystemIsShortOfMemory();
+		// Easy to change between never, if-shift-key-is-down, always, or MemoryUtils.SystemIsShortOfMemory().
+		//
+		// For 4.9, we set this to MemoryUtils.SystemIsShortOfMemory().
+		// For 5.0, we are setting it true for now so the full reload gets more testing.
+		// We anticipate changing 5.0 back to MemoryUtils.SystemIsShortOfMemory() before it goes beta.
+		private bool ShouldDoFullReload() => true;
 
 		private bool ReloadCurrentPage()
 		{
