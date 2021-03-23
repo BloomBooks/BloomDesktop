@@ -80,22 +80,35 @@ namespace BloomTests.TeamCollection
 		{
 			using (var tempFolder = new TemporaryFolder(MethodBase.GetCurrentMethod().Name))
 			{
-				var di = new DirectoryInfo(tempFolder.FolderPath);
-				var directorySecurity = di.GetAccessControl();
-				var currentUserIdentity = WindowsIdentity.GetCurrent();
-				var fileSystemRule = new FileSystemAccessRule(currentUserIdentity.Name,
-					FileSystemRights.Write,
-					InheritanceFlags.ObjectInherit |
-					InheritanceFlags.ContainerInherit,
-					PropagationFlags.None,
-					AccessControlType.Deny);
+				if (SIL.PlatformUtilities.Platform.IsWindows)
+				{
+					var di = new DirectoryInfo(tempFolder.FolderPath);
+					var directorySecurity = di.GetAccessControl();
+					var currentUserIdentity = WindowsIdentity.GetCurrent();
+					var fileSystemRule = new FileSystemAccessRule(currentUserIdentity.Name,
+						FileSystemRights.Write,
+						InheritanceFlags.ObjectInherit |
+						InheritanceFlags.ContainerInherit,
+						PropagationFlags.None,
+						AccessControlType.Deny);
 
-				directorySecurity.AddAccessRule(fileSystemRule);
-				di.SetAccessControl(directorySecurity);
-				Assert.That(_api.ProblemsWithLocation(tempFolder.FolderPath),
-					Contains.Substring("Bloom does not have permission to write to the selected folder"));
-				directorySecurity.RemoveAccessRule(fileSystemRule);
-				di.SetAccessControl(directorySecurity);
+					directorySecurity.AddAccessRule(fileSystemRule);
+					di.SetAccessControl(directorySecurity);
+					Assert.That(_api.ProblemsWithLocation(tempFolder.FolderPath),
+						Contains.Substring("Bloom does not have permission to write to the selected folder"));
+					directorySecurity.RemoveAccessRule(fileSystemRule);
+					di.SetAccessControl(directorySecurity);
+				}
+				else
+				{
+					var udi = new Mono.Unix.UnixDirectoryInfo(tempFolder.FolderPath);
+					var permissions = udi.FileAccessPermissions;
+					udi.FileAccessPermissions =
+						Mono.Unix.FileAccessPermissions.UserRead | Mono.Unix.FileAccessPermissions.GroupRead | Mono.Unix.FileAccessPermissions.OtherRead;
+					Assert.That(_api.ProblemsWithLocation(tempFolder.FolderPath),
+						Contains.Substring("Bloom does not have permission to write to the selected folder"));
+					udi.FileAccessPermissions = permissions;
+				}
 			}
 		}
 	}
