@@ -13,6 +13,7 @@ using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.Collection;
 using System.Threading;
+using Bloom.Utils;
 
 namespace Bloom.Api
 {
@@ -63,14 +64,17 @@ namespace Bloom.Api
 		/// the epub that is being generated is obsolete and we want the new api call to go ahead so it can set a flag 
 		/// to abort the one in progress. To avoid race conditions, api calls that set requiresSync false should be kept small
 		/// and simple and be very careful about touching objects that other API calls might interact with.</param>
-		public void RegisterEndpointHandler(string pattern, EndpointHandler handler, bool handleOnUiThread, bool requiresSync = true)
+		public EndpointRegistration RegisterEndpointHandler(string pattern, EndpointHandler handler, bool handleOnUiThread, bool requiresSync = true)
 		{
-			_endpointRegistrations[pattern.ToLowerInvariant().Trim(new char[] {'/'})] = new EndpointRegistration()
+			var registration = new EndpointRegistration()
 			{
 				Handler = handler,
 				HandleOnUIThread = handleOnUiThread,
-				RequiresSync = requiresSync
+				RequiresSync = requiresSync,
+				MeasurementLabel = pattern, // can be overridden... this is just a default
 			};
+			_endpointRegistrations[pattern.ToLowerInvariant().Trim(new char[] {'/'})] = registration;
+			return registration; // return it so the caller can say  RegisterEndpointHandler().Measurable();
 		}
 
 		/// <summary>
@@ -155,14 +159,15 @@ namespace Bloom.Api
 			var localPathLc = localPath.ToLowerInvariant();
 			if (localPathLc.StartsWith("api/", StringComparison.InvariantCulture))
 			{
-				var endpoint = localPath.Substring(3).ToLowerInvariant().Trim(new char[] {'/'});
+				var endpointPath = localPath.Substring(3).ToLowerInvariant().Trim(new char[] {'/'});
 				foreach (var pair in _endpointRegistrations.Where(pair =>
-					Regex.Match(endpoint,
+					Regex.Match(endpointPath,
 								"^" + //must match the beginning
 								pair.Key.ToLower()
 							).Success))
 				{
-					if (pair.Value.RequiresSync)
+					var endpointRegistration = pair.Value;
+					if (endpointRegistration.RequiresSync)
 					{
 						// A single synchronization object won't do, because when processing a request to create a thumbnail or update a preview,
 						// we have to load the HTML page the thumbnail is based on, or other HTML pages (like one used to figure what's
@@ -206,8 +211,9 @@ namespace Bloom.Api
 							}
 
 							// Lock has been acquired.
+							ApiRequest.Handle(endpointRegistration, info, CurrentCollectionSettings,
+									_bookSelection.CurrentSelection);
 
-							ApiRequest.Handle(pair.Value, info, CurrentCollectionSettings, _bookSelection.CurrentSelection);
 							// Even if ApiRequest.Handle() fails, return true to indicate that the request was processed and there
 							// is no further need for the caller to continue trying to process the request as a filename.
 							// See https://issues.bloomlibrary.org/youtrack/issue/BL-6763.
@@ -224,7 +230,7 @@ namespace Bloom.Api
 					else
 					{
 						// Up to api's that request no sync to do things right!
-						ApiRequest.Handle(pair.Value, info, CurrentCollectionSettings, _bookSelection.CurrentSelection);
+						ApiRequest.Handle(endpointRegistration, info, CurrentCollectionSettings, _bookSelection.CurrentSelection);
 						// Even if ApiRequest.Handle() fails, return true to indicate that the request was processed and there
 						// is no further need for the caller to continue trying to process the request as a filename.
 						// See https://issues.bloomlibrary.org/youtrack/issue/BL-6763.

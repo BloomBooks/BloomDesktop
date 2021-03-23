@@ -102,7 +102,7 @@ namespace Bloom.CollectionTab
 			this._L10NSharpExtender.SetLocalizationPriority(this._bookContextMenu, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._bookContextMenu, "CollectionTab.BookMenu.strip");
 			this._bookContextMenu.Name = "contextMenuStrip1";
-			this._bookContextMenu.Size = new System.Drawing.Size(239, 286);
+			this._bookContextMenu.Size = new System.Drawing.Size(239, 264);
 			// 
 			// _copyBook
 			// 
@@ -283,7 +283,7 @@ namespace Bloom.CollectionTab
 			this._L10NSharpExtender.SetLocalizationPriority(this._vernacularCollectionMenuStrip, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._vernacularCollectionMenuStrip, "CollectionTab.CollectionMenu.contextMenuStrip2");
 			this._vernacularCollectionMenuStrip.Name = "_vernacularCollectionMenuStrip";
-			this._vernacularCollectionMenuStrip.Size = new System.Drawing.Size(269, 70);
+			this._vernacularCollectionMenuStrip.Size = new System.Drawing.Size(269, 92);
 			// 
 			// openCreateCollectionToolStripMenuItem
 			// 

@@ -3,18 +3,14 @@ using System.Reflection;
 using Autofac;
 using Bloom.CollectionChoosing;
 using Bloom.Properties;
-using Bloom.ToPalaso;
 using System.Linq;
-using Bloom.WebLibraryIntegration;
 using L10NSharp;
-using SIL.Reporting;
 using System.Windows.Forms;
-
 
 namespace Bloom
 {
 		/// <summary>
-		/// This is sortof a wrapper around the DI container. I'm not thrilled with the name I've
+		/// This is sort of a wrapper around the DI container. I'm not thrilled with the name I've
 		/// used (jh).
 		/// </summary>
 		public class ApplicationContainer : IDisposable
@@ -36,13 +32,13 @@ namespace Bloom
 					.Where(t => t.GetInterfaces().Contains(typeof(ICommand))).InstancePerLifetimeScope();
 
 				builder.Register(c => LocalizationManager).SingleInstance();
-
-				if (Settings.Default.MruProjects==null)
+				
+			if (Settings.Default.MruProjects==null)
 				{
 					Settings.Default.MruProjects = new MostRecentPathsList();
 				}
 				builder.RegisterInstance(Settings.Default.MruProjects).SingleInstance();
-
+				
 			//this is to prevent some problems we were getting while waiting for a browser to navigate and being forced to call Application.DoEvents().
 			//HtmlThumbnailer & ConfigurationDialog, at least, use this.
 			// June 2018: we decided that actually no code other than the Browser class even needs to know that
@@ -60,7 +56,7 @@ namespace Bloom
 			private void OnApplicationExit(object sender, EventArgs e)
 			{
 				Application.ApplicationExit -= OnApplicationExit;
-				Bloom.Program.FinishLocalizationHarvesting();
+				Program.FinishLocalizationHarvesting();
 				Dispose();
 			}
 
@@ -71,14 +67,13 @@ namespace Bloom
 
 			public ILocalizationManager LocalizationManager;
 
-			public HtmlThumbNailer HtmlThumbnailer { get { return _container.Resolve<HtmlThumbNailer>();}}
+			public HtmlThumbNailer HtmlThumbnailer => _container.Resolve<HtmlThumbNailer>();
 
-			public BookThumbNailer BookThumbNailer { get { return _container.Resolve<BookThumbNailer>(); }}
+			public BookThumbNailer BookThumbNailer => _container.Resolve<BookThumbNailer>();
 
 			public void Dispose()
 			{
-				if (_container != null)
-					_container.Dispose();
+				_container?.Dispose();
 				_container = null;
 
 				GC.SuppressFinalize(this);

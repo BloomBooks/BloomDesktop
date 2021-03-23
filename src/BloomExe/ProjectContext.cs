@@ -19,6 +19,7 @@ using Bloom.TeamCollection;
 using Bloom.Publish.AccessibilityChecker;
 using Bloom.Publish.Android;
 using Bloom.Publish.Epub;
+using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 using BloomTests.web.controllers;
@@ -143,6 +144,7 @@ namespace Bloom
 							typeof(PageTemplatesApi),
 							typeof(AddOrChangePageApi),
 							typeof(BloomWebSocketServer),
+							typeof(PerformanceMeasurement),
 							typeof(KeyboardingConfigApi),
 							typeof(ImageApi),
 							typeof(MusicApi),
@@ -324,7 +326,7 @@ namespace Bloom
 				MessageBox.Show("Bloom was not able to find all its bits. This sometimes happens when upgrading to a newer version. To fix it, please run the installer again and choose 'Repair', or uninstall and reinstall. We truly value your time and apologize for wasting it. The error was:"+Environment.NewLine+Environment.NewLine+error.Message,"Bloom Installation Problem",MessageBoxButtons.OK,MessageBoxIcon.Error);
 				Application.Exit();
 			}
-
+			
 			var server = _scope.Resolve<BloomServer>();
 			server.StartListening();
 			_scope.Resolve<AudioRecording>().RegisterWithApiHandler(server.ApiHandler);
@@ -359,6 +361,7 @@ namespace Bloom
 			_scope.Resolve<I18NApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<FileIOApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<EditingViewApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<PerformanceMeasurement>().RegisterWithApiHandler(server.ApiHandler);
 		}
 
 

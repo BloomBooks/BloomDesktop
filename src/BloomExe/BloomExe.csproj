@@ -415,6 +415,7 @@
     <Compile Include="Utils\MemoryUtils.cs" />
     <Compile Include="Utils\FileSystemWatcherExtensions.cs" />
     <Compile Include="Utils\MiscUtils.cs" />
+    <Compile Include="Utils\PerformanceMeasurement.cs" />
     <Compile Include="WebLibraryIntegration\FirebaseLoginDialog.cs" />
     <Compile Include="web\ReactControl.cs">
       <SubType>UserControl</SubType>

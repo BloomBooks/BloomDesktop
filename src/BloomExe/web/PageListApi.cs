@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
+using System.Windows.Forms;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
+using Bloom.Utils;
 using Newtonsoft.Json;
 
 namespace Bloom.web
@@ -34,21 +36,34 @@ namespace Bloom.web
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler("pageList/pages", HandlePagesRequest, false);
+			apiHandler.RegisterEndpointHandler("pageList/pages", HandlePagesRequest, false).Measureable();
 			apiHandler.RegisterEndpointHandler("pageList/pageContent", HandlePageContentRequest, false);
-			apiHandler.RegisterEndpointHandler("pageList/pageMoved", HandlePageMovedRequest, true);
+			apiHandler.RegisterEndpointHandler("pageList/pageMoved", HandlePageMovedRequest, true).Measureable();
 			apiHandler.RegisterEndpointHandler("pageList/pageClicked", HandlePageClickedRequest, true);
-			apiHandler.RegisterEndpointHandler("pageList/menuClicked", HandleShowMenuRequest, true);
+			apiHandler.RegisterEndpointHandler("pageList/menuClicked", HandleShowMenuRequest, true).Measureable(); 
 		}
 
 		private void HandlePageClickedRequest(ApiRequest request)
 		{
 			var requestData = DynamicJson.Parse(request.RequiredPostJson());
 			string pageId = requestData.pageId;
-			IPage page = PageFromId(pageId);
-			if (page != null)
-				PageList.PageClicked(page);
+
+			var shiftIsDown = (Control.ModifierKeys & Keys.Shift) == Keys.Shift;
+			var label = shiftIsDown ? "Select Page (SHIFT)" : "Select Page";
+
+			using (PerformanceMeasurement.Global.Measure(label, requestData.detail ?? ""))
+			{
+				//using (PerformanceMeasurement.Global.Measure(label, requestData.detail ?? ""))
+				//{
+					IPage page = PageFromId(pageId);
+				//}
+
+				if (page != null)
+					PageList.PageClicked(page);
+			}
+
 			request.PostSucceeded();
+
 		}
 
 		// User clicked on the down arrow, we respond by showing the same menu as for right click.

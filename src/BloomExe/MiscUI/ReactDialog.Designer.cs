@@ -36,8 +36,10 @@ namespace Bloom.MiscUI
 			// 
 			this.reactControl1.BackColor = System.Drawing.Color.White;
 			this.reactControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.reactControl1.JavascriptBundleName = null;
 			this.reactControl1.Location = new System.Drawing.Point(0, 0);
 			this.reactControl1.Name = "reactControl1";
+			this.reactControl1.ReactComponentName = null;
 			this.reactControl1.Size = new System.Drawing.Size(800, 450);
 			this.reactControl1.TabIndex = 0;
 			// 

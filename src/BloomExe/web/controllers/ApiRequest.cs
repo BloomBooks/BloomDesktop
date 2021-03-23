@@ -7,6 +7,7 @@ using System.Net;
 using System.Runtime.ExceptionServices;
 using System.Windows.Forms;
 using Bloom.Collection;
+using Bloom.Utils;
 using Newtonsoft.Json;
 
 namespace Bloom.Api
@@ -18,6 +19,21 @@ namespace Bloom.Api
 		public bool HandleOnUIThread = true;
 		public EndpointHandler Handler;
 		public bool RequiresSync = true; // set false if handler does its own thread-handling.
+		public bool DoMeasure = false;
+		public string MeasurementLabel;
+		public Func<string> FunctionToGetLabel;
+
+		public void Measureable(string label = null)
+		{
+			DoMeasure = true;
+			if (label != null) // otherwise, stick with our current value which comes from the url
+				MeasurementLabel = label;
+		}
+		public void Measureable(Func<string> getLabel)
+		{
+			DoMeasure = true;
+			FunctionToGetLabel = getLabel;
+		}
 	}
 
 
@@ -152,15 +168,28 @@ namespace Bloom.Api
 				}
 				else
 				{
-					// Note: If the user is still interacting with the application, openForms could change and become empty
-					var formForSynchronizing = Application.OpenForms.Cast<Form>().LastOrDefault();
-					if (endpointRegistration.HandleOnUIThread && formForSynchronizing != null && formForSynchronizing.InvokeRequired)
+					var label = "";
+					if (endpointRegistration.DoMeasure && (endpointRegistration.FunctionToGetLabel !=null))
 					{
-						InvokeWithErrorHandling(endpointRegistration, formForSynchronizing, request);
+						label = endpointRegistration.FunctionToGetLabel();
 					}
-					else
+					else if (endpointRegistration.DoMeasure)
 					{
-						endpointRegistration.Handler(request);
+						label = endpointRegistration.MeasurementLabel;
+					}
+					using (endpointRegistration.DoMeasure ? PerformanceMeasurement.Global.Measure(label) : null)
+					{
+						// Note: If the user is still interacting with the application, openForms could change and become empty
+						var formForSynchronizing = Application.OpenForms.Cast<Form>().LastOrDefault();
+						if (endpointRegistration.HandleOnUIThread && formForSynchronizing != null &&
+						    formForSynchronizing.InvokeRequired)
+						{
+							InvokeWithErrorHandling(endpointRegistration, formForSynchronizing, request);
+						}
+						else
+						{
+							endpointRegistration.Handler(request);
+						}
 					}
 				}
 				if (!info.HaveOutput)
