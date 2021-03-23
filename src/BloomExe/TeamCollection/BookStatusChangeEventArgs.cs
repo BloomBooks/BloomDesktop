@@ -2,11 +2,17 @@
 
 namespace Bloom.TeamCollection
 {
+	/// <summary>
+	/// Used for reporting changes to a book's status, typically one of the options
+	/// for its checkout status, but can also indicate that the book has been
+	/// deleted altogether.
+	/// </summary>
 	public enum CheckedOutBy
 	{
 		None,
 		Self,
-		Other
+		Other,
+		Deleted
 	}
 
 	public class BookStatusChangeEventArgs

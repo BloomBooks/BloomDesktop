@@ -330,6 +330,7 @@
     <Compile Include="ErrorReporter\ProblemLevel.cs" />
     <Compile Include="MiscUI\BrowserProgressDialog.cs" />
     <Compile Include="TeamCollection\BookRepoChangeEventArgs.cs" />
+    <Compile Include="TeamCollection\DeleteRepoBookFileEventArgs.cs" />
     <Compile Include="TeamCollection\BookStatus.cs" />
     <Compile Include="TeamCollection\FileSystemEventRecord.cs" />
     <Compile Include="TeamCollection\FolderTeamCollection.cs" />
