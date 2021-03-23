@@ -265,6 +265,7 @@
     <Compile Include="Book\BookStorage_ReplacePageTests.cs" />
     <Compile Include="Book\LicenseCheckerTests.cs" />
     <Compile Include="CLI\CreateArtifactsCommandTests.cs" />
+    <Compile Include="CLI\GetUsedFontsCommandTests.cs" />
     <Compile Include="DataBuilders\HtmlErrorReporterBuilder.cs" />
     <Compile Include="TeamCollection\FolderTeamCollectionTests.cs" />
     <Compile Include="TeamCollection\FolderTeamCollectionTests2.cs" />
