@@ -258,5 +258,41 @@ namespace BloomTests.TeamCollection
 			Assert.That(_tcLog.Messages[prevMessages].MessageType, Is.EqualTo(MessageAndMilestoneType.Error));
 			Assert.That(_tcLog.Messages[prevMessages].L10NId, Is.EqualTo("TeamCollection.EditedFileChangedRemotely"));
 		}
+
+		[Test]
+		public void HandleBookRename_CheckedOutToMe_FixesStatusProperly()
+		{
+			// Setup //
+			const string originalBookName = "Hello. Goodbye!";
+			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, originalBookName);
+			Directory.CreateDirectory(bookFolderPath);
+			var htmlPath = Path.Combine(bookFolderPath, originalBookName + ".htm");
+			RobustFile.WriteAllText(htmlPath, "<html><body>This is just a dummy</body></html>");
+			TeamCollectionManager.ForceCurrentUserForTests("steve@somewhere.org");
+			_collection.PutBook(bookFolderPath);
+
+			var locked = _collection.AttemptLock(originalBookName);
+
+			Assert.That(locked, Is.True, "successfully checked out book to steve@somewhere.org");
+
+			// SUT: rename changes status in local collection folder, but not in shared repo folder
+			const string newBookName = "Testing is Fun. Sometimes";
+			var newBookFolderPath = Path.Combine(_collectionFolder.FolderPath, newBookName);
+			File.Move(htmlPath, Path.Combine(bookFolderPath, newBookName + ".htm"));
+			Directory.Move(bookFolderPath, newBookFolderPath);
+
+			_collection.HandleBookRename(originalBookName, newBookName);
+			var newStatus = _collection.GetLocalStatus(newBookName);
+			var repoStatus = _collection.GetStatus(newBookName);
+
+			Assert.That(newStatus, Is.Not.Null, "local status of renamed book is not null");
+			Assert.That(repoStatus, Is.Not.Null, "repo status of renamed book is not null");
+			Assert.That(newStatus.checksum, Is.EqualTo(repoStatus.checksum), "checksums of local and remote match after rename");
+			Assert.That(newStatus.lockedBy, Is.EqualTo(repoStatus.lockedBy), "lockedBy of local and remote match after rename");
+			Assert.That(newStatus.lockedWhen, Is.EqualTo(repoStatus.lockedWhen), "lockedWhen of local and remote match after rename");
+			Assert.That(newStatus.lockedWhere, Is.EqualTo(repoStatus.lockedWhere), "lockedWhere of local and remote match after rename");
+			Assert.That(newStatus.oldName, Is.EqualTo(originalBookName), "local status has original name in oldName field after rename");
+			Assert.That(repoStatus.oldName, Is.Null, "repo status still has null oldName field after rename");
+		}
 	}
 }
