@@ -30,6 +30,7 @@ using System.Globalization;
 using Bloom.web;
 using ICSharpCode.SharpZipLib.Zip;
 using SIL.Extensions;
+using Bloom.Utils;
 
 namespace Bloom.Edit
 {
@@ -566,12 +567,8 @@ namespace Bloom.Edit
 		// by occasionally reloading everything.
 		// Currently we're planning to do it always, for more predictable behavior and more
 		// extensive testing to discover any problems with the full reload.
-		// Easy to change to never, or if-shift-key-is-down, or as originally planned,
-		// if MemoryUtils.SystemIsShortOfMemory().
-		private bool ShouldDoFullReload()
-		{
-			return true;
-		}
+		// Easy to change to never, or if-shift-key-is-down, or always
+		private bool ShouldDoFullReload() => MemoryUtils.SystemIsShortOfMemory();
 
 #if __MonoCS__
 		/// <summary>
