@@ -314,8 +314,8 @@ namespace Bloom.TeamCollection
 				if (File.Exists(statusFilePath))
 				{
 					// The book has to have been renamed since it has a status file.
+					// Or maybe it's been removed remotely, but the local collection hasn't caught up...
 					var bookStatus = BookStatus.FromJson(RobustFile.ReadAllText(statusFilePath, Encoding.UTF8));
-					Debug.Assert(bookStatus.oldName != null, "book should have been renamed and have oldName set for book.status to exist");
 					if (!String.IsNullOrEmpty(bookStatus.oldName))
 					{
 						// Use the book's original name to access the repo status.  (BL-9680)
