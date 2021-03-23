@@ -48,8 +48,7 @@ namespace Bloom.TeamCollection
 		private const int kDebouncePeriodInMs = 100;
 		private Dictionary<string, FileSystemEventRecord> _lastCreateEventByFile = new Dictionary<string, FileSystemEventRecord>();
 		 
-		public FolderTeamCollection(ITeamCollectionManager manager, string localCollectionFolder,
-			string repoFolderPath, string collectionId = null, TeamCollectionMessageLog tcLog=null) : base(manager, localCollectionFolder, collectionId, tcLog)
+		public FolderTeamCollection(ITeamCollectionManager manager, string localCollectionFolder, string repoFolderPath, TeamCollectionMessageLog tcLog=null) : base(manager, localCollectionFolder, tcLog)
 		{
 			_repoFolderPath = repoFolderPath;
 		}
@@ -100,7 +99,7 @@ namespace Bloom.TeamCollection
 
 			var zipFile = new BloomZipFile(bookPath);
 			zipFile.AddDirectory(sourceBookFolderPath, sourceBookFolderPath.Length + 1, null);
-			zipFile.SetComment(status.WithCollectionId(null).ToJson());
+			zipFile.SetComment(status.ToJson());
 			zipFile.Save();
 			lock (_lockObject)
 			{
@@ -614,7 +613,7 @@ namespace Bloom.TeamCollection
 			_repoFolderPath = repoFolder;
 			progress.Message("SettingUpCore", "Setting up the core team collection files");
 			CreateJoinCollectionFile();
-			CreateTeamCollectionSettingsFile(_localCollectionFolder, repoFolder, CollectionId);
+			CreateTeamCollectionSettingsFile(_localCollectionFolder, repoFolder);
 			CopyRepoCollectionFilesFromLocal(_localCollectionFolder);
 			Directory.CreateDirectory(Path.Combine(repoFolder, "Books"));
 			SynchronizeBooksFromLocalToRepo(progress);
@@ -707,14 +706,11 @@ namespace Bloom.TeamCollection
 		/// in the specified repoFolder. (We could get away without unpacking more than the .bloomCollection
 		/// file, but we'll want the others soon, and typically it's not a lot.)
 		/// </summary>
-		/// <remarks>Assigns an arbitrary GUID as the ID of the new collection in the newly
-		/// created TeamCollectionSettings file. If this is going to be the real TCSettings file
-		/// for the collection, make sure to use that ID when you create the collection object.</remarks>
 		/// <returns></returns>
 		public static string SetupMinimumLocalCollectionFilesForRepo(string repoFolder, string localCollectionFolder)
 		{
 			Directory.CreateDirectory(localCollectionFolder);
-			CreateTeamCollectionSettingsFile(localCollectionFolder, repoFolder, TeamCollection.GenerateCollectionId());
+			CreateTeamCollectionSettingsFile(localCollectionFolder, repoFolder);
 			CopyRepoCollectionFilesTo(localCollectionFolder, repoFolder);
 			return CollectionPath(localCollectionFolder);
 		}
@@ -729,20 +725,11 @@ namespace Bloom.TeamCollection
 				+ @"You can rename this file but must keep the extension the same.");
 		}
 
-		public static void CreateTeamCollectionSettingsFile(string collectionFolder, string teamCollectionFolder,
-			string collectionId)
-		{
-			Debug.Assert(!string.IsNullOrEmpty(collectionId) || Program.RunningUnitTests, "should always create team collection file with ID");
-			var children = new List<object>();
-			children.Add(new XElement("TeamCollectionFolder",
-				new XText(teamCollectionFolder)));
-			if (collectionId != null)
-			{
-				children.Add(new XElement("Id", new XText(collectionId)));
-			}
+		public static void CreateTeamCollectionSettingsFile(string collectionFolder, string teamCollectionFolder) {
 			var doc = new XDocument(
-				new XElement("settings", children.ToArray()));
-
+				new XElement("settings",
+					new XElement("TeamCollectionFolder",
+						new XText(teamCollectionFolder))));
 			var teamSettingsPath = Path.Combine(collectionFolder, TeamCollectionManager.TeamCollectionSettingsFileName);
 			using (var stream = new FileStream(teamSettingsPath, FileMode.Create))
 			{

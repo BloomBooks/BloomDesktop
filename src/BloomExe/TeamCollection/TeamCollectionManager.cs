@@ -134,36 +134,9 @@ namespace Bloom.TeamCollection
 					doc.Load(localSettingsPath);
 					var repoFolderPath = doc.DocumentElement.GetElementsByTagName("TeamCollectionFolder").Cast<XmlElement>()
 						.First().InnerText;
-					var collectionId = doc.DocumentElement.GetElementsByTagName("Id").Cast<XmlElement>()
-						.FirstOrDefault()?.InnerText;
 					if (Directory.Exists(repoFolderPath))
 					{
-						var newCollectionId = string.IsNullOrEmpty(collectionId);
-						if (newCollectionId)
-						{
-							// An early TC. We need to assign one,...
-							collectionId =  TeamCollection.GenerateCollectionId();
-							//... and also repair the TC file so future loads will find the same one
-							FolderTeamCollection.CreateTeamCollectionSettingsFile(_localCollectionFolder, repoFolderPath, collectionId);
-						}
-						CurrentCollection = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath, collectionId);
-						if (newCollectionId)
-						{
-							//... and fix any status files in the collection
-							foreach (var path in Directory.EnumerateDirectories(_localCollectionFolder))
-							{
-								var bookFolderName = Path.GetFileName(path);
-								var statusFilePath = TeamCollection.GetStatusFilePath(bookFolderName, _localCollectionFolder);
-								if (!File.Exists(statusFilePath))
-								{
-									// Nothing to repair
-									continue;
-								}
-								var statusLocal = CurrentCollection.GetLocalStatus(bookFolderName);
-								// Automatically fills in the missing collectionId.
-								CurrentCollection.WriteLocalStatus(bookFolderName, statusLocal);
-							}
-						}
+						CurrentCollection = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath);
 						CurrentCollectionEvenIfDisabled = CurrentCollection;
 						CurrentCollection.SocketServer = SocketServer;
 						// Later, we will sync everything else, but we want the current collection settings before

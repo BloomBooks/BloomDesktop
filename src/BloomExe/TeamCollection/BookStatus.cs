@@ -17,7 +17,6 @@ namespace Bloom.TeamCollection
 		public string lockedWhen; // string.Format("{0:yyyy-MM-ddTHH:mm:ss.fffZ}", DateTime.UtcNow)
 		public string lockedWhere; // Environment.MachineName
 		public string oldName; // When a book is renamed, we store the previous name here until checkin.
-		public string collectionId; // used only locally, distinguishes which collection stored the book.
 
 		public string ToJson()
 		{
@@ -90,12 +89,5 @@ namespace Bloom.TeamCollection
 		/// Returns true is the book is checked out by anybody, false otherwise
 		/// </summary>
 		public bool IsCheckedOut() => !String.IsNullOrEmpty(lockedBy);
-
-		public BookStatus WithCollectionId(string id)
-		{
-			var result = (BookStatus)MemberwiseClone();
-			result.collectionId = id;
-			return result;
-		}
 	}
 }

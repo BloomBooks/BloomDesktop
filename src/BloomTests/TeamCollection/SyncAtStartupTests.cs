@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -29,11 +28,10 @@ namespace BloomTests.TeamCollection
 		{
 			_repoFolder = new TemporaryFolder("SyncAtStartup_Repo");
 			_collectionFolder = new TemporaryFolder("SyncAtStartup_Local");
-			FolderTeamCollection.CreateTeamCollectionSettingsFile(_collectionFolder.FolderPath,
-				_repoFolder.FolderPath, Bloom.TeamCollection.TeamCollection.GenerateCollectionId());
+			FolderTeamCollection.CreateTeamCollectionSettingsFile(_collectionFolder.FolderPath, _repoFolder.FolderPath);
 			_mockTcManager = new Mock<ITeamCollectionManager>();
 			_tcLog = new TeamCollectionMessageLog(TeamCollectionManager.GetTcLogPathFromLcPath(_collectionFolder.FolderPath));
-			_collection = new FolderTeamCollection(_mockTcManager.Object, _collectionFolder.FolderPath, _repoFolder.FolderPath, tcLog:_tcLog);
+			_collection = new FolderTeamCollection(_mockTcManager.Object, _collectionFolder.FolderPath, _repoFolder.FolderPath, _tcLog);
 			TeamCollectionManager.ForceCurrentUserForTests("test@somewhere.org");
 
 			// Simulate a book that was once shared, but has been deleted from the repo folder.
@@ -93,7 +91,7 @@ namespace BloomTests.TeamCollection
 			MakeBook("Rename local", "This content is on the server");
 			_collection.AttemptLock("Rename local", "fred@somewhere.org");
 			UpdateLocalBook("Rename local", "This is a new book created independently");
-			var statusFilePath = Bloom.TeamCollection.TeamCollection.GetStatusFilePath("Rename local", _collectionFolder.FolderPath);
+			var statusFilePath = _collection.GetStatusFilePath("Rename local", _collectionFolder.FolderPath);
 			RobustFile.Delete(statusFilePath);
 
 			// Simulate a book that is checked out locally but also checked out, to a different user
@@ -140,15 +138,8 @@ namespace BloomTests.TeamCollection
 			// Test result: status is copied to local
 			MakeBook("copy status", "Same content in both places");
 			_collection.AttemptLock("copy status", "fred@somewhere.org");
-			statusFilePath = Bloom.TeamCollection.TeamCollection.GetStatusFilePath("copy status", _collectionFolder.FolderPath);
+			statusFilePath = _collection.GetStatusFilePath("copy status", _collectionFolder.FolderPath);
 			RobustFile.Delete(statusFilePath);
-
-			// Simulate a book that was copied from another TC, using File Explorer.
-			// It therefore has a book.status file, but with a different guid.
-			// Test result: it should survive, and on a new collection sync get copied into the repo
-			var copiedEx = "copied with Explorer";
-			MakeBook(copiedEx, "This content is only local", false);
-			_collection.WriteLocalStatus(copiedEx, new BookStatus(), collectionId: Bloom.TeamCollection.TeamCollection.GenerateCollectionId());
 
 			// Make a couple of folders that are legitimately present, but not books.
 			var allowedWords = Path.Combine(_collectionFolder.FolderPath, "Allowed Words");
@@ -275,21 +266,9 @@ namespace BloomTests.TeamCollection
 		}
 
 		[Test]
-		public void SyncAtStartup_BookCopiedFromAnotherTcWithExplorer_Survives()
-		{
-			Assert.That(Directory.Exists(Path.Combine(_collectionFolder.FolderPath, "copied with Explorer")), Is.True);
-		}
-
-		[Test]
-		public virtual void SyncAtStartup_BookCreatedLocallyNotCheckedIn_CopiedToRepoOnlyOnJoin()
+		public virtual void SyncAtStartup_BookCreatedLocallyNotCheckedIn_CopiedLocalOnlyOnJoin()
 		{
 			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books" ,"New book.bloom")), Is.EqualTo(FirstTimeJoin()));
-		}
-
-		[Test]
-		public virtual void SyncAtStartup_BookCopiedFromAnotherTcWithExplorer_CopiedToRepoOnlyOnJoin()
-		{
-			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", "copied with Explorer.bloom")), Is.EqualTo(FirstTimeJoin()));
 		}
 
 		[Test]
