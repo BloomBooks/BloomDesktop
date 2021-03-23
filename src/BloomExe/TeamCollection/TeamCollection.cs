@@ -51,12 +51,18 @@ namespace Bloom.TeamCollection
 
 		protected bool _updatingCollectionFiles;
 
-		public TeamCollection(ITeamCollectionManager manager, string localCollectionFolder,
+		public TeamCollection(ITeamCollectionManager manager, string localCollectionFolder, string collectionId = null,
 			TeamCollectionMessageLog tcLog = null)
 		{
 			_tcManager = manager;
 			_localCollectionFolder = localCollectionFolder;
 			_tcLog = tcLog ?? new TeamCollectionMessageLog(TeamCollectionManager.GetTcLogPathFromLcPath(localCollectionFolder));
+			CollectionId = collectionId ?? TeamCollection.GenerateCollectionId();
+		}
+
+		public string CollectionId {
+			get;
+			set;
 		}
 
 		public TeamCollectionMessageLog MessageLog => _tcLog;
@@ -328,7 +334,8 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		public void WriteBookStatus(string bookName, BookStatus status)
 		{
-			WriteBookStatusJsonToRepo(bookName, status.ToJson());
+			// No reason to take up space in the repo with a collection ID that is purely local.
+			WriteBookStatusJsonToRepo(bookName, status.WithCollectionId(null).ToJson());
 			WriteLocalStatus(bookName, status);
 		}
 
@@ -549,13 +556,16 @@ namespace Bloom.TeamCollection
 			// Order must be predictable but does not otherwise matter.
 			foreach (var path in files.OrderBy(x => x))
 			{
-				using (var input = new FileStream(path, FileMode.Open))
+				if (File.Exists(path)) // won't usually be passed ones that don't, but useful for unit testing at least.
 				{
-					byte[] buffer = new byte[4096];
-					int count;
-					while ((count = input.Read(buffer, 0, 4096)) > 0)
+					using (var input = new FileStream(path, FileMode.Open))
 					{
-						sha.TransformBlock(buffer, 0, count, buffer, 0);
+						byte[] buffer = new byte[4096];
+						int count;
+						while ((count = input.Read(buffer, 0, 4096)) > 0)
+						{
+							sha.TransformBlock(buffer, 0, count, buffer, 0);
+						}
 					}
 				}
 			}
@@ -849,6 +859,11 @@ namespace Bloom.TeamCollection
 			return HasLocalChangesThatMustBeClobbered(bookName) || HasCheckoutConflict(bookName);
 		}
 
+		public static string GenerateCollectionId()
+		{
+			return Guid.NewGuid().ToString();
+		}
+
 		/// <summary>
 		/// Handle a notification that a file has been modified. If it's a bloom book file
 		/// and there is no problem, add a NewStuff message. If there is a problem,
@@ -949,7 +964,7 @@ namespace Bloom.TeamCollection
 		/// folder names containing periods.</param>
 		/// <param name="collectionFolder">The collection that contains the book</param>
 		/// <returns></returns>
-		internal string GetStatusFilePath(string bookName, string collectionFolder)
+		internal static string GetStatusFilePath(string bookName, string collectionFolder)
 		{
 			// Don't use GetFileNameWithoutExtension here, what comes in might be a plain folder name
 			// that doesn't have an extension, but might contain a period if the book title does.
@@ -961,7 +976,7 @@ namespace Bloom.TeamCollection
 			return statusFile;
 		}
 
-		internal void WriteLocalStatus(string bookFolderName, BookStatus status, string collectionFolder = null)
+		internal void WriteLocalStatus(string bookFolderName, BookStatus status, string collectionFolder = null, string collectionId = null)
 		{
 #if DEBUG
 			// Except in unit tests, where we do all sorts of weird things to simulate particular situations,
@@ -971,7 +986,8 @@ namespace Bloom.TeamCollection
 				Debug.Assert(GetBookStatusJsonFromRepo(bookFolderName) != null, "Should never write local status for a book that's not in repo");
 #endif
 			var statusFilePath = GetStatusFilePath(bookFolderName, collectionFolder ?? _localCollectionFolder);
-			RobustFile.WriteAllText(statusFilePath, status.ToJson(), Encoding.UTF8);
+			var statusToWrite = status.WithCollectionId(collectionId ?? CollectionId);
+			RobustFile.WriteAllText(statusFilePath, statusToWrite.ToJson(), Encoding.UTF8);
 		}
 
 		internal BookStatus GetLocalStatus(string bookFolderName, string collectionFolder = null)
@@ -1062,40 +1078,55 @@ namespace Bloom.TeamCollection
 							PutBook(path, true);
 							continue;
 						}
+
 						// no sign of book in repo...should we delete it?
 						var statusFilePath = GetStatusFilePath(bookFolderName, _localCollectionFolder);
-						if (File.Exists(statusFilePath))
+						if (!File.Exists(statusFilePath))
 						{
 							// If there's no local status, presume it's a newly created local file and keep it
-							// On this branch, there is local status, so the book has previously been shared.
-							// Since it's now missing from the repo, we assume it's been deleted.
-							// Unless it's checked out to the current user on the current computer, delete
-							// the local version.
-							var statusLocal = GetLocalStatus(bookFolderName);
-							if (statusLocal.lockedBy != TeamCollectionManager.CurrentUser
-							    || statusLocal.lockedWhere != TeamCollectionManager.CurrentMachine)
-							{
-								ReportProgressAndLog(progress, "DeleteLocal",
-									"Deleting '{0}' from local folder as it is no longer in the Team Collection",
-									bookFolderName);
-								SIL.IO.RobustIO.DeleteDirectoryAndContents(path);
-								continue;
-							}
-							// existing book folder checked out with status file, but nothing matching in repo.
-							// Most likely it is in the process of being renamed. In that case, not only
-							// should we not delete it, we should avoid re-creating the local book it was
-							// renamed from, for which we most likely have a .bloom in the repo.
-							// Here we just remember the name.
-							var oldName = GetLocalStatus(bookFolderName).oldName;
-							if (!string.IsNullOrEmpty(oldName))
-							{
-								oldBookNames.Add(oldName);
-							}
-
-							// If it's checked out here, assume current user wants it and keep it.
-							// If he checks it in, that will undo the delete...may annoy the user
-							// who deleted it, but that's life in a shared collection.
+							continue;
 						}
+
+						var statusLocal = GetLocalStatus(bookFolderName);
+						if (statusLocal.collectionId != CollectionId)
+						{
+							// The local status is bogus...it was not written by operations in this collection
+							// Most likely, the book was copied from another TC using Explorer or similar.
+							// We'll treat it like any other locally newly-created book by getting rid of the
+							// bogus status.
+							RobustFile.Delete(statusFilePath);
+							continue;
+						}
+
+						// On this branch, there is valid local status, so the book has previously been shared.
+						// Since it's now missing from the repo, we assume it's been deleted.
+						// Unless it's checked out to the current user on the current computer, delete
+						// the local version.
+
+						if (statusLocal.lockedBy != TeamCollectionManager.CurrentUser
+						    || statusLocal.lockedWhere != TeamCollectionManager.CurrentMachine)
+						{
+							ReportProgressAndLog(progress, "DeleteLocal",
+								"Deleting '{0}' from local folder as it is no longer in the Team Collection",
+								bookFolderName);
+							SIL.IO.RobustIO.DeleteDirectoryAndContents(path);
+							continue;
+						}
+
+						// existing book folder checked out with status file, but nothing matching in repo.
+						// Most likely it is in the process of being renamed. In that case, not only
+						// should we not delete it, we should avoid re-creating the local book it was
+						// renamed from, for which we most likely have a .bloom in the repo.
+						// Here we just remember the name.
+						var oldName = GetLocalStatus(bookFolderName).oldName;
+						if (!string.IsNullOrEmpty(oldName))
+						{
+							oldBookNames.Add(oldName);
+						}
+
+						// If it's checked out here, assume current user wants it and keep it.
+						// If he checks it in, that will undo the delete...may annoy the user
+						// who deleted it, but that's life in a shared collection.
 					}
 				}
 				catch (Exception ex)
@@ -1426,9 +1457,11 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		public void UpdateStatusOfAllCheckedOutBooks()
 		{
-			foreach (var bookName in GetBookList())
+			foreach (var path in Directory.EnumerateDirectories(_localCollectionFolder))
 			{
-				UpdateBookStatus(bookName, false);
+				if (!IsBloomBookFolder(path))
+					continue;
+				UpdateBookStatus(Path.GetFileName(path), false);
 			}
 		}
 
