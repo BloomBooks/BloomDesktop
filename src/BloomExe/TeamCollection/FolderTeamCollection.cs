@@ -1,14 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
+using Bloom.Api;
 using Bloom.CollectionCreating;
 using Bloom.MiscUI;
 using Bloom.Utils;
+using Bloom.web;
 using ICSharpCode.SharpZipLib.Zip;
 using Sentry;
 using SIL.IO;
@@ -598,21 +603,40 @@ namespace Bloom.TeamCollection
 		}
 
 		/// <summary>
-		/// Used when the user asks to create a team collection from the existing local collection.
-		/// Assumes only that the folder we want to connect to exists (and, at least for now, expects
-		/// it to have nothing else in it). We set it up with all the files it needs to have,
-		/// including any books that already exist locally.
+		/// Set up a team collection created from the existing local collection in the specified
+		/// (typically newly created) folder (and links the local collection to it so it becomes a TC).
+		/// We set it up with all the files it needs to have, including any books that already exist locally.
 		/// </summary>
 		/// <param name="repoFolder"></param>
-		public void ConnectToTeamCollection(string repoFolder)
+		public void SetupTeamCollection(string repoFolder, IWebSocketProgress progress)
 		{
 			_repoFolderPath = repoFolder;
+			progress.Message("SettingUpCore", "Setting up the core team collection files");
 			CreateJoinCollectionFile();
 			CreateTeamCollectionSettingsFile(_localCollectionFolder, repoFolder);
 			CopyRepoCollectionFilesFromLocal(_localCollectionFolder);
 			Directory.CreateDirectory(Path.Combine(repoFolder, "Books"));
-			SynchronizeBooksFromLocalToRepo();
+			SynchronizeBooksFromLocalToRepo(progress);
 			StartMonitoring();
+		}
+
+		/// <summary>
+		/// Wraps SetupTeamCollection() with a dialog showing progress.
+		/// </summary>
+		/// <param name="repoFolder"></param>
+		public void SetupTeamCollectionWithProgressDialog(string repoFolder)
+		{
+			BrowserProgressDialog.DoWorkWithProgressDialog(SocketServer, TeamCollection.kWebSocketContext, "Team Collection Activity",
+			progress =>
+			{
+				progress.Message("StartingCopy", "",
+					"Starting to set up the Team Collection", MessageKind.Progress);
+
+				SetupTeamCollection(repoFolder, progress);
+
+				progress.Message("Done", "Done");
+				return false; // always close dialog when done
+			});
 		}
 
 		private static string _joinCollectionPath;
