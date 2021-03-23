@@ -3,19 +3,14 @@ using System.Reflection;
 using Autofac;
 using Bloom.CollectionChoosing;
 using Bloom.Properties;
-using Bloom.ToPalaso;
 using System.Linq;
-using Bloom.WebLibraryIntegration;
 using L10NSharp;
-using SIL.Reporting;
 using System.Windows.Forms;
-using Bloom.Utils;
-
 
 namespace Bloom
 {
 		/// <summary>
-		/// This is sortof a wrapper around the DI container. I'm not thrilled with the name I've
+		/// This is sort of a wrapper around the DI container. I'm not thrilled with the name I've
 		/// used (jh).
 		/// </summary>
 		public class ApplicationContainer : IDisposable
@@ -61,7 +56,7 @@ namespace Bloom
 			private void OnApplicationExit(object sender, EventArgs e)
 			{
 				Application.ApplicationExit -= OnApplicationExit;
-				Bloom.Program.FinishLocalizationHarvesting();
+				Program.FinishLocalizationHarvesting();
 				Dispose();
 			}
 
@@ -72,15 +67,13 @@ namespace Bloom
 
 			public ILocalizationManager LocalizationManager;
 
+			public HtmlThumbNailer HtmlThumbnailer => _container.Resolve<HtmlThumbNailer>();
 
-			public HtmlThumbNailer HtmlThumbnailer { get { return _container.Resolve<HtmlThumbNailer>();}}
-
-			public BookThumbNailer BookThumbNailer { get { return _container.Resolve<BookThumbNailer>(); }}
+			public BookThumbNailer BookThumbNailer => _container.Resolve<BookThumbNailer>();
 
 			public void Dispose()
 			{
-				if (_container != null)
-					_container.Dispose();
+				_container?.Dispose();
 				_container = null;
 
 				GC.SuppressFinalize(this);

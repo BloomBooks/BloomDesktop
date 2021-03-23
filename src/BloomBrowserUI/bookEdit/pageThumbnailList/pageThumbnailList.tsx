@@ -412,7 +412,7 @@ function ContinueAutomatedPageClicking(
     pagesRemaining: IPage[],
     count: number = 0
 ) {
-    const kHowManyPages = 10; // no way other than code to change this at the moment
+    const kHowManyPages = 1000; // no way other than code to change this at the moment
     if (count > kHowManyPages) return;
     BloomApi.postJson(
         "pageList/pageClicked",
@@ -424,7 +424,7 @@ function ContinueAutomatedPageClicking(
                     () => {
                         ContinueAutomatedPageClicking(remaining, count + 1);
                     },
-                    3 * 1000 // leave time for the browser to redraw
+                    8 * 1000 // leave time for the browser to redraw
                 );
             else window.alert("Done with automated page clicking");
         }
