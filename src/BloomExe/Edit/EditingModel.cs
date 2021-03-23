@@ -177,7 +177,7 @@ namespace Bloom.Edit
 			if (details.From == _view)
 			{
 				SaveNow();
-				_view.RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getPageFrameExports().disconnectForGarbageCollection();}");
+				_view.RunJavaScript("if (typeof(FrameExports) !=='undefined' && typeof(FrameExports.getPageFrameExports()) !=='undefined') {FrameExports.getPageFrameExports().disconnectForGarbageCollection();}");
 				// This bizarre behavior prevents BL-2313 and related problems.
 				// For some reason I cannot discover, switching tabs when focus is in the Browser window
 				// causes Bloom to get deactivated, which prevents various controls from working.
@@ -625,9 +625,9 @@ namespace Bloom.Edit
 			if (_view != null && !_inProcessOfDeleting && !_inProcessOfLoading)
 			{
 				_view.ChangingPages = true;
-				_view.RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getPageFrameExports().pageSelectionChanging();}");
+				_view.RunJavaScript("if (typeof(FrameExports) !=='undefined' && typeof(FrameExports.getPageFrameExports()) !=='undefined') {FrameExports.getPageFrameExports().pageSelectionChanging();}");
 				FinishSavingPage();
-				_view.RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getPageFrameExports().disconnectForGarbageCollection();}");
+				_view.RunJavaScript("if (typeof(FrameExports) !=='undefined' && typeof(FrameExports.getPageFrameExports()) !=='undefined') {FrameExports.getPageFrameExports().disconnectForGarbageCollection();}");
 			}
 		}
 
@@ -889,42 +889,12 @@ namespace Bloom.Edit
 				Logger.WriteEvent("BL-422 happened just now (currentlyDisplayedBook was null in OnIdleAfterDocumentSupposedlyCompleted).");
 				return;
 			}
-			AddStandardEventListeners();
 		}
 
-		/// <summary>
-		/// listen for these events raised by javascript.
-		/// </summary>
-		internal void AddStandardEventListeners()
-		{
-			AddMessageEventListener("saveToolboxSettingsEvent", SaveToolboxSettings);
-			AddMessageEventListener("setTopic", SetTopic);
-			AddMessageEventListener("finishSavingPage", FinishSavingPage);
-		}
-
-		private void SaveToolboxSettings(string data)
+		internal void SaveToolboxSettings(string data)
 		{
 			ToolboxView.SaveToolboxSettings(_currentlyDisplayedBook,data);
 		}
-
-		private void AddMessageEventListener(string name, Action<string> listener)
-		{
-			_activeStandardListeners.Add(name);
-			_view.AddMessageEventListener(name, listener);
-		}
-
-		/// <summary>
-		/// stop listening for these events raised by javascript.
-		/// </summary>
-		internal void RemoveStandardEventListeners()
-		{
-			foreach (var name in _activeStandardListeners)
-			{
-				_view.RemoveMessageEventListener(name);
-			}
-			_activeStandardListeners.Clear();
-		}
-
 
 		/// <summary>
 		/// When the user types ctrl+n, we do this:
@@ -964,8 +934,8 @@ namespace Bloom.Edit
 //				this._view.ShowAddPageDialog();
 //		}
 
-		//invoked from TopicChooser.ts
-		private void SetTopic(string englishTopicAsKey)
+		//invoked from TopicChooser.ts via API
+		internal void SetTopic(string englishTopicAsKey)
 		{
 			//make the change in the data div
 			_currentlyDisplayedBook.SetTopic(englishTopicAsKey);
@@ -1511,6 +1481,14 @@ namespace Bloom.Edit
 			}
 
 			return "activities" + "/" + widgetName + "/" + rootFileName;
+		}
+
+		// This event is fired after a page has finished painting.
+		public event EventHandler EditPagePainted;
+		public void HandleEditPagePaintedEvent(object sender, EventArgs args)
+		{
+			NavigatingSoSuspendSaving = false;
+			EditPagePainted?.Invoke(sender, args);
 		}
 	}
 }
