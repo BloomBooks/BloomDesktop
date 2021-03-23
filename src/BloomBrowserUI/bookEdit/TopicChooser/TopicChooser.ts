@@ -42,7 +42,10 @@ export default class TopicChooser {
                             //thing here where the UI raises an event requesting a change
                             //to the model, and then let that propagate back down to the
                             //ui (that is, the html on the page).
-                            TopicChooser.fireCSharpEvent("setTopic", key);
+                            BloomApi.postString(
+                                "editView/setTopic",
+                                key ? key : "<NONE>"
+                            );
                         }
                         $(this).dialog("close");
                     }
@@ -55,15 +58,6 @@ export default class TopicChooser {
             var x = dlg.dialog("option", "buttons");
             x["OK"].apply(dlg);
         });
-    }
-
-    private static fireCSharpEvent(eventName, eventData): void {
-        var event = new MessageEvent(eventName, {
-            bubbles: true,
-            cancelable: true,
-            data: eventData
-        });
-        top.document.dispatchEvent(event);
     }
 
     private static createTopicDialogDiv(currentTopicKey: string) {
