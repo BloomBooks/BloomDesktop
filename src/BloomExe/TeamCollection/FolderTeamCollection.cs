@@ -297,7 +297,7 @@ namespace Bloom.TeamCollection
 			if (!RobustFile.Exists(collectionZipPath))
 				return;
 			ExtractFolderFromZip(destFolder, collectionZipPath, () => new HashSet<string>(RootLevelCollectionFilesIn(destFolder,
-				Path.GetFileNameWithoutExtension(GetLocalCollectionNameFromTcName(repoFolder)))));
+				Path.GetFileName(GetLocalCollectionNameFromTcName(repoFolder)))));
 		}
 
 		// Extract files from the given zip to the given destination folder. Delete any files in the destFolder which

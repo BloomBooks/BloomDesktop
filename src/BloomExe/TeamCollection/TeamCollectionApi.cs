@@ -177,7 +177,7 @@ namespace Bloom.TeamCollection
 			}
 		}
 
-		private string BookFolderName => Path.GetFileNameWithoutExtension(_bookSelection.CurrentSelection?.FolderPath);
+		private string BookFolderName => Path.GetFileName(_bookSelection.CurrentSelection?.FolderPath);
 
 		public void HandleAttemptLockOfCurrentBook(ApiRequest request)
 		{
