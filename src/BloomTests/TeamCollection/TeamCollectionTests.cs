@@ -35,10 +35,10 @@ namespace BloomTests.TeamCollection
 			_collectionFolder = new TemporaryFolder("TeamCollection_Local");
 			_tcLog = new TeamCollectionMessageLog(TeamCollectionManager.GetTcLogPathFromLcPath(_collectionFolder.FolderPath));
 			FolderTeamCollection.CreateTeamCollectionSettingsFile(_collectionFolder.FolderPath,
-				_sharedFolder.FolderPath);
+				_sharedFolder.FolderPath, Bloom.TeamCollection.TeamCollection.GenerateCollectionId());
 
 			_mockTcManager = new Mock<ITeamCollectionManager>();
-			_collection = new FolderTeamCollection(_mockTcManager.Object, _collectionFolder.FolderPath, _sharedFolder.FolderPath, _tcLog);
+			_collection = new FolderTeamCollection(_mockTcManager.Object, _collectionFolder.FolderPath, _sharedFolder.FolderPath, tcLog:_tcLog);
 		}
 
 		[TearDown]
