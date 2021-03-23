@@ -1,10 +1,12 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
 using L10NSharp;
+using SIL.Reporting;
 
 namespace Bloom.TeamCollection
 {
@@ -181,11 +183,12 @@ namespace Bloom.TeamCollection
 
 		public BloomWebSocketServer SocketServer => _webSocketServer;
 
-		public void ConnectToTeamCollection(string repoFolderParentPath)
+		public void ConnectToTeamCollection(string repoFolderParentPath, string collectionId)
 		{
 			var repoFolderPath = PlannedRepoFolderPath(repoFolderParentPath);
 			Directory.CreateDirectory(repoFolderPath);
 			var newTc = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath);
+			newTc.CollectionId = collectionId;
 			newTc.SocketServer = SocketServer;
 			newTc.SetupTeamCollectionWithProgressDialog(repoFolderPath);
 			CurrentCollection = newTc;
@@ -267,6 +270,12 @@ namespace Bloom.TeamCollection
 			// We're normally checking SIL.Windows.Forms.Registration.Registration.Default.Email,
 			// but getting it via TCM.CurrentUser allows overriding for testing.
 			return !String.IsNullOrWhiteSpace(CurrentUser);
+		}
+
+		public void SetCollectionId(string collectionSettingsCollectionId)
+		{
+			if (CurrentCollection != null)
+				CurrentCollection.CollectionId = collectionSettingsCollectionId;
 		}
 	}
 }

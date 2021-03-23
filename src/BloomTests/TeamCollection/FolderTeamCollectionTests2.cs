@@ -62,7 +62,8 @@ namespace BloomTests.TeamCollection
 					var teamCollectionSettingsPath =
 						Path.Combine(collectionFolder.FolderPath, TeamCollectionManager.TeamCollectionSettingsFileName);
 					Assert.That(File.Exists(teamCollectionSettingsPath));
-					Assert.That(RobustFile.ReadAllText(teamCollectionSettingsPath),
+					var collectionFileContent = RobustFile.ReadAllText(teamCollectionSettingsPath);
+					Assert.That(collectionFileContent,
 						Contains.Substring("<TeamCollectionFolder>" + sharedFolder.FolderPath +
 						                   "</TeamCollectionFolder>"));
 					var sharedSettingsPath = Path.Combine(collectionFolder.FolderPath, settingsFileName);
@@ -87,6 +88,7 @@ namespace BloomTests.TeamCollection
 				{
 					var mockTcManager = new Mock<ITeamCollectionManager>();
 					var tc = new FolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath, repoFolder.FolderPath);
+					tc.CollectionId = Bloom.TeamCollection.TeamCollection.GenerateCollectionId();
 					var bcPath = Path.Combine(collectionFolder.FolderPath, "mybooks.bloomCollection");
 					File.WriteAllText(bcPath, "something");
 					var files = tc.FilesToMonitorForCollection();
@@ -109,6 +111,7 @@ namespace BloomTests.TeamCollection
 					var settingsPath = Path.Combine(collectionFolder.FolderPath, settingsFileName);
 					var tcManager = new TeamCollectionManager(settingsPath, null, new BookRenamedEvent(), new BookStatusChangeEvent());
 					var tc = new FolderTeamCollection(tcManager, collectionFolder.FolderPath, repoFolder.FolderPath);
+					tc.CollectionId = Bloom.TeamCollection.TeamCollection.GenerateCollectionId();
 					var bloomCollectionPath = Bloom.TeamCollection.TeamCollection.CollectionPath(collectionFolder.FolderPath);
 					Assert.That(tc.LocalCollectionFilesRecordedSyncTime, Is.EqualTo(DateTime.MinValue));
 					File.WriteAllText(bloomCollectionPath, "This is a fake collection file");
@@ -217,6 +220,7 @@ namespace BloomTests.TeamCollection
 					var mockTcManager = new Mock<ITeamCollectionManager>();
 					TeamCollectionManager.ForceCurrentUserForTests("me@somewhere.org");
 					var tc = new FolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath, repoFolder.FolderPath);
+					tc.CollectionId = Bloom.TeamCollection.TeamCollection.GenerateCollectionId();
 					var oldFolderPath = SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, "old name", "book content");
 					tc.PutBook(oldFolderPath);
 					tc.AttemptLock("old name");
@@ -244,6 +248,7 @@ namespace BloomTests.TeamCollection
 					var mockTcManager = new Mock<ITeamCollectionManager>();
 					TeamCollectionManager.ForceCurrentUserForTests("");
 					var tc = new FolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath, repoFolder.FolderPath);
+					tc.CollectionId = Bloom.TeamCollection.TeamCollection.GenerateCollectionId();
 					var bookFolderPath =
 						SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, "some name", "book content");
 					Assert.That(tc.OkToCheckIn("some name"), Is.False, "can't check in new book when not registered");

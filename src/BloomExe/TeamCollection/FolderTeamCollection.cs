@@ -48,7 +48,8 @@ namespace Bloom.TeamCollection
 		private const int kDebouncePeriodInMs = 100;
 		private Dictionary<string, FileSystemEventRecord> _lastCreateEventByFile = new Dictionary<string, FileSystemEventRecord>();
 		 
-		public FolderTeamCollection(ITeamCollectionManager manager, string localCollectionFolder, string repoFolderPath, TeamCollectionMessageLog tcLog=null) : base(manager, localCollectionFolder, tcLog)
+		public FolderTeamCollection(ITeamCollectionManager manager, string localCollectionFolder,
+			string repoFolderPath, TeamCollectionMessageLog tcLog=null) : base(manager, localCollectionFolder, tcLog)
 		{
 			_repoFolderPath = repoFolderPath;
 		}
@@ -99,7 +100,7 @@ namespace Bloom.TeamCollection
 
 			var zipFile = new BloomZipFile(bookPath);
 			zipFile.AddDirectory(sourceBookFolderPath, sourceBookFolderPath.Length + 1, null);
-			zipFile.SetComment(status.ToJson());
+			zipFile.SetComment(status.WithCollectionId(CollectionId).ToJson());
 			zipFile.Save();
 			lock (_lockObject)
 			{
@@ -706,7 +707,6 @@ namespace Bloom.TeamCollection
 		/// in the specified repoFolder. (We could get away without unpacking more than the .bloomCollection
 		/// file, but we'll want the others soon, and typically it's not a lot.)
 		/// </summary>
-		/// <returns></returns>
 		public static string SetupMinimumLocalCollectionFilesForRepo(string repoFolder, string localCollectionFolder)
 		{
 			Directory.CreateDirectory(localCollectionFolder);
@@ -725,7 +725,8 @@ namespace Bloom.TeamCollection
 				+ @"You can rename this file but must keep the extension the same.");
 		}
 
-		public static void CreateTeamCollectionSettingsFile(string collectionFolder, string teamCollectionFolder) {
+		public static void CreateTeamCollectionSettingsFile(string collectionFolder, string teamCollectionFolder)
+		{
 			var doc = new XDocument(
 				new XElement("settings",
 					new XElement("TeamCollectionFolder",

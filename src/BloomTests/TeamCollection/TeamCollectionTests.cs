@@ -39,6 +39,7 @@ namespace BloomTests.TeamCollection
 
 			_mockTcManager = new Mock<ITeamCollectionManager>();
 			_collection = new FolderTeamCollection(_mockTcManager.Object, _collectionFolder.FolderPath, _sharedFolder.FolderPath, _tcLog);
+			_collection.CollectionId = Bloom.TeamCollection.TeamCollection.GenerateCollectionId();
 		}
 
 		[TearDown]
