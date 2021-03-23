@@ -987,6 +987,22 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// Get all the language tags which have content in this DOM
+		/// </summary>
+		/// <returns>Set of language tags</returns>
+		public ISet<string> GetLanguagesWithContent(bool includeXMatter)
+		{
+			ISet<string> result = new HashSet<string>();
+			foreach (var div in GetLanguageDivs(includeXMatter))
+			{
+				if (!string.IsNullOrWhiteSpace(div.InnerText))
+					result.Add(div.Attributes["lang"].Value);
+			}
+
+			return result;
+		}
+
+		/// <summary>
 		/// Checks if the specified language is considered valid (e.g. non-empty, not "*", not "z")
 		/// </summary>
 		internal static bool IsLanguageValid(string lang)
