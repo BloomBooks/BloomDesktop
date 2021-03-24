@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Bloom.Publish;
-using Bloom.Publish.Epub;
+using System.Text;
+using System.Text.RegularExpressions;
+using Bloom.Book;
 using CommandLine;
+using SIL.IO;
+using Directory = System.IO.Directory;
 
 namespace Bloom.CLI
 {
@@ -64,7 +68,7 @@ namespace Bloom.CLI
 
 				//book.BringBookUpToDate(new NullProgress());
 
-				var fonts = EpubMaker.GetFontsUsed(options.BookPath, false).ToList();
+				var fonts = GetFontsUsed(options.BookPath).ToList();
 				fonts.Sort();
 
 				Directory.CreateDirectory(Path.GetDirectoryName(options.ReportPath));
@@ -98,6 +102,75 @@ namespace Bloom.CLI
 				Console.Error.WriteLine(message);
 				return (int)GetUsedFontsExitCode.UnhandledException;
 			}
+		}
+
+		/// <summary>
+		/// Examine the stylesheets and collect the font families they mention.
+		/// Note that the process used by ePub and bloomPub publication to
+		/// determine fonts is more complicated, using the DOM in an actual browser.
+		/// </summary>
+		/// <returns>Enumerable of font names</returns>
+		internal static IEnumerable<string> GetFontsUsed(string bookPath)
+		{
+			string bookHtmContent = null;
+			string defaultLangStylesContent = null;
+
+			var result = new HashSet<string>();
+			// Css for styles are contained in the actual html
+			foreach (var filePath in Directory.EnumerateFiles(bookPath, "*.*").Where(f => f.EndsWith(".css") || f.EndsWith(".htm") || f.EndsWith(".html")))
+			{
+				var fileContents = RobustFile.ReadAllText(filePath, Encoding.UTF8);
+
+				if (filePath.EndsWith(".htm"))
+					bookHtmContent = fileContents;
+				else if (filePath.EndsWith("defaultLangStyles.css"))
+				{
+					defaultLangStylesContent = fileContents;
+					// Delay processing defaultLangStyles to the end when we know we have the htm content.
+					continue;
+				}
+
+				HtmlDom.FindFontsUsedInCss(fileContents, result, false);
+			}
+
+			ProcessDefaultLangStyles(bookHtmContent, defaultLangStylesContent, result);
+
+			return result;
+		}
+
+		/// <summary>
+		/// Special processing is needed for defaultLangStyles.css.
+		/// This file is designed to hold information about each language seen by this book and its ancestors.
+		/// But that means we may have font information for a language not present in this version of the book.
+		/// We don't want to include those fonts.
+		/// </summary>
+		private static void ProcessDefaultLangStyles(string bookHtmContent, string defaultLangStylesContent, HashSet<string> result)
+		{
+			if (bookHtmContent == null || defaultLangStylesContent == null)
+				return;
+
+			var htmlDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(bookHtmContent, false));
+			var languagesWithContent = htmlDom.GetLanguagesWithContent(true).ToArray();
+
+			// Find something like this
+			//	[lang='en']
+			//	{
+			//		font-family: 'Andika New Basic';
+			//		direction: ltr;
+			//	}
+			Regex languageCssRegex = new Regex(@"\[\s*lang\s*=\s*['""](.*?)['""]\s*\]\s*{.*?}", RegexOptions.Singleline | RegexOptions.Compiled);
+
+			// Remove it for languages which are not in the book.
+			foreach (Match match in languageCssRegex.Matches(defaultLangStylesContent))
+			{
+				var langTag = match.Groups[1].Value;
+				if (languagesWithContent.Contains(langTag))
+					continue;
+				var wholeRuleForLang = match.Groups[0].Value;
+				defaultLangStylesContent = defaultLangStylesContent.Replace(wholeRuleForLang, "");
+			}
+
+			HtmlDom.FindFontsUsedInCss(defaultLangStylesContent, result, false);
 		}
 	}
 }

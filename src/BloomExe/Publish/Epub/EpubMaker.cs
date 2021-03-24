@@ -1971,26 +1971,6 @@ namespace Bloom.Publish.Epub
 				$"@font-face {{font-family:'{name}'; font-weight:{weight}; font-style:{style}; src:url('{fullRelativePath}') format('{format}');}}");
 		}
 
-		/// <summary>
-		/// First step of embedding fonts: determine what are used in the document.
-		/// Eventually we may load each page into a DOM and use JavaScript to ask each
-		/// bit of text what actual font and face it is using.
-		/// For now we examine the stylesheets and collect the font families they mention.
-		/// </summary>
-		/// <param name="bookPath"></param>
-		/// <param name="includeFallbackFonts"></param>
-		/// <returns></returns>
-		public static IEnumerable<string> GetFontsUsed (string bookPath, bool includeFallbackFonts)
-		{
-			var result = new HashSet<string> ();
-			// Css for styles are contained in the actual html
-			foreach (var ss in Directory.EnumerateFiles (bookPath, "*.*").Where (f => f.EndsWith (".css") || f.EndsWith (".htm") || f.EndsWith (".html"))) {
-				var root = RobustFile.ReadAllText (ss, Encoding.UTF8);
-				HtmlDom.FindFontsUsedInCss (root, result, includeFallbackFonts);
-			}
-			return result;
-		}
-
 		const double mmPerInch = 25.4;
 
 		/// <summary>
