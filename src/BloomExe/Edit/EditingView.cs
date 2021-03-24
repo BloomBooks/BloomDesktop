@@ -487,7 +487,7 @@ namespace Bloom.Edit
 			}
 		}
 
-		public void UpdateSingleDisplayedPage(IPage page)
+		public void UpdateSingleDisplayedPage(IPage page, bool fastRedisplay = false)
 		{
 			if(!_model.Visible)
 			{
@@ -515,9 +515,10 @@ namespace Bloom.Edit
 				// to set it up again each time we load a page. It's important to set it up before we start
 				// navigation; otherwise, we might miss the event and never enable saving for this page.
 				_model.NavigatingSoSuspendSaving = true;
-				if (_model.AreToolboxAndOuterFrameCurrent() && !ShouldDoFullReload())
+				if (fastRedisplay || _model.AreToolboxAndOuterFrameCurrent() && !ShouldDoFullReload())
 				{
 					// Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
+					// This approach is needed when refreshing the display of the same page with a new layout.  (BL-9712)
 					var pageUrl = _model.GetUrlForCurrentPage();
 					_browser1.SetEditDom(domForCurrentPage);
 					RunJavaScript("FrameExports.switchContentPage('" + pageUrl + "');");

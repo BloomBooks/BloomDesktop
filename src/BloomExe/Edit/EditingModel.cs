@@ -724,7 +724,7 @@ namespace Bloom.Edit
 
 		public void RefreshDisplayOfCurrentPage()
 		{
-			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection, true);
 		}
 
 		private DataSet _pageDataBeforeEdits;
