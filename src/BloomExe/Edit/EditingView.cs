@@ -487,7 +487,20 @@ namespace Bloom.Edit
 			}
 		}
 
-		public void UpdateSingleDisplayedPage(IPage page)
+		/// <summary>
+		/// Update the displayed page, including displaying it in the browser.
+		/// </summary>
+		/// <param name="page">the page to display</param>
+		/// <param name="fastRedisplay">redisplay the page by changing the iframe URL instead of navigating to a copy of the current DOM content and reloading the toolbox</param>
+		/// <remarks>
+		/// fastRedisplay is not the default because that approach allows memory leaks to accumulate quickly for
+		/// some reason.  It should be used only when needed, such as when redisplaying the same page after changing
+		/// the layout.  In that scenario, using the more complete navigation triggers a state in the page list view
+		/// that permanently freezes it until Bloom is restarted.  Changing the layout forces a change in the
+		/// thumbnail displayed in that view, and the full navigation path apparently interferes with that view as
+		/// well.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9712.
+		/// </remarks>
+		public void UpdateSingleDisplayedPage(IPage page, bool fastRedisplay = false)
 		{
 			if(!_model.Visible)
 			{
@@ -515,7 +528,7 @@ namespace Bloom.Edit
 				// to set it up again each time we load a page. It's important to set it up before we start
 				// navigation; otherwise, we might miss the event and never enable saving for this page.
 				_model.NavigatingSoSuspendSaving = true;
-				if (_model.AreToolboxAndOuterFrameCurrent() && !ShouldDoFullReload())
+				if (fastRedisplay || _model.AreToolboxAndOuterFrameCurrent() && !ShouldDoFullReload())
 				{
 					// Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
 					var pageUrl = _model.GetUrlForCurrentPage();
