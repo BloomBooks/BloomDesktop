@@ -1,6 +1,12 @@
 {
     "presets": [
         {
+            "data-book": "licenseUrl",
+            "lang": "*",
+            "content": "http://creativecommons.org/licenses/by-nc-nd/4.0/",
+            "condition": "always"
+        },
+        {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
             "content": "<img class='branding' src='fdpm back cover.svg'/>",
