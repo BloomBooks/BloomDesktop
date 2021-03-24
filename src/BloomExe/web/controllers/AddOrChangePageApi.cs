@@ -1,5 +1,6 @@
-using System.Collections.Generic;
+using System;
 using System.Web;
+using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
@@ -11,7 +12,6 @@ namespace Bloom.web.controllers
 	/// </summary>
 	public class AddOrChangePageApi
 	{
-		private Dictionary<string, IPage> _templatePagesDict;
 		private readonly TemplateInsertionCommand _templateInsertionCommand;
 		private readonly PageRefreshEvent _pageRefreshEvent;
 		private readonly PageSelection _pageSelection;
@@ -44,8 +44,7 @@ namespace Bloom.web.controllers
 				CopyVideoPlaceHolderIfNeeded(templatePage);
 				_templateInsertionCommand.Insert(templatePage as Page);
 				_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay); // needed to get the styles updated
-				request.PostSucceeded();
-				return;
+				request.PostSucceeded();	// request.Failed already called if template page is null
 			}
 		}
 
@@ -68,24 +67,36 @@ namespace Bloom.web.controllers
 				_pageSelection.CurrentSelection.Book.Storage.Update("video-placeholder.svg");
 		}
 
+		private IPage _templatePage;
+		private bool _changeWholeBook;
 		private void HandleChangeLayout(ApiRequest request)
 		{
-			bool changeWholeBook;
-			var templatePage = GetPageTemplateAndUserStyles(request, out changeWholeBook);
-			if (templatePage != null)
+			_templatePage = GetPageTemplateAndUserStyles(request, out _changeWholeBook);
+			if (_templatePage != null)
 			{
-				CopyVideoPlaceHolderIfNeeded(templatePage);
-				var pageToChange = _pageSelection.CurrentSelection;
-				if (templatePage.Book != null) // may be null in unit tests that are unconcerned with stylesheets
-					HtmlDom.AddStylesheetFromAnotherBook(templatePage.Book.OurHtmlDom, pageToChange.Book.OurHtmlDom);
-				if (changeWholeBook)
-					ChangeSimilarPagesInEntireBook(pageToChange, templatePage);
-				else
-					pageToChange.Book.UpdatePageToTemplateAndUpdateLineage(pageToChange, templatePage);
-
-				_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay);
-				request.PostSucceeded();
+				// Changing the page layout and refreshing the page immediately here can cause the page list to
+				// freeze because the javascript dialog for selecting a page template is still open.  Our memory
+				// leak fix of reloading the entire page destroys the underlying javascript (and reloads it),
+				// leading to the dialog disappearing but not cleaning up by calling the "editView/setModalState"
+				// API with false.  This leaves the pageListView permanently disabled.
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-9712.
+				Application.Idle += ChangePageLayoutOnIdle;
+				request.PostSucceeded();	// request.Failed already called if template page is null
 			}
+		}
+
+		private void ChangePageLayoutOnIdle(object sender, EventArgs e)
+		{
+			Application.Idle -= ChangePageLayoutOnIdle;
+			CopyVideoPlaceHolderIfNeeded(_templatePage);
+			var pageToChange = _pageSelection.CurrentSelection;
+			if (_templatePage.Book != null) // may be null in unit tests that are unconcerned with stylesheets
+				HtmlDom.AddStylesheetFromAnotherBook(_templatePage.Book.OurHtmlDom, pageToChange.Book.OurHtmlDom);
+			if (_changeWholeBook)
+				ChangeSimilarPagesInEntireBook(pageToChange, _templatePage);
+			else
+				pageToChange.Book.UpdatePageToTemplateAndUpdateLineage(pageToChange, _templatePage);
+			_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay);
 		}
 
 		private static void ChangeSimilarPagesInEntireBook(IPage currentSelectedPage, IPage newTemplatePage)
