@@ -182,11 +182,13 @@ namespace Bloom.CLI
 
 				BookServer bookServer = _projectContext.BookServer;
 
+				var metadata = BookMetaData.FromFolder(bookPath);
+				bool isTemplateBook = metadata.IsSuitableForMakingShells;
+
 				using (var folderForUnzipped = new TemporaryFolder("BloomCreateArtifacts_Unzipped"))
 				{
 					// Ensure directory exists, just in case.
 					Directory.CreateDirectory(Path.GetDirectoryName(zippedBloomDOutputPath));
-
 					// Make the bloomd
 					string unzippedPath = Publish.Android.BloomReaderFileMaker.CreateBloomDigitalBook(
 					zippedBloomDOutputPath,
@@ -195,7 +197,8 @@ namespace Bloom.CLI
 					System.Drawing.Color.Azure, // TODO: What should this be?
 					new Bloom.web.NullWebSocketProgress(),
 					folderForUnzipped,
-					creator);
+					creator,
+					isTemplateBook);
 
 					// Currently the zipping process does some things we actually need, like making the cover picture
 					// transparent (BL-7437). Eventually we plan to separate the preparation and zipping steps (BL-7445).
