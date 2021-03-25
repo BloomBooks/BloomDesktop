@@ -151,8 +151,7 @@ namespace BloomTests.TeamCollection
 					File.WriteAllText(bloomCollectionPath, "This is a further modified fake collection file");
 					var collectionWriteTime3 = new FileInfo(bloomCollectionPath).LastWriteTime;
 					// modify the remote version by copying the old one back.
-					if (SIL.PlatformUtilities.Platform.IsLinux)
-						Thread.Sleep(10);
+					Thread.Sleep(10);
 					RobustFile.Copy(anotherPlace, otherFilesPath, true);
 					var repoWriteTime3 = new FileInfo(otherFilesPath).LastWriteTime;
 					Assert.That(repoWriteTime3, Is.GreaterThan(collectionWriteTime3), "repo file written after local collection file [sanity check]");
@@ -166,9 +165,8 @@ namespace BloomTests.TeamCollection
 					Assert.That(new FileInfo(bloomCollectionPath).LastWriteTime, Is.GreaterThan(collectionWriteTime3), "bloomCollection LastWriteTime should be greater than collectionWriteTime3");
 					// We got the original back.
 					Assert.That(File.ReadAllText(bloomCollectionPath), Is.EqualTo("This is a fake collection file"));
-
-					if (SIL.PlatformUtilities.Platform.IsLinux)
-						Thread.Sleep(10);
+					
+					Thread.Sleep(10);
 					var allowedWords = Path.Combine(collectionFolder.FolderPath, "Allowed Words");
 					Directory.CreateDirectory(allowedWords);
 					File.WriteAllText(Path.Combine(allowedWords, "file1.txt"), "fake word list");
@@ -179,9 +177,8 @@ namespace BloomTests.TeamCollection
 					Assert.That(localWriteTime5, Is.GreaterThan(localWriteTime4), "localWriteTime5 should be greater than localWriteTime4");
 					var repoWriteTime5 = new FileInfo(otherFilesPath).LastWriteTime;
 					Assert.That(repoWriteTime5, Is.GreaterThan(repoWriteTime4), "repoWriteTime5 should be greater than repoWriteTime4");
-
-					if (SIL.PlatformUtilities.Platform.IsLinux)
-						Thread.Sleep(5);
+					
+					Thread.Sleep(5);
 					var sampleTexts = Path.Combine(collectionFolder.FolderPath, "Sample Texts");
 					Directory.CreateDirectory(sampleTexts);
 					File.WriteAllText(Path.Combine(allowedWords, "sample1.txt"), "fake sample list");
@@ -192,9 +189,8 @@ namespace BloomTests.TeamCollection
 					Assert.That(localWriteTime6, Is.GreaterThan(localWriteTime5), "localWriteTime6 should be greater than localWriteTime5");
 					var repoWriteTime6 = new FileInfo(otherFilesPath).LastWriteTime;
 					Assert.That(repoWriteTime6, Is.GreaterThan(repoWriteTime5), "repoWriteTime6 should be greater than repoWriteTime5");
-
-					if (SIL.PlatformUtilities.Platform.IsLinux)
-						Thread.Sleep(10);
+					
+					Thread.Sleep(10);
 					File.WriteAllText(Path.Combine(allowedWords, "sample1.txt"), "fake sample list");
 
 					// SUT7: local file write time modified, but not actually changed. Want the sync time to
@@ -316,8 +312,7 @@ namespace BloomTests.TeamCollection
 					tc.RepoCollectionFilesChanged += monitorFunction;
 
 					// sut (at least, triggers it and waits for it)
-					if (SIL.PlatformUtilities.Platform.IsLinux)
-						Thread.Sleep(10);
+					Thread.Sleep(10);
 					var otherRepoPath = FolderTeamCollection.GetRepoProjectFilesZipPath(repoFolder.FolderPath);
 					RobustFile.WriteAllText(otherRepoPath, @"This is changed"); // no, not a zip at all
 
