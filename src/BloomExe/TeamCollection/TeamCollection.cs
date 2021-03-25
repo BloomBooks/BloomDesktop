@@ -1,4 +1,4 @@
-using Bloom.Api;
+﻿using Bloom.Api;
 using Bloom.MiscUI;
 using Bloom.web;
 using L10NSharp;
@@ -73,6 +73,8 @@ namespace Bloom.TeamCollection
 		/// <param name="inLostAndFound">See PutBook</param>
 		/// <remarks>Usually PutBook should be used; this method is meant for use by TeamCollection methods.</remarks>
 		protected abstract void PutBookInRepo(string sourceBookFolderPath, BookStatus newStatus, bool inLostAndFound = false);
+
+		protected abstract void MoveRepoBookToLostAndFound(string bookName);
 
 		public bool OkToCheckIn(string bookName)
 		{
@@ -1125,6 +1127,22 @@ namespace Bloom.TeamCollection
 		}
 
 		/// <summary>
+		/// A list of strings known to occur in filenames Dropbox generates when it resolves conflicting changes.
+		/// Not a completely reliable way to identify them, especially with an incomplete list of localizations,
+		/// but it's the best we can do.
+		/// </summary>
+		private string[] _conflictMarkers = new[]
+		{
+			"Conflicted copy",
+			"Copie en conflit", // French
+			"Cópia em conflito", // Spanish
+			"конфликтующая копия", // Russian
+			"冲突副本", // zh-cn, mainland chinese
+			"衝突複本" // zh-tx, taiwan
+			// Probably many others
+		};
+
+		/// <summary>
 		/// Run this when Bloom starts up to get the repo and local directories as sync'd as possible.
 		/// Also run when first joining an existing collection to merge them. A few behaviors are
 		/// different in this case.
@@ -1233,6 +1251,19 @@ namespace Bloom.TeamCollection
 					{
 						// it's a book we're in the process of renaming, but hasn't yet been
 						// checked in using the new name. Leave it alone.
+						continue;
+					}
+
+					var nameLc = bookName.ToLowerInvariant();
+					if (_conflictMarkers.Any(m => nameLc.Contains(m.ToLowerInvariant())))
+					{
+						// Book looks like a DropBox conflict file. Typically results when two users checked
+						// in changes while both were offline.
+						ReportProgressAndLog(progress, "ResolvedDropboxConflict",
+						"Two members of your team had a book checked out at the same time, so the Team Collection got two different versions of it. Bloom has moved \"{0}\" to the Lost & Found.",
+						bookName,null, MessageKind.Error);
+						MoveRepoBookToLostAndFound(bookName);
+						hasProblems = true;
 						continue;
 					}
 					// brand new book! Get it.

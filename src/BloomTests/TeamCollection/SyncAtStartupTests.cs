@@ -14,6 +14,7 @@ namespace BloomTests.TeamCollection
 {
 	public class SyncAtStartupTests
 	{
+		private const string kConflictName = "My book (FRED SOMEONE's conflicted copy 2021-03-18)";
 		private TemporaryFolder _repoFolder;
 		protected TemporaryFolder _collectionFolder;
 		protected Mock<ITeamCollectionManager> _mockTcManager;
@@ -151,6 +152,14 @@ namespace BloomTests.TeamCollection
 			MakeBook(copiedEx, "This content is only local", false);
 			_collection.WriteLocalStatus(copiedEx, new BookStatus(), collectionId: Bloom.TeamCollection.TeamCollection.GenerateCollectionId());
 
+			// Simulate a book that appeared in DropBox when their software found a conflict.
+			// It should NOT be copied locally, but instead moved to Lost and Found, with a report.
+			MakeBook(kConflictName, "This content is only on the repo, apart from conflicting copies");
+			var conflictFolderPath = Path.Combine(_collectionFolder.FolderPath, kConflictName);
+			SIL.IO.RobustIO.DeleteDirectoryAndContents(conflictFolderPath);
+
+			_collection.WriteLocalStatus(copiedEx, new BookStatus(), collectionId: Bloom.TeamCollection.TeamCollection.GenerateCollectionId());
+
 			// Make a couple of folders that are legitimately present, but not books.
 			var allowedWords = Path.Combine(_collectionFolder.FolderPath, "Allowed Words");
 			Directory.CreateDirectory(allowedWords);
@@ -202,7 +211,7 @@ namespace BloomTests.TeamCollection
 		public virtual void SyncAtStartup_ProducesNoUnexpectedMessages()
 		{
 			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(0), "Unexpected number of progress warnings produced. We're no longer using warning.");
-			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(2), "Unexpected number of progress errors produced. Did you mean to add one?");
+			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(3), "Unexpected number of progress errors produced. Did you mean to add one?");
 			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(5), "Unexpected number of progress messages produced. Did you mean to add one?");
 		}
 
@@ -306,6 +315,25 @@ namespace BloomTests.TeamCollection
 		{
 			AssertLocalContent("Add me", "Fetch to local");
 			AssertProgress("Fetching a new book '{0}' from the Team Collection", "Add me");
+		}
+
+		[Test]
+		public void SyncAtStartup_DropBoxConflictCreatedRemotely_MovedToLostAndFound()
+		{
+			AssertLostAndFound(kConflictName);
+		}
+
+		[Test]
+		public void SyncAtStartup_DropBoxConflictCreatedRemotely_NotCopiedLocal()
+		{
+			Assert.That(!Directory.Exists(Path.Combine(_collectionFolder.FolderPath, kConflictName)));
+		}
+
+		[Test]
+		public void SyncAtStartup_DropBoxConflictCreatedRemotely_GeneratesMessage()
+		{
+			AssertProgress("Two members of your team had a book checked out at the same time, so the Team Collection got two different versions of it. Bloom has moved \"{0}\" to the Lost & Found.",
+				kConflictName,null, MessageAndMilestoneType.Error);
 		}
 
 		[Test]
@@ -465,7 +493,7 @@ namespace BloomTests.TeamCollection
 		public override void SyncAtStartup_ProducesNoUnexpectedMessages()
 		{
 			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(0), "Unexpected number of progress warnings produced. We're not using warning any more");
-			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(3), "Unexpected number of progress errors produced. Did you mean to add one?");
+			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(4), "Unexpected number of progress errors produced. Did you mean to add one?");
 			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(3), "Unexpected number of progress messages produced. Did you mean to add one?");
 		}
 
