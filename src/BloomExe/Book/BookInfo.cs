@@ -1149,19 +1149,21 @@ namespace Bloom.Book
 
 				if (Feature_Video) features.Add("video");
 				if (Feature_Motion) features.Add("motion");
-				if (Feature_Quiz) features.Add("quiz");
 				if (Feature_Comic) features.Add("comic");
 				if (Feature_Activity) features.Add("activity");
+				if (Feature_Quiz) features.Add("quiz");
+				if (Feature_Widget) features.Add("widget");
 
 				return features.ToArray();
 			}
 			set
 			{
 				Feature_Motion = value.Contains("motion");
-				Feature_Quiz = value.Contains("quiz");
 				Feature_Comic = value.Contains("comic");
-				Feature_Activity = value.Contains("activity");
 				Feature_Video = value.Contains("video");
+				// no need to set Feature_Activity, it's automatically derived
+				Feature_Quiz = value.Contains("quiz");
+				Feature_Widget = value.Contains("widget");
 
 				Feature_Blind_LangCodes = new HashSet<string>();
 				Feature_TalkingBook_LangCodes = new HashSet<string>();
@@ -1238,8 +1240,13 @@ namespace Bloom.Book
 		[JsonIgnore]
 		public IEnumerable<string> Feature_SignLanguage_LangCodes { get; set; }
 
+		// Note:
+		//   Originally, Feature_Activity was true if and only if the book was a widget.
+		//   Then, Bloom Library decided that quizzes should be renamed to activity instead.
+		//   So now, Bloom Desktop will make it so that both quizzes and widgets count as the more general "activity",
+		//   and quizzes and widgets will also get a more specific "quiz" or "widget" feature applied too.
 		[JsonIgnore]
-		public bool Feature_Activity { get; set; }
+		public bool Feature_Activity => Feature_Quiz || Feature_Widget;
 
 		[JsonIgnore]
 		public bool Feature_Blind { get { return Feature_Blind_LangCodes?.Any() == true; } }
@@ -1255,6 +1262,10 @@ namespace Bloom.Book
 		public bool Feature_Quiz { get; set; }
 		[JsonIgnore]
 		public bool Feature_Comic { get; set; }
+		[JsonIgnore]
+		public bool Feature_Widget { get; set; }
+		
+
 
 		[JsonProperty("page-number-style")]
 		public string PageNumberStyle { get; set; }

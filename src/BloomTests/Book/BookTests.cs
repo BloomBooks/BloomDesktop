@@ -3346,11 +3346,11 @@ namespace BloomTests.Book
 			book.UpdateMetadataFeatures(false, false, false, null);
 
 			Assert.AreEqual(true, book.BookInfo.MetaData.Feature_Quiz, "Quiz");
-			CollectionAssert.AreEquivalent(new string[] { "quiz" }, book.BookInfo.MetaData.Features, "Features");
+			CollectionAssert.AreEquivalent(new string[] { "activity", "quiz" }, book.BookInfo.MetaData.Features, "Features");
 		}
 
 		[Test]
-		public void UpdateMetadataFeatures_ActivityMissing_ActivityFeatureFalse()
+		public void UpdateMetadataFeatures_WidgetActivityMissing_ActivityAndWidgetFeaturesFalse()
 		{
 			var html = @"<html>
 					<body>
@@ -3362,16 +3362,17 @@ namespace BloomTests.Book
 </body></html>";
 
 			var book = CreateBookWithPhysicalFile(html);
-			book.BookInfo.MetaData.Feature_Activity = true; // spurious, see if it gets cleaned up
+			book.BookInfo.MetaData.Feature_Widget = true; // spurious, see if it gets cleaned up
 
 			book.UpdateMetadataFeatures(false, false, false, null);
 
 			Assert.AreEqual(false, book.BookInfo.MetaData.Feature_Activity, "Activity");
+			Assert.AreEqual(false, book.BookInfo.MetaData.Feature_Widget, "Widget");
 			CollectionAssert.AreEquivalent(new string[0], book.BookInfo.MetaData.Features, "Features");
 		}
 
 		[Test]
-		public void UpdateMetadataFeatures_ActivityAdded_ActivityFeatureTrue()
+		public void UpdateMetadataFeatures_WidgetActivityAdded_ActivityAndWidgetFeaturesTrue()
 		{
 			var html = @"<html>
 					<body>
@@ -3389,7 +3390,8 @@ namespace BloomTests.Book
 			book.UpdateMetadataFeatures(false, false, false, null);
 
 			Assert.AreEqual(true, book.BookInfo.MetaData.Feature_Activity, "Activity");
-			CollectionAssert.AreEquivalent(new string[] { "activity" }, book.BookInfo.MetaData.Features, "Features");
+			Assert.AreEqual(true, book.BookInfo.MetaData.Feature_Widget, "Widget");
+			CollectionAssert.AreEquivalent(new string[] { "activity", "widget" }, book.BookInfo.MetaData.Features, "Features");
 		}
 
 		[Test]
