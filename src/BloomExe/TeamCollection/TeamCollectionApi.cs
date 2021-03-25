@@ -24,12 +24,14 @@ namespace Bloom.TeamCollection
 		private string CurrentUser => TeamCollectionManager.CurrentUser;
 		private string _folderForCreateTC;
 		private BloomWebSocketServer _socketServer;
+		private CollectionSettings _settings;
 
 		public static TeamCollectionApi TheOneInstance { get; private set; }
 
 		// Called by autofac, which creates the one instance and registers it with the server.
 		public TeamCollectionApi(CollectionSettings settings, BookSelection bookSelection, TeamCollectionManager tcManager, BookServer bookServer, BloomWebSocketServer socketServer)
 		{
+			_settings = settings;
 			_tcManager = tcManager;
 			_tcManager.CurrentCollection?.SetupMonitoringBehavior();
 			_bookSelection = bookSelection;
@@ -360,7 +362,7 @@ namespace Bloom.TeamCollection
 					return;
 				}
 
-				_tcManager.ConnectToTeamCollection(_folderForCreateTC);
+				_tcManager.ConnectToTeamCollection(_folderForCreateTC, _settings.CollectionId);
 				BrowserDialog.CloseDialog();
 				_callbackToReopenCollection?.Invoke();
 

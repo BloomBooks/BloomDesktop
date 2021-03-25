@@ -204,6 +204,11 @@ namespace Bloom.Collection
 			}
 		}
 
+		// The initializer provides a default for collections (like in unit tests)
+		// that are not loaded from  file, but normally it is saved and restored
+		// in the settings file.
+		public string CollectionId = Guid.NewGuid().ToString();
+
 		private string DefaultLanguageForNamingLanguages()
 		{
 			return Language2.Iso639Code?? "en";
@@ -290,6 +295,7 @@ namespace Bloom.Collection
 
 			XElement xml = new XElement("Collection");
 			xml.Add(new XAttribute("version", "0.2"));
+			xml.Add(new XElement("CollectionId", CollectionId));
 			Language1.SaveToXElement(xml);
 			Language2.SaveToXElement(xml);
 			Language3.SaveToXElement(xml);
@@ -360,7 +366,10 @@ namespace Bloom.Collection
 				}
 
 				var xml = XElement.Parse(settingsContent);
-				
+				// The default if we don't find one is the arbitrary ID generated when we initialized
+				// the variable (at its declaration).
+				CollectionId = ReadString(xml, "CollectionId", CollectionId);
+
 				Language1.ReadFromXml(xml, true, "en");
 				Language2.ReadFromXml(xml, true,"self");
 				Language3.ReadFromXml(xml, true,  Language2.Iso639Code);

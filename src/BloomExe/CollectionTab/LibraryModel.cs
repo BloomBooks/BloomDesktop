@@ -153,9 +153,11 @@ namespace Bloom.CollectionTab
 			// TC functionality to go on working even with enterprise disabled.
 			_tcManager.CheckDisablingTeamCollections(_collectionSettings);
 			// Before loading up the collection, update with anything new from any TeamCollection we are linked to.
-			// This may not be the final place to do this. And we have plans for showing a progress dialog
-			// and also using it to show any errors. But it's the latest we can do it without needing to reconcile
-			// the changes it makes with collection data we've loaded.
+			// To do this the TC if any needs to know the CollectionId. (We're not having autofac give it the
+			// CollectionSettings because circular dependencies would result.)
+			// This may not be the final place to do this.  But it's the latest we can do it without needing to reconcile
+			// the changes synchronization makes with collection data we've loaded.
+			_tcManager.SetCollectionId(_collectionSettings.CollectionId);
 			_tcManager.CurrentCollection?.SynchronizeRepoAndLocal();
 			var editableCollection = _bookCollectionFactory(_pathToLibrary, BookCollection.CollectionType.TheOneEditableCollection);
 			_currentEditableCollectionSelection.SelectCollection(editableCollection);
