@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
+using Bloom.Registration;
 using L10NSharp;
 using SIL.Reporting;
 
@@ -110,6 +111,10 @@ namespace Bloom.TeamCollection
 			_webSocketServer = webSocketServer;
 			_bookStatusChangeEvent = bookStatusChangeEvent;
 			_localCollectionFolder = Path.GetDirectoryName(localCollectionPath);
+			// Allows CurrentUser to see registration data from an earlier version of Bloom.
+			// This is usually done as part of deciding whether to show the dialog, but deciding
+			// whether TC has a problem happens earlier than that in startup.
+			RegistrationDialog.UpgradeRegistrationIfNeeded();
 			bookRenamedEvent.Subscribe(pair =>
 			{
 				CurrentCollection?.HandleBookRename(Path.GetFileName(pair.Key), Path.GetFileName(pair.Value));
