@@ -80,17 +80,7 @@ namespace Bloom.Registration
 
 		public static bool ShouldWeShowRegistrationDialog()
 		{
-			// Allow registration information to be copied from version to version even if
-			// the user has set the FEEDBACK environment variable.  If the user does register, or
-			// use an email address in a feedback form, we want to preserve that information!
-			// See https://issues.bloomlibrary.org/youtrack/issue/BL-7956.
-			if (SIL.Windows.Forms.Registration.Registration.Default.NeedUpgrade)
-			{
-				//see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
-				SIL.Windows.Forms.Registration.Registration.Default.Upgrade();
-				SIL.Windows.Forms.Registration.Registration.Default.NeedUpgrade = false;
-				SIL.Windows.Forms.Registration.Registration.Default.Save();
-			}
+			UpgradeRegistrationIfNeeded();
 			//there is no point registering if we are are developer/tester
 			string feedbackSetting = Environment.GetEnvironmentVariable("FEEDBACK");
 			if (!string.IsNullOrEmpty(feedbackSetting) && feedbackSetting.ToLowerInvariant() != "yes" &&
@@ -111,6 +101,21 @@ namespace Bloom.Registration
 					   string.IsNullOrWhiteSpace(SIL.Windows.Forms.Registration.Registration.Default.Organization) ||
 					   string.IsNullOrWhiteSpace(SIL.Windows.Forms.Registration.Registration.Default.Email)
 				   );
+		}
+
+		public static void UpgradeRegistrationIfNeeded()
+		{
+			// Allow registration information to be copied from version to version even if
+			// the user has set the FEEDBACK environment variable.  If the user does register, or
+			// use an email address in a feedback form, we want to preserve that information!
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-7956.
+			if (SIL.Windows.Forms.Registration.Registration.Default.NeedUpgrade)
+			{
+				//see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
+				SIL.Windows.Forms.Registration.Registration.Default.Upgrade();
+				SIL.Windows.Forms.Registration.Registration.Default.NeedUpgrade = false;
+				SIL.Windows.Forms.Registration.Registration.Default.Save();
+			}
 		}
 
 		private void SaveAndSendIfPossible()

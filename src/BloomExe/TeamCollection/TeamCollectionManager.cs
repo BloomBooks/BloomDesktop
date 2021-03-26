@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
+using Bloom.Registration;
 using L10NSharp;
 using SIL.Reporting;
 

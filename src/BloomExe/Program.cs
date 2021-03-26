@@ -95,6 +95,12 @@ namespace Bloom
 			_uiThreadId = Thread.CurrentThread.ManagedThreadId;
 			Logger.Init();
 			CheckForCorruptUserConfig();
+			// We want to do this as early as possible, definitely before we create
+			// the TeamCollectionManager, which needs the registered user information.
+			// But since it's difficult to predict what else might want it, it's best
+			// to do it before we create the Autofac context objects that create all
+			// our singletons.
+			RegistrationDialog.UpgradeRegistrationIfNeeded();
 			// We use crowdin for localizing, and they require a directory per language setup.
 			LocalizationManager.UseLanguageCodeFolders = true;
 			// We want only good localizations in Bloom.
