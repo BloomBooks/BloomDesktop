@@ -298,22 +298,48 @@ namespace BloomTests.Book
 			// System under test
 			string[] result = metadata.Features;
 
-			string[] expectedResult = containsQuiz ? new string[] { "quiz" } : new string[0];			
-			Assert.AreEqual(expectedResult, result);
+			bool expectedResult = containsQuiz;
+			Assert.AreEqual(expectedResult, result.Contains("quiz"));
 		}
 
 		[TestCase(false)]
 		[TestCase(true)]
-		public void FeaturesGetter_Activity(bool containsActivity)
+		public void FeaturesGetter_Widget(bool containsWidget)
 		{
 			var metadata = new BookMetaData();
-			metadata.Feature_Activity = containsActivity;
+			metadata.Feature_Widget = containsWidget;
 
 			// System under test
 			string[] result = metadata.Features;
 
-			string[] expectedResult = containsActivity ? new string[] { "activity" } : new string[0];
-			Assert.AreEqual(expectedResult, result);
+			bool expectedResult = containsWidget;
+			Assert.AreEqual(expectedResult, result.Contains("widget"));
+		}
+
+		[TestCase(false, true)]
+		[TestCase(true, false)]
+		[TestCase(true, true)]
+		public void FeaturesGetter_IfQuizOrWidgetSet_ThenActivityIsTrue(bool containsQuiz, bool containsWidget)
+		{
+			var metadata = new BookMetaData();
+			metadata.Feature_Quiz = containsQuiz;
+			metadata.Feature_Widget = containsWidget;
+
+			// System under test
+			string[] result = metadata.Features;
+
+			Assert.IsTrue(result.Contains("activity"));
+		}
+
+		public void FeaturesGetter_NeitherQuizNorWidgetSet_ThenActivityIsFalse()
+		{
+			var metadata = new BookMetaData();
+			metadata.Feature_Quiz = metadata.Feature_Widget = false;
+
+			// System under test
+			string[] result = metadata.Features;
+
+			Assert.IsFalse(result.Contains("activity"));
 		}
 
 		[TestCase(false)]
@@ -347,7 +373,7 @@ namespace BloomTests.Book
 		[Test]
 		public void FeaturesSetter_OverallFeaturesOnly_ConvertBackGetsSameResult()
 		{
-			var input = new string[] { "blind", "talkingBook", "signLanguage", "quiz", "motion", "comic", "activity" };
+			var input = new string[] { "blind", "talkingBook", "signLanguage", "quiz", "motion", "comic", "activity", "widget" };
 			var metadata = new BookMetaData();
 
 			// System under test
@@ -365,6 +391,7 @@ namespace BloomTests.Book
 			Assert.AreEqual(true, metadata.Feature_Motion, "Motion");
 			Assert.AreEqual(true, metadata.Feature_Comic, "Comic");
 			Assert.AreEqual(true, metadata.Feature_Activity, "Activity");
+			Assert.AreEqual(true, metadata.Feature_Widget, "Widget");
 
 			string[] expectedResult = new string[] { "" };
 			CollectionAssert.AreEqual(expectedResult, metadata.Feature_Blind_LangCodes, "Blind Language Codes");

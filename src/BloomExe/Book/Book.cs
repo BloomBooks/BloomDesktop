@@ -3823,7 +3823,7 @@ namespace Bloom.Book
 			UpdateQuizFeature();
 			UpdateMotionFeature();
 			UpdateComicFeature();
-			UpdateActivityFeature();
+			UpdateWidgetFeature();
 		}
 
 		/// <summary>
@@ -3916,11 +3916,11 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Updates the feature in bookInfo.metadata to indicate whether the book contains activities
+		/// Updates the feature in bookInfo.metadata to indicate whether the book contains widget activities
 		/// </summary>
-		private void UpdateActivityFeature()
+		private void UpdateWidgetFeature()
 		{
-			BookInfo.MetaData.Feature_Activity = Storage.GetActivityFolderNamesReferencedInBook().Any();
+			BookInfo.MetaData.Feature_Widget = Storage.GetActivityFolderNamesReferencedInBook().Any();
 		}
 
 		/// <summary>
