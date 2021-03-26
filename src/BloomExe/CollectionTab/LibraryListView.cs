@@ -49,6 +49,7 @@ namespace Bloom.CollectionTab
 		private BookCollection _downloadedBookCollection;
 		private Image _dropdownImage;
 		private string _previousTargetSaveAs = null;
+		private TeamCollectionManager _tcManager;
 
 		enum ButtonManagementStage
 		{
@@ -66,10 +67,11 @@ namespace Bloom.CollectionTab
 
 		private bool _alreadyReportedErrorDuringImproveAndRefreshBookButtons;
 
-		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookStatusChangeEvent tcStatusChangeEvent)
+		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookStatusChangeEvent tcStatusChangeEvent, TeamCollectionManager tcManager)
 			//HistoryAndNotesDialog.Factory historyAndNotesDialogFactory)
 		{
 			_model = model;
+			_tcManager = tcManager;
 			_bookSelection = bookSelection;
 			localizationChangedEvent.Subscribe(unused=>LoadSourceCollectionButtons());
 			_tcBookStatusChangeEvent = tcStatusChangeEvent;
@@ -266,7 +268,9 @@ namespace Bloom.CollectionTab
 					// due to raising idle in the progress dialog for team collection sync.
 					// If so, don't want to do anything until the original call finishes.
 					_buttonManagementStage = ButtonManagementStage.Reentering;
-					LoadPrimaryCollectionButtons();
+					// during this initial load, we are probably still loading TC information;
+					// TC status will get loaded later.
+					LoadPrimaryCollectionButtons(false);
 					_buttonManagementStage = ButtonManagementStage.ImprovePrimary;
 					_primaryCollectionFlow.Refresh();
 					break;
@@ -319,7 +323,7 @@ namespace Bloom.CollectionTab
 		/// <summary>
 		/// the primary could as well be called "the one editable collection"... the one at the top
 		/// </summary>
-		private void LoadPrimaryCollectionButtons()
+		private void LoadPrimaryCollectionButtons(bool UpdateTcStatus = true)
 		{
 			_primaryCollectionReloadPending = false;
 			_primaryCollectionFlow.SuspendLayout();
@@ -336,6 +340,10 @@ namespace Bloom.CollectionTab
 			_primaryCollection = _model.GetBookCollections().First();
 			LoadOneCollection(_primaryCollection, _primaryCollectionFlow);
 			_primaryCollectionFlow.ResumeLayout();
+			if (UpdateTcStatus)
+			{
+				_tcManager?.CurrentCollection?.UpdateStatusOfAllCheckedOutBooks();
+			}
 		}
 
 		private void LoadSourceCollectionButtons()
