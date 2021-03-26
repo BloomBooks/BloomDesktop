@@ -84,13 +84,9 @@ namespace Bloom.Registration
 			// the user has set the FEEDBACK environment variable.  If the user does register, or
 			// use an email address in a feedback form, we want to preserve that information!
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-7956.
-			if (SIL.Windows.Forms.Registration.Registration.Default.NeedUpgrade)
-			{
-				//see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
-				SIL.Windows.Forms.Registration.Registration.Default.Upgrade();
-				SIL.Windows.Forms.Registration.Registration.Default.NeedUpgrade = false;
-				SIL.Windows.Forms.Registration.Registration.Default.Save();
-			}
+			// (This is probably redundant as we now call this function very early in startup.
+			// But it takes very little time to make sure.)
+			UpgradeRegistrationIfNeeded();
 			//there is no point registering if we are are developer/tester
 			string feedbackSetting = Environment.GetEnvironmentVariable("FEEDBACK");
 			if (!string.IsNullOrEmpty(feedbackSetting) && feedbackSetting.ToLowerInvariant() != "yes" &&
@@ -111,6 +107,17 @@ namespace Bloom.Registration
 					   string.IsNullOrWhiteSpace(SIL.Windows.Forms.Registration.Registration.Default.Organization) ||
 					   string.IsNullOrWhiteSpace(SIL.Windows.Forms.Registration.Registration.Default.Email)
 				   );
+		}
+
+		public static void UpgradeRegistrationIfNeeded()
+		{
+			if (SIL.Windows.Forms.Registration.Registration.Default.NeedUpgrade)
+			{
+				//see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
+				SIL.Windows.Forms.Registration.Registration.Default.Upgrade();
+				SIL.Windows.Forms.Registration.Registration.Default.NeedUpgrade = false;
+				SIL.Windows.Forms.Registration.Registration.Default.Save();
+			}
 		}
 
 		private void SaveAndSendIfPossible()
