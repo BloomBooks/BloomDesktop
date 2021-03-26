@@ -543,6 +543,7 @@ namespace Bloom.Edit
 					_browser1.Navigate(dom, domForCurrentPage, setAsCurrentPageForDebugging: true, source:BloomServer.SimulatedPageFileSource.Frame);
 				}
 				_model.CheckForBL2634("navigated to page");
+				SetModalState(false);	// ensure _pageListView is enabled (BL-9712).
 				_pageListView.Focus();
 				// So far, the most reliable way I've found to detect that the page is fully loaded and we can call
 				// initialize() is the ReadyStateChanged event (combined with checking that ReadyState is "complete").
