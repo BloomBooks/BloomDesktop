@@ -75,7 +75,7 @@ export const ProgressDialog: React.FunctionComponent = props => {
                             hasText={true}
                             enabled={true}
                             onClick={() => {
-                                BloomApi.post("dialog/close");
+                                BloomApi.post("common/closeReactDialog");
                             }}
                         >
                             Close

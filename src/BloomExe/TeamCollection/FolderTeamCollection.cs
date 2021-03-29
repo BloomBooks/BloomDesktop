@@ -75,16 +75,7 @@ namespace Bloom.TeamCollection
 
 			if (inLostAndFound)
 			{
-				var lfPath = Path.Combine(_repoFolderPath, "Lost and Found");
-				Directory.CreateDirectory(lfPath);
-				int counter = 0;
-				do
-				{
-					counter++;
-					// Don't use ChangeExtension here, bookFolderName may have arbitrary period
-					bookPath = 
-						Path.Combine(lfPath, bookFolderName + (counter == 1 ? "" : counter.ToString())) + ".bloom";
-				} while (RobustFile.Exists(bookPath));
+				bookPath = AvailableLostAndFoundPath(bookFolderName);
 			}
 			else
 			{
@@ -107,6 +98,36 @@ namespace Bloom.TeamCollection
 				_lastWriteBookTime = DateTime.Now;
 				_writeBookInProgress = false;
 			}
+		}
+
+		/// <summary>
+		/// Find a path in the Lost And Found folder for the specified book.
+		/// It must not have an existing file, and the name should be a similar
+		/// as possible to bookFolderName.bloom
+		/// </summary>
+		private string AvailableLostAndFoundPath(string bookFolderName)
+		{
+			string bookPath;
+			var lfPath = Path.Combine(_repoFolderPath, "Lost and Found");
+			Directory.CreateDirectory(lfPath);
+			int counter = 0;
+			do
+			{
+				counter++;
+				// Don't use ChangeExtension here, bookFolderName may have arbitrary period
+				bookPath =
+					Path.Combine(lfPath, bookFolderName + (counter == 1 ? "" : counter.ToString())) + ".bloom";
+			} while (RobustFile.Exists(bookPath));
+
+			return bookPath;
+		}
+
+
+		protected override void MoveRepoBookToLostAndFound(string bookName)
+		{
+			var source = GetPathToBookFileInRepo(bookName);
+			var dest = AvailableLostAndFoundPath(bookName);
+			RobustFile.Move(source, dest);
 		}
 
 		internal string GetPathToBookFileInRepo(string bookFolderName)
