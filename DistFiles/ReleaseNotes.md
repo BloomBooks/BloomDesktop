@@ -2,6 +2,8 @@
 
 ## Edit Tab
 
+Bloom now makes much better use of your computer's memory. You should be able to work much longer, with much larger books, before encountering any memory limitations.
+
 ⭐**Talking Book Segmentation**. You can now type a vertical bar (|) to break up the recording of long sentences. This also works for splitting audio that you import. After recording or splitting, you will need to remove these vertical bars so that they don't show when you publish the book.
 
 The Talking Book tool no longer treats "Myanmar signed little section" (U+104A) as a sentence-ending character.
