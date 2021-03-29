@@ -1566,78 +1566,60 @@ export class BubbleManager {
         ); // translate px to %
     }
 
-    // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
-    // to create the context menu
-    public deleteFloatingTOPBox(mouseX: number, mouseY: number) {
-        const clickedElement = document.elementFromPoint(mouseX, mouseY);
-        if (clickedElement) {
-            const textElement = clickedElement.closest(
-                kTextOverPictureSelector
-            );
-            this.deleteTOPBox(textElement);
+    // This used to be called from a right-click context menu, but now it only gets called
+    // from the comicTool where we verify that we have an active element BEFORE calling this
+    // method. That simplifies things here.
+    public deleteTOPBox(textOverPicDiv: HTMLElement) {
+        // Simple guard, just in case.
+        if (!textOverPicDiv || !textOverPicDiv.parentElement) {
+            return;
         }
+        const containerElement = textOverPicDiv.parentElement;
+        // Make sure comical is up-to-date.
+        if (
+            containerElement.getElementsByClassName(kComicalGeneratedClass)
+                .length > 0
+        ) {
+            Comical.update(containerElement);
+        }
+
+        Comical.deleteBubbleFromFamily(textOverPicDiv, containerElement);
+
+        // Update UI and make sure things get redrawn correctly.
+        this.setActiveElement(undefined);
+        BloomApi.postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
     }
 
-    public deleteTOPBox(textElement: Element | null) {
-        if (textElement && textElement.parentElement) {
-            const wasComicalModified =
-                textElement.parentElement.getElementsByClassName(
-                    kComicalGeneratedClass
-                ).length > 0;
-
-            const parent = textElement.parentElement;
-            parent.removeChild(textElement);
-
-            if (wasComicalModified) {
-                Comical.update(parent);
-            }
-
-            // Check if we're deleting the active bubble. If so, gotta clean up the state.
-            if (textElement == this.getActiveElement()) {
-                this.setActiveElement(undefined);
-            }
-        }
-    }
-
-    public duplicateTOPBox(textElement: Element) {
-        if (this.getActiveElement() !== textElement) {
-            // something strange going on!
-            //toastr.info("Failed to duplicate bubble.");
+    // We verify that 'textElement' is the active element before calling this method.
+    public duplicateTOPBox(textElement: HTMLElement) {
+        // simple guard
+        if (!textElement || !textElement.parentElement) {
             return;
         }
         const parent = textElement.parentElement;
-        if (parent) {
-            // Make sure comical is up-to-date before we clone things.
-            if (
-                parent.getElementsByClassName(kComicalGeneratedClass).length > 0
-            ) {
-                Comical.update(parent);
-            }
-            // Get the patriarch bubble of this comical family. Can only be undefined if no active element.
-            const patriarchBubble = this.getPatriarchBubbleOfActiveElement();
-            if (patriarchBubble) {
-                if (textElement !== patriarchBubble.content) {
-                    this.setActiveElement(patriarchBubble.content);
-                }
-                const bubbleSpecToDuplicate = this.getSelectedItemBubbleSpec();
-                if (!bubbleSpecToDuplicate) {
-                    // Oddness! Bail!
-                    // reset active element to what it was
-                    this.setActiveElement(textElement as HTMLElement);
-                    //toastr.info("Failed to duplicate bubble.");
-                    return;
-                }
-
-                this.duplicateBubbleFamily(
-                    patriarchBubble,
-                    bubbleSpecToDuplicate
-                );
-            }
-
-            BloomApi.postThatMightNavigate(
-                "common/saveChangesAndRethinkPageEvent"
-            );
+        // Make sure comical is up-to-date before we clone things.
+        if (parent.getElementsByClassName(kComicalGeneratedClass).length > 0) {
+            Comical.update(parent);
         }
+        // Get the patriarch bubble of this comical family. Can only be undefined if no active element.
+        const patriarchBubble = this.getPatriarchBubbleOfActiveElement();
+        if (patriarchBubble) {
+            if (textElement !== patriarchBubble.content) {
+                this.setActiveElement(patriarchBubble.content);
+            }
+            const bubbleSpecToDuplicate = this.getSelectedItemBubbleSpec();
+            if (!bubbleSpecToDuplicate) {
+                // Oddness! Bail!
+                // reset active element to what it was
+                this.setActiveElement(textElement as HTMLElement);
+                //toastr.info("Failed to duplicate bubble.");
+                return;
+            }
+
+            this.duplicateBubbleFamily(patriarchBubble, bubbleSpecToDuplicate);
+        }
+
+        BloomApi.postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
     }
 
     // Should duplicate all bubbles and their size and relative placement and color, etc.,
