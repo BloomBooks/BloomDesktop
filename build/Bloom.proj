@@ -58,8 +58,8 @@
 
   <Target Name="RestoreBuildTasks" DependsOnTargets="CheckPrerequisites">
     <Message Text="RestartBuild=$(RestartBuild)"/>
-    <Exec Command='$(NuGetCommand) install SIL.BuildTasks -excludeVersion -version 1.0.2 -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
-    <Exec Command='$(NuGetCommand) install SIL.BuildTasks.AWS -excludeVersion -version 1.0.2 -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
+    <Exec Command='$(NuGetCommand) install SIL.BuildTasks -excludeVersion -version 2.5.0 -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
+    <Exec Command='$(NuGetCommand) install SIL.BuildTasks.AWS -excludeVersion -version 2.5.0 -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="BuildInternal"
       Properties="Configuration=$(Configuration)" Condition="$(RestartBuild)" />
   </Target>
@@ -148,6 +148,9 @@
 			ExcludeCategory="$(excludedCategories)"
 			WorkingDirectory="$(RootDir)/output/$(Configuration)"
 			Force32Bit="$(useNUnit-x86)"
+			Process="Single"
+			Agents="1"
+			Workers="1"
 			Verbose="true"
 			OutputXmlFile="$(RootDir)/output/$(Configuration)/TestResults.xml"
 			TeamCity="false"/>
@@ -157,6 +160,9 @@
 			ExcludeCategory="SkipOnTeamCity,$(excludedCategories)"
 			WorkingDirectory="$(RootDir)/output/$(Configuration)"
 			Force32Bit="$(useNUnit-x86)"
+			Process="Single"
+			Agents="1"
+			Workers="1"
 			Verbose="true"
 			TeamCity="true"/>
 	</Target>
