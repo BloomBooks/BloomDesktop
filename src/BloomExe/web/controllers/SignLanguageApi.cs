@@ -10,6 +10,7 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
+using Bloom.Utils;
 using Gecko;
 using L10NSharp;
 using SIL.Code;
@@ -47,9 +48,9 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler("signLanguage/recordedVideo", HandleRecordedVideoRequest, true);
-			apiHandler.RegisterEndpointHandler("signLanguage/deleteVideo", HandleDeleteVideoRequest, true);
-			apiHandler.RegisterEndpointHandler("signLanguage/importVideo", HandleImportVideoRequest, true);
+			apiHandler.RegisterEndpointHandler("signLanguage/recordedVideo", HandleRecordedVideoRequest, true).Measureable("Process recorded video");
+			apiHandler.RegisterEndpointHandler("signLanguage/deleteVideo", HandleDeleteVideoRequest, true).Measureable("Delete video"); ;
+			apiHandler.RegisterEndpointHandler("signLanguage/importVideo", HandleImportVideoRequest, true); // has dialog, so measure internally after the dialog.
 			apiHandler.RegisterEndpointHandler("signLanguage/getStats", HandleVideoStatisticsRequest, true);
 		}
 
@@ -195,11 +196,16 @@ namespace Bloom.web.controllers
 			}));
 			if (!string.IsNullOrEmpty(path))
 			{
-				_importedVideoIntoBloom = true;
-				var newVideoPath = Path.Combine(BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath), GetNewVideoFileName()); // Use a new name to defeat caching.
-				RobustFile.Copy(path, newVideoPath);
-				var relativePath = BookStorage.GetVideoFolderName + Path.GetFileName(newVideoPath);
-				request.ReplyWithText(UrlPathString.CreateFromUnencodedString(relativePath).UrlEncodedForHttpPath);
+				using (PerformanceMeasurement.Global.Measure("Import Video"))
+				{
+					_importedVideoIntoBloom = true;
+					var newVideoPath =
+						Path.Combine(BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath),
+							GetNewVideoFileName()); // Use a new name to defeat caching.
+					RobustFile.Copy(path, newVideoPath);
+					var relativePath = BookStorage.GetVideoFolderName + Path.GetFileName(newVideoPath);
+					request.ReplyWithText(UrlPathString.CreateFromUnencodedString(relativePath).UrlEncodedForHttpPath);
+				}
 			}
 			else
 			{

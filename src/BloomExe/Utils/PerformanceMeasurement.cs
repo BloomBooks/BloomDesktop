@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Api;
 using BloomTemp;
+using Newtonsoft.Json;
 using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom.Utils
 {
@@ -17,12 +20,13 @@ namespace Bloom.Utils
 		private readonly BloomWebSocketServer _webSocketServer;
 		public static PerformanceMeasurement Global;
 
-		private string _file;
+		private string _csvFilePath;
 		private StreamWriter _stream;
 		private const string kWebsocketContext = "performance";
 		public bool CurrentlyMeasuring { get; private set; }
-		private Measurement _topMeasurement;
+		private Measurement _measurement;
 		private Measurement _previousMeasurement;
+		private List<Measurement> _measurements = new List<Measurement>();
 
 		// The only instance of this is created by autofac
 		public PerformanceMeasurement(BloomWebSocketServer webSocketServer)
@@ -32,17 +36,31 @@ namespace Bloom.Utils
 		}
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler("performance/start", HandleStartMeasuring, false);
+			apiHandler.RegisterEndpointHandler("performance/showCsvFile", (request) =>
+			{
+				Process.Start(_csvFilePath);
+				request.PostSucceeded();
+			}, false);
+			apiHandler.RegisterEndpointHandler("performance/applicationInfo", (request) =>
+			{
+				request.ReplyWithText($"Bloom {Shell.GetShortVersionInfo()} {ApplicationUpdateSupport.ChannelName}");
+				
+			}, false);
+			apiHandler.RegisterEndpointHandler("performance/allMeasurements", (request) =>
+			{
+				List<object> l = new List<object>();
+				foreach (var measurement in _measurements)
+				{
+					l.Add(measurement.GetSummary());
+				}
+				request.ReplyWithJson(l.ToArray());
+				
+			}, false);
 		}
 
-		// If nothing calls this, then the rest just doesn't do anything.
-		// If it is called a second time, it will start a new file.
-		public void HandleStartMeasuring(ApiRequest request)
+		public void StartMeasuring()
 		{
 			CurrentlyMeasuring = true;
-
-			var columnNames = "Action,Details,Seconds,Private Bytes KB, Δ Private Bytes KB (since last measured)";
-			_webSocketServer.SendString(kWebsocketContext, "columns", columnNames);
 
 			if (_stream != null)
 			{
@@ -51,8 +69,8 @@ namespace Bloom.Utils
 				// no, leave it and its contents around: _folder.Dispose();
 			}
 
-			_file = TempFileUtils.GetTempFilepathWithExtension(".csv");
-			_stream = RobustFile.CreateText(_file);
+			_csvFilePath = TempFileUtils.GetTempFilepathWithExtension(".csv");
+			_stream = RobustFile.CreateText(_csvFilePath);
 			_stream.AutoFlush = true;
 
 			try
@@ -63,16 +81,13 @@ namespace Bloom.Utils
 			{
 				// swallow. This happens when we call from firefox, while debugging.
 			}
-
-			_stream.WriteLine(columnNames);
-			Process.Start(_file); // open in some editor
-
-			request.PostSucceeded();
+			using (Measure("Initial Memory Reading"))
+			{
+			}
 		}
 
 		/// <summary>
-		/// Called (by the winforms dialog closing event) when the user closes the dialog. If it is never
-		/// called, that's fine.
+		/// If this is never called, that's fine.
 		/// </summary>
 		public void StopMeasuring()
 		{
@@ -84,47 +99,49 @@ namespace Bloom.Utils
 				// no, leave it and its contents around: _folder.Dispose();
 				_stream = null;
 			}
-
 		}
 
 		/// <summary>
-		/// This is the main public method, called anywhere in the c# code that we want to measure something
+		/// This is the main public method, called anywhere in the c# code that we want to measure something.
+		/// What we're measuring is the memory used and the time it took from when this is called until
+		/// the return value is disposed.
 		/// </summary>
 		/// <returns>an object that should be disposed of to end the measurement</returns>
-		public IDisposable Measure(string action, string details ="")
+		public IDisposable MeasureMaybe(Boolean doMeasure, string actionLabel, string actionDetails = "")
+		{
+			if (doMeasure) return Measure(actionLabel, actionDetails);
+			else return new Lifespan(null,null);
+		}
+		public IDisposable Measure(string actionLabel, string actionDetails = "")
 		{
 			if (!CurrentlyMeasuring)
 				return null;
+
+			// skip nested measurements
+			if (_measurement !=null)
+			{
+				// there are too many of these to keep bugging us
+
+				//NonFatalProblem.Report(ModalIf.None, PassiveIf.All,$"Performance measurement cannot handle nested actions ('{action}' inside of '{_measurement._action}')");
+
+				return new Lifespan(null,null);
+			}
+
 			var previousSize = _previousMeasurement?.LastKnownSize ?? 0L;
-			var m = new Measurement(action, details, previousSize);
+			var m = new Measurement(actionLabel, actionDetails, previousSize);
 			_previousMeasurement = m;
-			if (_topMeasurement == null)
-			{
-				_topMeasurement = m;
-				// for a child, don't call us back at the end. The parent will get the child results when *it* ends.
-				return new Lifespan(m, TopMeasurementEnded);
-			}
-			else
-			{
-				_topMeasurement.child = m;
-				return new Lifespan(m, unused => { });
-			}
+			_measurement = m;
+			return new Lifespan(m, MeasurementEnded);
 		}
 
 		// This is only called if there is a Lifespan generated (and it gets disposed) and that will only happen
 		// if Measure() decided that we are in measuring mode.
-		private void TopMeasurementEnded(Measurement measure)
+		private void MeasurementEnded(Measurement measure)
 		{
-			var csv = measure.GetCsv();
-			if (measure.child !=null)
-			{
-				csv += "," + measure.child.GetCsv();
-			}
-			_stream.WriteLine(csv);
-			_webSocketServer.SendString(kWebsocketContext, "event", csv);
-			//Debug.WriteLine(step.GetCsv());
-
-			_topMeasurement = null;
+			_stream.WriteLine(measure.GetCsv());
+			_webSocketServer.SendString(kWebsocketContext, "event", JsonConvert.SerializeObject(measure.GetSummary()));
+			_measurement = null;
+			_measurements.Add(measure);
 		}
 
 		public void Dispose()
@@ -150,28 +167,26 @@ namespace Bloom.Utils
 		}
 		public void Dispose()
 		{
-			_measurement.Finish();
-			_callback(_measurement);
+			_measurement?.Finish();
+			_callback?.Invoke(_measurement);
 		}
 	}
 
 	public class Measurement
 	{
-		private readonly string _action;
-		private readonly string _details;
+		public readonly string _actionLabel;
+		private readonly string _actionDetails;
 		private readonly PerfPoint _start;
 		private PerfPoint _end;
-		// a measurement of an activity inside of the lifetime of this activity
-		public Measurement child;
-		private readonly long _previousSizeKb;
+		private readonly long _previousPrivateBytesKb;
 
 		public long LastKnownSize => _end?.privateBytesKb ?? _start?.privateBytesKb ?? 0L;
 
-		public Measurement(string action, string details, long previousSizeKb)
+		public Measurement(string actionLabel, string actionDetails, long previousPrivateBytesKb)
 		{
-			_action = action;
-			_details = details;
-			_previousSizeKb = previousSizeKb;
+			_actionLabel = actionLabel;
+			_actionDetails = actionDetails;
+			_previousPrivateBytesKb = previousPrivateBytesKb;
 			_start = new PerfPoint();
 		}
 
@@ -179,18 +194,39 @@ namespace Bloom.Utils
 		{
 			_end = new PerfPoint();
 		}
-	
+
+		public object GetSummary()
+		{
+			return new
+			{
+				action = _actionLabel,
+				details = _actionDetails,
+				privateBytes = _end.privateBytesKb,
+				duration = Duration
+			};
+		}
+
+		public double Duration
+		{
+			get
+			{
+				TimeSpan diff = _end.when - _start.when;
+				
+				return Math.Round(diff.TotalMilliseconds / 1000, 2);
+			}
+		}
+
 		public string GetCsv()
 		{
 			TimeSpan diff = _end.when - _start.when;
 			var time = diff.ToString(@"ss\.f");
-			return $"{_action},{_details},{time},{_end.privateBytesKb},{(_end.privateBytesKb - _previousSizeKb)}";
+			return $"{_actionLabel},{_actionDetails},{time},{_end.privateBytesKb},{(_end.privateBytesKb - _previousPrivateBytesKb)}";
 		}
 
 		public override string ToString()
 		{
 			// For a ToString() summary, the delta/previousSizeKb is not important.
-			return $"Measurement: details=\"{_details}\"; start={_start.privateBytesKb}KB ({_start.when}); end={_end?.privateBytesKb}KB ({_end?.when})";
+			return $"Measurement: details=\"{_actionDetails}\"; start={_start.privateBytesKb}KB ({_start.when}); end={_end?.privateBytesKb}KB ({_end?.when})";
 		}
 
 		public class PerfPoint

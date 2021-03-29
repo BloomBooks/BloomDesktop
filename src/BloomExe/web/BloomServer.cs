@@ -582,6 +582,35 @@ namespace Bloom.Api
 			return ProcessAnyFileContent(info, localPath);
 		}
 
+		// This is becoming refactor-soup, hence the not so useful name.
+		private string ProcessPath(string localPath, string modPath)
+		{
+			if (localPath.Contains("favicon.ico")) // browsers ask for this
+				return BloomFileLocator.GetBrowserFile(false, "images", "favicon.ico");
+
+			// Is this request the full path to an image file? For most images, we just have the filename. However, in at
+			// least one use case, the image we want isn't in the folder of the PDF we're looking at. That case is when
+			// we are looking at a "folio", a book that gathers up other books into one big PDF. In that case, we want
+			// to find the image in the correct book folder.  See AddChildBookContentsToFolio();
+			var possibleFullImagePath = localPath;
+			// "OriginalImages/" at the beginning means we're generating a pdf and want full images,
+			// but it has nothing to do with the actual file location.
+			string OriginalImageMarkerWithSuffix = OriginalImageMarker + "/";
+			if (localPath.StartsWith(OriginalImageMarkerWithSuffix))
+				possibleFullImagePath = localPath.Substring(OriginalImageMarkerWithSuffix.Length);
+			if (RobustFile.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
+			{
+				return possibleFullImagePath;
+			}
+			else
+			{
+				// Surprisingly, this method will return localPath unmodified if it is a fully rooted path
+				// (like C:\... or \\localhost\C$\...) to a file that exists. So this execution path
+				// can return contents of any file that exists if the URL gives its full path...even ones that
+				// are generated temp files most certainly NOT distributed with the application.
+				return FileLocationUtilities.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot, modPath);
+			}
+		}
 		private bool ProcessAnyFileContent(IRequestInfo info, string localPath)
 		{
 			string modPath = localPath;
@@ -592,31 +621,7 @@ namespace Bloom.Api
 				modPath = tempPath;
 			try
 			{
-				if (localPath.Contains("favicon.ico")) //need something to pacify Chrome
-					path = FileLocationUtilities.GetFileDistributedWithApplication("BloomPack.ico");
-
-				// Is this request the full path to an image file? For most images, we just have the filename. However, in at
-				// least one use case, the image we want isn't in the folder of the PDF we're looking at. That case is when
-				// we are looking at a "folio", a book that gathers up other books into one big PDF. In that case, we want
-				// to find the image in the correct book folder.  See AddChildBookContentsToFolio();
-				var possibleFullImagePath = localPath;
-				// "OriginalImages/" at the beginning means we're generating a pdf and want full images,
-				// but it has nothing to do with the actual file location.
-				string OriginalImageMarkerWithSuffix = OriginalImageMarker + "/";
-				if (localPath.StartsWith(OriginalImageMarkerWithSuffix))
-					possibleFullImagePath = localPath.Substring(OriginalImageMarkerWithSuffix.Length);
-				if (RobustFile.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
-				{
-					path = possibleFullImagePath;
-				}
-				else
-				{
-					// Surprisingly, this method will return localPath unmodified if it is a fully rooted path
-					// (like C:\... or \\localhost\C$\...) to a file that exists. So this execution path
-					// can return contents of any file that exists if the URL gives its full path...even ones that
-					// are generated temp files most certainly NOT distributed with the application.
-					path = FileLocationUtilities.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot, modPath);
-				}
+				path = ProcessPath(localPath, modPath);
 			}
 			catch (ApplicationException e)
 			{

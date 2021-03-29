@@ -538,18 +538,30 @@ namespace Bloom.web.controllers
 					{
 						try
 						{
-							var bounds = controlForScreenshotting.Bounds;
-							var screenshot = new Bitmap(bounds.Width, bounds.Height);
-							using (var g = Graphics.FromImage(screenshot))
+							// I got tired of landing here in the debugger so I'm avoiding the exception
+							if (controlForScreenshotting.Bounds.Width == 0)
 							{
-								if (controlForScreenshotting.Parent == null)
-									g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, bounds.Size);	// bounds already in screen coords
-								else
-									g.CopyFromScreen(controlForScreenshotting.PointToScreen(new Point(bounds.Left, bounds.Top)), Point.Empty, bounds.Size);
+								ResetScreenshotFile();
 							}
+							else
+							{
+								var bounds = controlForScreenshotting.Bounds;
+								var screenshot = new Bitmap(bounds.Width, bounds.Height);
+								using (var g = Graphics.FromImage(screenshot))
+								{
+									if (controlForScreenshotting.Parent == null)
+										g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0,
+											bounds.Size); // bounds already in screen coords
+									else
+										g.CopyFromScreen(
+											controlForScreenshotting.PointToScreen(new Point(bounds.Left, bounds.Top)),
+											Point.Empty, bounds.Size);
+								}
 
-							_reportInfo.ScreenshotTempFile = TempFile.WithFilename(ScreenshotName);
-							RobustImageIO.SaveImage(screenshot, _reportInfo.ScreenshotTempFile.Path, ImageFormat.Png);
+								_reportInfo.ScreenshotTempFile = TempFile.WithFilename(ScreenshotName);
+								RobustImageIO.SaveImage(screenshot, _reportInfo.ScreenshotTempFile.Path,
+									ImageFormat.Png);
+							}
 						}
 						catch (Exception e)
 						{

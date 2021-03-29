@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.TeamCollection;
+using Bloom.Utils;
 
 namespace Bloom
 {
@@ -38,9 +39,12 @@ namespace Bloom
 		public void Raise(TPayload descriptor)
 		{
 			SIL.Reporting.Logger.WriteMinorEvent("Event: " + _nameForLogging);
-			foreach (Action<TPayload> subscriber in _subscribers)
+			using (PerformanceMeasurement.Global.MeasureMaybe(_loggingLevel == LoggingLevel.Major, _nameForLogging))
 			{
-				((Action<TPayload>)subscriber)(descriptor);
+				foreach (Action<TPayload> subscriber in _subscribers)
+				{
+					((Action<TPayload>) subscriber)(descriptor);
+				}
 			}
 		}
 		public bool HasSubscribers

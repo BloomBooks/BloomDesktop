@@ -33,8 +33,8 @@ namespace Bloom.web.controllers
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			// Both of these display UI, expect to require UI thread.
-			apiHandler.RegisterEndpointHandler("addPage", HandleAddPage, true);
-			apiHandler.RegisterEndpointHandler("changeLayout", HandleChangeLayout, true);
+			apiHandler.RegisterEndpointHandler("addPage", HandleAddPage, true).Measureable("Add Page");
+			apiHandler.RegisterEndpointHandler("changeLayout", HandleChangeLayout, true).Measureable("Change Layout"); ;
 		}
 
 		private void HandleAddPage(ApiRequest request)

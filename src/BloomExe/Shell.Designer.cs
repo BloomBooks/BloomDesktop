@@ -35,8 +35,10 @@
 			this._size800x600 = new System.Windows.Forms.ToolStripMenuItem();
 			this._size1024x600 = new System.Windows.Forms.ToolStripMenuItem();
 			this._size1024x768 = new System.Windows.Forms.ToolStripMenuItem();
-			this.startMeasuringPerformanceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+			this.alwaysMeasureToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.startMeasuringPerformanceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.showPerformancePageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._contextMenu.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -49,54 +51,70 @@
             this._size1024x600,
             this._size1024x768,
             this.toolStripSeparator1,
-            this.startMeasuringPerformanceToolStripMenuItem});
+            this.alwaysMeasureToolStripMenuItem,
+            this.startMeasuringPerformanceToolStripMenuItem,
+            this.showPerformancePageToolStripMenuItem});
 			this._contextMenu.Name = "_contextMenu";
-			this._contextMenu.Size = new System.Drawing.Size(347, 148);
+			this._contextMenu.Size = new System.Drawing.Size(352, 192);
 			// 
 			// _size1024x586
 			// 
 			this._size1024x586.Name = "_size1024x586";
-			this._size1024x586.Size = new System.Drawing.Size(346, 22);
+			this._size1024x586.Size = new System.Drawing.Size(351, 22);
 			this._size1024x586.Text = "1024 x 586 Low-end netbook with windows Task bar";
 			this._size1024x586.Click += new System.EventHandler(this.On1024x586);
 			// 
 			// toolStripMenuItem1
 			// 
 			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-			this.toolStripMenuItem1.Size = new System.Drawing.Size(343, 6);
+			this.toolStripMenuItem1.Size = new System.Drawing.Size(348, 6);
 			// 
 			// _size800x600
 			// 
 			this._size800x600.Name = "_size800x600";
-			this._size800x600.Size = new System.Drawing.Size(346, 22);
+			this._size800x600.Size = new System.Drawing.Size(351, 22);
 			this._size800x600.Text = "800 x 600";
 			this._size800x600.Click += new System.EventHandler(this.On800x600Click);
 			// 
 			// _size1024x600
 			// 
 			this._size1024x600.Name = "_size1024x600";
-			this._size1024x600.Size = new System.Drawing.Size(346, 22);
+			this._size1024x600.Size = new System.Drawing.Size(351, 22);
 			this._size1024x600.Text = "1024 x 600";
 			this._size1024x600.Click += new System.EventHandler(this.On1024x600Click);
 			// 
 			// _size1024x768
 			// 
 			this._size1024x768.Name = "_size1024x768";
-			this._size1024x768.Size = new System.Drawing.Size(346, 22);
+			this._size1024x768.Size = new System.Drawing.Size(351, 22);
 			this._size1024x768.Text = "1024 x 768";
 			this._size1024x768.Click += new System.EventHandler(this.On1024x768);
-			// 
-			// startMeasuringPerformanceToolStripMenuItem
-			// 
-			this.startMeasuringPerformanceToolStripMenuItem.Name = "startMeasuringPerformanceToolStripMenuItem";
-			this.startMeasuringPerformanceToolStripMenuItem.Size = new System.Drawing.Size(346, 22);
-			this.startMeasuringPerformanceToolStripMenuItem.Text = "Start Measuring Performance";
-			this.startMeasuringPerformanceToolStripMenuItem.Click += new System.EventHandler(this.startMeasuringPerformanceToolStripMenuItem_Click);
 			// 
 			// toolStripSeparator1
 			// 
 			this.toolStripSeparator1.Name = "toolStripSeparator1";
-			this.toolStripSeparator1.Size = new System.Drawing.Size(343, 6);
+			this.toolStripSeparator1.Size = new System.Drawing.Size(348, 6);
+			// 
+			// alwaysMeasureToolStripMenuItem
+			// 
+			this.alwaysMeasureToolStripMenuItem.Name = "alwaysMeasureToolStripMenuItem";
+			this.alwaysMeasureToolStripMenuItem.Size = new System.Drawing.Size(351, 22);
+			this.alwaysMeasureToolStripMenuItem.Text = "Always Measure Performance";
+			this.alwaysMeasureToolStripMenuItem.Click += new System.EventHandler(this.alwaysMeasureToolStripMenuItem_Click);
+			// 
+			// startMeasuringPerformanceToolStripMenuItem
+			// 
+			this.startMeasuringPerformanceToolStripMenuItem.Name = "startMeasuringPerformanceToolStripMenuItem";
+			this.startMeasuringPerformanceToolStripMenuItem.Size = new System.Drawing.Size(351, 22);
+			this.startMeasuringPerformanceToolStripMenuItem.Text = "Start Measuring Performance";
+			this.startMeasuringPerformanceToolStripMenuItem.Click += new System.EventHandler(this.startMeasuringPerformanceToolStripMenuItem_Click);
+			// 
+			// showPerformancePageToolStripMenuItem
+			// 
+			this.showPerformancePageToolStripMenuItem.Name = "showPerformancePageToolStripMenuItem";
+			this.showPerformancePageToolStripMenuItem.Size = new System.Drawing.Size(351, 22);
+			this.showPerformancePageToolStripMenuItem.Text = "Show Performance Page";
+			this.showPerformancePageToolStripMenuItem.Click += new System.EventHandler(this.showPerformancePageToolStripMenuItem_Click);
 			// 
 			// Shell
 			// 
@@ -130,5 +148,7 @@
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
 		private System.Windows.Forms.ToolStripMenuItem startMeasuringPerformanceToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem showPerformancePageToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem alwaysMeasureToolStripMenuItem;
 	}
 }

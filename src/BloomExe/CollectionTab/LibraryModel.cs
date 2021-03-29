@@ -12,6 +12,7 @@ using Bloom.TeamCollection;
 //using Bloom.SendReceive;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
+using Bloom.Utils;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.IO;
@@ -157,7 +158,13 @@ namespace Bloom.CollectionTab
 			// and also using it to show any errors. But it's the latest we can do it without needing to reconcile
 			// the changes it makes with collection data we've loaded.
 			_tcManager.CurrentCollection?.SynchronizeRepoAndLocal();
-			var editableCollection = _bookCollectionFactory(_pathToLibrary, BookCollection.CollectionType.TheOneEditableCollection);
+			BookCollection editableCollection;
+			using (PerformanceMeasurement.Global.Measure("Creating Primary Collection"))
+			{
+				editableCollection = _bookCollectionFactory(_pathToLibrary,
+					BookCollection.CollectionType.TheOneEditableCollection);
+			}
+
 			_currentEditableCollectionSelection.SelectCollection(editableCollection);
 			yield return editableCollection;
 
