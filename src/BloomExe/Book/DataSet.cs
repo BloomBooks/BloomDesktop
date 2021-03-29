@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Web;
 using SIL.Extensions;
 using SIL.Text;
 
@@ -34,16 +35,28 @@ namespace Bloom.Book
 		/// </summary>
 		public Dictionary<string, ISet<KeyValuePair<string, string>>> XmatterPageDataAttributeSets { get; }
 
-		public void UpdateGenericLanguageString(string key, string value, bool isCollectionValue)
+		// encodedValue should generally be the XML encoded value.
+		public void UpdateGenericLanguageStringFromXmlEncoded(string key, string encodedValue, bool isCollectionValue)
 		{
 			var text = new MultiTextBase();
-			text.SetAlternative("*", value);
+			text.SetAlternative("*", encodedValue);
 			if(TextVariables.ContainsKey(key))
 			{
 				TextVariables.Remove(key);
 			}
+			//DataSetElementValues are generally instantiated with encoded text
 			TextVariables.Add(key, new DataSetElementValue(text, isCollectionValue));
 		}
+
+		/// <summary>
+		/// Similar to UpdateGenericLanguageStringFromXmlEncoded,
+		/// but call this function when the value you want to pass in has not been encoded yet.
+		/// </summary>
+		/// <param name="key">The key to update</param>
+		/// <param name="unencodedValue">The raw text. It should not have HTML/XML encoding applied to it. This function will apply it for you.</param>
+		/// <param name="isCollectionValue"></param>
+		public void UpdateGenericLanguageStringFromUnencoded(string key, string unencodedValue, bool isCollectionValue)
+			=> UpdateGenericLanguageStringFromXmlEncoded(key, HttpUtility.HtmlEncode(unencodedValue), isCollectionValue);
 
 		public void UpdateLanguageString(string key,  string value, string writingSystemId,bool isCollectionValue)
 		{

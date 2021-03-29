@@ -165,7 +165,7 @@ namespace Bloom.Book
 					int nextSeq = 1;
 					if (Int32.TryParse(curSeqStr, out curSeq))
 						nextSeq = curSeq + 1;
-					Set("styleNumberSequence", nextSeq.ToString(CultureInfo.InvariantCulture),
+					SetFromUnencoded("styleNumberSequence", nextSeq.ToString(CultureInfo.InvariantCulture),
 						false);
 					return nextSeq;
 				}
@@ -210,12 +210,12 @@ namespace Bloom.Book
 			var itemsToDelete = new HashSet<Tuple<string, string>>();
 			DataSet incomingData = SynchronizeDataItemsFromContentsOfElement(elementToReadFrom, itemsToDelete);
 			UpdateToolRelatedDataFromBookInfo(info, incomingData, itemsToDelete);
-			incomingData.UpdateGenericLanguageString("contentLanguage1", Language1.Iso639Code, false);
-			incomingData.UpdateGenericLanguageString("contentLanguage2",
+			incomingData.UpdateGenericLanguageStringFromUnencoded("contentLanguage1", Language1.Iso639Code, false);
+			incomingData.UpdateGenericLanguageStringFromXmlEncoded("contentLanguage2",
 											 String.IsNullOrEmpty(MultilingualContentLanguage2)
 												 ? null
 												 : MultilingualContentLanguage2, false);
-			incomingData.UpdateGenericLanguageString("contentLanguage3",
+			incomingData.UpdateGenericLanguageStringFromXmlEncoded("contentLanguage3",
 											 String.IsNullOrEmpty(MultilingualContentLanguage3)
 												 ? null
 												 : MultilingualContentLanguage3, false);
@@ -248,7 +248,7 @@ namespace Bloom.Book
 
 			if (!bookClass.Contains("leveled-reader") && !bookClass.Contains("decodable-reader"))
 			{
-				incomingData.UpdateGenericLanguageString("levelOrStageNumber", "", false);
+				incomingData.UpdateGenericLanguageStringFromXmlEncoded("levelOrStageNumber", "", false);
 				itemsToDelete.Add(new Tuple<string, string>("levelOrStageNumber", "*"));
 				return;
 			}
@@ -257,7 +257,7 @@ namespace Bloom.Book
 			if (levelTool != null && bookClass.Contains("leveled-reader"))
 			{
 				var level = levelTool.State;
-				incomingData.UpdateGenericLanguageString("levelOrStageNumber", level, false);
+				incomingData.UpdateGenericLanguageStringFromUnencoded("levelOrStageNumber", level, false);
 				itemsToDelete.RemoveWhere(item => item.Item1 == "levelOrStageNumber");
 			}
 
@@ -267,7 +267,7 @@ namespace Bloom.Book
 				var stageString = decodableTool.State.Split(';').FirstOrDefault()?.Split(':').Skip(1).FirstOrDefault();
 				if (!string.IsNullOrEmpty(stageString))
 				{
-					incomingData.UpdateGenericLanguageString("levelOrStageNumber", stageString, false);
+					incomingData.UpdateGenericLanguageStringFromUnencoded("levelOrStageNumber", stageString, false);
 					itemsToDelete.RemoveWhere(item => item.Item1 == "levelOrStageNumber");
 				}
 
@@ -606,6 +606,8 @@ namespace Bloom.Book
 			}
 		}
 
+		// Precondition: form should be XML-encoded already
+		//    unless if the key is in KeysOfVariablesThatAreUrlEncoded, then form should be URL-encoded.
 		private void SetNodeXml(string key, string form, XmlNode node)
 		{
 			if(KeysOfVariablesThatAreUrlEncoded.Contains(key))
@@ -644,32 +646,42 @@ namespace Bloom.Book
 			return newDiv;
 		}
 
-		public void Set(string key, string value, bool isCollectionValue)
+		public void SetFromUnencoded(string key, string unencodedValue, bool isCollectionValue)
+			=> SetFromXmlEncoded(key, HttpUtility.HtmlEncode(unencodedValue), isCollectionValue);
+
+		public void SetFromUnencoded(string key, string unencodedValue, string lang)
+			=> SetFromXmlEncoded(key, HttpUtility.HtmlEncode(unencodedValue), lang);
+
+		// encodedValue should be the value to set, already properly XML-encoded and ready to pass unaltered to InnerXml
+		// (unless key is in KeysOfVariablesThatAreUrlEncoded)
+		public void SetFromXmlEncoded(string key, string encodedValue, bool isCollectionValue)
 		{
-			_dataset.UpdateGenericLanguageString(key, value, isCollectionValue);
+			_dataset.UpdateGenericLanguageStringFromXmlEncoded(key, encodedValue, isCollectionValue);
 			UpdateSingleTextVariableInDataDiv(key, _dataset.TextVariables[key]);
 			if (key == "contentLanguage2")
-				_cachedMcl2 = value;
+				_cachedMcl2 = encodedValue;
 			else if (key == "contentLanguage3")
-				_cachedMcl3 = value;
+				_cachedMcl3 = encodedValue;
 		}
 
-		public void Set(string key, string value, string lang)
+		// encodedValue should be the value to set, already properly XML-encoded and ready to pass unaltered to InnerXml
+		// (unless key is in KeysOfVariablesThatAreUrlEncoded)
+		public void SetFromXmlEncoded(string key, string encodedValue, string lang)
 		{
-			_dataset.UpdateLanguageString(key, value, lang, false);
+			_dataset.UpdateLanguageString(key, encodedValue, lang, false);
 			if(_dataset.TextVariables.ContainsKey(key))
 			{
 				UpdateSingleTextVariableInDataDiv(key,_dataset.TextVariables[key]);
 			}
 			else //we go this path if we just removed the last value from the multitext
 			{
-				RemoveDataDivElementIfEmptyValue(key, value);
+				RemoveDataDivElementIfEmptyValue(key, encodedValue);
 			}
 		}
 
 		public void RemoveSingleForm(string key, string lang)
 		{
-			Set(key, null, lang);
+			SetFromXmlEncoded(key, null, lang);
 		}
 		public void RemoveAllForms(string key)
 		{
@@ -768,10 +780,10 @@ namespace Bloom.Book
 									   collectionSettings.Language2.Name, "*", true);
 				data.AddLanguageString("nameOfNationalLanguage2",
 									   collectionSettings.Language3.Name, "*", true);
-				data.UpdateGenericLanguageString("iso639Code", collectionSettings.Language1.Iso639Code, true);
-				data.UpdateGenericLanguageString("country", collectionSettings.Country, true);
-				data.UpdateGenericLanguageString("province", collectionSettings.Province, true);
-				data.UpdateGenericLanguageString("district", collectionSettings.District, true);
+				data.UpdateGenericLanguageStringFromUnencoded("iso639Code", collectionSettings.Language1.Iso639Code, true);
+				data.UpdateGenericLanguageStringFromUnencoded("country", collectionSettings.Country, true);
+				data.UpdateGenericLanguageStringFromUnencoded("province", collectionSettings.Province, true);
+				data.UpdateGenericLanguageStringFromUnencoded("district", collectionSettings.District, true);
 				string location = "";
 				var separator = LocalizationManager.GetString("EditTab.FrontMatter.ListSeparator", ", ",
 					"This is used to separate items in a list, such as 'Province, District, Country' on the Title Page. For English, that means comma followed by a space. Don't forget the space if your script uses them.",
@@ -788,7 +800,7 @@ namespace Bloom.Book
 
 				location = TrimEnd(location, separator);
 
-				data.UpdateGenericLanguageString("languageLocation", location, true);
+				data.UpdateGenericLanguageStringFromUnencoded("languageLocation", location, true);
 			}
 			return data;
 		}
@@ -879,7 +891,10 @@ namespace Bloom.Book
 						isCollectionValue = true;
 					}
 
+					// value should generally be HTML-encoded
+					// However, if the key is in KeysOfVariablesThatAreUrlEncoded, it should be URL-encoded instead.
 					string value;
+
 					// BL-9111 The same key can be processed multiple times, but we only want to modify
 					// KeysOfVariablesThatAreUrlEncoded, if we actually insert a value into data.TextVariables.
 					// This flag lets us check later.
@@ -1268,7 +1283,8 @@ namespace Bloom.Book
 		/// </summary>
 		/// <param name="key"></param>
 		/// <param name="node"></param>
-		/// <param name="form"></param>
+		/// <param name="form">The encoded form. Generally HTML-encoded,
+		/// unless if {key} is in KeysOfVariablesThatAreUrlEncoded, then {form} should be URL-encoded.</param>
 		private void SetInnerXmlPreservingLabel(string key, XmlElement node, string form)
 		{
 			var labelElement = node.SelectSingleNode("label");
@@ -1498,7 +1514,7 @@ namespace Bloom.Book
 				if (info != null)
 					info.Title =form.Form.Replace("<br />", ""); // Clean out breaks inserted at newlines.
 
-				this.Set("bookTitle", form.Form, form.WritingSystemId);
+				this.SetFromXmlEncoded("bookTitle", form.Form, form.WritingSystemId);
 
 			}
 			else if (_dataset.TextVariables.TryGetValue("bookTitle", out title))
@@ -1546,7 +1562,7 @@ namespace Bloom.Book
 
 				// _dataset.TextVariables is expected to contain an ENCODED string!
 				// info.OriginalTitle is expected to contain a DECODED string
-				_dataset.UpdateGenericLanguageString("originalTitle", encodedOriginalTitle, false);
+				_dataset.UpdateGenericLanguageStringFromXmlEncoded("originalTitle", encodedOriginalTitle, false);
 				UpdateSingleTextVariableInDataDiv("originalTitle", _dataset.TextVariables["originalTitle"]);
 				if (info != null)
 				{
@@ -1611,8 +1627,8 @@ namespace Bloom.Book
 			if (language3Code == "")
 				language3Code = null;
 
-			Set("contentLanguage2", language2Code,false);
-			Set("contentLanguage3", language3Code, false);
+			SetFromUnencoded("contentLanguage2", language2Code,false);
+			SetFromUnencoded("contentLanguage3", language3Code, false);
 		}
 
 //        public IEnumerable<KeyValuePair<string,DataSetElementValue>>  GetCollectionVariables()
@@ -1700,8 +1716,8 @@ namespace Bloom.Book
 						}
 					}
 
-					var content = item.Content.Replace("{flavor}", CollectionSettings.GetBrandingFlavor());
-					Set(item.DataBook, content, item.Lang);
+					var contentXml = item.Content.Replace("{flavor}", CollectionSettings.GetBrandingFlavor());
+					SetFromXmlEncoded(item.DataBook, contentXml, item.Lang);
 				}
 			}
 		}

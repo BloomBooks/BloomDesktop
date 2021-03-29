@@ -1995,7 +1995,7 @@ namespace Bloom.Book
 				languagesOfBook += ", " + _bookData.Language3.Name;
 			}
 
-			_bookData.Set("languagesOfBook", languagesOfBook, false);
+			_bookData.SetFromUnencoded("languagesOfBook", languagesOfBook, false);
 		}
 
 		/// <summary>
@@ -3497,7 +3497,7 @@ namespace Bloom.Book
 		/// </summary>
 		public void SetTopic(string englishTopicAsKey)
 		{
-			_bookData.Set("topic",englishTopicAsKey,"en");
+			_bookData.SetFromUnencoded("topic",englishTopicAsKey,"en");
 		}
 
 		public void SwitchSuitableForMakingShells(bool isSuitable)

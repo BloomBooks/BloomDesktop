@@ -1,4 +1,4 @@
-﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
+/// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="../../lib/jquery.i18n.custom.ts" />

@@ -117,6 +117,7 @@ namespace Bloom.Book
 			return HtmlDom.ConvertHtmlBreaksToNewLines(WebUtility.HtmlDecode(alternative));
 		}
 
+		// Returns the license URL (encoded)
 		public static string GetLicenseUrl(HtmlDom dom)
 		{
 			return dom.GetBookSetting("licenseUrl").GetBestAlternativeString(new[] { "*", "en" });

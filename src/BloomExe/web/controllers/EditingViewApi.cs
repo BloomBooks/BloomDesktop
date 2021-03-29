@@ -105,6 +105,7 @@ namespace Bloom.web.controllers
 			request.PostSucceeded();
 		}
 
+		// Expects the topic to be sent via post request. The body of the post should be the topic as its raw value (that is, don't pre-encode it or anything).
 		private void HandleSetTopic(ApiRequest request)
 		{
 			var topicString = request.RequiredPostString();

@@ -644,9 +644,9 @@ namespace Bloom.Book
 			var copyrightNotice = BookCopyrightAndLicense.GetMetadata(dom, bookData).CopyrightNotice;
 			if (String.IsNullOrEmpty(copyrightNotice) && collectionSettings.IsSourceCollection)
 				return;
-			bookData.Set("originalLicenseUrl", BookCopyrightAndLicense.GetLicenseUrl(dom), "*");
-			bookData.Set("originalCopyright", System.Web.HttpUtility.HtmlEncode(copyrightNotice), "*");
-			bookData.Set("originalLicenseNotes", dom.GetBookSetting("licenseNotes").GetFirstAlternative(), "*");
+			bookData.SetFromXmlEncoded("originalLicenseUrl", BookCopyrightAndLicense.GetLicenseUrl(dom), "*");
+			bookData.SetFromXmlEncoded("originalCopyright", System.Web.HttpUtility.HtmlEncode(copyrightNotice), "*");
+			bookData.SetFromXmlEncoded("originalLicenseNotes", dom.GetBookSetting("licenseNotes").GetFirstAlternative(), "*");
 		}
 	}
 }

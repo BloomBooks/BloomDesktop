@@ -152,19 +152,19 @@ namespace Bloom.Book
 				bookData.RemoveAllForms("contentLanguage2");
 
 			var language1 = bookData.CollectionSettings.Language1;
-			bookData.Set("contentLanguage1", language1.Iso639Code, false);
-			bookData.Set("contentLanguage1Rtl", language1.IsRightToLeft.ToString(), false);
+			bookData.SetFromUnencoded("contentLanguage1", language1.Iso639Code, false);
+			bookData.SetFromUnencoded("contentLanguage1Rtl", language1.IsRightToLeft.ToString(), false);
 			if (oneTwoOrThreeContentLanguages > 1)
 			{
 				var language2 = bookData.CollectionSettings.Language2;
-				bookData.Set("contentLanguage2", language2.Iso639Code, false);
-				bookData.Set("contentLanguage2Rtl", language2.IsRightToLeft.ToString(), false);
+				bookData.SetFromUnencoded("contentLanguage2", language2.Iso639Code, false);
+				bookData.SetFromUnencoded("contentLanguage2Rtl", language2.IsRightToLeft.ToString(), false);
 			}
 			var language3 = bookData.CollectionSettings.Language3;
 			if (oneTwoOrThreeContentLanguages > 2 && !string.IsNullOrEmpty(language3.Iso639Code))
 			{
-				bookData.Set("contentLanguage3", language3.Iso639Code, false);
-				bookData.Set("contentLanguage3Rtl", language3.IsRightToLeft.ToString(), false);
+				bookData.SetFromUnencoded("contentLanguage3", language3.Iso639Code, false);
+				bookData.SetFromUnencoded("contentLanguage3Rtl", language3.IsRightToLeft.ToString(), false);
 			}
 		}
 
