@@ -1148,65 +1148,71 @@ namespace Bloom.Edit
 #endif
 				if (DialogResult.OK == result && dlg.ImageInfo != null)
 				{
-					// Avoid saving the Image data if possible.  A large PNG file can take 5-10 seconds to save.
-					// So check the current image dimensions against the original image dimensions to see if we
-					// can avoid saving.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9377.
-					int height, width;	// set to -1, -1 if next call fails.
-					var gotSize = TryGetOriginalImageDimensions(dlg.ImageInfo, out height, out width);
-					var copyOriginalImage = gotSize && height == dlg.ImageInfo.Image.Height && width == dlg.ImageInfo.Image.Width;
-					// Copy an uncropped image's file or save a cropped image to a file before processing further.
-					// The code for ensuring non-transparency uses GraphicsMagick on the file content if possible, so the
-					// file must be in sync with the imageInfo.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8638.
-					// This applies to newly selected files as well as cropping previously selected files.
-					if (newImagePath == null || dlg.ImageInfo.OriginalFilePath != newImagePath)
+					using (PerformanceMeasurement.Global.Measure("Processing Image"))
 					{
-						var originalImagePath = dlg.ImageInfo.OriginalFilePath;
-						var basename = Path.GetFileNameWithoutExtension(originalImagePath);
-						var extension = Path.GetExtension(originalImagePath).ToLowerInvariant();
-						if (!copyOriginalImage)
+						// Avoid saving the Image data if possible.  A large PNG file can take 5-10 seconds to save.
+						// So check the current image dimensions against the original image dimensions to see if we
+						// can avoid saving.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9377.
+						int height, width; // set to -1, -1 if next call fails.
+						var gotSize = TryGetOriginalImageDimensions(dlg.ImageInfo, out height, out width);
+						var copyOriginalImage = gotSize && height == dlg.ImageInfo.Image.Height &&
+						                        width == dlg.ImageInfo.Image.Width;
+						// Copy an uncropped image's file or save a cropped image to a file before processing further.
+						// The code for ensuring non-transparency uses GraphicsMagick on the file content if possible, so the
+						// file must be in sync with the imageInfo.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8638.
+						// This applies to newly selected files as well as cropping previously selected files.
+						if (newImagePath == null || dlg.ImageInfo.OriginalFilePath != newImagePath)
 						{
-							// ImageInfo.Save throws an exception for .bmp files because they can't store metadata.
-							// ImageInfo.Save doesn't save .tif file properly, creating a blank image file.  So always
-							// save images in PNG format if they aren't originally JPEG format.
-							// (Bloom always saves images in either PNG or JPEG format anyway.  If the image is
-							// actually BMP or TIFF, it will get either get converted to PNG when resized later or
-							// it will be saved in PNG form later if it's not resized.  ImageInfo.Save is slow for
-							// PNG images, so we avoid it if at all possible.)
-							if (extension != ".jpg" && extension != ".jpeg")
-								extension = ".png";
+							var originalImagePath = dlg.ImageInfo.OriginalFilePath;
+							var basename = Path.GetFileNameWithoutExtension(originalImagePath);
+							var extension = Path.GetExtension(originalImagePath).ToLowerInvariant();
+							if (!copyOriginalImage)
+							{
+								// ImageInfo.Save throws an exception for .bmp files because they can't store metadata.
+								// ImageInfo.Save doesn't save .tif file properly, creating a blank image file.  So always
+								// save images in PNG format if they aren't originally JPEG format.
+								// (Bloom always saves images in either PNG or JPEG format anyway.  If the image is
+								// actually BMP or TIFF, it will get either get converted to PNG when resized later or
+								// it will be saved in PNG form later if it's not resized.  ImageInfo.Save is slow for
+								// PNG images, so we avoid it if at all possible.)
+								if (extension != ".jpg" && extension != ".jpeg")
+									extension = ".png";
+							}
+
+							var newFilename = ImageUtils.GetUnusedFilename(Path.GetTempPath(), basename, extension);
+							newImagePath = Path.Combine(Path.GetTempPath(), newFilename);
 						}
-						var newFilename = ImageUtils.GetUnusedFilename(Path.GetTempPath(), basename, extension);
-						newImagePath = Path.Combine(Path.GetTempPath(), newFilename);
-					}
-					var exceptionMsg = "Bloom had a problem including that image";
-					try
-					{
-						if (copyOriginalImage)
-							RobustFile.Copy(dlg.ImageInfo.OriginalFilePath, newImagePath);
-						else
-							dlg.ImageInfo.Save(newImagePath);
-						dlg.ImageInfo.SetCurrentFilePath(newImagePath);
-						SaveChangedImage(imageElement, dlg.ImageInfo, exceptionMsg);
-					}
-					catch (Exception error)
-					{
-						var path = dlg.ImageInfo.OriginalFilePath;
-						if (dlg.ImageInfo.OriginalFilePath != newImagePath)
-							path += $" (or {newImagePath})";
-						ReportFailureToLoadImage(path, error);
-					}
-					finally
-					{
-						dlg.ImageInfo.SetCurrentFilePath(null); // clears internal cache
-						if (newImagePath != dlg.ImageInfo.OriginalFilePath)
+
+						var exceptionMsg = "Bloom had a problem including that image";
+						try
 						{
-							RobustFile.Delete(newImagePath);
+							if (copyOriginalImage)
+								RobustFile.Copy(dlg.ImageInfo.OriginalFilePath, newImagePath);
+							else
+								dlg.ImageInfo.Save(newImagePath);
+							dlg.ImageInfo.SetCurrentFilePath(newImagePath);
+							SaveChangedImage(imageElement, dlg.ImageInfo, exceptionMsg);
 						}
-					}
+						catch (Exception error)
+						{
+							var path = dlg.ImageInfo.OriginalFilePath;
+							if (dlg.ImageInfo.OriginalFilePath != newImagePath)
+								path += $" (or {newImagePath})";
+							ReportFailureToLoadImage(path, error);
+						}
+						finally
+						{
+							dlg.ImageInfo.SetCurrentFilePath(null); // clears internal cache
+							if (newImagePath != dlg.ImageInfo.OriginalFilePath)
+							{
+								RobustFile.Delete(newImagePath);
+							}
+						}
 #if MEMORYCHECK
 					// Warn the user if we're starting to use too much memory.
 					Bloom.Utils.MemoryManagement.CheckMemory(false, "picture chosen and saved", true);
 #endif
+					}
 				}
 
 				// If the user changed the search language for art of reading, remember their change. But if they didn't

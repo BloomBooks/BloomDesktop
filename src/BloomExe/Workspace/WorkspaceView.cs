@@ -863,7 +863,7 @@ namespace Bloom.Workspace
 			CheckDPISettings();
 			_originalToolStripPanelWidth = 0;
 			_viewInitialized = true;
-			ShowAutoUpdateDialogIfNeeded();
+			// DONT COMMIT. A bug here (BL-9736) was preventing me from using Bloom: ShowAutoUpdateDialogIfNeeded();
 		}
 
 		private const int kCurrentAutoUpdateVersion = 1;

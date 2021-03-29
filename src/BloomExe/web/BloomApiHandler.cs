@@ -4,16 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using SIL.IO;
-
 using Bloom.Book;
-using Bloom.ImageProcessing;
 using Bloom.Collection;
 using System.Threading;
-using Bloom.Utils;
 
 namespace Bloom.Api
 {

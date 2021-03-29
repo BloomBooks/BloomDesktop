@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
+using Bloom.Api;
 using Bloom.Collection;
 using Bloom.MiscUI;
 using Bloom.Properties;
@@ -30,14 +31,15 @@ namespace Bloom
 		private bool _finishedLoading;
 
 		public Shell(Func<WorkspaceView> projectViewFactory,
-												CollectionSettings collectionSettings,
-												BookDownloadStartingEvent bookDownloadStartingEvent,
-												LibraryClosing libraryClosingEvent,
-												QueueRenameOfCollection queueRenameOfCollection,
-												ControlKeyEvent controlKeyEvent,
-												SignLanguageApi signLanguageApi)
+			CollectionSettings collectionSettings,
+			BookDownloadStartingEvent bookDownloadStartingEvent,
+			LibraryClosing libraryClosingEvent,
+			QueueRenameOfCollection queueRenameOfCollection,
+			ControlKeyEvent controlKeyEvent,
+			SignLanguageApi signLanguageApi)
 		{
-			queueRenameOfCollection.Subscribe(newName => _nameToChangeCollectionUponClosing = newName.Trim().SanitizeFilename('-'));
+			queueRenameOfCollection.Subscribe(newName =>
+				_nameToChangeCollectionUponClosing = newName.Trim().SanitizeFilename('-'));
 			_collectionSettings = collectionSettings;
 			_libraryClosingEvent = libraryClosingEvent;
 			_controlKeyEvent = controlKeyEvent;
@@ -58,7 +60,7 @@ namespace Bloom
 			{
 				try
 				{
-					this.Invoke((Action)this.Activate);
+					this.Invoke((Action) this.Activate);
 				}
 				catch (Exception e)
 				{
@@ -68,26 +70,18 @@ namespace Bloom
 			});
 
 
-#if DEBUG
-			WindowState = FormWindowState.Normal;
-			//this.FormBorderStyle = FormBorderStyle.None;  //fullscreen
 
-			Size = new Size(1024,720);
-#else
-			// We only want this screen size context menu in Debug mode or Developer or Alpha channel
-			var channel = ApplicationUpdateSupport.ChannelName.ToLowerInvariant();
-			if (!new[]{"alpha", "developer"}.Any(s => channel.Contains(s))) {
-				ContextMenuStrip = null;
-			}
-#endif
+			WindowState = FormWindowState.Normal;
+			Size = new Size(1024, 720);
+
 			_contextMenu.Opening += _contextMenu_Opening;
 
 			_workspaceView = projectViewFactory();
 			_workspaceView.CloseCurrentProject += ((x, y) =>
-													{
-														UserWantsToOpenADifferentProject = true;
-														Close();
-													});
+			{
+				UserWantsToOpenADifferentProject = true;
+				Close();
+			});
 
 			_workspaceView.ReopenCurrentProject += ((x, y) =>
 			{
@@ -122,8 +116,8 @@ namespace Bloom
 			_libraryClosingEvent.Raise(null);
 
 			if (!string.IsNullOrEmpty(_nameToChangeCollectionUponClosing) &&
-				_nameToChangeCollectionUponClosing != _collectionSettings.CollectionName &&
-				UserWantsToOpeReopenProject)
+			    _nameToChangeCollectionUponClosing != _collectionSettings.CollectionName &&
+			    UserWantsToOpeReopenProject)
 			{
 				// Without checking and resetting this flag, Linux endlessly spawns new instances. Apparently the Mono runtime
 				// calls OnClosing again as a result of calling Program.RestartBloom() which calls Application.Exit().
@@ -136,12 +130,14 @@ namespace Bloom
 					var parentDirectory = Path.GetDirectoryName(existingDirectoryPath);
 					var newDirectoryPath = Path.Combine(parentDirectory, _nameToChangeCollectionUponClosing);
 
-					Program.RestartBloom(true, string.Format("--rename \"{0}\" \"{1}\" ", existingDirectoryPath, newDirectoryPath));
+					Program.RestartBloom(true,
+						string.Format("--rename \"{0}\" \"{1}\" ", existingDirectoryPath, newDirectoryPath));
 				}
 				catch (Exception error)
 				{
 					SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,
-						"Sorry, Bloom failed to even prepare for the rename of the project to '{0}'", _nameToChangeCollectionUponClosing);
+						"Sorry, Bloom failed to even prepare for the rename of the project to '{0}'",
+						_nameToChangeCollectionUponClosing);
 				}
 			}
 
@@ -162,10 +158,12 @@ namespace Bloom
 			{
 				formattedText = string.Format("{0} - {1}", bookName, formattedText);
 			}
-			if(_collectionSettings.IsSourceCollection)
+
+			if (_collectionSettings.IsSourceCollection)
 			{
 				formattedText += " SOURCE COLLECTION";
 			}
+
 			Text = formattedText;
 		}
 
@@ -223,7 +221,7 @@ namespace Bloom
 
 		private void On800x600Click(object sender, EventArgs e)
 		{
-			Size = new Size(800,600);
+			Size = new Size(800, 600);
 		}
 
 		private void On1024x600Click(object sender, EventArgs e)
@@ -264,7 +262,7 @@ namespace Bloom
 			{
 				SuspendLayout();
 
-				if(Settings.Default.WindowSizeAndLocation == null)
+				if (Settings.Default.WindowSizeAndLocation == null)
 				{
 					StartPosition = FormStartPosition.WindowsDefaultLocation;
 					WindowState = FormWindowState.Maximized;
@@ -295,6 +293,8 @@ namespace Bloom
 					}
 
 					WindowState = FormWindowState.Maximized;
+
+					UpdatePerformanceMeasurementStatus();
 				}
 			}
 			catch (Exception error)
@@ -337,50 +337,56 @@ namespace Bloom
 
 		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
 		{
-			if(Control.ModifierKeys == Keys.Control)
+			if (Control.ModifierKeys == Keys.Control)
 			{
 				_controlKeyEvent.Raise(keyData);
 				//this event system doesn't actually give us a return value,, so we don't know if it was handled or not
 				//so we'll always just let it bubble. If that becomes a problem, we'll need a different design.
 				//return true;
 			}
+
 			return base.ProcessCmdKey(ref msg, keyData);
 		}
 
-		private delegate void NotifyTheUserOfProblem(string message, params object[] args);
-		/// <summary>
-		/// Display a dialog box that reports a problem to the user.
-		/// </summary>
-		/// <remarks>
-		/// On Linux at least, displaying a dialog on a thread that is not the main GUI
-		/// thread causes a crash with a segmentation violation.  So we try to display on
-		/// the main thread.
-		/// </remarks>
-		public static void DisplayProblemToUser(string message, params object[] args)
-		{
-			var forms = Application.OpenForms;
-			for (int i = 0; i < forms.Count; ++i)
-			{
-				var s = forms [i] as Bloom.Shell;
-				if (s != null && s.InvokeRequired)
-				{
-					var d = new Shell.NotifyTheUserOfProblem(SIL.Reporting.ErrorReport.NotifyUserOfProblem);
-					s.Invoke(d, new object[] { message, args });
-					return;
-				}
-			}
-			SIL.Reporting.ErrorReport.NotifyUserOfProblem(message, args);
-		}
 
 		private void startMeasuringPerformanceToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			var dlg = new ReactDialog("performanceLogBundle.js", "PerformanceLogControl");
-			dlg.FormBorderStyle = FormBorderStyle.Sizable;
-			dlg.ControlBox = true;
-			dlg.SizeGripStyle = SizeGripStyle.Show;
-			dlg.Text = "Performance Log";
-			dlg.Closing += (s, args) => PerformanceMeasurement.Global.StopMeasuring();
-			dlg.Show();
+				PerformanceMeasurement.Global.StartMeasuring();
+				UpdatePerformanceMeasurementStatus();
+				// open in a browser
+			this.showPerformancePageToolStripMenuItem_Click(sender,e);
+		}
+
+		private void showPerformancePageToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			Process.Start(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "performance/PerformanceLogPage.htm");
+		}
+
+		private void alwaysMeasureToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			Settings.Default.AlwaysMeasurePerformance = !Settings.Default.AlwaysMeasurePerformance;
+			UpdatePerformanceMeasurementStatus();
+		}
+
+		private void UpdatePerformanceMeasurementStatus()
+		{
+			alwaysMeasureToolStripMenuItem.Checked = Settings.Default.AlwaysMeasurePerformance;
+
+			if (Settings.Default.AlwaysMeasurePerformance && !PerformanceMeasurement.Global.CurrentlyMeasuring)
+			{
+				PerformanceMeasurement.Global.StartMeasuring();
+			}
+
+			this.startMeasuringPerformanceToolStripMenuItem.Enabled = !PerformanceMeasurement.Global.CurrentlyMeasuring;
+			this.showPerformancePageToolStripMenuItem.Enabled = PerformanceMeasurement.Global.CurrentlyMeasuring;
+
+			if (PerformanceMeasurement.Global.CurrentlyMeasuring)
+			{
+				startMeasuringPerformanceToolStripMenuItem.Text = "Currently Measuring Performance";
+			}
+
+			// if we're always measuring, don't offer to start/stop
+			//this.startMeasuringPerformanceToolStripMenuItem.Enabled = !Settings.Default.AlwaysMeasurePerformance;
 		}
 	}
 }

@@ -44,7 +44,19 @@ export function useWebSocketListenerForOneMessage(
         });
     }, []);
 }
-
+export function useWebSocketListenerForOneObject<T>(
+    clientContext: string,
+    messageId: string,
+    listener: (message: T) => void
+) {
+    useEffect(() => {
+        WebSocketManager.addListener(clientContext, e => {
+            if (e.id === messageId && e.message) {
+                listener(JSON.parse(e.message) as T);
+            }
+        });
+    }, []);
+}
 // This class manages a websocket, currently at the WebSocketManager.socketMap level, currently with
 // a fixed name. (Possible enhancement: support top WebSocketManager.socketMap level).
 // You can add listeners (for "message") with addListener(),
@@ -74,7 +86,7 @@ export default class WebSocketManager {
     public static getOrCreateWebSocket(clientContext: string): WebSocket {
         if (!WebSocketManager.socketMap[clientContext]) {
             //currently we use a different port for this websocket, and it's the main port + 1
-            let websocketPort = parseInt(window.location.port, 10) + 1;
+            const websocketPort = parseInt(window.location.port, 10) + 1;
             //here we're passing "socketName" in the "subprotocol" parameter, just for ease of identifying
             //sockets on the server side when debugging.
 
@@ -85,10 +97,22 @@ export default class WebSocketManager {
             // says clients should purposely make it difficult for Javascript to explore what's going
             // wrong when a socket can't be opened. So instead those errors are suppressed
             // in Browser.ReportJavascriptError.
-            WebSocketManager.socketMap[clientContext] = new WebSocket(
-                "ws://127.0.0.1:" + websocketPort.toString(),
-                clientContext
+            const address = "ws://127.0.0.1:" + websocketPort.toString();
+            // Note, the trailing slash is needed to not match on Chrome's "like Gecko)". I kid you not.
+            const isGeckoFxOrFirefox =
+                navigator.userAgent.toLowerCase().indexOf("gecko/") > -1;
+            // Chrome doesn't seem to handle our websocket (provided by the Fleck project) if you specify a
+            // subprotocol AND you don't tell Fleck about the protocol. Which is reasonable, but for some
+            // reason not a problem with GeckoFx 60. Since we only use the subprotocol for debugging, we
+            // just drop it if we're in not in geckofx or Firefox.
+
+            const ws = new WebSocket(
+                address,
+                isGeckoFxOrFirefox ? clientContext : undefined
             );
+
+            WebSocketManager.socketMap[clientContext] = ws;
+
             if (!WebSocketManager.clientContextCallbacks[clientContext]) {
                 WebSocketManager.clientContextCallbacks[clientContext] = [];
             }
@@ -96,8 +120,8 @@ export default class WebSocketManager {
             // getting the web ui to properly close its own listeners and socket, so we had to
             // revert to have c# send a message that would close this down. It may or may not be
             // used, but it's here if we need it. The perfered method is for the client UI to call closeSocket().
-            let listener = (event: MessageEvent) => {
-                var e: IBloomWebSocketEvent = JSON.parse(event.data);
+            const listener = (event: MessageEvent) => {
+                const e: IBloomWebSocketEvent = JSON.parse(event.data);
                 if (e.id === "websocketControl/close/" + clientContext) {
                     WebSocketManager.closeSocket(clientContext);
                 } else if (e.clientContext === clientContext) {

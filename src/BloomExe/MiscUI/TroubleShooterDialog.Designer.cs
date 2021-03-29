@@ -85,7 +85,7 @@
 			this.Controls.Add(this.label1);
 			this.Name = "TroubleShooterDialog";
 			this.ShowIcon = false;
-			this.Text = "Trouble Shooter";
+			this.Text = "Performance Troubleshooter";
 			this.ResumeLayout(false);
 			this.PerformLayout();
 

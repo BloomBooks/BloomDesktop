@@ -45,19 +45,33 @@ namespace Bloom.Api
 			var websocketaddr = "ws://127.0.0.1:" + port;
 			Logger.WriteMinorEvent("Attempting to open a WebSocketServer on " + websocketaddr);
 			_server = new WebSocketServer(websocketaddr);
+			// If we want, we can specify the subprotocols we are expecting:
+			//_server.SupportedSubProtocols = new[] { "performance","pageThumbnailList", "pageThumbnailList-pageControls", "bookStatus" etc etc};
+			// This tells Fleck to be picky.
+			// It would allow Chrome to work without any special Chrome code on the client side.
+			// But it seems like a pain. Firefox is able to negotiate with Fleck just fine, and
+			// we only use subprotocols for debugging, so rather than list every
+			// subprotocol we use here, for now I just changed our browser-side code to to not send
+			// the subprotocol unless we're in Firefox.
 
 			try
 			{
 				_server.Start(socket =>
 				{
+					Debug.WriteLine("subprotocol "+socket.ConnectionInfo.SubProtocol);
+
 					socket.OnOpen = () =>
 					{
 						// our Typescript WebSocketManager sticks the name of the socket into this subProtocol parameter just for this debugging purpose
-						Debug.WriteLine($"Opening websocket \"{socket.ConnectionInfo?.SubProtocol}\"");
+						//Debug.WriteLine($"Opening websocket \"{socket.ConnectionInfo?.SubProtocol}\"");
+
+						// But that breaks Chrome
 						_allSockets.Add(socket);
 					};
 					socket.OnClose = () =>
 					{
+						// The following is probably out of date as of Bloom 5.0, which fixed the Chrome problem.
+
 					//NB: In May 2019, we found that chrome could not open a socket, and we'd immediately get here and close.
 					// WebSocketManager.ts:87 WebSocket connection to 'ws://127.0.0.1:8090/' failed: Error during WebSocket
 					// handshake: Sent non-empty 'Sec-WebSocket-Protocol' header but no response was received

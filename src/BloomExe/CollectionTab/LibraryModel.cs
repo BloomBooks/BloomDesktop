@@ -12,6 +12,7 @@ using Bloom.TeamCollection;
 //using Bloom.SendReceive;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
+using Bloom.Utils;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.IO;
@@ -159,7 +160,13 @@ namespace Bloom.CollectionTab
 			// the changes synchronization makes with collection data we've loaded.
 			_tcManager.SetCollectionId(_collectionSettings.CollectionId);
 			_tcManager.CurrentCollection?.SynchronizeRepoAndLocal();
-			var editableCollection = _bookCollectionFactory(_pathToLibrary, BookCollection.CollectionType.TheOneEditableCollection);
+			BookCollection editableCollection;
+			using (PerformanceMeasurement.Global.Measure("Creating Primary Collection"))
+			{
+				editableCollection = _bookCollectionFactory(_pathToLibrary,
+					BookCollection.CollectionType.TheOneEditableCollection);
+			}
+
 			_currentEditableCollectionSelection.SelectCollection(editableCollection);
 			yield return editableCollection;
 

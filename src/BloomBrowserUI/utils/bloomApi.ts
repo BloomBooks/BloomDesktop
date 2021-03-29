@@ -195,6 +195,24 @@ export class BloomApi {
         return [value, fn];
     }
 
+    public static useApiObject<T>(
+        urlSuffix: string,
+        defaultValue: T
+    ): [T, (value: TextEncoderEncodeIntoResult) => void] {
+        const [value, setValue] = React.useState<T>(defaultValue);
+        React.useEffect(() => {
+            BloomApi.get(urlSuffix, c => {
+                setValue(c.data);
+            });
+        }, []);
+
+        const fn = (value: T) => {
+            BloomApi.postData(urlSuffix, value);
+            setValue(value);
+        };
+        return [value, fn];
+    }
+
     // A react hook for controlling an API-backed string from a React pure functional component
     // Returns a tuple of [theCurrentValue, aFunctionForChangingTheValue(newValue)]
     // When you call the returned function, two things happen: 1) we POST the value to the Bloom API
