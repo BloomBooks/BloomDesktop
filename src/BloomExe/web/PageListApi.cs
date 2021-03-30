@@ -51,7 +51,7 @@ namespace Bloom.web
 			var shiftIsDown = (Control.ModifierKeys & Keys.Shift) == Keys.Shift;
 			var label = shiftIsDown ? "Select Page (SHIFT)" : "Select Page";
 
-			using (PerformanceMeasurement.Global.Measure(label, requestData.detail ?? ""))
+			using (PerformanceMeasurement.Global?.Measure(label, requestData.detail ?? ""))
 			{
 				//using (PerformanceMeasurement.Global.Measure(label, requestData.detail ?? ""))
 				//{

@@ -39,7 +39,7 @@ namespace Bloom
 		public void Raise(TPayload descriptor)
 		{
 			SIL.Reporting.Logger.WriteMinorEvent("Event: " + _nameForLogging);
-			using (PerformanceMeasurement.Global.MeasureMaybe(_loggingLevel == LoggingLevel.Major, _nameForLogging))
+			using (PerformanceMeasurement.Global?.MeasureMaybe(_loggingLevel == LoggingLevel.Major, _nameForLogging))
 			{
 				foreach (Action<TPayload> subscriber in _subscribers)
 				{

@@ -177,7 +177,7 @@ namespace Bloom.Api
 					{
 						label = endpointRegistration.MeasurementLabel;
 					}
-					using (endpointRegistration.DoMeasure ? PerformanceMeasurement.Global.Measure(label) : null)
+					using (endpointRegistration.DoMeasure ? PerformanceMeasurement.Global?.Measure(label) : null)
 					{
 						// Note: If the user is still interacting with the application, openForms could change and become empty
 						var formForSynchronizing = Application.OpenForms.Cast<Form>().LastOrDefault();

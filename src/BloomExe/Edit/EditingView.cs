@@ -1148,7 +1148,7 @@ namespace Bloom.Edit
 #endif
 				if (DialogResult.OK == result && dlg.ImageInfo != null)
 				{
-					using (PerformanceMeasurement.Global.Measure("Processing Image"))
+					using (PerformanceMeasurement.Global?.Measure("Processing Image"))
 					{
 						// Avoid saving the Image data if possible.  A large PNG file can take 5-10 seconds to save.
 						// So check the current image dimensions against the original image dimensions to see if we

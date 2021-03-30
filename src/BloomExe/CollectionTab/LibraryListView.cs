@@ -969,7 +969,7 @@ namespace Bloom.CollectionTab
 		{
 			try
 			{
-				using (PerformanceMeasurement.Global.Measure("select book", bookInfo.QuickTitleUserDisplay))
+				using (PerformanceMeasurement.Global?.Measure("select book", bookInfo.QuickTitleUserDisplay))
 				{
 					_bookSelection.SelectBook(_model.GetBookFromBookInfo(bookInfo, true));
 

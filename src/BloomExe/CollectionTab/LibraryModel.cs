@@ -161,7 +161,7 @@ namespace Bloom.CollectionTab
 			_tcManager.SetCollectionId(_collectionSettings.CollectionId);
 			_tcManager.CurrentCollection?.SynchronizeRepoAndLocal();
 			BookCollection editableCollection;
-			using (PerformanceMeasurement.Global.Measure("Creating Primary Collection"))
+			using (PerformanceMeasurement.Global?.Measure("Creating Primary Collection"))
 			{
 				editableCollection = _bookCollectionFactory(_pathToLibrary,
 					BookCollection.CollectionType.TheOneEditableCollection);
