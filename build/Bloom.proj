@@ -31,6 +31,8 @@
 		<BUILD_NUMBER Condition="'$(BUILD_NUMBER)'==''">1.2.3.4</BUILD_NUMBER>
 		<useNUnit-x86 Condition="'$(OS)'=='Windows_NT'">true</useNUnit-x86>
 		<useNUnit-x86 Condition="'$(OS)'!='Windows_NT'">false</useNUnit-x86>
+		<TestProcessType Condition="'$(useNUnit-x86)'=='true'">Separate</TestProcessType>
+		<TestProcessType Condition="'$(useNUnit-x86)'!='true'">Single</TestProcessType>
 		<MSBuildCommunityTasksPath>$(RootDir)/build</MSBuildCommunityTasksPath>
 		<teamcity_agent_home_dir Condition="'$(teamcity_agent_home_dir)'=='' And '$(OS)'!='Windows_NT'">/var/lib/TeamCity/agent</teamcity_agent_home_dir>
     <BuildTasksDll>$(RootDir)/packages/SIL.BuildTasks/tools/SIL.BuildTasks.dll</BuildTasksDll>
@@ -148,6 +150,7 @@
 			ExcludeCategory="$(excludedCategories)"
 			WorkingDirectory="$(RootDir)/output/$(Configuration)"
 			Force32Bit="$(useNUnit-x86)"
+			Process="$(TestProcessType)"
 			Agents="1"
 			Workers="1"
 			Verbose="true"
@@ -159,6 +162,7 @@
 			ExcludeCategory="SkipOnTeamCity,$(excludedCategories)"
 			WorkingDirectory="$(RootDir)/output/$(Configuration)"
 			Force32Bit="$(useNUnit-x86)"
+			Process="$(TestProcessType)"
 			Agents="1"
 			Workers="1"
 			Verbose="true"
