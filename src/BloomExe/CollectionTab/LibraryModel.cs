@@ -143,7 +143,8 @@ namespace Bloom.CollectionTab
 
 		}
 
-		private IEnumerable<BookCollection> GetBookCollectionsOnce()
+		// Must be called before we call GetBookCollections() (or GetBookCollectionsOnce).
+		internal void HandleTeamStuffBeforeGetBookCollections()
 		{
 			// It would be nice if this was just in the  TCManager constructor. But TCManager has important
 			// work to do before we can create a CollectionSettings object, and that's the object that
@@ -159,7 +160,18 @@ namespace Bloom.CollectionTab
 			// This may not be the final place to do this.  But it's the latest we can do it without needing to reconcile
 			// the changes synchronization makes with collection data we've loaded.
 			_tcManager.SetCollectionId(_collectionSettings.CollectionId);
+
+			// Don't put anything after this line. This method is called within an idle event handler
+			// and displays a dialog. If we are still in the time frame for showing the splash
+			// screen, the dialog will not close, and SynchronizeRepoAndLocal() will not return,
+			// until the expiration of the splash screen time. And other startup idle tasks will
+			// be allowed to run once the sync is complete. Anything we want to happen after
+			// this sync should be part of a distinct startup idle task.
 			_tcManager.CurrentCollection?.SynchronizeRepoAndLocal();
+		}
+
+		private IEnumerable<BookCollection> GetBookCollectionsOnce()
+		{
 			BookCollection editableCollection;
 			using (PerformanceMeasurement.Global?.Measure("Creating Primary Collection"))
 			{
