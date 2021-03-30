@@ -1,3 +1,35 @@
+# 5.0 (Alpha)
+
+## Edit Tab
+
+In the Comic Tool, you can now control the transparency, and make corners round. You can also show a line that you can use to point to something in a diagram:
+
+![screenshot](https://i.imgur.com/HqlfqxN.png)
+
+We've made it easier to add HTML5 widgets from [Active Presenter](https://atomisystems.com/activepresenter/demo/). No more zipping/unzipping.
+
+There is now a "Widget Page" that gives you a full-screen page to host your html5 interactive widgets. (Widgets are part of Bloom Enterprise).
+
+![screenshot](https://i.imgur.com/EEoBfHe.png)
+
+## BloomLibrary.org
+
+When you download books from BloomLibrary.org that have audio, Bloom will now download the audio as part of the shell book.
+
+We've improved what you see when you look at a template books on BloomLibrary.org, in ways that will make it easier to understand what the template pages are for.
+
+![screenshot](https://i.imgur.com/JU0m0SD.png)
+![screenshot](https://i.imgur.com/lx9FVMz.png)
+
+## Team Collections
+
+The new Team Collection _enterprise_ feature debuts in this release. With a Team Collection, you can safely share a collection within your team, across the internet, without full-time internet access. For this release, we're going to keep this feature behind the "Experimental" checkbox. For now, we are only supporting Dropbox & LAN environments. If you would like to help test it out, that'd be great! Just contact us.
+
+![screenshot](https://i.imgur.com/VCqWEft.png)
+
+<br/>
+<br/>
+
 # 4.9 (Beta)
 
 ## Edit Tab
@@ -29,6 +61,9 @@ Login to BloomLibrary is now through next.bloomlibrary.org, which allows you to 
 You can now provide a custom thumbnail for Epub publications. Place a file labeled `epub-thumbnail.png` in the books folder.
 
 We can now provide custom "Full Bleed" layouts to Enterprise projects that need edge-to-edge printing at commercial print shops.
+
+<br/>
+<br/>
 
 # 4.8
 
