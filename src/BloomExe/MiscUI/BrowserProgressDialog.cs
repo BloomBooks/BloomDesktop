@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.web;
 
@@ -17,7 +18,9 @@ namespace Bloom.MiscUI
 	/// (A copy button is displayed while doWhat() is in progress, allowing the messages to
 	/// be captured.)
 	/// DoWhat() returns a boolean:
-	/// - false: the dialog closes and the UI thread resumes as soon as doWhat() returns.
+	/// - false: if doWhenMainActionFalse is provided, it is executed (on the UI thread); normally it
+	/// should eventually close the dialog. Otherwise, the dialog closes and the UI thread
+	/// resumes as soon as doWhat() returns false.
 	/// - true: when doWhat returns this value, the dialog displays a Close button
 	/// and a Report button. The Close button allows the user to close the dialog
 	/// after studying the the progress messages until satisfied; the UI thread resumes
@@ -32,7 +35,7 @@ namespace Bloom.MiscUI
 	public class BrowserProgressDialog
 	{
 		public static void DoWorkWithProgressDialog(BloomWebSocketServer socketServer, string socketContext, string title,
-			Func<IWebSocketProgress, bool> doWhat)
+			Func<IWebSocketProgress, bool> doWhat, Action<Form> doWhenMainActionFalse = null)
 		{
 			var progress = new WebSocketProgress(socketServer, socketContext);
 
@@ -64,7 +67,10 @@ namespace Bloom.MiscUI
 						// Just close the dialog
 						dlg.Invoke((Action)(() =>
 						{
-							dlg.Close();
+							if (doWhenMainActionFalse != null)
+								doWhenMainActionFalse(dlg);
+							else
+								dlg.Close();
 						}));
 					}
 				};

@@ -329,6 +329,7 @@
     <Compile Include="ErrorReporter\ErrorReportUtils.cs" />
     <Compile Include="ErrorReporter\ProblemLevel.cs" />
     <Compile Include="MiscUI\BrowserProgressDialog.cs" />
+    <Compile Include="MiscUI\StartupScreenManager.cs" />
     <Compile Include="TeamCollection\BookRepoChangeEventArgs.cs" />
     <Compile Include="TeamCollection\DeleteRepoBookFileEventArgs.cs" />
     <Compile Include="TeamCollection\BookStatus.cs" />

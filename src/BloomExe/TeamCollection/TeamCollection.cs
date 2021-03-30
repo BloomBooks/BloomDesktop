@@ -1455,8 +1455,6 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		public void SynchronizeRepoAndLocal()
 		{
-			Program.CloseSplashScreen(); // Enhance: maybe not right away? Maybe we can put our dialog on top? But it seems to work pretty well...
-
 			BrowserProgressDialog.DoWorkWithProgressDialog(SocketServer, TeamCollection.kWebSocketContext,
 				"Team Collection Activity",
 				progress =>
@@ -1489,6 +1487,16 @@ namespace Bloom.TeamCollection
 					// for the user to read them and close the dialog manually?
 					// Currently it stays open only if we detected problems.
 					return waitForUserToCloseDialogOrReportProblems;
+				}, (dlg) =>
+				{
+					// The dialog may continue to show for a bit, but other idle-time startup tasks
+					// may continue.
+					StartupScreenManager.ConsiderCurrentTaskDone();
+					// When we would normally close the splash screen, close the progress dialog.
+					StartupScreenManager.DoWhenSplashScreenShouldClose(() =>
+					{
+						dlg.Close();
+					});
 				});
 
 			// It's just possible there are one, or even more, file change notifications we

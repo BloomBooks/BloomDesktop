@@ -385,7 +385,7 @@ namespace Bloom.ErrorReporter
         {
 			// Before we do anything that might be "risky", put the problem in the log.
 			ProblemReportApi.LogProblem(exception, messageText, severity);
-			Program.CloseSplashScreen(); // if it's still up, it'll be on top of the dialog
+			StartupScreenManager.CloseSplashScreen(); // if it's still up, it'll be on top of the dialog
 
 			ErrorResult returnResult = ErrorResult.OK;
 
