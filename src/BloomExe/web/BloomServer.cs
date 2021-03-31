@@ -954,26 +954,38 @@ namespace Bloom.Api
 			catch(HttpListenerException error)
 			{
 				Logger.WriteEvent("Here, file not found is actually what you get if the port is in use:" + error.Message);
-				if (!Program.RunningUnitTests)
-					NonFatalProblem.Report(ModalIf.None,PassiveIf.Alpha, "Could not open " + ServerUrlEndingInSlash, "Could not start server on that port", error);
-				try
-				{
-					if(_listener != null)
-					{
-						//_listener.Stop();  this will always throw if we failed to start, so skip it and go to the close:
-						_listener.Close();
-					}
-				}
-				catch(Exception)
-				{
-					//that's ok, we're just trying to clean up
-				}
-				finally
-				{
-					_listener = null;
-				}
-				return false;
+				return HandleExceptionOpeningPort(error);
 			}
+			catch (System.Net.Sockets.SocketException error)
+			{
+				Logger.WriteEvent($"Port already in use for {ServerUrlEndingInSlash}: {error.Message}");
+				return HandleExceptionOpeningPort(error);
+			}
+		}
+
+		private bool HandleExceptionOpeningPort(Exception error)
+		{
+			if (!Program.RunningUnitTests)
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "Could not open " + ServerUrlEndingInSlash, "Could not start server on that port", error);
+			else
+				Console.WriteLine($"Cannot open {ServerUrlEndingInSlash}: {error.Message} ({error.GetType().Name})");
+			try
+			{
+				if (_listener != null)
+				{
+					//_listener.Stop();  this will always throw if we failed to start, so skip it and go to the close:
+					_listener.Close();
+				}
+			}
+			catch (Exception)
+			{
+				//that's ok, we're just trying to clean up
+			}
+			finally
+			{
+				_listener = null;
+			}
+			return false;
 		}
 
 		private static void VerifyWeAreNowListening()
