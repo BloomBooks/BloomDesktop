@@ -4376,6 +4376,17 @@ namespace BloomTests.Book
 			Assert.That(paras[1].InnerText, Is.EqualTo("There's nothing \"only\" about a cat!"));
 		}
 
+		[Test]
+		public void SetTopic_TopicContainsSpecialChars_IsEncodedProperly()
+		{
+			var book = CreateBook();
+
+			book.SetTopic("A & B");
+			var storedTopic = _bookData.GetVariableOrNull("topic", "*");
+
+			Assert.AreEqual("A &amp; B", storedTopic);
+		}
+
 #if UserControlledTemplate
 		[Test]
 		public void SetType_WasPublicationSetToTemplate_HasTemplateFeatures()

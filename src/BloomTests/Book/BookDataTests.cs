@@ -1210,6 +1210,35 @@ namespace BloomTests.Book
 				1);
 		}
 
+		[Test]
+		public void UpdateVariablesAndDataDivThroughDOM_L1WithSpecialChars_EncodedProperly()
+		{
+			var dom = new HtmlDom(
+				@"<html><head></head><body><div id='data-div' data-book='contentLanguage1' lang='*'>en</div></body></html>");
+			var data = new BookData(dom, CreateCollection("en-uk&au", "English"), null);
+
+			data.UpdateVariablesAndDataDivThroughDOM();
+
+			// Verify the language codes
+			Assert.That(dom.RawDom.InnerXml.Contains("en-uk&amp;au"), "L1");
+		}
+
+		[Test]
+		public void UpdateVariablesAndDataDivThroughDOM_L2L3WithSpecialChars_EncodedProperly()
+		{
+			var dom = new HtmlDom(
+				@"<html><head></head><body><div id='data-div' data-book='contentLanguage1' lang='*'>en</div></body></html>");
+			var data = new BookData(dom, CreateCollection("en", "English"), null);
+			data.SetMultilingualContentLanguages("es-es&la", "fr-fr&ca");
+
+			// ENHANCE: it'd be better if you could figure out how to set up L2 and L3
+			// TODO: Do a test for Country name having weird chars
+			data.UpdateVariablesAndDataDivThroughDOM();
+
+			// Verify the language codes
+			Assert.That(dom.RawDom.InnerXml.Contains("es-es&amp;la"), "L2");
+			Assert.That(dom.RawDom.InnerXml.Contains("fr-fr&amp;ca"), "L3");
+		}
 
 		[Test]
 		public void SetMultilingualContentLanguages_HasTrilingualLanguages_AddsToDataDiv()
@@ -1244,6 +1273,7 @@ namespace BloomTests.Book
 		[TestCase("", "the province", "the district", "the district, the province")]
 		[TestCase("", "", "the district", "the district")]
 		[TestCase("", "the province", "", "the province")]
+		[TestCase("country 1 & 2", "province 1 & 2", "district 1 & 2", "district 1 &amp; 2, province 1 &amp; 2, country 1 &amp; 2")]	// output is expected to return an encoded string
 		public void Constructor_CollectionSettingsHasVariousLocationFields_LanguageLocationFilledCorrect(string country,
 			string province, string district, string expected)
 		{
