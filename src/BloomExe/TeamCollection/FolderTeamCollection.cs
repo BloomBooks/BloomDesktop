@@ -265,6 +265,8 @@ namespace Bloom.TeamCollection
 			zipFile.Save();
 		}
 
+		public override string RepoDescription => _repoFolderPath;
+
 		// The standard place where we store zip files for a collection-level folder.
 		private static string GetZipFileForFolder(string folderName, string repoFolderPath)
 		{

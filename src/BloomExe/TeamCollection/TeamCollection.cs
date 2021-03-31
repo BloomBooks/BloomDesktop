@@ -303,6 +303,11 @@ namespace Bloom.TeamCollection
 		}
 
 		/// <summary>
+		/// A good default, overridden in DisconnectedTeamCollection.
+		/// </summary>
+		public virtual bool IsDisconnected => false;
+
+		/// <summary>
 		/// Common part of getting book status as recorded in the repo, or if it is not in the repo
 		/// but there is such a book locally, treat as locked by FakeUserIndicatingNewBook.
 		/// </summary>
@@ -328,6 +333,9 @@ namespace Bloom.TeamCollection
 						if (!String.IsNullOrEmpty(statusString))
 							return BookStatus.FromJson(statusString);
 					}
+					// Maybe it's a copied-in book we haven't cleaned up yet?
+					if (bookStatus.collectionId != this.CollectionId)
+						return BookStatus.NewBookStatus; // makes it be treated as a new local book, never checked in.
 					// This is a bizarre situation that should get corrected the next time Bloom starts up.
 					// For now, just return what we have by way of local status.
 					return bookStatus;
@@ -335,7 +343,7 @@ namespace Bloom.TeamCollection
 				else if (Directory.Exists(Path.GetDirectoryName(statusFilePath)))
 				{
 					// book exists only locally. Treat as checked out to FakeUserIndicatingNewBook
-					return new BookStatus() { lockedBy = FakeUserIndicatingNewBook, lockedWhere = TeamCollectionManager.CurrentMachine };
+					return BookStatus.NewBookStatus;
 				}
 				return new BookStatus();
 			}
@@ -430,7 +438,7 @@ namespace Bloom.TeamCollection
 
 			var whoBy = email ?? TeamCollectionManager.CurrentUser;
 			var status = GetStatus(bookName);
-			if (String.IsNullOrEmpty(status.lockedBy))
+			if (String.IsNullOrEmpty(status.lockedBy) && !IsDisconnected)
 			{
 				status = status.WithLockedBy(whoBy, TeamCollectionManager.CurrentUserFirstName, TeamCollectionManager.CurrentUserSurname);
 				WriteBookStatus(bookName, status);
@@ -1582,7 +1590,10 @@ namespace Bloom.TeamCollection
 			}
 		}
 
-		public TeamCollectionStatus CollectionStatus => _tcLog.TeamCollectionStatus;
+		public virtual TeamCollectionStatus CollectionStatus => _tcLog.TeamCollectionStatus;
+
+		// A description of the repo, typically useful for locating it, for example, the path to its folder.
+		public abstract string RepoDescription { get; }
 
 		/// <summary>
 		/// Causes a notification to be sent to the UI to update the checkout status icon for {bookName}
@@ -1628,6 +1639,11 @@ namespace Bloom.TeamCollection
 		{
 			return RegistrationDialog.RequireRegistrationEmail(
 				"You will need to register this copy of Bloom with an email address before participating in a Team Collection");
+		}
+
+		public virtual bool CannotDeleteBecauseDisconnected(string bookFolderPath)
+		{
+			return false;
 		}
 	}
 }

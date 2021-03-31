@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\NUnit.3.13.0\build\NUnit.props" Condition="Exists('..\..\packages\NUnit.3.13.0\build\NUnit.props')" />
   <PropertyGroup>
@@ -268,6 +268,7 @@
     <Compile Include="CLI\CreateArtifactsCommandTests.cs" />
     <Compile Include="CLI\GetUsedFontsCommandTests.cs" />
     <Compile Include="DataBuilders\HtmlErrorReporterBuilder.cs" />
+    <Compile Include="TeamCollection\DisconnectedTeamCollectionTests.cs" />
     <Compile Include="TeamCollection\FolderTeamCollectionTests.cs" />
     <Compile Include="TeamCollection\FolderTeamCollectionTests2.cs" />
     <Compile Include="TeamCollection\ProgressSpy.cs" />

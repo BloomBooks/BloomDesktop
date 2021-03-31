@@ -55,7 +55,7 @@ namespace Bloom.Collection
 			}
 
 			_showExperimentalFeatures.Checked = Settings.Default.ShowExperimentalFeatures;
-			if (!Settings.Default.ShowExperimentalFeatures && tcManager.CurrentCollection == null)
+			if (!Settings.Default.ShowExperimentalFeatures && tcManager.CurrentCollectionEvenIfDisconnected == null)
 			{
 				this._tab.Controls.Remove(this._teamCollectionTab);
 			}

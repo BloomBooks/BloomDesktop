@@ -167,7 +167,10 @@ namespace Bloom.CollectionTab
 			// until the expiration of the splash screen time. And other startup idle tasks will
 			// be allowed to run once the sync is complete. Anything we want to happen after
 			// this sync should be part of a distinct startup idle task.
-			_tcManager.CurrentCollection?.SynchronizeRepoAndLocal();
+            // This won't do much if disabled, but it can clean out the status files for
+			// books copied from another collection, and update checkout status for
+			// an offline TC.
+			_tcManager.CurrentCollectionEvenIfDisconnected?.SynchronizeRepoAndLocal();
 		}
 
 		private IEnumerable<BookCollection> GetBookCollectionsOnce()
@@ -206,6 +209,14 @@ namespace Bloom.CollectionTab
 					return false;
 				}
 
+				if (_tcManager.CannotDeleteBecauseDisconnected(_bookSelection.CurrentSelection.FolderPath))
+				{
+					var msg = LocalizationManager.GetString("TeamCollection.ConnectForDelete",
+						"Please connect to the Team Collection before deleting books that are part of it.");
+					ErrorReport.NotifyUserOfProblem(msg);
+					return false;
+				}
+
 				var title = _bookSelection.CurrentSelection.TitleBestForUserDisplay;
 				var confirmRecycleDescription = L10NSharp.LocalizationManager.GetString("CollectionTab.ConfirmRecycleDescription", "The book '{0}'");
 				if (ConfirmRecycleDialog.JustConfirm(string.Format(confirmRecycleDescription, title), false, "Palaso"))
@@ -235,9 +246,11 @@ namespace Bloom.CollectionTab
 			if (_bookSelection.CurrentSelection.IsEditable && !_bookSelection.CurrentSelection.HasFatalError)
 			{
 				// If we need the book to be checked out for editing, make sure it is. If necessary
-				// and possible, check it out.
-				if (_tcManager.CurrentCollection != null &&
-				    !_tcManager.CurrentCollection.AttemptLock(
+				// and possible, check it out. We use the EvenIfDisabled version here because we want
+				// double click to FAIL if we are in a disconnected TC and don't already have it
+				// checked out; we don't just want to edit it as if the collection was not a TC at all.
+				if (_tcManager.CurrentCollectionEvenIfDisconnected != null &&
+				    !_tcManager.CurrentCollectionEvenIfDisconnected.AttemptLock(
 					    Path.GetFileName(_bookSelection.CurrentSelection.FolderPath)))
 					return;
 				_editBookCommand.Raise(_bookSelection.CurrentSelection);

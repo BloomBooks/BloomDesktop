@@ -85,9 +85,7 @@ namespace Bloom.TeamCollection
 			try
 			{
 				Debug.Assert(request.HttpMethod == HttpMethods.Get, "only get is implemented for the teamCollection/repoFolderPath api endpoint");
-				request.ReplyWithText(_tcManager.CurrentCollection == null
-					? ""
-					: (_tcManager.CurrentCollection as FolderTeamCollection).RepoFolderPath);
+				request.ReplyWithText(_tcManager.CurrentCollectionEvenIfDisconnected?.RepoDescription ?? "");
 			}
 			catch (Exception e)
 			{
@@ -125,7 +123,7 @@ namespace Bloom.TeamCollection
 			{
 				// We don't need any of the Sharing UI if the selected book isn't in the editable
 				// collection (or if the collection doesn't have a Team Collection at all).
-				request.ReplyWithBoolean(_tcManager.CurrentCollection != null &&
+				request.ReplyWithBoolean(_tcManager.CurrentCollectionEvenIfDisconnected != null &&
 					(_bookSelection.CurrentSelection == null || _bookSelection.CurrentSelection.IsEditable));
 			}
 			catch (Exception e)
@@ -148,7 +146,9 @@ namespace Bloom.TeamCollection
 					return;
 				}
 
-				var whoHasBookLocked = _tcManager.CurrentCollection?.WhoHasBookLocked(BookFolderName);
+				var whoHasBookLocked = _tcManager.CurrentCollectionEvenIfDisconnected?.WhoHasBookLocked(BookFolderName);
+				// It's debatable whether to use CurrentCollectionEvenIfDisconnected everywhere. For now, I've only changed
+				// it for the two bits of information actually needed by the status panel when disconnected.
 				var whenLocked = _tcManager.CurrentCollection?.WhenWasBookLocked(BookFolderName) ?? DateTime.MaxValue;
 				// review: or better to pass on to JS? We may want to show slightly different
 				// text like "This book is not yet shared. Check it in to make it part of the team collection"
@@ -162,11 +162,12 @@ namespace Bloom.TeamCollection
 						whoFirstName = _tcManager.CurrentCollection?.WhoHasBookLockedFirstName(BookFolderName),
 						whoSurname = _tcManager.CurrentCollection?.WhoHasBookLockedSurname(BookFolderName),
 						when = whenLocked.ToLocalTime().ToShortDateString(),
-						where = _tcManager.CurrentCollection?.WhatComputerHasBookLocked(BookFolderName),
+						where = _tcManager.CurrentCollectionEvenIfDisconnected?.WhatComputerHasBookLocked(BookFolderName),
 						currentUser = CurrentUser,
 						currentMachine = TeamCollectionManager.CurrentMachine,
 						problem,
-						changedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(BookFolderName)
+						changedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(BookFolderName),
+						disconnected = _tcManager.CurrentCollectionEvenIfDisconnected?.IsDisconnected
 					}));
 			}
 			catch (Exception e)
@@ -419,12 +420,12 @@ namespace Bloom.TeamCollection
 			{
 				return false; // no book, no editing
 			}
-			if (_tcManager.CurrentCollection == null)
+			if (_tcManager.CurrentCollectionEvenIfDisconnected == null)
 			{
 				return true; // no team collection, no problem.
 			}
 
-			return _tcManager.CurrentCollection.IsCheckedOutHereBy(_tcManager.CurrentCollection.GetStatus(folderName));
+			return _tcManager.CurrentCollectionEvenIfDisconnected.IsCheckedOutHereBy(_tcManager.CurrentCollectionEvenIfDisconnected.GetStatus(folderName));
 		}
 	}
 }
