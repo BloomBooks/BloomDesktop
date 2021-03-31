@@ -333,6 +333,7 @@
     <Compile Include="TeamCollection\BookRepoChangeEventArgs.cs" />
     <Compile Include="TeamCollection\DeleteRepoBookFileEventArgs.cs" />
     <Compile Include="TeamCollection\BookStatus.cs" />
+    <Compile Include="TeamCollection\DisconnectedTeamCollection.cs" />
     <Compile Include="TeamCollection\FileSystemEventRecord.cs" />
     <Compile Include="TeamCollection\FolderTeamCollection.cs" />
     <Compile Include="TeamCollection\RepoChangeEventArgs.cs" />
@@ -413,6 +414,7 @@
     </Compile>
     <Compile Include="ToPalaso\BackgroundWorkerProgressAdapter.cs" />
     <Compile Include="Utils\BloomUnauthorizedAccessException.cs" />
+    <Compile Include="Utils\DropboxUtils.cs" />
     <Compile Include="Utils\MemoryUtils.cs" />
     <Compile Include="Utils\FileSystemWatcherExtensions.cs" />
     <Compile Include="Utils\MiscUtils.cs" />
@@ -1485,6 +1487,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Content Include="Firefox\sandboxbroker.dll" />
     <Content Include="Firefox\softokn3.dll" />
     <Content Include="Firefox\xul.dll" />
+    <None Include="Resources\Disconnected.png" />
     <None Include="Resources\Error32x32.png" />
     <None Include="Resources\TC Button Grey Small Team.png" />
     <None Include="Resources\TC Button Warning.png" />

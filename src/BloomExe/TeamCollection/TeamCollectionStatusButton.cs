@@ -32,6 +32,12 @@ namespace Bloom.TeamCollection
 					Image = Resources.TC_Button_Updates_Available;
 					ShowExtraIcon = true;
 					break;
+				case TeamCollectionStatus.Disconnected:
+					Text = "Disconnected";
+					ForeColor = Bloom.Palette.BloomYellow;
+					Image = Resources.Disconnected;
+					ShowExtraIcon = true;
+					break;
 				case TeamCollectionStatus.ClobberPending: // don't expect to use this
 				case TeamCollectionStatus.Error:
 					Text = "Problems Encountered";
