@@ -12,14 +12,13 @@ export const BooksOfCollection: React.FunctionComponent<{
     if (!props.collectionId) {
         window.alert("null collectionId");
     }
-    const [books] = BloomApi.useApiJson(
-        `collections/books?collection-id=${encodeURIComponent(
-            props.collectionId
-        )}`
-    );
+    const collectionQuery = React.useMemo(() => {
+        return `collection-id=${encodeURIComponent(props.collectionId)}`;
+    }, [props.collectionId]);
+    const [books] = BloomApi.useApiJson(`collections/books?${collectionQuery}`);
     const bookArray = books as Array<any>;
     const [selectedBookId, selectBook] = BloomApi.useApiString(
-        "collections/selected-book-id",
+        `collections/selected-book-id?${collectionQuery}`,
         ""
     );
 
