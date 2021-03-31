@@ -62,9 +62,8 @@ namespace Bloom
 #if PerProjectMutex
 		private static Mutex _oneInstancePerProjectMutex;
 #else
-		private static DateTime _earliestWeShouldCloseTheSplashScreen;
-		private static SplashScreen _splashForm;
-		private static bool _alreadyHadSplashOnce;
+		// Some splash screen management variables were move from here to StartupScreenManager.
+		// Not sure what should be done about them if we ever turn on PerProjectMutex.
 		private static BookDownloadSupport _bookDownloadSupport;
 #endif
 		internal static string PathToBookDownloadedAtStartup { get; set; }
@@ -336,9 +335,8 @@ namespace Bloom
 						SetUpLocalization();
 
 
-						if (args.Length == 1 && !IsInstallerLaunch(args) && !IsLocalizationHarvestingLaunch(args))
+						if (args.Length == 1 && !IsInstallerLaunch(args) && !IsLocalizationHarvestingLaunch(args) && args[0].ToLowerInvariant().EndsWith(@".bloomcollection"))
 						{
-							Debug.Assert(args[0].ToLowerInvariant().EndsWith(".bloomcollection")); // Anything else handled above.
 							if (CollectionChoosing.OpenCreateCloneControl.ReportIfInvalidCollectionToEdit(args[0]))
 								return 1;
 							Settings.Default.MruProjects.AddNewPath(args[0]);
@@ -622,11 +620,28 @@ namespace Bloom
 		[HandleProcessCorruptedStateExceptions]
 		private static void Run()
 		{
-			_earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(3);
-
+			StartupScreenManager.StartManaging();
+			
 			Settings.Default.Save();
 
-			Application.Idle += Startup;
+			MainContext = SynchronizationContext.Current;
+			StartupScreenManager.AddStartupAction(() => StartUpShellBasedOnMostRecentUsedIfPossible());
+			StartupScreenManager.DoLastOfAllAfterClosingSplashScreen = () =>
+				{
+					if (_projectContext != null && _projectContext.ProjectWindow != null)
+					{
+						var shell = _projectContext.ProjectWindow as Shell;
+						if (shell != null)
+						{
+							shell.ReallyComeToFront();
+						}
+					}
+				};
+			StartupScreenManager.AddStartupAction( () =>
+				{
+					CheckRegistration();
+				}, shouldHideSplashScreen: RegistrationDialog.ShouldWeShowRegistrationDialog(),
+				lowPriority:true);
 
 			Sldr.Initialize();
 			try
@@ -659,69 +674,6 @@ namespace Bloom
 		private static bool IsBloomBookOrder(string[] args)
 		{
 			return args.Length == 1 && !args[0].ToLowerInvariant().EndsWith(".bloomcollection") && !IsInstallerLaunch(args);
-		}
-
-		private static void Startup(object sender, EventArgs e)
-		{
-			Application.Idle -= Startup;
-			MainContext = SynchronizationContext.Current;
-			CareForSplashScreenAtIdleTime(null, null);
-			Application.Idle += new EventHandler(CareForSplashScreenAtIdleTime);
-			StartUpShellBasedOnMostRecentUsedIfPossible();
-		}
-
-
-		private static void CareForSplashScreenAtIdleTime(object sender, EventArgs e)
-		{
-			//this is a hack... somehow this is getting called again, haven't been able to track down how
-			//to reproduce, remove the user settings so that we get first-run behavior. Instead of going through the
-			//wizard, cancel it and open an existing project. After the new collectino window is created, this
-			//fires *again* and would try to open a new splashform
-			if (_alreadyHadSplashOnce)
-			{
-				Application.Idle -= CareForSplashScreenAtIdleTime;
-				return;
-			}
-			if(_splashForm==null)
-			{
-				_splashForm = SplashScreen.CreateAndShow();//warning: this does an ApplicationEvents()
-				CloseFastSplashScreen();
-			}
-			else if (DateTime.Now > _earliestWeShouldCloseTheSplashScreen)
-			{
-				// BL-3192. If there is some modal in front (e.g. dropbox or screen DPI warnings), just wait. We'll keep getting called with these
-				// on idle warnings until it closes, then we can proceed.
-				if (_splashForm.Visible && !_splashForm.CanFocus)
-				{
-					return;
-				}
-				CloseSplashScreen();
-				CheckRegistration();
-				if (_projectContext != null && _projectContext.ProjectWindow != null)
-				{
-					var shell = _projectContext.ProjectWindow as Shell;
-					if (shell != null)
-					{
-						shell.ReallyComeToFront();
-					}
-				}
-			}
-		}
-
-		public static void CloseSplashScreen()
-		{
-			_alreadyHadSplashOnce = true;
-			Application.Idle -= CareForSplashScreenAtIdleTime;
-
-			if (_splashForm != null)
-			{
-				if (RegistrationDialog.ShouldWeShowRegistrationDialog())
-				{
-					_splashForm.Hide();//the fading was getting stuck when we showed the registration.
-				}
-				_splashForm.FadeAndClose(); //it's going to hang around while it fades,
-				_splashForm = null; //but we are done with it
-			}
 		}
 
 		private static void CheckRegistration()
@@ -835,8 +787,10 @@ namespace Bloom
 
 			if (path == null || !OpenProjectWindow(path))
 			{
-				//since the message pump hasn't started yet, show the UI for choosing when it is //review june 2013... is it still not going, with the current splash screen?
-				Application.Idle += ChooseAnotherProject;
+				// Rather than just adding it to the idle queue, we make sure it doesn't overlap with any other startup idle tasks
+				// and that the splash screen will be closed to make way for it.
+				StartupScreenManager.AddStartupAction( ()=> ChooseAnotherProject(null, null),
+					shouldHideSplashScreen:true);
 			}
 		}
 
@@ -864,8 +818,7 @@ namespace Bloom
 #endif
 				_projectContext.ProjectWindow.Show();
 
-				if(_splashForm!=null)
-					_splashForm.StayAboveThisWindow(_projectContext.ProjectWindow);
+				StartupScreenManager.PutSplashAbove(_projectContext.ProjectWindow);
 
 				if (BloomThreadCancelService != null)
 					BloomThreadCancelService.Dispose();
@@ -917,9 +870,6 @@ namespace Bloom
 		static void ChooseAnotherProject(object sender, EventArgs e)
 		{
 			Application.Idle -= ChooseAnotherProject;
-
-			if (_splashForm != null)
-				CloseSplashScreen();
 
 			while (true)
 			{
@@ -1532,26 +1482,5 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 
 		// Should be set to true if this is being called by Harvester, false otherwise.
 		public static bool RunningHarvesterMode { get; set; }
-
-		/// <summary>
-		/// If launched by a fast splash screen program, signal it to close.
-		/// </summary>
-		private static void CloseFastSplashScreen()
-		{
-			if (SIL.PlatformUtilities.Platform.IsLinux)
-			{
-				File.Delete("/tmp/BloomLaunching.now");	// (okay if file doesn't exist)
-			}
-			else if (SIL.PlatformUtilities.Platform.IsWindows)
-			{
-				// signal the native process (that launched us) to close the splash screen
-				// (okay if there's nobody there to receive the signal)
-				using (var closeSplashEvent = new EventWaitHandle(false,
-					EventResetMode.ManualReset, "CloseSquirrelSplashScreenEvent"))
-				{
-					closeSplashEvent.Set();
-				}
-			}
 		}
-	}
 }

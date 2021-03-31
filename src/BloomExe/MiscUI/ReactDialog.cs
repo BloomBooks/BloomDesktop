@@ -30,13 +30,37 @@ namespace Bloom.MiscUI
 		protected override void OnShown(EventArgs e)
 		{
 			base.OnShown(e);
-			CommonApi.CurrentDialog = this; // allows common/closeReactDialog to close it.
+			CurrentOpenModal = this; // allows common/closeReactDialog to close it (via CloseCurrentModal).
 		}
 
 		protected override void OnClosed(EventArgs e)
 		{
 			base.OnClosed(e);
-			CommonApi.CurrentDialog = null;
+			CurrentOpenModal = null;
+		}
+
+		private static ReactDialog _currentOpenModal;
+		public static ReactDialog CurrentOpenModal
+		{
+			get { return _currentOpenModal; }
+			set
+			{
+				if (value != null && _currentOpenModal != null)
+					throw new ApplicationException($"Cannot set one dialog ({value.Text}) before the other closes ({_currentOpenModal.Text}). ");
+				_currentOpenModal = value;
+			}
+		}
+
+		public static void CloseCurrentModal(string labelOfUiElementUsedToCloseTheDialog=null)
+		{
+			// Closes the current dialog.
+			if (CurrentOpenModal != null)
+			{
+				// Optionally, the caller may provide a string value in the payload.  This string can be used to determine which button/etc that initiated the close action.
+				CurrentOpenModal.CloseSource = labelOfUiElementUsedToCloseTheDialog;
+
+				CurrentOpenModal.Close();
+			}
 		}
 	}
 }

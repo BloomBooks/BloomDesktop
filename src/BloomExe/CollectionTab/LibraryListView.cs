@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
+using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
@@ -50,13 +51,6 @@ namespace Bloom.CollectionTab
 		private Image _dropdownImage;
 		private string _previousTargetSaveAs = null;
 		private TeamCollectionManager _tcManager;
-
-		enum ButtonManagementStage
-		{
-			LoadPrimary, ImprovePrimary, LoadSourceCollections, ImproveAndRefresh, FinalizeSetup, Reentering
-		}
-
-		private ButtonManagementStage _buttonManagementStage = ButtonManagementStage.LoadPrimary;
 
 		/// <summary>
 		/// we go through these at idle time, doing slow things like actually instantiating the book to get the title in preferred language
@@ -251,67 +245,75 @@ namespace Bloom.CollectionTab
 		protected override void OnLoad(EventArgs e)
 		{
 			base.OnLoad(e);
-			Application.Idle += ManageButtonsAtIdleTime;
-		}
+			// Add the distinct stages of initialization we want to do as StartupScreenManager actions.
+			// This ensures they don't conflict with any dialogs we want to launch at startup,
+			// and don't happen unexpectedly because of idle events while modal dialogs are open.
 
-		internal void ManageButtonsAtIdleTime(object sender, EventArgs e)
-		{
-			if (_disposed) //could happen if a version update was detected on app launch
-				return;
-
-			switch (_buttonManagementStage)
+			// If we're loading a team collection, we need to do that...with its progress dialog...
+			// before anything else, and we'll need to close the splash screen to make room for
+			// that dialog.
+			// Note, this not put into _startupActions...it should never be disabled.
+			if (_tcManager?.CurrentCollection != null)
 			{
-				case ButtonManagementStage.Reentering:
-					break;
-				case ButtonManagementStage.LoadPrimary:
-					// We may reenter this method during LoadPrimaryCollectionButtons(),
-					// due to raising idle in the progress dialog for team collection sync.
-					// If so, don't want to do anything until the original call finishes.
-					_buttonManagementStage = ButtonManagementStage.Reentering;
-					// during this initial load, we are probably still loading TC information;
-					// TC status will get loaded later.
-					LoadPrimaryCollectionButtons(false);
-					_buttonManagementStage = ButtonManagementStage.ImprovePrimary;
-					_primaryCollectionFlow.Refresh();
-					break;
+				StartupScreenManager.AddStartupAction( () =>
+					{
+						// Don't do anything else after this as part of this idle task.
+						// See the comment near the end of HandleTeamStuffBeforeGetBookCollections.
+						_model.HandleTeamStuffBeforeGetBookCollections();
+					}, shouldHideSplashScreen:true);
+			}
+			// previously: stage LoadPrimary
+			_startupActions.Add(StartupScreenManager.AddStartupAction(() =>
+			{
+				if (_disposed) //could happen if a version update was detected on app launch
+				{
+					PauseStartupActions(); // make sure none of the others happen either
+					return;
+				}
 
-				//here we do any expensive fix up of the buttons in the primary collection (typically, getting vernacular captions, which requires reading their html)
-				case ButtonManagementStage.ImprovePrimary:
-					if (_buttonsNeedingSlowUpdate.IsEmpty)
-					{
-						_buttonManagementStage = ButtonManagementStage.LoadSourceCollections;
-					}
-					else
-					{
-						ImproveAndRefreshBookButtons();
-					}
-					break;
-				case ButtonManagementStage.LoadSourceCollections:
+				LoadPrimaryCollectionButtons(false);
+				_primaryCollectionFlow.Refresh();
+			}));
+			// previously: stage ImprovePrimary
+			// here we do any expensive fix up of the buttons in the primary collection (typically, getting vernacular captions, which requires reading their html)
+			// Each call here handles ONE button, so it needs to keep running until there are none in the queue.
+			_startupActions.Add(StartupScreenManager.AddStartupAction(ImproveAndRefreshBookButtons, needsToRun: () => !_buttonsNeedingSlowUpdate.IsEmpty));
+
+			// JT: used to be a do-nothing stage. If reinstated, make another startupAction.
+			// GJM Sept 23 2015: BL-2778 Concern about memory leaks led to not updating thumbnails on
+			// source collections for new books. To undo, uncomment ImproveAndRefreshBookButtons()
+			// and comment out removing the event handler.
+			//ImproveAndRefreshBookButtons();
+
+			// previously: stage LoadSourceCollections
+			_startupActions.Add(StartupScreenManager.AddStartupAction(() =>
+				{
 					LoadSourceCollectionButtons();
-					_buttonManagementStage = ButtonManagementStage.ImproveAndRefresh;
 					if (Program.PathToBookDownloadedAtStartup != null)
 					{
 						// We started up with a command to downloaded a book...Select it.
 						SelectBook(new BookInfo(Program.PathToBookDownloadedAtStartup, false));
 					}
-					break;
-				case ButtonManagementStage.ImproveAndRefresh:
-					// GJM Sept 23 2015: BL-2778 Concern about memory leaks led to not updating thumbnails on
-					// source collections for new books. To undo, uncomment ImproveAndRefreshBookButtons()
-					// and comment out removing the event handler.
-					//ImproveAndRefreshBookButtons();
-					_buttonManagementStage = ButtonManagementStage.FinalizeSetup;
-					break;
-				case ButtonManagementStage.FinalizeSetup:
+				}));
+			// previously: stage FinalizeSetup
+			_startupActions.Add(StartupScreenManager.AddStartupAction(() =>
+				{
 					// If we repair duplicates and there is a reason to toast (e.g. locked meta.json file),
 					// The ongoing UI activity focuses Bloom over top of the toast after a brief flash.
 					// For that reason, we add a new stage for tasks that need to happen after the UI is updated.
 					RepairDuplicates();
-					Application.Idle -= ManageButtonsAtIdleTime; // stop running to this to do nothing.
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
+				}));
+		}
+
+		List<IStartupAction> _startupActions = new List<IStartupAction>();
+
+		void PauseStartupActions()
+		{
+			_startupActions.ForEach(a => a.Enabled = false);
+		}
+		void ResumeStartupActions()
+		{
+			_startupActions.ForEach(a => a.Enabled = true);
 		}
 
 		private void RepairDuplicates()
@@ -323,7 +325,7 @@ namespace Bloom.CollectionTab
 		/// <summary>
 		/// the primary could as well be called "the one editable collection"... the one at the top
 		/// </summary>
-		private void LoadPrimaryCollectionButtons(bool UpdateTcStatus = true)
+		internal void LoadPrimaryCollectionButtons(bool UpdateTcStatus = true)
 		{
 			_primaryCollectionReloadPending = false;
 			_primaryCollectionFlow.SuspendLayout();
@@ -344,6 +346,8 @@ namespace Bloom.CollectionTab
 			{
 				_tcManager?.CurrentCollection?.UpdateStatusOfAllCheckedOutBooks();
 			}
+
+			_loadedPrimaryCollectionButtons = true;
 		}
 
 		private void LoadSourceCollectionButtons()
@@ -639,6 +643,8 @@ namespace Bloom.CollectionTab
 
 		private Timer _newDownloadTimer;
 		private HashSet<string> _changingFolders = new HashSet<string>();
+		private bool _loadedPrimaryCollectionButtons;
+
 		/// <summary>
 		/// Called when a file system watcher notices a new book (or some similar change) in our downloaded books folder.
 		/// This will happen on a thread-pool thread.
@@ -1028,8 +1034,7 @@ namespace Bloom.CollectionTab
 		{
 			if(obj.To is LibraryView)
 			{
-				Application.Idle -= ManageButtonsAtIdleTime;
-				Application.Idle += ManageButtonsAtIdleTime;
+				ResumeStartupActions();  // in case we paused these before finishing, we need to do them now.
 				Book.Book book = SelectedBook;
 				if (book != null && SelectedButton != null)
 				{
@@ -1056,7 +1061,8 @@ namespace Bloom.CollectionTab
 			}
 			else
 			{
-				Application.Idle -= ManageButtonsAtIdleTime;
+				// We don't need to finish these now if we've already switched tabs.
+				PauseStartupActions();
 			}
 		}
 
@@ -1089,7 +1095,7 @@ namespace Bloom.CollectionTab
 
 		private bool IsPrimaryCollectionAddingButtons()
 		{
-			return _buttonManagementStage == ButtonManagementStage.LoadPrimary || _buttonManagementStage  == ButtonManagementStage.Reentering;
+			return !_loadedPrimaryCollectionButtons;
 		}
 
 		internal void OnTeamCollectionBookStatusChange(BookStatusChangeEventArgs eventArgs)
@@ -1110,10 +1116,15 @@ namespace Bloom.CollectionTab
 				// However, I think this scenario is not likely enough to be worth fixing. I think it would require a book being changed in the repo
 				// as Bloom is starting up.
 				Task.Delay(100).ContinueWith(unused =>
-					// We may have been on the UI thread, but that doesn't guarantee that the continueWith task is.
-					SafeInvoke.InvokeIfPossible("LibraryListView update checkout status icons",this,true, () =>
-					_tcBookStatusChangeEvent.Raise(eventArgs)
-				));
+					{
+						// We may have been on the UI thread, but that doesn't guarantee that the continueWith task is.
+						// It's even just possible we got disposed in the last 100ms.
+						if(_disposed)
+							return;
+						SafeInvoke.InvokeIfPossible("LibraryListView update checkout status icons", this, true, () =>
+							_tcBookStatusChangeEvent.Raise(eventArgs));
+					}
+				);
 				return;
 			}
 

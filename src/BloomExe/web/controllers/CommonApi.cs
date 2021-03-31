@@ -13,6 +13,7 @@ using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
+using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -117,20 +118,7 @@ namespace Bloom.web.controllers
 			// api to do it. We just need a way to close a c#-opened dialog from javascript (e.g. the Close button of the dialog).
 			apiHandler.RegisterEndpointHandler("common/closeReactDialog", request =>
 			{
-				// Closes the current dialog.
-				if (CurrentDialog != null)
-				{
-					// Optionally, the caller may provide a string value in the payload.  This string can be used to determine which button/etc that initiated the close action.
-
-					// TODO: Probably unnecessary
-					CurrentDialog.CloseSource = null;	// First reset the source, in case of any parsing errors
-
-					// If desired, the close source should be sent as a Post String
-					CurrentDialog.CloseSource = request.GetPostStringOrNull();
-
-					CurrentDialog.Close();
-				}
-
+				ReactDialog.CloseCurrentModal(request.GetPostStringOrNull());
 				request.PostSucceeded();
 			}, true);
 
@@ -138,13 +126,17 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("common/reloadCollection", HandleReloadCollection, true);
 		}
 
-		public static ReactDialog CurrentDialog { get; set; }
+	
 
 		public Action ReloadProjectAction { get; set; }
 
 		private void HandleReloadCollection(ApiRequest request)
 		{
-			CurrentDialog?.Close();
+			if (ReactDialog.CurrentOpenModal!= null)
+			{
+				ReactDialog.CloseCurrentModal();
+			}
+
 			// On Linux, the main window doesn't close if we invoke ReloadProjectAction immediately here.
 			// Waiting for Idle processing allows the underlying dialog to actually close before its parent
 			// tries to close.  Without this slight delay on Linux, the user has to manually close the main

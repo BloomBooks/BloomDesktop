@@ -673,13 +673,14 @@ namespace Bloom.Workspace
 			// I'm not very happy with this, but the only place I could find to detect that we're opening a new project
 			// is too soon to bring up a dialog; it comes up before the main window is fully initialized, which can
 			// leave the main window in the wrong place. Waiting until idle gives a much better effect.
-			Application.Idle += BringUpEnterpriseSettings;
+			StartupScreenManager.AddStartupAction(() =>
+			{
+				BringUpEnterpriseSettings();
+			},shouldHideSplashScreen:true, lowPriority:true);
 		}
 
-		private void BringUpEnterpriseSettings(object o, EventArgs eventArgs)
+		private void BringUpEnterpriseSettings()
 		{
-			Application.Idle -= BringUpEnterpriseSettings;
-			Program.CloseSplashScreen();
 			CollectionSettingsApi.PrepareForFixEnterpriseBranding(_collectionSettings.InvalidBranding, _collectionSettings.SubscriptionCode);
 			OnSettingsButton_Click(this, new EventArgs());
 			CollectionSettingsApi.EndFixEnterpriseBranding();
@@ -863,39 +864,41 @@ namespace Bloom.Workspace
 			CheckDPISettings();
 			_originalToolStripPanelWidth = 0;
 			_viewInitialized = true;
-			// DONT COMMIT. A bug here (BL-9736) was preventing me from using Bloom: ShowAutoUpdateDialogIfNeeded();
+			ShowAutoUpdateDialogIfNeeded();
+			// Whether we showed the dialog or not we'll check for a new version in 1 minute.
+			_applicationUpdateCheckTimer.Enabled = true;
 		}
 
 		private const int kCurrentAutoUpdateVersion = 1;
+
 		private void ShowAutoUpdateDialogIfNeeded()
 		{
 			if (Platform.IsLinux)
 				return;
-			try
+			// If Bloom is newly installed or we only had old versions before, this should be 0.
+			var isShown = Settings.Default.AutoUpdateDialogShown;
+			if (isShown < kCurrentAutoUpdateVersion)
 			{
-				// If Bloom is newly installed or we only had old versions before, this should be 0.
-				var isShown = Settings.Default.AutoUpdateDialogShown;
-				if (isShown < kCurrentAutoUpdateVersion)
-				{
-					Program.CloseSplashScreen(); // Otherwise it will stay in front!
-					using (var dlg = new ReactDialog("autoUpdateSoftwareDlgBundle.js", "AutoUpdateSoftwareDialog"))
+				// It's tempting to make the whole process of calling this function a startup action,
+				// but until we actually decide whether to show it, we don't know whether we need to
+				// hide the progress dialog. This is as much as we can postpone.
+				StartupScreenManager.AddStartupAction( () =>
 					{
-                        dlg.Height = 350;
-						dlg.FormBorderStyle = FormBorderStyle.FixedDialog;
-						dlg.ControlBox = false;
-						dlg.Text = ""; // Don't show a title on the dialog
-						// FWIW: We don't want this dialog draggable, but if I didn't set Text to empty string,
-						// the dialog is draggable, but says "ReactDialog" in the upper left corner.
-						// If we need a draggable one sometime, we can just set the Text to what we want.
-						dlg.ShowDialog(this);
-					}
-				}
+						using (var dlg = new ReactDialog("autoUpdateSoftwareDlgBundle.js",
+							"AutoUpdateSoftwareDialog"))
+						{
+							dlg.Height = 350;
+							dlg.FormBorderStyle = FormBorderStyle.FixedDialog;
+							dlg.ControlBox = false;
+							dlg.Text = ""; // Don't show a title on the dialog
+							// FWIW: We don't want this dialog draggable, but if I didn't set Text to empty string,
+							// the dialog is draggable, but says "ReactDialog" in the upper left corner.
+							// If we need a draggable one sometime, we can just set the Text to what we want.
+							dlg.ShowDialog(this);
+						}
+					}, shouldHideSplashScreen:true, lowPriority:false);
 			}
-			finally
-			{
-				// Whether we showed the dialog or not we'll check for a new version in 1 minute.
-				_applicationUpdateCheckTimer.Enabled = true;
-			}
+
 		}
 
 		private void OnRegistrationMenuItem_Click(object sender, EventArgs e)

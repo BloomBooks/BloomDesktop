@@ -91,7 +91,7 @@ namespace BloomTests.CollectionTab
 			var primaryCollectionFlow = new FlowLayoutPanel();
 			var obj = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateObject(_view);
 			obj.SetField("_primaryCollectionFlow", primaryCollectionFlow);
-			_view.ManageButtonsAtIdleTime(null, null);	// Load primary buttons
+			_view.LoadPrimaryCollectionButtons();
 
 			// System Under Test //
 			_view.OnTeamCollectionBookStatusChange(new BookStatusChangeEventArgs("book1", CheckedOutBy.Self));
@@ -114,7 +114,7 @@ namespace BloomTests.CollectionTab
 			var primaryCollectionFlow = new FlowLayoutPanel();
 			var obj = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateObject(_view);
 			obj.SetField("_primaryCollectionFlow", primaryCollectionFlow);
-			_view.ManageButtonsAtIdleTime(null, null);	// Load primary buttons
+			_view.LoadPrimaryCollectionButtons();
 
 			// System Under Test //
 			_view.OnTeamCollectionBookStatusChange(new BookStatusChangeEventArgs("book1", CheckedOutBy.Other));
@@ -137,7 +137,7 @@ namespace BloomTests.CollectionTab
 			var primaryCollectionFlow = new FlowLayoutPanel();
 			var obj = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateObject(_view);
 			obj.SetField("_primaryCollectionFlow", primaryCollectionFlow);
-			_view.ManageButtonsAtIdleTime(null, null);	// Load primary buttons
+			_view.LoadPrimaryCollectionButtons();
 			_view.OnTeamCollectionBookStatusChange(new BookStatusChangeEventArgs("book1", CheckedOutBy.Other));
 			var button = primaryCollectionFlow.Controls.OfType<Button>().First();
 			Assert.AreEqual(1, button.Controls.OfType<Label>().Count(), "Test was not set up properly. Wrong number of labels.");
