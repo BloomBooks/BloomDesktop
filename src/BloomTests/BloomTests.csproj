@@ -399,6 +399,7 @@
   -->
   <Target Name="AfterBuild">
     <Copy SourceFiles="../../lib/dotnet/TidyManaged.dll.config" DestinationFolder="$(OutDir)" Condition="'$(OS)'!='Windows_NT'" />
+    <Message Text="AfterBuild target completed." Importance="high" />
   </Target>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -413,16 +414,19 @@
   </Target>
   <Import Project="..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets" Condition="Exists('..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets')" />
   <Import Project="..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets" Condition="'$(OS)'=='Windows_NT' AND Exists('..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets')" />
+  <Import Project="..\..\packages\SIL.Media.8.0.1-beta0008\build\SIL.Media.targets" Condition="Exists('..\..\packages\SIL.Media.8.0.1-beta0008\build\SIL.Media.targets')" />
+  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.8.0.1-beta0008\build\SIL.Windows.Forms.Keyboarding.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.8.0.1-beta0008\build\SIL.Windows.Forms.Keyboarding.targets')" />
+  <Import Project="..\..\packages\SIL.Windows.Forms.8.0.1-beta0008\build\SIL.Windows.Forms.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.8.0.1-beta0008\build\SIL.Windows.Forms.targets')" />
   <!-- msbuild mistakenly copies the 64-bit version of irrKlang.NET4.dll to $(Output) as it resolves
        SIL.Media.dll in our 32-bit build.  It also always copies both the 32-bit and 64-bit versions
        of the library files to $(Output)\lib\win-xXX.  We correct those errors here.  (We can't do
        this in AfterBuild because that runs before _CopyFilesMarkedCopyLocal which does the incorrect
        copying.) -->
   <ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x86'">
-    <CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.8.0.0-beta0239\build\lib\win-x86\*.dll" />
+    <CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x86\*.dll" />
   </ItemGroup>
   <ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x64'">
-    <CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.8.0.0-beta0239\build\lib\win-x64\*.dll" />
+    <CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x64\*.dll" />
   </ItemGroup>
   <ItemGroup Condition="'$(OS)'=='Windows_NT'">
     <DeleteForSILMedia Include="$(OutDir)lib\win-x64\*.*" />
@@ -437,7 +441,9 @@
     <Delete Files="@(DeleteForSILMedia)" TreatErrorsAsWarnings="true" />
     <RemoveDir Directories="@(RemoveForSILMedia)" />
   </Target>
-  <Import Project="..\..\packages\SIL.Media.8.0.1-beta0008\build\SIL.Media.targets" Condition="Exists('..\..\packages\SIL.Media.8.0.1-beta0008\build\SIL.Media.targets')" />
-  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.8.0.1-beta0008\build\SIL.Windows.Forms.Keyboarding.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.8.0.1-beta0008\build\SIL.Windows.Forms.Keyboarding.targets')" />
-  <Import Project="..\..\packages\SIL.Windows.Forms.8.0.1-beta0008\build\SIL.Windows.Forms.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.8.0.1-beta0008\build\SIL.Windows.Forms.targets')" />
+  <!-- Note: Visual Studio automatically inserts any imports from installing packages into the end here,
+  but the AfterBuild target may not run if .targets files are imported after it.
+  I recommend you move the Import statements before the "AfterBuild" target,
+  or if not, then please verify that AfterBuild's Message is still printed out.
+  -->
 </Project>
