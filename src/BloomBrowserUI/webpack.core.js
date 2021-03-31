@@ -47,6 +47,11 @@ module.exports = {
                 use: {
                     loader: "file-loader"
                 }
+            },
+            {
+                test: /react-spring/,
+                // work-around for https://github.com/plouc/nivo/issues/1290 until it gets fixed.
+                sideEffects: true
             }
         ]
     },
