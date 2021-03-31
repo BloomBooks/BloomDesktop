@@ -14,7 +14,6 @@ const knownComponents = {
     AutoUpdateSoftwareDialog: AutoUpdateSoftwareDialog,
     ProblemDialog: ProblemDialog,
     ProgressDialog: ProgressDialog,
-    BookListPane: BookListPane,
     CollectionsPane: CollectionsPane
 };
 
