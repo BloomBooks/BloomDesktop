@@ -303,6 +303,11 @@ namespace Bloom.TeamCollection
 		}
 
 		/// <summary>
+		/// A good default, overridden in DisconnectedTeamCollection.
+		/// </summary>
+		public virtual bool IsDisconnected => false;
+
+		/// <summary>
 		/// Common part of getting book status as recorded in the repo, or if it is not in the repo
 		/// but there is such a book locally, treat as locked by FakeUserIndicatingNewBook.
 		/// </summary>
@@ -328,6 +333,9 @@ namespace Bloom.TeamCollection
 						if (!String.IsNullOrEmpty(statusString))
 							return BookStatus.FromJson(statusString);
 					}
+					// Maybe it's a copied-in book we haven't cleaned up yet?
+					if (bookStatus.collectionId != this.CollectionId)
+						return BookStatus.NewBookStatus; // makes it be treated as a new local book, never checked in.
 					// This is a bizarre situation that should get corrected the next time Bloom starts up.
 					// For now, just return what we have by way of local status.
 					return bookStatus;
@@ -335,7 +343,7 @@ namespace Bloom.TeamCollection
 				else if (Directory.Exists(Path.GetDirectoryName(statusFilePath)))
 				{
 					// book exists only locally. Treat as checked out to FakeUserIndicatingNewBook
-					return new BookStatus() { lockedBy = FakeUserIndicatingNewBook, lockedWhere = TeamCollectionManager.CurrentMachine };
+					return BookStatus.NewBookStatus;
 				}
 				return new BookStatus();
 			}
@@ -430,7 +438,7 @@ namespace Bloom.TeamCollection
 
 			var whoBy = email ?? TeamCollectionManager.CurrentUser;
 			var status = GetStatus(bookName);
-			if (String.IsNullOrEmpty(status.lockedBy))
+			if (String.IsNullOrEmpty(status.lockedBy) && !IsDisconnected)
 			{
 				status = status.WithLockedBy(whoBy, TeamCollectionManager.CurrentUserFirstName, TeamCollectionManager.CurrentUserSurname);
 				WriteBookStatus(bookName, status);
@@ -537,7 +545,7 @@ namespace Bloom.TeamCollection
 					// if it's not a startup sync, it's happening because of a local change. It will get lost.
 					// Not sure this is worth localizing. Eventually only one or two users per collection will be
 					// allowed to make such changes. Collection settings should rarely be changed at all
-					// in team collections. This message will hopefully be seen rarely if at all.
+					// in Team Collections. This message will hopefully be seen rarely if at all.
 					ErrorReport.NotifyUserOfProblem(
 						"Collection settings have been changed remotely. Your recent changes will be lost when Bloom syncs the next time it starts up");
 				}
@@ -868,7 +876,7 @@ namespace Bloom.TeamCollection
 			{
 				// Argh! Somebody deleted the book I'm working on!
 				_tcLog.WriteMessage(MessageAndMilestoneType.Error, "TeamCollection.RemoteDeleteConflict",
-					"One of your teammates has deleted the book \"{0}\". Since you have this book checked out, it has not been deleted locally. You can delete your copy if you wish, or restore it to the team collection by just checking in what you have.",
+					"One of your teammates has deleted the book \"{0}\". Since you have this book checked out, it has not been deleted locally. You can delete your copy if you wish, or restore it to the Team Collection by just checking in what you have.",
 					bookBaseName, null);
 				// Don't delete it; and there's been no local status change we need to worry about.
 				return;
@@ -1287,7 +1295,7 @@ namespace Bloom.TeamCollection
 					}
 					else
 					{
-						// The remote book has the same name as a local book that is not known to be in the team collection.
+						// The remote book has the same name as a local book that is not known to be in the Team Collection.
 						if (firstTimeJoin)
 						{
 							// We don't know the previous history of the collection. Quite likely it was duplicated some
@@ -1377,7 +1385,7 @@ namespace Bloom.TeamCollection
 							// warn the user
 							hasProblems= true;
 							ReportProgressAndLog(progress, "ConflictingCheckout",
-								"The book '{0}', which you have checked out and edited, is checked out to someone else in the team collection. Your changes have been overwritten, but are saved to Lost-and-found.",
+								"The book '{0}', which you have checked out and edited, is checked out to someone else in the Team Collection. Your changes have been overwritten, but are saved to Lost-and-found.",
 								bookName, null, MessageKind.Error);
 							// Make the local folder match the repo (this is where 'they win')
 							CopyBookFromRepoToLocal(bookName);
@@ -1412,7 +1420,7 @@ namespace Bloom.TeamCollection
 						// warn the user
 						hasProblems = true;
 						ReportProgressAndLog(progress, "ConflictingEdit",
-						"The book '{0}', which you have checked out and edited, was modified in the team collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.",
+						"The book '{0}', which you have checked out and edited, was modified in the Team Collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.",
 						bookName, null, MessageKind.Error);
 						continue;
 				}
@@ -1541,7 +1549,7 @@ namespace Bloom.TeamCollection
 		}
 
 		/// <summary>
-		/// Given the name (with or without preceding path) of a team collection folder,
+		/// Given the name (with or without preceding path) of a Team Collection folder,
 		/// or at least the folder that contains the .JoinBloomTC file,
 		/// get the name of the corresponding .bloomCollection file. Currently this involves
 		/// removing the trailing " - TC" if present, and adding the .bloomcollection
@@ -1582,7 +1590,10 @@ namespace Bloom.TeamCollection
 			}
 		}
 
-		public TeamCollectionStatus CollectionStatus => _tcLog.TeamCollectionStatus;
+		public virtual TeamCollectionStatus CollectionStatus => _tcLog.TeamCollectionStatus;
+
+		// A description of the repo, typically useful for locating it, for example, the path to its folder.
+		public abstract string RepoDescription { get; }
 
 		/// <summary>
 		/// Causes a notification to be sent to the UI to update the checkout status icon for {bookName}
@@ -1628,6 +1639,11 @@ namespace Bloom.TeamCollection
 		{
 			return RegistrationDialog.RequireRegistrationEmail(
 				"You will need to register this copy of Bloom with an email address before participating in a Team Collection");
+		}
+
+		public virtual bool CannotDeleteBecauseDisconnected(string bookFolderPath)
+		{
+			return false;
 		}
 	}
 }

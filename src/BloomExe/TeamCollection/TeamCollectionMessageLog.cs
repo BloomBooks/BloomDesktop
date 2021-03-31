@@ -16,6 +16,7 @@ namespace Bloom.TeamCollection
 		NewStuff, // New remote stuff to see after reload
 		Error, // Errors you should check into sometime
 		ClobberPending, // Your current work is about to be overwritten, drop everything!
+		Disconnected, // It's a TC, but we can't connect right now, so most things are disabled.
 		None // The current collection is not a team collection.
 	}
 
