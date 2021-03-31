@@ -27,6 +27,13 @@ The new Team Collection _enterprise_ feature debuts in this release. With a Team
 
 ![screenshot](https://i.imgur.com/VCqWEft.png)
 
+## Performance
+
+Recently we spent weeks improving Bloom's ability to deal with large books and long Bloom sessions without running otu of memory. As part of that effort, we've added a tool for watching what happens to available memory and speed as Bloom does various things. This is mostly for our own use, but it's also available to you, in case you suspect that Bloom is eating memory or slowing down as you use it.
+
+![screenshot](https://i.imgur.com/fkTafND.png)
+![screenshot](https://i.imgur.com/3fsm9ae.png)
+
 <br/>
 <br/>
 
