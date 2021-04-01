@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using Bloom;
 using Bloom.Book;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
@@ -25,7 +25,7 @@ namespace BloomTests.Book
 		{
 			var first = new DataSet();
 			var second = new DataSet();
-			first.AddLanguageString("one", "a value", "en", false);
+			first.AddLanguageString("one", XmlString.FromXml("a value"), "en", false);
 			Assert.That(first.SameAs(second), Is.False);
 		}
 
@@ -34,8 +34,8 @@ namespace BloomTests.Book
 		{
 			var first = new DataSet();
 			var second = new DataSet();
-			first.AddLanguageString("one", "a value", "en", false);
-			second.AddLanguageString("two", "a value", "en", false);
+			first.AddLanguageString("one", XmlString.FromXml("a value"), "en", false);
+			second.AddLanguageString("two", XmlString.FromXml("a value"), "en", false);
 			Assert.That(first.SameAs(second), Is.False);
 		}
 
@@ -44,8 +44,8 @@ namespace BloomTests.Book
 		{
 			var first = new DataSet();
 			var second = new DataSet();
-			first.AddLanguageString("one", "a value", "en", false);
-			second.AddLanguageString("one", "another value", "en", false);
+			first.AddLanguageString("one", XmlString.FromXml("a value"), "en", false);
+			second.AddLanguageString("one", XmlString.FromXml("another value"), "en", false);
 			Assert.That(first.SameAs(second), Is.False);
 		}
 
@@ -54,9 +54,9 @@ namespace BloomTests.Book
 		{
 			var first = new DataSet();
 			var second = new DataSet();
-			first.AddLanguageString("one", "a value", "en", false);
-			first.AddLanguageString("one", "another value", "fr", false);
-			second.AddLanguageString("one", "a value", "en", false);
+			first.AddLanguageString("one", XmlString.FromXml("a value"), "en", false);
+			first.AddLanguageString("one", XmlString.FromXml("another value"), "fr", false);
+			second.AddLanguageString("one", XmlString.FromXml("a value"), "en", false);
 			Assert.That(first.SameAs(second), Is.False);
 		}
 
@@ -65,8 +65,8 @@ namespace BloomTests.Book
 		{
 			var first = new DataSet();
 			var second = new DataSet();
-			first.AddLanguageString("one", "a value", "en", false);
-			second.AddLanguageString("one", "a value", "de", false);
+			first.AddLanguageString("one", XmlString.FromXml("a value"), "en", false);
+			second.AddLanguageString("one", XmlString.FromXml("a value"), "de", false);
 			Assert.That(first.SameAs(second), Is.False);
 		}
 
@@ -213,9 +213,9 @@ namespace BloomTests.Book
 		private static DataSet MakeComplexDataSet()
 		{
 			var ds = new DataSet();
-			ds.AddLanguageString("one", "a value", "en", false);
-			ds.AddLanguageString("one", "another value", "de", false);
-			ds.AddLanguageString("two", "another value", "fr", false);
+			ds.AddLanguageString("one", XmlString.FromXml("a value"), "en", false);
+			ds.AddLanguageString("one", XmlString.FromXml("another value"), "de", false);
+			ds.AddLanguageString("two", XmlString.FromXml("another value"), "fr", false);
 			var values = new HashSet<KeyValuePair<string, string>>();
 			values.Add(new KeyValuePair<string, string>("key", "value"));
 			ds.UpdateXmatterPageDataAttributeSet("one", values);
@@ -227,13 +227,13 @@ namespace BloomTests.Book
 			return ds;
 		}
 
-		static List<Tuple<string, string>> MakeList(params string[] args)
+		static List<Tuple<string, XmlString>> MakeList(params string[] args)
 		{
-			var result = new List<Tuple<string, string>>();
+			var result = new List<Tuple<string, XmlString>>();
 			Assert.That(args.Length %2, Is.EqualTo(0));
 			for (var i = 0; i < args.Length / 2; i++)
 			{
-				result.Add(Tuple.Create(args[i * 2], args[i * 2 + 1]));
+				result.Add(Tuple.Create(args[i * 2], XmlString.FromNotEncoded(args[i * 2 + 1])));
 			}
 			return result;
 		}

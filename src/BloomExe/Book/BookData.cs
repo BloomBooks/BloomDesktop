@@ -227,7 +227,7 @@ namespace Bloom.Book
 					UpdateSingleTextVariableInDataDiv(v.Key,v.Value);
 			}
 			foreach (var tuple in itemsToDelete)
-				UpdateSingleTextVariableInDataDiv(tuple.Item1, tuple.Item2, "");
+				UpdateSingleTextVariableInDataDiv(tuple.Item1, tuple.Item2, XmlString.Empty);
 			foreach (var attributeSet in incomingData.XmatterPageDataAttributeSets)
 				PushXmatterPageAttributesIntoDataDiv(attributeSet);
 			//Debug.WriteLine("after update: " + _dataDiv.OuterXml);
@@ -289,7 +289,7 @@ namespace Bloom.Book
 								allLetters += " " + stageData.letters;
 							}
 							var letters = string.Join(", ", allLetters.Trim().Split(' '));
-							incomingData.UpdateLanguageString("decodableStageLetters", letters, Language1.Iso639Code, false);
+							incomingData.UpdateLanguageString("decodableStageLetters", XmlString.FromNotEncoded(letters), Language1.Iso639Code, false);
 						}
 						catch (XmlException e)
 						{
@@ -560,7 +560,7 @@ namespace Bloom.Book
 			{
 				string writingSystemId = languageForm.WritingSystemId;
 				var attrs = v.GetAttributeList(writingSystemId);
-				UpdateSingleTextVariableInDataDiv(key, writingSystemId, languageForm.Form, attrs);
+				UpdateSingleTextVariableInDataDiv(key, writingSystemId, XmlString.FromXml(languageForm.Form), attrs);
 			}
 		}
 
@@ -571,7 +571,7 @@ namespace Bloom.Book
 		/// <param name="key"></param>
 		/// <param name="writingSystemId"></param>
 		/// <param name="form"></param>
-		private void UpdateSingleTextVariableInDataDiv(string key, string writingSystemId, string form, List<Tuple<string, string>> attrs = null)
+		private void UpdateSingleTextVariableInDataDiv(string key, string writingSystemId, XmlString form, List<Tuple<string, XmlString>> attrs = null)
 		{
 			XmlNode node =
 				_dataDiv.SelectSingleNode(String.Format("div[@data-book='{0}' and @lang='{1}']", key,
@@ -581,17 +581,17 @@ namespace Bloom.Book
 
 			if (null == node)
 			{
-				if (!string.IsNullOrEmpty(form))
+				if (!XmlString.IsNullOrEmpty(form))
 				{
 					//Debug.WriteLine("creating in datadiv: {0}[{1}]={2}", key, writingSystemId, form);
 					//Debug.WriteLine("nop: " + _dataDiv.OuterXml);
-					var newElement = AddDataDivElementContainingBookVariable(key, writingSystemId, form);
+					var newElement = AddDataDivElementContainingBookVariable(key, writingSystemId, form.Xml);
 					MergeAttrsIntoElement(attrs, newElement);
 				}
 			}
 			else
 			{
-				if (string.IsNullOrEmpty(form)) //a null value removes the entry entirely
+				if (XmlString.IsNullOrEmpty(form)) //a null value removes the entry entirely
 				{
 					node.ParentNode.RemoveChild(node);
 				}
@@ -606,17 +606,17 @@ namespace Bloom.Book
 			}
 		}
 
-		private void SetNodeXml(string key, string form, XmlNode node)
+		private void SetNodeXml(string key, XmlString form, XmlNode node)
 		{
 			if(KeysOfVariablesThatAreUrlEncoded.Contains(key))
 			{
 				// Reference: BL-3235
 				//remove the url path encoding
-				form = UrlPathString.CreateFromUrlEncodedString(form).NotEncoded;	// want query as well as filepath
+				var decodedUrlStr = UrlPathString.CreateFromUrlEncodedString(form.Xml).NotEncoded;	// want query as well as filepath
 				//switch to html/xml encoding
-				form = HttpUtility.HtmlEncode(form);
+				form = XmlString.FromNotEncoded(decodedUrlStr);
 			}
-			node.InnerXml = form;
+			node.InnerXml = form.Xml;
 			if (node.Attributes["data-textonly"]?.Value == "true")
 			{
 				// In most contexts, it's fine for Bloom to wrap the content of a div in P elements and so forth.
@@ -630,11 +630,14 @@ namespace Bloom.Book
 
 		public XmlElement AddDataDivElementContainingBookVariable(string key, string lang, string form)
 		{
-			return AddDataDivElement("data-book", key, lang, form);
+			return AddDataDivElement("data-book", key, lang, XmlString.FromXml(form));
 		}
 
-		public XmlElement AddDataDivElement(string type, string key, string lang = null, string form = "")
+		public XmlElement AddDataDivElement(string type, string key, string lang = null, XmlString form = null)
 		{
+			if (form == null)
+				form = XmlString.Empty;
+
 			XmlElement newDiv = _dom.RawDom.CreateElement("div");
 			newDiv.SetAttribute(type, key);
 			if (lang != null)
@@ -656,7 +659,7 @@ namespace Bloom.Book
 
 		public void Set(string key, string value, string lang)
 		{
-			_dataset.UpdateLanguageString(key, value, lang, false);
+			_dataset.UpdateLanguageString(key, XmlString.FromXml(value), lang, false);
 			if(_dataset.TextVariables.ContainsKey(key))
 			{
 				UpdateSingleTextVariableInDataDiv(key,_dataset.TextVariables[key]);
@@ -763,11 +766,11 @@ namespace Bloom.Book
 //            else
 			{
 				data.WritingSystemAliases.Add("V", collectionSettings.Language1.Iso639Code);
-				data.AddLanguageString("nameOfLanguage", collectionSettings.Language1.Name, "*", true);
+				data.AddLanguageString("nameOfLanguage", XmlString.FromNotEncoded(collectionSettings.Language1.Name), "*", true);
 				data.AddLanguageString("nameOfNationalLanguage1",
-									   collectionSettings.Language2.Name, "*", true);
+									   XmlString.FromNotEncoded(collectionSettings.Language2.Name), "*", true);
 				data.AddLanguageString("nameOfNationalLanguage2",
-									   collectionSettings.Language3.Name, "*", true);
+									   XmlString.FromNotEncoded(collectionSettings.Language3.Name), "*", true);
 				data.UpdateGenericLanguageString("iso639Code", collectionSettings.Language1.Iso639Code, true);
 				data.UpdateGenericLanguageString("country", collectionSettings.Country, true);
 				data.UpdateGenericLanguageString("province", collectionSettings.Province, true);
@@ -1022,9 +1025,9 @@ namespace Bloom.Book
 		// doesn't have them.
 		static HashSet<string> _classesToRemoveIfAbsent = new HashSet<string>(new[] { "bloom-postAudioSplit" });
 
-		private List<Tuple<string, string>> GetAttributesToSave(XmlElement node)
+		private List<Tuple<string, XmlString>> GetAttributesToSave(XmlElement node)
 		{
-			var result = new List<Tuple<string, string>>();
+			var result = new List<Tuple<string, XmlString>>();
 			foreach (XmlAttribute attr in node.Attributes)
 			{
 				if (_attributesNotToCopy.Contains(attr.Name))
@@ -1033,10 +1036,10 @@ namespace Bloom.Book
 				{
 					var classes = attr.Value.Split().ToList();
 					classes.RemoveAll(x => _classesNotToCopy.Contains(x) || x.EndsWith("-style"));
-					result.Add(Tuple.Create("class", string.Join(" ", classes)));
+					result.Add(Tuple.Create("class", XmlString.FromNotEncoded(string.Join(" ", classes))));
 					continue;
 				}
-				result.Add(Tuple.Create(attr.Name, attr.Value));
+				result.Add(Tuple.Create(attr.Name, XmlString.FromNotEncoded(attr.Value)));
 			}
 			return result;
 		}
@@ -1161,7 +1164,7 @@ namespace Bloom.Book
 							{
 								s = ""; //don't show it in N2, since it's the same as N1
 							}
-							SetInnerXmlPreservingLabel(key, node, s);
+							SetInnerXmlPreservingLabel(key, node, XmlString.FromXml(s));
 							var attrs = dsv.GetAttributeList(lang);
 							if (attrs != null)
 							{
@@ -1177,7 +1180,7 @@ namespace Bloom.Book
 							lang = data.WritingSystemAliases[lang];
 						if (itemsToDelete.Contains(Tuple.Create(key, lang)))
 						{
-							SetInnerXmlPreservingLabel(key, node, "");// a later process may remove node altogether.
+							SetInnerXmlPreservingLabel(key, node, XmlString.Empty);// a later process may remove node altogether.
 						}
 					}
 				}
@@ -1190,7 +1193,7 @@ namespace Bloom.Book
 			}
 		}
 
-		internal void MergeAttrsIntoElement(List<Tuple<string, string>> attrs, XmlElement node)
+		internal void MergeAttrsIntoElement(List<Tuple<string, XmlString>> attrs, XmlElement node)
 		{
 			if (attrs == null)
 				return;
@@ -1206,7 +1209,7 @@ namespace Bloom.Book
 					var classesToRemove = new HashSet<string>(_classesToRemoveIfAbsent);
 					// There's probably a HashSet union function we could use here a little more concisely.
 					// I prefer not to disturb the order of the classes more than we have to.
-					var newClasses = tuple.Item2.Split();
+					var newClasses = tuple.Item2.NotEncoded.Split();
 					var classes = node.GetAttribute("class", "").Split().ToList();
 					var currentSet = new HashSet<string>(classes);
 					foreach (var newClass in newClasses)
@@ -1220,7 +1223,7 @@ namespace Bloom.Book
 					continue;
 				}
 
-				node.SetAttribute(tuple.Item1, tuple.Item2);
+				node.SetAttribute(tuple.Item1, tuple.Item2.NotEncoded);
 			}
 
 			foreach (var attr in attrsToRemove)
@@ -1269,7 +1272,7 @@ namespace Bloom.Book
 		/// <param name="key"></param>
 		/// <param name="node"></param>
 		/// <param name="form"></param>
-		private void SetInnerXmlPreservingLabel(string key, XmlElement node, string form)
+		private void SetInnerXmlPreservingLabel(string key, XmlElement node, XmlString form)
 		{
 			var labelElement = node.SelectSingleNode("label");
 			SetNodeXml(key, form, node);

@@ -45,7 +45,7 @@ namespace Bloom.Book
 			TextVariables.Add(key, new DataSetElementValue(text, isCollectionValue));
 		}
 
-		public void UpdateLanguageString(string key,  string value, string writingSystemId,bool isCollectionValue)
+		public void UpdateLanguageString(string key, XmlString value, string writingSystemId, bool isCollectionValue)
 		{
 			DataSetElementValue dataSetElementValue;
 			MultiTextBase text;
@@ -55,7 +55,7 @@ namespace Bloom.Book
 			{
 				text = new MultiTextBase();
 			}
-			text.SetAlternative(DealiasWritingSystemId(writingSystemId), value);
+			text.SetAlternative(DealiasWritingSystemId(writingSystemId), value.Xml);
 			TextVariables.Remove(key);
 			if(text.Count>0)
 				TextVariables.Add(key, new DataSetElementValue(text, isCollectionValue));
@@ -70,14 +70,14 @@ namespace Bloom.Book
 			return writingSystemId;
 		}
 
-		public void AddLanguageString(string key, string value, string writingSystemId, bool isCollectionValue)
+		public void AddLanguageString(string key, XmlString value, string writingSystemId, bool isCollectionValue)
 		{
 			if(!TextVariables.ContainsKey(key))
 			{
 				var text = new MultiTextBase();
 				TextVariables.Add(key, new DataSetElementValue(text, isCollectionValue));
 			}
-			TextVariables[key].TextAlternatives.SetAlternative(writingSystemId,value);
+			TextVariables[key].TextAlternatives.SetAlternative(writingSystemId, value.Xml);
 		}
 
 		/// <summary>
@@ -119,7 +119,7 @@ namespace Bloom.Book
 					var otherAttrs = otherVal.GetAttributeList(lang);
 					if (ourAttrs.Count != otherAttrs.Count)
 						return false;
-					var otherDict = new Dictionary<string, string>();
+					var otherDict = new Dictionary<string, XmlString>();
 					// We don't care about the order of the lists, so make a dictionary of one set of tuples,
 					// and use it to see whether the other list has the same keys and values.
 					foreach (var tuple in otherAttrs)
@@ -129,7 +129,7 @@ namespace Bloom.Book
 
 					foreach (var tuple in ourAttrs)
 					{
-						string otherItem2;
+						XmlString otherItem2;
 						if (!otherDict.TryGetValue(tuple.Item1, out otherItem2) || tuple.Item2 != otherItem2)
 							return false;
 					}
@@ -171,14 +171,15 @@ namespace Bloom.Book
 		public bool IsCollectionValue;
 		/// <summary>
 		/// Keyed by language code, value is a list of (attribute name, attribute value) pairs.
+		/// Assuming these are eventually going to get passed into setAttribute, it would be best if value was a simple string.
 		/// </summary>
-		private Dictionary<string, List<Tuple<string, string>>> _attributeAlternatives;
+		private Dictionary<string, List<Tuple<string, XmlString>>> _attributeAlternatives;
 
-		public void SetAttributeList(string lang, List<Tuple<string, string>> alternatives)
+		public void SetAttributeList(string lang, List<Tuple<string, XmlString>> alternatives)
 		{
 			if (_attributeAlternatives == null)
 			{
-				_attributeAlternatives = new Dictionary<string, List<Tuple<string, string>>>();
+				_attributeAlternatives = new Dictionary<string, List<Tuple<string, XmlString>>>();
 			}
 
 			if (alternatives == null)
@@ -187,9 +188,9 @@ namespace Bloom.Book
 				_attributeAlternatives[lang] = alternatives;
 		}
 
-		public List<Tuple<string, string>> GetAttributeList(string lang)
+		public List<Tuple<string, XmlString>> GetAttributeList(string lang)
 		{
-			List<Tuple<string, string>> result = null;
+			List<Tuple<string, XmlString>> result = null;
 			_attributeAlternatives?.TryGetValue(lang, out result);
 			return result;
 		}

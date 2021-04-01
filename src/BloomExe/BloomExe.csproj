@@ -877,6 +877,7 @@
       <DependentUpon>WorkspaceView.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="XmlString.cs" />
     <EmbeddedResource Include="AboutMemory.resx">
       <DependentUpon>AboutMemory.cs</DependentUpon>
     </EmbeddedResource>
