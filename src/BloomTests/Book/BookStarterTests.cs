@@ -1060,8 +1060,8 @@ namespace BloomTests.Book
 			var source2 = Path.GetDirectoryName(derivedBook);
 			var bookdata = new BookData(dom, _defaultCollectionSettings,
 				imgNode => ImageUpdater.UpdateImgMetadataAttributesToMatchImage(source2, imgNode, new NullProgress()));
-			bookdata.Set("copyright", "Copyright 2018 some translator", "*");
-			bookdata.Set("versionAcknowledgments", "some translator worked on this", "en");
+			bookdata.Set("copyright", XmlString.FromXml("Copyright 2018 some translator"), "*");
+			bookdata.Set("versionAcknowledgments", XmlString.FromXml("some translator worked on this"), "en");
 			bookdata.UpdateDomFromDataset();
 			XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, derivedBook);
 			var metadata = BookMetaData.FromFolder(source2);

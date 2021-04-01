@@ -83,8 +83,8 @@ namespace Bloom.Book
 		private readonly DataSet _dataset;
 		private XmlElement _dataDiv;
 		private Object thisLock = new Object();
-		private string _cachedMcl2;
-		private string _cachedMcl3;
+		private XmlString _cachedMcl2;
+		private XmlString _cachedMcl3;
 		private bool _gotMclCache;
 
 		//URLs are encoded in a certain way for the src attributes
@@ -114,7 +114,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// For bilingual or trilingual books, this is the second language to show, after the vernacular.
 		/// </summary>
-		public string MultilingualContentLanguage2
+		public XmlString MultilingualContentLanguage2
 		{
 			get
 			{
@@ -140,7 +140,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// For trilingual books, this is the third language to show
 		/// </summary>
-		public string MultilingualContentLanguage3
+		public XmlString MultilingualContentLanguage3
 		{
 			get
 			{
@@ -160,12 +160,12 @@ namespace Bloom.Book
 				lock(thisLock)
 				{
 					GatherDataItemsFromXElement(_dataset, _dom.RawDom);
-					string curSeqStr = GetVariableOrNull("styleNumberSequence", "*");
+					string curSeqStr = GetVariableOrNull("styleNumberSequence", "*").Unencoded;
 					int curSeq;
 					int nextSeq = 1;
 					if (Int32.TryParse(curSeqStr, out curSeq))
 						nextSeq = curSeq + 1;
-					Set("styleNumberSequence", nextSeq.ToString(CultureInfo.InvariantCulture),
+					Set("styleNumberSequence", XmlString.FromUnencoded(nextSeq.ToString(CultureInfo.InvariantCulture)),
 						false);
 					return nextSeq;
 				}
@@ -210,13 +210,13 @@ namespace Bloom.Book
 			var itemsToDelete = new HashSet<Tuple<string, string>>();
 			DataSet incomingData = SynchronizeDataItemsFromContentsOfElement(elementToReadFrom, itemsToDelete);
 			UpdateToolRelatedDataFromBookInfo(info, incomingData, itemsToDelete);
-			incomingData.UpdateGenericLanguageString("contentLanguage1", Language1.Iso639Code, false);
+			incomingData.UpdateGenericLanguageString("contentLanguage1", XmlString.FromUnencoded(Language1.Iso639Code), false);
 			incomingData.UpdateGenericLanguageString("contentLanguage2",
-											 String.IsNullOrEmpty(MultilingualContentLanguage2)
+											 XmlString.IsNullOrEmpty(MultilingualContentLanguage2)
 												 ? null
 												 : MultilingualContentLanguage2, false);
 			incomingData.UpdateGenericLanguageString("contentLanguage3",
-											 String.IsNullOrEmpty(MultilingualContentLanguage3)
+											 XmlString.IsNullOrEmpty(MultilingualContentLanguage3)
 												 ? null
 												 : MultilingualContentLanguage3, false);
 
@@ -248,7 +248,7 @@ namespace Bloom.Book
 
 			if (!bookClass.Contains("leveled-reader") && !bookClass.Contains("decodable-reader"))
 			{
-				incomingData.UpdateGenericLanguageString("levelOrStageNumber", "", false);
+				incomingData.UpdateGenericLanguageString("levelOrStageNumber", XmlString.Empty, false);
 				itemsToDelete.Add(new Tuple<string, string>("levelOrStageNumber", "*"));
 				return;
 			}
@@ -257,7 +257,7 @@ namespace Bloom.Book
 			if (levelTool != null && bookClass.Contains("leveled-reader"))
 			{
 				var level = levelTool.State;
-				incomingData.UpdateGenericLanguageString("levelOrStageNumber", level, false);
+				incomingData.UpdateGenericLanguageString("levelOrStageNumber", XmlString.FromUnencoded(level), false);
 				itemsToDelete.RemoveWhere(item => item.Item1 == "levelOrStageNumber");
 			}
 
@@ -267,7 +267,7 @@ namespace Bloom.Book
 				var stageString = decodableTool.State.Split(';').FirstOrDefault()?.Split(':').Skip(1).FirstOrDefault();
 				if (!string.IsNullOrEmpty(stageString))
 				{
-					incomingData.UpdateGenericLanguageString("levelOrStageNumber", stageString, false);
+					incomingData.UpdateGenericLanguageString("levelOrStageNumber", XmlString.FromUnencoded(stageString), false);
 					itemsToDelete.RemoveWhere(item => item.Item1 == "levelOrStageNumber");
 				}
 
@@ -289,7 +289,7 @@ namespace Bloom.Book
 								allLetters += " " + stageData.letters;
 							}
 							var letters = string.Join(", ", allLetters.Trim().Split(' '));
-							incomingData.UpdateLanguageString("decodableStageLetters", XmlString.FromNotEncoded(letters), Language1.Iso639Code, false);
+							incomingData.UpdateLanguageString("decodableStageLetters", XmlString.FromUnencoded(letters), Language1.Iso639Code, false);
 						}
 						catch (XmlException e)
 						{
@@ -537,7 +537,7 @@ namespace Bloom.Book
 		// Should we still remove the old one?
 		private void UpdateBookInfoTags(BookInfo info)
 		{
-			info.TopicsList = GetVariableOrNull("topic", "en");//topic key always in english
+			info.TopicsList = GetVariableOrNull("topic", "en").Xml;//topic key always in english
 		}
 
 
@@ -614,7 +614,7 @@ namespace Bloom.Book
 				//remove the url path encoding
 				var decodedUrlStr = UrlPathString.CreateFromUrlEncodedString(form.Xml).NotEncoded;	// want query as well as filepath
 				//switch to html/xml encoding
-				form = XmlString.FromNotEncoded(decodedUrlStr);
+				form = XmlString.FromUnencoded(decodedUrlStr);
 			}
 			node.InnerXml = form.Xml;
 			if (node.Attributes["data-textonly"]?.Value == "true")
@@ -647,7 +647,7 @@ namespace Bloom.Book
 			return newDiv;
 		}
 
-		public void Set(string key, string value, bool isCollectionValue)
+		public void Set(string key, XmlString value, bool isCollectionValue)
 		{
 			_dataset.UpdateGenericLanguageString(key, value, isCollectionValue);
 			UpdateSingleTextVariableInDataDiv(key, _dataset.TextVariables[key]);
@@ -657,9 +657,9 @@ namespace Bloom.Book
 				_cachedMcl3 = value;
 		}
 
-		public void Set(string key, string value, string lang)
+		public void Set(string key, XmlString value, string lang)
 		{
-			_dataset.UpdateLanguageString(key, XmlString.FromXml(value), lang, false);
+			_dataset.UpdateLanguageString(key, value, lang, false);
 			if(_dataset.TextVariables.ContainsKey(key))
 			{
 				UpdateSingleTextVariableInDataDiv(key,_dataset.TextVariables[key]);
@@ -766,15 +766,15 @@ namespace Bloom.Book
 //            else
 			{
 				data.WritingSystemAliases.Add("V", collectionSettings.Language1.Iso639Code);
-				data.AddLanguageString("nameOfLanguage", XmlString.FromNotEncoded(collectionSettings.Language1.Name), "*", true);
+				data.AddLanguageString("nameOfLanguage", XmlString.FromUnencoded(collectionSettings.Language1.Name), "*", true);
 				data.AddLanguageString("nameOfNationalLanguage1",
-									   XmlString.FromNotEncoded(collectionSettings.Language2.Name), "*", true);
+									   XmlString.FromUnencoded(collectionSettings.Language2.Name), "*", true);
 				data.AddLanguageString("nameOfNationalLanguage2",
-									   XmlString.FromNotEncoded(collectionSettings.Language3.Name), "*", true);
-				data.UpdateGenericLanguageString("iso639Code", collectionSettings.Language1.Iso639Code, true);
-				data.UpdateGenericLanguageString("country", collectionSettings.Country, true);
-				data.UpdateGenericLanguageString("province", collectionSettings.Province, true);
-				data.UpdateGenericLanguageString("district", collectionSettings.District, true);
+									   XmlString.FromUnencoded(collectionSettings.Language3.Name), "*", true);
+				data.UpdateGenericLanguageString("iso639Code", XmlString.FromUnencoded(collectionSettings.Language1.Iso639Code), true);
+				data.UpdateGenericLanguageString("country", XmlString.FromUnencoded(collectionSettings.Country), true);
+				data.UpdateGenericLanguageString("province", XmlString.FromUnencoded(collectionSettings.Province), true);
+				data.UpdateGenericLanguageString("district", XmlString.FromUnencoded(collectionSettings.District), true);
 				string location = "";
 				var separator = LocalizationManager.GetString("EditTab.FrontMatter.ListSeparator", ", ",
 					"This is used to separate items in a list, such as 'Province, District, Country' on the Title Page. For English, that means comma followed by a space. Don't forget the space if your script uses them.",
@@ -791,7 +791,7 @@ namespace Bloom.Book
 
 				location = TrimEnd(location, separator);
 
-				data.UpdateGenericLanguageString("languageLocation", location, true);
+				data.UpdateGenericLanguageString("languageLocation", XmlString.FromUnencoded(location), true);
 			}
 			return data;
 		}
@@ -1036,10 +1036,10 @@ namespace Bloom.Book
 				{
 					var classes = attr.Value.Split().ToList();
 					classes.RemoveAll(x => _classesNotToCopy.Contains(x) || x.EndsWith("-style"));
-					result.Add(Tuple.Create("class", XmlString.FromNotEncoded(string.Join(" ", classes))));
+					result.Add(Tuple.Create("class", XmlString.FromUnencoded(string.Join(" ", classes))));
 					continue;
 				}
-				result.Add(Tuple.Create(attr.Name, XmlString.FromNotEncoded(attr.Value)));
+				result.Add(Tuple.Create(attr.Name, XmlString.FromUnencoded(attr.Value)));
 			}
 			return result;
 		}
@@ -1209,7 +1209,7 @@ namespace Bloom.Book
 					var classesToRemove = new HashSet<string>(_classesToRemoveIfAbsent);
 					// There's probably a HashSet union function we could use here a little more concisely.
 					// I prefer not to disturb the order of the classes more than we have to.
-					var newClasses = tuple.Item2.NotEncoded.Split();
+					var newClasses = tuple.Item2.Unencoded.Split();
 					var classes = node.GetAttribute("class", "").Split().ToList();
 					var currentSet = new HashSet<string>(classes);
 					foreach (var newClass in newClasses)
@@ -1223,7 +1223,7 @@ namespace Bloom.Book
 					continue;
 				}
 
-				node.SetAttribute(tuple.Item1, tuple.Item2.NotEncoded);
+				node.SetAttribute(tuple.Item1, tuple.Item2.Unencoded);
 			}
 
 			foreach (var attr in attrsToRemove)
@@ -1416,9 +1416,9 @@ namespace Bloom.Book
 		}
 
 
-		private void RemoveDataDivElementIfEmptyValue(string key, string value)
+		private void RemoveDataDivElementIfEmptyValue(string key, XmlString value)
 		{
-			if (string.IsNullOrEmpty(value))
+			if (XmlString.IsNullOrEmpty(value))
 			{
 				foreach (
 					XmlElement node in _dom.SafeSelectNodes("//div[@id='bloomDataDiv']//div[@data-book='" + key + "']"))
@@ -1429,16 +1429,20 @@ namespace Bloom.Book
 		}
 
 
-
-		public string GetVariableOrNull(string key, string writingSystem)
+		/// <summary>
+		/// Returns the value of the specified {key} for the specified {writingSystem}
+		/// </summary>
+		/// <returns>An non-null XmlString representing the value. (The underlying data may be null, but the wrapper will be non-null)</returns>
+		public XmlString GetVariableOrNull(string key, string writingSystem)
 		{
 			var f= _dataset.TextVariables.ContainsKey(key)
 					   ? _dataset.TextVariables[key].TextAlternatives[writingSystem]
 					   : null;
 
 			if (string.IsNullOrEmpty(f))//the TextAlternatives thing gives "", whereas we want null
-				return null;
-			return f;
+				f = null;	// FYI, wrapping null like this rather than directly returning null will make our callers' lives simpler.
+
+			return XmlString.FromXml(f);
 		}
 
 		/// <summary>
@@ -1501,7 +1505,7 @@ namespace Bloom.Book
 				if (info != null)
 					info.Title =form.Form.Replace("<br />", ""); // Clean out breaks inserted at newlines.
 
-				this.Set("bookTitle", form.Form, form.WritingSystemId);
+				this.Set("bookTitle", XmlString.FromXml(form.Form), form.WritingSystemId);
 
 			}
 			else if (_dataset.TextVariables.TryGetValue("bookTitle", out title))
@@ -1534,26 +1538,26 @@ namespace Bloom.Book
 				// We just need to make the info, if any, consistent wit the bookdata
 				if (info != null)
 				{
-					string encodedTitle = GetVariableOrNull("originalTitle","*");
+					string encodedTitle = GetVariableOrNull("originalTitle","*").Xml;
 					info.OriginalTitle = HttpUtility.HtmlDecode(encodedTitle);
 				}
 			} else
 			{
 				string innerHtml = title?.TextAlternatives.GetExactAlternative(Language1.Iso639Code);
-				string unecodedOriginalTitle = BookData.TextOfInnerHtml(innerHtml);
+				string innerText = BookData.TextOfInnerHtml(innerHtml);	// Notably, also removes the markup
 
-				// Note: Even though encodedOriginalTitle and innerHtml are both encoded,
+				// Note: Even though originalTitle.Xml and innerHtml are both encoded,
 				// they are NOT equivalent. InnerHtml could contain nested markup (like paragraph tags),
-				// but we don't want surrounding paragraph tags/etc. in our encodedOriginalTitle.
-				string encodedOriginalTitle = HttpUtility.HtmlEncode(unecodedOriginalTitle);
+				// but for originalTitle we want that markup removed.  So, don't try to do XmlString.FromXml(innerHtml)
+				XmlString originalTitle = XmlString.FromUnencoded(innerText);
 
-				// _dataset.TextVariables is expected to contain an ENCODED string!
+				// Although _dataset.TextVariables stores ENCODED strings in its inner workings,
 				// info.OriginalTitle is expected to contain a DECODED string
-				_dataset.UpdateGenericLanguageString("originalTitle", encodedOriginalTitle, false);
+				_dataset.UpdateGenericLanguageString("originalTitle", originalTitle, false);
 				UpdateSingleTextVariableInDataDiv("originalTitle", _dataset.TextVariables["originalTitle"]);
 				if (info != null)
 				{
-					info.OriginalTitle = unecodedOriginalTitle;
+					info.OriginalTitle = originalTitle.Unencoded;
 				}
 			}
 		}
@@ -1614,8 +1618,8 @@ namespace Bloom.Book
 			if (language3Code == "")
 				language3Code = null;
 
-			Set("contentLanguage2", language2Code,false);
-			Set("contentLanguage3", language3Code, false);
+			Set("contentLanguage2", XmlString.FromUnencoded(language2Code),false);
+			Set("contentLanguage3", XmlString.FromUnencoded(language3Code), false);
 		}
 
 //        public IEnumerable<KeyValuePair<string,DataSetElementValue>>  GetCollectionVariables()
@@ -1652,7 +1656,7 @@ namespace Bloom.Book
 				var allCopyrightEmpty = true;
 				foreach (var setting in BookCopyrightAndLicense.SettingsToCheckForDefaultCopyright)
 				{
-					if (!string.IsNullOrWhiteSpace(GetVariableOrNull(setting, "*")))
+					if (!string.IsNullOrWhiteSpace(GetVariableOrNull(setting, "*").Xml))
 					{
 						allCopyrightEmpty = false;
 						break;
@@ -1675,7 +1679,7 @@ namespace Bloom.Book
 					switch (item.Condition)
 					{
 						case "ifEmpty":
-							if (!string.IsNullOrWhiteSpace(GetVariableOrNull(item.DataBook, item.Lang)))
+							if (!string.IsNullOrWhiteSpace(GetVariableOrNull(item.DataBook, item.Lang).Xml))
 								continue;
 							break;
 						case "ifAllCopyrightEmpty":
@@ -1695,7 +1699,7 @@ namespace Bloom.Book
 						if (!presetContainsMoreThanPublisher)
 						{
 							// if there is nothing in the copyright field
-							if (string.IsNullOrWhiteSpace(GetVariableOrNull("copyright", "*")))
+							if (string.IsNullOrWhiteSpace(GetVariableOrNull("copyright", "*").Xml))
 							{
 								item.Content = "Copyright © " + DateTime.Now.Year.ToString() + " " + item.Content;
 							}
@@ -1704,7 +1708,7 @@ namespace Bloom.Book
 					}
 
 					var content = item.Content.Replace("{flavor}", CollectionSettings.GetBrandingFlavor());
-					Set(item.DataBook, content, item.Lang);
+					Set(item.DataBook, XmlString.FromXml(content), item.Lang);
 				}
 			}
 		}
