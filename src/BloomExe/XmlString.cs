@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -20,7 +21,9 @@ namespace Bloom
 	public class XmlString
 	{
 		public string Xml {get; private set; }
-		public string NotEncoded { get; private set; }
+
+		private string _unencoded;
+		public string Unencoded => GetUnencoded(true);
 
 		/// <summary>
 		/// Private constructor. To create an instance, use FromXml or FromNotEncoded instead.
@@ -29,14 +32,52 @@ namespace Bloom
 		private XmlString(string xmlFragment, string notEncoded)
 		{
 			Xml = xmlFragment;
-			NotEncoded = notEncoded;
+			_unencoded = notEncoded;
 		}
 
 		#region Initializers
+		/// <summary>
+		/// Creates an XMLString object from an XML-ready string.
+		/// </summary>
+		/// <param name="xmlFragment">A string that could be written to an XML file(that is, it has been XML-encoded). e.g. "AT&amp;T is acceptable, but "AT&T" is not.
+		/// It need not be a complete XML document though, nor do all tags need to having matching end tags. </param>
+		/// <returns>The corresponding XML string object</returns>
 		public static XmlString FromXml(string xmlFragment) => new XmlString(xmlFragment, Decode(xmlFragment));
-		public static XmlString FromNotEncoded(string notEncodedText) => new XmlString(Encode(notEncodedText), notEncodedText);
+
+		/// <summary>
+		/// Creates an XMLString object from a simple, unencoded string.
+		/// </summary>
+		/// <param name="notEncodedText">A simple string with the user-facing text. For example, "AT&T" is fine. Generally, you should not use "AT&amp;T"
+		/// <returns>The corresponding XML string object</returns>
+		public static XmlString FromUnencoded(string notEncodedText) => new XmlString(Encode(notEncodedText), notEncodedText);
+
+		/// <summary>
+		/// Creates an XML String equivalent representing String.Empty
+		/// </summary>
 		public static XmlString Empty => new XmlString("", "");
 		#endregion
+
+		public string GetUnencoded(bool warnIfContainsMarkup = true)
+		{
+			if (warnIfContainsMarkup)
+			{
+				Debug.Assert(!this.ContainsMarkup(), "XmlString::NotEncoded() called on object containing markup. " +
+					"This may be incorrect. (). XML tags like \"<p>\" will still be present in the result of NotEncoded. " +
+					"Did you mean InnerText() instead? If not, set warnIfContainsMarkup to false to disable this warning.");
+			}
+
+			return this._unencoded;
+		}
+
+		/// <summary>
+		/// This function is likely more meaningful when you want the non-XML version of strings containing XmlMarkup()
+		/// </summary>
+		/// <returns></returns>
+		public string InnerText()
+		{
+			// TODO: Implement me when there's a caller that needs this instead of NotEncoded.
+			throw new NotImplementedException();
+		}
 
 		#region Equality Boilerplate
 		public override int GetHashCode()
@@ -44,11 +85,18 @@ namespace Bloom
 			return Xml?.GetHashCode() ?? 0;
 		}
 
-		public override bool Equals(object obj)
+		public override bool Equals(object other)
 		{
-			var x = obj as XmlString;
-			if (x == null)
+			// Treat the wrapper being null as equivalent to the underlying data being null
+			// FYI: if obj is a literal null, its type is not XmlString. So, easier to handle this right away.
+			if (other == null)
+				return this.Xml == null;	
+
+			//We now know that obj is non-null, and this is also non-null.
+			if (!(other is XmlString))	
 				return false;
+
+			var x = (XmlString)other;
 			return this.Xml == x.Xml;
 		}
 
@@ -60,14 +108,13 @@ namespace Bloom
 				return true;
 			}
 
-			// If one is null, but not both, return false.
-			if (((object)a == null) || ((object)b == null))
+			// Note: Need to cast to object so that a == null doesn't cause infinite recursion.
+			if ((object)a == null && b?.Xml == null)
 			{
-				return false;
+				return true;
 			}
 
-			// Return true if the fields match:
-			return a.Xml == b.Xml;
+			return a.Equals(b);
 		}
 
 		public static bool operator !=(XmlString a, XmlString b)
@@ -80,5 +127,6 @@ namespace Bloom
 		private static string Encode(string decoded) => HttpUtility.HtmlEncode(decoded);
 		public static bool IsNullOrEmpty(XmlString xmlString) => String.IsNullOrEmpty(xmlString?.Xml);
 
+		private bool ContainsMarkup() => Xml?.Contains("<") == true;
 	}
 }

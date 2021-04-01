@@ -34,10 +34,10 @@ namespace Bloom.Book
 		/// </summary>
 		public Dictionary<string, ISet<KeyValuePair<string, string>>> XmatterPageDataAttributeSets { get; }
 
-		public void UpdateGenericLanguageString(string key, string value, bool isCollectionValue)
+		public void UpdateGenericLanguageString(string key, XmlString value, bool isCollectionValue)
 		{
 			var text = new MultiTextBase();
-			text.SetAlternative("*", value);
+			text.SetAlternative("*", value?.Xml);
 			if(TextVariables.ContainsKey(key))
 			{
 				TextVariables.Remove(key);
@@ -55,7 +55,7 @@ namespace Bloom.Book
 			{
 				text = new MultiTextBase();
 			}
-			text.SetAlternative(DealiasWritingSystemId(writingSystemId), value.Xml);
+			text.SetAlternative(DealiasWritingSystemId(writingSystemId), value?.Xml);
 			TextVariables.Remove(key);
 			if(text.Count>0)
 				TextVariables.Add(key, new DataSetElementValue(text, isCollectionValue));
@@ -77,7 +77,7 @@ namespace Bloom.Book
 				var text = new MultiTextBase();
 				TextVariables.Add(key, new DataSetElementValue(text, isCollectionValue));
 			}
-			TextVariables[key].TextAlternatives.SetAlternative(writingSystemId, value.Xml);
+			TextVariables[key].TextAlternatives.SetAlternative(writingSystemId, value?.Xml);
 		}
 
 		/// <summary>

@@ -53,11 +53,11 @@ namespace Bloom
 		{
 			if (_xmlElement == null)
 			{
-				_geckoElement.SetAttribute(attributeName, value.NotEncoded);
+				_geckoElement.SetAttribute(attributeName, value.Unencoded);
 			}
 			else
 			{
-				_xmlElement.SetAttribute(attributeName, value.NotEncoded);
+				_xmlElement.SetAttribute(attributeName, value.Unencoded);
 			}
 		}
 

@@ -233,7 +233,7 @@ namespace BloomTests.Book
 			Assert.That(args.Length %2, Is.EqualTo(0));
 			for (var i = 0; i < args.Length / 2; i++)
 			{
-				result.Add(Tuple.Create(args[i * 2], XmlString.FromNotEncoded(args[i * 2 + 1])));
+				result.Add(Tuple.Create(args[i * 2], XmlString.FromUnencoded(args[i * 2 + 1])));
 			}
 			return result;
 		}

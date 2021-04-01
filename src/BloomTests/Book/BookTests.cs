@@ -4381,10 +4381,10 @@ namespace BloomTests.Book
 		{
 			var book = CreateBook();
 
-			book.SetTopic("A & B");
-			var storedTopic = _bookData.GetVariableOrNull("topic", "*");
+			book.SetTopic("A & B");	// "&" is a special char in XML
 
-			Assert.AreEqual("A &amp; B", storedTopic);
+			// Verify "&" becomes encoded in the XML... and that the previous line didn't throw an exception.
+			Assert.That(book.RawDom.InnerXml.Contains("A &amp; B"));
 		}
 
 #if UserControlledTemplate
