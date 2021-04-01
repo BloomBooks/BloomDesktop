@@ -376,7 +376,7 @@ namespace Bloom.Book
 		private void UpdateMultilingualSettings(HtmlDom dom)
 		{
 			TranslationGroupManager.UpdateContentLanguageClasses(dom.RawDom, _bookData, _bookData.Language1.Iso639Code,
-				_bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
+				_bookData.MultilingualContentLanguage2.Xml, _bookData.MultilingualContentLanguage3.Xml);
 			BookInfo.IsRtl = _bookData.Language1.IsRightToLeft;
 
 			BookStarter.SetLanguageForElementsWithMetaLanguage(dom.RawDom, _bookData);
@@ -726,7 +726,7 @@ namespace Bloom.Book
 			}
 
 			TranslationGroupManager.UpdateContentLanguageClasses(previewDom.RawDom, _bookData, primaryLanguage,
-				_bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
+				_bookData.MultilingualContentLanguage2.Xml, _bookData.MultilingualContentLanguage3.Xml);
 
 			AddPreviewJavascript(previewDom);
 			previewDom.AddPublishClassToBody("preview");
@@ -1939,12 +1939,13 @@ namespace Bloom.Book
 		/// <summary>
 		/// For bilingual or trilingual books, this is the second language to show, after the vernacular
 		/// </summary>
-		public string MultilingualContentLanguage2 => _bookData.MultilingualContentLanguage2;
+		public string MultilingualContentLanguage2 => _bookData.MultilingualContentLanguage2.Xml;
+		//ENHANCE: Make MCL2 and MCL3 return XmlString isntead of string
 
 		/// <summary>
 		/// For trilingual books, this is the third language to show
 		/// </summary>
-		public string MultilingualContentLanguage3 => _bookData.MultilingualContentLanguage3;
+		public string MultilingualContentLanguage3 => _bookData.MultilingualContentLanguage3.Xml;
 
 		public IEnumerable<string> ActiveLanguages
 		{
@@ -1995,7 +1996,7 @@ namespace Bloom.Book
 				languagesOfBook += ", " + _bookData.Language3.Name;
 			}
 
-			_bookData.Set("languagesOfBook", languagesOfBook, false);
+			_bookData.Set("languagesOfBook", XmlString.FromUnencoded(languagesOfBook), false);
 		}
 
 		/// <summary>
@@ -2576,7 +2577,7 @@ namespace Bloom.Book
 			XmlDocument dom = OurHtmlDom.RawDom;
 			var templatePageDiv = templatePage.GetDivNodeForThisPage();
 			var newPageDiv = dom.ImportNode(templatePageDiv, true) as XmlElement;
-			BookStarter.SetupPage(newPageDiv, _bookData, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);//, LockedExceptForTranslation);
+			BookStarter.SetupPage(newPageDiv, _bookData, _bookData.MultilingualContentLanguage2.Xml, _bookData.MultilingualContentLanguage3.Xml);//, LockedExceptForTranslation);
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPageDiv, GetLayout());
 			newPageDiv.RemoveAttribute("title"); //titles are just for templates [Review: that's not true for front matter pages, but at the moment you can't insert those, so this is ok]C:\dev\Bloom\src\BloomExe\StyleSheetService.cs
 			// If we're a template, make the new page a template one.
@@ -2861,7 +2862,7 @@ namespace Bloom.Book
 			}
 		}
 
-		public bool FullBleed => BookData.GetVariableOrNull("fullBleed", "*") == "true" && CollectionSettings.HaveEnterpriseFeatures;
+		public bool FullBleed => BookData.GetVariableOrNull("fullBleed", "*").Xml == "true" && CollectionSettings.HaveEnterpriseFeatures;
 
 		/// <summary>
 		/// Earlier, we handed out a single-page version of the document. Now it has been edited,
@@ -3265,8 +3266,8 @@ namespace Bloom.Book
 		public void UpdateEditableAreasOfElement(HtmlDom dom)
 		{
 			var language1Iso639Code = _bookData.Language1.Iso639Code;
-			var multilingualContentLanguage2 = _bookData.MultilingualContentLanguage2;
-			var multilingualContentLanguage3 = _bookData.MultilingualContentLanguage3;
+			var multilingualContentLanguage2 = _bookData.MultilingualContentLanguage2.Xml;
+			var multilingualContentLanguage3 = _bookData.MultilingualContentLanguage3.Xml;
 			foreach (XmlElement div in dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
 				TranslationGroupManager.PrepareElementsInPageOrDocument(div, _bookData);
@@ -3497,7 +3498,7 @@ namespace Bloom.Book
 		/// </summary>
 		public void SetTopic(string englishTopicAsKey)
 		{
-			_bookData.Set("topic",englishTopicAsKey,"en");
+			_bookData.Set("topic",XmlString.FromUnencoded(englishTopicAsKey),"en");
 		}
 
 		public void SwitchSuitableForMakingShells(bool isSuitable)
