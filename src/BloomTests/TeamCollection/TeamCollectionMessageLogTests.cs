@@ -80,6 +80,24 @@ namespace BloomTests.TeamCollection
 				null);
 		}
 
+		private void MakeErrorNoReload(string title = "Book was deleted")
+		{
+			_messageLog.WriteMessage(MessageAndMilestoneType.ErrorNoReload,
+				"TeamCollection.RemoteDeleteConflict",
+				"One of your teammates has deleted the book {0}.",
+				title,
+				null);
+		}
+
+		private void AssertErrorNoReload(List<TeamCollectionMessage> messages, int index, string title= "Book was deleted")
+		{
+			AssertMessage(messages, index, MessageAndMilestoneType.ErrorNoReload,
+				"TeamCollection.RemoteDeleteConflict",
+				"One of your teammates has deleted the book {0}.",
+				title,
+				null);
+		}
+
 		private void AssertError1(List<TeamCollectionMessage> messages, int index, string title="Joe hunts pigs")
 		{
 			AssertMessage(messages, index, MessageAndMilestoneType.Error,
@@ -132,10 +150,12 @@ namespace BloomTests.TeamCollection
 			MakeHistory1();
 			MakeError1();
 			MakeError2();
+			MakeErrorNoReload();
 			var messages = _messageLog.CurrentErrors;
 			AssertError1(messages, 0);
 			AssertError2(messages, 1);
-			Assert.That(messages, Has.Count.EqualTo(2));
+			AssertErrorNoReload(messages, 2);
+			Assert.That(messages, Has.Count.EqualTo(3));
 		}
 
 		[Test]
@@ -149,10 +169,35 @@ namespace BloomTests.TeamCollection
 			MakeError1("Fred chases buffalo");
 			MakeHistory2();
 			MakeError1("Dogs and Cats");
+			MakeErrorNoReload();
 			var messages = _messageLog.CurrentErrors;
-			Assert.That(messages, Has.Count.EqualTo(2));
+			Assert.That(messages, Has.Count.EqualTo(3));
 			AssertError1(messages, 0, "Fred chases buffalo");
 			AssertError1(messages, 1, "Dogs and Cats");
+			AssertErrorNoReload(messages, 2);
+		}
+
+		[Test]
+		public void ReadReloadMessages_Milestones_RecoversRightMessages()
+		{
+			MakeHistory1();
+			MakeError1();
+			MakeNewBookMessage();
+			_messageLog.WriteMilestone(MessageAndMilestoneType.Reloaded);
+			MakeError2();
+			MakeErrorNoReload();
+			_messageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
+			MakeError1("Fred chases buffalo");
+			MakeHistory2();
+			MakeError1("Dogs and Cats");
+			MakeErrorNoReload("Second time");
+			MakeNewBookMessage("yet another");
+			var messages = _messageLog.ReloadMessages;
+			Assert.That(messages, Has.Count.EqualTo(4));
+			AssertError2(messages, 0);
+			AssertError1(messages, 1, "Fred chases buffalo");
+			AssertError1(messages, 2, "Dogs and Cats");
+			AssertNewBookMessage(messages, 3, "yet another");
 		}
 
 		[Test]

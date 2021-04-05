@@ -198,6 +198,9 @@ namespace Bloom.TeamCollection
 				var msgId = "TeamCollection.ErrorLockingBook";
 				var msgEnglish = "Error locking access to {0}: {1}";
 				var log = _tcManager?.CurrentCollection?.MessageLog;
+				// Pushing an error into the log will show the Reload Collection button. It's not obvious this
+				// is useful here, since we don't know exactly what went wrong. However, it at least gives the user
+				// the option to try it.
 				if (log != null)
 					log.WriteMessage(MessageAndMilestoneType.Error, msgId, msgEnglish, BookFolderName, e.Message);
 				Logger.WriteError(String.Format(msgEnglish, BookFolderName, e.Message), e);
@@ -239,6 +242,9 @@ namespace Bloom.TeamCollection
 				var msgId = "TeamCollection.ErrorCheckingBookIn";
 				var msgEnglish = "Error checking in {0}: {1}";
 				var log = _tcManager?.CurrentCollection?.MessageLog;
+				// Pushing an error into the log will show the Reload Collection button. It's not obvious this
+				// is useful here, since we don't know exactly what went wrong. However, it at least gives the user
+				// the option to try it.
 				if (log != null)
 					log.WriteMessage(MessageAndMilestoneType.Error, msgId, msgEnglish, _bookSelection?.CurrentSelection?.FolderPath, e.Message);
 				Logger.WriteError(String.Format(msgEnglish, _bookSelection?.CurrentSelection?.FolderPath, e.Message), e);

@@ -874,8 +874,10 @@ namespace Bloom.TeamCollection
 			var status = GetLocalStatus(bookBaseName);
 			if (status.IsCheckedOut())
 			{
-				// Argh! Somebody deleted the book I'm working on!
-				_tcLog.WriteMessage(MessageAndMilestoneType.Error, "TeamCollection.RemoteDeleteConflict",
+				// Argh! Somebody deleted the book I'm working on! This is an error, but Reloading the collection
+				// won't help; I just need to check it in to undo the deletion, or delete the local copy myself.
+				// So unlike most errors, having this in the message log is not cause to show the Reload button.
+				_tcLog.WriteMessage(MessageAndMilestoneType.ErrorNoReload, "TeamCollection.RemoteDeleteConflict",
 					"One of your teammates has deleted the book \"{0}\". Since you have this book checked out, it has not been deleted locally. You can delete your copy if you wish, or restore it to the Team Collection by just checking in what you have.",
 					bookBaseName, null);
 				// Don't delete it; and there's been no local status change we need to worry about.
@@ -1124,13 +1126,15 @@ namespace Bloom.TeamCollection
 
 		// During Startup, we want messages to go to both the current progress dialog and the permanent
 		// change log. This method handles sending to both.
+		// Note that errors logged here will not result in the TC dialog showing the Reload Collection
+		// button, because we are here doing a reload, so all errors are logged as ErrorNoReload.
 		void ReportProgressAndLog(IWebSocketProgress progress, string l10nIdSuffix, string message,
 			string param0 = null, string param1= null, MessageKind kind = MessageKind.Progress)
 		{
 			var fullL10nId = "TeamCollection." + l10nIdSuffix;
 			var msg = string.Format(LocalizationManager.GetString(fullL10nId, message), param0, param1);
 			progress.MessageWithoutLocalizing(msg, kind);
-			_tcLog.WriteMessage((kind == MessageKind.Progress) ? MessageAndMilestoneType.History : MessageAndMilestoneType.Error,
+			_tcLog.WriteMessage((kind == MessageKind.Progress) ? MessageAndMilestoneType.History : MessageAndMilestoneType.ErrorNoReload,
 				fullL10nId, message, param0, param1);
 		}
 

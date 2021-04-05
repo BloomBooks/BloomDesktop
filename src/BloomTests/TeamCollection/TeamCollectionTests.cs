@@ -371,7 +371,7 @@ namespace BloomTests.TeamCollection
 			// Verification
 			Assert.That(_mockTcManager.Invocations.Count, Is.EqualTo(prevInvocations));
 			Assert.That(_tcLog.Messages.Count, Is.EqualTo(prevMessages + 1));
-			Assert.That(_tcLog.Messages[prevMessages].MessageType, Is.EqualTo(MessageAndMilestoneType.Error));
+			Assert.That(_tcLog.Messages[prevMessages].MessageType, Is.EqualTo(MessageAndMilestoneType.ErrorNoReload));
 			Assert.That(Directory.Exists(bookFolderPath), Is.True, "The local book should not have been deleted");
 		}
 	}

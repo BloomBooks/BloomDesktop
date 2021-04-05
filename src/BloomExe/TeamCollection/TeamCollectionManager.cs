@@ -221,6 +221,11 @@ namespace Bloom.TeamCollection
 				param0, param1);
 			CurrentCollectionEvenIfDisconnected.MessageLog.WriteMessage(MessageAndMilestoneType.Error, "TeamCollection.OperatingDisconnected", "When you have resolved this problem, please click \"Reload Collection\". Until then, your Team Collection will operate in \"Disconnected\" mode.",
 				param0, param1);
+			// This is normally ensured by pushing an Error message into the log. But in this case,
+			// before the user gets a chance to open the dialog, we will run SyncAtStartup, push a Reloaded
+			// milestone into the log, and thus suppress it. If we're disconnected, whatever gets in the
+			// message log, we want to offer Reload...after all, the message says to use it.
+			MessageLog.NextTeamCollectionDialogShouldForceReloadButton = true;
 		}
 
 		public static string GetTcLogPathFromLcPath(string localCollectionFolder)

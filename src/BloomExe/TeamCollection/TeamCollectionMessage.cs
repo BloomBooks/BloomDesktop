@@ -21,10 +21,14 @@ namespace Bloom.TeamCollection
 		// Corresponds to state Nominal
 		History,
 		// something new arrived (or a changed happened), user will be gently
-		// encouraged to reload.
+		// encouraged to reload. The Reload button will be shown.
 		NewStuff,
-		// Errors of ordinary severity; user firmly encouraged to reload
+		// Errors of ordinary severity; user firmly encouraged to reload. The presence of a message of this
+		// type will ensure that the Reload button is showing.
 		Error,
+		// Displays as Error, but it is not useful for user to reload, so that button should not show
+		// (at least not because this message is in the log).
+		ErrorNoReload,
 		// Conflicting change error serious enough that current edits
 		// will be clobbered (moved to Lost and Found); user strongly urged to reload.
 		ClobberPending,
