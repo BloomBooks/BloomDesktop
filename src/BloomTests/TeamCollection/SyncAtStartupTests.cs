@@ -355,7 +355,7 @@ namespace BloomTests.TeamCollection
 		{
 			AssertLocalContent("Update content and status and warn", "This simulates new content on server");
 			Assert.That(_collection.GetLocalStatus("Update content and status and warn").lockedBy, Is.EqualTo("fred@somewhere.org"));
-			AssertProgress("The book '{0}', which you have checked out and edited, was modified in the team collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.",
+			AssertProgress("The book '{0}', which you have checked out and edited, was modified in the Team Collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.",
 				"Update content and status and warn", null, MessageAndMilestoneType.Error);
 			AssertLostAndFound("Update content and status and warn");
 		}
@@ -365,7 +365,7 @@ namespace BloomTests.TeamCollection
 		{
 			AssertLocalContent("Update content and status and warn2", "This simulates new content on server");
 			Assert.That(_collection.GetLocalStatus("Update content and status and warn2").lockedBy, Is.EqualTo("fred@somewhere.org"));
-			AssertProgress("The book '{0}', which you have checked out and edited, is checked out to someone else in the team collection. Your changes have been overwritten, but are saved to Lost-and-found."
+			AssertProgress("The book '{0}', which you have checked out and edited, is checked out to someone else in the Team Collection. Your changes have been overwritten, but are saved to Lost-and-found."
 				, "Update content and status and warn2",null, MessageAndMilestoneType.Error);
 			AssertLostAndFound("Update content and status and warn2");
 		}
