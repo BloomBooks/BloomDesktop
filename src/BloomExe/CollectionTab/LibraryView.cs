@@ -92,7 +92,7 @@ namespace Bloom.CollectionTab
 				using (var dlg = new ReactDialog("teamCollectionSettingsBundle.js", "TeamCollectionDialog"))
 				{
 					dlg.ShowDialog(this);
-					tcManager.CurrentCollection?.MessageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
+					tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
 				}
 			};
 		}

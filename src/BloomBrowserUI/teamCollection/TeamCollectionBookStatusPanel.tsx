@@ -24,7 +24,9 @@ export type LockState =
     | "lockedByMe"
     | "lockedByMeElsewhere"
     | "needsReload"
-    | "problem";
+    | "problem"
+    | "disconnected"
+    | "lockedByMeDisconnected";
 
 export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [state, setState] = useState<LockState>("initializing");
@@ -34,6 +36,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [lockedMachine, setLockedMachine] = useState("");
     const [reload, setReload] = useState(0);
     React.useEffect(() => {
+        var lockedByMe = false;
         BloomApi.get(
             "teamCollection/currentBookStatus",
             data => {
@@ -52,6 +55,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         bookStatus.where === bookStatus.currentMachine
                     ) {
                         setState("lockedByMe");
+                        lockedByMe = true;
                     } else {
                         const isCurrentUser =
                             bookStatus.who === bookStatus.currentUser;
@@ -65,6 +69,13 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                     }
                 } else {
                     setState("unlocked");
+                }
+                if (bookStatus.disconnected) {
+                    if (lockedByMe) {
+                        setState("lockedByMeDisconnected");
+                    } else {
+                        setState("disconnected");
+                    }
                 }
             },
             err => {
@@ -203,6 +214,33 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         true
     );
 
+    const mainTitleDisconnected = useL10n(
+        "Disconnected",
+        "TeamCollection.Disconnected",
+        "",
+        undefined,
+        undefined,
+        true
+    );
+
+    const subTitleDisconnected = useL10n(
+        "You cannot check out this book while disconnected.",
+        "TeamCollection.CannotCheckoutDisconnected",
+        "",
+        undefined,
+        undefined,
+        true
+    );
+
+    const subTitleDisconnectedCheckedOut = useL10n(
+        "You can edit this book, but you will need to reconnect in order to send your changes to your team.",
+        "TeamCollection.DisconnectedCheckedOut",
+        "",
+        undefined,
+        undefined,
+        true
+    );
+
     const panelContents = (state: LockState): JSX.Element => {
         switch (state) {
             default:
@@ -309,6 +347,26 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                             undefined,
                             () => BloomApi.post("common/reloadCollection")
                         )}
+                    />
+                );
+            case "disconnected":
+                return (
+                    <StatusPanelCommon
+                        lockState={state}
+                        title={mainTitleDisconnected}
+                        subTitle={subTitleDisconnected}
+                        icon={
+                            <img src={"Disconnected.svg"} alt="disconnected" />
+                        }
+                    />
+                );
+            case "lockedByMeDisconnected":
+                return (
+                    <StatusPanelCommon
+                        lockState={state}
+                        title={mainTitleLockedByMe}
+                        subTitle={subTitleDisconnectedCheckedOut}
+                        icon={avatar}
                     />
                 );
         }

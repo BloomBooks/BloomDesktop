@@ -6,7 +6,9 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.Registration;
+using Bloom.Utils;
 using L10NSharp;
+using SIL.IO;
 using SIL.Reporting;
 
 namespace Bloom.TeamCollection
@@ -27,11 +29,26 @@ namespace Bloom.TeamCollection
 		private readonly BloomWebSocketServer _webSocketServer;
 		private readonly BookStatusChangeEvent _bookStatusChangeEvent;
 		public TeamCollection CurrentCollection { get; private set; }
-		// Normally the same as CurrentCollection, but when TC behavior is disabled
-		// (See CheckDisablingTeamCollections) but we actually DO have a TC, this
-		// hangs on to it. A few things, mainly showing the TC status button
-		// and launching the TC dialog, are permitted and need it.
-		public TeamCollection CurrentCollectionEvenIfDisabled { get; private set; }
+		// Normally the same as CurrentCollection, but CurrentCollection is only
+		// non-null when we have a fully functional Team Collection operating.
+		// Sometimes a TC may be disconnected, that is, we know this is a TC,
+		// but we can't currently do TC operations, for example, because we don't
+		// find the folder where the repo lives, or it's a dropbox folder but
+		// Dropbox is not running or we can't ping dropbox.com.
+		// A collection we know is a TC may also be disabled because there is no
+		// enterprise subscription. Another possibility is that we can't do TC
+		// operations because the user has not registered; I've been calling this
+		// disabled also, but it's not just that we choose not to allow it; we
+		// actually need the missing information to make things work.
+		// In all these situations, most TC operations simply don't happen because
+		// CurrentCollection is null, but there are a few operations that still need
+		// to be aware of the TC (for example, we still don't allow editing books
+		// that are in the Repo and not checked out, and still show the TC status icon)
+		// and it is easiest to achieve this by having a (Disconnected)TC object.
+		// This property allows us to find the TC whether or not it is disconnected.
+		// I can't find a good word that covers both disconnected and disabled,
+		// so in places where it is ambiguous I'm just using disconnected.
+		public TeamCollection CurrentCollectionEvenIfDisconnected { get; private set; }
 
 		/// <summary>
 		/// Raised when the status of the whole collection (this.TeamCollectionStatus) might have changed.
@@ -39,11 +56,6 @@ namespace Bloom.TeamCollection
 		/// actually IS different from before.)
 		/// </summary>
 		public static event EventHandler TeamCollectionStatusChanged;
-		// When we find a TeamCollectionSettings.xml but the repo it refers to is not found, we
-		// can't create a TC object. But we want to use the TC status button to radiate the problem
-		// and to allow the TC dialog to report the details, so we need a log. This is used only
-		// in this one case.
-		private TeamCollectionMessageLog _specialLogForMissingRepo;
 		private readonly string _localCollectionFolder;
 		private static string _overrideCurrentUser;
 		private static string _overrideCurrentUserFirstName;
@@ -68,30 +80,42 @@ namespace Bloom.TeamCollection
 		/// <summary>
 		/// Return true if the user must check this book out before editing it,
 		/// deleting it, etc. This is automatically false if the collection is not
-		/// a TC; if it is a TC, it's true if the books is NOT checked out.
+		/// a TC; if it is a TC (even a disconnected one), it's true if the book is
+		/// NOT checked out.
 		/// </summary>
 		/// <param name="bookFolderPath"></param>
 		/// <returns></returns>
 		public bool NeedCheckoutToEdit(string bookFolderPath)
 		{
-			if (CurrentCollection == null)
+			if (CurrentCollectionEvenIfDisconnected == null)
 				return false;
-			return CurrentCollection.NeedCheckoutToEdit(bookFolderPath);
+			return CurrentCollectionEvenIfDisconnected.NeedCheckoutToEdit(bookFolderPath);
+		}
+
+		/// <summary>
+		/// This is an additional check on delete AFTER we make sure the book is checked out.
+		/// Even if it is, we can't delete it while disconnected because we don't have a way
+		/// to actually remove it from the TC. Our current Delete mechanism, unlike git etc.,
+		/// does not postpone delete until commit.
+		/// </summary>
+		/// <param name="bookFolderPath"></param>
+		/// <returns></returns>
+		public bool CannotDeleteBecauseDisconnected(string bookFolderPath)
+		{
+			if (CurrentCollectionEvenIfDisconnected == null)
+				return false;
+			return CurrentCollectionEvenIfDisconnected.CannotDeleteBecauseDisconnected(bookFolderPath);
 		}
 
 		public TeamCollectionStatus CollectionStatus
 		{
 			get
 			{
-				if (CurrentCollectionEvenIfDisabled != null)
+				if (CurrentCollectionEvenIfDisconnected != null)
 				{
-					return CurrentCollectionEvenIfDisabled.CollectionStatus;
+					return CurrentCollectionEvenIfDisconnected.CollectionStatus;
 				}
 
-				if (_specialLogForMissingRepo != null)
-				{
-					return TeamCollectionStatus.Error;
-				}
 				return TeamCollectionStatus.None;
 			}
 		}
@@ -100,9 +124,9 @@ namespace Bloom.TeamCollection
 		{
 			get
 			{
-				if (CurrentCollectionEvenIfDisabled != null)
-					return CurrentCollectionEvenIfDisabled.MessageLog;
-				return _specialLogForMissingRepo; // may be null
+				if (CurrentCollectionEvenIfDisconnected != null)
+					return CurrentCollectionEvenIfDisconnected.MessageLog;
+				return null;
 			}
 		}
 
@@ -113,12 +137,12 @@ namespace Bloom.TeamCollection
 			_localCollectionFolder = Path.GetDirectoryName(localCollectionPath);
 			bookRenamedEvent.Subscribe(pair =>
 			{
-				CurrentCollection?.HandleBookRename(Path.GetFileName(pair.Key), Path.GetFileName(pair.Value));
+				CurrentCollectionEvenIfDisconnected?.HandleBookRename(Path.GetFileName(pair.Key), Path.GetFileName(pair.Value));
 			});
 			var impersonatePath = Path.Combine(_localCollectionFolder, "impersonate.txt");
-			if (File.Exists(impersonatePath))
+			if (RobustFile.Exists(impersonatePath))
 			{
-				var lines = File.ReadAllLines(impersonatePath);
+				var lines = RobustFile.ReadAllLines(impersonatePath);
 				_overrideCurrentUser = lines.FirstOrDefault();
 				if (lines.Length > 1)
 					_overrideMachineName = lines[1];
@@ -129,7 +153,7 @@ namespace Bloom.TeamCollection
 			}
 
 			var localSettingsPath = Path.Combine(_localCollectionFolder, TeamCollectionSettingsFileName);
-			if (File.Exists(localSettingsPath))
+			if (RobustFile.Exists(localSettingsPath))
 			{
 				try
 				{
@@ -139,8 +163,26 @@ namespace Bloom.TeamCollection
 						.First().InnerText;
 					if (Directory.Exists(repoFolderPath))
 					{
+						if (DropboxUtils.IsPathInDropboxFolder(repoFolderPath))
+						{
+							if (!DropboxUtils.IsDropboxProcessRunning)
+							{
+								MakeDisconnected(repoFolderPath, "TeamCollection.NeedDropboxRunning",
+									"Dropbox does not appear to be running.",
+									null,null);
+								return;
+							}
+
+							if (!DropboxUtils.CanAccessDropbox())
+							{
+								MakeDisconnected(repoFolderPath, "TeamCollection.NeedDropboxAccess",
+									"Bloom cannot reach Dropbox.com.",
+									null, null);
+								return;
+							}
+						}
 						CurrentCollection = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath);
-						CurrentCollectionEvenIfDisabled = CurrentCollection;
+						CurrentCollectionEvenIfDisconnected = CurrentCollection;
 						CurrentCollection.SocketServer = SocketServer;
 						// Later, we will sync everything else, but we want the current collection settings before
 						// we create the CollectionSettings object.
@@ -156,19 +198,29 @@ namespace Bloom.TeamCollection
 					}
 					else
 					{
-						// This will show the TC icon in error state, and if the dialog is shown it will have this one message.
-						_specialLogForMissingRepo = new TeamCollectionMessageLog(GetTcLogPathFromLcPath(_localCollectionFolder));
-						_specialLogForMissingRepo.WriteMessage(MessageAndMilestoneType.Error, "TeamCollection.MissingRepo",
-							"Team Collection functions will not work because Bloom could not find the team collection folder '{0}'",repoFolderPath, null);
+						MakeDisconnected( repoFolderPath, "TeamCollection.MissingRepo",
+							"Bloom could not find the Team Collection folder at '{0}'. If that drive or network is disconnected, re-connect it. If you have moved where that folder is located, 1) quit Bloom 2) go to the Team Collection folder and double-click “Join this Team Collection”.", repoFolderPath, Environment.NewLine);
 					}
 				}
 				catch (Exception ex)
 				{
-					NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom found team collection settings but could not process them", null, ex, true);
+					NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom found Team Collection settings but could not process them", null, ex, true);
 					CurrentCollection = null;
-					CurrentCollectionEvenIfDisabled = null;
+					CurrentCollectionEvenIfDisconnected = null;
 				}
 			}
+		}
+
+		public void MakeDisconnected(string repoFolderPath, string messageId, string message, string param0, string param1)
+		{
+			CurrentCollection = null;
+			// This will show the TC icon in error state, and if the dialog is shown it will have this one message.
+			CurrentCollectionEvenIfDisconnected = new DisconnectedTeamCollection(this, _localCollectionFolder, repoFolderPath);
+			CurrentCollectionEvenIfDisconnected.SocketServer = SocketServer;
+			CurrentCollectionEvenIfDisconnected.MessageLog.WriteMessage(MessageAndMilestoneType.Error, messageId, message,
+				param0, param1);
+			CurrentCollectionEvenIfDisconnected.MessageLog.WriteMessage(MessageAndMilestoneType.Error, "TeamCollection.OperatingDisconnected", "When you have resolved this problem, please click \"Reload Collection\". Until then, your Team Collection will operate in \"Disconnected\" mode.",
+				param0, param1);
 		}
 
 		public static string GetTcLogPathFromLcPath(string localCollectionFolder)
@@ -193,7 +245,7 @@ namespace Bloom.TeamCollection
 			newTc.SocketServer = SocketServer;
 			newTc.SetupTeamCollectionWithProgressDialog(repoFolderPath);
 			CurrentCollection = newTc;
-			CurrentCollectionEvenIfDisabled = newTc;
+			CurrentCollectionEvenIfDisconnected = newTc;
 		}
 
 		public string PlannedRepoFolderPath(string repoFolderParentPath)
@@ -246,19 +298,18 @@ namespace Bloom.TeamCollection
 			if (!settings.HaveEnterpriseFeatures)
 			{
 				l10nId = "TeamCollection.DisabledForEnterprise";
-				msg = "Most Team Collection functions are unavailable because Bloom Enterprise is not enabled.";
+				msg = "Bloom Enterprise is not enabled.";
 			}
 
 			if (!IsRegistrationSufficient())
 			{
 				l10nId = "TeamCollection.DisabledForRegistration";
-				msg = "Most Team Collection functions are unavailable because you have not registered Bloom with at least an email address to identify who is making changes.";
+				msg = "You have not registered Bloom with at least an email address to identify who is making changes.";
 			}
 
 			if (msg != null)
 			{
-				CurrentCollection = null; // This neatly disables almost everything
-				CurrentCollectionEvenIfDisabled.MessageLog.WriteMessage(MessageAndMilestoneType.Error, l10nId, msg,
+				MakeDisconnected(CurrentCollection.RepoDescription, l10nId, msg,
 					null, null);
 			}
 		}
@@ -275,8 +326,8 @@ namespace Bloom.TeamCollection
 
 		public void SetCollectionId(string collectionSettingsCollectionId)
 		{
-			if (CurrentCollection != null)
-				CurrentCollection.CollectionId = collectionSettingsCollectionId;
+			if (CurrentCollectionEvenIfDisconnected != null)
+				CurrentCollectionEvenIfDisconnected.CollectionId = collectionSettingsCollectionId;
 		}
 	}
 }

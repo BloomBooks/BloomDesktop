@@ -30,6 +30,18 @@ namespace Bloom.TeamCollection
 		}
 
 		/// <summary>
+		/// A status indicating a newly created local-only book, which is automatically considered
+		/// checked out to the current user.
+		/// </summary>
+		public static BookStatus NewBookStatus
+		{
+			get
+			{
+				return new BookStatus() { lockedBy = TeamCollection.FakeUserIndicatingNewBook, lockedWhere = TeamCollectionManager.CurrentMachine };
+			}
+		}
+
+		/// <summary>
 		/// Return a new status which is the same as this one except for having
 		/// the specified version code.
 		/// </summary>
