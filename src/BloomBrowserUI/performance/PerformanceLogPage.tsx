@@ -157,11 +157,18 @@ const MemoryGraph: React.FunctionComponent<{
 const DurationGraph: React.FunctionComponent<{
     measurements: IMeasurement[];
 }> = props => {
-    const durations = props.measurements.map((m, index) => ({
-        x: index,
-        y: m.duration,
-        action: m.action
-    }));
+    const durations = props.measurements.map((m, index) => {
+        const r = {
+            x: index,
+            // sometimes a thing (like a break point) sneaks in wrecks our
+            // graph by being a huge number. Cap it.
+            y: Math.min(m.duration, 2),
+            action: m.action,
+            clipped: false
+        };
+        r.clipped = r.y < m.duration;
+        return r;
+    });
     return (
         <div className="graph">
             <h2>Time</h2>
@@ -277,17 +284,28 @@ const CustomNodeWithColorDependingOnAction = ({
         ActionToColor[action] = colors[l % colors.length];
     }
     const customColor = ActionToColor[action];
+    const commonProps = {
+        fill: customColor,
+        //style:{{ mixBlendMode: blendMode }},
+        onMouseEnter,
+        onMouseMove,
+        onMouseLeave,
+        onClick
+    };
     return (
-        <g transform={`translate(${x},${y})`}>
-            <circle
-                r={size / 2}
-                fill={customColor}
-                style={{ mixBlendMode: blendMode }}
-                onMouseEnter={onMouseEnter}
-                onMouseMove={onMouseMove}
-                onMouseLeave={onMouseLeave}
-                onClick={onClick}
-            />
+        // show values that were clipped as diamonds
+        <g transform={`translate(${x},${y})  rotate(45)`}>
+            {node.data.clipped ? (
+                <rect
+                    x={size * -0.5}
+                    y={size * -0.5}
+                    width={size}
+                    height={size}
+                    {...commonProps}
+                />
+            ) : (
+                <circle r={size / 2} {...commonProps} />
+            )}
         </g>
     );
 };
@@ -306,9 +324,13 @@ function getTooltip(node, measurements: IMeasurement[]) {
             >
                 {measurements[node.index].action}
                 <br />
-                {measurements[node.index].details}
+                {measurements[node.index].details} <br />
+                {filesize(
+                    (measurements[node.index].privateBytes as number) *
+                        1000 /* kb->bytes */
+                )}
                 <br />
-                {node.data.formattedY}
+                {measurements[node.index].duration + " seconds"}
             </div>
         )
     );
