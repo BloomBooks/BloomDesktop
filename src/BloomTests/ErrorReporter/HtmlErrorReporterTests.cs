@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Bloom.Api;
 using Bloom.ErrorReporter;
 using Bloom.MiscUI;
 using Bloom.web.controllers;
@@ -17,6 +18,20 @@ namespace BloomTests.ErrorReporter
 	public class HtmlErrorReporterTests
 	{
 		private string _testValue = "";
+
+		[NUnit.Framework.SetUp]
+		public void Setup()
+		{
+			// doesn't make it true, but allows the methods we're testing to use the
+			// error reporting paths designed for when it is.
+			BloomServer.ServerIsListening = true;
+		}
+
+		[NUnit.Framework.TearDown]
+		public void TearDown()
+		{
+			BloomServer.ServerIsListening = false;
+		}
 
 		private Mock<IReactDialogFactory> GetDefaultMockReactDialogFactory()
 		{

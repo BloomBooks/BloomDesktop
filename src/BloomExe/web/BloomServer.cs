@@ -988,7 +988,7 @@ namespace Bloom.Api
 			return false;
 		}
 
-		public static bool ServerIsListening { get; private set; }
+		public static bool ServerIsListening { get; internal set; }
 
 		private static void VerifyWeAreNowListening()
 		{
