@@ -196,7 +196,7 @@ namespace Bloom.web.controllers
 			}));
 			if (!string.IsNullOrEmpty(path))
 			{
-				using (PerformanceMeasurement.Global.Measure("Import Video"))
+				using (PerformanceMeasurement.Global.Measure("Import Video",path))
 				{
 					_importedVideoIntoBloom = true;
 					var newVideoPath =

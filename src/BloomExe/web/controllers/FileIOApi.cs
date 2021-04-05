@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Publish;
+using Bloom.Utils;
 using SIL.IO;
 
 namespace Bloom.web.controllers
@@ -46,8 +47,14 @@ namespace Bloom.web.controllers
 			};
 			var result = dlg.ShowDialog();
 			if (result == DialogResult.OK)
-				return dlg.FileName.Replace("\\", "/");
+			{
+				// We are not trying get a memory or time diff, just a point measure.
+				PerformanceMeasurement.Global.Measure("Choose file", dlg.FileName).Dispose();
 
+				return dlg.FileName.Replace("\\", "/");
+			}
+
+			
 			return String.Empty;
 		}
 

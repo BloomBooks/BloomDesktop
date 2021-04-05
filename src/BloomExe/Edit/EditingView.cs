@@ -861,7 +861,7 @@ namespace Bloom.Edit
 
 		private void OnPasteImage(DomEventArgs ge)
 		{
-			if(!_model.CanChangeImages())
+			if (!_model.CanChangeImages())
 			{
 				MessageBox.Show(
 					LocalizationManager.GetString("EditTab.CantPasteImageLocked",
@@ -869,91 +869,101 @@ namespace Bloom.Edit
 				return;
 			}
 
-			PalasoImage clipboardImage = null;
-			try
+			using (var measure = PerformanceMeasurement.Global.Measure("Paste Image"))
 			{
+				PalasoImage clipboardImage = null;
 				try
 				{
-					clipboardImage = PortableClipboard.GetImageFromClipboardWithExceptions();
-				}
-				catch (Exception ex)
-				{
-					MessageBox.Show(
-						LocalizationManager.GetString("EditTab.NoValidImageFoundOnClipboard",
-							"Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else."));
-					return;
-				}
-
-				if(clipboardImage == null)
-				{
-					MessageBox.Show(
-						LocalizationManager.GetString("EditTab.NoImageFoundOnClipboard",
-							"Before you can paste an image, copy one onto your 'clipboard', from another program."));
-					return;
-				}
-
-				var target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
-				if(target.ClassName.Contains("licenseImage"))
-					return;
-
-				var imageElement = GetImageNode(ge);
-				if(imageElement == null)
-					return;
-				Cursor = Cursors.WaitCursor;
-
-				//nb: Taglib# requires an extension that matches the file content type.
-				if(ImageUtils.AppearsToBeJpeg(clipboardImage))
-				{
-					if(ShouldBailOutBecauseUserAgreedNotToUseJpeg(clipboardImage))
+					try
+					{
+						clipboardImage = PortableClipboard.GetImageFromClipboardWithExceptions();
+					}
+					catch (Exception ex)
+					{
+						MessageBox.Show(
+							LocalizationManager.GetString("EditTab.NoValidImageFoundOnClipboard",
+								"Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else."));
 						return;
-					Logger.WriteMinorEvent("[Paste Image] Pasting jpeg image {0}", clipboardImage.OriginalFilePath);
-					_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
-				}
-				else
-				{
-					//At this point, it could be a bmp, tiff, or PNG. We want it to be a PNG.
-					if(clipboardImage.OriginalFilePath == null) //they pasted an image, not a path
-					{
-						Logger.WriteMinorEvent("[Paste Image] Pasting image directly from clipboard (e.g. screenshot)");
-						_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
 					}
-					//they pasted a path to a png
-					else if(Path.GetExtension(clipboardImage.OriginalFilePath).ToLowerInvariant() == ".png")
-					{
-						Logger.WriteMinorEvent("[Paste Image] Pasting png file {0}", clipboardImage.OriginalFilePath);
-						_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
-					}
-					else // they pasted a path to some other bitmap format
-					{
-						var pathToPngVersion = Path.Combine(Path.GetTempPath(),
-							Path.GetFileNameWithoutExtension(clipboardImage.FileName) + ".png");
-						Logger.WriteMinorEvent("[Paste Image] Saving {0} ({1}) as {2} and converting to PNG", clipboardImage.FileName,
-							clipboardImage.OriginalFilePath, pathToPngVersion);
-						if(RobustFile.Exists(pathToPngVersion))
-						{
-							RobustFile.Delete(pathToPngVersion);
-						}
-						using(var temp = TempFile.TrackExisting(pathToPngVersion))
-						{
-							SIL.IO.RobustImageIO.SaveImage(clipboardImage.Image, pathToPngVersion, ImageFormat.Png);
 
-							using(var palasoImage = PalasoImage.FromFileRobustly(temp.Path))
+					if (clipboardImage == null)
+					{
+						MessageBox.Show(
+							LocalizationManager.GetString("EditTab.NoImageFoundOnClipboard",
+								"Before you can paste an image, copy one onto your 'clipboard', from another program."));
+						return;
+					}
+
+					var target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
+					if (target.ClassName.Contains("licenseImage"))
+						return;
+
+					var imageElement = GetImageNode(ge);
+					if (imageElement == null)
+						return;
+					Cursor = Cursors.WaitCursor;
+
+
+					//nb: Taglib# requires an extension that matches the file content type.
+					if (ImageUtils.AppearsToBeJpeg(clipboardImage))
+					{
+						if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(clipboardImage))
+							return;
+						Logger.WriteMinorEvent("[Paste Image] Pasting jpeg image {0}", clipboardImage.OriginalFilePath);
+						_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
+					}
+					else
+					{
+						//At this point, it could be a bmp, tiff, or PNG. We want it to be a PNG.
+						if (clipboardImage.OriginalFilePath == null) //they pasted an image, not a path
+						{
+							Logger.WriteMinorEvent(
+								"[Paste Image] Pasting image directly from clipboard (e.g. screenshot)");
+							_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
+						}
+						//they pasted a path to a png
+						else if (Path.GetExtension(clipboardImage.OriginalFilePath).ToLowerInvariant() == ".png")
+						{
+							Logger.WriteMinorEvent("[Paste Image] Pasting png file {0}",
+								clipboardImage.OriginalFilePath);
+							_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
+						}
+						else // they pasted a path to some other bitmap format
+						{
+							var pathToPngVersion = Path.Combine(Path.GetTempPath(),
+								Path.GetFileNameWithoutExtension(clipboardImage.FileName) + ".png");
+							Logger.WriteMinorEvent("[Paste Image] Saving {0} ({1}) as {2} and converting to PNG",
+								clipboardImage.FileName,
+								clipboardImage.OriginalFilePath, pathToPngVersion);
+							if (RobustFile.Exists(pathToPngVersion))
 							{
-								_model.ChangePicture(imageElement, palasoImage, new NullProgress());
+								RobustFile.Delete(pathToPngVersion);
+							}
+
+							using (var temp = TempFile.TrackExisting(pathToPngVersion))
+							{
+								SIL.IO.RobustImageIO.SaveImage(clipboardImage.Image, pathToPngVersion, ImageFormat.Png);
+
+								using (var palasoImage = PalasoImage.FromFileRobustly(temp.Path))
+								{
+									_model.ChangePicture(imageElement, palasoImage, new NullProgress());
+								}
 							}
 						}
 					}
 				}
+				catch (Exception error)
+				{
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,
+						"The program had trouble getting an image from the clipboard.");
+				}
+				finally
+				{
+					if (clipboardImage != null)
+						clipboardImage.Dispose();
+				}
 			}
-			catch(Exception error)
-			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "The program had trouble getting an image from the clipboard.");
-			}
-			finally
-			{
-				if(clipboardImage != null)
-					clipboardImage.Dispose();
-			}
+
 			Cursor = Cursors.Default;
 		}
 
@@ -1123,6 +1133,10 @@ namespace Bloom.Edit
 			var useWebTextBox = TextInputBox.UseWebTextBox;
 			if (SIL.PlatformUtilities.Platform.IsLinux)
 				TextInputBox.UseWebTextBox = false;
+
+			// not using a "using for this" because we want to disentagle the cost of the dialog vs. working
+			// with the results of the dialog.
+			var performanceMeasureForShowingDialog = PerformanceMeasurement.Global.Measure("Show ImageToolbox Dialog");
 			using (var dlg = new ImageToolboxDialog(imageInfo, null))
 			{
 				var searchLanguage = Settings.Default.ImageSearchLanguage;
@@ -1142,6 +1156,7 @@ namespace Bloom.Edit
 
 				dlg.SearchLanguage = searchLanguage;
 				var result = dlg.ShowDialog();
+				performanceMeasureForShowingDialog.Dispose();
 #if MEMORYCHECK
 				// Check memory for the benefit of developers.  The user won't see anything.
 				Bloom.Utils.MemoryManagement.CheckMemory(false, "picture chosen or canceled", false);

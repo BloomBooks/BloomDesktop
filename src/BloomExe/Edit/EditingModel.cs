@@ -232,21 +232,25 @@ namespace Bloom.Edit
 
 		internal void DuplicatePage(IPage page)
 		{
-			try
+			// nb though there is an api call to do this, it isn't currently used, so we have to measure here
+			using (PerformanceMeasurement.Global.Measure("Duplicate page"))
 			{
-				SaveNow(); //ensure current page is saved first
-				_domForCurrentPage = null; //prevent us trying to save it later, as the page selection changes
-				_currentlyDisplayedBook.DuplicatePage(page);
-				// Book.DuplicatePage() updates the page list so we don't need to do it here.
-				// (See http://issues.bloomlibrary.org/youtrack/issue/BL-3715.)
-				//_view.UpdatePageList(false);
-				Logger.WriteEvent("Duplicate Page");
-				Analytics.Track("Duplicate Page");
-			}
-			catch (Exception error)
-			{
-				ErrorReport.NotifyUserOfProblem(error,
-					"Could not duplicate that page. Try quiting Bloom, run it again, and then attempt to duplicate the page again. And please click 'details' below and report this to us.");
+				try
+				{
+					SaveNow(); //ensure current page is saved first
+					_domForCurrentPage = null; //prevent us trying to save it later, as the page selection changes
+					_currentlyDisplayedBook.DuplicatePage(page);
+					// Book.DuplicatePage() updates the page list so we don't need to do it here.
+					// (See http://issues.bloomlibrary.org/youtrack/issue/BL-3715.)
+					//_view.UpdatePageList(false);
+					Logger.WriteEvent("Duplicate Page");
+					Analytics.Track("Duplicate Page");
+				}
+				catch (Exception error)
+				{
+					ErrorReport.NotifyUserOfProblem(error,
+						"Could not duplicate that page. Try quiting Bloom, run it again, and then attempt to duplicate the page again. And please click 'details' below and report this to us.");
+				}
 			}
 		}
 
