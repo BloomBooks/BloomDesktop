@@ -148,10 +148,33 @@ namespace Bloom.MiscUI
 				return;
 			}
 
-			if (_current.ShouldHideSplashScreen && _splashForm != null)
+			if (_current.ShouldHideSplashScreen)
 			{
-				_splashForm.Hide();
-				_splashForm = null; // it's gone, not needed again
+				bool tryAgainLater = false;
+				if (_splashForm != null)
+				{
+					_splashForm.Hide();
+					_splashForm = null; // it's gone, not needed again
+					tryAgainLater = true;
+				}
+
+				if (_doWhenSplashScreenShouldClose != null)
+				{
+					_doWhenSplashScreenShouldClose();
+					_doWhenSplashScreenShouldClose = null;
+					tryAgainLater = true;
+				}
+
+				if (tryAgainLater)
+				{
+					// Ok, now we've hidden whatever was in the way...but we might
+					// still be executing from the event loop of a modal dialog
+					// that we're trying to get rid of. Safest to wait until the system
+					// is idle one more time, when we'll find the same event, but
+					// nothing needing to be closed.
+					_current = null;
+					return;
+				}
 			}
 
 			if (_current.NeedsToRun != null)
