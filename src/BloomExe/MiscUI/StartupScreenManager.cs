@@ -165,6 +165,24 @@ namespace Bloom.MiscUI
 					tryAgainLater = true;
 				}
 
+				// The problem we ran into is that one one machine (but not another) was
+				// that the TC progress dialog (which is a ReactDialog) was still showing when the next ReactDialog
+				// (Do you want to auto update?) was being shown. This only happened because the TC progress dialog
+				// sometimes has to stay open even after it is done, so we let other things continue.
+				// In the previous code here, we do try to wait for the TC dialog to close first, but on Hatton's
+				// machine somehow that didn't work... it lead to setting the ReactDialog Current when it wasn't null.
+				// We considered a more principled approach of having ReactDialogs take a key so that multiple can be
+				// open at the same time-- they have to tell us which key to use when they call "close". But the complexity
+				// there just felt like it wasn't warranted.
+				// So we have a bit of a hack here to work around that; if the topmost screen is not the shell,
+				// then either some dialog is open, or Bloom itself is not the active app. The latter case
+				// means that we effectively pause if there is a dialog waiting to be shown, which will come up
+				// when you activate Bloom. We've decided to try and live with that for what we think is a corner case.
+				if (!(Form.ActiveForm is Shell))
+				{
+					tryAgainLater = true;
+				}
+
 				if (tryAgainLater)
 				{
 					// Ok, now we've hidden whatever was in the way...but we might
