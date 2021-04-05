@@ -45,14 +45,14 @@ export const TeamCollectionDialog: React.FunctionComponent = props => {
                         Reload Collection
                     </BloomButton>
                     <BloomButton
-                        l10nKey="Common.Cancel"
+                        l10nKey="Common.Close"
                         hasText={true}
                         enabled={true}
                         variant="outlined"
                         temporarilyDisableI18nWarning={true}
                         onClick={() => BloomApi.post("common/closeReactDialog")}
                     >
-                        Cancel
+                        Close
                     </BloomButton>
                 </div>
             </div>
