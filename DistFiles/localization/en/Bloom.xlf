@@ -871,6 +871,11 @@
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
       </trans-unit>
+      <trans-unit id="Common.Close">
+        <source xml:lang="en">Close</source>
+        <note>ID: Common.Close</note>
+        <note>Used typically for a button that closes a dialog (where OK or Cancel are not really appropriate)</note>
+      </trans-unit>
       <trans-unit id="Common.Colors.Black">
         <source xml:lang="en">Black</source>
         <note>ID: Common.Colors.Black</note>
