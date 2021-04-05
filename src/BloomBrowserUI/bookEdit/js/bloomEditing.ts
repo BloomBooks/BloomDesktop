@@ -1185,7 +1185,7 @@ export const pageSelectionChanging = () => {
     marginBox.find(".bloom-translationGroup .textBox-identifier").remove();
 };
 
-// Called from C# in EditingView.CleanHtmlAndCopyToPageDom via FrameExports.getPageFrameExports()
+// Called from C# in EditingView.CleanHtmlAndCopyToPageDom via editTabBundle.getPageFrameExports()
 export const getBodyContentForSavePage = () => {
     theOneBubbleManager.turnOffBubbleEditing();
     // Active element should be forced to blur

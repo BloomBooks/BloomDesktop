@@ -8,6 +8,7 @@ var pathToOriginalJavascriptFilesInModified_Libraries = path.resolve(
     "modified_libraries"
 );
 var globule = require("globule");
+const RenameWebpackPlugin = require("rename-webpack-plugin");
 
 //note: if you change this, change it in gulpfile.js & karma.conf.js as well
 var outputDir = "../../output/browser";
@@ -35,7 +36,7 @@ module.exports = merge(core, {
         wireUpBundle: "./utils/WireUpReact.ts",
         collectionTabBundle: "./collectionTab/CollectionTabPane.tsx",
         problemReportBundle: "./problemDialog/ProblemDialog.tsx",
-        editTabRootBundle: "./bookEdit/editViewFrame.ts",
+        editTabBundle: "./bookEdit/editViewFrame.ts",
         readerSetupBundle:
             "./bookEdit/toolbox/readers/readerSetup/readerSetup.ts",
         editablePageBundle: "./bookEdit/editablePage.ts",
@@ -73,18 +74,15 @@ module.exports = merge(core, {
 
         libraryTarget: "var",
 
-        //makes a single entry point module's epxorts accessible via Exports.
-        //Note that if you include more than one entry point js in the frame, the second one will overwrite the Exports var
-        // (see the other way of doing this, below, if that becomes necessary for some reason)
-        // (JT: later: I think what the above means is that the root pug file for a browser control (or an iframe within it)
-        // should not import more than commonBundle.js and then, after it, the one root bundle for that frame,
-        // one of the bundles specified in the entry: block above. If you do import more than one, only the exports
-        // from the LAST one will be accessible in FrameExports, since each bundle will set FrameExports and the
-        // last one will win. I can't find the 'other way' of doing things if you need both lots of exports;
-        // the preferred solution would be to reorganize the code so that each frame has only one root bundle.)
-        library: "FrameExports"
+        // Makes a single entry point module's exports accessible via Exports.
+        library: "[name]"
     },
-
+    // plugins: [
+    //     new RenameWebpackPlugin({
+    //         originNameReg: /editTabBundle.js/,
+    //         targetName: "editTabBundle.js"
+    //     })
+    // ],
     resolve: {
         // For some reason, webpack began to complain about being given minified source.
         // alias: {

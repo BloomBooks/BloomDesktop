@@ -37,7 +37,7 @@ export interface IToolboxFrameExports {
     applyToolboxStateToPage(): void;
 }
 
-// each of these exports shows up under this window's FrameExports object (see bloomFrames.ts)
+// each of these exports shows up under this window's editTabBundle object (see bloomFrames.ts)
 export { removeToolboxMarkup, showOrHideTool_click };
 export {
     showSetupDialog,

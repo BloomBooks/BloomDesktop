@@ -25,7 +25,7 @@ export function SayHello() {
 }
 
 // These functions should be available for calling by non-module code (such as C# directly)
-// using the FrameExports object (see more details in bloomFrames.ts)
+// using the editTabBundle object (see more details in bloomFrames.ts)
 import { getToolboxFrameExports } from "./js/bloomFrames";
 export { getToolboxFrameExports };
 import { getPageFrameExports } from "./js/bloomFrames";
@@ -36,7 +36,7 @@ import "errorHandler";
 import { reportError } from "../lib/errorHandler";
 import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 
-//Called by c# using FrameExports.handleUndo()
+//Called by c# using editTabBundle.handleUndo()
 export function handleUndo(): void {
     // First see if origami is active and knows about something we can undo.
     var contentWindow = getPageFrameExports();
@@ -144,7 +144,7 @@ export function doWhenToolboxLoaded(
     }
 }
 
-//Called by c# using FrameExports.canUndo()
+//Called by c# using editTabBundle.canUndo()
 export function canUndo(): string {
     // See comments on handleUndo()
     const contentWindow = getPageFrameExports();

@@ -72,15 +72,14 @@ namespace Bloom.web
 					<script src = '/commonBundle.js' ></script>
 					<script src = '/wireUpBundle.js' ></script>
 					<script src = '/{_javascriptBundleName}'></script>
-					<script>
-						window.onload = () => {{
-							const rootDiv = document.getElementById('reactRoot');
-							window.wireUpReact(rootDiv,'{_reactComponentName}');
-						}};
-					</script>
+					
 				</head>
 				<body>
 					<div id='reactRoot'>Component should replace this</div >
+					<script>
+						const rootDiv = document.getElementById('reactRoot');
+						wireUpBundle.wireUpReact(rootDiv,'{_reactComponentName}');
+					</script>
 				</body>
 				</html>");
 

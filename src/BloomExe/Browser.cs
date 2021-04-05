@@ -228,7 +228,7 @@ namespace Bloom
 						_browser.Undo();
 						break;
 					case JavaScriptUndoState.Enabled:
-						RunJavaScript("FrameExports.handleUndo()");
+						RunJavaScript("editTabBundle.handleUndo()");
 						break;
 				}
 			};
@@ -323,7 +323,7 @@ namespace Bloom
 		// Answer what we can determine about Undo from our JavaScript canUndo method.
 		// Some Undo tasks are best handled in JavaScript; others, the best we can do is to use the browser's
 		// built-in CanUndo and Undo. This method is used by both CanUndo and the actual Undo code (in SetEditingCommands)
-		// to make sure that consistently we call FrameExports.handleUndo to implement undo if FrameExports.canUndo()
+		// to make sure that consistently we call editTabBundle.handleUndo to implement undo if editTabBundle.canUndo()
 		// returns "yes"; if it returns "fail" we let the browser both determine whether Undo is possible and
 		// implement Undo if so.
 		// (Currently these are the only two things canUndo returns. However, it seemed marginally worth keeping the
@@ -334,10 +334,10 @@ namespace Bloom
 			{
 				if (_browser == null)
 					return JavaScriptUndoState.Disabled;
-				var result = RunJavaScript("(typeof FrameExports === 'undefined' || typeof FrameExports.canUndo === 'undefined') ? 'f' : 'y'");
+				var result = RunJavaScript("(typeof editTabBundle === 'undefined' || typeof editTabBundle.canUndo === 'undefined') ? 'f' : 'y'");
 				if (result == "y")
 				{
-					result = RunJavaScript("FrameExports.canUndo()");
+					result = RunJavaScript("editTabBundle.canUndo()");
 					if (result == "fail")
 						return JavaScriptUndoState.DependsOnBrowser; // not using special Undo.
 					return result == "yes" ? JavaScriptUndoState.Enabled : JavaScriptUndoState.Disabled;
@@ -508,7 +508,7 @@ namespace Bloom
 		private void Paste()
 		{
 			// Saved as an example of how to do a special paste. But since we introduced modules,
-			// if we want this we have to get the ts code into the FrameExports system.
+			// if we want this we have to get the ts code into the editTabBundle system.
 			//if (Control.ModifierKeys == Keys.Control)
 			//{
 			//	var text = PortableClipboard.GetText(TextDataFormat.UnicodeText);

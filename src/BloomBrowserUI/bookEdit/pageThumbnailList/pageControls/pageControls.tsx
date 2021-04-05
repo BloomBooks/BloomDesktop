@@ -12,9 +12,9 @@ import { ThemeProvider } from "@material-ui/styles";
 // pageControlsBundle.js is built. Currently, contrary to our usual practice,
 // this bundle is one of two loaded by pageThumbnailList.pug. It is NOT the last
 // bundle loaded. As a result, anything exported in this file will NOT be
-// accessible through FrameExports, because this bundle's FrameExports is
+// accessible through editTabBundle, because this bundle's editTabBundle is
 // replaced by the pageControlsBundle one. We do need something from that
-// FrameExports, so if we one day need something exported from this, we will
+// editTabBundle, so if we one day need something exported from this, we will
 // have to either combine the two into a single bundle, or use a technique
 // hinted at in webpack.config.js to give each bundle a different root name
 // for its exports.

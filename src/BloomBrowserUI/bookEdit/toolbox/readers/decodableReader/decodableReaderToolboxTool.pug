@@ -8,7 +8,7 @@ html
 			#setupStages
 				img#decodable-edit(src='/bloom/bookEdit/toolbox/readers/edit-white.png')
 				span.setup.noSelect
-					a(href="javascript:window.FrameExports.showSetupDialog('stages');", data-i18n='EditTab.Toolbox.DecodableReaderTool.SetUpStages') Set up Stages
+					a(href="javascript:window.editTabBundle.showSetupDialog('stages');", data-i18n='EditTab.Toolbox.DecodableReaderTool.SetUpStages') Set up Stages
 			.stageLine.clear.noSelect
 				span.scroll-button.ui-icon.ui-icon-triangle-1-w#decStage
 				span.stageLabel.stageLine.noSelect
@@ -36,7 +36,7 @@ html
 			.tableHolder.clear
 				.wordList#wordList
 			#make-letter-word-list-div.clear
-				a#make-letter-word-list(href='javascript:FrameExports.makeLetterWordList();', data-i18n='EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport') Generate a letter and word list report
+				a#make-letter-word-list(href='javascript:editTabBundle.makeLetterWordList();', data-i18n='EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport') Generate a letter and word list report
 			#allowed-word-list-truncated.clear(style="color: red")
 			#hiddenWordListForDecodableReader(style="display: none")
 				label#allowed_word_list_truncated_text(data-i18n='EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated') Bloom can handle only the first {0} words.

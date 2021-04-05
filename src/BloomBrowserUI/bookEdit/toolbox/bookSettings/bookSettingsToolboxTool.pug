@@ -4,7 +4,7 @@
 		=englishLabel
 	br
 mixin checkbox(key, i18nKey, englishLabel)
-	input(type='checkbox', name=key, value=theValue, onClick='FrameExports.handleBookSettingCheckboxClick(this);')
+	input(type='checkbox', name=key, value=theValue, onClick='editTabBundle.handleBookSettingCheckboxClick(this);')
 	label(data-i18n=i18nKey)
 		=englishLabel
 mixin text(i18nKey, englishText)

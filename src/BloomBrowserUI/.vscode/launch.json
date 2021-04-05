@@ -36,7 +36,7 @@
             "webRoot": "${workspaceFolder}",
             "pathMappings": [
                 {
-                    "url": "webpack://FrameExports",
+                    "url": "webpack://editTabBundle",
                     "path": "${workspaceFolder}"
                 }
             ],
@@ -51,8 +51,7 @@
             "name": "Launch in Chrome",
             "type": "chrome",
             "request": "launch",
-            "runtimeExecutable":
-                "c:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
+            "runtimeExecutable": "c:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
             // these args don't appear to work... trying to get it to not offer to restore previous pages
             //"runtimeArgs": [ "--no-first-run --kiosk --disable-session-crashed-bubble --disable-infobars --incognito --disable-extensions"],
             "url": "http://localhost:8089/bloom/CURRENTPAGE.htm",
@@ -61,7 +60,7 @@
             "userDataDir": "${workspaceFolder}/output/chrome",
             "breakOnLoad": true,
             "sourceMapPathOverrides": {
-                "webpack://FrameExports/./*": "${workspaceFolder}/*"
+                "webpack://editTabBundle/./*": "${workspaceFolder}/*"
             }
             // "trace": true, // when uncommented, this writes a log to %userprofile%\AppData\Local\Temp\vscode-chrome-debug.txt
         },
@@ -105,7 +104,7 @@
             "userDataDir": "${workspaceFolder}/output/chrome",
             "breakOnLoad": true,
             "sourceMapPathOverrides": {
-                "webpack://FrameExports/./*": "${workspaceFolder}/*"
+                "webpack://editTabBundle/./*": "${workspaceFolder}/*"
             }
             // "trace": true, // when uncommented, this writes a log to %userprofile%\AppData\Local\Temp\vscode-chrome-debug.txt
         }

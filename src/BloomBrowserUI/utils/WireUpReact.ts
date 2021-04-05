@@ -18,12 +18,25 @@ const knownComponents = {
 };
 
 // This is called from an html file created in the c# ReactControl class.
-(window as any).wireUpReact = (
-    root: HTMLElement,
-    reactComponentName: string
-) => {
+// export function wireUpReact  (
+//     root: HTMLElement,
+//     reactComponentName: string
+// )  {
+//     ReactDOM.render(
+//         React.createElement(knownComponents[reactComponentName], {}, null),
+//         root
+//     );
+// };
+
+export function wire2(root: HTMLElement, reactComponentName: string) {
     ReactDOM.render(
         React.createElement(knownComponents[reactComponentName], {}, null),
         root
     );
-};
+}
+export function wireUpReact(root: HTMLElement, reactComponentName: string) {
+    ReactDOM.render(
+        React.createElement(knownComponents[reactComponentName], {}, null),
+        root
+    );
+}

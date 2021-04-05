@@ -37,7 +37,7 @@ namespace Bloom.Edit
 	///		which specifies the icon for your tool. (And create the icon in the BloomBrowserUI/images folder).
 	/// - Usually you will add a line to GetToolboxServerDirectories() in this file
 	/// - Add two lines like this to src\BloomBrowserUI\bookEdit\toolbox\settings\Settings.pug
-	///		.checkbox.clear#musicCheck(data-tool='musicTool', onclick='FrameExports.showOrHideTool_click(this);')
+	///		.checkbox.clear#musicCheck(data-tool='musicTool', onclick='editTabBundle.showOrHideTool_click(this);')
 	///		.checkbox-label(data-i18n='EditTab.Toolbox.Music.Heading') Music Tool
 	/// </summary>
 	public class ToolboxView
