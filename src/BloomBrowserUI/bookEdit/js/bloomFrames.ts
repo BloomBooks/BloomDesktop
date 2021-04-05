@@ -6,7 +6,7 @@
         In order to make the contents of that bundle and the context of that frame accessible from the
         outside, Webpack is set so that the first line of each of these "entry point" files
         is something like
-        var FrameExports = {.....}
+        var editTabBundle = {.....}
 
         So this module just hides all that and allows code in any frame to access the exports on any other frame.
         Not to make it simpler (because it's already simple... see how few lines are here...) but in order
@@ -18,7 +18,7 @@ import { IEditViewFrameExports } from "../editViewFrame";
 import { IToolboxFrameExports } from "../toolbox/toolboxBootstrap";
 
 interface WindowWithExports extends Window {
-    FrameExports: any;
+    editTabBundle: any;
 }
 export function getToolboxFrameExports(): IToolboxFrameExports | null {
     return getFrameExports("toolbox") as IToolboxFrameExports | null;
@@ -27,7 +27,7 @@ export function getPageFrameExports(): IPageFrameExports | null {
     return getFrameExports("page") as IPageFrameExports | null;
 }
 export function getEditViewFrameExports(): IEditViewFrameExports {
-    return (<any>getRootWindow()).FrameExports as IEditViewFrameExports;
+    return (<any>getRootWindow()).editTabBundle as IEditViewFrameExports;
 }
 
 function getRootWindow(): Window {
@@ -45,5 +45,5 @@ function getFrame(id: string): WindowWithExports | null {
 }
 
 function getFrameExports(id: string): any {
-    return getFrame(id)?.FrameExports;
+    return getFrame(id)?.editTabBundle;
 }

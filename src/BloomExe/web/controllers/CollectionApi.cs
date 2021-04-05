@@ -82,12 +82,15 @@ namespace Bloom.web.controllers
 			{
 				return; // have already called request failed at this point
 			}
+
+			// Note: the winforms version used ImproveAndRefreshBookButtons(), which may load the whole book.
+
 			var infos = collection.GetBookInfos()
 				.Select(info =>
 				{
 					//var book = _libraryModel.GetBookFromBookInfo(info);
 					return new
-						{id = info.Id, title = info.Title, collectionId = collection.PathToDirectory };
+						{id = info.Id, title = info.QuickTitleUserDisplay, collectionId = collection.PathToDirectory };
 				});
 			var json = DynamicJson.Serialize(infos);
 			request.ReplyWithJson(json);

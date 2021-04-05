@@ -299,7 +299,7 @@ export default class BloomField {
     // ckeditor. So I'm leaving this toy example here to save us
     // time if we need to do something similar in the future.
     // JohnT: disabled when we switched to modules, since to make it work again we'd have to
-    // work it into FrameExports etc.
+    // work it into editTabBundle etc.
     //public static CalledByCSharp_SpecialPaste(contents: string) {
     //    let html = contents.replace(/[b,c,d,f,g,h,j,k,l,m,n,p,q,r,s,t,v,w,x,z]/g, 'C');
     //    html = html.replace(/[a,e,i,o,u]/g, 'V');

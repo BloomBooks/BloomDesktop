@@ -47,4 +47,10 @@ const knownComponents = {
         React.createElement(knownComponents[reactComponentName], p, null),
         root
     );
-};
+}
+export function wireUpReact(root: HTMLElement, reactComponentName: string) {
+    ReactDOM.render(
+        React.createElement(knownComponents[reactComponentName], {}, null),
+        root
+    );
+}

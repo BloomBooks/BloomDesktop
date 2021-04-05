@@ -5,24 +5,42 @@ body {
     color: white;
     padding: 25px;
     h1 {
-        font-size: 16px;
+        font-size: 20px;
         margin: 0;
     }
     h2 {
-        font-size: 20px;
+        font-size: 16px;
         margin: 0;
+    }
+}
+.group {
+    opacity: 0;
+    transition: opacity 100ms ease-in;
+
+    &.fade-entering {
+        opacity: 0.01;
+    }
+    &.fade-entered {
+        opacity: 1;
     }
 }
 .bookButtonPane {
     font-family: "Andika New Basic";
     overflow: hidden;
     margin-bottom: 20px;
+    margin-top: 10px;
+    // enhance?
+    .MuiGrid-spacing-xs-3 > .MuiGrid-item {
+        padding-top: 1px;
+        padding-right: 14px;
+    }
     .bookButton {
         //margin-top: 16px;
         height: 120px;
         width: 90px;
         border: none;
         overflow: hidden;
+        padding: 0;
         &:hover {
             //you want this to be the same as the backgroundColor above
             background-color: rgb(68, 68, 68);
@@ -34,15 +52,19 @@ body {
             color: white;
             display: flex;
             flex-direction: column;
+            justify-content: unset;
             text-transform: none;
             font-size: 12px;
             line-height: 14px;
             margin-top: 5px;
             width: 75px;
+            height: 106px;
         }
         img {
-            height: 75px;
-            width: 75px;
+            min-height: 70px;
+            height: 70px;
+            max-width: 70px;
+            object-fit: contain;
         }
     }
 }
