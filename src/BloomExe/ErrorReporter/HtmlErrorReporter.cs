@@ -400,6 +400,24 @@ namespace Bloom.ErrorReporter
 
 					var message = GetMessage(messageText, exception);
 
+					if (!Api.BloomServer.ServerIsListening)
+					{
+						// There's no hope of using the HtmlErrorReporter dialog if our server is not yet running.
+						// We'll likely get errors, maybe Javascript alerts, that won't lead to a clean fallback to
+						// the exception handler below. Besides, failure of HtmlErrorReporter in these circumstances
+						// is expected; we just want to cleanly report the original problem, not to report a
+						// failure of error handling.
+						var fallbackReporter = new WinFormsErrorReporter();
+						if (exception != null)
+							fallbackReporter.ReportNonFatalException(exception, new ShowAlwaysPolicy());
+						else
+						{
+							fallbackReporter.NotifyUserOfProblem(new ShowAlwaysPolicy(), null, ErrorResult.OK,
+								message.NotEncoded);
+						}
+						return;
+					}
+
 					string urlQueryString = CreateNotifyUrlQueryString(message, reportButtonLabel, secondaryButtonLabel);
 
 					

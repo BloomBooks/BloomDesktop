@@ -988,6 +988,8 @@ namespace Bloom.Api
 			return false;
 		}
 
+		public static bool ServerIsListening { get; private set; }
+
 		private static void VerifyWeAreNowListening()
 		{
 			try
@@ -1004,6 +1006,8 @@ namespace Bloom.Api
 				ErrorReport.NotifyUserOfProblem(error,GetServerStartFailureMessage());
 				Application.Exit();
 			}
+
+			ServerIsListening = true;
 		}
 
 		private static string GetServerStartFailureMessage()
@@ -1447,6 +1451,7 @@ namespace Bloom.Api
 				// dispose managed and unmanaged objects
 				try
 				{
+					ServerIsListening = false;
 					if (_listener != null)
 					{
 						//prompted by the mysterious BL 273, Crash while closing down the imageserver
