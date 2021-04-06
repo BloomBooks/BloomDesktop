@@ -178,7 +178,7 @@ namespace Bloom.MiscUI
 				// then either some dialog is open, or Bloom itself is not the active app. The latter case
 				// means that we effectively pause if there is a dialog waiting to be shown, which will come up
 				// when you activate Bloom. We've decided to try and live with that for what we think is a corner case.
-				if (!(Form.ActiveForm is Shell))
+				if (Form.ActiveForm != null && !(Form.ActiveForm is Shell))
 				{
 					tryAgainLater = true;
 				}
