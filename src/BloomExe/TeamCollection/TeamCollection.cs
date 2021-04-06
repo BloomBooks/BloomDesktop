@@ -284,6 +284,11 @@ namespace Bloom.TeamCollection
 		private void SyncCollectionFilesToRepoOnIdle(object sender, EventArgs e)
 		{
 			Application.Idle -= SyncCollectionFilesToRepoOnIdle;
+			// The only time we should not have a TCManager is during unit testing.
+			if (TCManager != null && !TCManager.CheckConnection())
+			{
+				return;
+			}
 			// We want to do this after all changes are finished.
 			SyncLocalAndRepoCollectionFiles(false);
 		}
@@ -1457,6 +1462,7 @@ namespace Bloom.TeamCollection
 		internal const string kWebSocketContext = "teamCollectionMerge";
 
 		public BloomWebSocketServer SocketServer;
+		public TeamCollectionManager TCManager;
 		private FileSystemWatcher _localFolderWatcher;
 
 
