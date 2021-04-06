@@ -64,10 +64,21 @@ namespace Bloom.TeamCollection
 					return;
 				}
 
+				var messagesSource = log.PrettyPrintMessages;
+				if (messagesSource.Length == 0)
+				{
+					messagesSource = new[]
+					{
+						Tuple.Create(MessageAndMilestoneType.History,
+							_tcManager.MessageLog.LastReloadTime.ToLocalTime() + ": "
+								+ LocalizationManager.GetString("TeamCollection.CheckedForChanges", "Checked for remote changes...none found"))
+					};
+				}
+				var messages = messagesSource.Select(t => new { type = t.Item1.ToString(), message = t.Item2 }).ToArray();
 				request.ReplyWithJson(JsonConvert.SerializeObject(
 					new
 					{
-						messages = log.PrettyPrintMessages.Select(t => new { type = t.Item1.ToString(), message = t.Item2 }).ToArray()
+						messages = messages
 					}));
 			}
 			catch (Exception e)

@@ -107,6 +107,17 @@ namespace Bloom.TeamCollection
 			}
 		}
 
+		public DateTime LastReloadTime
+		{
+			get
+			{
+				var last = Messages.FindLast(m =>
+					m.MessageType == MessageAndMilestoneType.Reloaded
+				);
+				return last == null ? DateTime.MinValue : last.When;
+			}
+		}
+
 		public TeamCollectionStatus TeamCollectionStatus
 		{
 			get
