@@ -370,6 +370,7 @@
     <Compile Include="Collection\ShortcutMakerTests.cs" />
     <Compile Include="WebLibraryIntegration\ProxyManagerTests.cs" />
     <Compile Include="SetupFixture.cs" />
+    <Compile Include="XmlStringTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BloomExe\BloomExe.csproj">

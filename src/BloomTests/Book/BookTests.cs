@@ -4376,6 +4376,17 @@ namespace BloomTests.Book
 			Assert.That(paras[1].InnerText, Is.EqualTo("There's nothing \"only\" about a cat!"));
 		}
 
+		[Test]
+		public void SetTopic_TopicContainsSpecialChars_IsEncodedProperly()
+		{
+			var book = CreateBook();
+
+			book.SetTopic("A & B");	// "&" is a special char in XML
+
+			// Verify "&" becomes encoded in the XML... and that the previous line didn't throw an exception.
+			Assert.That(book.RawDom.InnerXml.Contains("A &amp; B"));
+		}
+
 #if UserControlledTemplate
 		[Test]
 		public void SetType_WasPublicationSetToTemplate_HasTemplateFeatures()

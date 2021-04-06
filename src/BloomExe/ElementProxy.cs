@@ -30,17 +30,34 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// Sets the named attribute
+		/// Sets the named attribute to {value}, which should be a simple string (i.e. not, encoded.)
 		/// </summary>
+		[Obsolete("Use the version where the 2nd parameter is an XmlString instead")]
 		public void SetAttribute(string attributeName, string value)
 		{
+			// ENHANCE: Remove references to this
 			if (_xmlElement == null)
 			{
 				_geckoElement.SetAttribute(attributeName, value);
 			}
 			else
 			{
-				_xmlElement.SetAttribute(attributeName, value);
+				_xmlElement.SetAttribute(attributeName, value);	// This method will apply XML-encoding to {value}
+			}
+		}
+
+		/// <summary>
+		/// Sets the named attribute to {value}
+		/// </summary>
+		public void SetAttribute(string attributeName, XmlString value)
+		{
+			if (_xmlElement == null)
+			{
+				_geckoElement.SetAttribute(attributeName, value.Unencoded);
+			}
+			else
+			{
+				_xmlElement.SetAttribute(attributeName, value.Unencoded);
 			}
 		}
 

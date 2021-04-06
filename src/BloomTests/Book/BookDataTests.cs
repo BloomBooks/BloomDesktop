@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Web;
 using System.Xml;
+using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
@@ -127,7 +128,7 @@ namespace BloomTests.Book
 				</div>
 			 </body></html>");
 			var data = new BookData(bookDom, _collectionSettings, null);
-			Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+			Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz").Xml);
 
 
 			HtmlDom editedPageDom = new HtmlDom(@"<html ><head></head><body>
@@ -140,7 +141,7 @@ namespace BloomTests.Book
 
 			data.SuckInDataFromEditedDom(editedPageDom, info);
 
-			Assert.AreEqual("changed", data.GetVariableOrNull("bookTitle", "xyz"));
+			Assert.AreEqual("changed", data.GetVariableOrNull("bookTitle", "xyz").Xml);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='originalTitle' and text()='changed']", 1);
 			Assert.That(info.OriginalTitle, Is.EqualTo("changed"));
 		}
@@ -161,7 +162,7 @@ namespace BloomTests.Book
 
 			data.SuckInDataFromEditedDom(bookDom, info);
 
-			Assert.That(data.GetVariableOrNull("originalTitle", "*"), Is.EqualTo(encodedTitle), "Data should return the InnerXML (NOT the InnerText) of the title");
+			Assert.That(data.GetVariableOrNull("originalTitle", "*").Xml, Is.EqualTo(encodedTitle), "Data should return the InnerXML (NOT the InnerText) of the title");
 			Assert.That(bookDom.SelectSingleNode("//div[@id='bloomDataDiv']/div[@data-book='originalTitle']").InnerXml, Is.EqualTo(encodedTitle));
 			Assert.That(info.OriginalTitle, Is.EqualTo(unencodedTitle));
 		}
@@ -183,7 +184,7 @@ namespace BloomTests.Book
 
 			data.SuckInDataFromEditedDom(bookDom);
 
-			Assert.That(data.GetVariableOrNull("originalTitle", "*"), Is.Null);
+			Assert.That(data.GetVariableOrNull("originalTitle", "*").Xml, Is.Null);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='originalTitle']");
 		}
 
@@ -206,7 +207,7 @@ namespace BloomTests.Book
 
 			data.SuckInDataFromEditedDom(bookDom, info);
 
-			Assert.That(data.GetVariableOrNull("originalTitle", "*"), Is.EqualTo(encodedTitle), "data should equal the encoded title");
+			Assert.That(data.GetVariableOrNull("originalTitle", "*").Xml, Is.EqualTo(encodedTitle), "data should equal the encoded title");
 			Assert.That(info.OriginalTitle, Is.EqualTo(unencodedTitle), "Info.OriginalTitle should equal the decoded title");
 		}
 
@@ -229,7 +230,7 @@ namespace BloomTests.Book
 
 			data.SuckInDataFromEditedDom(bookDom);
 
-			Assert.That(data.GetVariableOrNull("originalTitle", "*"), Is.EqualTo(encodedTitle), "data should equal the encoded title");
+			Assert.That(data.GetVariableOrNull("originalTitle", "*").Xml, Is.EqualTo(encodedTitle), "data should equal the encoded title");
 		}
 
 		/// <summary>
@@ -248,7 +249,7 @@ namespace BloomTests.Book
 			 </body></html>");
 
 			var data = new BookData(bookDom, _collectionSettings, null);
-			Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+			Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz").Xml);
 
 			HtmlDom editedPageDom = new HtmlDom(@"<html ><head></head><body>
 				<div class='bloom-page' id='guid2'>
@@ -258,7 +259,7 @@ namespace BloomTests.Book
 
 			data.SuckInDataFromEditedDom(editedPageDom);
 
-			Assert.AreEqual("changed", data.GetVariableOrNull("bookTitle", "xyz"));
+			Assert.AreEqual("changed", data.GetVariableOrNull("bookTitle", "xyz").Xml);
 		}
 
 		// BRANDING-RELATED TESTS
@@ -273,9 +274,9 @@ namespace BloomTests.Book
 			 </body></html>");
 
 			var data = new BookData(bookDom, _collectionSettings, null);
-			Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+			Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz").Xml);
 			data.MergeBrandingSettings("nonsense");
-			Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+			Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz").Xml);
 		}
 
 		[Test]
@@ -291,9 +292,9 @@ namespace BloomTests.Book
 				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"), @"{}");
 
 				var data = new BookData(bookDom, _collectionSettings, null);
-				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz").Xml);
 				data.MergeBrandingSettings(tempFolder.Path);
-				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz").Xml);
 			}
 		}
 
@@ -310,9 +311,9 @@ namespace BloomTests.Book
 				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"), "");
 
 				var data = new BookData(bookDom, _collectionSettings, null);
-				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz").Xml);
 				data.MergeBrandingSettings(tempFolder.Path);
-				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz").Xml);
 			}
 		}
 
@@ -345,9 +346,9 @@ namespace BloomTests.Book
 
 				var data = new BookData(bookDom, _collectionSettings, null);
 				data.MergeBrandingSettings(tempFolder.Path);
-				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
-				Assert.That(data.GetVariableOrNull("insideBackCover", "en"), Is.Null);
-				Assert.That(data.GetVariableOrNull("title", "xyz"), Is.Null);
+				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz").Xml);
+				Assert.That(data.GetVariableOrNull("insideBackCover", "en").Xml, Is.Null);
+				Assert.That(data.GetVariableOrNull("title", "xyz").Xml, Is.Null);
 			}
 		}
 
@@ -412,10 +413,10 @@ namespace BloomTests.Book
 				var data = new BookData(bookDom, _collectionSettings, null);
 				data.MergeBrandingSettings(tempFolder.Path);
 
-				Assert.AreEqual("stuff from settings", data.GetVariableOrNull("insideBackCover", "xyz"));
-				Assert.AreEqual("English stuff from settings", data.GetVariableOrNull("insideBackCover", "en"));
-				Assert.AreEqual("xyz title", data.GetVariableOrNull("title", "xyz"));
-				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+				Assert.AreEqual("stuff from settings", data.GetVariableOrNull("insideBackCover", "xyz").Xml);
+				Assert.AreEqual("English stuff from settings", data.GetVariableOrNull("insideBackCover", "en").Xml);
+				Assert.AreEqual("xyz title", data.GetVariableOrNull("title", "xyz").Xml);
+				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz").Xml);
 			}
 		}
 
@@ -450,8 +451,8 @@ namespace BloomTests.Book
 				var data = new BookData(bookDom, _collectionSettings, null);
 				data.MergeBrandingSettings(tempFolder.Path);
 
-				Assert.AreEqual("stuff from settings", data.GetVariableOrNull("insideBackCover", "xyz"));
-				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz"));
+				Assert.AreEqual("stuff from settings", data.GetVariableOrNull("insideBackCover", "xyz").Xml);
+				Assert.AreEqual("original", data.GetVariableOrNull("bookTitle", "xyz").Xml);
 			}
 		}
 
@@ -1074,8 +1075,8 @@ namespace BloomTests.Book
 				</body></html>");
 			var collectionSettings = CreateCollection();
 			var data = new BookData(dom, collectionSettings, null);
-			Assert.AreEqual("fr", data.MultilingualContentLanguage2);
-			Assert.AreEqual("es", data.MultilingualContentLanguage3);
+			Assert.AreEqual("fr", data.MultilingualContentLanguage2.Xml);
+			Assert.AreEqual("es", data.MultilingualContentLanguage3.Xml);
 		}
 
 		[Test]
@@ -1089,8 +1090,8 @@ namespace BloomTests.Book
 			var collectionSettings = CreateCollection();
 			var data = new BookData(dom, collectionSettings, null);
 			data.SetMultilingualContentLanguages("en", "de");
-			Assert.AreEqual("en", data.MultilingualContentLanguage2);
-			Assert.AreEqual("de", data.MultilingualContentLanguage3);
+			Assert.AreEqual("en", data.MultilingualContentLanguage2.Xml);
+			Assert.AreEqual("de", data.MultilingualContentLanguage3.Xml);
 		}
 
 		[Test]
@@ -1210,6 +1211,33 @@ namespace BloomTests.Book
 				1);
 		}
 
+		[Test]
+		public void UpdateVariablesAndDataDivThroughDOM_L1WithSpecialChars_EncodedProperly()
+		{
+			var dom = new HtmlDom(
+				@"<html><head></head><body><div id='data-div' data-book='contentLanguage1' lang='*'>en</div></body></html>");
+			var data = new BookData(dom, CreateCollection("en-uk&au", "English"), null);
+
+			data.UpdateVariablesAndDataDivThroughDOM();
+
+			// Verify the language codes
+			Assert.That(dom.RawDom.InnerXml.Contains("en-uk&amp;au"), "L1");
+		}
+
+		[Test]
+		public void UpdateVariablesAndDataDivThroughDOM_L2L3WithSpecialChars_EncodedProperly()
+		{
+			var dom = new HtmlDom(
+				@"<html><head></head><body><div id='data-div' data-book='contentLanguage1' lang='*'>en</div></body></html>");
+			var data = new BookData(dom, CreateCollection("en", "English"), null);
+			data.SetMultilingualContentLanguages("es-es&la", "fr-fr&ca");
+
+			data.UpdateVariablesAndDataDivThroughDOM();
+
+			// Verify the language codes
+			Assert.That(dom.RawDom.InnerXml.Contains("es-es&amp;la"), "L2");
+			Assert.That(dom.RawDom.InnerXml.Contains("fr-fr&amp;ca"), "L3");
+		}
 
 		[Test]
 		public void SetMultilingualContentLanguages_HasTrilingualLanguages_AddsToDataDiv()
@@ -1244,13 +1272,14 @@ namespace BloomTests.Book
 		[TestCase("", "the province", "the district", "the district, the province")]
 		[TestCase("", "", "the district", "the district")]
 		[TestCase("", "the province", "", "the province")]
+		[TestCase("country 1 & 2", "province 1 & 2", "district 1 & 2", "district 1 &amp; 2, province 1 &amp; 2, country 1 &amp; 2")]	// output is expected to return an encoded string
 		public void Constructor_CollectionSettingsHasVariousLocationFields_LanguageLocationFilledCorrect(string country,
 			string province, string district, string expected)
 		{
 			var dom = new HtmlDom();
 			var data = new BookData(dom,
 				new CollectionSettings() {Country = country, Province = province, District = district}, null);
-			Assert.AreEqual(expected, data.GetVariableOrNull("languageLocation", "*"));
+			Assert.AreEqual(expected, data.GetVariableOrNull("languageLocation", "*").Xml);
 		}
 
 		/*    data.AddLanguageString("*", "nameOfLanguage", collectionSettings.Language1.Name, true);
@@ -1265,7 +1294,7 @@ namespace BloomTests.Book
 		{
 			var dom = new HtmlDom();
 			var data = new BookData(dom, CreateCollection(Language1Iso639Code: "xyz"), null);
-			Assert.AreEqual("xyz", data.GetVariableOrNull("iso639Code", "*"));
+			Assert.AreEqual("xyz", data.GetVariableOrNull("iso639Code", "*").Xml);
 		}
 
 		[Test]
@@ -1281,7 +1310,7 @@ namespace BloomTests.Book
 		{
 			var dom = new HtmlDom();
 			var data = new BookData(dom, CreateCollection(Language1Name: "foobar"), null);
-			Assert.AreEqual("foobar", data.GetVariableOrNull("nameOfLanguage", "*"));
+			Assert.AreEqual("foobar", data.GetVariableOrNull("nameOfLanguage", "*").Xml);
 		}
 
 		//NB: yes, this is confusing, having lang1 = language, lang2 = nationalLang1, lang3 = nationalLang2
@@ -1291,7 +1320,7 @@ namespace BloomTests.Book
 		{
 			var dom = new HtmlDom();
 			var data = new BookData(dom, CreateCollection(Language2Iso639Code: "tpi"), null);
-			Assert.AreEqual("Tok Pisin", data.GetVariableOrNull("nameOfNationalLanguage1", "*"));
+			Assert.AreEqual("Tok Pisin", data.GetVariableOrNull("nameOfNationalLanguage1", "*").Xml);
 		}
 
 		[Test]
@@ -1299,7 +1328,7 @@ namespace BloomTests.Book
 		{
 			var dom = new HtmlDom();
 			var data = new BookData(dom, CreateCollection(Language3Iso639Code: "tpi"), null);
-			Assert.AreEqual("Tok Pisin", data.GetVariableOrNull("nameOfNationalLanguage2", "*"));
+			Assert.AreEqual("Tok Pisin", data.GetVariableOrNull("nameOfNationalLanguage2", "*").Xml);
 		}
 
 		[Test]
@@ -1307,11 +1336,11 @@ namespace BloomTests.Book
 		{
 			var htmlDom = new HtmlDom();
 			var data = new BookData(htmlDom, CreateCollection(), null);
-			data.Set("1", "one", "en");
-			Assert.AreEqual("one", data.GetVariableOrNull("1", "en"));
+			data.Set("1", XmlString.FromXml("one"), "en");
+			Assert.AreEqual("one", data.GetVariableOrNull("1", "en").Xml);
 			AssertThatXmlIn.Dom(htmlDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en']", 1);
 			var roundTripData = new BookData(htmlDom, CreateCollection(), null);
-			var t = roundTripData.GetVariableOrNull("1", "en");
+			var t = roundTripData.GetVariableOrNull("1", "en").Xml;
 			Assert.AreEqual("one", t);
 		}
 
@@ -1320,11 +1349,11 @@ namespace BloomTests.Book
 		{
 			var htmlDom = new HtmlDom();
 			var data = new BookData(htmlDom, CreateCollection(), null);
-			data.Set("1", "one", "en");
-			data.Set("1", "uno", "es");
+			data.Set("1", XmlString.FromXml("one"), "en");
+			data.Set("1", XmlString.FromXml("uno"), "es");
 			var roundTripData = new BookData(htmlDom, CreateCollection(), null);
-			Assert.AreEqual("one", roundTripData.GetVariableOrNull("1", "en"));
-			Assert.AreEqual("uno", roundTripData.GetVariableOrNull("1", "es"));
+			Assert.AreEqual("one", roundTripData.GetVariableOrNull("1", "en").Xml);
+			Assert.AreEqual("uno", roundTripData.GetVariableOrNull("1", "es").Xml);
 		}
 
 		[Test]
@@ -1332,12 +1361,12 @@ namespace BloomTests.Book
 		{
 			var htmlDom = new HtmlDom();
 			var data = new BookData(htmlDom, CreateCollection(), null);
-			data.Set("1", "one", "en");
-			data.Set("1", "one", "en");
-			Assert.AreEqual("one", data.GetVariableOrNull("1", "en"));
+			data.Set("1", XmlString.FromXml("one"), "en");
+			data.Set("1", XmlString.FromXml("one"), "en");
+			Assert.AreEqual("one", data.GetVariableOrNull("1", "en").Xml);
 			AssertThatXmlIn.Dom(htmlDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en']", 1);
 			var roundTripData = new BookData(htmlDom, CreateCollection(), null);
-			var t = roundTripData.GetVariableOrNull("1", "en");
+			var t = roundTripData.GetVariableOrNull("1", "en").Xml;
 			Assert.AreEqual("one", t);
 		}
 
@@ -1346,12 +1375,12 @@ namespace BloomTests.Book
 		{
 			var htmlDom = new HtmlDom();
 			var data = new BookData(htmlDom, CreateCollection(), null);
-			data.Set("1", "one", "en");
-			data.Set("1", "", "en");
-			Assert.AreEqual(null, data.GetVariableOrNull("1", "en"));
+			data.Set("1", XmlString.FromXml("one"), "en");
+			data.Set("1", XmlString.Empty, "en");
+			Assert.AreEqual(null, data.GetVariableOrNull("1", "en").Xml);
 			AssertThatXmlIn.Dom(htmlDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en']", 0);
 			var roundTripData = new BookData(htmlDom, CreateCollection(), null);
-			Assert.IsNull(roundTripData.GetVariableOrNull("1", "en"));
+			Assert.IsNull(roundTripData.GetVariableOrNull("1", "en").Xml);
 		}
 
 		[Test]
@@ -1359,12 +1388,12 @@ namespace BloomTests.Book
 		{
 			var htmlDom = new HtmlDom();
 			var data = new BookData(htmlDom, CreateCollection(), null);
-			data.Set("1", "one", "en");
+			data.Set("1", XmlString.FromXml("one"), "en");
 			data.Set("1", null, "en");
-			Assert.AreEqual(null, data.GetVariableOrNull("1", "en"));
+			Assert.AreEqual(null, data.GetVariableOrNull("1", "en").Xml);
 			AssertThatXmlIn.Dom(htmlDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en']", 0);
 			var roundTripData = new BookData(htmlDom, CreateCollection(), null);
-			Assert.IsNull(roundTripData.GetVariableOrNull("1", "en"));
+			Assert.IsNull(roundTripData.GetVariableOrNull("1", "en").Xml);
 		}
 
 		[Test]
@@ -1372,10 +1401,10 @@ namespace BloomTests.Book
 		{
 			var htmlDom = new HtmlDom();
 			var data = new BookData(htmlDom, CreateCollection(), null);
-			data.Set("1", "one", "en");
+			data.Set("1", XmlString.FromXml("one"), "en");
 			var data2 = new BookData(htmlDom, CreateCollection(), null);
 			data2.RemoveSingleForm("1", "en");
-			Assert.IsNull(data2.GetVariableOrNull("1", "en"));
+			Assert.IsNull(data2.GetVariableOrNull("1", "en").Xml);
 		}
 
 		[Test]
@@ -1384,10 +1413,10 @@ namespace BloomTests.Book
 			var htmlDom = new HtmlDom();
 			var data = new BookData(htmlDom, CreateCollection(), null);
 			data.RemoveSingleForm("1", "en");
-			Assert.AreEqual(null, data.GetVariableOrNull("1", "en"));
+			Assert.AreEqual(null, data.GetVariableOrNull("1", "en").Xml);
 			AssertThatXmlIn.Dom(htmlDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en']", 0);
 			var roundTripData = new BookData(htmlDom, CreateCollection(), null);
-			Assert.IsNull(roundTripData.GetVariableOrNull("1", "en"));
+			Assert.IsNull(roundTripData.GetVariableOrNull("1", "en").Xml);
 		}
 
 		[Test]
@@ -1395,10 +1424,10 @@ namespace BloomTests.Book
 		{
 			var htmlDom = new HtmlDom();
 			var data = new BookData(htmlDom, CreateCollection(), null);
-			data.Set("1", "one", "en");
+			data.Set("1", XmlString.FromXml("one"), "en");
 			var roundTripData = new BookData(htmlDom, CreateCollection(), null);
 			roundTripData.RemoveSingleForm("1", "en");
-			Assert.IsNull(roundTripData.GetVariableOrNull("1", "en"));
+			Assert.IsNull(roundTripData.GetVariableOrNull("1", "en").Xml);
 
 		}
 
@@ -1408,12 +1437,12 @@ namespace BloomTests.Book
 		{
 			var htmlDom = new HtmlDom();
 			var data = new BookData(htmlDom, CreateCollection(), null);
-			data.Set("1", "one", "en");
-			data.Set("1", "uno", "es");
+			data.Set("1", XmlString.FromXml("one"), "en");
+			data.Set("1", XmlString.FromXml("uno"), "es");
 			var roundTripData = new BookData(htmlDom, CreateCollection(), null);
 			roundTripData.RemoveSingleForm("1", "en");
-			Assert.IsNull(roundTripData.GetVariableOrNull("1", "en"));
-			Assert.AreEqual("uno", roundTripData.GetVariableOrNull("1", "es"));
+			Assert.IsNull(roundTripData.GetVariableOrNull("1", "en").Xml);
+			Assert.AreEqual("uno", roundTripData.GetVariableOrNull("1", "es").Xml);
 		}
 
 
@@ -1422,8 +1451,8 @@ namespace BloomTests.Book
 		{
 			var htmlDom = new HtmlDom();
 			var data = new BookData(htmlDom, CreateCollection(), null);
-			data.Set("1", "one", "en");
-			data.Set("1", "uno", "es");
+			data.Set("1", XmlString.FromXml("one"), "en");
+			data.Set("1", XmlString.FromXml("uno"), "es");
 			Assert.AreEqual(2, data.GetMultiTextVariableOrEmpty("1").Forms.Count());
 		}
 
@@ -1432,7 +1461,7 @@ namespace BloomTests.Book
 		{
 			var htmlDom = new HtmlDom();
 			var data = new BookData(htmlDom, CreateCollection(), null);
-			data.Set("1", "one", "en");
+			data.Set("1", XmlString.FromXml("one"), "en");
 			data.Set("1", null, "es");
 			data.UpdateVariablesAndDataDivThroughDOM();
 			AssertThatXmlIn.Dom(htmlDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("html/body/div/div[@lang='en']", 1);
@@ -1548,8 +1577,8 @@ namespace BloomTests.Book
 			 </body></html>");
 
 			var data = new BookData(bookDom, _collectionSettings, null);
-			Assert.AreEqual("health", data.GetVariableOrNull("topic", "en"));
-			Assert.IsNull(data.GetVariableOrNull("topic", "tpi"));
+			Assert.AreEqual("health", data.GetVariableOrNull("topic", "en").Xml);
+			Assert.IsNull(data.GetVariableOrNull("topic", "tpi").Xml);
 		}
 
 		[Test]
