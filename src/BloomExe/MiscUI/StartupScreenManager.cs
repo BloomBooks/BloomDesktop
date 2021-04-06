@@ -266,7 +266,9 @@ namespace Bloom.MiscUI
 				_splashForm.FadeAndClose(); //it's going to hang around while it fades,
 			}
 			_doWhenSplashScreenShouldClose?.Invoke();
+			_doWhenSplashScreenShouldClose = null;
 			DoLastOfAllAfterClosingSplashScreen?.Invoke();
+			DoLastOfAllAfterClosingSplashScreen = null;
 		}
 
 		public static void EnableProcessing()
