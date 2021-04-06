@@ -333,7 +333,7 @@ namespace BloomTests.TeamCollection
 		public void SyncAtStartup_DropBoxConflictCreatedRemotely_GeneratesMessage()
 		{
 			AssertProgress("Two members of your team had a book checked out at the same time, so the Team Collection got two different versions of it. Bloom has moved \"{0}\" to the Lost & Found.",
-				kConflictName,null, MessageAndMilestoneType.Error);
+				kConflictName,null, MessageAndMilestoneType.ErrorNoReload);
 		}
 
 		[Test]
@@ -356,7 +356,7 @@ namespace BloomTests.TeamCollection
 			AssertLocalContent("Update content and status and warn", "This simulates new content on server");
 			Assert.That(_collection.GetLocalStatus("Update content and status and warn").lockedBy, Is.EqualTo("fred@somewhere.org"));
 			AssertProgress("The book '{0}', which you have checked out and edited, was modified in the Team Collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.",
-				"Update content and status and warn", null, MessageAndMilestoneType.Error);
+				"Update content and status and warn", null, MessageAndMilestoneType.ErrorNoReload);
 			AssertLostAndFound("Update content and status and warn");
 		}
 
@@ -366,7 +366,7 @@ namespace BloomTests.TeamCollection
 			AssertLocalContent("Update content and status and warn2", "This simulates new content on server");
 			Assert.That(_collection.GetLocalStatus("Update content and status and warn2").lockedBy, Is.EqualTo("fred@somewhere.org"));
 			AssertProgress("The book '{0}', which you have checked out and edited, is checked out to someone else in the Team Collection. Your changes have been overwritten, but are saved to Lost-and-found."
-				, "Update content and status and warn2",null, MessageAndMilestoneType.Error);
+				, "Update content and status and warn2",null, MessageAndMilestoneType.ErrorNoReload);
 			AssertLostAndFound("Update content and status and warn2");
 		}
 
@@ -419,7 +419,7 @@ namespace BloomTests.TeamCollection
 		{
 			var expectedMsg = string.Format(msg, param0, param1);
 			
-			if (expectedType == MessageAndMilestoneType.Error)
+			if (expectedType == MessageAndMilestoneType.Error || expectedType == MessageAndMilestoneType.ErrorNoReload)
 			{
 				Assert.That(_progressSpy.Errors, Contains.Item(expectedMsg));
 			}
@@ -485,7 +485,7 @@ namespace BloomTests.TeamCollection
 			AssertLocalContent("Rename local", "This content is on the server");
 			Assert.That(_collection.GetLocalStatus("Rename local").lockedBy, Is.EqualTo("fred@somewhere.org"));
 			AssertProgress("Found different versions of '{0}' in both collections. The team version has been copied to your local collection, and the old local version to Lost and Found",
-				"Rename local", null, MessageAndMilestoneType.Error);
+				"Rename local", null, MessageAndMilestoneType.ErrorNoReload);
 			AssertLostAndFound("Rename local");
 		}
 

@@ -19,6 +19,8 @@ export const TeamCollectionDialog: React.FunctionComponent = props => {
             setMessages(result.data.messages);
         });
     }, []);
+    const urlParams = new URLSearchParams(window.location.search);
+    const showReloadButton = !!urlParams.get("showReloadButton");
     return (
         <ThemeProvider theme={theme}>
             <div id="team-collection-dialog">
@@ -33,22 +35,26 @@ export const TeamCollectionDialog: React.FunctionComponent = props => {
                     ))}
                 </div>
                 <div className="align-right no-space-below">
-                    <BloomButton
-                        id="reload"
-                        l10nKey="TeamCollection.Reload"
-                        temporarilyDisableI18nWarning={true}
-                        //variant="text"
-                        enabled={true}
-                        hasText={true}
-                        onClick={() => BloomApi.post("common/reloadCollection")}
-                    >
-                        Reload Collection
-                    </BloomButton>
+                    {showReloadButton && (
+                        <BloomButton
+                            id="reload"
+                            l10nKey="TeamCollection.Reload"
+                            temporarilyDisableI18nWarning={true}
+                            //variant="text"
+                            enabled={true}
+                            hasText={true}
+                            onClick={() =>
+                                BloomApi.post("common/reloadCollection")
+                            }
+                        >
+                            Reload Collection
+                        </BloomButton>
+                    )}
                     <BloomButton
                         l10nKey="Common.Close"
                         hasText={true}
                         enabled={true}
-                        variant="outlined"
+                        variant={showReloadButton ? "outlined" : "contained"}
                         temporarilyDisableI18nWarning={true}
                         onClick={() => BloomApi.post("common/closeReactDialog")}
                     >

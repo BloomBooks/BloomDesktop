@@ -51,9 +51,37 @@ namespace Bloom.TeamCollection
 				var index = Messages.FindLastIndex(m =>
 					m.MessageType == MessageAndMilestoneType.LogDisplayed ||
 					m.MessageType == MessageAndMilestoneType.Reloaded) + 1;
-				return Messages.Skip(index).Where(m => m.MessageType == MessageAndMilestoneType.Error).ToList();
+				return Messages.Skip(index).Where(m => m.MessageType == MessageAndMilestoneType.Error
+				    || m.MessageType == MessageAndMilestoneType.ErrorNoReload).ToList();
 			}
 		}
+
+		/// <summary>
+		/// Messages that should cause the Reload button to be present. That is,
+		/// messages since the last Reload that are
+		/// - NewStuff
+		/// - Error (but not ErrorNoReload)
+		/// </summary>
+		/// <remarks>Note that unlike CurrentErrors or CurrentNewStuff, a LogShown does not prevent
+		/// earlier messages being included. If we open the dialog and close it without reloading,
+		/// we want the button to stop indicating a new problem, but we don't want the user to
+		/// lose the ability to reload until he actually reloads.</remarks>
+		public List<TeamCollectionMessage> ReloadMessages
+		{
+			get
+			{
+				// correctly 0 if none match
+				var index = Messages.FindLastIndex(m =>
+					m.MessageType == MessageAndMilestoneType.Reloaded) + 1;
+				return Messages.Skip(index).Where(m => m.MessageType == MessageAndMilestoneType.Error
+				                                       || m.MessageType == MessageAndMilestoneType.NewStuff).ToList();
+			}
+		}
+
+		public bool NextTeamCollectionDialogShouldForceReloadButton;
+
+		public bool ShouldShowReloadButton =>
+			NextTeamCollectionDialogShouldForceReloadButton || ReloadMessages.Count > 0;
 
 		public List<TeamCollectionMessage> CurrentNewStuff
 		{
@@ -76,6 +104,17 @@ namespace Bloom.TeamCollection
 					m.MessageType == MessageAndMilestoneType.Reloaded
 				);
 				return last?.MessageType == MessageAndMilestoneType.ClobberPending ? last : null;
+			}
+		}
+
+		public DateTime LastReloadTime
+		{
+			get
+			{
+				var last = Messages.FindLast(m =>
+					m.MessageType == MessageAndMilestoneType.Reloaded
+				);
+				return last == null ? DateTime.MinValue : last.When;
 			}
 		}
 

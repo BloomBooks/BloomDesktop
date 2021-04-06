@@ -84,12 +84,14 @@ namespace Bloom.CollectionTab
 			};
 			_tcStatusButton.Click += (sender, args) =>
 			{
+				// Any messages for which reloading the collection is a useful action?
+				var showReloadButton = tcManager.MessageLog.ShouldShowReloadButton;
 				// Reinstate this to see messages from before we started up.
 				// We think it might be too expensive to show a list as long as this might get.
 				// Instead, in the short term we may add a button to show the file.
 				// Later we may implement some efficient way to scroll through them.
 				// tcManager.CurrentCollection?.MessageLog?.LoadSavedMessages();
-				using (var dlg = new ReactDialog("teamCollectionSettingsBundle.js", "TeamCollectionDialog"))
+				using (var dlg = new ReactDialog("teamCollectionSettingsBundle.js", "TeamCollectionDialog", showReloadButton ? "showReloadButton=true" : ""))
 				{
 					dlg.ShowDialog(this);
 					tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
