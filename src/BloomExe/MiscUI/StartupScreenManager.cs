@@ -141,10 +141,6 @@ namespace Bloom.MiscUI
 					// We can stop running altogether until some new action gets added or enabled.
 					Application.Idle -= DoStartupAction;
 				}
-				// The only way we could want it again is if some task that ShouldHideSplashScreen
-				// is still in the list, and later gets enabled. But currently no such tasks ever
-				// get disabled. So if there are no current tasks, we no longer need it.
-				_splashForm = null;
 				return;
 			}
 
@@ -261,12 +257,13 @@ namespace Bloom.MiscUI
 
 		public static void CloseSplashScreen()
 		{
-			if (_splashForm != null)
-			{
-				_splashForm.FadeAndClose(); //it's going to hang around while it fades,
-			}
+			_splashForm?.FadeAndClose();	 //it's going to hang around while it fades,
 			_doWhenSplashScreenShouldClose?.Invoke();
 			DoLastOfAllAfterClosingSplashScreen?.Invoke();
+
+			_splashForm = null;
+			_doWhenSplashScreenShouldClose = null;		// Do these actions only once.
+			DoLastOfAllAfterClosingSplashScreen = null;
 		}
 
 		public static void EnableProcessing()
