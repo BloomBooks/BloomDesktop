@@ -219,7 +219,7 @@ namespace Bloom.Utils
 		public string GetCsv()
 		{
 			TimeSpan diff = _end.when - _start.when;
-			var time = diff.ToString(@"ss\.f");
+			var time = diff.ToString(@"ss\.ff");
 			return $"{_actionLabel},{_actionDetails},{time},{_end.privateBytesKb},{(_end.privateBytesKb - _previousPrivateBytesKb)}";
 		}
 

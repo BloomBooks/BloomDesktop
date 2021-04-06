@@ -97,11 +97,11 @@ namespace Bloom.Edit
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			// HandleStartRecording seems to need to be on the UI thread in order for HandleEndRecord() to detect the correct state.
-			apiHandler.RegisterEndpointHandler("audio/startRecord", HandleStartRecording, true);
+			apiHandler.RegisterEndpointHandler("audio/startRecord", HandleStartRecording, true).Measureable();
 
 			// Note: This handler locks and unlocks a shared resource (_completeRecording lock).
 			// Any other handlers depending on this resource should not wait on the same thread (i.e. the UI thread) or deadlock can occur.
-			apiHandler.RegisterEndpointHandler("audio/endRecord", HandleEndRecord, true);
+			apiHandler.RegisterEndpointHandler("audio/endRecord", HandleEndRecord, true).Measureable();
 
 			// Any handler which retrieves information from the audio folder SHOULD wait on the _completeRecording lock (call WaitForRecordingToComplete()) to ensure that it sees
 			// a consistent state of the audio folder, and therefore should NOT run on the UI thread.

@@ -82,7 +82,8 @@ const MemoryGraph: React.FunctionComponent<{
 }> = props => {
     const memoryLevels = props.measurements.map((m, index) => ({
         x: index,
-        y: m.privateBytes / 1000000
+        y: m.privateBytes / 1000000,
+        action: m.action
     }));
     return (
         <div className="graph">
@@ -147,17 +148,27 @@ const MemoryGraph: React.FunctionComponent<{
                         data: memoryLevels
                     }
                 ]}
+                renderNode={CustomNodeWithColorDependingOnAction}
             />
         </div>
     );
 };
+
 const DurationGraph: React.FunctionComponent<{
     measurements: IMeasurement[];
 }> = props => {
-    const durations = props.measurements.map((m, index) => ({
-        x: index,
-        y: m.duration
-    }));
+    const durations = props.measurements.map((m, index) => {
+        const r = {
+            x: index,
+            // sometimes a thing (like a break point) sneaks in wrecks our
+            // graph by being a huge number. Cap it.
+            y: Math.min(m.duration, 2),
+            action: m.action,
+            clipped: false
+        };
+        r.clipped = r.y < m.duration;
+        return r;
+    });
     return (
         <div className="graph">
             <h2>Time</h2>
@@ -214,8 +225,88 @@ const DurationGraph: React.FunctionComponent<{
                         data: durations
                     }
                 ]}
+                renderNode={CustomNodeWithColorDependingOnAction}
             />
         </div>
+    );
+};
+
+interface IHash {
+    [actionLabel: string]: string;
+}
+const ActionToColor: IHash = {};
+
+const CustomNodeWithColorDependingOnAction = ({
+    node,
+    x,
+    y,
+    size,
+    color,
+    blendMode,
+    onMouseEnter,
+    onMouseMove,
+    onMouseLeave,
+    onClick
+}) => {
+    const colors = [
+        "#a6cee3",
+        "#6a3d9a",
+        "#1f78b4",
+        "#33a02c",
+        "#ff7f00",
+        "#e31a1c",
+        "#d33682",
+        "#6c71c4",
+        "#268bd2",
+        "#2aa198",
+        "#a09e2c",
+        "#b15928",
+        "#fb8072",
+        "#b2df8a",
+        "#f5a3a1",
+        "#fdbf6f",
+        "#cab2d6",
+        "#8dd3c7",
+        "#bebada",
+
+        "#80b1d3",
+        "#fdb462",
+        "#b3de69",
+        "#fccde5",
+        "#d9d9d9",
+        "#bc80bd",
+        "#ccebc5"
+    ];
+    const action = node.data.action;
+    const l: number = Object.keys(ActionToColor).length;
+    if (!ActionToColor[action]) {
+        // Each new distinct action type gets the next color, until we run out of colors, then we start over
+        ActionToColor[action] = colors[l % colors.length];
+    }
+    const customColor = ActionToColor[action];
+    const commonProps = {
+        fill: customColor,
+        //style:{{ mixBlendMode: blendMode }},
+        onMouseEnter,
+        onMouseMove,
+        onMouseLeave,
+        onClick
+    };
+    return (
+        // show values that were clipped as diamonds
+        <g transform={`translate(${x},${y})  rotate(45)`}>
+            {node.data.clipped ? (
+                <rect
+                    x={size * -0.5}
+                    y={size * -0.5}
+                    width={size}
+                    height={size}
+                    {...commonProps}
+                />
+            ) : (
+                <circle r={size / 2} {...commonProps} />
+            )}
+        </g>
     );
 };
 
@@ -233,9 +324,13 @@ function getTooltip(node, measurements: IMeasurement[]) {
             >
                 {measurements[node.index].action}
                 <br />
-                {measurements[node.index].details}
+                {measurements[node.index].details} <br />
+                {filesize(
+                    (measurements[node.index].privateBytes as number) *
+                        1000 /* kb->bytes */
+                )}
                 <br />
-                {node.data.formattedY}
+                {measurements[node.index].duration + " seconds"}
             </div>
         )
     );
