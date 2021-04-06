@@ -1160,7 +1160,8 @@ namespace Bloom.Edit
 
 				dlg.SearchLanguage = searchLanguage;
 				var result = dlg.ShowDialog();
-				performanceMeasureForShowingDialog.Dispose();
+				if (performanceMeasureForShowingDialog != null)
+					performanceMeasureForShowingDialog.Dispose();
 #if MEMORYCHECK
 				// Check memory for the benefit of developers.  The user won't see anything.
 				Bloom.Utils.MemoryManagement.CheckMemory(false, "picture chosen or canceled", false);

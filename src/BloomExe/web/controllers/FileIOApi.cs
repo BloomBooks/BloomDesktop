@@ -49,7 +49,7 @@ namespace Bloom.web.controllers
 			if (result == DialogResult.OK)
 			{
 				// We are not trying get a memory or time diff, just a point measure.
-				PerformanceMeasurement.Global.Measure("Choose file", dlg.FileName).Dispose();
+				PerformanceMeasurement.Global.Measure("Choose file", dlg.FileName)?.Dispose();
 
 				return dlg.FileName.Replace("\\", "/");
 			}
