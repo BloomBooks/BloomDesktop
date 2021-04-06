@@ -1082,6 +1082,8 @@ namespace Bloom.Edit
 			Cursor = Cursors.WaitCursor;
 
 			var imageInfo = new PalasoImage();
+			Image oldImage = null;
+			var oldSize = new Size() { Height = 0, Width = 0 };
 			var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
 			string newImagePath = null;
 
@@ -1101,6 +1103,8 @@ namespace Bloom.Edit
 					Debug.WriteLine("Created image copy: " + newImagePath);
 					Logger.WriteEvent("Created image copy: " + newImagePath);
 					imageInfo = PalasoImage.FromFileRobustly(newImagePath);
+					oldSize = imageInfo.Image.Size;
+					oldImage = imageInfo.Image;
 				}
 				catch(Exception e)
 				{
@@ -1150,6 +1154,10 @@ namespace Bloom.Edit
 				{
 					using (PerformanceMeasurement.Global?.Measure("Processing Image"))
 					{
+						var sameAsOriginalImage = (imageInfo == dlg.ImageInfo &&
+							oldImage == dlg.ImageInfo.Image &&
+							oldSize == dlg.ImageInfo.Image.Size &&
+							newImagePath == dlg.ImageInfo.OriginalFilePath);
 						// Avoid saving the Image data if possible.  A large PNG file can take 5-10 seconds to save.
 						// So check the current image dimensions against the original image dimensions to see if we
 						// can avoid saving.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9377.
@@ -1186,10 +1194,17 @@ namespace Bloom.Edit
 						var exceptionMsg = "Bloom had a problem including that image";
 						try
 						{
-							if (copyOriginalImage)
-								RobustFile.Copy(dlg.ImageInfo.OriginalFilePath, newImagePath);
+							if (copyOriginalImage || sameAsOriginalImage)
+							{
+								// Try to copy the file only if we actually need to copy it.  (BL-9737)
+								if (dlg.ImageInfo.OriginalFilePath != newImagePath)
+									RobustFile.Copy(dlg.ImageInfo.OriginalFilePath, newImagePath);
+							}
 							else
+							{
+								// Cropping may have occurred, so we need to save the image.
 								dlg.ImageInfo.Save(newImagePath);
+							}
 							dlg.ImageInfo.SetCurrentFilePath(newImagePath);
 							SaveChangedImage(imageElement, dlg.ImageInfo, exceptionMsg);
 						}
