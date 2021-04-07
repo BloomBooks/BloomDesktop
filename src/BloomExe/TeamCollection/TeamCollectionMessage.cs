@@ -68,6 +68,20 @@ namespace Bloom.TeamCollection
 	/// </summary>
 	public class TeamCollectionMessage
 	{
+		public TeamCollectionMessage()
+		{
+		}
+
+		public TeamCollectionMessage(MessageAndMilestoneType messageType, string l10nId, string message, string param0 = null, string param1 = null)
+		{
+			MessageType = messageType;
+			When = DateTime.UtcNow;
+			L10NId = l10nId;
+			Message = message;
+			Param0 = param0;
+			Param1 = param1;
+		}
+
 		public DateTime When { get; set; }
 		public MessageAndMilestoneType MessageType { get; set; }
 		public string L10NId { get; set; }
