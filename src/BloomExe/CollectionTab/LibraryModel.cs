@@ -245,13 +245,12 @@ namespace Bloom.CollectionTab
 		{
 			if (_bookSelection.CurrentSelection.IsEditable && !_bookSelection.CurrentSelection.HasFatalError)
 			{
-				// If we need the book to be checked out for editing, make sure it is. If necessary
-				// and possible, check it out. We use the EvenIfDisabled version here because we want
+				// If we need the book to be checked out for editing, make sure it is. Do not allow double click
+				// to check it out. We use the EvenIfDisconnected version here because we want
 				// double click to FAIL if we are in a disconnected TC and don't already have it
 				// checked out; we don't just want to edit it as if the collection was not a TC at all.
 				if (_tcManager.CurrentCollectionEvenIfDisconnected != null &&
-				    !_tcManager.CurrentCollectionEvenIfDisconnected.AttemptLock(
-					    Path.GetFileName(_bookSelection.CurrentSelection.FolderPath)))
+				    _tcManager.NeedCheckoutToEdit(_bookSelection.CurrentSelection.FolderPath))
 					return;
 				_editBookCommand.Raise(_bookSelection.CurrentSelection);
 			}
