@@ -68,6 +68,15 @@ namespace Bloom.Publish.Android
 #endif
 		}
 
+		/// <summary>
+		/// Conceptually, this is where we are currently building a book for preview.
+		/// In the current implementation, it is not cleared when we are no longer doing so.
+		/// Nor does it include the path to the individual book folder, just the staging
+		/// folder. This is not ideal but it serves the current limited purpose of this field.
+		/// </summary>
+		public static string CurrentPublicationFolder { get; private set; }
+		
+
 		private static string ToCssColorString(System.Drawing.Color c)
 		{
 			return "#" + c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
@@ -501,6 +510,9 @@ namespace Bloom.Publish.Android
 			// We don't use the folder found here, but this method does some checks we want done.
 			BookStorage.FindBookHtmlInFolder(book.FolderPath);
 			_stagingFolder = new TemporaryFolder(StagingFolder);
+			// I'd prefer this to include the book folder, but we need it before PrepareBookForBloomReader returns.
+			// I believe we only ever have one book being made there, so it works.
+			CurrentPublicationFolder = _stagingFolder.FolderPath;
 			var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book.FolderPath, bookServer, _stagingFolder, progress, settings: settings);
 			progress.Message("Common.Done", "Shown in a list of messages when Bloom has completed a task.", "Done");
 			return modifiedBook.FolderPath.ToLocalhostProperlyEncoded();
