@@ -132,28 +132,28 @@ namespace Bloom.TeamCollection
 			}
 		}
 
-		public void WriteMessage(MessageAndMilestoneType messageType, string l10nId, string message, string param0, string param1)
+		public void WriteMessage(MessageAndMilestoneType messageType, string l10nId, string message, string param0,
+			string param1)
 		{
 			if (IsRedundantMessage(messageType, l10nId, param0, param1))
 				return;
-			var msg = new TeamCollectionMessage();
-			msg.When = DateTime.UtcNow;
-			msg.MessageType = messageType;
-			msg.L10NId = l10nId;
-			msg.Message = message;
-			msg.Param0 = param0;
-			msg.Param1 = param1;
-			Messages.Add(msg);
+			var msg = new TeamCollectionMessage(messageType, l10nId, message, param0, param1);
+			WriteMessage(msg);
+		}
+
+		public void WriteMessage(TeamCollectionMessage message) {
+			Messages.Add(message);
 			TeamCollectionManager.RaiseTeamCollectionStatusChanged();
 			// Using Environment.NewLine here means the format of the file will be appropriate for the
 			// computer we are running on. It's possible a shared collection might be used by both
 			// Linux and Windows. But that's OK, because .NET line reading accepts either line
 			// break on either platform.
-			var toPersist = msg.ToPersistedForm + Environment.NewLine;
+			var toPersist = message.ToPersistedForm + Environment.NewLine;
 			// There ought to be a RobustFile.AppendAllText, but there isn't.
 			// However, as this promises to close the file each call, it should be pretty reliable.
 			RetryUtility.Retry(() => File.AppendAllText(_logFilePath, toPersist));
 		}
+		
 
 		private bool IsRedundantMessage(MessageAndMilestoneType messageType, string l10nId, string param0, string param1)
 		{

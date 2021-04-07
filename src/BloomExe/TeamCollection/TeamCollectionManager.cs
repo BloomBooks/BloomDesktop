@@ -162,9 +162,10 @@ namespace Bloom.TeamCollection
 					doc.Load(localSettingsPath);
 					var repoFolderPath = doc.DocumentElement.GetElementsByTagName("TeamCollectionFolder").Cast<XmlElement>()
 						.First().InnerText;
-					if (CheckConnection(repoFolderPath))
+					
+					CurrentCollection = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath); // will be replaced if CheckConnection fails
+					if (CheckConnection())
 					{
-						CurrentCollection = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath);
 						CurrentCollectionEvenIfDisconnected = CurrentCollection;
 						CurrentCollection.SocketServer = SocketServer;
 						CurrentCollection.TCManager = this;
@@ -198,13 +199,12 @@ namespace Bloom.TeamCollection
 		/// <returns></returns>
 		public bool CheckConnection()
 		{
-			if (!(CurrentCollection is FolderTeamCollection))
+			if (CurrentCollection == null)
 				return false; // we're already disconnected, or not a TC at all.
-			var repoFolderPath = ((FolderTeamCollection) CurrentCollection).RepoFolderPath;
-			bool result;
+			TeamCollectionMessage connectionProblem;
 			try
 			{
-				result = CheckConnection(repoFolderPath);
+				connectionProblem = CurrentCollection.CheckConnection();
 			}
 			catch (Exception ex)
 			{
@@ -214,54 +214,26 @@ namespace Bloom.TeamCollection
 				return CurrentCollection != null;
 			}
 
-			if (!result)
+			if (connectionProblem != null)
+			{
+				MakeDisconnected(connectionProblem, CurrentCollection.RepoDescription);
 				RaiseTeamCollectionStatusChanged(); // make the TC icon update
-			return result;
-		}
-
-		private bool CheckConnection(string repoFolderPath)
-		{
-			if (!Directory.Exists(repoFolderPath))
-			{
-				MakeDisconnected(repoFolderPath, "TeamCollection.MissingRepo",
-					"Bloom could not find the Team Collection folder at '{0}'. If that drive or network is disconnected, re-connect it. If you have moved where that folder is located, 1) quit Bloom 2) go to the Team Collection folder and double-click “Join this Team Collection”.",
-					repoFolderPath, Environment.NewLine);
 				return false;
-			}
-
-			if (DropboxUtils.IsPathInDropboxFolder(repoFolderPath))
-			{
-				if (!DropboxUtils.IsDropboxProcessRunning)
-				{
-					MakeDisconnected(repoFolderPath, "TeamCollection.NeedDropboxRunning",
-						"Dropbox does not appear to be running.",
-						null, null);
-					return false;
-				}
-
-				if (!DropboxUtils.CanAccessDropbox())
-				{
-					MakeDisconnected(repoFolderPath, "TeamCollection.NeedDropboxAccess",
-						"Bloom cannot reach Dropbox.com.",
-						null, null);
-					return false;
-				}
 			}
 
 			return true;
 		}
 
-		public void MakeDisconnected(string repoFolderPath, string messageId, string message, string param0, string param1)
+		public void MakeDisconnected(TeamCollectionMessage message, string repoDescription)
 		{
 			CurrentCollection = null;
 			// This will show the TC icon in error state, and if the dialog is shown it will have this one message.
-			CurrentCollectionEvenIfDisconnected = new DisconnectedTeamCollection(this, _localCollectionFolder, repoFolderPath);
+			CurrentCollectionEvenIfDisconnected = new DisconnectedTeamCollection(this, _localCollectionFolder, repoDescription);
 			CurrentCollectionEvenIfDisconnected.SocketServer = SocketServer;
 			CurrentCollectionEvenIfDisconnected.TCManager = this;
-			CurrentCollectionEvenIfDisconnected.MessageLog.WriteMessage(MessageAndMilestoneType.Error, messageId, message,
-				param0, param1);
+			CurrentCollectionEvenIfDisconnected.MessageLog.WriteMessage(message);
 			CurrentCollectionEvenIfDisconnected.MessageLog.WriteMessage(MessageAndMilestoneType.Error, "TeamCollection.OperatingDisconnected", "When you have resolved this problem, please click \"Reload Collection\". Until then, your Team Collection will operate in \"Disconnected\" mode.",
-				param0, param1);
+				null, null);
 			// This is normally ensured by pushing an Error message into the log. But in this case,
 			// before the user gets a chance to open the dialog, we will run SyncAtStartup, push a Reloaded
 			// milestone into the log, and thus suppress it. If we're disconnected, whatever gets in the
@@ -356,8 +328,7 @@ namespace Bloom.TeamCollection
 
 			if (msg != null)
 			{
-				MakeDisconnected(CurrentCollection.RepoDescription, l10nId, msg,
-					null, null);
+				MakeDisconnected(new TeamCollectionMessage(MessageAndMilestoneType.Error, l10nId, msg), CurrentCollection.RepoDescription);
 			}
 		}
 

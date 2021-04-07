@@ -74,6 +74,15 @@ namespace Bloom.TeamCollection
 		/// <remarks>Usually PutBook should be used; this method is meant for use by TeamCollection methods.</remarks>
 		protected abstract void PutBookInRepo(string sourceBookFolderPath, BookStatus newStatus, bool inLostAndFound = false);
 
+		/// <summary>
+		/// Returns null if connection to repo is fine, otherwise, a message describing the problem.
+		/// This default implementation assumes nothing useful can be done to check the connection.
+		/// </summary>
+		public virtual TeamCollectionMessage CheckConnection()
+		{
+			return null;
+		}
+
 		protected abstract void MoveRepoBookToLostAndFound(string bookName);
 
 		public bool OkToCheckIn(string bookName)
