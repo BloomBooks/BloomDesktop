@@ -781,5 +781,35 @@ namespace Bloom.TeamCollection
 				}
 			}
 		}
+
+		/// <summary>
+		/// Returns null if connection is fine, otherwise, a message describing the problem.
+		/// </summary>
+		public override TeamCollectionMessage CheckConnection()
+		{
+			if (!Directory.Exists(_repoFolderPath))
+			{
+				return new TeamCollectionMessage(MessageAndMilestoneType.Error, "TeamCollection.MissingRepo",
+					"Bloom could not find the Team Collection folder at '{0}'. If that drive or network is disconnected, re-connect it. If you have moved where that folder is located, 1) quit Bloom 2) go to the Team Collection folder and double-click \"Join this Team Collection\".",
+					_repoFolderPath);
+			}
+
+			if (DropboxUtils.IsPathInDropboxFolder(_repoFolderPath))
+			{
+				if (!DropboxUtils.IsDropboxProcessRunning)
+				{
+					return new TeamCollectionMessage(MessageAndMilestoneType.Error, "TeamCollection.NeedDropboxRunning",
+						"Dropbox does not appear to be running.");
+				}
+
+				if (!DropboxUtils.CanAccessDropbox())
+				{
+					return new TeamCollectionMessage(MessageAndMilestoneType.Error, "TeamCollection.NeedDropboxAccess",
+						"Bloom cannot reach Dropbox.com.");
+				}
+			}
+
+			return null;
+		}
 	}
 }

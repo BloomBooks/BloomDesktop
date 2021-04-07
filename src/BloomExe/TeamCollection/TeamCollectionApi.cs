@@ -195,6 +195,11 @@ namespace Bloom.TeamCollection
 
 		public void HandleAttemptLockOfCurrentBook(ApiRequest request)
 		{
+			if (!_tcManager.CheckConnection())
+			{
+				request.Failed();
+				return;
+			}
 			try
 			{
 				// Could be a problem if there's no current book or it's not in the collection folder.
@@ -226,6 +231,11 @@ namespace Bloom.TeamCollection
 			try
 			{
 				_bookSelection.CurrentSelection.Save();
+				if (!_tcManager.CheckConnection())
+				{
+					request.Failed();
+					return;
+				}
 				var bookName = Path.GetFileName(_bookSelection.CurrentSelection.FolderPath);
 				if (_tcManager.CurrentCollection.OkToCheckIn(bookName))
 				{
