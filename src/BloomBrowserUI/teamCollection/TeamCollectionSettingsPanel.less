@@ -1,10 +1,23 @@
 @import "../bloomUI.less";
+@tab-panel-margin-top: 24px;
+@tab-panel-margin-sides: 26px;
+
 .button-row {
     display: flex;
 }
 
+// Something higher up in our system that I haven't been able to discover sets the height of
+// html and body to 100% (possibly the Forms Dock.Fill?),
+// but it's unhelpful at best, we tend to get vertical scrollbars where not needed.
+html,
+body {
+    height: unset !important;
+}
+
 #teamCollection-settings {
-    padding: 10px;
+    margin: @tab-panel-margin-top @tab-panel-margin-sides 0;
+    font-family: @UIFontStack;
+    font-size: @ui-font-size;
     .requiresEnterpriseOverlay {
         justify-content: center;
         align-items: center;

@@ -11,12 +11,9 @@ using SIL.Extensions;
 using SIL.WritingSystems;
 using System.Collections.Generic;
 using Bloom.Api;
-using Bloom.CollectionTab;
 using Bloom.TeamCollection;
 using Bloom.MiscUI;
-using Bloom.web;
 using Bloom.web.controllers;
-using Gecko;
 
 namespace Bloom.Collection
 {
