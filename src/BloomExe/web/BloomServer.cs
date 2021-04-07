@@ -1307,6 +1307,14 @@ namespace Bloom.Api
 			// documented by the browser message saying the file is missing.
 			if (currentBookFolderPath != null && localPath.StartsWith(currentBookFolderPath.Replace("\\", "/")))
 				return false;
+			// Likewise if it's part of the current book we're publishing. If we didn't give a message about something being
+			// missing while creating the book, it's just confusing to do so when they create a publication preview. See BL-9738
+			// for one example.
+			if (PublishToAndroidApi.CurrentPublicationFolder != null &&
+			    localPath.StartsWith(PublishToAndroidApi.CurrentPublicationFolder.Replace("\\", "/")))
+			{
+				return false;
+			}
 
 			// If it's in a deleted book (typically we're still trying to update the thumbnail of a book we just deleted),
 			// we definitely don't want to bother the user.
