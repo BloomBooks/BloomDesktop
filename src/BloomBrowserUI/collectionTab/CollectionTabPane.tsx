@@ -16,6 +16,15 @@ export const CollectionsPane: React.FunctionComponent<{}> = () => {
             drag: "black"
         };
 
+        const collectionComponents = sourcesCollections.map(c => {
+            return (
+                <div key={"frag:" + c.id}>
+                    <h2>{c.name}</h2>
+                    <BooksOfCollection collectionId={c.id} />
+                </div>
+            );
+        });
+
         return (
             <div style={{ height: "100%" }}>
                 {/* {JSON.stringify(books)} */} <h1>{collections[0].name}</h1>
@@ -28,17 +37,9 @@ export const CollectionsPane: React.FunctionComponent<{}> = () => {
                     <Transition in={true} appear={true} timeout={2000}>
                         {state => (
                             <div className={`group fade-${state}`}>
+                                {/*-${state} */}
                                 <h1>Sources For New Books</h1>
-                                {sourcesCollections.map(c => {
-                                    return (
-                                        <>
-                                            <h2>{c.name}</h2>
-                                            <BooksOfCollection
-                                                collectionId={c.id}
-                                            />
-                                        </>
-                                    );
-                                })}
+                                {collectionComponents}
                             </div>
                         )}
                     </Transition>
