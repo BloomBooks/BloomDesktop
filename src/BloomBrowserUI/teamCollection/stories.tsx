@@ -65,7 +65,7 @@ storiesOf("Team Collection components", module)
                 lockState="unlocked"
                 title="This book is available for editing"
                 subTitle="When you check it out, no one on the team will be able to modify it or see your changes until you check it back in."
-                icon={<img src={"Available.svg"} alt="available" />}
+                icon={<img src={"Team Collection.svg"} alt="available" />}
                 button={getBloomButton(
                     "Check out book",
                     "TeamCollection.Checkout",

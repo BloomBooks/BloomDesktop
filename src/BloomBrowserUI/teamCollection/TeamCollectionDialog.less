@@ -1,43 +1,69 @@
 @import "../bloomUI.less";
 
+@DialogPadding: 10px;
+
 #reactRoot {
     height: 100%;
+    padding-bottom: 0 !important; // I don't know where the padding-bottom:10px comes from.
 }
 
 #team-collection-dialog {
     box-sizing: border-box;
     height: 100%;
-    padding-bottom: 15px;
     display: flex;
     flex-direction: column;
+    padding: @DialogPadding;
 
     #messages {
         flex-grow: 1;
         overflow-y: scroll;
-        margin-bottom: 10px;
-        margin-left: 15px;
+        margin-bottom: @DialogPadding;
+        // margin-left: 15px;
         background-color: @form-background;
+        padding: @DialogPadding;
         // These two names need to correspond to the MessageAndMilestoneType enumeration in C#
         .Error,
         .ErrorNoReload {
             color: red;
         }
         .NewStuff {
-            color: rgb(0, 129, 0);
+            color: #26b245;
+        }
+        p {
+            margin: 0;
+            margin-bottom: 8px;
         }
     }
 
     .align-right {
         display: flex;
         justify-content: right;
-        margin-right: 25px;
+        //margin-right: 25px;
     }
     #reload {
-        margin-right: 15px;
+        margin-right: 2 * @DialogPadding;
     }
-    .MuiDialogTitle-root {
+    .title-bar {
+        // we need to be flush against the top and sides of the dialog, undoing the padding it uses elsewhere
+        margin: -(@DialogPadding);
+        margin-bottom: 2 * @DialogPadding;
+        padding-top: @DialogPadding;
+        padding-bottom: @DialogPadding;
+        padding-left: 2 * @DialogPadding;
+
+        display: flex;
         color: white;
         background-color: @bloom-blue;
-        margin-bottom: 10px;
+        margin-bottom: @DialogPadding;
+        height: 40px;
+
+        img {
+            // space between icon and label
+            margin-right: 10px;
+        }
+        * {
+            margin-top: auto;
+            margin-bottom: auto;
+        }
     }
 }

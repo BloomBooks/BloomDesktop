@@ -132,8 +132,7 @@ namespace Bloom.TeamCollection
 			}
 		}
 
-		public void WriteMessage(MessageAndMilestoneType messageType, string l10nId, string message, string param0,
-			string param1)
+		public void WriteMessage(MessageAndMilestoneType messageType, string l10nId, string message, string param0="", string param1="")
 		{
 			if (IsRedundantMessage(messageType, l10nId, param0, param1))
 				return;
