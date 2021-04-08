@@ -150,6 +150,8 @@ namespace BloomTests.TeamCollection
 
 					File.WriteAllText(bloomCollectionPath, "This is a further modified fake collection file");
 					var collectionWriteTime3 = new FileInfo(bloomCollectionPath).LastWriteTime;
+					var version2Path = Path.Combine(repoFolder.FolderPath, "version2.zip");
+					RobustFile.Copy(otherFilesPath, version2Path);
 					// modify the remote version by copying the old one back.
 					Thread.Sleep(10);
 					RobustFile.Copy(anotherPlace, otherFilesPath, true);
@@ -200,6 +202,51 @@ namespace BloomTests.TeamCollection
 					Assert.That(localWriteTime7, Is.GreaterThan(localWriteTime6), "localWriteTime7 should be greater than localWriteTime6");
 					var repoWriteTime7 = new FileInfo(otherFilesPath).LastWriteTime;
 					Assert.That(repoWriteTime7, Is.EqualTo(repoWriteTime6));
+
+					tc._haveShownRemoteSettingsChangeWarning = false;
+					File.WriteAllText(bloomCollectionPath, "This is a modified fake collection file, for SUT 8");
+					var collectionWriteTimeBeforeSut8 = new FileInfo(bloomCollectionPath).LastWriteTime;
+					var localWriteTimeBeforeSut8 = tc.LocalCollectionFilesRecordedSyncTime();
+					var repoWriteTimeBeforeSut8 = new FileInfo(otherFilesPath).LastWriteTime;
+
+					// SUT 8: local change copied to repo on idle
+					tc.SyncLocalAndRepoCollectionFiles(false);
+					Assert.That(tc._haveShownRemoteSettingsChangeWarning, Is.False, "user should not have been warned");
+					var localWriteTimeAfterSut8 = tc.LocalCollectionFilesRecordedSyncTime();
+					Assert.That(localWriteTimeAfterSut8, Is.GreaterThan(localWriteTimeBeforeSut8), "localWriteTime should increase copying on idle");
+					var repoWriteTimeAfterSut8 = new FileInfo(otherFilesPath).LastWriteTime;
+					Assert.That(repoWriteTimeAfterSut8, Is.GreaterThan(repoWriteTimeBeforeSut8), "repoWriteTime should increase copying on idle");
+					// not modified by sync
+					Assert.That(new FileInfo(bloomCollectionPath).LastWriteTime, Is.EqualTo(collectionWriteTimeBeforeSut8));
+
+					// modify the remote version by copying version2 back.
+					Thread.Sleep(10);
+					var repoWriteTimeBeforeSug9Copy = new FileInfo(otherFilesPath).LastWriteTime;
+					RobustFile.Copy(version2Path, otherFilesPath, true);
+					var collectionWriteTimeBeforeSut9 = new FileInfo(bloomCollectionPath).LastWriteTime;
+					var repoWriteTimeBeforeSut9 = new FileInfo(otherFilesPath).LastWriteTime;
+					Assert.That(repoWriteTimeBeforeSut9, Is.GreaterThan(repoWriteTimeBeforeSug9Copy), "repo file written after local collection file [sanity check]");
+
+					// SUT9: repo modified, doing check on idle. No changes or warning.
+					tc.SyncLocalAndRepoCollectionFiles(false);
+					Assert.That(tc._haveShownRemoteSettingsChangeWarning, Is.False, "user should not have been warned");
+					var collectionWriteTimeAfterSut9 = new FileInfo(bloomCollectionPath).LastWriteTime;
+					Assert.That(collectionWriteTimeAfterSut9, Is.EqualTo(collectionWriteTimeBeforeSut9), "local settings should not have been modified");
+
+					File.WriteAllText(bloomCollectionPath, "This is a modified fake collection file, for SUT 10");
+					var collectionWriteTimeBeforeSut10 = new FileInfo(bloomCollectionPath).LastWriteTime;
+					var localWriteTimeBeforeSut10 = tc.LocalCollectionFilesRecordedSyncTime();
+					var repoWriteTimeBeforeSut10 = new FileInfo(otherFilesPath).LastWriteTime;
+
+					// SUT10: both modified, doing check on idle. No changes. User warned.
+					tc.SyncLocalAndRepoCollectionFiles(false);
+					Assert.That(tc._haveShownRemoteSettingsChangeWarning, Is.True, "user should have been warned");
+					var localWriteTimeAfterSut10 = tc.LocalCollectionFilesRecordedSyncTime();
+					Assert.That(localWriteTimeAfterSut10, Is.EqualTo(localWriteTimeBeforeSut10), "localWriteTime should not be changed by idle sync where both changed");
+					var repoWriteTimeAfterSut10 = new FileInfo(otherFilesPath).LastWriteTime;
+					Assert.That(repoWriteTimeAfterSut10, Is.EqualTo(repoWriteTimeBeforeSut10), "repo should not be modified by idle sync where both changed"); // not modified by sync
+					Assert.That(new FileInfo(bloomCollectionPath).LastWriteTime, Is.EqualTo(collectionWriteTimeBeforeSut10),
+						"bloomCollection LastWriteTime should not be changed by idle sync both changed");
 				}
 			}
 		}

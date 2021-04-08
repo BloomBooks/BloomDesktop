@@ -526,7 +526,8 @@ namespace Bloom.TeamCollection
 			return GetStatus(bookName).checksum;
 		}
 
-		private bool _haveShownRemoteSettingsChangeWarning;
+		// internal for testing
+		internal bool _haveShownRemoteSettingsChangeWarning;
 
 		/// <summary>
 		/// Bring the collection-level files in the repo and the local collection into sync.
@@ -553,15 +554,19 @@ namespace Bloom.TeamCollection
 					// except when the warning below has already been seen.
 					CopyRepoCollectionFilesToLocal(_localCollectionFolder);
 				}
-				else if (!_haveShownRemoteSettingsChangeWarning)
+				else if (LocalCollectionFilesUpdated())
 				{
-					_haveShownRemoteSettingsChangeWarning = true;
-					// if it's not a startup sync, it's happening because of a local change. It will get lost.
-					// Not sure this is worth localizing. Eventually only one or two users per collection will be
-					// allowed to make such changes. Collection settings should rarely be changed at all
-					// in Team Collections. This message will hopefully be seen rarely if at all.
-					ErrorReport.NotifyUserOfProblem(
-						"Collection settings have been changed remotely. Your recent changes will be lost when Bloom syncs the next time it starts up");
+					// We have a conflict we should warn the user about...if we haven't already.
+					if (!_haveShownRemoteSettingsChangeWarning)
+					{
+						_haveShownRemoteSettingsChangeWarning = true;
+						// if it's not a startup sync, it's happening because of a local change. It will get lost.
+						// Not sure this is worth localizing. Eventually only one or two users per collection will be
+						// allowed to make such changes. Collection settings should rarely be changed at all
+						// in Team Collections. This message will hopefully be seen rarely if at all.
+						ErrorReport.NotifyUserOfProblem(
+							"Collection settings have been changed remotely. Your recent changes will be lost when Bloom syncs the next time it starts up");
+					}
 				}
 			}
 			else if (LocalCollectionFilesUpdated())

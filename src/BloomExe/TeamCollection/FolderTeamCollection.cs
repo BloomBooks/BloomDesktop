@@ -379,7 +379,9 @@ namespace Bloom.TeamCollection
 				return;
 			var destFolder = Path.Combine(collectionFolder, folderName);
 			ExtractFolderFromZip(destFolder, sourceZip,
-				() => new HashSet<string>(Directory.EnumerateFiles(destFolder).Select(p => Path.GetFileName(p))));
+				() => Directory.Exists(destFolder)
+					? new HashSet<string>(Directory.EnumerateFiles(destFolder).Select(p => Path.GetFileName(p)))
+					: new HashSet<string>());
 		}
 
 		// All the people who have something checked out in the repo.
