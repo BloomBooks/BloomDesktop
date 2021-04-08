@@ -57,6 +57,8 @@ namespace Bloom.Book
 			string initialBookName = GetInitialName(parentCollectionPath);
 			var newBookFolder = Path.Combine(parentCollectionPath, initialBookName);
 			CopyFolder(sourceBookFolder, newBookFolder);
+			// The new book should not look like it's already part of a team collection, whatever the source.
+			TeamCollection.TeamCollection.DeleteLocalStatus(newBookFolder);
 			//if something bad happens from here on out, we need to delete that folder we just made
 			try
 			{
