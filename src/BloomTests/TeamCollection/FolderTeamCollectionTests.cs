@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Bloom;
 using Bloom.TeamCollection;
 using BloomTemp;
 using Moq;
@@ -515,6 +516,38 @@ namespace BloomTests.TeamCollection
 				Assert.That(File.ReadAllText(Path.Combine(tempDest.FolderPath, "Sample Texts", "texts1.txt")),
 					Is.EqualTo("this is the first sample text for tok pisin"),
 					"copied the sample texts file");
+			}
+		}
+
+		[Test]
+		public void CopySharedCollectionFilesToLocal_PossibleFoldersMissing_RetrievesFilesPut()
+		{
+			var collectionFilePath = Bloom.TeamCollection.TeamCollection.CollectionPath(_collectionFolder.FolderPath);
+			File.WriteAllText(collectionFilePath, "This is a fake collection");
+			var customStylesPath = Path.Combine(_collectionFolder.FolderPath, "customCollectionStyles.css");
+			File.WriteAllText(customStylesPath, "Fake collection styles");
+
+			var sampleTextsSource = Path.Combine(_collectionFolder.FolderPath, "Sample Texts");
+			Directory.CreateDirectory(sampleTextsSource); // but nothing in it!
+
+			// First SUT: copy from local to repo
+			_collection.CopyRepoCollectionFilesFromLocal(_collectionFolder.FolderPath);
+
+			using (var tempDest = new TemporaryFolder("CopySharedCollectionFilesToLocal_RetrievesFilePut"))
+			{
+				var destCollectionFilePath =
+					Path.Combine(tempDest.FolderPath, Path.GetFileName(collectionFilePath));
+				File.WriteAllText(destCollectionFilePath, "This should get overwritten");
+				NonFatalProblem.LastNotFatalProblemReported = null;
+
+				// Second SUT: copy back
+				_collection.CopyRepoCollectionFilesToLocal(tempDest.FolderPath);
+
+				Assert.That(NonFatalProblem.LastNotFatalProblemReported, Is.Null);
+
+				Assert.That(File.ReadAllText(destCollectionFilePath), Is.EqualTo("This is a fake collection"));
+				var destStylesPath = Path.Combine(tempDest.FolderPath, "customCollectionStyles.css");
+				Assert.That(File.ReadAllText(destStylesPath), Is.EqualTo("Fake collection styles"));
 			}
 		}
 

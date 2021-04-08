@@ -62,7 +62,10 @@ namespace Bloom
 					//but there are others in which say, not finding a file is expected. Either way,
 					//the rest of the test should fail if the problem is real, so doing anything here
 					//would just be a help, not really necessary for getting the test to fail.
-					//So, for now I'm going to just go with doing nothing.
+					//So, for now I'm going to just go with doing nothing in general.
+					// We'll save a little information so we can write specific "this does not report a problem"
+					// tests.
+					LastNotFatalProblemReported = fullDetailedMessage;
 					return;
 				}
 
@@ -228,6 +231,7 @@ namespace Bloom
 		}
 
 		private static ExpectedByUnitTest s_expectedByUnitTest = null;
+		public static string LastNotFatalProblemReported = null;
 
 		/// <summary>
 		/// use this in unit tests to cleanly check that a message would have been shown.

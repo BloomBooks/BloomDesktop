@@ -437,6 +437,20 @@ namespace Bloom.web.controllers
 				{
 					var query = $"?level={levelOfProblem}";
 
+					if (!BloomServer.ServerIsListening)
+					{
+						// We can't use the react dialog!
+						var fallbackReporter = new WinFormsErrorReporter();
+						if (exception != null)
+							fallbackReporter.ReportNonFatalException(exception, new ShowAlwaysPolicy());
+						else
+						{
+							fallbackReporter.NotifyUserOfProblem(new ShowAlwaysPolicy(), null, ErrorResult.OK,
+								detailedMessage);
+						}
+						return;
+					}
+
 					// Precondition: we must be on the UI thread for Gecko to work.
 					using (var dlg = new ReactDialog("problemReportBundle.js", "ProblemDialog", query))
 					{
