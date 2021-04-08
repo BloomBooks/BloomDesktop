@@ -3458,7 +3458,7 @@
         <note xml:lang="en">OLD TEXT (before 3.9, reworded): Upload</note>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm-tooltip" sil:dynamic="true">
-        <source xml:lang="en">Upload to BloomLibrary.org, where others can download and localize into their own language.</source>
+        <source xml:lang="en">Upload your book to BloomLibrary.org so that other people can read it, download it to their devices and share it with other people.</source>
         <note>ID: PublishTab.ButtonThatShowsUploadForm-tooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.CoverOnlyRadio">

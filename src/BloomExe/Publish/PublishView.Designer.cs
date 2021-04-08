@@ -269,8 +269,7 @@ namespace Bloom.Publish
 			superToolTipInfo2.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			superToolTipInfo2.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
 			superToolTipInfo2.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo2.BodyText = "Upload to BloomLibrary.org, where others can download and localize into their own" +
-    " language.";
+			superToolTipInfo2.BodyText = "Upload your book to BloomLibrary.org so that other people can read it, download it to their devices and share it with other people.";
 			superToolTipInfo2.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
 			superToolTipInfo2.ShowHeader = false;
 			superToolTipInfoWrapper2.SuperToolTipInfo = superToolTipInfo2;
