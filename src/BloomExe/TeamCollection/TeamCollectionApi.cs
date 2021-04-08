@@ -55,6 +55,16 @@ namespace Bloom.TeamCollection
 
 		private void HandleGetLog(ApiRequest request)
 		{
+		/* keeping this around as a comment to make it easier to work on the display
+		   _tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.History, "","blah blah blah blah");
+			_tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.History, "", "Another message. I just simplified this English, but the surrounding code would lead me to think. I just simplified this English, but the surrounding code would lead me to think.");
+			_tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.Error, "", "An error of some sort. I just simplified this English, but the surrounding code would lead me to think. I just simplified this English, but the surrounding code would lead me to think.");
+			_tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.Error, "", "An error of some sort. I just simplified this English, but the surrounding code would lead me to think. I just simplified this English, but the surrounding code would lead me to think.");
+			_tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.History, "", "Another message.");
+			_tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.NewStuff, "", "a new stuff message.");
+			_tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.History, "", "Another message.");
+		*/
+
 			try
 			{
 				var log = _tcManager.MessageLog;
@@ -71,7 +81,10 @@ namespace Bloom.TeamCollection
 					{
 						Tuple.Create(MessageAndMilestoneType.History,
 							_tcManager.MessageLog.LastReloadTime.ToLocalTime() + ": "
-								+ LocalizationManager.GetString("TeamCollection.CheckedForChanges", "Checked for remote changes...none found"))
+							 // review: I just simplified this English, but the surrounding code would lead me to think
+							 // that the message should be something like "No Team Collection activity since loading." ?
+								+ LocalizationManager.GetString("TeamCollection.CheckedForChanges", "No incoming changes were found.")),
+	
 					};
 				}
 				var messages = messagesSource.Select(t => new { type = t.Item1.ToString(), message = t.Item2 }).ToArray();

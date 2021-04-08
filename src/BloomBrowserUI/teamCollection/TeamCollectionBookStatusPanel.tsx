@@ -262,7 +262,9 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         lockState={state}
                         title={mainTitleUnlocked}
                         subTitle={subTitleUnlocked}
-                        icon={<img src={"Available.svg"} alt="available" />}
+                        icon={
+                            <img src={"Team Collection.svg"} alt="available" />
+                        }
                         button={getBloomButton(
                             "Check out book",
                             "TeamCollection.Checkout",
