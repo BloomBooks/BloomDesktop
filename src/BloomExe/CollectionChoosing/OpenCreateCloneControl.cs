@@ -113,7 +113,7 @@ namespace Bloom.CollectionChoosing
 
 			button.ImageAlign = ContentAlignment.MiddleLeft;
 			button.Click += clickHandler;
-			button.Text = buttonLabelPadding + localizedLabel;
+			button.SetTextSafely(buttonLabelPadding + localizedLabel);
 
 			button.FlatAppearance.BorderSize = _templateButton.FlatAppearance.BorderSize;
 			button.ForeColor = _templateButton.ForeColor;
