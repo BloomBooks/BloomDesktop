@@ -697,6 +697,10 @@ namespace Bloom.Workspace
 			// Warn the user if we're starting to use too much memory.
 			Bloom.Utils.MemoryManagement.CheckMemory(false, "switched page in workspace", true);
 
+			// Let the team collection API know that we don't want special team collection behavior
+			// while in the Publish tab.  (See https://issues.bloomlibrary.org/youtrack/issue/BL-9786.)
+			TeamCollectionApi.TheOneInstance.DisableTeamCollectionBehavior = view is PublishView;
+
 			if(_previouslySelectedControl !=null)
 				_containerPanel.Controls.Remove(_previouslySelectedControl);
 

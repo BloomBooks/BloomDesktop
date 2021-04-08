@@ -141,14 +141,25 @@ namespace Bloom.TeamCollection
 			}
 		}
 
+		/// <summary>
+		/// Flag that we currently want to disable any special team collection behavior.
+		/// </summary>
+		/// <remarks>
+		/// This is needed for the Publish tab.  (See https://issues.bloomlibrary.org/youtrack/issue/BL-9786.)
+		/// </remarks>
+		public bool DisableTeamCollectionBehavior;
+
 		public void HandleIsTeamCollectionEnabled(ApiRequest request)
 		{
 			try
 			{
 				// We don't need any of the Sharing UI if the selected book isn't in the editable
 				// collection (or if the collection doesn't have a Team Collection at all).
-				request.ReplyWithBoolean(_tcManager.CurrentCollectionEvenIfDisconnected != null &&
-					(_bookSelection.CurrentSelection == null || _bookSelection.CurrentSelection.IsEditable));
+				var isEnabled = _tcManager.CurrentCollectionEvenIfDisconnected != null &&
+					(_bookSelection.CurrentSelection == null || _bookSelection.CurrentSelection.IsEditable);
+				if (DisableTeamCollectionBehavior)
+					isEnabled = false;
+				request.ReplyWithBoolean(isEnabled);
 			}
 			catch (Exception e)
 			{
