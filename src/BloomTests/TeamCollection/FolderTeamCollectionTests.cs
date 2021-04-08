@@ -471,6 +471,11 @@ namespace BloomTests.TeamCollection
 			// First SUT: copy from local to repo
 			_collection.CopyRepoCollectionFilesFromLocal(_collectionFolder.FolderPath);
 
+			// (We verify that we sucessfully copied to the various zip files by copying back
+			// from there to a new folder. Thus we don't need the test code to have white-box
+			// knowledge of the format in which the data is stored in the repo. CopyFromLocal
+			// must have succeeded if we get the expected data back from CopyToLocal.)
+
 			using (var tempDest = new TemporaryFolder("CopySharedCollectionFilesToLocal_RetrievesFilePut"))
 			{
 				var destCollectionFilePath =
@@ -538,12 +543,12 @@ namespace BloomTests.TeamCollection
 				var destCollectionFilePath =
 					Path.Combine(tempDest.FolderPath, Path.GetFileName(collectionFilePath));
 				File.WriteAllText(destCollectionFilePath, "This should get overwritten");
-				NonFatalProblem.LastNotFatalProblemReported = null;
+				NonFatalProblem.LastNonFatalProblemReported = null;
 
 				// Second SUT: copy back
 				_collection.CopyRepoCollectionFilesToLocal(tempDest.FolderPath);
 
-				Assert.That(NonFatalProblem.LastNotFatalProblemReported, Is.Null);
+				Assert.That(NonFatalProblem.LastNonFatalProblemReported, Is.Null);
 
 				Assert.That(File.ReadAllText(destCollectionFilePath), Is.EqualTo("This is a fake collection"));
 				var destStylesPath = Path.Combine(tempDest.FolderPath, "customCollectionStyles.css");

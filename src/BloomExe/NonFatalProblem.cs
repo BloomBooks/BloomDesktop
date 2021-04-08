@@ -65,7 +65,7 @@ namespace Bloom
 					//So, for now I'm going to just go with doing nothing in general.
 					// We'll save a little information so we can write specific "this does not report a problem"
 					// tests.
-					LastNotFatalProblemReported = fullDetailedMessage;
+					LastNonFatalProblemReported = fullDetailedMessage;
 					return;
 				}
 
@@ -231,7 +231,7 @@ namespace Bloom
 		}
 
 		private static ExpectedByUnitTest s_expectedByUnitTest = null;
-		public static string LastNotFatalProblemReported = null;
+		public static string LastNonFatalProblemReported = null; // just for unit tests
 
 		/// <summary>
 		/// use this in unit tests to cleanly check that a message would have been shown.
