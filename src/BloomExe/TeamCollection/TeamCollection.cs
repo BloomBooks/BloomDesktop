@@ -1025,11 +1025,20 @@ namespace Bloom.TeamCollection
 				return;
 			if (args.BookFileName.EndsWith(".bloom"))
 			{
-				_tcLog.WriteMessage(MessageAndMilestoneType.NewStuff, "TeamCollection.NewBookArrived",
-					"A new book called '{0}' was added by a teammate.", bookBaseName, null);
+				var statusFilePath = GetStatusFilePath(bookBaseName, _localCollectionFolder);
+				// sometimes we get a new book notification when all that happened is it got checked in or out remotely.
+				// If the book already exists and has status locally, then a new book notification is spurious,
+				// so we don't want a message about it.
+				if (!File.Exists(statusFilePath))
+				{
+					_tcLog.WriteMessage(MessageAndMilestoneType.NewStuff, "TeamCollection.NewBookArrived",
+						"A new book called '{0}' was added by a teammate.", bookBaseName, null);
+				}
+				// This needs to be AFTER we update the message log, data which it may use.
+				// In case by any chance this is the only notification we get when checkout status changed
+				// remotely, we do this even if we think the notiication is spurious.
+				UpdateBookStatus(bookBaseName, true);
 			}
-			// This needs to be AFTER we update the message log, data which it may use.
-			UpdateBookStatus(bookBaseName, true);
 		}
 
 		public void HandleBookRename(string oldName, string newName)
