@@ -277,6 +277,13 @@ namespace Bloom
 								using (var projectContext =
 									_applicationContainer.CreateProjectContext(fakeCollectionPath, true))
 								{
+									if (!UniqueToken.AcquireTokenQuietly(_mutexId))
+									{
+										var msg = LocalizationManager.GetString("TeamCollection.QuitOtherBloom",
+											"Please close Bloom before joining a Team Collection");
+										ErrorReport.NotifyUserOfProblem(msg);
+										return 1;
+									}
 									if (projectContext.TeamCollectionManager.CurrentCollection == null)
 										return 1; // something went wrong processing it, hopefully already reported.
 									newCollection = FolderTeamCollection.ShowJoinCollectionTeamDialog(args[0]);
