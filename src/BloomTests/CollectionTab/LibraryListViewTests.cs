@@ -78,7 +78,7 @@ namespace BloomTests.CollectionTab
 			Assert.IsNotNull(bookSelection?.CurrentSelection);
 			Assert.AreEqual(expectedBookPath, bookSelection.CurrentSelection.FolderPath);
 		}
-
+				
 		[Test]
 		public void OnTeamCollectionBookStatusChange_TeamCollection_CheckedOutBySelf()
 		{
@@ -148,6 +148,47 @@ namespace BloomTests.CollectionTab
 			// Verification //			
 			var labelOfButton = button.Controls.OfType<Label>().FirstOrDefault();
 			Assert.IsNull(labelOfButton);
+		}
+
+		[Test]
+		public void LoadPrimaryCollectionButtons_CollectionNameHasAmpersand_IsEscaped()
+		{
+			// Setup //
+			var collectionFolder = new TemporaryFolder("LibraryListViewTests");
+			var collectionSettings = new CollectionSettings();
+			var privateCollectionSettings = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateObject(collectionSettings);
+			privateCollectionSettings.SetFieldOrProperty("CollectionName", "A&B");
+
+			_view = new LibraryListView(new FakeLibraryModel(collectionFolder, collectionSettings), new BookSelection(), new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent(), null);
+
+			// System Under Test //
+			_view.LoadPrimaryCollectionButtons();
+
+			// Verification //
+			var obj = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateObject(_view);
+			var primaryCollectionFlow = (FlowLayoutPanel)(obj.GetFieldOrProperty("_primaryCollectionFlow"));
+			var listHeader = primaryCollectionFlow.Controls.OfType<ListHeader>().First();
+			Assert.AreEqual("A&&B", listHeader.Label.Text);
+		}
+
+		[Test]
+		public void LoadPrimaryCollectionButtons_BookTitleHasAmpersand_ButtonUsesNonEscapedForm()
+		{
+			// Setup //
+			var collectionFolder = new TemporaryFolder("LibraryListViewTests");
+			Book.BookCollectionTests.AddBook(collectionFolder, "A&B Book");
+
+			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), new BookSelection(), new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent(), null);
+
+			// System Under Test //
+			_view.LoadPrimaryCollectionButtons();
+
+			// Verification //
+			var obj = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateObject(_view);
+			var primaryCollectionFlow = (FlowLayoutPanel)(obj.GetFieldOrProperty("_primaryCollectionFlow"));
+			var firstBookButton = primaryCollectionFlow.Controls.OfType<Button>().First();
+			Assert.AreEqual("A&B Book", firstBookButton.Text, "Text");	// Not escaped because the button has UseMnemonic = false
+			Assert.AreEqual(false, firstBookButton.UseMnemonic, "UseMnemonic");
 		}
 
 		internal static void AssertImageCenterIsColor(Image image, Color expectedColor)

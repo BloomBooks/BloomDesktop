@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
@@ -334,7 +335,14 @@ namespace Bloom.CollectionTab
 			var invisibleHackPartner = new Label() {Text = "", Width = 0};
 			_primaryCollectionFlow.Controls.Add(invisibleHackPartner);
 			var primaryCollectionHeader = new ListHeader() {ForeColor = Palette.LightTextAgainstDarkBackground};
-			primaryCollectionHeader.Label.Text = _model.VernacularLibraryNamePhrase;
+
+			// Note: Although another workaround is to set UseMnemonic to false
+			// (this disables access key prefixes, which means that you don't need to escape ampersands anymore),
+			// the un-escaped text causes AdjustWidth() (which calls TextRenderer.MeasureText) to calculate
+			// the width of ampersands incorrectly.
+			// Therefore, I think it's better to just escape the text here.
+			primaryCollectionHeader.Label.SetTextSafely(_model.VernacularLibraryNamePhrase);
+			
 			primaryCollectionHeader.AdjustWidth();
 			_primaryCollectionFlow.Controls.Add(primaryCollectionHeader);
 			//_primaryCollectionFlow.SetFlowBreak(primaryCollectionHeader, true);
@@ -360,11 +368,11 @@ namespace Bloom.CollectionTab
 
 				var lockNoticeLabel = new Label()
 					{
-						Text = lockNotice,
 						Size = new Size(_primaryCollectionFlow.Width - 20, 15),
 						ForeColor = Palette.LightTextAgainstDarkBackground,
 						Padding = new Padding(10, 0, 0, 0)
 					};
+				lockNoticeLabel.SetTextSafely(lockNotice);
 				_primaryCollectionFlow.Controls.Add(lockNoticeLabel);
 				return;
 			}
@@ -381,7 +389,9 @@ namespace Bloom.CollectionTab
 																				"Sources For New Shells");
 			string bookSourceHeading = LocalizationManager.GetString("CollectionTab.BookSourceHeading",
 																			   "Sources For New Books");
-			bookSourcesHeader.Label.Text = _model.IsShellProject ? shellSourceHeading : bookSourceHeading;
+			
+			string sourcesHeaderRawText = _model.IsShellProject ? shellSourceHeading : bookSourceHeading;			
+			bookSourcesHeader.Label.SetTextSafely(sourcesHeaderRawText);
 			// Don't truncate the heading: see https://jira.sil.org/browse/BL-250.
 			// But do allow it to wrap
 			bookSourcesHeader.AdjustSize(_sourceBooksFlow.Width - SystemInformation.VerticalScrollBarWidth);
@@ -408,12 +418,12 @@ namespace Bloom.CollectionTab
 					var collectionName = L10NSharp.LocalizationManager.GetDynamicString("Bloom", "CollectionTab." + collection.Name, collection.Name);
 					var collectionHeader = new Label()
 					{
-						Text = collectionName,
 						Size = GetSizeForLabel(collectionName, _headerFont),
 						ForeColor = Palette.LightTextAgainstDarkBackground,
 						Padding = new Padding(10, 0, 0, 0),
 						Anchor = AnchorStyles.None
 					};
+					collectionHeader.SetTextSafely(collectionName);
 					collectionHeader.Margin = new Padding(0, 10, 0, 0);
 					collectionHeader.Font = _headerFont;
 					_sourceBooksFlow.Controls.Add(collectionHeader);
@@ -460,10 +470,11 @@ namespace Bloom.CollectionTab
 			{
 				var label = c as Label;
 				var header = c as ListHeader;
+				var labelText = label?.GetTextSafely();
 				if (header != null)
 					header.AdjustSize(_sourceBooksFlow.Width - SystemInformation.VerticalScrollBarWidth);
-				else if (label != null && !string.IsNullOrEmpty(label.Text))
-					label.Size = GetSizeForLabel(label.Text, label.Font);
+				else if (!string.IsNullOrEmpty(labelText))
+					label.Size = GetSizeForLabel(labelText, label.Font);
 			}
 			_sourceBooksFlow.ResumeLayout(true);
 			_sourceBooksFlow.AutoScroll = true;
@@ -497,7 +508,7 @@ namespace Bloom.CollectionTab
 			// we're not going to get a better title by digging into the document itself and overriding what the localizer
 			// chose to call it.
 			// Note: currently (August 2014) the books that will have been localized are are those in the main "templates" section: Basic Book, Calendar, etc.
-			if (button.Text == ShortenTitleIfNeeded(bookInfo.QuickTitleUserDisplay, button))
+			if (button.GetTextSafely() == ShortenTitleIfNeeded(bookInfo.QuickTitleUserDisplay, button))
 			{
 				// Actually getting the HtmlDom may be rather expensive due to finding the actual HTML file and
 				// converting it to XHTML first.
@@ -514,10 +525,11 @@ namespace Bloom.CollectionTab
 						bestTitle = bookInfo.QuickTitleUserDisplay;
 				}
 				var titleBestForUserDisplay = ShortenTitleIfNeeded(bestTitle, button);
-				if (titleBestForUserDisplay != button.Text)
+				string buttonText = button.GetTextSafely();
+				if (titleBestForUserDisplay != buttonText)
 				{
-					Debug.WriteLine(button.Text + " --> " + titleBestForUserDisplay);
-					button.Text = titleBestForUserDisplay;
+					Debug.WriteLine(buttonText + " --> " + titleBestForUserDisplay);
+					button.SetTextSafely(titleBestForUserDisplay);
 					toolTip1.SetToolTip(button, bestTitle);
 				}
 			}
@@ -602,18 +614,20 @@ namespace Bloom.CollectionTab
 				_downloadedBookCollection = collection;
 				collection.FolderContentChanged += DownLoadedBooksChanged;
 				collection.WatchDirectory(); // In case another instance downloads a book.
-				var bloomLibrayLink = new LinkLabel()
+				var bloomLibraryLink = new LinkLabel()
 				{
-					Text =
-						LocalizationManager.GetString("CollectionTab.BloomLibraryLinkLabel",
-																"Get more source books at BloomLibrary.org",
-																"Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library"),
 					Margin = new Padding(17, 0, 0, 0),
 					LinkColor = Palette.LightTextAgainstDarkBackground
 				};
-				bloomLibrayLink.Size = GetSizeForLabel(bloomLibrayLink.Text, bloomLibrayLink.Font);
-				bloomLibrayLink.Click += new EventHandler(OnBloomLibrary_Click);
-				flowLayoutPanel.Controls.Add(bloomLibrayLink);
+				bloomLibraryLink.SetTextSafely(
+					LocalizationManager.GetString("CollectionTab.BloomLibraryLinkLabel",
+						"Get more source books at BloomLibrary.org",
+						"Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library"
+					)
+				);
+				bloomLibraryLink.Size = GetSizeForLabel(bloomLibraryLink.GetTextSafely(), bloomLibraryLink.Font);
+				bloomLibraryLink.Click += new EventHandler(OnBloomLibrary_Click);
+				flowLayoutPanel.Controls.Add(bloomLibraryLink);
 				loadedAtLeastOneBook = true;
 			}
 			// We could look for it in the main loop, but it seems safer to let the collection be fully constructed before
@@ -765,7 +779,7 @@ namespace Bloom.CollectionTab
 			button.MouseDown += OnClickBook; //we need this for right-click menu selection, which needs to 1st select the book
 			//doesn't work: item.DoubleClick += (sender,arg)=>_model.DoubleClickedBook();
 
-			button.Text = ShortenTitleIfNeeded(title, button);
+			button.SetTextSafely(ShortenTitleIfNeeded(title, button));
 			button.FlatAppearance.BorderSize = 1;
 			button.FlatAppearance.BorderColor = BackColor;
 
@@ -1039,7 +1053,7 @@ namespace Bloom.CollectionTab
 				if (book != null && SelectedButton != null)
 				{
 					var bestTitle = book.TitleBestForUserDisplay;
-					SelectedButton.Text = ShortenTitleIfNeeded(bestTitle, SelectedButton);
+					SelectedButton.SetTextSafely(ShortenTitleIfNeeded(bestTitle, SelectedButton));
 					toolTip1.SetToolTip(SelectedButton, bestTitle);
 					if (_thumbnailRefreshPending)
 					{
@@ -1233,7 +1247,7 @@ namespace Bloom.CollectionTab
 		{
 			var iconLabels = button.Controls.OfType<Label>();
 			var count = iconLabels.Count();
-			Debug.Assert(count <= 1, $"Button for \"{button.Text}\" was only expected to have 1 label, but it had {count} instead.");
+			Debug.Assert(count <= 1, $"Button for \"{button.GetTextSafely()}\" was only expected to have 1 label, but it had {count} instead.");
 
 			if (count >= 1)
 			{
