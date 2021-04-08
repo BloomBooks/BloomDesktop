@@ -1078,6 +1078,11 @@ namespace Bloom.TeamCollection
 			if (bookFolderName.EndsWith(".bloom"))
 				bookFolderName = bookFolderName.Substring(0, bookFolderName.Length - ".bloom".Length);
 			var bookFolderPath = Path.Combine(collectionFolder, bookFolderName);
+			return GetStatusFilePathFromBookFolderPath(bookFolderPath);
+		}
+
+		private static string GetStatusFilePathFromBookFolderPath(string bookFolderPath)
+		{
 			var statusFile = Path.Combine(bookFolderPath, "book.status");
 			return statusFile;
 		}
@@ -1100,6 +1105,15 @@ namespace Bloom.TeamCollection
 			var statusFilePath = GetStatusFilePath(bookFolderName, collectionFolder ?? _localCollectionFolder);
 			var statusToWrite = status.WithCollectionId(collectionId ?? CollectionId);
 			RobustFile.WriteAllText(statusFilePath, statusToWrite.ToJson(), Encoding.UTF8);
+		}
+
+		/// <summary>
+		/// Add to the list any TC-specific files that should be deleted or not copied
+		/// when making most kinds of duplicates or publications of the book.
+		/// </summary>
+		public static void AddTCSpecificFiles(string bookFolderPath, List<string> paths)
+		{
+			paths.Add(GetStatusFilePathFromBookFolderPath(bookFolderPath));
 		}
 
 		internal BookStatus GetLocalStatus(string bookFolderName, string collectionFolder = null)

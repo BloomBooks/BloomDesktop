@@ -168,10 +168,16 @@ namespace Bloom.Book
 			{
 				imagesToGiveTransparentBackgrounds = new List<string>();
 			}
+
+			// Some of the knowledge about ExcludedFileExtensions might one day move into this method.
+			// But we'd have to check carefully the other places it is used.
+			var localOnlyFiles = BookStorage.LocalOnlyFiles(directoryToCompress);
 			foreach (var filePath in files)
 			{
 				if (ExcludedFileExtensionsLowerCase.Contains(Path.GetExtension(filePath.ToLowerInvariant())))
 					continue; // BL-2246: skip putting this one into the BloomPack
+				if (localOnlyFiles.Contains(filePath))
+					continue;
 				var fileName = Path.GetFileName(filePath).ToLowerInvariant();
 				if (fileName.StartsWith(BookStorage.PrefixForCorruptHtmFiles))
 					continue;

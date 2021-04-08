@@ -253,6 +253,8 @@ namespace Bloom.WebLibraryIntegration
 			// Don't upload corrupt htms that have been repaired
 			foreach (var path in Directory.EnumerateFiles(destDirName, BookStorage.PrefixForCorruptHtmFiles + "*.htm"))
 				RobustFile.Delete(path);
+			// Some more of the logic above might be useful to move into this method.
+			BookStorage.RemoveLocalOnlyFiles(destDirName);
 
 			if (languagesToInclude != null && languagesToInclude.Count() > 0)
 				RemoveUnwantedLanguageData(destDirName, languagesToInclude);
