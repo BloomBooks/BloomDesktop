@@ -897,6 +897,18 @@ namespace Bloom.TeamCollection
 				// Don't delete it; and there's been no local status change we need to worry about.
 				return;
 			}
+
+			if ((_tcManager?.BookSelection?.CurrentSelection?.FolderPath ?? "") ==
+			    Path.Combine(_localCollectionFolder, bookBaseName))
+			{
+				// Argh! Somebody deleted the selected book! We might be right in the middle of any form
+				// of publication, or generating a preview, or anything! Just keep it, and let the user know
+				// a reload is needed.
+				_tcLog.WriteMessage(MessageAndMilestoneType.Error, "TeamCollection.RemoteDeleteCurrent",
+					"One of your teammates has deleted the book \"{0}\". Since this book is selected, your copy will not be deleted until you reload the collection.", bookBaseName);
+				TeamCollectionManager.RaiseTeamCollectionStatusChanged();
+				return;
+			}
 			SIL.IO.RobustIO.DeleteDirectory(Path.Combine(_localCollectionFolder, bookBaseName), true);
 			UpdateBookStatus(bookBaseName, true);
 		}

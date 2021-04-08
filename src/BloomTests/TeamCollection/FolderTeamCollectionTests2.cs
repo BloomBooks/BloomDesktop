@@ -39,7 +39,7 @@ namespace BloomTests.TeamCollection
 
 					// As an aside, this is a convenient place to check that a TC manager created when TC settings does not exist
 					// functions and does not have a current collection.
-					var tcManager = new TeamCollectionManager(settingsPath, null, new BookRenamedEvent(), new BookStatusChangeEvent());
+					var tcManager = new TeamCollectionManager(settingsPath, null, new BookRenamedEvent(), new BookStatusChangeEvent(), null);
 					Assert.That(tcManager.CurrentCollection, Is.Null);
 
 					RobustFile.WriteAllText(settingsPath, "This is a fake settings file");
@@ -48,7 +48,7 @@ namespace BloomTests.TeamCollection
 
 					var nonBookFolder = Path.Combine(collectionFolder.FolderPath, "Some other folder");
 					Directory.CreateDirectory(nonBookFolder);
-					tcManager = new TeamCollectionManager(settingsPath, null, new BookRenamedEvent(), new BookStatusChangeEvent());
+					tcManager = new TeamCollectionManager(settingsPath, null, new BookRenamedEvent(), new BookStatusChangeEvent(), null);
 					var collection = tcManager.CurrentCollection;
 
 					// sut
@@ -109,7 +109,7 @@ namespace BloomTests.TeamCollection
 					var settingsFileName =
 						Path.ChangeExtension(Path.GetFileName(collectionFolder.FolderPath), "bloomCollection");
 					var settingsPath = Path.Combine(collectionFolder.FolderPath, settingsFileName);
-					var tcManager = new TeamCollectionManager(settingsPath, null, new BookRenamedEvent(), new BookStatusChangeEvent());
+					var tcManager = new TeamCollectionManager(settingsPath, null, new BookRenamedEvent(), new BookStatusChangeEvent(), null);
 					var tc = new FolderTeamCollection(tcManager, collectionFolder.FolderPath, repoFolder.FolderPath);
 					tc.CollectionId = Bloom.TeamCollection.TeamCollection.GenerateCollectionId();
 					var bloomCollectionPath = Bloom.TeamCollection.TeamCollection.CollectionPath(collectionFolder.FolderPath);

@@ -435,6 +435,7 @@ namespace Bloom.web.controllers
 				// Uses a browser dialog to show the problem report
 				try
 				{
+					StartupScreenManager.CloseSplashScreen();
 					var query = $"?level={levelOfProblem}";
 
 					// Precondition: we must be on the UI thread for Gecko to work.

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
+using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Registration;
 using Bloom.Utils;
@@ -17,6 +18,7 @@ namespace Bloom.TeamCollection
 	public interface ITeamCollectionManager
 	{
 		void RaiseBookStatusChanged(BookStatusChangeEventArgs eventInfo);
+		BookSelection BookSelection { get; }
 	}
 
 	/// <summary>
@@ -62,6 +64,7 @@ namespace Bloom.TeamCollection
 		private static string _overrideCurrentUserFirstName;
 		private static string _overrideCurrentUserSurname;
 		private static string _overrideMachineName;
+		public BookSelection BookSelection { get; private set; }
 
 		/// <summary>
 		/// Force the startup sync of collection files to be FROM the repo TO local.
@@ -131,11 +134,14 @@ namespace Bloom.TeamCollection
 			}
 		}
 
-		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer, BookRenamedEvent bookRenamedEvent, BookStatusChangeEvent bookStatusChangeEvent)
+		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer,
+			BookRenamedEvent bookRenamedEvent, BookStatusChangeEvent bookStatusChangeEvent,
+			BookSelection bookSelection)
 		{
 			_webSocketServer = webSocketServer;
 			_bookStatusChangeEvent = bookStatusChangeEvent;
 			_localCollectionFolder = Path.GetDirectoryName(localCollectionPath);
+			BookSelection = bookSelection;
 			bookRenamedEvent.Subscribe(pair =>
 			{
 				CurrentCollectionEvenIfDisconnected?.HandleBookRename(Path.GetFileName(pair.Key), Path.GetFileName(pair.Value));

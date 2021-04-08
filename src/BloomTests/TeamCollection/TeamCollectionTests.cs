@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using Bloom.Book;
 using Bloom.TeamCollection;
 using BloomTemp;
 using Moq;
@@ -316,8 +317,11 @@ namespace BloomTests.TeamCollection
 			_collection.HandleDeletedRepoFile($"{bookFolderName}.bloom" );
 
 			// Verification
-			Assert.That(_mockTcManager.Invocations.Count, Is.EqualTo(prevInvocations + 1));
-			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[prevInvocations].Arguments[0];
+			// (This is a bit fragile, as it depends on how many times the method calls ANY function in the
+			// mock TC manager, and in what order. Currently we call it once to ask for a book selection,
+			// and then, (the call we're interested in) to raise book status changed.
+			Assert.That(_mockTcManager.Invocations.Count, Is.EqualTo(prevInvocations + 2));
+			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[prevInvocations + 1].Arguments[0];
 			Assert.That(eventArgs.CheckedOutByWhom, Is.EqualTo(CheckedOutBy.Deleted));
 			Assert.That(_tcLog.Messages.Count, Is.EqualTo(prevMessages));
 			Assert.That(Directory.Exists(bookFolderPath), Is.False, "The local book should have been deleted");
@@ -372,6 +376,39 @@ namespace BloomTests.TeamCollection
 			Assert.That(_mockTcManager.Invocations.Count, Is.EqualTo(prevInvocations));
 			Assert.That(_tcLog.Messages.Count, Is.EqualTo(prevMessages + 1));
 			Assert.That(_tcLog.Messages[prevMessages].MessageType, Is.EqualTo(MessageAndMilestoneType.ErrorNoReload));
+			Assert.That(Directory.Exists(bookFolderPath), Is.True, "The local book should not have been deleted");
+		}
+
+		[Test]
+		public void HandleDeletedFile_BookSelected_LogsProblem()
+		{
+			// Simulate that a book which is currently selected was just deleted in the repo
+			const string bookFolderName = "My book";
+			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
+			Directory.CreateDirectory(bookFolderPath);
+			var bookPath = Path.Combine(bookFolderPath, "My book.htm");
+			RobustFile.WriteAllText(bookPath, "This is just a dummy");
+
+			var status = _collection.PutBook(bookFolderPath);
+			// But, although we have all the status to indicate it is in the repo, it's gone!
+			_collection.DeleteBookFromRepo(bookFolderPath);
+
+			// But it can't go away locally...it's the selected book!
+			var book = new Mock<Bloom.Book.Book>();
+			book.Setup(m => m.FolderPath).Returns(bookFolderPath);
+			var selection = new Mock<BookSelection>();
+			selection.Setup(m => m.CurrentSelection).Returns(book.Object);
+			_mockTcManager.Setup(m => m.BookSelection).Returns(selection.Object);
+
+			var prevMessages = _tcLog.Messages.Count;
+			var prevInvocations = _mockTcManager.Invocations.Count;
+
+			// System Under Test //
+			_collection.HandleDeletedRepoFile($"{bookFolderName}.bloom");
+
+			// Verification
+			Assert.That(_tcLog.Messages.Count, Is.EqualTo(prevMessages + 1));
+			Assert.That(_tcLog.Messages[prevMessages].MessageType, Is.EqualTo(MessageAndMilestoneType.Error));
 			Assert.That(Directory.Exists(bookFolderPath), Is.True, "The local book should not have been deleted");
 		}
 	}
