@@ -23,7 +23,8 @@ namespace Bloom.Book
 			Settings.Default.Save();
 		}
 
-		public Book CurrentSelection
+		// virtual for mocking
+		public virtual Book CurrentSelection
 		{
 			get { return _currentSelection; }
 		}

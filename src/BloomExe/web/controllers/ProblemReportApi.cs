@@ -435,6 +435,7 @@ namespace Bloom.web.controllers
 				// Uses a browser dialog to show the problem report
 				try
 				{
+					StartupScreenManager.CloseSplashScreen();
 					var query = $"?level={levelOfProblem}";
 
 					if (!BloomServer.ServerIsListening)
