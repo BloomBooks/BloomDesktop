@@ -3,14 +3,8 @@
 
 @status-panel-height: 180px;
 
-html,
-body {
-    height: 100%; // required so we can do percents on #preview-wrapper
-}
-
-#preview-wrapper {
-    height: calc(100% - @status-panel-height);
-    overflow-y: scroll;
+#preview.abovePanel {
+    height: calc(99vh - @status-panel-height);
 }
 
 #teamCollection {

@@ -2,7 +2,6 @@ import * as React from "react";
 import theme from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { useState } from "react";
-import ReactDOM = require("react-dom");
 import { BloomApi } from "../utils/bloomApi";
 import { useL10n } from "../react_components/l10nHooks";
 import "./TeamCollectionBookStatusPanel.less";
@@ -11,9 +10,7 @@ import BloomButton from "../react_components/bloomButton";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import { useWebSocketListenerForOneEvent } from "../utils/WebSocketManager";
 
-// The panel that appears at the bottom of the preview in the collection tab in a Team Collection.
-// Todo: JohnH wants this component to wrap an iframe that contains the preview,
-// rather than just inserting itself below it.
+// The panel that shows the book preview and settings in the collection tab in a Team Collection.
 
 export type LockState =
     | "initializing"
@@ -394,37 +391,3 @@ export const getBloomButton = (
         {english}
     </BloomButton>
 );
-
-// This function gets the teamCollection panel going, iff the collection is shared.
-// It wraps another div around the whole current contents of the window,
-// then adds an instance of TeamCollectionBookStatusPanel below it.
-export function setupTeamCollection() {
-    BloomApi.getBoolean(
-        "teamCollection/isTeamCollectionEnabled",
-        teamCollection => {
-            if (!teamCollection) {
-                return;
-            }
-            let teamCollectionRoot = document.getElementById("teamCollection");
-            if (!teamCollectionRoot) {
-                // Make a wrapper and put the whole original document contents into it.
-                // Styles will make the preview take all the viewport except 200px at the bottom.
-                var preview = document.createElement("div");
-                preview.setAttribute("id", "preview-wrapper");
-                Array.from(document.body.childNodes).forEach(e =>
-                    preview.appendChild(e)
-                );
-                document.body.appendChild(preview);
-
-                // Now make the TeamCollectionPanel and let React render it.
-                teamCollectionRoot = document.createElement("div");
-                teamCollectionRoot.setAttribute("id", "teamCollection");
-                document.body.appendChild(teamCollectionRoot);
-            }
-            ReactDOM.render(
-                <TeamCollectionBookStatusPanel />,
-                teamCollectionRoot
-            );
-        }
-    );
-}

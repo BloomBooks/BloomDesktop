@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
+using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.TeamCollection;
@@ -30,6 +32,8 @@ namespace Bloom.CollectionTab
 		private bool _reshowPending = false;
 		private bool _visible;
 
+		private BloomWebSocketServer _webSocketServer;
+
 		public TeamCollectionManager TeamCollectionMgr { get; internal set; }
 
 		public delegate LibraryBookView Factory();//autofac uses this
@@ -48,6 +52,7 @@ namespace Bloom.CollectionTab
 			//_sendReceiver = sendReceiver;
 			_createFromSourceBookCommand = createFromSourceBookCommand;
 			_editBookCommand = editBookCommand;
+			_webSocketServer = webSocketServer;
 			if (!Bloom.CLI.UploadCommand.IsUploading)
 				bookSelection.SelectionChanged += OnBookSelectionChanged;
 
@@ -84,7 +89,7 @@ namespace Bloom.CollectionTab
 					SafeInvoke.Invoke("sending reload status", this, false, true,
 						() =>
 						{
-							webSocketServer.SendEvent("bookStatus", "reload");
+							_webSocketServer.SendEvent("bookStatus", "reload");
 							SetEditButtonVisibility();
 						});
 				}
@@ -172,10 +177,18 @@ namespace Bloom.CollectionTab
 				_addToCollectionButton.Visible = _bookSelection.CurrentSelection.IsShellOrTemplate && !_bookSelection.CurrentSelection.HasFatalError;
 				SetEditButtonVisibility();
 				_readmeBrowser.Visible = false;
-				//_previewBrowser.Visible = true;
 				_splitContainerForPreviewAndAboutBrowsers.Visible = true;
 				if (updatePreview && !TroubleShooterDialog.SuppressBookPreview)
-					_previewBrowser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook(), source:BloomServer.SimulatedPageFileSource.Preview);
+				{
+					var previewDom = _bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook();
+					XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(previewDom.RawDom);
+					var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(previewDom, setAsCurrentPageForDebugging: false, source: BloomServer.SimulatedPageFileSource.Preview);
+					_reactBookPreviewControl.UrlQueryString = $"?urlPreview={fakeTempFile.Key}";	// need this for initial selection
+					_webSocketServer.SendString("bookStatus", "changeBook", fakeTempFile.Key);	// need this for changing selection display
+					_webSocketServer.SendEvent("bookStatus", "reload");	// need this for changing selection's book info display if team collection
+					_reactBookPreviewControl.Visible = true;
+					RecordAndCleanupFakeFiles(fakeTempFile);
+				}
 				_splitContainerForPreviewAndAboutBrowsers.Panel2Collapsed = true;
 				if (_bookSelection.CurrentSelection.HasAboutBookInformationToShow)
 				{
@@ -198,16 +211,20 @@ namespace Bloom.CollectionTab
 			}
 		}
 
+		SimulatedPageFile _previousPageFile;
+		/// <summary>
+		/// Remember the current fake file (stored in memory) after first cleaning up (removing) any
+		/// previous fake file.  This prevents memory use from increasing for each book previewed.
+		/// </summary>
+		private void RecordAndCleanupFakeFiles(SimulatedPageFile fakeTempFile)
+		{
+			_previousPageFile?.Dispose();
+			_previousPageFile = fakeTempFile;
+		}
+
 		private void HidePreview()
 		{
-			// When the user clicks the Edit button, the preview browser may still be busy loading images and otherwise
-			// working on the display of a long book. If we allow it to continue, our NavigationIsolator will
-			// not allow the newly visible browser in the EditView (or the other useful one in the WebThumbNailList)
-			// to start navigating to their pages. Thus, painting of the two current views is held up until we've
-			// generated not only the previously-visible part of the preview, but all the rest of it as well.
-			// So, we abort whatever is going on in the preview browser by pointing it at an empty page.
-			_previewBrowser.Navigate("about:blank", false);
-			//_previewBrowser.Visible = false;
+			_reactBookPreviewControl.Visible = false;
 			_splitContainerForPreviewAndAboutBrowsers.Visible = false;
 			BackColor = Palette.GeneralBackground; // NB: this color is only seen in a flash before browser loads
 		}
@@ -272,7 +289,7 @@ namespace Bloom.CollectionTab
 		{
 			if (GetAnchorHref(e).EndsWith("ReportProblem"))
 			{
-				ProblemReportApi.ShowProblemDialog(_previewBrowser, null, "", "nonfatal");
+				ProblemReportApi.ShowProblemDialog(_reactBookPreviewControl, null, "", "nonfatal");
 			}
 		}
 
