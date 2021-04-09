@@ -396,8 +396,6 @@ export const getBloomButton = (
 );
 
 // This function gets the teamCollection panel going, iff the collection is shared.
-// It wraps another div around the whole current contents of the window,
-// then adds an instance of TeamCollectionBookStatusPanel below it.
 export function setupTeamCollection() {
     BloomApi.getBoolean(
         "teamCollection/isTeamCollectionEnabled",
@@ -405,26 +403,15 @@ export function setupTeamCollection() {
             if (!teamCollection) {
                 return;
             }
-            let teamCollectionRoot = document.getElementById("teamCollection");
-            if (!teamCollectionRoot) {
-                // Make a wrapper and put the whole original document contents into it.
-                // Styles will make the preview take all the viewport except 200px at the bottom.
-                var preview = document.createElement("div");
-                preview.setAttribute("id", "preview-wrapper");
-                Array.from(document.body.childNodes).forEach(e =>
-                    preview.appendChild(e)
-                );
-                document.body.appendChild(preview);
-
-                // Now make the TeamCollectionPanel and let React render it.
-                teamCollectionRoot = document.createElement("div");
-                teamCollectionRoot.setAttribute("id", "teamCollection");
-                document.body.appendChild(teamCollectionRoot);
-            }
-            ReactDOM.render(
-                <TeamCollectionBookStatusPanel />,
-                teamCollectionRoot
+            const teamCollectionRoot = document.getElementById(
+                "teamCollection"
             );
+            if (teamCollectionRoot) {
+                ReactDOM.render(
+                    <TeamCollectionBookStatusPanel />,
+                    teamCollectionRoot
+                );
+            }
         }
     );
 }

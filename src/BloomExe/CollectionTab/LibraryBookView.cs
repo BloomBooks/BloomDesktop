@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
+using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.TeamCollection;
@@ -175,7 +177,32 @@ namespace Bloom.CollectionTab
 				//_previewBrowser.Visible = true;
 				_splitContainerForPreviewAndAboutBrowsers.Visible = true;
 				if (updatePreview && !TroubleShooterDialog.SuppressBookPreview)
-					_previewBrowser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook(), source:BloomServer.SimulatedPageFileSource.Preview);
+				{
+					var previewDom = _bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook();
+					if (TeamCollectionMgr.CollectionStatus != TeamCollectionStatus.None)
+					{
+						// Make a wrapper and put the whole original document contents into it.
+						// This is needed to handle the book information pane for Team Collections.
+						// Styles will make the preview take all the viewport except 200px at the bottom.
+						// Or our Typescript code will remove the wrapper if we're not in a team collection.
+						var divPreview = previewDom.RawDom.CreateElement("div");
+						divPreview.SetAttribute("id", "preview-wrapper");
+						// We need to copy the XmlNodeList to a normal List<XmlNode> so that moving elements
+						// out of Body doesn't modify the list we're accessing and abort the process.
+						var nodeList = new List<XmlNode>();
+						foreach (XmlNode node in previewDom.Body.ChildNodes)
+							nodeList.Add(node);
+						foreach (XmlNode node in nodeList)
+							divPreview.AppendChild(node);
+						previewDom.Body.AppendChild(divPreview);
+						// Now make a div for the TeamCollectionPanel and let React render it if needed.
+						// If it's not needed, this div will be removed by our Typescript code.
+						var divTeamCollection = previewDom.RawDom.CreateElement("div");
+						divTeamCollection.SetAttribute("id", "teamCollection");
+						previewDom.Body.AppendChild(divTeamCollection);
+					}
+					_previewBrowser.Navigate(previewDom, source: BloomServer.SimulatedPageFileSource.Preview);
+				}
 				_splitContainerForPreviewAndAboutBrowsers.Panel2Collapsed = true;
 				if (_bookSelection.CurrentSelection.HasAboutBookInformationToShow)
 				{
