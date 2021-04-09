@@ -2,10 +2,10 @@
 @icon-top-padding: 4px; // Headings have top space which we want to match
 @icon-side-padding: 8px;
 @panel-button-height: 40px;
-@panel-button-width: 200px;
+@panel-button-width: 180px;
 @panel-button-padding: 15px;
-@panel-button-icon-space: 20px;
-@panel-button-icon-size: 24px;
+@panel-button-icon-space: 5px;
+@panel-button-icon-size: 28px;
 @panel-width: 560px; // roughly A5 width
 
 .status-panel {
@@ -50,7 +50,7 @@
         margin-left: calc(@icon-size + 2 * @icon-side-padding);
     }
     .panel-button {
-        width: @panel-button-width;
+        min-width: @panel-button-width;
         height: @panel-button-height;
         padding-right: @panel-button-padding;
         padding-bottom: @panel-button-padding;
@@ -62,6 +62,9 @@
             img {
                 width: @panel-button-icon-size;
                 margin-right: @panel-button-icon-space; // add some space between the icon and the text
+            }
+            & > span {
+                font-size: larger;
             }
         }
     }

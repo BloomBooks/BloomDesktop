@@ -9,9 +9,7 @@ import "./TeamCollectionBookStatusPanel.less";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import BloomButton from "../react_components/bloomButton";
 import { BloomAvatar } from "../react_components/bloomAvatar";
-import WebSocketManager, {
-    useWebSocketListenerForOneEvent
-} from "../utils/WebSocketManager";
+import { useWebSocketListenerForOneEvent } from "../utils/WebSocketManager";
 
 // The panel that appears at the bottom of the preview in the collection tab in a Team Collection.
 // Todo: JohnH wants this component to wrap an iframe that contains the preview,
