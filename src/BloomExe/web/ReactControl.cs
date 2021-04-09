@@ -65,13 +65,16 @@ namespace Bloom.web
 			var tempFile = TempFile.WithExtension("htm");
 			tempFile.Detach(); // the browser control will clean it up
 
+			var loadJavascriptBundle = string.IsNullOrWhiteSpace(_javascriptBundleName)
+				? ""
+				: "<script src = '/" + _javascriptBundleName + "'></script>";
 			RobustFile.WriteAllText(tempFile.Path, $@"<!DOCTYPE html>
 				<html>
 				<head>
 					<meta charset = 'UTF-8' />
 					<script src = '/commonBundle.js' ></script>
 					<script src = '/wireUpBundle.js' ></script>
-					<script src = '/{_javascriptBundleName}'></script>
+					{loadJavascriptBundle}
 					<script>
 						window.onload = () => {{
 							const rootDiv = document.getElementById('reactRoot');

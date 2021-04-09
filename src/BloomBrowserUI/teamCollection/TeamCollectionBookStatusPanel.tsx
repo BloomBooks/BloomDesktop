@@ -2,18 +2,18 @@ import * as React from "react";
 import theme from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { useState } from "react";
-import ReactDOM = require("react-dom");
 import { BloomApi } from "../utils/bloomApi";
 import { useL10n } from "../react_components/l10nHooks";
 import "./TeamCollectionBookStatusPanel.less";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import BloomButton from "../react_components/bloomButton";
 import { BloomAvatar } from "../react_components/bloomAvatar";
-import { useWebSocketListenerForOneEvent } from "../utils/WebSocketManager";
+import {
+    useWebSocketListenerForOneEvent,
+    useWebSocketListenerForOneMessage
+} from "../utils/WebSocketManager";
 
-// The panel that appears at the bottom of the preview in the collection tab in a Team Collection.
-// Todo: JohnH wants this component to wrap an iframe that contains the preview,
-// rather than just inserting itself below it.
+// The panel that shows the book preview and settings in the collection tab in a Team Collection.
 
 export type LockState =
     | "initializing"
@@ -26,13 +26,25 @@ export type LockState =
     | "disconnected"
     | "lockedByMeDisconnected";
 
+const urlParams = new URLSearchParams(window.location.search);
+const urlPreview = urlParams.get("urlPreview") ?? "about:blank";
+
 export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [state, setState] = useState<LockState>("initializing");
     const [lockedBy, setLockedBy] = useState("");
     const [lockedByDisplay, setLockedByDisplay] = useState("");
     const [lockedWhen, setLockedWhen] = useState("");
     const [lockedMachine, setLockedMachine] = useState("");
+    const [isTeamCollection, setIsTeamCollection] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState(urlPreview);
     const [reload, setReload] = useState(0);
+
+    React.useEffect(() => {
+        BloomApi.getBoolean(
+            "teamCollection/isTeamCollectionEnabled",
+            teamCollection => setIsTeamCollection(teamCollection)
+        );
+    }, [reload]);
     React.useEffect(() => {
         var lockedByMe = false;
         BloomApi.get(
@@ -87,6 +99,10 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     useWebSocketListenerForOneEvent("bookStatus", "reload", () =>
         setReload(oldValue => oldValue + 1)
     );
+    useWebSocketListenerForOneMessage("bookStatus", "changeBook", message => {
+        setReload(oldValue => oldValue + 1);
+        setPreviewUrl(message);
+    });
 
     let avatar;
     if (state.startsWith("locked")) {
@@ -371,8 +387,23 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                 );
         }
     };
-
-    return <ThemeProvider theme={theme}>{panelContents(state)}</ThemeProvider>;
+    // BL-9786: enclose in div with iframe for actual book preview
+    return (
+        <div>
+            <div id={isTeamCollection ? "preview-wrapper" : "preview"}>
+                <iframe src={previewUrl} height="100%" width="100%" />
+            </div>
+            {isTeamCollection ? (
+                <div id="teamCollection">
+                    <ThemeProvider theme={theme}>
+                        {panelContents(state)}
+                    </ThemeProvider>
+                </div>
+            ) : (
+                <div />
+            )}
+        </div>
+    );
 };
 
 export const getBloomButton = (
@@ -394,37 +425,3 @@ export const getBloomButton = (
         {english}
     </BloomButton>
 );
-
-// This function gets the teamCollection panel going, iff the collection is shared.
-// It wraps another div around the whole current contents of the window,
-// then adds an instance of TeamCollectionBookStatusPanel below it.
-export function setupTeamCollection() {
-    BloomApi.getBoolean(
-        "teamCollection/isTeamCollectionEnabled",
-        teamCollection => {
-            if (!teamCollection) {
-                return;
-            }
-            let teamCollectionRoot = document.getElementById("teamCollection");
-            if (!teamCollectionRoot) {
-                // Make a wrapper and put the whole original document contents into it.
-                // Styles will make the preview take all the viewport except 200px at the bottom.
-                var preview = document.createElement("div");
-                preview.setAttribute("id", "preview-wrapper");
-                Array.from(document.body.childNodes).forEach(e =>
-                    preview.appendChild(e)
-                );
-                document.body.appendChild(preview);
-
-                // Now make the TeamCollectionPanel and let React render it.
-                teamCollectionRoot = document.createElement("div");
-                teamCollectionRoot.setAttribute("id", "teamCollection");
-                document.body.appendChild(teamCollectionRoot);
-            }
-            ReactDOM.render(
-                <TeamCollectionBookStatusPanel />,
-                teamCollectionRoot
-            );
-        }
-    );
-}

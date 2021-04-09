@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
+using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.TeamCollection;
@@ -172,10 +174,18 @@ namespace Bloom.CollectionTab
 				_addToCollectionButton.Visible = _bookSelection.CurrentSelection.IsShellOrTemplate && !_bookSelection.CurrentSelection.HasFatalError;
 				SetEditButtonVisibility();
 				_readmeBrowser.Visible = false;
-				//_previewBrowser.Visible = true;
 				_splitContainerForPreviewAndAboutBrowsers.Visible = true;
 				if (updatePreview && !TroubleShooterDialog.SuppressBookPreview)
-					_previewBrowser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook(), source:BloomServer.SimulatedPageFileSource.Preview);
+				{
+					var previewDom = _bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook();
+					XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(previewDom.RawDom);
+					var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(previewDom, setAsCurrentPageForDebugging: false, source: BloomServer.SimulatedPageFileSource.Preview);
+					/* SetNewDependent(fakeTempFile); // fix for deleting temp files as we go along */
+					Console.WriteLine($"DEBUG: fakeTempFile.Key = {fakeTempFile.Key}");
+					reactControl1.UrlQueryString = $"?urlPreview={fakeTempFile.Key}";	// need this for initial selection
+					TeamCollectionMgr.SocketServer.SendString("bookStatus", "changeBook", fakeTempFile.Key);	// need this for changing selection
+					reactControl1.Visible = true;
+				}
 				_splitContainerForPreviewAndAboutBrowsers.Panel2Collapsed = true;
 				if (_bookSelection.CurrentSelection.HasAboutBookInformationToShow)
 				{
@@ -206,8 +216,7 @@ namespace Bloom.CollectionTab
 			// to start navigating to their pages. Thus, painting of the two current views is held up until we've
 			// generated not only the previously-visible part of the preview, but all the rest of it as well.
 			// So, we abort whatever is going on in the preview browser by pointing it at an empty page.
-			_previewBrowser.Navigate("about:blank", false);
-			//_previewBrowser.Visible = false;
+			reactControl1.Visible = false;
 			_splitContainerForPreviewAndAboutBrowsers.Visible = false;
 			BackColor = Palette.GeneralBackground; // NB: this color is only seen in a flash before browser loads
 		}
@@ -272,7 +281,7 @@ namespace Bloom.CollectionTab
 		{
 			if (GetAnchorHref(e).EndsWith("ReportProblem"))
 			{
-				ProblemReportApi.ShowProblemDialog(_previewBrowser, null, "", "nonfatal");
+				ProblemReportApi.ShowProblemDialog(reactControl1, null, "", "nonfatal");
 			}
 		}
 

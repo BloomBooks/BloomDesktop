@@ -3,14 +3,19 @@
 
 @status-panel-height: 180px;
 
-html,
-body {
-    height: 100%; // required so we can do percents on #preview-wrapper
+#preview {
+    // used when there's no team collection
+    height: 99vh;
+    width: 99vw;
+    overflow-y: hidden; // inner iframe shows scrollbars as needed
+    overflow-x: hidden;
 }
 
 #preview-wrapper {
-    height: calc(100% - @status-panel-height);
-    overflow-y: scroll;
+    height: calc(99vh - @status-panel-height);
+    width: 99vw;
+    overflow-y: hidden; // inner iframe shows scrollbars as needed
+    overflow-x: hidden;
 }
 
 #teamCollection {

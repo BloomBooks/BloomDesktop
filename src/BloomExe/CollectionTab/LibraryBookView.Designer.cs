@@ -34,8 +34,8 @@
 			this._editBookButton = new System.Windows.Forms.Button();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._splitContainerForPreviewAndAboutBrowsers = new Bloom.ToPalaso.BetterSplitContainer(this.components);
-			this._previewBrowser = new Bloom.Browser();
 			this._readmeBrowser = new Bloom.Browser();
+			this.reactControl1 = new Bloom.web.ReactControl();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._splitContainerForPreviewAndAboutBrowsers)).BeginInit();
 			this._splitContainerForPreviewAndAboutBrowsers.Panel1.SuspendLayout();
@@ -99,8 +99,8 @@
 			// 
 			// _splitContainerForPreviewAndAboutBrowsers.Panel1
 			// 
+			this._splitContainerForPreviewAndAboutBrowsers.Panel1.Controls.Add(this.reactControl1);
 			this._splitContainerForPreviewAndAboutBrowsers.Panel1.Controls.Add(this._addToCollectionButton);
-			this._splitContainerForPreviewAndAboutBrowsers.Panel1.Controls.Add(this._previewBrowser);
 			// 
 			// _splitContainerForPreviewAndAboutBrowsers.Panel2
 			// 
@@ -110,22 +110,6 @@
 			this._splitContainerForPreviewAndAboutBrowsers.TabIndex = 3;
 			this._splitContainerForPreviewAndAboutBrowsers.TabStop = false;
 			this._splitContainerForPreviewAndAboutBrowsers.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this._splitContainerForPreviewAndAboutBrowsers_SplitterMoved);
-			// 
-			// _previewBrowser
-			// 
-			this._previewBrowser.BackColor = System.Drawing.Color.DarkGray;
-			this._previewBrowser.ContextMenuProvider = null;
-			this._previewBrowser.ControlKeyEvent = null;
-			this._previewBrowser.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._previewBrowser, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._previewBrowser, null);
-			this._L10NSharpExtender.SetLocalizingId(this._previewBrowser, "CollectionTab.Browser");
-			this._previewBrowser.Location = new System.Drawing.Point(0, 0);
-			this._previewBrowser.Name = "_previewBrowser";
-			this._previewBrowser.Size = new System.Drawing.Size(900, 193);
-			this._previewBrowser.TabIndex = 2;
-			this._previewBrowser.VerticalScrollDistance = 0;
-			this._previewBrowser.OnBrowserClick += new System.EventHandler(this._previewBrowser_OnBrowserClick);
 			// 
 			// _readmeBrowser
 			// 
@@ -142,6 +126,21 @@
 			this._readmeBrowser.TabIndex = 2;
 			this._readmeBrowser.VerticalScrollDistance = 0;
 			this._readmeBrowser.OnBrowserClick += new System.EventHandler(this._readmeBrowser_OnBrowserClick);
+			// 
+			// reactControl1
+			// 
+			this.reactControl1.BackColor = System.Drawing.Color.DarkGray;
+			this.reactControl1.JavascriptBundleName = null;
+			this.reactControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._L10NSharpExtender.SetLocalizableToolTip(this.reactControl1, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.reactControl1, null);
+			this._L10NSharpExtender.SetLocalizingId(this.reactControl1, "ReactControl");
+			this.reactControl1.Location = new System.Drawing.Point(0, 0);
+			this.reactControl1.Name = "reactControl1";
+			this.reactControl1.ReactComponentName = "TeamCollectionBookStatusPanel";
+			this.reactControl1.Size = new System.Drawing.Size(900, 193);
+			this.reactControl1.TabIndex = 2;
+			this.reactControl1.UrlQueryString = null;
 			// 
 			// LibraryBookView
 			// 
@@ -172,7 +171,7 @@
         private System.Windows.Forms.Button _editBookButton;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
         private ToPalaso.BetterSplitContainer _splitContainerForPreviewAndAboutBrowsers;
-        private Browser _previewBrowser;
         private Browser _readmeBrowser;
-    }
+		private web.ReactControl reactControl1;
+	}
 }
