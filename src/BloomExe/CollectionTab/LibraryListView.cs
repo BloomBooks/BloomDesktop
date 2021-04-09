@@ -1564,6 +1564,8 @@ namespace Bloom.CollectionTab
 			if (SelectedBook == null) return;
 
 			var newBookDir = SelectedBook.Storage.Duplicate();
+			// Get rid of any TC status we copied from the original, so Bloom treats it correctly as a new book.
+			BookStorage.RemoveLocalOnlyFiles(newBookDir);
 
 			// reload the collection
 			_model.ReloadCollections();

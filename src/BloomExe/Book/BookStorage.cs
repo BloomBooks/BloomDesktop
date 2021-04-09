@@ -166,6 +166,30 @@ namespace Bloom.Book
 		private string _cachedFolderPath;
 		private string _cachedPathToHtml;
 
+		
+		public static void RemoveLocalOnlyFiles(string folderPath)
+		{
+			LocalOnlyFiles(folderPath).ForEach(f => RobustFile.Delete(f));
+		}
+
+		/// <summary>
+		/// This is something of a work in progress. The idea is to identify stuff that we
+		/// don't want when making a copy of a book folder. It's tricky because it tends
+		/// to involve an intersection of responsibilities. On the one hand, whether we are
+		/// publishing a book to S3 or making a local duplicate or creating an epub, we
+		/// don't need the status file that helps implement Team Collection; and
+		/// code for those tasks has no business knowing about that status file. OTOH,
+		/// some of those functions don't need some of the audio files; but a generic
+		/// cleanup function like this doesn't know which ones. For now, it just deals
+		/// with TC cleanup.
+		/// </summary>
+		public static List<string> LocalOnlyFiles(string folderPath)
+		{
+			var accumulator = new List<string>();
+			TeamCollection.TeamCollection.AddTCSpecificFiles(folderPath, accumulator);
+			return accumulator;
+		}
+
 		public string PathToExistingHtml
 		{
 			get
