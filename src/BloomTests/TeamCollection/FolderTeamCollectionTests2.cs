@@ -1,14 +1,15 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using Bloom;
+﻿using Bloom;
 using Bloom.TeamCollection;
 using Bloom.web;
 using BloomTemp;
 using Moq;
 using NUnit.Framework;
 using SIL.IO;
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using SIL.Reporting;
 
 namespace BloomTests.TeamCollection
 {
@@ -233,23 +234,24 @@ namespace BloomTests.TeamCollection
 					var collectionWriteTimeAfterSut9 = new FileInfo(bloomCollectionPath).LastWriteTime;
 					Assert.That(collectionWriteTimeAfterSut9, Is.EqualTo(collectionWriteTimeBeforeSut9), "local settings should not have been modified");
 
-					// This piece of the test works locally but I think it is what has been failing on TC.
-					// Seems whatever magic lets us NotifyUserOfProblem without the test failing is not working there.
-					// Taking it out for now.
-					//File.WriteAllText(bloomCollectionPath, "This is a modified fake collection file, for SUT 10");
-					//var collectionWriteTimeBeforeSut10 = new FileInfo(bloomCollectionPath).LastWriteTime;
-					//var localWriteTimeBeforeSut10 = tc.LocalCollectionFilesRecordedSyncTime();
-					//var repoWriteTimeBeforeSut10 = new FileInfo(otherFilesPath).LastWriteTime;
+					File.WriteAllText(bloomCollectionPath, "This is a modified fake collection file, for SUT 10");
+					var collectionWriteTimeBeforeSut10 = new FileInfo(bloomCollectionPath).LastWriteTime;
+					var localWriteTimeBeforeSut10 = tc.LocalCollectionFilesRecordedSyncTime();
+					var repoWriteTimeBeforeSut10 = new FileInfo(otherFilesPath).LastWriteTime;
 
-					//// SUT10: both modified, doing check on idle. No changes. User warned.
-					//tc.SyncLocalAndRepoCollectionFiles(false);
-					//Assert.That(tc._haveShownRemoteSettingsChangeWarning, Is.True, "user should have been warned");
-					//var localWriteTimeAfterSut10 = tc.LocalCollectionFilesRecordedSyncTime();
-					//Assert.That(localWriteTimeAfterSut10, Is.EqualTo(localWriteTimeBeforeSut10), "localWriteTime should not be changed by idle sync where both changed");
-					//var repoWriteTimeAfterSut10 = new FileInfo(otherFilesPath).LastWriteTime;
-					//Assert.That(repoWriteTimeAfterSut10, Is.EqualTo(repoWriteTimeBeforeSut10), "repo should not be modified by idle sync where both changed"); // not modified by sync
-					//Assert.That(new FileInfo(bloomCollectionPath).LastWriteTime, Is.EqualTo(collectionWriteTimeBeforeSut10),
-					//	"bloomCollection LastWriteTime should not be changed by idle sync both changed");
+					// SUT10: both modified, doing check on idle. No changes. User warned.
+					using (var nfes = new ErrorReport.NonFatalErrorReportExpected())
+					{
+						tc.SyncLocalAndRepoCollectionFiles(false);
+					}
+
+					Assert.That(tc._haveShownRemoteSettingsChangeWarning, Is.True, "user should have been warned");
+					var localWriteTimeAfterSut10 = tc.LocalCollectionFilesRecordedSyncTime();
+					Assert.That(localWriteTimeAfterSut10, Is.EqualTo(localWriteTimeBeforeSut10), "localWriteTime should not be changed by idle sync where both changed");
+					var repoWriteTimeAfterSut10 = new FileInfo(otherFilesPath).LastWriteTime;
+					Assert.That(repoWriteTimeAfterSut10, Is.EqualTo(repoWriteTimeBeforeSut10), "repo should not be modified by idle sync where both changed"); // not modified by sync
+					Assert.That(new FileInfo(bloomCollectionPath).LastWriteTime, Is.EqualTo(collectionWriteTimeBeforeSut10),
+						"bloomCollection LastWriteTime should not be changed by idle sync both changed");
 				}
 			}
 		}
