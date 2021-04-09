@@ -1,5 +1,6 @@
 import React = require("react");
 import * as ReactDOM from "react-dom";
+import { BookPreviewPanel } from "../bookPreview/BookPreviewPanel";
 import { TeamCollectionSettingsPanel } from "../teamCollection/TeamCollectionSettingsPanel";
 import { TeamCollectionDialog } from "../teamCollection/TeamCollectionDialog";
 import { AutoUpdateSoftwareDialog } from "../react_components/AutoUpdateSoftwareDialog";
@@ -8,6 +9,7 @@ import { ProgressDialog } from "../react_components/IndependentProgressDialog";
 
 // this is a bummer... haven't figured out how to do a lookup just from the string... have to have this map
 const knownComponents = {
+    BookPreviewPanel: BookPreviewPanel,
     TeamCollectionSettingsPanel: TeamCollectionSettingsPanel,
     TeamCollectionDialog: TeamCollectionDialog,
     AutoUpdateSoftwareDialog: AutoUpdateSoftwareDialog,
