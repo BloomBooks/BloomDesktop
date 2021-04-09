@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.Utils;
 
 namespace Bloom
 {
@@ -103,6 +104,42 @@ namespace Bloom
 			if (!changed) return;
 
 			args.TextRectangle = rc;
+		}
+
+		/// <summary>
+		/// Gets the Text property, un-escaping it if necessary
+		/// </summary>
+		public static string GetTextSafely(this Label label)
+		{
+			return TextUtils.UnescapeWinForms(label.Text, label.UseMnemonic);
+		}
+
+		/// <summary>
+		/// Sets the Text property to {text}, escaping it if necessary.
+		/// Precondition: Only valid as long as {label.UseMnemonic} does not change.
+		/// </summary>
+		/// <param name="text">The un-escaped value of text (that which should be read by user)</param>
+		public static void SetTextSafely(this Label label, string text)
+		{
+			label.Text = TextUtils.EscapeForWinForms(text, label.UseMnemonic);
+		}
+
+		/// <summary>
+		/// Gets the Text property, un-escaping it if necessary
+		/// </summary>
+		public static string GetTextSafely(this Button button)
+		{
+			return TextUtils.UnescapeWinForms(button.Text, button.UseMnemonic);
+		}
+
+		/// <summary>
+		/// Sets the Text property to {text}, escaping it if necessary.
+		/// Precondition: Only valid as long as {label.UseMnemonic} does not change.
+		/// </summary>
+		/// <param name="text">The un-escaped value of text (that which should be read by user)</param>
+		public static void SetTextSafely(this Button button, string text)
+		{
+			button.Text = TextUtils.EscapeForWinForms(text, button.UseMnemonic);
 		}
 	}
 }
