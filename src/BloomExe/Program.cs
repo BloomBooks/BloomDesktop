@@ -284,8 +284,29 @@ namespace Bloom
 										ErrorReport.NotifyUserOfProblem(msg);
 										return 1;
 									}
+
 									if (projectContext.TeamCollectionManager.CurrentCollection == null)
+									{
+										if (projectContext.TeamCollectionManager.CurrentCollectionEvenIfDisconnected !=
+										    null)
+										{
+
+											var msg = LocalizationManager.GetString("TeamCollection.ConnectToJoin",
+												"Bloom cannot currently join this collection.");
+											// This is a bit of a kludge, but when we make a disconnected collection it's pretty
+											// consistently true that the last message just says "you'll be disconnected till you fix this",
+											// but the previous one actually says what's wrong. So we'll reuse this in this (hopefully)
+											// rare case.
+											var messages = projectContext.TeamCollectionManager
+												.CurrentCollectionEvenIfDisconnected.MessageLog.PrettyPrintMessages;
+											if (messages.Length > 1 && messages[messages.Length - 2].Item1 == MessageAndMilestoneType.Error)
+											{
+												msg += Environment.NewLine + messages[messages.Length - 2].Item2;
+											}
+											ErrorReport.NotifyUserOfProblem(msg);
+										}
 										return 1; // something went wrong processing it, hopefully already reported.
+									}
 									newCollection = FolderTeamCollection.ShowJoinCollectionTeamDialog(args[0]);
 								}
 							}
