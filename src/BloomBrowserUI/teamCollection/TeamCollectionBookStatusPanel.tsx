@@ -404,29 +404,29 @@ export function setupTeamCollection() {
     BloomApi.getBoolean(
         "teamCollection/isTeamCollectionEnabled",
         teamCollection => {
+            const teamCollectionRoot = document.getElementById(
+                "teamCollection"
+            );
             if (!teamCollection) {
+                // If we're not in a team collection, remove the extra divs
+                // inserted earlier since we don't display the book status panel.
+                if (teamCollectionRoot)
+                    document.body.removeChild(teamCollectionRoot);
+                const wrapperDiv = document.getElementById("preview-wrapper");
+                if (wrapperDiv) {
+                    Array.from(wrapperDiv.childNodes).forEach(e =>
+                        document.body.appendChild(e)
+                    );
+                    document.body.removeChild(wrapperDiv);
+                }
                 return;
             }
-            let teamCollectionRoot = document.getElementById("teamCollection");
-            if (!teamCollectionRoot) {
-                // Make a wrapper and put the whole original document contents into it.
-                // Styles will make the preview take all the viewport except 200px at the bottom.
-                var preview = document.createElement("div");
-                preview.setAttribute("id", "preview-wrapper");
-                Array.from(document.body.childNodes).forEach(e =>
-                    preview.appendChild(e)
+            if (teamCollectionRoot) {
+                ReactDOM.render(
+                    <TeamCollectionBookStatusPanel />,
+                    teamCollectionRoot
                 );
-                document.body.appendChild(preview);
-
-                // Now make the TeamCollectionPanel and let React render it.
-                teamCollectionRoot = document.createElement("div");
-                teamCollectionRoot.setAttribute("id", "teamCollection");
-                document.body.appendChild(teamCollectionRoot);
             }
-            ReactDOM.render(
-                <TeamCollectionBookStatusPanel />,
-                teamCollectionRoot
-            );
         }
     );
 }
