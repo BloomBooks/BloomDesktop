@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.TeamCollection;
 using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
@@ -32,17 +33,19 @@ namespace Bloom.Publish.BloomLibrary
 		private string _originalUploadText;
 		private readonly BloomLibraryPublishModel _model;
 		private IBloomWebSocketServer _webSocketServer;
+		private TeamCollectionManager _tcManager;
 
 		// We would love to be able to access this in the designer, but we can't...
 		private readonly Padding _checkBoxMargin = new Padding(3, 3, 40, 3);
 
 		private readonly string _pleaseSetThis = LocalizationManager.GetString("PublishTab.Upload.PleaseSetThis",
 			"Please set this from the edit tab", "This shows next to the license, if the license has not yet been set.");
-		public BloomLibraryUploadControl(PublishView parentView, BloomLibraryPublishModel model, IBloomWebSocketServer webSocketServer)
+		public BloomLibraryUploadControl(PublishView parentView, BloomLibraryPublishModel model, IBloomWebSocketServer webSocketServer, TeamCollectionManager tcManager)
 		{
 			_model = model;
 			_parentView = parentView;
 			_webSocketServer = webSocketServer;
+			_tcManager = tcManager;
 			InitializeComponent();
 			_originalLoginText = _loginLink.Text; // Before anything might modify it (but after InitializeComponent creates it).
 			_titleLabel.Text = _model.Title;
@@ -105,6 +108,13 @@ namespace Bloom.Publish.BloomLibrary
 			_copyrightLabel.Text = _model.Copyright;
 			_creditsLabel.Text = _model.Credits;
 			_summaryBox.Text = _model.Summary;
+			bool needsCheckout = _tcManager.NeedCheckoutToEdit(_model.Book.FolderPath);
+			if (needsCheckout)
+			{
+				_summaryBox.Enabled = false;
+				_summaryOptionalLabel.Text = LocalizationManager.GetString("TeamCollection.OptionalCheckOutEdit",
+					"optional--check out to edit");
+			}
 
 			UpdateFeaturesCheckBoxesDisplay();
 
@@ -147,7 +157,7 @@ namespace Bloom.Publish.BloomLibrary
 
 			UpdateAudioCheckBoxDisplay();
 
-			_optional1.Left = _summaryBox.Right - _optional1.Width; // right-align these (even if localization changes their width)
+			_summaryOptionalLabel.Left = _summaryBox.Right - _summaryOptionalLabel.Width; // right-align these (even if localization changes their width)
 			// Copyright info is not required if the book has been put in the public domain
 			// or if we are publishing from a source collection and we have original copyright info
 			if (!_model.IsBookPublicDomain && !_model.HasOriginalCopyrightInfoInSourceCollection)

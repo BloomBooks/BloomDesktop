@@ -51,6 +51,12 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/createTeamCollection", HandleCreateTeamCollection, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/joinTeamCollection", HandleJoinTeamCollection, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/getLog", HandleGetLog, false);
+			apiHandler.RegisterEndpointHandler("teamCollection/needsCheckoutToEdit", HandleNeedsCheckoutToEdit, false);
+		}
+
+		private void HandleNeedsCheckoutToEdit(ApiRequest request)
+		{
+			request.ReplyWithBoolean(_tcManager.NeedCheckoutToEdit(_bookSelection.CurrentSelection?.FolderPath));
 		}
 
 		private void HandleGetLog(ApiRequest request)

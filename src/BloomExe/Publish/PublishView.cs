@@ -20,6 +20,7 @@ using Bloom.Publish.Android;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.Epub;
 using Bloom.Publish.PDF;
+using Bloom.TeamCollection;
 using SIL.Progress;
 
 namespace Bloom.Publish
@@ -37,19 +38,21 @@ namespace Bloom.Publish
 		private PublishToAndroidApi _publishApi;
 		private PublishEpubApi _publishEpubApi;
 		private BloomWebSocketServer _webSocketServer;
+		private TeamCollectionManager _tcManager;
 
 
 		public delegate PublishView Factory();//autofac uses this
 
 		public PublishView(PublishModel model,
 			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, NavigationIsolator isolator,
-			PublishToAndroidApi publishApi, PublishEpubApi publishEpubApi, BloomWebSocketServer webSocketServer)
+			PublishToAndroidApi publishApi, PublishEpubApi publishEpubApi, BloomWebSocketServer webSocketServer, TeamCollectionManager tcManager)
 		{
 			_bookTransferrer = bookTransferrer;
 			_isolator = isolator;
 			_publishApi = publishApi;
 			_publishEpubApi = publishEpubApi;
 			_webSocketServer = webSocketServer;
+			_tcManager = tcManager;
 
 			InitializeComponent();
 
@@ -629,7 +632,7 @@ namespace Bloom.Publish
 			}
 
 			var libaryPublishModel = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection, _model);
-			_uploadControl = new BloomLibraryUploadControl(this, libaryPublishModel, _webSocketServer);
+			_uploadControl = new BloomLibraryUploadControl(this, libaryPublishModel, _webSocketServer, _tcManager);
 			_uploadControl.Dock = DockStyle.Fill;
 			var saveBackColor = _uploadControl.BackColor;
 			Controls.Add(_uploadControl); // somehow this changes the backcolor

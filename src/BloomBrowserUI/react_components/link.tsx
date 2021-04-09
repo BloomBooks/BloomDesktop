@@ -7,6 +7,7 @@ interface ILinkProps extends ILocalizationProps {
     id?: string;
     href?: string;
     onClick?: any; // overrides following any href.
+    disabled?: boolean;
     color?:
         | "initial"
         | "inherit"
@@ -24,12 +25,13 @@ export class Link extends LocalizableElement<ILinkProps, {}> {
     public render() {
         // prettier-ignore
         return (<MUI.Link
-                className={this.props.className}
+                className={this.props.className + (this.props.disabled ? " disabled" : "")}
                 id={"" + this.props.id}
                 color={this.props.color}
                 // href must be defined in order to maintain normal link UI
                 // I tried to do like the 'id' attribute above, but it caused an error.
-                href={this.props.href ? this.props.href : ""}
+                href={(this.props.href && !this.props.disabled) ? this.props.href : ""}
+
                 onClick={e => {
                     if (this.props.onClick) {
                         // If we have an onClick we don't expect to also have an href.
@@ -37,7 +39,9 @@ export class Link extends LocalizableElement<ILinkProps, {}> {
                         // The default behaviour will navigate to the top of the page,
                         // causing the whole react page to reload. So prevent that default.
                         e.preventDefault();
-                        this.props.onClick();
+                        if (!this.props.disabled) {
+                            this.props.onClick();
+                        }
                     }
                 }}
             >{this.getLocalizedContent()}</MUI.Link>);

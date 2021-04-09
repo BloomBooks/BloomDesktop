@@ -9,6 +9,7 @@ interface IColorChooserProps {
     backColorSetting: string;
     onColorChanged?: (color: string) => void;
     menuLeft?: boolean;
+    disabled?: boolean;
 }
 
 // A reusable color chooser.
@@ -38,7 +39,9 @@ export const ColorChooser: React.FunctionComponent<IColorChooserProps> = props =
             className="cc-outer-wrapper"
             tabIndex={0}
             onClick={event => {
-                setColorsVisible(!colorsVisible);
+                if (!props.disabled) {
+                    setColorsVisible(!colorsVisible);
+                }
             }}
         >
             <div className="cc-image-wrapper">
@@ -52,7 +55,8 @@ export const ColorChooser: React.FunctionComponent<IColorChooserProps> = props =
             <div
                 className={
                     "cc-menu-arrow" +
-                    (props.menuLeft ? " cc-pulldown-left" : "")
+                    (props.menuLeft ? " cc-pulldown-left" : "") +
+                    (props.disabled ? " disabled" : "")
                 }
             >
                 <div
