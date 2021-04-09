@@ -9,6 +9,10 @@ import { SettingsGroup } from "../commonPublish/BasePublishScreen";
 import { useL10n } from "../../react_components/l10nHooks";
 export const EPUBSettingsGroup = () => {
     //const [includeImageDescriptionOnPage,setIncludeImageDescriptionOnPage] = BloomApi.useApiBoolean("publish/epub/imageDescriptionSetting", true);
+    const [canModifyCurrentBook] = BloomApi.useApiBoolean(
+        "common/canModifyCurrentBook",
+        false
+    );
     return (
         <SettingsGroup
             label={useL10n(
@@ -21,12 +25,14 @@ export const EPUBSettingsGroup = () => {
                 english="Include image descriptions on page"
                 apiEndpoint="publish/epub/imageDescriptionSetting"
                 l10nKey="PublishTab.Epub.IncludeOnPage"
+                disabled={!canModifyCurrentBook}
             />
 
             <ApiCheckbox
                 english="Use ePUB reader's text size"
                 apiEndpoint="publish/epub/removeFontSizesSetting"
                 l10nKey="PublishTab.Epub.RemoveFontSizes"
+                disabled={!canModifyCurrentBook}
                 //TODO: priorClickAction={() => this.abortPreview()}
             />
             {/* l10nKey is intentionally not under PublishTab.Epub... we may end up with this link in other places */}
@@ -44,6 +50,7 @@ export const EPUBSettingsGroup = () => {
                 l10nKey="PublishTab.BookMetadata"
                 l10nComment="This link opens a dialog box that lets you put in information someone (often a librarian) might use to search for a book with particular characteristics."
                 onClick={() => BookMetadataDialog.show()}
+                disabled={!canModifyCurrentBook}
             >
                 Book Metadata
             </Link>

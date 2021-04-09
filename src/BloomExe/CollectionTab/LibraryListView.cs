@@ -139,7 +139,36 @@ namespace Bloom.CollectionTab
 			}
 			var btnInfo = btn.Tag as BookButtonInfo;
 			if (btnInfo.IsEditable)
-				return; // leave them all on
+			{
+				// It's in a location where editing makes sense, so all the menu options are
+				// relevant. I don't think we want to hide any of them. But, we need to disable
+				// the ones that require checkout if we don't have it.
+				bool needsCheckout = _tcManager.NeedCheckoutToEdit(btnInfo.BookInfo.FolderPath);
+				foreach (ToolStripItem menuItem in (sender as ContextMenuStrip).Items)
+				{
+					if (needsCheckout)
+					{
+						// disable editing commands. It seems safest to just list the ones
+						// that do NOT require checkout.
+						menuItem.Enabled = menuItem == _openFolderOnDisk
+							|| menuItem == _copyBook
+							|| menuItem == _exportToXMLForInDesignToolStripMenuItem
+							|| menuItem == exportToWordOrLibreOfficeToolStripMenuItem
+							|| menuItem == _makeBloomPackOfBookToolStripMenuItem
+							|| menuItem == makeReaderTemplateBloomPackToolStripMenuItem
+							|| menuItem == SaveAsBloomToolStripMenuItem;
+					}
+					else
+					{
+						// Not sure if this is needed. In case we're reusing the menu, items
+						// might have been disabled by the code above.
+						menuItem.Enabled = true;
+					}
+				}
+
+				return;
+			}
+
 			if (btnInfo.HasNoContextMenu)
 			{
 				e.Cancel = true; // don't show the menu at all (but leave them visible for next time)

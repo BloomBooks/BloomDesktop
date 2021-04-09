@@ -87,11 +87,19 @@ namespace Bloom.TeamCollection
 		/// a TC; if it is a TC (even a disconnected one), it's true if the book is
 		/// NOT checked out.
 		/// </summary>
-		/// <param name="bookFolderPath"></param>
-		/// <returns></returns>
+		/// <remarks>if bookFolderPath is null or empty, it currently returns false.
+		/// This is a bit arbitrary. If there's no book currently selected, then we can't
+		/// do editing operations...in that sense this situation is similar to a selected
+		/// book that needs to be checked out. But strictly it's not true that we need
+		/// to check out the selected book to edit...we need a book to be selected!
+		/// I wanted to settle on some answer so that callers don't each have to be careful
+		/// not to pass null, so I settled on false.</remarks>
 		public bool NeedCheckoutToEdit(string bookFolderPath)
 		{
-			if (CurrentCollectionEvenIfDisconnected == null)
+			// We use the EvenIfDisconnected version here because we want
+			// editing attempts to FAIL if we are in a disconnected TC and don't already have it
+			// checked out; we don't just want to edit it as if the collection was not a TC at all.
+			if (CurrentCollectionEvenIfDisconnected == null || string.IsNullOrEmpty(bookFolderPath))
 				return false;
 			return CurrentCollectionEvenIfDisconnected.NeedCheckoutToEdit(bookFolderPath);
 		}

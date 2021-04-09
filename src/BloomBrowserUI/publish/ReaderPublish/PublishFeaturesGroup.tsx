@@ -8,10 +8,15 @@ import { BloomApi } from "../../utils/bloomApi";
 export const PublishFeaturesGroup: React.FunctionComponent<{
     onChange?: () => void;
 }> = props => {
-    const [enabled] = BloomApi.useApiBoolean(
+    const [motionEnabled] = BloomApi.useApiBoolean(
         "publish/android/canHaveMotionMode",
         false
     );
+    const [canModifyCurrentBook] = BloomApi.useApiBoolean(
+        "common/canModifyCurrentBook",
+        false
+    );
+    const enabled = motionEnabled && canModifyCurrentBook;
     return (
         <SettingsGroup
             label={useL10n("Features", "PublishTab.Android.Features")}

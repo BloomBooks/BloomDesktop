@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.TeamCollection;
 using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
@@ -105,6 +106,12 @@ namespace Bloom.Publish.BloomLibrary
 			_copyrightLabel.Text = _model.Copyright;
 			_creditsLabel.Text = _model.Credits;
 			_summaryBox.Text = _model.Summary;
+			if (!TeamCollectionApi.TheOneInstance.CanEditBook())
+			{
+				_summaryBox.Enabled = false;
+				_summaryOptionalLabel.Text = LocalizationManager.GetString("TeamCollection.OptionalCheckOutEdit",
+					"optional--check out to edit");
+			}
 
 			UpdateFeaturesCheckBoxesDisplay();
 
@@ -147,7 +154,7 @@ namespace Bloom.Publish.BloomLibrary
 
 			UpdateAudioCheckBoxDisplay();
 
-			_optional1.Left = _summaryBox.Right - _optional1.Width; // right-align these (even if localization changes their width)
+			_summaryOptionalLabel.Left = _summaryBox.Right - _summaryOptionalLabel.Width; // right-align these (even if localization changes their width)
 			// Copyright info is not required if the book has been put in the public domain
 			// or if we are publishing from a source collection and we have original copyright info
 			if (!_model.IsBookPublicDomain && !_model.HasOriginalCopyrightInfoInSourceCollection)

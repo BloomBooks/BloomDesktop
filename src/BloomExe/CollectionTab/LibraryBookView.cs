@@ -141,11 +141,7 @@ namespace Bloom.CollectionTab
 
 		private void SetEditButtonVisibility()
 		{
-			// A book in a Team Collection may not be editable for multiple reasons,
-			// but outside of Team Collections the selected book should know whether it is editable.
-			_editBookButton.Visible = TeamCollectionMgr.CollectionStatus == TeamCollectionStatus.None ?
-				_bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.IsEditable && !_bookSelection.CurrentSelection.HasFatalError :
-				TeamCollectionApi.TheOneInstance.CanEditBook();
+			_editBookButton.Visible = TeamCollectionApi.TheOneInstance.CanEditBook();
 		}
 
 		void CurrentSelection_ContentsChanged(object sender, EventArgs e)
