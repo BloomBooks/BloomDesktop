@@ -57,6 +57,7 @@ module.exports = merge(core, {
         autoUpdateSoftwareDlgBundle:
             "./react_components/AutoUpdateSoftwareDialog.tsx",
         performanceLogBundle: "./performance/PerformanceLogPage.tsx",
+        appBundle: "./app/App.tsx",
         testBundle: globule.find([
             "./bookEdit/**/*Spec.ts",
             "./bookEdit/**/*Spec.js",

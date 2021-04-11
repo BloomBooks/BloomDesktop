@@ -6,6 +6,7 @@ import { TeamCollectionDialog } from "../teamCollection/TeamCollectionDialog";
 import { AutoUpdateSoftwareDialog } from "../react_components/AutoUpdateSoftwareDialog";
 import { ProblemDialog } from "../problemDialog/ProblemDialog";
 import { ProgressDialog } from "../react_components/IndependentProgressDialog";
+import { App } from "../app/App";
 
 // this is a bummer... haven't figured out how to do a lookup just from the string... have to have this map
 const knownComponents = {
@@ -14,7 +15,8 @@ const knownComponents = {
     AutoUpdateSoftwareDialog: AutoUpdateSoftwareDialog,
     ProblemDialog: ProblemDialog,
     ProgressDialog: ProgressDialog,
-    CollectionsPane: CollectionsPane
+    CollectionsPane: CollectionsPane,
+    App: App
 };
 
 // This is called from an html file created in the c# ReactControl class.

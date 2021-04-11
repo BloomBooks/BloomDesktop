@@ -373,6 +373,18 @@ namespace Bloom.Api
 
 			var localPath = GetLocalPathWithoutQuery(info);
 
+			// root of our UI from a web browser pointed at localhost:8089
+			if (localPath == "")
+			{
+				info.ResponseContentType = "text/html";
+				info.WriteCompleteOutput(GetHtmlForRootOfBloomUI());
+				return true;
+			}
+			if (localPath == "test-dialog")
+			{
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, "Test of bringing dialog in front of Browser.");
+				return true;
+			}
 			//enhance: something feeds back these branding logos with a weird URL, that shouldn't be.
 			if (ApiHandler.IsInvalidApiCall(localPath))
 				return false;
@@ -449,6 +461,12 @@ namespace Bloom.Api
 			if(localPath.EndsWith("map"))
 				localPath = localPath.Replace("output/browser/", "");
 
+			if (localPath == "")
+			{
+				info.ResponseContentType = "text/html";
+				info.WriteCompleteOutput(File.ReadAllText(@"D:\temp\test.htm"));
+				return true;
+			}
 			return ProcessContent(info, localPath);
 		}
 
@@ -1432,6 +1450,28 @@ namespace Bloom.Api
 
 		private bool IsWorkerThread(Thread thread) => thread?.Name?.IndexOf(WorkerThreadNamePrefix) == 0;
 
+
+		private string GetHtmlForRootOfBloomUI()
+		{
+			return $@"<!DOCTYPE html>
+				<html>
+				<head>
+					<meta charset = 'UTF-8' />
+					<script src = '/commonBundle.js' ></script>
+					<script src = '/wireUpBundle.js' ></script>
+					<script src = '/appBundle.js'></script>
+					<script>
+						window.onload = () => {{
+							const rootDiv = document.getElementById('reactRoot');
+							window.wireUpReact(rootDiv,'App');
+						}};
+					</script>
+				</head>
+				<body>
+					<div id='reactRoot'>Component should replace this</div >
+				</body>
+				</html>";
+		}
 #region Disposable stuff
 
 		private bool IsDisposed { get; set; }
