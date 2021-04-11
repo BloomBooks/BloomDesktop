@@ -4,6 +4,7 @@ import { BloomApi } from "../utils/bloomApi";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import { Button } from "@material-ui/core";
+import TruncateMarkup from "react-truncate-markup";
 
 export const BookButton: React.FunctionComponent<{
     book: any;
@@ -15,6 +16,19 @@ export const BookButton: React.FunctionComponent<{
     //     ""
     // );
     // TODO: the c# had Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont,
+
+    const label =
+        props.book.title.length > 30 ? (
+            <TruncateMarkup
+                // test false positives css={css`color: red;`}
+                lines={2}
+            >
+                {props.book.title}
+            </TruncateMarkup>
+        ) : (
+            props.book.title
+        );
+
     return (
         <Grid item={true}>
             {/* <div className="bookButton">
@@ -30,16 +44,18 @@ export const BookButton: React.FunctionComponent<{
                 size="large"
                 onClick={() => props.onClick(props.book.id)}
                 startIcon={
-                    <img
-                        src={`/bloom/api/collections/book/thumbnail?book-id=${
-                            props.book.id
-                        }&collection-id=${encodeURIComponent(
-                            props.book.collectionId
-                        )}`}
-                    />
+                    <div className={"thumbnail-wrapper"}>
+                        <img
+                            src={`/bloom/api/collections/book/thumbnail?book-id=${
+                                props.book.id
+                            }&collection-id=${encodeURIComponent(
+                                props.book.collectionId
+                            )}`}
+                        />
+                    </div>
                 }
             >
-                {props.book.title}
+                <div>{props.book.title}</div>
             </Button>
         </Grid>
     );

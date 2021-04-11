@@ -110,6 +110,7 @@
         "react-tabs": "^3.0.0",
         "react-tooltip": "^4.2.10",
         "react-transition-group": "^4.4.1",
+        "react-truncate-markup": "^5.1.0",
         "requirejs": "^2.3.6",
         "select2": "^4.0.6-rc.1",
         "slick-carousel": "^1.8.1",

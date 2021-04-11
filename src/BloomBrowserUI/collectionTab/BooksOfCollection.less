@@ -13,6 +13,9 @@ body {
         margin: 0;
     }
 }
+.react-split .full-content {
+    overflow-y: auto !important; // review: why does react-split set this to hidden?
+}
 .group {
     opacity: 0;
     transition: opacity 100ms ease-in;
@@ -41,12 +44,29 @@ body {
         border: none;
         overflow: hidden;
         padding: 0;
+
+        .MuiButton-startIcon {
+            margin: 0 !important;
+        }
         &:hover {
             //you want this to be the same as the backgroundColor above
             background-color: rgb(68, 68, 68);
         }
         &.selected {
             border: solid thin gold;
+        }
+        .thumbnail-wrapper {
+            height: 70px;
+            display: flex; // somehow this allows the child image to auto-margin into centered-ness
+
+            img {
+                //min-height: 70px;
+                //height: 70px;
+                max-height: 70px;
+                max-width: 70px;
+                object-fit: contain;
+                margin: auto; // center
+            }
         }
         .MuiButton-label {
             color: white;
@@ -59,12 +79,6 @@ body {
             margin-top: 5px;
             width: 75px;
             height: 106px;
-        }
-        img {
-            min-height: 70px;
-            height: 70px;
-            max-width: 70px;
-            object-fit: contain;
         }
     }
 }
