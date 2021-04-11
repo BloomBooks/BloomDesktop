@@ -12,6 +12,7 @@ import { ProgressDialog } from "../react_components/Progress/ProgressDialog";
 import { IBloomDialogEnvironmentParams } from "../react_components/BloomDialog/BloomDialog";
 import { CreateTeamCollectionDialog } from "../teamCollection/CreateTeamCollection";
 import { DefaultBookshelfControl } from "../react_components/DefaultBookshelfControl";
+import { App } from "../app/App";
 
 // this is a bummer... haven't figured out how to do a lookup just from the string... have to have this map
 const knownComponents = {
@@ -27,6 +28,7 @@ const knownComponents = {
     BookListPane: BookListPane
     BookListPane: BookListPane,
     CollectionsPane: CollectionsPane
+    App: App
 };
 
 // This is called from an html file created in the c# ReactControl class.

@@ -1,0 +1,25 @@
+@import "../bloomUI.less";
+
+html,
+body {
+    height: 100% !important;
+}
+
+#main-tabs {
+    width: max-content;
+    margin: 0;
+    padding: 0;
+    background-color: @bloom-panelBackground;
+    li {
+        list-style-type: none;
+        height: 100%;
+
+        .MuiButton-root {
+            height: 100%;
+            background-color: transparent;
+            .MuiButton-label {
+                color: white;
+            }
+        }
+    }
+}
