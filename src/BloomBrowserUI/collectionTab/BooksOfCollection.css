@@ -175,6 +175,9 @@ body h2 {
     font-size: 16px;
     margin: 0;
 }
+.react-split .full-content {
+    overflow-y: auto !important;
+}
 .group {
     opacity: 0;
     transition: opacity 100ms ease-in;
@@ -202,11 +205,24 @@ body h2 {
     overflow: hidden;
     padding: 0;
 }
+.bookButtonPane .bookButton .MuiButton-startIcon {
+    margin: 0 !important;
+}
 .bookButtonPane .bookButton:hover {
     background-color: #444444;
 }
 .bookButtonPane .bookButton.selected {
     border: solid thin gold;
+}
+.bookButtonPane .bookButton .thumbnail-wrapper {
+    height: 70px;
+    display: flex;
+}
+.bookButtonPane .bookButton .thumbnail-wrapper img {
+    max-height: 70px;
+    max-width: 70px;
+    object-fit: contain;
+    margin: auto;
 }
 .bookButtonPane .bookButton .MuiButton-label {
     color: white;
@@ -219,10 +235,4 @@ body h2 {
     margin-top: 5px;
     width: 75px;
     height: 106px;
-}
-.bookButtonPane .bookButton img {
-    min-height: 70px;
-    height: 70px;
-    max-width: 70px;
-    object-fit: contain;
 }
