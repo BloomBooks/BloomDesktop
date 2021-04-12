@@ -20,8 +20,17 @@ const Tabs: React.FunctionComponent<{}> = props => {
     return (
         <ul id="main-tabs" style={{ height: "77px" }}>
             <li>
-                <Button startIcon={<img src="../images/CollectionsTab.svg" />}>
+                <Button
+                    className={"selected"}
+                    startIcon={<img src="../images/CollectionsTab.svg" />}
+                >
                     Collections
+                </Button>
+                <Button startIcon={<img src="../images/EditTab.svg" />}>
+                    Edit
+                </Button>
+                <Button startIcon={<img src="../images/PublishTab.svg" />}>
+                    Publish
                 </Button>
             </li>
         </ul>
