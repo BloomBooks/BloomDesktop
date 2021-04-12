@@ -108,7 +108,7 @@ module.exports = merge(core, {
                 commons: {
                     name: "commonBundle",
                     chunks: "initial",
-                    // Our build process creates 10 independent bundle files.  (See exports.entry
+                    // Our build process creates multiple independent bundle files.  (See exports.entry
                     // above.)  minChunks specifies how many of those bundles must contain a common
                     // chunk for that common chunk to be moved into commonBundle.js.  The default
                     // value 1 moves everything to a massive commonBundle.js, leaving only a small

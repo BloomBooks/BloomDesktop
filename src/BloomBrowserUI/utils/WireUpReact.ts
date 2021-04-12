@@ -1,6 +1,6 @@
 import React = require("react");
 import * as ReactDOM from "react-dom";
-import { CollectionsPane } from "../collectionTab/CollectionTabPane";
+import { CollectionTabPane } from "../collectionTab/CollectionTabPane";
 import { TeamCollectionSettingsPanel } from "../teamCollection/TeamCollectionSettingsPanel";
 import { TeamCollectionDialog } from "../teamCollection/TeamCollectionDialog";
 import { AutoUpdateSoftwareDialog } from "../react_components/AutoUpdateSoftwareDialog";
@@ -15,7 +15,7 @@ const knownComponents = {
     AutoUpdateSoftwareDialog: AutoUpdateSoftwareDialog,
     ProblemDialog: ProblemDialog,
     ProgressDialog: ProgressDialog,
-    CollectionsPane: CollectionsPane,
+    CollectionsTabPane: CollectionTabPane,
     App: App
 };
 

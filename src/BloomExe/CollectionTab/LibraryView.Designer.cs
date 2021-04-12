@@ -40,13 +40,11 @@ namespace Bloom.CollectionTab
 			this._settingsButton = new System.Windows.Forms.ToolStripButton();
 			this._openCreateCollectionButton = new System.Windows.Forms.ToolStripButton();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-			this.splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
+			this.reactControl1 = new Bloom.web.ReactControl();
 			this._topBarControl.SuspendLayout();
 			this._toolStripLeft.SuspendLayout();
 			this._toolStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
-			this.splitContainer1.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// _topBarControl
@@ -76,7 +74,7 @@ namespace Bloom.CollectionTab
 			this._toolStripLeft.Location = new System.Drawing.Point(0, 0);
 			this._toolStripLeft.Name = "_toolStripLeft";
 			this._toolStripLeft.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this._toolStripLeft.Size = new System.Drawing.Size(150, 69);
+			this._toolStripLeft.Size = new System.Drawing.Size(119, 69);
 			this._toolStripLeft.TabIndex = 32;
 			this._toolStripLeft.Text = "_toolStripLeft";
 			// 
@@ -187,27 +185,26 @@ namespace Bloom.CollectionTab
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = null;
 			// 
-			// splitContainer1
+			// reactControl1
 			// 
-			this.splitContainer1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(54)))), ((int)(((byte)(51)))), ((int)(((byte)(51)))));
-			this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._L10NSharpExtender.SetLocalizableToolTip(this.splitContainer1, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.splitContainer1, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this.splitContainer1, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this.splitContainer1, "LibraryView.splitContainer1");
-			this.splitContainer1.Location = new System.Drawing.Point(0, 0);
-			this.splitContainer1.Name = "splitContainer1";
-			this.splitContainer1.Size = new System.Drawing.Size(773, 518);
-			this.splitContainer1.SplitterDistance = 333;
-			this.splitContainer1.SplitterWidth = 10;
-			this.splitContainer1.TabIndex = 0;
-			this.splitContainer1.TabStop = false;
+			this.reactControl1.BackColor = System.Drawing.Color.White;
+			this.reactControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.reactControl1.JavascriptBundleName = "collectionTabBundle.js";
+			this._L10NSharpExtender.SetLocalizableToolTip(this.reactControl1, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.reactControl1, null);
+			this._L10NSharpExtender.SetLocalizingId(this.reactControl1, "ReactControl");
+			this.reactControl1.Location = new System.Drawing.Point(0, 0);
+			this.reactControl1.Name = "reactControl1";
+			this.reactControl1.ReactComponentName = "CollectionsTabPane";
+			this.reactControl1.Size = new System.Drawing.Size(773, 518);
+			this.reactControl1.TabIndex = 16;
+			this.reactControl1.UrlQueryString = null;
 			// 
 			// LibraryView
 			// 
 			this.BackColor = System.Drawing.SystemColors.Control;
 			this.Controls.Add(this._topBarControl);
-			this.Controls.Add(this.splitContainer1);
+			this.Controls.Add(this.reactControl1);
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "CollectionTab.LibraryView");
@@ -220,16 +217,12 @@ namespace Bloom.CollectionTab
 			this._toolStrip.ResumeLayout(false);
 			this._toolStrip.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
-			this.splitContainer1.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
         }
 
         #endregion
-
-		private Bloom.ToPalaso.BetterSplitContainer splitContainer1;
 		public System.Windows.Forms.Panel _topBarControl;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.ToolStrip _toolStrip;
@@ -239,5 +232,6 @@ namespace Bloom.CollectionTab
 		private System.Windows.Forms.ToolStripButton _openCreateCollectionButton;
 		private System.Windows.Forms.ToolStrip _toolStripLeft;
 		private TeamCollectionStatusButton _tcStatusButton;
+		private web.ReactControl reactControl1;
 	}
 }
