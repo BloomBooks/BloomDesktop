@@ -3,6 +3,7 @@ import * as ReactDOM from "react-dom";
 import { BookPreviewPanel } from "../bookPreview/BookPreviewPanel";
 import { BookListPane } from "../collectionTab/BookListPane";
 import { CollectionsPane } from "../collectionTab/CollectionTabPane";
+import { CollectionTabPane } from "../collectionTab/CollectionTabPane";
 import { TeamCollectionSettingsPanel } from "../teamCollection/TeamCollectionSettingsPanel";
 import { TeamCollectionDialog } from "../teamCollection/TeamCollectionDialog";
 import { JoinTeamCollectionDialog } from "../teamCollection/JoinTeamCollectionDialog";
@@ -28,6 +29,7 @@ const knownComponents = {
     BookListPane: BookListPane
     BookListPane: BookListPane,
     CollectionsPane: CollectionsPane
+    CollectionsTabPane: CollectionTabPane,
     App: App
 };
 

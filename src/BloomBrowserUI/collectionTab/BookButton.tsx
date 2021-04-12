@@ -18,12 +18,12 @@ export const BookButton: React.FunctionComponent<{
     // TODO: the c# had Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont,
 
     const label =
-        props.book.title.length > 30 ? (
+        props.book.title.length > 20 ? (
             <TruncateMarkup
                 // test false positives css={css`color: red;`}
                 lines={2}
             >
-                {props.book.title}
+                <span>{props.book.title}</span>
             </TruncateMarkup>
         ) : (
             props.book.title
@@ -31,13 +31,6 @@ export const BookButton: React.FunctionComponent<{
 
     return (
         <Grid item={true}>
-            {/* <div className="bookButton">
-                <img
-                    src={`/bloom/api/collection/book/thumbnail?book-id=${props.book.id}`}
-                    alt="book thumbnail"
-                />
-                <div className="bookTitle">{props.book.title}</div>
-            </div> */}
             <Button
                 className={"bookButton" + (props.selected ? " selected" : "")}
                 variant="outlined"
@@ -55,7 +48,7 @@ export const BookButton: React.FunctionComponent<{
                     </div>
                 }
             >
-                <div>{props.book.title}</div>
+                <div>{label}</div>
             </Button>
         </Grid>
     );

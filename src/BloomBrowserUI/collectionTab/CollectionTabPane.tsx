@@ -2,9 +2,11 @@ import React = require("react");
 import { BloomApi } from "../utils/bloomApi";
 import { BooksOfCollection } from "./BooksOfCollection";
 import { Transition } from "react-transition-group";
-import { Split } from "@geoffcox/react-splitter";
+import Splitter from "m-react-splitters";
+import "m-react-splitters/lib/splitters.css";
+import "CollectionTabPane.less";
 
-export const CollectionsPane: React.FunctionComponent<{}> = () => {
+export const CollectionTabPane: React.FunctionComponent<{}> = () => {
     const [collections] = BloomApi.useApiJson("collections/list");
 
     if (collections) {
@@ -26,25 +28,29 @@ export const CollectionsPane: React.FunctionComponent<{}> = () => {
         });
 
         return (
-            <div style={{ height: "100%" }}>
-                {/* {JSON.stringify(books)} */} <h1>{collections[0].name}</h1>
-                <Split
-                    horizontal={true}
-                    defaultSplitterColors={splitterProps}
-                    splitterSize={"20px"}
-                >
-                    <BooksOfCollection collectionId={collections[0].id} />
+            <Splitter position="vertical">
+                <Splitter position="horizontal">
+                    <div style={{ padding: "10px" }}>
+                        <h1>{collections[0].name}</h1>
+
+                        <BooksOfCollection collectionId={collections[0].id} />
+                    </div>
                     <Transition in={true} appear={true} timeout={2000}>
                         {state => (
-                            <div className={`group fade-${state}`}>
+                            <div
+                                style={{ padding: "10px" }}
+                                className={`group fade-${state}`}
+                            >
                                 {/*-${state} */}
                                 <h1>Sources For New Books</h1>
                                 {collectionComponents}
                             </div>
                         )}
                     </Transition>
-                </Split>
-            </div>
+                </Splitter>
+
+                <h1>TODO: Preview</h1>
+            </Splitter>
         );
     } else {
         return <div />;

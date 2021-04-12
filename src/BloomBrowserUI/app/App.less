@@ -3,22 +3,35 @@
 html,
 body {
     height: 100% !important;
+    padding: 0 !important;
+    #reactRoot {
+        padding-bottom: 0 !important; // fix a dumb default coming from bloomUI
+        overflow: hidden;
+    }
 }
 
 #main-tabs {
     width: max-content;
     margin: 0;
     padding: 0;
-    background-color: @bloom-panelBackground;
+
     li {
         list-style-type: none;
         height: 100%;
 
         .MuiButton-root {
+            border-radius: 5px 5px 0 0;
             height: 100%;
-            background-color: transparent;
+            background-color: @bloom-panelBackground;
+            color: white;
             .MuiButton-label {
-                color: white;
+                text-transform: none;
+                display: flex;
+                flex-direction: column;
+            }
+            &:hover {
+                background-color: white;
+                color: black;
             }
         }
     }

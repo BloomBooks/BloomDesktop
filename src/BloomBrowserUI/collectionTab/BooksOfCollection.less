@@ -1,21 +1,5 @@
 @import "../bloomUI.less";
 
-body {
-    background-color: @bloom-panelBackground;
-    color: white;
-    padding: 25px;
-    h1 {
-        font-size: 20px;
-        margin: 0;
-    }
-    h2 {
-        font-size: 16px;
-        margin: 0;
-    }
-}
-.react-split .full-content {
-    overflow-y: auto !important; // review: why does react-split set this to hidden?
-}
 .group {
     opacity: 0;
     transition: opacity 100ms ease-in;
@@ -32,6 +16,11 @@ body {
     overflow: hidden;
     margin-bottom: 20px;
     margin-top: 10px;
+    .MuiGrid-spacing-xs-3 {
+        // this is a hack... I don't know why the default styling has a -12px margin, but it makes
+        // the selected book's border disappear at the top.
+        padding-top: 11px;
+    }
     // enhance?
     .MuiGrid-spacing-xs-3 > .MuiGrid-item {
         padding-top: 1px;
@@ -53,7 +42,8 @@ body {
             background-color: rgb(68, 68, 68);
         }
         &.selected {
-            border: solid thin gold;
+            border: solid 2px #1e94a4;
+            border-radius: 3px;
         }
         .thumbnail-wrapper {
             height: 70px;

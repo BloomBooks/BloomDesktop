@@ -19,7 +19,7 @@ namespace Bloom.CollectionTab
 		private readonly LibraryModel _model;
 
 
-		private Control _collectionListView;
+		
 		private LibraryBookView _bookView;
 
 		public LibraryView(LibraryModel model, LibraryListView.Factory libraryListViewFactory,
@@ -30,23 +30,8 @@ namespace Bloom.CollectionTab
 		{
 			_model = model;
 			InitializeComponent();
-			splitContainer1.BackColor = Palette.BookListSplitterColor; // controls the left vs. right splitter
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 			_toolStripLeft.Renderer = new NoBorderToolStripRenderer();
-
-			_collectionListView = new ReactControl
-			{
-				JavascriptBundleName = "collectionTabBundle.js",
-				ReactComponentName = "CollectionsPane",
-				Dock = DockStyle.Fill
-			};
-
-			splitContainer1.Panel1.Controls.Add(_collectionListView);
-
-			_bookView = templateBookViewFactory();
-			_bookView.TeamCollectionMgr = tcManager;
-			_bookView.Dock = DockStyle.Fill;
-			splitContainer1.Panel2.Controls.Add(_bookView);
 
 			// When going down to Shrink Stage 3 (see WorkspaceView), we want the right-side toolstrip to take precedence
 			// (Settings, Other Collection).

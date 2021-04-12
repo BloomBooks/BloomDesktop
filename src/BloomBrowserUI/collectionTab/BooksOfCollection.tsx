@@ -4,7 +4,6 @@ import "BooksOfCollection.less";
 import { BloomApi } from "../utils/bloomApi";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
-import { Button } from "@material-ui/core";
 import { BookButton } from "./BookButton";
 
 export const BooksOfCollection: React.FunctionComponent<{

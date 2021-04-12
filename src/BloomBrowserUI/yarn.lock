@@ -9136,6 +9136,14 @@ lru-queue@^0.1.0:
   dependencies:
     es5-ext "~0.10.2"
 
+m-react-splitters@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/m-react-splitters/-/m-react-splitters-1.2.0.tgz#75babeac9093ca63dd83c58bf5bdccfb88e6af5e"
+  integrity sha512-w6zftbSImtRH5NcbbZFNBnziTJC5iG3hDo5oF1GYRAnbYCsDCEMLCHeJZG3X/6Bhy6fz1RJ+sZcvMSmY5pZkqQ==
+  dependencies:
+    react "^16.4.2"
+    react-dom "^16.4.2"
+
 make-dir@^2.0.0, make-dir@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/make-dir/-/make-dir-2.1.0.tgz#5f0310e18b8be898cc07009295a30ae41e91e6f5"

@@ -1471,7 +1471,7 @@ namespace Bloom.Api
 					<script>
 						window.onload = () => {{
 							const rootDiv = document.getElementById('reactRoot');
-							window.wireUpReact(rootDiv,'App');
+							wireUpBundle.wireUpReact(rootDiv,'App');
 						}};
 					</script>
 				</head>
