@@ -37,7 +37,7 @@ Recently we spent weeks improving Bloom's ability to deal with large books and l
 <br/>
 <br/>
 
-# 4.9 (Beta)
+4.9
 
 ## Edit Tab
 
@@ -63,7 +63,7 @@ We have added a Copy button to the Source Bubble. ([Feature Request](https://com
 
 ## Publish Tab
 
-Login to BloomLibrary is now through next.bloomlibrary.org, which allows you to just click the Google button to use your Google identity (include sil.org accounts, for those of you who have that).
+Login to BloomLibrary allows you to just click the Google button to use your Google identity (including sil.org accounts, for those of you who have that).
 
 You can now provide a custom thumbnail for Epub publications. Place a file labeled `epub-thumbnail.png` in the books folder.
 
