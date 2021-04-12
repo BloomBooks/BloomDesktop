@@ -94,7 +94,7 @@ export const ProgressDialog: React.FunctionComponent<{
                 </Typography>
             </DialogContent>
             <DialogActions>
-                {/* This && "" is needed because there's something about DialogActions that choaks if given a `false` in its children */}
+                {/* This && "" is needed because there's something about DialogActions that chokes if given a `false` in its children */}
                 {(somethingStillGoing && "") || (
                     <Button
                         onClick={() => onCopy()}

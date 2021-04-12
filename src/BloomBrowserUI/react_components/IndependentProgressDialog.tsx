@@ -13,18 +13,20 @@ import { ThemeProvider } from "@material-ui/styles";
 
 // Root element rendered to progress dialog, using ReactDialog in C#
 
-export const ProgressDialog: React.FunctionComponent = props => {
+export const IndependentProgressDialog: React.FunctionComponent = props => {
     const urlParams = new URLSearchParams(window.location.search);
     const dialogTitle = urlParams.get("title");
     const [showButtons, setShowButtons] = useState(false);
     const progress = useRef("");
+    const kWebSocketContext = "IndependentProgressDialog";
+
     React.useEffect(() => {
         const listener = e => {
             if (e.id === "show-buttons") {
                 setShowButtons(true);
             }
         };
-        WebSocketManager.addListener("teamCollectionMerge", listener);
+        WebSocketManager.addListener(kWebSocketContext, listener);
     }, []);
     const sendToClipboard = () => {
         BloomApi.postJson("common/clipboardText", { text: progress.current });
@@ -45,11 +47,11 @@ export const ProgressDialog: React.FunctionComponent = props => {
                         id="copy-button"
                         onClick={sendToClipboard}
                         title="Copy to Clipboard"
-                    ></button>
+                    />
                     <ProgressBox
-                        clientContext="teamCollectionMerge" // must match TeamCollection.kWebSocketContext
+                        clientContext={kWebSocketContext}
                         notifyProgressChange={p => (progress.current = p)}
-                    ></ProgressBox>
+                    />
                 </div>
                 {showButtons && (
                     <div id="progress-buttons">
@@ -92,5 +94,5 @@ export const ProgressDialog: React.FunctionComponent = props => {
 // to get the ReactDOM.render call applied even though we can't do React inside
 // a local script element.
 (window as any).connectProgressDialogRoot = element => {
-    ReactDOM.render(<ProgressDialog />, element);
+    ReactDOM.render(<IndependentProgressDialog />, element);
 };

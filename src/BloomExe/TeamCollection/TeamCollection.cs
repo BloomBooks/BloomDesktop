@@ -1222,7 +1222,10 @@ namespace Bloom.TeamCollection
 		{
 			Debug.Assert(!string.IsNullOrEmpty(CollectionId), "Collection ID must get set before we start syncing books");
 			_tcLog.WriteMilestone(MessageAndMilestoneType.Reloaded);
+
+
 			var hasProblems = false; //set true if we get any problems
+
 			// Delete books that we think have been deleted remotely from the repo.
 			// If it's a join collection merge, check new books in instead.
 			var englishSomethingWrongMessage = "Something went wrong trying to sync with the book {0} in your Team Collection.";
@@ -1293,6 +1296,7 @@ namespace Bloom.TeamCollection
 						// If he checks it in, that will undo the delete...may annoy the user
 						// who deleted it, but that's life in a shared collection.
 					}
+					throw new ApplicationException("testing error");
 				}
 				catch (Exception ex)
 				{
@@ -1511,7 +1515,7 @@ namespace Bloom.TeamCollection
 		// must match what is in IndependentProgressDialog.tsx passed as clientContext to ProgressBox.
 		// (At least until we generalize that dialog for different Progress tasks...then, it will need
 		// to be configured to use this.)
-		internal const string kWebSocketContext = "teamCollectionMerge";
+		internal const string kWebSocketContext = "IndependentProgressDialog";
 
 		public BloomWebSocketServer SocketServer;
 		public TeamCollectionManager TCManager;
