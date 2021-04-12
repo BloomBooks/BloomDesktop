@@ -22,7 +22,10 @@ body {
         .MuiButton-root {
             border-radius: 5px 5px 0 0;
             height: 100%;
-            background-color: @bloom-panelBackground;
+            margin-right: 1px;
+            min-width: 83px;
+
+            background-color: @bloom-unselectedTabBackground;
             color: white;
             .MuiButton-label {
                 text-transform: none;
@@ -33,6 +36,9 @@ body {
                 background-color: white;
                 color: black;
             }
+        }
+        .selected {
+            background-color: @bloom-panelBackground;
         }
     }
 }
