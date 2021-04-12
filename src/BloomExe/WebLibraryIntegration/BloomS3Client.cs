@@ -118,62 +118,72 @@ namespace Bloom.WebLibraryIntegration
 		// Similarly for the book order file.
 		public string BookOrderUrlOfRecentUpload { get; private set; }
 
-		internal ListObjectsResponse GetMatchingItems(string bucketName, string key)
+		internal List<S3Object> GetMatchingItems(string bucketName, string key)
 		{
-			var matchingItemsResponse = GetAmazonS3(bucketName).ListObjects(new ListObjectsRequest()
+			var allMatchingItems = new List<S3Object>();
+			ListObjectsResponse matchingItemsResponse;
+
+			var request = new ListObjectsRequest()
 			{
 				BucketName = bucketName,
 				Prefix = key
-			});
-			return matchingItemsResponse;
+			};
+
+			// Note: S3 only allows a max of 1,000 objects in one go.
+			do
+			{
+				matchingItemsResponse = GetAmazonS3(bucketName).ListObjects(request);
+				allMatchingItems.AddRange(matchingItemsResponse.S3Objects);
+				request.Marker = matchingItemsResponse.NextMarker;	// NextMarker indicates where the next request should start
+			}
+			while (matchingItemsResponse.IsTruncated);	// IsTruncated returns true if it's not at the end
+
+			// FYI: I don't recommend yield returning. The callers need to enumerate the list immediately anyway
+			// or do random access on the list. So you want it as a List, not as a lazy IEnumerable.
+			return allMatchingItems;
 		}
 
 		internal int GetBookFileCount(string key, string bucketName)
 		{
-			var count = GetMatchingItems(key, bucketName).S3Objects.Count;
+			var count = GetMatchingItems(key, bucketName).Count;
 			return count;
 		}
 
 		public void DeleteBookData(string bucketName, string key)
 		{
-			var matchingFilesResponse = GetAmazonS3(bucketName).ListObjects(new ListObjectsRequest()
+			var listMatchingObjectsRequest = new ListObjectsRequest()
 			{
 				BucketName = bucketName,
 				Prefix = key
-			});
-			if (matchingFilesResponse.S3Objects.Count == 0)
-				return;
-
-			var deleteObjectsRequest = new DeleteObjectsRequest()
-			{
-				BucketName = bucketName,
-				Objects = matchingFilesResponse.S3Objects.Select(s3Object => new KeyVersion() { Key = s3Object.Key }).ToList()
 			};
 
-			var response = GetAmazonS3(bucketName).DeleteObjects(deleteObjectsRequest);
-			Debug.Assert(response.DeleteErrors.Count == 0);
+			ListObjectsResponse matchingFilesResponse;
+			do
+			{
+				// Note: ListObjects can only return 1,000 objects at a time.
+				//       So a loop is needed if the book contains 1,001+ objects.
+				matchingFilesResponse = GetAmazonS3(bucketName).ListObjects(listMatchingObjectsRequest);
+				if (matchingFilesResponse.S3Objects.Count == 0)
+					return;
 
+				var deleteObjectsRequest = new DeleteObjectsRequest()
+				{
+					BucketName = bucketName,
+					Objects = matchingFilesResponse.S3Objects.Select(s3Object => new KeyVersion() { Key = s3Object.Key }).ToList()
+				};
+
+				var response = GetAmazonS3(bucketName).DeleteObjects(deleteObjectsRequest);
+				Debug.Assert(response.DeleteErrors.Count == 0);
+
+				// Prep the next request (if needed)
+				listMatchingObjectsRequest.Marker = matchingFilesResponse.NextMarker;
+			}
+			while (matchingFilesResponse.IsTruncated);	// Returns true if haven't reached the end yet
 		}
 
 		public void EmptyUnitTestBucket(string prefix)
 		{
-			var matchingFilesResponse = GetAmazonS3(BloomS3Client.UnitTestBucketName).ListObjects(new ListObjectsRequest()
-			{
-				//NB: this one intentionally hard-codes the folder it can delete, to protect from accidents
-				BucketName = UnitTestBucketName,
-				Prefix = prefix,
-			});
-			if (matchingFilesResponse.S3Objects.Count == 0)
-				return;
-
-			var deleteObjectsRequest = new DeleteObjectsRequest()
-			{
-				BucketName = UnitTestBucketName,
-				Objects = matchingFilesResponse.S3Objects.Select(s3Object => new KeyVersion() {Key = s3Object.Key}).ToList()
-			};
-
-			var response = GetAmazonS3(BloomS3Client.UnitTestBucketName).DeleteObjects(deleteObjectsRequest);
-			Debug.Assert(response.DeleteErrors.Count == 0);
+			DeleteBookData(BloomS3Client.UnitTestBucketName, prefix);
 		}
 
 		/// <summary>
@@ -553,12 +563,12 @@ namespace Bloom.WebLibraryIntegration
 			return false;
 		}
 
-		private int CountDesiredFiles(ListObjectsResponse matching)
+		private int CountDesiredFiles(List<S3Object> matching)
 		{
 			int totalItems = 0;
-			for (int i = 0; i < matching.S3Objects.Count; ++i)
+			for (int i = 0; i < matching.Count; ++i)
 			{
-				if (AvoidThisFile(matching.S3Objects[i].Key))
+				if (AvoidThisFile(matching[i].Key))
 					continue;
 				++totalItems;
 			}
@@ -586,10 +596,10 @@ namespace Bloom.WebLibraryIntegration
 			if (!storageKeyOfBookFolder.EndsWith("/"))
 				storageKeyOfBookFolder += '/';
 			
-			Debug.Assert(matching.S3Objects[0].Key.StartsWith(storageKeyOfBookFolder), "Matched object does not start with storageKey");
+			Debug.Assert(matching[0].Key.StartsWith(storageKeyOfBookFolder), "Matched object does not start with storageKey");
 
 			// Get the top-level directory name of the book from the first object key.
-			var bookFolderName = matching.S3Objects[0].Key.Substring(storageKeyOfBookFolder.Length);
+			var bookFolderName = matching[0].Key.Substring(storageKeyOfBookFolder.Length);
 			while (bookFolderName.Contains("/") || bookFolderName.Contains("\\"))
 			{
 				// Note: Path.GetDirectoryName may replace "/" (URL format) with "\" (Windows format),
@@ -617,9 +627,9 @@ namespace Bloom.WebLibraryIntegration
 					}));
 				using(var transferUtility = new TransferUtility(_amazonS3))
 				{
-					for(int i = 0; i < matching.S3Objects.Count; ++i)
+					for(int i = 0; i < matching.Count; ++i)
 					{
-						var objKey = matching.S3Objects[i].Key;
+						var objKey = matching[i].Key;
 						if(AvoidThisFile(objKey))
 							continue;
 						// Removing the book's prefix from the object key, then using the remainder of the key
