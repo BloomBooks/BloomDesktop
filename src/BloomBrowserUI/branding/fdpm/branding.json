@@ -9,7 +9,7 @@
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "content": "<img class='branding' src='fdpm back cover.svg'/>",
+            "content": "<img class='branding' src='fdpm.svg'/>",
             "condition": "always"
         }
     ]
