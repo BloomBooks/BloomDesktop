@@ -19,7 +19,7 @@ import { Block } from "@material-ui/icons";
 
 // The panel that shows the book preview and settings in the collection tab in a Team Collection.
 
-export type LockState =
+export type TeamCollectionBookLockState =
     | "initializing"
     | "unlocked"
     | "locked"
@@ -31,8 +31,22 @@ export type LockState =
     | "lockedByMeDisconnected"
     | "error";
 
+export interface IBookTeamCollectionStatus {
+    changedRemotely: boolean;
+    who: string;
+    whoFirstName: string;
+    whoSurname: string;
+    currentUser: string;
+    where: string;
+    currentMachine: string;
+    when: string;
+    disconnected: boolean;
+    hasAProblem: boolean;
+}
 export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
-    const [state, setState] = useState<LockState>("initializing");
+    const [lockState, setLockState] = useState<TeamCollectionBookLockState>(
+        "initializing"
+    );
     const [lockedBy, setLockedBy] = useState("");
     const [lockedByDisplay, setLockedByDisplay] = useState("");
     const [lockedWhen, setLockedWhen] = useState("");
@@ -42,15 +56,17 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [progress, setProgress] = useState(0);
     const [busy, setBusy] = useState(false);
     React.useEffect(() => {
-        var lockedByMe = false;
+        let lockedByMe = false;
         BloomApi.get(
             "teamCollection/currentBookStatus",
             data => {
-                const bookStatus = data.data;
-                if (bookStatus.problem) {
-                    setState("problem");
+                const bookStatus: IBookTeamCollectionStatus = data.data;
+                //if (bookStatus.status) { // review this is what we had, but on the c# side, I didn't see anything setting a "status",
+                // so this would always be false. There was, however, a "problem",  which I have renamed to "hasAProblem" and I'm using that.
+                if (bookStatus.hasAProblem) {
+                    setLockState("problem");
                 } else if (bookStatus.changedRemotely) {
-                    setState("needsReload");
+                    setLockState("needsReload");
                 } else if (bookStatus.who) {
                     // locked by someone
                     setLockedBy(bookStatus.who);
@@ -60,27 +76,27 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         bookStatus.who === bookStatus.currentUser &&
                         bookStatus.where === bookStatus.currentMachine
                     ) {
-                        setState("lockedByMe");
+                        setLockState("lockedByMe");
                         lockedByMe = true;
                     } else {
                         const isCurrentUser =
                             bookStatus.who === bookStatus.currentUser;
                         if (isCurrentUser) {
-                            setState("lockedByMeElsewhere");
+                            setLockState("lockedByMeElsewhere");
                         } else {
-                            setState("locked");
+                            setLockState("locked");
                         }
                         setLockedWhen(bookStatus.when);
                         setLockedMachine(bookStatus.where);
                     }
                 } else {
-                    setState("unlocked");
+                    setLockState("unlocked");
                 }
                 if (bookStatus.disconnected) {
                     if (lockedByMe) {
-                        setState("lockedByMeDisconnected");
+                        setLockState("lockedByMeDisconnected");
                     } else {
-                        setState("disconnected");
+                        setLockState("disconnected");
                     }
                 }
             },
@@ -116,7 +132,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                 email={lockedBy}
                 name={lockedByDisplay}
                 borderColor={
-                    state === "lockedByMe" && theme.palette.warning.main
+                    lockState === "lockedByMe" && theme.palette.warning.main
                 }
             />
         );
@@ -263,7 +279,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         setBusy(false);
     }
 
-    const panelContents = (state: LockState): JSX.Element => {
+    const panelContents = (state: TeamCollectionBookLockState): JSX.Element => {
         switch (state) {
             default:
                 return <div />; // just while initializing
@@ -435,7 +451,9 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         }
     };
 
-    return <ThemeProvider theme={theme}>{panelContents(state)}</ThemeProvider>;
+    return (
+        <ThemeProvider theme={theme}>{panelContents(lockState)}</ThemeProvider>
+    );
 };
 
 export const getBloomButton = (
