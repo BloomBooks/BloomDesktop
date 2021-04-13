@@ -6,10 +6,10 @@ import {
     createMuiTheme
 } from "@material-ui/core/styles";
 import "./statusPanelCommon.less";
-import { LockState } from "./TeamCollectionBookStatusPanel";
+import { TeamCollectionBookLockState } from "./TeamCollectionBookStatusPanel";
 
 export interface IStatusPanelProps {
-    lockState: LockState;
+    lockState: TeamCollectionBookLockState;
     title: string;
     subTitle: string;
     icon: JSX.Element;

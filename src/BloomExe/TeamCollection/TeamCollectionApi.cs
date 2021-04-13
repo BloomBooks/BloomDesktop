@@ -176,7 +176,7 @@ namespace Bloom.TeamCollection
 						where = _tcManager.CurrentCollectionEvenIfDisconnected?.WhatComputerHasBookLocked(BookFolderName),
 						currentUser = CurrentUser,
 						currentMachine = TeamCollectionManager.CurrentMachine,
-						problem,
+						hasAProblem = problem,
 						changedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(BookFolderName),
 						disconnected = _tcManager.CurrentCollectionEvenIfDisconnected?.IsDisconnected
 					}));
