@@ -1515,7 +1515,7 @@ namespace Bloom.TeamCollection
 		// must match what is in IndependentProgressDialog.tsx passed as clientContext to ProgressBox.
 		// (At least until we generalize that dialog for different Progress tasks...then, it will need
 		// to be configured to use this.)
-		internal const string kWebSocketContext = "IndependentProgressDialog";
+		internal const string kWebSocketContext = "TeamCollectionProgress";
 
 		public BloomWebSocketServer SocketServer;
 		public TeamCollectionManager TCManager;
@@ -1529,8 +1529,13 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		public void SynchronizeRepoAndLocal()
 		{
+			var title = "Syncing Team Collection"; // todo l10n
+			//dlg.Width = 500;
+			//dlg.Height = 300;
+
 			BrowserProgressDialog.DoWorkWithProgressDialog(SocketServer, TeamCollection.kWebSocketContext,
-				"Team Collection Activity",
+				()=> new ReactDialog("teamCollectionSettingsBundle.js",
+					"IndependentProgressDialog", $"title={title}", new {test="from team collection"}),
 				progress =>
 				{
 					// Not useful to have the date and time in the progress dialog, but definitely

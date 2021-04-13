@@ -686,7 +686,11 @@ namespace Bloom.TeamCollection
 		/// <param name="repoFolder"></param>
 		public void SetupTeamCollectionWithProgressDialog(string repoFolder)
 		{
-			BrowserProgressDialog.DoWorkWithProgressDialog(SocketServer, TeamCollection.kWebSocketContext, "Team Collection Activity",
+			var title = "Setting Up Team Collection"; // todo l10n
+
+			BrowserProgressDialog.DoWorkWithProgressDialog(SocketServer, TeamCollection.kWebSocketContext, () => new ReactDialog("teamCollectionSettingsBundle.js",
+					"IndependentProgressDialog", $"title={title}", new { test = "from team collection" }),
+
 			progress =>
 			{
 				progress.Message("StartingCopy", "",

@@ -34,17 +34,15 @@ namespace Bloom.MiscUI
 	/// responding to paint events, a click on the buttons, and and so forth.</remarks>
 	public class BrowserProgressDialog
 	{
-		public static void DoWorkWithProgressDialog(BloomWebSocketServer socketServer, string socketContext, string title,
+		public static void DoWorkWithProgressDialog(BloomWebSocketServer socketServer, string socketContext,  Func<Form> makeDialog,
 			Func<IWebSocketProgress, bool> doWhat, Action<Form> doWhenMainActionFalse = null)
 		{
 			var progress = new WebSocketProgress(socketServer, socketContext);
 
 			// NOTE: This (specifically ShowDialog) blocks the main thread until the dialog is closed.
 			// Be careful to avoid deadlocks.
-			using (var dlg = new ReactDialog("ProgressDialog", $"title={title}"))
+			using (var dlg = makeDialog())
 			{
-				dlg.Width = 500;
-				dlg.Height = 300;
 				// For now let's not try to handle letting the user abort.
 				dlg.ControlBox = false;
 				var worker = new BackgroundWorker();

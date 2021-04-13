@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Windows.Forms.Extensions;
 
@@ -44,6 +45,9 @@ namespace Bloom.web
 			set { _urlQueryString = value; }
 		}
 
+		// props to provide to the react component
+		public object Props;
+
 		private void ReactControl_Load(object sender, System.EventArgs e)
 		{
 			if (this.DesignModeAtAll())
@@ -58,6 +62,8 @@ namespace Bloom.web
 			var tempFile = TempFile.WithExtension("htm");
 			tempFile.Detach(); // the browser control will clean it up
 
+			var props = Props==null ? "{}":JsonConvert.SerializeObject(Props);
+
 			RobustFile.WriteAllText(tempFile.Path, $@"<!DOCTYPE html>
 				<html>
 				<head>
@@ -67,7 +73,7 @@ namespace Bloom.web
 					<script>
 						window.onload = () => {{
 							const rootDiv = document.getElementById('reactRoot');
-							window.wireUpReact(rootDiv,'{_reactComponentName}');
+							window.wireUpReact(rootDiv,'{_reactComponentName}', {props});
 						}};
 					</script>
 				</head>

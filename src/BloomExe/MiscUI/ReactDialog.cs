@@ -30,6 +30,7 @@ namespace Bloom.MiscUI
 			FormClosing += ReactDialog_FormClosing;
 			reactControl.ReactComponentName = reactComponentName;
 			reactControl.UrlQueryString = urlQueryString;
+            reactControl1.Props = props;
 			_activeDialogs.Add(this);
 
 			Icon = global::Bloom.Properties.Resources.BloomIcon;

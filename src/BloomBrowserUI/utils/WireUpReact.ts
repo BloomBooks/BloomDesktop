@@ -22,10 +22,11 @@ const knownComponents = {
 // This is called from an html file created in the c# ReactControl class.
 (window as any).wireUpReact = (
     root: HTMLElement,
-    reactComponentName: string
+    reactComponentName: string,
+    props?: Object
 ) => {
     ReactDOM.render(
-        React.createElement(knownComponents[reactComponentName], {}, null),
+        React.createElement(knownComponents[reactComponentName], props, null),
         root
     );
 };
