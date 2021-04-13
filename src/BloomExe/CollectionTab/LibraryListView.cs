@@ -254,7 +254,7 @@ namespace Bloom.CollectionTab
 			// before anything else, and we'll need to close the splash screen to make room for
 			// that dialog.
 			// Note, this not put into _startupActions...it should never be disabled.
-			if (_tcManager?.CurrentCollection != null)
+			if (_tcManager?.CurrentCollectionEvenIfDisconnected != null)
 			{
 				StartupScreenManager.AddStartupAction( () =>
 					{
