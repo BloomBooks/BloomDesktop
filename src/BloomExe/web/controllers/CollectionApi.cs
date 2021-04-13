@@ -90,7 +90,7 @@ namespace Bloom.web.controllers
 				{
 					//var book = _libraryModel.GetBookFromBookInfo(info);
 					return new
-						{id = info.Id, title = info.QuickTitleUserDisplay, collectionId = collection.PathToDirectory };
+						{id = info.Id, title = info.QuickTitleUserDisplay, collectionId = collection.PathToDirectory, folderName= Path.GetFileName(info.FolderPath) };
 				});
 			var json = DynamicJson.Serialize(infos);
 			request.ReplyWithJson(json);

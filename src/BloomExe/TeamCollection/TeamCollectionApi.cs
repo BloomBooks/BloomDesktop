@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -44,6 +45,7 @@ namespace Bloom.TeamCollection
 		{
 			apiHandler.RegisterEndpointHandler("teamCollection/repoFolderPath", HandleRepoFolderPath, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/isTeamCollectionEnabled", HandleIsTeamCollectionEnabled, false);
+			apiHandler.RegisterEndpointHandler("teamCollection/bookStatus", HandleBookStatus, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/currentBookStatus", HandleCurrentBookStatus, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/attemptLockOfCurrentBook", HandleAttemptLockOfCurrentBook, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/checkInCurrentBook", HandleCheckInCurrentBook, true);
@@ -147,6 +149,55 @@ namespace Bloom.TeamCollection
 			}
 		}
 
+		public void HandleBookStatus(ApiRequest request)
+		{
+			try
+			{
+				if (!TeamCollectionManager.IsRegistrationSufficient())
+				{
+					request.Failed(HttpStatusCode.ServiceUnavailable, "Team Collection not active");
+					return;
+				}
+
+				var bookFolderName = request.RequiredParam("folderName");
+				request.ReplyWithJson(GetBookStatusJson(bookFolderName));
+			}
+			catch (Exception e)
+			{
+				// Not sure what to do here: getting the current book status crashed.
+				Logger.WriteError("TeamCollectionApi.HandleBookStatus() crashed", e);
+				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
+				SentrySdk.CaptureException(e);
+				request.Failed("getting the book status failed");
+			}
+		}
+
+		private string GetBookStatusJson(string bookFolderName)
+		{
+			var whoHasBookLocked = _tcManager.CurrentCollectionEvenIfDisconnected?.WhoHasBookLocked(bookFolderName);
+			// It's debatable whether to use CurrentCollectionEvenIfDisconnected everywhere. For now, I've only changed
+			// it for the two bits of information actually needed by the status panel when disconnected.
+			var whenLocked = _tcManager.CurrentCollection?.WhenWasBookLocked(bookFolderName) ?? DateTime.MaxValue;
+			// review: or better to pass on to JS? We may want to show slightly different
+			// text like "This book is not yet shared. Check it in to make it part of the Team Collection"
+			if (whoHasBookLocked == TeamCollection.FakeUserIndicatingNewBook)
+				whoHasBookLocked = CurrentUser;
+			var problem = _tcManager.CurrentCollection?.HasLocalChangesThatMustBeClobbered(bookFolderName);
+			return JsonConvert.SerializeObject(
+				new
+				{
+					who = whoHasBookLocked,
+					whoFirstName = _tcManager.CurrentCollection?.WhoHasBookLockedFirstName(bookFolderName),
+					whoSurname = _tcManager.CurrentCollection?.WhoHasBookLockedSurname(bookFolderName),
+					when = whenLocked.ToLocalTime().ToShortDateString(),
+					where = _tcManager.CurrentCollectionEvenIfDisconnected?.WhatComputerHasBookLocked(bookFolderName),
+					currentUser = CurrentUser,
+					currentMachine = TeamCollectionManager.CurrentMachine,
+					hasAProblem = problem,
+					changedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(bookFolderName),
+					disconnected = _tcManager.CurrentCollectionEvenIfDisconnected?.IsDisconnected
+				});
+		}
 		public void HandleCurrentBookStatus(ApiRequest request)
 		{
 			try
@@ -156,30 +207,7 @@ namespace Bloom.TeamCollection
 					request.Failed("not registered");
 					return;
 				}
-
-				var whoHasBookLocked = _tcManager.CurrentCollectionEvenIfDisconnected?.WhoHasBookLocked(BookFolderName);
-				// It's debatable whether to use CurrentCollectionEvenIfDisconnected everywhere. For now, I've only changed
-				// it for the two bits of information actually needed by the status panel when disconnected.
-				var whenLocked = _tcManager.CurrentCollection?.WhenWasBookLocked(BookFolderName) ?? DateTime.MaxValue;
-				// review: or better to pass on to JS? We may want to show slightly different
-				// text like "This book is not yet shared. Check it in to make it part of the Team Collection"
-				if (whoHasBookLocked == TeamCollection.FakeUserIndicatingNewBook)
-					whoHasBookLocked = CurrentUser;
-				var problem = _tcManager.CurrentCollection?.HasLocalChangesThatMustBeClobbered(BookFolderName);
-				request.ReplyWithJson(JsonConvert.SerializeObject(
-					new
-					{
-						who = whoHasBookLocked,
-						whoFirstName = _tcManager.CurrentCollection?.WhoHasBookLockedFirstName(BookFolderName),
-						whoSurname = _tcManager.CurrentCollection?.WhoHasBookLockedSurname(BookFolderName),
-						when = whenLocked.ToLocalTime().ToShortDateString(),
-						where = _tcManager.CurrentCollectionEvenIfDisconnected?.WhatComputerHasBookLocked(BookFolderName),
-						currentUser = CurrentUser,
-						currentMachine = TeamCollectionManager.CurrentMachine,
-						hasAProblem = problem,
-						changedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(BookFolderName),
-						disconnected = _tcManager.CurrentCollectionEvenIfDisconnected?.IsDisconnected
-					}));
+				request.ReplyWithJson(GetBookStatusJson(BookFolderName));
 			}
 			catch (Exception e)
 			{

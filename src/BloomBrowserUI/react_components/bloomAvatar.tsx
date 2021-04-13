@@ -6,18 +6,21 @@ export const BloomAvatar: React.FunctionComponent<{
     email: string;
     name: string;
     borderColor?: string;
+    radius?: number;
 }> = props => {
     const borderSizeInt = 3;
-    const avatarSizeInt = 48;
+
+    const radius = props.radius ?? 48;
     const avatarSize = props.borderColor
-        ? `${avatarSizeInt - borderSizeInt}px`
-        : `${avatarSizeInt}px`;
+        ? `${radius - borderSizeInt}px`
+        : `${radius}px`;
     const borderStyle = props.borderColor
         ? `${borderSizeInt}px solid ${props.borderColor}`
         : undefined;
     return (
         <React.Suspense fallback={<></>}>
             <div
+                className="avatar"
                 style={{
                     borderRadius: "50%",
                     overflow: "hidden",
