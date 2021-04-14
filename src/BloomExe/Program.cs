@@ -631,7 +631,8 @@ namespace Bloom
 			
 			Settings.Default.Save();
 
-			MainContext = SynchronizationContext.Current;
+			// Note: MainContext needs to be set from WinForms land (Application.Run() from System.Windows.Forms), not from here.
+			StartupScreenManager.AddStartupAction(() => MainContext = SynchronizationContext.Current);
 			StartupScreenManager.AddStartupAction(() => StartUpShellBasedOnMostRecentUsedIfPossible());
 			StartupScreenManager.DoLastOfAllAfterClosingSplashScreen = () =>
 				{

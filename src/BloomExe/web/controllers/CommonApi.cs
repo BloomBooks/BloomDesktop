@@ -64,7 +64,20 @@ namespace Bloom.web.controllers
 					if (request.HttpMethod == HttpMethods.Get)
 					{
 						string result = ""; // initial value is not used, delegate will set it.
-						Program.MainContext.Send(o => result = Clipboard.GetText(), null);
+						Program.MainContext.Send(o =>
+						{
+							try
+							{
+								result = Clipboard.GetText();
+							}
+							catch (Exception e)
+							{
+								// Need to make sure to handle exceptions.
+								// If the worker thread dies with an unhandled exception,
+								// it causes the whole program to immediately crash without opportunity for error reporting
+								NonFatalProblem.Report(ModalIf.All, PassiveIf.None, "Error pasting text", exception: e);
+							}
+						}, null);
 						request.ReplyWithText(result);
 					}
 					else
@@ -75,7 +88,19 @@ namespace Bloom.web.controllers
 						if (!string.IsNullOrEmpty(content))
 						{
 							Program.MainContext.Post(o =>
-								Clipboard.SetText(content), null);
+							{
+								try
+								{
+									Clipboard.SetText(content);
+								}
+								catch (Exception e)
+								{
+									// Need to make sure to handle exceptions.
+									// If the worker thread dies with an unhandled exception,
+									// it causes the whole program to immediately crash without opportunity for error reporting
+									NonFatalProblem.Report(ModalIf.All, PassiveIf.None, "Error copying text", exception: e);
+								}
+							}, null);
 						}
 						request.PostSucceeded();
 					}
