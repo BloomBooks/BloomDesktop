@@ -130,18 +130,18 @@ namespace BloomTests.TeamCollection
 					var repoWriteTime1 = new FileInfo(otherFilesPath).LastWriteTime;
 					var collectionWriteTime1 = new FileInfo(bloomCollectionPath).LastWriteTime;
 
-					// SUT 2: nothing has changed. No sync happens.
+					// SUT 2: nothing has changed. But it's a startup, so sync still happens to local.
 					tc.SyncLocalAndRepoCollectionFiles();
 					var localWriteTime2 = tc.LocalCollectionFilesRecordedSyncTime();
-					Assert.That(localWriteTime2, Is.EqualTo(localWriteTime1));
+					Assert.That(localWriteTime2, Is.GreaterThanOrEqualTo(localWriteTime1));
 					Assert.That(new FileInfo(otherFilesPath).LastWriteTime, Is.EqualTo(repoWriteTime1));
-					Assert.That(new FileInfo(bloomCollectionPath).LastWriteTime, Is.EqualTo(collectionWriteTime1));
+					Assert.That(new FileInfo(bloomCollectionPath).LastWriteTime, Is.GreaterThanOrEqualTo(collectionWriteTime1));
 
 					File.WriteAllText(bloomCollectionPath, "This is a modified fake collection file");
 					var collectionWriteTime2 = new FileInfo(bloomCollectionPath).LastWriteTime;
 
-					// SUT 3: local change copied to repo
-					tc.SyncLocalAndRepoCollectionFiles();
+					// SUT 3: local change copied to repo (only when not at startup)
+					tc.SyncLocalAndRepoCollectionFiles(false);
 					var localWriteTime3 = tc.LocalCollectionFilesRecordedSyncTime();
 					Assert.That(localWriteTime3, Is.GreaterThan(localWriteTime1), "localWriteTime3 should be greater than localWriteTime1");
 					var repoWriteTime2 = new FileInfo(otherFilesPath).LastWriteTime;
@@ -175,7 +175,7 @@ namespace BloomTests.TeamCollection
 					File.WriteAllText(Path.Combine(allowedWords, "file1.txt"), "fake word list");
 
 					// SUT5: local allowed words added
-					tc.SyncLocalAndRepoCollectionFiles();
+					tc.SyncLocalAndRepoCollectionFiles(false);
 					var localWriteTime5 = tc.LocalCollectionFilesRecordedSyncTime();
 					Assert.That(localWriteTime5, Is.GreaterThan(localWriteTime4), "localWriteTime5 should be greater than localWriteTime4");
 					var repoWriteTime5 = new FileInfo(otherFilesPath).LastWriteTime;
@@ -187,7 +187,7 @@ namespace BloomTests.TeamCollection
 					File.WriteAllText(Path.Combine(allowedWords, "sample1.txt"), "fake sample list");
 
 					// SUT6: local sample texts added
-					tc.SyncLocalAndRepoCollectionFiles();
+					tc.SyncLocalAndRepoCollectionFiles(false);
 					var localWriteTime6 = tc.LocalCollectionFilesRecordedSyncTime();
 					Assert.That(localWriteTime6, Is.GreaterThan(localWriteTime5), "localWriteTime6 should be greater than localWriteTime5");
 					var repoWriteTime6 = new FileInfo(otherFilesPath).LastWriteTime;
@@ -198,7 +198,7 @@ namespace BloomTests.TeamCollection
 
 					// SUT7: local file write time modified, but not actually changed. Want the sync time to
 					// update, but NOT to write the remote file.
-					tc.SyncLocalAndRepoCollectionFiles();
+					tc.SyncLocalAndRepoCollectionFiles(false);
 					var localWriteTime7 = tc.LocalCollectionFilesRecordedSyncTime();
 					Assert.That(localWriteTime7, Is.GreaterThan(localWriteTime6), "localWriteTime7 should be greater than localWriteTime6");
 					var repoWriteTime7 = new FileInfo(otherFilesPath).LastWriteTime;
@@ -222,11 +222,12 @@ namespace BloomTests.TeamCollection
 
 					// modify the remote version by copying version2 back.
 					Thread.Sleep(10);
-					var repoWriteTimeBeforeSug9Copy = new FileInfo(otherFilesPath).LastWriteTime;
+					var repoWriteTimeBeforeSut9Copy = new FileInfo(otherFilesPath).LastWriteTime;
 					RobustFile.Copy(version2Path, otherFilesPath, true);
 					var collectionWriteTimeBeforeSut9 = new FileInfo(bloomCollectionPath).LastWriteTime;
 					var repoWriteTimeBeforeSut9 = new FileInfo(otherFilesPath).LastWriteTime;
-					Assert.That(repoWriteTimeBeforeSut9, Is.GreaterThan(repoWriteTimeBeforeSug9Copy), "repo file written after local collection file [sanity check]");
+					Assert.That(repoWriteTimeBeforeSut9, Is.GreaterThan(repoWriteTimeBeforeSut9Copy), "repo file written after local collection file [sanity check]");
+					tc._haveShownRemoteSettingsChangeWarning = false;
 
 					// SUT9: repo modified, doing check on idle. No changes or warning.
 					tc.SyncLocalAndRepoCollectionFiles(false);

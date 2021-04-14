@@ -544,36 +544,39 @@ namespace Bloom.TeamCollection
 		{
 			var repoModTime = LastRepoCollectionFileModifyTime;
 			var savedSyncTime = LocalCollectionFilesRecordedSyncTime();
-			if (repoModTime > savedSyncTime)
+			if (atStartup && repoModTime != DateTime.MinValue)
 			{
-				// We only modify local stuff at startup.
-				if (atStartup)
+				// Theoretically it could be that local collection settings are newer.
+				// But we write changes to them more-or-less immediately. The important
+				// thing is that, as of each reload, the local settings match the repo ones.
+				// In the future, we will have various limits to make conflicts even less likely.
+				// For now, the important thing is that whatever wins in the repo wins everywhere.
+				CopyRepoCollectionFilesToLocal(_localCollectionFolder);
+			}
+			else
+			{
+				if (LocalCollectionFilesUpdated())
 				{
-					// Theoretically, it's possible that localModTime is also greater than savedLocalModTime.
-					// However, we monitor local changes and try to save them immediately, so it's highly unlikely,
-					// except when the warning below has already been seen.
-					CopyRepoCollectionFilesToLocal(_localCollectionFolder);
-				}
-				else if (LocalCollectionFilesUpdated())
-				{
-					// We have a conflict we should warn the user about...if we haven't already.
-					if (!_haveShownRemoteSettingsChangeWarning)
+					if (repoModTime > savedSyncTime)
 					{
-						_haveShownRemoteSettingsChangeWarning = true;
-						// if it's not a startup sync, it's happening because of a local change. It will get lost.
-						// Not sure this is worth localizing. Eventually only one or two users per collection will be
-						// allowed to make such changes. Collection settings should rarely be changed at all
-						// in Team Collections. This message will hopefully be seen rarely if at all.
-						ErrorReport.NotifyUserOfProblem(
-							"Collection settings have been changed remotely. Your recent changes will be lost when Bloom syncs the next time it starts up");
+						// We have a conflict we should warn the user about...if we haven't already.
+						if (!_haveShownRemoteSettingsChangeWarning)
+						{
+							_haveShownRemoteSettingsChangeWarning = true;
+							// if it's not a startup sync, it's happening because of a local change. It will get lost.
+							// Not sure this is worth localizing. Eventually only one or two users per collection will be
+							// allowed to make such changes. Collection settings should rarely be changed at all
+							// in Team Collections. This message will hopefully be seen rarely if at all.
+							ErrorReport.NotifyUserOfProblem(
+								"Collection settings have been changed remotely. Your recent collection settings changes will be lost the next time Bloom is restarted.");
+						}
+					}
+					else
+					{
+						CopyRepoCollectionFilesFromLocal(_localCollectionFolder);
 					}
 				}
 			}
-			else if (LocalCollectionFilesUpdated())
-			{
-				CopyRepoCollectionFilesFromLocal(_localCollectionFolder);
-			}
-			// Otherwise, nothing has changed since we last synced. Do nothing.
 		}
 
 		/// <summary>
