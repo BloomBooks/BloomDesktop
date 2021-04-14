@@ -16,6 +16,7 @@ using Bloom.Utils;
 using Bloom.web;
 using ICSharpCode.SharpZipLib.Zip;
 using Sentry;
+using SIL.Code;
 using SIL.IO;
 
 namespace Bloom.TeamCollection
@@ -89,10 +90,18 @@ namespace Bloom.TeamCollection
 				_writeBookInProgress = true;
 			}
 
-			var zipFile = new BloomZipFile(bookPath);
-			zipFile.AddDirectory(sourceBookFolderPath, sourceBookFolderPath.Length + 1, null);
-			zipFile.SetComment(status.WithCollectionId(CollectionId).ToJson());
-			zipFile.Save();
+			RetryUtility.Retry(() =>
+			{
+				// Although there's quite a bit of use of RobustFile in the methods called here,
+				// We've found it's still possible to find the repo file locked, for example,
+				// clicking the checkin/checkout button very fast it seems we may still have
+				// the file locked from writing the status as we check it out when we try to
+				// check it in.
+				var zipFile = new BloomZipFile(bookPath);
+				zipFile.AddDirectory(sourceBookFolderPath, sourceBookFolderPath.Length + 1, null);
+				zipFile.SetComment(status.WithCollectionId(CollectionId).ToJson());
+				zipFile.Save();
+			});
 			lock (_lockObject)
 			{
 				_lastWriteBookTime = DateTime.Now;
@@ -623,12 +632,19 @@ namespace Bloom.TeamCollection
 				_writeBookInProgress = true;
 				_lastWriteBookTime = DateTime.Now;
 			}
-			using (var zipFile = new ZipFile(bookPath))
+
+			// We've had some failures on very fast clicking of Checkin/Checkout.
+			// Not clear how they come to overlap, but it's worth just trying again
+			// as a recovery strategy.
+			RetryUtility.Retry(() =>
 			{
-				zipFile.BeginUpdate();
-				zipFile.SetComment(status);
-				zipFile.CommitUpdate();
-			}
+				using (var zipFile = new ZipFile(bookPath))
+				{
+					zipFile.BeginUpdate();
+					zipFile.SetComment(status);
+					zipFile.CommitUpdate();
+				}
+			});
 			lock (_lockObject)
 			{
 				_writeBookInProgress = false;
