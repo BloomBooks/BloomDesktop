@@ -211,6 +211,17 @@ namespace Bloom
 						builder.Register<CollectionSettings>(c =>
 						{
 							c.Resolve<TeamCollectionManager>();
+							if (!RobustFile.Exists(projectSettingsPath))
+							{
+								// TCManager constructor may have deleted it in the process of syncing TC settings
+								var collections = Directory.EnumerateFiles(Path.GetDirectoryName(projectSettingsPath),
+									"*.bloomCollection").ToList();
+								if (collections.Count >= 1)
+								{
+									// Hopefully this repairs things.
+									projectSettingsPath = collections[0];
+								}
+							}
 							return new CollectionSettings(projectSettingsPath);
 						}).InstancePerLifetimeScope();
 					}
