@@ -20,10 +20,15 @@ const ThumbnailControl: React.FunctionComponent<{
         "publish/android/backColor",
         "white"
     );
+    const [canModifyCurrentBook] = BloomApi.useApiBoolean(
+        "common/canModifyCurrentBook",
+        false
+    );
     const inStorybookMode = React.useContext(StorybookContext);
     return (
         <ColorChooser
             menuLeft={true}
+            disabled={!canModifyCurrentBook}
             imagePath="/bloom/api/publish/android/thumbnail?color="
             backColorSetting={bookCoverColor}
             onColorChanged={colorChoice => {

@@ -56,7 +56,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._licenseNotesLabel = new System.Windows.Forms.Label();
 			this.label10 = new System.Windows.Forms.Label();
 			this.label11 = new System.Windows.Forms.Label();
-			this._optional1 = new System.Windows.Forms.Label();
+			this._summaryOptionalLabel = new System.Windows.Forms.Label();
 			this._progressBox = new SIL.Windows.Forms.Progress.LogBox();
 			this._userId = new System.Windows.Forms.Label();
 			this._giveBackLabel = new System.Windows.Forms.Label();
@@ -450,18 +450,18 @@ namespace Bloom.Publish.BloomLibrary
 			this.label11.Text = "By uploading, you confirm your agreement with the Bloom Library Terms of Use and " +
     "grant the rights it describes.";
 			// 
-			// _optional1
+			// _summaryOptionalLabel
 			// 
-			this._optional1.AutoSize = true;
-			this._optional1.Dock = System.Windows.Forms.DockStyle.Right;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._optional1, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._optional1, null);
-			this._L10NSharpExtender.SetLocalizingId(this._optional1, "Common.Optional");
-			this._optional1.Location = new System.Drawing.Point(560, 0);
-			this._optional1.Name = "_optional1";
-			this._optional1.Size = new System.Drawing.Size(44, 13);
-			this._optional1.TabIndex = 22;
-			this._optional1.Text = "optional";
+			this._summaryOptionalLabel.AutoSize = true;
+			this._summaryOptionalLabel.Dock = System.Windows.Forms.DockStyle.Right;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._summaryOptionalLabel, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._summaryOptionalLabel, null);
+			this._L10NSharpExtender.SetLocalizingId(this._summaryOptionalLabel, "Common.Optional");
+			this._summaryOptionalLabel.Location = new System.Drawing.Point(560, 0);
+			this._summaryOptionalLabel.Name = "_summaryOptionalLabel";
+			this._summaryOptionalLabel.Size = new System.Drawing.Size(44, 13);
+			this._summaryOptionalLabel.TabIndex = 22;
+			this._summaryOptionalLabel.Text = "optional";
 			// 
 			// _progressBox
 			// 
@@ -708,7 +708,7 @@ namespace Bloom.Publish.BloomLibrary
 			// panel1
 			// 
 			this.panel1.Controls.Add(this.label10);
-			this.panel1.Controls.Add(this._optional1);
+			this.panel1.Controls.Add(this._summaryOptionalLabel);
 			this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.panel1.Location = new System.Drawing.Point(3, 116);
 			this.panel1.Name = "panel1";
@@ -883,7 +883,7 @@ namespace Bloom.Publish.BloomLibrary
 		private System.Windows.Forms.Panel _ccPanel;
 		private System.Windows.Forms.Panel panel1;
 		private System.Windows.Forms.Label label10;
-		private System.Windows.Forms.Label _optional1;
+		private System.Windows.Forms.Label _summaryOptionalLabel;
 		private SIL.Windows.Forms.Progress.LogBox _progressBox;
 		private System.Windows.Forms.Panel panel1a;
 		private System.Windows.Forms.Panel panel2;

@@ -449,23 +449,13 @@ namespace Bloom.TeamCollection
 		// that it is checked-out to this user 
 		public bool CanEditBook()
 		{
-			if (_tcManager.CollectionStatus == TeamCollectionStatus.None)
-				return true;	// not a Team Collection
-
-			if (!TeamCollectionManager.IsRegistrationSufficient())
-				return false;
-
-			var folderName = BookFolderName;
-			if (string.IsNullOrEmpty(folderName) || !_bookSelection.CurrentSelection.IsEditable || _bookSelection.CurrentSelection.HasFatalError)
+			if (_bookSelection.CurrentSelection == null || !_bookSelection.CurrentSelection.IsEditable)
 			{
-				return false; // no book, no editing
-			}
-			if (_tcManager.CurrentCollectionEvenIfDisconnected == null)
-			{
-				return true; // no Team Collection, no problem.
+				return false; // no book, or the book's own logic says it's not editable
 			}
 
-			return _tcManager.CurrentCollectionEvenIfDisconnected.IsCheckedOutHereBy(_tcManager.CurrentCollectionEvenIfDisconnected.GetStatus(folderName));
+			// We can edit it unless TC says we need a checkout to do it.
+			return !_tcManager.NeedCheckoutToEdit(_bookSelection.CurrentSelection.FolderPath);
 		}
 	}
 }

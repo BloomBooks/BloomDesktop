@@ -9,6 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.MiscUI;
+using Bloom.TeamCollection;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
@@ -55,6 +56,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true); // Move to EditingViewApi
 			apiHandler.RegisterEndpointHandler("common/requestTranslationGroups", RequestTranslationGroups, true); // Move to EditingViewApi
 			apiHandler.RegisterEndpointHandler("common/showInFolder", HandleShowInFolderRequest, true); // Common
+			apiHandler.RegisterEndpointHandler("common/canModifyCurrentBook", HandleCanModifyCurrentBook, true);
 			apiHandler.RegisterEndpointHandler("common/showSettingsDialog", HandleShowSettingsDialog, false); // Common
 			// Used when something in JS land wants to copy text to or from the clipboard. For POST, the text to be put on the
 			// clipboard is passed as the 'text' property of a JSON requestData.
@@ -151,7 +153,18 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("common/reloadCollection", HandleReloadCollection, true);
 		}
 
-	
+		/// <summary>
+		/// Whether any modifications to the current book may currently be saved.
+		/// This is used by many things that don't otherwise need to know about Team Collections,
+		/// so I decided the API call belongs here; however, TeamCollection must be involved
+		/// in the answer, so the actual implementation is in TeamCollectionApi.
+		/// </summary>
+		/// <param name="request"></param>
+		private void HandleCanModifyCurrentBook(ApiRequest request)
+		{
+			request.ReplyWithBoolean(TeamCollectionApi.TheOneInstance.CanEditBook());
+		}
+
 
 		public Action ReloadProjectAction { get; set; }
 

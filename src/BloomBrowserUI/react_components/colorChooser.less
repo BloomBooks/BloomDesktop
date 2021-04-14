@@ -29,6 +29,9 @@
     border: @cc-arrow-height solid transparent;
     border-top: @cc-arrow-height solid black;
     position: relative; // so absolutely positioned pull-down is relative to this.
+    &.disabled {
+        border-top: @cc-arrow-height solid grey;
+    }
 }
 
 .cc-pulldown-wrapper {

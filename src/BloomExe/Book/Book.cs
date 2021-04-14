@@ -611,6 +611,21 @@ namespace Bloom.Book
 		/// <summary>
 		/// In the Bloom app, only one collection at a time is editable; that's the library they opened. All the other collections of templates, shells, etc., are not editable.
 		/// So, a book is editable if it's in that one collection (unless it's in an error state).
+		/// This wants a better name, because if it's in a team collection, we can't really edit it unless it's checked out.
+		/// "IsInEditableCollection" would almost work, but then, the HasFatalError check wouldn't survive,
+		/// which affects existing callers.
+		/// We could try to make it return false if the book needs to be checked out for editing,
+		/// but Book doesn't feel like an object that should know about Team Collections...it's already
+		/// way too complicated to create a mock book for testing. And some of the usages are more in line
+		/// with the "IsInEditableCollection" meaning. Not seeing a good way to improve things.
+		/// The official way to decide whether a book can really be edited (or modified in any way
+		/// that would require it to be checked out in a TC) is to call
+		/// TeamCollectionApi.TheOneInstance.CanEditBook()...from C# if asking about the current book
+		/// book.IsEditable && !_tcManager.NeedCheckoutToEdit(book.FolderPath)...if asking about some other book
+		/// const [canModifyCurrentBook] = BloomApi.useApiBoolean(
+		///     "common/canModifyCurrentBook",
+		///      false
+		/// ); in Typescript
 		/// </summary>
 		public bool IsEditable {
 			get
