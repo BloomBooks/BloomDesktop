@@ -1927,7 +1927,7 @@ namespace Bloom.Publish.Epub
 		/// </summary>
 		private void EmbedFonts()
 		{
-			var fontFileFinder = new FontFileFinder ();
+			var fontFileFinder = FontFileFinder.GetInstance(Program.RunningUnitTests);
 			var filesToEmbed = _fontsUsedInBook.SelectMany(fontFileFinder.GetFilesForFont).ToArray();
 			foreach (var file in filesToEmbed) {
 				CopyFileToEpub(file, subfolder:kFontsFolder);

@@ -22,6 +22,27 @@ namespace Bloom.Publish.Epub
 	{
 		private Dictionary<string, FontGroup> FontNameToFiles { get; set; }
 
+		private static FontFileFinder _instance = null;
+		/// <summary>
+		/// Creates or gets an instance of the class
+		/// </summary>
+		/// <param name="isReuseAllowed">If false, always constructs a new instance. If true, then it operates like a singleton.
+		/// If you're paranoid about the available fonts changing under you, you can pass false.
+		/// Otherwise, you can pass true if you're happy with re-using whatever fonts were available the first time this ran.
+		/// </param>
+		public static FontFileFinder GetInstance(bool isReuseAllowed)
+		{
+			if (isReuseAllowed)
+			{
+				if (_instance == null)
+					_instance = new FontFileFinder();
+
+				return _instance;
+			}
+			else
+				return new FontFileFinder();
+		}
+
 		/// <summary>
 		/// This is really hard. We somehow need to figure out what font file(s) are used for a particular font.
 		/// http://stackoverflow.com/questions/16769758/get-a-font-filename-based-on-the-font-handle-hfont
@@ -58,6 +79,9 @@ namespace Bloom.Publish.Epub
 			return result;
 		}
 
+		/// <summary>
+		/// Note: There is some performance overhead to initializing this. 
+		/// </summary>
 		private void InitializeFontData()
 		{
 			FontNameToFiles = new Dictionary<string, FontGroup>();

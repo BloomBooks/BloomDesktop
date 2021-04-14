@@ -165,7 +165,7 @@ namespace Bloom.Publish.Android
 
 			modifiedBook.OurHtmlDom.SetMedia("bloomReader");
 			modifiedBook.OurHtmlDom.AddOrReplaceMetaElement("bloom-digital-creator", creator);
-			EmbedFonts(modifiedBook, progress, fontsUsed, new FontFileFinder());
+			EmbedFonts(modifiedBook, progress, fontsUsed, FontFileFinder.GetInstance(Program.RunningUnitTests));
 
 			var bookFile = BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath);
 			StripImgIfWeCannotFindFile(modifiedBook.RawDom, bookFile);
