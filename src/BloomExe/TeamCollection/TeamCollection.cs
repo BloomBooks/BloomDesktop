@@ -1565,7 +1565,8 @@ namespace Bloom.TeamCollection
 					// When we would normally close the splash screen, close the progress dialog.
 					StartupScreenManager.DoWhenSplashScreenShouldClose(() =>
 					{
-						dlg.Close();
+						// Not dlg.Close(); that may not clear ReactDialog.CurrentOpenModal fast enough.
+						ReactDialog.CloseCurrentModal();
 					});
 				});
 

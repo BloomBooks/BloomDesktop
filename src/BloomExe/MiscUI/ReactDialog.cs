@@ -60,6 +60,7 @@ namespace Bloom.MiscUI
 				CurrentOpenModal.CloseSource = labelOfUiElementUsedToCloseTheDialog;
 
 				CurrentOpenModal.Close();
+				_currentOpenModal = null;
 			}
 		}
 	}
