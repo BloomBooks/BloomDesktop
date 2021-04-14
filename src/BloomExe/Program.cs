@@ -55,6 +55,8 @@ namespace Bloom
 
 		private static GeckoWebBrowser _debugServerStarter;
 
+		static string _originalPreload; // saves LD_PRELOAD environment variable for restarting Bloom
+
 #if PerProjectMutex
 		private static Mutex _oneInstancePerProjectMutex;
 #else
@@ -329,6 +331,7 @@ namespace Bloom
 							return 1;
 
 						// This has served its purpose on Linux, and with Geckofx60 it interferes with CommandLineRunner.
+						_originalPreload = Environment.GetEnvironmentVariable("LD_PRELOAD");
 						Environment.SetEnvironmentVariable("LD_PRELOAD", null);
 
 						Run();
@@ -478,6 +481,8 @@ namespace Bloom
 						args = "\"" + Application.ExecutablePath + "\"";
 					else
 						args = "\"" + Application.ExecutablePath + "\" " + args;
+					if (_originalPreload != null)
+						Environment.SetEnvironmentVariable("LD_PRELOAD", _originalPreload);
 				}
 				if (args == null)
 					Process.Start(program);
