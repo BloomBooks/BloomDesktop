@@ -280,10 +280,19 @@
 // Set vertical alignment to center
 // Working prototype using flexboxes.
 .bloom-imageContainer {
-    // We exclude "Just Text" bubbles because
+    // We exclude "Just Text" bubbles with no background color because
     // 1) Visually there's not a lot of profit to it
     // 2) So for existing books there won't be a subtle movement in the text position
-    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]) {
+    // We want to do this to almost all bloom-textOverPicture elements. The ones we don't want to do it
+    // to have data-bubble="...`style`:`none`...`backgroundColors`:[`transparent`]
+    // or else data-bubble="...`style`:`none`..." and don't specify a background color at all.
+    // So, the first rule says we do it to anything without style:none
+    // The second says we do it to anything that specifies a backgroundColor
+    // and does NOT specify 'transparent' as the value of that background color.
+    // (Of course, there could be other ways of specifying transparent. But AFIK Bloom has never used them.)
+    // (Thus, if it has backgroundColors and isn't explicitly transparent the centering applies.)
+    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]),
+    .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]) {
         // Center the translationGroup within the textOverPic box,
         // instead of having the 2 px difference all at the bottom.
         display: flex;
