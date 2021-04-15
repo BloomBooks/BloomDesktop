@@ -268,6 +268,7 @@
     <Compile Include="CLI\CreateArtifactsCommandTests.cs" />
     <Compile Include="CLI\GetUsedFontsCommandTests.cs" />
     <Compile Include="DataBuilders\HtmlErrorReporterBuilder.cs" />
+    <Compile Include="DataBuilders\TCBookBuilder.cs" />
     <Compile Include="ExperimentalFeaturesTests.cs" />
     <Compile Include="TeamCollection\DisconnectedTeamCollectionTests.cs" />
     <Compile Include="TeamCollection\FolderTeamCollectionTests.cs" />
