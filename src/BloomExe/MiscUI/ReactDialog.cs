@@ -1,6 +1,7 @@
-﻿using System;
+﻿using SIL.Reporting;
+using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
-using Bloom.web.controllers;
 
 namespace Bloom.MiscUI
 {
@@ -19,49 +20,45 @@ namespace Bloom.MiscUI
 	{
 		public string CloseSource { get; set; } = null;
 
+		private static List<ReactDialog> _activeDialogs = new List<ReactDialog>();
+		public static ReactDialog CurrentOpenModal;
+
 		public ReactDialog(string javascriptBundleName, string reactComponentName, string urlQueryString = "")
 		{
 			InitializeComponent();
+			FormClosing += ReactDialog_FormClosing;
 			this.reactControl1.JavascriptBundleName = javascriptBundleName;
 			this.reactControl1.ReactComponentName = reactComponentName;
 			this.reactControl1.UrlQueryString = urlQueryString;
-		}
+			CurrentOpenModal = this;
+			_activeDialogs.Add(this);
 
-		protected override void OnShown(EventArgs e)
-		{
-			base.OnShown(e);
-			CurrentOpenModal = this; // allows common/closeReactDialog to close it (via CloseCurrentModal).
-		}
-
-		protected override void OnClosed(EventArgs e)
-		{
-			base.OnClosed(e);
-			CurrentOpenModal = null;
-		}
-
-		private static ReactDialog _currentOpenModal;
-		public static ReactDialog CurrentOpenModal
-		{
-			get { return _currentOpenModal; }
-			set
-			{
-				if (value != null && _currentOpenModal != null)
-					throw new ApplicationException($"Cannot set one dialog ({value.Text}) before the other closes ({_currentOpenModal.Text}). ");
-				_currentOpenModal = value;
-			}
 		}
 
 		public static void CloseCurrentModal(string labelOfUiElementUsedToCloseTheDialog=null)
 		{
+			if (CurrentOpenModal == null)
+				return;
+
 			// Closes the current dialog.
-			if (CurrentOpenModal != null)
+			try
 			{
 				// Optionally, the caller may provide a string value in the payload.  This string can be used to determine which button/etc that initiated the close action.
 				CurrentOpenModal.CloseSource = labelOfUiElementUsedToCloseTheDialog;
-
-				CurrentOpenModal.Close();
-				_currentOpenModal = null;
+				CurrentOpenModal.Invoke((Action) (() => CurrentOpenModal.Close()));
 			}
+			catch (Exception ex)
+			{
+				Logger.WriteError(ex);
+			}
+		}
+
+		private void ReactDialog_FormClosing(object sender, FormClosingEventArgs e)
+		{
+			_activeDialogs.Remove(this);
+			CurrentOpenModal = _activeDialogs.Count > 0 ?
+				_activeDialogs[_activeDialogs.Count - 1] :
+				null;
 		}
 	}
 }

@@ -170,10 +170,8 @@ namespace Bloom.web.controllers
 
 		private void HandleReloadCollection(ApiRequest request)
 		{
-			if (ReactDialog.CurrentOpenModal!= null)
-			{
-				ReactDialog.CloseCurrentModal();
-			}
+			// Does nothing if there is no current dialog.
+			ReactDialog.CloseCurrentModal();
 
 			// On Linux, the main window doesn't close if we invoke ReloadProjectAction immediately here.
 			// Waiting for Idle processing allows the underlying dialog to actually close before its parent
