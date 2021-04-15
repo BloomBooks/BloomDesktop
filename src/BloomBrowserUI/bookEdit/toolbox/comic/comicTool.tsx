@@ -530,6 +530,11 @@ const ComicToolControls: React.FunctionComponent = () => {
                                     Thought
                                 </Div>
                             </MenuItem>
+                            <MenuItem value="circle">
+                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Circle">
+                                    Circle
+                                </Div>
+                            </MenuItem>
                         </Select>
                         <div className="comicCheckbox">
                             <MuiCheckbox
