@@ -13,9 +13,12 @@
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing)
             {
-                components.Dispose();
+                components?.Dispose();
+                components = null;
+                _previousPageFile?.Dispose();
+                _previousPageFile = null;
             }
             base.Dispose(disposing);
         }
@@ -34,8 +37,8 @@
 			this._editBookButton = new System.Windows.Forms.Button();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._splitContainerForPreviewAndAboutBrowsers = new Bloom.ToPalaso.BetterSplitContainer(this.components);
-			this._previewBrowser = new Bloom.Browser();
 			this._readmeBrowser = new Bloom.Browser();
+			this._reactBookPreviewControl = new Bloom.web.ReactControl();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._splitContainerForPreviewAndAboutBrowsers)).BeginInit();
 			this._splitContainerForPreviewAndAboutBrowsers.Panel1.SuspendLayout();
@@ -99,8 +102,8 @@
 			// 
 			// _splitContainerForPreviewAndAboutBrowsers.Panel1
 			// 
+			this._splitContainerForPreviewAndAboutBrowsers.Panel1.Controls.Add(this._reactBookPreviewControl);
 			this._splitContainerForPreviewAndAboutBrowsers.Panel1.Controls.Add(this._addToCollectionButton);
-			this._splitContainerForPreviewAndAboutBrowsers.Panel1.Controls.Add(this._previewBrowser);
 			// 
 			// _splitContainerForPreviewAndAboutBrowsers.Panel2
 			// 
@@ -110,22 +113,6 @@
 			this._splitContainerForPreviewAndAboutBrowsers.TabIndex = 3;
 			this._splitContainerForPreviewAndAboutBrowsers.TabStop = false;
 			this._splitContainerForPreviewAndAboutBrowsers.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this._splitContainerForPreviewAndAboutBrowsers_SplitterMoved);
-			// 
-			// _previewBrowser
-			// 
-			this._previewBrowser.BackColor = System.Drawing.Color.DarkGray;
-			this._previewBrowser.ContextMenuProvider = null;
-			this._previewBrowser.ControlKeyEvent = null;
-			this._previewBrowser.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._previewBrowser, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._previewBrowser, null);
-			this._L10NSharpExtender.SetLocalizingId(this._previewBrowser, "CollectionTab.Browser");
-			this._previewBrowser.Location = new System.Drawing.Point(0, 0);
-			this._previewBrowser.Name = "_previewBrowser";
-			this._previewBrowser.Size = new System.Drawing.Size(900, 193);
-			this._previewBrowser.TabIndex = 2;
-			this._previewBrowser.VerticalScrollDistance = 0;
-			this._previewBrowser.OnBrowserClick += new System.EventHandler(this._previewBrowser_OnBrowserClick);
 			// 
 			// _readmeBrowser
 			// 
@@ -142,6 +129,21 @@
 			this._readmeBrowser.TabIndex = 2;
 			this._readmeBrowser.VerticalScrollDistance = 0;
 			this._readmeBrowser.OnBrowserClick += new System.EventHandler(this._readmeBrowser_OnBrowserClick);
+			// 
+			// _reactBookPreviewControl
+			// 
+			this._reactBookPreviewControl.BackColor = System.Drawing.Color.DarkGray;
+			this._reactBookPreviewControl.JavascriptBundleName = null;
+			this._reactBookPreviewControl.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._reactBookPreviewControl, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._reactBookPreviewControl, null);
+			this._L10NSharpExtender.SetLocalizingId(this._reactBookPreviewControl, "ReactControl");
+			this._reactBookPreviewControl.Location = new System.Drawing.Point(0, 0);
+			this._reactBookPreviewControl.Name = "_reactBookPreviewControl";
+			this._reactBookPreviewControl.ReactComponentName = "BookPreviewPanel";
+			this._reactBookPreviewControl.Size = new System.Drawing.Size(900, 193);
+			this._reactBookPreviewControl.TabIndex = 2;
+			this._reactBookPreviewControl.UrlQueryString = null;
 			// 
 			// LibraryBookView
 			// 
@@ -172,7 +174,7 @@
         private System.Windows.Forms.Button _editBookButton;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
         private ToPalaso.BetterSplitContainer _splitContainerForPreviewAndAboutBrowsers;
-        private Browser _previewBrowser;
         private Browser _readmeBrowser;
-    }
+		private web.ReactControl _reactBookPreviewControl;
+	}
 }
