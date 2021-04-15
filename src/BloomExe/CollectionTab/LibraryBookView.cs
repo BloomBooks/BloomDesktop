@@ -204,6 +204,8 @@ namespace Bloom.CollectionTab
 					}
 				}
 				_reshowPending = false;
+				if (_addToCollectionButton.Visible)
+					_addToCollectionButton.BringToFront();	// ensure it's visible in front of react control
 			}
 		}
 
