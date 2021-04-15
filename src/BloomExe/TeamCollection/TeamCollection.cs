@@ -1529,7 +1529,6 @@ namespace Bloom.TeamCollection
 				"Team Collection Activity",
 				progress =>
 				{
-					var now = DateTime.Now;
 					// Not useful to have the date and time in the progress dialog, but definitely
 					// handy to record at the start of each section in the saved log. Tells us when anything it
 					// had to do to sync things actually happened.

@@ -368,7 +368,7 @@ namespace Bloom.web.controllers
 
 		static bool _showingProblemReport;
 		// Extra locking object because 1) you can't lock primitives directly, and 2) you shouldn't use the object whose value you'll be reading as the lock object (reads to the object are not blocked)
-		static object _showingProblemReportLock = new object();	
+		static object _showingProblemReportLock = new object();
 
 		// ENHANCE: Reduce duplication in HtmlErrorReporter and ProblemReportApi code. Some of the ProblemReportApi code can move to HtmlErrorReporter code.
 
@@ -408,6 +408,12 @@ namespace Bloom.web.controllers
 
 				_showingProblemReport = true;
 			}
+			// Ensure that we don't try to open a new ReactDialog on top of its caller.
+			// e.g. Team Collection Activity sync progress's Report button. (BL-9800)
+			if (ReactDialog.CurrentOpenModal != null)
+			{
+				ReactDialog.CloseCurrentModal();
+			}
 
 			GatherReportInfoExceptScreenshot(exception, detailedMessage, shortUserLevelMessage, isShortMessagePreEncoded);
 
@@ -435,6 +441,9 @@ namespace Bloom.web.controllers
 				// Uses a browser dialog to show the problem report
 				try
 				{
+					// We call CloseSplashScreen() above too, where it might help in some cases, but
+					// this one, while apparently redundant might be wise to keep since closing the splash screen
+					// needs to be done on the UI thread.
 					StartupScreenManager.CloseSplashScreen();
 					var query = $"?level={levelOfProblem}";
 
@@ -455,9 +464,9 @@ namespace Bloom.web.controllers
 					// Precondition: we must be on the UI thread for Gecko to work.
 					using (var dlg = new ReactDialog("problemReportBundle.js", "ProblemDialog", query))
 					{
-						dlg.FormBorderStyle = FormBorderStyle.FixedToolWindow;	// Allows the window to be dragged around
-						dlg.ControlBox = true;	// Add controls like the X button back to the top bar
-						dlg.Text = "";	// Remove the title from the WinForms top bar
+						dlg.FormBorderStyle = FormBorderStyle.FixedToolWindow; // Allows the window to be dragged around
+						dlg.ControlBox = true; // Add controls like the X button back to the top bar
+						dlg.Text = ""; // Remove the title from the WinForms top bar
 
 						dlg.Width = 731;
 						dlg.Height = 616;
