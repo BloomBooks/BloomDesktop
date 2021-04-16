@@ -24,6 +24,8 @@ namespace Bloom.web
 	{
 		private string _reactComponentName;
 		private string _urlQueryString;
+		// props to provide to the react component
+		public object Props;
 
 		public ReactControl()
 		{
@@ -44,9 +46,6 @@ namespace Bloom.web
 			get { return _urlQueryString; }
 			set { _urlQueryString = value; }
 		}
-
-		// props to provide to the react component
-		public object Props;
 
 		private void ReactControl_Load(object sender, System.EventArgs e)
 		{

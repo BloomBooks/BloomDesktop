@@ -5,7 +5,7 @@ interface IBloomWebSocketEvent {
     clientContext: string;
     id: string;
     message?: string;
-    kind?: string;
+    kind?: "Error" | "Warning" | "Progress" | "Note" | "Instruction";
     cssStyleRule?: string;
 }
 
@@ -74,7 +74,9 @@ export default class WebSocketManager {
         [clientContext: string]: Array<(messageEvent: object) => void>;
     } = {};
 
-    private static socketMap: { [clientContext: string]: WebSocket } = {};
+    private static socketMap: {
+        [clientContext: string]: WebSocket;
+    } = {};
 
     /**
      *  In an attempt to make it easier to come to grips with some lifetime issues, we
@@ -169,8 +171,18 @@ export default class WebSocketManager {
         clientContext: string,
         listener: (messageEvent: IBloomWebSocketEvent) => void
     ): void {
-        WebSocketManager.getOrCreateWebSocket(clientContext); // side effect makes sure there's an array in listenerMap to push onto.
+        if (clientContext.indexOf("mock_")) {
+        } else {
+            WebSocketManager.getOrCreateWebSocket(clientContext); // side effect makes sure there's an array in listenerMap to push onto.
+        }
         WebSocketManager.clientContextCallbacks[clientContext].push(listener);
+    }
+
+    // useful for storybook stories to send messages
+    public static mockSend(clientContext: string, event: IBloomWebSocketEvent) {
+        WebSocketManager.clientContextCallbacks[
+            clientContext
+        ].forEach(listener => listener(event));
     }
 
     /**

@@ -1,8 +1,8 @@
-﻿import * as React from "react";
+import * as React from "react";
 import { IUILanguageAwareProps } from "../../react_components/l10nComponents";
 import axios from "axios";
 import "./daisyChecks.less";
-import ProgressBox from "../../react_components/progressBox";
+import { ProgressBox } from "../../react_components/progressBox";
 
 const kWebSocketLifetime = "a11yChecklist";
 

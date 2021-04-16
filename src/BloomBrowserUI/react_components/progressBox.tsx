@@ -22,7 +22,7 @@ interface IProgressState {
 
 // Note that this component does not do localization; we expect the progress messages
 // to already be localized when they are sent over the websocket.
-export default class ProgressBox extends React.Component<
+export class ProgressBox extends React.Component<
     IProgressBoxProps,
     IProgressState
 > {

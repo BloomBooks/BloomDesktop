@@ -18,6 +18,8 @@ import {
 } from "./colorPickerDialog";
 import SmallNumberPicker from "./smallNumberPicker";
 import { BloomAvatar } from "./bloomAvatar";
+import { IndependentProgressDialog } from "./IndependentProgressDialog";
+import WebSocketManager from "../utils/WebSocketManager";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -548,3 +550,32 @@ storiesOf("Custom Color Chooser", module)
             );
         })
     );
+
+storiesOf("Progress Dialog", module).add("Progress Dialog", () =>
+    React.createElement(() => {
+        const kContext = "mock_progress";
+
+        const [messages, setMessages] = useState(["one", "two", "three"]);
+        React.useEffect(() => {
+            const m = messages.pop();
+            setMessages(messages);
+            WebSocketManager.mockSend(kContext, {
+                clientContext: kContext,
+                id: "message",
+                kind: "Progress",
+                message: "hello"
+            });
+            WebSocketManager.mockSend(kContext, {
+                clientContext: kContext,
+                id: "message",
+                kind: "Progress",
+                message: m
+            });
+        }, []);
+        return (
+            <div>
+                <IndependentProgressDialog webSocketContext={kContext} />
+            </div>
+        );
+    })
+);

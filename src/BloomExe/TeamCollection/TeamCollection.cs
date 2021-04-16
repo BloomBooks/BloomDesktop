@@ -1535,7 +1535,7 @@ namespace Bloom.TeamCollection
 
 			BrowserProgressDialog.DoWorkWithProgressDialog(SocketServer, TeamCollection.kWebSocketContext,
 				()=> new ReactDialog("teamCollectionSettingsBundle.js",
-					"IndependentProgressDialog", $"title={title}", new {test="from team collection"}),
+					"IndependentProgressDialog", $"title={title}", new {webSocketContext= TeamCollection.kWebSocketContext }),
 				progress =>
 				{
 					// Not useful to have the date and time in the progress dialog, but definitely

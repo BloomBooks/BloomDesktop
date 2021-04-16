@@ -15,7 +15,7 @@ import BookMetadataDialog from "./metadata/BookMetadataDialog";
 import "./storiesApiMocks";
 import { AccessibilityCheckScreen } from "./accessibilityCheck/accessibilityCheckScreen";
 
-addDecorator(withA11y);
+addDecorator(withA11y as any);
 
 addDecorator(storyFn => (
     <ThemeProvider theme={theme}>

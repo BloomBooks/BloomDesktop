@@ -1,4 +1,4 @@
-import { DialogTitle, Typography } from "@material-ui/core";
+import { CircularProgress, DialogTitle, Typography } from "@material-ui/core";
 import * as React from "react";
 import { useRef, useState } from "react";
 import ReactDOM = require("react-dom");
@@ -6,19 +6,20 @@ import { BloomApi } from "../utils/bloomApi";
 import WebSocketManager from "../utils/WebSocketManager";
 import BloomButton from "./bloomButton";
 import { Link } from "./link";
-import ProgressBox from "./progressBox";
+import { ProgressBox } from "./progressBox";
 import "./IndependentProgressDialog.less";
 import theme from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 
 // Root element rendered to progress dialog, using ReactDialog in C#
 
-export const IndependentProgressDialog: React.FunctionComponent = props => {
+export const IndependentProgressDialog: React.FunctionComponent<{
+    webSocketContext: string;
+}> = props => {
     const urlParams = new URLSearchParams(window.location.search);
     const dialogTitle = urlParams.get("title");
     const [showButtons, setShowButtons] = useState(false);
     const progress = useRef("");
-    const kWebSocketContext = "IndependentProgressDialog";
 
     React.useEffect(() => {
         const listener = e => {
@@ -26,11 +27,14 @@ export const IndependentProgressDialog: React.FunctionComponent = props => {
                 setShowButtons(true);
             }
         };
-        WebSocketManager.addListener(kWebSocketContext, listener);
+        WebSocketManager.addListener(props.webSocketContext, listener);
     }, []);
     const sendToClipboard = () => {
         BloomApi.postJson("common/clipboardText", { text: progress.current });
     };
+
+    const somethingStillGoing = true;
+
     return (
         <ThemeProvider theme={theme}>
             <div id="progress-root">
@@ -39,6 +43,19 @@ export const IndependentProgressDialog: React.FunctionComponent = props => {
                 <DialogTitle className="dialog-title">
                     <Typography variant="h6">{dialogTitle}</Typography>
                 </DialogTitle>
+                <div className="title-bar">
+                    {/* <img
+                        src={"Team Collection.svg"}
+                        alt="Team Collection Icon"
+                    /> */}
+                    <Typography variant="h4">{dialogTitle}</Typography>
+                    {somethingStillGoing && (
+                        <CircularProgress
+                            size={20}
+                            className={"circle-progress"}
+                        />
+                    )}
+                </div>
                 <div
                     id="copy-progress-row"
                     className={showButtons ? "with-buttons" : ""}
@@ -49,7 +66,7 @@ export const IndependentProgressDialog: React.FunctionComponent = props => {
                         title="Copy to Clipboard"
                     />
                     <ProgressBox
-                        clientContext={kWebSocketContext}
+                        clientContext={props.webSocketContext}
                         notifyProgressChange={p => (progress.current = p)}
                     />
                 </div>
@@ -93,6 +110,6 @@ export const IndependentProgressDialog: React.FunctionComponent = props => {
 // the root for the BrowserDialog window containing this dialog. This allows us
 // to get the ReactDOM.render call applied even though we can't do React inside
 // a local script element.
-(window as any).connectProgressDialogRoot = element => {
-    ReactDOM.render(<IndependentProgressDialog />, element);
-};
+// (window as any).connectProgressDialogRoot = element => {
+//     ReactDOM.render(<IndependentProgressDialog />, element);
+// };
