@@ -25,21 +25,21 @@ override_dh_auto_build:
 	wget https://nodejs.org/dist/v12.14.0/node-v12.14.0-linux-x64.tar.xz && \
 	tar xf node-v12.14.0-linux-x64.tar.xz && \
 	export PATH="`pwd`/node-v12.14.0-linux-x64/bin:$$PATH" && \
-	export NODE_OPTIONS=--max-old-space-size=1024 && \
+	export NODE_OPTIONS=--max-old-space-size=1536 && \
 	export HOME=/tmp && \
 	npm install --no-save yarn && \
 	export PATH="`pwd`/node_modules/.bin:$$PATH" && \
 	. ./environ && \
 	if [ -f ./build_number.env ]; then . ./build_number.env; else FULL_BUILD_NUMBER=0.0.0.0; fi && \
-	xbuild /t:RestoreBuildTasks /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER build/Bloom.proj && \
-	xbuild /t:SetAssemblyVersion /p:RootDir=$(shell pwd) /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER build/Bloom.proj && \
-	xbuild /p:Configuration=$(BUILD) /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER "Bloom.sln" && \
-	xbuild /p:Configuration=$(BUILD) /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER src/LinuxBloomLauncher/LinuxBloomLauncher.cproj
+	msbuild /t:RestoreBuildTasks /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER build/Bloom.proj && \
+	msbuild /t:SetAssemblyVersion /p:RootDir=$(shell pwd) /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER build/Bloom.proj && \
+	msbuild /p:Configuration=$(BUILD) /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER "Bloom.sln" && \
+	msbuild /p:Configuration=$(BUILD) /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER src/LinuxBloomLauncher/LinuxBloomLauncher.cproj
 
 override_dh_auto_test:
 
 override_dh_auto_clean:
-	. ./environ && xbuild /p:Configuration=$(BUILD) "Bloom.sln" /t:Clean
+	. ./environ && msbuild /p:Configuration=$(BUILD) "Bloom.sln" /t:Clean
 	dh_clean
 
 override_dh_auto_install:
