@@ -706,20 +706,28 @@ namespace Bloom.Publish
 			}
 			if (pdfPreviewMode)
 			{
-				if (_model.DisplayMode == PublishModel.DisplayModes.Upload)
-				{
-					// We've transitioned away from upload to a PDF preview.
-					_model.DisplayMode = _model.PdfGenerationSucceeded
-						? PublishModel.DisplayModes.ShowPdf
-						: PublishModel.DisplayModes.WaitForUserToChooseSomething;
-				}
+				// We get here before PDF generation has been initiated.  If we previously had
+				// generated a PDF file, setting the DisplayMode to ShowPdf here causes a "file
+				// not found" error on Linux due to BloomPdfMaker removing the old PDF file
+				// before creating the new one, but the display update expecting to find the
+				// previously created PDF file.  (See BL-9798.)  The timing inside the Windows
+				// WinForms internals apparently prevents this from happening on that system.
 				if (IsMakingPdf)
 				{
+					// This code path is probably defunct due to the modal dialogs showing the
+					// progress of the PDF generation process.  But I'm leaving it here Just
+					// In Case.
+					_model.DisplayMode = PublishModel.DisplayModes.ShowPdf;
 					_makePdfBackgroundWorker.CancelAsync();
 					UpdateDisplay();
 				}
 				else
 				{
+					// MakeBooklet() will result in DisplayMode being set to ShowPdf if the
+					// PDF generation succeeds.  That will update the display to show the newly
+					// generated PDF file.  Meanwhile, the user will see a blank window (and
+					// the progress report dialogs).
+					_model.DisplayMode = PublishModel.DisplayModes.Working;
 					MakeBooklet();
 				}
 			}
