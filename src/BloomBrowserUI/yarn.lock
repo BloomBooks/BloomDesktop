@@ -3442,11 +3442,12 @@ blob@0.0.5:
   integrity sha512-gaqbzQPqOoamawKg0LGVd7SzLgXS+JH61oWprSLH+P+abTczqJbhTR8CmJ2u9/bUYNmHTGJx/UEmn6doAvvuig==
 
 bloom-player@^2.0.4:
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.0.4.tgz#d66f7f42d513c81da837e07bca31f804171af330"
-  integrity sha512-ufCkOcVBlaHUPKxTkQMoMF/QJAbAO6MbB5W7f1sKUWWgk/lsBwxFeqvvr4hn+5SWnIuLuUCq55QqPcvMNtDsiw==
+  version "2.0.58"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.0.58.tgz#6afc8858c40cbbd7058d1b11c87ac417e127a810"
+  integrity sha512-ZNlbmbwx71o0Z0A8p3chEtYsfh+2Pdl1eUp36SpnRHmIUxHtL7olwlKMRV2d0eczVAdJG1Iq2cRX8d5maH/+ZQ==
   dependencies:
     dynamic-import-polyfill "^0.1.1"
+    jquery.nicescroll "^3.7.6"
 
 bluebird@^3.3.0, bluebird@^3.3.5, bluebird@^3.5.3:
   version "3.5.4"
@@ -7534,10 +7535,22 @@ jquery.hotkeys@^0.1.0:
   resolved "https://registry.yarnpkg.com/jquery.hotkeys/-/jquery.hotkeys-0.1.0.tgz#a88f636494fe75de41e4b753a059e5a523b83273"
   integrity sha1-qI9jZJT+dd5B5LdToFnlpSO4MnM=
 
+jquery.nicescroll@^3.7.6:
+  version "3.7.6"
+  resolved "https://registry.yarnpkg.com/jquery.nicescroll/-/jquery.nicescroll-3.7.6.tgz#afeff3e80658dabe4f78d2d2e84250060fea0852"
+  integrity sha1-r+/z6AZY2r5PeNLS6EJQBg/qCFI=
+  dependencies:
+    jquery ">=1.8.3"
+
 jquery@>=1.12.0:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.4.0.tgz#8de513fa0fa4b2c7d2e48a530e26f0596936efdf"
   integrity sha512-ggRCXln9zEqv6OqAGXFEcshF5dSBvCkzj6Gm2gzuR5fWawaX8t7cxKVkkygKODrDAzKdoYw3l/e3pm3vlT4IbQ==
+
+jquery@>=1.8.3:
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.6.0.tgz#c72a09f15c1bdce142f49dbf1170bdf8adac2470"
+  integrity sha512-JVzAR/AjBvVt2BmYhxRCSYysDsPcssdmTFnzyLEts9qNwmjmu4JTAMYubEfwVOSwpQ1I1sKKFcxhZCI2buerfw==
 
 jquery@^1.12.4:
   version "1.12.4"
