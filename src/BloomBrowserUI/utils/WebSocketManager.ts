@@ -178,6 +178,17 @@ export default class WebSocketManager {
         WebSocketManager.clientContextCallbacks[clientContext].push(listener);
     }
 
+    public static removeListener(
+        clientContext: string,
+        listener: (messageEvent: IBloomWebSocketEvent) => void
+    ): void {
+        WebSocketManager.clientContextCallbacks[
+            clientContext
+        ] = WebSocketManager.clientContextCallbacks[clientContext].filter(
+            l => l === listener
+        );
+    }
+
     // useful for storybook stories to send messages
     public static mockSend(clientContext: string, event: IBloomWebSocketEvent) {
         WebSocketManager.clientContextCallbacks[

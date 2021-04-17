@@ -1,4 +1,9 @@
-import { CircularProgress, DialogTitle, Typography } from "@material-ui/core";
+import {
+    Button,
+    CircularProgress,
+    DialogTitle,
+    Typography
+} from "@material-ui/core";
 import * as React from "react";
 import { useRef, useState } from "react";
 import ReactDOM = require("react-dom");
@@ -15,6 +20,7 @@ import { ThemeProvider } from "@material-ui/styles";
 
 export const IndependentProgressDialog: React.FunctionComponent<{
     webSocketContext: string;
+    onReadyToReceive?: () => void;
 }> = props => {
     const urlParams = new URLSearchParams(window.location.search);
     const dialogTitle = urlParams.get("title");
@@ -29,9 +35,6 @@ export const IndependentProgressDialog: React.FunctionComponent<{
         };
         WebSocketManager.addListener(props.webSocketContext, listener);
     }, []);
-    const sendToClipboard = () => {
-        BloomApi.postJson("common/clipboardText", { text: progress.current });
-    };
 
     const somethingStillGoing = true;
 
@@ -60,14 +63,10 @@ export const IndependentProgressDialog: React.FunctionComponent<{
                     id="copy-progress-row"
                     className={showButtons ? "with-buttons" : ""}
                 >
-                    <button
-                        id="copy-button"
-                        onClick={sendToClipboard}
-                        title="Copy to Clipboard"
-                    />
                     <ProgressBox
                         clientContext={props.webSocketContext}
                         notifyProgressChange={p => (progress.current = p)}
+                        onReadyToReceive={props.onReadyToReceive}
                     />
                 </div>
                 {showButtons && (

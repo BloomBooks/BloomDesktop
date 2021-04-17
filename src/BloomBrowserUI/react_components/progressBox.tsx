@@ -1,3 +1,6 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+import { Button } from "@material-ui/core";
 import * as React from "react";
 import WebSocketManager from "../utils/WebSocketManager";
 import "./progressBox.less";
@@ -26,7 +29,7 @@ export class ProgressBox extends React.Component<
     IProgressBoxProps,
     IProgressState
 > {
-    progressDiv: HTMLElement | null;
+    private progressDiv: HTMLElement | null;
     public readonly state: IProgressState = {
         progress: this.props.testProgressHtml || ""
     };
@@ -36,10 +39,11 @@ export class ProgressBox extends React.Component<
         //alert("constructing progress box for " + this.props.clientContext);
         //get progress messages from c#
         WebSocketManager.addListener(props.clientContext, e => {
+            console.log(this.state);
             if (e.id === "message") {
                 if (e.message!.indexOf("error") > -1) {
-                    if (props.onGotErrorMessage) {
-                        props.onGotErrorMessage();
+                    if (this.props.onGotErrorMessage) {
+                        this.props.onGotErrorMessage();
                     }
                 }
                 if (e.cssStyleRule) {
@@ -79,9 +83,13 @@ export class ProgressBox extends React.Component<
             );
         }
     }
+    public componentDidUnmount() {
+        //WebSocketManager.removeListener(props.clientContext);
+    }
 
     public write(htmlToAdd: string) {
         const newProgress = this.state.progress + htmlToAdd;
+        console.log(newProgress);
         this.setState({
             progress: newProgress
         });
@@ -107,15 +115,47 @@ export class ProgressBox extends React.Component<
             // Tests show that everyhing stays responsive.
         }
     }
+    private copyToClipboard() {
+        // BloomApi.postJson("common/clipboardText", {
+        //     text: progress.current
+        // });
+
+        // const copyText: HTMLInputElement = document.getElementById(
+        //     this.props.progressBoxId || "progress"
+        // ) as HTMLInputElement;
+
+        const range = document.createRange();
+        range.selectNode(
+            document.getElementById(this.props.progressBoxId || "progress")!
+        );
+        window.getSelection()!.removeAllRanges();
+        window.getSelection()!.addRange(range);
+        document.execCommand("copy");
+        window.getSelection()!.removeAllRanges();
+    }
 
     public render() {
         return (
-            <div
-                className="progress-box"
-                id={this.props.progressBoxId || ""}
-                dangerouslySetInnerHTML={{ __html: this.state.progress }}
-                ref={div => (this.progressDiv = div)}
-            />
+            <div>
+                <div
+                    className="progress-box"
+                    id={this.props.progressBoxId || "progress"}
+                    dangerouslySetInnerHTML={{
+                        __html: this.state.progress
+                    }}
+                    ref={div => (this.progressDiv = div)}
+                    css={css`
+                        user-select: all;
+                    `}
+                />
+                <Button
+                    //id="copy-button"
+                    onClick={() => this.copyToClipboard()}
+                    title="Copy to Clipboard"
+                >
+                    Copy to Clipboard
+                </Button>
+            </div>
         );
     }
 }
