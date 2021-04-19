@@ -9,7 +9,7 @@ export interface ISwatchDefn {
     // We use an array here, so we can support gradients (top to bottom).
     colors: string[];
     name?: string;
-    opacity?: number;
+    opacity: number;
 }
 
 // More complete definition we need to pass in for handling swatch display.
@@ -57,13 +57,15 @@ export const getBackgroundFromSwatch = (swatch: ISwatchDefn): string => {
     // Otherwise, it could be a name of a color (OldLace) or a hex value starting with '#'
     const initialColorString =
         baseColor.length === 1 ? baseColor[0] : "gradient";
-    const opacity = swatch.opacity ? swatch.opacity : 1.0;
+    if (swatch.opacity === 0.0) {
+        return "transparent";
+    }
     // 'backgroundString' will end up being a named color, a linear-gradient string,
     // or an rgba string (with possible opacity values).
     let backgroundString: string = initialColorString;
     if (initialColorString.startsWith("#")) {
         const rgb = tinycolor(initialColorString).toRgb();
-        backgroundString = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity})`;
+        backgroundString = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${swatch.opacity})`;
     }
     if (initialColorString === "gradient") {
         backgroundString =

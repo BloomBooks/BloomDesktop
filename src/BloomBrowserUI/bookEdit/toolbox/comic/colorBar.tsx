@@ -8,20 +8,21 @@ import {
 import * as tinycolor from "tinycolor2";
 import { CSSProperties } from "react";
 
-export interface IColorBarProps extends ISwatchDefn {
+export interface IColorBarProps {
     id: string;
     // if defined, 'text' will display over the color bar in either white or black,
     // depending on the color bar's "perceived brightness".
     text?: string;
     onClick: () => void;
+    swatch: ISwatchDefn;
 }
 // Displays a color bar menu item with optional localizable text.
 export const ColorBar: React.FunctionComponent<IColorBarProps> = (
     props: IColorBarProps
 ) => {
-    const baseColor = props.colors; // An array of strings representing colors
+    const baseColor = props.swatch.colors; // An array of strings representing colors
 
-    const backgroundColorString = getBackgroundFromSwatch(props);
+    const backgroundColorString = getBackgroundFromSwatch(props.swatch);
 
     const isDark = (colorString: string): boolean => {
         const color = tinycolor(colorString); // handles named colors, rgba() and hex strings!!!

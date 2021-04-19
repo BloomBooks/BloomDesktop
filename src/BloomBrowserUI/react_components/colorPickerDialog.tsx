@@ -153,7 +153,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         isSwatchInThisArray(swatch, swatchArray);
 
     const willSwatchBeFilteredOut = (swatch: ISwatchDefn): boolean => {
-        if (props.noAlphaSlider && swatch.opacity && swatch.opacity !== 1) {
+        if (props.noAlphaSlider && swatch.opacity !== 1) {
             return true;
         }
         if (props.noGradientSwatches && swatch.colors.length > 1) {
@@ -184,13 +184,11 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                 return false;
             }
         }
-        const swatchOpacity = swatch.opacity ? swatch.opacity : 1;
-        const itemOpacity = item.opacity ? item.opacity : 1;
         const swatchColor1 = tinycolor(swatch.colors[0]);
         const itemColor1 = tinycolor(item.colors[0]);
         return (
             swatchColor1.toHex() === itemColor1.toHex() &&
-            swatchOpacity === itemOpacity
+            swatch.opacity === item.opacity
         );
     };
 

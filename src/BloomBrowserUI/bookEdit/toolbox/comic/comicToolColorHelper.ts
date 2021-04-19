@@ -7,42 +7,49 @@ export const specialColors: ISwatchDefn[] = [
     // so I decided it was the best choice for keeping that option.
     {
         name: "whiteToCalico",
-        colors: ["white", "#DFB28B"]
+        colors: ["white", "#DFB28B"],
+        opacity: 1
     },
     // https://www.htmlcsscolor.com/hex/ACCCDD
     {
         name: "whiteToFrenchPass",
-        colors: ["white", "#ACCCDD"]
+        colors: ["white", "#ACCCDD"],
+        opacity: 1
     },
     // https://encycolorpedia.com/7b8eb8
     {
         name: "whiteToPortafino",
-        colors: ["white", "#7b8eb8"]
+        colors: ["white", "#7b8eb8"],
+        opacity: 1
     }
 ];
 
 export const defaultTextColors: ISwatchDefn[] = [
     {
         name: "black",
-        colors: ["black"]
+        colors: ["black"],
+        opacity: 1
     },
     {
         name: "gray",
-        colors: ["gray"] // #808080
+        colors: ["gray"], // #808080
+        opacity: 1
     },
     {
         name: "lightgray",
-        colors: ["lightgray"] // #D3D3D3
+        colors: ["lightgray"], // #D3D3D3
+        opacity: 1
     },
-    { name: "white", colors: ["white"] }
+    { name: "white", colors: ["white"], opacity: 1 }
 ];
 
 const temp: ISwatchDefn[] = [
     {
         name: "black",
-        colors: ["black"]
+        colors: ["black"],
+        opacity: 1
     },
-    { name: "white", colors: ["white"] },
+    { name: "white", colors: ["white"], opacity: 1 },
     {
         name: "partialTransparent",
         colors: ["#575757"], // bloom-gray
@@ -69,6 +76,14 @@ export const getSwatchFromBubbleSpecColor = (
     // We need to pull out the "opacity" and add it to the swatch here.
     const colorStruct = tinycolor(bubbleSpecColor);
     const opacity = colorStruct.getAlpha();
+    // Complete transparency, though, is a special case.
+    // We want to continue using 'transparent' as the background color in that case.
+    if (opacity === 0.0) {
+        return {
+            colors: ["transparent"],
+            opacity: opacity
+        };
+    }
     return {
         colors: [`#${colorStruct.toHex()}`],
         opacity: opacity
