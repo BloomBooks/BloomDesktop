@@ -20,8 +20,7 @@ namespace Bloom.MiscUI
 	{
 		public string CloseSource { get; set; } = null;
 
-		private static List<ReactDialog> _activeDialogs = new List<ReactDialog>();
-		public static ReactDialog CurrentOpenModal;
+		private static readonly List<ReactDialog> _activeDialogs = new List<ReactDialog>();
 
 		public ReactDialog(string javascriptBundleName, string reactComponentName, string urlQueryString = "")
 		{
@@ -30,22 +29,22 @@ namespace Bloom.MiscUI
 			this.reactControl1.JavascriptBundleName = javascriptBundleName;
 			this.reactControl1.ReactComponentName = reactComponentName;
 			this.reactControl1.UrlQueryString = urlQueryString;
-			CurrentOpenModal = this;
 			_activeDialogs.Add(this);
 
 		}
 
 		public static void CloseCurrentModal(string labelOfUiElementUsedToCloseTheDialog=null)
 		{
-			if (CurrentOpenModal == null)
+			if (_activeDialogs.Count == 0)
 				return;
 
 			// Closes the current dialog.
 			try
 			{
+				var currentDialog = _activeDialogs[_activeDialogs.Count - 1];
 				// Optionally, the caller may provide a string value in the payload.  This string can be used to determine which button/etc that initiated the close action.
-				CurrentOpenModal.CloseSource = labelOfUiElementUsedToCloseTheDialog;
-				CurrentOpenModal.Invoke((Action) (() => CurrentOpenModal.Close()));
+				currentDialog.CloseSource = labelOfUiElementUsedToCloseTheDialog;
+				currentDialog.Invoke((Action) (() => currentDialog.Close()));
 			}
 			catch (Exception ex)
 			{
@@ -53,12 +52,17 @@ namespace Bloom.MiscUI
 			}
 		}
 
+		public static void CloseAllReactDialogs(string labelOfUiElementUsedToCloseTheDialog = null)
+		{
+			while (_activeDialogs.Count > 0)
+			{
+				CloseCurrentModal(labelOfUiElementUsedToCloseTheDialog);
+			}
+		}
+
 		private void ReactDialog_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			_activeDialogs.Remove(this);
-			CurrentOpenModal = _activeDialogs.Count > 0 ?
-				_activeDialogs[_activeDialogs.Count - 1] :
-				null;
 		}
 	}
 }
