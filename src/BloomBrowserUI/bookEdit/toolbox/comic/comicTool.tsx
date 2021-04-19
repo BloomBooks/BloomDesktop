@@ -396,7 +396,7 @@ const ComicToolControls: React.FunctionComponent = () => {
 
     const needToCalculateTransparency = (): boolean => {
         const opacityDecimal = backgroundColorSwatch.opacity;
-        return !!opacityDecimal && opacityDecimal < 1.0;
+        return opacityDecimal < 1.0;
     };
 
     const percentTransparentFromOpacity = (): string => {
@@ -573,6 +573,7 @@ const ComicToolControls: React.FunctionComponent = () => {
                             onClick={launchTextColorChooser}
                             name={textColorSwatch.name}
                             colors={textColorSwatch.colors}
+                            opacity={1}
                         />
                     </FormControl>
                     <FormControl>
@@ -592,6 +593,7 @@ const ComicToolControls: React.FunctionComponent = () => {
                             name={backgroundColorSwatch.name}
                             text={percentTransparencyString()}
                             colors={backgroundColorSwatch.colors}
+                            opacity={backgroundColorSwatch.opacity}
                         />
                     </FormControl>
                     <FormControl>

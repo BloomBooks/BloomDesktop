@@ -387,10 +387,10 @@ const initialOverDivStyles: React.CSSProperties = {
 };
 
 const defaultSwatches: ISwatchDefn[] = [
-    { name: "white", colors: ["#ffffff"] },
-    { name: "grey", colors: ["#777777"] },
-    { name: "black", colors: ["#000000"] },
-    { name: "whiteToCalico", colors: ["white", "#DFB28B"] },
+    { name: "white", colors: ["#ffffff"], opacity: 1 },
+    { name: "grey", colors: ["#777777"], opacity: 1 },
+    { name: "black", colors: ["#000000"], opacity: 1 },
+    { name: "whiteToCalico", colors: ["white", "#DFB28B"], opacity: 1 },
     { name: "60%Portafino", colors: ["#7b8eb8"], opacity: 0.6 }
 ];
 
