@@ -46,10 +46,15 @@ export const CustomColorPicker: React.FunctionComponent<ICustomPicker> = props =
         customName: string
     ): ISwatchDefn => {
         // A Swatch that comes from the ChromePicker (not from clicking on a swatch), cannot be a gradient.
+        const opacity = color.rgb.a; // will be defined, so a falsey result means transparent here.
+        let colorString = color.hex;
+        if (!opacity) {
+            colorString = "transparent";
+        }
         return {
             name: customName,
-            colors: [color.hex],
-            opacity: color.rgb.a
+            colors: [colorString],
+            opacity: opacity
         };
     };
 
@@ -64,7 +69,8 @@ export const CustomColorPicker: React.FunctionComponent<ICustomPicker> = props =
                     }
                 })
                 .filter(swatch => {
-                    const opacity = swatch.opacity ? swatch.opacity : 1;
+                    const opacity =
+                        swatch.opacity !== undefined ? swatch.opacity : 1.0;
                     return props.noAlphaSlider ? opacity === 1 : true;
                 })
                 .map((swatchDefn: ISwatchDefn, i: number) => (
@@ -82,7 +88,9 @@ export const CustomColorPicker: React.FunctionComponent<ICustomPicker> = props =
     const getRgbOfCurrentSwatch = (): RGBColor => {
         const currentSwatch = colorChoice;
         const rgbColor = tinycolor(currentSwatch.colors[0]).toRgb();
-        rgbColor.a = currentSwatch.opacity ? currentSwatch.opacity : 1;
+        // One more spot where falsey is not equal to undefined
+        rgbColor.a =
+            currentSwatch.opacity === undefined ? 1 : currentSwatch.opacity;
         return rgbColor;
     };
 

@@ -396,7 +396,9 @@ const ComicToolControls: React.FunctionComponent = () => {
 
     const needToCalculateTransparency = (): boolean => {
         const opacityDecimal = backgroundColorSwatch.opacity;
-        return !!opacityDecimal && opacityDecimal < 1.0;
+        // In this case opacity not undefined is different than !!opacity, since
+        // opacity can legitimately be defined as zero.
+        return opacityDecimal !== undefined && opacityDecimal < 1.0;
     };
 
     const percentTransparentFromOpacity = (): string => {

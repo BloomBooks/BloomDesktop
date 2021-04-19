@@ -57,7 +57,11 @@ export const getBackgroundFromSwatch = (swatch: ISwatchDefn): string => {
     // Otherwise, it could be a name of a color (OldLace) or a hex value starting with '#'
     const initialColorString =
         baseColor.length === 1 ? baseColor[0] : "gradient";
-    const opacity = swatch.opacity ? swatch.opacity : 1.0;
+    // Not 'undefined' is different than truthy here!!! opacity can be legitimately zero.
+    const opacity = swatch.opacity !== undefined ? swatch.opacity : 1.0;
+    if (opacity === 0.0) {
+        return "transparent";
+    }
     // 'backgroundString' will end up being a named color, a linear-gradient string,
     // or an rgba string (with possible opacity values).
     let backgroundString: string = initialColorString;

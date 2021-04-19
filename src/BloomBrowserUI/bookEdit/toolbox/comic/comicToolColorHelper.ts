@@ -69,6 +69,14 @@ export const getSwatchFromBubbleSpecColor = (
     // We need to pull out the "opacity" and add it to the swatch here.
     const colorStruct = tinycolor(bubbleSpecColor);
     const opacity = colorStruct.getAlpha();
+    // Complete transparency, though, is a special case. We want to continue using 'transparent' as
+    // the background color in that case.
+    if (opacity === 0.0) {
+        return {
+            colors: ["transparent"],
+            opacity: opacity
+        };
+    }
     return {
         colors: [`#${colorStruct.toHex()}`],
         opacity: opacity
