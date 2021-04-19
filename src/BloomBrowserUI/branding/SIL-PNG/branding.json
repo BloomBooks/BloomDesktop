@@ -3,7 +3,7 @@
         {
             "data-book": "title-page-branding-bottom-html",
             "lang": "*",
-            "content": "<img class='branding' src='silpng.png'/>",
+            "content": "<img class='branding' src='silpng.svg'/>",
             "condition": "always"
         },
         {
