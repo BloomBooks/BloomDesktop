@@ -43,7 +43,7 @@ namespace Bloom.Publish.PDF
 		/// Process the input PDF file by compressing images and/or by converting color to CMYK.  The operations
 		/// to perform are established by the constructor.
 		/// </summary>
-		public void ProcessPdfFile(string inputFile, string outputFile, bool bookIsFullBleed = false)
+		public void ProcessPdfFile(string inputFile, string outputFile, bool removeEvenPages = false)
 		{
 			_inputPdfPath = inputFile;
 			_outputPdfPath = outputFile;
@@ -57,7 +57,7 @@ namespace Bloom.Publish.PDF
 				using (var tempPdfFile = TempFile.WithExtension(".pdf"))
 				{
 					var runner = new CommandLineRunner();
-					var arguments = GetArguments(tempPdfFile.Path, null, bookIsFullBleed);
+					var arguments = GetArguments(tempPdfFile.Path, null, removeEvenPages);
 					var fromDirectory = String.Empty;
 					var progress = new NullProgress();	// I can't figure out how to use any IProgress based code, but we show progress okay as is.
 					var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
@@ -70,7 +70,7 @@ namespace Bloom.Publish.PDF
 						{
 							RobustFile.Delete(tempInputFile.Path);		// Move won't replace even empty files.
 							RobustFile.Move(_inputPdfPath, tempInputFile.Path);
-							arguments = GetArguments(tempPdfFile.Path, tempInputFile.Path);
+							arguments = GetArguments(tempPdfFile.Path, tempInputFile.Path, removeEvenPages);
 							res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
 							RobustFile.Move(tempInputFile.Path, _inputPdfPath);
 						}
@@ -84,7 +84,7 @@ namespace Bloom.Publish.PDF
 					// If the process made the file larger and didn't change the color scheme and we're not removing blank pages, ignore the result.
 					var oldInfo = new FileInfo(_inputPdfPath);
 					var newInfo = new FileInfo(tempPdfFile.Path);
-					if (newInfo.Length < oldInfo.Length || _type == OutputType.Printshop || bookIsFullBleed)
+					if (newInfo.Length < oldInfo.Length || _type == OutputType.Printshop || removeEvenPages)
 						RobustFile.Copy(tempPdfFile.Path, _outputPdfPath, true);
 					else if (_inputPdfPath != _outputPdfPath)
 						RobustFile.Copy(_inputPdfPath, _outputPdfPath, true);
@@ -167,7 +167,7 @@ namespace Bloom.Publish.PDF
 			return null;
 		}
 
-		private string GetArguments(string tempFile, string inputFile = null, bool bookIsFullBleed = false)
+		private string GetArguments(string tempFile, string inputFile, bool removeEvenPages)
 		{
 			var bldr = new StringBuilder();
 			// CompatibilityLevel=1.4 - Acrobat 5.0
@@ -227,7 +227,7 @@ namespace Bloom.Publish.PDF
 				bldr.AppendFormat(" -sGrayImageDict=\"{0}\"", imageCompressDict);
 			}
 
-			if (bookIsFullBleed)
+			if (removeEvenPages)
 			{
 				// Our full-bleed PDF page generation currently produces a spurious almost-blank page after each real
 				// page, even if we aren't printing the bleed area. Delete them.
