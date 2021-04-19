@@ -207,7 +207,8 @@ namespace Bloom
 						builder.Register<TeamCollectionManager>(c => new TeamCollectionManager(projectSettingsPath,
 							c.Resolve<BloomWebSocketServer>(), c.Resolve<BookRenamedEvent>(),
 							c.Resolve<BookStatusChangeEvent>(),
-							c.Resolve<BookSelection>())).InstancePerLifetimeScope();
+							c.Resolve<BookSelection>(),
+							c.Resolve<LibraryClosing>())).InstancePerLifetimeScope();
 						builder.Register<CollectionSettings>(c =>
 						{
 							c.Resolve<TeamCollectionManager>();

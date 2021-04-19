@@ -28,7 +28,7 @@ namespace BloomTests.TeamCollection
 			var collectionPath = Path.Combine(_localCollection.FolderPath,
 				Path.ChangeExtension(Path.GetFileName(_localCollection.FolderPath), ".bloomCollection"));
 			_api = new TeamCollectionApi(new CollectionSettings(collectionPath), new BookSelection(),
-				new TeamCollectionManager(collectionPath, new BloomWebSocketServer(), new BookRenamedEvent(), null, null), null,  null);
+				new TeamCollectionManager(collectionPath, new BloomWebSocketServer(), new BookRenamedEvent(), null, null, null), null,  null);
 		}
 
 		[OneTimeTearDown]
