@@ -1565,7 +1565,7 @@ namespace Bloom.TeamCollection
 					StartupScreenManager.DoWhenSplashScreenShouldClose(() =>
 					{
 						// Not dlg.Close(); that may not clear ReactDialog.CurrentOpenModal fast enough.
-						ReactDialog.CloseCurrentModal();
+						dlg.Invoke((Action)(() => ReactDialog.CloseCurrentModal()));
 					});
 				});
 
