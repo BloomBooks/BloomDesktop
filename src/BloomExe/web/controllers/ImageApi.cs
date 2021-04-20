@@ -318,45 +318,55 @@ namespace Bloom.web.controllers
 						break;
 					path = Path.Combine(_bookSelection.CurrentSelection.FolderPath, fileName);
 				}
-				RequireThat.File(path).Exists();
-				var fileInfo = new FileInfo(path);
 				dynamic result = new ExpandoObject();
 				result.name = fileName;
-				result.bytes = fileInfo.Length;
-
-				// Using a stream this way, according to one source,
-				// http://stackoverflow.com/questions/552467/how-do-i-reliably-get-an-image-dimensions-in-net-without-loading-the-image,
-				// supposedly avoids loading the image into memory when we only want its dimensions
-				using (var stream = RobustFile.OpenRead(path))
-				using (var img = Image.FromStream(stream, false, false))
+				if (!RobustFile.Exists(path))
 				{
-					result.width = img.Width;
-					result.height = img.Height;
-					switch (img.PixelFormat)
+					result.bytes = -1;
+					result.width = -1;
+					result.height = -1;
+					result.bitDepth = "unknown";
+				}
+				else
+				{
+					var fileInfo = new FileInfo(path);
+					result.bytes = fileInfo.Length;
+
+					// Using a stream this way, according to one source,
+					// http://stackoverflow.com/questions/552467/how-do-i-reliably-get-an-image-dimensions-in-net-without-loading-the-image,
+					// supposedly avoids loading the image into memory when we only want its dimensions
+					using (var stream = RobustFile.OpenRead(path))
+					using (var img = Image.FromStream(stream, false, false))
 					{
-						case PixelFormat.Format32bppArgb:
-						case PixelFormat.Format32bppRgb:
-						case PixelFormat.Format32bppPArgb:
-							result.bitDepth = "32";
-							break;
-						case PixelFormat.Format24bppRgb:
-							result.bitDepth = "24";
-							break;
-						case PixelFormat.Format16bppArgb1555:
-						case PixelFormat.Format16bppGrayScale:
-							result.bitDepth = "16";
-							break;
-						case PixelFormat.Format8bppIndexed:
-							result.bitDepth = "8";
-							break;
-						case PixelFormat.Format1bppIndexed:
-							result.bitDepth = "1";
-							break;
-						default:
-							result.bitDepth = "unknown";
-							break;
+						result.width = img.Width;
+						result.height = img.Height;
+						switch (img.PixelFormat)
+						{
+							case PixelFormat.Format32bppArgb:
+							case PixelFormat.Format32bppRgb:
+							case PixelFormat.Format32bppPArgb:
+								result.bitDepth = "32";
+								break;
+							case PixelFormat.Format24bppRgb:
+								result.bitDepth = "24";
+								break;
+							case PixelFormat.Format16bppArgb1555:
+							case PixelFormat.Format16bppGrayScale:
+								result.bitDepth = "16";
+								break;
+							case PixelFormat.Format8bppIndexed:
+								result.bitDepth = "8";
+								break;
+							case PixelFormat.Format1bppIndexed:
+								result.bitDepth = "1";
+								break;
+							default:
+								result.bitDepth = "unknown";
+								break;
+						}
 					}
 				}
+
 				request.ReplyWithJson((object)result);
 			}
 			catch (Exception e)
