@@ -21,7 +21,8 @@ export type LockState =
     | "needsReload"
     | "problem"
     | "disconnected"
-    | "lockedByMeDisconnected";
+    | "lockedByMeDisconnected"
+    | "error";
 
 export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [state, setState] = useState<LockState>("initializing");
@@ -30,6 +31,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [lockedWhen, setLockedWhen] = useState("");
     const [lockedMachine, setLockedMachine] = useState("");
     const [reload, setReload] = useState(0);
+    const [error, setError] = useState("");
     React.useEffect(() => {
         var lockedByMe = false;
         BloomApi.get(
@@ -74,9 +76,15 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                 }
             },
             err => {
-                // If the user is not sufficiently registered, just show nothing rather than throwing a js error.
-                // Enhance: we could display a message telling them to register and perhaps a link to the registration dialog.
-                if (err?.response?.statusText !== "not registered") throw err;
+                // something went wrong. Maybe not registered. Already reported to Sentry, we don't need another throw
+                // here, with less information. Displaying the message may tell the user something. I don't think it's
+                // worth localizing the fallback message here, which is even less likely to be seen.
+                // Enhance: we could display a message telling them to register and perhaps a link to the registration dialog, if the error is 'not registered'.
+                setError(
+                    err?.response?.statusText ??
+                        "Bloom could not determine the status of this book"
+                );
+                setState("error");
             }
         );
     }, [reload]);
@@ -240,6 +248,19 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         switch (state) {
             default:
                 return <div />; // just while initializing
+            case "error":
+                // This is just a fallback, which hopefully will never be seen.
+                return (
+                    <StatusPanelCommon
+                        lockState={state}
+                        title={error}
+                        subTitle=""
+                        icon={
+                            // not sure this is the best image to use, but it might help convey that things are not set up right.
+                            <img src={"Disconnected.svg"} alt="error" />
+                        }
+                    />
+                );
             case "unlocked":
                 const checkoutHandler = () => {
                     BloomApi.post(

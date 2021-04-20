@@ -256,31 +256,39 @@ function SetImageTooltip(container: HTMLElement) {
 
     BloomApi.getWithConfig("image/info", { params: { image: url } }, result => {
         const imageFileInfo: any = result.data;
-
-        const dpi = getDpi(
-            container,
-            imageFileInfo.width,
-            imageFileInfo.height
-        );
-        const bulletForDpi = dpi < 300 ? "⚠" : "✓";
-        // removed because only devs care! Bit Depth: ${imageFileInfo.bitDepth.toString()}
-        const linesAboutThisFile = `Name: ${
-            imageFileInfo.name
-        } Size: ${getFileLengthString(imageFileInfo.bytes)} Dots: ${
-            imageFileInfo.width
-        } x ${imageFileInfo.height}\n\n`;
+        let linesAboutThisFile: string;
+        const fileFound = imageFileInfo.bytes >= 0;
+        let dpiLine = "";
+        if (isPlaceHolder) {
+            linesAboutThisFile = "";
+        } else if (!fileFound) {
+            linesAboutThisFile = `${imageFileInfo.name} not found\n`;
+        } else {
+            const dpi = getDpi(
+                container,
+                imageFileInfo.width,
+                imageFileInfo.height
+            );
+            const bulletForDpi = dpi < 300 ? "⚠" : "✓";
+            // removed because only devs care! Bit Depth: ${imageFileInfo.bitDepth.toString()}
+            linesAboutThisFile = `Name: ${
+                imageFileInfo.name
+            } Size: ${getFileLengthString(imageFileInfo.bytes)} Dots: ${
+                imageFileInfo.width
+            } x ${imageFileInfo.height}\n\n`;
+            if (!isPlaceHolder) {
+                dpiLine = `${bulletForDpi} This image would print at ${dpi} DPI.\n`;
+            }
+        }
 
         const linesAboutThisContext =
             `For the current paper size:\n` +
             `  • The image container is ${containerJQ.width()} x ${containerJQ.height()} dots.\n` +
             `  • For print publications, you want between 300-600 DPI (Dots Per Inch).\n` +
-            (isPlaceHolder
-                ? ""
-                : `  ${bulletForDpi} This image would print at ${dpi} DPI.\n`) +
+            dpiLine +
             `  • An image with ${targetDpiWidth} x ${targetDpiHeight} dots would fill this container at 300 DPI.`;
 
-        container.title =
-            (isPlaceHolder ? "" : linesAboutThisFile) + linesAboutThisContext;
+        container.title = linesAboutThisFile + linesAboutThisContext;
     });
 }
 function getDpi(
