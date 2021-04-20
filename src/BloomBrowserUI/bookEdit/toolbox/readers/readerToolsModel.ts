@@ -1245,21 +1245,36 @@ export class ReaderToolsModel {
             "actualUniqueWords"
         );
         this.updateActualCount(
+            ReaderToolsModel.totalSentencesInBook(sentenceFragmentsByPage),
+            this.maxWordsPerSentenceOnThisPage(),
+            "actualSentenceCount"
+        );
+        this.updateActualCount(
+            ReaderToolsModel.maxGlyphsInWord(sentenceFragmentsByPage),
+            this.maxGlyphsPerWord(),
+            "actualMaxGlyphsPerWord"
+        );
+        this.updateActualCount(
+            ReaderToolsModel.maxSentenceLengthInBook(sentenceFragmentsByPage),
+            this.maxWordsPerSentenceOnThisPage(),
+            "actualMaxWordsPerSentence"
+        );
+        this.updateActualAverageCount(
             ReaderToolsModel.averageWordsInSentence(sentenceFragmentsByPage),
             this.maxAverageWordsPerSentence(),
             "actualAverageWordsPerSentence"
         );
-        this.updateActualCount(
+        this.updateActualAverageCount(
             ReaderToolsModel.averageWordsInPage(sentenceFragmentsByPage),
             this.maxAverageWordsPerPage(),
             "actualAverageWordsPerPage"
         );
-        this.updateActualCount(
+        this.updateActualAverageCount(
             ReaderToolsModel.averageGlyphsInWord(sentenceFragmentsByPage),
             this.maxAverageGlyphsPerWord(),
             "actualAverageGlyphsPerWord"
         );
-        this.updateActualCount(
+        this.updateActualAverageCount(
             ReaderToolsModel.averageSentencesInPage(sentenceFragmentsByPage),
             this.maxAverageSentencesPerPage(),
             "actualAverageSentencesPerPage"
@@ -1349,7 +1364,7 @@ export class ReaderToolsModel {
         if (sentenceCount == 0) {
             return 0;
         }
-        return Math.round(wordCount / sentenceCount);
+        return wordCount / sentenceCount;
         //return Math.round(10 * wordCount / sentenceCount) / 10; // for one decimal place (here and elsewhere)
     }
 
@@ -1366,7 +1381,7 @@ export class ReaderToolsModel {
         if (sentenceFragmentsByPage.length == 0) {
             return 0;
         }
-        return Math.round(wordCount / sentenceFragmentsByPage.length);
+        return wordCount / sentenceFragmentsByPage.length;
     }
 
     public static averageGlyphsInWord(
@@ -1386,26 +1401,86 @@ export class ReaderToolsModel {
         if (wordCount == 0) {
             return 0;
         }
-        return Math.round(glyphCount / wordCount);
+        return glyphCount / wordCount;
     }
 
     public static averageSentencesInPage(
         sentenceFragmentsByPage: TextFragment[][]
     ): number {
+        if (sentenceFragmentsByPage.length == 0) {
+            return 0;
+        }
+        const sentenceCount = ReaderToolsModel.totalSentencesInBook(
+            sentenceFragmentsByPage
+        );
+        return sentenceCount / sentenceFragmentsByPage.length;
+    }
+
+    public static maxGlyphsInWord(
+        sentenceFragmentsByPage: TextFragment[][]
+    ): number {
+        let maxGlyphCount = 0;
+        for (let i = 0; i < sentenceFragmentsByPage.length; i++) {
+            const fragments = sentenceFragmentsByPage[i];
+            for (let j = 0; j < fragments.length; j++) {
+                for (const w of fragments[j].words) {
+                    maxGlyphCount = Math.max(
+                        maxGlyphCount,
+                        ReaderToolsModel.getWordLength(w)
+                    );
+                }
+            }
+        }
+        return maxGlyphCount;
+    }
+
+    public static maxSentenceLengthInBook(
+        sentenceFragmentsByPage: TextFragment[][]
+    ): number {
+        let maxSentenceLength = 0;
+        for (let i = 0; i < sentenceFragmentsByPage.length; i++) {
+            const fragments = sentenceFragmentsByPage[i];
+            for (let j = 0; j < fragments.length; j++) {
+                maxSentenceLength = Math.max(
+                    maxSentenceLength,
+                    fragments[j].words.length
+                );
+            }
+        }
+        return maxSentenceLength;
+    }
+
+    public static totalSentencesInBook(
+        sentenceFragmentsByPage: TextFragment[][]
+    ): number {
         let sentenceCount = 0;
+        if (sentenceFragmentsByPage.length == 0) {
+            return 0;
+        }
         for (let i = 0; i < sentenceFragmentsByPage.length; i++) {
             const fragments = sentenceFragmentsByPage[i];
             sentenceCount += ReaderToolsModel.countSentences(fragments);
         }
-        if (sentenceFragmentsByPage.length == 0) {
-            return 0;
-        }
-        return Math.round(sentenceCount / sentenceFragmentsByPage.length);
+        return sentenceCount;
     }
 
     public updateActualCount(actual: number, max: number, id: string): void {
         $("#" + id).html(actual.toString());
         const acceptable = actual <= max || max === 0;
+        // The two styles here must match ones defined in ReaderTools.htm or its stylesheet.
+        // It's important NOT to use two names where one is a substring of the other (e.g., unacceptable
+        // instead of tooLarge). That will mess things up going from the longer to the shorter.
+        this.setPresenceOfClass(id, acceptable, "acceptable");
+        this.setPresenceOfClass(id, !acceptable, "tooLarge");
+    }
+
+    public updateActualAverageCount(
+        average: number,
+        max: number,
+        id: string
+    ): void {
+        $("#" + id).html(average.toFixed(1));
+        const acceptable = average <= max || max === 0;
         // The two styles here must match ones defined in ReaderTools.htm or its stylesheet.
         // It's important NOT to use two names where one is a substring of the other (e.g., unacceptable
         // instead of tooLarge). That will mess things up going from the longer to the shorter.
