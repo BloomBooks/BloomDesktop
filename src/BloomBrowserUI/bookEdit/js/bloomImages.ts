@@ -507,7 +507,7 @@ function SetAlternateTextOnImages(element) {
             .fail(() => {
                 $(element).attr(
                     "alt",
-                    theOneLocalizationManager.simpleDotNetFormat(englishText, [
+                    theOneLocalizationManager.simpleFormat(englishText, [
                         decodedName
                     ])
                 );

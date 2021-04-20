@@ -1714,7 +1714,7 @@ export class ReaderToolsModel {
             msgDiv.html("");
         } else {
             msgDiv.html(
-                theOneLocalizationManager.simpleDotNetFormat(
+                theOneLocalizationManager.simpleFormat(
                     $(toolbox)
                         .find("#allowed_word_list_truncated_text")
                         .html(),

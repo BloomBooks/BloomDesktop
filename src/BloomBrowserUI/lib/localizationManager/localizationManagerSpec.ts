@@ -55,4 +55,34 @@ describe("localizationManager", () => {
         );
         expect(result6).toBe("This is a [**] test (*).");
     });
+
+    it("simpleFormat replaces %0 and %1 with l10nParams", () => {
+        const result = theOneLocalizationManager.simpleFormat(
+            "%1 likes %0, but %0 does not like %1",
+            ["Jack", "Jill"]
+        );
+        expect(result).toBe("Jill likes Jack, but Jack does not like Jill");
+    });
+    it("simpleFormat replaces {0} and {1} with l10nParams", () => {
+        const result = theOneLocalizationManager.simpleFormat(
+            "{1} likes {0}, but {0} does not like {1}",
+            ["Jack", "Jill"]
+        );
+        expect(result).toBe("Jill likes Jack, but Jack does not like Jill");
+    });
+    it("simpleFormat does not replace missing params", () => {
+        const result = theOneLocalizationManager.simpleFormat(
+            "{1} likes {0}, but {7} does not like %8",
+            ["Jack", undefined]
+        );
+        expect(result).toBe("{1} likes Jack, but {7} does not like %8");
+    });
+
+    it("simpleFormat can insert empty string", () => {
+        const result = theOneLocalizationManager.simpleFormat(
+            "the translation of '{0}' is '{1}'",
+            ["Jack", ""]
+        );
+        expect(result).toBe("the translation of 'Jack' is ''");
+    });
 });
