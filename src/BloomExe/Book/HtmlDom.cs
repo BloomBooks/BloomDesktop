@@ -990,18 +990,21 @@ namespace Bloom.Book
 		/// Get all the language tags which have visible content in this DOM
 		/// </summary>
 		/// <returns>Set of language tags</returns>
-		public ISet<string> GetLanguagesWithContent(bool includeXMatter)
+		public ISet<string> GetLanguagesWithContent()
 		{
 			ISet<string> result = new HashSet<string>();
-			foreach (var div in GetLanguageDivs(includeXMatter)
-				// If the text isn't visible, the language data doesn't really matter.
-				// See https://issues.bloomlibrary.org/youtrack/issue/BL-9831.
-				.Where(div => div.Attributes["class"].Value.Contains("bloom-visibility-code-on")))
+			var langDivSet = new HashSet<XmlElement>();
+			// If xmatter text isn't visible, its language data doesn't really matter.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-9831.
+			langDivSet.AddRange(GetLanguageDivs(true).Where(div => div.Attributes["class"].Value.Contains("bloom-visibility-code-on")));
+			// Now add other languages from content pages only that have text that are not marked
+			// as visible, but could be made visible by the user in Bloom Reader.
+			langDivSet.AddRange(GetLanguageDivs(false));
+			foreach (var div in langDivSet)
 			{
 				if (!string.IsNullOrWhiteSpace(div.InnerText))
 					result.Add(div.Attributes["lang"].Value);
 			}
-
 			return result;
 		}
 
