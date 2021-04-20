@@ -158,7 +158,7 @@ export class LocalizationManager {
         // is this a string.format style request?
         if (args.length > 0) {
             // Do the formatting.
-            text = this.simpleDotNetFormat(text, args);
+            text = this.simpleFormat(text, args);
         }
 
         return text;
@@ -280,7 +280,7 @@ export class LocalizationManager {
                 let text = HtmlDecode(response.data.text);
                 // is this a C#-style string.format style request?
                 if (args.length > 0) {
-                    text = this.simpleDotNetFormat(text, args);
+                    text = this.simpleFormat(text, args);
                 }
                 if (!includeSuccessInfo) deferred.resolve(text);
                 else {
@@ -296,7 +296,7 @@ export class LocalizationManager {
                 if (englishDefault) {
                     text = HtmlDecode(englishText);
                     if (args.length > 0) {
-                        text = this.simpleDotNetFormat(text, args);
+                        text = this.simpleFormat(text, args);
                     }
                     deferred.resolve(text);
                 } else {
@@ -383,14 +383,31 @@ export class LocalizationManager {
     /**
      * Return a formatted string.
      * Replaces {0}, {1} ... {n} with the corresponding elements of the args array.
+     * Replaces %0, %1...%n with the corresponding elements of the args array
+     * (Thus, callers can use either C or DotNet param substitution)
      * @param {String} format
      * @param {String[]} args
      * @returns {String}
      */
-    public simpleDotNetFormat(format: string, args: string[]): string {
-        return format.replace(/{(\d+)}/g, (match: string, index: number) => {
-            return typeof args[index] !== "undefined" ? args[index] : match;
-        });
+    public simpleFormat(format: string, args: (string | undefined)[]): string {
+        // The match functions here are tricky. The first argument is the whole match, e.g., {0}, which is no use
+        // and is ignored. The second argument is the first capture group, thus typically a string that looks
+        // like a number, e.g., "0". The code then takes advantage of Javascript's ability to use a number-like
+        // string in place of a number to index an array. Telling typescript that the second function argument
+        // is a number is a trick. It's really a string, but since it's the result of matching \d+, we can be
+        // sure it will work as a number.
+        const dotNetOutput = format.replace(
+            /{(\d+)}/g,
+            (match: string, index: number) => {
+                return args[index] ?? match;
+            }
+        );
+        return dotNetOutput.replace(
+            /%(\d+)/g,
+            (match: string, index: number) => {
+                return args[index] ?? match;
+            }
+        );
     }
 
     /**

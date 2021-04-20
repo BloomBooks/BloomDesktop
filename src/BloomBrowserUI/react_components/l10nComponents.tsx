@@ -50,7 +50,8 @@ export interface ILocalizationProps extends IUILanguageAwareProps {
 }
 
 export interface ILocalizationState {
-    translation?: string;
+    retrievedTranslation?: string; // what came back from getLocalization; may have {0}, %1 etc; may remain undefined if alreadyLocalized
+    translation?: string; // The final thing we want to display, translated and with {0}, %1 etc replaced
     tipEnabledTranslation?: string;
     tipDisabledTranslation?: string;
     lookupSuccessful?: boolean;
@@ -66,7 +67,6 @@ export class LocalizableElement<
     private isComponentMounted: boolean;
     private tooltipKey: string;
     private disabledTooltipKey: string;
-    private localizedText: string;
 
     private previousL10nKey: string = "";
 
@@ -118,19 +118,14 @@ export class LocalizableElement<
     }
 
     public componentDidUpdate() {
-        if (this.localizedText && this.props.l10nParam0) {
-            let newText = this.localizedText.replace(
-                "%0",
-                this.props.l10nParam0!
-            );
-            if (this.props.l10nParam1) {
-                newText = newText.replace("%1", this.props.l10nParam1!);
-            }
-            if (newText != this.state.translation) {
-                this.setState({
-                    translation: newText
-                });
-            }
+        const newText = theOneLocalizationManager.simpleFormat(
+            this.state.retrievedTranslation ?? this.getOriginalStringContent(),
+            [this.props.l10nParam0, this.props.l10nParam1]
+        );
+        if (newText != this.state.translation) {
+            this.setState({
+                translation: newText
+            });
         }
         if (this.props.l10nKey != this.previousL10nKey) {
             this.fetchTranslation();
@@ -175,15 +170,19 @@ export class LocalizableElement<
                 english,
                 l10nKey: this.props.l10nKey,
                 l10nComment: this.props.l10nComment,
-                l10nParam0: this.props.l10nParam0,
-                l10nParam1: this.props.l10nParam1,
+                // do NOT pass these. Doing so is confusing, because this is called from componentDidMount,
+                // and it's possible these params are retrieved by the caller from axios and are still null
+                // when componentDidMount is called. l10nParams need to be handled by something that
+                // will re-compute (like componentDidUpdate). OTOH, we generally don't need to re-call
+                // getLocalization when they change...they are used in the output that it produces.
+                // l10nParam0: this.props.l10nParam0,
+                // l10nParam1: this.props.l10nParam1,
                 temporarilyDisableI18nWarning: this.props
                     .temporarilyDisableI18nWarning,
                 callback: (localizedText, success) => {
-                    this.localizedText = localizedText;
                     if (this.isComponentMounted) {
                         this.setState({
-                            translation: localizedText,
+                            retrievedTranslation: localizedText,
                             lookupSuccessful: success
                         });
                     }

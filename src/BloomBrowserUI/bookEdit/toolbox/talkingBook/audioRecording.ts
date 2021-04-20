@@ -458,11 +458,11 @@ export default class AudioRecording {
                     url = blAeneasUrl + "/linux";
                 }
                 const anchor = '<a href="' + url + '">' + aeneasName + "</a>";
-                const missingDependencyHoverTip = theOneLocalizationManager.simpleDotNetFormat(
+                const missingDependencyHoverTip = theOneLocalizationManager.simpleFormat(
                     localizedMessage,
                     [aeneasName]
                 );
-                const missingDependencyMsgWithLink = theOneLocalizationManager.simpleDotNetFormat(
+                const missingDependencyMsgWithLink = theOneLocalizationManager.simpleFormat(
                     localizedMessage,
                     [anchor]
                 );
