@@ -12,8 +12,8 @@ import { ThemeProvider } from "@material-ui/styles";
 // A device for getting code into the team collection module
 import { ProgressDialog } from "../react_components/IndependentProgressDialog";
 export { ProgressDialog };
-import { NewTeamCollection } from "./NewTeamCollection";
-export { NewTeamCollection };
+import { JoinTeamCollection } from "./JoinTeamCollection";
+export { JoinTeamCollection };
 import { CreateTeamCollection } from "./CreateTeamCollection";
 export { CreateTeamCollection };
 

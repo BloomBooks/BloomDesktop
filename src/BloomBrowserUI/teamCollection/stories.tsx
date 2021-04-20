@@ -9,17 +9,25 @@ import { getBloomButton } from "./TeamCollectionBookStatusPanel";
 import "./TeamCollectionBookStatusPanel.less";
 import { Typography } from "@material-ui/core";
 import { BloomAvatar } from "../react_components/bloomAvatar";
+import { JoinTeamCollection } from "./JoinTeamCollection";
+import "./JoinTeamCollection.less";
+import { TeamCollectionDialog } from "./TeamCollectionDialog";
+import { TeamCollectionSettingsPanel } from "./TeamCollectionSettingsPanel";
+import { CreateTeamCollection } from "./CreateTeamCollection";
+import { ProgressDialog } from "../react_components/IndependentProgressDialog";
+import "../react_components/IndependentProgressDialog.less";
 
 addDecorator(storyFn => (
     <ThemeProvider theme={theme}>
         <StorybookContext.Provider value={true}>
-            {storyFn()}
+            <div id="reactRoot">{storyFn()}</div>
         </StorybookContext.Provider>
     </ThemeProvider>
 ));
 
 // Try to simulate the environment of the page preview
 const wrapperStyles: React.CSSProperties = {
+    height: "300px",
     width: "560px", // imitate A5 page width
     border: "1px solid green",
     backgroundColor: "lightgreen"
@@ -58,7 +66,7 @@ const avatar = (lockedByMe: boolean) => (
     />
 );
 
-storiesOf("Team Collection components", module)
+storiesOf("Team Collection components/StatusPanelCommon", module)
     .add("Available", () =>
         testPage(
             <StatusPanelCommon
@@ -120,3 +128,37 @@ storiesOf("Team Collection components", module)
             />
         )
     );
+
+storiesOf("Team Collection components", module).add(
+    "JoinTeamCollection",
+    () => (
+        <div id="reactRoot" className="JoinTeamCollection">
+            <JoinTeamCollection />
+        </div>
+    )
+);
+
+storiesOf("Team Collection components", module).add(
+    "TeamCollectionDialog",
+    () => <TeamCollectionDialog />
+);
+
+storiesOf(
+    "Team Collection components",
+    module
+).add("TeamCollectionSettingsPanel", () => <TeamCollectionSettingsPanel />);
+
+storiesOf("Team Collection components", module).add(
+    "CreateTeamCollection",
+    () => (
+        <CreateTeamCollection
+            closeDlg={() => {
+                alert("close");
+            }}
+        />
+    )
+);
+
+storiesOf("ProgressDialog", module).add("ProgressDialog", () => (
+    <ProgressDialog />
+));

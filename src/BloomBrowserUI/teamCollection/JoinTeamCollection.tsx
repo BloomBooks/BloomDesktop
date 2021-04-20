@@ -1,8 +1,7 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import { BloomApi } from "../utils/bloomApi";
 import { Div } from "../react_components/l10nComponents";
-import "./NewTeamCollection.less";
+import "./JoinTeamCollection.less";
 import BloomButton from "../react_components/bloomButton";
 import { ExclaimTriangle } from "../react_components/ExclaimTriangle";
 import theme from "../bloomMaterialUITheme";
@@ -10,10 +9,8 @@ import { ThemeProvider } from "@material-ui/styles";
 
 // The contents of the dialog that comes up when double-clicking a .JoinBloomTC file.
 // Two versions (create new local collection, and merge with existing local) are both handled here.
-// The class is rendered by the connectNewTeamCollectionScreen into the root element in
-// NewTeamCollection.html in an independent C# BrowserDialog.
 
-export const NewTeamCollection: React.FunctionComponent = props => {
+export const JoinTeamCollection: React.FunctionComponent = props => {
     const urlParams = new URLSearchParams(window.location.search);
     const existingCollection = !!urlParams.get("existingCollection");
     const collectionName = urlParams.get("name") ?? "missing";
@@ -122,7 +119,7 @@ export const NewTeamCollection: React.FunctionComponent = props => {
                         enabled={true}
                         variant="outlined"
                         onClick={() => {
-                            BloomApi.post("dialog/close");
+                            BloomApi.post("common/closeReactDialog");
                         }}
                     >
                         Cancel
@@ -131,9 +128,4 @@ export const NewTeamCollection: React.FunctionComponent = props => {
             </div>
         </ThemeProvider>
     );
-};
-
-// allow plain 'ol javascript in the html to connect up react
-(window as any).connectNewTeamCollectionScreen = element => {
-    ReactDOM.render(<NewTeamCollection />, element);
 };

@@ -717,14 +717,13 @@ namespace Bloom.TeamCollection
 			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(repoFolder));
 			var localCollectionFolder =
 				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, collectionName);
-			var url = BloomFileLocator.GetBrowserFile(false, "teamCollection", "NewTeamCollection.html").ToLocalhost()
-			          + $"?name={collectionName}";
+			var urlQueryString = $"name={collectionName}";
 			if (Directory.Exists(localCollectionFolder))
 			{
-				url += "&existingCollection=true"; // any 'truthy' value in JS will do
+				urlQueryString += "&existingCollection=true"; // any 'truthy' value in JS will do
 			}
 
-			using (var dlg = new BrowserDialog(url))
+			using (var dlg = new ReactDialog("JoinTeamCollection", urlQueryString))
 			{
 				dlg.Width = 560;
 				dlg.Height = 400;

@@ -3,6 +3,7 @@ import * as ReactDOM from "react-dom";
 import { BookPreviewPanel } from "../bookPreview/BookPreviewPanel";
 import { TeamCollectionSettingsPanel } from "../teamCollection/TeamCollectionSettingsPanel";
 import { TeamCollectionDialog } from "../teamCollection/TeamCollectionDialog";
+import { JoinTeamCollection } from "../teamCollection/JoinTeamCollection";
 import { AutoUpdateSoftwareDialog } from "../react_components/AutoUpdateSoftwareDialog";
 import { ProblemDialog } from "../problemDialog/ProblemDialog";
 import { ProgressDialog } from "../react_components/IndependentProgressDialog";
@@ -12,6 +13,7 @@ const knownComponents = {
     BookPreviewPanel: BookPreviewPanel,
     TeamCollectionSettingsPanel: TeamCollectionSettingsPanel,
     TeamCollectionDialog: TeamCollectionDialog,
+    JoinTeamCollection: JoinTeamCollection,
     AutoUpdateSoftwareDialog: AutoUpdateSoftwareDialog,
     ProblemDialog: ProblemDialog,
     ProgressDialog: ProgressDialog

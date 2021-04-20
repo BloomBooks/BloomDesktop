@@ -831,7 +831,6 @@ namespace Bloom.Collection
 			// reactControl1
 			// 
 			this.reactControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.reactControl1.JavascriptBundleName = "teamCollectionSettingsBundle.js";
 			this._L10NSharpExtender.SetLocalizableToolTip(this.reactControl1, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.reactControl1, null);
 			this._L10NSharpExtender.SetLocalizingId(this.reactControl1, "ReactControl");

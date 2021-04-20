@@ -49,7 +49,7 @@ namespace Bloom
 		/// <param name="projectSettingsPath"></param>
 		/// <param name="parentContainer"></param>
 		/// <param name="justEnoughForHtmlDialog">If true, we're aiming for the minimum init that will
-		/// let us display an HTML dialog. Currently this will be the NewTeamCollection dialog.
+		/// let us display an HTML dialog. Currently this will be the JoinTeamCollection dialog.
 		/// We need the BloomServer running (so we can make API requests, including for localization).
 		/// We can avoid a lot of other expensive stuff.</param>
 		public ProjectContext(string projectSettingsPath, IContainer parentContainer, bool justEnoughForHtmlDialog = false)

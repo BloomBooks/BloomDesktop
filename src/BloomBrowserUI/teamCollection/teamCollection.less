@@ -1,0 +1,24 @@
+// This is a place to put all the rules which apply to the whole bundle.
+// At one point, we were trying to define these in the individual .less files
+// for each component. But people didn't realize they applied to the whole bundle,
+// so we kept stepping on each other. I moved them here to make it obvious.
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+// For now, these are applied to all `reactRoot`s.
+// To apply styling to a specific one, do something like `#reactRoot.MyComponentName`
+// in the individual component's less file.
+#reactRoot {
+    overflow: auto;
+    height: 100%;
+    box-sizing: border-box;
+}

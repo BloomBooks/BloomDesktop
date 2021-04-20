@@ -126,7 +126,7 @@ namespace Bloom.TeamCollection
 			try
 			{
 				FolderTeamCollection.JoinCollectionTeam();
-				BrowserDialog.CloseDialog();
+				ReactDialog.CloseCurrentModal();
 				request.PostSucceeded();
 			}
 			catch (Exception e)
@@ -404,7 +404,6 @@ namespace Bloom.TeamCollection
 				}
 
 				_tcManager.ConnectToTeamCollection(_folderForCreateTC, _settings.CollectionId);
-				BrowserDialog.CloseDialog();
 				_callbackToReopenCollection?.Invoke();
 
 				request.PostSucceeded();

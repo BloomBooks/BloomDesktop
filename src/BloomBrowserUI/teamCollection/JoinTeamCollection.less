@@ -1,21 +1,9 @@
 @import "../bloomUI.less";
+@import "teamCollection.less";
 
-// Note: because the IndependentProgressDialog.tsx is in the same webpack module and imports
-// IndependentProgressDialog.less, those styles also apply, so keep everything specific to this
-// inside #new-team-collection-screen except the very first rule, which necessarily applies to
-// everything outside, but is fortunately common to both.
-
-// Everything outside the first vertical flexbox we want to grow has to be 100%
-html,
-body {
-    height: 100%;
-}
-
-body {
-    margin: 0;
-}
-
-#new-team-collection-screen {
+// Note: other components are in the same webpack module so any rules here will get applied to
+// those components and vice versa, so keep everything specific to this inside #reactRoot.JoinTeamCollection
+#reactRoot.JoinTeamCollection {
     height: 100%;
     * {
         box-sizing: border-box;
@@ -37,7 +25,6 @@ body {
         flex-grow: 1;
     }
     .join-heading {
-        font-weight: bold;
         font-size: x-large;
     }
 
@@ -57,9 +44,10 @@ body {
         display: flex;
         width: 100%;
         svg {
-            height: 30px;
-            width: 45px;
+            height: 20px;
+            width: 30px;
             margin-right: 15px;
+            margin-top: 4px; // make it align with the top of the text
         }
     }
     .icon-row-grow {

@@ -21,20 +21,13 @@ namespace Bloom.web
 
 	public partial class ReactControl : UserControl
 	{
-		private string _javascriptBundleName;
 		private string _reactComponentName;
 		private string _urlQueryString;
+
 		public ReactControl()
 		{
 			InitializeComponent();
-			this.BackColor = Color.White;// we use a different color in design mode
-		}
-
-		[Browsable(true), Category("Setup")]
-		public string JavascriptBundleName
-		{
-			get { return _javascriptBundleName; }
-			set { _javascriptBundleName = value; }
+			BackColor = Color.White;// we use a different color in design mode
 		}
 
 		[Browsable(true), Category("Setup")]
@@ -56,7 +49,7 @@ namespace Bloom.web
 			if (this.DesignModeAtAll())
 			{
 				_settingsDisplay.Visible = true;
-				_settingsDisplay.Text = $"ReactControl{Environment.NewLine}{Environment.NewLine}Javascript Bundle: {_javascriptBundleName}{Environment.NewLine}React Component Name: {_reactComponentName}{Environment.NewLine}{Environment.NewLine}Remember to add the component to the map in WireUpReact.ts";
+				_settingsDisplay.Text = $"ReactControl{Environment.NewLine}{Environment.NewLine}React Component Name: {_reactComponentName}{Environment.NewLine}{Environment.NewLine}Remember to add the component to the map in WireUpReact.ts";
 				return;
 			}
 
@@ -65,16 +58,12 @@ namespace Bloom.web
 			var tempFile = TempFile.WithExtension("htm");
 			tempFile.Detach(); // the browser control will clean it up
 
-			var loadJavascriptBundle = string.IsNullOrWhiteSpace(_javascriptBundleName)
-				? ""
-				: "<script src = '/" + _javascriptBundleName + "'></script>";
 			RobustFile.WriteAllText(tempFile.Path, $@"<!DOCTYPE html>
 				<html>
 				<head>
 					<meta charset = 'UTF-8' />
 					<script src = '/commonBundle.js' ></script>
 					<script src = '/wireUpBundle.js' ></script>
-					{loadJavascriptBundle}
 					<script>
 						window.onload = () => {{
 							const rootDiv = document.getElementById('reactRoot');
@@ -83,7 +72,7 @@ namespace Bloom.web
 					</script>
 				</head>
 				<body>
-					<div id='reactRoot'>Component should replace this</div >
+					<div id='reactRoot' class='{_reactComponentName}'>Component should replace this</div>
 				</body>
 				</html>");
 
@@ -94,7 +83,7 @@ namespace Bloom.web
 			{
 				Dock = DockStyle.Fill,
 				Location = new Point(3, 3),
-				Size = new Size(this.Width - 6, this.Height - 6),
+				Size = new Size(Width - 6, Height - 6),
 				BackColor = Color.White
 			};
 
@@ -105,7 +94,7 @@ namespace Bloom.web
 			// So just don't show it at all until it contains what we want to see.
 			browser.WebBrowser.DocumentCompleted += (unused, args) =>
 			{
-				this.Controls.Add(browser);
+				Controls.Add(browser);
 			};
 			browser.NavigateToTempFileThenRemoveIt(tempFile.Path, _urlQueryString);
 		}
