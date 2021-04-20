@@ -150,7 +150,7 @@ namespace Bloom.CLI
 				return;
 
 			var htmlDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(bookHtmContent, false));
-			var languagesWithContent = htmlDom.GetLanguagesWithContent(true).ToArray();
+			var languagesWithContent = htmlDom.GetLanguagesWithContent().ToArray();
 
 			// Find something like this
 			//	[lang='en']
