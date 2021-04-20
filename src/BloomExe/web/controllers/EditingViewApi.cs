@@ -23,6 +23,19 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("editView/editPagePainted", HandleEditPagePainted, true);
 			apiHandler.RegisterEndpointHandler("editView/saveToolboxSetting", HandleSaveToolboxSetting, true);
 			apiHandler.RegisterEndpointHandler("editView/setTopic", HandleSetTopic, true);
+			apiHandler.RegisterEndpointHandler("editView/setIsSelectionRange", HandleSetIsSelectionRange, false);
+		}
+
+		/// <summary>
+		/// Currently this is only valid in EditingView, since it depends on the Javascript code being
+		/// configured to send appropriate messages to the editView/setIsSelectionRange API.
+		/// </summary>
+		public static bool IsSelectionRange;
+
+		private void HandleSetIsSelectionRange(ApiRequest request)
+		{
+			IsSelectionRange = request.RequiredPostBooleanAsJson();
+			request.PostSucceeded();
 		}
 
 		public void HandleSetModalState(ApiRequest request)

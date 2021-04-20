@@ -1046,6 +1046,12 @@ interface String {
     startsWith(string): boolean;
 }
 
+function haveRangeSelection(): boolean {
+    const selection = document.getSelection();
+    return !!selection && !selection.isCollapsed;
+}
+
+let reportedRangeSelection = haveRangeSelection();
 // ---------------------------------------------------------------------------------
 // called inside document ready function
 // ---------------------------------------------------------------------------------
@@ -1055,6 +1061,24 @@ export function bootstrap() {
     $.fn.reverse = function() {
         return this.pushStack(this.get().reverse(), arguments);
     };
+
+    document.addEventListener("selectionchange", () => {
+        const rangeSelection = haveRangeSelection();
+        if (rangeSelection != reportedRangeSelection) {
+            BloomApi.postBoolean(
+                "editView/setIsSelectionRange",
+                rangeSelection
+            );
+            reportedRangeSelection = rangeSelection;
+        }
+    });
+    // We could force this in C#, but it's easier to just send a message to convey the state
+    // that the page is in to begin with. I think this is always false at bootstrap.
+    reportedRangeSelection = haveRangeSelection();
+    BloomApi.postBoolean(
+        "editView/setIsSelectionRange",
+        reportedRangeSelection
+    );
 
     /* reviewSlog typescript just couldn't cope with this. Our browser has this built in , so it's ok
             //if this browser doesn't have endsWith built in, add it
