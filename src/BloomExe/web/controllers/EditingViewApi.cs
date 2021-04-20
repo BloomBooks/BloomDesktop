@@ -23,6 +23,13 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("editView/editPagePainted", HandleEditPagePainted, true);
 			apiHandler.RegisterEndpointHandler("editView/saveToolboxSetting", HandleSaveToolboxSetting, true);
 			apiHandler.RegisterEndpointHandler("editView/setTopic", HandleSetTopic, true);
+			apiHandler.RegisterEndpointHandler("editView/isTextSelected", HandleIsTextSelected, false);
+		}
+
+		private void HandleIsTextSelected(ApiRequest request)
+		{
+			EditingModel.IsTextSelected = request.RequiredPostBooleanAsJson();
+			request.PostSucceeded();
 		}
 
 		public void HandleSetModalState(ApiRequest request)

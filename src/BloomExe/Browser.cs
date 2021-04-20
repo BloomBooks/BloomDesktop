@@ -13,6 +13,8 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Api;
+using Bloom.Edit;
+using Bloom.web.controllers;
 using Gecko;
 using Gecko.DOM;
 using Gecko.Events;
@@ -274,8 +276,6 @@ namespace Bloom
 
 			try
 			{
-				// BL-3658 GeckoFx-45 has a bug in the CanXSelection Properties, they always return 'true'
-				// Tom Hindle suggested a workaround that seems to work.
 				var isTextSelection = IsThereACurrentTextSelection();
 				_cutCommand.Enabled = _browser != null && isTextSelection;
 				_copyCommand.Enabled = _browser != null && isTextSelection;
@@ -299,18 +299,13 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// Workaround suggested by Tom Hindle, since GeckoFx-45's CanXSelection properties aren't working.
+		/// We configure something in Javascript to keep track of this, since GeckoFx-45's CanXSelection properties aren't working,
+		/// and a workaround involving making a GeckoWindow object and querying its selection led to memory leaks (BL-9757).
 		/// </summary>
 		/// <returns></returns>
 		private bool IsThereACurrentTextSelection()
 		{
-			using (var win = new GeckoWindow(_browser.WebBrowserFocus.GetFocusedWindowAttribute()))
-			{
-				var sel = win.Selection;
-				if (sel.IsCollapsed || sel.FocusNode is GeckoImageElement)
-					return false;
-			}
-			return true;
+			return EditingModel.IsTextSelected;
 		}
 
 		enum JavaScriptUndoState
