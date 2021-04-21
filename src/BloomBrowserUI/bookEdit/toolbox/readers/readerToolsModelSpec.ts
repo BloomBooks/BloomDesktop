@@ -27,7 +27,7 @@ describe("averageWordsInPage tests", () => {
         ];
         expect(ReaderToolsModel.averageWordsInPage(data)).toBe(3);
     });
-    it("multiple sentences on page, rounding 0.5 up", () => {
+    it("multiple sentences on page, fractional result 1", () => {
         // Two pages, first with two sentence of three words
         const data = [
             [
@@ -38,9 +38,9 @@ describe("averageWordsInPage tests", () => {
             ],
             [{ words: ["four", "five", "six"] } as TextFragment]
         ];
-        expect(ReaderToolsModel.averageWordsInPage(data)).toBe(6);
+        expect(ReaderToolsModel.averageWordsInPage(data)).toBe(11 / 2);
     });
-    it("multiple sentences on page, rounding down", () => {
+    it("multiple sentences on page, fractional result 2", () => {
         // Three pages, 13 words
         const data = [
             [
@@ -52,7 +52,7 @@ describe("averageWordsInPage tests", () => {
             [{ words: ["four", "five", "six"] } as TextFragment],
             [{ words: ["four", "five"] } as TextFragment]
         ];
-        expect(ReaderToolsModel.averageWordsInPage(data)).toBe(4);
+        expect(ReaderToolsModel.averageWordsInPage(data)).toBe(13 / 3);
     });
 });
 
@@ -85,16 +85,16 @@ describe("averageGlyphsInWord tests", () => {
         ];
         expect(ReaderToolsModel.averageGlyphsInWord(data)).toBe(4);
     });
-    it("rounding up", () => {
+    it("fractional result", () => {
         // Four words, 18 letters
         const data = [
             [{ words: ["four", "five"] } as TextFragment],
             [{ words: ["sixes", "seven"] } as TextFragment]
         ];
-        expect(ReaderToolsModel.averageGlyphsInWord(data)).toBe(5);
+        expect(ReaderToolsModel.averageGlyphsInWord(data)).toBe(18 / 4);
     });
-    it("rounding down, with diacritics", () => {
-        // Four words, 17 letters plus several diacritics
+    it("fractional result, with diacritics", () => {
+        // Four words, 15 letters plus several diacritics
         const data = [
             [
                 {
@@ -103,7 +103,7 @@ describe("averageGlyphsInWord tests", () => {
             ],
             [{ words: ["si\u0301x", "se\u0301vn"] } as TextFragment]
         ];
-        expect(ReaderToolsModel.averageGlyphsInWord(data)).toBe(4);
+        expect(ReaderToolsModel.averageGlyphsInWord(data)).toBe(15 / 4);
     });
 });
 
@@ -116,7 +116,7 @@ describe("averageSentencesInPage tests", () => {
         ];
         expect(ReaderToolsModel.averageSentencesInPage(data)).toBe(1);
     });
-    it("multiple sentences on page, rounding 0.5 up", () => {
+    it("multiple sentences on page, fractional result", () => {
         // Two pages, first with two sentences
         const data = [
             [
@@ -127,9 +127,9 @@ describe("averageSentencesInPage tests", () => {
             ],
             [{ words: ["four", "five", "six"] } as TextFragment]
         ];
-        expect(ReaderToolsModel.averageSentencesInPage(data)).toBe(2);
+        expect(ReaderToolsModel.averageSentencesInPage(data)).toBe(1.5);
     });
-    it("multiple sentences on page, rounding down", () => {
+    it("multiple sentences on page, fractional result", () => {
         // Three pages, seven sentences
         const data = [
             [
@@ -146,7 +146,7 @@ describe("averageSentencesInPage tests", () => {
             ],
             [{ words: ["four", "five"] } as TextFragment]
         ];
-        expect(ReaderToolsModel.averageSentencesInPage(data)).toBe(2);
+        expect(ReaderToolsModel.averageSentencesInPage(data)).toBe(7 / 3);
     });
     it("computes max average sentence length, ignoring empty sentences", () => {
         const data = [
