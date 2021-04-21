@@ -2307,6 +2307,14 @@
         <source xml:lang="en">Max</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Max</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.MaxInBook" sil:dynamic="true">
+        <source xml:lang="en">max in book</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.MaxInBook</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.MaxSentenceLength" sil:dynamic="true">
+        <source xml:lang="en">max sentence length</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.MaxSentenceLength</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerPage" sil:dynamic="true">
         <source xml:lang="en">per page</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.PerPage</note>
@@ -2343,6 +2351,10 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Total" sil:dynamic="true">
         <source xml:lang="en">total</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Total</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.TotalInBook" sil:dynamic="true">
+        <source xml:lang="en">total in book</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.TotalInBook</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Unique" sil:dynamic="true">
         <source xml:lang="en">unique</source>

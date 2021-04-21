@@ -51,6 +51,10 @@ html
 					td.statistics-max#maxUniqueWordsPerBook
 					td.statistics-actual#actualUniqueWords -
 				tr
+					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.MaxSentenceLength') max sentence length
+					td.statistics-max#maxWordsPerSentenceInBook
+					td.statistics-actual#actualMaxWordsPerSentence -
+				tr
 					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.Average') avg per sentence
 					td.statistics-max#maxAverageWordsPerSentence
 					td.statistics-actual#actualAverageWordsPerSentence -
@@ -70,6 +74,10 @@ html
 					td.statistics-max#maxLettersPerWord
 					td.statistics-actual#actualLettersPerWord -
 				tr
+					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.MaxInBook') max in book
+					td.statistics-max#maxGlyphsPerWordInBook
+					td.statistics-actual#actualMaxGlyphsPerWord -
+				tr
 					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.AverageInBook') avg in book
 					td.statistics-max#maxAverageGlyphsPerWord
 					td.statistics-actual#actualAverageGlyphsPerWord -
@@ -84,6 +92,10 @@ html
 					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.ThisPageLC') this page
 					td.statistics-max#maxSentencesPerPage
 					td.statistics-actual#actualSentencesPerPage -
+				tr
+					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.TotalInBook') total in book
+					td.statistics-max#maxSentencesPerBook
+					td.statistics-actual#actualSentenceCount -
 				tr
 					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.AverageInBook') avg in book
 					td.statistics-max#maxAverageSentencesPerPage
