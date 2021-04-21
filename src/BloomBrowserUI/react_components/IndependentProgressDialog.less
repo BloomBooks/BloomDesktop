@@ -1,4 +1,5 @@
 @import "../bloomUI.less";
+@import "../teamCollection/teamCollection.less";
 
 @outer-margin: 10px;
 @copy-button-width: 15px;
@@ -8,45 +9,28 @@
     @copy-button-width;
 @title-height: 67px;
 @button-row-margin: 20px;
-@button-height: 40px; // experimentall determined
+@button-height: 40px; // experimentally determined
 
-html,
-body {
-    height: 100%; // to make progress-root fill the window all parents must do so.
-}
-
-body {
-    box-sizing: border-box;
-    padding: 0;
-    margin: 0;
-}
-
-// Everything else should be inside this, to guard against unexpected interference.
-#reactRoot {
+// Everything should be inside this, to guard against unexpected interference.
+#progress-root {
     height: 100%;
-    padding-bottom: @outer-margin;
-    box-sizing: border-box;
-
-    #progress-root {
+    .progress-box {
         height: 100%;
-        .progress-box {
-            height: 100%;
-            width: calc(
-                100% - @copy-button-width - @copy-button-left-margin -
-                    @copy-button-right-margin - @main-margin
-            );
-            padding: 10px;
-            font-size: smaller;
-            background-color: @form-background;
-            overflow-y: scroll;
-            box-sizing: border-box;
-            margin-right: @main-margin;
-        }
-        .MuiDialogTitle-root {
-            color: white;
-            background-color: @bloom-purple;
-            margin-bottom: 15px;
-        }
+        width: calc(
+            100% - @copy-button-width - @copy-button-left-margin -
+                @copy-button-right-margin - @main-margin
+        );
+        padding: 10px;
+        font-size: smaller;
+        background-color: @form-background;
+        overflow-y: scroll;
+        box-sizing: border-box;
+        margin-right: @main-margin;
+    }
+    .MuiDialogTitle-root {
+        color: white;
+        background-color: @bloom-purple;
+        margin-bottom: 15px;
     }
 
     // We should be able to do this much more elegantly by making the parent display:flex column
@@ -89,6 +73,7 @@ body {
         margin-left: @main-margin;
         margin-right: @main-margin;
     }
+
     #progress-report {
         margin-top: 10px;
     }

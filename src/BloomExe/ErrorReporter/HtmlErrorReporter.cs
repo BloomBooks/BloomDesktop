@@ -422,7 +422,7 @@ namespace Bloom.ErrorReporter
 
 					
 					// Precondition: we must be on the UI thread for Gecko to work.
-					using (var dlg = BrowserDialogFactory.CreateReactDialog("problemReportBundle.js", "ProblemDialog", urlQueryString))
+					using (var dlg = BrowserDialogFactory.CreateReactDialog("ProblemDialog", urlQueryString))
 					{
 						dlg.FormBorderStyle = FormBorderStyle.FixedToolWindow;	// Allows the window to be dragged around
 						dlg.ControlBox = true;	// Add controls like the X button back to the top bar

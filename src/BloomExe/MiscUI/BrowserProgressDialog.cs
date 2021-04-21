@@ -41,8 +41,7 @@ namespace Bloom.MiscUI
 
 			// NOTE: This (specifically ShowDialog) blocks the main thread until the dialog is closed.
 			// Be careful to avoid deadlocks.
-			using (var dlg = new ReactDialog("teamCollectionSettingsBundle.js",
-				"ProgressDialog", $"title={title}"))
+			using (var dlg = new ReactDialog("ProgressDialog", $"title={title}"))
 			{
 				dlg.Width = 500;
 				dlg.Height = 300;

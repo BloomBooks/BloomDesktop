@@ -29,19 +29,18 @@ namespace Bloom.MiscUI
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.reactControl1 = new Bloom.web.ReactControl();
+			this.reactControl = new Bloom.web.ReactControl();
 			this.SuspendLayout();
 			// 
 			// reactControl1
 			// 
-			this.reactControl1.BackColor = System.Drawing.Color.White;
-			this.reactControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.reactControl1.JavascriptBundleName = null;
-			this.reactControl1.Location = new System.Drawing.Point(0, 0);
-			this.reactControl1.Name = "reactControl1";
-			this.reactControl1.ReactComponentName = null;
-			this.reactControl1.Size = new System.Drawing.Size(800, 450);
-			this.reactControl1.TabIndex = 0;
+			this.reactControl.BackColor = System.Drawing.Color.White;
+			this.reactControl.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.reactControl.Location = new System.Drawing.Point(0, 0);
+			this.reactControl.Name = "reactControl";
+			this.reactControl.ReactComponentName = null;
+			this.reactControl.Size = new System.Drawing.Size(800, 450);
+			this.reactControl.TabIndex = 0;
 			// 
 			// ReactDialog
 			// 
@@ -49,7 +48,7 @@ namespace Bloom.MiscUI
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(800, 450);
 			this.ControlBox = false;
-			this.Controls.Add(this.reactControl1);
+			this.Controls.Add(this.reactControl);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 			this.Name = "ReactDialog";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
@@ -60,6 +59,6 @@ namespace Bloom.MiscUI
 
 		#endregion
 
-		private Bloom.web.ReactControl reactControl1;
+		private Bloom.web.ReactControl reactControl;
 	}
 }

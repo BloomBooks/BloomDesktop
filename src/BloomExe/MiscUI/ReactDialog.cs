@@ -8,7 +8,7 @@ namespace Bloom.MiscUI
 {
 	/// <summary>
 	/// A dialog whose entire content is a react control. The constructor specifies
-	/// the component and module. Note that currently the component must be added to
+	/// the component. Note that currently the component must be added to
 	/// WireUpReact.ts to make things work.
 	/// All the interesting content and behavior is in the tsx file of the component.
 	/// The connection is through the child ReactControl, which entirely fills the dialog.
@@ -24,15 +24,15 @@ namespace Bloom.MiscUI
 
 		private static readonly List<ReactDialog> _activeDialogs = new List<ReactDialog>();
 
-		public ReactDialog(string javascriptBundleName, string reactComponentName, string urlQueryString = "")
+		public ReactDialog(string reactComponentName, string urlQueryString = "")
 		{
 			InitializeComponent();
 			FormClosing += ReactDialog_FormClosing;
-			this.reactControl1.JavascriptBundleName = javascriptBundleName;
-			this.reactControl1.ReactComponentName = reactComponentName;
-			this.reactControl1.UrlQueryString = urlQueryString;
+			reactControl.ReactComponentName = reactComponentName;
+			reactControl.UrlQueryString = urlQueryString;
 			_activeDialogs.Add(this);
 
+			Icon = global::Bloom.Properties.Resources.BloomIcon;
 		}
 
 		public static void CloseCurrentModal(string labelOfUiElementUsedToCloseTheDialog=null)

@@ -1,18 +1,7 @@
 @import "../bloomUI.less";
+@import "./teamCollection.less";
 @tab-panel-margin-top: 24px;
 @tab-panel-margin-sides: 26px;
-
-.button-row {
-    display: flex;
-}
-
-// Something higher up in our system that I haven't been able to discover sets the height of
-// html and body to 100% (possibly the Forms Dock.Fill?),
-// but it's unhelpful at best, we tend to get vertical scrollbars where not needed.
-html,
-body {
-    height: unset !important;
-}
 
 #teamCollection-settings {
     margin: @tab-panel-margin-top @tab-panel-margin-sides 0;
@@ -41,25 +30,13 @@ body {
     a {
         color: @bloom-blue;
     }
-}
 
-.extra-space-above {
-    margin-top: 40px;
-}
-
-.align-right {
-    display: flex;
-    justify-content: right;
-}
-
-.join-help-dialog {
-    .MuiPaper-root {
-        padding: 10px;
+    .extra-space-above {
+        margin-top: 40px;
     }
-    .teamCollection-heading {
-        margin-bottom: 10px;
-    }
-    img {
-        margin-top: 5px;
+
+    .align-right {
+        display: flex;
+        justify-content: right;
     }
 }
