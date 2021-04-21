@@ -57,6 +57,8 @@ In the Comic Tool, you can now set custom background colors for text boxes.
 
 In the Comic Tool, you can now click a button to duplicate the current bubble.
 
+When you hover over an image or image placeholder, Bloom now tells you what resolution image you need. This information can be useful to your illustrator.
+
 ## Copy Text from Source Bubble
 
 We have added a Copy button to the Source Bubble. ([Feature Request](https://community.software.sil.org/t/allow-copying-text-from-speech-bubbles-with-comic-books/3216/9))
