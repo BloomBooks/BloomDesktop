@@ -1575,5 +1575,11 @@ namespace Bloom.Edit
 			}
 			return widgetPath;
 		}
+
+		/// <summary>
+		/// Currently this is only valid in EditingView, since it depends on the Javascript code being
+		/// configured to send appropriate messages to the editView/setIsSelectionRange API.
+		/// </summary>
+		public static bool IsTextSelected;
 	}
 }
