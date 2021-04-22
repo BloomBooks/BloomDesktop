@@ -13,11 +13,11 @@ namespace Bloom.Api
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "showAdvancedFeatures", request =>
+			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "enabledExperimentalFeatures", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
-					request.ReplyWithText(Settings.Default.ShowExperimentalFeatures.ToString().ToLowerInvariant());
+					request.ReplyWithText(ExperimentalFeatures.TokensOfEnabledFeatures);
 				}
 				else // post
 				{
