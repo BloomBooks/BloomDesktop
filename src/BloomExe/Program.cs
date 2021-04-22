@@ -7,6 +7,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Windows.Forms;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Configuration;
 using Bloom.Collection;
 using Bloom.Collection.BloomPack;
@@ -43,6 +44,11 @@ namespace Bloom
 {
 	static class Program
 	{
+		// It's not clear where these constant strings belong.  They're used in the global program settings,
+		// which are on a per-user basis and use generated code.
+		public const string AllowExperimentalSources = "experimental-sources";
+		public const string AllowTeamCollection = "team-collection";
+
 		private const string _mutexId = "bloom";
 
 		//static HttpListener listener = new HttpListener();
@@ -109,6 +115,15 @@ namespace Bloom
 			// REVIEW: should the setting be used only for alpha and beta?
 			LocalizationManager.ReturnOnlyApprovedStrings = !Settings.Default.ShowUnapprovedLocalizations;
 
+			// Migrate from old monolithic experimental features setting.
+			if (Settings.Default.EnabledExperimentalFeatures == null)
+				Settings.Default.EnabledExperimentalFeatures = new StringCollection();
+			if (Settings.Default.ShowExperimentalFeatures)
+			{
+				if (!Settings.Default.EnabledExperimentalFeatures.Contains(AllowExperimentalSources))
+					Settings.Default.EnabledExperimentalFeatures.Add(AllowExperimentalSources);
+				Settings.Default.ShowExperimentalFeatures = false;
+			}
 #if DEBUG
 			//MessageBox.Show("Attach debugger now");
 #endif

@@ -187,9 +187,9 @@ export class ToolBox {
         masterToolList.push(tool);
     }
 
-    private getShowAdvancedFeatures() {
+    private getEnabledExperimentalFeatures() {
         // Using axios directly because api calls for returning the promise.
-        return axios.get("/bloom/api/app/showAdvancedFeatures");
+        return axios.get("/bloom/api/app/enabledExperimentalFeatures");
     }
     private getEnabledTools() {
         // Using axios directly because api calls for returning the promise.
@@ -216,13 +216,19 @@ export class ToolBox {
         // Using axios directly because BloomApi doesn't support merging promises with .all
         BloomApi.wrapAxios(
             axios
-                .all([this.getShowAdvancedFeatures(), this.getEnabledTools()])
+                .all([
+                    this.getEnabledExperimentalFeatures(),
+                    this.getEnabledTools()
+                ])
                 .then(
-                    axios.spread((showAdvancedFeatures, enabledTools) => {
+                    axios.spread((experimentalFeatures, enabledTools) => {
                         // Both requests are complete
                         // remove the experimental tools if the user doesn't want them
-                        showExperimentalTools =
-                            showAdvancedFeatures.data.toString() === "true";
+                        // TODO: give each experimental tool it's own setting once we have any experimental tools again.
+                        // In other words, this code is a place-holder since we don't currently have any experimental tools.
+                        showExperimentalTools = experimentalFeatures.data
+                            .toString()
+                            .includes("experimental-sources");
                         if (!showExperimentalTools) {
                             for (
                                 let i = masterToolList.length - 1;

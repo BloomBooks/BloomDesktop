@@ -11,8 +11,11 @@ $(() => {
 });
 
 export function setupOrigami(isBookLocked: boolean) {
-    BloomApi.get("app/showAdvancedFeatures", result => {
-        const showAdvanced: boolean = result.data;
+    BloomApi.get("app/enabledExperimentalFeatures", result => {
+        const enabledExperimentalFeatures: string = result.data;
+        const showExperimental: boolean = enabledExperimentalFeatures.includes(
+            "experimental-sources"
+        );
         BloomApi.get("settings/enterpriseEnabled", result2 => {
             const isEnterpriseEnabled: boolean = result2.data;
             const customPages = document.getElementsByClassName("customPage");
@@ -20,7 +23,9 @@ export function setupOrigami(isBookLocked: boolean) {
                 const width = customPages[0].clientWidth;
                 const origamiControl = getOrigamiControl()
                     .append(
-                        createTypeSelectors(showAdvanced && isEnterpriseEnabled)
+                        createTypeSelectors(
+                            showExperimental && isEnterpriseEnabled
+                        )
                     )
                     .append(createTextBoxIdentifier());
                 $("#page-scaling-container").append(origamiControl);

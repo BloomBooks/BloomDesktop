@@ -1,4 +1,5 @@
-﻿using Bloom.Properties;
+﻿using System.Text;
+using Bloom.Properties;
 using Newtonsoft.Json;
 
 namespace Bloom.Api
@@ -13,11 +14,19 @@ namespace Bloom.Api
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "showAdvancedFeatures", request =>
+			//apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "showAdvancedFeatures", request =>
+			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "enabledExperimentalFeatures", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
-					request.ReplyWithText(Settings.Default.ShowExperimentalFeatures.ToString().ToLowerInvariant());
+					var bldr = new StringBuilder();
+					var sep = "";
+					foreach (var feature in Settings.Default.EnabledExperimentalFeatures)
+					{
+						bldr.AppendFormat("{0}{1}", sep, feature);
+						sep = ",";
+					}
+					request.ReplyWithText(bldr.ToString().ToLowerInvariant());
 				}
 				else // post
 				{
