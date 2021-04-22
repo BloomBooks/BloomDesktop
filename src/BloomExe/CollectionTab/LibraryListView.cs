@@ -102,9 +102,14 @@ namespace Bloom.CollectionTab
 
 			_showHistoryMenu.Visible = _showNotesMenu.Visible = Settings.Default.ShowSendReceive;
 
+#if SUPPORT_INDESIGN
 			if(Settings.Default.ShowExperimentalFeatures)
 				_settingsProtectionHelper.ManageComponent(_exportToXMLForInDesignToolStripMenuItem);//we are restricting it because it opens a folder from which the user could do damage
 			_exportToXMLForInDesignToolStripMenuItem.Visible = Settings.Default.ShowExperimentalFeatures;
+#else
+			_exportToXMLForInDesignToolStripMenuItem.Enabled = false;
+			_exportToXMLForInDesignToolStripMenuItem.Visible = false;
+#endif
 
 			SetupBookDropdownIcon();
 			_bookContextMenu.Closed += _bookContextMenu_Closed;
@@ -152,7 +157,9 @@ namespace Bloom.CollectionTab
 						// that do NOT require checkout.
 						menuItem.Enabled = menuItem == _openFolderOnDisk
 							|| menuItem == _copyBook
+#if SUPPORT_INDESIGN
 							|| menuItem == _exportToXMLForInDesignToolStripMenuItem
+#endif
 							|| menuItem == exportToWordOrLibreOfficeToolStripMenuItem
 							|| menuItem == _makeBloomPackOfBookToolStripMenuItem
 							|| menuItem == makeReaderTemplateBloomPackToolStripMenuItem
@@ -190,11 +197,17 @@ namespace Bloom.CollectionTab
 			// So make them all visible so they are available in the right-click menu
 			foreach (ToolStripItem menuItem in (sender as ContextMenuStrip).Items)
 			{
+#if SUPPORT_INDESIGN
 				// Except that we do know that this one's visibility has already been set correctly;
 				// Don't change it! (BL-4176)
 				if (menuItem == _exportToXMLForInDesignToolStripMenuItem)
 					menuItem.Visible = _exportToXMLForInDesignToolStripMenuItem.Visible;
-				else menuItem.Visible = true;
+#else
+				if (menuItem == _exportToXMLForInDesignToolStripMenuItem)
+					menuItem.Visible = false;
+#endif
+				else
+					menuItem.Visible = true;
 			}
 		}
 
@@ -230,6 +243,7 @@ namespace Bloom.CollectionTab
 
 		private void OnExportToXmlForInDesign(object sender, EventArgs e)
 		{
+#if SUPPORT_INDESIGN
 			using(var d = new InDesignXmlInformationDialog())
 			{
 				d.ShowDialog();
@@ -254,6 +268,7 @@ namespace Bloom.CollectionTab
 					}
 				}
 			}
+#endif
 		}
 
 		private void OnBookSelectionChanged(object sender, BookSelectionChangedEventArgs bookSelectionChangedEventArgs)

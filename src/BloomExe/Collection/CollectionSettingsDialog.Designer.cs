@@ -74,10 +74,12 @@ namespace Bloom.Collection
 			this._provinceLabel = new System.Windows.Forms.Label();
 			this._enterpriseTab = new System.Windows.Forms.TabPage();
 			this._teamCollectionTab = new System.Windows.Forms.TabPage();
+			this.reactControl1 = new Bloom.web.ReactControl();
 			this.tabPage4 = new System.Windows.Forms.TabPage();
-			this.showTroubleShooterCheckBox = new System.Windows.Forms.CheckBox();
+			this._allowTeamCollection = new System.Windows.Forms.CheckBox();
+			this.label2 = new System.Windows.Forms.Label();
 			this._automaticallyUpdate = new System.Windows.Forms.CheckBox();
-			this._showExperimentalFeatures = new System.Windows.Forms.CheckBox();
+			this._showExperimentalBookSources = new System.Windows.Forms.CheckBox();
 			this._okButton = new System.Windows.Forms.Button();
 			this._restartReminder = new System.Windows.Forms.Label();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
@@ -85,7 +87,6 @@ namespace Bloom.Collection
 			this.settingsProtectionLauncherButton1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton();
 			this._helpButton = new System.Windows.Forms.Button();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this.reactControl1 = new Bloom.web.ReactControl();
 			this._tab.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.tabPage2.SuspendLayout();
@@ -690,11 +691,27 @@ namespace Bloom.Collection
 			this._teamCollectionTab.Text = "Team Collection";
 			this._teamCollectionTab.UseVisualStyleBackColor = true;
 			// 
+			// reactControl1
+			// 
+			this.reactControl1.BackColor = System.Drawing.Color.White;
+			this.reactControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._L10NSharpExtender.SetLocalizableToolTip(this.reactControl1, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.reactControl1, null);
+			this._L10NSharpExtender.SetLocalizingId(this.reactControl1, "ReactControl");
+			this.reactControl1.Location = new System.Drawing.Point(3, 3);
+			this.reactControl1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+			this.reactControl1.Name = "reactControl1";
+			this.reactControl1.ReactComponentName = "TeamCollectionSettingsPanel";
+			this.reactControl1.Size = new System.Drawing.Size(636, 446);
+			this.reactControl1.TabIndex = 0;
+			this.reactControl1.UrlQueryString = null;
+			// 
 			// tabPage4
 			// 
-			this.tabPage4.Controls.Add(this.showTroubleShooterCheckBox);
+			this.tabPage4.Controls.Add(this._allowTeamCollection);
+			this.tabPage4.Controls.Add(this.label2);
 			this.tabPage4.Controls.Add(this._automaticallyUpdate);
-			this.tabPage4.Controls.Add(this._showExperimentalFeatures);
+			this.tabPage4.Controls.Add(this._showExperimentalBookSources);
 			this._L10NSharpExtender.SetLocalizableToolTip(this.tabPage4, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.tabPage4, null);
 			this._L10NSharpExtender.SetLocalizingId(this.tabPage4, "CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel");
@@ -706,20 +723,34 @@ namespace Bloom.Collection
 			this.tabPage4.Text = "Advanced Program Settings";
 			this.tabPage4.UseVisualStyleBackColor = true;
 			// 
-			// showTroubleShooterCheckBox
+			// _allowTeamCollection
 			// 
-			this.showTroubleShooterCheckBox.AutoSize = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this.showTroubleShooterCheckBox, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.showTroubleShooterCheckBox, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this.showTroubleShooterCheckBox, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this.showTroubleShooterCheckBox, "showTroubleshooter");
-			this.showTroubleShooterCheckBox.Location = new System.Drawing.Point(50, 170);
-			this.showTroubleShooterCheckBox.Name = "showTroubleShooterCheckBox";
-			this.showTroubleShooterCheckBox.Size = new System.Drawing.Size(237, 23);
-			this.showTroubleShooterCheckBox.TabIndex = 6;
-			this.showTroubleShooterCheckBox.Text = "Show Performance Troubleshooter";
-			this.showTroubleShooterCheckBox.UseVisualStyleBackColor = true;
-			this.showTroubleShooterCheckBox.CheckedChanged += new System.EventHandler(this.showTroubleShooterCheckBox_CheckedChanged);
+			this._allowTeamCollection.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._allowTeamCollection, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._allowTeamCollection, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._allowTeamCollection, L10NSharp.LocalizationPriority.Low);
+			this._L10NSharpExtender.SetLocalizingId(this._allowTeamCollection, "TeamCollection.TeamCollection");
+			this._allowTeamCollection.Location = new System.Drawing.Point(27, 129);
+			this._allowTeamCollection.Name = "_allowTeamCollection";
+			this._allowTeamCollection.Size = new System.Drawing.Size(124, 23);
+			this._allowTeamCollection.TabIndex = 8;
+			this._allowTeamCollection.Text = "Team Collection";
+			this._allowTeamCollection.UseVisualStyleBackColor = true;
+			this._allowTeamCollection.CheckedChanged += new System.EventHandler(this._allowTeamCollection_CheckedChanged);
+			// 
+			// label2
+			// 
+			this.label2.AutoSize = true;
+			this.label2.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this.label2, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.label2, null);
+			this._L10NSharpExtender.SetLocalizingId(this.label2, "CollectionSettingsDialog.AdvancedTab.ExperimentalFeaturesLabel");
+			this.label2.Location = new System.Drawing.Point(23, 70);
+			this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+			this.label2.Name = "label2";
+			this.label2.Size = new System.Drawing.Size(146, 19);
+			this.label2.TabIndex = 7;
+			this.label2.Text = "Experimental Features";
 			// 
 			// _automaticallyUpdate
 			// 
@@ -728,28 +759,28 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizationComment(this._automaticallyUpdate, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._automaticallyUpdate, L10NSharp.LocalizationPriority.Low);
 			this._L10NSharpExtender.SetLocalizingId(this._automaticallyUpdate, "CollectionSettingsDialog.AdvancedTab.AutoUpdate");
-			this._automaticallyUpdate.Location = new System.Drawing.Point(50, 124);
+			this._automaticallyUpdate.Location = new System.Drawing.Point(27, 24);
 			this._automaticallyUpdate.Name = "_automaticallyUpdate";
-			this._automaticallyUpdate.Size = new System.Drawing.Size(201, 23);
+			this._automaticallyUpdate.Size = new System.Drawing.Size(203, 23);
 			this._automaticallyUpdate.TabIndex = 5;
-			this._automaticallyUpdate.Text = "Automatically update Bloom";
+			this._automaticallyUpdate.Text = "Automatically Update Bloom";
 			this._automaticallyUpdate.UseVisualStyleBackColor = true;
 			this._automaticallyUpdate.CheckedChanged += new System.EventHandler(this._automaticallyUpdate_CheckedChanged);
 			// 
-			// _showExperimentalFeatures
+			// _showExperimentalBookSources
 			// 
-			this._showExperimentalFeatures.AutoSize = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._showExperimentalFeatures, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._showExperimentalFeatures, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._showExperimentalFeatures, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this._showExperimentalFeatures, "CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands");
-			this._showExperimentalFeatures.Location = new System.Drawing.Point(50, 37);
-			this._showExperimentalFeatures.Name = "_showExperimentalFeatures";
-			this._showExperimentalFeatures.Size = new System.Drawing.Size(199, 23);
-			this._showExperimentalFeatures.TabIndex = 4;
-			this._showExperimentalFeatures.Text = "Show Experimental Features";
-			this._showExperimentalFeatures.UseVisualStyleBackColor = true;
-			this._showExperimentalFeatures.CheckedChanged += new System.EventHandler(this._showExperimentalFeatures_CheckedChanged);
+			this._showExperimentalBookSources.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._showExperimentalBookSources, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._showExperimentalBookSources, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._showExperimentalBookSources, L10NSharp.LocalizationPriority.Low);
+			this._L10NSharpExtender.SetLocalizingId(this._showExperimentalBookSources, "CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalBookSources");
+			this._showExperimentalBookSources.Location = new System.Drawing.Point(27, 100);
+			this._showExperimentalBookSources.Name = "_showExperimentalBookSources";
+			this._showExperimentalBookSources.Size = new System.Drawing.Size(229, 23);
+			this._showExperimentalBookSources.TabIndex = 4;
+			this._showExperimentalBookSources.Text = "Show Experimental Book Sources";
+			this._showExperimentalBookSources.UseVisualStyleBackColor = true;
+			this._showExperimentalBookSources.CheckedChanged += new System.EventHandler(this._showExperimentalBookSources_CheckedChanged);
 			// 
 			// _okButton
 			// 
@@ -828,19 +859,6 @@ namespace Bloom.Collection
 			this._helpButton.UseVisualStyleBackColor = true;
 			this._helpButton.Click += new System.EventHandler(this._helpButton_Click);
 			// 
-			// reactControl1
-			// 
-			this.reactControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._L10NSharpExtender.SetLocalizableToolTip(this.reactControl1, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.reactControl1, null);
-			this._L10NSharpExtender.SetLocalizingId(this.reactControl1, "ReactControl");
-			this.reactControl1.Location = new System.Drawing.Point(3, 3);
-			this.reactControl1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-			this.reactControl1.Name = "reactControl1";
-			this.reactControl1.ReactComponentName = "TeamCollectionSettingsPanel";
-			this.reactControl1.Size = new System.Drawing.Size(636, 446);
-			this.reactControl1.TabIndex = 0;
-			// 
 			// CollectionSettingsDialog
 			// 
 			this.AcceptButton = this._okButton;
@@ -918,7 +936,7 @@ namespace Bloom.Collection
 		private System.Windows.Forms.ComboBox _fontComboLanguage2;
 		private System.Windows.Forms.Label _language3FontLabel;
 		private System.Windows.Forms.ComboBox _fontComboLanguage3;
-		private System.Windows.Forms.CheckBox _showExperimentalFeatures;
+		private System.Windows.Forms.CheckBox _showExperimentalBookSources;
 		private Button _helpButton;
 		private TextBox _xmatterDescription;
 		private ListView _xmatterList;
@@ -928,7 +946,6 @@ namespace Bloom.Collection
 		private LinkLabel _fontSettings1Link;
 		private ComboBox _numberStyleCombo;
 		private Label label3;
-		private CheckBox showTroubleShooterCheckBox;
 		private TabPage _enterpriseTab;
 		private TabPage _teamCollectionTab;
 		private LinkLabel _removeSignLanguageLink;
@@ -936,5 +953,7 @@ namespace Bloom.Collection
 		protected Label _signLanguageName;
 		protected Label _signLanguageLabel;
 		private web.ReactControl reactControl1;
+		private Label label2;
+		private CheckBox _allowTeamCollection;
 	}
 }
