@@ -74,25 +74,25 @@
     <Setting Name="PageZoom" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)">1.0</Value>
     </Setting>
-    <Setting Name="AdobeColorProfileEula2003Accepted" Type="System.Boolean" Scope="User">
+    <Setting Name="AdobeColorProfileEula2003Accepted" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="BloomDeviceFileExportFolder" Type="System.String" Scope="User">
+    <Setting Name="BloomDeviceFileExportFolder" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="PublishAndroidMethod" Type="System.String" Scope="User">
+    <Setting Name="PublishAndroidMethod" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="CurrentStage" Type="System.Int32" Scope="User">
+    <Setting Name="CurrentStage" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">1</Value>
     </Setting>
-    <Setting Name="CurrentLevel" Type="System.Int32" Scope="User">
+    <Setting Name="CurrentLevel" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">1</Value>
     </Setting>
-    <Setting Name="CurrentBookPath" Type="System.String" Scope="User">
+    <Setting Name="CurrentBookPath" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="AutoUpdateDialogShown" Type="System.Int32" Scope="User">
+    <Setting Name="AutoUpdateDialogShown" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
     <Setting Name="AlwaysMeasurePerformance" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
