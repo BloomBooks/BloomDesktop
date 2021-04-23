@@ -2312,8 +2312,9 @@
         <note>ID: EditTab.Toolbox.LeveledReaderTool.MaxInBook</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.MaxSentenceLength" sil:dynamic="true">
-        <source xml:lang="en">max sentence length</source>
+        <source xml:lang="en">longest sentence</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.MaxSentenceLength</note>
+        <note>length of the longest sentence (in the book)</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerPage" sil:dynamic="true">
         <source xml:lang="en">per page</source>
