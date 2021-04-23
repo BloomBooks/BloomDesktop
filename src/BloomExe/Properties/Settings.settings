@@ -1,105 +1,105 @@
 <?xml version='1.0' encoding='utf-8'?>
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Bloom.Properties" GeneratedClassName="Settings">
-    <Profiles />
-    <Settings>
-        <Setting Name="FirstTimeRun" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
-            <Value Profile="(Default)">True</Value>
-        </Setting>
-        <Setting Name="MruProjects" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="Bloom.CollectionChoosing.MostRecentPathsList" Scope="User">
-            <Value Profile="(Default)" />
-        </Setting>
-        <Setting Name="NeedUpgrade" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
-            <Value Profile="(Default)">True</Value>
-        </Setting>
-        <Setting Name="UserInterfaceLanguage" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
-            <Value Profile="(Default)" />
-        </Setting>
-        <Setting Name="UserInterfaceLanguageSetExplicitly" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
-            <Value Profile="(Default)">False</Value>
-        </Setting>
-        <Setting Name="LastSourceLanguageViewed" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
-            <Value Profile="(Default)" />
-        </Setting>
-        <Setting Name="ImageHandler" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
-            <Value Profile="(Default)">http</Value>
-        </Setting>
-        <Setting Name="ShowSendReceive" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
-            <Value Profile="(Default)">False</Value>
-        </Setting>
-        <Setting Name="ShowLocalizationControls" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
-            <Value Profile="(Default)">False</Value>
-        </Setting>
-        <Setting Name="ShowUnapprovedLocalizations" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
-            <Value Profile="(Default)">False</Value>
-        </Setting>
-        <Setting Name="ShowExperimentalBooks" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
-            <Value Profile="(Default)">False</Value>
-        </Setting>
-        <Setting Name="DontShowThisAgain" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
-            <Value Profile="(Default)" />
-        </Setting>
-        <Setting Name="ShowExperimentalFeatures" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
-            <Value Profile="(Default)">False</Value>
-        </Setting>
-        <Setting Name="WebUserId" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
-            <Value Profile="(Default)" />
-        </Setting>
-        <Setting Name="WebPassword" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
-            <Value Profile="(Default)" />
-        </Setting>
-        <Setting Name="WebShowPassword" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
-            <Value Profile="(Default)">True</Value>
-        </Setting>
-        <Setting Name="UseAdobePdfViewer" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
-            <Value Profile="(Default)">False</Value>
-        </Setting>
-        <Setting Name="MaximizeWindow" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
-            <Value Profile="(Default)">True</Value>
-        </Setting>
-        <Setting Name="WindowSizeAndLocation" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="SIL.Windows.Forms.PortableSettingsProvider.FormSettings" Scope="User">
-            <Value Profile="(Default)" />
-        </Setting>
-    <Setting Name="LicenseAccepted" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+  <Profiles />
+  <Settings>
+    <Setting Name="FirstTimeRun" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="MruProjects" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="Bloom.CollectionChoosing.MostRecentPathsList" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="NeedUpgrade" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="UserInterfaceLanguage" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="UserInterfaceLanguageSetExplicitly" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="AutoUpdate" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+    <Setting Name="LastSourceLanguageViewed" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ImageHandler" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+      <Value Profile="(Default)">http</Value>
+    </Setting>
+    <Setting Name="ShowSendReceive" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="ShowLocalizationControls" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="ShowUnapprovedLocalizations" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="EnabledExperimentalFeatures" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="DontShowThisAgain" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ShowExperimentalFeatures" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="WebUserId" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="WebPassword" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="WebShowPassword" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="UseAdobePdfViewer" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="MaximizeWindow" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="WindowSizeAndLocation" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="SIL.Windows.Forms.PortableSettingsProvider.FormSettings" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="LicenseAccepted" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="RestoreBounds" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Drawing.Rectangle" Scope="User">
       <Value Profile="(Default)">0, 0, 1028, 586</Value>
     </Setting>
-        <Setting Name="DontShowPrintNotification" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
-            <Value Profile="(Default)">False</Value>
-        </Setting>
-        <Setting Name="ImageSearchLanguage" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
-            <Value Profile="(Default)" />
-        </Setting>
-        <Setting Name="PageZoom" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
-            <Value Profile="(Default)">1.0</Value>
-        </Setting>
-        <Setting Name="AdobeColorProfileEula2003Accepted" Type="System.Boolean" Scope="User">
-            <Value Profile="(Default)">False</Value>
-        </Setting>
-        <Setting Name="BloomDeviceFileExportFolder" Type="System.String" Scope="User">
-            <Value Profile="(Default)" />
-        </Setting>
-        <Setting Name="PublishAndroidMethod" Type="System.String" Scope="User">
-            <Value Profile="(Default)" />
-        </Setting>
-        <Setting Name="CurrentStage" Type="System.Int32" Scope="User">
-            <Value Profile="(Default)">1</Value>
-        </Setting>
-        <Setting Name="CurrentLevel" Type="System.Int32" Scope="User">
-            <Value Profile="(Default)">1</Value>
-        </Setting>
-        <Setting Name="CurrentBookPath" Type="System.String" Scope="User">
-            <Value Profile="(Default)" />
-        </Setting>
-        <Setting Name="AutoUpdateDialogShown" Type="System.Int32" Scope="User">
-            <Value Profile="(Default)">0</Value>
-        </Setting>
-        <Setting Name="AlwaysMeasurePerformance" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
-            <Value Profile="(Default)">False</Value>
-        </Setting>
-    </Settings>
+    <Setting Name="DontShowPrintNotification" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="ImageSearchLanguage" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="PageZoom" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1.0</Value>
+    </Setting>
+    <Setting Name="AdobeColorProfileEula2003Accepted" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="BloomDeviceFileExportFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="PublishAndroidMethod" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="CurrentStage" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="CurrentLevel" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="CurrentBookPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="AutoUpdateDialogShown" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="AlwaysMeasurePerformance" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="AutoUpdate" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+  </Settings>
 </SettingsFile>

@@ -181,6 +181,8 @@ namespace Bloom
 
 					StartUpWithFirstOrNewVersionBehavior = true;
 				}
+				// Migrate from old monolithic experimental features setting.
+				ExperimentalFeatures.MigrateFromOldSettings();
 
 				if (IsInstallerLaunch(args))
 				{

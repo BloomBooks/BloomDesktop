@@ -187,9 +187,9 @@ export class ToolBox {
         masterToolList.push(tool);
     }
 
-    private getShowAdvancedFeatures() {
+    private getEnabledExperimentalFeatures() {
         // Using axios directly because api calls for returning the promise.
-        return axios.get("/bloom/api/app/showAdvancedFeatures");
+        return axios.get("/bloom/api/app/enabledExperimentalFeatures");
     }
     private getEnabledTools() {
         // Using axios directly because api calls for returning the promise.
@@ -216,24 +216,15 @@ export class ToolBox {
         // Using axios directly because BloomApi doesn't support merging promises with .all
         BloomApi.wrapAxios(
             axios
-                .all([this.getShowAdvancedFeatures(), this.getEnabledTools()])
+                .all([
+                    this.getEnabledExperimentalFeatures(),
+                    this.getEnabledTools()
+                ])
                 .then(
-                    axios.spread((showAdvancedFeatures, enabledTools) => {
-                        // Both requests are complete
-                        // remove the experimental tools if the user doesn't want them
-                        showExperimentalTools =
-                            showAdvancedFeatures.data.toString() === "true";
-                        if (!showExperimentalTools) {
-                            for (
-                                let i = masterToolList.length - 1;
-                                i >= 0;
-                                i--
-                            ) {
-                                if (masterToolList[i].isExperimental()) {
-                                    masterToolList.splice(i, 1);
-                                }
-                            }
-                        }
+                    axios.spread((experimentalFeatures, enabledTools) => {
+                        // remove any experimental tools the user doesn't want
+                        // TODO: give each experimental tool it's own setting once we have any experimental tools again.
+                        // Presumably use the tool id as the keyword in the list of experimental features.
                         const toolsToLoad = enabledTools.data.split(",");
                         // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
                         for (let i = toolsToLoad.length - 1; i >= 0; i--) {

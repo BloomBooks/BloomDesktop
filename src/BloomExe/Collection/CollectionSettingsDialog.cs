@@ -51,8 +51,9 @@ namespace Bloom.Collection
 				_language3Label.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.Language3InSourceCollection", "Language 3", "In a local language collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label");
 			}
 
-			_showExperimentalFeatures.Checked = Settings.Default.ShowExperimentalFeatures;
-			if (!Settings.Default.ShowExperimentalFeatures && tcManager.CurrentCollectionEvenIfDisconnected == null)
+			_showExperimentalBookSources.Checked = ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kExperimentalSourceBooks);
+			_allowTeamCollection.Checked = ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections);
+			if (!ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections) && tcManager.CurrentCollectionEvenIfDisconnected == null)
 			{
 				this._tab.Controls.Remove(this._teamCollectionTab);
 			}
@@ -516,9 +517,9 @@ namespace Bloom.Collection
 				ChangeThatRequiresRestart();
 		}
 
-		private void _showExperimentalFeatures_CheckedChanged(object sender, EventArgs e)
+		private void _showExperimentalBookSources_CheckedChanged(object sender, EventArgs e)
 		{
-			Settings.Default.ShowExperimentalFeatures = _showExperimentalFeatures.Checked;
+			ExperimentalFeatures.SetValue(ExperimentalFeatures.kExperimentalSourceBooks, _showExperimentalBookSources.Checked);
 			ChangeThatRequiresRestart();
 		}
 
@@ -638,20 +639,14 @@ namespace Bloom.Collection
 			return code1 != code2;
 		}
 
-		private void showTroubleShooterCheckBox_CheckedChanged(object sender, EventArgs e)
-		{
-			if (showTroubleShooterCheckBox.Checked)
-			{
-				TroubleShooterDialog.ShowTroubleShooter();
-			}
-			else
-			{
-				TroubleShooterDialog.HideTroubleShooter();
-			}
-		}
-
 		private void _numberStyleCombo_SelectedIndexChanged(object sender, EventArgs e)
 		{
+			ChangeThatRequiresRestart();
+		}
+
+		private void _allowTeamCollection_CheckedChanged(object sender, EventArgs e)
+		{
+			ExperimentalFeatures.SetValue(ExperimentalFeatures.kTeamCollections, _allowTeamCollection.Checked);
 			ChangeThatRequiresRestart();
 		}
 	}

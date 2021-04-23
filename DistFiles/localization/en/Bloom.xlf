@@ -323,18 +323,21 @@
         <note>ID: CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate">
-        <source xml:lang="en">Automatically update Bloom</source>
+        <source xml:lang="en">Automatically Update Bloom</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AutoUpdate</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
-        <source xml:lang="en">Show Experimental Features</source>
-        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands</note>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ExperimentalFeatures">
+        <source xml:lang="en">Experimental Features</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ExperimentalFeatures</note>
+        <note>This string is now a heading for a collection of checkboxes rather than a checkbox itself.</note>
+        <note xml:lang="en">OLD TEXT (before 5.0): Show Experimental Features</note>
         <note xml:lang="en">OLD TEXT (before 4.3): Show Experimental Commands</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Show Experimental Commands (e.g. Export XML for InDesign)</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
-        <source xml:lang="en">Show Experimental Templates (e.g. Picture Dictionary)</source>
-        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates</note>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalBookSources">
+        <source xml:lang="en">Show Experimental Book Sources</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalBookSources</note>
+        <note>OLD TEXT (before 5.0/3.9): Show Experimental Templates (e.g. Picture Dictionary)</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
@@ -2657,10 +2660,10 @@
         <note>ID: EditTab.Widget.ChooseWidget</note>
         <note>User is supposed to choose a file containing HTML that can be embedded in an element of the book.</note>
       </trans-unit>
-	  <trans-unit id="ErrorReport.Report">
+      <trans-unit id="ErrorReport.Report">
         <source xml:lang="en">Report</source>
         <note>ID: ErrorReport.Report</note>
-		<note>"Report" as in "Report this problem to Bloom Support"</note>
+        <note>"Report" as in "Report this problem to Bloom Support"</note>
       </trans-unit>
       <trans-unit id="Errors.BookProblem">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
