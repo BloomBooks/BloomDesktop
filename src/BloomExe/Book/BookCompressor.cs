@@ -471,6 +471,9 @@ namespace Bloom.Book
 					if (!appearsToBeJpeg)
 						imagePixelFormat = PixelFormat.Format32bppArgb;
 
+					var needTransparencyConversion =
+						!appearsToBeJpeg && needsTransparentBackground && !ImageUtils.HasTransparency(image);
+
 					using (var newImage = new Bitmap(newWidth, newHeight, imagePixelFormat))
 					{
 						// Draws the image in the specified size with quality mode set to HighQuality
@@ -486,7 +489,7 @@ namespace Bloom.Book
 								imageAttributes.SetWrapMode(WrapMode.TileFlipXY);
 
 								// In addition to possibly scaling, we want PNG images to have transparent backgrounds.
-								if (!appearsToBeJpeg && needsTransparentBackground)
+								if (needTransparencyConversion)
 								{
 									// This specifies that all white or very-near-white pixels (all color components at least 253/255)
 									// will be made transparent.
@@ -516,7 +519,7 @@ namespace Bloom.Book
 							if (!metadata.IsEmpty)
 								metadata.Write(tempFile.Path);
 							var newBytes = RobustFile.ReadAllBytes(tempFile.Path);
-							if (newBytes.Length < originalBytes.Length || (needsTransparentBackground && !appearsToBeJpeg))
+							if (newBytes.Length < originalBytes.Length || needTransparencyConversion)
 								return newBytes;
 						}
 					}

@@ -2204,9 +2204,13 @@ namespace Bloom.Publish.Epub
 		{
 			foreach (XmlElement link in pageDom.RawDom.SafeSelectNodes ("//head/link").Cast<XmlElement> ().ToArray ()) {
 				var href = link.Attributes ["href"];
-				if (href != null && Path.GetFileName (href.Value).StartsWith ("custom"))
+				if (href != null && Path.GetFileName(href.Value).StartsWith ("custom"))
 					continue;
-				if (href != null && Path.GetFileName (href.Value) == "defaultLangStyles.css")
+				if (href != null && Path.GetFileName(href.Value) == "defaultLangStyles.css")
+					continue;
+				// BL-9844 Let's keep our xmatter stylesheets. If it causes problems, we can use the .epub class
+				// as a "media query".
+				if (href != null && Path.GetFileName(href.Value).EndsWith("-XMatter.css"))
 					continue;
 				link.ParentNode.RemoveChild (link);
 			}

@@ -433,7 +433,24 @@ div.bloom-page {
     }
 }
 .epub {
+    div {
+        width: unset !important; // yes! all of them!
+    }
+    .marginBox {
+        width: calc(100% - 30px); // leave room for left/right arrows
+    }
     .divider {
         display: none;
+    }
+    .ISBNContainer {
+        display: none !important;
+    }
+    .bloom-page.credits .marginBox div {
+        display: block;
+        // for some reason on ePUB, the bottom branding wants to sit on top of the acknowledgments.
+        &[data-book="credits-page-branding-bottom-html"] {
+            position: relative;
+            bottom: 0;
+        }
     }
 }
