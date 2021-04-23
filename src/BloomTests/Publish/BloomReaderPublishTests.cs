@@ -1174,7 +1174,7 @@ namespace BloomTests.Publish
 				ErrorsNotLocalized.Add(message);
 			}
 
-			public override void Message(string idSuffix, string comment, string message, MessageKind kind, bool useL10nIdPrefix = true)
+			public override void Message(string idSuffix, string comment, string message, MessageKind progressKind, bool useL10nIdPrefix = true)
 			{
 				MessagesNotLocalized.Add(string.Format(message));
 			}

@@ -2,7 +2,7 @@ import * as React from "react";
 import { IUILanguageAwareProps } from "../../react_components/l10nComponents";
 import axios from "axios";
 import "./daisyChecks.less";
-import { ProgressBox } from "../../react_components/progressBox";
+import { ProgressBox } from "../../react_components/Progress/progressBox";
 
 const kWebSocketLifetime = "a11yChecklist";
 
@@ -35,7 +35,7 @@ export class DaisyChecks extends React.Component<
                 this.setState({ reportUrl: result.data });
             })
             .catch(error => {
-                if (this.progressBox) this.progressBox.writeLine("Failed");
+                if (this.progressBox) this.progressBox.writeError("Failed");
             });
     }
     public render() {

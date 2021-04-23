@@ -689,7 +689,7 @@ namespace Bloom.TeamCollection
 			var title = "Setting Up Team Collection"; // todo l10n
 
 			BrowserProgressDialog.DoWorkWithProgressDialog(SocketServer, TeamCollection.kWebSocketContext, () => new ReactDialog("teamCollectionSettingsBundle.js",
-					"IndependentProgressDialog", $"title={title}", new { test = "from team collection" }),
+					"ProgressDialog", $"title={title}", new { test = "from team collection" }),
 
 			progress =>
 			{

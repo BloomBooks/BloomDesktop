@@ -52,10 +52,12 @@ namespace Bloom.MiscUI
 					while (!socketServer.IsSocketOpen(socketContext))
 						Thread.Sleep(50);
 					var waitForUserToCloseDialogOrReportProblems = doWhat(progress);
+					// stop the spinner
+					socketServer.SendEvent(socketContext, "finished");
 					if (waitForUserToCloseDialogOrReportProblems)
 					{
 						// Now the user is allowed to close the dialog or report problems.
-						// (IndependentProgressDialog in JS-land is watching for this message, which causes it to turn
+						// (ProgressDialog in JS-land is watching for this message, which causes it to turn
 						// on the buttons that allow the dialog to be manually closed (or a problem to be reported).
 						socketServer.SendBundle(socketContext, "show-buttons", new DynamicJson());
 					}

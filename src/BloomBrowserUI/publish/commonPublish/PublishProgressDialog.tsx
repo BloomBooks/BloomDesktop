@@ -1,8 +1,12 @@
 import * as React from "react";
 import { useState } from "react";
-import { ProgressDialog, ProgressState } from "./ProgressDialog";
+import {
+    ProgressDialogInner,
+    ProgressState
+} from "./PublishProgressDialogInner";
 import { BloomApi } from "../../utils/bloomApi";
 import WebSocketManager, {
+    IBloomWebSocketProgressEvent,
     useWebSocketListenerForOneEvent
 } from "../../utils/WebSocketManager";
 
@@ -73,9 +77,7 @@ export const PublishProgressDialog: React.FunctionComponent<{
                     setAccumulatedMessages(
                         oldMessages =>
                             oldMessages +
-                            `<span class='Error'>Failed to prepare the book for publish. Request '${
-                                props.startApiEndpoint
-                            }' returned: ${r}.</span>`
+                            `<span class='Error'>Failed to prepare the book for publish. Request '${props.startApiEndpoint}' returned: ${r}.</span>`
                     );
                     props.setProgressState(ProgressState.Done);
                 }
@@ -87,13 +89,15 @@ export const PublishProgressDialog: React.FunctionComponent<{
         props.webSocketClientContext,
         "message",
         e => {
+            const progressEvent = e as IBloomWebSocketProgressEvent;
+
             // // the epub maker
             // if(progressState === ProgressState.Closed){
             //     setProgressState(ProgressState.Working);
             // }
-            const html = `<span class='${e.kind}'>${e.message}</span><br/>`;
+            const html = `<span class='${progressEvent.progressKind}'>${e.message}</span><br/>`;
             if (e.id == "message") {
-                switch (e.kind) {
+                switch (progressEvent.progressKind) {
                     case "Error":
                     case "Warning":
                         setErrorEncountered(true);
@@ -113,7 +117,7 @@ export const PublishProgressDialog: React.FunctionComponent<{
     );
 
     return (
-        <ProgressDialog
+        <ProgressDialogInner
             heading={props.heading}
             instruction={instructionMessage}
             messages={accumulatedMessages}

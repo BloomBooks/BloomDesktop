@@ -6,7 +6,10 @@ import { addDecorator } from "@storybook/react";
 import { ReaderPublishScreen } from "./ReaderPublish/ReaderPublishScreen";
 import { DeviceAndControls } from "./commonPublish/DeviceAndControls";
 import { StorybookContext } from "../.storybook/StoryBookContext";
-import { ProgressDialog, ProgressState } from "./commonPublish/ProgressDialog";
+import {
+    ProgressDialogInner,
+    ProgressState
+} from "./commonPublish/PublishProgressDialogInner";
 import { loremIpsum } from "lorem-ipsum";
 import { withA11y } from "@storybook/addon-a11y";
 import { LibraryPreview } from "./LibraryPublish/LibraryPreview";
@@ -35,7 +38,7 @@ const testText =
 storiesOf("Publish/ProgressDialog", module)
     .add("Working", () => (
         <div>
-            <ProgressDialog
+            <ProgressDialogInner
                 progressState={ProgressState.Working}
                 messages={testText}
                 heading={"Working hard..."}
@@ -48,7 +51,7 @@ storiesOf("Publish/ProgressDialog", module)
     ))
     .add("Done", () => (
         <div>
-            <ProgressDialog
+            <ProgressDialogInner
                 progressState={ProgressState.Done}
                 messages={testText}
                 onUserClosed={() => {}}
@@ -59,7 +62,7 @@ storiesOf("Publish/ProgressDialog", module)
     ))
     .add("Error", () => (
         <div>
-            <ProgressDialog
+            <ProgressDialogInner
                 progressState={ProgressState.Done}
                 errorEncountered={true}
                 messages={testText}

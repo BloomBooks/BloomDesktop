@@ -76,7 +76,7 @@ namespace Bloom.Publish.Android.wifi
 				{
 					_progress.Message(idSuffix: "BadBookRequest",
 						message: "Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?",
-						kind:MessageKind.Error);
+						progressKind: MessageKind.Error);
 
 					//this is too technical/hard to translate
 					_progress.MessageWithoutLocalizing($" Request contains {json}; trying to interpret as JSON we got {ex.Message}", kind: MessageKind.Error);
@@ -299,7 +299,7 @@ namespace Bloom.Publish.Android.wifi
 				_progress.Message(idSuffix: "Failed",
 					message: "There was an error while sending the book. Possibly the device was disconnected? If you can't see a "
 					         + "reason for this the following may be helpful to report to the developers:",
-					kind: MessageKind.Error);
+					progressKind: MessageKind.Error);
 				_progress.Exception(e);
 			}
 			Debug.Fail("got exception " + e.Message + " sending book");

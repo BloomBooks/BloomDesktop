@@ -131,3 +131,5 @@ src/BloomBrowserUI/templates/xMatter/Kyrgyzstan2020-XMatter/Kyrgyzstan2020-XMatt
 src/BloomBrowserUI/react_components/IndependentProgressDialog.css
 
 src/BloomBrowserUI/teamCollection/TeamCollectionDialog.css
+
+src/BloomBrowserUI/publish/accessibilityCheck/daisyChecks.css

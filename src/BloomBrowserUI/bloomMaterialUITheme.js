@@ -6,10 +6,15 @@
 
 import { createMuiTheme } from "@material-ui/core/styles";
 
-const bloomBlue = "#1d94a4";
-const bloomPurple = "#96668f";
+export const kBloomBlue = "#1d94a4";
+export const kBloomPurple = "#96668f";
 const kDialogTopBottomGray = "#F1F3F4";
 const kRefreshIconColor = "#988b8b";
+export const kBloomGold = "#f3aa18";
+export const kErrorColor = "red";
+export const kDialogPadding = "10px";
+export const kLogBackgroundColor = "#fcfcfc";
+
 // the value that gets us to the 4.5 AA ratio depends on the background.
 // So the "aside"/features right-panel color effects this.
 //const AACompliantBloomBlue = "#177c8a";
@@ -20,8 +25,8 @@ const theme = createMuiTheme({
     // would be spacing{unit:23} but that gives an error saying to use a number
     //spacing: 23,
     palette: {
-        primary: { main: bloomBlue },
-        secondary: { main: bloomPurple },
+        primary: { main: kBloomBlue },
+        secondary: { main: kBloomPurple },
         warning: { main: "#F3AA18" },
         text: { secondary: kRefreshIconColor }
     },

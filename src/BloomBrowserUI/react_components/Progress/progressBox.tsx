@@ -1,9 +1,16 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
-import { Button } from "@material-ui/core";
+// import { Button } from "@material-ui/core";
 import * as React from "react";
-import WebSocketManager from "../utils/WebSocketManager";
-import "./progressBox.less";
+import WebSocketManager, {
+    IBloomWebSocketProgressEvent
+} from "../../utils/WebSocketManager";
+import {
+    kBloomGold,
+    kErrorColor,
+    kLogBackgroundColor,
+    kDialogPadding
+} from "../../bloomMaterialUITheme";
 
 export interface IProgressBoxProps {
     clientContext: string;
@@ -38,40 +45,35 @@ export class ProgressBox extends React.Component<
         super(props);
         //alert("constructing progress box for " + this.props.clientContext);
         //get progress messages from c#
-        WebSocketManager.addListener(props.clientContext, e => {
-            console.log(this.state);
-            if (e.id === "message") {
-                if (e.message!.indexOf("error") > -1) {
-                    if (this.props.onGotErrorMessage) {
-                        this.props.onGotErrorMessage();
+        WebSocketManager.addListener<IBloomWebSocketProgressEvent>(
+            props.clientContext,
+            e => {
+                const msg = "" + e.message;
+                if (e.id === "message") {
+                    if (e.message!.indexOf("error") > -1) {
+                        if (this.props.onGotErrorMessage) {
+                            this.props.onGotErrorMessage();
+                        }
                     }
-                }
-                if (e.cssStyleRule) {
-                    this.writeLine(
-                        `<span style='${e.cssStyleRule}'>${e.message}</span>`
-                    );
-                } else if (e.kind) {
-                    switch (e.kind) {
-                        default:
-                            this.writeLine(e.message || "");
-                            break;
-                        case "Error":
-                            this.writeLine(
-                                `<span style='color:red'>${e.message}</span>`
-                            );
-                            break;
-                        case "Warning":
-                            this.writeLine(
-                                `<span style='color:#da7903'>${e.message}</span>`
-                            );
-                            break;
+                    if (e.progressKind) {
+                        switch (e.progressKind) {
+                            default:
+                                this.writeLine(msg, "black");
+                                break;
+                            case "Error":
+                                this.writeLine(msg, kErrorColor);
+                                break;
+                            case "Warning":
+                                this.writeLine(msg, kBloomGold);
+                                break;
+                        }
+                    } else {
+                        this.writeLine(msg, "black");
                     }
-                } else {
-                    this.writeLine(e.message || "");
+                    this.tryScrollToBottom();
                 }
-                this.tryScrollToBottom();
             }
-        });
+        );
     }
 
     public componentDidMount() {
@@ -83,13 +85,14 @@ export class ProgressBox extends React.Component<
             );
         }
     }
-    public componentDidUnmount() {
+    public componentWillUnmount() {
         //WebSocketManager.removeListener(props.clientContext);
     }
 
-    public write(htmlToAdd: string) {
-        const newProgress = this.state.progress + htmlToAdd;
-        console.log(newProgress);
+    public writeLine(htmlToAdd: string, color: string, style?: string) {
+        const newProgress =
+            this.state.progress +
+            `<p  style='color:${color}; '${"" + style}'>${htmlToAdd}<p>`;
         this.setState({
             progress: newProgress
         });
@@ -97,8 +100,8 @@ export class ProgressBox extends React.Component<
             this.props.notifyProgressChange(newProgress);
         }
     }
-    public writeLine(htmlToAdd: string) {
-        this.write(htmlToAdd + "<br/>");
+    public writeError(message: string) {
+        this.writeLine(message, kErrorColor);
     }
 
     private tryScrollToBottom() {
@@ -116,14 +119,6 @@ export class ProgressBox extends React.Component<
         }
     }
     private copyToClipboard() {
-        // BloomApi.postJson("common/clipboardText", {
-        //     text: progress.current
-        // });
-
-        // const copyText: HTMLInputElement = document.getElementById(
-        //     this.props.progressBoxId || "progress"
-        // ) as HTMLInputElement;
-
         const range = document.createRange();
         range.selectNode(
             document.getElementById(this.props.progressBoxId || "progress")!
@@ -136,26 +131,38 @@ export class ProgressBox extends React.Component<
 
     public render() {
         return (
-            <div>
-                <div
-                    className="progress-box"
-                    id={this.props.progressBoxId || "progress"}
-                    dangerouslySetInnerHTML={{
-                        __html: this.state.progress
-                    }}
-                    ref={div => (this.progressDiv = div)}
-                    css={css`
-                        user-select: all;
-                    `}
-                />
-                <Button
+            <div
+                css={css`
+                    user-select: all;
+                    overflow-y: scroll;
+                    background-color: ${kLogBackgroundColor};
+                    padding: ${kDialogPadding};
+                    height: 100%;
+                    /* width: calc(
+                            100% - @copy-button-width - @copy-button-left-margin -
+                                @copy-button-right-margin - @main-margin
+                        );
+                        margin-right: @main-margin; */
+                    p {
+                        margin-block-start: 0px;
+                        margin-block-end: 8px;
+                        font-family: "consolas", "monospace";
+                    }
+                `}
+                id={this.props.progressBoxId || "progress"}
+                dangerouslySetInnerHTML={{
+                    __html: this.state.progress
+                }}
+                ref={div => (this.progressDiv = div)}
+            />
+        );
+    }
+}
+
+/* <Button
                     //id="copy-button"
                     onClick={() => this.copyToClipboard()}
                     title="Copy to Clipboard"
                 >
                     Copy to Clipboard
-                </Button>
-            </div>
-        );
-    }
-}
+                </Button> */

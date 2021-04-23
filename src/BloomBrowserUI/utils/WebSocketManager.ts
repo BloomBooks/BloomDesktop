@@ -1,12 +1,13 @@
 import { BloomApi } from "./bloomApi";
 import { useEffect } from "react";
 
-interface IBloomWebSocketEvent {
+export interface IBloomWebSocketEvent {
     clientContext: string;
     id: string;
     message?: string;
-    kind?: "Error" | "Warning" | "Progress" | "Note" | "Instruction";
-    cssStyleRule?: string;
+}
+export interface IBloomWebSocketProgressEvent extends IBloomWebSocketEvent {
+    progressKind?: "Error" | "Warning" | "Progress" | "Note" | "Instruction";
 }
 
 export function useWebSocketListener(
@@ -167,11 +168,13 @@ export default class WebSocketManager {
      * is equal to the given clientContext, the parsed data object will be passed to the listener function.
      * @param {string} clientContext - should use the same name through the lifetime of the WebSocketManager.socketMap
      */
-    public static addListener(
+    public static addListener<T extends IBloomWebSocketEvent>(
         clientContext: string,
-        listener: (messageEvent: IBloomWebSocketEvent) => void
+        listener: (messageEvent: T) => void
     ): void {
         if (clientContext.indexOf("mock_")) {
+            // this is used in storybook stories. Don't try finding a server because there isn't one.
+            // Events will come in via mockSend().
         } else {
             WebSocketManager.getOrCreateWebSocket(clientContext); // side effect makes sure there's an array in listenerMap to push onto.
         }
@@ -190,7 +193,10 @@ export default class WebSocketManager {
     }
 
     // useful for storybook stories to send messages
-    public static mockSend(clientContext: string, event: IBloomWebSocketEvent) {
+    public static mockSend<T extends IBloomWebSocketEvent>(
+        clientContext: string,
+        event: T
+    ) {
         WebSocketManager.clientContextCallbacks[
             clientContext
         ].forEach(listener => listener(event));
@@ -203,10 +209,14 @@ export default class WebSocketManager {
      * once, before the call to this method returns.
      */
     public static notifyReady(clientContext: string, onReady: () => void) {
-        var socket = WebSocketManager.getOrCreateWebSocket(clientContext);
+        const socket = WebSocketManager.getOrCreateWebSocket(clientContext);
+        console.log(
+            "WebSocketManager:notifyReady. readyState = " +
+                socket.readyState.toString()
+        );
         if (socket.readyState === 0) {
             // CONNECTING
-            var openFunc = () => {
+            const openFunc = () => {
                 socket.removeEventListener("open", openFunc);
                 onReady();
             };

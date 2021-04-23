@@ -18,7 +18,7 @@ import {
 } from "./colorPickerDialog";
 import SmallNumberPicker from "./smallNumberPicker";
 import { BloomAvatar } from "./bloomAvatar";
-import { IndependentProgressDialog } from "./IndependentProgressDialog";
+import { ProgressDialog } from "./Progress/ProgressDialog";
 import WebSocketManager from "../utils/WebSocketManager";
 
 storiesOf("Localizable Widgets", module)
@@ -550,52 +550,3 @@ storiesOf("Custom Color Chooser", module)
             );
         })
     );
-
-storiesOf("Progress Dialog", module).add("Progress Dialog", () => {
-    const kContext = "mock_progress";
-    function sendEvent(
-        events: Array<{
-            k: "Error" | "Warning" | "Progress" | "Note" | "Instruction";
-            m: string;
-        }>
-    ) {
-        const e = events.shift();
-        console.log(events);
-        WebSocketManager.mockSend(kContext, {
-            clientContext: kContext,
-            id: "message",
-            kind: e!.k,
-            message: e!.m
-        });
-
-        if (events.length)
-            window.setTimeout(() => {
-                sendEvent(events);
-            }, 100);
-    }
-
-    return React.createElement(() => {
-        return (
-            <div>
-                <IndependentProgressDialog
-                    webSocketContext={kContext}
-                    onReadyToReceive={() =>
-                        sendEvent([
-                            { k: "Progress", m: "Starting up..." },
-                            { k: "Progress", m: "Working hard..." },
-                            { k: "Warning", m: "Things are looking iffy." },
-                            { k: "Progress", m: "Trying to recover..." },
-                            {
-                                k: "Note",
-                                m:
-                                    "While you're waiting, have you checked out the Bloom Library lately?"
-                            },
-                            { k: "Error", m: "Well that didn't work." },
-                            { k: "Instruction", m: "You should get some help." }
-                        ])
-                    }
-                />
-            </div>
-        );
-    });
-});

@@ -21,7 +21,7 @@ export enum ProgressState {
     Serving // doing something indefinitely, which user can stop
 }
 
-export const ProgressDialog: React.FunctionComponent<{
+export const ProgressDialogInner: React.FunctionComponent<{
     heading?: string;
     instruction?: string;
     messages: string;

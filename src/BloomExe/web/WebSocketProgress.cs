@@ -14,7 +14,7 @@ namespace Bloom.web
 	public interface IWebSocketProgress
 	{
 		void MessageWithoutLocalizing(string message, MessageKind kind=MessageKind.Progress);
-		void Message(string idSuffix, string comment, string message, MessageKind kind = MessageKind.Progress, bool useL10nIdPrefix =true);
+		void Message(string idSuffix, string comment, string message, MessageKind progressKind = MessageKind.Progress, bool useL10nIdPrefix =true);
 		void Message(string idSuffix, string message, MessageKind kind=MessageKind.Progress, bool useL10nIdPrefix = true);
 		void MessageWithParams(string idSuffix, string comment, string message, MessageKind kind, params object[] parameters);
 	}
@@ -90,20 +90,20 @@ namespace Bloom.web
 			_bloomWebSocketServer.SendBundle(_clientContext, "message", messageBundle);
 		}
 
-		public virtual void Message(string idSuffix, string comment, string message, MessageKind kind = MessageKind.Progress, bool useL10nIdPrefix =true)
+		public virtual void Message(string idSuffix, string comment, string message, MessageKind progressKind = MessageKind.Progress, bool useL10nIdPrefix =true)
 		{
-			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message, comment: comment),kind:kind);
+			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message, comment: comment),kind:progressKind);
 		}
-		public void Message(string idSuffix, string message, MessageKind kind=MessageKind.Progress, bool useL10nIdPrefix = true)
+		public void Message(string idSuffix, string message, MessageKind progressKind = MessageKind.Progress, bool useL10nIdPrefix = true)
 		{
-			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message), kind:kind);
+			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message), kind: progressKind);
 		}
 
 		// Use with care: if the first parameter is a string, you can leave out one of the earlier arguments with no compiler warning.
-		public virtual void MessageWithParams(string idSuffix, string comment, string message, MessageKind kind, params object[] parameters)
+		public virtual void MessageWithParams(string idSuffix, string comment, string message, MessageKind progressKind, params object[] parameters)
 		{
 			var formatted = GetMessageWithParams(idSuffix, comment, message, parameters);
-			MessageWithoutLocalizing(formatted, kind);
+			MessageWithoutLocalizing(formatted, progressKind);
 		}
 
 		// Use with care: if the first parameter is a string, you can leave out one of the earlier arguments with no compiler warning.
