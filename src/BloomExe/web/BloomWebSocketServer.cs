@@ -23,7 +23,7 @@ namespace Bloom.Api
 	/// * message: (optional) for events that need some text, it goes in here
 	///
 	/// Note that there is a subclass of events for Progress boxes and dialogs, defined in IBloomWebSocketProgressEvent,
-	/// which adds "progressKind".
+	/// which adds "messageKind".
 	/// 
 	/// The IBloomWebSocketServer interface allows tests to use a spy to see what messages have been sent.
 	/// </summary>

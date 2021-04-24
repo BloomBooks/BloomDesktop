@@ -680,6 +680,7 @@ namespace Bloom.TeamCollection
 			StartMonitoring();
 		}
 
+
 		/// <summary>
 		/// Wraps SetupTeamCollection() with a dialog showing progress.
 		/// </summary>
@@ -687,20 +688,20 @@ namespace Bloom.TeamCollection
 		public void SetupTeamCollectionWithProgressDialog(string repoFolder)
 		{
 			var title = "Setting Up Team Collection"; // todo l10n
+			ShowProgressDialog(title,
+				progress =>
+				{
+					progress.Message("StartingCopy", "",
+						"Starting to set up the Team Collection", MessageKind.Progress);
 
-			BrowserProgressDialog.DoWorkWithProgressDialog(SocketServer, TeamCollection.kWebSocketContext, () => new ReactDialog("teamCollectionSettingsBundle.js",
-					"ProgressDialog", $"title={title}", new { test = "from team collection" }),
+					SetupTeamCollection(repoFolder, progress);
 
-			progress =>
-			{
-				progress.Message("StartingCopy", "",
-					"Starting to set up the Team Collection", MessageKind.Progress);
+					progress.Message("Done", "Done");
+					return false; // always close dialog when done
 
-				SetupTeamCollection(repoFolder, progress);
-
-				progress.Message("Done", "Done");
-				return false; // always close dialog when done
-			});
+					// Review: I (JH) notice that the TeamCollection.SynchronizeRepoAndLocal() version of this
+					// returns true if an error was found. Why doesn't this one?
+				});
 		}
 
 		private static string _joinCollectionPath;

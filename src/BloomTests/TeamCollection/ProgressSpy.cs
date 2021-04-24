@@ -24,10 +24,10 @@ namespace BloomTests.TeamCollection
 			Messages.Add(Tuple.Create(message, kind));
 		}
 
-		public void Message(string idSuffix, string comment, string message, MessageKind progressKind = MessageKind.Progress,
+		public void Message(string idSuffix, string comment, string message, MessageKind messageKind = MessageKind.Progress,
 			bool useL10nIdPrefix = true)
 		{
-			Messages.Add(Tuple.Create(message, progressKind));
+			Messages.Add(Tuple.Create(message, messageKind));
 		}
 
 		public void Message(string idSuffix, string message, MessageKind kind = MessageKind.Progress, bool useL10nIdPrefix = true)

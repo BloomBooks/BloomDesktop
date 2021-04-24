@@ -14,8 +14,6 @@ import "./JoinTeamCollection.less";
 import { TeamCollectionDialog } from "./TeamCollectionDialog";
 import { TeamCollectionSettingsPanel } from "./TeamCollectionSettingsPanel";
 import { CreateTeamCollection } from "./CreateTeamCollection";
-import { ProgressDialog } from "../react_components/IndependentProgressDialog";
-import "../react_components/IndependentProgressDialog.less";
 
 addDecorator(storyFn => (
     <ThemeProvider theme={theme}>
@@ -158,7 +156,3 @@ storiesOf("Team Collection components", module).add(
         />
     )
 );
-
-storiesOf("ProgressDialog", module).add("ProgressDialog", () => (
-    <ProgressDialog />
-));

@@ -10,7 +10,7 @@ import theme from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 
 // A device for getting code into the team collection module
-import { ProgressDialog } from "../react_components/IndependentProgressDialog";
+import { ProgressDialog } from "../react_components/Progress/ProgressDialog";
 export { ProgressDialog };
 import { JoinTeamCollection } from "./JoinTeamCollection";
 export { JoinTeamCollection };

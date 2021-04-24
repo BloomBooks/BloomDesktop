@@ -104,7 +104,7 @@ namespace Bloom.Publish.Android.usb
 			_progress.MessageWithParams(idSuffix: "Connected",
 				message: "Connected to {0} via USB...",
 				comment: "{0} is a the name of the device Bloom connected to",
-				progressKind: MessageKind.Progress,
+				messageKind: MessageKind.Progress,
 				parameters: _androidDeviceUsbConnection.GetDeviceName());
 
 			SendBookAsync(book, backColor, settings);

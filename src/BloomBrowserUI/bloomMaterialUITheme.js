@@ -27,7 +27,7 @@ const theme = createMuiTheme({
     palette: {
         primary: { main: kBloomBlue },
         secondary: { main: kBloomPurple },
-        warning: { main: "#F3AA18" },
+        warning: { main: kBloomGold },
         text: { secondary: kRefreshIconColor }
     },
     typography: {

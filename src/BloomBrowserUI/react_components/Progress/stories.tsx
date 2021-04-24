@@ -184,4 +184,34 @@ storiesOf("Progress Dialog", module)
                 />
             );
         });
+    })
+    .add("Not wrapped in a dialog", () => {
+        return React.createElement(() => {
+            return (
+                <ProgressDialog
+                    title="A Nice Progress Dialog"
+                    titleColor="white"
+                    titleBackgroundColor="green"
+                    webSocketContext={kContext}
+                    showReportButton={"never"}
+                    wrapInDialog={false}
+                    onReadyToReceive={() =>
+                        sendEvents([
+                            {
+                                k: "Progress",
+                                m:
+                                    "This one is not wrapped in a material dialog, in order to test expanding out to whatever width is available, like we need when wrapping in a winforms dialog",
+                                progress: "indefinite"
+                            },
+                            {
+                                id: "show-buttons"
+                            },
+                            {
+                                id: "finished"
+                            }
+                        ])
+                    }
+                />
+            );
+        });
     });

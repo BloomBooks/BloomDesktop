@@ -172,9 +172,10 @@ export default class WebSocketManager {
         clientContext: string,
         listener: (messageEvent: T) => void
     ): void {
-        if (clientContext.indexOf("mock_")) {
+        if (clientContext.indexOf("mock_") > -1) {
             // this is used in storybook stories. Don't try finding a server because there isn't one.
             // Events will come in via mockSend().
+            WebSocketManager.clientContextCallbacks[clientContext] = [];
         } else {
             WebSocketManager.getOrCreateWebSocket(clientContext); // side effect makes sure there's an array in listenerMap to push onto.
         }

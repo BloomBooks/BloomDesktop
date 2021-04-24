@@ -74,7 +74,7 @@ export const ProgressDialog: React.FunctionComponent<{
         (sawAnError && props.showReportButton == "if-error");
 
     let titleColor = props.titleColor || "black";
-    let titleBackground = props.titleBackgroundColor || "lightGrey";
+    let titleBackground = props.titleBackgroundColor || "transparent";
     if (sawAWarning) {
         titleBackground = kBloomGold;
         titleColor = "black";

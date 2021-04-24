@@ -9,14 +9,12 @@ import { useL10n } from "../react_components/l10nHooks";
 import { useEffect, useState } from "react";
 import CloseOnEscape from "react-close-on-escape";
 
-export const TeamCollectionDialog: React.FunctionComponent<{
-    test: string;
-}> = props => {
+export const TeamCollectionDialog: React.FunctionComponent<{}> = props => {
     const dialogTitle = useL10n(
         "Team Collection",
         "TeamCollection.TeamCollection"
     );
-    window.alert(JSON.stringify(props.test));
+
     const [messages, setMessages] = useState([{ type: "", message: "" }]);
     useEffect(() => {
         BloomApi.get("teamCollection/getLog", result => {
