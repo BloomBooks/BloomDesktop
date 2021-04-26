@@ -1164,7 +1164,7 @@ namespace BloomTests.Publish
 		class StubProgress : WebSocketProgress
 		{
 			public readonly List<string> MessagesNotLocalized = new List<string>();
-			public override void MessageWithoutLocalizing(string message, MessageKind kind)
+			public override void MessageWithoutLocalizing(string message, ProgressKind kind)
 			{
 				MessagesNotLocalized.Add(message);
 			}
@@ -1174,12 +1174,12 @@ namespace BloomTests.Publish
 				ErrorsNotLocalized.Add(message);
 			}
 
-			public override void Message(string idSuffix, string comment, string message, MessageKind messageKind, bool useL10nIdPrefix = true)
+			public override void Message(string idSuffix, string comment, string message, ProgressKind progressKind, bool useL10nIdPrefix = true)
 			{
 				MessagesNotLocalized.Add(string.Format(message));
 			}
 
-			public override void MessageWithParams(string id, string comment, string message, MessageKind kind, params object[] parameters)
+			public override void MessageWithParams(string id, string comment, string message, ProgressKind kind, params object[] parameters)
 			{
 				MessagesNotLocalized.Add(string.Format(message, parameters));
 			}

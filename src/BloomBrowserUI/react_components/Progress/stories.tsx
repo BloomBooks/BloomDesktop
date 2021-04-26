@@ -5,6 +5,7 @@ import WebSocketManager, {
     IBloomWebSocketProgressEvent
 } from "../../utils/WebSocketManager";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
+import { ProgressBox } from "./progressBox";
 
 const kContext = "mock_progress";
 interface IStoryMessage {
@@ -211,6 +212,29 @@ storiesOf("Progress Dialog", module)
                             }
                         ])
                     }
+                />
+            );
+        });
+    })
+    .add("Raw ProgressBox with preloaded log", () => {
+        return React.createElement(() => {
+            return (
+                <ProgressBox
+                    preloadedProgressEvents={[
+                        {
+                            id: "message",
+                            clientContext: "unused",
+                            message: "This is a preloaded log message",
+                            progressKind: "Progress"
+                        },
+                        {
+                            id: "message",
+                            clientContext: "unused",
+                            message:
+                                "This is a message about an error in the past",
+                            progressKind: "Error"
+                        }
+                    ]}
                 />
             );
         });

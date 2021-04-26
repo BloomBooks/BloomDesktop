@@ -692,7 +692,7 @@ namespace Bloom.TeamCollection
 				progress =>
 				{
 					progress.Message("StartingCopy", "",
-						"Starting to set up the Team Collection", MessageKind.Progress);
+						"Starting to set up the Team Collection", ProgressKind.Progress);
 
 					SetupTeamCollection(repoFolder, progress);
 

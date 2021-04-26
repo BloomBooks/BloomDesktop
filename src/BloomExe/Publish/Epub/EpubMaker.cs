@@ -235,7 +235,7 @@ namespace Bloom.Publish.Epub
 			var message = new LicenseChecker().CheckBook(Book, Book.ActiveLanguages.ToArray());
 			if (message != null)
 			{
-				progress.MessageWithoutLocalizing(message, MessageKind.Error);
+				progress.MessageWithoutLocalizing(message, ProgressKind.Error);
 				return;
 			}
 
@@ -314,8 +314,8 @@ namespace Bloom.Publish.Epub
 				var comicalMatches = pageElement.SafeSelectNodes(".//svg:svg[contains(@class, 'comical-generated')]", nsManager);
 				if (comicalMatches.Count > 0)
 				{
-					progress.Message("Common.Error", "Error", MessageKind.Error, false);
-					progress.MessageWithParams("PublishTab.Epub.NoComicSupport", "Error shown if book contains comic bubbles.", "Sorry, Bloom cannot produce ePUBs if there are any comic bubbles. The first comic bubble is on page {0}.", MessageKind.Error, pageLabelEnglish);
+					progress.Message("Common.Error", "Error", ProgressKind.Error, false);
+					progress.MessageWithParams("PublishTab.Epub.NoComicSupport", "Error shown if book contains comic bubbles.", "Sorry, Bloom cannot produce ePUBs if there are any comic bubbles. The first comic bubble is on page {0}.", ProgressKind.Error, pageLabelEnglish);
 					AbortRequested = true;
 				}
 
@@ -334,10 +334,10 @@ namespace Bloom.Publish.Epub
 			{
 				progress.Message("OmittedPages",
 					"The following pages were removed because they are not supported in ePUBs:",
-					MessageKind.Warning);
+					ProgressKind.Warning);
 				foreach (var label in _omittedPageLabels.OrderBy(x => x))
 				{
-					progress.MessageWithoutLocalizing(label, MessageKind.Warning);
+					progress.MessageWithoutLocalizing(label, ProgressKind.Warning);
 				}
 			}
 

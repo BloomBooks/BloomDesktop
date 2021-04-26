@@ -4,7 +4,7 @@ import axios from "axios";
 import "./daisyChecks.less";
 import { ProgressBox } from "../../react_components/Progress/progressBox";
 
-const kWebSocketLifetime = "a11yChecklist";
+const kWebSocketContext = "a11yChecklist";
 
 /* Ace by DAISY (https://daisy.github.io/ace/) is a nodejs-based epub checker.
     This class asks the Bloom server to run it and then shows the result
@@ -51,7 +51,7 @@ export class DaisyChecks extends React.Component<
                 ) : (
                     <ProgressBox
                         ref={r => (this.progressBox = r)}
-                        clientContext={kWebSocketLifetime}
+                        webSocketContext={kWebSocketContext}
                     />
                 )}
             </div>

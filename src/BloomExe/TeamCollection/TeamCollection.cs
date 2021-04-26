@@ -182,7 +182,7 @@ namespace Bloom.TeamCollection
 					var localHtmlFilePath = Path.Combine(path, BookStorage.FindBookHtmlInFolder(path));
 					if ((status?.checksum == null || status.checksum != localStatus?.checksum) && RobustFile.Exists(localHtmlFilePath))
 					{
-						progress.MessageWithParams("SendingFile", "", "Adding {0} to the collection", MessageKind.Progress, bookFolderName);
+						progress.MessageWithParams("SendingFile", "", "Adding {0} to the collection", ProgressKind.Progress, bookFolderName);
 						PutBook(path);
 					}
 				}
@@ -1185,13 +1185,13 @@ namespace Bloom.TeamCollection
 		// change log. This method handles sending to both.
 		// Note that errors logged here will not result in the TC dialog showing the Reload Collection
 		// button, because we are here doing a reload, so all errors are logged as ErrorNoReload.
-		void ReportProgressAndLog(IWebSocketProgress progress, MessageKind kind, string l10nIdSuffix, string message, 
+		void ReportProgressAndLog(IWebSocketProgress progress, ProgressKind kind, string l10nIdSuffix, string message, 
 			string param0 = null, string param1= null)
 		{
 			var fullL10nId = "TeamCollection." + l10nIdSuffix;
 			var msg = string.Format(LocalizationManager.GetString(fullL10nId, message), param0, param1);
 			progress.MessageWithoutLocalizing(msg, kind);
-			_tcLog.WriteMessage((kind == MessageKind.Progress) ? MessageAndMilestoneType.History : MessageAndMilestoneType.ErrorNoReload,
+			_tcLog.WriteMessage((kind == ProgressKind.Progress) ? MessageAndMilestoneType.History : MessageAndMilestoneType.ErrorNoReload,
 				fullL10nId, message, param0, param1);
 		}
 
@@ -1274,7 +1274,7 @@ namespace Bloom.TeamCollection
 						if (statusLocal.lockedBy != TeamCollectionManager.CurrentUser
 						    || statusLocal.lockedWhere != TeamCollectionManager.CurrentMachine)
 						{
-							ReportProgressAndLog(progress, MessageKind.Warning, "DeleteLocal",
+							ReportProgressAndLog(progress, ProgressKind.Warning, "DeleteLocal",
 								"Deleting '{0}' from local folder as it is no longer in the Team Collection",
 								bookFolderName);
 							SIL.IO.RobustIO.DeleteDirectoryAndContents(path);
@@ -1301,7 +1301,7 @@ namespace Bloom.TeamCollection
 				{
 					// Something went wrong with dealing with this book, but we'd like to carry on with
 					// syncing the rest of the collection
-					ReportProgressAndLog(progress, MessageKind.Error, "SomethingWentWrong",englishSomethingWrongMessage,
+					ReportProgressAndLog(progress, ProgressKind.Error, "SomethingWentWrong",englishSomethingWrongMessage,
 						path, null);
 					SentrySdk.AddBreadcrumb(string.Format(englishSomethingWrongMessage, path));
 					SentrySdk.CaptureException(ex);
@@ -1331,7 +1331,7 @@ namespace Bloom.TeamCollection
 					{
 						// Book looks like a DropBox conflict file. Typically results when two users checked
 						// in changes while both were offline.
-						ReportProgressAndLog(progress, MessageKind.Error, "ResolvedDropboxConflict",
+						ReportProgressAndLog(progress, ProgressKind.Error, "ResolvedDropboxConflict",
 						"Two members of your team had a book checked out at the same time, so the Team Collection got two different versions of it. Bloom has moved \"{0}\" to the Lost & Found.",
 						bookName);
 						MoveRepoBookToLostAndFound(bookName);
@@ -1339,7 +1339,7 @@ namespace Bloom.TeamCollection
 						continue;
 					}
 					// brand new book! Get it.
-					ReportProgressAndLog(progress, MessageKind.Progress, "FetchedNewBook",
+					ReportProgressAndLog(progress, ProgressKind.Progress, "FetchedNewBook",
 						"Fetching a new book '{0}' from the Team Collection", bookName);
 					CopyBookFromRepoToLocal(bookName);
 					continue;
@@ -1367,7 +1367,7 @@ namespace Bloom.TeamCollection
 							PutBook(localFolderPath, inLostAndFound: true);
 							// warn the user
 							hasProblems = true;
-							ReportProgressAndLog(progress, MessageKind.Error, "ConflictingCheckout",
+							ReportProgressAndLog(progress, ProgressKind.Error, "ConflictingCheckout",
 								"Found different versions of '{0}' in both collections. The team version has been copied to your local collection, and the old local version to Lost and Found"
 								, bookName);
 							// Make the local folder match the repo (this is where 'they win')
@@ -1389,7 +1389,7 @@ namespace Bloom.TeamCollection
 							// Don't use ChangeExtension here, bookName may have arbitrary periods.
 							var renamePath = Path.Combine(renameFolder, Path.GetFileName(renameFolder) + ".htm");
 							var oldBookPath = Path.Combine(renameFolder, bookName +  ".htm");
-							ReportProgressAndLog(progress, MessageKind.Warning, "RenamingBook",
+							ReportProgressAndLog(progress, ProgressKind.Warning, "RenamingBook",
 								"Renaming the local book '{0}' because there is a new one with the same name from the Team Collection",
 								bookName);
 							RobustFile.Move(oldBookPath, renamePath);
@@ -1408,7 +1408,7 @@ namespace Bloom.TeamCollection
 					if (localStatus.checksum != repoStatus.checksum)
 					{
 						// Changed and not checked out. Just bring it up to date.
-						ReportProgressAndLog(progress, MessageKind.Progress,"Updating",
+						ReportProgressAndLog(progress, ProgressKind.Progress,"Updating",
 							"Updating '{0}' to match the Team Collection", bookName);
 						CopyBookFromRepoToLocal(bookName); // updates everything local.
 					}
@@ -1448,7 +1448,7 @@ namespace Bloom.TeamCollection
 							PutBook(localFolderPath, inLostAndFound: true);
 							// warn the user
 							hasProblems= true;
-							ReportProgressAndLog(progress, MessageKind.Error, "ConflictingCheckout",
+							ReportProgressAndLog(progress, ProgressKind.Error, "ConflictingCheckout",
 								"The book '{0}', which you have checked out and edited, is checked out to someone else in the Team Collection. Your changes have been overwritten, but are saved to Lost-and-found.",
 								bookName);
 							// Make the local folder match the repo (this is where 'they win')
@@ -1470,7 +1470,7 @@ namespace Bloom.TeamCollection
 					if (currentChecksum == localStatus.checksum)
 					{
 						// not edited locally. No warning needed, but we need to update it. We can keep local checkout.
-						ReportProgressAndLog(progress, MessageKind.Progress,"Updating",
+						ReportProgressAndLog(progress, ProgressKind.Progress,"Updating",
 							"Updating '{0}' to match the Team Collection", bookName);
 						CopyBookFromRepoToLocal(bookName);
 						WriteBookStatus(bookName, localStatus.WithChecksum(repoStatus.checksum));
@@ -1483,7 +1483,7 @@ namespace Bloom.TeamCollection
 					CopyBookFromRepoToLocal(bookName);
 						// warn the user
 						hasProblems = true;
-						ReportProgressAndLog(progress, MessageKind.Error, "ConflictingEdit",
+						ReportProgressAndLog(progress, ProgressKind.Error, "ConflictingEdit",
 						"The book '{0}', which you have checked out and edited, was modified in the Team Collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.",
 						bookName);
 						continue;
@@ -1493,7 +1493,7 @@ namespace Bloom.TeamCollection
 				{
 					// Something went wrong with dealing with this book, but we'd like to carry on with
 					// syncing the rest of the collection
-					ReportProgressAndLog(progress, MessageKind.Error, "SomethingWentWrong", englishSomethingWrongMessage,
+					ReportProgressAndLog(progress, ProgressKind.Error, "SomethingWentWrong", englishSomethingWrongMessage,
 						bookName);
 					SentrySdk.AddBreadcrumb(string.Format(englishSomethingWrongMessage, bookName));
 					SentrySdk.CaptureException(ex);
@@ -1555,7 +1555,7 @@ namespace Bloom.TeamCollection
 					// handy to record at the start of each section in the saved log. Tells us when anything it
 					// had to do to sync things actually happened.
 					progress.Message("StartingSync", "",
-						"Starting sync with Team Collection", MessageKind.Progress);
+						"Starting sync with Team Collection", ProgressKind.Progress);
 
 					bool doingJoinCollectionMerge = TeamCollectionManager.NextMergeIsJoinCollection;
 					TeamCollectionManager.NextMergeIsJoinCollection = false;

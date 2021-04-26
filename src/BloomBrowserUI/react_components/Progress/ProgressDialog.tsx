@@ -133,7 +133,8 @@ export const ProgressDialog: React.FunctionComponent<{
             </div>
 
             <ProgressBox
-                clientContext={props.webSocketContext}
+                webSocketContext={props.webSocketContext}
+                // review: I (JH) am not clear what this is here for? Presumably someone had trouble with the whole state/refresh thing?
                 notifyProgressChange={p => (progress.current = p)}
                 onReadyToReceive={props.onReadyToReceive}
             />
@@ -170,7 +171,7 @@ export const ProgressDialog: React.FunctionComponent<{
                         )}
                         <BloomButton
                             id="close-button"
-                            l10nKey="ReportProblemDialog.Close" // Should we have Common.Close?
+                            l10nKey="Common.Close"
                             hasText={true}
                             enabled={true}
                             onClick={() => {

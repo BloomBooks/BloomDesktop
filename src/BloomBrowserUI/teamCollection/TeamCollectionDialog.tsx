@@ -4,10 +4,11 @@ import { BloomApi } from "../utils/bloomApi";
 import "./TeamCollectionDialog.less";
 import theme from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
-import { DialogTitle, Typography } from "@material-ui/core";
+import { Typography } from "@material-ui/core";
 import { useL10n } from "../react_components/l10nHooks";
-import { useEffect, useState } from "react";
 import CloseOnEscape from "react-close-on-escape";
+import { ProgressBox } from "../react_components/Progress/progressBox";
+import { IBloomWebSocketProgressEvent } from "../utils/WebSocketManager";
 
 export const TeamCollectionDialog: React.FunctionComponent<{}> = props => {
     const dialogTitle = useL10n(
@@ -15,12 +16,11 @@ export const TeamCollectionDialog: React.FunctionComponent<{}> = props => {
         "TeamCollection.TeamCollection"
     );
 
-    const [messages, setMessages] = useState([{ type: "", message: "" }]);
-    useEffect(() => {
-        BloomApi.get("teamCollection/getLog", result => {
-            setMessages(result.data.messages);
-        });
-    }, []);
+    const [events] = BloomApi.useApiObject<IBloomWebSocketProgressEvent[]>(
+        "teamCollection/getLog",
+        []
+    );
+
     const urlParams = new URLSearchParams(window.location.search);
     const showReloadButton = !!urlParams.get("showReloadButton");
     return (
@@ -38,13 +38,8 @@ export const TeamCollectionDialog: React.FunctionComponent<{}> = props => {
                         />
                         <Typography variant="h4">{dialogTitle}</Typography>
                     </div>
-                    <div id="messages">
-                        {messages.map((m, index) => (
-                            <p key={index} className={m.type}>
-                                {m.message}
-                            </p>
-                        ))}
-                    </div>
+                    <ProgressBox preloadedProgressEvents={events} />
+
                     <div className="align-right no-space-below">
                         {showReloadButton && (
                             <BloomButton
