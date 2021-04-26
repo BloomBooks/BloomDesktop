@@ -224,7 +224,7 @@ namespace Bloom.TeamCollection
 					return new[]
 					{
 						new BloomWebSocketProgressEvent(kWebSocketContext, ProgressKind.Progress,
-							LastReloadTime.ToLocalTime() + ": " + "No new activity.")
+							"No new activity.")
 					};
 				}
 
