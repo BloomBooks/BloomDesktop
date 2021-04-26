@@ -1,3 +1,6 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+
 import * as React from "react";
 import { BloomApi } from "../utils/bloomApi";
 import { Div } from "../react_components/l10nComponents";
@@ -8,6 +11,7 @@ import {
 import "./TeamCollectionSettingsPanel.less";
 import theme from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
+import { kBloomBlue } from "../bloomMaterialUITheme";
 
 // A device for getting code into the team collection module
 import { ProgressDialog } from "../react_components/Progress/ProgressDialog";
@@ -21,6 +25,7 @@ import BloomButton from "../react_components/bloomButton";
 import { Dialog } from "@material-ui/core";
 import { useState } from "react";
 
+import StarIcon from "@material-ui/icons/Star";
 //import joiningImage from "../images/joining-team-collection.png";
 
 // The contents of the Team Collection panel of the Settings dialog.
@@ -39,18 +44,48 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
         ""
     );
 
-    const intro: JSX.Element = (
-        <Div
-            l10nKey="TeamCollection.Intro"
-            l10nParam0="https://docs.google.com/document/d/1DOhy7hnmG37NzcQN8oP6NkXW_X3WU7YH4ez_P1hV1mo/edit?usp=sharing"
-            // Todo: once we have an actual video this should link to it! For now just another link to the document.
-            l10nParam1="https://docs.google.com/document/d/1DOhy7hnmG37NzcQN8oP6NkXW_X3WU7YH4ez_P1hV1mo/edit?usp=sharing"
-            temporarilyDisableI18nWarning={true}
-        >
-            Bloom's Team Collection system helps your team collaborate as you
-            create, translate, and edit books. Read about how it works [here](
-            {0}), or view this [video]({1}).
-        </Div>
+    /*            <Link l10nKey="unused" alreadyLocalized={true} href="experimental@bloomlibrary.org">
+                experimental@bloomlibrary.org
+            </Link>
+
+*/ const intro: JSX.Element = (
+        <div>
+            <div
+                css={css`
+                    background-color: ${kBloomBlue};
+                    padding: 10px;
+                    margin-bottom: 21px !important;
+                    &,
+                    a {
+                        color: white !important;
+                    }
+                `}
+            >
+                <StarIcon /> This is an <strong>experimental</strong> feature.
+                Please contact us at{" "}
+                <a
+                    href="mailto:experimental@bloomlibrary.org?subject= Our interest in Team Collections"
+                    target="blank"
+                >
+                    {" "}
+                    experimental@bloomlibrary.org
+                </a>{" "}
+                so that we can talk over your needs and make sure that this
+                feature is ready for you.
+            </div>
+            <Div
+                l10nKey="TeamCollection.Intro"
+                l10nParam0="https://docs.google.com/document/d/1DOhy7hnmG37NzcQN8oP6NkXW_X3WU7YH4ez_P1hV1mo/edit?usp=sharing"
+                // Todo: once we have an actual video this should link to it! For now just another link to the document.
+                l10nParam1="https://docs.google.com/document/d/1DOhy7hnmG37NzcQN8oP6NkXW_X3WU7YH4ez_P1hV1mo/edit?usp=sharing"
+                temporarilyDisableI18nWarning={true}
+            >
+                Bloom's Team Collection system helps your team collaborate as
+                you create, translate, and edit books. Read about how it works
+                [here](
+                {0}), or view this [video]({1}).
+            </Div>
+        </div>
     );
 
     const isTeamCollection: JSX.Element = (

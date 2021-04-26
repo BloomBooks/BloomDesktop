@@ -36,7 +36,9 @@ export const TeamCollectionDialog: React.FunctionComponent<{}> = props => {
                             src={"Team Collection.svg"}
                             alt="Team Collection Icon"
                         />
-                        <Typography variant="h4">{dialogTitle}</Typography>
+                        <Typography variant="h4">
+                            {`${dialogTitle} (experimental)`}
+                        </Typography>
                     </div>
                     <ProgressBox preloadedProgressEvents={events} />
 
