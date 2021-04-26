@@ -3456,6 +3456,8 @@ namespace Bloom.Book
 		{
 			foreach (var img in htmlDom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-imageContainer')]/img[@style|@width|@height]").Cast<XmlElement>())
 			{
+				if (img.ParentNode.GetOptionalStringAttribute("class", "").Contains("bloom-scale-with-code"))
+					continue;
 				var style = img.GetOptionalStringAttribute("style", "");
 				var fixedStyle = RemoveSizeStyling(style);
 				if (String.IsNullOrEmpty(fixedStyle))
