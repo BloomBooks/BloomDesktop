@@ -57,6 +57,9 @@ namespace Bloom.Collection
 			{
 				this._tab.Controls.Remove(this._teamCollectionTab);
 			}
+			// Don't allow the user to disable the Team Collection feature if we're currently in a Team Collection.
+			_allowTeamCollection.Enabled = !(_allowTeamCollection.Checked && tcManager.CurrentCollectionEvenIfDisconnected != null);
+
 			// AutoUpdate applies only to Windows: see https://silbloom.myjetbrains.com/youtrack/issue/BL-2317.
 			if (SIL.PlatformUtilities.Platform.IsWindows)
 				_automaticallyUpdate.Checked = Settings.Default.AutoUpdate;
