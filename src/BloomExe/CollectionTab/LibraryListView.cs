@@ -1136,7 +1136,11 @@ namespace Bloom.CollectionTab
 					var button = FindBookButton(bookInfo);
 					if (button == null || button.IsDisposed)
 						return; // I (gjm) found that this condition occurred sometimes when testing BL-6100
-					image = ImageUtils.CenterImageIfNecessary(MaxThumbnailSize, image, bookInfo.IsSuitableForMakingTemplates);
+					// BL-9634 The original code change here (for BL-8058) was meant for templates already created from the
+					// Template Starter, but the Template Starter itself already has a fixed thumbnail with a dashed border.
+					// No need to generate another dashed border.
+					image = ImageUtils.CenterImageIfNecessary(MaxThumbnailSize, image,
+						bookInfo.IsSuitableForMakingTemplates && bookInfo.FolderName != "Template Starter");
 					_bookThumbnails.Images[imageIndex] = image;
 					button.Image = IsUsableBook(button) ? image : MakeDim(image);
 				}
