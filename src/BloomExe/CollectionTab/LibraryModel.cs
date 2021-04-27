@@ -201,22 +201,24 @@ namespace Bloom.CollectionTab
 
 			if (_bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanDelete)
 			{
-				if (!TeamCollectionApi.TheOneInstance.CanEditBook())
+				if (IsCurrentBookInCollection())
 				{
-					var msg = LocalizationManager.GetString("TeamCollection.CheckOutForDelete",
-						"Please check out the book before deleting it.");
-					ErrorReport.NotifyUserOfProblem(msg);
-					return false;
-				}
+					if (!TeamCollectionApi.TheOneInstance.CanEditBook())
+					{
+						var msg = LocalizationManager.GetString("TeamCollection.CheckOutForDelete",
+							"Please check out the book before deleting it.");
+						ErrorReport.NotifyUserOfProblem(msg);
+						return false;
+					}
 
-				if (_tcManager.CannotDeleteBecauseDisconnected(_bookSelection.CurrentSelection.FolderPath))
-				{
-					var msg = LocalizationManager.GetString("TeamCollection.ConnectForDelete",
-						"Please connect to the Team Collection before deleting books that are part of it.");
-					ErrorReport.NotifyUserOfProblem(msg);
-					return false;
+					if (_tcManager.CannotDeleteBecauseDisconnected(_bookSelection.CurrentSelection.FolderPath))
+					{
+						var msg = LocalizationManager.GetString("TeamCollection.ConnectForDelete",
+							"Please connect to the Team Collection before deleting books that are part of it.");
+						ErrorReport.NotifyUserOfProblem(msg);
+						return false;
+					}
 				}
-
 				var title = _bookSelection.CurrentSelection.TitleBestForUserDisplay;
 				var confirmRecycleDescription = L10NSharp.LocalizationManager.GetString("CollectionTab.ConfirmRecycleDescription", "The book '{0}'");
 				if (ConfirmRecycleDialog.JustConfirm(string.Format(confirmRecycleDescription, title), false, "Palaso"))
@@ -239,6 +241,12 @@ namespace Bloom.CollectionTab
 				}
 			}
 			return false;
+		}
+
+		private bool IsCurrentBookInCollection()
+		{
+			var currentFolder = Path.GetDirectoryName(_bookSelection.CurrentSelection.FolderPath);
+			return (currentFolder == _collectionSettings.FolderPath);
 		}
 
 		public void DoubleClickedBook()
