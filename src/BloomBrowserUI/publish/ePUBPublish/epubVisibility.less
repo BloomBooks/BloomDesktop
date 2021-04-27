@@ -6,16 +6,15 @@
 // completely since some eReaders don't handle display:none properly.
 // The epub-visibility class and this stylesheet are added in EpubMaker.RemoveUnwantedContent()
 // and are *only* used to strip out elements we don't want included in our epub dom.
-// Not sure why we now need "!important" on these, when we apparently didn't before. (BL-9844)
 .epub-visibility {
     .credits {
         .licenseAndCopyrightBlock {
             .licenseUrl {
-                display: none !important; // included in the licenseDescription field, no need to repeat
+                display: none; // included in the licenseDescription field, no need to repeat
             }
         }
         .ISBNContainer {
-            display: none !important; // would probably need a separate number for epub anyway
+            display: none; // would probably need a separate number for epub anyway
         }
     }
 }
