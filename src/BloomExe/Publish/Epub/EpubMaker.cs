@@ -2233,9 +2233,12 @@ namespace Bloom.Publish.Epub
 		{
 			foreach (XmlElement link in pageDom.RawDom.SafeSelectNodes ("//head/link").Cast<XmlElement> ().ToArray ()) {
 				var href = link.Attributes ["href"];
-				if (href != null && Path.GetFileName (href.Value).StartsWith ("custom"))
+				if (href != null && Path.GetFileName(href.Value).StartsWith ("custom"))
 					continue;
-				if (href != null && Path.GetFileName (href.Value) == "defaultLangStyles.css")
+				if (href != null && Path.GetFileName(href.Value) == "defaultLangStyles.css")
+					continue;
+				// BL-9844 Let's keep the Kyrgyzstan xmatter stylesheet (just for 4.9; we keep all of them in 5.0).
+				if (href != null && Path.GetFileName(href.Value).StartsWith("Kyrgyzstan2020"))
 					continue;
 				link.ParentNode.RemoveChild (link);
 			}

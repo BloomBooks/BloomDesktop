@@ -1092,6 +1092,17 @@ namespace BloomTests.Publish
 		}
 
 		[Test]
+		public void GetBytesOfReducedImage_LargishPngImageNotReduced_AlreadyTransparent()
+		{
+			// levels.png: PNG image data, 643 x 963, mostly transparent
+			// non-transparent pixels are white (and need to stay that way!)
+			var path = FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "levels.png");
+			var originalBytes = File.ReadAllBytes(path);
+			var reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path, true);
+			Assert.AreEqual(originalBytes.Length, reducedBytes.Length, "levels.png is not reduced");
+		}
+
+		[Test]
 		public void GetBytesOfReducedImage_LargeJpgImageReduced()
 		{
 			// LakePendOreille.jpg:        JPEG image data, JFIF standard 1.01, ... precision 8, 3264x2448, frames 3
