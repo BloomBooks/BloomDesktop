@@ -904,7 +904,7 @@ namespace Bloom.Edit
 
 		internal void SaveToolboxSettings(string data)
 		{
-			ToolboxView.SaveToolboxSettings(_currentlyDisplayedBook,data);
+			ToolboxView.SaveToolboxSettings(CurrentBook,data);
 		}
 
 		/// <summary>
