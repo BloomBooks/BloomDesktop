@@ -93,10 +93,10 @@ namespace BloomTests.Book
 
 			TranslationGroupManager.PrepareElementsInPageOrDocument((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], bookData);
 
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea", 4);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea", 3);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='en']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='fr']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='es']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='es']", 0);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz']", 1);
 		}
 
@@ -115,17 +115,18 @@ namespace BloomTests.Book
 
 			TranslationGroupManager.PrepareElementsInPageOrDocument((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], bookData);
 
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'bloom-editable') and @contenteditable='true' ]", 3);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'normal-style') and contains(@class, 'bloom-editable')]", 3);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'bloom-editable') and @contenteditable='true' ]", 2);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'normal-style') and contains(@class, 'bloom-editable')]", 2);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'normal-style') and contains(@class, 'bloom-translationGroup')]", 0);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='xyz']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 0);
 		}
 
 		/// <summary>
-		/// This is the normal shell book case. PrepareElementsOnPage should create 3 empty divs, one for
-		/// each of the languages in the test settings. The 2 existing divs should still contain their text,
+		/// This is the normal shell book case. PrepareElementsOnPage should create 2 empty divs, one for
+		/// each of the active languages in the test settings (we're not setting a third in the BookData here).
+		/// The 2 existing divs should still contain their text,
 		/// but the new ones should remain empty.
 		/// </summary>
 		[Test]
@@ -152,12 +153,12 @@ namespace BloomTests.Book
 
 			TranslationGroupManager.PrepareElementsInPageOrDocument((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], bookData);
 
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'bloom-editable') and @contenteditable='true' ]", 5);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'normal-style') and contains(@class, 'bloom-editable')]", 5);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'bloom-editable') and @contenteditable='true' ]", 4);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'normal-style') and contains(@class, 'bloom-editable')]", 4);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'normal-style') and contains(@class, 'bloom-translationGroup')]", 0);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='xyz']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 0);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(., 'The Mother')]", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='tpi' and contains(., 'Mama i tok')]", 1);
 			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@lang='xyz' and contains(., 'The Mother')]");
@@ -183,8 +184,13 @@ namespace BloomTests.Book
 			var dom = new XmlDocument();
 			dom.LoadXml(contents);
 			var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
+
 			var pageDiv = (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
+
+			// Here the arguments don't matter much. data-default-languages specifies N1, which means the Metadata1Language should
+			// be visible, and N2, which currently turns on L3.
 			TranslationGroupManager.UpdateContentLanguageClasses(pageDiv, bookData, "xyz", "222", "333");
+
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-visibility-code-on')]", 2);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and contains(@class, 'bloom-visibility-code-on')]", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and contains(@class, 'bloom-visibility-code-on')]", 1);
@@ -354,6 +360,7 @@ namespace BloomTests.Book
 			var dom = new XmlDocument();
 			dom.LoadXml(contents);
 			var bookData = new BookData(new HtmlDom(dom), _collectionSettings, null);
+			bookData.SetMultilingualContentLanguages("xyz", "fr", "es");
 
 			TranslationGroupManager.PrepareElementsInPageOrDocument((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], bookData);
 
@@ -398,11 +405,11 @@ namespace BloomTests.Book
 
 			TranslationGroupManager.PrepareElementsInPageOrDocument((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], bookData);
 
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'plain-style') and contains(@class, 'bloom-editable')]", 4);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'plain-style') and contains(@class, 'bloom-editable')]", 3);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'normal-style') and contains(@class, 'bloom-translationGroup')]", 0);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='xyz']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 0);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(., 'The Mother')]", 1);
 			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@lang='fr']/u");
 			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@lang='fr']/b");
@@ -434,7 +441,7 @@ namespace BloomTests.Book
 
 			TranslationGroupManager.PrepareElementsInPageOrDocument((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], bookData);
 
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'plain-style') and contains(@class, 'bloom-editable')]", 4);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'plain-style') and contains(@class, 'bloom-editable')]", 3);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'normal-style') and contains(@class, 'bloom-translationGroup')]", 0);
 			//the added french should have all the structure including a copy of the image container div, but none of the text except from the bloom-cloneToOtherLanguages paragraph
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']/div/img[@src='foo.png']", 1);
@@ -516,6 +523,7 @@ namespace BloomTests.Book
 		public void ShouldNormallyShowEditable_SituationsWhereNationalLanguagesShouldBeShown()
 		{
 			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), _collectionSettings, null);
+			bookData.SetMultilingualContentLanguages("xyz", "fr", "es");
 			Assert.IsTrue(TranslationGroupManager.ShouldNormallyShowEditable("fr", new[] { "V","N1" }, "", "", bookData),
 				"The data-default-languages calls for the vernacular and n1");
 			Assert.IsTrue(TranslationGroupManager.ShouldNormallyShowEditable("fr", new[] { "N1" }, "", "", bookData),
@@ -528,18 +536,37 @@ namespace BloomTests.Book
 				"Auto and Trilingual, so should show all three languages.");
 			Assert.IsTrue(TranslationGroupManager.ShouldNormallyShowEditable("es", new[] { "auto" }, "fr", "es", bookData),
 				"Auto and Trilingual, so should show all three languages.");
+			bookData.SetMultilingualContentLanguages("xyz");
+			Assert.IsTrue(TranslationGroupManager.ShouldNormallyShowEditable("fr", new[] { "N1" }, "", "", bookData),
+				"The data-default-languages calls for the N1; it should show, even when not in the auto list.");
+			Assert.IsFalse(TranslationGroupManager.ShouldNormallyShowEditable("es", new[] { "N1" }, "", "", bookData),
+				"The data-default-languages calls for the N1; it should show, even when not in the auto list.");
+			Assert.IsFalse(TranslationGroupManager.ShouldNormallyShowEditable("fr", new[] { "N2" }, "", "", bookData),
+				"The data-default-languages calls for the N1; it should show, even when not in the auto list.");
+			Assert.IsTrue(TranslationGroupManager.ShouldNormallyShowEditable("es", new[] { "N2" }, "", "", bookData),
+				"The data-default-languages calls for the N1; it should show, even when not in the auto list.");
 		}
 
 		[Test]
 		public void ShouldNormallyShowEditable_SituationsWhereNumberedLanguagesShouldBeShown()
 		{
 			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), _collectionSettings, null);
+			bookData.SetMultilingualContentLanguages("xyz", "fr", "es");
 			Assert.IsTrue(TranslationGroupManager.ShouldNormallyShowEditable("xyz", new[] { "L1" }, "", "", bookData),
 				"The data-default-languages calls for the L1");
 			Assert.IsTrue(TranslationGroupManager.ShouldNormallyShowEditable("fr", new[] { "L2" }, "", "", bookData),
 				"The data-default-languages calls for the L2.");
 			Assert.IsTrue(TranslationGroupManager.ShouldNormallyShowEditable("es", new[] { "L3"}, "", "", bookData),
 				"The data-default-languages calls for the L3.");
+			bookData.SetMultilingualContentLanguages("fr");
+			Assert.IsFalse(TranslationGroupManager.ShouldNormallyShowEditable("xyz", new[] { "L1" }, "", "", bookData),
+				"xyz is not L1");
+			Assert.IsTrue(TranslationGroupManager.ShouldNormallyShowEditable("fr", new[] { "L1" }, "", "", bookData),
+				"French is L1, should show");
+			Assert.IsFalse(TranslationGroupManager.ShouldNormallyShowEditable("fr", new[] { "L2" }, "", "", bookData),
+				"No language is currently L2.");
+			Assert.IsFalse(TranslationGroupManager.ShouldNormallyShowEditable("es", new[] { "L3" }, "", "", bookData),
+				"No language is currently L3.");
 		}
 
 		[Test]

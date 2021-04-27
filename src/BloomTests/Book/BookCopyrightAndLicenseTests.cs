@@ -542,9 +542,10 @@ namespace BloomTests.Book
 
 		private string GetFrenchOriginalCopyrightAndLicense(HtmlDom dom)
 		{
+			// Set these before making the bookData as it will cache during constructor.
+			_collectionSettings.Language1.Iso639Code = "en";
+			_collectionSettings.Language2.Iso639Code = "fr";
 			var bookData = new BookData(dom, _collectionSettings, null);
-			bookData.SetLanguage(LanguageSlot.Language1, "en");
-			bookData.SetLanguage(LanguageSlot.Language2, "fr");
 			return BookCopyrightAndLicense.GetOriginalCopyrightAndLicenseNotice(bookData, dom);
 		}
 

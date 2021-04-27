@@ -397,44 +397,37 @@ namespace Bloom.Edit
 				//_contentLanguages.Clear();		CAREFUL... the tags in the dropdown are ContentLanguage's, so changing them breaks that binding
 				if (_contentLanguages.Count() == 0)
 				{
-					// TODO: use BookData.GetAllBookLanguages() once we figure more out about how to handle more than
-					// the three traditional languages.
-					_contentLanguages.Add(new ContentLanguage(_bookSelection.CurrentSelection.BookData.Language1) { Locked = true, Selected = true });
+					// TODO: use a method that gets all the collection languages when we have more than three.
+					// (We'll have to do something to stop the user choosing more than three.)
+					_contentLanguages.Add(new ContentLanguage(_collectionSettings.Language1));
 
 					//NB: these won't *always* be tied to the national and regional languages, but they are for now. We would need more UI, without making for extra complexity
-					var item2 = new ContentLanguage(_bookSelection.CurrentSelection.BookData.Language2);
-					_contentLanguages.Add(item2);
-					if (!String.IsNullOrEmpty(_bookSelection.CurrentSelection.BookData.Language3.Iso639Code))
+					if (_collectionSettings.Language2Iso639Code != _collectionSettings.Language1Iso639Code)
 					{
-						var item3 = new ContentLanguage(_bookSelection.CurrentSelection.BookData.Language3);
+						var item2 = new ContentLanguage(_collectionSettings.Language2);
+						_contentLanguages.Add(item2);
+					}
+
+					if (_collectionSettings.Language3 != null)
+					{
+						var item3 = new ContentLanguage(_collectionSettings.Language3);
 						_contentLanguages.Add(item3);
 					}
 				}
-				//update the selections
-				var lang2 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _bookSelection.CurrentSelection.BookData.Language2.Iso639Code);
+				// update which ones are selected
+				var lang1 = _contentLanguages.FirstOrDefault(l =>
+					l.Iso639Code == _bookSelection.CurrentSelection.Language1IsoCode);
+				// We must have one language selected. If nothing matches, select the first.
+				if (lang1 == null)
+					lang1 = _contentLanguages[0];
+				lang1.Selected = true;
+
+				var lang2 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _bookSelection.CurrentSelection.Language2IsoCode);
 				if (lang2 != null)
-					lang2.Selected = CurrentBook.MultilingualContentLanguage2 == _bookSelection.CurrentSelection.BookData.Language2.Iso639Code;
-				else
-					Logger.WriteEvent("Found no Lang2 in ContentLanguages; count= " + _contentLanguages.Count);
-
-				//the first language is always selected. This covers the common situation in shellbook collections where
-				//we have English as both the 1st and national language. https://jira.sil.org/browse/BL-756
-				var lang1 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _bookSelection.CurrentSelection.BookData.Language1.Iso639Code);
-				if (lang1 != null)
-					lang1.Selected = true;
-				else
-					Logger.WriteEvent("Hit BL-2780 condition in ContentLanguages; count= " + _contentLanguages.Count);
-
-				var contentLanguageMatchingNatLan2 =
-					_contentLanguages.Where(l => l.Iso639Code == _bookSelection.CurrentSelection.BookData.Language3.Iso639Code).FirstOrDefault();
-
-				if(contentLanguageMatchingNatLan2!=null)
-				{
-					contentLanguageMatchingNatLan2.Selected =
-					CurrentBook.MultilingualContentLanguage2 ==_bookSelection.CurrentSelection.BookData.Language3.Iso639Code
-					|| CurrentBook.MultilingualContentLanguage3 == _bookSelection.CurrentSelection.BookData.Language3.Iso639Code;
-				}
-
+					lang2.Selected = true;
+				var lang3 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _bookSelection.CurrentSelection.Language3IsoCode);
+				if (lang3 != null)
+					lang3.Selected = true;
 
 				return _contentLanguages;
 			}
@@ -481,12 +474,10 @@ namespace Bloom.Edit
 		public void ContentLanguagesSelectionChanged()
 		{
 			Logger.WriteEvent("Changing Content Languages");
-			string l2 = null;
-			string l3 = null;
-			GetMultilingualContentLanguages(out l2, out l3);
+			var contentLanguages = GetMultilingualContentLanguages();
 
 			//Reload to display these changes
-			CurrentBook.SetMultilingualContentLanguages(l2, l3);	// set langs before saving page
+			CurrentBook.SetMultilingualContentLanguages(contentLanguages);	// set langs before saving page
 			SaveNow();
 			CurrentBook.PrepareForEditing();
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
@@ -499,22 +490,9 @@ namespace Bloom.Edit
 		// Get current MultilingualContentLanguage settings based on what's been recently checked/unchecked.
 		// N.B. Unless we're calling this from a more general display update we do NOT want to update ContentLanguages
 		// first, as that will change the 'checked' status back to what it was.
-		private void GetMultilingualContentLanguages(out string lang2iso, out string lang3iso)
+		private string[] GetMultilingualContentLanguages()
 		{
-			lang2iso = null;
-			lang3iso = null;
-			foreach (var language in _contentLanguages)
-			{
-				if (language.Locked)
-					continue; //that's the vernacular (language1)
-				if(language.Selected && lang2iso==null)
-					lang2iso = language.Iso639Code;
-				else if(language.Selected)
-				{
-					lang3iso = language.Iso639Code;
-					break;
-				}
-			}
+			return _contentLanguages.Where(l => l.Selected).Select(l => l.Iso639Code).ToArray();
 		}
 
 		public int NumberOfDisplayedLanguages
@@ -568,9 +546,8 @@ namespace Bloom.Edit
 				}
 				// Reset the book's languages in case the user changed the collection's languages.
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-5444.
-				string lang2iso, lang3iso;
-				GetMultilingualContentLanguages(out lang2iso, out lang3iso);
-				CurrentBook.SetMultilingualContentLanguages(lang2iso, lang3iso);
+				var contentLanguages = GetMultilingualContentLanguages();
+				CurrentBook.SetMultilingualContentLanguages(contentLanguages);
 				CurrentBook.PrepareForEditing();
 				// As of 4.9, we are adding a hook here to do one-time maintenance to books, based on a
 				// metadata 'maintenanceLevel'.
@@ -1288,14 +1265,16 @@ namespace Bloom.Edit
 		public string GetFontAvailabilityMessage()
 		{
 			// REVIEW: does this ToLower() do the right thing on Linux, where filenames are case sensitive?
-			var name = _bookSelection.CurrentSelection.BookData.Language1.FontName.ToLowerInvariant();
+			var bookData = _bookSelection.CurrentSelection.BookData;
+			var language1FontName = bookData.Language1.FontName;
+			var name = language1FontName.ToLowerInvariant();
 
 			if (null == FontFamily.Families.FirstOrDefault(f => f.Name.ToLowerInvariant() == name))
 			{
 				var s = LocalizationManager.GetString("EditTab.FontMissing",
 														   "The current selected " +
 														   "font is '{0}', but it is not installed on this computer. Some other font will be used.");
-				return String.Format(s, _bookSelection.CurrentSelection.BookData.Language1.FontName);
+				return String.Format(s, language1FontName);
 			}
 			return null;
 		}
