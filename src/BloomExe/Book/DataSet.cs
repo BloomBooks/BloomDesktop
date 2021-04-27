@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using SIL.Extensions;
 using SIL.Text;
 
@@ -12,18 +13,9 @@ namespace Bloom.Book
 	{
 		public DataSet()
 		{
-			WritingSystemAliases = new Dictionary<string, string>();
 			TextVariables = new Dictionary<string, DataSetElementValue>();
 			XmatterPageDataAttributeSets = new Dictionary<string, ISet<KeyValuePair<string, string>>>();
 		}
-
-		/// <summary>
-		/// Depending on the context, the correct values for these change. E.g., "V" is the *actual* vernacular when looking at a book in the Vernacular library,
-		/// but it should be the national language or UI language when looking a shell in a collection (where we'd want to see, for example, the French title)
-		///
-		/// Values in use currently are: "V", "N1", "N2"
-		/// </summary>
-		public Dictionary<string, string> WritingSystemAliases { get; private set; }
 
 		public Dictionary<string, DataSetElementValue> TextVariables { get; private set; }
 
@@ -47,6 +39,8 @@ namespace Bloom.Book
 
 		public void UpdateLanguageString(string key, XmlString value, string writingSystemId, bool isCollectionValue)
 		{
+			Debug.Assert(writingSystemId != "V" && writingSystemId != "N1" && writingSystemId != "N2",
+				"UpdateLanguageString may no longer be passed an alias writing system ID");
 			DataSetElementValue dataSetElementValue;
 			MultiTextBase text;
 			if(TextVariables.TryGetValue(key,out dataSetElementValue))
@@ -55,19 +49,10 @@ namespace Bloom.Book
 			{
 				text = new MultiTextBase();
 			}
-			text.SetAlternative(DealiasWritingSystemId(writingSystemId), value?.Xml);
+			text.SetAlternative(writingSystemId, value?.Xml);
 			TextVariables.Remove(key);
 			if(text.Count>0)
 				TextVariables.Add(key, new DataSetElementValue(text, isCollectionValue));
-		}
-
-		public string DealiasWritingSystemId(string writingSystemId)
-		{
-			if (WritingSystemAliases.ContainsKey(writingSystemId))
-			{
-				writingSystemId = WritingSystemAliases[writingSystemId]; // e.g. convert "V" to the Vernacular
-			}
-			return writingSystemId;
 		}
 
 		public void AddLanguageString(string key, XmlString value, string writingSystemId, bool isCollectionValue)

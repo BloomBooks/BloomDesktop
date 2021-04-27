@@ -11,6 +11,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.WebLibraryIntegration;
@@ -768,21 +769,22 @@ namespace Bloom.web.controllers
 			bldr.AppendLine("Collection name: " + settings.CollectionName);
 			bldr.AppendLine("xMatter pack name: " + settings.XMatterPackName);
 			// TODO: rethink how to display language information if we expand the languages available.
-			var language1 = book.BookData.Language1;
-			bldr.AppendLine("Language1 -> iso: '" + language1.Iso639Code + "',  font: " +
-							language1.FontName + (language1.IsRightToLeft ? " RTL" : string.Empty));
-			var language2 = book.BookData.Language2;
-			bldr.AppendLine("Language2 -> iso: '" + language2.Iso639Code + "',  font: " +
-							language2.FontName + (language2.IsRightToLeft ? " RTL" : string.Empty));
-			var language3 = book.BookData.Language3;
-			if (string.IsNullOrEmpty(language3?.Iso639Code))
+			AppendWritingSystem(book.BookData.Language1, "Language1", bldr);
+			AppendWritingSystem(book.BookData.Language2, "Language2", bldr);
+			AppendWritingSystem(book.BookData.Language3, "Language3", bldr);
+			AppendWritingSystem(book.BookData.MetadataLanguage1, "MetadataLanguage1", bldr);
+		}
+
+		void AppendWritingSystem(WritingSystem ws, string label, StringBuilder bldr)
+		{
+			if (string.IsNullOrEmpty(ws?.Iso639Code))
 			{
-				bldr.AppendLine("No Language3 defined");
+				bldr.AppendLine("No " + label + " defined");
 			}
 			else
 			{
-				bldr.AppendLine("Language3 -> iso: '" + language3.Iso639Code + "',  font: " +
-					language3.FontName + (language3.IsRightToLeft ? " RTL" : string.Empty));
+				bldr.AppendLine(label + " -> iso: '" + ws.Iso639Code + "',  font: " +
+				                ws.FontName + (ws.IsRightToLeft ? " RTL" : string.Empty));
 			}
 		}
 

@@ -196,6 +196,7 @@ namespace BloomTests.CLI
 			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
 			AssertThatXmlIn.HtmlFile(_eventualHtmlPath)
 				.HasAtLeastOneMatchForXpath("//div[@data-book='bookTitle' and @contenteditable='true' and @lang='fr' and contains(@class,'bloom-contentNational1')]");
+			// This is effectively a test that the book has been made trilingual.
 			AssertThatXmlIn.HtmlFile(_eventualHtmlPath)
 				.HasAtLeastOneMatchForXpath("//div[@data-book='bookTitle' and @contenteditable='true' and @lang='sp' and contains(@class,'bloom-contentNational2')]");
 		}
