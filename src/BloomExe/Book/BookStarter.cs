@@ -224,7 +224,7 @@ namespace Bloom.Book
 			{
 				XmlElement sourceDiv = sourceDom.SelectSingleNode("//div[@id='"+div.GetAttribute("id")+"']") as XmlElement;
 				SetupIdAndLineage(sourceDiv, div);
-				SetupPage(div, bookData, null, null);
+				SetupPage(div, bookData);
 			}
 
 			ClearAwayDraftText(storage.Dom.RawDom);
@@ -430,16 +430,19 @@ namespace Bloom.Book
 			//now add in the xmatter from the currently selected xmatter pack
 			if (!TestingSoSkipAddingXMatter)
 			{
-				var data = new DataSet();
+				var data = new Dictionary<string, string>();
 				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.Language1.Iso639Code));
 				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.Language2.Iso639Code));
-				data.WritingSystemAliases.Add("V", _collectionSettings.Language1.Iso639Code);
-				data.WritingSystemAliases.Add("N1", _collectionSettings.Language2.Iso639Code);
-				data.WritingSystemAliases.Add("N2", _collectionSettings.Language3.Iso639Code);
+				// Review: this sort of duplicates the knowledge in BookData.WritingSystemAliases
+				// Is it worth creating a BookData here? Since we're just starting the new book, it can't
+				// yet have any language settings different from the collection.
+				data.Add("V", _collectionSettings.Language1.Iso639Code);
+				data.Add("N1", _collectionSettings.Language2.Iso639Code);
+				data.Add("N2", _collectionSettings.Language3.Iso639Code);
 
 				var helper = new XMatterHelper(storage.Dom, _collectionSettings.XMatterPackName, _fileLocator);
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
-				helper.InjectXMatter(data.WritingSystemAliases, sizeAndOrientation, false, _collectionSettings.Language2.Iso639Code);
+				helper.InjectXMatter(data, sizeAndOrientation, false, _collectionSettings.Language2.Iso639Code);
 				//TranslationGroupManager.PrepareDataBookTranslationGroups(storage.Dom,languages);
 			}
 		}
@@ -490,7 +493,7 @@ namespace Bloom.Book
 		}
 
 
-		public static void SetupPage(XmlElement pageDiv, BookData bookData, string contentLanguageIso1, string contentLanguageIso2)//, bool inShellMode)
+		public static void SetupPage(XmlElement pageDiv, BookData bookData)//, bool inShellMode)
 		{
 			TranslationGroupManager.PrepareElementsInPageOrDocument(pageDiv, bookData);
 
