@@ -433,7 +433,18 @@ div.bloom-page {
     }
 }
 .epub {
+    .outsideBackCover .marginBox {
+        // otherwise non-epub rules push things right too much and chop off government logos!
+        width: unset !important;
+    }
     .divider {
         display: none;
+    }
+    .credits .marginBox div {
+        // for some reason on ePUB, the bottom branding wants to sit on top of the acknowledgments.
+        &[data-book="credits-page-branding-bottom-html"] {
+            position: relative;
+            bottom: 0;
+        }
     }
 }
