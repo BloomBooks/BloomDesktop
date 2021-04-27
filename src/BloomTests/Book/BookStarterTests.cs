@@ -630,7 +630,7 @@ namespace BloomTests.Book
 		public void CreateBookOnDiskFromTemplate_TextAreaHasNoText_VernacularLangAttrSet()
 		{
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
-			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithNoLanguageTags']/p/textarea", 3);
+			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithNoLanguageTags']/p/textarea", 2);
 			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithNoLanguageTags']/p/textarea[@lang='xyz']", 1);
 		}
 		[Test]
@@ -1022,9 +1022,9 @@ namespace BloomTests.Book
 			dom.LoadXml(contents);
 			var bookData = new BookData(new HtmlDom(dom), _defaultCollectionSettings, null);
 
-			BookStarter.SetupPage((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], bookData, "abc", "def");
+			BookStarter.SetupPage((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], bookData);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='fr']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='es']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='es']", 0);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='xyz']", 1);
 		}
 
@@ -1040,7 +1040,7 @@ namespace BloomTests.Book
 			dom.LoadXml(contents);
 			var bookData = new BookData(new HtmlDom(dom), _alternateCollectionSettings, null);
 
-			BookStarter.SetupPage((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], bookData, "abc", "def");
+			BookStarter.SetupPage((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], bookData);
 			//should remove the French (I don't see that we actually have any templates that have anything but English, but just in case)
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'pageDescription') and @lang != 'en']", 0);
 			//should leave English as a placeholder

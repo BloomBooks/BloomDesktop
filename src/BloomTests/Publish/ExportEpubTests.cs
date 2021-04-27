@@ -910,7 +910,7 @@ namespace BloomTests.Publish
 							<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
 				optionalDataDiv:
 				@"<div id=""bloomDataDiv"">
-						<div data-book=""contentLanguage1"" lang=""*"">en</div>
+						<div data-book=""contentLanguage1"" lang=""*"">xyz</div>
 						<div data-book=""originalAcknowledgments"" lang=""fr""><p>French Acknowledgments</p></div>
 						<div data-book=""originalAcknowledgments"" lang=""de""><p>German Acknowledgments</p></div>
 						<div data-book=""originalAcknowledgments"" lang=""es""><p>Spanish Acknowledgments</p></div>

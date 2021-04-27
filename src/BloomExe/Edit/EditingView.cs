@@ -1479,11 +1479,15 @@ namespace Bloom.Edit
 					//_contentLanguagesDropdown.ToolTipText); doesn't work because the scanner needs literals
 					"Choose language to make this a bilingual or trilingual book");
 
+				var nSelected = _model.ContentLanguages.Count(l => l.Selected);
+
 				foreach(var l in _model.ContentLanguages)
 				{
 					var item = AddDropdownItemSafely(_contentLanguagesDropdown, l.ToString());
 					item.Tag = l;
-					item.Enabled = !l.Locked;
+					// Any language which is not selected may be turned on.
+					// A language which is turned on may only be turned off if more than one is selected.
+					item.Enabled = !l.Selected || nSelected > 1;
 					item.Checked = l.Selected;
 					item.CheckOnClick = true;
 					item.CheckedChanged += new EventHandler(OnContentLanguageDropdownItem_CheckedChanged);

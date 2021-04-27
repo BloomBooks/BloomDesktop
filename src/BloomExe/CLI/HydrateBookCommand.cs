@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Xml;
@@ -58,6 +59,18 @@ namespace Bloom.CLI
 			var bookInfo = new BookInfo(options.Path, true);
 			var book = new Book.Book(bookInfo, new BookStorage(options.Path, locator, new BookRenamedEvent(), collectionSettings),
 				null, collectionSettings, null, null, new BookRefreshEvent(), new BookSavedEvent());
+			// This was added as part of the phase 1 changes towards the new language system, where book languages
+			// are more clearly distinct from collection languages, and there's no sense (except underlying storage) in which
+			// a book has languages that are not selected for display. This made it necessary to decide explicitly
+			// whether passing the national language options implies that a book is bi- or tri-lingual. Andrew and I (JohnT)
+			// could not think of any reason to pass the arguments at all except to achieve that, so I made it so.
+			var langs = new List<string>();
+			langs.Add(options.VernacularIsoCode);
+			if (!string.IsNullOrEmpty(options.NationalLanguage1IsoCode) && options.NationalLanguage1IsoCode != options.VernacularIsoCode)
+				langs.Add(options.NationalLanguage1IsoCode);
+			if (!string.IsNullOrEmpty(options.NationalLanguage2IsoCode))
+				langs.Add(options.NationalLanguage2IsoCode);
+			book.SetMultilingualContentLanguages(langs.ToArray());
 
 			//we might change this later, or make it optional, but for now, this will prevent surprises to processes
 			//running this CLI... the folder name won't change out from under it.

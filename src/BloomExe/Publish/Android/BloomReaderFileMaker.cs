@@ -109,7 +109,7 @@ namespace Bloom.Publish.Android
 			modifiedBook.Storage.BookInfo.MetaData.BloomdVersion = 1;
 
 			if (settings?.LanguagesToInclude != null)
-				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings.LanguagesToInclude, modifiedBook.BookData.Language2.Iso639Code);
+				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings.LanguagesToInclude, modifiedBook.BookData.MetadataLanguage1IsoCode);
 			else if (Program.RunningHarvesterMode && modifiedBook.OurHtmlDom.SelectSingleNode(BookStorage.ComicalXpath) != null)
 			{
 				// This indicates that we are harvesting a book with comic speech bubbles.
@@ -120,7 +120,7 @@ namespace Bloom.Publish.Android
 				// eventually improve this. In the meantime, switching language would have bad effects,
 				// and if you can't switch language, there's no point in the book containing more than one.
 				var languagesToInclude = new string[1] { modifiedBook.BookData.Language1.Iso639Code };
-				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, languagesToInclude, modifiedBook.BookData.Language2.Iso639Code);
+				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, languagesToInclude, modifiedBook.BookData.MetadataLanguage1IsoCode);
 			}
 
 			// Do this after processing interactive pages, as they can satisfy the criteria for being 'blank'

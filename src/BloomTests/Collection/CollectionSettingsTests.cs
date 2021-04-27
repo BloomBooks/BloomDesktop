@@ -131,10 +131,11 @@ namespace BloomTests.Collection
 		public void GetLanguagePrioritiesForTranslatedTextOnPage_GetsCorrectListOfLanguages(string lang1, string lang2, string lang3, string[] results)
 		{
 			var settings = CreateCollectionSettings(_folder.Path, "test");
-			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), settings, null);
 			settings.Language1Iso639Code = lang1;
 			settings.Language2Iso639Code = lang2;
 			settings.Language3Iso639Code = lang3;
+			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), settings, null);
+			bookData.SetMultilingualContentLanguages(lang1, lang2, lang3);
 			Assert.That(bookData.GetLanguagePrioritiesForLocalizedTextOnPage(), Is.EqualTo(results));
 		}
 
@@ -142,10 +143,10 @@ namespace BloomTests.Collection
 		public void GetLanguagePrioritiesForTranslatedTextOnPage_DoNotIncludeLang1_GetsCorrectListOfLanguages(string lang1, string lang2, string lang3, string[] results)
 		{
 			var settings = CreateCollectionSettings(_folder.Path, "test");
-			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), settings, null);
 			settings.Language1Iso639Code = lang1;
 			settings.Language2Iso639Code = lang2;
 			settings.Language3Iso639Code = lang3;
+			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), settings, null);
 			Assert.That(bookData.GetLanguagePrioritiesForLocalizedTextOnPage(false), Is.EqualTo(results));
 		}
 
