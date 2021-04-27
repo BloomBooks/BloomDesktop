@@ -493,6 +493,8 @@ namespace Bloom.Publish
 			// Abort any work we're doing to prepare a preview (at least stop it interfering with other navigation).
 			PublishHelper.Cancel();
 
+			// Suspending/resuming layout makes the transition between modes a bit smoother.
+			SuspendLayout();
 			if (displayMode != PublishModel.DisplayModes.Upload && _uploadControl != null)
 			{
 				Controls.Remove(_uploadControl);
@@ -568,7 +570,6 @@ namespace Bloom.Publish
 					{
 						SetupPublishControl();
 					}
-
 					break;
 				}
 				case PublishModel.DisplayModes.Android:
@@ -588,6 +589,7 @@ namespace Bloom.Publish
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "ePUBPublish", "loader.html"));
 					break;
 			}
+			ResumeLayout(true);
 			UpdateSaveButton();
 		}
 
@@ -605,6 +607,8 @@ namespace Bloom.Publish
 				_htmlControl.Dispose();
 			}
 			_htmlControl = new HtmlPublishPanel(pathToHtml);
+			// Setting the location explicitly makes the transition a bit smoother.
+			_htmlControl.Location = new Point(tableLayoutPanel1.Width, 0);
 			_htmlControl.Dock = DockStyle.Fill;
 			var saveBackGround = _htmlControl.BackColor; // changed to match parent during next statement
 			Controls.Add(_htmlControl);
@@ -630,6 +634,8 @@ namespace Bloom.Publish
 
 			var libaryPublishModel = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection, _model);
 			_uploadControl = new BloomLibraryUploadControl(this, libaryPublishModel, _webSocketServer);
+			// Setting the location explicitly makes the transition a bit smoother.
+			_uploadControl.Location = new Point(tableLayoutPanel1.Width, 0);
 			_uploadControl.Dock = DockStyle.Fill;
 			var saveBackColor = _uploadControl.BackColor;
 			Controls.Add(_uploadControl); // somehow this changes the backcolor
