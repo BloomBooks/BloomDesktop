@@ -95,7 +95,9 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                     enabled={true}
                     hasText={true}
                     onClick={() =>
-                        BloomApi.post("help/Tasks/Team_collection/Add_teammate")
+                        BloomApi.post(
+                            "help/Tasks/Basic_tasks/Team_Collections/Add_someone_to_a_Team_Collection.htm"
+                        )
                     }
                 >
                     How to add someone to this Team Collection
@@ -143,7 +145,9 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                     variant="text"
                     temporarilyDisableI18nWarning={true}
                     onClick={() =>
-                        BloomApi.post("help/Tasks/Team_collection/Join_team")
+                        BloomApi.post(
+                            "help/Tasks/Basic_tasks/Team_Collections/Join_a_Team_Collection.htm"
+                        )
                     }
                 >
                     How to join an existing Team Collection
