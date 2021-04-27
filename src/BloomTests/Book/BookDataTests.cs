@@ -1028,7 +1028,7 @@ namespace BloomTests.Book
 					</div>
 				</div>
 				</body></html>");
-			var collectionSettings = CreateCollection(Language1Iso639Code: "etr");
+			var collectionSettings = CreateCollection(Language1Iso639Code: "etr", Language1Name:null, "en",null,"tpi",null);
 			var data = new BookData(dom, collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
 			XmlElement nationalTitle =
@@ -1037,7 +1037,10 @@ namespace BloomTests.Book
 
 			//now switch the national language to Tok Pisin
 
-			collectionSettings.Language2Iso639Code = "tpi";
+			collectionSettings.Language2.Iso639Code = "tpi";
+			collectionSettings.Language3.Iso639Code = "en";
+			// Hack to update cache of ML1
+			data.SetMultilingualContentLanguages("etr", "tpi", "en");
 			data.SynchronizeDataItemsThroughoutDOM();
 			nationalTitle = (XmlElement) dom.SelectSingleNodeHonoringDefaultNS("//h2[@data-book='bookTitle']");
 			Assert.AreEqual("Tambu Sut", nationalTitle.InnerText);
@@ -1069,29 +1072,47 @@ namespace BloomTests.Book
 		{
 			var dom = new HtmlDom(@"<html ><head></head><body>
 				<div id='bloomDataDiv'>
-						<div data-book='contentLanguage2'>fr</div>
-						<div data-book='contentLanguage3'>es</div>
+						<div data-book='contentLanguage1'>en</div>
+						<div data-book='contentLanguage2'>tpi</div>
+						<div data-book='contentLanguage3'>fr</div>
 				</div>
 				</body></html>");
 			var collectionSettings = CreateCollection();
 			var data = new BookData(dom, collectionSettings, null);
-			Assert.AreEqual("fr", data.MultilingualContentLanguage2.Xml);
-			Assert.AreEqual("es", data.MultilingualContentLanguage3.Xml);
+			Assert.AreEqual("en", data.Language1.Iso639Code);
+			Assert.AreEqual("tpi", data.Language2.Iso639Code);
+			Assert.AreEqual("fr", data.Language3.Iso639Code);
+		}
+
+		[Test]
+		public void SetMultilingualContentLanguages_NonCollectionLanguage_Throws()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+				</body></html>");
+			var collectionSettings = CreateCollection();
+			var data = new BookData(dom, collectionSettings, null);
+			Assert.Throws<ApplicationException>(() => data.SetMultilingualContentLanguages(new[] { "de"}));
+			Assert.Throws<ApplicationException>(() => data.SetMultilingualContentLanguages(new[] { "fr", "de" }));
+			Assert.Throws<ApplicationException>(() => data.SetMultilingualContentLanguages(new[] { "fr", "en", "de" }));
 		}
 
 		[Test]
 		public void SetMultilingualContentLanguage_ContentLanguageSpecifiedInHtml_ReadsIt()
 		{
+			// Same languages as collection (tpi, fr, en) but different order.
 			var dom = new HtmlDom(@"<html ><head></head><body>
 				<div id='bloomDataDiv'>
-						<div data-book='contentLanguage2'>fr</div>
+						<div data-book='contentLanguage1'>fr</div>
+						<div data-book='contentLanguage2'>en</div>
+						<div data-book='contentLanguage3'>tpi</div>
 				</div>
 				</body></html>");
 			var collectionSettings = CreateCollection();
 			var data = new BookData(dom, collectionSettings, null);
-			data.SetMultilingualContentLanguages("en", "de");
-			Assert.AreEqual("en", data.MultilingualContentLanguage2.Xml);
-			Assert.AreEqual("de", data.MultilingualContentLanguage3.Xml);
+			//data.SetMultilingualContentLanguages(new [] {"fr", "en", "tpi"});
+			Assert.AreEqual("fr", data.Language1.Iso639Code);
+			Assert.AreEqual("en", data.Language2.Iso639Code);
+			Assert.AreEqual("tpi", data.Language3.Iso639Code);
 		}
 
 		[Test]
@@ -1218,6 +1239,7 @@ namespace BloomTests.Book
 				@"<html><head></head><body><div id='data-div' data-book='contentLanguage1' lang='*'>en</div></body></html>");
 			var data = new BookData(dom, CreateCollection("en-uk&au", "English"), null);
 
+			data.SetMultilingualContentLanguages("en-uk&au");
 			data.UpdateVariablesAndDataDivThroughDOM();
 
 			// Verify the language codes
@@ -1229,8 +1251,9 @@ namespace BloomTests.Book
 		{
 			var dom = new HtmlDom(
 				@"<html><head></head><body><div id='data-div' data-book='contentLanguage1' lang='*'>en</div></body></html>");
-			var data = new BookData(dom, CreateCollection("en", "English"), null);
-			data.SetMultilingualContentLanguages("es-es&la", "fr-fr&ca");
+			var data = new BookData(dom, CreateCollection("en", "English", "es-es&la", "spanish and latin",
+				"fr-fr&ca", "French and Canadian"), null);
+			data.SetMultilingualContentLanguages( "en", "es-es&la", "fr-fr&ca");
 
 			data.UpdateVariablesAndDataDivThroughDOM();
 
@@ -1243,23 +1266,28 @@ namespace BloomTests.Book
 		public void SetMultilingualContentLanguages_HasTrilingualLanguages_AddsToDataDiv()
 		{
 			var dom = new HtmlDom(@"<html><head></head><body></body></html>");
-			var data = new BookData(dom, CreateCollection(), null);
-			data.SetMultilingualContentLanguages("okm", "kbt");
+			var data = new BookData(dom, CreateCollection("en", "English", "okm", "Oklhoman", "kbt", "Klingon"), null);
+			data.SetMultilingualContentLanguages("kbt", "en", "okm");
 			AssertThatXmlIn.Dom(dom.RawDom)
 				.HasSpecifiedNumberOfMatchesForXpath(
-					"//div[@id='bloomDataDiv']/div[@data-book='contentLanguage2' and text()='okm']", 1);
+					"//div[@id='bloomDataDiv']/div[@data-book='contentLanguage1' and text()='kbt']", 1);
 			AssertThatXmlIn.Dom(dom.RawDom)
 				.HasSpecifiedNumberOfMatchesForXpath(
-					"//div[@id='bloomDataDiv']/div[@data-book='contentLanguage3' and text()='kbt']", 1);
+					"//div[@id='bloomDataDiv']/div[@data-book='contentLanguage2' and text()='en']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom)
+				.HasSpecifiedNumberOfMatchesForXpath(
+					"//div[@id='bloomDataDiv']/div[@data-book='contentLanguage3' and text()='okm']", 1);
 		}
 
 		[Test]
-		public void SetMultilingualContentLanguages_ThirdContentLangTurnedOff_RemovedFromDataDiv()
+		public void SetMultilingualContentLanguages_SecondAndThirdContentLangTurnedOff_RemovedFromDataDiv()
 		{
 			var dom = new HtmlDom(
 				@"<html><head><div id='bloomDataDiv'><div data-book='contentLanguage2'>xyz</div><div data-book='contentLanguage3'>kbt</div></div></head><body></body></html>");
 			var data = new BookData(dom, CreateCollection(), null);
-			data.SetMultilingualContentLanguages(null, null);
+			data.SetMultilingualContentLanguages("en");
+			AssertThatXmlIn.Dom(dom.RawDom)
+				.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage2']", 0);
 			AssertThatXmlIn.Dom(dom.RawDom)
 				.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage3']", 0);
 		}
@@ -1302,34 +1330,37 @@ namespace BloomTests.Book
 		{
 			var dom = new HtmlDom();
 			var data = new BookData(dom, CreateCollection(Language1Iso639Code: "xyz"), null);
-			Assert.AreEqual("xyz", data.GetWritingSystemCodes()["V"]);
+			Assert.AreEqual("xyz", data.DealiasWritingSystemId("V"));
 		}
 
-		[Test]
-		public void Constructor_CollectionSettingsHasLanguage1Name_LanguagenameOfNationalLanguage1FilledIn()
-		{
-			var dom = new HtmlDom();
-			var data = new BookData(dom, CreateCollection(Language1Name: "foobar"), null);
-			Assert.AreEqual("foobar", data.GetVariableOrNull("nameOfLanguage", "*").Xml);
-		}
+		// We have currently commented out the code that sets nameOfLanguage and nameOfNationalLanguage1/2 as we can't find
+		// anything that uses them. Keeping the tests around in case we decide to reinstate.
+		//[Test]
+		//public void Constructor_CollectionSettingsHasLanguage1Name_LanguagenameOfNationalLanguage1FilledIn()
+		//{
+		//	var dom = new HtmlDom();
+		//	var data = new BookData(dom, CreateCollection(Language1Name: "foobar"), null);
+		//	Assert.AreEqual("foobar", data.GetVariableOrNull("nameOfLanguage", "*").Xml);
+		//}
 
 		//NB: yes, this is confusing, having lang1 = language, lang2 = nationalLang1, lang3 = nationalLang2
 
-		[Test]
-		public void Constructor_CollectionSettingsHasLanguage2Iso639Code_nameOfNationalLanguage1FilledIn()
-		{
-			var dom = new HtmlDom();
-			var data = new BookData(dom, CreateCollection(Language2Iso639Code: "tpi"), null);
-			Assert.AreEqual("Tok Pisin", data.GetVariableOrNull("nameOfNationalLanguage1", "*").Xml);
-		}
+		//[Test]
+		//public void Constructor_CollectionSettingsHasLanguage2Iso639Code_nameOfNationalLanguage1FilledIn()
+		//{
+		//	var dom = new HtmlDom();
+		//	var data = new BookData(dom, CreateCollection(Language2Iso639Code: "tpi", Language2Name:null), null);
+		//	Assert.AreEqual("Tok Pisin", data.GetVariableOrNull("nameOfNationalLanguage1", "*").Xml);
+		//}
 
-		[Test]
-		public void Constructor_CollectionSettingsHasLanguage3Iso639Code_nameOfNationalLanguage2FilledIn()
-		{
-			var dom = new HtmlDom();
-			var data = new BookData(dom, CreateCollection(Language3Iso639Code: "tpi"), null);
-			Assert.AreEqual("Tok Pisin", data.GetVariableOrNull("nameOfNationalLanguage2", "*").Xml);
-		}
+		//[Test]
+		//public void Constructor_CollectionSettingsHasLanguage3Iso639Code_nameOfNationalLanguage2FilledIn()
+		//{
+		//	var dom = new HtmlDom();
+		//	var data = new BookData(dom, CreateCollection(Language1Iso639Code : "en", Language1Name:"English", "fr", "French", "tpi", Language3Name:"Tok Pisin"), null);
+		//	data.SetMultilingualContentLanguages("en", "fr", "tpi");
+		//	Assert.AreEqual("Tok Pisin", data.GetVariableOrNull("nameOfNationalLanguage2", "*").Xml);
+		//}
 
 		[Test]
 		public void Set_DidNotHaveForm_Added()
@@ -1475,7 +1506,7 @@ namespace BloomTests.Book
 			var settingsettings =
 				CreateCollection(Language1Iso639Code: "pdc", Language1Name: "German, Kludged");
 			var data = new BookData(htmlDom, settingsettings, null);
-			Assert.That(data.PrettyPrintLanguage("xyz"), Is.EqualTo("xyz"));
+			Assert.That(data.GetDisplayNameForLanguage("xyz"), Is.EqualTo("xyz"));
 		}
 
 		[Test]
@@ -1485,7 +1516,7 @@ namespace BloomTests.Book
 			var settingsettings =
 				CreateCollection(Language1Iso639Code: "pdc", Language1Name: "German, Kludged");
 			var data = new BookData(htmlDom, settingsettings, null);
-			Assert.That(data.PrettyPrintLanguage("pdc"), Is.EqualTo("German, Kludged"));
+			Assert.That(data.GetDisplayNameForLanguage("pdc"), Is.EqualTo("German, Kludged"));
 		}
 
 		[Test]
@@ -1496,13 +1527,15 @@ namespace BloomTests.Book
 				Language1Name: "German, Kludged",
 				Language1Iso639Code: "pdc",
 				Language2Iso639Code: "de",
-				Language3Iso639Code: "fr"
+				Language2Name:null,
+				Language3Iso639Code: "fr",
+				Language3Name:null
 			);
 			var data = new BookData(htmlDom, settings, null);
-			Assert.That(data.PrettyPrintLanguage("de"), Is.EqualTo("Deutsch"));
-			Assert.That(data.PrettyPrintLanguage("fr"), Is.EqualTo("français"));
-			Assert.That(data.PrettyPrintLanguage("en"), Is.EqualTo("English"));
-			Assert.That(data.PrettyPrintLanguage("es"), Is.EqualTo("español"));
+			Assert.That(data.GetDisplayNameForLanguage("de"), Is.EqualTo("Deutsch"));
+			Assert.That(data.GetDisplayNameForLanguage("fr"), Is.EqualTo("français"));
+			Assert.That(data.GetDisplayNameForLanguage("en"), Is.EqualTo("English"));
+			Assert.That(data.GetDisplayNameForLanguage("es"), Is.EqualTo("español"));
 		}
 
 		[Test]
@@ -1513,13 +1546,15 @@ namespace BloomTests.Book
 				Language1Iso639Code: "pdc",
 				Language1Name: "German, Kludged",
 				Language2Iso639Code: "en",
-				Language3Iso639Code: "fr"
+				Language2Name:null,
+				Language3Iso639Code: "fr",
+				Language3Name:null
 			);
 			var data = new BookData(htmlDom, settings, null);
-			Assert.That(data.PrettyPrintLanguage("de"), Is.EqualTo("German"));
-			Assert.That(data.PrettyPrintLanguage("fr"), Is.EqualTo("French"));
-			Assert.That(data.PrettyPrintLanguage("en"), Is.EqualTo("English"));
-			Assert.That(data.PrettyPrintLanguage("es"), Is.EqualTo("Spanish"));
+			Assert.That(data.GetDisplayNameForLanguage("de"), Is.EqualTo("German"));
+			Assert.That(data.GetDisplayNameForLanguage("fr"), Is.EqualTo("French"));
+			Assert.That(data.GetDisplayNameForLanguage("en"), Is.EqualTo("English"));
+			Assert.That(data.GetDisplayNameForLanguage("es"), Is.EqualTo("Spanish"));
 		}
 
 		[Test]
@@ -1539,12 +1574,14 @@ namespace BloomTests.Book
 				Language1Iso639Code: "nsk",
 				Language1Name: "Naskapi",
 				Language2Iso639Code: "en",
-				Language3Iso639Code: lg3Code
+				Language2Name: "English",
+				Language3Iso639Code: lg3Code,
+				Language3Name:null
 			);
 			var data = new BookData(htmlDom, settings, null);
-			Assert.That(data.PrettyPrintLanguage("nsk"), Is.EqualTo("Naskapi"));
-			Assert.That(data.PrettyPrintLanguage("en"), Is.EqualTo("English"));
-			Assert.That(data.PrettyPrintLanguage(lg3Code), Is.EqualTo(expectedResult));
+			Assert.That(data.GetDisplayNameForLanguage("nsk"), Is.EqualTo("Naskapi"));
+			Assert.That(data.GetDisplayNameForLanguage("en"), Is.EqualTo("English"));
+			Assert.That(data.GetDisplayNameForLanguage(lg3Code), Is.EqualTo(expectedResult));
 		}
 
 		[Test]
@@ -1559,12 +1596,15 @@ namespace BloomTests.Book
 			var htmlDom = new HtmlDom();
 			var settings = CreateCollection(
 				Language1Iso639Code: lg1Code,
+				Language1Name:null,
 				Language2Iso639Code: "en",
-				Language3Iso639Code: "fr"
+				Language2Name:null,
+				Language3Iso639Code: "fr",
+				Language3Name:null
 			);
 			settings.Language1.SetName(customName, true);
 			var data = new BookData(htmlDom, settings, null);
-			Assert.That(data.PrettyPrintLanguage(lg1Code), Is.EqualTo(expectedResult));
+			Assert.That(data.GetDisplayNameForLanguage(lg1Code), Is.EqualTo(expectedResult));
 		}
 
 		[Test]
@@ -2176,12 +2216,12 @@ namespace BloomTests.Book
 		}
 
 
-		public static CollectionSettings CreateCollection(string Language1Iso639Code = null,
-			string Language1Name = null,
-			string Language2Iso639Code = null,
-			string Language2Name = null,
-			string Language3Iso639Code = null,
-			string Language3Name = null,
+		public static CollectionSettings CreateCollection(string Language1Iso639Code = "tpi",
+			string Language1Name = "Tok Pisin",
+			string Language2Iso639Code = "fr",
+			string Language2Name = "French",
+			string Language3Iso639Code = "en",
+			string Language3Name = "English",
 			string CountryName = null
 		)
 		{
