@@ -49,7 +49,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
         >
             Bloom's Team Collection system helps your team collaborate as you
             create, translate, and edit books. Read about how it works [here](
-            {0}), or view this [video]({1}).
+            %0), or view this [video](%1).
         </Div>
     );
 
