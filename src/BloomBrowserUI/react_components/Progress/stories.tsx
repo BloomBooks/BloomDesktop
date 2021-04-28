@@ -127,19 +127,66 @@ const kLongListOfAllTypes: Array<IStoryMessage> = [
         m: "unused"
     }
 ];
+storiesOf("Progress Box", module)
+    .add("Raw ProgressBox with preloaded log", () => {
+        return React.createElement(() => {
+            return (
+                <ProgressBox
+                    preloadedProgressEvents={[
+                        {
+                            id: "message",
+                            clientContext: "unused",
+                            message: "This is a preloaded log message",
+                            progressKind: "Progress"
+                        },
+                        {
+                            id: "message",
+                            clientContext: "unused",
+                            message:
+                                "This is a message about an error in the past",
+                            progressKind: "Error"
+                        }
+                    ]}
+                />
+            );
+        });
+    })
+    .add("FuncProgressBox with preloaded log", () => {
+        return React.createElement(() => {
+            return (
+                <ProgressBox
+                    preloadedProgressEvents={[
+                        {
+                            id: "message",
+                            clientContext: "unused",
+                            message: "This is a preloaded log message",
+                            progressKind: "Progress"
+                        },
+                        {
+                            id: "message",
+                            clientContext: "unused",
+                            message:
+                                "This is a message about an error in the past",
+                            progressKind: "Error"
+                        }
+                    ]}
+                />
+            );
+        });
+    });
 
 storiesOf("Progress Dialog", module)
     .add("Short, with report button if there is an error", () => {
         return React.createElement(() => {
             return (
                 <ProgressDialog
-                    title="A Nice Progress Dialog"
+                    title="Short, with report button eventually"
                     titleColor="white"
                     titleBackgroundColor={kBloomBlue}
                     titleIcon="Team Collection.svg"
                     webSocketContext={kContext}
                     showReportButton={"if-error"}
-                    wrapInDialog={true}
+                    omitOuterFrame={false}
                     onReadyToReceive={() =>
                         sendEvents([
                             {
@@ -175,13 +222,13 @@ storiesOf("Progress Dialog", module)
         return React.createElement(() => {
             return (
                 <ProgressDialog
-                    title="A Nice Progress Dialog"
+                    title="A Long Progress Dialog"
                     titleColor="black"
                     titleBackgroundColor="transparent"
                     webSocketContext={kContext}
                     showReportButton={"never"}
                     onReadyToReceive={() => sendEvents(kLongListOfAllTypes)}
-                    wrapInDialog={true}
+                    omitOuterFrame={true}
                 />
             );
         });
@@ -190,12 +237,12 @@ storiesOf("Progress Dialog", module)
         return React.createElement(() => {
             return (
                 <ProgressDialog
-                    title="A Nice Progress Dialog"
+                    title="Not wrapped in a dialog"
                     titleColor="white"
                     titleBackgroundColor="green"
                     webSocketContext={kContext}
                     showReportButton={"never"}
-                    wrapInDialog={false}
+                    omitOuterFrame={true}
                     onReadyToReceive={() =>
                         sendEvents([
                             {
@@ -212,29 +259,6 @@ storiesOf("Progress Dialog", module)
                             }
                         ])
                     }
-                />
-            );
-        });
-    })
-    .add("Raw ProgressBox with preloaded log", () => {
-        return React.createElement(() => {
-            return (
-                <ProgressBox
-                    preloadedProgressEvents={[
-                        {
-                            id: "message",
-                            clientContext: "unused",
-                            message: "This is a preloaded log message",
-                            progressKind: "Progress"
-                        },
-                        {
-                            id: "message",
-                            clientContext: "unused",
-                            message:
-                                "This is a message about an error in the past",
-                            progressKind: "Error"
-                        }
-                    ]}
                 />
             );
         });

@@ -22,166 +22,105 @@ export interface IProgressBoxProps {
     onReadyToReceive?: () => void;
     preloadedProgressEvents?: Array<IBloomWebSocketProgressEvent>;
     onGotErrorMessage?: () => void;
-    progressBoxId?: string;
-    notifyProgressChange?: (progress: string) => void;
-}
-
-interface IProgressState {
-    progress: string;
 }
 
 // Note that this component does not do localization; we expect the progress messages
 // to already be localized when they are sent over the websocket.
-export class ProgressBox extends React.Component<IProgressBoxProps> {
-    private progressDiv: HTMLElement | null;
-    public readonly state: IProgressState = {
-        progress: ""
-    };
+export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => {
+    const [messages, setMessages] = React.useState<Array<JSX.Element>>([]);
 
-    private internalMessageHtml: string;
+    // used for scrolling to bottom
+    const bottomRef = React.useRef<HTMLDivElement>(null);
 
-    constructor(props: IProgressBoxProps) {
-        super(props);
-        //alert("constructing progress box for " + this.props.clientContext);
-        //get progress messages from c#
+    React.useEffect(() => {
+        if (props.preloadedProgressEvents) {
+            props.preloadedProgressEvents.forEach(e => processEvent(e));
+        }
+    }, [props.preloadedProgressEvents]);
+
+    React.useEffect(() => {
         if (props.webSocketContext) {
             WebSocketManager.addListener<IBloomWebSocketProgressEvent>(
                 props.webSocketContext,
-                e => this.processEvent(e)
+                e => processEvent(e)
             );
         }
-        this.internalMessageHtml = "";
-    }
-
-    public componentDidMount() {
-        if (this.props.onReadyToReceive && this.props.webSocketContext) {
+        if (props.onReadyToReceive && props.webSocketContext) {
             WebSocketManager.notifyReady(
-                this.props.webSocketContext,
-                this.props.onReadyToReceive
+                props.webSocketContext,
+                props.onReadyToReceive
             );
         }
-    }
-    public componentDidUpdate(prevProps: Readonly<IProgressBoxProps>) {
-        if (
-            prevProps.preloadedProgressEvents !==
-            this.props.preloadedProgressEvents
-        )
-            this.props.preloadedProgressEvents?.forEach(e =>
-                this.processEvent(e)
-            );
-    }
-    public componentWillUnmount() {
-        //WebSocketManager.removeListener(props.clientContext);
+    }, [props.webSocketContext]);
+
+    React.useEffect(() => {
+        if (bottomRef && bottomRef.current)
+            bottomRef!.current!.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+    }, [messages]);
+
+    function writeLine(message: string, color: string, style?: string) {
+        const line = (
+            <p
+                css={css`
+                    color: ${color};
+                `}
+            >
+                {message}
+            </p>
+        );
+        setMessages(old => [...old, line]);
     }
 
-    private processEvent(e: IBloomWebSocketProgressEvent) {
+    function processEvent(e: IBloomWebSocketProgressEvent) {
         const msg = "" + e.message;
         if (e.id === "message") {
             if (e.message!.indexOf("error") > -1) {
-                if (this.props.onGotErrorMessage) {
-                    this.props.onGotErrorMessage();
+                if (props.onGotErrorMessage) {
+                    props.onGotErrorMessage();
                 }
             }
             if (e.progressKind) {
                 switch (e.progressKind) {
                     default:
-                        this.writeLine(msg, "black");
+                        writeLine(msg, "black");
                         break;
                     case "Error":
-                        this.writeLine(msg, kErrorColor);
+                        writeLine(msg, kErrorColor);
                         break;
                     case "Warning":
-                        this.writeLine(msg, kBloomGold);
+                        writeLine(msg, kBloomGold);
                         break;
                 }
             } else {
-                this.writeLine(msg, "black");
+                writeLine(msg, "black");
             }
         }
     }
-    private writeLine(htmlToAdd: string, color: string, style?: string) {
-        this.internalMessageHtml += `<p  style='color:${color}; '${"" +
-            style}'>${htmlToAdd}<p>`;
-        this.setState({
-            progress: this.internalMessageHtml
-        });
 
-        // review: I (JH) *think* this was put here as a way of enlisting our client in helping to keep our state
-        if (this.props.notifyProgressChange) {
-            this.props.notifyProgressChange(this.internalMessageHtml);
-        }
-        this.tryScrollToBottom();
-    }
-
-    // having this public this is a bit awkward, it is un-react-y, but it's needed for the DaisyChecks client
-    public writeError(message: string) {
-        this.writeLine(message, kErrorColor);
-    }
-
-    private tryScrollToBottom() {
-        // Must be done AFTER painting once, so we
-        // get a real current scroll height.
-        const progressDiv = this.progressDiv;
-        // in my testing in FF, this worked the first time
-        if (progressDiv) progressDiv.scrollTop = progressDiv.scrollHeight;
-        // but there apparently have been times when the div wasn't around
-        // yet, so we do this:
-        else {
-            window.requestAnimationFrame(() => this.tryScrollToBottom());
-            // note, I have tested what happens if the element is *never* found (due to some future bug).
-            // Tests show that everything stays responsive.
-        }
-    }
-    /* At the moment I (JH) am leaning away from an explicit copy button. Instead
-    clients of this control should have "REPORT" button if we want users to be
-    telling us about problems, PLUS allow for selection & copy of the contents
-    for the rare case where something other than reporting is needed.
-
-    private copyToClipboard() {
-        const range = document.createRange();
-        range.selectNode(
-            document.getElementById(this.props.progressBoxId || "progress")!
-        );
-        window.getSelection()!.removeAllRanges();
-        window.getSelection()!.addRange(range);
-        document.execCommand("copy");
-        window.getSelection()!.removeAllRanges();
-    }*/
-
-    public render() {
-        return (
-            <div
-                css={css`
+    return (
+        <div
+            css={css`
+                overflow-y: scroll;
+                background-color: ${kLogBackgroundColor};
+                padding: ${kDialogPadding};
+                height: 100%;
+                &,
+                * {
                     user-select: all;
-                    overflow-y: scroll;
-                    background-color: ${kLogBackgroundColor};
-                    padding: ${kDialogPadding};
-                    height: 100%;
-                    /* width: calc(
-                            100% - @copy-button-width - @copy-button-left-margin -
-                                @copy-button-right-margin - @main-margin
-                        );
-                        margin-right: @main-margin; */
-                    p {
-                        margin-block-start: 0px;
-                        margin-block-end: 8px;
-                        font-family: "consolas", "monospace";
-                    }
-                `}
-                id={this.props.progressBoxId || "progress"}
-                dangerouslySetInnerHTML={{
-                    __html: this.state.progress
-                }}
-                ref={div => (this.progressDiv = div)}
-            />
-        );
-    }
-}
-
-/* <Button
-                    //id="copy-button"
-                    onClick={() => this.copyToClipboard()}
-                    title="Copy to Clipboard"
-                >
-                    Copy to Clipboard
-                </Button> */
+                }
+                p {
+                    margin-block-start: 0px;
+                    margin-block-end: 8px;
+                    font-family: "consolas", "monospace";
+                }
+            `} // accept styling that the parent might have put on the <ProgressBox> element. See https://emotion.sh/docs/css-prop
+            {...props}
+        >
+            {messages}
+            <div ref={bottomRef} />
+        </div>
+    );
+};
