@@ -34,9 +34,9 @@ using System.Runtime.InteropServices;
 // Note that an automated process updates these in the TeamCity build; these ones however are important
 // for whether a local build satisfies BloomParseClient.GetIsThisVersionAllowedToUpload.
 // [assembly: AssemblyVersion("0.9.999.0")]
-[assembly: AssemblyVersion("5.0.000.0")]
-[assembly: AssemblyFileVersion("5.0.000.0")]
-[assembly: AssemblyInformationalVersion("5.0.000.0")]
+[assembly: AssemblyVersion("5.1.000.0")]
+[assembly: AssemblyFileVersion("5.1.000.0")]
+[assembly: AssemblyInformationalVersion("5.1.000.0")]
 [assembly: InternalsVisibleTo("BloomTests")]
 [assembly: InternalsVisibleTo("BloomHarvester")]
 [assembly: InternalsVisibleTo("BloomHarvesterTests")]
