@@ -745,6 +745,10 @@ namespace Bloom.Book
 
 			AddPreviewJavascript(previewDom);
 			previewDom.AddPublishClassToBody("preview");
+
+			// Not needed for preview mode, so just remove them to reduce memory usage.
+			RemoveVideos(previewDom);
+			
 			return previewDom;
 		}
 
@@ -2312,7 +2316,7 @@ namespace Bloom.Book
 		/// <returns></returns>
 		public bool HasVideos()
 		{
-			return OurHtmlDom.SelectVideoElements()
+			return OurHtmlDom.SelectVideoSources()
 				.Cast<XmlElement>().Any(NonTrivialVideoFileExists);
 		}
 
@@ -2459,6 +2463,25 @@ namespace Bloom.Book
 		{
 			dom.AddJavascriptFile("commonBundle.js".ToLocalhost());
 			dom.AddJavascriptFile("bookPreviewBundle.js".ToLocalhost());
+		}
+
+		/// <summary>
+		/// Removes each video element contained in DOM. Useful for preview mode, where the videos will never actually play.
+		/// </summary>
+		/// <param name="dom">The dom containing the video elements.</param>
+		private void RemoveVideos(HtmlDom dom)
+		{
+			var videos = dom.SelectVideoSources();
+
+			for (int i = 0; i < (videos?.Count ?? 0); ++i)
+			{
+				var videoSrc = videos[i];
+				var videoTag = videoSrc.ParentNode;
+
+				// Actually removing the video element (unsurprisingly) saves even more memory than doing "display:none" on it.
+				// FYI, either of these methods should cause the placeholder image to appear instead.
+				videoTag?.ParentNode.RemoveChild(videoTag);
+			}
 		}
 
 		public IEnumerable<IPage> GetPages()

@@ -2204,7 +2204,7 @@ namespace Bloom.Book
 			return element.SelectSingleNode(BookStorage.ComicalXpath) != null;
 		}
 
-		public XmlNodeList SelectVideoElements()
+		public XmlNodeList SelectVideoSources()
 		{
 			return RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-videoContainer')]//source");
 		}

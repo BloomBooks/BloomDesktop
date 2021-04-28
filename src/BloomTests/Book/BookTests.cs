@@ -43,6 +43,31 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void GetPreviewHtmlFileForWholeBook_BookHasVideo_PreviewRemovesVideo()
+		{
+			var htmlSourceBook = $@"<html><head></head><body>
+					<div class='bloom-page numberedPage' id='page1' data-page-number='1'>
+						<div class='bloom-videoContainer'>
+							<video>
+								<source src='video/fakeVideo.mp4'>
+								</source>
+							</video>
+						</div>
+					</div>
+				</body></html>";
+			var doc = new XmlDocument();
+			doc.LoadXml(htmlSourceBook);
+			var dom = new HtmlDom(doc);
+			_storage.SetupGet(x => x.Dom).Returns(() => dom);
+
+			// System Under Test
+			var result = CreateBook().GetPreviewHtmlFileForWholeBook();
+
+			// Verification
+			AssertThatXmlIn.Dom(result.RawDom.StripXHtmlNameSpace()).HasSpecifiedNumberOfMatchesForXpath("//video", 0);
+		}
+
+		[Test]
 		public void SetCoverColor_WorksWithCaps()
 		{
 			var newValue = "#777777";

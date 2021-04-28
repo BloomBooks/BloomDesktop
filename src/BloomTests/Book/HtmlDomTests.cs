@@ -1447,7 +1447,7 @@ p {
 	</div>
 </html>");
 
-			XmlNodeList result = htmlDom.SelectVideoElements();
+			XmlNodeList result = htmlDom.SelectVideoSources();
 
 			Assert.AreEqual(1, result.Count, "Count does not match");
 			Assert.AreEqual("vidSource", ((XmlElement)result[0]).GetAttribute("id"), "ID does not match.");
