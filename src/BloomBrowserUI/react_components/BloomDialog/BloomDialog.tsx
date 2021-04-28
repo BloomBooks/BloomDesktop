@@ -12,7 +12,9 @@ import { kDialogPadding } from "../../bloomMaterialUITheme";
 import { BloomApi } from "../../utils/bloomApi";
 
 export const BloomDialog: React.FunctionComponent<{
-    isRootOfBrowser?: boolean;
+    open: boolean;
+    // true if the caller is wrapping in a winforms dialog already
+    omitOuterFrame: boolean;
 }> = props => (
     <CloseOnEscape
         onEscape={() => {
@@ -20,11 +22,11 @@ export const BloomDialog: React.FunctionComponent<{
         }}
     >
         <ThemeProvider theme={theme}>
-            {props.isRootOfBrowser ? (
+            {props.omitOuterFrame ? (
                 <div>{props.children}</div>
             ) : (
                 // TODO: handle open/closed
-                <Dialog open={true}>
+                <Dialog open={props.open}>
                     <div
                         css={css`
                             display: flex;
