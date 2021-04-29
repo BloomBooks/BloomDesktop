@@ -1798,6 +1798,14 @@
         <source xml:lang="en">Borders &amp; Background</source>
         <note>ID: EditTab.TextBoxProperties.BordersAndBackground</note>
       </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.CollectionLanguage2" sil:dynamic="true">
+        <source xml:lang="en">Collection Language 2</source>
+        <note>ID: EditTab.TextBoxProperties.CollectionLanguage2</note>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.CollectionLanguage3" sil:dynamic="true">
+        <source xml:lang="en">Collection Language 3</source>
+        <note>ID: EditTab.TextBoxProperties.CollectionLanguage3</note>
+      </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.HintBubbles" sil:dynamic="true">
         <source xml:lang="en">Hint Bubbles</source>
         <note>ID: EditTab.TextBoxProperties.HintBubbles</note>
@@ -1815,17 +1823,19 @@
       <trans-unit id="EditTab.TextBoxProperties.LocalLanguage" sil:dynamic="true">
         <source xml:lang="en">Local Language</source>
         <note>ID: EditTab.TextBoxProperties.LocalLanguage</note>
+        <note>Obsolete for Bloom 5.1 and later</note>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.NationalLanguage" sil:dynamic="true">
         <source xml:lang="en">National Language</source>
         <note>ID: EditTab.TextBoxProperties.NationalLanguage</note>
+        <note>Obsolete for Bloom 5.1 and later</note>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.Normal" sil:dynamic="true">
         <source xml:lang="en">Normal</source>
         <note>ID: EditTab.TextBoxProperties.Normal</note>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.NormalLabel" sil:dynamic="true">
-        <source xml:lang="en">"Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.</source>
+        <source xml:lang="en">"Normal" will show the languages you have checked in the Languages control. Use this for most content.</source>
         <note>ID: EditTab.TextBoxProperties.NormalLabel</note>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.OtherLanguagesLabel" sil:dynamic="true">
@@ -1835,6 +1845,11 @@
       <trans-unit id="EditTab.TextBoxProperties.RegionalLanguage" sil:dynamic="true">
         <source xml:lang="en">Regional Language</source>
         <note>ID: EditTab.TextBoxProperties.RegionalLanguage</note>
+        <note>Obsolete for Bloom 5.1 and later</note>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.SelectedLanguage" sil:dynamic="true">
+        <source xml:lang="en">Selected Language 1</source>
+        <note>ID: EditTab.TextBoxProperties.SelectedLanguage</note>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.ShowHintBubble" sil:dynamic="true">
         <source xml:lang="en">Show the hint bubble</source>
