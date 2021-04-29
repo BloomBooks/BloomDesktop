@@ -44,7 +44,7 @@ namespace BloomTests.TeamCollection
 					Assert.That(tcManager.CurrentCollection, Is.Null);
 
 					RobustFile.WriteAllText(settingsPath, "This is a fake settings file");
-					FolderTeamCollection.CreateTeamCollectionSettingsFile(collectionFolder.FolderPath,
+					FolderTeamCollection.CreateTeamCollectionLinkFile(collectionFolder.FolderPath,
 						sharedFolder.FolderPath);
 
 					var nonBookFolder = Path.Combine(collectionFolder.FolderPath, "Some other folder");
@@ -60,13 +60,11 @@ namespace BloomTests.TeamCollection
 						Path.Combine(sharedFolder.FolderPath, "Join this Team Collection.JoinBloomTC");
 					Assert.That(File.Exists(joinCollectionPath));
 
-					var teamCollectionSettingsPath =
-						Path.Combine(collectionFolder.FolderPath, TeamCollectionManager.TeamCollectionSettingsFileName);
-					Assert.That(File.Exists(teamCollectionSettingsPath));
-					var collectionFileContent = RobustFile.ReadAllText(teamCollectionSettingsPath);
-					Assert.That(collectionFileContent,
-						Contains.Substring("<TeamCollectionFolder>" + sharedFolder.FolderPath +
-						                   "</TeamCollectionFolder>"));
+					var teamCollectionLinkPath =
+						Path.Combine(collectionFolder.FolderPath, TeamCollectionManager.TeamCollectionLinkFileName);
+					Assert.That(File.Exists(teamCollectionLinkPath));
+					var collectionFileContent = RobustFile.ReadAllText(teamCollectionLinkPath);
+					Assert.That(collectionFileContent, Is.EqualTo(sharedFolder.FolderPath));
 					var sharedSettingsPath = Path.Combine(collectionFolder.FolderPath, settingsFileName);
 					Assert.That(RobustFile.ReadAllText(sharedSettingsPath), Is.EqualTo("This is a fake settings file"));
 					var bookPath = Path.Combine(sharedFolder.FolderPath, "Books", bookFolderName1 + ".bloom");

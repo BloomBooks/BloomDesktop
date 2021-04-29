@@ -35,7 +35,7 @@ namespace BloomTests.TeamCollection
 			_sharedFolder = new TemporaryFolder("TeamCollection_Shared");
 			_collectionFolder = new TemporaryFolder("TeamCollection_Local");
 			_tcLog = new TeamCollectionMessageLog(TeamCollectionManager.GetTcLogPathFromLcPath(_collectionFolder.FolderPath));
-			FolderTeamCollection.CreateTeamCollectionSettingsFile(_collectionFolder.FolderPath,
+			FolderTeamCollection.CreateTeamCollectionLinkFile(_collectionFolder.FolderPath,
 				_sharedFolder.FolderPath);
 
 			_mockTcManager = new Mock<ITeamCollectionManager>();

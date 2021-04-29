@@ -673,7 +673,7 @@ namespace Bloom.TeamCollection
 			_repoFolderPath = repoFolder;
 			progress.Message("SettingUpCore", "Setting up the core team collection files");
 			CreateJoinCollectionFile();
-			CreateTeamCollectionSettingsFile(_localCollectionFolder, repoFolder);
+			CreateTeamCollectionLinkFile(_localCollectionFolder, repoFolder);
 			CopyRepoCollectionFilesFromLocal(_localCollectionFolder);
 			Directory.CreateDirectory(Path.Combine(repoFolder, "Books"));
 			SynchronizeBooksFromLocalToRepo(progress);
@@ -768,7 +768,7 @@ namespace Bloom.TeamCollection
 		public static string SetupMinimumLocalCollectionFilesForRepo(string repoFolder, string localCollectionFolder)
 		{
 			Directory.CreateDirectory(localCollectionFolder);
-			CreateTeamCollectionSettingsFile(localCollectionFolder, repoFolder);
+			CreateTeamCollectionLinkFile(localCollectionFolder, repoFolder);
 			CopyRepoCollectionFilesTo(localCollectionFolder, repoFolder);
 			return CollectionPath(localCollectionFolder);
 		}
@@ -783,20 +783,10 @@ namespace Bloom.TeamCollection
 				+ @"You can rename this file but must keep the extension the same.");
 		}
 
-		public static void CreateTeamCollectionSettingsFile(string collectionFolder, string teamCollectionFolder)
+		public static void CreateTeamCollectionLinkFile(string collectionFolder, string teamCollectionFolder)
 		{
-			var doc = new XDocument(
-				new XElement("settings",
-					new XElement("TeamCollectionFolder",
-						new XText(teamCollectionFolder))));
-			var teamSettingsPath = Path.Combine(collectionFolder, TeamCollectionManager.TeamCollectionSettingsFileName);
-			using (var stream = new FileStream(teamSettingsPath, FileMode.Create))
-			{
-				using (var writer = new XmlTextWriter(stream, Encoding.UTF8))
-				{
-					doc.Save(writer);
-				}
-			}
+			var teamCollectionLinkPath = Path.Combine(collectionFolder, TeamCollectionManager.TeamCollectionLinkFileName);
+			RobustFile.WriteAllText(teamCollectionLinkPath, teamCollectionFolder);
 		}
 
 		/// <summary>
