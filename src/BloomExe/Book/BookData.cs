@@ -83,9 +83,13 @@ namespace Bloom.Book
 		private readonly DataSet _dataset;
 		private XmlElement _dataDiv;
 		private Object thisLock = new Object();
-		private XmlString _cachedMcl2;
-		private XmlString _cachedMcl3;
-		private bool _gotMclCache;
+		// At one point we used XmlString for these, but language tags cannot actually
+		// contain any characters that need encoding, so it seems an unnecessary complication.
+		private string _cachedIsoLang1;
+		private string _cachedIsoLang2;
+		private string _cachedIsoLang3;
+		private string _cachedIsoMetadataLang1;
+		private bool _gotLangCache;
 
 		//URLs are encoded in a certain way for the src attributes
 		//If they have certain symbols (namely &), they need to be encoded differently
@@ -106,47 +110,204 @@ namespace Bloom.Book
 			_updateImgNode = updateImgNodeCallback;
 			CollectionSettings = collectionSettings;
 			GetOrCreateDataDiv();
-			_dataset = GatherDataItemsFromCollectionSettings(CollectionSettings);
+			_dataset = new DataSet();
+			GatherDataItemsFromSettings(_dataset, CollectionSettings);
 			GatherDataItemsFromXElement(_dataset,_dom.RawDom);
 			MigrateData(_dataset);
 		}
 
 		/// <summary>
-		/// For bilingual or trilingual books, this is the second language to show, after the vernacular.
+		/// The first (or only) language to show, usually the vernacular.
 		/// </summary>
-		public XmlString MultilingualContentLanguage2
+		public string Language1IsoCode
 		{
 			get
 			{
-				if (!_gotMclCache)
-					CacheMclData();
-				return _cachedMcl2;
+				if (!_gotLangCache)
+				{
+					if (_cachingLangData)
+					{
+						// recursive call from GatherDataItemsFromXElement; just use collection language
+						return CollectionSettings.Language1Iso639Code;
+					}
+					CacheLangData();
+				}
+
+				return _cachedIsoLang1;
 			}
 		}
 
 		/// <summary>
-		/// Cache values for MultilingualContentLanguage2 and MultilingualContentLanguage3
-		/// It is safe to cache this because we reload everything when changing languages.
+		/// For bilingual or trilingual books, this is the second language to show,
+		/// after Language1.
+		/// </summary>
+		public String Language2IsoCode
+		{
+			get
+			{
+				if (!_gotLangCache)
+					CacheLangData();
+				return _cachedIsoLang2;
+			}
+		}
+
+		/// <summary>
+		/// This is the language we use to show metadata, which currently includes most
+		/// of the fields in XMatter, including the second title. In phase 2 of our language
+		/// cleanup, we may separate out more categories.
+		/// Currently this is always the the collection's L2, though we may allow configuring
+		/// it eventually.
+		/// It should never be null, but might be the same as Language1 (or 2 or 3).
+		/// </summary>
+		public String MetadataLanguage1IsoCode
+		{
+			get
+			{
+				if (!_gotLangCache)
+					CacheLangData();
+				return _cachedIsoMetadataLang1;
+			}
+		}
+
+		/// <summary>
+		/// We tentatively anticipate supporting a second metadata language, typically useful for
+		/// something like a regional language where ML1 is a national one, though it's equally
+		/// possible that ML1 might be a regional language while ML2 could be the language of
+		/// an international organization working on the project.
+		/// Somewhere in phase 2 or later, this might become configurable for a book
+		/// independent of the collection; or we may decide that metadata languages are fixed
+		/// for a collection.
+		/// For now, it serves as the definition of the data-default-languages code N2
+		/// (a legacy name kept for backwards compatibility, short for National Language 2).
+		/// This is currently only used where the user configures a text box to show N2 by
+		/// choosing the last radio button.
+		/// </summary>
+		public string MetadataLanguage2IsoCode => CollectionSettings.Language3Iso639Code;
+
+		private bool _cachingLangData = false;
+		/// <summary>
+		/// Cache values for LanguageNIsoCode and MetadataLang1IsoCode
+		/// It is safe to cache this because we reload everything when changing languages
+		/// in the collection. When we change them in the active language menu, we update the cache.
 		/// It is important because these properties are heavily used, especially when saving pages.
 		/// </summary>
-		private void CacheMclData()
+		private void CacheLangData()
 		{
-			GatherDataItemsFromXElement(_dataset, _dom.RawDom);
-			_cachedMcl2 = GetVariableOrNull("contentLanguage2", "*");
-			_cachedMcl3 = GetVariableOrNull("contentLanguage3", "*");
-			_gotMclCache = true;
+			if (_cachingLangData)
+			{
+				throw new ApplicationException("recursive call to CachecLangData");
+			}
+			_cachingLangData = true;
+			try
+			{
+				GatherDataItemsFromXElement(_dataset, _dom.RawDom);
+				_cachedIsoLang1 = GetVariableOrNull("contentLanguage1", "*").Unencoded;
+				if (string.IsNullOrEmpty(_cachedIsoLang1) || GetWritingSystemOrNull(_cachedIsoLang1) == null)
+				{
+					// If contentLanguage1 isn't in the element (typically in unit tests), just use Language1 from CollectionSettings.
+					// Likewise, if the stored WS isn't a current collection language (typically because we just modified collection settings),
+					// use the first collection language.
+					_cachedIsoLang1 = CollectionSettings.Language1.Iso639Code;
+				}
+
+				_cachedIsoLang2 = GetVariableOrNull("contentLanguage2", "*").Unencoded;
+				_cachedIsoLang3 = GetVariableOrNull("contentLanguage3", "*").Unencoded;
+				// If either of these is a WS no longer in the collection, drop it. Also drop duplicates
+				// (which should only happen as a result of language 1 changing because of collection settings changes).
+				if (GetWritingSystemOrNull(_cachedIsoLang3) == null || _cachedIsoLang3 == _cachedIsoLang2 || _cachedIsoLang3 == _cachedIsoLang1)
+					_cachedIsoLang3 = null;
+				if (GetWritingSystemOrNull(_cachedIsoLang2) == null || _cachedIsoLang2 == _cachedIsoLang1)
+				{
+					// If we still have an L3, promote it to L2.
+					_cachedIsoLang2 = _cachedIsoLang3;
+					_cachedIsoLang3 = null;
+				}
+
+				_gotLangCache = true;
+			}
+			finally
+			{
+				_cachingLangData = false;
+			}
+
+			// To avoid triggering the recursive call warning above, these need to be done outside
+			// the protected block.
+			UpdateLang1Derivatives(_cachedIsoLang1);
+			UpdateLang2Derivatives(_cachedIsoLang2);
+			UpdateLang3Derivatives(_cachedIsoLang3);
+			UpdateML1Derivatives();
+		}
+
+		private void UpdateLang1Derivatives(string newLang1)
+		{
+			_cachedIsoLang1 = newLang1;
+			if (newLang1 == null)
+				return; // This should only happen in the earliest stages of constructing a BookData
+			// I'm not sure why this is needed nor, since it is using *, why we don't use UpdateGenericLanguageString
+			// so it ONLY has that alternative. I cannot find anywhere this value is used. I'm putting this in
+			// because GatherDataItemsFromSettings fills it in, and if it IS used, I want to keep it consistent
+			// with the new notion of what language 1 means.
+			// Taking out for now to see what breaks.
+			//_dataset.AddLanguageString("nameOfLanguage",
+			//	XmlString.FromUnencoded(Language1.Name), "*", true);
+			_dataset.UpdateGenericLanguageString("iso639Code", XmlString.FromUnencoded(newLang1), true);
+		}
+
+		private void UpdateLang3Derivatives(string newLang3)
+		{
+			_cachedIsoLang3 = newLang3;
+			// I'm not sure why this is needed nor, since it is using *, why we don't use UpdateGenericLanguageString
+			// so it ONLY has that alternative. I cannot find anywhere this value is used. I'm putting this in
+			// because GatherDataItemsFromSettings fills it in, and if it IS used, I want to keep it consistent
+			// with the new notion of what language 3 means.
+			// For the same reason, I'm not sure whether it should be set to empty or removed if there is no L3.
+			// Taking out for now to see what breaks.
+			//_dataset.AddLanguageString("nameOfNationalLanguage2",
+			//	XmlString.FromUnencoded(Language3?.Name), "*", true);
+		}
+
+		private void UpdateLang2Derivatives(string newLang2)
+		{
+			_cachedIsoLang2 = newLang2;
+			// There actually are no derivatives of L2. Derivatives of what used to be L2
+			// are now derived from ML1 (alias N2).
+
+			// This is not now necessary in normal operation, as ML1 does not currently
+			// depend on L2. However, we have unit tests that mess with collection languages
+			// without doing the full reloading that happens in normal operation.
+			// It helps keep these working if changing L2 also updates the current ML1.
+			UpdateML1Derivatives();
+		}
+
+		private void UpdateML1Derivatives()
+		{
+			_cachedIsoMetadataLang1 = CollectionSettings.Language2Iso639Code;
+			// We thought about using this, but decided in the end that until we give the user
+			// full control over ML1 it's better to stick with the old behavior where ML1 is simply
+			// the second collection language.
+			//_cachedIsoMetadataLang1 = string.IsNullOrEmpty(_cachedIsoLang2)
+			//	? CollectionSettings.Language2Iso639Code
+			//	: _cachedIsoLang2;
+
+			// I'm not sure why this is needed nor, since it is using *, why we don't use UpdateGenericLanguageString
+			// so it ONLY has that alternative. I cannot find anywhere this value is used. I'm putting this in
+			// because GatherDataItemsFromSettings fills it in, and if it IS used, I want to keep it consistent
+			// with the new notion of what national language 1 means.
+			// Taking out for now to see what breaks.
+			//_dataset.AddLanguageString("nameOfNationalLanguage1",
+			//	XmlString.FromUnencoded(MetadataLanguage1.Name), "*", true);
 		}
 
 		/// <summary>
 		/// For trilingual books, this is the third language to show
 		/// </summary>
-		public XmlString MultilingualContentLanguage3
+		public String Language3IsoCode
 		{
 			get
 			{
-				if (!_gotMclCache)
-					CacheMclData();
-				return _cachedMcl3;
+				if (!_gotLangCache)
+					CacheLangData();
+				return _cachedIsoLang3;
 			}
 		}
 
@@ -212,13 +373,13 @@ namespace Bloom.Book
 			UpdateToolRelatedDataFromBookInfo(info, incomingData, itemsToDelete);
 			incomingData.UpdateGenericLanguageString("contentLanguage1", XmlString.FromUnencoded(Language1.Iso639Code), false);
 			incomingData.UpdateGenericLanguageString("contentLanguage2",
-											 XmlString.IsNullOrEmpty(MultilingualContentLanguage2)
+											 String.IsNullOrEmpty(Language2IsoCode)
 												 ? null
-												 : MultilingualContentLanguage2, false);
+												 : XmlString.FromUnencoded(Language2IsoCode), false);
 			incomingData.UpdateGenericLanguageString("contentLanguage3",
-											 XmlString.IsNullOrEmpty(MultilingualContentLanguage3)
+											 String.IsNullOrEmpty(Language3IsoCode)
 												 ? null
-												 : MultilingualContentLanguage3, false);
+												 : XmlString.FromUnencoded(Language3IsoCode), false);
 
 			//Debug.WriteLine("xyz: " + _dataDiv.OuterXml);
 			foreach (var v in incomingData.TextVariables)
@@ -408,8 +569,10 @@ namespace Bloom.Book
 		/// of a @data-book attribute.  Old books with @data-book attributes should be updated automatically
 		/// when the xmatter is refreshed.
 		/// </remarks>
-		private void SetupDisplayOfLanguagesOfBook(DataSet data)
+		public void SetupDisplayOfLanguagesOfBook(DataSet data = null)
 		{
+			if (data == null)
+				data = _dataset;
 			DataSetElementValue langData;
 			if (!data.TextVariables.TryGetValue("languagesOfBook", out langData))
 				return;
@@ -426,8 +589,14 @@ namespace Bloom.Book
 				return;		// must be in a test...
 			foreach (var element in elements.Cast<XmlElement>().ToList())
 			{
-				element.SetAttribute("lang", Language2.Iso639Code);
-				element.InnerText = languages;
+				element.SetAttribute("lang", MetadataLanguage1IsoCode);
+				SetNodeXml("languagesOfBook", XmlString.FromXml(languages), element );
+				// Was until April 2021
+				//element.InnerText = languages;
+				// This is wrong because languages, coming from data.TextVariables, is encoded.
+				// It would probably be OK to use element.InnerXml = languages, which is what
+				// SetNodeXml ends up doing; but it seems safest to use the routine made for the
+				// purpose of setting node contents.
 			}
 		}
 
@@ -485,24 +654,10 @@ namespace Bloom.Book
 
 			var stringId = "Topics." + englishTopic;
 
-			//get the topic in the most prominent language for which we have a translation
-			var langOfTopicToShowOnCover = Language1.Iso639Code;
-			if (LocalizationManager.GetIsStringAvailableForLangId(stringId, Language1.Iso639Code))
-			{
-				langOfTopicToShowOnCover = Language1.Iso639Code;
-			}
-			else if (LocalizationManager.GetIsStringAvailableForLangId(stringId, Language2.Iso639Code))
-			{
-				langOfTopicToShowOnCover = Language2.Iso639Code;
-			}
-			else if (LocalizationManager.GetIsStringAvailableForLangId(stringId, Language3.Iso639Code))
-			{
-				langOfTopicToShowOnCover = Language3.Iso639Code;
-			}
-			else
-			{
-				langOfTopicToShowOnCover = "en";
-			}
+			var tagsInPriorityOrder = GetLanguagePrioritiesForLocalizedTextOnPage();
+			var langOfTopicToShowOnCover = tagsInPriorityOrder
+				.FirstOrDefault(t => LocalizationManager.GetIsStringAvailableForLangId(stringId, t))
+			    ?? "en";
 
 			var bestTranslation = LocalizationManager.GetDynamicStringOrEnglish("Bloom", stringId, englishTopic,
 				"this is a book topic", langOfTopicToShowOnCover);
@@ -577,7 +732,7 @@ namespace Bloom.Book
 				_dataDiv.SelectSingleNode(String.Format("div[@data-book='{0}' and @lang='{1}']", key,
 					writingSystemId));
 
-			_dataset.UpdateLanguageString(key, form, writingSystemId, false);
+			_dataset.UpdateLanguageString(key, form, DealiasWritingSystemId(writingSystemId), false);
 
 			if (null == node)
 			{
@@ -651,15 +806,64 @@ namespace Bloom.Book
 		{
 			_dataset.UpdateGenericLanguageString(key, value, isCollectionValue);
 			UpdateSingleTextVariableInDataDiv(key, _dataset.TextVariables[key]);
-			if (key == "contentLanguage2")
-				_cachedMcl2 = value;
+			// These three props, which are updated when the user checks and unchecks languages
+			// in the edit-mode languages menu, are the source for the values set by
+			// CacheLangData (along with the collection languages...but when one of those
+			// changes we reload everything completely). So when one changes, we have to
+			// update the caches themselves and various values derived from them.
+			// The methods called here capture various common work that needs to be done
+			// both here and in CacheLangData.
+			if (key == "contentLanguage1")
+				UpdateLang1Derivatives(value.Unencoded);
+			else if (key == "contentLanguage2")
+			{
+				UpdateLang2Derivatives(value.Unencoded);
+			}
 			else if (key == "contentLanguage3")
-				_cachedMcl3 = value;
+				UpdateLang3Derivatives(value.Unencoded);
+			// Enhance: if it becomes possible to set ML1 without a collection-level
+			// change that reloads everything, we might need to call UpdateMetadataLang1Derivatives() here.
+		}
+
+		/// <summary>
+		/// If the input WS is one of three magic ones, translate to the actual language;
+		/// otherwise return the input unchanged.
+		/// </summary>
+		/// <remarks>Other aliases are used in the system, at least L1, L2, and L3. Possibly
+		/// this method should be enhanced to understand them, also. It is currently replacing
+		/// a dictionary we were maintaining in DataSet which only had these three values,
+		/// so until we use it more widely, handling them is enough.</remarks>
+		public string DealiasWritingSystemId(string writingSystemId)
+		{
+			switch (writingSystemId)
+			{
+				case "V": return Language1IsoCode;
+				case "N1": return MetadataLanguage1IsoCode;
+				case "N2": return MetadataLanguage2IsoCode;
+				default: return writingSystemId;
+			}
+		}
+
+		/// <summary>
+		/// Return a dictionary with the conversions that DealiasWritingSystemId makes.
+		/// (If this was very frequently used, we could cache it, but maintaining it
+		/// is a pain.)
+		/// </summary>
+		public Dictionary<string, string> WritingSystemAliases
+		{
+			get
+			{
+				var result = new Dictionary<string,string>();
+				result.Add("V", Language1IsoCode);
+				result.Add("N1", MetadataLanguage1IsoCode);
+				result.Add("N2", MetadataLanguage2IsoCode);
+				return result;
+			}
 		}
 
 		public void Set(string key, XmlString value, string lang)
 		{
-			_dataset.UpdateLanguageString(key, value, lang, false);
+			_dataset.UpdateLanguageString(key, value, DealiasWritingSystemId(lang), false);
 			if(_dataset.TextVariables.ContainsKey(key))
 			{
 				UpdateSingleTextVariableInDataDiv(key,_dataset.TextVariables[key]);
@@ -717,7 +921,8 @@ namespace Bloom.Book
 			// Since GatherDataItemsFromXElement prefers the first value it finds for any key combination, and does this by ignoring any
 			// data for a key combination already present, we would not use the new data in elementToReadFrom if we started with
 			// _dataset, which is already populated from the current document.
-			DataSet data = GatherDataItemsFromCollectionSettings(CollectionSettings);
+			DataSet data = new DataSet();
+			GatherDataItemsFromSettings(data, CollectionSettings);
 
 			// The first encountered value for data-book/data-collection wins... so the rest better be read-only to the user, or they're in for some frustration!
 			// If we don't like that, we'd need to create an event to notice when field are changed. Usually this is fine, because
@@ -742,13 +947,8 @@ namespace Bloom.Book
 			return data;
 		}
 
-		private DataSet GatherDataItemsFromCollectionSettings(CollectionSettings collectionSettings)
+		private void GatherDataItemsFromSettings(DataSet data, CollectionSettings collectionSettings)
 		{
-			var data = new DataSet();
-
-			data.WritingSystemAliases.Add("N1", collectionSettings.Language2.Iso639Code);
-			data.WritingSystemAliases.Add("N2", collectionSettings.Language3.Iso639Code);
-
 //            if (makeGeneric)
 //            {
 //                data.WritingSystemCodes.Add("V", collectionSettings.Language2Iso639Code);
@@ -765,13 +965,20 @@ namespace Bloom.Book
 //            }
 //            else
 			{
-				data.WritingSystemAliases.Add("V", collectionSettings.Language1.Iso639Code);
-				data.AddLanguageString("nameOfLanguage", XmlString.FromUnencoded(collectionSettings.Language1.Name), "*", true);
-				data.AddLanguageString("nameOfNationalLanguage1",
-									   XmlString.FromUnencoded(collectionSettings.Language2.Name), "*", true);
-				data.AddLanguageString("nameOfNationalLanguage2",
-									   XmlString.FromUnencoded(collectionSettings.Language3.Name), "*", true);
-				data.UpdateGenericLanguageString("iso639Code", XmlString.FromUnencoded(collectionSettings.Language1.Iso639Code), true);
+				// Not sure what these three should be. As far as I can determine, none of the values is used.
+				// If they are used, they almost certainly ought to be based on the book's languages, which can
+				// now be different from the collection languages. But this function is used to initialize a brand
+				// new dataset, often for a brand new BookData, which may not have any LanguageN set yet, so
+				// utilizing those values is problematic. Until we determine that these are used for something,
+				// I'm setting them here, and updating them when anything changes the BookData language values.
+				// For now, we're taking this out to see if anything breaks. May not be needed anyway since set in caching code.
+				//data.AddLanguageString("nameOfLanguage", XmlString.FromUnencoded(collectionSettings.Language1.Name), "*", true);
+				//data.AddLanguageString("nameOfNationalLanguage1",
+				//					   XmlString.FromUnencoded(collectionSettings.Language2.Name), "*", true);
+
+				//data.AddLanguageString("nameOfNationalLanguage2",
+				//					   XmlString.FromUnencoded(collectionSettings.Language3?.Name??""), "*", true);
+				data.UpdateGenericLanguageString("iso639Code", XmlString.FromUnencoded(Language1IsoCode), true);
 				data.UpdateGenericLanguageString("country", XmlString.FromUnencoded(collectionSettings.Country), true);
 				data.UpdateGenericLanguageString("province", XmlString.FromUnencoded(collectionSettings.Province), true);
 				data.UpdateGenericLanguageString("district", XmlString.FromUnencoded(collectionSettings.District), true);
@@ -793,7 +1000,6 @@ namespace Bloom.Book
 
 				data.UpdateGenericLanguageString("languageLocation", XmlString.FromUnencoded(location), true);
 			}
-			return data;
 		}
 
 		private static string TrimEnd(string source, string value)
@@ -813,15 +1019,19 @@ namespace Bloom.Book
 		/// if it can't find a name.
 		/// BL-8174 But in case the code includes Script/Region/Variant codes, we should show them somewhere too.
 		/// </summary>
-		public string PrettyPrintLanguage(string code)
+		public string GetDisplayNameForLanguage(string code)
 		{
-			if (code == Language1.Iso639Code && !string.IsNullOrWhiteSpace(Language1.Name))
-				return GetLanguageNameWithScriptVariants(code, Language1.Name, Language1.IsCustomName);
-			if (code == Language2.Iso639Code)
-				return GetLanguageNameWithScriptVariants(code, Language2.Name, Language2.IsCustomName);
-			if (code == Language3.Iso639Code)
-				return GetLanguageNameWithScriptVariants(code, Language3.Name, Language3.IsCustomName);
-			return CollectionSettings.GetLanguageName(code, Language2.Iso639Code);
+			// Why aren't we using book languages here? We're just trying to get a name, and the book languages are always
+			// among the collection languages, so it means three things to check instead of four. And if by any chance
+			// we're wanting a name of a language that is not currently in use in the book, but is known to the collection,
+			// it's desirable to find it.
+			if (code == CollectionSettings.Language1Iso639Code && !string.IsNullOrWhiteSpace(CollectionSettings.Language1.Name))
+				return GetLanguageNameWithScriptVariants(code, CollectionSettings.Language1.Name, CollectionSettings.Language1.IsCustomName);
+			if (code == CollectionSettings.Language2Iso639Code)
+				return GetLanguageNameWithScriptVariants(code, CollectionSettings.Language2.Name, CollectionSettings.Language2.IsCustomName);
+			if (code == CollectionSettings.Language3Iso639Code)
+				return GetLanguageNameWithScriptVariants(code, CollectionSettings.Language3.Name, CollectionSettings.Language3.IsCustomName);
+			return CollectionSettings.GetLanguageName(code, MetadataLanguage1IsoCode);
 		}
 
 		// We always want to use a name the user deliberately gave (hence the use of 'nameIsCustom').
@@ -840,7 +1050,7 @@ namespace Bloom.Book
 				return collectionSettingsLanguageName;
 			var baseIsoCode = completeIsoCode.Substring(0, hyphenIndex);
 			return nameIsCustom ?
-				collectionSettingsLanguageName + " (" + CollectionSettings.GetLanguageName(baseIsoCode, Language2.Iso639Code) + ")"
+				collectionSettingsLanguageName + " (" + CollectionSettings.GetLanguageName(baseIsoCode, MetadataLanguage1IsoCode) + ")"
 				: collectionSettingsLanguageName + "-" + srvCodes + " (" + collectionSettingsLanguageName + ")";
 		}
 
@@ -915,9 +1125,9 @@ namespace Bloom.Book
 					if (lang == "{V}")
 						lang = Language1.Iso639Code;
 					if (lang == "{N1}")
-						lang = Language2.Iso639Code;
+						lang = MetadataLanguage1IsoCode;
 					if (lang == "{N2}")
-						lang = Language3.Iso639Code;
+						lang = MetadataLanguage2IsoCode;
 
 					if (StringAlternativeHasNoText(value))
 					{
@@ -1119,9 +1329,7 @@ namespace Bloom.Book
 					{
 						if (UpdateImageFromDataSet(data, node, key)) continue;
 
-						var lang = node.GetOptionalStringAttribute("lang", "*");
-						if (lang == "N1" || lang == "N2" || lang == "V")
-							lang = data.WritingSystemAliases[lang];
+						var lang = DealiasWritingSystemId(node.GetOptionalStringAttribute("lang", "*"));
 
 						//							//see comment later about the inability to clear a value. TODO: when we re-write Bloom, make sure this is possible
 						//							if(data.TextVariables[key].TextAlternatives.Forms.Length==0)
@@ -1157,10 +1365,9 @@ namespace Bloom.Book
 								continue;
 
 							//hack: until I think of a more elegant way to avoid repeating the language name in N2 when it's the exact same as N1...
-							var bestAlt = GetBestUnwrappedAlternative(data.TextVariables[key].TextAlternatives,
-								new[] {data.WritingSystemAliases["N1"], "*"});
-							if (data.WritingSystemAliases.Count != 0 && lang == data.WritingSystemAliases["N2"] &&
-								bestAlt != null && s == bestAlt.Form)
+							var n1Form = GetBestUnwrappedAlternative(data.TextVariables[key].TextAlternatives,
+								new[] { MetadataLanguage1IsoCode, "*"});
+							if (lang == MetadataLanguage2IsoCode && n1Form != null && s == n1Form.Form)
 							{
 								s = ""; //don't show it in N2, since it's the same as N1
 							}
@@ -1175,9 +1382,7 @@ namespace Bloom.Book
 					else if (!HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
 					{
 						// See whether we need to delete something
-						var lang = node.GetOptionalStringAttribute("lang", "*");
-						if (lang == "N1" || lang == "N2" || lang == "V")
-							lang = data.WritingSystemAliases[lang];
+						var lang = DealiasWritingSystemId(node.GetOptionalStringAttribute("lang", "*"));
 						if (itemsToDelete.Contains(Tuple.Create(key, lang)))
 						{
 							SetInnerXmlPreservingLabel(key, node, XmlString.Empty);// a later process may remove node altogether.
@@ -1361,12 +1566,13 @@ namespace Bloom.Book
 			LanguageForm formToCopyFromSinceOursIsMissing = null;
 			string s = "";
 
-			if ((languageCodeOfTargetField == Language2.Iso639Code || //is it a national language?
-				 languageCodeOfTargetField == Language3.Iso639Code) ||
+
+			if (languageCodeOfTargetField == MetadataLanguage1IsoCode || //is it a national language?
+				// languageCodeOfTargetField == Language3IsoCode) || we had this before but don't think we need it.
 				//this one is a kludge as we clearly have this case of a vernacular field that people have used
 				//to hold stuff that should be copied to every shell. So we can either remove the restriction of the
 				//first two clauses in this if statement, or add another bloom-___ class in order to make execptions.
-				//Today, I'm not seing the issue clearly enough, so I'm just going to path this one exisint hole.
+				//Today, I'm not seing the issue clearly enough, so I'm just going to patch this one exising hole.
 				 classes.Contains("smallCoverCredits"))
 			{
 				formToCopyFromSinceOursIsMissing = GetBestUnwrappedAlternative(data.TextVariables[key].TextAlternatives,
@@ -1464,11 +1670,6 @@ namespace Bloom.Book
 			return _dataset.TextVariables.ContainsKey(key)
 					   ? _dataset.TextVariables[key].TextAlternatives
 					   : new MultiTextBase();
-		}
-
-		public Dictionary<string, string> GetWritingSystemCodes()
-		{
-			return _dataset.WritingSystemAliases;
 		}
 
 		private static void SendDataToDebugConsole(DataSet data)
@@ -1596,28 +1797,16 @@ namespace Bloom.Book
 			}
 		}
 
-		public void SetMultilingualContentLanguages(string language2Code, string language3Code)
+		public void SetMultilingualContentLanguages(params string[] contentLanguages)
 		{
-			if (language2Code == Language1.Iso639Code) //can't have the vernacular twice
-				language2Code = null;
-			if (language3Code == Language1.Iso639Code)
-				language3Code = null;
-			if (language2Code == language3Code)	//can't use the same lang twice
-				language3Code = null;
-
-			if (String.IsNullOrEmpty(language2Code))
+			foreach (var lang in contentLanguages)
 			{
-				if (!String.IsNullOrEmpty(language3Code))
-				{
-					language2Code = language3Code; //can't have a 3 without a 2
-					language3Code = null;
-				}
-				else
-					language2Code = null;
+				GetWritingSystem(lang); // throws if not valid collection language
 			}
-			if (language3Code == "")
-				language3Code = null;
+			var language2Code = contentLanguages.Length > 1 ? contentLanguages[1] : null;
+			var language3Code = contentLanguages.Length > 2 ? contentLanguages[2] : null;
 
+			Set("contentLanguage1", XmlString.FromUnencoded(contentLanguages[0]), false);
 			Set("contentLanguage2", XmlString.FromUnencoded(language2Code),false);
 			Set("contentLanguage3", XmlString.FromUnencoded(language3Code), false);
 		}
@@ -1742,11 +1931,15 @@ namespace Bloom.Book
 			switch (slot)
 			{
 				case LanguageSlot.Language1:
-					return CollectionSettings.Language1;
+					return GetWritingSystem(Language1IsoCode);
 				case LanguageSlot.Language2:
-					return CollectionSettings.Language2;
+					return Language2IsoCode == null ? null : GetWritingSystem(Language2IsoCode);
 				case LanguageSlot.Language3:
-					return CollectionSettings.Language3;
+					return Language3IsoCode == null ? null : GetWritingSystem(Language3IsoCode);
+				case LanguageSlot.MetadataLanguage1:
+					return GetWritingSystem(MetadataLanguage1IsoCode);
+				case LanguageSlot.MetadataLanguage2:
+					return GetWritingSystem(MetadataLanguage2IsoCode);
 				default:
 					throw new ArgumentException("BookData.GetLanguage() cannot handle that slot yet");
 
@@ -1758,16 +1951,44 @@ namespace Bloom.Book
 		public WritingSystem Language2 => GetLanguage(LanguageSlot.Language2);
 		public WritingSystem Language3 => GetLanguage(LanguageSlot.Language3);
 
-		public void SetLanguage(LanguageSlot slot, string isoCode)
+		public WritingSystem MetadataLanguage1 => GetLanguage(LanguageSlot.MetadataLanguage1);
+		public WritingSystem MetadataLanguage2 => GetLanguage(LanguageSlot.MetadataLanguage2);
+
+		/// <summary>
+		/// Get one of the collection language objects that matches the iso.
+		/// Crash if not found.
+		/// </summary>
+		/// <param name="iso"></param>
+		/// <returns></returns>
+		public WritingSystem GetWritingSystem(string iso)
 		{
-			GetLanguage(slot).ChangeIsoCode(isoCode);
+			var result = GetWritingSystemOrNull(iso);
+			if (result == null)
+				throw new ApplicationException("trying to get language not in system");
+			return result;
+		}
+
+		/// <summary>
+		/// Get one of the collection language objects that matches the iso, or null if it doesn't match.
+		/// </summary>
+		/// <param name="iso"></param>
+		/// <returns></returns>
+		private WritingSystem GetWritingSystemOrNull(string iso)
+		{
+			if (CollectionSettings.Language1.Iso639Code == iso)
+				return CollectionSettings.Language1;
+			if (CollectionSettings.Language2?.Iso639Code == iso)
+				return CollectionSettings.Language2;
+			if (CollectionSettings.Language3?.Iso639Code == iso)
+				return CollectionSettings.Language3;
+			return null;
 		}
 
 		/// <summary>
 		/// Returns an ordered list of distinct languages actively used in this book (from L1,
-		/// L2, and L3).  Note that L1 and L2 are always defined, and L3 may or may not be
+		/// L2, L3, and M1).  Note that L1 and M1 are always defined, and L2 and L3 may or may not be
 		/// defined.  The returned list will have 1, 2, or 3 items in it.  L1 will always be
-		/// the first language, unless includeLanguage1 is set false.  Then L2 will be the first
+		/// the first language, unless includeLanguage1 is set false.  Then M1 will be the first
 		/// language (even if it is the same as L1).
 		/// </summary>
 		/// <remarks>
@@ -1777,21 +1998,15 @@ namespace Bloom.Book
 		/// </remarks>
 		public List<WritingSystem> GetBasicBookLanguages(bool includeLanguage1 = true)
 		{
-			var langs = new List<WritingSystem>();
-			if (includeLanguage1)
-				langs.Add(Language1);
-			if (!includeLanguage1 || Language2.Iso639Code != Language1.Iso639Code)
-				langs.Add(Language2);
-			if (!String.IsNullOrEmpty(Language3.Iso639Code) && !langs.Any(ws => ws.Iso639Code == Language3.Iso639Code))
-				langs.Add(Language3);
-			return langs;
+			return GetBasicBookLanguageCodes(includeLanguage1).Select(c => GetWritingSystem(c)).ToList();
 		}
+
 		/// <summary>
-		/// Returns an ordered list of codes of distinct languages actively used in this book
-		/// (from L1, L2, and L3).  Note that L1 and L2 are always defined, and L3 may or may
-		/// not be defined.  The returned list will have 1, 2, or 3 items in it.  L1 will always
-		/// be the first language, unless includeLanguage1 is set false.  Then L2 will be the
-		/// first language (even if it is the same as L1).
+		/// Returns an ordered list of codes of distinct languages actively used in this book (from L1,
+		/// L2, L3, and M1).  Note that L1 and M1 are always defined, and L2 and L3 may or may not be
+		/// defined.  The returned list will have 1, 2, or 3 items in it.  L1 will always be
+		/// the first language, unless includeLanguage1 is set false.  Then M1 will be the first
+		/// language (even if it is the same as L1).
 		/// </summary>
 		/// <remarks>
 		/// Places where GetBasicBookLanguageCodes is used should be examined to see if
@@ -1802,12 +2017,20 @@ namespace Bloom.Book
 		{
 			var langCodes = new List<string>();
 			if (includeLanguage1)
-				langCodes.Add(Language1.Iso639Code);
-			if (!includeLanguage1 || Language2.Iso639Code != Language1.Iso639Code)
-				langCodes.Add(Language2.Iso639Code);
-			if (!String.IsNullOrEmpty(Language3.Iso639Code) && !langCodes.Any(code => code == Language3.Iso639Code))
-				langCodes.Add(Language3.Iso639Code);
+				langCodes.Add(Language1IsoCode);
+			AddLang(langCodes, MetadataLanguage1IsoCode);
+			AddLang(langCodes, Language2IsoCode);
+			AddLang(langCodes, Language3IsoCode);
 			return langCodes;
+		}
+
+		private void AddLang(List<string> langs, string ws)
+		{
+			if (string.IsNullOrEmpty(ws))
+				return;
+			if (langs.Any(l => l == ws))
+				return;
+			langs.Add(ws);
 		}
 
 		/// <summary>
@@ -1842,6 +2065,14 @@ namespace Bloom.Book
 		/// <summary>
 		/// Given a choice, what language should we use to display text on the page
 		/// (not in the UI, which is controlled by the UI Language).
+		/// Setting includeLang1 to false is currently used when localizing FullOriginalCopyrightLicenseSentence,
+		/// and the "comma,space" string used to separate things in a list. It's not clear to me why we'd want to
+		/// exclude L1 in these cases, whether we mean the book L1 or the collection L1 now that they can be
+		/// different. Possibly the idea is that it's unlikely a localization is available in a vernacular
+		/// language, but that would be true of all strings, and it's only unlikely; the vernacular language
+		/// of a collection can be a major language. Possibly the idea is that the string we are trying to
+		/// localize is normally in ML1, so that should be what we try first? For now I'm guessing that it's
+		/// best to omit both the book L1 and the collection L1 (unless they are included for another reason).
 		/// </summary>
 		/// <returns>A prioritized enumerable of language codes</returns>
 		public IEnumerable<string> GetLanguagePrioritiesForLocalizedTextOnPage(bool includeLang1 = true)
@@ -1850,6 +2081,11 @@ namespace Bloom.Book
 			var langCodes = new List<string>();
 			// The .Where is needed for various unit tests as a minimum.
 			langCodes.AddRange(GetBasicBookLanguageCodes(includeLang1).Where(lc => !string.IsNullOrWhiteSpace(lc)));
+			// Try any collection settings we don't already have...but not the first if we're excluding vernacular
+			if (includeLang1)
+				AddLang(langCodes, CollectionSettings.Language1Iso639Code);
+			AddLang(langCodes, CollectionSettings.Language2Iso639Code);
+			AddLang(langCodes, CollectionSettings.Language3Iso639Code);
 			if (!langCodes.Contains("en"))
 				langCodes.Add("en");
 

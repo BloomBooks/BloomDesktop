@@ -128,24 +128,72 @@ namespace BloomTests.Collection
 		[TestCase("pus", "pus", null, new[] { "pus", "pbu", "ps", "en" })]	// don't duplicate "pus"
 		[TestCase("pbu", "pbu", null, new[] { "pbu", "ps", "pus", "en" })]	// don't duplicate "pbu"
 		[TestCase("xyz", "pbu", "abc", new[] { "xyz", "pbu", "ps", "pus", "abc", "en" })]
-		public void GetLanguagePrioritiesForTranslatedTextOnPage_GetsCorrectListOfLanguages(string lang1, string lang2, string lang3, string[] results)
+		public void GetLanguagePrioritiesForLocalizedTextOnPage_GetsCorrectListOfLanguages(string lang1, string lang2, string lang3, string[] results)
 		{
 			var settings = CreateCollectionSettings(_folder.Path, "test");
-			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), settings, null);
 			settings.Language1Iso639Code = lang1;
 			settings.Language2Iso639Code = lang2;
 			settings.Language3Iso639Code = lang3;
+			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), settings, null);
+			bookData.SetMultilingualContentLanguages(lang1, lang2, lang3);
+			Assert.That(bookData.GetLanguagePrioritiesForLocalizedTextOnPage(), Is.EqualTo(results));
+		}
+
+		[TestCase("pt", "pt", null, new[] { "pt", "en" })]  // don't duplicate "pt"
+		[TestCase("en", "es", "de", new[] { "es", "de", "en" })] // don't duplicate "en", and last because not selected
+		[TestCase("id", "es", "de", new[] { "es", "de", "id", "en" })] // more typical case where adding English is important. 'id' comes later because not selected.
+		[TestCase("zh-CN", "es", "de", new[] { "es", "de", "zh-CN", "en" })] // zh-CN does not require an insertion
+		[TestCase("zh-Hans", "es", "de", new[] { "es", "de", "zh-Hans", "zh-CN", "en" })] // any other zh-X requires zh-CN to be inserted following it.
+		[TestCase("es", "zh-Hans", "zh-Hant", new[] { "zh-Hans", "zh-Hant", "zh-CN", "es", "en" })] // if we have two locale-specific ones, the insertion should be after both.
+		[TestCase("fr-CA", "es", "de", new[] { "es", "de", "fr-CA", "fr", "en" })]
+		[TestCase("rub", "", "en", new[] { "en", "rub" })] // don't stick in Russian as an alternative to an unrelated 3 letter code, and don't duplicate "en" or move to end
+
+		public void GetLanguagePrioritiesForLocalizedTextOnPage_L1Unchecked_GetsCorrectListOfLanguages(string lang1, string lang2, string lang3, string[] results)
+		{
+			var settings = CreateCollectionSettings(_folder.Path, "test");
+			settings.Language1Iso639Code = lang1;
+			settings.Language2Iso639Code = lang2;
+			settings.Language3Iso639Code = lang3;
+			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), settings, null);
+			bookData.SetMultilingualContentLanguages(lang2, lang3);
 			Assert.That(bookData.GetLanguagePrioritiesForLocalizedTextOnPage(), Is.EqualTo(results));
 		}
 
 		[TestCase("xyz", "abc", null, new[] { "abc", "en" })]
-		public void GetLanguagePrioritiesForTranslatedTextOnPage_DoNotIncludeLang1_GetsCorrectListOfLanguages(string lang1, string lang2, string lang3, string[] results)
+		public void GetLanguagePrioritiesForLocalizedTextOnPage_DoNotIncludeLang1_GetsCorrectListOfLanguages(string lang1, string lang2, string lang3, string[] results)
 		{
 			var settings = CreateCollectionSettings(_folder.Path, "test");
-			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), settings, null);
 			settings.Language1Iso639Code = lang1;
 			settings.Language2Iso639Code = lang2;
 			settings.Language3Iso639Code = lang3;
+			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), settings, null);
+			bookData.SetMultilingualContentLanguages(lang1, lang2, lang3);
+			Assert.That(bookData.GetLanguagePrioritiesForLocalizedTextOnPage(false), Is.EqualTo(results));
+		}
+
+		[TestCase("xyz", "abc", "tpi", new[] { "abc", "tpi", "en" })]
+		[TestCase("xyz", "abc", null, new[] { "abc", "en" })]
+		public void GetLanguagePrioritiesForLocalizedTextOnPage_DoNotIncludeLang1_Lang1NotChecked_GetsCorrectListOfLanguages(string lang1, string lang2, string lang3, string[] results)
+		{
+			var settings = CreateCollectionSettings(_folder.Path, "test");
+			settings.Language1Iso639Code = lang1;
+			settings.Language2Iso639Code = lang2;
+			settings.Language3Iso639Code = lang3;
+			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), settings, null);
+			bookData.SetMultilingualContentLanguages(lang2, lang3);
+			Assert.That(bookData.GetLanguagePrioritiesForLocalizedTextOnPage(false), Is.EqualTo(results));
+		}
+
+		[TestCase("xyz", "abc", "tpi", new[] { "abc", "tpi", "en" })]
+		[TestCase("xyz", "abc", null, new[] { "abc", "en" })]
+		public void GetLanguagePrioritiesForLocalizedTextOnPage_DoNotIncludeLang1_OnlyLang1Checked_GetsCorrectListOfLanguages(string lang1, string lang2, string lang3, string[] results)
+		{
+			var settings = CreateCollectionSettings(_folder.Path, "test");
+			settings.Language1Iso639Code = lang1;
+			settings.Language2Iso639Code = lang2;
+			settings.Language3Iso639Code = lang3;
+			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), settings, null);
+			bookData.SetMultilingualContentLanguages(lang1);
 			Assert.That(bookData.GetLanguagePrioritiesForLocalizedTextOnPage(false), Is.EqualTo(results));
 		}
 

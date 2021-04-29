@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -206,7 +206,7 @@ namespace Bloom.Book
 		/// </summary>
 		public XmlDocument XMatterDom { get; set; }
 
-		public void InjectXMatter(Dictionary<string, string> writingSystemCodes, Layout layout, bool orderXmatterForDeviceUse, string language2IsoCode)
+		public void InjectXMatter(Dictionary<string, string> writingSystemCodes, Layout layout, bool orderXmatterForDeviceUse, string metadataIsoCode)
 		{
 			//don't want to pollute shells with this content
 			if (!string.IsNullOrEmpty(FolderPathForCopyingXMatterFiles))
@@ -241,7 +241,7 @@ namespace Bloom.Book
 				// By setting it on the page, all those fields can properly inherit the language 2 code and thus use its font. See BL-8545.
 				// Since we are only doing this for xmatter, we don't have to worry about the lang attribute staying around when it shouldn't.
 				// Old Blooms will effectively remove it when injecting xmatter. New Blooms will always set it to the current language 2 code.
-				newPageDiv.SetAttribute("lang", language2IsoCode);
+				newPageDiv.SetAttribute("lang", metadataIsoCode);
 
 				// We have some xmatters that don't know about devices, and these we replace with the
 				// standard Device Xmatter as needed.
