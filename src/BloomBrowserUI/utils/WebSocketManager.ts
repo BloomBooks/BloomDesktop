@@ -150,7 +150,7 @@ export default class WebSocketManager {
      */
     public static closeSocket(clientContext: string): void {
         delete WebSocketManager.clientContextCallbacks[clientContext];
-        let webSocket: WebSocket = WebSocketManager.socketMap[clientContext];
+        const webSocket: WebSocket = WebSocketManager.socketMap[clientContext];
         if (webSocket) {
             webSocket.removeEventListener(
                 "message",
@@ -170,16 +170,37 @@ export default class WebSocketManager {
      */
     public static addListener<T extends IBloomWebSocketEvent>(
         clientContext: string,
-        listener: (messageEvent: T) => void
+        listener: (messageEvent: T) => void,
+        tagForDebugging?: string
     ): void {
+        console.log(
+            `${tagForDebugging ?? ""} addListener(${clientContext})  had ${
+                WebSocketManager.clientContextCallbacks[clientContext]?.length
+            } listeners.`
+        );
         if (clientContext.indexOf("mock_") > -1) {
             // this is used in storybook stories. Don't try finding a server because there isn't one.
             // Events will come in via mockSend().
-            WebSocketManager.clientContextCallbacks[clientContext] = [];
+            if (!WebSocketManager.clientContextCallbacks[clientContext])
+                WebSocketManager.clientContextCallbacks[clientContext] = [];
         } else {
             WebSocketManager.getOrCreateWebSocket(clientContext); // side effect makes sure there's an array in listenerMap to push onto.
         }
         WebSocketManager.clientContextCallbacks[clientContext].push(listener);
+        // console.log(
+        //     `${tagForDebugging ?? ""} addListener(${clientContext})  now has ${
+        //         WebSocketManager.clientContextCallbacks[clientContext]?.length
+        //     } listeners.`
+        // );
+        const count =
+            WebSocketManager.clientContextCallbacks[clientContext].length;
+
+        // in the case of the progressDialog, we expect to have 2: one for the dialog, which is listening, and one for the ProgressBox.
+        if (count > 2) {
+            console.error(
+                `addListener sees that we have ${count} listeners on "${clientContext}". Normally if everything is disconnecting appropriately, these should not add up.`
+            );
+        }
     }
 
     public static removeListener(

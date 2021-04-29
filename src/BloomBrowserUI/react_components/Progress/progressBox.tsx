@@ -24,6 +24,8 @@ export interface IProgressBoxProps {
     onGotErrorMessage?: () => void;
 }
 
+let indexForMessageKey = 0;
+
 // Note that this component does not do localization; we expect the progress messages
 // to already be localized when they are sent over the websocket.
 export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => {
@@ -39,10 +41,12 @@ export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => 
     }, [props.preloadedProgressEvents]);
 
     React.useEffect(() => {
+        const listener = e => processEvent(e);
         if (props.webSocketContext) {
             WebSocketManager.addListener<IBloomWebSocketProgressEvent>(
                 props.webSocketContext,
-                e => processEvent(e)
+                listener,
+                "box"
             );
         }
         if (props.onReadyToReceive && props.webSocketContext) {
@@ -51,6 +55,13 @@ export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => 
                 props.onReadyToReceive
             );
         }
+        return () => {
+            if (props.webSocketContext)
+                WebSocketManager.removeListener(
+                    props.webSocketContext,
+                    listener
+                );
+        };
     }, [props.webSocketContext]);
 
     React.useEffect(() => {
@@ -64,6 +75,7 @@ export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => 
     function writeLine(message: string, color: string, style?: string) {
         const line = (
             <p
+                key={indexForMessageKey++}
                 css={css`
                     color: ${color};
                 `}
@@ -76,6 +88,7 @@ export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => 
 
     function processEvent(e: IBloomWebSocketProgressEvent) {
         const msg = "" + e.message;
+        console.log("progress: processEvent " + msg);
         if (e.id === "message") {
             if (e.message!.indexOf("error") > -1) {
                 if (props.onGotErrorMessage) {

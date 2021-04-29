@@ -1,3 +1,4 @@
+import { text } from "@fortawesome/fontawesome-svg-core";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 
 export function getLocalization({
@@ -27,16 +28,20 @@ export function getLocalization({
             temporarilyDisableI18nWarning
         )
         .done(result => {
-            let text = theOneLocalizationManager.simpleFormat(result.text, [
-                l10nParam0,
-                l10nParam1
-            ]);
+            const text = result.text ?? english;
+            let incorporatingParameters = theOneLocalizationManager.simpleFormat(
+                text,
+                [l10nParam0, l10nParam1]
+            );
 
             // some legacy strings will have an ampersand which winforms interpreted as an accelerator key
             // enhance: we could conceivably implement this, using the html "accesskey" attribute
-            if (text.indexOf("&") == 0) {
-                text = text.substring(1, 9999);
+            if (incorporatingParameters.indexOf("&") == 0) {
+                incorporatingParameters = incorporatingParameters.substring(
+                    1,
+                    9999
+                );
             }
-            callback(text, result.success);
+            callback(incorporatingParameters, result.success);
         });
 }

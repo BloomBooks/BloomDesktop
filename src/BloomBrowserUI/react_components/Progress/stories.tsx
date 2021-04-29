@@ -7,7 +7,7 @@ import WebSocketManager, {
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import { ProgressBox } from "./progressBox";
 
-const kContext = "mock_progress";
+const kWebSocketMockContext = "mock_progress";
 interface IStoryMessage {
     id?: string;
     k?: "Error" | "Warning" | "Progress" | "Note" | "Instruction";
@@ -15,28 +15,58 @@ interface IStoryMessage {
     delay?: number;
     progress?: "indefinite" | "off";
 }
+
+storiesOf("Progress Box", module).add(
+    "Raw ProgressBox with preloaded log",
+    () => {
+        return React.createElement(() => {
+            return (
+                <ProgressBox
+                    preloadedProgressEvents={[
+                        {
+                            id: "message",
+                            clientContext: "unused",
+                            message: "This is a preloaded log message",
+                            progressKind: "Progress"
+                        },
+                        {
+                            id: "message",
+                            clientContext: "unused",
+                            message:
+                                "This is a message about an error in the past",
+                            progressKind: "Error"
+                        }
+                    ]}
+                />
+            );
+        });
+    }
+);
+
 function sendEvents(events: Array<IStoryMessage>) {
     sendNextEvent([...events]);
 }
 // I don't know why we run into trouble occasion
 function sendNextEvent(events: Array<IStoryMessage>) {
-    console.log("Sending events to progress.");
     // I don't know why we run into trouble occasionally without this
     if (!events || events.length === 0) {
         return;
     }
     const e = events.shift();
-    WebSocketManager.mockSend<IBloomWebSocketProgressEvent>(kContext, {
-        clientContext: kContext,
-        id: e!.id || "message",
-        progressKind: e!.k,
-        message: e!.m
-    });
+    WebSocketManager.mockSend<IBloomWebSocketProgressEvent>(
+        kWebSocketMockContext,
+        {
+            clientContext: kWebSocketMockContext,
+            id: e!.id || "message",
+            progressKind: e!.k,
+            message: e!.m
+        }
+    );
 
     if (events.length)
         window.setTimeout(() => {
             sendNextEvent(events);
-        }, e!.delay ?? 100);
+        }, /*e!.delay ??*/ 100);
 }
 
 const kLongListOfAllTypes: Array<IStoryMessage> = [
@@ -127,53 +157,6 @@ const kLongListOfAllTypes: Array<IStoryMessage> = [
         m: "unused"
     }
 ];
-storiesOf("Progress Box", module)
-    .add("Raw ProgressBox with preloaded log", () => {
-        return React.createElement(() => {
-            return (
-                <ProgressBox
-                    preloadedProgressEvents={[
-                        {
-                            id: "message",
-                            clientContext: "unused",
-                            message: "This is a preloaded log message",
-                            progressKind: "Progress"
-                        },
-                        {
-                            id: "message",
-                            clientContext: "unused",
-                            message:
-                                "This is a message about an error in the past",
-                            progressKind: "Error"
-                        }
-                    ]}
-                />
-            );
-        });
-    })
-    .add("FuncProgressBox with preloaded log", () => {
-        return React.createElement(() => {
-            return (
-                <ProgressBox
-                    preloadedProgressEvents={[
-                        {
-                            id: "message",
-                            clientContext: "unused",
-                            message: "This is a preloaded log message",
-                            progressKind: "Progress"
-                        },
-                        {
-                            id: "message",
-                            clientContext: "unused",
-                            message:
-                                "This is a message about an error in the past",
-                            progressKind: "Error"
-                        }
-                    ]}
-                />
-            );
-        });
-    });
 
 storiesOf("Progress Dialog", module)
     .add("Short, with report button if there is an error", () => {
@@ -184,7 +167,7 @@ storiesOf("Progress Dialog", module)
                     titleColor="white"
                     titleBackgroundColor={kBloomBlue}
                     titleIcon="Team Collection.svg"
-                    webSocketContext={kContext}
+                    webSocketContext={kWebSocketMockContext}
                     showReportButton={"if-error"}
                     omitOuterFrame={false}
                     onReadyToReceive={() =>
@@ -222,13 +205,14 @@ storiesOf("Progress Dialog", module)
         return React.createElement(() => {
             return (
                 <ProgressDialog
+                    key="long"
                     title="A Long Progress Dialog"
                     titleColor="black"
                     titleBackgroundColor="transparent"
-                    webSocketContext={kContext}
+                    webSocketContext={kWebSocketMockContext}
                     showReportButton={"never"}
                     onReadyToReceive={() => sendEvents(kLongListOfAllTypes)}
-                    omitOuterFrame={true}
+                    omitOuterFrame={false}
                 />
             );
         });
@@ -240,7 +224,7 @@ storiesOf("Progress Dialog", module)
                     title="Not wrapped in a dialog"
                     titleColor="white"
                     titleBackgroundColor="green"
-                    webSocketContext={kContext}
+                    webSocketContext={kWebSocketMockContext}
                     showReportButton={"never"}
                     omitOuterFrame={true}
                     onReadyToReceive={() =>
@@ -248,7 +232,17 @@ storiesOf("Progress Dialog", module)
                             {
                                 k: "Progress",
                                 m:
-                                    "This one is not wrapped in a material dialog, in order to test expanding out to whatever width is available, like we need when wrapping in a winforms dialog",
+                                    "This one is not wrapped in a material dialog, in order to test expanding out to whatever width is available, like we need when wrapping in a winforms dialog. 1 of 3 messages.",
+                                progress: "indefinite"
+                            },
+                            {
+                                k: "Progress",
+                                m: "2 of 3",
+                                progress: "indefinite"
+                            },
+                            {
+                                k: "Progress",
+                                m: "3 of 3",
                                 progress: "indefinite"
                             },
                             {

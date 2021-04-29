@@ -79,7 +79,7 @@ export const DialogTitle: React.FunctionComponent<{
                     src={props.icon}
                     alt="Decorative Icon"
                     css={css`
-                        margin-right: ${kDialogPadding};
+                        margin-left: ${kDialogPadding};
                         color: ${color};
                     `}
                 />
@@ -88,6 +88,7 @@ export const DialogTitle: React.FunctionComponent<{
                 css={css`
                     margin-top: auto;
                     margin-bottom: auto;
+                    margin-left: ${kDialogPadding};
                 `}
             >
                 {props.title}
@@ -102,7 +103,7 @@ export const DialogMiddle: React.FunctionComponent<{}> = props => {
     return (
         <div
             css={css`
-                overflow-y: scroll;
+                overflow-y: auto;
             `}
             {...props}
         >

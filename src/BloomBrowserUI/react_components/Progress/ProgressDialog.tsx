@@ -68,7 +68,13 @@ export const ProgressDialog: React.FunctionComponent<{
                 setShowSpinner(false);
             }
         };
-        WebSocketManager.addListener(props.webSocketContext, listener);
+        WebSocketManager.addListener(
+            props.webSocketContext,
+            listener,
+            "dialog"
+        );
+        return () =>
+            WebSocketManager.removeListener(props.webSocketContext, listener);
     }, []);
 
     const buttonForSendingErrorReportIsRelevant =
