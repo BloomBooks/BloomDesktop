@@ -1,17 +1,12 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.Registration;
-using Bloom.Utils;
-using L10NSharp;
 using Sentry;
 using SIL.IO;
-using SIL.Reporting;
 
 namespace Bloom.TeamCollection
 {
@@ -275,6 +270,11 @@ namespace Bloom.TeamCollection
 		public static string GetTcLogPathFromLcPath(string localCollectionFolder)
 		{
 			return Path.Combine(localCollectionFolder, "log.txt");
+		}
+
+		public static string GetTcSettingsFilePathFromLcPath(string localCollectionFolder)
+		{
+			return Path.Combine(localCollectionFolder, TeamCollectionLinkFileName);
 		}
 
 		/// <summary>

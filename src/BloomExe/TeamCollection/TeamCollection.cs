@@ -7,19 +7,16 @@ using SIL.IO;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Registration;
 using Bloom.ToPalaso;
 using Bloom.Utils;
-using Bloom.web.controllers;
 using SIL.Reporting;
 
 namespace Bloom.TeamCollection
@@ -1657,7 +1654,7 @@ namespace Bloom.TeamCollection
 		/// However, most of the logic involved in joining a collection is common, so I hate
 		/// to do that. Inclined to wait until we DO have an alternative implementation,
 		/// when it may be clearer how to refactor.
-		/// If we ever get another implementation that dose use .JoinBloomTC, thought will be needed as to
+		/// If we ever get another implementation that does use .JoinBloomTC, thought will be needed as to
 		/// how to get a local collection name from the .JoinBloomTC file path.
 		/// </summary>
 		/// <param name="tcName"></param>

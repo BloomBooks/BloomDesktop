@@ -24,7 +24,6 @@ using SIL.Windows.Forms.Reporting;
 using SIL.Windows.Forms.UniqueToken;
 using System.Linq;
 using System.Xml;
-using Bloom.Book;
 using Bloom.CLI;
 using Bloom.CollectionChoosing;
 using Bloom.TeamCollection;

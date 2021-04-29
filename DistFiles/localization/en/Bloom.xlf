@@ -4796,6 +4796,10 @@ Do you want to go ahead?</note>
       </trans-unit>
       <!--
 // Don't want these actually translated until things stabilize. Will need re-ordering.
+      <trans-unit id="TeamCollection.Already" sil:dynamic="true">
+        <source xml:lang="en">You are already part of this collection.</source>
+        <note>ID: TeamCollection.Already</note>
+      </trans-unit>
       <trans-unit id="TeamCollection.AvailableDescription" sil:dynamic="true">
         <source xml:lang="en">When you check it out, no one on the team will be able to modify it or see your changes until you check it back in.</source>
         <note>ID: TeamCollection.AvailableDescription</note>
@@ -4899,6 +4903,10 @@ Do you want to go ahead?</note>
       <trans-unit id="TeamCollection.MergeInstead" sil:dynamic="true">
         <source xml:lang="en">If instead you want to merge a collection you already have into this Team Collection, click Cancel and rename the collection you want to merge to the same as the Team Collection you are joining. Then try to join again.</source>
         <note>ID: TeamCollection.MergeInstead</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Open">
+        <source xml:lang="en">Open</source>
+        <note>ID: TeamCollection.Open</note>
       </trans-unit>
       <trans-unit id="TeamCollection.RemoteChanges" sil:dynamic="true">
         <source xml:lang="en">Remote Changes</source>
