@@ -135,9 +135,20 @@ export default class TextBoxProperties {
                         this.setButtonClickActions();
                         this.makeLanguageSelect();
                         this.initializeHintTab();
+                        this.fillInLanguageNames();
                     }, 0); // just push this to the end of the event queue
                 }
             );
+        });
+    }
+    fillInLanguageNames() {
+        BloomApi.get("editView/getBookLangs", result => {
+            document.getElementById("tbprop-lang1")!.innerText =
+                "(" + result.data.V + ")";
+            document.getElementById("tbprop-lang2")!.innerText =
+                "(" + result.data.N1 + ")";
+            document.getElementById("tbprop-lang3")!.innerText =
+                "(" + result.data.N2 + ")";
         });
     }
 
