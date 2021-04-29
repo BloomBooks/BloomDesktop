@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Dynamic;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Api;
@@ -24,6 +25,18 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("editView/saveToolboxSetting", HandleSaveToolboxSetting, true);
 			apiHandler.RegisterEndpointHandler("editView/setTopic", HandleSetTopic, true);
 			apiHandler.RegisterEndpointHandler("editView/isTextSelected", HandleIsTextSelected, false);
+			apiHandler.RegisterEndpointHandler("editView/getBookLangs", HandleGetBookLangs, false);
+		}
+
+		private void HandleGetBookLangs(ApiRequest request)
+		{
+			var bookData = request.CurrentBook.BookData;
+			dynamic answer = new ExpandoObject();
+			answer.V = bookData.Language1.Name;
+			answer.N1 = bookData.MetadataLanguage1.Name;
+			var n2Name = bookData.MetadataLanguage2?.Name;
+			answer.N2 = string.IsNullOrEmpty(n2Name)? "-----" : n2Name;
+			request.ReplyWithJson(answer);
 		}
 
 		private void HandleIsTextSelected(ApiRequest request)

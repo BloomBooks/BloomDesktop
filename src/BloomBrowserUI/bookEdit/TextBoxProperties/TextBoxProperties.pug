@@ -6,7 +6,7 @@
 		.tab-page
 			h2.tab(data-i18n="EditTab.TextBoxProperties.LanguageTab") Language
 			.main-label(data-i18n="EditTab.TextBoxProperties.NormalLabel")
-				| "Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.
+				| "Normal" will show the languages you have checked in the Languages control. Use this for most content.
 			#language-group
 				input#tbprop-normal(type="radio" name="languageRadioGroup" value="Auto")
 				label(for="tbprop-normal" data-i18n="EditTab.TextBoxProperties.Normal") Normal
@@ -14,13 +14,16 @@
 				.main-label(data-i18n="EditTab.TextBoxProperties.OtherLanguagesLabel")
 					| Use one of these for simple text boxes that are always in only one language.
 				input#tbprop-vernacular(type="radio" name="languageRadioGroup" value="V")
-				label(for="tbprop-vernacular" data-i18n="EditTab.TextBoxProperties.LocalLanguage") Local Language
+				label(for="tbprop-vernacular" data-i18n="EditTab.TextBoxProperties.SelectedLanguage") Selected Language 1
+				label#tbprop-lang1(for="tbprop-vernacular")
 				br
 				input#tbprop-national(type="radio" name="languageRadioGroup" value="N1")
-				label(for="tbprop-national" data-i18n="EditTab.TextBoxProperties.NationalLanguage") National Language
+				label(for="tbprop-national" data-i18n="EditTab.TextBoxProperties.CollectionLanguage2") Collection Language 2
+				label#tbprop-lang2(for="tbprop-national")
 				br
 				input#tbprop-regional(type="radio" name="languageRadioGroup" value="N2")
-				label(for="tbprop-regional" data-i18n="EditTab.TextBoxProperties.RegionalLanguage") Regional Language
+				label(for="tbprop-regional" data-i18n="EditTab.TextBoxProperties.CollectionLanguage3") Collection Language 3
+				label#tbprop-lang3(for="tbprop-regional")
 		.tab-page
 			h2.tab(data-i18n="EditTab.TextBoxProperties.Alignment") Alignment
 			#alignment-group
