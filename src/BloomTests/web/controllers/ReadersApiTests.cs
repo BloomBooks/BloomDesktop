@@ -15,7 +15,7 @@ namespace BloomTests.web
 			bookSelection.SelectBook(new Bloom.Book.Book());
 			_server = new BloomServer(bookSelection);
 
-			var controller = new ReadersApi(bookSelection);
+			var controller = new ReadersApi(bookSelection, null);
 			controller.RegisterWithApiHandler(_server.ApiHandler);
 		}
 

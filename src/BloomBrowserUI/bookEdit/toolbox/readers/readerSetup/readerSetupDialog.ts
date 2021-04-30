@@ -67,66 +67,75 @@ export function showSetupDialog(showWhat) {
 
             getTheOneReaderToolsModel().setupType = showWhat;
 
-            // The showDialog function is a device to get the dialog element and its JQuery wrapper created in the frame
-            // where it is displayed. The main dialog() function doesn't work quite right (can't drag or resize it), and other functions
-            // like dialog("close") don't do anything, if the wrapper is created in the toolbox frame.
-            setupDialogElement = getEditViewFrameExports().showDialog(
-                getDialogHtml(title),
-                {
-                    autoOpen: true,
-                    modal: true,
-                    buttons: <any>{
-                        Help: {
-                            text: theOneLocalizationManager.getText(
-                                "Common.Help",
-                                "Help"
-                            ),
-                            class: "left-button",
-                            click: () => {
-                                const window = settingsFrameWindow();
-                                if (window) window.postMessage("Help", "*");
-                            }
-                        },
-                        OK: {
-                            text: theOneLocalizationManager.getText(
-                                "Common.OK",
-                                "OK"
-                            ),
-                            click: () => {
-                                const window = settingsFrameWindow();
-                                if (window) window.postMessage("OK", "*");
-                            }
-                        },
-
-                        Cancel: {
-                            text: theOneLocalizationManager.getText(
-                                "Common.Cancel",
-                                "Cancel"
-                            ),
-                            click: () => {
-                                //nb: the element pointed to here by setupDialogElement is the same as "this"
-                                //however, the jquery that you'd get by saying $(this) is *not* the same one as
-                                //that stored in setupDialogElement. Ref BL-3331.
-                                setupDialogElement.dialog("close");
-                            }
+            BloomApi.get("readers/io/readerSettingsEditForbidden", result => {
+                var buttons: any = {
+                    Cancel: {
+                        text: theOneLocalizationManager.getText(
+                            "Common.Cancel",
+                            "Cancel"
+                        ),
+                        click: () => {
+                            //nb: the element pointed to here by setupDialogElement is the same as "this"
+                            //however, the jquery that you'd get by saying $(this) is *not* the same one as
+                            //that stored in setupDialogElement. Ref BL-3331.
+                            setupDialogElement.dialog("close");
                         }
-                    },
-                    close: () => {
-                        // $(this).remove(); uses the wrong document (see https://silbloom.myjetbrains.com/youtrack/issue/BL-3962)
-                        // the following derives from http://stackoverflow.com/questions/2864740/jquery-how-to-completely-remove-a-dialog-on-close
-                        setupDialogElement.dialog("destroy").remove();
-                        BloomApi.postBoolean("editView/setModalState", false);
-                    },
-                    open: () => {
-                        $("#synphonyConfig").css("overflow", "hidden");
-                        $('button span:contains("Help")').prepend(
-                            '<i class="fa fa-question-circle"></i> '
-                        );
-                    },
-                    height: h,
-                    width: w
+                    }
+                };
+                if (!result.data) {
+                    buttons.Help = {
+                        text: theOneLocalizationManager.getText(
+                            "Common.Help",
+                            "Help"
+                        ),
+                        class: "left-button",
+                        click: () => {
+                            const window = settingsFrameWindow();
+                            if (window) window.postMessage("Help", "*");
+                        }
+                    };
+                    buttons.OK = {
+                        text: theOneLocalizationManager.getText(
+                            "Common.OK",
+                            "OK"
+                        ),
+                        click: () => {
+                            const window = settingsFrameWindow();
+                            if (window) window.postMessage("OK", "*");
+                        }
+                    };
                 }
-            );
+                // The showDialog function is a device to get the dialog element and its JQuery wrapper created in the frame
+                // where it is displayed. The main dialog() function doesn't work quite right (can't drag or resize it), and other functions
+                // like dialog("close") don't do anything, if the wrapper is created in the toolbox frame.
+                setupDialogElement = getEditViewFrameExports().showDialog(
+                    result.data
+                        ? getSettingsForbidden(title, result.data)
+                        : getDialogHtml(title),
+                    {
+                        autoOpen: true,
+                        modal: true,
+                        buttons,
+                        close: () => {
+                            // $(this).remove(); uses the wrong document (see https://silbloom.myjetbrains.com/youtrack/issue/BL-3962)
+                            // the following derives from http://stackoverflow.com/questions/2864740/jquery-how-to-completely-remove-a-dialog-on-close
+                            setupDialogElement.dialog("destroy").remove();
+                            BloomApi.postBoolean(
+                                "editView/setModalState",
+                                false
+                            );
+                        },
+                        open: () => {
+                            $("#synphonyConfig").css("overflow", "hidden");
+                            $('button span:contains("Help")').prepend(
+                                '<i class="fa fa-question-circle"></i> '
+                            );
+                        },
+                        height: h,
+                        width: w
+                    }
+                );
+            });
             BloomApi.postBoolean("editView/setModalState", true);
         }
     );
@@ -187,4 +196,19 @@ export function initializeReaderSetupDialog() {
 
 export function closeSetupDialog() {
     setupDialogElement.dialog("close");
+}
+
+// Get replacement settings dialog content when editing settings is forbidden.
+// message is the value we got from the API which should explain why we can't edit them.
+function getSettingsForbidden(title: string, message: any): string | JQuery {
+    var dialogContents = $(
+        '<div id="synphonyConfig" title="' + title + '"/>'
+    ).appendTo($(parentDocument()).find("body"));
+
+    // overide some styles from Dialog to make it compatible with the main title.
+    var html = `<div style="padding: 10px; color: black;font-size:10pt;">${message}</div>`;
+
+    dialogContents.append(html);
+
+    return dialogContents;
 }

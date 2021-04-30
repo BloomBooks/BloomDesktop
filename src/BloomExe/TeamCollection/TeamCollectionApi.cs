@@ -40,6 +40,9 @@ namespace Bloom.TeamCollection
 			TheOneInstance = this;
 		}
 
+		// intended for use only by TeamCollectionManager, see comment in OkToEditCollectionSettings
+		internal CollectionSettings Settings => _settings;
+
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			apiHandler.RegisterEndpointHandler("teamCollection/repoFolderPath", HandleRepoFolderPath, false);

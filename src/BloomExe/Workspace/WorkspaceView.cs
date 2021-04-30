@@ -650,6 +650,11 @@ namespace Bloom.Workspace
 					return;
 				}
 				DialogResult result = _settingsLauncherHelper.LaunchSettingsIfAppropriate (() => {
+					if (!_tcManager.OkToEditCollectionSettings)
+					{
+						ErrorReport.NotifyUserOfProblem(CollectionSettings.MustBeAdminMessage);
+						return DialogResult.Cancel;
+					}
 					using (var dlg = _settingsDialogFactory ())
 					{
 						_currentlyOpenSettingsDialog = dlg;

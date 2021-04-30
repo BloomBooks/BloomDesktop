@@ -44,6 +44,8 @@ namespace Bloom.Collection
 		public WritingSystem Language2;
 		public WritingSystem Language3;
 		public WritingSystem[] LanguagesZeroBased;
+		// Email addresses of users authorized to change collection settings if this is a TeamCollection.
+		public string[] Administrators;
 
 		private string _signLanguageIso639Code;
 
@@ -204,6 +206,9 @@ namespace Bloom.Collection
 			}
 		}
 
+		public static string MustBeAdminMessage => LocalizationManager.GetString("TeamCollection.MustBeAdmin",
+			"You must be an administrator to change collection settings");
+
 		// The initializer provides a default for collections (like in unit tests)
 		// that are not loaded from  file, but normally it is saved and restored
 		// in the settings file.
@@ -313,6 +318,7 @@ namespace Bloom.Collection
 			xml.Add(new XElement("AllowNewBooks", AllowNewBooks.ToString()));
 			xml.Add(new XElement("AudioRecordingMode", AudioRecordingMode.ToString()));
 			xml.Add(new XElement("AudioRecordingTrimEndMilliseconds", AudioRecordingTrimEndMilliseconds));
+			xml.Add(new XElement("Administrators", string.Join(",", Administrators)));
 			SIL.IO.RobustIO.SaveXElement(xml, SettingsFilePath);
 		}
 
@@ -413,6 +419,8 @@ namespace Bloom.Collection
 				AudioRecordingMode = parsedAudioRecordingMode;
 				AudioRecordingTrimEndMilliseconds = ReadInteger(xml, "AudioRecordingTrimEndMilliseconds",
 					kDefaultAudioRecordingTrimEndMilliseconds);
+				Administrators=ReadString(xml, "Administrators", "")
+					.Split(new[] {","}, StringSplitOptions.RemoveEmptyEntries);
 			}
 			catch (Exception e)
 			{
