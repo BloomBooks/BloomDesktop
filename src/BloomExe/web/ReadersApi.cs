@@ -231,9 +231,9 @@ namespace Bloom.Api
 		}
 
 		/// <summary>
-		/// Needs to return a json string with the page guid and the bloom-content1 text of each non-x-matter page
+		/// Return a json string with the page guid and the visible bloom-content1 text of each content page
+		/// that contains bloom-content1 text and that will be printed.
 		/// </summary>
-		/// <returns></returns>
 		private string GetTextOfContentPagesAsJson()
 		{
 			var pageTexts = new List<string>();
@@ -243,13 +243,21 @@ namespace Bloom.Api
 				.Where(p =>
 				{
 					var cls = " " + p.Attributes["class"].Value + " ";
-					return !cls.Contains(" bloom-frontMatter ") && !cls.Contains(" bloom-backMatter ");
+					// We want only printing content pages as a first cut.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9876.
+					return !cls.Contains(" bloom-frontMatter ") &&
+						!cls.Contains(" bloom-backMatter ") &&
+						!cls.Contains(" bloom-nonprinting ") &&
+						!cls.Contains(" bloom-ignoreForReaderStats ");
 				});
-			var xpathToTextContent = ".//div[not(" + GenerateXPathClassStringSearch("bloom-imageDescription") + ")]/div[" + GenerateXPathClassStringSearch("bloom-content1") + "]";
+			var xpathToTextContent = ".//div[not(" + GenerateXPathClassStringSearch("bloom-imageDescription") + ")]/div[" + GenerateXPathClassStringSearch("bloom-visibility-code-on") +" and "+ GenerateXPathClassStringSearch("bloom-content1") + "]";
 			foreach (var page in pages)
 			{
 				var pageWords = String.Empty;
-				foreach (XmlElement node in page.SafeSelectNodes(xpathToTextContent))
+				var textDivs = page.SafeSelectNodes(xpathToTextContent);
+				// Skip the page if it contains no visible vernacular text elements.  (picture only)
+				if (textDivs.Count == 0)
+					continue;
+				foreach (XmlElement node in textDivs)
 					pageWords += " " + node.InnerText;
 
 				pageTexts.Add("\"" + page.GetAttribute("id") + "\":\"" + EscapeJsonValue(pageWords.Trim()) + "\"");
