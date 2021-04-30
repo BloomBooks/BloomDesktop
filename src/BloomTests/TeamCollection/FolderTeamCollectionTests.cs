@@ -29,7 +29,7 @@ namespace BloomTests.TeamCollection
 		{
 			_repoFolder = new TemporaryFolder("FolderTeamCollectionTests_Repo");
 			_collectionFolder = new TemporaryFolder("FolderTeamCollectionTests_Local");
-			FolderTeamCollection.CreateTeamCollectionSettingsFile(_collectionFolder.FolderPath,
+			FolderTeamCollection.CreateTeamCollectionLinkFile(_collectionFolder.FolderPath,
 				_repoFolder.FolderPath);
 			_mockTcManager = new Mock<ITeamCollectionManager>();
 			_collection = new TestFolderTeamCollection(_mockTcManager.Object, _collectionFolder.FolderPath, _repoFolder.FolderPath);

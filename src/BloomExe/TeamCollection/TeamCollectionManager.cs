@@ -178,16 +178,12 @@ namespace Bloom.TeamCollection
 					_overrideCurrentUserSurname = lines[3];
 			}
 
-			var localSettingsPath = Path.Combine(_localCollectionFolder, TeamCollectionSettingsFileName);
-			if (RobustFile.Exists(localSettingsPath))
+			var localCollectionLinkPath = Path.Combine(_localCollectionFolder, TeamCollectionLinkFileName);
+			if (RobustFile.Exists(localCollectionLinkPath))
 			{
 				try
 				{
-					var doc = new XmlDocument();
-					doc.Load(localSettingsPath);
-					var repoFolderPath = doc.DocumentElement.GetElementsByTagName("TeamCollectionFolder").Cast<XmlElement>()
-						.First().InnerText;
-					
+					var repoFolderPath = RobustFile.ReadAllText(localCollectionLinkPath).Trim();
 					CurrentCollection = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath); // will be replaced if CheckConnection fails
 					if (CheckConnection())
 					{
@@ -297,7 +293,7 @@ namespace Bloom.TeamCollection
 			return Path.Combine(repoFolderParentPath, Path.GetFileName(_localCollectionFolder)+ " - TC");
 		}
 
-		public const string TeamCollectionSettingsFileName = "TeamCollectionSettings.xml";
+		public const string TeamCollectionLinkFileName = "TeamCollectionLink.txt";
 
 		// This is the value the book must be locked to for a local checkout.
 		// For all the Team Collection code, this should be the one place we know how to find that user.
