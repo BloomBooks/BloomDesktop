@@ -81,6 +81,7 @@ namespace Bloom
 			}
 
 			ToolboxView.SetupToolboxForCollection(Settings);
+			_scope.Resolve<TeamCollectionManager>().Settings = Settings;
 		}
 
 		/// ------------------------------------------------------------------------------------
