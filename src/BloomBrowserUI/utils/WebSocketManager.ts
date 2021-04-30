@@ -173,11 +173,6 @@ export default class WebSocketManager {
         listener: (messageEvent: T) => void,
         tagForDebugging?: string
     ): void {
-        console.log(
-            `${tagForDebugging ?? ""} addListener(${clientContext})  had ${
-                WebSocketManager.clientContextCallbacks[clientContext]?.length
-            } listeners.`
-        );
         if (clientContext.indexOf("mock_") > -1) {
             // this is used in storybook stories. Don't try finding a server because there isn't one.
             // Events will come in via mockSend().

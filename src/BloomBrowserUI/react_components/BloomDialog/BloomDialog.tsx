@@ -1,20 +1,27 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
-
 import * as React from "react";
-
 import theme from "../../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { Dialog } from "@material-ui/core";
 import CloseOnEscape from "react-close-on-escape";
-
 import { kDialogPadding } from "../../bloomMaterialUITheme";
 import { BloomApi } from "../../utils/bloomApi";
 
+// This component provides consistent layout across Bloom Dialogs.
+// It can be used either inside of a winforms dialog, or on its own.
+// Simplest usage:
+//               <BloomDialog open={true}>
+//                   <DialogTitle title="hello world"/>
+//                   <DialogMiddle>
+//                      stuff
+//                   </DialogMiddle>
+//               </BloomDialog>
+//
 export const BloomDialog: React.FunctionComponent<{
     open: boolean;
     // true if the caller is wrapping in a winforms dialog already
-    omitOuterFrame: boolean;
+    omitOuterFrame?: boolean;
 }> = props => (
     <CloseOnEscape
         onEscape={() => {

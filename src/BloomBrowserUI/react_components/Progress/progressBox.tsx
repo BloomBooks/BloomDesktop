@@ -88,7 +88,7 @@ export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => 
 
     function processEvent(e: IBloomWebSocketProgressEvent) {
         const msg = "" + e.message;
-        console.log("progress: processEvent " + msg);
+
         if (e.id === "message") {
             if (e.message!.indexOf("error") > -1) {
                 if (props.onGotErrorMessage) {

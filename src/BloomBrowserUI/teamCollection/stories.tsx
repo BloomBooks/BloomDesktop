@@ -138,7 +138,7 @@ storiesOf("Team Collection components", module).add(
 
 storiesOf("Team Collection components", module).add(
     "TeamCollectionDialog",
-    () => <TeamCollectionDialog />
+    () => <TeamCollectionDialog omitOuterFrame={false} />
 );
 
 storiesOf(
