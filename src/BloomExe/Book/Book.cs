@@ -627,7 +627,7 @@ namespace Bloom.Book
 		///      false
 		/// ); in Typescript
 		/// </summary>
-		public bool IsEditable {
+		public virtual bool IsEditable {
 			get
 			{
 				if (!BookInfo.IsEditable)

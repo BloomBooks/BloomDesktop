@@ -469,7 +469,7 @@ namespace Bloom.TeamCollection
 
 		// Get the email of the user, if any, who has the book locked. Returns null if not locked.
 		// As a special case, if the book exists only locally, we return TeamRepo.kThisUser.
-		public string WhoHasBookLocked(string bookName)
+		public virtual string WhoHasBookLocked(string bookName)
 		{
 			return GetStatus(bookName).lockedBy;
 		}
@@ -505,7 +505,7 @@ namespace Bloom.TeamCollection
 		/// Records the computer which locked a book. Allows us to distinguish between
 		/// "you have this book locked" and "you locked this book on another computer"
 		/// </summary>
-		public string WhatComputerHasBookLocked(string bookName)
+		public virtual string WhatComputerHasBookLocked(string bookName)
 		{
 			return GetStatus(bookName).lockedWhere;
 		}
