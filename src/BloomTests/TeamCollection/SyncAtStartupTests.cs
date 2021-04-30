@@ -30,7 +30,7 @@ namespace BloomTests.TeamCollection
 		{
 			_repoFolder = new TemporaryFolder("SyncAtStartup_Repo");
 			_collectionFolder = new TemporaryFolder("SyncAtStartup_Local");
-			FolderTeamCollection.CreateTeamCollectionSettingsFile(_collectionFolder.FolderPath,
+			FolderTeamCollection.CreateTeamCollectionLinkFile(_collectionFolder.FolderPath,
 				_repoFolder.FolderPath);
 			_mockTcManager = new Mock<ITeamCollectionManager>();
 			_tcLog = new TeamCollectionMessageLog(TeamCollectionManager.GetTcLogPathFromLcPath(_collectionFolder.FolderPath));
