@@ -31,7 +31,7 @@ Kuna njia mbili ambazo watu wanaweza kutumia templeti yako. Njia ya kwanza ni ku
       </trans-unit>
       <trans-unit id="template.starter.labeleachpage">
         <source xml:lang="en">When you add pages to your template, make sure to give each one a useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</source>
-        <target xml:lang="sw" state="translated">Unapoongeza kurasa kwenye kiolezo chako, hakikisha kuipa kila kiolezi lebo muhimu<g id="genid-5" ctype="x-html-sup"><g id="genid-5" ctype="x-html-sup">4</g></g>:</target>
+        <target xml:lang="sw" state="translated">Unapoongeza kurasa kwenye kiolezo chako, hakikisha kuipa kila kiolezi lebo muhimu<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</target>
         <note>ID: template.starter.labeleachpage</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails">
@@ -102,7 +102,7 @@ Kuna njia mbili ambazo watu wanaweza kutumia templeti yako. Njia ya kwanza ni ku
       </trans-unit>
       <trans-unit id="template.starter.editrawhtml">
         <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
-        <target xml:lang="sw" state="translated"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g> Ikiwa unataka skrini ya Ongeza ukurasa pia itoe maelezo mafupi ya ukurasa, utahitaji kuacha Bloom na kuhariri html ya kiolezi kwenye Notepad, kama hii:<x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        <target xml:lang="sw" state="translated"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: Ikiwa unataka skrini ya Ongeza ukurasa pia itoe maelezo mafupi ya ukurasa, utahitaji kuacha Bloom na kuhariri html ya kiolezi kwenye Notepad, kama hii:<x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
       </trans-unit>
     </body>

@@ -56,62 +56,62 @@
         <note>ID: Application.WaitingFinish.General</note>
         <target xml:lang="mam" state="translated">N-ayet tu'n tb'aj aq'unan juntl aq'unb'il xk'utz'ib'...</target>
       </trans-unit>
-      <trans-unit id="Application.WaitingFinish.Specific" approved="yes">
+      <trans-unit id="Application.WaitingFinish.Specific">
         <source xml:lang="en">Waiting for other {0} to finish...</source>
         <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="mam" state="final">N-ayet tu'n tb'aj aq'unan {0}...</target>
+        <target xml:lang="mam" state="translated">N-ayet tu'n tb'aj aq'unan {0}...</target>
       </trans-unit>
-      <trans-unit id="Common.AbortButton" approved="yes">
+      <trans-unit id="Common.AbortButton">
         <source xml:lang="en">&amp;Abort</source>
         <note>ID: Common.AbortButton</note>
-        <target xml:lang="mam" state="final">&amp;Mi'n txi' lajet</target>
+        <target xml:lang="mam" state="translated">&amp;Mi'n txi' lajet</target>
       </trans-unit>
-      <trans-unit id="Common.CancelButton">
+      <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="mam" state="translated">&amp;Kwe'b'il</target>
+        <target xml:lang="mam" state="final">&amp;Kwe'b'il</target>
       </trans-unit>
-      <trans-unit id="Common.IgnoreButton">
+      <trans-unit id="Common.IgnoreButton" approved="yes">
         <source xml:lang="en">&amp;Ignore</source>
         <note>ID: Common.IgnoreButton</note>
-        <target xml:lang="mam" state="translated">&amp;Min txi' b'inchet</target>
+        <target xml:lang="mam" state="final">&amp;Min txi' b'inchet</target>
       </trans-unit>
-      <trans-unit id="Common.No">
+      <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
-        <target xml:lang="mam" state="translated">Min</target>
+        <target xml:lang="mam" state="final">Min</target>
       </trans-unit>
-      <trans-unit id="Common.NoButton" approved="yes">
+      <trans-unit id="Common.NoButton">
         <source xml:lang="en">&amp;No</source>
         <note>ID: Common.NoButton</note>
-        <target xml:lang="mam" state="final">&amp;Min</target>
+        <target xml:lang="mam" state="translated">&amp;Min</target>
       </trans-unit>
-      <trans-unit id="Common.OKButton" approved="yes">
+      <trans-unit id="Common.OKButton">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="mam" state="final">B'a'n</target>
+        <target xml:lang="mam" state="translated">B'a'n</target>
       </trans-unit>
-      <trans-unit id="Common.RetryButton" approved="yes">
+      <trans-unit id="Common.RetryButton">
         <source xml:lang="en">&amp;Retry</source>
         <note>ID: Common.RetryButton</note>
-        <target xml:lang="mam" state="final">&amp;Kb'inchetil juntl maj</target>
+        <target xml:lang="mam" state="translated">&amp;Kb'inchetil juntl maj</target>
       </trans-unit>
-      <trans-unit id="Common.Yes" approved="yes">
+      <trans-unit id="Common.Yes">
         <source xml:lang="en">Yes</source>
         <note>ID: Common.Yes</note>
-        <target xml:lang="mam" state="final">B'a'n</target>
+        <target xml:lang="mam" state="translated">B'a'n</target>
       </trans-unit>
-      <trans-unit id="Common.YesButton" approved="yes">
+      <trans-unit id="Common.YesButton">
         <source xml:lang="en">&amp;Yes</source>
         <note>ID: Common.YesButton</note>
-        <target xml:lang="mam" state="final">&amp;B'a'n</target>
+        <target xml:lang="mam" state="translated">&amp;B'a'n</target>
       </trans-unit>
-      <trans-unit id="CustomIdentifierView.betterLabel1" approved="yes">
+      <trans-unit id="CustomIdentifierView.betterLabel1">
         <source xml:lang="en">RFC5646 code:</source>
         <note>ID: CustomIdentifierView.betterLabel1</note>
         <note>label describes the code for a custom identifier. Translate only 'code'</note>
-        <target xml:lang="mam" state="final">Techil tajlal RFC5646:</target>
+        <target xml:lang="mam" state="translated">Techil tajlal RFC5646:</target>
       </trans-unit>
       <trans-unit id="CustomIdentifierView.linkLabel1" approved="yes">
         <source xml:lang="en">Read about language identifiers on the web</source>
