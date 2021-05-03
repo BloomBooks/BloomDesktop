@@ -19,7 +19,7 @@ namespace Bloom.TeamCollection
 	// Review: should this be in web/controllers with all the other API classes, or here with all the other sharing code?
 	public class TeamCollectionApi
 	{
-		private TeamCollectionManager _tcManager;
+		private ITeamCollectionManager _tcManager;
 		private BookSelection _bookSelection; // configured by autofac, tells us what book is selected
 		private BookServer _bookServer;
 		private string CurrentUser => TeamCollectionManager.CurrentUser;
@@ -30,7 +30,7 @@ namespace Bloom.TeamCollection
 		public static TeamCollectionApi TheOneInstance { get; private set; }
 
 		// Called by autofac, which creates the one instance and registers it with the server.
-		public TeamCollectionApi(CollectionSettings settings, BookSelection bookSelection, TeamCollectionManager tcManager, BookServer bookServer, BloomWebSocketServer socketServer)
+		public TeamCollectionApi(CollectionSettings settings, BookSelection bookSelection, ITeamCollectionManager tcManager, BookServer bookServer, BloomWebSocketServer socketServer)
 		{
 			_settings = settings;
 			_tcManager = tcManager;

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Bloom.TeamCollection;
 using BloomTemp;
+using BloomTests.DataBuilders;
 using Moq;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
@@ -460,13 +461,16 @@ namespace BloomTests.TeamCollection
 
 		// Make a very trivial fake book. Not nearly good enough to make a Book object from,
 		// but enough for most purposes of testing TeamCollection.
-		public static string MakeFakeBook(string collectionFolder, string name, string content, string folderNameIfDifferent="")
+		public static string MakeFakeBook(string collectionFolder, string name, string content, string folderNameIfDifferent = null)
 		{
-			var folderPath = Path.Combine(collectionFolder, string.IsNullOrEmpty(folderNameIfDifferent) ? name : folderNameIfDifferent);
-			var bookPath = Path.Combine(folderPath, Path.ChangeExtension(name, "htm"));
-			Directory.CreateDirectory(folderPath);
-			RobustFile.WriteAllText(bookPath, "<html><body>" + content + "</body></html>");
-			return folderPath;
+			var bookBuilder = new TeamCollectionBookBuilder()
+				.WithRootFolder(collectionFolder)
+				.WithBookFolderName(folderNameIfDifferent)
+				.WithTitle(name)
+				.WithHtm("<html><body>" + content + "</body></html>")
+				.Build();
+
+			return bookBuilder.BuiltBookFolderPath;
 		}
 
 		void UpdateLocalBook(string name, string content, bool updateChecksum = true)

@@ -209,6 +209,7 @@ namespace Bloom
 							c.Resolve<BookStatusChangeEvent>(),
 							c.Resolve<BookSelection>(),
 							c.Resolve<LibraryClosing>())).InstancePerLifetimeScope();
+						builder.Register<ITeamCollectionManager>(c => c.Resolve<TeamCollectionManager>()).InstancePerLifetimeScope();
 						builder.Register<CollectionSettings>(c =>
 						{
 							c.Resolve<TeamCollectionManager>();
