@@ -432,7 +432,16 @@ div.bloom-page {
         }
     }
 }
+
 .epub {
+    height: 100%;
+    .marginBox {
+        height: 100% !important;
+    }
+    .bloom-frontMatter,
+    .bloom-backMatter {
+        height: 100%; // these height 100% are needed to make the cover color flow to the bottom
+    }
     .outsideBackCover .marginBox {
         // otherwise non-epub rules push things right too much and chop off government logos!
         width: unset !important;
