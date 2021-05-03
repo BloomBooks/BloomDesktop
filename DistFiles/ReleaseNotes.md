@@ -1,16 +1,16 @@
-# 5.0 (Alpha)
+# 5.0 (Beta)
 
 ## Edit Tab
 
 In the Comic Tool, you can now control the transparency, and make corners round. You can also show a line that you can use to point to something in a diagram:
 
-![screenshot](https://i.imgur.com/HqlfqxN.png)
+![screenshot-online-only](https://i.imgur.com/HqlfqxN.png)
 
 We've made it easier to add HTML5 widgets from [Active Presenter](https://atomisystems.com/activepresenter/demo/). No more zipping/unzipping.
 
 There is now a "Widget Page" that gives you a full-screen page to host your html5 interactive widgets. (Widgets are part of Bloom Enterprise).
 
-![screenshot](https://i.imgur.com/EEoBfHe.png)
+![screenshot-online-only](https://i.imgur.com/EEoBfHe.png)
 
 ## BloomLibrary.org
 
@@ -18,26 +18,26 @@ When you download books from BloomLibrary.org that have audio, Bloom will now do
 
 We've improved what you see when you look at a template books on BloomLibrary.org, in ways that will make it easier to understand what the template pages are for.
 
-![screenshot](https://i.imgur.com/JU0m0SD.png)
-![screenshot](https://i.imgur.com/lx9FVMz.png)
+![screenshot-online-only](https://i.imgur.com/JU0m0SD.png)
+![screenshot-online-only](https://i.imgur.com/lx9FVMz.png)
 
 ## Team Collections
 
 The new Team Collection _enterprise_ feature debuts in this release. With a Team Collection, you can safely share a collection within your team, across the internet, without full-time internet access. For this release, we're going to keep this feature behind the "Experimental" checkbox. For now, we are only supporting Dropbox & LAN environments. If you would like to help test it out, that'd be great! Just contact us.
 
-![screenshot](https://i.imgur.com/VCqWEft.png)
+![screenshot-online-only](https://i.imgur.com/VCqWEft.png){width="960px"}
 
 ## Performance
 
-Recently we spent weeks improving Bloom's ability to deal with large books and long Bloom sessions without running otu of memory. As part of that effort, we've added a tool for watching what happens to available memory and speed as Bloom does various things. This is mostly for our own use, but it's also available to you, in case you suspect that Bloom is eating memory or slowing down as you use it.
+Recently we spent weeks improving Bloom's ability to deal with large books and long Bloom sessions without running out of memory. As part of that effort, we've added a tool for watching what happens to available memory and speed as Bloom does various things. This is mostly for our own use, but it's also available to you, in case you suspect that Bloom is eating memory or slowing down as you use it.
 
-![screenshot](https://i.imgur.com/fkTafND.png)
-![screenshot](https://i.imgur.com/3fsm9ae.png)
+![screenshot-online-only](https://i.imgur.com/fkTafND.png)
+![screenshot-online-only](https://i.imgur.com/3fsm9ae.png){width="965px"}
 
 <br/>
 <br/>
 
-4.9
+# 4.9
 
 ## Edit Tab
 
