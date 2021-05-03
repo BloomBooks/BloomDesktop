@@ -217,7 +217,7 @@ namespace Bloom.TeamCollection
 		public BloomWebSocketProgressEvent[] GetProgressMessages()
 		{
 
-				var messages =  Messages.Where(m=>!string.IsNullOrEmpty(m.Message)).Select(ProgressMessageFromTeamCollectionLogEntry).ToArray();
+				var messages =  Messages.Where(m=>!string.IsNullOrEmpty(m.RawEnglishMessageTemplate)).Select(ProgressMessageFromTeamCollectionLogEntry).ToArray();
 
 				if (messages.Length == 0)
 				{
@@ -240,9 +240,9 @@ namespace Bloom.TeamCollection
 				case MessageAndMilestoneType.Error:
 				case MessageAndMilestoneType.ErrorNoReload:
 				case MessageAndMilestoneType.ClobberPending:
-					return new BloomWebSocketProgressEvent(kWebSocketContext, ProgressKind.Error, entry.Message );
+					return new BloomWebSocketProgressEvent(kWebSocketContext, ProgressKind.Error, entry.TextForDisplay );
 				default:
-					return new BloomWebSocketProgressEvent(kWebSocketContext, ProgressKind.Progress, entry.Message);
+					return new BloomWebSocketProgressEvent(kWebSocketContext, ProgressKind.Progress, entry.TextForDisplay);
 			}
 		}
 	}

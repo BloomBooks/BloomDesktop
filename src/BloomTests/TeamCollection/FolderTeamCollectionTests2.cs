@@ -395,7 +395,7 @@ namespace BloomTests.TeamCollection
 					tc.HandleCollectionSettingsChange(new RepoChangeEventArgs());
 					var msg = tc.MessageLog.CurrentNewStuff.First();
 					Assert.That(msg.MessageType, Is.EqualTo(MessageAndMilestoneType.NewStuff));
-					Assert.That(msg.Message, Is.EqualTo("One of your teammates has made changes to the collection settings."));
+					Assert.That(msg.RawEnglishMessageTemplate, Is.EqualTo("One of your teammates has made changes to the collection settings."));
 				}
 			}
 		}

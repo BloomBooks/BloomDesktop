@@ -428,7 +428,7 @@ namespace BloomTests.TeamCollection
 				Assert.That(_progressSpy.ProgressMessages, Contains.Item(expectedMsg));
 			}
 			Assert.That(_tcLog.Messages, Has.Exactly(1).Matches<TeamCollectionMessage>(m =>
-				m.Message == msg && (m.Param0 ?? "") == (param0 ?? "") && (m.Param1 ?? "") == (param1 ?? "") &&
+				m.RawEnglishMessageTemplate == msg && (m.Param0 ?? "") == (param0 ?? "") && (m.Param1 ?? "") == (param1 ?? "") &&
 				m.MessageType == expectedType));
 		}
 

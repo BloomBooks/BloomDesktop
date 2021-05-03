@@ -1,4 +1,4 @@
-using Bloom.Api;
+﻿using Bloom.Api;
 using Bloom.MiscUI;
 using Bloom.web;
 using L10NSharp;
@@ -1185,7 +1185,7 @@ namespace Bloom.TeamCollection
 		// change log. This method handles sending to both.
 		// Note that errors logged here will not result in the TC dialog showing the Reload Collection
 		// button, because we are here doing a reload, so all errors are logged as ErrorNoReload.
-		void ReportProgressAndLog(IWebSocketProgress progress, ProgressKind kind, string l10nIdSuffix, string message, 
+		void ReportProgressAndLog(IWebSocketProgress progress, ProgressKind kind, string l10nIdSuffix, string message,
 			string param0 = null, string param1= null)
 		{
 			var fullL10nId = "TeamCollection." + l10nIdSuffix;
@@ -1233,7 +1233,8 @@ namespace Bloom.TeamCollection
 			foreach (var path in Directory.EnumerateDirectories(_localCollectionFolder))
 			{
 				try
-				{throw new Exception("test");
+				{
+					throw new Exception("test error");
 					if (!IsBloomBookFolder(path))
 						continue;
 					var bookFolderName = Path.GetFileName(path);
@@ -1265,7 +1266,7 @@ namespace Bloom.TeamCollection
 							RobustFile.Delete(statusFilePath);
 							continue;
 						}
-						
+
 						// On this branch, there is valid local status, so the book has previously been shared.
 						// Since it's now missing from the repo, we assume it's been deleted.
 						// Unless it's checked out to the current user on the current computer, delete
@@ -1295,7 +1296,7 @@ namespace Bloom.TeamCollection
 						// If it's checked out here, assume current user wants it and keep it.
 						// If he checks it in, that will undo the delete...may annoy the user
 						// who deleted it, but that's life in a shared collection.
-					}		
+					}
 				}
 				catch (Exception ex)
 				{
@@ -1523,7 +1524,7 @@ namespace Bloom.TeamCollection
 		protected void ShowProgressDialog(string title, Func<IWebSocketProgress, bool> doWhat, Action<Form> doWhenMainActionFalse = null)
 		{
 			BrowserProgressDialog.DoWorkWithProgressDialog(SocketServer, TeamCollection.kWebSocketContext,
-				() => new ReactDialog("ProgressDialog", 
+				() => new ReactDialog("ProgressDialog",
 					// props to send to the react component
 					new
 					{
@@ -1549,7 +1550,7 @@ namespace Bloom.TeamCollection
 		public void SynchronizeRepoAndLocal()
 		{
 			var title = "Syncing Team Collection"; // todo l10n
-			ShowProgressDialog(title, 
+			ShowProgressDialog(title,
 				progress =>
 				{
 					// Not useful to have the date and time in the progress dialog, but definitely

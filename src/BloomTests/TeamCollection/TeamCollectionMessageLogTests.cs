@@ -140,7 +140,7 @@ namespace BloomTests.TeamCollection
 		{
 			Assert.That(msg.MessageType, Is.EqualTo(expectedType));
 			Assert.That(msg.L10NId, Is.EqualTo(expectedL10n));
-			Assert.That(msg.Message, Is.EqualTo(expectedMsg));
+			Assert.That(msg.RawEnglishMessageTemplate, Is.EqualTo(expectedMsg));
 			Assert.That(msg.Param0 ?? "", Is.EqualTo(expectedParam0 ?? ""));
 			Assert.That(msg.Param1 ?? "", Is.EqualTo(expectedParam1 ?? ""));
 		}

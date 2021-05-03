@@ -19,7 +19,7 @@ namespace BloomTests.TeamCollection
 			Assert.That(msg.MessageType, Is.EqualTo(MessageAndMilestoneType.Error));
 			Assert.That(msg.Param1, Is.EqualTo("Fred"));
 			Assert.That(msg.Param0, Is.EqualTo("My book"));
-			Assert.That(msg.Message, Is.EqualTo("A new book {0} arrived from {1}"));
+			Assert.That(msg.RawEnglishMessageTemplate, Is.EqualTo("A new book {0} arrived from {1}"));
 			Assert.That(msg.L10NId, Is.EqualTo("TeamCollection.NewBook"));
 		}
 
@@ -29,7 +29,7 @@ namespace BloomTests.TeamCollection
 			var msg = TeamCollectionMessage.FromPersistedForm("2010-06-15T13:45:30.0000000-07:00\tReloaded");
 			Assert.That(msg.When.Month, Is.EqualTo(6));
 			Assert.That(msg.MessageType, Is.EqualTo(MessageAndMilestoneType.Reloaded));
-			Assert.That(msg.Message, Is.Null);
+			Assert.That(msg.RawEnglishMessageTemplate, Is.Null);
 		}
 
 		[TestCase("rubbish\tHistory", true)] // bad date
