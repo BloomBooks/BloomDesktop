@@ -1,4 +1,3 @@
-import { text } from "@fortawesome/fontawesome-svg-core";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 
 export function getLocalization({

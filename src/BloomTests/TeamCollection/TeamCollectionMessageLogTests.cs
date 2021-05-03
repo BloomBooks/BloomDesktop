@@ -450,35 +450,5 @@ namespace BloomTests.TeamCollection
 			MakeHistory2();
 			Assert.That(_messageLog.TeamCollectionStatus, Is.EqualTo(TeamCollectionStatus.ClobberPending));
 		}
-
-		/* I JH don't see that this really tested anything worth testing and was a hassle to refactor when I moved
-		 away from tuples to strongly typed messages.
-		 
-		[Test]
-		public void PrettyMessages_ShowsExpectedResults()
-		{
-			MakeHistory1();
-			MakeNewBookMessage();
-			_messageLog.WriteMilestone(MessageAndMilestoneType.Reloaded);
-			MakeError1();
-			_messageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
-			MakeChangedBookMessage();
-			_messageLog.WriteMilestone(MessageAndMilestoneType.ShowedClobbered);
-			var messages = _messageLog.GetProgressMessages();
-			var today = DateTime.Now.ToShortDateString();
-			VerifyLogMessage(messages[0], MessageAndMilestoneType.History,today + ": joe@somewhere.org checked out the book Joe hunts pigs");
-			VerifyLogMessage(messages[1], MessageAndMilestoneType.NewStuff, today + ": A new book called I am new was added to the collection");
-			VerifyLogMessage(messages[2], MessageAndMilestoneType.Error, today + ": The book 'Joe hunts pigs' is checked out to someone else. Your changes are saved to Lost-and-found.");
-			VerifyLogMessage(messages[3], MessageAndMilestoneType.NewStuff, today + ": The book called I am different was changed");
-			VerifyLogMessage(messages[4], MessageAndMilestoneType.ShowedClobbered,today + ": Repaired conflict");
-			// Enhance: Do we want colors? If so, should the output of this be HTML,
-			// or something else that supports that? Or should some other component handle formatting?
-		}
-
-		void VerifyLogMessage(ProgressMessage m, MessageAndMilestoneType type, string message)
-		{
-			Assert.That(pretty.Item1, Is.EqualTo(type));
-			Assert.That(pretty.Item2, Is.EqualTo(message));
-		}*/
 	}
 }

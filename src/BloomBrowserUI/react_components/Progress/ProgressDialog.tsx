@@ -1,7 +1,7 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
 
-import { Button, CircularProgress, Typography } from "@material-ui/core";
+import { Button, CircularProgress } from "@material-ui/core";
 import * as React from "react";
 import { useRef, useState } from "react";
 import { BloomApi } from "../../utils/bloomApi";
@@ -19,9 +19,6 @@ import {
     DialogMiddle,
     DialogTitle
 } from "../BloomDialog/BloomDialog";
-
-// Root element rendered to progress dialog, using ReactDialog in C#
-const kDialogPadding = "10px";
 
 export const ProgressDialog: React.FunctionComponent<{
     title: string;
@@ -41,16 +38,23 @@ export const ProgressDialog: React.FunctionComponent<{
     const [showButtons, setShowButtons] = useState(false);
     const [sawAnError, setSawAnError] = useState(false);
     const [sawAWarning, setSawAWarning] = useState(false);
+    const [messagesForErrorReporting, setMessagesForErrorReporting] = useState(
+        ""
+    );
 
     // Start off showing the spinner, then stop when we get a "finished" message.
     const [showSpinner, setShowSpinner] = useState(true);
 
     const progress = useRef("");
-
     // Note that the embedded ProgressBox is also listening to the same stream of events.
     // Here we are just concerned with events that change the state of our buttons, title bar, etc.
     React.useEffect(() => {
         const listener = (e: IBloomWebSocketProgressEvent) => {
+            if (e.id === "message") {
+                setMessagesForErrorReporting(
+                    current => current + "\r\n" + e.message
+                );
+            }
             if (e.id === "show-buttons") {
                 setShowButtons(true);
             }
@@ -64,11 +68,8 @@ export const ProgressDialog: React.FunctionComponent<{
                 setShowSpinner(false);
             }
         };
-        WebSocketManager.addListener(
-            props.webSocketContext,
-            listener,
-            "dialog"
-        );
+        WebSocketManager.addListener(props.webSocketContext, listener);
+        // cleanup when this dialog unmounts (since this useEffect will only be called once)
         return () =>
             WebSocketManager.removeListener(props.webSocketContext, listener);
     }, []);
@@ -88,8 +89,17 @@ export const ProgressDialog: React.FunctionComponent<{
         titleColor = "white";
     }
 
+    function close() {
+        if (props.omitOuterFrame) BloomApi.post("common/closeReactDialog");
+        else setOpen(false);
+    }
+
     return (
-        <BloomDialog open={open} omitOuterFrame={props.omitOuterFrame}>
+        <BloomDialog
+            open={open}
+            omitOuterFrame={props.omitOuterFrame}
+            onClose={close}
+        >
             <DialogTitle
                 title={props.title}
                 icon={props.titleIcon}
@@ -105,18 +115,17 @@ export const ProgressDialog: React.FunctionComponent<{
                             color: ${props.titleColor || "black"} !important;
                         `}
                         size={20}
-                        className={"circle-progress"}
                     />
                 )}
             </DialogTitle>
             <DialogMiddle>
                 <ProgressBox
                     webSocketContext={props.webSocketContext}
-                    // review: I (JH) am not clear what this is here for? Presumably someone had trouble with the whole state/refresh thing?
-                    //notifyProgressChange={p => (progress.current = p)}
                     onReadyToReceive={props.onReadyToReceive}
                     css={css`
-                        height: 400px;
+                        // If we have omitOuterFrame that means the dialog height is controlled by c#, so let the progress grow to fit it.
+                        // Maybe we could have that approach *all* the time?
+                        height: ${props.omitOuterFrame ? "100%" : "400px"};
                         min-width: 540px;
                     `}
                 />
@@ -125,36 +134,32 @@ export const ProgressDialog: React.FunctionComponent<{
                 {showButtons ? (
                     <React.Fragment>
                         {buttonForSendingErrorReportIsRelevant && (
-                            <Link
+                            <BloomButton
                                 id="progress-report"
-                                color="primary"
+                                hasText={true}
+                                enabled={true}
+                                //color="primary"
                                 l10nKey="Common.Report"
+                                variant="text"
                                 onClick={() => {
                                     BloomApi.postJson(
                                         "problemReport/showDialog",
                                         {
-                                            message: progress.current,
-                                            // Enhance: this will need to be configurable if we use this
-                                            // dialog for something else...maybe by url param?
-                                            shortMessage:
-                                                "The user reported a problem in Team Collection Sync"
+                                            message: messagesForErrorReporting,
+                                            shortMessage: `The user reported a problem from "${props.title}".`
                                         }
                                     );
                                 }}
                             >
-                                REPORT
-                            </Link>
+                                Report
+                            </BloomButton>
                         )}
                         <BloomButton
                             id="close-button"
                             l10nKey="Common.Close"
                             hasText={true}
                             enabled={true}
-                            onClick={() => {
-                                if (props.omitOuterFrame)
-                                    BloomApi.post("common/closeReactDialog");
-                                else setOpen(false);
-                            }}
+                            onClick={close}
                             css={css`
                                 float: right;
                             `}
@@ -177,14 +182,3 @@ export const ProgressDialog: React.FunctionComponent<{
         </BloomDialog>
     );
 };
-
-/*  <Dialog
-                    PaperProps={{
-                        style: {
-                            maxHeight: "100%"
-                        }
-                    }}
-                    maxWidth={"md"}
-                    open={true}
-                    className="foobar"
-                > */

@@ -1233,7 +1233,7 @@ namespace Bloom.TeamCollection
 			foreach (var path in Directory.EnumerateDirectories(_localCollectionFolder))
 			{
 				try
-				{
+				{throw new Exception("test");
 					if (!IsBloomBookFolder(path))
 						continue;
 					var bookFolderName = Path.GetFileName(path);
@@ -1265,7 +1265,7 @@ namespace Bloom.TeamCollection
 							RobustFile.Delete(statusFilePath);
 							continue;
 						}
-
+						
 						// On this branch, there is valid local status, so the book has previously been shared.
 						// Since it's now missing from the repo, we assume it's been deleted.
 						// Unless it's checked out to the current user on the current computer, delete
@@ -1533,10 +1533,10 @@ namespace Bloom.TeamCollection
 						titleBackgroundColor = Palette.kBloomBlueHex,
 						webSocketContext = TeamCollection.kWebSocketContext,
 						// we're providing the dialog as a winforms dialog
-						wrapInDialog = false
+						omitOuterFrame = true
 					})
 					// winforms dialog properties
-					{Width = 620, Height = 650},
+					{Width = 620, Height = 550},
 				doWhat, doWhenMainActionFalse);
 		}
 

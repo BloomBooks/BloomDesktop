@@ -23,55 +23,55 @@ body {
 
 // Everything else should be inside this, to guard against unexpected interference.
 #reactRoot {
-    height: 100%;
-    padding-bottom: @outer-margin;
-    box-sizing: border-box;
+    //height: 100%;
+    // padding-bottom: @outer-margin;
+    // box-sizing: border-box;
 
-    #progress-root {
-        height: 100%;
-    }
+    // #progress-root {
+    //     height: 100%;
+    // }
 
-    // We should be able to do this much more elegantly by making the parent display:flex column
-    // and this flex-grow:1. But in FF60, this will not integrate with setting the child
-    // progress box to be height:100%. Both the progress box and this row end up the full
-    // height needed for all the progress messages, and instead of a neat scroll bar on
-    // the progress box, we get one on the whole dialog content.
-    #copy-progress-row {
-        height: calc(100% - @title-height - @main-margin);
-        display: flex;
-        &.with-buttons {
-            height: calc(
-                100% - @title-height - @button-height - @button-row-margin
-            );
-        }
-    }
+    // // We should be able to do this much more elegantly by making the parent display:flex column
+    // // and this flex-grow:1. But in FF60, this will not integrate with setting the child
+    // // progress box to be height:100%. Both the progress box and this row end up the full
+    // // height needed for all the progress messages, and instead of a neat scroll bar on
+    // // the progress box, we get one on the whole dialog content.
+    // #copy-progress-row {
+    //     height: calc(100% - @title-height - @main-margin);
+    //     display: flex;
+    //     &.with-buttons {
+    //         height: calc(
+    //             100% - @title-height - @button-height - @button-row-margin
+    //         );
+    //     }
+    // }
 
-    #copy-button {
-        background-image: url("../../images/copy.svg");
-        height: 20px;
-        width: @copy-button-width;
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center;
-        margin-left: @copy-button-left-margin;
-        margin-right: @copy-button-right-margin;
-        background-color: white;
-        border: none;
-    }
+    // #copy-button {
+    //     background-image: url("../../images/copy.svg");
+    //     height: 20px;
+    //     width: @copy-button-width;
+    //     background-size: contain;
+    //     background-repeat: no-repeat;
+    //     background-position: center;
+    //     margin-left: @copy-button-left-margin;
+    //     margin-right: @copy-button-right-margin;
+    //     background-color: white;
+    //     border: none;
+    // }
 
-    #close-button {
-        background-color: @bloom-purple;
-    }
+    // #close-button {
+    //     background-color: @bloom-purple;
+    // }
 
-    #progress-buttons {
-        display: flex;
-        justify-content: space-between;
-        flex-grow: 0;
-        margin-top: @button-row-margin;
-        margin-left: @main-margin;
-        margin-right: @main-margin;
-    }
-    #progress-report {
-        margin-top: 10px;
-    }
+    // #progress-buttons {
+    //     display: flex;
+    //     justify-content: space-between;
+    //     flex-grow: 0;
+    //     margin-top: @button-row-margin;
+    //     margin-left: @main-margin;
+    //     margin-right: @main-margin;
+    // }
+    // #progress-report {
+    //     margin-top: 10px;
+    // }
 }

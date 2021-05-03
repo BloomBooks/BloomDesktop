@@ -18,7 +18,11 @@ storiesOf("Bloom Dialog", module)
             return (
                 <div>
                     {open ? (
-                        <BloomDialog omitOuterFrame={false} open={open}>
+                        <BloomDialog
+                            omitOuterFrame={false}
+                            open={open}
+                            onClose={() => setOpen(false)}
+                        >
                             <DialogTitle title="A Simple Progress Dialog" />
                             <DialogMiddle
                                 css={css`
@@ -76,7 +80,11 @@ storiesOf("Bloom Dialog", module)
     .add("Dialog with icon and spinner", () => {
         return React.createElement(() => {
             return (
-                <BloomDialog omitOuterFrame={false} open={true}>
+                <BloomDialog
+                    omitOuterFrame={false}
+                    open={true}
+                    onClose={() => {}}
+                >
                     <DialogTitle
                         icon="Check In.svg"
                         backgroundColor="#ffffad"

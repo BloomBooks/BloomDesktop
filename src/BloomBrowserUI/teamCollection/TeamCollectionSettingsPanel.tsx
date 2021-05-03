@@ -67,7 +67,6 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                     href="mailto:experimental@bloomlibrary.org?subject= Our interest in Team Collections"
                     target="blank"
                 >
-                    {" "}
                     experimental@bloomlibrary.org
                 </a>{" "}
                 so that we can talk over your needs and make sure that this

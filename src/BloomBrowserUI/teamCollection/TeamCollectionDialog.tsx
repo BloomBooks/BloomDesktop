@@ -17,6 +17,7 @@ import {
 } from "../react_components/BloomDialog/BloomDialog";
 import { useState } from "react";
 
+export let showTeamCollectionDialog: () => void;
 export const TeamCollectionDialog: React.FunctionComponent<{
     omitOuterFrame: boolean;
 }> = props => {
@@ -26,6 +27,8 @@ export const TeamCollectionDialog: React.FunctionComponent<{
         "TeamCollection.TeamCollection"
     );
 
+    React.useEffect(() => (showTeamCollectionDialog = () => setOpen(true)), []);
+
     const [events] = BloomApi.useApiObject<IBloomWebSocketProgressEvent[]>(
         "teamCollection/getLog",
         []
@@ -33,8 +36,17 @@ export const TeamCollectionDialog: React.FunctionComponent<{
 
     const urlParams = new URLSearchParams(window.location.search);
     const showReloadButton = !!urlParams.get("showReloadButton");
+
+    function close() {
+        if (props.omitOuterFrame) BloomApi.post("common/closeReactDialog");
+        else setOpen(false);
+    }
     return (
-        <BloomDialog open={open} omitOuterFrame={props.omitOuterFrame}>
+        <BloomDialog
+            open={open}
+            omitOuterFrame={props.omitOuterFrame}
+            onClose={close}
+        >
             <DialogTitle
                 title={`${dialogTitle} (experimental)`}
                 icon={"Team Collection.svg"}
@@ -71,11 +83,7 @@ export const TeamCollectionDialog: React.FunctionComponent<{
                     enabled={true}
                     variant={showReloadButton ? "outlined" : "contained"}
                     temporarilyDisableI18nWarning={true}
-                    onClick={() => {
-                        if (props.omitOuterFrame)
-                            BloomApi.post("common/closeReactDialog");
-                        else setOpen(false);
-                    }}
+                    onClick={close}
                     css={css`
                         float: right;
                     `}

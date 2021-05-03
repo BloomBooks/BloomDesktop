@@ -4598,6 +4598,12 @@ Do you want to go ahead?</note>
         <note>ID: RegisterDialog.WindowTitle</note>
         <note>Place a {0} where the name of the program goes.</note>
       </trans-unit>
+      <trans-unit id="ReportProblemDialog.Close">
+        <source xml:lang="en">Close</source>
+        <note>ID: ReportProblemDialog.Close</note>
+        <note>Shown in the button that closes the dialog after a successful report submission.</note>
+        <note>Obsolete for Bloom 5.0 and later</note>
+      </trans-unit>
       <trans-unit id="ReportProblemDialog.CouldNotSendToServer">
         <source xml:lang="en">Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.</source>
         <note>ID: ReportProblemDialog.CouldNotSendToServer</note>

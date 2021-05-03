@@ -9,52 +9,54 @@ import { kDialogPadding } from "../../bloomMaterialUITheme";
 import { BloomApi } from "../../utils/bloomApi";
 
 // This component provides consistent layout across Bloom Dialogs.
-// It can be used either inside of a winforms dialog, or on its own.
+// It can be used either inside of a winforms dialog, or as a MaterialUI Dialog.
 // Simplest usage:
 //               <BloomDialog open={true}>
 //                   <DialogTitle title="hello world"/>
 //                   <DialogMiddle>
 //                      stuff
 //                   </DialogMiddle>
+//                   <DialogBottom><CloseButton/></DialogBottom>
 //               </BloomDialog>
 //
 export const BloomDialog: React.FunctionComponent<{
     open: boolean;
     // true if the caller is wrapping in a winforms dialog already
     omitOuterFrame?: boolean;
-}> = props => (
-    <CloseOnEscape
-        onEscape={() => {
-            CloseDialog();
-        }}
-    >
-        <ThemeProvider theme={theme}>
-            {props.omitOuterFrame ? (
-                <div>{props.children}</div>
-            ) : (
-                // TODO: handle open/closed
-                <Dialog open={props.open}>
-                    <div
-                        css={css`
-                            display: flex;
-                            flex-direction: column;
-                            padding-left: ${kDialogPadding};
-                            padding-right: ${kDialogPadding};
-                            padding-bottom: ${kDialogPadding};
-                        `}
-                    >
-                        {props.children}
-                    </div>
-                </Dialog>
-            )}
-        </ThemeProvider>
-    </CloseOnEscape>
-);
+    onClose: () => void;
+}> = props => {
+    const inner = (
+        <div
+            css={css`
+                display: flex;
+                flex-direction: column;
+                padding-left: ${kDialogPadding};
+                padding-right: ${kDialogPadding};
+                padding-bottom: ${kDialogPadding};
+                // todo: I can't understand why this "- 10px" is needed. This and all its parents have no margin, so I don't understand why it ends up being 10px larger than the available space
+                ${props.omitOuterFrame ? "height: calc(100% - 10px)" : ""}
+            `}
+        >
+            {props.children}
+        </div>
+    );
 
-/* TODO: this is fine for winforms-hosted dialogs, but not for dialogs sharing a browser */
-function CloseDialog() {
-    BloomApi.post("common/closeReactDialog");
-}
+    return (
+        <CloseOnEscape
+            onEscape={() => {
+                props.onClose();
+            }}
+        >
+            <ThemeProvider theme={theme}>
+                {props.omitOuterFrame ? (
+                    inner
+                ) : (
+                    <Dialog open={props.open}>{inner}</Dialog>
+                )}
+            </ThemeProvider>
+        </CloseOnEscape>
+    );
+};
 
 export const DialogTitle: React.FunctionComponent<{
     backgroundColor?: string;
@@ -106,11 +108,16 @@ export const DialogTitle: React.FunctionComponent<{
     );
 };
 
+// The height of this is determined by what is inside of it. If the content might grow (e.g. a progress box), then it's up to the
+// client to set maxes or fixed dimensions. See <ProgressDialog> for an example.
 export const DialogMiddle: React.FunctionComponent<{}> = props => {
     return (
         <div
             css={css`
                 overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                flex-grow: 1;
             `}
             {...props}
         >

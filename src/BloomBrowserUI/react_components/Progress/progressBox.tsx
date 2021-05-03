@@ -1,6 +1,6 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
-// import { Button } from "@material-ui/core";
+
 import * as React from "react";
 import WebSocketManager, {
     IBloomWebSocketProgressEvent
@@ -20,8 +20,9 @@ export interface IProgressBoxProps {
     // once, immediately if the socket is already open, otherwise, as soon as
     // it is in the "OPEN" state where messages can be received (and sent).
     onReadyToReceive?: () => void;
-    preloadedProgressEvents?: Array<IBloomWebSocketProgressEvent>;
     onGotErrorMessage?: () => void;
+
+    preloadedProgressEvents?: Array<IBloomWebSocketProgressEvent>;
 }
 
 let indexForMessageKey = 0;
@@ -36,6 +37,7 @@ export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => 
 
     React.useEffect(() => {
         if (props.preloadedProgressEvents) {
+            setMessages([]);
             props.preloadedProgressEvents.forEach(e => processEvent(e));
         }
     }, [props.preloadedProgressEvents]);
@@ -45,8 +47,7 @@ export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => 
         if (props.webSocketContext) {
             WebSocketManager.addListener<IBloomWebSocketProgressEvent>(
                 props.webSocketContext,
-                listener,
-                "box"
+                listener
             );
         }
         if (props.onReadyToReceive && props.webSocketContext) {
@@ -55,6 +56,7 @@ export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => 
                 props.onReadyToReceive
             );
         }
+        // clean up when we are unmounted or this useEffect runs again (i.e. if the props.webSocketContext were to change)
         return () => {
             if (props.webSocketContext)
                 WebSocketManager.removeListener(
@@ -120,6 +122,7 @@ export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => 
                 background-color: ${kLogBackgroundColor};
                 padding: ${kDialogPadding};
                 height: 100%;
+
                 &,
                 * {
                     user-select: all;

@@ -122,7 +122,7 @@ export default class WebSocketManager {
             // the following is a refactored holdover from a situation where we were having trouble
             // getting the web ui to properly close its own listeners and socket, so we had to
             // revert to have c# send a message that would close this down. It may or may not be
-            // used, but it's here if we need it. The perfered method is for the client UI to call closeSocket().
+            // used, but it's here if we need it. The preferred method is for the client UI to call closeSocket().
             const listener = (event: MessageEvent) => {
                 const e: IBloomWebSocketEvent = JSON.parse(event.data);
                 if (e.id === "websocketControl/close/" + clientContext) {
