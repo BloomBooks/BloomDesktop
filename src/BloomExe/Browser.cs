@@ -539,8 +539,6 @@ namespace Bloom
 				if (replacesStdMenu)
 					return; // only the provider's items
 			}
-			var m = e.ContextMenu.MenuItems.Add("Edit Stylesheets in Stylizer", OnOpenPageInStylizer);
-			m.Enabled = !String.IsNullOrEmpty(GetPathToStylizer());
 
 			if(FFMenuItem == null)
 				AddOpenPageInFFItem(e);
@@ -681,19 +679,6 @@ namespace Bloom
 
 				}
 			}
-		}
-
-		public void OnOpenPageInStylizer(object sender, EventArgs e)
-		{
-			Debug.Assert(!InvokeRequired);
-			string path = Path.GetTempFileName().Replace(".tmp",".html");
-			RobustFile.Copy(_url, path,true); //we make a copy because once Bloom leaves this page, it will delete it, which can be an annoying thing to have happen your editor
-			Process.Start(GetPathToStylizer(), path);
-		}
-
-		public static string GetPathToStylizer()
-		{
-			return FileLocationUtilities.LocateInProgramFiles("Stylizer.exe", false, new string[] { "Skybound Stylizer 5" });
 		}
 
 		void OnBrowser_DomClick(object sender, DomEventArgs e)

@@ -127,3 +127,9 @@ src/BloomBrowserUI/branding/Nirmaan/branding.css
 src/BloomBrowserUI/branding/Kyrgyzstan2020-Kyrgyz/branding.css
 
 src/BloomBrowserUI/templates/xMatter/Kyrgyzstan2020-XMatter/Kyrgyzstan2020-XMatter.css
+
+src/BloomBrowserUI/react_components/IndependentProgressDialog.css
+
+src/BloomBrowserUI/teamCollection/TeamCollectionDialog.css
+
+src/BloomBrowserUI/publish/accessibilityCheck/daisyChecks.css

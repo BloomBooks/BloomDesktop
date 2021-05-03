@@ -442,7 +442,7 @@ namespace Bloom.Publish.Android
 			Func<string, bool> confirmFunction, Color backColor, AndroidPublishSettings settings = null)
 		{
 			var bookTitle = book.Title;
-			progress.MessageUsingTitle("PackagingBook", "Packaging \"{0}\" for use with Bloom Reader...", bookTitle, MessageKind.Progress);
+			progress.MessageUsingTitle("PackagingBook", "Packaging \"{0}\" for use with Bloom Reader...", bookTitle, ProgressKind.Progress);
 
 			// compress audio if needed, with progress message
 			if (AudioProcessor.IsAnyCompressedAudioMissing(book.FolderPath, book.RawDom))
@@ -462,7 +462,7 @@ namespace Bloom.Publish.Android
 					sendAction(publishedFileName, bloomdTempFile.Path);
 					if (confirmFunction != null && !confirmFunction(publishedFileName))
 						throw new ApplicationException("Book does not exist after write operation.");
-					progress.MessageUsingTitle("BookSent", "You can now read \"{0}\" in Bloom Reader!", bookTitle, MessageKind.Note);
+					progress.MessageUsingTitle("BookSent", "You can now read \"{0}\" in Bloom Reader!", bookTitle, ProgressKind.Note);
 				}
 			}
 			else
@@ -494,7 +494,7 @@ namespace Bloom.Publish.Android
 				var message = new LicenseChecker().CheckBook(book, settings.LanguagesToInclude.ToArray());
 				if (message != null)
 				{
-					progress.MessageWithoutLocalizing(message, MessageKind.Error);
+					progress.MessageWithoutLocalizing(message, ProgressKind.Error);
 					return null;
 				}
 			}
@@ -535,13 +535,13 @@ namespace Bloom.Publish.Android
 				// which requires a special argument.
 //				var msgFormat = L10NSharp.LocalizationManager.GetString("Common.Note",
 //					"Note", "A heading shown above some messages.");
-//				progress.MessageWithoutLocalizing(msgFormat, MessageKind.Note);
+//				progress.MessageWithoutLocalizing(msgFormat, ProgressKind.Note);
 				 var msgFormat = L10NSharp.LocalizationManager.GetString("PublishTab.Android.WrongLayout.Message",
 					"The layout of this book is currently \"{0}\". Bloom Reader will display it using \"{1}\", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to \"{1}\".",
 					"{0} and {1} are book layout tags.");
 				var desiredLayout = desiredLayoutSize + layout.SizeAndOrientation.OrientationName;
 				var msg = String.Format(msgFormat, layout.SizeAndOrientation.ToString(), desiredLayout, Environment.NewLine);
-				progress.MessageWithoutLocalizing(msg, MessageKind.Note);
+				progress.MessageWithoutLocalizing(msg, ProgressKind.Note);
 			}
 		}
 	}

@@ -11,31 +11,31 @@ namespace BloomTests.TeamCollection
 {
 	public class ProgressSpy : IWebSocketProgress
 	{
-		public List<Tuple<string, MessageKind>> Messages = new List<Tuple<string, MessageKind>>();
+		public List<Tuple<string, ProgressKind>> Messages = new List<Tuple<string, ProgressKind>>();
 
 		public List<String> Warnings =>
-			Messages.Where(m => m.Item2 == MessageKind.Warning).Select(m => m.Item1).ToList();
+			Messages.Where(m => m.Item2 == ProgressKind.Warning).Select(m => m.Item1).ToList();
 		public List<String> Errors =>
-			Messages.Where(m => m.Item2 == MessageKind.Error).Select(m => m.Item1).ToList();
+			Messages.Where(m => m.Item2 == ProgressKind.Error).Select(m => m.Item1).ToList();
 		public List<String> ProgressMessages =>
-			Messages.Where(m => m.Item2 == MessageKind.Progress).Select(m => m.Item1).ToList();
-		public void MessageWithoutLocalizing(string message, MessageKind kind = MessageKind.Progress)
+			Messages.Where(m => m.Item2 == ProgressKind.Progress).Select(m => m.Item1).ToList();
+		public void MessageWithoutLocalizing(string message, ProgressKind kind = ProgressKind.Progress)
 		{
 			Messages.Add(Tuple.Create(message, kind));
 		}
 
-		public void Message(string idSuffix, string comment, string message, MessageKind kind = MessageKind.Progress,
+		public void Message(string idSuffix, string comment, string message, ProgressKind progressKind = ProgressKind.Progress,
 			bool useL10nIdPrefix = true)
 		{
-			Messages.Add(Tuple.Create(message, kind));
+			Messages.Add(Tuple.Create(message, progressKind));
 		}
 
-		public void Message(string idSuffix, string message, MessageKind kind = MessageKind.Progress, bool useL10nIdPrefix = true)
+		public void Message(string idSuffix, string message, ProgressKind kind = ProgressKind.Progress, bool useL10nIdPrefix = true)
 		{
 			Messages.Add(Tuple.Create(message,kind));
 		}
 
-		public void MessageWithParams(string idSuffix, string comment, string message, MessageKind kind, params object[] parameters)
+		public void MessageWithParams(string idSuffix, string comment, string message, ProgressKind kind, params object[] parameters)
 		{
 			throw new NotImplementedException();
 		}

@@ -6,7 +6,7 @@ import { TeamCollectionDialog } from "../teamCollection/TeamCollectionDialog";
 import { JoinTeamCollection } from "../teamCollection/JoinTeamCollection";
 import { AutoUpdateSoftwareDialog } from "../react_components/AutoUpdateSoftwareDialog";
 import { ProblemDialog } from "../problemDialog/ProblemDialog";
-import { ProgressDialog } from "../react_components/IndependentProgressDialog";
+import { ProgressDialog } from "../react_components/Progress/ProgressDialog";
 
 // this is a bummer... haven't figured out how to do a lookup just from the string... have to have this map
 const knownComponents = {
@@ -22,10 +22,11 @@ const knownComponents = {
 // This is called from an html file created in the c# ReactControl class.
 (window as any).wireUpReact = (
     root: HTMLElement,
-    reactComponentName: string
+    reactComponentName: string,
+    props?: Object
 ) => {
     ReactDOM.render(
-        React.createElement(knownComponents[reactComponentName], {}, null),
+        React.createElement(knownComponents[reactComponentName], props, null),
         root
     );
 };

@@ -20,6 +20,7 @@ interface IMeasurement {
 
 export const PerformanceLogPage: React.FunctionComponent<{
     initialPoints?: IMeasurement[];
+    webSocketContext?: string;
 }> = props => {
     const [measurements, setMeasurements] = useState<IMeasurement[]>(
         props.initialPoints || []
@@ -39,7 +40,8 @@ export const PerformanceLogPage: React.FunctionComponent<{
     }, earlierMeasurements);
 
     useWebSocketListenerForOneObject<IMeasurement>(
-        "performance",
+        // this prop is just used during testing when there is no server (i.e. storybook).
+        props.webSocketContext ?? "performance",
         "event",
         measurement => {
             setMeasurements(previous => {

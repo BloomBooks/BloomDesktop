@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Bloom.TeamCollection;
+using Bloom.web;
 using NUnit.Framework;
 using SIL.IO;
 
@@ -139,7 +140,7 @@ namespace BloomTests.TeamCollection
 		{
 			Assert.That(msg.MessageType, Is.EqualTo(expectedType));
 			Assert.That(msg.L10NId, Is.EqualTo(expectedL10n));
-			Assert.That(msg.Message, Is.EqualTo(expectedMsg));
+			Assert.That(msg.RawEnglishMessageTemplate, Is.EqualTo(expectedMsg));
 			Assert.That(msg.Param0 ?? "", Is.EqualTo(expectedParam0 ?? ""));
 			Assert.That(msg.Param1 ?? "", Is.EqualTo(expectedParam1 ?? ""));
 		}
@@ -448,33 +449,6 @@ namespace BloomTests.TeamCollection
 			MakeChangedBookMessage();
 			MakeHistory2();
 			Assert.That(_messageLog.TeamCollectionStatus, Is.EqualTo(TeamCollectionStatus.ClobberPending));
-		}
-
-		[Test]
-		public void PrettyMessages_ShowsExpectedResults()
-		{
-			MakeHistory1();
-			MakeNewBookMessage();
-			_messageLog.WriteMilestone(MessageAndMilestoneType.Reloaded);
-			MakeError1();
-			_messageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
-			MakeChangedBookMessage();
-			_messageLog.WriteMilestone(MessageAndMilestoneType.ShowedClobbered);
-			var prettyMessages = _messageLog.PrettyPrintMessages;
-			var today = DateTime.Now.ToShortDateString();
-			VerifyPrettyMessage(prettyMessages[0], MessageAndMilestoneType.History,today + ": joe@somewhere.org checked out the book Joe hunts pigs");
-			VerifyPrettyMessage(prettyMessages[1], MessageAndMilestoneType.NewStuff, today + ": A new book called I am new was added to the collection");
-			VerifyPrettyMessage(prettyMessages[2], MessageAndMilestoneType.Error, today + ": The book 'Joe hunts pigs' is checked out to someone else. Your changes are saved to Lost-and-found.");
-			VerifyPrettyMessage(prettyMessages[3], MessageAndMilestoneType.NewStuff, today + ": The book called I am different was changed");
-			VerifyPrettyMessage(prettyMessages[4], MessageAndMilestoneType.ShowedClobbered,today + ": Repaired conflict");
-			// Enhance: Do we want colors? If so, should the output of this be HTML,
-			// or something else that supports that? Or should some other component handle formatting?
-		}
-
-		void VerifyPrettyMessage(Tuple<MessageAndMilestoneType, String> pretty, MessageAndMilestoneType type, string message)
-		{
-			Assert.That(pretty.Item1, Is.EqualTo(type));
-			Assert.That(pretty.Item2, Is.EqualTo(message));
 		}
 	}
 }

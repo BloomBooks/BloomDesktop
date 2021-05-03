@@ -65,7 +65,7 @@ namespace BloomTests.Publish
 			const string message =
 				"The device reported that it does not have enough space for this book. The book is of unknown MB.";
 			Assert.AreEqual(message, spy.Events.First().Value.Item1);
-			Assert.That(spy.Events.First().Value.Item3, Is.EqualTo(MessageKind.Error));
+			Assert.That(spy.Events.First().Value.Item3, Is.EqualTo(ProgressKind.Error));
 		}
 
 		[Test]
@@ -88,7 +88,7 @@ namespace BloomTests.Publish
 			const string message =
 				"The device reported that it does not have enough space for this book. The book is of unknown MB.";
 			Assert.AreEqual(message, spy.Events.First().Value.Item1);
-			Assert.That(spy.Events.First().Value.Item3, Is.EqualTo(MessageKind.Error));
+			Assert.That(spy.Events.First().Value.Item3, Is.EqualTo(ProgressKind.Error));
 		}
 
 		[Test]
