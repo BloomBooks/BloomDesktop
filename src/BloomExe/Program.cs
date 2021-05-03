@@ -302,10 +302,10 @@ namespace Bloom
 											// but the previous one actually says what's wrong. So we'll reuse this in this (hopefully)
 											// rare case.
 											var messages = projectContext.TeamCollectionManager
-												.CurrentCollectionEvenIfDisconnected.MessageLog.PrettyPrintMessages;
-											if (messages.Length > 1 && messages[messages.Length - 2].Item1 == MessageAndMilestoneType.Error)
+												.CurrentCollectionEvenIfDisconnected.MessageLog.GetProgressMessages();
+											if (messages.Length > 1 && messages[messages.Length - 2].progressKind == "Error")
 											{
-												msg += Environment.NewLine + messages[messages.Length - 2].Item2;
+												msg += Environment.NewLine + messages[messages.Length - 2].message;
 											}
 											ErrorReport.NotifyUserOfProblem(msg);
 										}

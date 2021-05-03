@@ -480,11 +480,11 @@ namespace Bloom.Publish
 		public static void SendBatchedWarningMessagesToProgress(ISet<string> warningMessages, WebSocketProgress progress)
 		{
 			if (warningMessages.Any())
-				progress.Message("Common.Warning", "Warning", MessageKind.Warning, false);
+				progress.Message("Common.Warning", "Warning", ProgressKind.Warning, false);
 			foreach (var warningMessage in warningMessages)
 			{
 				// Messages are already localized
-				progress.MessageWithoutLocalizing(warningMessage, MessageKind.Warning);
+				progress.MessageWithoutLocalizing(warningMessage, ProgressKind.Warning);
 			}
 		}
 

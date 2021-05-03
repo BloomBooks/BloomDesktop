@@ -1,10 +1,10 @@
-﻿import * as React from "react";
+import * as React from "react";
 import { IUILanguageAwareProps } from "../../react_components/l10nComponents";
 import axios from "axios";
 import "./daisyChecks.less";
-import ProgressBox from "../../react_components/progressBox";
+import { ProgressBox } from "../../react_components/Progress/progressBox";
 
-const kWebSocketLifetime = "a11yChecklist";
+const kWebSocketContext = "a11yChecklist";
 
 /* Ace by DAISY (https://daisy.github.io/ace/) is a nodejs-based epub checker.
     This class asks the Bloom server to run it and then shows the result
@@ -12,22 +12,23 @@ const kWebSocketLifetime = "a11yChecklist";
 interface IState {
     // when the report is done, we get back from the Bloom server a url to get at the report that was generated
     reportUrl: string;
+    errorMessage?: string;
 }
 
 export class DaisyChecks extends React.Component<
     IUILanguageAwareProps,
     IState
 > {
-    private progressBox: ProgressBox | null;
     public readonly state: IState = {
-        reportUrl: ""
+        reportUrl: "",
+        errorMessage: undefined
     };
 
     public componentDidMount() {
         this.refresh();
     }
     private refresh() {
-        this.setState({ reportUrl: "" });
+        this.setState({ reportUrl: "", errorMessage: undefined });
         // using axios directly because of explicit catch.
         axios
             .get("/bloom/api/accessibilityCheck/aceByDaisyReportUrl")
@@ -35,7 +36,11 @@ export class DaisyChecks extends React.Component<
                 this.setState({ reportUrl: result.data });
             })
             .catch(error => {
-                if (this.progressBox) this.progressBox.writeLine("Failed");
+                this.setState({
+                    errorMessage:
+                        "The API call to Ace By Daisy failed. " +
+                        JSON.stringify(error)
+                });
             });
     }
     public render() {
@@ -50,8 +55,19 @@ export class DaisyChecks extends React.Component<
                     </div>
                 ) : (
                     <ProgressBox
-                        ref={r => (this.progressBox = r)}
-                        clientContext={kWebSocketLifetime}
+                        webSocketContext={kWebSocketContext}
+                        preloadedProgressEvents={
+                            this.state.errorMessage
+                                ? [
+                                      {
+                                          progressKind: "Error",
+                                          id: "message",
+                                          clientContext: "unused",
+                                          message: this.state.errorMessage
+                                      }
+                                  ]
+                                : []
+                        }
                     />
                 )}
             </div>

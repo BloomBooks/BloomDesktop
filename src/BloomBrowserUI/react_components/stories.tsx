@@ -18,6 +18,8 @@ import {
 } from "./colorPickerDialog";
 import SmallNumberPicker from "./smallNumberPicker";
 import { BloomAvatar } from "./bloomAvatar";
+import { ProgressDialog } from "./Progress/ProgressDialog";
+import WebSocketManager from "../utils/WebSocketManager";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (

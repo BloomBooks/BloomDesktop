@@ -1,12 +1,13 @@
 import { BloomApi } from "./bloomApi";
 import { useEffect } from "react";
 
-interface IBloomWebSocketEvent {
+export interface IBloomWebSocketEvent {
     clientContext: string;
     id: string;
     message?: string;
-    kind?: string;
-    cssStyleRule?: string;
+}
+export interface IBloomWebSocketProgressEvent extends IBloomWebSocketEvent {
+    progressKind?: "Error" | "Warning" | "Progress" | "Note" | "Instruction";
 }
 
 export function useWebSocketListener(
@@ -74,7 +75,9 @@ export default class WebSocketManager {
         [clientContext: string]: Array<(messageEvent: object) => void>;
     } = {};
 
-    private static socketMap: { [clientContext: string]: WebSocket } = {};
+    private static socketMap: {
+        [clientContext: string]: WebSocket;
+    } = {};
 
     /**
      *  In an attempt to make it easier to come to grips with some lifetime issues, we
@@ -119,7 +122,7 @@ export default class WebSocketManager {
             // the following is a refactored holdover from a situation where we were having trouble
             // getting the web ui to properly close its own listeners and socket, so we had to
             // revert to have c# send a message that would close this down. It may or may not be
-            // used, but it's here if we need it. The perfered method is for the client UI to call closeSocket().
+            // used, but it's here if we need it. The preferred method is for the client UI to call closeSocket().
             const listener = (event: MessageEvent) => {
                 const e: IBloomWebSocketEvent = JSON.parse(event.data);
                 if (e.id === "websocketControl/close/" + clientContext) {
@@ -147,7 +150,7 @@ export default class WebSocketManager {
      */
     public static closeSocket(clientContext: string): void {
         delete WebSocketManager.clientContextCallbacks[clientContext];
-        let webSocket: WebSocket = WebSocketManager.socketMap[clientContext];
+        const webSocket: WebSocket = WebSocketManager.socketMap[clientContext];
         if (webSocket) {
             webSocket.removeEventListener(
                 "message",
@@ -165,12 +168,55 @@ export default class WebSocketManager {
      * is equal to the given clientContext, the parsed data object will be passed to the listener function.
      * @param {string} clientContext - should use the same name through the lifetime of the WebSocketManager.socketMap
      */
-    public static addListener(
+    public static addListener<T extends IBloomWebSocketEvent>(
+        clientContext: string,
+        listener: (messageEvent: T) => void,
+        tagForDebugging?: string
+    ): void {
+        if (clientContext.indexOf("mock_") > -1) {
+            // this is used in storybook stories. Don't try finding a server because there isn't one.
+            // Events will come in via mockSend().
+            if (!WebSocketManager.clientContextCallbacks[clientContext])
+                WebSocketManager.clientContextCallbacks[clientContext] = [];
+        } else {
+            WebSocketManager.getOrCreateWebSocket(clientContext); // side effect makes sure there's an array in listenerMap to push onto.
+        }
+        WebSocketManager.clientContextCallbacks[clientContext].push(listener);
+        // console.log(
+        //     `${tagForDebugging ?? ""} addListener(${clientContext})  now has ${
+        //         WebSocketManager.clientContextCallbacks[clientContext]?.length
+        //     } listeners.`
+        // );
+        const count =
+            WebSocketManager.clientContextCallbacks[clientContext].length;
+
+        // in the case of the progressDialog, we expect to have 2: one for the dialog, which is listening, and one for the ProgressBox.
+        if (count > 2) {
+            console.error(
+                `addListener sees that we have ${count} listeners on "${clientContext}". Normally if everything is disconnecting appropriately, these should not add up.`
+            );
+        }
+    }
+
+    public static removeListener(
         clientContext: string,
         listener: (messageEvent: IBloomWebSocketEvent) => void
     ): void {
-        WebSocketManager.getOrCreateWebSocket(clientContext); // side effect makes sure there's an array in listenerMap to push onto.
-        WebSocketManager.clientContextCallbacks[clientContext].push(listener);
+        WebSocketManager.clientContextCallbacks[
+            clientContext
+        ] = WebSocketManager.clientContextCallbacks[clientContext].filter(
+            l => l === listener
+        );
+    }
+
+    // useful for storybook stories to send messages
+    public static mockSend<T extends IBloomWebSocketEvent>(
+        clientContext: string,
+        event: T
+    ) {
+        WebSocketManager.clientContextCallbacks[
+            clientContext
+        ].forEach(listener => listener(event));
     }
 
     /**
@@ -180,10 +226,14 @@ export default class WebSocketManager {
      * once, before the call to this method returns.
      */
     public static notifyReady(clientContext: string, onReady: () => void) {
-        var socket = WebSocketManager.getOrCreateWebSocket(clientContext);
+        const socket = WebSocketManager.getOrCreateWebSocket(clientContext);
+        console.log(
+            "WebSocketManager:notifyReady. readyState = " +
+                socket.readyState.toString()
+        );
         if (socket.readyState === 0) {
             // CONNECTING
-            var openFunc = () => {
+            const openFunc = () => {
                 socket.removeEventListener("open", openFunc);
                 onReady();
             };

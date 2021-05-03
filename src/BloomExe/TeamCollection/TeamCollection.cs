@@ -182,7 +182,7 @@ namespace Bloom.TeamCollection
 					var localHtmlFilePath = Path.Combine(path, BookStorage.FindBookHtmlInFolder(path));
 					if ((status?.checksum == null || status.checksum != localStatus?.checksum) && RobustFile.Exists(localHtmlFilePath))
 					{
-						progress.MessageWithParams("SendingFile", "", "Adding {0} to the collection", MessageKind.Progress, bookFolderName);
+						progress.MessageWithParams("SendingFile", "", "Adding {0} to the collection", ProgressKind.Progress, bookFolderName);
 						PutBook(path);
 					}
 				}
@@ -1185,13 +1185,13 @@ namespace Bloom.TeamCollection
 		// change log. This method handles sending to both.
 		// Note that errors logged here will not result in the TC dialog showing the Reload Collection
 		// button, because we are here doing a reload, so all errors are logged as ErrorNoReload.
-		void ReportProgressAndLog(IWebSocketProgress progress, string l10nIdSuffix, string message,
-			string param0 = null, string param1= null, MessageKind kind = MessageKind.Progress)
+		void ReportProgressAndLog(IWebSocketProgress progress, ProgressKind kind, string l10nIdSuffix, string message,
+			string param0 = null, string param1= null)
 		{
 			var fullL10nId = "TeamCollection." + l10nIdSuffix;
 			var msg = string.Format(LocalizationManager.GetString(fullL10nId, message), param0, param1);
 			progress.MessageWithoutLocalizing(msg, kind);
-			_tcLog.WriteMessage((kind == MessageKind.Progress) ? MessageAndMilestoneType.History : MessageAndMilestoneType.ErrorNoReload,
+			_tcLog.WriteMessage((kind == ProgressKind.Progress) ? MessageAndMilestoneType.History : MessageAndMilestoneType.ErrorNoReload,
 				fullL10nId, message, param0, param1);
 		}
 
@@ -1222,7 +1222,10 @@ namespace Bloom.TeamCollection
 		{
 			Debug.Assert(!string.IsNullOrEmpty(CollectionId), "Collection ID must get set before we start syncing books");
 			_tcLog.WriteMilestone(MessageAndMilestoneType.Reloaded);
+
+
 			var hasProblems = false; //set true if we get any problems
+
 			// Delete books that we think have been deleted remotely from the repo.
 			// If it's a join collection merge, check new books in instead.
 			var englishSomethingWrongMessage = "Something went wrong trying to sync with the book {0} in your Team Collection.";
@@ -1271,7 +1274,7 @@ namespace Bloom.TeamCollection
 						if (statusLocal.lockedBy != TeamCollectionManager.CurrentUser
 						    || statusLocal.lockedWhere != TeamCollectionManager.CurrentMachine)
 						{
-							ReportProgressAndLog(progress, "DeleteLocal",
+							ReportProgressAndLog(progress, ProgressKind.Warning, "DeleteLocal",
 								"Deleting '{0}' from local folder as it is no longer in the Team Collection",
 								bookFolderName);
 							SIL.IO.RobustIO.DeleteDirectoryAndContents(path);
@@ -1298,8 +1301,8 @@ namespace Bloom.TeamCollection
 				{
 					// Something went wrong with dealing with this book, but we'd like to carry on with
 					// syncing the rest of the collection
-					ReportProgressAndLog(progress, "SomethingWentWrong",englishSomethingWrongMessage,
-						path, null, MessageKind.Error);
+					ReportProgressAndLog(progress, ProgressKind.Error, "SomethingWentWrong",englishSomethingWrongMessage,
+						path, null);
 					SentrySdk.AddBreadcrumb(string.Format(englishSomethingWrongMessage, path));
 					SentrySdk.CaptureException(ex);
 					hasProblems= true;
@@ -1328,15 +1331,15 @@ namespace Bloom.TeamCollection
 					{
 						// Book looks like a DropBox conflict file. Typically results when two users checked
 						// in changes while both were offline.
-						ReportProgressAndLog(progress, "ResolvedDropboxConflict",
+						ReportProgressAndLog(progress, ProgressKind.Error, "ResolvedDropboxConflict",
 						"Two members of your team had a book checked out at the same time, so the Team Collection got two different versions of it. Bloom has moved \"{0}\" to the Lost & Found.",
-						bookName,null, MessageKind.Error);
+						bookName);
 						MoveRepoBookToLostAndFound(bookName);
 						hasProblems = true;
 						continue;
 					}
 					// brand new book! Get it.
-					ReportProgressAndLog(progress, "FetchedNewBook",
+					ReportProgressAndLog(progress, ProgressKind.Progress, "FetchedNewBook",
 						"Fetching a new book '{0}' from the Team Collection", bookName);
 					CopyBookFromRepoToLocal(bookName);
 					continue;
@@ -1364,9 +1367,9 @@ namespace Bloom.TeamCollection
 							PutBook(localFolderPath, inLostAndFound: true);
 							// warn the user
 							hasProblems = true;
-							ReportProgressAndLog(progress, "ConflictingCheckout",
+							ReportProgressAndLog(progress, ProgressKind.Error, "ConflictingCheckout",
 								"Found different versions of '{0}' in both collections. The team version has been copied to your local collection, and the old local version to Lost and Found"
-								, bookName, null, MessageKind.Error);
+								, bookName);
 							// Make the local folder match the repo (this is where 'they win')
 							CopyBookFromRepoToLocal(bookName);
 							continue;
@@ -1386,7 +1389,7 @@ namespace Bloom.TeamCollection
 							// Don't use ChangeExtension here, bookName may have arbitrary periods.
 							var renamePath = Path.Combine(renameFolder, Path.GetFileName(renameFolder) + ".htm");
 							var oldBookPath = Path.Combine(renameFolder, bookName +  ".htm");
-							ReportProgressAndLog(progress, "RenamingBook",
+							ReportProgressAndLog(progress, ProgressKind.Warning, "RenamingBook",
 								"Renaming the local book '{0}' because there is a new one with the same name from the Team Collection",
 								bookName);
 							RobustFile.Move(oldBookPath, renamePath);
@@ -1405,7 +1408,7 @@ namespace Bloom.TeamCollection
 					if (localStatus.checksum != repoStatus.checksum)
 					{
 						// Changed and not checked out. Just bring it up to date.
-						ReportProgressAndLog(progress,"Updating",
+						ReportProgressAndLog(progress, ProgressKind.Progress,"Updating",
 							"Updating '{0}' to match the Team Collection", bookName);
 						CopyBookFromRepoToLocal(bookName); // updates everything local.
 					}
@@ -1445,9 +1448,9 @@ namespace Bloom.TeamCollection
 							PutBook(localFolderPath, inLostAndFound: true);
 							// warn the user
 							hasProblems= true;
-							ReportProgressAndLog(progress, "ConflictingCheckout",
+							ReportProgressAndLog(progress, ProgressKind.Error, "ConflictingCheckout",
 								"The book '{0}', which you have checked out and edited, is checked out to someone else in the Team Collection. Your changes have been overwritten, but are saved to Lost-and-found.",
-								bookName, null, MessageKind.Error);
+								bookName);
 							// Make the local folder match the repo (this is where 'they win')
 							CopyBookFromRepoToLocal(bookName);
 							continue;
@@ -1467,7 +1470,7 @@ namespace Bloom.TeamCollection
 					if (currentChecksum == localStatus.checksum)
 					{
 						// not edited locally. No warning needed, but we need to update it. We can keep local checkout.
-						ReportProgressAndLog(progress, "Updating",
+						ReportProgressAndLog(progress, ProgressKind.Progress,"Updating",
 							"Updating '{0}' to match the Team Collection", bookName);
 						CopyBookFromRepoToLocal(bookName);
 						WriteBookStatus(bookName, localStatus.WithChecksum(repoStatus.checksum));
@@ -1480,9 +1483,9 @@ namespace Bloom.TeamCollection
 					CopyBookFromRepoToLocal(bookName);
 						// warn the user
 						hasProblems = true;
-						ReportProgressAndLog(progress, "ConflictingEdit",
+						ReportProgressAndLog(progress, ProgressKind.Error, "ConflictingEdit",
 						"The book '{0}', which you have checked out and edited, was modified in the Team Collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.",
-						bookName, null, MessageKind.Error);
+						bookName);
 						continue;
 				}
 				}
@@ -1490,8 +1493,8 @@ namespace Bloom.TeamCollection
 				{
 					// Something went wrong with dealing with this book, but we'd like to carry on with
 					// syncing the rest of the collection
-					ReportProgressAndLog(progress, "SomethingWentWrong", englishSomethingWrongMessage,
-						bookName, null, MessageKind.Error);
+					ReportProgressAndLog(progress, ProgressKind.Error, "SomethingWentWrong", englishSomethingWrongMessage,
+						bookName);
 					SentrySdk.AddBreadcrumb(string.Format(englishSomethingWrongMessage, bookName));
 					SentrySdk.CaptureException(ex);
 					hasProblems = true;
@@ -1508,15 +1511,35 @@ namespace Bloom.TeamCollection
 			return hasProblems;
 		}
 
-		// must match what is in IndependentProgressDialog.tsx passed as clientContext to ProgressBox.
+		// must match what is in ProgressDialog.tsx passed as clientContext to ProgressBox.
 		// (At least until we generalize that dialog for different Progress tasks...then, it will need
 		// to be configured to use this.)
-		internal const string kWebSocketContext = "teamCollectionMerge";
+		internal const string kWebSocketContext = "TeamCollectionProgress";
 
 		public BloomWebSocketServer SocketServer;
 		public TeamCollectionManager TCManager;
 		private FileSystemWatcher _localFolderWatcher;
 
+		protected void ShowProgressDialog(string title, Func<IWebSocketProgress, bool> doWhat, Action<Form> doWhenMainActionFalse = null)
+		{
+			BrowserProgressDialog.DoWorkWithProgressDialog(SocketServer, TeamCollection.kWebSocketContext,
+				() => new ReactDialog("ProgressDialog",
+					// props to send to the react component
+					new
+					{
+						title,
+						titleIcon = "Team Collection.svg",
+						titleColor = "white",
+						titleBackgroundColor = Palette.kBloomBlueHex,
+						webSocketContext = TeamCollection.kWebSocketContext,
+						// we're providing the dialog as a winforms dialog
+						omitOuterFrame = true,
+						showReportButton = "if-error"
+		})
+					// winforms dialog properties
+					{Width = 620, Height = 550},
+				doWhat, doWhenMainActionFalse);
+		}
 
 		/// <summary>
 		/// Main entry point called before creating CollectionSettings; updates local folder to match
@@ -1525,15 +1548,15 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		public void SynchronizeRepoAndLocal()
 		{
-			BrowserProgressDialog.DoWorkWithProgressDialog(SocketServer, TeamCollection.kWebSocketContext,
-				"Team Collection Activity",
+			var title = "Syncing Team Collection"; // todo l10n
+			ShowProgressDialog(title,
 				progress =>
 				{
 					// Not useful to have the date and time in the progress dialog, but definitely
 					// handy to record at the start of each section in the saved log. Tells us when anything it
 					// had to do to sync things actually happened.
 					progress.Message("StartingSync", "",
-						"Starting sync with Team Collection", MessageKind.Progress);
+						"Starting sync with Team Collection", ProgressKind.Progress);
 
 					bool doingJoinCollectionMerge = TeamCollectionManager.NextMergeIsJoinCollection;
 					TeamCollectionManager.NextMergeIsJoinCollection = false;

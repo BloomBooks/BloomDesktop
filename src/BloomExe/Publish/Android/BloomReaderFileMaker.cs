@@ -392,27 +392,27 @@ namespace Bloom.Publish.Android
 				if (fontFiles.Count() > 0)
 				{
 					filesToEmbed.AddRange(fontFiles);
-					progress.MessageWithParams("PublishTab.Android.File.Progress.CheckFontOK", "{0} is a font name", "Checking {0} font: License OK for embedding.", MessageKind.Progress, font);
+					progress.MessageWithParams("PublishTab.Android.File.Progress.CheckFontOK", "{0} is a font name", "Checking {0} font: License OK for embedding.", ProgressKind.Progress, font);
 					// Assumes only one font file per font; if we embed multiple ones will need to enhance this.
 					var size = new FileInfo(fontFiles.First()).Length;
 					var sizeToReport = (size / 1000000.0).ToString("F1"); // purposely locale-specific; might be e.g. 1,2
 					progress.MessageWithParams("PublishTab.Android.File.Progress.Embedding",
 						"{1} is a number with one decimal place, the number of megabytes the font file takes up",
 						"Embedding font {0} at a cost of {1} megs",
-						MessageKind.Note,
+						ProgressKind.Note,
 						font, sizeToReport);
 					continue;
 				}
 				if (fontFileFinder.FontsWeCantInstall.Contains(font))
 				{
 					//progress.Error("Common.Warning", "Warning");
-					progress.MessageWithParams("LicenseForbids","{0} is a font name", "This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.",MessageKind.Error, font);
+					progress.MessageWithParams("LicenseForbids","{0} is a font name", "This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.",ProgressKind.Error, font);
 				}
 				else
 				{
-					progress.MessageWithParams("NoFontFound", "{0} is a font name", "This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.", MessageKind.Error, font);
+					progress.MessageWithParams("NoFontFound", "{0} is a font name", "This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.", ProgressKind.Error, font);
 				}
-				progress.MessageWithParams("SubstitutingAndika", "{0} is a font name", "Bloom will substitute \"{0}\" instead.", MessageKind.Error, defaultFont, font);
+				progress.MessageWithParams("SubstitutingAndika", "{0} is a font name", "Bloom will substitute \"{0}\" instead.", ProgressKind.Error, defaultFont, font);
 			}
 			foreach (var file in filesToEmbed)
 			{

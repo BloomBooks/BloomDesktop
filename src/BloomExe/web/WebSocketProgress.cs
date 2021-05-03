@@ -5,18 +5,58 @@ using L10NSharp;
 
 namespace Bloom.web
 {
-	public enum MessageKind
+	public enum ProgressKind
 	{
 		Error, Warning, Instruction, Note, Progress
 	};
 
+	// NB: This class is designed to map, via json, to IBloomWebSocketProgressEvent, so the
+	// names here must exactly match those in the typescript IBloomWebSocketProgressEvent.
+	public class BloomWebSocketProgressEvent { 
+
+		// ReSharper disable once InconsistentNaming
+		public string id = "message";
+		// ReSharper disable once InconsistentNaming
+		public string clientContext;
+		// ReSharper disable once InconsistentNaming
+		public string progressKind; //"Error" | "Warning" | "Progress" | "Note" | "Instruction"
+		// ReSharper disable once InconsistentNaming
+		public string message;
+
+		public BloomWebSocketProgressEvent(string clientContext, ProgressKind kind, string message)
+
+		{
+			this.clientContext = clientContext;
+			this.message = message;
+			switch (kind)
+			{
+				case ProgressKind.Error:
+					this.progressKind = "Error";
+					break;
+				case ProgressKind.Warning:
+					this.progressKind = "Warning";
+					break;
+				case ProgressKind.Instruction:
+					this.progressKind = "Instruction";
+					break;
+				case ProgressKind.Note:
+					this.progressKind = "Note";
+					break;
+				case ProgressKind.Progress:
+					this.progressKind = "Progress";
+					break;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(kind), kind, null);
+			}
+		}
+	}
 
 	public interface IWebSocketProgress
 	{
-		void MessageWithoutLocalizing(string message, MessageKind kind=MessageKind.Progress);
-		void Message(string idSuffix, string comment, string message, MessageKind kind = MessageKind.Progress, bool useL10nIdPrefix =true);
-		void Message(string idSuffix, string message, MessageKind kind=MessageKind.Progress, bool useL10nIdPrefix = true);
-		void MessageWithParams(string idSuffix, string comment, string message, MessageKind kind, params object[] parameters);
+		void MessageWithoutLocalizing(string message, ProgressKind kind=ProgressKind.Progress);
+		void Message(string idSuffix, string comment, string message, ProgressKind progressKind = ProgressKind.Progress, bool useL10nIdPrefix =true);
+		void Message(string idSuffix, string message, ProgressKind kind=ProgressKind.Progress, bool useL10nIdPrefix = true);
+		void MessageWithParams(string idSuffix, string comment, string message, ProgressKind kind, params object[] parameters);
 	}
 
 	/// <summary>
@@ -69,7 +109,7 @@ namespace Bloom.web
 		[Obsolete("Instead, use normal messages with an kind=Error")]
 		public virtual void ErrorWithoutLocalizing(string message)
 		{
-			MessageWithoutLocalizing(message, MessageKind.Error);
+			MessageWithoutLocalizing(message, ProgressKind.Error);
 		}
 
 		[Obsolete("Instead, use normal messages with an kind=Error")]
@@ -82,28 +122,28 @@ namespace Bloom.web
 				SIL.Reporting.Logger.WriteEvent($"Error: {message}"); // repeat message in the log unlocalized.
 		}
 
-		public virtual void MessageWithoutLocalizing(string message, MessageKind kind=MessageKind.Progress)
+		public virtual void MessageWithoutLocalizing(string message, ProgressKind kind=ProgressKind.Progress)
 		{
 			dynamic messageBundle = new DynamicJson();
 			messageBundle.message = message;
-			messageBundle.kind = kind.ToString();
+			messageBundle.progressKind = kind.ToString();
 			_bloomWebSocketServer.SendBundle(_clientContext, "message", messageBundle);
 		}
 
-		public virtual void Message(string idSuffix, string comment, string message, MessageKind kind = MessageKind.Progress, bool useL10nIdPrefix =true)
+		public virtual void Message(string idSuffix, string comment, string message, ProgressKind progressKind = ProgressKind.Progress, bool useL10nIdPrefix =true)
 		{
-			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message, comment: comment),kind:kind);
+			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message, comment: comment),kind:progressKind);
 		}
-		public void Message(string idSuffix, string message, MessageKind kind=MessageKind.Progress, bool useL10nIdPrefix = true)
+		public void Message(string idSuffix, string message, ProgressKind progressKind = ProgressKind.Progress, bool useL10nIdPrefix = true)
 		{
-			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message), kind:kind);
+			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message), kind: progressKind);
 		}
 
 		// Use with care: if the first parameter is a string, you can leave out one of the earlier arguments with no compiler warning.
-		public virtual void MessageWithParams(string idSuffix, string comment, string message, MessageKind kind, params object[] parameters)
+		public virtual void MessageWithParams(string idSuffix, string comment, string message, ProgressKind progressKind, params object[] parameters)
 		{
 			var formatted = GetMessageWithParams(idSuffix, comment, message, parameters);
-			MessageWithoutLocalizing(formatted, kind);
+			MessageWithoutLocalizing(formatted, progressKind);
 		}
 
 		// Use with care: if the first parameter is a string, you can leave out one of the earlier arguments with no compiler warning.
@@ -116,7 +156,7 @@ namespace Bloom.web
 			return formatted;
 		}
 
-		public void MessageUsingTitle(string idSuffix, string message, string bookTitle, MessageKind kind, bool useL10nIdPrefix = true)
+		public void MessageUsingTitle(string idSuffix, string message, string bookTitle, ProgressKind kind, bool useL10nIdPrefix = true)
 		{
 			var formatted = GetTitleMessage(idSuffix, message, bookTitle, useL10nIdPrefix);
 			MessageWithoutLocalizing(formatted, kind);
@@ -142,7 +182,7 @@ namespace Bloom.web
 	// Passing one of these where we don't need the progress report saves recipients handling nulls
 	public class NullWebSocketProgress : WebSocketProgress
 	{
-		public override void MessageWithoutLocalizing(string message, MessageKind kind)
+		public override void MessageWithoutLocalizing(string message, ProgressKind kind)
 		{
 		}
 

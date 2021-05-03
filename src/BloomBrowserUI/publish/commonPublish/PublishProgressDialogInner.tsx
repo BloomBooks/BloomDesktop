@@ -21,7 +21,7 @@ export enum ProgressState {
     Serving // doing something indefinitely, which user can stop
 }
 
-export const ProgressDialog: React.FunctionComponent<{
+export const ProgressDialogInner: React.FunctionComponent<{
     heading?: string;
     instruction?: string;
     messages: string;
@@ -94,7 +94,7 @@ export const ProgressDialog: React.FunctionComponent<{
                 </Typography>
             </DialogContent>
             <DialogActions>
-                {/* This && "" is needed because there's something about DialogActions that choaks if given a `false` in its children */}
+                {/* This && "" is needed because there's something about DialogActions that chokes if given a `false` in its children */}
                 {(somethingStillGoing && "") || (
                     <Button
                         onClick={() => onCopy()}

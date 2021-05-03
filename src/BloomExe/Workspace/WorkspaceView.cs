@@ -826,6 +826,11 @@ namespace Bloom.Workspace
 			var path = FileLocationUtilities.GetFileDistributedWithApplication("ReleaseNotes.md");
 			using (var dlg = new ShowReleaseNotesDialog(global::Bloom.Properties.Resources.BloomIcon, path))
 			{
+				// Try to make the dialog big enough to show the embedded images without horizontal
+				// scrolling and without getting too big for the screen.  (BL-9867)
+				var screenSize = Screen.GetBounds(this);
+				dlg.Width = Math.Min(1024, screenSize.Width);
+				dlg.Height = Math.Min(768, screenSize.Height);
 				dlg.ShowDialog();
 			}
 		}
