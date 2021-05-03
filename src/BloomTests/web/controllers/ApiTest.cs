@@ -14,7 +14,7 @@ namespace BloomTests
 			{
 				server.ApiHandler.RegisterEndpointHandler(endPoint, handler, true);
 			}
-			server.StartListening();
+			server.EnsureListening();
 			var client = new WebClientWithTimeout
 			{
 				Timeout = timeoutInMilliseconds ?? 3000,
