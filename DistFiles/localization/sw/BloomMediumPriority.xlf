@@ -5,10 +5,10 @@
       <note>This file is not yet being used.  We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations and approval status.</note>
     </header>
     <body>
-      <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
-        <target xml:lang="sw" state="translated">Alama maalum za kumaliza sentensi</target>
+        <target xml:lang="sw" state="final">Uakifishaji maalum wa kumaliza sentensi</target>
       </trans-unit>
     </body>
   </file>
