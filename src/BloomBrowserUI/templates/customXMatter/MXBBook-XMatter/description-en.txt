@@ -1,1 +1,1 @@
-[V3]Designed for books, this distributes the information from the Inside Cover across the Title and Credit pages with more spacing.
+[V4]Designed for books, this distributes the information from the Inside Cover across the Title and Credit pages with more spacing.
