@@ -99,7 +99,7 @@
       <trans-unit id="Settings.Enterprise.SubscriptionCode" approved="yes">
         <source xml:lang="en">Subscription Code:</source>
         <note>ID: Settings.Enterprise.SubscriptionCode</note>
-        <target xml:lang="quc" state="final">Retal rech utz’ib’axik b’i’aj: </target>
+        <target xml:lang="quc" state="final">Retal rech utz’ib’axik b’i’aj:</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.UnknownCode" approved="yes">
         <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
