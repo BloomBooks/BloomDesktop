@@ -158,8 +158,8 @@ a normal merge with all that history would probably be okay.)
    commits labeled "New translations" in the branch.)  Every line in the commit message file
    except the first should be marked as *fixup*.  The first line should be marked *reword*.  The
    "git log" command is just to reassure yourself that everything looks okay after squashing
-   down all the history.  [NB: the count is likely too high.  I think 3 individual commits have
-   snuck through somehow.]
+   down all the history.  [NB: the count is too high by 3.  Three individual commits have snuck
+   through somehow.]
 
     <pre>
         git rebase -i HEAD~432
@@ -167,22 +167,30 @@ a normal merge with all that history would probably be okay.)
     </pre>
 
 4. Verify that the modified xliff files are still valid, and fix any errors that may be found.
-   If you execute build/getDependencies-Windows.sh to get all the artifacts from TeamCity, then
-   on Windows, the following command could be used in the git bash shell window:
+   This is done with the CheckOrFixXliff tool that is part of L10NSharp.  This is available as a
+   nuget package named L10NSharp.CheckOrFixXliff and can be installed by a "nuget install"
+   command, followed optionally by moving the CheckOrFixXliff.exe and L10NSharp.dll files to a
+   convenient location.
 
    <pre>
+       nuget install L10NSharp.CheckOrFixXliff
+       cp L10NSharp.CheckOrFixXliff.4.1.0/tools/* /c/bin
+
        for f in DistFiles/localization/*/*.xlf; do
            echo ==== $f ====
-           lib/dotnet/CheckOrFixXliff.exe --fix "$f"
+           /c/bin/CheckOrFixXliff.exe --fix "$f"
        done | tee check-xliff.log
    </pre>
 
-   On Linux, the shell command is almost the same:
+   On Linux, the bash shell commands are almost the same:
 
    <pre>
+       nuget install L10NSharp.CheckOrFixXliff
+       cp L10NSharp.CheckOrFixXliff.4.1.0/tools/* /home/steve/bin
+
        for f in DistFiles/localization/*/*.xlf; do
            echo ==== $f ====
-           /opt/mono4-sil/bin/mono lib/dotnet/CheckOrFixXliff.exe --fix "$f"
+           /opt/mono5-sil/bin/mono /home/steve/bin/CheckOrFixXliff.exe --fix "$f"
        done | tee check-xliff.log
    </pre>
 
@@ -210,7 +218,15 @@ a normal merge with all that history would probably be okay.)
    I'm not sure how to feed corrected strings back to Crowdin.  Just uploading the corrected
    translated xliff file to crowdin does not work, at least not cleanly.
 
-5. Force push the modified l10n_master branch back to the master BloomDesktop repository.  The
+5. Rebase the l10n_master branch on the master branch, and fix any merge conflicts.  (I find it
+   easier to fix merge conflicts on the local machine rather than in the web interface.  Your
+   mileage may vary, as they say.)
+
+   <pre>
+        git rebase master
+   </pre>
+
+6. Force push the modified l10n_master branch back to the master BloomDesktop repository.  The
    form of the command given here ensures that nobody else has modified the branch on github
    since you acquired it.
 
@@ -219,24 +235,18 @@ a normal merge with all that history would probably be okay.)
     </pre>
 
 
-6. Merge the modified PR on github using the normal web browser interface.  If translated xliff
-   files have been modified locally, this may require resolving conflicts.  The web browser
-   conflict resolution view will essentially show you a simple textual comparison of the
-   l10n_master and master branch contents.  You will probably want to delete one branch's
-   content for each conflict (plus the 3 added lines marking the beginning and end of the
-   conflict) unless you are an expert translator and familiar with this simpleminded approach to
-   conflict resolution. After merging, delete the remote l10n_master branch using the handy
-   "Delete branch" button provide by the web browser interface.  **Do not forget to delete the
-   remote l10n__master branch!**
+7. Merge the modified PR on github using the normal web browser interface.  After merging,
+   delete the remote l10n_master branch using the handy "Delete branch" button provide by the
+   web browser interface.  **Do not forget to delete the remote l10n__master branch!**
 
-7. Delete the temporary local copy of the BloomDesktop repository.
+8. Delete the temporary local copy of the BloomDesktop repository.
 
     <pre>
         cd ~/tmp
         rm -rf BloomDesktop
     </pre>
 
-8. Go back to [Crowdin Integration
+9. Go back to [Crowdin Integration
    Settings](https://crowdin.com/project/SIL-Bloom/settings#integration) for github and click on
    the "Resume" button to allow translation changes to be committed to the l10n_master branch
    once again.  The l10n_master branch (and a new pull request) will be automatically created by
