@@ -126,7 +126,7 @@ namespace Bloom.web
 		{
 			dynamic messageBundle = new DynamicJson();
 			messageBundle.message = message;
-			messageBundle.messageKind = kind.ToString();
+			messageBundle.progressKind = kind.ToString();
 			_bloomWebSocketServer.SendBundle(_clientContext, "message", messageBundle);
 		}
 

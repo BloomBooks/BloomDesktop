@@ -91,7 +91,7 @@ namespace Bloom.CollectionTab
 				// Instead, in the short term we may add a button to show the file.
 				// Later we may implement some efficient way to scroll through them.
 				// tcManager.CurrentCollection?.MessageLog?.LoadSavedMessages();
-				using (var dlg = new ReactDialog("TeamCollectionDialog", showReloadButton ? "showReloadButton=true" : ""))
+				using (var dlg = new ReactDialog("TeamCollectionDialog", new {showReloadButton, omitOuterFrame = true}))
 				{
 					dlg.ShowDialog(this);
 					tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);

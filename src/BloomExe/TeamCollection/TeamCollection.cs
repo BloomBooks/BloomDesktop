@@ -1,4 +1,4 @@
-﻿using Bloom.Api;
+using Bloom.Api;
 using Bloom.MiscUI;
 using Bloom.web;
 using L10NSharp;
@@ -1533,8 +1533,9 @@ namespace Bloom.TeamCollection
 						titleBackgroundColor = Palette.kBloomBlueHex,
 						webSocketContext = TeamCollection.kWebSocketContext,
 						// we're providing the dialog as a winforms dialog
-						omitOuterFrame = true
-					})
+						omitOuterFrame = true,
+						showReportButton = "if-error"
+		})
 					// winforms dialog properties
 					{Width = 620, Height = 550},
 				doWhat, doWhenMainActionFalse);

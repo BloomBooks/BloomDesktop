@@ -57,8 +57,10 @@ export const TeamCollectionDialog: React.FunctionComponent<{
                 <ProgressBox
                     preloadedProgressEvents={events}
                     css={css`
-                        width: 400px;
-                        height: 400px;
+                        // If we have omitOuterFrame that means the dialog height is controlled by c#, so let the progress grow to fit it.
+                        // Maybe we could have that approach *all* the time?
+                        height: ${props.omitOuterFrame ? "100%" : "400px"};
+                        min-width: 540px;
                     `}
                 />
             </DialogMiddle>
