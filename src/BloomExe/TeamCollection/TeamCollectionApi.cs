@@ -7,6 +7,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
+using Bloom.web;
 using L10NSharp;
 using Newtonsoft.Json;
 using Sentry;
@@ -55,50 +56,32 @@ namespace Bloom.TeamCollection
 
 		private void HandleGetLog(ApiRequest request)
 		{
-		/* keeping this around as a comment to make it easier to work on the display
-		   _tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.History, "","blah blah blah blah");
+			/* keeping this around as a comment to make it easier to work on the display
+
+			
+			_tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.History, "", "blah blah blah blah");
 			_tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.History, "", "Another message. I just simplified this English, but the surrounding code would lead me to think. I just simplified this English, but the surrounding code would lead me to think.");
 			_tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.Error, "", "An error of some sort. I just simplified this English, but the surrounding code would lead me to think. I just simplified this English, but the surrounding code would lead me to think.");
 			_tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.Error, "", "An error of some sort. I just simplified this English, but the surrounding code would lead me to think. I just simplified this English, but the surrounding code would lead me to think.");
 			_tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.History, "", "Another message.");
 			_tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.NewStuff, "", "a new stuff message.");
 			_tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.History, "", "Another message.");
-		*/
-
+			*/
 			try
 			{
-				var log = _tcManager.MessageLog;
-				if (log == null)
+				if (_tcManager.MessageLog == null)
 				{
 					request.Failed();
 					return;
 				}
 
-				var messagesSource = log.PrettyPrintMessages;
-				if (messagesSource.Length == 0)
-				{
-					messagesSource = new[]
-					{
-						Tuple.Create(MessageAndMilestoneType.History,
-							_tcManager.MessageLog.LastReloadTime.ToLocalTime() + ": "
-							 // review: I just simplified this English, but the surrounding code would lead me to think
-							 // that the message should be something like "No Team Collection activity since loading." ?
-								+ LocalizationManager.GetString("TeamCollection.CheckedForChanges", "No incoming changes were found.")),
-	
-					};
-				}
-				var messages = messagesSource.Select(t => new { type = t.Item1.ToString(), message = t.Item2 }).ToArray();
-				request.ReplyWithJson(JsonConvert.SerializeObject(
-					new
-					{
-						messages = messages
-					}));
+				request.ReplyWithJson(JsonConvert.SerializeObject(_tcManager.MessageLog.GetProgressMessages()));
 			}
 			catch (Exception e)
 			{
 				// Not sure what to do here: getting the log should never crash.
 				Logger.WriteError("TeamCollectionApi.HandleGetLog() crashed", e);
-				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
+				SentrySdk.AddBreadcrumb($"Something went wrong for {request.LocalPath()}");
 				SentrySdk.CaptureException(e);
 				request.Failed("get log failed");
 			}

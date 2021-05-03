@@ -27,7 +27,7 @@ import HtmlHelpLink from "../../react_components/htmlHelpLink";
 import Link from "../../react_components/link";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
-import { ProgressState } from "../commonPublish/ProgressDialog";
+import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
 import { PublishLanguagesGroup } from "./PublishLanguagesGroup";
 
 export const ReaderPublishScreen = () => {

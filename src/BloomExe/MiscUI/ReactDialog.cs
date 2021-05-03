@@ -24,12 +24,13 @@ namespace Bloom.MiscUI
 
 		private static readonly List<ReactDialog> _activeDialogs = new List<ReactDialog>();
 
-		public ReactDialog(string reactComponentName, string urlQueryString = "")
+		public ReactDialog(string reactComponentName, object props = null, string urlQueryString = "")
 		{
 			InitializeComponent();
 			FormClosing += ReactDialog_FormClosing;
 			reactControl.ReactComponentName = reactComponentName;
 			reactControl.UrlQueryString = urlQueryString;
+            reactControl.Props = props;
 			_activeDialogs.Add(this);
 
 			Icon = global::Bloom.Properties.Resources.BloomIcon;

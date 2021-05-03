@@ -21,8 +21,10 @@ namespace Bloom.Api
 	/// * clientContext: normally the screen, like "publish to android".
 	/// * eventId: things like "progress message"
 	/// * message: (optional) for events that need some text, it goes in here
-	/// * cssStyleRule: (optional) for events that need some css styles. (JH isn't so happy about this one, seems rather special case)
 	///
+	/// Note that there is a subclass of events for Progress boxes and dialogs, defined in IBloomWebSocketProgressEvent,
+	/// which adds "progressKind".
+	/// 
 	/// The IBloomWebSocketServer interface allows tests to use a spy to see what messages have been sent.
 	/// </summary>
 	public class BloomWebSocketServer : IBloomWebSocketServer, IDisposable

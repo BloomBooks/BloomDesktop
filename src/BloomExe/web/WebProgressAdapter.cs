@@ -63,33 +63,33 @@ namespace Bloom.web
 		{
 			var msg = string.Format(message, args);
 			if (ShowMessage(msg))
-				_webProgress?.MessageWithoutLocalizing(msg, MessageKind.Error);
+				_webProgress?.MessageWithoutLocalizing(msg, ProgressKind.Error);
 		}
 
 		public void WriteException(Exception error)
 		{
-			_webProgress?.MessageWithoutLocalizing(error.Message, MessageKind.Error);
+			_webProgress?.MessageWithoutLocalizing(error.Message, ProgressKind.Error);
 		}
 
 		public void WriteMessage(string message, params object[] args)
 		{
 			var msg = string.Format(message, args);
 			if (ShowMessage(msg))
-				_webProgress?.MessageWithoutLocalizing(msg, MessageKind.Note);
+				_webProgress?.MessageWithoutLocalizing(msg, ProgressKind.Note);
 		}
 
 		public void WriteMessageWithColor(string colorName, string message, params object[] args)
 		{
 			var msg = string.Format(message, args);
 			if (ShowMessage(msg))
-				_webProgress?.MessageWithoutLocalizing(msg, MessageKind.Note);
+				_webProgress?.MessageWithoutLocalizing(msg, ProgressKind.Note);
 		}
 
 		public void WriteStatus(string message, params object[] args)
 		{
 			var msg = string.Format(message, args);
 			if (ShowMessage(msg))
-				_webProgress?.MessageWithoutLocalizing(msg, MessageKind.Progress);
+				_webProgress?.MessageWithoutLocalizing(msg, ProgressKind.Progress);
 		}
 
 		public void WriteVerbose(string message, params object[] args)
@@ -98,14 +98,14 @@ namespace Bloom.web
 				return;
 			var msg = string.Format(message, args);
 			if (ShowMessage(msg))
-				_webProgress?.MessageWithoutLocalizing(msg, MessageKind.Instruction);
+				_webProgress?.MessageWithoutLocalizing(msg, ProgressKind.Instruction);
 		}
 
 		public void WriteWarning(string message, params object[] args)
 		{
 			var msg = string.Format(message, args);
 			if (ShowMessage(msg))
-				_webProgress?.MessageWithoutLocalizing(msg, MessageKind.Warning);
+				_webProgress?.MessageWithoutLocalizing(msg, ProgressKind.Warning);
 		}
 	}
 }

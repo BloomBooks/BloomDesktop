@@ -210,9 +210,9 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public virtual void SyncAtStartup_ProducesNoUnexpectedMessages()
 		{
-			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(0), "Unexpected number of progress warnings produced. We're no longer using warning.");
+			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(2), "Unexpected number of progress warnings produced.");
 			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(3), "Unexpected number of progress errors produced. Did you mean to add one?");
-			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(5), "Unexpected number of progress messages produced. Did you mean to add one?");
+			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(3), "Unexpected number of progress messages produced. Did you mean to add one?");
 		}
 
 		[Test]
@@ -275,7 +275,7 @@ namespace BloomTests.TeamCollection
 		public virtual void SyncAtStartup_BookDeletedRemotely_GetsDeletedLocally_UnlessJoin()
 		{
 			Assert.That(Directory.Exists(Path.Combine(_collectionFolder.FolderPath, "Should be deleted")), Is.False);
-			AssertProgress("Deleting '{0}' from local folder as it is no longer in the Team Collection","Should be deleted");
+			AssertWarning("Deleting '{0}' from local folder as it is no longer in the Team Collection","Should be deleted");
 		}
 
 		[Test]
@@ -414,6 +414,7 @@ namespace BloomTests.TeamCollection
 
 		// Check that the indicated message made it into the progress report, and ALSO
 		// into the log.
+
 		protected void AssertProgress(string msg, string param0 = null, string param1 = null,
 			MessageAndMilestoneType expectedType = MessageAndMilestoneType.History)
 		{
@@ -427,9 +428,25 @@ namespace BloomTests.TeamCollection
 			{
 				Assert.That(_progressSpy.ProgressMessages, Contains.Item(expectedMsg));
 			}
+
 			Assert.That(_tcLog.Messages, Has.Exactly(1).Matches<TeamCollectionMessage>(m =>
-				m.Message == msg && (m.Param0 ?? "") == (param0 ?? "") && (m.Param1 ?? "") == (param1 ?? "") &&
+				m.RawEnglishMessageTemplate == msg && (m.Param0 ?? "") == (param0 ?? "") && (m.Param1 ?? "") == (param1 ?? "") &&
 				m.MessageType == expectedType));
+		}
+
+		protected void AssertWarning(string msg, string param0 = null, string param1 = null)
+		{
+			var expectedMsg = string.Format(msg, param0, param1);
+
+			// (JH May 2021) The mismatch between ProgressKinds and MessageAndMilestoneType
+			// get's rather painful here. The spy is collecting based on the former, but this
+			// is based on the later. So progresses that are warnings are in limbo.
+
+			Assert.That(_progressSpy.Warnings, Contains.Item(expectedMsg));
+			
+			Assert.That(_tcLog.Messages, Has.Exactly(1).Matches<TeamCollectionMessage>(m =>
+				m.RawEnglishMessageTemplate == msg && (m.Param0 ?? "") == (param0 ?? "") &&
+				(m.Param1 ?? "") == (param1 ?? "")));
 		}
 
 		void MakeBook(string name, string content, bool toRepo = true, bool onlyRepo = false)

@@ -34,17 +34,15 @@ namespace Bloom.MiscUI
 	/// responding to paint events, a click on the buttons, and and so forth.</remarks>
 	public class BrowserProgressDialog
 	{
-		public static void DoWorkWithProgressDialog(BloomWebSocketServer socketServer, string socketContext, string title,
+		public static void DoWorkWithProgressDialog(BloomWebSocketServer socketServer, string socketContext,  Func<Form> makeDialog,
 			Func<IWebSocketProgress, bool> doWhat, Action<Form> doWhenMainActionFalse = null)
 		{
 			var progress = new WebSocketProgress(socketServer, socketContext);
 
 			// NOTE: This (specifically ShowDialog) blocks the main thread until the dialog is closed.
 			// Be careful to avoid deadlocks.
-			using (var dlg = new ReactDialog("ProgressDialog", $"title={title}"))
+			using (var dlg = makeDialog())
 			{
-				dlg.Width = 500;
-				dlg.Height = 300;
 				// For now let's not try to handle letting the user abort.
 				dlg.ControlBox = false;
 				var worker = new BackgroundWorker();
@@ -54,10 +52,12 @@ namespace Bloom.MiscUI
 					while (!socketServer.IsSocketOpen(socketContext))
 						Thread.Sleep(50);
 					var waitForUserToCloseDialogOrReportProblems = doWhat(progress);
+					// stop the spinner
+					socketServer.SendEvent(socketContext, "finished");
 					if (waitForUserToCloseDialogOrReportProblems)
 					{
 						// Now the user is allowed to close the dialog or report problems.
-						// (IndependentProgressDialog in JS-land is watching for this message, which causes it to turn
+						// (ProgressDialog in JS-land is watching for this message, which causes it to turn
 						// on the buttons that allow the dialog to be manually closed (or a problem to be reported).
 						socketServer.SendBundle(socketContext, "show-buttons", new DynamicJson());
 					}

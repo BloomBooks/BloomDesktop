@@ -128,7 +128,7 @@ export const NotifyDialog: React.FunctionComponent<{
         return (
             <BloomButton
                 enabled={true}
-                l10nKey={"ReportProblemDialog.Close"}
+                l10nKey={"Common.Close"}
                 hasText={true}
                 onClick={() => {
                     BloomApi.post("common/closeReactDialog");

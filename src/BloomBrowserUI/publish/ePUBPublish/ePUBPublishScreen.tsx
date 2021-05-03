@@ -24,7 +24,7 @@ import Typography from "@material-ui/core/Typography";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import BookMetadataDialog from "../metadata/BookMetadataDialog";
 import { useL10n } from "../../react_components/l10nHooks";
-import { ProgressState } from "../commonPublish/ProgressDialog";
+import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
 
 export const EPUBPublishScreen = () => {
     // When the user changes some features, included languages, etc., we

@@ -76,10 +76,10 @@ namespace Bloom.Publish.Android.wifi
 				{
 					_progress.Message(idSuffix: "BadBookRequest",
 						message: "Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?",
-						kind:MessageKind.Error);
+						progressKind: ProgressKind.Error);
 
 					//this is too technical/hard to translate
-					_progress.MessageWithoutLocalizing($" Request contains {json}; trying to interpret as JSON we got {ex.Message}", kind: MessageKind.Error);
+					_progress.MessageWithoutLocalizing($" Request contains {json}; trying to interpret as JSON we got {ex.Message}", kind: ProgressKind.Error);
 				}
 			};
 
@@ -100,7 +100,7 @@ namespace Bloom.Publish.Android.wifi
 				englishText: "You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.");
 
 			// can only have one instruction up at a time, so we concatenate these
-			_progress.MessageWithoutLocalizing(part1+" "+part2, MessageKind.Instruction);
+			_progress.MessageWithoutLocalizing(part1+" "+part2, ProgressKind.Instruction);
 
 		}
 
@@ -299,7 +299,7 @@ namespace Bloom.Publish.Android.wifi
 				_progress.Message(idSuffix: "Failed",
 					message: "There was an error while sending the book. Possibly the device was disconnected? If you can't see a "
 					         + "reason for this the following may be helpful to report to the developers:",
-					kind: MessageKind.Error);
+					progressKind: ProgressKind.Error);
 				_progress.Exception(e);
 			}
 			Debug.Fail("got exception " + e.Message + " sending book");

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Bloom.web;
+using L10NSharp;
 using SIL.Code;
 using SIL.IO;
 
@@ -210,9 +212,38 @@ namespace Bloom.TeamCollection
 		//	_oldMessageLength = 0;
 		//}
 
-		public Tuple<MessageAndMilestoneType, String>[] PrettyPrintMessages
+		const string kWebSocketContext = "unused"; // this is just all preloaded, doesn't use websocket at this point
+
+		public BloomWebSocketProgressEvent[] GetProgressMessages()
 		{
-			get { return Messages.Select(m => Tuple.Create(m.MessageType, m.PrettyPrint)).Where(t => !String.IsNullOrEmpty(t.Item2)).ToArray(); }
+
+				var messages =  Messages.Where(m=>!string.IsNullOrEmpty(m.RawEnglishMessageTemplate)).Select(ProgressMessageFromTeamCollectionLogEntry).ToArray();
+
+				if (messages.Length == 0)
+				{
+					return new[]
+					{
+						new BloomWebSocketProgressEvent(kWebSocketContext, ProgressKind.Progress,
+							"No new activity.")
+					};
+				}
+
+				return messages;
+		}
+
+		// TeamCollection has its own set of message types. Here we convert them to standard
+		// progress messages so we can reuse existing UI controls.
+		private BloomWebSocketProgressEvent ProgressMessageFromTeamCollectionLogEntry(TeamCollectionMessage entry)
+		{
+			switch (entry.MessageType)
+			{
+				case MessageAndMilestoneType.Error:
+				case MessageAndMilestoneType.ErrorNoReload:
+				case MessageAndMilestoneType.ClobberPending:
+					return new BloomWebSocketProgressEvent(kWebSocketContext, ProgressKind.Error, entry.TextForDisplay );
+				default:
+					return new BloomWebSocketProgressEvent(kWebSocketContext, ProgressKind.Progress, entry.TextForDisplay);
+			}
 		}
 	}
 }

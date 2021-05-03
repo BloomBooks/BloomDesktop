@@ -72,12 +72,12 @@ namespace Bloom.TeamCollection
 		{
 		}
 
-		public TeamCollectionMessage(MessageAndMilestoneType messageType, string l10nId, string message, string param0 = null, string param1 = null)
+		public TeamCollectionMessage(MessageAndMilestoneType messageType, string l10nId, string rawEnglishMessageTemplate, string param0 = null, string param1 = null)
 		{
 			MessageType = messageType;
 			When = DateTime.UtcNow;
 			L10NId = l10nId;
-			Message = message;
+			RawEnglishMessageTemplate = rawEnglishMessageTemplate;
 			Param0 = param0;
 			Param1 = param1;
 		}
@@ -87,7 +87,7 @@ namespace Bloom.TeamCollection
 		public string L10NId { get; set; }
 		// Possibly containing {0} and {1}, which will be replaced with Param0 and Param1.
 		// The string corresponding to L10NId in the xlf, if any, wins, even in English.
-		public string Message { get; set; }
+		public string RawEnglishMessageTemplate { get; set; }
 		public string Param0 { get; set; }
 		public string Param1 { get; set; }
 
@@ -96,15 +96,15 @@ namespace Bloom.TeamCollection
 		// Milestones only have the first two.
 		public string ToPersistedForm =>
 			When.ToString("o") // ISO 8601
-			+ "\t" + MessageType + "\t" + (L10NId ?? "") + "\t" + (Message ?? "") + "\t" +
+			+ "\t" + MessageType + "\t" + (L10NId ?? "") + "\t" + (RawEnglishMessageTemplate ?? "") + "\t" +
 			(Param0 ?? "") + "\t" + (Param1 ?? "");
 
-		public string PrettyPrint
+		public string TextForDisplay
 		{
 			get
 			{
 				var leadIn = DateTime.Now.ToShortDateString() + ": ";
-				if (String.IsNullOrEmpty(Message))
+				if (String.IsNullOrEmpty(RawEnglishMessageTemplate))
 				{
 					switch (MessageType)
 					{
@@ -118,7 +118,7 @@ namespace Bloom.TeamCollection
 					}
 				}
 
-				var msg = LocalizationManager.GetString(L10NId, Message);
+				var msg = LocalizationManager.GetString(L10NId, RawEnglishMessageTemplate);
 				return leadIn + string.Format(msg, Param0, Param1);
 			}
 		}
@@ -162,7 +162,7 @@ namespace Bloom.TeamCollection
 
 			if (parts.Length > 3)
 			{
-				result.Message = parts[3];
+				result.RawEnglishMessageTemplate = parts[3];
 			}
 
 			if (parts.Length > 2)
