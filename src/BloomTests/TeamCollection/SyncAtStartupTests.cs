@@ -268,7 +268,7 @@ namespace BloomTests.TeamCollection
 			AssertLocalContent("Rename local1", "This is a new book created independently");
 			AssertLocalContent("Rename local", "This content is on the server");
 			Assert.That(_collection.GetLocalStatus("Rename local").lockedBy, Is.EqualTo("fred@somewhere.org"));
-			AssertProgress("Renaming the local book '{0}' because there is a new one with the same name from the Team Collection", "Rename local");
+			AssertWarning("Renaming the local book '{0}' because there is a new one with the same name from the Team Collection", "Rename local");
 		}
 
 		[Test]
