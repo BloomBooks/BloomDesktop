@@ -4,6 +4,7 @@ using System.Linq;
 using Bloom.Book;
 using Bloom.TeamCollection;
 using BloomTemp;
+using BloomTests.DataBuilders;
 using Moq;
 using NUnit.Framework;
 using SIL.IO;
@@ -50,14 +51,16 @@ namespace BloomTests.TeamCollection
 			_collectionFolder.Dispose();
 			_sharedFolder.Dispose();
 		}
-
+				
 		[Test]
 		public void HandleNewBook_CreatesNewStuffMessage()
 		{
-			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, "My new book");
-			Directory.CreateDirectory(bookFolderPath);
-			var bookPath = Path.Combine(bookFolderPath, "My new book.htm");
-			RobustFile.WriteAllText(bookPath, "This is just a dummy");
+			var bookBuilder = new BookFolderBuilder()
+				.WithRootFolder(_collectionFolder.FolderPath)
+				.WithTitle("My new book")
+				.Build();	// Writes the book to disk based on the above specified values
+			string bookFolderPath = bookBuilder.BuiltBookFolderPath;	// Gets the location the book was written to
+			
 			_collection.PutBook(bookFolderPath);
 			SIL.IO.RobustIO.DeleteDirectoryAndContents(bookFolderPath);
 			var prevMessages = _tcLog.Messages.Count;
@@ -79,10 +82,12 @@ namespace BloomTests.TeamCollection
 			// first. Or the book might be modified again before we fetch it. In any case,
 			// we don't need modify messages until we fetch a local copy.
 			const string bookFolderName = "My book";
-			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
-			Directory.CreateDirectory(bookFolderPath);
-			var bookPath = Path.Combine(bookFolderPath, "My book.htm");
-			RobustFile.WriteAllText(bookPath, "This is just a dummy");
+			var bookBuilder = new BookFolderBuilder()
+				.WithRootFolder(_collectionFolder.FolderPath)
+				.WithTitle(bookFolderName)
+				.Build();	// Writes the book to disk based on the above specified values
+			string bookFolderPath = bookBuilder.BuiltBookFolderPath;
+
 			var status = _collection.PutBook(bookFolderPath);
 			// pretending we had nothing local before the change.
 			RobustIO.DeleteDirectory(bookFolderPath, true);
@@ -107,11 +112,12 @@ namespace BloomTests.TeamCollection
 			// Simulate (sort of) that a book was just overwritten with the following new contents,
 			// including that book.status does not indicate it's checked out
 			const string bookFolderName = "My book";
-			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
-			Directory.CreateDirectory(bookFolderPath);
-			var bookPath = Path.Combine(bookFolderPath, "My book.htm");
-			RobustFile.WriteAllText(bookPath, "This is just a dummy");
-
+			var bookBuilder = new BookFolderBuilder()
+				.WithRootFolder(_collectionFolder.FolderPath)
+				.WithTitle(bookFolderName)
+				.Build();	// Writes the book to disk based on the above specified values
+			string bookFolderPath = bookBuilder.BuiltBookFolderPath;
+			
 			var status = _collection.PutBook(bookFolderPath);
 			// pretending this is what it was before the change.
 			_collection.WriteLocalStatus(bookFolderName, status.WithLockedBy("fred@somewhere.org"));
@@ -133,13 +139,15 @@ namespace BloomTests.TeamCollection
 			// Simulate (sort of) that a book was just overwritten with the following new contents,
 			// including that book.status does not indicate it's checked out
 			const string bookFolderName = "My book";
-			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
-			Directory.CreateDirectory(bookFolderPath);
-			var bookPath = Path.Combine(bookFolderPath, "My book.htm");
-			RobustFile.WriteAllText(bookPath, "This is pretending to be new content from remote");
+			var bookBuilder = new BookFolderBuilder()
+				.WithRootFolder(_collectionFolder.FolderPath)
+				.WithTitle(bookFolderName)
+				.WithHtm("This is pretending to be new content from remote")
+				.Build();
 
+			string bookFolderPath = bookBuilder.BuiltBookFolderPath;
 			var status = _collection.PutBook(bookFolderPath);
-			RobustFile.WriteAllText(bookPath, "This is pretending to be old content");
+			RobustFile.WriteAllText(bookBuilder.BuiltBookHtmPath, "This is pretending to be old content");
 			// pretending this is what it was before the change.
 			_collection.WriteLocalStatus(bookFolderName, status.WithChecksum(Bloom.TeamCollection.TeamCollection.MakeChecksum(bookFolderPath)));
 			var prevMessages = _tcLog.Messages.Count;
@@ -161,10 +169,11 @@ namespace BloomTests.TeamCollection
 			// Simulate (sort of) that a book was just overwritten with the following new contents,
 			// including that book.status indicates a remote checkout
 			const string bookFolderName = "My other book";
-			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
-			Directory.CreateDirectory(bookFolderPath);
-			var bookPath = Path.Combine(bookFolderPath, "My other book.htm");
-			RobustFile.WriteAllText(bookPath, "This is just a dummy");
+			var bookBuilder = new BookFolderBuilder()
+				.WithRootFolder(_collectionFolder.FolderPath)
+				.WithTitle(bookFolderName)
+				.Build();
+			string bookFolderPath = bookBuilder.BuiltBookFolderPath;
 
 			_collection.PutBook(bookFolderPath);
 			_collection.AttemptLock("My other book", "nancy@somewhere.com");
@@ -189,10 +198,11 @@ namespace BloomTests.TeamCollection
 			// Simulate a book was just overwritten with contents indicating a remote checkout,
 			// while locally it is checked out to me.
 			const string bookFolderName = "My conflict book";
-			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
-			Directory.CreateDirectory(bookFolderPath);
-			var bookPath = Path.Combine(bookFolderPath, "My conflict book.htm");
-			RobustFile.WriteAllText(bookPath, "This is just a dummy");
+			var bookBuilder = new BookFolderBuilder()
+				.WithRootFolder(_collectionFolder.FolderPath)
+				.WithTitle(bookFolderName)
+				.Build();
+			string bookFolderPath = bookBuilder.BuiltBookFolderPath;
 
 			TeamCollectionManager.ForceCurrentUserForTests("me@somewhere.org");
 
@@ -228,10 +238,14 @@ namespace BloomTests.TeamCollection
 			// Simulate a book that was checked out and modified by me, but then we get a remote change
 			// notification.
 			const string bookFolderName = "My conflicting change book";
-			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
-			Directory.CreateDirectory(bookFolderPath);
-			var bookPath = Path.Combine(bookFolderPath, bookFolderName + ".htm");
-			RobustFile.WriteAllText(bookPath, "We will be simulating a remote change to this.");
+			var bookBuilder = new BookFolderBuilder()
+				.WithRootFolder(_collectionFolder.FolderPath)
+				.WithTitle(bookFolderName)
+				.WithHtm("We will be simulating a remote change to this.")
+				.Build();
+
+			string bookFolderPath = bookBuilder.BuiltBookFolderPath;
+			string bookPath = bookBuilder.BuiltBookHtmPath;
 
 			_collection.PutBook(bookFolderPath);
 			var pathToBookFileInRepo = _collection.GetPathToBookFileInRepo(bookFolderName);
@@ -266,10 +280,14 @@ namespace BloomTests.TeamCollection
 		{
 			// Setup //
 			const string originalBookName = "Hello. Goodbye!";
-			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, originalBookName);
-			Directory.CreateDirectory(bookFolderPath);
-			var htmlPath = Path.Combine(bookFolderPath, originalBookName + ".htm");
-			RobustFile.WriteAllText(htmlPath, "<html><body>This is just a dummy</body></html>");
+			var bookBuilder = new BookFolderBuilder()
+				.WithRootFolder(_collectionFolder.FolderPath)
+				.WithTitle(originalBookName)
+				.WithHtm("<html><body>This is just a dummy</body></html>")
+				.Build();
+			string bookFolderPath = bookBuilder.BuiltBookFolderPath;
+			string htmlPath = bookBuilder.BuiltBookHtmPath;
+
 			TeamCollectionManager.ForceCurrentUserForTests("steve@somewhere.org");
 			_collection.PutBook(bookFolderPath);
 
@@ -302,10 +320,11 @@ namespace BloomTests.TeamCollection
 		{
 			// Simulate that a book was just deleted in the repo
 			const string bookFolderName = "My book";
-			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
-			Directory.CreateDirectory(bookFolderPath);
-			var bookPath = Path.Combine(bookFolderPath, "My book.htm");
-			RobustFile.WriteAllText(bookPath, "This is just a dummy");
+			var bookBuilder = new BookFolderBuilder()
+				.WithRootFolder(_collectionFolder.FolderPath)
+				.WithTitle(bookFolderName)
+				.Build();
+			string bookFolderPath = bookBuilder.BuiltBookFolderPath;
 
 			var status = _collection.PutBook(bookFolderPath);
 			_collection.DeleteBookFromRepo(bookFolderPath);
@@ -332,10 +351,11 @@ namespace BloomTests.TeamCollection
 		{
 			// Simulate that a book was reported as deleted in the repo, but actually, it's still there
 			const string bookFolderName = "My book";
-			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
-			Directory.CreateDirectory(bookFolderPath);
-			var bookPath = Path.Combine(bookFolderPath, "My book.htm");
-			RobustFile.WriteAllText(bookPath, "This is just a dummy");
+			var bookBuilder = new BookFolderBuilder()
+				.WithRootFolder(_collectionFolder.FolderPath)
+				.WithTitle(bookFolderName)
+				.Build();
+			string bookFolderPath = bookBuilder.BuiltBookFolderPath;
 
 			var status = _collection.PutBook(bookFolderPath);
 
@@ -356,10 +376,11 @@ namespace BloomTests.TeamCollection
 		{
 			// Simulate that a book which is checked out here was just deleted in the repo
 			const string bookFolderName = "My book";
-			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
-			Directory.CreateDirectory(bookFolderPath);
-			var bookPath = Path.Combine(bookFolderPath, "My book.htm");
-			RobustFile.WriteAllText(bookPath, "This is just a dummy");
+			var bookBuilder = new BookFolderBuilder()
+				.WithRootFolder(_collectionFolder.FolderPath)
+				.WithTitle(bookFolderName)
+				.Build();
+			string bookFolderPath = bookBuilder.BuiltBookFolderPath;
 
 			var status = _collection.PutBook(bookFolderPath);
 			_collection.AttemptLock(bookFolderName);
@@ -384,10 +405,11 @@ namespace BloomTests.TeamCollection
 		{
 			// Simulate that a book which is currently selected was just deleted in the repo
 			const string bookFolderName = "My book";
-			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, bookFolderName);
-			Directory.CreateDirectory(bookFolderPath);
-			var bookPath = Path.Combine(bookFolderPath, "My book.htm");
-			RobustFile.WriteAllText(bookPath, "This is just a dummy");
+			var bookBuilder = new BookFolderBuilder()
+				.WithRootFolder(_collectionFolder.FolderPath)
+				.WithTitle(bookFolderName)
+				.Build();
+			string bookFolderPath = bookBuilder.BuiltBookFolderPath;
 
 			var status = _collection.PutBook(bookFolderPath);
 			// But, although we have all the status to indicate it is in the repo, it's gone!

@@ -20,6 +20,18 @@ namespace Bloom.TeamCollection
 			RepoDescription = description;
 		}
 
+		// For Moq
+		// Alternatively,  you could make it implement an ITeamCollection interface instead.
+		public DisconnectedTeamCollection()
+			: base(null, "")
+		{
+			
+			if (!Program.RunningUnitTests)
+			{
+				throw new ApplicationException("Parameterless constructor is only for mocking purposes");
+			}
+		}
+
 		public override bool IsDisconnected => true;
 
 		public override TeamCollectionStatus CollectionStatus => TeamCollectionStatus.Disconnected;
