@@ -18,10 +18,10 @@ namespace Bloom.Utils
 		/// Is Dropbox up and running? This may not be 100% reliable...could the process be
 		/// called something else when a localized version is running? Might one Dropbox process
 		/// be running but not the one we really need? But it's the best we can find so far.
-		/// Review: will this work on Linux?
 		/// </summary>
 		public static bool IsDropboxProcessRunning =>
-			System.Diagnostics.Process.GetProcesses().Any(p => p.ProcessName.Contains("Dropbox"));
+			System.Diagnostics.Process.GetProcesses().Any((p) =>
+				Platform.IsLinux? p.ProcessName == "dropbox" : p.ProcessName.Contains("Dropbox"));
 
 		/// <summary>
 		/// Based on information in https://help.dropbox.com/installs-integrations/desktop/locate-dropbox-folder,
@@ -32,12 +32,12 @@ namespace Bloom.Utils
 			try
 			{
 				var jsonPaths = Platform.IsLinux
-					? new[] {"~/.dropbox/info.json"}
+					? new[] {"%HOME%/.dropbox/info.json"}
 					: new[] {"%APPDATA%\\Dropbox\\info.json", "%LOCALAPPDATA%\\Dropbox\\info.json"};
 				var searchPath = Platform.IsLinux ? path : path.ToLowerInvariant();
 				foreach (var jsonPath in jsonPaths)
 				{
-					var fixedPath = Platform.IsLinux ? jsonPath : Environment.ExpandEnvironmentVariables(jsonPath);
+					var fixedPath = Environment.ExpandEnvironmentVariables(jsonPath);
 					if (RobustFile.Exists(fixedPath))
 					{
 						var json = RobustFile.ReadAllText(fixedPath, Encoding.UTF8);

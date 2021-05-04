@@ -21,6 +21,7 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using SIL.Reporting;
+using DesktopAnalytics;
 
 namespace Bloom.TeamCollection
 {
@@ -1556,6 +1557,14 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		public void SynchronizeRepoAndLocal()
 		{
+			Analytics.Track("TeamCollectionOpen", new Dictionary<string, string>()
+			{
+				{"CollectionId", CollectionId},
+				// No easy way to get collection name at this point
+				{"Backend", GetBackendType()},
+				{"User", TeamCollectionManager.CurrentUser}
+			});
+
 			var title = "Syncing Team Collection"; // todo l10n
 			ShowProgressDialog(title,
 				progress =>
@@ -1737,6 +1746,11 @@ namespace Bloom.TeamCollection
 		public virtual bool CannotDeleteBecauseDisconnected(string bookFolderPath)
 		{
 			return false;
+		}
+
+		public virtual string GetBackendType()
+		{
+			return "Other";
 		}
 	}
 }
