@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -8,6 +9,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
 using Bloom.Utils;
+using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using Sentry;
@@ -139,6 +141,15 @@ namespace Bloom.TeamCollection
 			{
 				FolderTeamCollection.JoinCollectionTeam();
 				ReactDialog.CloseCurrentModal();
+
+				Analytics.Track("TeamCollectionJoin",
+					new Dictionary<string, string>(){
+						{"CollectionId", _settings?.CollectionId},
+						{"CollectionName", _settings?.CollectionName},
+						{"Backend", _tcManager?.CurrentCollection?.GetBackendType()},
+						{"User", CurrentUser}
+					});
+
 				request.PostSucceeded();
 			}
 			catch (Exception e)
@@ -231,7 +242,19 @@ namespace Bloom.TeamCollection
 				// But in that case, we don't show the UI that leads to this being called.
 				var success = _tcManager.CurrentCollection.AttemptLock(BookFolderName);
 				if (success)
+				{
 					UpdateUiForBook();
+
+					Analytics.Track("TeamCollectionCheckoutBook",
+						new Dictionary<string, string>(){
+							{"CollectionId", _settings?.CollectionId},
+							{"CollectionName", _settings?.CollectionName},
+							{"Backend", _tcManager?.CurrentCollection?.GetBackendType()},
+							{"User", CurrentUser},
+							{"BookId", _bookSelection?.CurrentSelection?.ID },
+							{"BookName", _bookSelection?.CurrentSelection?.Title }
+						});
+				}
 				request.ReplyWithBoolean(success);
 			}
 			catch (Exception e)
@@ -265,6 +288,17 @@ namespace Bloom.TeamCollection
 				if (_tcManager.CurrentCollection.OkToCheckIn(bookName))
 				{
 					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, true);
+
+					Analytics.Track("TeamCollectionCheckinBook",
+						new Dictionary<string, string>(){
+							{"CollectionId", _settings?.CollectionId},
+							{"CollectionName", _settings?.CollectionName},
+							{"Backend", _tcManager?.CurrentCollection?.GetBackendType()},
+							{"User", CurrentUser},
+							{"BookId", _bookSelection?.CurrentSelection.ID },
+							{"BookName", _bookSelection?.CurrentSelection.Title }
+						});
+
 				}
 				else
 				{
@@ -278,6 +312,15 @@ namespace Bloom.TeamCollection
 					var msg = LocalizationManager.GetString("TeamCollection.ConflictingEditOrCheckout",
 						"Someone else has edited this book or checked it out even though you were editing it! Your changes have been saved to Lost and Found");
 					ErrorReport.NotifyUserOfProblem(msg);
+					Analytics.Track("TeamCollectionConflictingEditOrCheckout",
+						new Dictionary<string, string>() {
+							{"CollectionId", _settings?.CollectionId},
+							{"CollectionName", _settings?.CollectionName},
+							{"Backend", _tcManager?.CurrentCollection?.GetBackendType()},
+							{"User", CurrentUser},
+							{"BookId", _bookSelection?.CurrentSelection?.ID},
+							{"BookName", _bookSelection?.CurrentSelection?.Title}
+						});
 				}
 
 				UpdateUiForBook();
@@ -422,6 +465,13 @@ namespace Bloom.TeamCollection
 				_tcManager.ConnectToTeamCollection(_folderForCreateTC, _settings.CollectionId);
 				_callbackToReopenCollection?.Invoke();
 
+				Analytics.Track("TeamCollectionCreate", new Dictionary<string, string>() {
+						{"CollectionId", _settings?.CollectionId},
+						{"CollectionName", _settings?.CollectionName},
+						{"Backend", _tcManager?.CurrentCollection?.GetBackendType()},
+						{"User", CurrentUser}
+					});
+
 				request.PostSucceeded();
 			}
 			catch (Exception e)
@@ -435,7 +485,6 @@ namespace Bloom.TeamCollection
 				request.Failed("create team failed");
 			}
 		}
-
 
 		// Called when we cause the book's status to change, so things outside the HTML world, like visibility of the
 		// "Edit this book" button, can change appropriately. Pretending the user chose a different book seems to
