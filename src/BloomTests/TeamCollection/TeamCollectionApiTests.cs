@@ -13,9 +13,11 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.TeamCollection;
+using Bloom.web;
 using BloomTemp;
 using BloomTests.DataBuilders;
 using Moq;
+using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace BloomTests.TeamCollection
@@ -262,22 +264,6 @@ namespace BloomTests.TeamCollection
 		}
 
 		[Test]
-		public void HandleGetLog_NoMessages_DefaultMessageInserted()
-		{
-			var apiBuilder = new TeamCollectionApiBuilder().WithDefaultMocks();
-			var api = apiBuilder.Build();
-			api.RegisterWithApiHandler(_server.ApiHandler);
-
-			var mockMessageLog = new Mock<ITeamCollectionMessageLog>();
-			apiBuilder.MockTeamCollectionManager.SetupGet(x => x.MessageLog).Returns(mockMessageLog.Object);
-
-			// System Under Test
-			var result = ApiTest.GetString(_server, endPoint: "teamCollection/getLog", returnType: ApiTest.ContentType.JSON);
-			
-			Assert.That(result, Is.EqualTo("{\"messages\":[{\"type\":\"History\",\"message\":\"1/1/0001 12:00:00 AM: No incoming changes were found.\"}]}"));
-		}
-
-		[Test]
 		public void HandleGetLog_NonZeroMessages_MessagesReturned()
 		{
 			var apiBuilder = new TeamCollectionApiBuilder().WithDefaultMocks();
@@ -286,17 +272,21 @@ namespace BloomTests.TeamCollection
 
 			var mockMessageLog = new Mock<ITeamCollectionMessageLog>();
 			apiBuilder.MockTeamCollectionManager.SetupGet(x => x.MessageLog).Returns(mockMessageLog.Object);
-			mockMessageLog.SetupGet(x => x.PrettyPrintMessages).Returns(
-				new Tuple<MessageAndMilestoneType, string>[] {
-					Tuple.Create(MessageAndMilestoneType.Reloaded, "1"),
-					Tuple.Create(MessageAndMilestoneType.History, "2"),
+			mockMessageLog.Setup(x => x.GetProgressMessages()).Returns(
+				new BloomWebSocketProgressEvent[]
+				{
+					new BloomWebSocketProgressEvent("unused", ProgressKind.Progress, "1"),
+					new BloomWebSocketProgressEvent("unused", ProgressKind.Progress, "2")
 				}
 			);
 
 			// System Under Test
 			var result = ApiTest.GetString(_server, endPoint: "teamCollection/getLog", returnType: ApiTest.ContentType.JSON);
-			
-			Assert.That(result, Is.EqualTo("{\"messages\":[{\"type\":\"Reloaded\",\"message\":\"1\"},{\"type\":\"History\",\"message\":\"2\"}]}"));
+
+			// Verification
+			var deserializedArray = JsonConvert.DeserializeObject<BloomWebSocketProgressEvent[]>(result);
+			var messages = deserializedArray.Select(x => x.message).ToArray();
+			CollectionAssert.AreEqual(new string[] { "1", "2" }, messages);
 		}
 		#endregion
 			

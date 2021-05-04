@@ -4,16 +4,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.ServiceModel.Channels;
 
 namespace BloomTests.DataBuilders
 {
 	/// <summary>
-	/// Uses a DataBuilder pattern to help write test books to disk for Team Collections tests
-	/// Example 1: new TCBookBuilder(...).SetFolder(...).SetTitle("Book Title").SetHtm("<html></html>").Build();
-	/// Example 2:  new TCBookBuilder(...).SetFolder(...).WithTestValues().Build();
+	/// Uses a DataBuilder pattern to help write test books to disk for tests
+	/// Example 1: new BookFolderBuilder(...).SetFolder(...).SetTitle("Book Title").SetHtm("<html></html>").Build();
+	/// Example 2:  new BookFolderBuilder(...).SetFolder(...).WithDefaultValues().Build();
 	/// </summary>
-	class TeamCollectionBookBuilder
+	/// <remarks>Originally intended for use in TeamCollection tests, but should be general enough to use elsewhere as well</remarks>
+	class BookFolderBuilder
 	{
 		private string _containingFolder = null;
 		private string _bookFolderName = null;	// Optional. Not needed if same as _bookTitle
@@ -26,9 +26,9 @@ namespace BloomTests.DataBuilders
 		#endregion
 
 		/// <summary>
-		/// Creates a new builder object to facilitate setting up books for Team Collections
+		/// Creates a new builder object to facilitate setting up books on the filesystem
 		/// </summary>
-		public TeamCollectionBookBuilder()
+		public BookFolderBuilder()
 		{
 		}
 
@@ -40,10 +40,10 @@ namespace BloomTests.DataBuilders
 		/// returning a "book" object like we normally would (we don't have a book object),
 		/// but instead we're causing the book to be written to disk.
 		/// </remarks>
-		public TeamCollectionBookBuilder Build()
+		public BookFolderBuilder Build()
 		{
 			Debug.Assert(_containingFolder != null, "_containingFolder is required! Set it via InFolder(...)");
-			Debug.Assert(_bookTitle != null, "BookTitle is required. Set it either via WithTitle() or via WithTestValues()");
+			Debug.Assert(_bookTitle != null, "BookTitle is required. Set it either via WithTitle() or via WithDefaultValues()");
 
 			var bookFolderPath = Path.Combine(_containingFolder, _bookFolderName ?? _bookTitle);
 			Directory.CreateDirectory(bookFolderPath);
@@ -62,9 +62,9 @@ namespace BloomTests.DataBuilders
 
 		#region Pre-Build setters
 		/// <summary>
-		/// Provides reasonable default values for a TeamCollectionBook that would be used in unit tests
+		/// Provides reasonable default values for a book on the filesystem that would be used in unit tests
 		/// </summary>
-		public TeamCollectionBookBuilder WithDefaultValues()
+		public BookFolderBuilder WithDefaultValues()
 		{
 			WithTitle("Book Title");
 			WithHtm("<html></html>");
@@ -73,25 +73,25 @@ namespace BloomTests.DataBuilders
 
 		/// <summary>Sets the folder which contains the book</summary>
 		/// <param name="containingFolder">The folder that should contain the book. Usually, this should be the collection folder.</param>
-		public TeamCollectionBookBuilder WithRootFolder(string containingFolder)
+		public BookFolderBuilder WithRootFolder(string containingFolder)
 		{
 			this._containingFolder = containingFolder;
 			return this;
 		}
 
-		public TeamCollectionBookBuilder WithBookFolderName(string folderName)
+		public BookFolderBuilder WithBookFolderName(string folderName)
 		{
 			this._bookFolderName = folderName;
 			return this;
 		}
 
-		public TeamCollectionBookBuilder WithTitle(string title)
+		public BookFolderBuilder WithTitle(string title)
 		{
 			this._bookTitle = title;
 			return this;
 		}
 
-		public TeamCollectionBookBuilder WithHtm(string htmContents)
+		public BookFolderBuilder WithHtm(string htmContents)
 		{
 			this._htmContents = htmContents;
 			return this;

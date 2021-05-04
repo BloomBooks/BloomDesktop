@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Bloom.web;
-using L10NSharp;
 using SIL.Code;
 using SIL.IO;
 
@@ -32,15 +31,15 @@ namespace Bloom.TeamCollection
 		TeamCollectionStatus TeamCollectionStatus { get; }
 		void WriteMessage(MessageAndMilestoneType messageType, string l10nId, string message, string param0="", string param1="");
 		void WriteMessage(TeamCollectionMessage message);
-		Tuple<MessageAndMilestoneType, String>[] PrettyPrintMessages { get; }
 		void WriteMilestone(MessageAndMilestoneType milestoneType);
+		BloomWebSocketProgressEvent[] GetProgressMessages();
 	}
 
 	/// <summary>
 	/// Stores a log of messages and milestones that form the local history of the collection.
 	/// Deduces from these the current state of the collection.
 	/// </summary>
-	public class TeamCollectionMessageLog
+	public class TeamCollectionMessageLog : ITeamCollectionMessageLog
 	{
 		private string _logFilePath;
 		// Length of the log file at the time the TC was created, indicating the length of

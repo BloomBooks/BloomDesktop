@@ -463,7 +463,7 @@ namespace BloomTests.TeamCollection
 		// but enough for most purposes of testing TeamCollection.
 		public static string MakeFakeBook(string collectionFolder, string name, string content, string folderNameIfDifferent = null)
 		{
-			var bookBuilder = new TeamCollectionBookBuilder()
+			var bookBuilder = new BookFolderBuilder()
 				.WithRootFolder(collectionFolder)
 				.WithBookFolderName(folderNameIfDifferent)
 				.WithTitle(name)

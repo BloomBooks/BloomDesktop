@@ -147,7 +147,7 @@ namespace Bloom.TeamCollection
 			get
 			{
 				if (CurrentCollectionEvenIfDisconnected != null)
-					return (ITeamCollectionMessageLog)CurrentCollectionEvenIfDisconnected.MessageLog;
+					return CurrentCollectionEvenIfDisconnected.MessageLog;
 				return null;
 			}
 		}
