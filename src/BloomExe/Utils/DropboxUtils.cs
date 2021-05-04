@@ -37,7 +37,6 @@ namespace Bloom.Utils
 		/// Is Dropbox up and running? This may not be 100% reliable...could the process be
 		/// called something else when a localized version is running? Might one Dropbox process
 		/// be running but not the one we really need? But it's the best we can find so far.
-		/// Review: will this work on Linux?
 		/// </summary>
 		public static bool IsDropboxProcessRunning =>
 			System.Diagnostics.Process.GetProcesses().Any(p => Platform.IsLinux ? p.ProcessName == "dropbox" : p.ProcessName.Contains("Dropbox"));
