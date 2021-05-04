@@ -1028,7 +1028,7 @@ namespace BloomTests.Book
 					</div>
 				</div>
 				</body></html>");
-			var collectionSettings = CreateCollection(Language1Iso639Code: "etr", Language1Name:null, "en",null,"tpi",null);
+			var collectionSettings = CreateCollection("etr", null, "en", null, "tpi", null);
 			var data = new BookData(dom, collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
 			XmlElement nationalTitle =
