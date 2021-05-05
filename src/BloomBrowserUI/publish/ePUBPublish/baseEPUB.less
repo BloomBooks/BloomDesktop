@@ -105,3 +105,12 @@ video {
 .-epub-media-overlay-active {
     background-color: #ffb;
 }
+
+// .epub will be on the body tag when publishing to epub
+// These rules fix a bunch of layout issues when xmatter css is included in epub,
+// especially involving branding images and things getting squished together due to short pages.
+.epub,
+.bloom-page,
+.marginBox {
+    height: 100%;
+}
