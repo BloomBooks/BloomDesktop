@@ -9,11 +9,14 @@ import { ThemeProvider } from "@material-ui/styles";
 
 // The contents of the dialog that comes up when double-clicking a .JoinBloomTC file.
 // Two versions (create new local collection, and merge with existing local) are both handled here.
+interface IJoinTCProps {
+    name?: string;
+    existingCollection: boolean;
+}
 
-export const JoinTeamCollection: React.FunctionComponent = props => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const existingCollection = !!urlParams.get("existingCollection");
-    const collectionName = urlParams.get("name") ?? "missing";
+export const JoinTeamCollection: React.FunctionComponent<IJoinTCProps> = props => {
+    const collectionName = props.name ?? "missing";
+    const existingCollection = props.existingCollection;
     return (
         <ThemeProvider theme={theme}>
             <div id="new-team-collection">

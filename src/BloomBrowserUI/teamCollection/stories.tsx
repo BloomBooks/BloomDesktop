@@ -131,7 +131,7 @@ storiesOf("Team Collection components", module).add(
     "JoinTeamCollection",
     () => (
         <div id="reactRoot" className="JoinTeamCollection">
-            <JoinTeamCollection />
+            <JoinTeamCollection existingCollection={false} />
         </div>
     )
 );

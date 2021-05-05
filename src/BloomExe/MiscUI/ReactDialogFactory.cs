@@ -11,7 +11,7 @@ namespace Bloom.MiscUI
 	{
 		public IBrowserDialog CreateReactDialog(string reactComponentName, string urlQueryString)
 		{
-			return new ReactDialog(reactComponentName, urlQueryString);
+			return new ReactDialog(reactComponentName, null, urlQueryString);
 		}
 	}
 }
