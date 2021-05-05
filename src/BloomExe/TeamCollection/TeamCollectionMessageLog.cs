@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Bloom.web;
-using L10NSharp;
 using SIL.Code;
 using SIL.IO;
 
@@ -19,11 +18,28 @@ namespace Bloom.TeamCollection
 		None // The current collection is not a team collection.
 	}
 
+	public interface ITeamCollectionMessageLog
+	{
+		List<TeamCollectionMessage> Messages { get; }
+		List<TeamCollectionMessage> CurrentErrors { get; }
+		List<TeamCollectionMessage> ReloadMessages { get; }
+		bool NextTeamCollectionDialogShouldForceReloadButton { get; set; }
+		bool ShouldShowReloadButton { get; }
+		List<TeamCollectionMessage> CurrentNewStuff { get; }
+		TeamCollectionMessage CurrentClobberMessage { get; }
+		DateTime LastReloadTime { get; }
+		TeamCollectionStatus TeamCollectionStatus { get; }
+		void WriteMessage(MessageAndMilestoneType messageType, string l10nId, string message, string param0="", string param1="");
+		void WriteMessage(TeamCollectionMessage message);
+		void WriteMilestone(MessageAndMilestoneType milestoneType);
+		BloomWebSocketProgressEvent[] GetProgressMessages();
+	}
+
 	/// <summary>
 	/// Stores a log of messages and milestones that form the local history of the collection.
 	/// Deduces from these the current state of the collection.
 	/// </summary>
-	public class TeamCollectionMessageLog
+	public class TeamCollectionMessageLog : ITeamCollectionMessageLog
 	{
 		private string _logFilePath;
 		// Length of the log file at the time the TC was created, indicating the length of
@@ -77,7 +93,7 @@ namespace Bloom.TeamCollection
 			}
 		}
 
-		public bool NextTeamCollectionDialogShouldForceReloadButton;
+		public bool NextTeamCollectionDialogShouldForceReloadButton { get; set; }
 
 		public bool ShouldShowReloadButton =>
 			NextTeamCollectionDialogShouldForceReloadButton || ReloadMessages.Count > 0;

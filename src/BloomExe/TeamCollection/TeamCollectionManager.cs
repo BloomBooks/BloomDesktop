@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -19,6 +19,16 @@ namespace Bloom.TeamCollection
 	{
 		void RaiseBookStatusChanged(BookStatusChangeEventArgs eventInfo);
 		BookSelection BookSelection { get; }
+		TeamCollection CurrentCollection { get; }
+		TeamCollection CurrentCollectionEvenIfDisconnected { get; }
+		ITeamCollectionMessageLog MessageLog { get; }
+
+		bool CheckConnection();
+		void ConnectToTeamCollection(string repoFolderParentPath, string collectionId);
+		bool NeedCheckoutToEdit(string bookFolderPath);
+		string PlannedRepoFolderPath(string repoFolderParentPath);
+
+		// ENHANCE: Add other properties and methods as needed
 	}
 
 	/// <summary>
@@ -132,7 +142,7 @@ namespace Bloom.TeamCollection
 			}
 		}
 
-		public TeamCollectionMessageLog MessageLog
+		public ITeamCollectionMessageLog MessageLog
 		{
 			get
 			{

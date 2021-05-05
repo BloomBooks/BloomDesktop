@@ -30,7 +30,7 @@ namespace BloomTests.web
 		public void SendBundle(string clientContext, string eventId, dynamic messageBundle)
 		{
 			ProgressKind kind;
-			ProgressKind.TryParse(messageBundle.kind as string, out kind);
+			ProgressKind.TryParse(messageBundle.progressKind as string, out kind);
 			_events.Add(new KeyValuePair<string, Tuple<string, string,ProgressKind>>(eventId,
 				Tuple.Create(messageBundle.message as string, clientContext, kind)));
 		}

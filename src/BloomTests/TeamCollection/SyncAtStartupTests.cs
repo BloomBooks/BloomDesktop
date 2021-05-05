@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Bloom.TeamCollection;
 using BloomTemp;
+using BloomTests.DataBuilders;
 using Moq;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
@@ -268,7 +269,7 @@ namespace BloomTests.TeamCollection
 			AssertLocalContent("Rename local1", "This is a new book created independently");
 			AssertLocalContent("Rename local", "This content is on the server");
 			Assert.That(_collection.GetLocalStatus("Rename local").lockedBy, Is.EqualTo("fred@somewhere.org"));
-			AssertProgress("Renaming the local book '{0}' because there is a new one with the same name from the Team Collection", "Rename local");
+			AssertWarning("Renaming the local book '{0}' because there is a new one with the same name from the Team Collection", "Rename local");
 		}
 
 		[Test]
@@ -460,13 +461,16 @@ namespace BloomTests.TeamCollection
 
 		// Make a very trivial fake book. Not nearly good enough to make a Book object from,
 		// but enough for most purposes of testing TeamCollection.
-		public static string MakeFakeBook(string collectionFolder, string name, string content, string folderNameIfDifferent="")
+		public static string MakeFakeBook(string collectionFolder, string name, string content, string folderNameIfDifferent = null)
 		{
-			var folderPath = Path.Combine(collectionFolder, string.IsNullOrEmpty(folderNameIfDifferent) ? name : folderNameIfDifferent);
-			var bookPath = Path.Combine(folderPath, Path.ChangeExtension(name, "htm"));
-			Directory.CreateDirectory(folderPath);
-			RobustFile.WriteAllText(bookPath, "<html><body>" + content + "</body></html>");
-			return folderPath;
+			var bookBuilder = new BookFolderBuilder()
+				.WithRootFolder(collectionFolder)
+				.WithBookFolderName(folderNameIfDifferent)
+				.WithTitle(name)
+				.WithHtm("<html><body>" + content + "</body></html>")
+				.Build();
+
+			return bookBuilder.BuiltBookFolderPath;
 		}
 
 		void UpdateLocalBook(string name, string content, bool updateChecksum = true)
