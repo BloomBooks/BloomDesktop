@@ -1,3 +1,7 @@
+<style>/* leave this at the beginning of the file */
+img { max-width: 100%; }
+</style>
+
 # 5.0 (Beta)
 
 ## Edit Tab
@@ -25,14 +29,14 @@ We've improved what you see when you look at a template books on BloomLibrary.or
 
 The new Team Collection _enterprise_ feature debuts in this release. With a Team Collection, you can safely share a collection within your team, across the internet, without full-time internet access. For this release, we're going to keep this feature behind the "Experimental" checkbox. For now, we are only supporting Dropbox & LAN environments. If you would like to help test it out, that'd be great! Just contact us.
 
-![screenshot-online-only](https://i.imgur.com/VCqWEft.png){width="960px"}
+![screenshot-online-only](https://i.imgur.com/VCqWEft.png)
 
 ## Performance
 
 Recently we spent weeks improving Bloom's ability to deal with large books and long Bloom sessions without running out of memory. As part of that effort, we've added a tool for watching what happens to available memory and speed as Bloom does various things. This is mostly for our own use, but it's also available to you, in case you suspect that Bloom is eating memory or slowing down as you use it.
 
 ![screenshot-online-only](https://i.imgur.com/fkTafND.png)
-![screenshot-online-only](https://i.imgur.com/3fsm9ae.png){width="965px"}
+![screenshot-online-only](https://i.imgur.com/3fsm9ae.png)
 
 <br/>
 <br/>
