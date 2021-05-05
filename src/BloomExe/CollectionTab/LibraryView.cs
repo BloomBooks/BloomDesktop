@@ -93,6 +93,7 @@ namespace Bloom.CollectionTab
 				// tcManager.CurrentCollection?.MessageLog?.LoadSavedMessages();
 				using (var dlg = new ReactDialog("TeamCollectionDialog", new {showReloadButton, omitOuterFrame = true}))
 				{
+					dlg.UseEditContextMenu = true;
 					dlg.ShowDialog(this);
 					tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
 				}

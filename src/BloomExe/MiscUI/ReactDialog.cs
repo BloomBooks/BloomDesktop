@@ -22,6 +22,12 @@ namespace Bloom.MiscUI
 	{
 		public string CloseSource { get; set; } = null;
 
+		public bool UseEditContextMenu
+		{
+			get { return reactControl.UseEditContextMenu; }
+			set { reactControl.UseEditContextMenu = value; }
+		}
+
 		private static readonly List<ReactDialog> _activeDialogs = new List<ReactDialog>();
 
 		public ReactDialog(string reactComponentName, object props = null, string urlQueryString = "")

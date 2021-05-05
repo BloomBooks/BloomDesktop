@@ -528,26 +528,24 @@ namespace Bloom
 		{
 			MenuItem FFMenuItem = null;
 			Debug.Assert(!InvokeRequired);
+#if DEBUG
+			var _addDebuggingMenuItems = true;
+#else
+			var debugBloom = Environment.GetEnvironmentVariable("DEBUGBLOOM")?.ToLowerInvariant();
+			var _addDebuggingMenuItems = !String.IsNullOrEmpty(debugBloom) && debugBloom != "false" && debugBloom != "no" && debugBloom != "off";
+#endif
 			ContextMenuLocation = PointToClient(Cursor.Position);
 			if (ContextMenuProvider != null)
 			{
 				var replacesStdMenu = ContextMenuProvider(e);
-#if DEBUG
-				FFMenuItem = AddOpenPageInFFItem(e);
-#endif
-
+				if (_addDebuggingMenuItems || ((ModifierKeys & Keys.Control) == Keys.Control))
+					FFMenuItem = AddOpenPageInFFItem(e);
 				if (replacesStdMenu)
 					return; // only the provider's items
 			}
 
 			if(FFMenuItem == null)
 				AddOpenPageInFFItem(e);
-#if DEBUG
-			var _addDebuggingMenuItems = true;
-#else
-			var debugBloom = Environment.GetEnvironmentVariable("DEBUGBLOOM");
-			var _addDebuggingMenuItems = !String.IsNullOrEmpty(debugBloom) && debugBloom.ToLowerInvariant() != "false" && debugBloom.ToLowerInvariant() != "no";
-#endif
 			// Allow debugging entries on any alpha builds as well as any debug builds.
 			if (_addDebuggingMenuItems || ApplicationUpdateSupport.IsDevOrAlpha)
 				AddOtherMenuItemsForDebugging(e);

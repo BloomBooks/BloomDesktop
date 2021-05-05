@@ -47,6 +47,8 @@ namespace Bloom.web
 			set { _urlQueryString = value; }
 		}
 
+		public bool UseEditContextMenu;
+
 		private void ReactControl_Load(object sender, System.EventArgs e)
 		{
 			if (this.DesignModeAtAll())
@@ -91,6 +93,14 @@ namespace Bloom.web
 				Size = new Size(Width - 6, Height - 6),
 				BackColor = Color.White
 			};
+			if (UseEditContextMenu)
+				browser.ContextMenuProvider = args => {
+					args.ContextMenu.MenuItems.Add(new MenuItem(L10NSharp.LocalizationManager.GetString("Common.Copy", "Copy"),
+							(s1, e1) => { browser.WebBrowser.CopySelection(); }));
+					args.ContextMenu.MenuItems.Add(new MenuItem(L10NSharp.LocalizationManager.GetString("Common.SelectAll", "Select all"),
+							(s1, e1) => { browser.WebBrowser.SelectAll(); }));
+					return true;
+				};
 
 			var dummy = browser.Handle; // gets the WebBrowser created
 
