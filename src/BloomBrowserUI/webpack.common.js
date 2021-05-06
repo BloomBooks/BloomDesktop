@@ -1,6 +1,5 @@
 var path = require("path");
 const { merge } = require("webpack-merge");
-var node_modules = path.resolve(__dirname, "node_modules");
 var pathToOriginalJavascriptFilesInLib = path.resolve(__dirname, "lib");
 var pathToBookEditJS = path.resolve(__dirname, "bookEdit/js");
 var pathToOriginalJavascriptFilesInModified_Libraries = path.resolve(
@@ -93,7 +92,7 @@ module.exports = merge(core, {
         modules: [
             ".",
             pathToOriginalJavascriptFilesInLib,
-            node_modules,
+            "node_modules",
             pathToBookEditJS,
             pathToOriginalJavascriptFilesInModified_Libraries
         ],

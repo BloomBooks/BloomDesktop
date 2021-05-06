@@ -108,7 +108,7 @@ describe("Overflow Tests", () => {
     it("Check test page for Self overflows", () => {
         loadFixtures("OverflowFixture.html");
         expect($("#jasmine-fixtures")).toBeTruthy();
-        if (window.console && window.console.log) {
+        if (window.console) {
             consoleDef = true;
             console.log("Commencing Overflow tests...");
         }
@@ -118,7 +118,7 @@ describe("Overflow Tests", () => {
     it("Check test page for Margin overflows", () => {
         loadFixtures("OverflowMarginFixture.html");
         expect($("#jasmine-fixtures")).toBeTruthy();
-        if (window.console && window.console.log) {
+        if (window.console) {
             consoleDef = true;
             console.log("Commencing Margin Overflow tests...");
         }
@@ -130,7 +130,7 @@ describe("Overflow Tests", () => {
     it("Check test page for Fixed Ancestor overflows", () => {
         loadFixtures("OverflowAncestorFixture.html");
         expect($("#jasmine-fixtures")).toBeTruthy();
-        if (window.console && window.console.log) {
+        if (window.console) {
             consoleDef = true;
             console.log("Commencing Fixed Ancestor Overflow tests...");
         }
