@@ -133,3 +133,7 @@ src/BloomBrowserUI/react_components/IndependentProgressDialog.css
 src/BloomBrowserUI/teamCollection/TeamCollectionDialog.css
 
 src/BloomBrowserUI/publish/accessibilityCheck/daisyChecks.css
+
+src/BloomBrowserUI/.vscode/tasks.json.old
+
+src/BloomBrowserUI/teamCollection/JoinTeamCollection.css

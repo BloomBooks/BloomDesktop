@@ -9,7 +9,7 @@ import { getBloomButton } from "./TeamCollectionBookStatusPanel";
 import "./TeamCollectionBookStatusPanel.less";
 import { Typography } from "@material-ui/core";
 import { BloomAvatar } from "../react_components/bloomAvatar";
-import { JoinTeamCollection } from "./JoinTeamCollection";
+import { JoinTeamCollectionDialog } from "./JoinTeamCollectionDialog";
 import "./JoinTeamCollection.less";
 import { TeamCollectionDialog } from "./TeamCollectionDialog";
 import { TeamCollectionSettingsPanel } from "./TeamCollectionSettingsPanel";
@@ -127,21 +127,39 @@ storiesOf("Team Collection components/StatusPanelCommon", module)
         )
     );
 
-storiesOf("Team Collection components", module).add(
-    "JoinTeamCollection",
-    () => (
+storiesOf("Team Collection components/JoinTeamCollection", module)
+    .add(" new collection", () => (
         <div id="reactRoot" className="JoinTeamCollection">
-            <JoinTeamCollection />
+            <JoinTeamCollectionDialog
+                collectionName="foobar"
+                existingCollection={false}
+            />
         </div>
-    )
-);
+    ))
+    .add("existing collection", () => (
+        <div id="reactRoot" className="JoinTeamCollection">
+            <JoinTeamCollectionDialog
+                collectionName="foobar"
+                existingCollection={true}
+            />
+        </div>
+    ))
+    .add("existing collection, bare frame", () => (
+        <div id="reactRoot" className="JoinTeamCollection">
+            <JoinTeamCollectionDialog
+                collectionName="foobar"
+                existingCollection={true}
+                omitOuterFrame={true}
+            />
+        </div>
+    ));
 
 storiesOf("Team Collection components", module)
-    .add("TeamCollectionDialog with dialog frame", () => (
-        <TeamCollectionDialog omitOuterFrame={false} />
+    .add("TeamCollectionDialog with dialog frame and reload button", () => (
+        <TeamCollectionDialog omitOuterFrame={false} showReloadButton={true} />
     ))
     .add("TeamCollectionDialog", () => (
-        <TeamCollectionDialog omitOuterFrame={true} />
+        <TeamCollectionDialog omitOuterFrame={true} showReloadButton={false} />
     ));
 
 storiesOf(

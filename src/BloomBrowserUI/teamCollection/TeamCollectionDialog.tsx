@@ -12,41 +12,40 @@ import { kBloomBlue } from "../bloomMaterialUITheme";
 import {
     BloomDialog,
     DialogBottom,
+    DialogBottomButtons,
+    DialogBottomLeftButtons,
+    DialogCloseButton,
     DialogMiddle,
-    DialogTitle
+    DialogTitle,
+    useMakeBloomDialog
 } from "../react_components/BloomDialog/BloomDialog";
-import { useState } from "react";
 
 export let showTeamCollectionDialog: () => void;
+
 export const TeamCollectionDialog: React.FunctionComponent<{
     omitOuterFrame: boolean;
+    showReloadButton: boolean;
 }> = props => {
-    const [open, setOpen] = useState(true);
+    const { showDialog, closeDialog, propsForBloomDialog } = useMakeBloomDialog(
+        props.omitOuterFrame
+    );
+
+    // hoist this up to the window level so that any code that imports showTeamCollectionDialog can show it
+    // (It will still have to be declared once at the app level when it is no longer launched in its own winforms dialog.)
+    showTeamCollectionDialog = showDialog;
+
     const dialogTitle = useL10n(
         "Team Collection",
         "TeamCollection.TeamCollection"
     );
-
-    React.useEffect(() => (showTeamCollectionDialog = () => setOpen(true)), []);
 
     const [events] = BloomApi.useApiObject<IBloomWebSocketProgressEvent[]>(
         "teamCollection/getLog",
         []
     );
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const showReloadButton = !!urlParams.get("showReloadButton");
-
-    function close() {
-        if (props.omitOuterFrame) BloomApi.post("common/closeReactDialog");
-        else setOpen(false);
-    }
     return (
-        <BloomDialog
-            open={open}
-            omitOuterFrame={props.omitOuterFrame}
-            onClose={close}
-        >
+        <BloomDialog {...propsForBloomDialog}>
             <DialogTitle
                 title={`${dialogTitle} (experimental)`}
                 icon={"Team Collection.svg"}
@@ -60,39 +59,36 @@ export const TeamCollectionDialog: React.FunctionComponent<{
                         // If we have omitOuterFrame that means the dialog height is controlled by c#, so let the progress grow to fit it.
                         // Maybe we could have that approach *all* the time?
                         height: ${props.omitOuterFrame ? "100%" : "400px"};
-                        min-width: 540px;
+                        // enhance: there is a bug I haven't found where, if this is > 530px, then it overflows. Instead, the BloomDialog should keep growing.
+                        min-width: 530px;
                     `}
                 />
             </DialogMiddle>
 
-            <DialogBottom>
-                {showReloadButton && (
-                    <BloomButton
-                        id="reload"
-                        l10nKey="TeamCollection.Reload"
-                        temporarilyDisableI18nWarning={true}
-                        //variant="text"
-                        enabled={true}
-                        hasText={true}
-                        onClick={() => BloomApi.post("common/reloadCollection")}
-                    >
-                        Reload Collection
-                    </BloomButton>
+            <DialogBottomButtons>
+                {props.showReloadButton && (
+                    <DialogBottomLeftButtons>
+                        <BloomButton
+                            id="reload"
+                            l10nKey="TeamCollection.Reload"
+                            temporarilyDisableI18nWarning={true}
+                            //variant="text"
+                            enabled={true}
+                            hasText={true}
+                            onClick={() =>
+                                BloomApi.post("common/reloadCollection")
+                            }
+                        >
+                            Reload Collection
+                        </BloomButton>
+                    </DialogBottomLeftButtons>
                 )}
-                <BloomButton
-                    l10nKey="Common.Close"
-                    hasText={true}
-                    enabled={true}
-                    variant={showReloadButton ? "outlined" : "contained"}
-                    temporarilyDisableI18nWarning={true}
-                    onClick={close}
-                    css={css`
-                        float: right;
-                    `}
-                >
-                    Close
-                </BloomButton>
-            </DialogBottom>
+                <DialogCloseButton
+                    onClick={closeDialog}
+                    // default action is to close *unless* we're showing reload
+                    default={!props.showReloadButton}
+                />
+            </DialogBottomButtons>
         </BloomDialog>
     );
 };

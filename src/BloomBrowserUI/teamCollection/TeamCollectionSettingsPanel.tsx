@@ -13,19 +13,12 @@ import theme from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 
-// A device for getting code into the team collection module
-import { ProgressDialog } from "../react_components/Progress/ProgressDialog";
-export { ProgressDialog };
-import { JoinTeamCollection } from "./JoinTeamCollection";
-export { JoinTeamCollection };
-import { CreateTeamCollection } from "./CreateTeamCollection";
-export { CreateTeamCollection };
-
 import BloomButton from "../react_components/bloomButton";
 import { Dialog } from "@material-ui/core";
 import { useState } from "react";
 
 import StarIcon from "@material-ui/icons/Star";
+import { CreateTeamCollection } from "./CreateTeamCollection";
 //import joiningImage from "../images/joining-team-collection.png";
 
 // The contents of the Team Collection panel of the Settings dialog.

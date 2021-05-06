@@ -7,7 +7,7 @@ import {
 } from "./l10nComponents";
 import Button from "@material-ui/core/Button";
 
-export interface IButtonProps extends ILocalizationProps {
+export interface IBloomButtonProps extends ILocalizationProps {
     id?: string;
     enabled: boolean;
     clickApiEndpoint?: string;
@@ -31,10 +31,10 @@ export interface IButtonProps extends ILocalizationProps {
 // The button displays localizable text and optionally enabled and disabled versions of an image file.
 // Also, this button optionally implements the LocalizableElement tooltip function.
 export default class BloomButton extends LocalizableElement<
-    IButtonProps,
+    IBloomButtonProps,
     ILocalizationState
 > {
-    constructor(props: IButtonProps) {
+    constructor(props: IBloomButtonProps) {
         super(props);
     }
 

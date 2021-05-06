@@ -16,8 +16,10 @@ import { kBloomGold, kErrorColor } from "../../bloomMaterialUITheme";
 import {
     BloomDialog,
     DialogBottom,
+    DialogCloseButton,
     DialogMiddle,
-    DialogTitle
+    DialogTitle,
+    useMakeBloomDialog
 } from "../BloomDialog/BloomDialog";
 
 export const ProgressDialog: React.FunctionComponent<{
@@ -34,7 +36,9 @@ export const ProgressDialog: React.FunctionComponent<{
     webSocketContext: string;
     onReadyToReceive?: () => void;
 }> = props => {
-    const [open, setOpen] = useState(true);
+    const { showDialog, closeDialog, propsForBloomDialog } = useMakeBloomDialog(
+        props.omitOuterFrame
+    );
     const [showButtons, setShowButtons] = useState(false);
     const [sawAnError, setSawAnError] = useState(false);
     const [sawAWarning, setSawAWarning] = useState(false);
@@ -45,7 +49,6 @@ export const ProgressDialog: React.FunctionComponent<{
     // Start off showing the spinner, then stop when we get a "finished" message.
     const [showSpinner, setShowSpinner] = useState(true);
 
-    const progress = useRef("");
     // Note that the embedded ProgressBox is also listening to the same stream of events.
     // Here we are just concerned with events that change the state of our buttons, title bar, etc.
     React.useEffect(() => {
@@ -89,17 +92,8 @@ export const ProgressDialog: React.FunctionComponent<{
         titleColor = "white";
     }
 
-    function close() {
-        if (props.omitOuterFrame) BloomApi.post("common/closeReactDialog");
-        else setOpen(false);
-    }
-
     return (
-        <BloomDialog
-            open={open}
-            omitOuterFrame={props.omitOuterFrame}
-            onClose={close}
-        >
+        <BloomDialog {...propsForBloomDialog}>
             <DialogTitle
                 title={props.title}
                 icon={props.titleIcon}
@@ -154,18 +148,7 @@ export const ProgressDialog: React.FunctionComponent<{
                                 Report
                             </BloomButton>
                         )}
-                        <BloomButton
-                            id="close-button"
-                            l10nKey="Common.Close"
-                            hasText={true}
-                            enabled={true}
-                            onClick={close}
-                            css={css`
-                                float: right;
-                            `}
-                        >
-                            Close
-                        </BloomButton>
+                        <DialogCloseButton onClick={closeDialog} />
                     </React.Fragment>
                 ) : (
                     // This is an invisible Placeholder used to leave room for buttons when the progress is over
