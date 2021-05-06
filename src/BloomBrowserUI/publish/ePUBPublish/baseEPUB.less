@@ -105,3 +105,25 @@ video {
 .-epub-media-overlay-active {
     background-color: #ffb;
 }
+
+// These rules deal with changes due to including xmatter css in epubs.
+// The .epub class will be on the body tag when publishing to epub.
+.epub {
+    // These rules fix Readium and Android EKitabu layout issues, and allow cover color to extend
+    // to the bottom of the page. Windows EKitabu doesn't work quite as well, unfortunately.
+    height: 100% !important;
+    .bloom-frontMatter,
+    .bloom-backMatter {
+        height: 100%;
+    }
+
+    // On ePUB, the bottom branding wants to sit on top of the acknowledgments.
+    .credits .marginBox {
+        [data-book="credits-page-branding-bottom-html"] {
+            // Apparently "position: absolute" doesn't work in ePubs because of the page size issue
+            // mentioned above.
+            position: relative;
+            bottom: 0;
+        }
+    }
+}
