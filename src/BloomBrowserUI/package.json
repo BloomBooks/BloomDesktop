@@ -120,10 +120,10 @@
         "xregexp": "^4.2.4"
     },
     "devDependencies": {
-        "@babel/cli": "^7.4.3",
-        "@babel/core": "^7.4.3",
-        "@babel/preset-env": "^7.4.3",
-        "@babel/preset-react": "^7.0.0",
+        "@babel/cli": "^7.13.16",
+        "@babel/core": "^7.14.0",
+        "@babel/preset-env": "^7.14.1",
+        "@babel/preset-react": "^7.13.13",
         "@storybook/addon-a11y": "^5.3.18",
         "@storybook/react": "^5.3.18",
         "@types/dom-mediacapture-record": "^1.0.1",
