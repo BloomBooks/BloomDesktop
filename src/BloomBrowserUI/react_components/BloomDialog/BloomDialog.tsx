@@ -11,12 +11,16 @@ import { useState } from "react";
 import BloomButton from "../bloomButton";
 
 import InfoIcon from "@material-ui/icons/Info";
+import WarningIcon from "@material-ui/icons/Warning";
+
 // This component provides consistent layout across Bloom Dialogs.
 // It can be used either inside of a winforms dialog, or as a MaterialUI Dialog.
 // See the accompanying storybook story for usage.
 //
 
-const kDialogOuterPadding = "24px"; // per material?
+const kDialogTopPadding = "24px"; // per material
+const kDialogSidePadding = "24px"; // per material
+const kDialogBottomPadding = "8px"; // per material
 
 export const BloomDialog: React.FunctionComponent<{
     open: boolean;
@@ -29,12 +33,12 @@ export const BloomDialog: React.FunctionComponent<{
             css={css`
                 display: flex;
                 flex-direction: column;
-                padding-left: ${kDialogOuterPadding};
-                padding-right: ${kDialogOuterPadding};
-                padding-bottom: ${kDialogOuterPadding};
+                padding-left: ${kDialogSidePadding};
+                padding-right: ${kDialogSidePadding};
+                padding-bottom: ${kDialogBottomPadding};
                 // todo: I can't understand why this "- 10px" is needed. This and all its parents have no margin, so I don't understand why it ends up being 10px larger than the available space
                 ${props.omitOuterFrame
-                    ? `height: 100%; border: solid thin darkgrey; box-sizing: border-box;`
+                    ? `height: 100%; border: solid thin black; box-sizing: border-box;`
                     : ""}
             `}
         >
@@ -70,7 +74,7 @@ export const DialogTitle: React.FunctionComponent<{
 
     // This is lame, but it's really what looks right to me. When there is a color bar, it looks better to have less padding at the top.
     const titleTopPadding =
-        background === "transparent" ? kDialogOuterPadding : kDialogPadding;
+        background === "transparent" ? kDialogTopPadding : kDialogPadding;
     return (
         <div
             css={css`
@@ -78,12 +82,12 @@ export const DialogTitle: React.FunctionComponent<{
                 background-color: ${background};
                 display: flex;
 
-                padding-left: ${kDialogOuterPadding};
-                padding-right: ${kDialogOuterPadding};
+                padding-left: ${kDialogTopPadding};
+                padding-right: ${kDialogTopPadding};
                 padding-top: ${titleTopPadding};
                 padding-bottom: ${kDialogPadding};
-                margin-left: -${kDialogOuterPadding};
-                margin-right: -${kDialogOuterPadding};
+                margin-left: -${kDialogTopPadding};
+                margin-right: -${kDialogTopPadding};
                 margin-bottom: ${kDialogPadding};
                 * {
                     font-size: 16px;
@@ -126,6 +130,7 @@ export const DialogMiddle: React.FunctionComponent<{}> = props => {
                 display: flex;
                 flex-direction: column;
                 flex-grow: 1;
+
                 p {
                     margin-block-start: 0;
                 }
@@ -145,6 +150,9 @@ export const DialogBottom: React.FunctionComponent<{}> = props => {
     return (
         <div
             css={css`
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
                 margin-top: auto; // push to bottom
                 padding-top: ${kDialogPadding}; // leave room between us and the content above us
             `}
@@ -166,7 +174,11 @@ export const DialogBottomLeftButtons: React.FunctionComponent<{}> = props => (
             button{
                 margin-right: ${kDialogPadding};
             }
-            // margin-left: -6px;   <--- tempting... makes un-outlined material buttons left-align
+             //padding-left: 0;//  would be good, if we could only apply it to un-outlined material buttons to make them left-align
+
+             button{
+                 margin-left:0;
+             }
         `}
     >
         {props.children}
@@ -189,7 +201,9 @@ export const DialogBottomButtons: React.FunctionComponent<{}> = props => {
                 margin-left: ${kDialogPadding};
             }
 
-                width: 100%; // needed to left left buttons actually get to the left
+                // As per material (https://i.imgur.com/REsXU1C.png), we actually should be closer to the right than
+                // the content.
+                width: calc(100% + 10px);
             `}
             {...props}
         >
@@ -243,6 +257,23 @@ export const NoteBox: React.FunctionComponent<{}> = props => (
             `}
         >
             <InfoIcon
+                color="primary"
+                css={css`
+                    margin-right: ${kDialogPadding};
+                `}
+            />
+            {props.children}
+        </CardContent>
+    </Card>
+);
+export const CautionBox: React.FunctionComponent<{}> = props => (
+    <Card style={{ backgroundColor: "#E5F9F0" }}>
+        <CardContent
+            css={css`
+                display: flex;
+            `}
+        >
+            <WarningIcon
                 color="primary"
                 css={css`
                     margin-right: ${kDialogPadding};

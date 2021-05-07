@@ -18,7 +18,7 @@ import { Dialog } from "@material-ui/core";
 import { useState } from "react";
 
 import StarIcon from "@material-ui/icons/Star";
-import { CreateTeamCollection } from "./CreateTeamCollection";
+import { CreateTeamCollectionDialog } from "./CreateTeamCollection";
 //import joiningImage from "../images/joining-team-collection.png";
 
 // The contents of the Team Collection panel of the Settings dialog.
@@ -189,7 +189,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                                 {repoFolderPath
                                     ? isTeamCollection
                                     : isNotTeamCollection}
-                                <Dialog
+                                {/* <Dialog
                                     open={createDlgOpen}
                                     onBackdropClick={() =>
                                         setCreateDlgOpen(false)
@@ -198,7 +198,8 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                                     <CreateTeamCollection
                                         closeDlg={() => setCreateDlgOpen(false)}
                                     />
-                                </Dialog>
+                                </Dialog> */}
+                                <CreateTeamCollectionDialog />
                             </React.Fragment>
                         )}
                     </BloomEnterpriseAvailableContext.Consumer>

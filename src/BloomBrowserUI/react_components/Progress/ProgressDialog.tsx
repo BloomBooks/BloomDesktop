@@ -3,19 +3,19 @@ import { jsx, css } from "@emotion/core";
 
 import { Button, CircularProgress } from "@material-ui/core";
 import * as React from "react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { BloomApi } from "../../utils/bloomApi";
 import WebSocketManager, {
     IBloomWebSocketProgressEvent
 } from "../../utils/WebSocketManager";
 import BloomButton from "../bloomButton";
-import { Link } from "../link";
 import { ProgressBox } from "./progressBox";
-import "./ProgressDialog.less";
 import { kBloomGold, kErrorColor } from "../../bloomMaterialUITheme";
 import {
     BloomDialog,
     DialogBottom,
+    DialogBottomButtons,
+    DialogBottomLeftButtons,
     DialogCloseButton,
     DialogMiddle,
     DialogTitle,
@@ -112,7 +112,13 @@ export const ProgressDialog: React.FunctionComponent<{
                     />
                 )}
             </DialogTitle>
-            <DialogMiddle>
+            <DialogMiddle
+                css={css`
+                    // I don't actually understand why I had do to this, other than than
+                    // I'm hopeless at css sizing stuff. See storybook story ProgressDialog: long.
+                    overflow-y: unset;
+                `}
+            >
                 <ProgressBox
                     webSocketContext={props.webSocketContext}
                     onReadyToReceive={props.onReadyToReceive}
@@ -124,29 +130,31 @@ export const ProgressDialog: React.FunctionComponent<{
                     `}
                 />
             </DialogMiddle>
-            <DialogBottom>
+            <DialogBottomButtons>
                 {showButtons ? (
                     <React.Fragment>
                         {buttonForSendingErrorReportIsRelevant && (
-                            <BloomButton
-                                id="progress-report"
-                                hasText={true}
-                                enabled={true}
-                                //color="primary"
-                                l10nKey="Common.Report"
-                                variant="text"
-                                onClick={() => {
-                                    BloomApi.postJson(
-                                        "problemReport/showDialog",
-                                        {
-                                            message: messagesForErrorReporting,
-                                            shortMessage: `The user reported a problem from "${props.title}".`
-                                        }
-                                    );
-                                }}
-                            >
-                                Report
-                            </BloomButton>
+                            <DialogBottomLeftButtons>
+                                <BloomButton
+                                    id="progress-report"
+                                    hasText={true}
+                                    enabled={true}
+                                    //color="primary"
+                                    l10nKey="Common.Report"
+                                    variant="text"
+                                    onClick={() => {
+                                        BloomApi.postJson(
+                                            "problemReport/showDialog",
+                                            {
+                                                message: messagesForErrorReporting,
+                                                shortMessage: `The user reported a problem from "${props.title}".`
+                                            }
+                                        );
+                                    }}
+                                >
+                                    Report
+                                </BloomButton>
+                            </DialogBottomLeftButtons>
                         )}
                         <DialogCloseButton onClick={closeDialog} />
                     </React.Fragment>
@@ -161,7 +169,7 @@ export const ProgressDialog: React.FunctionComponent<{
                         placeholder
                     </Button>
                 )}
-            </DialogBottom>
+            </DialogBottomButtons>
         </BloomDialog>
     );
 };

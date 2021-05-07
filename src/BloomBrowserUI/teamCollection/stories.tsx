@@ -10,10 +10,9 @@ import "./TeamCollectionBookStatusPanel.less";
 import { Typography } from "@material-ui/core";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import { JoinTeamCollectionDialog } from "./JoinTeamCollectionDialog";
-import "./JoinTeamCollection.less";
 import { TeamCollectionDialog } from "./TeamCollectionDialog";
 import { TeamCollectionSettingsPanel } from "./TeamCollectionSettingsPanel";
-import { CreateTeamCollection } from "./CreateTeamCollection";
+import { CreateTeamCollectionDialog } from "./CreateTeamCollection";
 
 addDecorator(storyFn => (
     <ThemeProvider theme={theme}>
@@ -167,13 +166,7 @@ storiesOf(
     module
 ).add("TeamCollectionSettingsPanel", () => <TeamCollectionSettingsPanel />);
 
-storiesOf("Team Collection components", module).add(
-    "CreateTeamCollection",
-    () => (
-        <CreateTeamCollection
-            closeDlg={() => {
-                alert("close");
-            }}
-        />
-    )
-);
+storiesOf(
+    "Team Collection components",
+    module
+).add("CreateTeamCollection Dialog", () => <CreateTeamCollectionDialog />);

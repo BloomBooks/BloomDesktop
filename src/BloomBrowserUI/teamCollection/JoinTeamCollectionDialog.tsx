@@ -4,16 +4,11 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { BloomApi } from "../utils/bloomApi";
 import { Div, P } from "../react_components/l10nComponents";
-import "./JoinTeamCollection.less";
 import BloomButton from "../react_components/bloomButton";
 
-import theme from "../bloomMaterialUITheme";
-import { ThemeProvider } from "@material-ui/styles";
 import {
     BloomDialog,
-    DialogBottom,
     DialogBottomButtons,
-    DialogBottomLeftButtons,
     DialogCancelButton,
     DialogMiddle,
     DialogTitle,
