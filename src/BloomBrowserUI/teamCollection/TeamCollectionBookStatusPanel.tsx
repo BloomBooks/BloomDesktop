@@ -8,7 +8,7 @@ import "./TeamCollectionBookStatusPanel.less";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import BloomButton from "../react_components/bloomButton";
 import { BloomAvatar } from "../react_components/bloomAvatar";
-import { useWebSocketListenerForOneEvent } from "../utils/WebSocketManager";
+import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 
 // The panel that shows the book preview and settings in the collection tab in a Team Collection.
 
@@ -89,7 +89,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         );
     }, [reload]);
 
-    useWebSocketListenerForOneEvent("bookStatus", "reload", () =>
+    useSubscribeToWebSocketForEvent("bookStatus", "reload", () =>
         setReload(oldValue => oldValue + 1)
     );
 

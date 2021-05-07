@@ -18,8 +18,8 @@ import { ThemeProvider } from "@material-ui/styles";
 import theme from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import {
-    useWebSocketListenerForOneMessage,
-    useWebSocketListenerForOneEvent
+    useSubscribeToWebSocketForStringMessage,
+    useSubscribeToWebSocketForEvent
 } from "../../utils/WebSocketManager";
 import { BloomApi } from "../../utils/bloomApi";
 import HelpLink from "../../react_components/helpLink";
@@ -78,7 +78,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
         "publish/android/canRotate",
         false
     );
-    useWebSocketListenerForOneMessage(
+    useSubscribeToWebSocketForStringMessage(
         "publish-android",
         "androidPreview",
         url => {
@@ -89,7 +89,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     const usbWorking = useL10n("Publishing", "PublishTab.Common.Publishing");
     const wifiWorking = useL10n("Publishing", "PublishTab.Common.Publishing");
 
-    useWebSocketListenerForOneEvent(
+    useSubscribeToWebSocketForEvent(
         "publish-android",
         "publish/android/state",
         e => {

@@ -42,7 +42,7 @@ function useWebSocketListenerInner<T>(
     }, []);
 }
 
-export function useWebSocketListenerForOneEvent(
+export function useSubscribeToWebSocketForEvent(
     clientContext: string,
     eventId: string,
     listener: (e: IBloomWebSocketEvent) => void,
@@ -56,7 +56,7 @@ export function useWebSocketListenerForOneEvent(
         onlyCallListenerIfMessageIsTruthy ? e => !!e.message : e => true
     );
 }
-export function useWebSocketListenerForOneMessage(
+export function useSubscribeToWebSocketForStringMessage(
     clientContext: string,
     eventId: string,
     listener: (message: string) => void
@@ -66,10 +66,13 @@ export function useWebSocketListenerForOneMessage(
         eventId,
         listener,
         e => e.message!,
-        e => !!e.message
+        e => !!e.message // ignore if no message
     );
 }
-export function useWebSocketListenerForOneObject<T>(
+
+// Subscribe to an event where the message string is holding a JSON object
+// which this will parse.
+export function useSubscribeToWebSocketForObject<T>(
     clientContext: string,
     eventId: string,
     listener: (message: T) => void
@@ -78,9 +81,11 @@ export function useWebSocketListenerForOneObject<T>(
         clientContext,
         eventId,
         listener,
-        e => JSON.parse(e.message!) as T
+        e => JSON.parse(e.message!) as T,
+        e => !!e.message // ignore if no message
     );
 }
+
 // This class manages a websocket, currently at the WebSocketManager.socketMap level, currently with
 // a fixed name. (Possible enhancement: support top WebSocketManager.socketMap level).
 // You can add listeners (for "message") with addListener(),

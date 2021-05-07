@@ -13,8 +13,8 @@ import ThemeProvider from "@material-ui/styles/ThemeProvider";
 import theme from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import {
-    useWebSocketListenerForOneMessage,
-    useWebSocketListenerForOneEvent
+    useSubscribeToWebSocketForStringMessage,
+    useSubscribeToWebSocketForEvent
 } from "../../utils/WebSocketManager";
 import BloomButton from "../../react_components/bloomButton";
 import { EPUBHelpGroup } from "./ePUBHelpGroup";
@@ -57,7 +57,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
             : "" // otherwise, wait for the websocket to deliver a url when the c# has finished creating the bloomd
     );
 
-    useWebSocketListenerForOneEvent(
+    useSubscribeToWebSocketForEvent(
         "publish-epub",
         "startingEbookCreation",
         e => {
@@ -67,11 +67,15 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
 
     // The c# api responds to changes of settings by auto-starting a new epub build. When
     // it is done, it calls this (but actually the same url, alas).
-    useWebSocketListenerForOneMessage("publish-epub", "newEpubReady", url => {
-        // add a random component so that react will reload the iframe
-        setBookUrl(url + "&random=" + Math.random().toString());
-        setClosePending(true);
-    });
+    useSubscribeToWebSocketForStringMessage(
+        "publish-epub",
+        "newEpubReady",
+        url => {
+            // add a random component so that react will reload the iframe
+            setBookUrl(url + "&random=" + Math.random().toString());
+            setClosePending(true);
+        }
+    );
 
     return (
         <>
