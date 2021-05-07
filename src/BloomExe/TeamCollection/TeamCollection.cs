@@ -1542,8 +1542,6 @@ namespace Bloom.TeamCollection
 						titleColor = "white",
 						titleBackgroundColor = Palette.kBloomBlueHex,
 						webSocketContext = TeamCollection.kWebSocketContext,
-						// we're providing the dialog as a winforms dialog
-						omitOuterFrame = true,
 						showReportButton = "if-error"
 		})
 					// winforms dialog properties

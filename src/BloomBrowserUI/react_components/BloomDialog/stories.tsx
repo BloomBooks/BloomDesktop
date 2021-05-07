@@ -6,85 +6,70 @@ import { storiesOf } from "@storybook/react";
 import {
     BloomDialog,
     DialogBottom,
+    DialogBottomButtons,
+    DialogBottomLeftButtons,
+    DialogCancelButton,
+    DialogCloseButton,
     DialogMiddle,
-    DialogTitle
+    DialogTitle,
+    useMakeBloomDialog
 } from "./BloomDialog";
 import { Button, CircularProgress } from "@material-ui/core";
 
 storiesOf("Bloom Dialog", module)
     .add("Simple Dialog", () => {
         return React.createElement(() => {
-            const [open, setOpen] = React.useState(false);
+            const {
+                showDialog,
+                closeDialog,
+                propsForBloomDialog
+            } = useMakeBloomDialog();
+            // normally here we would assign showDialog to an exported function that
+            // other parts of the UI can use to show this dialog. But that doesn't
+            // really work here in story-land, so we'll just use it below in a button.
             return (
                 <div>
-                    {open ? (
-                        <BloomDialog
-                            omitOuterFrame={false}
-                            open={open}
-                            onClose={() => setOpen(false)}
+                    <BloomDialog {...propsForBloomDialog}>
+                        <DialogTitle title="A Simple <BloomDialog>" />
+                        <DialogMiddle
+                            css={css`
+                                height: 200px;
+                                width: 500px;
+                                p {
+                                    margin-top: 0;
+                                }
+                            `}
                         >
-                            <DialogTitle title="A Simple Progress Dialog" />
-                            <DialogMiddle
-                                css={css`
-                                    height: 100px;
-                                    width: 500px;
-                                    p {
-                                        margin-top: 0;
-                                    }
-                                `}
-                            >
-                                <p>
-                                    We should have a consistent amount of space
-                                    between every element and the borders of the
-                                    dialog box. This will overflow which should
-                                    lead to a vertical scroll bar.
-                                </p>
-                                <p>
-                                    Ea non consequat irure et elit enim laboris
-                                    fugiat ipsum. Lorem ipsum velit ut duis ex
-                                    magna aliquip quis. Magna incididunt ullamco
-                                    qui in aliquip. Est anim nisi aute cupidatat
-                                    elit voluptate ut aute quis esse excepteur.
-                                    Deserunt irure eiusmod occaecat nisi est
-                                    exercitation. Reprehenderit excepteur
-                                    excepteur cupidatat nisi esse nisi. Nostrud
-                                    excepteur irure incididunt nisi velit
-                                    voluptate velit proident.
-                                </p>
-                            </DialogMiddle>
-                            <DialogBottom>
-                                <Button
-                                    variant={"outlined"}
-                                    color={"primary"}
-                                    css={css`
-                                        float: right;
-                                    `}
-                                    onClick={() => setOpen(false)}
-                                >
-                                    Close Me
-                                </Button>
-                            </DialogBottom>
-                        </BloomDialog>
-                    ) : (
-                        <Button
-                            onClick={() => setOpen(true)}
-                            variant={"contained"}
-                        >
-                            {"Show Dialog"}
-                        </Button>
-                    )}
+                            <p>
+                                We should have a consistent amount of space
+                                between every element and the borders of the
+                                dialog box.
+                            </p>
+                        </DialogMiddle>
+                        <DialogBottomButtons>
+                            <DialogCloseButton onClick={closeDialog} />
+                        </DialogBottomButtons>
+                    </BloomDialog>
+                    <Button
+                        onClick={() => showDialog()}
+                        variant={"contained"}
+                        color="secondary"
+                    >
+                        {"Show Dialog"}
+                    </Button>
                 </div>
             );
         });
     })
-    .add("Dialog with icon and spinner", () => {
+    .add("Dialog with the kitchen sink", () => {
         return React.createElement(() => {
+            const {
+                showDialog,
+                closeDialog,
+                propsForBloomDialog
+            } = useMakeBloomDialog();
             return (
-                <BloomDialog
-                    omitOuterFrame={false}
-                    open={true}
-                    onClose={() => {}}
-                >
+                <BloomDialog {...propsForBloomDialog}>
                     <DialogTitle
                         icon="Check In.svg"
                         backgroundColor="#ffffad"
@@ -105,7 +90,7 @@ storiesOf("Bloom Dialog", module)
                     </DialogTitle>
                     <DialogMiddle
                         css={css`
-                            height: 100px;
+                            height: 300px;
                             width: 500px;
                             p {
                                 margin-top: 0;
@@ -128,27 +113,39 @@ storiesOf("Bloom Dialog", module)
                             est exercitation. Reprehenderit excepteur excepteur
                             cupidatat nisi esse nisi. Nostrud excepteur irure
                             incididunt nisi velit voluptate velit proident.
+                        </p>{" "}
+                        <p>
+                            Ea non consequat irure et elit enim laboris fugiat
+                            ipsum. Lorem ipsum velit ut duis ex magna aliquip
+                            quis. Magna incididunt ullamco qui in aliquip. Est
+                            anim nisi aute cupidatat elit voluptate ut aute quis
+                            esse excepteur. Deserunt irure eiusmod occaecat nisi
+                            est exercitation. Reprehenderit excepteur excepteur
+                            cupidatat nisi esse nisi. Nostrud excepteur irure
+                            incididunt nisi velit voluptate velit proident.
+                        </p>{" "}
+                        <p>
+                            Ea non consequat irure et elit enim laboris fugiat
+                            ipsum. Lorem ipsum velit ut duis ex magna aliquip
+                            quis. Magna incididunt ullamco qui in aliquip. Est
+                            anim nisi aute cupidatat elit voluptate ut aute quis
+                            esse excepteur. Deserunt irure eiusmod occaecat nisi
+                            est exercitation. Reprehenderit excepteur excepteur
+                            cupidatat nisi esse nisi. Nostrud excepteur irure
+                            incididunt nisi velit voluptate velit proident.
                         </p>
                     </DialogMiddle>
-                    <DialogBottom>
-                        <Button
-                            color={"primary"}
-                            css={css`
-                                float: left;
-                            `}
-                        >
-                            Secondary
+                    <DialogBottomButtons>
+                        <DialogBottomLeftButtons>
+                            <Button color="primary">
+                                Something on the left
+                            </Button>
+                        </DialogBottomLeftButtons>
+                        <Button variant="contained" color="primary">
+                            Just Do It
                         </Button>
-                        <Button
-                            variant={"contained"}
-                            color={"primary"}
-                            css={css`
-                                float: right;
-                            `}
-                        >
-                            Foo
-                        </Button>
-                    </DialogBottom>
+                        <DialogCancelButton onClick={closeDialog} />
+                    </DialogBottomButtons>
                 </BloomDialog>
             );
         });

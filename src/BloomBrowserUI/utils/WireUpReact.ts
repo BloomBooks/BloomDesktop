@@ -3,7 +3,7 @@ import * as ReactDOM from "react-dom";
 import { BookPreviewPanel } from "../bookPreview/BookPreviewPanel";
 import { TeamCollectionSettingsPanel } from "../teamCollection/TeamCollectionSettingsPanel";
 import { TeamCollectionDialog } from "../teamCollection/TeamCollectionDialog";
-import { JoinTeamCollection } from "../teamCollection/JoinTeamCollection";
+import { JoinTeamCollectionDialog } from "../teamCollection/JoinTeamCollectionDialog";
 import { AutoUpdateSoftwareDialog } from "../react_components/AutoUpdateSoftwareDialog";
 import { ProblemDialog } from "../problemDialog/ProblemDialog";
 import { ProgressDialog } from "../react_components/Progress/ProgressDialog";
@@ -13,7 +13,7 @@ const knownComponents = {
     BookPreviewPanel: BookPreviewPanel,
     TeamCollectionSettingsPanel: TeamCollectionSettingsPanel,
     TeamCollectionDialog: TeamCollectionDialog,
-    JoinTeamCollection: JoinTeamCollection,
+    JoinTeamCollectionDialog: JoinTeamCollectionDialog,
     AutoUpdateSoftwareDialog: AutoUpdateSoftwareDialog,
     ProblemDialog: ProblemDialog,
     ProgressDialog: ProgressDialog
@@ -25,8 +25,9 @@ const knownComponents = {
     reactComponentName: string,
     props?: Object
 ) => {
+    const p = { omitOuterFrame: true, ...props };
     ReactDOM.render(
-        React.createElement(knownComponents[reactComponentName], props, null),
+        React.createElement(knownComponents[reactComponentName], p, null),
         root
     );
 };
