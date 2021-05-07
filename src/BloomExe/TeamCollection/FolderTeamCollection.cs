@@ -722,13 +722,12 @@ namespace Bloom.TeamCollection
 			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(repoFolder));
 			var localCollectionFolder =
 				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, collectionName);
-			var urlQueryString = $"name={collectionName}";
-			if (Directory.Exists(localCollectionFolder))
-			{
-				urlQueryString += "&existingCollection=true"; // any 'truthy' value in JS will do
-			}
 
-			using (var dlg = new ReactDialog("JoinTeamCollection", urlQueryString))
+			using (var dlg = new ReactDialog("JoinTeamCollectionDialog", new
+			{
+				collectionName,
+				existingCollection = Directory.Exists(localCollectionFolder)
+			}))
 			{
 				dlg.Width = 560;
 				dlg.Height = 400;

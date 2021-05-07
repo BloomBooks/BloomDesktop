@@ -1009,17 +1009,20 @@ export class ReaderToolsModel {
                     };
                     editableElements.checkLeveledReader(options);
 
-                    // update current page words
+                    // update current page words, but only if page is already known
+                    // Some pages are (and should be) ignored.  See BL-9876.
                     const topPageWindow = this.getTopPageWindow();
                     if (topPageWindow) {
                         const pageDiv = $("body", topPageWindow.document).find(
                             "div.bloom-page"
                         );
-                        if (pageDiv.length) {
-                            if (pageDiv[0].id)
-                                this.pageIDToText[pageDiv[0].id] =
-                                    editableElements["allWords"];
-                        }
+                        if (
+                            pageDiv.length &&
+                            pageDiv[0].id &&
+                            this.pageIDToText[pageDiv[0].id] !== undefined
+                        )
+                            this.pageIDToText[pageDiv[0].id] =
+                                editableElements["allWords"];
                     }
                 }
 

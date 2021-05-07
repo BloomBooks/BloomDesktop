@@ -3,22 +3,21 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import theme from "../../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
-import { Dialog } from "@material-ui/core";
+import { Card, CardContent, Dialog } from "@material-ui/core";
 import CloseOnEscape from "react-close-on-escape";
 import { kDialogPadding } from "../../bloomMaterialUITheme";
 import { BloomApi } from "../../utils/bloomApi";
+import { useState } from "react";
+import BloomButton from "../bloomButton";
 
+import InfoIcon from "@material-ui/icons/Info";
 // This component provides consistent layout across Bloom Dialogs.
 // It can be used either inside of a winforms dialog, or as a MaterialUI Dialog.
-// Simplest usage:
-//               <BloomDialog open={true}>
-//                   <DialogTitle title="hello world"/>
-//                   <DialogMiddle>
-//                      stuff
-//                   </DialogMiddle>
-//                   <DialogBottom><CloseButton/></DialogBottom>
-//               </BloomDialog>
+// See the accompanying storybook story for usage.
 //
+
+const kDialogOuterPadding = "24px"; // per material?
+
 export const BloomDialog: React.FunctionComponent<{
     open: boolean;
     // true if the caller is wrapping in a winforms dialog already
@@ -30,11 +29,13 @@ export const BloomDialog: React.FunctionComponent<{
             css={css`
                 display: flex;
                 flex-direction: column;
-                padding-left: ${kDialogPadding};
-                padding-right: ${kDialogPadding};
-                padding-bottom: ${kDialogPadding};
+                padding-left: ${kDialogOuterPadding};
+                padding-right: ${kDialogOuterPadding};
+                padding-bottom: ${kDialogOuterPadding};
                 // todo: I can't understand why this "- 10px" is needed. This and all its parents have no margin, so I don't understand why it ends up being 10px larger than the available space
-                ${props.omitOuterFrame ? "height: calc(100% - 10px)" : ""}
+                ${props.omitOuterFrame
+                    ? `height: 100%; border: solid thin darkgrey; box-sizing: border-box;`
+                    : ""}
             `}
         >
             {props.children}
@@ -67,15 +68,22 @@ export const DialogTitle: React.FunctionComponent<{
     const color = props.color || "black";
     const background = props.backgroundColor || "transparent";
 
+    // This is lame, but it's really what looks right to me. When there is a color bar, it looks better to have less padding at the top.
+    const titleTopPadding =
+        background === "transparent" ? kDialogOuterPadding : kDialogPadding;
     return (
         <div
             css={css`
                 color: ${color};
                 background-color: ${background};
                 display: flex;
-                padding: ${kDialogPadding};
-                margin-left: -${kDialogPadding};
-                margin-right: -${kDialogPadding};
+
+                padding-left: ${kDialogOuterPadding};
+                padding-right: ${kDialogOuterPadding};
+                padding-top: ${titleTopPadding};
+                padding-bottom: ${kDialogPadding};
+                margin-left: -${kDialogOuterPadding};
+                margin-right: -${kDialogOuterPadding};
                 margin-bottom: ${kDialogPadding};
                 * {
                     font-size: 16px;
@@ -88,7 +96,8 @@ export const DialogTitle: React.FunctionComponent<{
                     src={props.icon}
                     alt="Decorative Icon"
                     css={css`
-                        margin-left: ${kDialogPadding};
+                        /* margin-left: ${kDialogPadding}; */
+                        margin-right: ${kDialogPadding};
                         color: ${color};
                     `}
                 />
@@ -97,7 +106,6 @@ export const DialogTitle: React.FunctionComponent<{
                 css={css`
                     margin-top: auto;
                     margin-bottom: auto;
-                    margin-left: ${kDialogPadding};
                 `}
             >
                 {props.title}
@@ -118,6 +126,13 @@ export const DialogMiddle: React.FunctionComponent<{}> = props => {
                 display: flex;
                 flex-direction: column;
                 flex-grow: 1;
+                p {
+                    margin-block-start: 0;
+                }
+                /* p:first-of-type {
+                    margin-block-start: 0;
+                    background-color: yellow;
+                } */
             `}
             {...props}
         >
@@ -139,3 +154,121 @@ export const DialogBottom: React.FunctionComponent<{}> = props => {
         </div>
     );
 };
+
+export const DialogBottomLeftButtons: React.FunctionComponent<{}> = props => (
+    <div
+        css={css`
+            margin-right: auto;
+            display: flex;
+
+            /* -- button separation -- */
+            // this is better but Firefox doesn't support it until FF 63:  gap: ${kDialogPadding};
+            button{
+                margin-right: ${kDialogPadding};
+            }
+            // margin-left: -6px;   <--- tempting... makes un-outlined material buttons left-align
+        `}
+    >
+        {props.children}
+    </div>
+);
+
+export const DialogBottomButtons: React.FunctionComponent<{}> = props => {
+    return (
+        <div
+            css={css`
+                margin-left: auto;
+                margin-top: auto; // push to bottom
+                padding-top: ${kDialogPadding}; // leave room between us and the content above us
+                display: flex;
+                justify-content: flex-end; // make buttons line up on the right, unless wrapped in <DialogBottomLeftButtons>
+                      // this is better but Firefox doesn't support it until FF 63:  gap: ${kDialogPadding};
+
+                /* -- button separation -- */
+                button{
+                margin-left: ${kDialogPadding};
+            }
+
+                width: 100%; // needed to left left buttons actually get to the left
+            `}
+            {...props}
+        >
+            {props.children}
+        </div>
+    );
+};
+export const DialogCloseButton: React.FunctionComponent<{
+    onClick: () => void;
+    default?: boolean;
+}> = props => (
+    <BloomButton
+        l10nKey="Common.Close"
+        hasText={true}
+        enabled={true}
+        // close button defaults to being the default button
+        variant={
+            props.default === undefined || props.default === true
+                ? "contained"
+                : "outlined"
+        }
+        {...props}
+    >
+        Close
+    </BloomButton>
+);
+
+export const DialogCancelButton: React.FunctionComponent<{
+    onClick: () => void;
+    default?: boolean;
+}> = props => (
+    <BloomButton
+        l10nKey="Common.Cancel"
+        hasText={true}
+        enabled={true}
+        // cancel button defaults to being the not-default default
+        variant={
+            !props.default || props.default === true ? "outlined" : "contained"
+        }
+        onClick={props.onClick}
+    >
+        Cancel
+    </BloomButton>
+);
+
+export const NoteBox: React.FunctionComponent<{}> = props => (
+    <Card style={{ backgroundColor: "#E5F9F0" }}>
+        <CardContent
+            css={css`
+                display: flex;
+            `}
+        >
+            <InfoIcon
+                color="primary"
+                css={css`
+                    margin-right: ${kDialogPadding};
+                `}
+            />
+            {props.children}
+        </CardContent>
+    </Card>
+);
+
+export function useMakeBloomDialog(omitOuterFrame?: boolean) {
+    const [currentlyOpen, setOpen] = useState(true);
+    function showDialog() {
+        setOpen(true);
+    }
+    function closeDialog() {
+        if (omitOuterFrame) BloomApi.post("common/closeReactDialog");
+        else setOpen(false);
+    }
+    return {
+        showDialog,
+        closeDialog,
+        propsForBloomDialog: {
+            open: currentlyOpen,
+            onClose: closeDialog,
+            omitOuterFrame
+        }
+    };
+}
