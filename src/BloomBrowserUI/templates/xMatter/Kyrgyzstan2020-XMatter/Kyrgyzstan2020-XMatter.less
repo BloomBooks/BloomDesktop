@@ -435,24 +435,33 @@ div.bloom-page {
 .epub {
     // These rules fix Readium and Android EKitabu layout issues, and allow cover color to extend
     // to the bottom of the page. Windows EKitabu doesn't work quite as well, unfortunately.
-    height: 100% !important;
+    height: calc(100% - 5px) !important;
     .bloom-frontMatter,
     .bloom-backMatter {
         height: 100%;
-    }
-
-    // On ePUB, the bottom branding wants to sit on top of the acknowledgments.
-    .credits .marginBox {
-        [data-book="credits-page-branding-bottom-html"] {
-            // Apparently "position: absolute" doesn't work in ePubs because of the page size issue
-            // mentioned above.
-            position: relative;
-            bottom: 0;
+        .marginBox {
+            height: 100%;
         }
     }
+
+    .credits .marginBox {
+        [data-book="credits-page-branding-bottom-html"] {
+            // We want the position absolute bottom 0 from a regular rule, but in epub
+            // the left: 0, right: 0 can mess up centering.
+            left: unset;
+            right: unset;
+        }
+    }
+
     .outsideBackCover .marginBox {
-        // otherwise non-epub rules push things right too much and chop off government logos!
+        height: 100% !important; // override non-epub version
+        // Non-epub rules try to push things right too much and chop off government logos!
         width: unset !important;
+        // Keep level image from moving off to next page where it's not visible by moving it up
+        // one grid-row.
+        [data-book="level-image"] {
+            grid-row: 2;
+        }
     }
     .divider {
         display: none;
