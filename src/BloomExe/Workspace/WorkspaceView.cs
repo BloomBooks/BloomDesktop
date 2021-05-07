@@ -831,6 +831,8 @@ namespace Bloom.Workspace
 				var screenSize = Screen.GetBounds(this);
 				dlg.Width = Math.Min(1024, screenSize.Width);
 				dlg.Height = Math.Min(768, screenSize.Height);
+				var uriCss = new Uri(FileLocationUtilities.GetFileDistributedWithApplication("ReleaseNotes.css"));
+				dlg.CssLinkHref = uriCss.AbsoluteUri;
 				dlg.ShowDialog();
 			}
 		}
