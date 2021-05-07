@@ -154,7 +154,10 @@ storiesOf("Team Collection components/JoinTeamCollection", module)
             <JoinTeamCollectionDialog
                 collectionName="foobar"
                 existingCollection={true}
-                dialogEnvironment={normalDialogEnvironmentForStorybook}
+                dialogEnvironment={{
+                    omitOuterFrame: true,
+                    initiallyOpen: true
+                }}
             />
         </div>
     ));
