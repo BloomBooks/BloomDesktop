@@ -33,7 +33,8 @@
 		<useNUnit-x86 Condition="'$(OS)'!='Windows_NT'">false</useNUnit-x86>
 		<MSBuildCommunityTasksPath>$(RootDir)/build</MSBuildCommunityTasksPath>
 		<teamcity_agent_home_dir Condition="'$(teamcity_agent_home_dir)'=='' And '$(OS)'!='Windows_NT'">/var/lib/TeamCity/agent</teamcity_agent_home_dir>
-	</PropertyGroup>
+	<SharedBuildDir>Z:</SharedBuildDir>
+    </PropertyGroup>
 
 	<UsingTask TaskName="StampAssemblies" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="MakeWixForDirTree" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
@@ -91,7 +92,7 @@
 	  </CreateProperty>
 	  <!-- Z drive is set up for data shared by all build agents on TeamCity. If running on a dev machine,
 	  you should set your preferred release folder from the command line, usually /p:SquirrelReleaseFolder=<root>/output/installer-->
-	  <CreateProperty Value="\\bob.psonet\buildshare\Bloom$(channel)" Condition="$(SquirrelReleaseFolder)==''">
+	  <CreateProperty Value="$(SharedBuildDir)\Bloom$(channel)" Condition="$(SquirrelReleaseFolder)==''">
 		  <Output PropertyName="SquirrelReleaseFolder" TaskParameter="Value"/>
 	  </CreateProperty>
 	<Message Text="Version: $(Version)" Importance="high"/>
