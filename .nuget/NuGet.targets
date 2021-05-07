@@ -18,20 +18,18 @@
 
 	<ItemGroup Condition=" '$(PackageSources)' == '' ">
 		<!-- Package sources used to restore packages. By default, registered sources under %APPDATA%\NuGet\NuGet.Config will be used -->
-		<!-- The official NuGet package source (https://nuget.org/api/v2/) will be excluded if package sources are specified and it does not appear in the list -->
-		<PackageSource Include="http://nuget.org/api/v2/" />
-		<PackageSource Include="http://build.palaso.org/guestAuth/app/nuget/v1/FeedService.svc/" />
+		<!-- The official NuGet package source (nuget.org) will be excluded if package sources are specified and it does not appear in the list -->
 	</ItemGroup>
 
 	<PropertyGroup>
 		<NuGetToolsPath>$(MSBuildThisFileDirectory)</NuGetToolsPath>
-		<PackagesConfig Condition="'$(OS)'=='Windows_NT'">$(ProjectDir)packages.config</PackagesConfig>
-		<PackagesConfig Condition="'$(OS)'!='Windows_NT'">$(ProjectDir)/packages.config</PackagesConfig>
+		<PackagesConfig Condition="'$(PackagesConfig)'=='' AND '$(OS)'=='Windows_NT'">$(ProjectDir)packages.config</PackagesConfig>
+		<PackagesConfig Condition="'$(PackagesConfig)'=='' AND '$(OS)'!='Windows_NT'">$(ProjectDir)/packages.config</PackagesConfig>
 	</PropertyGroup>
 
 	<PropertyGroup>
 		<!-- NuGet command -->
-		<NuGetExePath Condition=" '$(NuGetExePath)' == '' ">$(NuGetToolsPath)/NuGet.exe</NuGetExePath>
+		<NuGetExePath Condition=" '$(NuGetExePath)' == '' ">$(NuGetToolsPath)/nuget.exe</NuGetExePath>
 		<PackageSources Condition=" $(PackageSources) == '' ">@(PackageSource)</PackageSources>
 
 		<NuGetCommand Condition=" '$(OS)' == 'Windows_NT'">"$(NuGetExePath)"</NuGetCommand>
@@ -72,7 +70,8 @@
 
 	<Target Name="_DownloadNuGet" Condition=" '$(DownloadNuGetExe)' == 'true' AND !Exists('$(NuGetExePath)')">
 		<DownloadNuGet OutputFilename="$(NuGetExePath)" Condition="'$(OS)' == 'Windows_NT'" />
-		<Exec Command="wget https://nuget.org/NuGet.exe" WorkingDirectory="$(NuGetToolsPath)"
+		<!-- change back to /latest/ instead of /v5.2.0/ when we move to mono 5 -->
+		<Exec Command="wget https://dist.nuget.org/win-x86-commandline/v5.2.0/nuget.exe" WorkingDirectory="$(NuGetToolsPath)"
 			Condition="'$(OS)' != 'Windows_NT'" />
 	</Target>
 
@@ -113,9 +112,12 @@
 				try {
 					OutputFilename = Path.GetFullPath(OutputFilename);
 
+					ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
+					Log.LogMessage("Enabled Protocols: " + ServicePointManager.SecurityProtocol);
+
 					Log.LogMessage("Downloading latest version of NuGet.exe...");
 					WebClient webClient = new WebClient();
-					webClient.DownloadFile("https://nuget.org/nuget.exe", OutputFilename);
+					webClient.DownloadFile("https://dist.nuget.org/win-x86-commandline/latest/nuget.exe", OutputFilename);
 
 					return true;
 				}
