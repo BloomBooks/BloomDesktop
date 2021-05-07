@@ -105,3 +105,27 @@ video {
 .-epub-media-overlay-active {
     background-color: #ffb;
 }
+
+// These rules deal with changes due to including xmatter css in epubs.
+// The .epub class will be on the body tag when publishing to epub.
+.epub {
+    .credits,
+    .titlePage,
+    .theEndPage {
+        .marginBox {
+            // In non-epub situations, branding elements are more easily set with position: absolute.
+            // Unfortunately, the epub concept of page length being somewhat fluid, makes absolute
+            // positioning not work so well. So we make all branding positioning relative.
+            [data-book*="branding"] {
+                position: relative;
+                // We don't want left or right set, to avoid centering issues.
+                left: unset;
+                right: unset;
+            }
+            // If this branding block isn't the first div on the page, add some space.
+            div + [data-book*="branding"] {
+                margin-top: 20px;
+            }
+        }
+    }
+}
