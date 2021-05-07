@@ -907,8 +907,21 @@ namespace Bloom.Workspace
 		}
 
 
-#endregion
+		#endregion
 
+		private void _reachUpgradeTimer_Tick(object sender, EventArgs e)
+		{
+			_reachUpgradeTimer.Enabled = false;
+			DoSpecialREACHUpgradeMessage();
+		}
+
+		private void DoSpecialREACHUpgradeMessage()
+		{
+			var notifier = new ToastNotifier();
+			notifier.Image.Image = Resources.Bloom;
+			notifier.ToastClicked += (sender, args) => Process.Start("https://bloomlibrary.org/page/reach-upgrade");
+			notifier.Show("Click to get a better Bloom!", null, -1); // Stay up until the user clicks on it
+		}
 	}
 
 	public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer
