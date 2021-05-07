@@ -1,10 +1,7 @@
 import * as React from "react";
 import { useState } from "react";
 import { BloomApi } from "../utils/bloomApi";
-import {
-    useWebSocketListenerForOneMessage,
-    useWebSocketListenerForOneObject
-} from "../utils/WebSocketManager";
+import { useSubscribeToWebSocketForObject } from "../utils/WebSocketManager";
 import "./PerformanceLogPage.less";
 import { ScatterPlot } from "@nivo/scatterplot";
 import ReactDOM = require("react-dom");
@@ -39,7 +36,7 @@ export const PerformanceLogPage: React.FunctionComponent<{
         setMeasurements(earlierMeasurements);
     }, earlierMeasurements);
 
-    useWebSocketListenerForOneObject<IMeasurement>(
+    useSubscribeToWebSocketForObject<IMeasurement>(
         // this prop is just used during testing when there is no server (i.e. storybook).
         props.webSocketContext ?? "performance",
         "event",
@@ -49,7 +46,6 @@ export const PerformanceLogPage: React.FunctionComponent<{
             });
         }
     );
-    //const websocket = new WebSocket("ws://127.0.0.1:8090");
 
     const allMeasurements = earlierMeasurements.concat(measurements);
     return (

@@ -18,46 +18,74 @@ export function useWebSocketListener(
         WebSocketManager.addListener(clientContext, listener);
     }, []);
 }
-export function useWebSocketListenerForOneEvent(
+
+// avoid making this public, so that we can have more freedom to make changes to the signature
+function useWebSocketListenerInner<T>(
     clientContext: string,
-    messageId: string,
-    listener: (e: IBloomWebSocketEvent) => void,
-    requireMessage?: boolean
+    eventId: string,
+    listener: (T) => void,
+    processEvent: (e: IBloomWebSocketEvent) => T,
+    filter?: (e: IBloomWebSocketEvent) => boolean
 ) {
     useEffect(() => {
-        WebSocketManager.addListener(clientContext, e => {
-            if (e.id === messageId && (!requireMessage || e.message)) {
-                listener(e);
+        const l = (e: IBloomWebSocketEvent) => {
+            if (e.id === eventId && (!filter || filter(e))) {
+                listener(processEvent(e));
             }
-        });
+        };
+        WebSocketManager.addListener(clientContext, l);
+        // Clean up when we are unmounted or this useEffect runs again (i.e. if the props.webSocketContext were to change)
+        // TODO: we want this, but it breaks ReaderPublishScreen, maybe
+        // because the progress dialog closes and something disconnects and then
+        // the preview screen doesn't get the message that we're done.
+        //return WebSocketManager.removeListener(clientContext, l);
     }, []);
 }
-export function useWebSocketListenerForOneMessage(
+
+export function useSubscribeToWebSocketForEvent(
     clientContext: string,
-    messageId: string,
+    eventId: string,
+    listener: (e: IBloomWebSocketEvent) => void,
+    onlyCallListenerIfMessageIsTruthy?: boolean
+) {
+    useWebSocketListenerInner<IBloomWebSocketEvent>(
+        clientContext,
+        eventId,
+        listener,
+        e => e,
+        onlyCallListenerIfMessageIsTruthy ? e => !!e.message : e => true
+    );
+}
+export function useSubscribeToWebSocketForStringMessage(
+    clientContext: string,
+    eventId: string,
     listener: (message: string) => void
 ) {
-    useEffect(() => {
-        WebSocketManager.addListener(clientContext, e => {
-            if (e.id === messageId && e.message) {
-                listener(e.message);
-            }
-        });
-    }, []);
+    useWebSocketListenerInner<string>(
+        clientContext,
+        eventId,
+        listener,
+        e => e.message!,
+        e => !!e.message // ignore if no message
+    );
 }
-export function useWebSocketListenerForOneObject<T>(
+
+// Subscribe to an event where the message string is holding a JSON object
+// which this will parse.
+export function useSubscribeToWebSocketForObject<T>(
     clientContext: string,
-    messageId: string,
+    eventId: string,
     listener: (message: T) => void
 ) {
-    useEffect(() => {
-        WebSocketManager.addListener(clientContext, e => {
-            if (e.id === messageId && e.message) {
-                listener(JSON.parse(e.message) as T);
-            }
-        });
-    }, []);
+    useWebSocketListenerInner<T>(
+        clientContext,
+        eventId,
+        listener,
+        e => JSON.parse(e.message!) as T,
+        e => !!e.message // ignore if no message
+    );
 }
+
 // This class manages a websocket, currently at the WebSocketManager.socketMap level, currently with
 // a fixed name. (Possible enhancement: support top WebSocketManager.socketMap level).
 // You can add listeners (for "message") with addListener(),

@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import ReactDOM = require("react-dom");
 import { BloomApi } from "../utils/bloomApi";
 import WebSocketManager, {
-    useWebSocketListenerForOneEvent
+    useSubscribeToWebSocketForEvent
 } from "../utils/WebSocketManager";
 import BloomButton from "../react_components/bloomButton";
 import "./CreateTeamCollection.less";
@@ -31,7 +31,7 @@ export const CreateTeamCollection: React.FunctionComponent<IProps> = props => {
         setRepoFolderPath(e.repoFolderPath);
         setProblemReport(e.problem);
     };
-    useWebSocketListenerForOneEvent(
+    useSubscribeToWebSocketForEvent(
         "teamCollectionCreate",
         "shared-folder-path",
         listener,
