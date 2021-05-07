@@ -128,15 +128,13 @@ storiesOf("Team Collection components/StatusPanelCommon", module)
     );
 
 storiesOf("Team Collection components/JoinTeamCollection", module)
-    .add(" new collection", () => (
+    .add("new collection", () => (
         <div id="reactRoot" className="JoinTeamCollection">
             <JoinTeamCollectionDialog
                 collectionName="foobar"
                 existingCollection={false}
-                dialogEnvironment={{
-                    omitOuterFrame: false,
-                    initiallyOpen: true
-                }}
+                isAlreadyTcCollection={false}
+                dialogEnvironment={normalDialogEnvironmentForStorybook}
             />
         </div>
     ))
@@ -145,6 +143,17 @@ storiesOf("Team Collection components/JoinTeamCollection", module)
             <JoinTeamCollectionDialog
                 collectionName="foobar"
                 existingCollection={true}
+                isAlreadyTcCollection={false}
+                dialogEnvironment={normalDialogEnvironmentForStorybook}
+            />
+        </div>
+    ))
+    .add("existing TC collection", () => (
+        <div id="reactRoot" className="JoinTeamCollection">
+            <JoinTeamCollectionDialog
+                collectionName="foobar"
+                existingCollection={true}
+                isAlreadyTcCollection={true}
                 dialogEnvironment={normalDialogEnvironmentForStorybook}
             />
         </div>
@@ -154,6 +163,7 @@ storiesOf("Team Collection components/JoinTeamCollection", module)
             <JoinTeamCollectionDialog
                 collectionName="foobar"
                 existingCollection={true}
+                isAlreadyTcCollection={false}
                 dialogEnvironment={{
                     omitOuterFrame: true,
                     initiallyOpen: true

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Bloom.MiscUI
+﻿namespace Bloom.MiscUI
 {
 	public interface IReactDialogFactory
 	{
