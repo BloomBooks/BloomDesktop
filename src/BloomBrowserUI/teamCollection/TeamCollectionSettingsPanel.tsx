@@ -3,7 +3,7 @@ import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
 import { BloomApi } from "../utils/bloomApi";
-import { Div } from "../react_components/l10nComponents";
+import { P } from "../react_components/l10nComponents";
 import {
     BloomEnterpriseAvailableContext,
     RequiresBloomEnterpriseWrapper
@@ -14,24 +14,17 @@ import { ThemeProvider } from "@material-ui/styles";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 
 import BloomButton from "../react_components/bloomButton";
-import { Dialog } from "@material-ui/core";
-import { useState } from "react";
 
 import StarIcon from "@material-ui/icons/Star";
-import { CreateTeamCollectionDialog } from "./CreateTeamCollection";
+import {
+    CreateTeamCollectionDialog,
+    showCreateTeamCollectionDialog
+} from "./CreateTeamCollection";
 //import joiningImage from "../images/joining-team-collection.png";
 
 // The contents of the Team Collection panel of the Settings dialog.
 
 export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
-    // Because this is the top level component in a C# web browser, there is nothing outside it that can
-    // provide any props. We instead use a url param to communicate from C# to this whether we are showing
-    // settings for a collection that is already part of a team collection
-    // (and if so, to provide the collection path).
-    const urlParams = new URLSearchParams(window.location.search);
-    //const existingTcPath = urlParams.get("folder");
-    const [createDlgOpen, setCreateDlgOpen] = useState(false);
-
     const [repoFolderPath] = BloomApi.useApiString(
         "teamCollection/repoFolderPath",
         ""
@@ -61,7 +54,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                 so that we can talk over your needs and make sure that this
                 feature is ready for you.
             </div>
-            <Div
+            <P
                 l10nKey="TeamCollection.Intro"
                 l10nParam0="https://docs.google.com/document/d/1DOhy7hnmG37NzcQN8oP6NkXW_X3WU7YH4ez_P1hV1mo/edit?usp=sharing"
                 // Todo: once we have an actual video this should link to it! For now just another link to the document.
@@ -71,26 +64,26 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                 Bloom's Team Collection system helps your team collaborate as
                 you create, translate, and edit books. Read about how it works
                 [here]( %0), or view this [video](%1).
-            </Div>
+            </P>
         </div>
     );
 
     const isTeamCollection: JSX.Element = (
         <div>
-            <Div
+            <P
                 l10nKey="TeamCollection.ThisIsATC"
                 className="teamCollection-heading no-space-below"
                 temporarilyDisableI18nWarning={true}
             >
                 This is a Team Collection
-            </Div>
-            <Div
+            </P>
+            <P
                 l10nKey="TeamCollection.CloudLocation"
                 temporarilyDisableI18nWarning={true}
                 className="no-space-below"
             >
                 Cloud Storage Folder Location:
-            </Div>
+            </P>
             <a
                 className="directory-link"
                 href=""
@@ -103,12 +96,12 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
             >
                 {repoFolderPath}
             </a>
-            <Div
+            <P
                 l10nKey="TeamCollection.AddingHelp"
                 temporarilyDisableI18nWarning={true}
             >
                 Need help adding someone to your Team Collection?
-            </Div>
+            </P>
             <div className="align-right">
                 <BloomButton
                     l10nKey="TeamCollection.HowToAddSomeone"
@@ -130,14 +123,14 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
 
     const isNotTeamCollection: JSX.Element = (
         <div>
-            <Div
+            <P
                 l10nKey="TeamCollection.StartingInstructions"
                 className="extra-space-above"
                 temporarilyDisableI18nWarning={true}
             >
                 It is important that **only one person** on the team create the
                 Team Collection.
-            </Div>
+            </P>
             <div className="align-right">
                 <BloomButton
                     className="align-right"
@@ -145,20 +138,20 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                     enabled={true}
                     hasText={true}
                     variant="outlined"
-                    onClick={() => setCreateDlgOpen(true)}
+                    onClick={() => showCreateTeamCollectionDialog()}
                     temporarilyDisableI18nWarning={true}
                 >
                     Create a Team Collection
                 </BloomButton>
             </div>
-            <Div
+            <P
                 l10nKey="TeamCollection.JoiningHelp"
                 className="extra-space-above"
                 temporarilyDisableI18nWarning={true}
             >
                 Has someone in your team already created a Team Collection for
                 your Team?
-            </Div>
+            </P>
             <div className="align-right">
                 <BloomButton
                     l10nKey="TeamCollection.Joining"

@@ -13,6 +13,7 @@ import { JoinTeamCollectionDialog } from "./JoinTeamCollectionDialog";
 import { TeamCollectionDialog } from "./TeamCollectionDialog";
 import { TeamCollectionSettingsPanel } from "./TeamCollectionSettingsPanel";
 import { CreateTeamCollectionDialog } from "./CreateTeamCollection";
+import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialog";
 
 addDecorator(storyFn => (
     <ThemeProvider theme={theme}>
@@ -132,6 +133,10 @@ storiesOf("Team Collection components/JoinTeamCollection", module)
             <JoinTeamCollectionDialog
                 collectionName="foobar"
                 existingCollection={false}
+                dialogEnvironment={{
+                    omitOuterFrame: false,
+                    initiallyOpen: true
+                }}
             />
         </div>
     ))
@@ -140,6 +145,7 @@ storiesOf("Team Collection components/JoinTeamCollection", module)
             <JoinTeamCollectionDialog
                 collectionName="foobar"
                 existingCollection={true}
+                dialogEnvironment={normalDialogEnvironmentForStorybook}
             />
         </div>
     ))
@@ -148,17 +154,23 @@ storiesOf("Team Collection components/JoinTeamCollection", module)
             <JoinTeamCollectionDialog
                 collectionName="foobar"
                 existingCollection={true}
-                omitOuterFrame={true}
+                dialogEnvironment={normalDialogEnvironmentForStorybook}
             />
         </div>
     ));
 
-storiesOf("Team Collection components", module)
-    .add("TeamCollectionDialog with dialog frame and reload button", () => (
-        <TeamCollectionDialog omitOuterFrame={false} showReloadButton={true} />
+storiesOf("Team Collection components/TeamCollectionDialog", module)
+    .add("With reload button", () => (
+        <TeamCollectionDialog
+            showReloadButton={true}
+            dialogEnvironment={normalDialogEnvironmentForStorybook}
+        />
     ))
-    .add("TeamCollectionDialog", () => (
-        <TeamCollectionDialog omitOuterFrame={true} showReloadButton={false} />
+    .add("no dialog frame", () => (
+        <TeamCollectionDialog
+            dialogEnvironment={{ omitOuterFrame: true, initiallyOpen: true }}
+            showReloadButton={false}
+        />
     ));
 
 storiesOf(
@@ -166,7 +178,21 @@ storiesOf(
     module
 ).add("TeamCollectionSettingsPanel", () => <TeamCollectionSettingsPanel />);
 
-storiesOf(
-    "Team Collection components",
-    module
-).add("CreateTeamCollection Dialog", () => <CreateTeamCollectionDialog />);
+storiesOf("Team Collection components/CreateTeamCollection", module)
+    .add("CreateTeamCollection Dialog", () => (
+        <CreateTeamCollectionDialog
+            dialogEnvironment={normalDialogEnvironmentForStorybook}
+        />
+    ))
+    .add("CreateTeamCollection Dialog showing path", () => (
+        <CreateTeamCollectionDialog
+            dialogEnvironment={normalDialogEnvironmentForStorybook}
+            repoFolderForTesting="z:\Enim aute dolore ex voluptate commodo\"
+        />
+    ))
+    .add("CreateTeamCollection Dialog showing error", () => (
+        <CreateTeamCollectionDialog
+            dialogEnvironment={normalDialogEnvironmentForStorybook}
+            errorForTesting="Commodo veniam laboris ut ut ea laboris Lorem Lorem laborum enim minim velit."
+        />
+    ));

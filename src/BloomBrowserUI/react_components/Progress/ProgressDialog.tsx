@@ -13,12 +13,12 @@ import { ProgressBox } from "./progressBox";
 import { kBloomGold, kErrorColor } from "../../bloomMaterialUITheme";
 import {
     BloomDialog,
-    DialogBottom,
     DialogBottomButtons,
     DialogBottomLeftButtons,
     DialogCloseButton,
     DialogMiddle,
     DialogTitle,
+    IBloomDialogEnvironmentParams,
     useMakeBloomDialog
 } from "../BloomDialog/BloomDialog";
 
@@ -27,17 +27,15 @@ export const ProgressDialog: React.FunctionComponent<{
     titleColor?: string;
     titleIcon?: string;
     titleBackgroundColor?: string;
-
-    // true if the caller is wrapping in a winforms dialog already
-    omitOuterFrame: boolean;
     // defaults to "never"
     showReportButton?: "always" | "if-error" | "never";
 
     webSocketContext: string;
     onReadyToReceive?: () => void;
+    dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = props => {
     const { showDialog, closeDialog, propsForBloomDialog } = useMakeBloomDialog(
-        props.omitOuterFrame
+        props.dialogEnvironment
     );
     const [showButtons, setShowButtons] = useState(false);
     const [sawAnError, setSawAnError] = useState(false);
@@ -125,7 +123,9 @@ export const ProgressDialog: React.FunctionComponent<{
                     css={css`
                         // If we have omitOuterFrame that means the dialog height is controlled by c#, so let the progress grow to fit it.
                         // Maybe we could have that approach *all* the time?
-                        height: ${props.omitOuterFrame ? "100%" : "400px"};
+                        height: ${props.dialogEnvironment?.omitOuterFrame
+                            ? "100%"
+                            : "400px"};
                         min-width: 540px;
                     `}
                 />

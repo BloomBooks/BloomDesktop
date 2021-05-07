@@ -12,6 +12,7 @@ import {
     DialogCancelButton,
     DialogMiddle,
     DialogTitle,
+    IBloomDialogEnvironmentParams,
     NoteBox,
     useMakeBloomDialog
 } from "../react_components/BloomDialog/BloomDialog";
@@ -23,10 +24,10 @@ import { useL10n } from "../react_components/l10nHooks";
 export const JoinTeamCollectionDialog: React.FunctionComponent<{
     collectionName: string;
     existingCollection: boolean;
-    omitOuterFrame?: boolean;
+    dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = props => {
     const { showDialog, closeDialog, propsForBloomDialog } = useMakeBloomDialog(
-        props.omitOuterFrame
+        props.dialogEnvironment
     );
 
     const dialogTitle = useL10n(
