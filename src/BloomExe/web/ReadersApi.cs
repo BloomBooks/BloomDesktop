@@ -15,7 +15,9 @@ using Amazon.Runtime.Internal.Util;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.Properties;
+using Bloom.TeamCollection;
 using Bloom.web.controllers;
+using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json.Linq;
 using SIL.PlatformUtilities;
@@ -36,10 +38,12 @@ namespace Bloom.Api
 
 		private FileSystemWatcher _sampleTextsWatcher;
 		private bool _sampleTextsChanged = true;
+		private TeamCollectionManager _tcManager;
 
-		public ReadersApi(BookSelection _bookSelection)
+		public ReadersApi(BookSelection _bookSelection, TeamCollectionManager tcManager)
 		{
 			this._bookSelection = _bookSelection;
+			_tcManager = tcManager;
 		}
 
 		private enum WordFileType
@@ -95,6 +99,12 @@ namespace Bloom.Api
 			{
 				case "test":
 					request.PostSucceeded();
+					break;
+
+				case "readerSettingsEditForbidden":
+					request.ReplyWithText(_tcManager.OkToEditCollectionSettings
+						? ""
+						: WorkspaceView.MustBeAdminMessage);
 					break;
 
 				case "readerToolSettings":
