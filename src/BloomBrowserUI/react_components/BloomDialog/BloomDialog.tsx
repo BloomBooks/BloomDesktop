@@ -315,7 +315,7 @@ export const normalDialogEnvironmentForStorybook = {
 
 // Components that include <BloomDialog> to make a dialog should call this hook and use what it returns to manage the dialog.
 // See the uses of it in the code for examples.
-export function useMakeBloomDialog(
+export function useSetupBloomDialog(
     dialogEnvironment?: IBloomDialogEnvironmentParams
 ) {
     const [currentlyOpen, setOpen] = useState(

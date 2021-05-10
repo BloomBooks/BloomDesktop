@@ -17,7 +17,7 @@ import {
     DialogMiddle,
     DialogTitle,
     IBloomDialogEnvironmentParams,
-    useMakeBloomDialog
+    useSetupBloomDialog
 } from "../react_components/BloomDialog/BloomDialog";
 
 export let showTeamCollectionDialog: () => void;
@@ -26,9 +26,11 @@ export const TeamCollectionDialog: React.FunctionComponent<{
     showReloadButton: boolean;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = props => {
-    const { showDialog, closeDialog, propsForBloomDialog } = useMakeBloomDialog(
-        props.dialogEnvironment
-    );
+    const {
+        showDialog,
+        closeDialog,
+        propsForBloomDialog
+    } = useSetupBloomDialog(props.dialogEnvironment);
 
     // hoist this up to the window level so that any code that imports showTeamCollectionDialog can show it
     // (It will still have to be declared once at the app level when it is no longer launched in its own winforms dialog.)

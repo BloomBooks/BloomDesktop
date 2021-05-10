@@ -18,7 +18,7 @@ import {
     DialogTitle,
     ErrorBox,
     IBloomDialogEnvironmentParams,
-    useMakeBloomDialog
+    useSetupBloomDialog
 } from "../react_components/BloomDialog/BloomDialog";
 import { useL10n } from "../react_components/l10nHooks";
 
@@ -55,9 +55,11 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
         "Create a Team Collection",
         "TeamCollection.CreateTeamCollection"
     );
-    const { showDialog, closeDialog, propsForBloomDialog } = useMakeBloomDialog(
-        props.dialogEnvironment
-    );
+    const {
+        showDialog,
+        closeDialog,
+        propsForBloomDialog
+    } = useSetupBloomDialog(props.dialogEnvironment);
     showCreateTeamCollectionDialog = showDialog;
     return (
         <BloomDialog {...propsForBloomDialog}>

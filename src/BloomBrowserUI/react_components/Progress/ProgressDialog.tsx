@@ -19,7 +19,7 @@ import {
     DialogMiddle,
     DialogTitle,
     IBloomDialogEnvironmentParams,
-    useMakeBloomDialog
+    useSetupBloomDialog
 } from "../BloomDialog/BloomDialog";
 
 export const ProgressDialog: React.FunctionComponent<{
@@ -34,9 +34,11 @@ export const ProgressDialog: React.FunctionComponent<{
     onReadyToReceive?: () => void;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = props => {
-    const { showDialog, closeDialog, propsForBloomDialog } = useMakeBloomDialog(
-        props.dialogEnvironment
-    );
+    const {
+        showDialog,
+        closeDialog,
+        propsForBloomDialog
+    } = useSetupBloomDialog(props.dialogEnvironment);
     const [showButtons, setShowButtons] = useState(false);
     const [sawAnError, setSawAnError] = useState(false);
     const [sawAWarning, setSawAWarning] = useState(false);

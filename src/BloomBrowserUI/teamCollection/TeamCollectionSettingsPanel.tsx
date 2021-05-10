@@ -182,16 +182,6 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                                 {repoFolderPath
                                     ? isTeamCollection
                                     : isNotTeamCollection}
-                                {/* <Dialog
-                                    open={createDlgOpen}
-                                    onBackdropClick={() =>
-                                        setCreateDlgOpen(false)
-                                    }
-                                >
-                                    <CreateTeamCollection
-                                        closeDlg={() => setCreateDlgOpen(false)}
-                                    />
-                                </Dialog> */}
                                 <CreateTeamCollectionDialog />
                             </React.Fragment>
                         )}

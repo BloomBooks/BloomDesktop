@@ -14,7 +14,7 @@ import {
     DialogTitle,
     IBloomDialogEnvironmentParams,
     NoteBox,
-    useMakeBloomDialog
+    useSetupBloomDialog
 } from "../react_components/BloomDialog/BloomDialog";
 import { useL10n } from "../react_components/l10nHooks";
 
@@ -26,9 +26,11 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
     existingCollection: boolean;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = props => {
-    const { showDialog, closeDialog, propsForBloomDialog } = useMakeBloomDialog(
-        props.dialogEnvironment
-    );
+    const {
+        showDialog,
+        closeDialog,
+        propsForBloomDialog
+    } = useSetupBloomDialog(props.dialogEnvironment);
 
     const dialogTitle = useL10n(
         'Join the Bloom Team Collection "%0"',
