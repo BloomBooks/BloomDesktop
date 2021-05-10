@@ -3,23 +3,23 @@ import { jsx, css } from "@emotion/core";
 
 import { Button, CircularProgress } from "@material-ui/core";
 import * as React from "react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { BloomApi } from "../../utils/bloomApi";
 import WebSocketManager, {
     IBloomWebSocketProgressEvent
 } from "../../utils/WebSocketManager";
 import BloomButton from "../bloomButton";
-import { Link } from "../link";
 import { ProgressBox } from "./progressBox";
-import "./ProgressDialog.less";
 import { kBloomGold, kErrorColor } from "../../bloomMaterialUITheme";
 import {
     BloomDialog,
-    DialogBottom,
+    DialogBottomButtons,
+    DialogBottomLeftButtons,
     DialogCloseButton,
     DialogMiddle,
     DialogTitle,
-    useMakeBloomDialog
+    IBloomDialogEnvironmentParams,
+    useSetupBloomDialog
 } from "../BloomDialog/BloomDialog";
 
 export const ProgressDialog: React.FunctionComponent<{
@@ -27,18 +27,18 @@ export const ProgressDialog: React.FunctionComponent<{
     titleColor?: string;
     titleIcon?: string;
     titleBackgroundColor?: string;
-
-    // true if the caller is wrapping in a winforms dialog already
-    omitOuterFrame: boolean;
     // defaults to "never"
     showReportButton?: "always" | "if-error" | "never";
 
     webSocketContext: string;
     onReadyToReceive?: () => void;
+    dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = props => {
-    const { showDialog, closeDialog, propsForBloomDialog } = useMakeBloomDialog(
-        props.omitOuterFrame
-    );
+    const {
+        showDialog,
+        closeDialog,
+        propsForBloomDialog
+    } = useSetupBloomDialog(props.dialogEnvironment);
     const [showButtons, setShowButtons] = useState(false);
     const [sawAnError, setSawAnError] = useState(false);
     const [sawAWarning, setSawAWarning] = useState(false);
@@ -112,41 +112,51 @@ export const ProgressDialog: React.FunctionComponent<{
                     />
                 )}
             </DialogTitle>
-            <DialogMiddle>
+            <DialogMiddle
+                css={css`
+                    // I don't actually understand why I had do to this, other than than
+                    // I'm hopeless at css sizing stuff. See storybook story ProgressDialog: long.
+                    overflow-y: unset;
+                `}
+            >
                 <ProgressBox
                     webSocketContext={props.webSocketContext}
                     onReadyToReceive={props.onReadyToReceive}
                     css={css`
                         // If we have omitOuterFrame that means the dialog height is controlled by c#, so let the progress grow to fit it.
                         // Maybe we could have that approach *all* the time?
-                        height: ${props.omitOuterFrame ? "100%" : "400px"};
+                        height: ${props.dialogEnvironment?.omitOuterFrame
+                            ? "100%"
+                            : "400px"};
                         min-width: 540px;
                     `}
                 />
             </DialogMiddle>
-            <DialogBottom>
+            <DialogBottomButtons>
                 {showButtons ? (
                     <React.Fragment>
                         {buttonForSendingErrorReportIsRelevant && (
-                            <BloomButton
-                                id="progress-report"
-                                hasText={true}
-                                enabled={true}
-                                //color="primary"
-                                l10nKey="Common.Report"
-                                variant="text"
-                                onClick={() => {
-                                    BloomApi.postJson(
-                                        "problemReport/showDialog",
-                                        {
-                                            message: messagesForErrorReporting,
-                                            shortMessage: `The user reported a problem from "${props.title}".`
-                                        }
-                                    );
-                                }}
-                            >
-                                Report
-                            </BloomButton>
+                            <DialogBottomLeftButtons>
+                                <BloomButton
+                                    id="progress-report"
+                                    hasText={true}
+                                    enabled={true}
+                                    //color="primary"
+                                    l10nKey="Common.Report"
+                                    variant="text"
+                                    onClick={() => {
+                                        BloomApi.postJson(
+                                            "problemReport/showDialog",
+                                            {
+                                                message: messagesForErrorReporting,
+                                                shortMessage: `The user reported a problem from "${props.title}".`
+                                            }
+                                        );
+                                    }}
+                                >
+                                    Report
+                                </BloomButton>
+                            </DialogBottomLeftButtons>
                         )}
                         <DialogCloseButton onClick={closeDialog} />
                     </React.Fragment>
@@ -161,7 +171,7 @@ export const ProgressDialog: React.FunctionComponent<{
                         placeholder
                     </Button>
                 )}
-            </DialogBottom>
+            </DialogBottomButtons>
         </BloomDialog>
     );
 };

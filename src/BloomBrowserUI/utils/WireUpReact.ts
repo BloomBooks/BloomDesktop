@@ -7,6 +7,7 @@ import { JoinTeamCollectionDialog } from "../teamCollection/JoinTeamCollectionDi
 import { AutoUpdateSoftwareDialog } from "../react_components/AutoUpdateSoftwareDialog";
 import { ProblemDialog } from "../problemDialog/ProblemDialog";
 import { ProgressDialog } from "../react_components/Progress/ProgressDialog";
+import { IBloomDialogEnvironmentParams } from "../react_components/BloomDialog/BloomDialog";
 
 // this is a bummer... haven't figured out how to do a lookup just from the string... have to have this map
 const knownComponents = {
@@ -25,7 +26,14 @@ const knownComponents = {
     reactComponentName: string,
     props?: Object
 ) => {
-    const p = { omitOuterFrame: true, ...props };
+    const dialogParamsWhenWrappedByWinforms: IBloomDialogEnvironmentParams = {
+        omitOuterFrame: true,
+        initiallyOpen: true
+    };
+    const p = {
+        dialogEnvironment: dialogParamsWhenWrappedByWinforms,
+        ...props
+    };
     ReactDOM.render(
         React.createElement(knownComponents[reactComponentName], p, null),
         root

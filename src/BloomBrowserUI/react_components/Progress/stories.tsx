@@ -6,6 +6,7 @@ import WebSocketManager, {
 } from "../../utils/WebSocketManager";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import { ProgressBox } from "./progressBox";
+import { normalDialogEnvironmentForStorybook } from "../BloomDialog/BloomDialog";
 
 const kWebSocketMockContext = "mock_progress";
 interface IStoryMessage {
@@ -15,6 +16,13 @@ interface IStoryMessage {
     delay?: number;
     progress?: "indefinite" | "off";
 }
+
+const noFrameProps = {
+    dialogEnvironment: {
+        omitOuterFrame: true,
+        initiallyOpen: true
+    }
+};
 
 storiesOf("Progress Box", module).add(
     "Raw ProgressBox with preloaded log",
@@ -169,7 +177,6 @@ storiesOf("Progress Dialog", module)
                     titleIcon="Team Collection.svg"
                     webSocketContext={kWebSocketMockContext}
                     showReportButton={"if-error"}
-                    omitOuterFrame={false}
                     onReadyToReceive={() =>
                         sendEvents([
                             {
@@ -197,6 +204,7 @@ storiesOf("Progress Dialog", module)
                             }
                         ])
                     }
+                    dialogEnvironment={normalDialogEnvironmentForStorybook}
                 />
             );
         });
@@ -212,7 +220,7 @@ storiesOf("Progress Dialog", module)
                     webSocketContext={kWebSocketMockContext}
                     showReportButton={"never"}
                     onReadyToReceive={() => sendEvents(kLongListOfAllTypes)}
-                    omitOuterFrame={false}
+                    dialogEnvironment={normalDialogEnvironmentForStorybook}
                 />
             );
         });
@@ -226,7 +234,6 @@ storiesOf("Progress Dialog", module)
                     titleBackgroundColor="green"
                     webSocketContext={kWebSocketMockContext}
                     showReportButton={"never"}
-                    omitOuterFrame={true}
                     onReadyToReceive={() =>
                         sendEvents([
                             {
@@ -253,6 +260,7 @@ storiesOf("Progress Dialog", module)
                             }
                         ])
                     }
+                    {...noFrameProps}
                 />
             );
         });

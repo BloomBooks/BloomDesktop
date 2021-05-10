@@ -11,24 +11,26 @@ import { IBloomWebSocketProgressEvent } from "../utils/WebSocketManager";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 import {
     BloomDialog,
-    DialogBottom,
     DialogBottomButtons,
     DialogBottomLeftButtons,
     DialogCloseButton,
     DialogMiddle,
     DialogTitle,
-    useMakeBloomDialog
+    IBloomDialogEnvironmentParams,
+    useSetupBloomDialog
 } from "../react_components/BloomDialog/BloomDialog";
 
 export let showTeamCollectionDialog: () => void;
 
 export const TeamCollectionDialog: React.FunctionComponent<{
-    omitOuterFrame: boolean;
     showReloadButton: boolean;
+    dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = props => {
-    const { showDialog, closeDialog, propsForBloomDialog } = useMakeBloomDialog(
-        props.omitOuterFrame
-    );
+    const {
+        showDialog,
+        closeDialog,
+        propsForBloomDialog
+    } = useSetupBloomDialog(props.dialogEnvironment);
 
     // hoist this up to the window level so that any code that imports showTeamCollectionDialog can show it
     // (It will still have to be declared once at the app level when it is no longer launched in its own winforms dialog.)
@@ -58,7 +60,9 @@ export const TeamCollectionDialog: React.FunctionComponent<{
                     css={css`
                         // If we have omitOuterFrame that means the dialog height is controlled by c#, so let the progress grow to fit it.
                         // Maybe we could have that approach *all* the time?
-                        height: ${props.omitOuterFrame ? "100%" : "400px"};
+                        height: ${props.dialogEnvironment?.omitOuterFrame
+                            ? "100%"
+                            : "350px"};
                         // enhance: there is a bug I haven't found where, if this is > 530px, then it overflows. Instead, the BloomDialog should keep growing.
                         min-width: 530px;
                     `}
