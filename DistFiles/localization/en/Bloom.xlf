@@ -351,11 +351,6 @@
         <source xml:lang="en">Book Making</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding">
-        <source xml:lang="en">Branding</source>
-        <note>ID: CollectionSettingsDialog.BookMakingTab.Branding</note>
-        <note xml:lang="en">Used in 3.9 and 4.0; not used in 4.1</note>
-      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None" sil:dynamic="true">
         <source xml:lang="en">None</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
@@ -742,12 +737,6 @@
         <source xml:lang="en">Create a book in my language using this source book</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate_ToolTip_</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.MoreLanguagesMenuItem">
-        <source xml:lang="en">More...</source>
-        <note>ID: CollectionTab.MoreLanguagesMenuItem</note>
-        <note>Brings up the localization dialog</note>
-        <note xml:lang="en">used in 3.9 and earlier; feature removed in 4.0</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.Open/CreateCollectionButton">
         <source xml:lang="en">Other Collection</source>
         <note>ID: CollectionTab.Open/CreateCollectionButton</note>
@@ -1069,7 +1058,6 @@
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutTitle" sil:dynamic="true">
         <source xml:lang="en">Choose Different Layout...</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutTitle</note>
-        <note>found in 3.9 and earlier</note>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutWillLoseData" sil:dynamic="true">
         <source xml:lang="en">Converting to this layout will cause some content to be lost.</source>
@@ -1092,12 +1080,6 @@
       <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true">
         <source xml:lang="en">Add Page...</source>
         <note>ID: EditTab.AddPageDialog.Title</note>
-        <note>found in 3.9 and earlier</note>
-      </trans-unit>
-      <trans-unit id="EditTab.AddTextBoxToImage">
-        <source xml:lang="en">Add Text Box To Image</source>
-        <note>ID: EditTab.AddTextBoxToImage</note>
-        <note>Obsolete for Bloom 4.7 and later</note>
       </trans-unit>
       <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</source>
@@ -1228,11 +1210,6 @@
         <source xml:lang="en">This page cannot be removed</source>
         <note>ID: EditTab.DeletePageButton.ToolTipWhenDisabled</note>
         <note>Button that tells Bloom to delete the currently selected page.</note>
-      </trans-unit>
-      <trans-unit id="EditTab.DeleteTextBoxFromImage">
-        <source xml:lang="en">Delete Text Box From Image</source>
-        <note>ID: EditTab.DeleteTextBoxFromImage</note>
-        <note>Obsolete for Bloom 4.7 and later</note>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Bold" sil:dynamic="true">
         <source xml:lang="en">Bold</source>
@@ -1897,24 +1874,6 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace</note>
         <note>A background color that looks like old lace</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToCalico" sil:dynamic="true">
-        <source xml:lang="en">White to Calico</source>
-        <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToCalico</note>
-        <note>A background color that is a gradient starting with white blending into calico color</note>
-        <note>Obsolete for Bloom 4.9 and later</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass" sil:dynamic="true">
-        <source xml:lang="en">White to French Pass</source>
-        <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass</note>
-        <note>A background color that is a gradient starting with white blending into the "French pass" color</note>
-        <note>Obsolete for Bloom 4.9 and later</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino" sil:dynamic="true">
-        <source xml:lang="en">White to Portafino</source>
-        <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino</note>
-        <note>A background color that is a gradient starting with white blending into the "Portafino" color</note>
-        <note>Obsolete for Bloom 4.9 and later</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true">
         <source xml:lang="en">Duplicate</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
@@ -2163,12 +2122,12 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.Stage" sil:dynamic="true">
         <source xml:lang="en">Stage</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.Stage</note>
-        <note>Obsolete for Bloom 5.0 and later</note>
+        <note>Obsolete as of Bloom 5.0</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageOf" sil:dynamic="true">
         <source xml:lang="en">of</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageOf</note>
-        <note>Obsolete for Bloom 5.0 and later</note>
+        <note>Obsolete as of Bloom 5.0</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageNofM" sil:dynamic="true">
         <source xml:lang="en">Stage {0} of {1}</source>
@@ -2209,26 +2168,6 @@
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe" sil:dynamic="true">
         <source xml:lang="en">This image should not be described.</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeConcise" sil:dynamic="true">
-        <source xml:lang="en">Be Concise</source>
-        <note>ID: EditTab.Toolbox.ImageDescriptionTool.BeConcise</note>
-        <note>Obsolete for Bloom 4.5 and later</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeObjective" sil:dynamic="true">
-        <source xml:lang="en">Be Objective</source>
-        <note>ID: EditTab.Toolbox.ImageDescriptionTool.BeObjective</note>
-        <note>Obsolete for Bloom 4.5 and later</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo" sil:dynamic="true">
-        <source xml:lang="en">Bloom training video</source>
-        <note>ID: EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo</note>
-        <note>Obsolete for Bloom 4.5 and later</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckDescription" sil:dynamic="true">
-        <source xml:lang="en">Check your image description against each of these reminders:</source>
-        <note>ID: EditTab.Toolbox.ImageDescriptionTool.CheckDescription</note>
-        <note>Obsolete for Bloom 4.5 and later</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ConsiderAudience" sil:dynamic="true">
         <source xml:lang="en">Consider your Audience</source>
@@ -2301,13 +2240,13 @@
         <source xml:lang="en">Level</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Level</note>
         <note>Used to create string "Level # of #". The space after this word is added programmatically.</note>
-        <note>Obsolete for Bloom 5.0 and later</note>
+        <note>Obsolete as of Bloom 5.0</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelOf" sil:dynamic="true">
         <source xml:lang="en">of</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.LevelOf</note>
         <note>Used to create string "Level # of #". The spaces on each side of this word are added programmatically.</note>
-        <note>Obsolete for Bloom 5.0 and later</note>
+        <note>Obsolete as of Bloom 5.0</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelNofM" sil:dynamic="true">
         <source xml:lang="en">Level {0} of {1}</source>
@@ -2512,23 +2451,6 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.Back</note>
         <note>As in, move the selection "BACK"wards to the previous sentence.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Check" sil:dynamic="true">
-        <source xml:lang="en">4) Check</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.Check</note>
-        <note>As in, play the current audio file to "CHECK" that the audio is OK.</note>
-        <note>Last used in version 4.4, deprecated in 4.5</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckLabel" sil:dynamic="true">
-        <source xml:lang="en">Check</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.CheckLabel</note>
-        <note>As in, play the current audio file to "CHECK" that the audio is OK.</note>
-        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Check if possible, but without the number</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettings" sil:dynamic="true">
-        <source xml:lang="en">1) Check that you are recording into the correct device and that these levels are showing blue:</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettings</note>
-        <note>Last used in version 4.4, deprecated in 4.5</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel" sil:dynamic="true">
         <source xml:lang="en">Check that you are recording into the correct device and that these levels are showing blue:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel</note>
@@ -2561,11 +2483,6 @@
         <source xml:lang="en">If you import this recording, it will replace all the audio for this text box.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true">
-        <source xml:lang="en">2) Look at the highlighted text</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentence</note>
-        <note>Last used in version 4.4, deprecated in 4.5</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel" sil:dynamic="true">
         <source xml:lang="en">Look at the highlighted text</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel</note>
@@ -2575,20 +2492,10 @@
         <source xml:lang="en">Bloom is having problems connecting to your microphone. Please restart your computer and try again.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneProblem</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true">
-        <source xml:lang="en">5) Next</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
-        <note>Last used in version 4.4, deprecated in 4.5</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.NextLabel" sil:dynamic="true">
         <source xml:lang="en">Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.NextLabel</note>
         <note>Please make it match EditTab.Toolbox.TalkingBookTool.Next if possible, but without the number</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordBySentences" sil:dynamic="true">
-        <source xml:lang="en">Record by sentences</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordBySentences</note>
-        <note>Deprecated in Bloom Version 4.5</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordByTextBox" sil:dynamic="true">
         <source xml:lang="en">Record by whole text box, then let Bloom split it into sentences later.</source>
@@ -2616,11 +2523,6 @@
         <source xml:lang="en">Show playback order buttons</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder</note>
         <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speak" sil:dynamic="true">
-        <source xml:lang="en">3) Speak</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.Speak</note>
-        <note>Last used in version 4.4, deprecated in 4.5</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SpeakLabel" sil:dynamic="true">
         <source xml:lang="en">Speak</source>
@@ -2781,11 +2683,6 @@
         <source xml:lang="en">Sorry, something went wrong.</source>
         <note>ID: Errors.SomethingWentWrong</note>
       </trans-unit>
-      <trans-unit id="Errors.SpecifiedXMatterNotFound">
-        <source xml:lang="en">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or change the book's Front/Back Matter pack setting.</source>
-        <note>ID: Errors.SpecifiedXMatterNotFound</note>
-        <note xml:lang="en">Not found in version 3.9 or later)</note>
-      </trans-unit>
       <trans-unit id="Errors.XMatterNotFound">
         <source xml:lang="en">This Collection called for Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The collection has been changed to use the default Front/Back Matter pages.</source>
         <note>ID: Errors.XMatterNotFound</note>
@@ -2838,7 +2735,7 @@
       <trans-unit id="HelpMenu.KeyBloomConceptsToolStripMenuItem">
         <source xml:lang="en">Key Bloom Concepts</source>
         <note>ID: HelpMenu.KeyBloomConceptsToolStripMenuItem</note>
-        <note>obsolete as of Bloom 5.0</note>
+        <note>Obsolete as of Bloom 5.0</note>
       </trans-unit>
       <trans-unit id="HelpMenu.MakeASuggestionMenuItem">
         <source xml:lang="en">Request a Feature</source>
@@ -2861,7 +2758,7 @@
       <trans-unit id="HelpMenu.ShowEventLogMenuItem">
         <source xml:lang="en">Show Event Log</source>
         <note>ID: HelpMenu.ShowEventLogMenuItem</note>
-        <note>obsolete as of Bloom 5.0</note>
+        <note>Obsolete as of Bloom 5.0</note>
       </trans-unit>
       <trans-unit id="HelpMenu.UsingReaderTemplatesMenuItem">
         <source xml:lang="en">Using Reader Templates </source>
@@ -3707,12 +3604,6 @@
         <note>menu header in the Publish tab</note>
         <note>was previously just "Options"</note>
       </trans-unit>
-      <trans-unit id="PublishTab.OptionsMenu.SizeLayout">
-        <source xml:lang="en">Size/Orientation</source>
-        <note>ID: PublishTab.OptionsMenu.SizeLayout</note>
-        <note>Header for a region of the menu which lists various standard page sizes and orientations</note>
-        <note>obsolete as of Bloom 4.9</note>
-      </trans-unit>
       <trans-unit id="PublishTab.OptionsMenu.PreparePrintshop">
         <source xml:lang="en">Prepare for Print Shop:</source>
         <note>ID: PublishTab.OptionsMenu.PreparePrintshop</note>
@@ -3828,12 +3719,6 @@
         <note>displayed as a checkable menu option for the Publish tab, PDF options menu. The content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.</note>
         <note>Previously this item was "PDF with CMYK ..." and it occurred as an option within the Save dialog for PDF files</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.PdfWithRGB">
-        <source xml:lang="en">PDF with RGB color</source>
-        <note>ID: PublishTab.PdfMaker.PdfWithRGB</note>
-        <note>displayed as file type for Save File dialog. 'RGB' may not be translatable, it is a standard.</note>
-        <note>obsolete as of Bloom 4.9</note>
-      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Saving">
         <source xml:lang="en">Saving PDF...</source>
         <note>ID: PublishTab.PdfMaker.Saving</note>
@@ -3886,11 +3771,6 @@
       <trans-unit id="PublishTab.SaveEpub">
         <source xml:lang="en">&amp;Save ePUB...</source>
         <note>ID: PublishTab.SaveEpub</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Upload.AccesibleToVisuallyImpaired">
-        <source xml:lang="en">Accessible to the Visually Impaired</source>
-        <note>ID: PublishTab.Upload.AccesibleToVisuallyImpaired</note>
-        <note>last used in Bloom 4.4</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AccessibleToBlind">
         <source xml:lang="en">Accessible to the Blind</source>
@@ -4219,12 +4099,6 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Book</source>
         <note>ID: ReaderSetup.BookHeader</note>
       </trans-unit>
-      <trans-unit id="ReaderSetup.BookMaxWords" sil:dynamic="true">
-        <source xml:lang="en">Maximum Words in Book</source>
-        <note>ID: ReaderSetup.BookMaxWords</note>
-        <note xml:lang="en">OLD TEXT (before 3.9): Maximum Words per Book</note>
-        <note>obsolete as of 4.9</note>
-      </trans-unit>
       <trans-unit id="ReaderSetup.BookMaxWords2" sil:dynamic="true">
         <source xml:lang="en">Per **Book**</source>
         <note>ID: ReaderSetup.BookMaxWords2</note>
@@ -4295,12 +4169,6 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Level</source>
         <note>ID: ReaderSetup.LevelHeader</note>
       </trans-unit>
-      <trans-unit id="ReaderSetup.LevelLabel" sil:dynamic="true">
-        <source xml:lang="en">Level </source>
-        <note>ID: ReaderSetup.LevelLabel</note>
-        <note xml:lang="en">OLD TEXT (before 3.9, use literal NBSP character): Level&amp;nbsp;</note>
-        <note>obsolete as of 4.9. New LevelLabelMax replaces it</note>
-      </trans-unit>
       <trans-unit id="ReaderSetup.LevelLabelMax" sil:dynamic="true">
         <source xml:lang="en">Level {0} Maximums</source>
         <note>ID: ReaderSetup.LevelLabelMax</note>
@@ -4363,11 +4231,6 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true">
         <source xml:lang="en">Page</source>
         <note>ID: ReaderSetup.PageHeader</note>
-      </trans-unit>
-      <trans-unit id="ReaderSetup.PageMaxWords" sil:dynamic="true">
-        <source xml:lang="en">Maximum Words on each Page</source>
-        <note>ID: ReaderSetup.PageMaxWords</note>
-        <note>obsolete as of Bloom 4.9</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.PageMaxWords2" sil:dynamic="true">
         <source xml:lang="en">Per **Page**</source>
@@ -4445,11 +4308,6 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.Sentences" sil:dynamic="true">
         <source xml:lang="en">Sentences</source>
         <note>ID: ReaderSetup.Sentences</note>
-      </trans-unit>
-      <trans-unit id="ReaderSetup.SentenceMaxWords" sil:dynamic="true">
-        <source xml:lang="en">Maximum Words in each Sentence</source>
-        <note>ID: ReaderSetup.SentenceMaxWords</note>
-        <note>obsolete as of Bloom 4.9</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentenceMaxWords2" sil:dynamic="true">
         <source xml:lang="en">Per **Sentence**</source>
@@ -4610,7 +4468,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Close</source>
         <note>ID: ReportProblemDialog.Close</note>
         <note>Shown in the button that closes the dialog after a successful report submission.</note>
-        <note>Obsolete for Bloom 5.0 and later</note>
+        <note>Obsolete as of Bloom 5.0</note>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.CouldNotSendToServer">
         <source xml:lang="en">Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.</source>
