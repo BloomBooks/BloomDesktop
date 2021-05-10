@@ -43,14 +43,12 @@
 			this._helpMenu = new System.Windows.Forms.ToolStripDropDownButton();
 			this._documentationMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._trainingVideosMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this._keyBloomConceptsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.buildingReaderTemplatesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.usingReaderTemplatesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
 			this._askAQuestionMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._requestAFeatureMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._reportAProblemMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this._showLogMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._divider1 = new System.Windows.Forms.ToolStripSeparator();
 			this._releaseNotesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._checkForNewVersionMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -223,14 +221,12 @@
 			this._helpMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._documentationMenuItem,
             this._trainingVideosMenuItem,
-            this._keyBloomConceptsMenuItem,
             this.buildingReaderTemplatesMenuItem,
             this.usingReaderTemplatesMenuItem,
             this.toolStripSeparator1,
             this._askAQuestionMenuItem,
             this._requestAFeatureMenuItem,
             this._reportAProblemMenuItem,
-            this._showLogMenuItem,
             this._divider1,
             this._releaseNotesMenuItem,
             this._checkForNewVersionMenuItem,
@@ -257,7 +253,7 @@
 			this._L10NSharpExtender.SetLocalizingId(this._documentationMenuItem, "HelpMenu.DocumentationMenuItem");
 			this._documentationMenuItem.Name = "_documentationMenuItem";
 			this._documentationMenuItem.Size = new System.Drawing.Size(213, 22);
-			this._documentationMenuItem.Text = "Documentation";
+			this._documentationMenuItem.Text = "Browse Help...";
 			this._documentationMenuItem.Click += new System.EventHandler(this.toolStripMenuItem3_Click);
 			// 
 			// _trainingVideosMenuItem
@@ -270,18 +266,6 @@
 			this._trainingVideosMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._trainingVideosMenuItem.Text = "Training Videos";
 			this._trainingVideosMenuItem.Click += new System.EventHandler(this._trainingVideosMenuItem_Click);
-			// 
-			// _keyBloomConceptsMenuItem
-			// 
-			this._keyBloomConceptsMenuItem.Image = global::Bloom.Properties.Resources.pdf16x16;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._keyBloomConceptsMenuItem, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._keyBloomConceptsMenuItem, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._keyBloomConceptsMenuItem, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this._keyBloomConceptsMenuItem, "HelpMenu.KeyBloomConceptsToolStripMenuItem");
-			this._keyBloomConceptsMenuItem.Name = "_keyBloomConceptsMenuItem";
-			this._keyBloomConceptsMenuItem.Size = new System.Drawing.Size(213, 22);
-			this._keyBloomConceptsMenuItem.Text = "Key Bloom Concepts";
-			this._keyBloomConceptsMenuItem.Click += new System.EventHandler(this.keyBloomConceptsMenuItem_Click);
 			// 
 			// buildingReaderTemplatesMenuItem
 			// 
@@ -344,17 +328,6 @@
 			this._reportAProblemMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._reportAProblemMenuItem.Text = "Report a Problem...";
 			this._reportAProblemMenuItem.Click += new System.EventHandler(this._reportAProblemMenuItem_Click);
-			// 
-			// _showLogMenuItem
-			// 
-			this._L10NSharpExtender.SetLocalizableToolTip(this._showLogMenuItem, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._showLogMenuItem, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._showLogMenuItem, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this._showLogMenuItem, "HelpMenu.ShowEventLogMenuItem");
-			this._showLogMenuItem.Name = "_showLogMenuItem";
-			this._showLogMenuItem.Size = new System.Drawing.Size(213, 22);
-			this._showLogMenuItem.Text = "Show Event Log";
-			this._showLogMenuItem.Click += new System.EventHandler(this._showLogMenuItem_Click);
 			// 
 			// _divider1
 			// 
@@ -424,7 +397,7 @@
 			this._panelHoldingToolStrip.Controls.Add(this._toolStrip);
 			this._L10NSharpExtender.SetLocalizableToolTip(this._panelHoldingToolStrip, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._panelHoldingToolStrip, null);
-	        this._L10NSharpExtender.SetLocalizationPriority(this._panelHoldingToolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
+			this._L10NSharpExtender.SetLocalizationPriority(this._panelHoldingToolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._panelHoldingToolStrip, "HelpMenu.WorkspaceView._panelHoldingToolStrip");
 			this._panelHoldingToolStrip.Location = new System.Drawing.Point(1006, 3);
 			this._panelHoldingToolStrip.Name = "_panelHoldingToolStrip";
@@ -433,7 +406,6 @@
 			// 
 			// _applicationUpdateCheckTimer
 			// 
-			this._applicationUpdateCheckTimer.Enabled = false;
 			this._applicationUpdateCheckTimer.Interval = 60000;
 			this._applicationUpdateCheckTimer.Tick += new System.EventHandler(this._applicationUpdateCheckTimer_Tick);
 			// 
@@ -483,14 +455,12 @@
 		private System.Windows.Forms.ToolStripMenuItem _trainingVideosMenuItem;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
 		private System.Windows.Forms.ToolStripMenuItem _releaseNotesMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem _keyBloomConceptsMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem buildingReaderTemplatesMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem usingReaderTemplatesMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _reportAProblemMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _requestAFeatureMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _webSiteMenuItem;
 		private System.Windows.Forms.ToolStripSeparator _divider1;
-		private System.Windows.Forms.ToolStripMenuItem _showLogMenuItem;
 		private System.Windows.Forms.ToolStripSeparator _divider2;
 		private System.Windows.Forms.ToolStripMenuItem _checkForNewVersionMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _registrationMenuItem;

@@ -126,10 +126,8 @@ namespace Bloom.Workspace
 			//we have a number of buttons which don't make sense for the remote (therefore vulnerable) low-end user
 			//_settingsLauncherHelper.CustomSettingsControl = _toolStrip;
 			//NB: these aren't really settings, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
-			_settingsLauncherHelper.ManageComponent(_keyBloomConceptsMenuItem);
 			_settingsLauncherHelper.ManageComponent(_requestAFeatureMenuItem);
 			_settingsLauncherHelper.ManageComponent(_webSiteMenuItem);
-			_settingsLauncherHelper.ManageComponent(_showLogMenuItem);
 			_settingsLauncherHelper.ManageComponent(_releaseNotesMenuItem);
 			_settingsLauncherHelper.ManageComponent(_divider2);
 
@@ -847,11 +845,13 @@ namespace Bloom.Workspace
 			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.Support));
 		}
 
+		// Currently not used, but I'm leaving the method in case we want to put it
+		// back in for debug or alpha builds, etc.
 		private void _showLogMenuItem_Click(object sender, EventArgs e)
 		{
 			try
 			{
-				Logger.ShowUserTheLogFile();// Process.Start(Logger.LogPath);
+				Logger.ShowUserTheLogFile();
 			}
 			catch (Exception)
 			{
@@ -992,11 +992,6 @@ namespace Bloom.Workspace
 		{
 			// These are PDF files, but stored under browser/infoPages.
 			Process.Start(BloomFileLocator.GetBrowserFile(false, "infoPages", fileName));
-		}
-
-		private void keyBloomConceptsMenuItem_Click(object sender, EventArgs e)
-		{
-			OpenInfoFile("KeyBloomConcepts.pdf");
 		}
 
 		private void buildingReaderTemplatesMenuItem_Click(object sender, EventArgs e)
