@@ -2823,8 +2823,9 @@
         <note xml:lang="en">OLD TEXT (before 3.9, added dots): About Bloom</note>
       </trans-unit>
       <trans-unit id="HelpMenu.DocumentationMenuItem">
-        <source xml:lang="en">Documentation</source>
+        <source xml:lang="en">Browse Help...</source>
         <note>ID: HelpMenu.DocumentationMenuItem</note>
+        <note>Prior to 5.0, this was "Documentation"</note>
       </trans-unit>
       <trans-unit id="HelpMenu.Help Menu">
         <source xml:lang="en">Help</source>
@@ -2837,6 +2838,7 @@
       <trans-unit id="HelpMenu.KeyBloomConceptsToolStripMenuItem">
         <source xml:lang="en">Key Bloom Concepts</source>
         <note>ID: HelpMenu.KeyBloomConceptsToolStripMenuItem</note>
+        <note>obsolete as of Bloom 5.0</note>
       </trans-unit>
       <trans-unit id="HelpMenu.MakeASuggestionMenuItem">
         <source xml:lang="en">Request a Feature</source>
@@ -2859,6 +2861,7 @@
       <trans-unit id="HelpMenu.ShowEventLogMenuItem">
         <source xml:lang="en">Show Event Log</source>
         <note>ID: HelpMenu.ShowEventLogMenuItem</note>
+        <note>obsolete as of Bloom 5.0</note>
       </trans-unit>
       <trans-unit id="HelpMenu.UsingReaderTemplatesMenuItem">
         <source xml:lang="en">Using Reader Templates </source>
