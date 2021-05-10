@@ -999,6 +999,11 @@
         <note>ID: Common.SeeWebPage</note>
         <note>Used to point the user to a web page. Put the '{0}' where the web page URL will go.</note>
       </trans-unit>
+      <trans-unit id="Common.SelectAll">
+        <source xml:lang="en">Select all</source>
+        <note>ID: Common.SelectAll</note>
+        <note>used for a menu item for selecting all text in a text box</note>
+      </trans-unit>
       <trans-unit id="Common.Settings">
         <source xml:lang="en">Settings</source>
         <note>ID: Common.Settings</note>
