@@ -328,7 +328,7 @@ div.bloom-page {
 
 .bloom-mediaBox {
     :not(.Device16x9Portrait):not(.Device16x9Landscape)&::before {
-        // we're not expecting an edge-to-edge images, so no need ot show the transparent bleed area. Just make it black.
+        // we're not expecting an edge-to-edge images, so no need to show the transparent bleed area. Just make it black.
         border-color: black !important;
     }
     &::after {
@@ -432,38 +432,69 @@ div.bloom-page {
         }
     }
 }
+
 .epub {
-    // These rules fix Readium and Android EKitabu layout issues, and allow cover color to extend
-    // to the bottom of the page. Windows EKitabu doesn't work quite as well, unfortunately.
-    height: calc(100% - 5px) !important;
-    .bloom-frontMatter,
-    .bloom-backMatter {
-        height: 100%;
-        .marginBox {
-            height: 100%;
+    .divider {
+        display: none;
+    }
+
+    // For ePub, set things as if we're doing Device16x9Portrait layout
+    --HeaderHeight: 3cm; // enough for two lines
+    --OutsideBackCoverLogoHeight: 10mm;
+    --OutsideBackCoverCreditsFontSize: 9pt;
+
+    .frontCover .bloom-translationGroup.bookTitle {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    @media (max-resolution: 2dppx) {
+        .frontCover .bottomBlock {
+            margin: unset; // eliminate some extra spacing that messes up smaller epubs.
         }
     }
 
     .credits .marginBox {
         [data-book="credits-page-branding-bottom-html"] {
-            // We want the position absolute bottom 0 from a regular rule, but in epub
-            // the left: 0, right: 0 can mess up centering.
+            position: relative;
+            margin-top: 20px;
+            // Having left/right in epub can mess up centering.
             left: unset;
             right: unset;
         }
     }
 
     .outsideBackCover .marginBox {
-        height: 100% !important; // override non-epub version
-        // Non-epub rules try to push things right too much and chop off government logos!
-        width: unset !important;
-        // Keep level image from moving off to next page where it's not visible by moving it up
-        // one grid-row.
-        [data-book="level-image"] {
-            grid-row: 2;
+        width: 100%;
+
+        // Keep logos on back cover from bleeding to next page
+        .outside-back-cover-branding-top-block {
+            margin: 0;
+            padding: 0;
         }
-    }
-    .divider {
-        display: none;
+
+        .bottomHalfGrid {
+            height: 600px;
+            display: grid;
+            grid-template-columns: auto;
+            grid-template-rows: 250px 30px auto;
+            [data-book="level-image"] {
+                grid-row: 2;
+                grid-column: 1;
+                margin-left: auto;
+                margin-right: auto;
+                margin-bottom: 10px; //separate from preceding text
+                img {
+                    height: 250px;
+                }
+            }
+            .bloom-translationGroup {
+                grid-row: 1;
+            }
+        }
+
+        @media (max-resolution: 2dppx) {
+            height: unset !important; // override non-epub version
+        }
     }
 }
