@@ -722,6 +722,11 @@
         <source xml:lang="en">Edit this book</source>
         <note>ID: CollectionTab.EditBookButton</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.GetABetterBloom">
+        <source xml:lang="en">Click to get a better Bloom!</source>
+        <note>ID: CollectionTab.GetABetterBloom</note>
+        <note>Clicking this message loads a web page which describes how to upgrade Bloom.</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections">
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
         <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
