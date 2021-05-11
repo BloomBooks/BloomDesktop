@@ -315,7 +315,8 @@ namespace Bloom.Collection
 			xml.Add(new XElement("AllowNewBooks", AllowNewBooks.ToString()));
 			xml.Add(new XElement("AudioRecordingMode", AudioRecordingMode.ToString()));
 			xml.Add(new XElement("AudioRecordingTrimEndMilliseconds", AudioRecordingTrimEndMilliseconds));
-			xml.Add(new XElement("Administrators", string.Join(",", Administrators)));
+			if (Administrators != null && Administrators.Length > 0)
+				xml.Add(new XElement("Administrators", string.Join(",", Administrators)));
 			SIL.IO.RobustIO.SaveXElement(xml, SettingsFilePath);
 		}
 
