@@ -15,29 +15,41 @@ namespace Bloom.Utils
 	public class DropboxUtils
 	{
 		/// <summary>
+		/// Location(s) for the Dropbox info.json file based on information in
+		/// https://help.dropbox.com/installs-integrations/desktop/locate-dropbox-folder,
+		/// though it isn't precisely accurate.
+		/// </summary>
+		private static string[] s_jsonPaths = Platform.IsLinux ?
+			new[] {"%HOME%/.dropbox/info.json"} :
+			new[] {"%APPDATA%\\Dropbox\\info.json", "%LOCALAPPDATA%\\Dropbox\\info.json"};
+
+		/// <summary>
+		/// It's a bit of a toss-up whether to use a Regex or a JSON parser to extract data from
+		/// the info.json file. The documentation at the URL above has several mistakes. There 
+		/// are at least a couple of paths to navigate through the JSON to possible dropbox folder
+		/// paths (personal.path and business.path) and one of these is not documented for Linux;
+		/// could there be others they have not mentioned?  Then we'd also have to handle the file
+		/// possibly not parsing. This Regex simply looks for any occurrence of "path": "wherever".
+		/// </summary>
+		private static string s_pathMatchPattern = "\"path\":\\s*\"(.*?)\"";
+
+		/// <summary>
 		/// Is Dropbox up and running? This may not be 100% reliable...could the process be
 		/// called something else when a localized version is running? Might one Dropbox process
 		/// be running but not the one we really need? But it's the best we can find so far.
 		/// Review: will this work on Linux?
 		/// </summary>
 		public static bool IsDropboxProcessRunning =>
-			System.Diagnostics.Process.GetProcesses().Any(p => p.ProcessName.Contains("Dropbox"));
+			System.Diagnostics.Process.GetProcesses().Any(p => Platform.IsLinux ? p.ProcessName == "dropbox" : p.ProcessName.Contains("Dropbox"));
 
-		/// <summary>
-		/// Based on information in https://help.dropbox.com/installs-integrations/desktop/locate-dropbox-folder,
-		/// though it isn't precisely accurate.
-		/// </summary>
 		public static bool IsPathInDropboxFolder(string path)
 		{
 			try
 			{
-				var jsonPaths = Platform.IsLinux
-					? new[] {"~/.dropbox/info.json"}
-					: new[] {"%APPDATA%\\Dropbox\\info.json", "%LOCALAPPDATA%\\Dropbox\\info.json"};
 				var searchPath = Platform.IsLinux ? path : path.ToLowerInvariant();
-				foreach (var jsonPath in jsonPaths)
+				foreach (var jsonPath in s_jsonPaths)
 				{
-					var fixedPath = Platform.IsLinux ? jsonPath : Environment.ExpandEnvironmentVariables(jsonPath);
+					var fixedPath = Environment.ExpandEnvironmentVariables(jsonPath);
 					if (RobustFile.Exists(fixedPath))
 					{
 						var json = RobustFile.ReadAllText(fixedPath, Encoding.UTF8);
@@ -46,7 +58,7 @@ namespace Bloom.Utils
 						// JSON to possible dropbox folder paths (personal.path and business.path) and one of these is not
 						// documented for Linux; could there be others they have not mentioned? Then we'd also have to handle
 						// the file possibly not parsing. This Regex simply looks for any occurrence of "path": "wherever".
-						foreach (var match in new Regex("\\\"path\\\":\\s*\\\"(.*?)\\\"").Matches(json).Cast<Match>())
+						foreach (var match in new Regex(s_pathMatchPattern).Matches(json).Cast<Match>())
 						{
 							var dropboxRoot = match.Groups[1].Value;
 							if (!Platform.IsLinux)
@@ -89,6 +101,40 @@ namespace Bloom.Utils
 				// rather than a nice failure.
 				return false;
 			}
+		}
+
+		public static string GetDropboxFolderPath()
+		{
+			try
+			{
+				// Prefer a "business" dropbox to a "personal" dropbox if one exists.
+				var pathPrefixes = new[] { "\"business\":\\s*{[^{}]*", "\"personal\":\\s*{[^{}]*" };
+				foreach (var jsonPath in s_jsonPaths)
+				{
+					var fixedPath = Environment.ExpandEnvironmentVariables(jsonPath);
+					if (RobustFile.Exists(fixedPath))
+					{
+						var json = RobustFile.ReadAllText(fixedPath, Encoding.UTF8);
+						foreach (var prefix in pathPrefixes)
+						{
+							var pathMatch = prefix + s_pathMatchPattern;
+							foreach (var match in new Regex(pathMatch).Matches(json).Cast<Match>())
+							{
+								var dropboxRoot = match.Groups[1].Value;
+								if (!Platform.IsLinux)
+									dropboxRoot = dropboxRoot.Replace(@"\\", @"\");
+								if (System.IO.Directory.Exists(dropboxRoot))
+									return dropboxRoot;
+							}
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				SentrySdk.CaptureException(ex);
+			}
+			return null;
 		}
 	}
 }
