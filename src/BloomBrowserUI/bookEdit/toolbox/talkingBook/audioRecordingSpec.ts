@@ -1640,7 +1640,7 @@ describe("audio recording tests", () => {
                 const scenarioName = AudioMode[scenario];
                 it(`recording updates the md5 (md5=${md5Setting}, scenario=${scenarioName})`, async () => {
                     await runEndRecordSetsMd5TestsAsync(md5Setting, scenario);
-                });
+                }, 15000);
             });
         });
     });
