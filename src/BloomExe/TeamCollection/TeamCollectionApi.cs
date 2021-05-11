@@ -7,7 +7,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
-using Bloom.web;
+using Bloom.Utils;
 using L10NSharp;
 using Newtonsoft.Json;
 using Sentry;
@@ -291,6 +291,10 @@ namespace Bloom.TeamCollection
 				// some other kind of repo.
 				using (var dlg = new FolderBrowserDialog())
 				{
+					// Default to the Dropbox folder if one is found.
+					var dropboxFolder = DropboxUtils.GetDropboxFolderPath();
+					if (!String.IsNullOrEmpty(dropboxFolder))
+						dlg.SelectedPath = dropboxFolder;
 					dlg.ShowNewFolderButton = true;
 					dlg.Description = LocalizationManager.GetString("TeamCollection.SelectFolder",
 						"Select or create the folder where this collection will be shared");
