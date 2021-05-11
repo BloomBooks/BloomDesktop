@@ -4,21 +4,17 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { BloomApi } from "../utils/bloomApi";
 import { Div, P } from "../react_components/l10nComponents";
-import "./JoinTeamCollection.less";
 import BloomButton from "../react_components/bloomButton";
 
-import theme from "../bloomMaterialUITheme";
-import { ThemeProvider } from "@material-ui/styles";
 import {
     BloomDialog,
-    DialogBottom,
     DialogBottomButtons,
-    DialogBottomLeftButtons,
     DialogCancelButton,
     DialogMiddle,
     DialogTitle,
+    IBloomDialogEnvironmentParams,
     NoteBox,
-    useMakeBloomDialog
+    useSetupBloomDialog
 } from "../react_components/BloomDialog/BloomDialog";
 import { useL10n } from "../react_components/l10nHooks";
 
@@ -28,11 +24,13 @@ import { useL10n } from "../react_components/l10nHooks";
 export const JoinTeamCollectionDialog: React.FunctionComponent<{
     collectionName: string;
     existingCollection: boolean;
-    omitOuterFrame?: boolean;
+    dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = props => {
-    const { showDialog, closeDialog, propsForBloomDialog } = useMakeBloomDialog(
-        props.omitOuterFrame
-    );
+    const {
+        showDialog,
+        closeDialog,
+        propsForBloomDialog
+    } = useSetupBloomDialog(props.dialogEnvironment);
 
     const dialogTitle = useL10n(
         'Join the Bloom Team Collection "%0"',

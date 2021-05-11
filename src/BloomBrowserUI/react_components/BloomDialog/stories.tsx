@@ -5,14 +5,14 @@ import * as React from "react";
 import { storiesOf } from "@storybook/react";
 import {
     BloomDialog,
-    DialogBottom,
     DialogBottomButtons,
     DialogBottomLeftButtons,
     DialogCancelButton,
     DialogCloseButton,
     DialogMiddle,
     DialogTitle,
-    useMakeBloomDialog
+    normalDialogEnvironmentForStorybook,
+    useSetupBloomDialog
 } from "./BloomDialog";
 import { Button, CircularProgress } from "@material-ui/core";
 
@@ -23,7 +23,7 @@ storiesOf("Bloom Dialog", module)
                 showDialog,
                 closeDialog,
                 propsForBloomDialog
-            } = useMakeBloomDialog();
+            } = useSetupBloomDialog(normalDialogEnvironmentForStorybook);
             // normally here we would assign showDialog to an exported function that
             // other parts of the UI can use to show this dialog. But that doesn't
             // really work here in story-land, so we'll just use it below in a button.
@@ -67,7 +67,7 @@ storiesOf("Bloom Dialog", module)
                 showDialog,
                 closeDialog,
                 propsForBloomDialog
-            } = useMakeBloomDialog();
+            } = useSetupBloomDialog(normalDialogEnvironmentForStorybook);
             return (
                 <BloomDialog {...propsForBloomDialog}>
                     <DialogTitle

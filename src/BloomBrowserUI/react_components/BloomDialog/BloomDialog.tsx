@@ -11,12 +11,17 @@ import { useState } from "react";
 import BloomButton from "../bloomButton";
 
 import InfoIcon from "@material-ui/icons/Info";
+import WarningIcon from "@material-ui/icons/Warning";
+import ErrorIcon from "@material-ui/icons/Error";
+
 // This component provides consistent layout across Bloom Dialogs.
 // It can be used either inside of a winforms dialog, or as a MaterialUI Dialog.
 // See the accompanying storybook story for usage.
 //
 
-const kDialogOuterPadding = "24px"; // per material?
+const kDialogTopPadding = "24px";
+const kDialogSidePadding = "24px";
+const kDialogBottomPadding = "10px"; // per material, the bottom buttons are supposed to be closer to the edges
 
 export const BloomDialog: React.FunctionComponent<{
     open: boolean;
@@ -29,13 +34,17 @@ export const BloomDialog: React.FunctionComponent<{
             css={css`
                 display: flex;
                 flex-direction: column;
-                padding-left: ${kDialogOuterPadding};
-                padding-right: ${kDialogOuterPadding};
-                padding-bottom: ${kDialogOuterPadding};
+                padding-left: ${kDialogSidePadding};
+                padding-right: ${kDialogSidePadding};
+                padding-bottom: ${kDialogBottomPadding};
                 // todo: I can't understand why this "- 10px" is needed. This and all its parents have no margin, so I don't understand why it ends up being 10px larger than the available space
                 ${props.omitOuterFrame
-                    ? `height: 100%; border: solid thin darkgrey; box-sizing: border-box;`
+                    ? `height: 100%; border: solid thin black; box-sizing: border-box;`
                     : ""}
+
+                * {
+                    //font-family: "Roboto";
+                }
             `}
         >
             {props.children}
@@ -70,7 +79,7 @@ export const DialogTitle: React.FunctionComponent<{
 
     // This is lame, but it's really what looks right to me. When there is a color bar, it looks better to have less padding at the top.
     const titleTopPadding =
-        background === "transparent" ? kDialogOuterPadding : kDialogPadding;
+        background === "transparent" ? kDialogTopPadding : kDialogPadding;
     return (
         <div
             css={css`
@@ -78,12 +87,12 @@ export const DialogTitle: React.FunctionComponent<{
                 background-color: ${background};
                 display: flex;
 
-                padding-left: ${kDialogOuterPadding};
-                padding-right: ${kDialogOuterPadding};
+                padding-left: ${kDialogTopPadding};
+                padding-right: ${kDialogTopPadding};
                 padding-top: ${titleTopPadding};
                 padding-bottom: ${kDialogPadding};
-                margin-left: -${kDialogOuterPadding};
-                margin-right: -${kDialogOuterPadding};
+                margin-left: -${kDialogTopPadding};
+                margin-right: -${kDialogTopPadding};
                 margin-bottom: ${kDialogPadding};
                 * {
                     font-size: 16px;
@@ -126,6 +135,8 @@ export const DialogMiddle: React.FunctionComponent<{}> = props => {
                 display: flex;
                 flex-direction: column;
                 flex-grow: 1;
+                font-size: 14px;
+
                 p {
                     margin-block-start: 0;
                 }
@@ -141,20 +152,7 @@ export const DialogMiddle: React.FunctionComponent<{}> = props => {
     );
 };
 
-export const DialogBottom: React.FunctionComponent<{}> = props => {
-    return (
-        <div
-            css={css`
-                margin-top: auto; // push to bottom
-                padding-top: ${kDialogPadding}; // leave room between us and the content above us
-            `}
-            {...props}
-        >
-            {props.children}
-        </div>
-    );
-};
-
+// should be a child of DialogBottomButtons
 export const DialogBottomLeftButtons: React.FunctionComponent<{}> = props => (
     <div
         css={css`
@@ -166,13 +164,18 @@ export const DialogBottomLeftButtons: React.FunctionComponent<{}> = props => (
             button{
                 margin-right: ${kDialogPadding};
             }
-            // margin-left: -6px;   <--- tempting... makes un-outlined material buttons left-align
+             //padding-left: 0;//  would be good, if we could only apply it to un-outlined material buttons to make them left-align
+
+             button{
+                 margin-left:0 !important;
+             }
         `}
     >
         {props.children}
     </div>
 );
 
+// normally one or more buttons. 1st child can also be <DialogBottomLeftButtons> if you have left-aligned buttons to show
 export const DialogBottomButtons: React.FunctionComponent<{}> = props => {
     return (
         <div
@@ -189,7 +192,11 @@ export const DialogBottomButtons: React.FunctionComponent<{}> = props => {
                 margin-left: ${kDialogPadding};
             }
 
-                width: 100%; // needed to left left buttons actually get to the left
+                // As per material (https://i.imgur.com/REsXU1C.png), we actually should be closer to the right than
+                // the content.
+                // no it looks ugly! width: calc(100% + 10px);
+
+                width: 100%;
             `}
             {...props}
         >
@@ -236,30 +243,91 @@ export const DialogCancelButton: React.FunctionComponent<{
 );
 
 export const NoteBox: React.FunctionComponent<{}> = props => (
-    <Card style={{ backgroundColor: "#E5F9F0" }}>
-        <CardContent
+    <div
+        css={css`
+            display: flex;
+            background-color: #e5f9f0;
+            padding: ${kDialogBottomPadding};
+            margin-top: ${kDialogBottomPadding};
+        `}
+    >
+        <InfoIcon
+            color="primary"
             css={css`
-                display: flex;
+                margin-right: ${kDialogPadding};
             `}
-        >
-            <InfoIcon
-                color="primary"
-                css={css`
-                    margin-right: ${kDialogPadding};
-                `}
-            />
-            {props.children}
-        </CardContent>
-    </Card>
+        />
+        {props.children}
+    </div>
+);
+export const CautionBox: React.FunctionComponent<{}> = props => (
+    <div
+        css={css`
+            display: flex;
+            background-color: #e5f9f0;
+            padding: ${kDialogBottomPadding};
+            margin-top: ${kDialogBottomPadding};
+        `}
+    >
+        <WarningIcon
+            color="primary"
+            css={css`
+                margin-right: ${kDialogPadding};
+            `}
+        />
+        {props.children}
+    </div>
 );
 
-export function useMakeBloomDialog(omitOuterFrame?: boolean) {
-    const [currentlyOpen, setOpen] = useState(true);
+export const ErrorBox: React.FunctionComponent<{}> = props => (
+    <div
+        css={css`
+            display: flex;
+            background-color: #eb3941;
+            padding: ${kDialogBottomPadding};
+            margin-top: ${kDialogBottomPadding};
+            &,
+            * {
+                color: white;
+            }
+        `}
+    >
+        <ErrorIcon
+            css={css`
+                margin-right: ${kDialogPadding};
+            `}
+        />
+        {props.children}
+    </div>
+);
+
+export interface IBloomDialogEnvironmentParams {
+    // true if the caller is wrapping in a winforms dialog already
+    omitOuterFrame: boolean;
+    // storybook stories will usually set this to true so we don't have to do anything to see the dialog
+    initiallyOpen: boolean;
+}
+
+export const normalDialogEnvironmentForStorybook = {
+    omitOuterFrame: false,
+    initiallyOpen: true
+};
+
+// Components that include <BloomDialog> to make a dialog should call this hook and use what it returns to manage the dialog.
+// See the uses of it in the code for examples.
+export function useSetupBloomDialog(
+    dialogEnvironment?: IBloomDialogEnvironmentParams
+) {
+    const [currentlyOpen, setOpen] = useState(
+        // we default to closed
+        dialogEnvironment ? dialogEnvironment.initiallyOpen : false
+    );
     function showDialog() {
         setOpen(true);
     }
     function closeDialog() {
-        if (omitOuterFrame) BloomApi.post("common/closeReactDialog");
+        if (dialogEnvironment?.omitOuterFrame)
+            BloomApi.post("common/closeReactDialog");
         else setOpen(false);
     }
     return {
@@ -268,7 +336,7 @@ export function useMakeBloomDialog(omitOuterFrame?: boolean) {
         propsForBloomDialog: {
             open: currentlyOpen,
             onClose: closeDialog,
-            omitOuterFrame
+            omitOuterFrame: dialogEnvironment?.omitOuterFrame || false
         }
     };
 }

@@ -86,6 +86,29 @@ namespace Bloom.TeamCollection
 			_overrideCurrentUser = user;
 		}
 
+		// We'd prefer to have Autofac just pass us the collection settings
+		// in our constructor, as is done for most classes that need one.
+		// But TCM must be created by AutoFac before CollectionSettings,
+		// so it can sync the latest version of the CS file
+		// before the CS is loaded. So instead ProjectContext is hard-coded
+		// to set it when available. (The internal is not really a useful
+		// restriction, but serves as a hint that nothing else is supposed
+		// to use the setter.)
+		public CollectionSettings Settings { get; internal set; }
+
+		public bool OkToEditCollectionSettings
+		{
+			get
+			{
+				if (CurrentCollectionEvenIfDisconnected == null)
+					return true; // restrictions only apply to TCs
+				var settings = Settings;
+				if (settings.Administrators.Length == 0)
+					return true; // legacy TC, no admin recorded
+				return settings.Administrators.Contains(CurrentUser);
+			}
+		}
+
 		public static void RaiseTeamCollectionStatusChanged()
 		{
 			TeamCollectionStatusChanged?.Invoke(null, new EventArgs());
@@ -289,6 +312,9 @@ namespace Bloom.TeamCollection
 		{
 			var repoFolderPath = PlannedRepoFolderPath(repoFolderParentPath);
 			Directory.CreateDirectory(repoFolderPath);
+			// The creator of a TC is its first and, for now, usually only administrator.
+			// (Currently there is no way to change this except to hand-edit the file.)
+			Settings.Administrators = new[] {CurrentUser};
 			var newTc = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath);
 			newTc.CollectionId = collectionId;
 			newTc.SocketServer = SocketServer;

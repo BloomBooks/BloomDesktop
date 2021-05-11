@@ -19,14 +19,17 @@ using SIL.Reporting;
 using SIL.Windows.Forms.ReleaseNotes;
 using SIL.Windows.Forms.SettingProtection;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
+using Bloom.Utils;
 using Bloom.web.controllers;
 using Gecko.Cache;
 using SIL.Windows.Forms.WritingSystems;
 using SIL.PlatformUtilities;
+using SIL.Windows.Forms.Miscellaneous;
 
 namespace Bloom.Workspace
 {
@@ -110,7 +113,7 @@ namespace Bloom.Workspace
 
 			//_chorusSystem = chorusSystem;
 			_localizationManager = localizationManager;
-			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
+			_model.UpdateDisplay += new EventHandler(OnUpdateDisplay);
 
 			// By this point, BloomServer is up and listening and our web controllers are registered,
 			// so our new ProblemReportApi will function. These next two lines activate it.
@@ -119,22 +122,20 @@ namespace Bloom.Workspace
 
 			InitializeComponent();
 
-			_checkForNewVersionMenuItem.Visible = SIL.PlatformUtilities.Platform.IsWindows;
+			_checkForNewVersionMenuItem.Visible = Platform.IsWindows;
 
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 
 			//we have a number of buttons which don't make sense for the remote (therefore vulnerable) low-end user
 			//_settingsLauncherHelper.CustomSettingsControl = _toolStrip;
 			//NB: these aren't really settings, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
-			_settingsLauncherHelper.ManageComponent(_keyBloomConceptsMenuItem);
 			_settingsLauncherHelper.ManageComponent(_requestAFeatureMenuItem);
 			_settingsLauncherHelper.ManageComponent(_webSiteMenuItem);
-			_settingsLauncherHelper.ManageComponent(_showLogMenuItem);
 			_settingsLauncherHelper.ManageComponent(_releaseNotesMenuItem);
 			_settingsLauncherHelper.ManageComponent(_divider2);
 
 			OnSettingsProtectionChanged(this, null);//initial setup
-			SettingsProtectionSettings.Default.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(OnSettingsProtectionChanged);
+			SettingsProtectionSettings.Default.PropertyChanged += new PropertyChangedEventHandler(OnSettingsProtectionChanged);
 
 
 			_uiLanguageMenu.Visible = true;
@@ -151,19 +152,19 @@ namespace Bloom.Workspace
 			//
 			this._collectionView = (LibraryView) libraryView;
 			_collectionView.ManageSettings(_settingsLauncherHelper);
-			this._collectionView.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._collectionView.Dock = DockStyle.Fill;
 
 			//
 			// _editingView
 			//
 			this._editingView = editingViewFactory();
-			this._editingView.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._editingView.Dock = DockStyle.Fill;
 
 			//
 			// _pdfView
 			//
 			this._publishView = pdfViewFactory();
-			this._publishView.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._publishView.Dock = DockStyle.Fill;
 
 			_collectionTab.Tag = _collectionView;
 			_publishTab.Tag = _publishView;
@@ -177,7 +178,7 @@ namespace Bloom.Workspace
 			_tabStrip.SelectedTab = _collectionTab;
 			SelectPage(_collectionView);
 
-			if (SIL.PlatformUtilities.Platform.IsMono)
+			if (Platform.IsMono)
 			{
 				// Without this adjustment, we lose some controls on smaller resolutions.
 				AdjustToolPanelLocation(true);
@@ -195,7 +196,8 @@ namespace Bloom.Workspace
 
 			bookStatusChangeEvent.Subscribe(args => { HandleBookStatusChange(args); });
 		}
-
+		public static string MustBeAdminMessage => LocalizationManager.GetString("TeamCollection.MustBeAdmin",
+			"You must be an administrator to change collection settings");
 
 		private void HandleBookStatusChange(BookStatusChangeEventArgs args)
 		{
@@ -270,7 +272,7 @@ namespace Bloom.Workspace
 		/// </summary>
 		void HandleTabTextChanged(object sender, EventArgs e)
 		{
-			var btn = sender as Messir.Windows.Forms.TabStripButton;
+			var btn = sender as TabStripButton;
 			if (btn != null)
 			{
 				const string kEllipsis = "\u2026";
@@ -320,7 +322,7 @@ namespace Bloom.Workspace
 		private void _applicationUpdateCheckTimer_Tick(object sender, EventArgs e)
 		{
 			_applicationUpdateCheckTimer.Enabled = false;
-			if (!Debugger.IsAttached && SIL.PlatformUtilities.Platform.IsWindows)
+			if (!Debugger.IsAttached && Platform.IsWindows)
 			{
 				ApplicationUpdateSupport.CheckForASquirrelUpdate(ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Quiet, newInstallDir => RestartBloom(newInstallDir), Settings.Default.AutoUpdate);
 			}
@@ -340,7 +342,7 @@ namespace Bloom.Workspace
 #endif
 		}
 
-		void OnSettingsProtectionChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		void OnSettingsProtectionChanged(object sender, PropertyChangedEventArgs e)
 		{
 			//when we need to use Ctrl+Shift to display stuff, we don't want it also firing up the localization dialog (which shouldn't be done by a user under settings protection anyhow)
 
@@ -425,7 +427,7 @@ namespace Bloom.Workspace
 			Debug.WriteLine("DEBUG WorkspaceView.DropDown_Closing: reason={0}, cancel={1}", e.CloseReason.ToString(), e.Cancel);
 		}
 
-		void DropDown_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+		void DropDown_Opening(object sender, CancelEventArgs e)
 		{
 			_ignoreNextAppFocusChange = true;
 		}
@@ -469,7 +471,7 @@ namespace Bloom.Workspace
 			var message = LocalizationManager.GetString("CollectionTab.UILanguageMenu.HelpTranslate", "Help us translate Bloom (web)",
 				"The final item in the UI Language menu. When clicked, it opens Bloom's page in the Crowdin web-based translation system.");
 			var helpItem = uiMenuControl.DropDownItems.Add(message);
-			helpItem.Image = global::Bloom.Properties.Resources.weblink;
+			helpItem.Image = Resources.weblink;
 			helpItem.Click += (sender, args) => SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.LocalizingSystem));
 		}
 
@@ -481,7 +483,7 @@ namespace Bloom.Workspace
 			var bText = b.MenuText;
 			if (!LanguageLookupModelExtensions.IsLatinChar(bText[0]))
 				bText = b.EnglishName;
-			return string.Compare(aText.ToLowerInvariant(), bText.ToLowerInvariant(), StringComparison.Ordinal);
+			return String.Compare(aText.ToLowerInvariant(), bText.ToLowerInvariant(), StringComparison.Ordinal);
 		}
 
 		private static void UiLanguageMenuItemClickHandler(ToolStripDropDownButton toolStripButton, ToolStripItem item, Action finishClickAction)
@@ -591,7 +593,7 @@ namespace Bloom.Workspace
 		}
 
 
-		private void OnUpdateDisplay(object sender, System.EventArgs e)
+		private void OnUpdateDisplay(object sender, EventArgs e)
 		{
 			SetTabVisibility(_editTab, _model.ShowEditPage);
 			SetTabVisibility(_publishTab, _model.ShowPublishPage);
@@ -650,6 +652,11 @@ namespace Bloom.Workspace
 					return;
 				}
 				DialogResult result = _settingsLauncherHelper.LaunchSettingsIfAppropriate (() => {
+					if (!_tcManager.OkToEditCollectionSettings)
+					{
+						ErrorReport.NotifyUserOfProblem(MustBeAdminMessage);
+						return DialogResult.Cancel;
+					}
 					using (var dlg = _settingsDialogFactory ())
 					{
 						_currentlyOpenSettingsDialog = dlg;
@@ -695,7 +702,7 @@ namespace Bloom.Workspace
 
 			CurrentTabView = view as IBloomTabArea;
 			// Warn the user if we're starting to use too much memory.
-			Bloom.Utils.MemoryManagement.CheckMemory(false, "switched page in workspace", true);
+			MemoryManagement.CheckMemory(false, "switched page in workspace", true);
 
 			if(_previouslySelectedControl !=null)
 				_containerPanel.Controls.Remove(_previouslySelectedControl);
@@ -707,7 +714,7 @@ namespace Bloom.Workspace
 
 			_panelHoldingToolStrip.BackColor = CurrentTabView.TopBarControl.BackColor = _tabStrip.BackColor;
 
-			if (SIL.PlatformUtilities.Platform.IsMono)
+			if (Platform.IsMono)
 			{
 				BackgroundColorsForLinux(CurrentTabView);
 			}
@@ -749,7 +756,7 @@ namespace Bloom.Workspace
 			// Possibly overkill, but makes sure nothing obsolete hangs around long.
 			try
 			{
-				Gecko.Cache.CacheService.Clear(CacheStoragePolicy.Anywhere);
+				CacheService.Clear(CacheStoragePolicy.Anywhere);
 			}
 			catch (Exception e)
 			{
@@ -805,7 +812,7 @@ namespace Bloom.Workspace
 			{
 				path = BloomFileLocator.GetBrowserFile(false,"infoPages","aboutBox.htm");
 			}
-			using(var dlg = new SIL.Windows.Forms.Miscellaneous.SILAboutBox(path))
+			using(var dlg = new SILAboutBox(path))
 			{
 				dlg.ShowDialog();
 			}
@@ -824,7 +831,7 @@ namespace Bloom.Workspace
 		private void _releaseNotesMenuItem_Click(object sender, EventArgs e)
 		{
 			var path = FileLocationUtilities.GetFileDistributedWithApplication("ReleaseNotes.md");
-			using (var dlg = new ShowReleaseNotesDialog(global::Bloom.Properties.Resources.BloomIcon, path))
+			using (var dlg = new ShowReleaseNotesDialog(Resources.BloomIcon, path))
 			{
 				// Try to make the dialog big enough to show the embedded images without horizontal
 				// scrolling and without getting too big for the screen.  (BL-9867)
@@ -847,11 +854,13 @@ namespace Bloom.Workspace
 			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.Support));
 		}
 
+		// Currently not used, but I'm leaving the method in case we want to put it
+		// back in for debug or alpha builds, etc.
 		private void _showLogMenuItem_Click(object sender, EventArgs e)
 		{
 			try
 			{
-				Logger.ShowUserTheLogFile();// Process.Start(Logger.LogPath);
+				Logger.ShowUserTheLogFile();
 			}
 			catch (Exception)
 			{
@@ -994,11 +1003,6 @@ namespace Bloom.Workspace
 			Process.Start(BloomFileLocator.GetBrowserFile(false, "infoPages", fileName));
 		}
 
-		private void keyBloomConceptsMenuItem_Click(object sender, EventArgs e)
-		{
-			OpenInfoFile("KeyBloomConcepts.pdf");
-		}
-
 		private void buildingReaderTemplatesMenuItem_Click(object sender, EventArgs e)
 		{
 			OpenInfoFile("Building and Distributing Reader Templates in Bloom.pdf");
@@ -1047,7 +1051,7 @@ namespace Bloom.Workspace
 			//note: markdown processors pass raw html through unchanged.  Bloom's localization process
 			// is designed to produce HTML files, not Markdown files.
 			var path = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, "infoPages", "TrainingVideos-en.htm");
-			using (var dlg = new ShowReleaseNotesDialog(global::Bloom.Properties.Resources.BloomIcon, path))
+			using (var dlg = new ShowReleaseNotesDialog(Resources.BloomIcon, path))
 			{
 				dlg.ApplyMarkdown = false;
 				dlg.Text = LocalizationManager.GetString("HelpMenu.trainingVideos", "Training Videos");

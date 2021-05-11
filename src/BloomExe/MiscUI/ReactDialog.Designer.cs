@@ -41,6 +41,7 @@ namespace Bloom.MiscUI
 			this.reactControl.ReactComponentName = null;
 			this.reactControl.Size = new System.Drawing.Size(800, 450);
 			this.reactControl.TabIndex = 0;
+			this.reactControl.UseEditContextMenu = true;
 			// 
 			// ReactDialog
 			// 

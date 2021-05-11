@@ -4,7 +4,7 @@ import * as React from "react";
 import { useState } from "react";
 import { BloomApi } from "../utils/bloomApi";
 import "./BookPreviewPanel.less";
-import { useWebSocketListenerForOneMessage } from "../utils/WebSocketManager";
+import { useSubscribeToWebSocketForStringMessage } from "../utils/WebSocketManager";
 import { TeamCollectionBookStatusPanel } from "../teamCollection/TeamCollectionBookStatusPanel";
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -21,8 +21,10 @@ export const BookPreviewPanel: React.FunctionComponent = props => {
         );
     }, [previewUrl]);
 
-    useWebSocketListenerForOneMessage("bookStatus", "changeBook", message =>
-        setPreviewUrl(message)
+    useSubscribeToWebSocketForStringMessage(
+        "bookStatus",
+        "changeBook",
+        message => setPreviewUrl(message)
     );
 
     return (

@@ -45,6 +45,7 @@ export class ReaderLevel {
     public maxUniqueWordsPerBook: number = 0;
     public maxGlyphsPerWord: number = 0;
     public maxSentencesPerPage: number = 0;
+    public maxSentencesPerBook: number = 0;
     public maxAverageWordsPerSentence: number = 0;
     public maxAverageWordsPerPage: number = 0;
     public maxAverageSentencesPerPage: number = 0;
@@ -92,6 +93,10 @@ export class ReaderLevel {
 
     public getMaxSentencesPerPage(): number {
         return this.maxSentencesPerPage || 0;
+    }
+
+    public getMaxSentencesPerBook(): number {
+        return this.maxSentencesPerBook || 0;
     }
 
     public getMaxGlyphsPerWord(): number {

@@ -44,6 +44,8 @@ namespace Bloom.Collection
 		public WritingSystem Language2;
 		public WritingSystem Language3;
 		public WritingSystem[] LanguagesZeroBased;
+		// Email addresses of users authorized to change collection settings if this is a TeamCollection.
+		public string[] Administrators;
 
 		private string _signLanguageIso639Code;
 
@@ -313,6 +315,8 @@ namespace Bloom.Collection
 			xml.Add(new XElement("AllowNewBooks", AllowNewBooks.ToString()));
 			xml.Add(new XElement("AudioRecordingMode", AudioRecordingMode.ToString()));
 			xml.Add(new XElement("AudioRecordingTrimEndMilliseconds", AudioRecordingTrimEndMilliseconds));
+			if (Administrators != null && Administrators.Length > 0)
+				xml.Add(new XElement("Administrators", string.Join(",", Administrators)));
 			SIL.IO.RobustIO.SaveXElement(xml, SettingsFilePath);
 		}
 
@@ -413,6 +417,8 @@ namespace Bloom.Collection
 				AudioRecordingMode = parsedAudioRecordingMode;
 				AudioRecordingTrimEndMilliseconds = ReadInteger(xml, "AudioRecordingTrimEndMilliseconds",
 					kDefaultAudioRecordingTrimEndMilliseconds);
+				Administrators=ReadString(xml, "Administrators", "")
+					.Split(new[] {","}, StringSplitOptions.RemoveEmptyEntries);
 			}
 			catch (Exception e)
 			{

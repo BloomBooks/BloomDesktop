@@ -1110,6 +1110,10 @@ export class ReaderToolsModel {
         return this.getValueFromCurrentLevel(l => l.getMaxUniqueWordsPerBook());
     }
 
+    public maxSentencesPerBook(): number {
+        return this.getValueFromCurrentLevel(l => l.getMaxSentencesPerBook());
+    }
+
     public maxAverageWordsPerSentence(): number {
         return this.getValueFromCurrentLevel(l =>
             l.getMaxAverageWordsPerSentence()
@@ -1249,7 +1253,7 @@ export class ReaderToolsModel {
         );
         this.updateActualCount(
             ReaderToolsModel.totalSentencesInBook(sentenceFragmentsByPage),
-            this.maxWordsPerSentenceOnThisPage(),
+            this.maxSentencesPerBook(),
             "actualSentenceCount"
         );
         this.updateActualCount(

@@ -7,7 +7,7 @@ import {
 import { BloomApi } from "../../utils/bloomApi";
 import WebSocketManager, {
     IBloomWebSocketProgressEvent,
-    useWebSocketListenerForOneEvent
+    useSubscribeToWebSocketForEvent
 } from "../../utils/WebSocketManager";
 
 export const PublishProgressDialog: React.FunctionComponent<{
@@ -85,7 +85,7 @@ export const PublishProgressDialog: React.FunctionComponent<{
         });
     }, []);
 
-    useWebSocketListenerForOneEvent(
+    useSubscribeToWebSocketForEvent(
         props.webSocketClientContext,
         "message",
         e => {
