@@ -187,10 +187,15 @@ namespace Bloom.TeamCollection
 				try
 				{
 					var bookFolderName = Path.GetFileName(path);
-					var status = GetStatus(bookFolderName);
+					var statusString = GetBookStatusJsonFromRepo(bookFolderName);
+					// don't just use GetStatus().checksum here, since if the book isn't in the repo but DOES have a local
+					// status, perhaps from being previously in another TC, it will retrieve the local status, which
+					// will have the same checksum as localStatus, and we will wrongly conclude we don't need to copy
+					// the book to the repo.
+					var repoChecksum = string.IsNullOrEmpty(statusString) ? null : BookStatus.FromJson(statusString).checksum;
 					var localStatus = GetLocalStatus(bookFolderName);
 					var localHtmlFilePath = Path.Combine(path, BookStorage.FindBookHtmlInFolder(path));
-					if ((status?.checksum == null || status.checksum != localStatus?.checksum) && RobustFile.Exists(localHtmlFilePath))
+					if ((repoChecksum == null || repoChecksum != localStatus?.checksum) && RobustFile.Exists(localHtmlFilePath))
 					{
 						progress.MessageWithParams("SendingFile", "", "Adding {0} to the collection", ProgressKind.Progress, bookFolderName);
 						PutBook(path);

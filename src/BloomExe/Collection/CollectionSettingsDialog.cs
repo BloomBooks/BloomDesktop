@@ -82,7 +82,8 @@ namespace Bloom.Collection
 			TeamCollectionApi.TheOneInstance.SetCallbackToReopenCollection(() =>
 			{
 				_restartRequired = true;
-				_okButton_Click(null, null);
+				ReactDialog.CloseCurrentModal(); // close the top Create dialog
+				_okButton_Click(null, null); // close this dialog
 			});
 
 			UpdateDisplay();
@@ -90,6 +91,15 @@ namespace Bloom.Collection
 			if (CollectionSettingsApi.FixEnterpriseSubscriptionCodeMode)
 			{
 				_tab.SelectedTab = _enterpriseTab;
+			}
+
+			if (tcManager.CurrentCollectionEvenIfDisconnected == null)
+			{
+				_noRenameTeamCollectionLabel.Visible = false;
+			}
+			else
+			{
+				_bloomCollectionName.Enabled = false;
 			}
 		}
 
