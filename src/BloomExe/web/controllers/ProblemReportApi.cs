@@ -14,6 +14,7 @@ using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.WebLibraryIntegration;
+using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
@@ -456,7 +457,7 @@ namespace Bloom.web.controllers
 					}
 
 					// Precondition: we must be on the UI thread for Gecko to work.
-					using (var dlg = new ReactDialog("ProblemDialog", query))
+					using (var dlg = new ReactDialog("ProblemDialog", null, query))
 					{
 						dlg.FormBorderStyle = FormBorderStyle.FixedToolWindow; // Allows the window to be dragged around
 						dlg.ControlBox = true; // Add controls like the X button back to the top bar
