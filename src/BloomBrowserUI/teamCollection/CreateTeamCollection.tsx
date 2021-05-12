@@ -27,11 +27,11 @@ import { Checkbox } from "../react_components/checkbox";
 
 export const CreateTeamCollectionDialog: React.FunctionComponent<{
     errorForTesting?: string;
-    repoFolderForTesting?: string;
+    defaultRepoFolder?: string;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = props => {
     const [repoFolderPath, setRepoFolderPath] = useState(
-        props.repoFolderForTesting ?? ""
+        props.defaultRepoFolder ?? ""
     );
     const [errorMessage, setErrorMessage] = useState<string>(
         props.errorForTesting ?? ""
