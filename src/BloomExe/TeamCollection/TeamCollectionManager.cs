@@ -1,17 +1,12 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.Registration;
-using Bloom.Utils;
-using L10NSharp;
 using Sentry;
 using SIL.IO;
-using SIL.Reporting;
 
 namespace Bloom.TeamCollection
 {
@@ -211,12 +206,12 @@ namespace Bloom.TeamCollection
 					_overrideCurrentUserSurname = lines[3];
 			}
 
-			var localCollectionLinkPath = Path.Combine(_localCollectionFolder, TeamCollectionLinkFileName);
+			var localCollectionLinkPath = GetTcLinkPathFromLcPath(_localCollectionFolder);
 			if (RobustFile.Exists(localCollectionLinkPath))
 			{
 				try
 				{
-					var repoFolderPath = RobustFile.ReadAllText(localCollectionLinkPath).Trim();
+					var repoFolderPath = RepoFolderPathFromLinkPath(localCollectionLinkPath);
 					CurrentCollection = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath); // will be replaced if CheckConnection fails
 					if (CheckConnection())
 					{
@@ -244,6 +239,11 @@ namespace Bloom.TeamCollection
 					CurrentCollectionEvenIfDisconnected = null;
 				}
 			}
+		}
+
+		public static string RepoFolderPathFromLinkPath(string localCollectionLinkPath)
+		{
+			return RobustFile.ReadAllText(localCollectionLinkPath).Trim();
 		}
 
 		/// <summary>
@@ -300,11 +300,16 @@ namespace Bloom.TeamCollection
 			return Path.Combine(localCollectionFolder, "log.txt");
 		}
 
+		public static string GetTcLinkPathFromLcPath(string localCollectionFolder)
+		{
+			return Path.Combine(localCollectionFolder, TeamCollectionLinkFileName);
+		}
+
 		/// <summary>
 		/// This gets set when we join a new TeamCollection so that the merge we do
 		/// later as we open it gets the special behavior for this case.
 		/// </summary>
-		public static bool NextMergeIsJoinCollection { get; set; }
+		public static bool NextMergeIsFirstTimeJoinCollection { get; set; }
 
 		public BloomWebSocketServer SocketServer => _webSocketServer;
 

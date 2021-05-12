@@ -279,11 +279,13 @@ export const CautionBox: React.FunctionComponent<{}> = props => (
     </div>
 );
 
+export const kErrorBoxColor = "#eb3941";
+
 export const ErrorBox: React.FunctionComponent<{}> = props => (
     <div
         css={css`
             display: flex;
-            background-color: #eb3941;
+            background-color: ${kErrorBoxColor};
             padding: ${kDialogBottomPadding};
             margin-top: ${kDialogBottomPadding};
             &,
