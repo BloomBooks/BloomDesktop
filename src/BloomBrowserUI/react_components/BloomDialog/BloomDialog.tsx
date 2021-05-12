@@ -242,6 +242,22 @@ export const DialogCancelButton: React.FunctionComponent<{
     </BloomButton>
 );
 
+export const DialogReportButton: React.FunctionComponent<{
+    onClick: () => void;
+    className?: string;
+}> = props => (
+    <BloomButton
+        className={props.className}
+        l10nKey="ErrorReport.Report"
+        hasText={true}
+        enabled={true}
+        variant="text"
+        onClick={props.onClick}
+    >
+        Report
+    </BloomButton>
+);
+
 export const NoteBox: React.FunctionComponent<{}> = props => (
     <div
         css={css`
@@ -279,11 +295,13 @@ export const CautionBox: React.FunctionComponent<{}> = props => (
     </div>
 );
 
+export const kErrorBoxColor = "#eb3941";
+
 export const ErrorBox: React.FunctionComponent<{}> = props => (
     <div
         css={css`
             display: flex;
-            background-color: #eb3941;
+            background-color: ${kErrorBoxColor};
             padding: ${kDialogBottomPadding};
             margin-top: ${kDialogBottomPadding};
             &,

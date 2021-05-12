@@ -3,6 +3,7 @@ import { ProblemKind } from "./ProblemDialog";
 
 const kBloomBlue = "#1d94a4";
 const kNonFatalColor = "#F3AA18";
+export const kBloomRed = "#d65649";
 export const kindParams = {
     User: {
         dialogHeaderColor: kBloomBlue,
