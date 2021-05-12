@@ -16,10 +16,7 @@ import { kBloomBlue } from "../bloomMaterialUITheme";
 import BloomButton from "../react_components/bloomButton";
 
 import StarIcon from "@material-ui/icons/Star";
-import {
-    CreateTeamCollectionDialog,
-    showCreateTeamCollectionDialog
-} from "./CreateTeamCollection";
+import { CreateTeamCollectionDialog } from "./CreateTeamCollection";
 //import joiningImage from "../images/joining-team-collection.png";
 
 // The contents of the Team Collection panel of the Settings dialog.
@@ -138,7 +135,11 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                     enabled={true}
                     hasText={true}
                     variant="outlined"
-                    onClick={() => showCreateTeamCollectionDialog()}
+                    onClick={() =>
+                        BloomApi.post(
+                            "teamCollection/showCreateTeamCollectionDialog"
+                        )
+                    }
                     temporarilyDisableI18nWarning={true}
                 >
                     Create a Team Collection
@@ -182,7 +183,6 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                                 {repoFolderPath
                                     ? isTeamCollection
                                     : isNotTeamCollection}
-                                <CreateTeamCollectionDialog />
                             </React.Fragment>
                         )}
                     </BloomEnterpriseAvailableContext.Consumer>
