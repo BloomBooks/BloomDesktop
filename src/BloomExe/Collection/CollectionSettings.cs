@@ -340,39 +340,6 @@ namespace Bloom.Collection
 			return sb.ToString();
 		}
 
-		public static string CollectionIdFromCollectionFolder(string collectionFolder)
-		{
-			try
-			{
-				var settingsFilePath = Path.Combine(collectionFolder,
-					Path.ChangeExtension(Path.GetFileName(collectionFolder), "bloomCollection"));
-				if (!File.Exists(settingsFilePath))
-				{
-					// When we're joining a TC, we extract settings in to a temp folder whose name does not
-					// match the settings file.
-					var collections = Directory.EnumerateFiles(collectionFolder,
-						"*.bloomCollection").ToList();
-					if (collections.Count >= 1)
-					{
-						// Hopefully this repairs things.
-						settingsFilePath = collections[0];
-					}
-					else
-					{
-						return "";
-					}
-				}
-					
-				var settingsContent = RobustFile.ReadAllText(settingsFilePath, Encoding.UTF8);
-				var xml = XElement.Parse(settingsContent);
-				return ReadString(xml, "CollectionId", "");
-			}
-			catch (Exception ex)
-			{
-				return "";
-			}
-		}
-
 		
 		/// ------------------------------------------------------------------------------------
 		public void Load()
@@ -519,7 +486,7 @@ namespace Bloom.Collection
 		}
 
 
-		private static string ReadString(XElement document, string id, string defaultValue)
+		private string ReadString(XElement document, string id, string defaultValue)
 		{
 			var nodes = document.Descendants(id);
 			if (nodes != null && nodes.Count() > 0)

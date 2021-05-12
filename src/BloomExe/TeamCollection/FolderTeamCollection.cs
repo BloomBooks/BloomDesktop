@@ -10,7 +10,6 @@ using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
 using Bloom.Api;
-using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.MiscUI;
 using Bloom.Utils;
@@ -711,9 +710,8 @@ namespace Bloom.TeamCollection
 		// Create a new local collection from the team collection at the specified path.
 		// Return the path to its settings (not team settings) file...the path we need to
 		// open the new collection. This is the method that gets called when we open a
-		// JoinTeamCollection file. The tcManager passed is a temporary one created by
-		// syncing the repo and its settings to a temporary folder.
-		public static string ShowJoinCollectionTeamDialog(string path, TeamCollectionManager tcManager)
+		// JoinTeamCollection file.
+		public static string ShowJoinCollectionTeamDialog(string path)
 		{
 			if (!PromptForSufficientRegistrationIfNeeded())
 				return null;
@@ -724,30 +722,11 @@ namespace Bloom.TeamCollection
 			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(repoFolder));
 			var localCollectionFolder =
 				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, collectionName);
-			var isExistingCollection = Directory.Exists(localCollectionFolder);
-			var tcLinkPath = TeamCollectionManager.GetTcLinkPathFromLcPath(localCollectionFolder);
-			var isAlreadyTcCollection = isExistingCollection &&
-			                            File.Exists(tcLinkPath);
-			var repoFolderPathFromLinkPath = isAlreadyTcCollection ? TeamCollectionManager.RepoFolderPathFromLinkPath(tcLinkPath) : "";
-			var isCurrentCollection = isAlreadyTcCollection &&
-			                          repoFolderPathFromLinkPath == repoFolder;
-			var joiningGuid = CollectionSettings.CollectionIdFromCollectionFolder(tcManager.CurrentCollection
-				.LocalCollectionFolder);
-			var localGuid = CollectionSettings.CollectionIdFromCollectionFolder(localCollectionFolder);
-			var isSameCollection = joiningGuid == localGuid;
 
 			using (var dlg = new ReactDialog("JoinTeamCollectionDialog", new
 			{
 				collectionName,
-				existingCollection = isExistingCollection,
-				isAlreadyTcCollection,
-				isCurrentCollection,
-				isSameCollection,
-				existingCollectionFolder = localCollectionFolder,
-				conflictingCollection = repoFolderPathFromLinkPath,
-				joiningRepo = repoFolder,
-				joiningGuid,
-				localGuid
+				existingCollection = Directory.Exists(localCollectionFolder)
 			}))
 			{
 				dlg.Width = 560;
@@ -773,7 +752,6 @@ namespace Bloom.TeamCollection
 			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(repoFolder));
 			var localCollectionFolder =
 				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, collectionName);
-			var firstTimeJoin = !Directory.Exists(localCollectionFolder) || !File.Exists(TeamCollectionManager.GetTcLinkPathFromLcPath(localCollectionFolder));
 			// Most of the collection settings files will be copied later when we create the repo
 			// in TeamRepo.MakeInstance() and call CopyRepoCollectionFilesToLocal.
 			// However, when we start up with a command line argument that causes JoinCollectionTeam,
@@ -782,9 +760,8 @@ namespace Bloom.TeamCollection
 			// exist; so we have to make it exist.
 			_newCollectionToJoin = SetupMinimumLocalCollectionFilesForRepo(repoFolder, localCollectionFolder);
 			// Soon we will open the new collection, and do a SyncAtStartup. We want that to have some
-			// special behavior, but only if joining for the first time.
-			if (firstTimeJoin)
-				TeamCollectionManager.NextMergeIsFirstTimeJoinCollection = true;
+			// special behavior.
+			TeamCollectionManager.NextMergeIsJoinCollection = true;
 		}
 
 		/// <summary>

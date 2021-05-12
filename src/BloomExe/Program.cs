@@ -24,6 +24,7 @@ using SIL.Windows.Forms.Reporting;
 using SIL.Windows.Forms.UniqueToken;
 using System.Linq;
 using System.Xml;
+using Bloom.Book;
 using Bloom.CLI;
 using Bloom.CollectionChoosing;
 using Bloom.TeamCollection;
@@ -317,7 +318,7 @@ namespace Bloom
 										}
 										return 1; // something went wrong processing it, hopefully already reported.
 									}
-									newCollection = FolderTeamCollection.ShowJoinCollectionTeamDialog(args[0], projectContext.TeamCollectionManager);
+									newCollection = FolderTeamCollection.ShowJoinCollectionTeamDialog(args[0]);
 								}
 							}
 						}

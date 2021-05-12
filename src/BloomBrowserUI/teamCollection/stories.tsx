@@ -128,17 +128,15 @@ storiesOf("Team Collection components/StatusPanelCommon", module)
     );
 
 storiesOf("Team Collection components/JoinTeamCollection", module)
-    .add("new collection", () => (
+    .add(" new collection", () => (
         <div id="reactRoot" className="JoinTeamCollection">
             <JoinTeamCollectionDialog
                 collectionName="foobar"
                 existingCollection={false}
-                isAlreadyTcCollection={false}
-                isCurrentCollection={false}
-                isSameCollection={false}
-                existingCollectionFolder=""
-                conflictingCollection=""
-                dialogEnvironment={normalDialogEnvironmentForStorybook}
+                dialogEnvironment={{
+                    omitOuterFrame: false,
+                    initiallyOpen: true
+                }}
             />
         </div>
     ))
@@ -147,53 +145,6 @@ storiesOf("Team Collection components/JoinTeamCollection", module)
             <JoinTeamCollectionDialog
                 collectionName="foobar"
                 existingCollection={true}
-                isAlreadyTcCollection={false}
-                isCurrentCollection={false}
-                isSameCollection={false}
-                existingCollectionFolder="somewhere"
-                conflictingCollection=""
-                dialogEnvironment={normalDialogEnvironmentForStorybook}
-            />
-        </div>
-    ))
-    .add("existing TC collection, same location and guid", () => (
-        <div id="reactRoot" className="JoinTeamCollection">
-            <JoinTeamCollectionDialog
-                collectionName="foobar"
-                existingCollection={true}
-                isAlreadyTcCollection={true}
-                isCurrentCollection={true}
-                isSameCollection={true}
-                existingCollectionFolder="some good place"
-                conflictingCollection=""
-                dialogEnvironment={normalDialogEnvironmentForStorybook}
-            />
-        </div>
-    ))
-    .add("existing TC collection, different location same guid", () => (
-        <div id="reactRoot" className="JoinTeamCollection">
-            <JoinTeamCollectionDialog
-                collectionName="foobar"
-                existingCollection={true}
-                isAlreadyTcCollection={true}
-                isCurrentCollection={false}
-                isSameCollection={true}
-                existingCollectionFolder="some good place"
-                conflictingCollection="some bad place"
-                dialogEnvironment={normalDialogEnvironmentForStorybook}
-            />
-        </div>
-    ))
-    .add("existing TC collection, different location and guid", () => (
-        <div id="reactRoot" className="JoinTeamCollection">
-            <JoinTeamCollectionDialog
-                collectionName="foobar"
-                existingCollection={true}
-                isAlreadyTcCollection={true}
-                isCurrentCollection={false}
-                isSameCollection={false}
-                existingCollectionFolder="some good place"
-                conflictingCollection="some bad place"
                 dialogEnvironment={normalDialogEnvironmentForStorybook}
             />
         </div>
@@ -203,11 +154,6 @@ storiesOf("Team Collection components/JoinTeamCollection", module)
             <JoinTeamCollectionDialog
                 collectionName="foobar"
                 existingCollection={true}
-                isAlreadyTcCollection={false}
-                isCurrentCollection={false}
-                isSameCollection={false}
-                existingCollectionFolder="somewhere"
-                conflictingCollection=""
                 dialogEnvironment={{
                     omitOuterFrame: true,
                     initiallyOpen: true
