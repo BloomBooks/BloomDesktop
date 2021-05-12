@@ -147,5 +147,10 @@ namespace Bloom.TeamCollection
 		{
 			// do nothing. We didn't start anything so there's nothing to stop.
 		}
+
+		public override string GetBackendType()
+		{
+			return "Disconnected";
+		}
 	}
 }
