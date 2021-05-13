@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Amazon.Runtime.Internal.Util;
 using Bloom.web;
 using SIL.Code;
 using SIL.IO;
@@ -157,6 +158,7 @@ namespace Bloom.TeamCollection
 
 		public void WriteMessage(TeamCollectionMessage message) {
 			Messages.Add(message);
+			SIL.Reporting.Logger.WriteEvent(message.TextForDisplay);
 			TeamCollectionManager.RaiseTeamCollectionStatusChanged();
 			// Using Environment.NewLine here means the format of the file will be appropriate for the
 			// computer we are running on. It's possible a shared collection might be used by both
