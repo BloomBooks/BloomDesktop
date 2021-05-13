@@ -907,8 +907,22 @@ namespace Bloom.Workspace
 		}
 
 
-#endregion
+		#endregion
 
+		private void _reachUpgradeTimer_Tick(object sender, EventArgs e)
+		{
+			_reachUpgradeTimer.Enabled = false;
+			ShowSpecialREACHUpgradeMessage();
+		}
+
+		private void ShowSpecialREACHUpgradeMessage()
+		{
+			var notifier = new ToastNotifier();
+			notifier.Image.Image = Resources.Bloom;
+			notifier.ToastClicked += (sender, args) => Process.Start("https://bloomlibrary.org/page/reach-upgrade");
+			// I wouldn't have chosen CollectionTab as the L10n prefix, but that is what all the similar messages have.
+			notifier.Show(LocalizationManager.GetString("CollectionTab.GetABetterBloom", "Click to get a better Bloom!", "Clicking this message will take the user to a web page which will describe how to upgrade Bloom."), null, -1); // Stay up until the user clicks on it
+		}
 	}
 
 	public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer

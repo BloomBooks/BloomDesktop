@@ -58,11 +58,12 @@
 			this._aboutBloomMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._uiLanguageMenu = new System.Windows.Forms.ToolStripDropDownButton();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-			this._applicationUpdateCheckTimer = new System.Windows.Forms.Timer(this.components);
 			this._tabStrip = new Messir.Windows.Forms.TabStrip();
 			this._collectionTab = new Messir.Windows.Forms.TabStripButton();
 			this._editTab = new Messir.Windows.Forms.TabStripButton();
 			this._publishTab = new Messir.Windows.Forms.TabStripButton();
+			this._applicationUpdateCheckTimer = new System.Windows.Forms.Timer(this.components);
+			this._reachUpgradeTimer = new System.Windows.Forms.Timer(this.components);
 			this._panelHoldingToolStrip.SuspendLayout();
 			this._toolStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
@@ -142,8 +143,8 @@
 			this._openCreateCollectionButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
 			this._openCreateCollectionButton.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._openCreateCollectionButton, "Open/Create/Get Collection");
-			this._L10NSharpExtender.SetLocalizationComment(this._openCreateCollectionButton, "This is the button you use to create a new collection, open a new one, or get " +
-        "one from a repository somewhere.");
+			this._L10NSharpExtender.SetLocalizationComment(this._openCreateCollectionButton, "This is the button you use to create a new collection, open a new one, or get one" +
+        " from a repository somewhere.");
 			this._L10NSharpExtender.SetLocalizingId(this._openCreateCollectionButton, "CollectionTab.Open/CreateCollectionButton");
 			this._openCreateCollectionButton.Name = "_openCreateCollectionButton";
 			this._openCreateCollectionButton.Size = new System.Drawing.Size(98, 43);
@@ -191,7 +192,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._documentationMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._documentationMenuItem, "HelpMenu.DocumentationMenuItem");
 			this._documentationMenuItem.Name = "_documentationMenuItem";
-			this._documentationMenuItem.Size = new System.Drawing.Size(215, 22);
+			this._documentationMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._documentationMenuItem.Text = "Help. Lots of help!";
 			this._documentationMenuItem.Click += new System.EventHandler(this.toolStripMenuItem3_Click);
 			// 
@@ -202,14 +203,14 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._trainingVideosMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._trainingVideosMenuItem, "HelpMenu.trainingVideos");
 			this._trainingVideosMenuItem.Name = "_trainingVideosMenuItem";
-			this._trainingVideosMenuItem.Size = new System.Drawing.Size(215, 22);
+			this._trainingVideosMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._trainingVideosMenuItem.Text = "Training Videos";
 			this._trainingVideosMenuItem.Click += new System.EventHandler(this._trainingVideosMenuItem_Click);
 			// 
 			// toolStripSeparator1
 			// 
 			this.toolStripSeparator1.Name = "toolStripSeparator1";
-			this.toolStripSeparator1.Size = new System.Drawing.Size(212, 6);
+			this.toolStripSeparator1.Size = new System.Drawing.Size(210, 6);
 			// 
 			// _releaseNotesMenuItem
 			// 
@@ -217,7 +218,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._releaseNotesMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._releaseNotesMenuItem, "HelpMenu.ReleaseNotesMenuItem");
 			this._releaseNotesMenuItem.Name = "_releaseNotesMenuItem";
-			this._releaseNotesMenuItem.Size = new System.Drawing.Size(215, 22);
+			this._releaseNotesMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._releaseNotesMenuItem.Text = "Release Notes...";
 			this._releaseNotesMenuItem.Click += new System.EventHandler(this._releaseNotesMenuItem_Click);
 			// 
@@ -229,14 +230,14 @@
 			this._L10NSharpExtender.SetLocalizationPriority(this._keyBloomConceptsMenuItem, L10NSharp.LocalizationPriority.Low);
 			this._L10NSharpExtender.SetLocalizingId(this._keyBloomConceptsMenuItem, "HelpMenu.KeyBloomConceptsToolStripMenuItem");
 			this._keyBloomConceptsMenuItem.Name = "_keyBloomConceptsMenuItem";
-			this._keyBloomConceptsMenuItem.Size = new System.Drawing.Size(215, 22);
+			this._keyBloomConceptsMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._keyBloomConceptsMenuItem.Text = "Key Bloom Concepts";
 			this._keyBloomConceptsMenuItem.Click += new System.EventHandler(this.keyBloomConceptsMenuItem_Click);
 			// 
 			// _divider1
 			// 
 			this._divider1.Name = "_divider1";
-			this._divider1.Size = new System.Drawing.Size(212, 6);
+			this._divider1.Size = new System.Drawing.Size(210, 6);
 			// 
 			// buildingReaderTemplatesMenuItem
 			// 
@@ -246,7 +247,7 @@
 			this._L10NSharpExtender.SetLocalizationPriority(this.buildingReaderTemplatesMenuItem, L10NSharp.LocalizationPriority.Low);
 			this._L10NSharpExtender.SetLocalizingId(this.buildingReaderTemplatesMenuItem, "HelpMenu.BuildingReaderTemplatesMenuItem");
 			this.buildingReaderTemplatesMenuItem.Name = "buildingReaderTemplatesMenuItem";
-			this.buildingReaderTemplatesMenuItem.Size = new System.Drawing.Size(215, 22);
+			this.buildingReaderTemplatesMenuItem.Size = new System.Drawing.Size(213, 22);
 			this.buildingReaderTemplatesMenuItem.Text = "Building Reader Templates";
 			this.buildingReaderTemplatesMenuItem.Click += new System.EventHandler(this.buildingReaderTemplatesMenuItem_Click);
 			// 
@@ -258,14 +259,14 @@
 			this._L10NSharpExtender.SetLocalizationPriority(this.usingReaderTemplatesMenuItem, L10NSharp.LocalizationPriority.Low);
 			this._L10NSharpExtender.SetLocalizingId(this.usingReaderTemplatesMenuItem, "HelpMenu.UsingReaderTemplatesMenuItem");
 			this.usingReaderTemplatesMenuItem.Name = "usingReaderTemplatesMenuItem";
-			this.usingReaderTemplatesMenuItem.Size = new System.Drawing.Size(215, 22);
+			this.usingReaderTemplatesMenuItem.Size = new System.Drawing.Size(213, 22);
 			this.usingReaderTemplatesMenuItem.Text = "Using Reader Templates ";
 			this.usingReaderTemplatesMenuItem.Click += new System.EventHandler(this.usingReaderTemplatesMenuItem_Click);
 			// 
 			// _divider2
 			// 
 			this._divider2.Name = "_divider2";
-			this._divider2.Size = new System.Drawing.Size(212, 6);
+			this._divider2.Size = new System.Drawing.Size(210, 6);
 			// 
 			// _reportAProblemMenuItem
 			// 
@@ -273,7 +274,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._reportAProblemMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._reportAProblemMenuItem, "HelpMenu.ReportAProblemToolStripMenuItem");
 			this._reportAProblemMenuItem.Name = "_reportAProblemMenuItem";
-			this._reportAProblemMenuItem.Size = new System.Drawing.Size(215, 22);
+			this._reportAProblemMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._reportAProblemMenuItem.Text = "Report a Problem...";
 			this._reportAProblemMenuItem.Click += new System.EventHandler(this._reportAProblemMenuItem_Click);
 			// 
@@ -284,7 +285,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._makeASuggestionMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._makeASuggestionMenuItem, "HelpMenu.MakeASuggestionMenuItem");
 			this._makeASuggestionMenuItem.Name = "_makeASuggestionMenuItem";
-			this._makeASuggestionMenuItem.Size = new System.Drawing.Size(215, 22);
+			this._makeASuggestionMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._makeASuggestionMenuItem.Text = "Make a Suggestion";
 			this._makeASuggestionMenuItem.Click += new System.EventHandler(this._makeASuggestionMenuItem_Click);
 			// 
@@ -294,14 +295,14 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._webSiteMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._webSiteMenuItem, "HelpMenu.WebSiteMenuItem");
 			this._webSiteMenuItem.Name = "_webSiteMenuItem";
-			this._webSiteMenuItem.Size = new System.Drawing.Size(215, 22);
+			this._webSiteMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._webSiteMenuItem.Text = "Web Site";
 			this._webSiteMenuItem.Click += new System.EventHandler(this._webSiteMenuItem_Click);
 			// 
 			// _divider3
 			// 
 			this._divider3.Name = "_divider3";
-			this._divider3.Size = new System.Drawing.Size(212, 6);
+			this._divider3.Size = new System.Drawing.Size(210, 6);
 			// 
 			// _showLogMenuItem
 			// 
@@ -310,14 +311,14 @@
 			this._L10NSharpExtender.SetLocalizationPriority(this._showLogMenuItem, L10NSharp.LocalizationPriority.Low);
 			this._L10NSharpExtender.SetLocalizingId(this._showLogMenuItem, "HelpMenu.ShowEventLogMenuItem");
 			this._showLogMenuItem.Name = "_showLogMenuItem";
-			this._showLogMenuItem.Size = new System.Drawing.Size(215, 22);
+			this._showLogMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._showLogMenuItem.Text = "Show Event Log";
 			this._showLogMenuItem.Click += new System.EventHandler(this._showLogMenuItem_Click);
 			// 
 			// _divider4
 			// 
 			this._divider4.Name = "_divider4";
-			this._divider4.Size = new System.Drawing.Size(212, 6);
+			this._divider4.Size = new System.Drawing.Size(210, 6);
 			// 
 			// _checkForNewVersionMenuItem
 			// 
@@ -325,7 +326,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._checkForNewVersionMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._checkForNewVersionMenuItem, "HelpMenu.CheckForNewVersionMenuItem");
 			this._checkForNewVersionMenuItem.Name = "_checkForNewVersionMenuItem";
-			this._checkForNewVersionMenuItem.Size = new System.Drawing.Size(215, 22);
+			this._checkForNewVersionMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._checkForNewVersionMenuItem.Text = "Check For New Version";
 			this._checkForNewVersionMenuItem.Click += new System.EventHandler(this._checkForNewVersionMenuItem_Click);
 			// 
@@ -335,7 +336,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._registrationMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._registrationMenuItem, "HelpMenu.RegistrationMenuItem");
 			this._registrationMenuItem.Name = "_registrationMenuItem";
-			this._registrationMenuItem.Size = new System.Drawing.Size(215, 22);
+			this._registrationMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._registrationMenuItem.Text = "Registration";
 			this._registrationMenuItem.Click += new System.EventHandler(this.OnRegistrationMenuItem_Click);
 			// 
@@ -345,7 +346,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._aboutBloomMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._aboutBloomMenuItem, "HelpMenu.CreditsMenuItem");
 			this._aboutBloomMenuItem.Name = "_aboutBloomMenuItem";
-			this._aboutBloomMenuItem.Size = new System.Drawing.Size(215, 22);
+			this._aboutBloomMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._aboutBloomMenuItem.Text = "About Bloom";
 			this._aboutBloomMenuItem.Click += new System.EventHandler(this.OnAboutBoxClick);
 			// 
@@ -467,6 +468,12 @@
 			this._applicationUpdateCheckTimer.Interval = 60000;
 			this._applicationUpdateCheckTimer.Tick += new System.EventHandler(this._applicationUpdateCheckTimer_Tick);
 			// 
+			// _reachUpgradeTimer
+			// 
+			this._reachUpgradeTimer.Enabled = true;
+			this._reachUpgradeTimer.Interval = 5000;
+			this._reachUpgradeTimer.Tick += new System.EventHandler(this._reachUpgradeTimer_Tick);
+			// 
 			// WorkspaceView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -530,7 +537,6 @@
 		private System.Windows.Forms.ToolStripMenuItem _reportAProblemMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _trainingVideosMenuItem;
 		private System.Windows.Forms.Timer _applicationUpdateCheckTimer;
-
-
-    }
+		private System.Windows.Forms.Timer _reachUpgradeTimer;
+	}
 }

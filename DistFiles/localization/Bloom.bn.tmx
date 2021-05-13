@@ -1023,6 +1023,15 @@
             <seg>এই বইটি সম্পাদন করুন</seg>
          </tuv>
       </tu>
+      <tu tuid="CollectionTab.GetABetterBloom">
+         <note>Clicking this message will take the user to a web page which will describe how to upgrade Bloom.</note>
+         <tuv xml:lang="en">
+           <seg>Click to get a better Bloom!</seg>
+         </tuv>
+         <tuv xml:lang="bn">
+            <seg>আরও ভাল ব্লুম পেতে ক্লিক করুন!</seg>
+         </tuv>
+      </tu>
       <tu tuid="CollectionTab.Health">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
