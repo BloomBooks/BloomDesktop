@@ -165,6 +165,7 @@ export const DialogBottomLeftButtons: React.FunctionComponent<{}> = props => (
                 margin-right: ${kDialogPadding};
             }
              //padding-left: 0;//  would be good, if we could only apply it to un-outlined material buttons to make them left-align
+             // or margin-left:-8px, which left-aligns such buttons but keeps the padding, which is used in hover effects.
 
              button{
                  margin-left:0 !important;
@@ -242,6 +243,33 @@ export const DialogCancelButton: React.FunctionComponent<{
     </BloomButton>
 );
 
+export const DialogReportButton: React.FunctionComponent<{
+    className?: string; // also supports Emotion CSS
+    shortMessage: string;
+    messageGenerator: () => string;
+}> = props => (
+    <BloomButton
+        className={props.className}
+        l10nKey="ErrorReport.Report"
+        hasText={true}
+        enabled={true}
+        variant="text"
+        onClick={() =>
+            BloomApi.postJson("problemReport/showDialog", {
+                shortMessage: props.shortMessage,
+                message: props.messageGenerator()
+            })
+        }
+        css={css`
+            span {
+                color: ${kErrorBoxColor};
+            }
+        `}
+    >
+        Report
+    </BloomButton>
+);
+
 export const NoteBox: React.FunctionComponent<{}> = props => (
     <div
         css={css`
@@ -279,11 +307,13 @@ export const CautionBox: React.FunctionComponent<{}> = props => (
     </div>
 );
 
+export const kErrorBoxColor = "#eb3941";
+
 export const ErrorBox: React.FunctionComponent<{}> = props => (
     <div
         css={css`
             display: flex;
-            background-color: #eb3941;
+            background-color: ${kErrorBoxColor};
             padding: ${kDialogBottomPadding};
             margin-top: ${kDialogBottomPadding};
             &,
