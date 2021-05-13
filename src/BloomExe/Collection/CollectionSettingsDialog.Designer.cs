@@ -64,6 +64,7 @@ namespace Bloom.Collection
 			this._language1FontLabel = new System.Windows.Forms.Label();
 			this._xmatterPackLabel = new System.Windows.Forms.Label();
 			this.tabPage3 = new System.Windows.Forms.TabPage();
+			this._noRenameTeamCollectionLabel = new System.Windows.Forms.Label();
 			this._bloomCollectionName = new System.Windows.Forms.TextBox();
 			this.label1 = new System.Windows.Forms.Label();
 			this._districtText = new System.Windows.Forms.TextBox();
@@ -549,6 +550,7 @@ namespace Bloom.Collection
 			// 
 			// tabPage3
 			// 
+			this.tabPage3.Controls.Add(this._noRenameTeamCollectionLabel);
 			this.tabPage3.Controls.Add(this._bloomCollectionName);
 			this.tabPage3.Controls.Add(this.label1);
 			this.tabPage3.Controls.Add(this._districtText);
@@ -566,6 +568,18 @@ namespace Bloom.Collection
 			this.tabPage3.TabIndex = 2;
 			this.tabPage3.Text = "Project Information";
 			this.tabPage3.UseVisualStyleBackColor = true;
+			// 
+			// _noRenameTeamCollectionLabel
+			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this._noRenameTeamCollectionLabel, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._noRenameTeamCollectionLabel, null);
+			this._L10NSharpExtender.SetLocalizingId(this._noRenameTeamCollectionLabel, "NoRenameTeamCollection");
+			this._noRenameTeamCollectionLabel.Location = new System.Drawing.Point(32, 278);
+			this._noRenameTeamCollectionLabel.Name = "_noRenameTeamCollectionLabel";
+			this._noRenameTeamCollectionLabel.Size = new System.Drawing.Size(291, 95);
+			this._noRenameTeamCollectionLabel.TabIndex = 23;
+			this._noRenameTeamCollectionLabel.Text = "The collection name cannot be changed because this is a Team Collection. Contact " +
+    "the Bloom team for more information.";
 			// 
 			// _bloomCollectionName
 			// 
@@ -955,5 +969,6 @@ namespace Bloom.Collection
 		private web.ReactControl reactControl1;
 		private Label label2;
 		private CheckBox _allowTeamCollection;
+		private Label _noRenameTeamCollectionLabel;
 	}
 }

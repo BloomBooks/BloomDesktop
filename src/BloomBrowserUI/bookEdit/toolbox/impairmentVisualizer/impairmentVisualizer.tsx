@@ -1,3 +1,6 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+
 import * as React from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { Div } from "../../../react_components/l10nComponents";
@@ -39,22 +42,26 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
                         your images would look with various visual impairments.
                     </Div>
                     <ApiBackedCheckbox
-                        className="checkBox"
                         apiEndpoint="accessibilityCheck/cataracts"
                         l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Cataracts"
                         onCheckChanged={simulate =>
                             this.updateCataracts(simulate)
                         }
+                        css={css`
+                            margin-bottom: 6px;
+                        `}
                     >
                         Cataracts
                     </ApiBackedCheckbox>
                     <ApiBackedCheckbox
-                        className="checkBox colorBlindCheckBox"
                         apiEndpoint="accessibilityCheck/colorBlindness"
                         l10nKey="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness"
                         onCheckChanged={simulate =>
                             this.updateColorBlindnessCheck(simulate)
                         }
+                        css={css`
+                            margin-bottom: 2px;
+                        `}
                     >
                         Color Blindness
                     </ApiBackedCheckbox>

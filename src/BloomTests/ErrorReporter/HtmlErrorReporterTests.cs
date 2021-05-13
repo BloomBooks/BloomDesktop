@@ -34,7 +34,7 @@ namespace BloomTests.ErrorReporter
 		{
 			var mockFactory = new Mock<IReactDialogFactory>();
 			var mockBrowserDialog = new Mock<IBrowserDialog>();
-			mockFactory.Setup(x => x.CreateReactDialog(It.IsAny<string>(), It.IsAny<string>())).Returns(mockBrowserDialog.Object);
+			mockFactory.Setup(x => x.CreateReactDialog(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<string>())).Returns(mockBrowserDialog.Object);
 
 			return mockFactory;
 		}
@@ -80,7 +80,7 @@ namespace BloomTests.ErrorReporter
 
 			// FYI: The URL uses a substring specific to the actual directory, so use .Contains() instead of an equality check
 			mockFactory.Verify(x => x.CreateReactDialog(
-				It.Is<string>(name => name == "ProblemDialog"),
+				It.Is<string>(name => name == "ProblemDialog"), null,
 				It.Is<string>(url => url.Contains("level=notify&msg=%3cb%3eTags%20should%20be%20encoded%3c%2fb%3e"))));
 		}
 
@@ -105,7 +105,7 @@ namespace BloomTests.ErrorReporter
 
 			// Verification
 			mockFactory.Verify(x => x.CreateReactDialog(
-				It.Is<string>(name => name == "ProblemDialog"),
+				It.Is<string>(name => name == "ProblemDialog"), null,
 				It.Is<string>(url => url.Contains("level=notify"))));
 
 			Assert.AreEqual(messageText, ProblemReportApi.NotifyMessage);
@@ -125,7 +125,7 @@ namespace BloomTests.ErrorReporter
 			reporter.NotifyUserOfProblem(new ShowAlwaysPolicy(), reportLabel, ErrorResult.Yes, "message");
 
 			mockFactory.Verify(x => x.CreateReactDialog(
-				It.Is<string>(name => name == "ProblemDialog"),
+				It.Is<string>(name => name == "ProblemDialog"), null,
 				It.Is<string>(url => url.Contains($"level=notify&reportLabel={reportLabel}&msg=message"))));
 		}
 
@@ -146,7 +146,7 @@ namespace BloomTests.ErrorReporter
 			reporter.NotifyUserOfProblem(new ShowAlwaysPolicy(), "Details", ErrorResult.Yes, "message");
 
 			mockFactory.Verify(x => x.CreateReactDialog(
-				It.Is<string>(name => name == "ProblemDialog"),
+				It.Is<string>(name => name == "ProblemDialog"), null,
 				It.Is<string>(url => url.Contains("level=notify&reportLabel=Report&msg=message"))));
 		}
 		#endregion
@@ -172,7 +172,7 @@ namespace BloomTests.ErrorReporter
 			reporter.CustomNotifyUserAuto("Details", null, null, null, "message");
 
 			mockFactory.Verify(x => x.CreateReactDialog(
-				It.Is<string>(name => name == "ProblemDialog"),
+				It.Is<string>(name => name == "ProblemDialog"), null,
 				It.Is<string>(url => url.Contains("level=notify&reportLabel=Details&msg=message"))));
 		}
 
@@ -196,7 +196,7 @@ namespace BloomTests.ErrorReporter
 
 			// Verification
 			mockFactory.Verify(x => x.CreateReactDialog(
-				It.Is<string>(name => name == "ProblemDialog"),
+				It.Is<string>(name => name == "ProblemDialog"), null,
 				It.Is<string>(url => url.Contains("level=notify&secondaryLabel=Retry&msg=message"))));
 		}
 
@@ -210,7 +210,7 @@ namespace BloomTests.ErrorReporter
 			mockBrowserDialog.Setup(x => x.ShowDialog()).Callback(delegate {
 				mockBrowserDialog.Object.CloseSource = "closedByAlternateButton";
 			});
-			mockFactory.Setup(x => x.CreateReactDialog(It.IsAny<string>(), It.IsAny<string>()))
+			mockFactory.Setup(x => x.CreateReactDialog(It.IsAny<string>(), null, It.IsAny<string>()))
 				.Returns(mockBrowserDialog.Object);
 
 			var reporter = new HtmlErrorReporterBuilder()
@@ -250,7 +250,7 @@ namespace BloomTests.ErrorReporter
 			{
 				mockBrowserDialog.Object.CloseSource = "closedByAlternateButton";
 			});
-			mockFactory.Setup(x => x.CreateReactDialog(It.IsAny<string>(), It.IsAny<string>())).Returns(mockBrowserDialog.Object);
+			mockFactory.Setup(x => x.CreateReactDialog(It.IsAny<string>(), null, It.IsAny<string>())).Returns(mockBrowserDialog.Object);
 
 			var reporter = new HtmlErrorReporterBuilder()
 				.WithTestValues()
@@ -283,7 +283,7 @@ namespace BloomTests.ErrorReporter
 			{
 				mockBrowserDialog.Object.CloseSource = "closedByReportButton";
 			});
-			mockFactory.Setup(x => x.CreateReactDialog(It.IsAny<string>(), It.IsAny<string>()))
+			mockFactory.Setup(x => x.CreateReactDialog(It.IsAny<string>(), null, It.IsAny<string>()))
 				.Returns(mockBrowserDialog.Object);
 
 			var reporter = new HtmlErrorReporterBuilder()
@@ -314,7 +314,7 @@ namespace BloomTests.ErrorReporter
 			{
 				mockBrowserDialog.Object.CloseSource = null;
 			});
-			mockFactory.Setup(x => x.CreateReactDialog(It.IsAny<string>(), It.IsAny<string>()))
+			mockFactory.Setup(x => x.CreateReactDialog(It.IsAny<string>(), null, It.IsAny<string>()))
 				.Returns(mockBrowserDialog.Object);
 
 			var reporter = new HtmlErrorReporterBuilder()

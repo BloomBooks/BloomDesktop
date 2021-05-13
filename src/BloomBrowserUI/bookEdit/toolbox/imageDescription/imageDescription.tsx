@@ -1,3 +1,6 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { BloomApi } from "../../../utils/bloomApi";
@@ -90,6 +93,15 @@ export class ImageDescriptionToolControls extends React.Component<
                             onCheckChanged={checked =>
                                 this.onCheckChanged(checked)
                             }
+                            // This is a rather ugly way of reaching inside our checkbox class,
+                            // but the usual box positioning just doesn't look right in this context.
+                            css={css`
+                                input {
+                                    margin-right: 3px;
+                                    align-self: center;
+                                    margin-top: -4px;
+                                }
+                            `}
                         >
                             This image should not be described.
                         </Checkbox>

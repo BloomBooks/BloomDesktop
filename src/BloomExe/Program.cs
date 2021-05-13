@@ -115,7 +115,9 @@ namespace Bloom
 			// Bloom has several command line scenarios, without a coherent system for them.
 			// The following is how we will do things from now on, and things can be moved
 			// into this as time allows. See CommandLineOptions.cs.
-			if (args1.Length > 0 && new[] {"--help", "hydrate", "upload", "download", "getfonts", "changeLayout", "createArtifacts"}.Contains(args1[0])) //restrict using the commandline parser to cases were it should work
+			if (args1.Length > 0 &&
+			    new[] {"--help", "hydrate", "upload", "download", "getfonts", "changeLayout", "createArtifacts"}
+				    .Contains(args1[0])) //restrict using the commandline parser to cases were it should work
 			{
 #if !__MonoCS__
 				AttachConsole(-1);
@@ -124,7 +126,11 @@ namespace Bloom
 				RunningInConsoleMode = true;
 
 				var exitCode = CommandLine.Parser.Default.ParseArguments(args1,
-					new[] {typeof (HydrateParameters), typeof(UploadParameters), typeof(DownloadBookOptions), typeof (GetUsedFontsParameters), typeof(ChangeLayoutParameters), typeof(CreateArtifactsParameters)})
+						new[]
+						{
+							typeof(HydrateParameters), typeof(UploadParameters), typeof(DownloadBookOptions), typeof(GetUsedFontsParameters),
+							typeof(ChangeLayoutParameters), typeof(CreateArtifactsParameters)
+						})
 					.MapResult(
 						(HydrateParameters opts) => HydrateBookCommand.Handle(opts),
 						(UploadParameters opts) =>
@@ -141,15 +147,16 @@ namespace Bloom
 						errors =>
 						{
 							var code = 0;
-							foreach(var error in errors)
+							foreach (var error in errors)
 							{
-								if(!(error is HelpVerbRequestedError))
+								if (!(error is HelpVerbRequestedError))
 								{
 									Debug.WriteLine(error.ToString());
 									Console.WriteLine(error.ToString());
 									code = 1;
 								}
 							}
+
 							return code;
 						});
 				return exitCode; // we're done

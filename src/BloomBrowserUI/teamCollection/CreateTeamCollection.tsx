@@ -21,18 +21,17 @@ import {
     useSetupBloomDialog
 } from "../react_components/BloomDialog/BloomDialog";
 import { useL10n } from "../react_components/l10nHooks";
+import { Checkbox } from "../react_components/checkbox";
 
 // Contents of a dialog launched from TeamCollectionSettingsPanel Create Team Collection button.
 
-export let showCreateTeamCollectionDialog: () => void;
-
 export const CreateTeamCollectionDialog: React.FunctionComponent<{
     errorForTesting?: string;
-    repoFolderForTesting?: string;
+    defaultRepoFolder?: string;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = props => {
     const [repoFolderPath, setRepoFolderPath] = useState(
-        props.repoFolderForTesting ?? ""
+        props.defaultRepoFolder ?? ""
     );
     const [errorMessage, setErrorMessage] = useState<string>(
         props.errorForTesting ?? ""
@@ -55,12 +54,21 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
         "Create a Team Collection",
         "TeamCollection.CreateTeamCollection"
     );
+
+    const [collectionName] = BloomApi.useApiString(
+        "teamCollection/getCollectionName",
+        ""
+    );
+    const [boxesChecked, setBoxesChecked] = useState(0);
     const {
         showDialog,
         closeDialog,
         propsForBloomDialog
     } = useSetupBloomDialog(props.dialogEnvironment);
-    showCreateTeamCollectionDialog = showDialog;
+
+    const checkChanged = (newVal: boolean) => {
+        setBoxesChecked(oldCount => (newVal ? oldCount + 1 : oldCount - 1));
+    };
     return (
         <BloomDialog {...propsForBloomDialog}>
             <DialogTitle title={`${dialogTitle}`} />
@@ -119,30 +127,52 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
                         Choose shared folder
                     </BloomButton>
                 </div>
-
-                {errorMessage ? (
-                    <ErrorBox>{errorMessage}</ErrorBox>
-                ) : (
-                    <CautionBox>
-                        <Div
-                            l10nKey="TeamCollection.MustBeDoneOnce"
-                            temporarilyDisableI18nWarning={true}
-                        >
-                            This can only be done once, by a single member of
-                            the team. Bloom will remember that you are the one
-                            who created it. When other people join this Team
-                            Collection, you will be the only one allowed to
-                            modify collection settings.
-                        </Div>
-                    </CautionBox>
-                )}
+                <Checkbox
+                    l10nKey="TeamCollection.NameWillWork"
+                    l10nParam0={collectionName}
+                    onCheckChanged={checkChanged}
+                    temporarilyDisableI18nWarning={true}
+                    css={css`
+                        margin-top: 5px;
+                    `}
+                >
+                    The name, "%0", will be a good one for the whole team, and
+                    will not be confused with other collections. I understand
+                    that I will not be able to change this name, later.
+                </Checkbox>
+                <Checkbox
+                    l10nKey="TeamCollection.OnlyOneCreator"
+                    onCheckChanged={checkChanged}
+                    temporarilyDisableI18nWarning={true}
+                    css={css`
+                        margin-top: 20px;
+                    `}
+                >
+                    I am the only person on the team creating this Team
+                    Collection. The rest of the team will join this collection.
+                </Checkbox>
+                <Checkbox
+                    l10nKey="TeamCollection.OnlyCreatorCanChangeSettings"
+                    onCheckChanged={checkChanged}
+                    temporarilyDisableI18nWarning={true}
+                    css={css`
+                        margin-top: 20px;
+                        margin-bottom: 15px;
+                    `}
+                >
+                    I understand that as the creator of the project, I will be
+                    the only person who can change Collection Settings.
+                </Checkbox>
+                {errorMessage && <ErrorBox>{errorMessage}</ErrorBox>}
             </DialogMiddle>
             <DialogBottomButtons>
                 <BloomButton
                     id="create-and-restart"
                     l10nKey="TeamCollection.CreateAndRestart"
                     hasText={true}
-                    enabled={!!repoFolderPath && !errorMessage}
+                    enabled={
+                        !!repoFolderPath && !errorMessage && boxesChecked == 3
+                    }
                     temporarilyDisableI18nWarning={true}
                     onClick={() => {
                         BloomApi.post("teamCollection/createTeamCollection");
@@ -150,7 +180,9 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
                 >
                     Create &amp; Restart
                 </BloomButton>
-                <DialogCancelButton onClick={closeDialog} />
+                <DialogCancelButton
+                    onClick={() => BloomApi.post("common/closeReactDialog")}
+                />
             </DialogBottomButtons>
         </BloomDialog>
     );

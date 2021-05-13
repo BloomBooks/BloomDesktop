@@ -1121,7 +1121,7 @@ export class MotionControl extends React.Component<IMotionProps, IMotionState> {
                 <Checkbox
                     id="motion"
                     name="motion"
-                    wrapClassName="enable-checkbox"
+                    className="enable-checkbox"
                     l10nKey="EditTab.Toolbox.Motion.ThisPage"
                     // tslint:disable-next-line:max-line-length
                     l10nComment="Motion here refers to panning and zooms image when it is viewed in Bloom Reader. Google 'Ken Burns effect' to see exactly what we mean."

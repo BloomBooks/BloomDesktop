@@ -84,7 +84,7 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
                     <div>
                         <Checkbox
                             id="convertWholeBookCheckbox"
-                            wrapClassName="convertWholeBook"
+                            className="convertWholeBook"
                             l10nKey="EditTab.AddPageDialog.ChooseLayoutConvertBookCheckbox"
                             name="WholeBook"
                             checked={convertWholeBookChecked}
@@ -111,7 +111,7 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
                                     name="Continue"
                                     checked={continueChecked}
                                     tristate={false}
-                                    wrapClassName="convertAnyway"
+                                    className="convertAnyway"
                                     onCheckChanged={() =>
                                         setContinueChecked(!continueChecked)
                                     }

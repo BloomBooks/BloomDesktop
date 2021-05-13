@@ -13,7 +13,6 @@
 // Intended to be similar to HighlightColor when over the default dialog background, but I haven't
 // tried to figure out exactly what would achieve that.
 @TransparentHiglightColor: hsla(186.9, 49.1%, 65%, 0.45);
-@CheckboxPadding: 20px; // used to get hanging indent to work on convert whole book checkbox
 @VerticalMarginBetweenPreviewItems: 10px;
 
 // The badge in Add Page/Change Layout on pages that are BE-only is larger than the ones
@@ -266,9 +265,6 @@ body {
     margin-left: @PreviewPaneLeftPadding;
     margin-right: @PreviewPaneLeftPadding;
     margin-top: @VerticalMarginBetweenPreviewItems;
-    display: block;
-    padding-left: @CheckboxPadding;
-    text-indent: -@CheckboxPadding;
     .disabled {
         color: @bloom-buff;
     }

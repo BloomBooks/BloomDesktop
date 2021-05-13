@@ -1,3 +1,6 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+
 import * as React from "react";
 import {
     ILocalizationProps,
@@ -8,9 +11,9 @@ import {
 interface ICheckboxProps extends ILocalizationProps {
     id?: string;
     name?: string;
-    className?: string;
+    inputClassName?: string;
     disabled?: boolean;
-    wrapClassName?: string;
+    className?: string;
     // toggle between on, off, and unknown
     tristate?: boolean;
     // Note: checked can be undefined, if tristate==true
@@ -51,11 +54,24 @@ export class Checkbox extends LocalizableElement<ICheckboxProps, {}> {
 
     public render() {
         return (
-            <div className={this.props.wrapClassName}>
+            <div
+                // To allow emotion css to apply to the Checkbox class, it's important that our main
+                // div is given the className of the Checkbox. (An earlier version of this code
+                // had a property wrapClassName for this, and passed className to the input
+                // element. This produced bizarre results with emotion. If you really need to apply
+                // a class to the input element from outside, it's probably best done with emotion
+                // using a child element rule. If you must pass in a className for that element,
+                // props.inputClassName is available.)
+                className={this.props.className}
+                css={css`
+                    display: flex;
+                    align-items: baseline;
+                `}
+            >
                 <input
                     id={this.props.id}
                     type="checkbox"
-                    className={this.props.className}
+                    className={this.props.inputClassName}
                     name={this.props.name}
                     disabled={this.props.disabled}
                     checked={this.props.checked}
@@ -63,10 +79,12 @@ export class Checkbox extends LocalizableElement<ICheckboxProps, {}> {
                         this.onChange(event.target);
                     }}
                     ref={input => (this.input = input)}
+                    css={css`
+                        margin-right: 10px;
+                    `}
                 />
                 <Label
-                    l10nKey={this.props.l10nKey}
-                    alreadyLocalized={this.props.alreadyLocalized}
+                    {...this.props}
                     onClick={() => this.onLabelClicked()}
                     className={this.props.disabled ? "disabled" : ""}
                 >

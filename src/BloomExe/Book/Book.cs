@@ -2623,6 +2623,16 @@ namespace Bloom.Book
 			var templatePageDiv = templatePage.GetDivNodeForThisPage();
 			var newPageDiv = dom.ImportNode(templatePageDiv, true) as XmlElement;
 			BookStarter.SetupPage(newPageDiv, _bookData);//, LockedExceptForTranslation);
+			if (!IsSuitableForMakingShells)
+			{
+				// We need to add these early on for leveled reader statistics not to get messed up
+				// when adding a new (empty) page.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9876.
+				TranslationGroupManager.UpdateContentLanguageClasses(newPageDiv, _bookData,
+					_bookData.Language1.Iso639Code,
+					_bookData.MultilingualContentLanguage2.Xml,
+					_bookData.MultilingualContentLanguage3.Xml);
+			}
+
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPageDiv, GetLayout());
 			newPageDiv.RemoveAttribute("title"); //titles are just for templates [Review: that's not true for front matter pages, but at the moment you can't insert those, so this is ok]C:\dev\Bloom\src\BloomExe\StyleSheetService.cs
 			// If we're a template, make the new page a template one.

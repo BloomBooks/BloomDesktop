@@ -822,5 +822,19 @@ namespace Bloom.TeamCollection
 
 			return null;
 		}
+
+		public override string GetBackendType()
+		{
+			if (!string.IsNullOrEmpty(RepoFolderPath))
+			{
+				if (DropboxUtils.IsPathInDropboxFolder(RepoFolderPath))
+					return "DropBox";
+				if (RepoFolderPath.StartsWith("\\\\", StringComparison.InvariantCulture) ||
+						RepoFolderPath.StartsWith("//", StringComparison.InvariantCulture) ||
+						new DriveInfo(Path.GetPathRoot(RepoFolderPath)).DriveType == DriveType.Network)
+					return "LAN";   // probably works only on Windows
+			}
+			return "Other";
+		}
 	}
 }

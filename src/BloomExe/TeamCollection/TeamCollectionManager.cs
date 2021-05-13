@@ -22,6 +22,7 @@ namespace Bloom.TeamCollection
 		TeamCollection CurrentCollection { get; }
 		TeamCollection CurrentCollectionEvenIfDisconnected { get; }
 		ITeamCollectionMessageLog MessageLog { get; }
+		CollectionSettings Settings { get; }
 
 		bool CheckConnection();
 		void ConnectToTeamCollection(string repoFolderParentPath, string collectionId);

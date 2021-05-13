@@ -190,7 +190,7 @@ storiesOf("Team Collection components/CreateTeamCollection", module)
     .add("CreateTeamCollection Dialog showing path", () => (
         <CreateTeamCollectionDialog
             dialogEnvironment={normalDialogEnvironmentForStorybook}
-            repoFolderForTesting="z:\Enim aute dolore ex voluptate commodo\"
+            defaultRepoFolder="z:\Enim aute dolore ex voluptate commodo\"
         />
     ))
     .add("CreateTeamCollection Dialog showing error", () => (
