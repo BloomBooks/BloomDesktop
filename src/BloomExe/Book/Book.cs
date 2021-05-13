@@ -2628,9 +2628,9 @@ namespace Bloom.Book
 				// We need to add these early on for leveled reader statistics not to get messed up
 				// when adding a new (empty) page.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9876.
 				TranslationGroupManager.UpdateContentLanguageClasses(newPageDiv, _bookData,
-					_bookData.Language1.Iso639Code,
-					_bookData.MultilingualContentLanguage2.Xml,
-					_bookData.MultilingualContentLanguage3.Xml);
+					Language1IsoCode,
+					Language2IsoCode,
+					Language3IsoCode);
 			}
 
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPageDiv, GetLayout());
