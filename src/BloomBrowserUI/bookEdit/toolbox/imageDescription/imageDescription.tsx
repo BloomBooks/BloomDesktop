@@ -10,7 +10,7 @@ import "./imageDescription.less";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { Label } from "../../../react_components/l10nComponents";
 import { Checkbox } from "../../../react_components/checkbox";
-import Link from "../../../react_components/link";
+import { Link } from "../../../react_components/link";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 
 interface IImageDescriptionState {

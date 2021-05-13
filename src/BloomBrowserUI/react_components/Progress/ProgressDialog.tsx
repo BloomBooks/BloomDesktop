@@ -15,12 +15,12 @@ import {
     BloomDialog,
     DialogBottomButtons,
     DialogBottomLeftButtons,
-    DialogCloseButton,
     DialogMiddle,
     DialogTitle,
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog
 } from "../BloomDialog/BloomDialog";
+import { DialogCloseButton } from "../BloomDialog/commonDialogComponents";
 
 export const ProgressDialog: React.FunctionComponent<{
     title: string;

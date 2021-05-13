@@ -3,21 +3,15 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import theme from "../../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
-import { Card, CardContent, Dialog } from "@material-ui/core";
+import { Dialog } from "@material-ui/core";
 import CloseOnEscape from "react-close-on-escape";
 import { kDialogPadding } from "../../bloomMaterialUITheme";
 import { BloomApi } from "../../utils/bloomApi";
 import { useState } from "react";
-import BloomButton from "../bloomButton";
 
-import InfoIcon from "@material-ui/icons/Info";
-import WarningIcon from "@material-ui/icons/Warning";
-import ErrorIcon from "@material-ui/icons/Error";
-
-// This component provides consistent layout across Bloom Dialogs.
+// The <BloomDialog> component and its children provides consistent layout across Bloom Dialogs.
 // It can be used either inside of a winforms dialog, or as a MaterialUI Dialog.
 // See the accompanying storybook story for usage.
-//
 
 const kDialogTopPadding = "24px";
 const kDialogSidePadding = "24px";
@@ -205,131 +199,6 @@ export const DialogBottomButtons: React.FunctionComponent<{}> = props => {
         </div>
     );
 };
-export const DialogCloseButton: React.FunctionComponent<{
-    onClick: () => void;
-    default?: boolean;
-}> = props => (
-    <BloomButton
-        l10nKey="Common.Close"
-        hasText={true}
-        enabled={true}
-        // close button defaults to being the default button
-        variant={
-            props.default === undefined || props.default === true
-                ? "contained"
-                : "outlined"
-        }
-        {...props}
-    >
-        Close
-    </BloomButton>
-);
-
-export const DialogCancelButton: React.FunctionComponent<{
-    onClick: () => void;
-    default?: boolean;
-}> = props => (
-    <BloomButton
-        l10nKey="Common.Cancel"
-        hasText={true}
-        enabled={true}
-        // cancel button defaults to being the not-default default
-        variant={
-            !props.default || props.default === true ? "outlined" : "contained"
-        }
-        onClick={props.onClick}
-    >
-        Cancel
-    </BloomButton>
-);
-
-export const DialogReportButton: React.FunctionComponent<{
-    className?: string; // also supports Emotion CSS
-    shortMessage: string;
-    messageGenerator: () => string;
-}> = props => (
-    <BloomButton
-        className={props.className}
-        l10nKey="ErrorReport.Report"
-        hasText={true}
-        enabled={true}
-        variant="text"
-        onClick={() =>
-            BloomApi.postJson("problemReport/showDialog", {
-                shortMessage: props.shortMessage,
-                message: props.messageGenerator()
-            })
-        }
-        css={css`
-            span {
-                color: ${kErrorBoxColor};
-            }
-        `}
-    >
-        Report
-    </BloomButton>
-);
-
-export const NoteBox: React.FunctionComponent<{}> = props => (
-    <div
-        css={css`
-            display: flex;
-            background-color: #e5f9f0;
-            padding: ${kDialogBottomPadding};
-            margin-top: ${kDialogBottomPadding};
-        `}
-    >
-        <InfoIcon
-            color="primary"
-            css={css`
-                margin-right: ${kDialogPadding};
-            `}
-        />
-        {props.children}
-    </div>
-);
-export const CautionBox: React.FunctionComponent<{}> = props => (
-    <div
-        css={css`
-            display: flex;
-            background-color: #e5f9f0;
-            padding: ${kDialogBottomPadding};
-            margin-top: ${kDialogBottomPadding};
-        `}
-    >
-        <WarningIcon
-            color="primary"
-            css={css`
-                margin-right: ${kDialogPadding};
-            `}
-        />
-        {props.children}
-    </div>
-);
-
-export const kErrorBoxColor = "#eb3941";
-
-export const ErrorBox: React.FunctionComponent<{}> = props => (
-    <div
-        css={css`
-            display: flex;
-            background-color: ${kErrorBoxColor};
-            padding: ${kDialogBottomPadding};
-            margin-top: ${kDialogBottomPadding};
-            &,
-            * {
-                color: white;
-            }
-        `}
-    >
-        <ErrorIcon
-            css={css`
-                margin-right: ${kDialogPadding};
-            `}
-        />
-        {props.children}
-    </div>
-);
 
 export interface IBloomDialogEnvironmentParams {
     // true if the caller is wrapping in a winforms dialog already

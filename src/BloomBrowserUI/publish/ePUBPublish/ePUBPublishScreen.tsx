@@ -18,7 +18,7 @@ import {
 } from "../../utils/WebSocketManager";
 import BloomButton from "../../react_components/bloomButton";
 import { EPUBHelpGroup } from "./ePUBHelpGroup";
-import PWithLink from "../../react_components/pWithLink";
+import { PWithLink } from "../../react_components/pWithLink";
 import { EPUBSettingsGroup } from "./ePUBSettingsGroup";
 import Typography from "@material-ui/core/Typography";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";

@@ -10,16 +10,18 @@ import {
     BloomDialog,
     DialogBottomButtons,
     DialogBottomLeftButtons,
-    DialogCancelButton,
     DialogMiddle,
-    DialogReportButton,
     DialogTitle,
-    ErrorBox,
     IBloomDialogEnvironmentParams,
-    NoteBox,
     useSetupBloomDialog
 } from "../react_components/BloomDialog/BloomDialog";
 import { useL10n } from "../react_components/l10nHooks";
+import {
+    DialogCancelButton,
+    DialogReportButton,
+    ErrorBox,
+    NoteBox
+} from "../react_components/BloomDialog/commonDialogComponents";
 
 // Five variations are all handled here.
 enum JoinCollectionState {
