@@ -3524,6 +3524,7 @@ export default class AudioRecording {
 
     private split(): void {
         this.setStatus("split", Status.Disabled); // Disable it immediately (not asynchronously!) so that the button stops registering clicks
+        this.showBusy();
         BloomApi.get(
             "audioSegmentation/checkAutoSegmentDependencies",
             result => {
@@ -3531,8 +3532,10 @@ export default class AudioRecording {
                     // The specific missing dependency is only reported in the error log on the C# side.
                     this.handleMissingDependency();
                     this.setStatus("split", Status.Enabled);
+                    this.endBusy();
                 } else {
                     this.autoSegment();
+                    // endBusy is handled when promises in autoSegment complete.
                 }
             }
         );
@@ -3555,6 +3558,7 @@ export default class AudioRecording {
         ) {
             this.displaySplitError();
             this.setStatus("split", Status.Disabled); // Remove active/expected highlights
+            this.endBusy();
             return;
         }
 
@@ -3564,6 +3568,7 @@ export default class AudioRecording {
             // So just give up.
             this.displaySplitError();
             this.setStatus("split", Status.Enabled); // Remove active/expected highlights
+            this.endBusy();
             return;
         }
 
@@ -3578,7 +3583,6 @@ export default class AudioRecording {
 
             this.disableInteraction();
             // this.setStatus("split", Status.Active);  // Now we decide to just keep it disabled instead.
-            this.showBusy();
 
             BloomApi.postJson(
                 "audioSegmentation/getForcedAlignmentTimings", // Or can use "audioSegmentation/autoSegmentAudio" to create hard splits of the audio
@@ -3600,6 +3604,8 @@ export default class AudioRecording {
                     this.endBusy();
                 }
             );
+        } else {
+            this.endBusy();
         }
     }
 
