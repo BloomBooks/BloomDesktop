@@ -676,6 +676,13 @@ namespace Bloom.TeamCollection
 			CreateJoinCollectionFile();
 			CreateTeamCollectionLinkFile(_localCollectionFolder, repoFolder);
 			CopyRepoCollectionFilesFromLocal(_localCollectionFolder);
+			// The new TC now has the current collection-level files. But a couple of things might try
+			// to copy them again: we do a sync when closing down the collection, as we will shortly
+			// do in order to re-open it as a TC. And then the idle loop sync might fire, too.
+			// In at least one case (BL-9902), we had a crash when rewriting the collection settings zip
+			// file failed due to a file lock, and at best it wastes time. So this collection,
+			// which is about to go away, can just stop doing this sort of sync.
+			_stopSyncingCollectionFiles = true;
 			Directory.CreateDirectory(Path.Combine(repoFolder, "Books"));
 			SynchronizeBooksFromLocalToRepo(progress);
 			StartMonitoring();

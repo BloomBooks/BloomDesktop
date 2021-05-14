@@ -542,6 +542,8 @@ namespace Bloom.TeamCollection
 		// internal for testing
 		internal bool _haveShownRemoteSettingsChangeWarning;
 
+		protected bool _stopSyncingCollectionFiles;
+
 		/// <summary>
 		/// Bring the collection-level files in the repo and the local collection into sync.
 		/// If the repo has been changed since the last sync, update the local files.
@@ -555,6 +557,8 @@ namespace Bloom.TeamCollection
 		/// <param name="atStartup"></param>
 		public void SyncLocalAndRepoCollectionFiles(bool atStartup = true)
 		{
+			if (_stopSyncingCollectionFiles)
+				return;
 			var repoModTime = LastRepoCollectionFileModifyTime;
 			var savedSyncTime = LocalCollectionFilesRecordedSyncTime();
 			if (atStartup && repoModTime != DateTime.MinValue)
