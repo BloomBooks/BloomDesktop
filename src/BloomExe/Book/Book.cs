@@ -747,7 +747,7 @@ namespace Bloom.Book
 			previewDom.AddPublishClassToBody("preview");
 
 			// Not needed for preview mode, so just remove them to reduce memory usage.
-			RemoveVideos(previewDom);
+			PreventVideoAutoLoad(previewDom);
 			
 			return previewDom;
 		}
@@ -2466,22 +2466,28 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Removes each video element contained in DOM. Useful for preview mode, where the videos will never actually play.
+		/// Tells videos not to preload. Useful for preview mode, where the videos will never actually play.
+		/// The goal is to minimize a memory leak where videos once loaded continue to use memory for
+		/// a long time, especially if the system has a lot (BL-9845).
+		/// Doc says preload="none" is unreliable, but it does work in Gecko60 to prevent these leaks.
+		/// Currently, code in bookPreview.ts uses an IntersectionObserver to make videos load when they
+		/// become visible. At that point, there will be leaks, but at least one user finds it useful
+		/// to see the first frame of the video in preview mode (BL-9875). At least, we don't leak from
+		/// just clicking on a book, only if we really look through them.
 		/// </summary>
 		/// <param name="dom">The dom containing the video elements.</param>
-		private void RemoveVideos(HtmlDom dom)
+		private void PreventVideoAutoLoad(HtmlDom dom)
 		{
+
 			var videos = dom.SelectVideoSources();
 
 			for (int i = 0; i < (videos?.Count ?? 0); ++i)
 			{
 				var videoSrc = videos[i];
-				var videoTag = videoSrc.ParentNode;
-
-				// Actually removing the video element (unsurprisingly) saves even more memory than doing "display:none" on it.
-				// FYI, either of these methods should cause the placeholder image to appear instead.
-				videoTag?.ParentNode.RemoveChild(videoTag);
+				var videoTag = videoSrc.ParentNode as XmlElement;
+				videoTag?.SetAttribute("preload", "none");
 			}
+
 		}
 
 		public IEnumerable<IPage> GetPages()
