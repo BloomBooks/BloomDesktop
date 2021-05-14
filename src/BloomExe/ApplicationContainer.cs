@@ -73,6 +73,12 @@ namespace Bloom
 
 			public void Dispose()
 			{
+				// Disposing the container results in disposing of the objects that
+				// support requests to localize strings. But sometimes such a request
+				// is still pending, perhaps from a browser queued in our server.
+				// We don't want an exception thrown if the request reaches the LM
+				// after things are disposed.
+				L10NSharp.LocalizationManager.ThrowIfManagerDisposed = false;
 				_container?.Dispose();
 				_container = null;
 
