@@ -24,7 +24,7 @@ import {
 import { BloomApi } from "../../utils/bloomApi";
 import HelpLink from "../../react_components/helpLink";
 import HtmlHelpLink from "../../react_components/htmlHelpLink";
-import Link from "../../react_components/link";
+import { Link } from "../../react_components/link";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/PublishProgressDialogInner";

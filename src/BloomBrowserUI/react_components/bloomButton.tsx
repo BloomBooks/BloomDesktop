@@ -82,6 +82,7 @@ export default class BloomButton extends LocalizableElement<
                 color="primary"
                 startIcon={this.props.iconBeforeText}
                 size={this.props.size}
+                {...this.props} // allows defining more css rules from container
             >
                 {commonChildren}
             </Button>

@@ -5,7 +5,7 @@ import {
     P,
     LocalizedString
 } from "../../react_components/l10nComponents";
-import Link from "../../react_components/link";
+import { Link } from "../../react_components/link";
 
 import "./learnAboutAccessibility.less";
 

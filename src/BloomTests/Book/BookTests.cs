@@ -43,7 +43,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void GetPreviewHtmlFileForWholeBook_BookHasVideo_PreviewRemovesVideo()
+		public void GetPreviewHtmlFileForWholeBook_BookHasVideo_PreviewMarksItPreloadNone()
 		{
 			var htmlSourceBook = $@"<html><head></head><body>
 					<div class='bloom-page numberedPage' id='page1' data-page-number='1'>
@@ -64,7 +64,7 @@ namespace BloomTests.Book
 			var result = CreateBook().GetPreviewHtmlFileForWholeBook();
 
 			// Verification
-			AssertThatXmlIn.Dom(result.RawDom.StripXHtmlNameSpace()).HasSpecifiedNumberOfMatchesForXpath("//video", 0);
+			AssertThatXmlIn.Dom(result.RawDom.StripXHtmlNameSpace()).HasSpecifiedNumberOfMatchesForXpath("//video[@preload='none']", 1);
 		}
 
 		[Test]

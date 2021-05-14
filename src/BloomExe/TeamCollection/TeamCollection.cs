@@ -7,19 +7,16 @@ using SIL.IO;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Registration;
 using Bloom.ToPalaso;
 using Bloom.Utils;
-using Bloom.web.controllers;
 using SIL.Reporting;
 using DesktopAnalytics;
 
@@ -545,6 +542,8 @@ namespace Bloom.TeamCollection
 		// internal for testing
 		internal bool _haveShownRemoteSettingsChangeWarning;
 
+		protected bool _stopSyncingCollectionFiles;
+
 		/// <summary>
 		/// Bring the collection-level files in the repo and the local collection into sync.
 		/// If the repo has been changed since the last sync, update the local files.
@@ -558,6 +557,8 @@ namespace Bloom.TeamCollection
 		/// <param name="atStartup"></param>
 		public void SyncLocalAndRepoCollectionFiles(bool atStartup = true)
 		{
+			if (_stopSyncingCollectionFiles)
+				return;
 			var repoModTime = LastRepoCollectionFileModifyTime;
 			var savedSyncTime = LocalCollectionFilesRecordedSyncTime();
 			if (atStartup && repoModTime != DateTime.MinValue)
@@ -1580,8 +1581,8 @@ namespace Bloom.TeamCollection
 					progress.Message("StartingSync", "",
 						"Starting sync with Team Collection", ProgressKind.Progress);
 
-					bool doingJoinCollectionMerge = TeamCollectionManager.NextMergeIsJoinCollection;
-					TeamCollectionManager.NextMergeIsJoinCollection = false;
+					bool doingFirstTimeJoinCollectionMerge = TeamCollectionManager.NextMergeIsFirstTimeJoinCollection;
+					TeamCollectionManager.NextMergeIsFirstTimeJoinCollection = false;
 					// don't want messages about the collection being changed while we're synchronizing,
 					// and in some cases we might be the source of several changes (for example, multiple
 					// check ins while joining a collection). Normally we suppress notifications for
@@ -1589,7 +1590,7 @@ namespace Bloom.TeamCollection
 					// enough when we do several close together.
 					StopMonitoring();
 
-					var waitForUserToCloseDialogOrReportProblems = SyncAtStartup(progress, doingJoinCollectionMerge);
+					var waitForUserToCloseDialogOrReportProblems = SyncAtStartup(progress, doingFirstTimeJoinCollectionMerge);
 
 					// Now that we've finished synchronizing, update these icons based on the post-sync result
 					// REVIEW: What do we want to happen if exception throw here? Should we add to {problems} list?
@@ -1671,7 +1672,7 @@ namespace Bloom.TeamCollection
 		/// However, most of the logic involved in joining a collection is common, so I hate
 		/// to do that. Inclined to wait until we DO have an alternative implementation,
 		/// when it may be clearer how to refactor.
-		/// If we ever get another implementation that dose use .JoinBloomTC, thought will be needed as to
+		/// If we ever get another implementation that does use .JoinBloomTC, thought will be needed as to
 		/// how to get a local collection name from the .JoinBloomTC file path.
 		/// </summary>
 		/// <param name="tcName"></param>

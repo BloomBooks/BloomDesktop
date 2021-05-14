@@ -1,17 +1,12 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.Registration;
-using Bloom.Utils;
-using L10NSharp;
 using Sentry;
 using SIL.IO;
-using SIL.Reporting;
 
 namespace Bloom.TeamCollection
 {
@@ -193,7 +188,45 @@ namespace Bloom.TeamCollection
 				// change before everything shuts down; and (b) if we're reopening the collection,
 				// we might overwrite the change with current collection settings before we
 				// save the new ones.
-				CurrentCollection?.SyncLocalAndRepoCollectionFiles(false);
+				if (CurrentCollection != null)
+				{
+					CurrentCollection.SyncLocalAndRepoCollectionFiles(false);
+				}
+				else if (Settings.HaveEnterpriseFeatures && CurrentCollectionEvenIfDisconnected != null)
+				{
+					// Possibly we were disconnected because of Enterprise being off, but now the user has
+					// turned Enterprise on again. We really need to save that, even though we usually don't
+					// save settings changes when disconnected. Otherwise, restarting will restore the
+					// no-enterprise state, and we will be stuck.
+					// Note: We don't need to check for admin privileges here. If the user isn't an admin,
+					// he could not have made any changes to settings, including turning on enterprise.
+					var tempCollectionLinkPath = GetTcLinkPathFromLcPath(_localCollectionFolder);
+					if (RobustFile.Exists(tempCollectionLinkPath))
+					{
+						try
+						{
+							var repoFolderPath = RepoFolderPathFromLinkPath(tempCollectionLinkPath);
+							var tempCollection = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath);
+							var problemWithConnection = tempCollection.CheckConnection();
+							if (problemWithConnection == null)
+							{
+								tempCollection.SyncLocalAndRepoCollectionFiles(false);
+							}
+							else
+							{
+								NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not save your settings to the Team Collection: " + problemWithConnection,
+									null, null, true);
+							}
+						}
+						catch (Exception ex)
+						{
+							NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not save your settings to the Team Collection",
+								null, ex, true);
+						}
+					}
+					// What if there's NOT a TC link file? Then it would be pathological to have a CurrentCollectionEvenIfDisconnected.
+					// It's no longer a TC, so we don't need to save the settings to the TC. For now I'm just not going to do anything.
+				}
 			});
 			bookRenamedEvent.Subscribe(pair =>
 			{
@@ -212,12 +245,12 @@ namespace Bloom.TeamCollection
 					_overrideCurrentUserSurname = lines[3];
 			}
 
-			var localCollectionLinkPath = Path.Combine(_localCollectionFolder, TeamCollectionLinkFileName);
+			var localCollectionLinkPath = GetTcLinkPathFromLcPath(_localCollectionFolder);
 			if (RobustFile.Exists(localCollectionLinkPath))
 			{
 				try
 				{
-					var repoFolderPath = RobustFile.ReadAllText(localCollectionLinkPath).Trim();
+					var repoFolderPath = RepoFolderPathFromLinkPath(localCollectionLinkPath);
 					CurrentCollection = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath); // will be replaced if CheckConnection fails
 					if (CheckConnection())
 					{
@@ -245,6 +278,11 @@ namespace Bloom.TeamCollection
 					CurrentCollectionEvenIfDisconnected = null;
 				}
 			}
+		}
+
+		public static string RepoFolderPathFromLinkPath(string localCollectionLinkPath)
+		{
+			return RobustFile.ReadAllText(localCollectionLinkPath).Trim();
 		}
 
 		/// <summary>
@@ -301,11 +339,16 @@ namespace Bloom.TeamCollection
 			return Path.Combine(localCollectionFolder, "log.txt");
 		}
 
+		public static string GetTcLinkPathFromLcPath(string localCollectionFolder)
+		{
+			return Path.Combine(localCollectionFolder, TeamCollectionLinkFileName);
+		}
+
 		/// <summary>
 		/// This gets set when we join a new TeamCollection so that the merge we do
 		/// later as we open it gets the special behavior for this case.
 		/// </summary>
-		public static bool NextMergeIsJoinCollection { get; set; }
+		public static bool NextMergeIsFirstTimeJoinCollection { get; set; }
 
 		public BloomWebSocketServer SocketServer => _webSocketServer;
 

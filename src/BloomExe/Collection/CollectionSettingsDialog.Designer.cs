@@ -571,6 +571,7 @@ namespace Bloom.Collection
 			// 
 			// _noRenameTeamCollectionLabel
 			// 
+			this._noRenameTeamCollectionLabel.ForeColor = System.Drawing.SystemColors.ControlDark;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._noRenameTeamCollectionLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._noRenameTeamCollectionLabel, null);
 			this._L10NSharpExtender.SetLocalizingId(this._noRenameTeamCollectionLabel, "NoRenameTeamCollection");

@@ -7,14 +7,16 @@ import {
     BloomDialog,
     DialogBottomButtons,
     DialogBottomLeftButtons,
-    DialogCancelButton,
-    DialogCloseButton,
     DialogMiddle,
     DialogTitle,
     normalDialogEnvironmentForStorybook,
     useSetupBloomDialog
 } from "./BloomDialog";
 import { Button, CircularProgress } from "@material-ui/core";
+import {
+    DialogCancelButton,
+    DialogCloseButton
+} from "./commonDialogComponents";
 
 storiesOf("Bloom Dialog", module)
     .add("Simple Dialog", () => {

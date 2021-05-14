@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
 using Bloom.Api;
+using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.MiscUI;
 using Bloom.Utils;
@@ -222,7 +223,7 @@ namespace Bloom.TeamCollection
 			foreach (var name in names)
 			{
 				var path = Path.Combine(_localCollectionFolder, name);
-				if (!File.Exists(path))
+				if (!RobustFile.Exists(path))
 					continue;
 				zipFile.AddTopLevelFile(path, true);
 			}
@@ -235,7 +236,7 @@ namespace Bloom.TeamCollection
 			get
 			{
 				var repoProjectFilesZipPath = GetRepoProjectFilesZipPath(_repoFolderPath);
-				if (!File.Exists(repoProjectFilesZipPath))
+				if (!RobustFile.Exists(repoProjectFilesZipPath))
 					return DateTime.MinValue; // brand new repo, want to copy TO it.
 				var collectionFilesModTime = new FileInfo(repoProjectFilesZipPath).LastWriteTime;
 				GetMaxModifyTime("Allowed Words", ref collectionFilesModTime);
@@ -247,7 +248,7 @@ namespace Bloom.TeamCollection
 		private void GetMaxModifyTime(string folderName, ref DateTime max)
 		{
 			var zipPath =Path.Combine(_repoFolderPath, "Other", Path.ChangeExtension(folderName,"zip"));
-			if (File.Exists(zipPath))
+			if (RobustFile.Exists(zipPath))
 			{
 				var thisModTime = new FileInfo(zipPath).LastWriteTime;
 				if (thisModTime > max)
@@ -384,7 +385,7 @@ namespace Bloom.TeamCollection
 		static void ExtractFolder(string collectionFolder, string repoFolder, string folderName)
 		{
 			var sourceZip = GetZipFileForFolder(folderName, repoFolder);
-			if (!File.Exists(sourceZip))
+			if (!RobustFile.Exists(sourceZip))
 				return;
 			var destFolder = Path.Combine(collectionFolder, folderName);
 			ExtractFolderFromZip(destFolder, sourceZip,
@@ -675,6 +676,13 @@ namespace Bloom.TeamCollection
 			CreateJoinCollectionFile();
 			CreateTeamCollectionLinkFile(_localCollectionFolder, repoFolder);
 			CopyRepoCollectionFilesFromLocal(_localCollectionFolder);
+			// The new TC now has the current collection-level files. But a couple of things might try
+			// to copy them again: we do a sync when closing down the collection, as we will shortly
+			// do in order to re-open it as a TC. And then the idle loop sync might fire, too.
+			// In at least one case (BL-9902), we had a crash when rewriting the collection settings zip
+			// file failed due to a file lock, and at best it wastes time. So this collection,
+			// which is about to go away, can just stop doing this sort of sync.
+			_stopSyncingCollectionFiles = true;
 			Directory.CreateDirectory(Path.Combine(repoFolder, "Books"));
 			SynchronizeBooksFromLocalToRepo(progress);
 			StartMonitoring();
@@ -710,8 +718,9 @@ namespace Bloom.TeamCollection
 		// Create a new local collection from the team collection at the specified path.
 		// Return the path to its settings (not team settings) file...the path we need to
 		// open the new collection. This is the method that gets called when we open a
-		// JoinTeamCollection file.
-		public static string ShowJoinCollectionTeamDialog(string path)
+		// JoinTeamCollection file. The tcManager passed is a temporary one created by
+		// syncing the repo and its settings to a temporary folder.
+		public static string ShowJoinCollectionTeamDialog(string path, TeamCollectionManager tcManager)
 		{
 			if (!PromptForSufficientRegistrationIfNeeded())
 				return null;
@@ -722,11 +731,30 @@ namespace Bloom.TeamCollection
 			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(repoFolder));
 			var localCollectionFolder =
 				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, collectionName);
+			var isExistingCollection = Directory.Exists(localCollectionFolder);
+			var tcLinkPath = TeamCollectionManager.GetTcLinkPathFromLcPath(localCollectionFolder);
+			var isAlreadyTcCollection = isExistingCollection &&
+			                            RobustFile.Exists(tcLinkPath);
+			var repoFolderPathFromLinkPath = isAlreadyTcCollection ? TeamCollectionManager.RepoFolderPathFromLinkPath(tcLinkPath) : "";
+			var isCurrentCollection = isAlreadyTcCollection &&
+			                          repoFolderPathFromLinkPath == repoFolder;
+			var joiningGuid = CollectionSettings.CollectionIdFromCollectionFolder(tcManager.CurrentCollection
+				.LocalCollectionFolder);
+			var localGuid = CollectionSettings.CollectionIdFromCollectionFolder(localCollectionFolder);
+			var isSameCollection = joiningGuid == localGuid;
 
 			using (var dlg = new ReactDialog("JoinTeamCollectionDialog", new
 			{
 				collectionName,
-				existingCollection = Directory.Exists(localCollectionFolder)
+				existingCollection = isExistingCollection,
+				isAlreadyTcCollection,
+				isCurrentCollection,
+				isSameCollection,
+				existingCollectionFolder = localCollectionFolder,
+				conflictingCollection = repoFolderPathFromLinkPath,
+				joiningRepo = repoFolder,
+				joiningGuid,
+				localGuid
 			}))
 			{
 				dlg.Width = 560;
@@ -752,6 +780,7 @@ namespace Bloom.TeamCollection
 			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(repoFolder));
 			var localCollectionFolder =
 				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, collectionName);
+			var firstTimeJoin = !Directory.Exists(localCollectionFolder) || !RobustFile.Exists(TeamCollectionManager.GetTcLinkPathFromLcPath(localCollectionFolder));
 			// Most of the collection settings files will be copied later when we create the repo
 			// in TeamRepo.MakeInstance() and call CopyRepoCollectionFilesToLocal.
 			// However, when we start up with a command line argument that causes JoinCollectionTeam,
@@ -760,8 +789,9 @@ namespace Bloom.TeamCollection
 			// exist; so we have to make it exist.
 			_newCollectionToJoin = SetupMinimumLocalCollectionFilesForRepo(repoFolder, localCollectionFolder);
 			// Soon we will open the new collection, and do a SyncAtStartup. We want that to have some
-			// special behavior.
-			TeamCollectionManager.NextMergeIsJoinCollection = true;
+			// special behavior, but only if joining for the first time.
+			if (firstTimeJoin)
+				TeamCollectionManager.NextMergeIsFirstTimeJoinCollection = true;
 		}
 
 		/// <summary>
