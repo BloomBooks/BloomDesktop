@@ -636,7 +636,7 @@ export default class BloomSourceBubbles {
                 const element = event.target as Element;
                 BloomSourceBubbles.ShowSourceBubbleForElement(element);
             });
-            // reset the tooltip when it loses focus. The "reset other tooltips" code
+            // reset the tooltip when the text box loses focus. The "reset other tooltips" code
             // in ShowSourceBubbleForElement() below (called by the focus handler) is
             // not enough because the field receiving focus may not be one that has
             // been configured with this event.
@@ -649,6 +649,11 @@ export default class BloomSourceBubbles {
                     "aria-describedby"
                 );
                 const $tip = $("body").find("#" + tipId);
+                if ($tip.hasClass("qtip-focus")) {
+                    // If it's the tooltip that has gotten focus, don't reset it.
+                    // See https://issues.bloomlibrary.org/youtrack/issue/BL-9901.
+                    return;
+                }
                 $tip.addClass("passive-bubble");
                 const maxHeight = $tip.attr("data-max-height");
                 if (maxHeight) $tip.css("max-height", parseInt(maxHeight));
