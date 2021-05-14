@@ -42,5 +42,3 @@ export class PWithLink extends LocalizableElement<
         );
     }
 }
-
-export default PWithLink;

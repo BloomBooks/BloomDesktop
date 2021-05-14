@@ -1,5 +1,6 @@
 import * as React from "react";
 import * as MUI from "@material-ui/core";
+import { LinkBaseProps } from "@material-ui/core/Link";
 
 import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
 
@@ -48,4 +49,33 @@ export class Link extends LocalizableElement<ILinkProps, {}> {
     }
 }
 
-export default Link;
+// Usage <TextWithEmbeddedLink l10nKey="blah" href="google.com"/>Click [here] or else</TextWithEmbeddedLink>
+export class TextWithEmbeddedLink extends LocalizableElement<
+    ILocalizationProps & LinkBaseProps,
+    {}
+> {
+    public render() {
+        // Text within [] is for the link.
+        const parts = this.getLocalizedContentAndClass();
+        const idxOpen = parts.text.indexOf("[");
+        const idxClose = parts.text.indexOf("]", idxOpen + 1);
+        if (idxOpen >= 0 && idxClose > idxOpen) {
+            // We found the link text, piece together the desired output
+            return (
+                <span className={parts.l10nClass}>
+                    {parts.text.substring(0, idxOpen)}
+                    <MUI.Link {...this.props}>
+                        {parts.text.substring(idxOpen + 1, idxClose)}
+                    </MUI.Link>
+                    {parts.text.substring(idxClose + 1)}
+                </span>
+            );
+        }
+        // We couldn't find the link text, return everything as a link.
+        return (
+            <span>
+                <MUI.Link {...this.props}>{parts.text}</MUI.Link>
+            </span>
+        );
+    }
+}

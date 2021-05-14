@@ -8,20 +8,24 @@ import { BloomApi } from "../utils/bloomApi";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import BloomButton from "../react_components/bloomButton";
 import { Div, P } from "../react_components/l10nComponents";
-
+import { kDialogPadding } from "../bloomMaterialUITheme";
 import {
     BloomDialog,
-    CautionBox,
     DialogBottomButtons,
-    DialogCancelButton,
     DialogMiddle,
     DialogTitle,
-    ErrorBox,
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog
 } from "../react_components/BloomDialog/BloomDialog";
+import {
+    DialogCancelButton,
+    DialogControlGroup,
+    DialogFolderChooser,
+    ErrorBox
+} from "../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../react_components/l10nHooks";
 import { Checkbox } from "../react_components/checkbox";
+import { TextWithEmbeddedLink } from "../react_components/link";
 
 // Contents of a dialog launched from TeamCollectionSettingsPanel Create Team Collection button.
 
@@ -36,7 +40,7 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
     const [errorMessage, setErrorMessage] = useState<string>(
         props.errorForTesting ?? ""
     );
-    // This listener is waiting for results that are sent when the user clicks "Choose  shared folder"
+    // This listener is waiting for results that are sent when the user clicks "Choose Folder"
     // and then selects a folder. We use a listener rather than having the API request return the
     // results to guard against a browser timeout on the request.
     const listener = e => {
@@ -73,96 +77,84 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
         <BloomDialog {...propsForBloomDialog}>
             <DialogTitle title={`${dialogTitle}`} />
             <DialogMiddle>
-                <P
-                    l10nKey="TeamCollection.HowTeamCollectionsWork"
+                <TextWithEmbeddedLink
+                    l10nKey="TeamCollection.CreateTeamCollection.Intro"
                     temporarilyDisableI18nWarning={true}
+                    href="https://docs.google.com/document/d/1DOhy7hnmG37NzcQN8oP6NkXW_X3WU7YH4ez_P1hV1mo/edit#bookmark=id.52kgqu3o6ny4"
                 >
-                    Team Collections work by using a shared folder from a LAN
-                    server, Dropbox, or other cloud provider.
-                </P>
-                <P
-                    l10nKey="TeamCollection.StorageFolderLabel"
-                    temporarilyDisableI18nWarning={true}
-                >
-                    Cloud Storage Folder location (for example, your Dropbox
-                    folder):
-                </P>
-                <div
-                    css={css`
-                        min-height: 2em;
-                        padding: 10px;
-                        box-sizing: border-box;
-                        background-color: lightgrey;
-                        width: 100%;
-                    `}
-                >
-                    {repoFolderPath}
-                </div>
+                    Team Collections work by sharing files between team members
+                    using Dropbox or a LAN server. Read [this note] about other
+                    file sync services.
+                </TextWithEmbeddedLink>
 
-                <div
+                <DialogControlGroup
                     css={css`
-                        margin-left: auto;
+                        margin-top: ${kDialogPadding};
                     `}
                 >
-                    <BloomButton
-                        l10nKey="TeamCollection.ChooseFolder"
-                        className="teamCollection-heading"
-                        enabled={true}
-                        hasText={true}
-                        variant="text"
+                    <Div
+                        l10nKey="TeamCollection.StorageFolderLabel"
                         temporarilyDisableI18nWarning={true}
-                        // This will eventually timeout if the user doesn't choose a folder or cancel
-                        // It doesn't matter because we ignore the result and are notified of the folder
-                        // through the websocket.
-                        onClick={() =>
-                            BloomApi.post(
-                                "teamCollection/chooseFolderLocation",
-                                // nothing to do either on success or failure, including possible timeout,
-                                // or the user canceling.
-                                () => {},
-                                () => {}
-                            )
-                        }
+                        css={css`
+                            margin-top: 1em;
+                        `}
                     >
-                        Choose shared folder
-                    </BloomButton>
-                </div>
-                <Checkbox
-                    l10nKey="TeamCollection.NameWillWork"
-                    l10nParam0={collectionName}
-                    onCheckChanged={checkChanged}
-                    temporarilyDisableI18nWarning={true}
-                    css={css`
-                        margin-top: 5px;
-                    `}
-                >
-                    The name, "%0", will be a good one for the whole team, and
-                    will not be confused with other collections. I understand
-                    that I will not be able to change this name, later.
-                </Checkbox>
-                <Checkbox
-                    l10nKey="TeamCollection.OnlyOneCreator"
-                    onCheckChanged={checkChanged}
-                    temporarilyDisableI18nWarning={true}
-                    css={css`
-                        margin-top: 20px;
-                    `}
-                >
-                    I am the only person on the team creating this Team
-                    Collection. The rest of the team will join this collection.
-                </Checkbox>
-                <Checkbox
-                    l10nKey="TeamCollection.OnlyCreatorCanChangeSettings"
-                    onCheckChanged={checkChanged}
-                    temporarilyDisableI18nWarning={true}
-                    css={css`
-                        margin-top: 20px;
-                        margin-bottom: 15px;
-                    `}
-                >
-                    I understand that as the creator of the project, I will be
-                    the only person who can change Collection Settings.
-                </Checkbox>
+                        LAN or Dropbox Folder:
+                    </Div>
+                    <DialogFolderChooser
+                        path={repoFolderPath}
+                        apiCommandToChooseAndSetFolder="teamCollection/chooseFolderLocation"
+                    />
+                </DialogControlGroup>
+                {!errorMessage && (
+                    <DialogControlGroup>
+                        <P
+                            l10nKey="TeamCollection.ChecklistIntro"
+                            temporarilyDisableI18nWarning={true}
+                        >
+                            Please read and check each of these items:
+                        </P>
+                        <Checkbox
+                            l10nKey="TeamCollection.NameWillWork"
+                            l10nParam0={collectionName}
+                            onCheckChanged={checkChanged}
+                            temporarilyDisableI18nWarning={true}
+                            css={css`
+                                margin-top: 5px;
+                            `}
+                        >
+                            I think the name, "%0", will be a good one for the
+                            whole team, and will not be confused with other
+                            collections. I understand that I will not be able to
+                            change this name once this becomes a Team
+                            Collection.
+                        </Checkbox>
+                        <Checkbox
+                            l10nKey="TeamCollection.OnlyOneCreator"
+                            onCheckChanged={checkChanged}
+                            temporarilyDisableI18nWarning={true}
+                            css={css`
+                                margin-top: 20px;
+                            `}
+                        >
+                            I am the only person on the team creating this Team
+                            Collection. The rest of the team will join it.
+                        </Checkbox>
+                        <Checkbox
+                            l10nKey="TeamCollection.OnlyCreatorCanChangeSettings"
+                            onCheckChanged={checkChanged}
+                            temporarilyDisableI18nWarning={true}
+                            css={css`
+                                margin-top: 20px;
+                                margin-bottom: 15px;
+                            `}
+                        >
+                            I understand that as the creator of the project, I
+                            will be the only person who can change Collection
+                            Settings.
+                        </Checkbox>
+                    </DialogControlGroup>
+                )}
                 {errorMessage && <ErrorBox>{errorMessage}</ErrorBox>}
             </DialogMiddle>
             <DialogBottomButtons>

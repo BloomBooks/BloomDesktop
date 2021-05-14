@@ -13,13 +13,12 @@ import {
     BloomDialog,
     DialogBottomButtons,
     DialogBottomLeftButtons,
-    DialogCloseButton,
     DialogMiddle,
     DialogTitle,
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog
 } from "../react_components/BloomDialog/BloomDialog";
-
+import { DialogCloseButton } from "../react_components/BloomDialog/commonDialogComponents";
 export let showTeamCollectionDialog: () => void;
 
 export const TeamCollectionDialog: React.FunctionComponent<{

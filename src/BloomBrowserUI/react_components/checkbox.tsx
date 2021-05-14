@@ -65,7 +65,7 @@ export class Checkbox extends LocalizableElement<ICheckboxProps, {}> {
                 className={this.props.className}
                 css={css`
                     display: flex;
-                    align-items: baseline;
+                    align-items: self-start;
                 `}
             >
                 <input

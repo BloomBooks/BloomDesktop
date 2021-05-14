@@ -55,12 +55,12 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                 l10nKey="TeamCollection.Intro"
                 l10nParam0="https://docs.google.com/document/d/1DOhy7hnmG37NzcQN8oP6NkXW_X3WU7YH4ez_P1hV1mo/edit?usp=sharing"
                 // Todo: once we have an actual video this should link to it! For now just another link to the document.
-                l10nParam1="https://docs.google.com/document/d/1DOhy7hnmG37NzcQN8oP6NkXW_X3WU7YH4ez_P1hV1mo/edit?usp=sharing"
+                //l10nParam1="https://docs.google.com/document/d/1DOhy7hnmG37NzcQN8oP6NkXW_X3WU7YH4ez_P1hV1mo/edit?usp=sharing"
                 temporarilyDisableI18nWarning={true}
             >
                 Bloom's Team Collection system helps your team collaborate as
-                you create, translate, and edit books. Read about how it works
-                [here]( %0), or view this [video](%1).
+                you create, translate, and edit books. See how it works [here](
+                %0).
             </P>
         </div>
     );
@@ -120,14 +120,6 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
 
     const isNotTeamCollection: JSX.Element = (
         <div>
-            <P
-                l10nKey="TeamCollection.StartingInstructions"
-                className="extra-space-above"
-                temporarilyDisableI18nWarning={true}
-            >
-                It is important that **only one person** on the team create the
-                Team Collection.
-            </P>
             <div className="align-right">
                 <BloomButton
                     className="align-right"
