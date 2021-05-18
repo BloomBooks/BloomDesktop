@@ -574,7 +574,9 @@ namespace Bloom.CollectionTab
 				{
 					Debug.WriteLine(buttonText + " --> " + titleBestForUserDisplay);
 					button.SetTextSafely(titleBestForUserDisplay);
-					toolTip1.SetToolTip(button, bestTitle);
+					// We changed the tooltip to show the folder name to help when you have duplicates of the book, e.g. when
+					// something goes amiss when using Dropbox and it creates copies.
+					toolTip1.SetToolTip(button, Path.GetFileName(bookInfo.FolderPath));
 				}
 			}
 			if (buttonRefreshInfo.ThumbnailRefreshNeeded)
