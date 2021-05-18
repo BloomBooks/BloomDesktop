@@ -4146,8 +4146,10 @@ namespace BloomTests.Book
 			Assert.True(Bloom.Book.Book.IsPageBloomEnterpriseOnly(page));
 		}
 
+		// Originally, video was enterprise-only, so the logic was reversed.
+		// Now we want to be sure that video does not trigger a page as enterprise-only.
 		[Test]
-		public void IsPageBloomEnterpriseOnly_HasVideo_True()
+		public void IsPageBloomEnterpriseOnly_HasVideo_False()
 		{
 			string xml = @"
 	<div class=""bloom-page numberedPage customPage side-left A5Portrait bloom-monolingual"" data-page="""" id=""4854bc4a-0046-426e-9e19-596773582d23"" data-pagelineage=""8bedcdf8-3ad6-4967-b027-6c186436572f"" data-page-number=""2"" lang="""">
@@ -4178,7 +4180,7 @@ namespace BloomTests.Book
 			XmlDocument doc = new XmlDocument();
 			doc.LoadXml(xml);
 			XmlElement page = doc.DocumentElement;
-			Assert.True(Bloom.Book.Book.IsPageBloomEnterpriseOnly(page));
+			Assert.False(Bloom.Book.Book.IsPageBloomEnterpriseOnly(page));
 		}
 
 		[Test]
