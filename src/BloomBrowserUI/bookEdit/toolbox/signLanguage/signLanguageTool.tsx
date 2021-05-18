@@ -802,7 +802,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     public toolRequiresEnterprise(): boolean {
-        return true;
+        return false;
     }
 
     public beginRestoreSettings(settings: string): JQueryPromise<void> {

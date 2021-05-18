@@ -49,7 +49,7 @@ export interface ITool {
     // (toolbox will construct the h3 element which goes along with it in the accordion
     // and set its data-toolId attr; this method is however responsible to
     // localize the content of the div.)
-    // It may be unimplmented for older tools where beginAddTool() already knows
+    // It may be unimplemented for older tools where beginAddTool() already knows
     // where to find an HTML file for the tool content.
     makeRootElement(): HTMLDivElement;
 }
