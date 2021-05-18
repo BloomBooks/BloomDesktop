@@ -1,5 +1,9 @@
 # 5.0 (Beta)
 
+## Collection Tab
+
+We made hovering over a book thumbnail show the folder name of the book. This is helpful to see what's-what when you have multiple copies of a book.
+
 ## Edit Tab
 
 In the Comic Tool, you can now control the transparency, and make corners round. You can also show a line that you can use to point to something in a diagram:

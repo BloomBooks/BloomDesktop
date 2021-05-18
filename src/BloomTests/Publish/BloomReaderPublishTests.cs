@@ -931,8 +931,10 @@ namespace BloomTests.Publish
 			);
 		}
 
+		// Originally, video was an enterprise-only feature, so the logic was reversed.
+		// Now we want to be sure we are keeping video even if enterprise is off.
 		[Test]
-		public void CompressBookForDevice_NotBloomEnterprise_RemovesVideoPages()
+		public void CompressBookForDevice_NotBloomEnterprise_DoesNotRemoveVideoPages()
 		{
 			// This requires a real book file (which a mocked book usually doesn't have).
 			TestHtmlAfterCompression(kVideoTestHtml,
@@ -941,22 +943,23 @@ namespace BloomTests.Publish
 				{
 					var zip = paramObj.ZipFile;
 					var zipEnumerator = zip.GetEnumerator();
+					var foundVideo = false;
 					while (zipEnumerator.MoveNext())
 					{
 						var zipEntry = zipEnumerator.Current as ZipEntry;
 						if (zipEntry == null)
 							Assert.Fail();
 						if (zipEntry.Name.Contains("video"))
-							Assert.Fail("Expected NOT to find video folder or files");
+							foundVideo = true;
 					}
+					if (!foundVideo)
+						Assert.Fail("Expected to find video folder and files");
 					var meta = BookMetaData.FromString(GetEntryContents(zip, "meta.json"));
-					Assert.That(meta.Feature_SignLanguage, Is.False);
-
 				},
 				assertionsOnResultingHtmlString: html =>
 				{
 					var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
-					AssertThatXmlIn.Dom(htmlDom).HasNoMatchForXpath("//video");
+					AssertThatXmlIn.Dom(htmlDom).HasAtLeastOneMatchForXpath("//video");
 				},
 
 				branding: "Default"
