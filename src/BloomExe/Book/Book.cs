@@ -4060,7 +4060,6 @@ namespace Bloom.Book
 			return classAttrib.Contains("enterprise-only") ||
 				// legacy quiz pages don't have 'enterprise-only'
 			    classAttrib.Contains("questions") ||
-				page.SafeSelectNodes(".//video").Count > 0 ||
 				page.SafeSelectNodes(".//div[contains(@class,'bloom-widgetContainer')]").Count > 0;
 		}
 
