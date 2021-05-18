@@ -208,7 +208,7 @@ export const ReportDialog: React.FunctionComponent<{
                         Submit
                     </BloomButton>
                 )}
-                {getEndingButton()}
+                {mode !== Mode.showPrivacyDetails && getEndingButton()}
             </>
         );
     };
