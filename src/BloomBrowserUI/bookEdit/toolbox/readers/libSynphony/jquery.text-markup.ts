@@ -151,7 +151,10 @@ import { ReaderToolsModel } from "../readerToolsModel";
                     name != "br" &&
                     name != "i" &&
                     name != "b" &&
-                    name != "u"
+                    name != "u" &&
+                    name != "em" &&
+                    name != "strong" &&
+                    name != "sup"
                 ) {
                     processedChild = true;
                     checkRoot($(child));
