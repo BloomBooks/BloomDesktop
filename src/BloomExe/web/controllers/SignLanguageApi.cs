@@ -147,13 +147,13 @@ namespace Bloom.web.controllers
 				if (!string.IsNullOrEmpty(msg))
 				{
 					Logger.WriteEvent(msg);
-					ErrorReport.NotifyUserOfProblem(msg);
-					RobustFile.Copy(rawVideoPath, path);     // use the original, hoping it's better than nothing.
+					CommonApi.CreateDialogOnIdle(() => { ErrorReport.NotifyUserOfProblem(msg); });
+					RobustFile.Copy(rawVideoPath, path, true);     // use the original, hoping it's better than nothing.
 				}
 			}
 			else
 			{
-				RobustFile.Copy(rawVideoPath, path);
+				RobustFile.Copy(rawVideoPath, path, true);
 			}
 		}
 
@@ -314,10 +314,13 @@ namespace Bloom.web.controllers
 
 		private static void ParseDuration(string output, IDictionary<string, object> statistics)
 		{
-			var re = new Regex("[D|d]uration:.((\\d|:|\\.)*)");
+			var re = new Regex("[D|d]uration:.((\\d|:|\\.)+)");
 			var match = re.Match(output);
 			if (!match.Success)
+			{
+				statistics.Add("duration", "unknown");
 				return;
+			}
 			var duration = match.Groups[1].Value;
 			// put out MM:SS.T or (if it's really long) HH:MM:SS.T
 			statistics.Add("duration",

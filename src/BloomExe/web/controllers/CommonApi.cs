@@ -14,7 +14,6 @@ using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
-using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -141,7 +140,7 @@ namespace Bloom.web.controllers
 					request.PostSucceeded();
 				}, false);
 
-			// At this point we open dialogs from c# code; if we opened dialog from javascript, we wouldn't need this
+			// At this point we open dialogs from c# code; if we opened dialogs from javascript, we wouldn't need this
 			// api to do it. We just need a way to close a c#-opened dialog from javascript (e.g. the Close button of the dialog).
 			apiHandler.RegisterEndpointHandler("common/closeReactDialog", request =>
 			{
@@ -251,7 +250,7 @@ namespace Bloom.web.controllers
 		/// Open the folder containing the specified file and select it.
 		/// </summary>
 		/// <param name="filePath"></param>
-		public static void SelectFileInExplorer(string filePath)
+		private static void SelectFileInExplorer(string filePath)
 		{
 			try
 			{
@@ -259,8 +258,11 @@ namespace Bloom.web.controllers
 			}
 			catch (System.Runtime.InteropServices.COMException e)
 			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
-					$"Bloom had a problem asking your operating system to show {filePath}. Sorry!");
+				CreateDialogOnIdle(() =>
+				{
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
+						$"Bloom had a problem asking your operating system to show {filePath}. Sorry!");
+				});
 			}
 			var folderName = Path.GetFileName(Path.GetDirectoryName(filePath));
 			BringFolderToFrontInLinux(folderName);
@@ -479,6 +481,22 @@ namespace Bloom.web.controllers
 				}
 				request.PostSucceeded();
 			}
+		}
+
+		/// <summary>
+		/// Use this to create any dialog from within an API handler which has requiresSync == true (the default).
+		/// Otherwise, our server is still locked, and all kinds of things the dialog wants to do through the server won't work.
+		/// Instead, we arrange for it to be launched when the system is idle (and the server is no longer locked).
+		/// </summary>
+		public static void CreateDialogOnIdle(Action createDialogAction)
+		{
+			void HandleAction(object sender, EventArgs eventArgs)
+			{
+				Application.Idle -= HandleAction;
+				createDialogAction();
+			}
+
+			Application.Idle += HandleAction;
 		}
 	}
 }

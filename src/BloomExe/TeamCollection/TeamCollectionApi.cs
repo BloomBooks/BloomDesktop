@@ -9,6 +9,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
 using Bloom.Utils;
+using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -59,24 +60,16 @@ namespace Bloom.TeamCollection
 
 		private void HandleShowCreateTeamCollectionDialog(ApiRequest request)
 		{
-			// If we create the dialog here, the request that launched it will still be active.
-			// This means our server is still locked, and all kinds of things the dialog wants to
-			// do through the server won't work, or have to be made to work unlocked.
-			// Instead, we arrange for it to be launched when the system is idle
-			// (and the server is no longer locked).
-			Application.Idle += ShowCreateTeamCollectionDialog;
-			request.PostSucceeded();
-		}
-
-		private void ShowCreateTeamCollectionDialog(object sender, EventArgs e)
-		{
-			Application.Idle -= ShowCreateTeamCollectionDialog;
-			using (var dlg = new ReactDialog("CreateTeamCollectionDialog", new { defaultRepoFolder = DropboxUtils.GetDropboxFolderPath() }))
+			CommonApi.CreateDialogOnIdle(() =>
 			{
-				dlg.Width = 600;
-				dlg.Height = 580;
-				dlg.ShowDialog();
-			}
+				using (var dlg = new ReactDialog("CreateTeamCollectionDialog", new { defaultRepoFolder = DropboxUtils.GetDropboxFolderPath() }))
+				{
+					dlg.Width = 600;
+					dlg.Height = 580;
+					dlg.ShowDialog();
+				}
+			});
+			request.PostSucceeded();
 		}
 
 		private void HandleGetCollectionName(ApiRequest request)
@@ -156,10 +149,13 @@ namespace Bloom.TeamCollection
 				// Not sure what to do here: joining the collection crashed.
 				Logger.WriteError("TeamCollectionApi.HandleJoinTeamCollection() crashed", e);
 				var msg = LocalizationManager.GetString("TeamCollection.ErrorJoining", "Could not join Team Collection");
-				ErrorReport.NotifyUserOfProblem(e, msg);
+				CommonApi.CreateDialogOnIdle(() => { ErrorReport.NotifyUserOfProblem(e, msg); });
 				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
 				SentrySdk.CaptureException(e);
-				request.Failed("join team failed");
+
+				// Since we have already informed the user above, it is better to just report a success here.
+				// Otherwise, they will also get a toast.
+				request.PostSucceeded();
 			}
 		}
 
@@ -310,7 +306,7 @@ namespace Bloom.TeamCollection
 					_bookSelection.SelectBook(_bookServer.GetBookFromBookInfo(_bookSelection.CurrentSelection.BookInfo, true));
 					var msg = LocalizationManager.GetString("TeamCollection.ConflictingEditOrCheckout",
 						"Someone else has edited this book or checked it out even though you were editing it! Your changes have been saved to Lost and Found");
-					ErrorReport.NotifyUserOfProblem(msg);
+					CommonApi.CreateDialogOnIdle(() => { ErrorReport.NotifyUserOfProblem(msg); });					
 					Analytics.Track("TeamCollectionConflictingEditOrCheckout",
 						new Dictionary<string, string>() {
 							{"CollectionId", _settings?.CollectionId},
@@ -481,11 +477,18 @@ namespace Bloom.TeamCollection
 			{
 				var msgEnglish = "Error creating Team Collection {0}: {1}";
 				var msgFmt = LocalizationManager.GetString("TeamCollection.ErrorCreating", msgEnglish);
-				ErrorReport.NotifyUserOfProblem(e, msgFmt, repoFolderParentPath, e.Message);
+
+				CommonApi.CreateDialogOnIdle(() => {
+					ErrorReport.NotifyUserOfProblem(e, msgFmt, repoFolderParentPath, e.Message);
+				});
+
 				Logger.WriteError(String.Format(msgEnglish, repoFolderParentPath, e.Message), e);
 				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
 				SentrySdk.CaptureException(e);
-				request.Failed("create team failed");
+
+				// Since we have already informed the user above, it is better to just report a success here.
+				// Otherwise, they will also get a toast.
+				request.PostSucceeded();
 			}
 		}
 

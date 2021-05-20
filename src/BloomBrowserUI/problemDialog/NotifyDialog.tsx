@@ -66,7 +66,7 @@ export const NotifyDialog: React.FunctionComponent<{
                         dangerouslySetInnerHTML={{
                             __html: formatForHtml(message)
                         }}
-                    ></DialogContentText>
+                    />
                 </DialogContent>
                 {getDialogActionButtons()}
             </Dialog>
@@ -91,7 +91,7 @@ export const NotifyDialog: React.FunctionComponent<{
                             onClick={() => {
                                 BloomApi.postString(
                                     "common/closeReactDialog",
-                                    "closedByAlternateButton" // The value is the close source
+                                    "closedByAlternateButton" // The close source; informs HtmlErrorReporter what to do
                                 );
                             }}
                         >
@@ -112,7 +112,7 @@ export const NotifyDialog: React.FunctionComponent<{
                             onClick={() => {
                                 BloomApi.postString(
                                     "common/closeReactDialog",
-                                    "closedByReportButton" // The value is the close source
+                                    "closedByReportButton" // The close source; informs HtmlErrorReporter what to do
                                 );
                             }}
                         >
