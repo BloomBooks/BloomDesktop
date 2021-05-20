@@ -167,7 +167,7 @@ namespace Bloom.ErrorReporter
 		/// <param name="error">Optional - Any exception that was encountered that should be included in the notification/report. May be null</param>
 		/// <param name="message">The message to show to the user. May be a format string.</param>
 		/// <param name="args">The args to pass to the {message} format string</param>
-		public void CustomNotifyUserAuto(string reportButtonLabel, string secondaryActionButtonLabel, Action<Exception, string> onSecondaryActionPressed ,
+		public void CustomNotifyUserAuto(string reportButtonLabel, string secondaryActionButtonLabel, Action<Exception, string> onSecondaryActionPressed,
 			IRepeatNoticePolicy policy, Exception error, string message, params object[] args)
 		{
 			Debug.Assert(!System.Threading.Monitor.IsEntered(_lock), "Expected object not to have been locked yet, but the current thread already aquired it earlier. Bug?");

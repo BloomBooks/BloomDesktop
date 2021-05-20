@@ -180,7 +180,9 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
                     Create &amp; Restart
                 </BloomButton>
                 <DialogCancelButton
-                    onClick={() => BloomApi.post("common/closeReactDialog")}
+                    onClick={() =>
+                        BloomApi.post("common/closeReactDialogImmediately")
+                    }
                 />
             </DialogBottomButtons>
         </BloomDialog>

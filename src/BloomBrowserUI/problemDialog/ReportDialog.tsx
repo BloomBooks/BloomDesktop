@@ -161,16 +161,16 @@ export const ReportDialog: React.FunctionComponent<{
     // Gives us a Cancel, Close, or Quit button.
     const getEndingButton = (): JSX.Element | null => {
         let l10nKey: string;
-        let text: string;
+        let buttonLabel: string;
         if (mode === Mode.gather && props.kind === ProblemKind.User) {
             l10nKey = "Common.Cancel";
-            text = "Cancel";
+            buttonLabel = "Cancel";
         } else {
             // Note: At one point, we only included this button if mode was not Submitted nor SubmissionFailed.
             // Now, we include it all the time. Since we have Sentry reporting too, there's less need to
             // try to funnel people towards submitting.
-            text = props.kind === ProblemKind.Fatal ? "Quit" : "Close";
-            l10nKey = `ReportProblemDialog.${text}`;
+            buttonLabel = props.kind === ProblemKind.Fatal ? "Quit" : "Close";
+            l10nKey = `ReportProblemDialog.${buttonLabel}`;
         }
 
         return (
@@ -180,10 +180,10 @@ export const ReportDialog: React.FunctionComponent<{
                 hasText={true}
                 variant="outlined"
                 onClick={() => {
-                    BloomApi.post("common/closeReactDialog");
+                    BloomApi.post("common/closeReactDialogImmediately");
                 }}
             >
-                {text}
+                {buttonLabel}
             </BloomButton>
         );
     };
@@ -222,7 +222,9 @@ export const ReportDialog: React.FunctionComponent<{
                 //fullWidth={true}
                 maxWidth={"md"}
                 fullScreen={true}
-                onClose={() => BloomApi.post("common/closeReactDialog")}
+                onClose={() =>
+                    BloomApi.post("common/closeReactDialogImmediately")
+                }
             >
                 {/* The whole disableTypography and Typography thing gets around Material-ui putting the
                     Close icon inside of the title's Typography element, where we don't have control over its CSS. */}
@@ -231,7 +233,7 @@ export const ReportDialog: React.FunctionComponent<{
                     {/* We moved the X up to the winforms dialog so that it is draggable
                          <Close
                         className="close-in-title"
-                        onClick={() => BloomApi.post("common/closeReactDialog")}
+                        onClick={() => BloomApi.post("common/closeReactDialogImmediately")}
                     /> */}
                 </DialogTitle>
                 <DialogContent className="content">

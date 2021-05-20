@@ -82,7 +82,7 @@ export const AutoUpdateSoftwareDialog: React.FunctionComponent = () => {
                                 dialogShown: 1,
                                 autoUpdate: isAutoUpdate
                             });
-                            BloomApi.post("common/closeReactDialog");
+                            BloomApi.post("common/closeReactDialogImmediately");
                         }}
                     >
                         OK

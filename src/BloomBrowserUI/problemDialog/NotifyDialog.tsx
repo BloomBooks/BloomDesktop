@@ -44,7 +44,9 @@ export const NotifyDialog: React.FunctionComponent<{
                 //fullWidth={true}
                 maxWidth={"md"}
                 fullScreen={true}
-                onClose={() => BloomApi.post("common/closeReactDialog")}
+                onClose={() =>
+                    BloomApi.post("common/closeReactDialogImmediately")
+                }
             >
                 {/* The whole disableTypography and Typography thing gets around Material-ui putting the
                     Close icon inside of the title's Typography element, where we don't have control over its CSS. */}
@@ -56,7 +58,7 @@ export const NotifyDialog: React.FunctionComponent<{
                     {/* We moved the X up to the winforms dialog so that it is draggable
                          <Close
                         className="close-in-title"
-                        onClick={() => BloomApi.post("common/closeReactDialog")}
+                        onClick={() => BloomApi.post("common/closeReactDialogImmediately")}
                     /> */}
                 </DialogTitle>
                 <DialogContent className={"dialog-content"}>
@@ -66,7 +68,7 @@ export const NotifyDialog: React.FunctionComponent<{
                         dangerouslySetInnerHTML={{
                             __html: formatForHtml(message)
                         }}
-                    ></DialogContentText>
+                    />
                 </DialogContent>
                 {getDialogActionButtons()}
             </Dialog>
@@ -90,8 +92,8 @@ export const NotifyDialog: React.FunctionComponent<{
                             variant="text"
                             onClick={() => {
                                 BloomApi.postString(
-                                    "common/closeReactDialog",
-                                    "closedByAlternateButton" // The value is the close source
+                                    "common/closeReactDialogImmediately",
+                                    "closedByAlternateButton" // The close source; informs HtmlErrorReporter what to do
                                 );
                             }}
                         >
@@ -111,8 +113,8 @@ export const NotifyDialog: React.FunctionComponent<{
                             variant="text"
                             onClick={() => {
                                 BloomApi.postString(
-                                    "common/closeReactDialog",
-                                    "closedByReportButton" // The value is the close source
+                                    "common/closeReactDialogImmediately",
+                                    "closedByReportButton" // The close source; informs HtmlErrorReporter what to do
                                 );
                             }}
                         >
@@ -131,7 +133,7 @@ export const NotifyDialog: React.FunctionComponent<{
                 l10nKey={"Common.Close"}
                 hasText={true}
                 onClick={() => {
-                    BloomApi.post("common/closeReactDialog");
+                    BloomApi.post("common/closeReactDialogImmediately");
                 }}
             >
                 Close

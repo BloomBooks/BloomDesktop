@@ -226,7 +226,7 @@ export function useSetupBloomDialog(
     }
     function closeDialog() {
         if (dialogEnvironment?.omitOuterFrame)
-            BloomApi.post("common/closeReactDialog");
+            BloomApi.post("common/closeReactDialogImmediately");
         else setOpen(false);
     }
     return {

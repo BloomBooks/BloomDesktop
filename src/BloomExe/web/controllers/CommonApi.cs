@@ -141,13 +141,25 @@ namespace Bloom.web.controllers
 					request.PostSucceeded();
 				}, false);
 
-			// At this point we open dialogs from c# code; if we opened dialog from javascript, we wouldn't need this
+			// At this point we open dialogs from c# code; if we opened dialogs from javascript, we wouldn't need this
 			// api to do it. We just need a way to close a c#-opened dialog from javascript (e.g. the Close button of the dialog).
-			apiHandler.RegisterEndpointHandler("common/closeReactDialog", request =>
+			// This version of the handler sets requiresSync to true to block the thread. This can cause deadlock issues. See BL-9920.
+			// In such situations, use closeReactDialogImmediately instead.
+			// As of May 2021, this version is not used, but I'm leaving it here for documentation.
+			apiHandler.RegisterEndpointHandler("common/closeReactDialogThreadsafe", request =>
 			{
 				ReactDialog.CloseCurrentModal(request.GetPostStringOrNull());
 				request.PostSucceeded();
-			}, true);
+			}, true, requiresSync: true);
+
+			// At this point we open dialogs from c# code; if we opened dialogs from javascript, we wouldn't need this
+			// api to do it. We just need a way to close a c#-opened dialog from javascript (e.g. the Close button of the dialog).
+			// This version of the handler sets requiresSync to false to ensure we don't get into deadlock situations like BL-9920.
+			apiHandler.RegisterEndpointHandler("common/closeReactDialogImmediately", request =>
+			{
+				ReactDialog.CloseCurrentModal(request.GetPostStringOrNull());
+				request.PostSucceeded();
+			}, true, requiresSync: false);
 
 			// TODO: move to the new App API (BL-9635)
 			apiHandler.RegisterEndpointHandler("common/reloadCollection", HandleReloadCollection, true);
