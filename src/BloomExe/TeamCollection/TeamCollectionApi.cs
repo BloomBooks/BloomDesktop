@@ -25,7 +25,6 @@ namespace Bloom.TeamCollection
 		private BookSelection _bookSelection; // configured by autofac, tells us what book is selected
 		private BookServer _bookServer;
 		private string CurrentUser => TeamCollectionManager.CurrentUser;
-		private string _folderForCreateTC;
 		private BloomWebSocketServer _socketServer;
 		private CollectionSettings _settings;
 
@@ -356,6 +355,7 @@ namespace Bloom.TeamCollection
 		{
 			try
 			{
+				string sharedFolder;
 				// One of the few places that knows we're using a particular implementation
 				// of TeamRepo. But we have to know that to create it. And of course the user
 				// has to chose a folder to get things started.
@@ -376,7 +376,7 @@ namespace Bloom.TeamCollection
 						return;
 					}
 
-					_folderForCreateTC = dlg.SelectedPath;
+					sharedFolder = dlg.SelectedPath;
 				}
 				// We send the result through a websocket rather than simply returning it because
 				// if the user is very slow (one site said FF times out after 90s) the browser may
@@ -387,8 +387,8 @@ namespace Bloom.TeamCollection
 				// does not offer such an API. Instead, we just ignore any timeout
 				// in our Javascript code.
 				dynamic messageBundle = new DynamicJson();
-				messageBundle.repoFolderPath = _folderForCreateTC;
-				messageBundle.problem = ProblemsWithLocation(_folderForCreateTC);
+				messageBundle.repoFolderPath = sharedFolder;
+				messageBundle.problem = ProblemsWithLocation(sharedFolder);
 				// This clientContext must match what is being listened for in CreateTeamCollection.tsx
 				_socketServer.SendBundle("teamCollectionCreate", "shared-folder-path", messageBundle);
 
@@ -454,6 +454,7 @@ namespace Bloom.TeamCollection
 
 		public void HandleCreateTeamCollection(ApiRequest request)
 		{
+			string repoFolderParentPath = null;
 			try
 			{
 				if (!TeamCollection.PromptForSufficientRegistrationIfNeeded())
@@ -462,7 +463,9 @@ namespace Bloom.TeamCollection
 					return;
 				}
 
-				_tcManager.ConnectToTeamCollection(_folderForCreateTC, _settings.CollectionId);
+				repoFolderParentPath = request.RequiredPostString();
+
+				_tcManager.ConnectToTeamCollection(repoFolderParentPath, _settings.CollectionId);
 				_callbackToReopenCollection?.Invoke();
 
 				Analytics.Track("TeamCollectionCreate", new Dictionary<string, string>() {
@@ -478,8 +481,8 @@ namespace Bloom.TeamCollection
 			{
 				var msgEnglish = "Error creating Team Collection {0}: {1}";
 				var msgFmt = LocalizationManager.GetString("TeamCollection.ErrorCreating", msgEnglish);
-				ErrorReport.NotifyUserOfProblem(e, msgFmt, _folderForCreateTC, e.Message);
-				Logger.WriteError(String.Format(msgEnglish, _folderForCreateTC, e.Message), e);
+				ErrorReport.NotifyUserOfProblem(e, msgFmt, repoFolderParentPath, e.Message);
+				Logger.WriteError(String.Format(msgEnglish, repoFolderParentPath, e.Message), e);
 				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
 				SentrySdk.CaptureException(e);
 				request.Failed("create team failed");
