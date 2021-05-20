@@ -1267,6 +1267,11 @@ namespace Bloom.Edit
 		/// </summary>
 		public void CleanHtmlAndCopyToPageDom()
 		{
+			// NOTE: these calls to may lead to API calls from the JS. These are async, so the actions
+			// that JS might perform may not actually happen until well after this method. We ran into a problem in
+			// BL-9912 where the Leveled Reader Tool was prompted by some of this to call us back with a save to the
+			// tool state, but by then the editingModel had cleared out its knowledge of what book it had previously
+			// been editing, so there was an null.
 			RunJavaScript("if (typeof(FrameExports) !=='undefined' && typeof(FrameExports.getPageFrameExports()) !=='undefined') {FrameExports.getToolboxFrameExports().removeToolboxMarkup();}");
 			var bodyHtml = RunJavaScript("if (typeof(FrameExports && typeof(FrameExports.getPageFrameExports()) !=='undefined') !=='undefined') {return FrameExports.getPageFrameExports().getBodyContentForSavePage();}");
 			var userCssContent = RunJavaScript("if (typeof(FrameExports) !=='undefined' && typeof(FrameExports.getPageFrameExports()) !=='undefined') {return FrameExports.getPageFrameExports().userStylesheetContent();}");
