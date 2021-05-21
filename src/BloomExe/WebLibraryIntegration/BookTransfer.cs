@@ -549,11 +549,22 @@ namespace Bloom.WebLibraryIntegration
 				return destinationPath; //argh! we can't lock it.
 			var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFile, false);
 			var dom = new HtmlDom(xmlDomFromHtmlFile);
+			bool needToSave = false;
+			// If the book is downloaded from Bloom Library, we don't want to treat it as though
+			// it were directly created from a Reader bloomPack.  So relax the formatting lock.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-9996.
+			if (dom.HasMetaElement("lockFormatting"))
+			{
+				dom.RemoveMetaElement("lockFormatting");
+				needToSave = true;
+			}
 			if (!BookMetaData.FromString(MetaDataText(destinationPath)).IsSuitableForMakingShells)
 			{
 				dom.RecordAsLockedDown(true);
-				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, htmlFile);
+				needToSave = true;
 			}
+			if (needToSave)
+				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, htmlFile);
 
 			return destinationPath;
 		}
