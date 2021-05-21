@@ -1671,6 +1671,33 @@ namespace BloomTests.Book
 				"//div[@id='bloomDataDiv']/div[@data-book='topic' and @lang='en' and text()='Health']", 1);
 		}
 
+		[Test]
+		public void SynchronizeDataItemsThroughoutDOM_LanguagesOfBookHasUnicode_DataSetLoadedCorrectly()
+		{
+			var bookDom = new HtmlDom(@"<html><body>
+				<div id='bloomDataDiv'>
+					<div data-book='languagesOfBook' lang='*'>Hakö</div>
+				</div>
+				<div class='bloom-page titlePage'>
+					<div class='languagesOfBook' data-derived='languagesOfBook' lang='en'>PlaceholderThatWillGetUpdated</div>
+				</div>
+				</body></html>");
+			
+			var data = new BookData(bookDom, _collectionSettings, null);
+
+			// For BL-9972, the languagesOfBook key was somehow set again via XMLString (which generates the entity reference version of "ö".
+			// Not 100% sure what normally organically causes this to happen,
+			// but we'll just manually execute this to get the repro.
+			data.Set("languagesOfBook", XmlString.FromUnencoded("Hakö"), false);
+
+			// System Under Test
+			data.SynchronizeDataItemsThroughoutDOM();
+
+			// Verification
+			var titlePageNode = bookDom.RawDom.SelectSingleNode("//div[@data-derived='languagesOfBook']");
+			Assert.AreEqual("Hakö", titlePageNode.InnerText);
+		}
+
 		private bool AndikaNewBasicIsInstalled()
 		{
 			const string fontToCheck = "andika new basic";

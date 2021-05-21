@@ -413,8 +413,8 @@ namespace Bloom.Book
 			DataSetElementValue langData;
 			if (!data.TextVariables.TryGetValue("languagesOfBook", out langData))
 				return;
-			var languages = langData.TextAlternatives.GetExactAlternative("*");
-			if (string.IsNullOrEmpty(languages))
+			var languagesXml = langData.TextAlternatives.GetExactAlternative("*");	// NOTE: DataSetElementValue.TextAlternatives contains more or less the InnerXml of the element, not the InnerText
+			if (string.IsNullOrEmpty(languagesXml))
 				return;
 			var elements = this._dom.SafeSelectNodes("//div[@data-derived='languagesOfBook']");
 
@@ -427,7 +427,7 @@ namespace Bloom.Book
 			foreach (var element in elements.Cast<XmlElement>().ToList())
 			{
 				element.SetAttribute("lang", Language2.Iso639Code);
-				element.InnerText = languages;
+				element.InnerXml = languagesXml;
 			}
 		}
 
