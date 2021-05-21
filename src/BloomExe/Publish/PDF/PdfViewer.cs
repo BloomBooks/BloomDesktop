@@ -279,6 +279,9 @@ namespace Bloom.Publish.PDF
 #if __MonoCS__
 			proc.EnableRaisingEvents = true;
 			proc.Exited += PrintProcessExited;
+			// gtklp may use a different GTK version than Bloom: clear the library path, which will cause
+			// gtklp to do the right lookup.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9957.
+			proc.StartInfo.Environment.Remove("LD_LIBRARY_PATH");
 #endif
 			proc.Start();
 			return true; // we at least think we printed it (unless the user cancels...anyway, don't try again some other way).
