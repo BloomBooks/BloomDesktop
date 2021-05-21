@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.PlatformUtilities;
+using SIL.Code;
 
 namespace Bloom.web.controllers
 {
@@ -339,7 +340,7 @@ namespace Bloom.web.controllers
 			{
 				string collectionPath = _bookSelection.CurrentSelection.CollectionSettings.FolderPath;
 				string orthographyConversionMappingPath = Path.Combine(collectionPath, $"convert_{requestedLangCode}_to_{langCode}.txt");
-				if (File.Exists(orthographyConversionMappingPath))
+				if (RobustFile.Exists(orthographyConversionMappingPath))
 				{
 					fragmentList = ApplyOrthographyConversion(fragmentList, orthographyConversionMappingPath);
 				}
@@ -351,7 +352,10 @@ namespace Bloom.web.controllers
 			List<Tuple<string, string>> timingStartEndRangeList = null;
 			try
 			{
-				File.WriteAllLines(textFragmentsFilename, fragmentList);
+				//TODO - Create RobustFile.WriteAllLines (where it might want even more robust-ness; see other RobustFile.WriteX methods).
+				RetryUtility.Retry(() =>
+					File.WriteAllLines(textFragmentsFilename, fragmentList)
+				);
 
 				timingStartEndRangeList = GetSplitStartEndTimings(audioFilenameToSegment, textFragmentsFilename, audioTimingsFilename, langCode);
 			}
@@ -498,7 +502,7 @@ namespace Bloom.web.controllers
 			{
 				string filePath =  Path.Combine(directoryName, fileNameBase + extension);
 
-				if (File.Exists(filePath))
+				if (RobustFile.Exists(filePath))
 				{
 					return filePath;
 				}
@@ -616,7 +620,7 @@ namespace Bloom.web.controllers
 
 
 			// This might throw exceptions, but IMO best to let the error handler pass it, and have the Javascript code be as robust as possible, instead of passing on error messages to user
-			var segmentationResults = File.ReadAllLines(outputTimingsFilename);
+			var segmentationResults = RobustFile.ReadAllLines(outputTimingsFilename);
 
 			List<Tuple<string, string>> timingStartEndRangeList;
 			if (kTimingsOutputFormat.Equals("srt", StringComparison.OrdinalIgnoreCase))
@@ -861,7 +865,7 @@ namespace Bloom.web.controllers
 
 			string collectionPath = _bookSelection.CurrentSelection.CollectionSettings.FolderPath;
 			string orthographyConversionMappingPath = Path.Combine(collectionPath, $"convert_{requestedLangCode}_to_{langCode}.txt");
-			if (File.Exists(orthographyConversionMappingPath))
+			if (RobustFile.Exists(orthographyConversionMappingPath))
 			{
 				text = ApplyOrthographyConversion(text, orthographyConversionMappingPath);
 			}
@@ -872,14 +876,14 @@ namespace Bloom.web.controllers
 			// This causes the audio to match the audio that Aeneas will hear when it calls its eSpeak dependency.
 			//   (Well, actually it was difficult to verify the exact audio that Aeneas hears, but for -v el "άλφα", verified reading from file caused audio duration to match, but passing on command line caused discrepancy in audio duration)
 			string textToSpeakFullPath = Path.GetTempFileName();
-			File.WriteAllText(textToSpeakFullPath, text, Encoding.UTF8);
+			RobustFile.WriteAllText(textToSpeakFullPath, text, Encoding.UTF8);
 
 			// No need to wait for espeak before responding.
 			var response = new ESpeakPreviewResponse()
 			{
 				text = text,
 				lang = langCode,
-				filePath = File.Exists(orthographyConversionMappingPath) ? Path.GetFileName(orthographyConversionMappingPath) : ""
+				filePath = RobustFile.Exists(orthographyConversionMappingPath) ? Path.GetFileName(orthographyConversionMappingPath) : ""
 			};
 			string responseJson = JsonConvert.SerializeObject(response);
 			request.ReplyWithJson(responseJson);
