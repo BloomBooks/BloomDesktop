@@ -911,7 +911,7 @@ namespace Bloom.TeamCollection
 			if (IsBookPresentInRepo(bookBaseName))
 				return;
 			var status = GetLocalStatus(bookBaseName);
-			if (status.IsCheckedOut())
+			if (status.IsCheckedOutHereBy(TeamCollectionManager.CurrentUser))
 			{
 				// Argh! Somebody deleted the book I'm working on! This is an error, but Reloading the collection
 				// won't help; I just need to check it in to undo the deletion, or delete the local copy myself.
