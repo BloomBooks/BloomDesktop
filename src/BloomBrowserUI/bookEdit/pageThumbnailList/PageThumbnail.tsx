@@ -66,7 +66,8 @@ export const PageThumbnail: React.FunctionComponent<{
         });
     };
     const reForOverflow = /^[^>]*class="[^"]*pageOverflows/;
-    const overflowing = reForOverflow.test(content); // enhance: memo?
+    const reForQuiz = /^[^>]*class="[^"]*simple-comprehension-quiz/;
+    const overflowing = reForOverflow.test(content) && !reForQuiz.test(content); // enhance: memo?
     useEffect(() => {
         if (Math.abs(Date.now() - lastPageRequestTime) > 5000) {
             activePageRequestCount = 0; // something weird happened, don't block forever

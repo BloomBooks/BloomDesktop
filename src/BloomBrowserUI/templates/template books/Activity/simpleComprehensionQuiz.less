@@ -13,6 +13,9 @@
     --pure-material-onprimary-rgb: 255, 255, 255;
     --pure-material-onsurface-rgb: 0, 0, 0;
 
+    .marginBox.childOverflowingThis {
+        border-bottom: 1px solid @marginBoxBorderColor !important;
+    }
     .bloom-translationGroup {
         margin-bottom: @vertical-space;
         flex-grow: 1;
@@ -36,7 +39,6 @@
         // starts a new stacking context, so the z-index:-1 shadows behind the check boxes
         // are not hidden by the non-transparent bloom-page.
         z-index: 0;
-        height: 2.85em; // prevent overflow on quiz page in device layout (BL-9823)
 
         input {
             // This input is sized to fill the space of the circle we draw around the
