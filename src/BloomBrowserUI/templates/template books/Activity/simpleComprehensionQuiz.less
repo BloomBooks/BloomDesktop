@@ -2,6 +2,14 @@
 @import (reference) "../../common-mixins.less";
 @vertical-space: 10px;
 
+// Shrink margins between answers to fit everything within actual page size for
+// Device16x9Landscape page size and orientation.
+.bloom-page.simple-comprehension-quiz.Device16x9Landscape {
+    .bloom-translationGroup {
+        margin-bottom: @vertical-space - 1px;
+    }
+}
+
 .bloom-page.simple-comprehension-quiz {
     // These are usually defined under :root. But in bloom-player, any rules
     // using things above the "actual-page-preview" element where we attach the
@@ -36,7 +44,6 @@
         // starts a new stacking context, so the z-index:-1 shadows behind the check boxes
         // are not hidden by the non-transparent bloom-page.
         z-index: 0;
-        height: 2.85em; // prevent overflow on quiz page in device layout (BL-9823)
 
         input {
             // This input is sized to fill the space of the circle we draw around the
