@@ -27,7 +27,7 @@ namespace Bloom.Book
 		internal static readonly string[] ImageFileExtensions = { ".tif", ".tiff", ".png", ".bmp", ".jpg", ".jpeg" };
 
 		// these files (if encountered) won't be included in the compressed version
-		internal static readonly string[] ExcludedFileExtensionsLowerCase = { ".db", ".pdf", ".bloompack", ".bak", ".userprefs", ".wav", ".bloombookorder", ".map" };
+		internal static readonly string[] ExcludedFileExtensionsLowerCase = { ".db", ".pdf", ".bloompack", ".bak", ".userprefs", ".bloombookorder", ".map" };
 
 		internal static void MakeSizedThumbnail(Book book, Color backColor, string destinationFolder, int heightAndWidth)
 		{
@@ -176,6 +176,8 @@ namespace Bloom.Book
 			{
 				if (ExcludedFileExtensionsLowerCase.Contains(Path.GetExtension(filePath.ToLowerInvariant())))
 					continue; // BL-2246: skip putting this one into the BloomPack
+				if (IsUnneededWaveFile(filePath, depthFromCollection))
+					continue;
 				if (localOnlyFiles.Contains(filePath))
 					continue;
 				var fileName = Path.GetFileName(filePath).ToLowerInvariant();
@@ -281,6 +283,33 @@ namespace Bloom.Book
 
 				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection + 1, forReaderTools, excludeAudio, reduceImages);
 			}
+		}
+
+		/// <summary>
+		/// If we record narration in a .wav file, it gets converted to .mp3 when published so
+		/// we don't need to upload the .wav file.  On the other hand, the user can select .wav
+		/// files for background music, and we don't try to convert those so they do need to be
+		/// uploaded.  We detect this situation by scanning the html file for any mention of
+		/// the filename.  (simple string scan, so only 99.999% foolproof, not quite six sigma)
+		/// </summary>
+		private static bool IsUnneededWaveFile(string filePath, int depthFromCollection)
+		{
+			if (Path.GetExtension(filePath).ToLowerInvariant() != ".wav")
+				return false;	// not a wave file
+			var folder = Path.GetDirectoryName(filePath);
+			while (depthFromCollection > 1)
+			{
+				folder = Path.GetDirectoryName(folder);
+				--depthFromCollection;
+			}
+			var bookFile = BookStorage.FindBookHtmlInFolder(folder);
+			if (!String.IsNullOrEmpty(bookFile))
+			{
+				var html = RobustFile.ReadAllText(bookFile);
+				if (html.Contains(Path.GetFileName(filePath)))
+					return false;	// filename is in the HTML: keep it.
+			}
+			return true;	// filename not seen in html: we can skip it.
 		}
 
 		private const string kBackgroundImage = "background-image:url('";	// must match format string in HtmlDom.SetImageElementUrl()
