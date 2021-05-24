@@ -235,7 +235,12 @@
 
 .bloom-showImageDescriptions {
     .bloom-textOverPicture {
-        display: none; // Turn this off because it's complicated to deal with these while image description tool active.  Re-positioning and shrinking the text boxes proportionally while ImageDescription tool is active is possible but hugely complicates the code... so for now, just disable it.
+        // Turn this off because it's complicated to deal with these while image description tool active.
+        // Re-positioning and shrinking the text boxes proportionally while ImageDescription tool is active
+        // is possible but hugely complicates the code... so for now, just disable it.
+        // Make this rule !important because we have some quite complex rules to make certain bubbles
+        // display:flex and this needs to win.
+        display: none !important;
     }
 }
 
