@@ -2415,7 +2415,7 @@ namespace Bloom.Book
 			{
 				var meta = DynamicJson.Parse(File.ReadAllText(metaPath));
 				meta.bookInstanceId = Guid.NewGuid().ToString();
-				RobustFile.WriteAllText(metaPath, JsonConvert.SerializeObject(meta));
+				RobustFile.WriteAllText(metaPath, meta.ToString());
 			}
 
 			// rename the book htm file
