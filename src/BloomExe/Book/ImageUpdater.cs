@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
 using Bloom.Utils;
+using L10NSharp;
 using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.Progress;
@@ -19,6 +20,10 @@ namespace Bloom.Book
 	{
 		public static void CopyImageMetadataToWholeBook(string folderPath, HtmlDom dom, Metadata metadata, IProgress progress)
 		{
+			var filesWithProblems = new List<string>();
+			Exception lastError=null;
+			const int kMaxFilesToList = 4;
+
 			progress.WriteStatus("Starting...");
 
 			//First update the images themselves
@@ -34,12 +39,30 @@ namespace Bloom.Book
 				{
 					metadata.WriteIntellectualPropertyOnly(path);
 				}
-				catch (TagLib.CorruptFileException e)
+				catch (Exception e)
 				{
-					NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All,"Image metadata problem", "Bloom had a problem accessing the metadata portion of this image " + path+ "  ref(BL-3214)", e);
+					lastError = e;
+					filesWithProblems.Add((Path.GetFileName(path)));
 				}
-
 				++completed;
+			}
+
+			if (filesWithProblems.Count > 0)
+			{
+				// Don't overflow the screen with a needlessly long list of files if for some reason
+				// there are huge numbers of failures.
+				var namesToList = filesWithProblems.Take(kMaxFilesToList);
+				// Purposefully not producing different messages if the list is being trimmed.
+				//ErrorReport.ReportNonFatalExceptionWithMessage(lastError, "Bloom was not able to copy the metadata to {0} images: {1}. ref(BL-3214)", filesWithProblems.Count, string.Join(", ", namesToList));
+				var list = string.Join(", ", namesToList);
+				if (filesWithProblems.Count > kMaxFilesToList)
+				{
+					list += ", ...";
+				}
+				var msg = LocalizationManager.GetString("Errors.CopyImageMetadata",
+					"Bloom was not able to copy the metadata to {0} image(s): {1}. Try restarting your computer. If that does not fix the problem, please send us a report and we will help you fix it.");
+				ErrorReport.NotifyUserOfProblem(lastError, msg, filesWithProblems.Count, list);
+
 			}
 
 			//Now update the html attributes which echo some of it, and is used by javascript to overlay displays related to

@@ -800,19 +800,16 @@ namespace Bloom.Edit
 								LocalizationManager.GetString("EditTab.TitleOfCopyIPToWholeBooksDialog",
 									"Picture Intellectual Property Information"), MessageBoxButtons.YesNo, MessageBoxIcon.Question,
 								MessageBoxDefaultButton.Button2);
-						if(answer == DialogResult.Yes)
+						if (answer == DialogResult.Yes)
 						{
 							Cursor = Cursors.WaitCursor;
-							try
-							{
-								_model.CopyImageMetadataToWholeBook(dlg.Metadata);
-								// There might be more than one image on this page. Update overlays.
-								_model.RefreshDisplayOfCurrentPage();
-							}
-							catch(Exception e)
-							{
-								ErrorReport.NotifyUserOfProblem(e, "There was a problem copying the metadata to all the images.");
-							}
+
+							// Note: if something goes wrong in this call, the user gets notified, so we don't have
+							// to catch errors here.
+							_model.CopyImageMetadataToWholeBook(dlg.Metadata);
+							// There might be more than one image on this page. Update overlays.
+							_model.RefreshDisplayOfCurrentPage();
+
 							Cursor = Cursors.Default;
 						}
 					}

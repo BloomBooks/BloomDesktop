@@ -2584,6 +2584,10 @@
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
         <note>ID: Errors.BookProblem</note>
       </trans-unit>
+      <trans-unit id="Errors.CopyImageMetadata">
+        <source xml:lang="en">Bloom was not able to copy the metadata to {0} image(s): {1}. Try restarting your computer. If that does not fix the problem, please send us a report and we will help you fix it.</source>
+        <note>ID: Errors.BookProblem</note>
+      </trans-unit>
       <trans-unit id="Errors.CannotAccessFile" sil:dynamic="true">
         <source xml:lang="en">Cannot access {0}</source>
         <note>ID: Errors.CannotAccessFile</note>
