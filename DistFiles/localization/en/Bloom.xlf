@@ -3621,9 +3621,9 @@
         <note>Header for a region of the menu which lists various options useful for jobs that will be printed at a commercial print shop</note>
       </trans-unit>
       <trans-unit id="PublishTab.Options_ToolTip_">
-        <source xml:lang="en">Choose a page size and orientation</source>
+        <source xml:lang="en">Choose print shop setup</source>
         <note>ID: PublishTab.Options_ToolTip_</note>
-        <note>menu header in the Publish tab</note>
+        <note>tooltip for the menu header in the Publish tab</note>
       </trans-unit>
       <trans-unit id="PublishTab.OverwriteWarning.ReplaceExistingButton">
         <source xml:lang="en">Replace Existing</source>
