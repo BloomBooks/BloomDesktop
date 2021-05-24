@@ -15,7 +15,6 @@ using Bloom.CollectionCreating;
 using Bloom.MiscUI;
 using Bloom.Utils;
 using Bloom.web;
-using ICSharpCode.SharpZipLib.Zip;
 using Sentry;
 using SIL.Code;
 using SIL.IO;
@@ -176,40 +175,15 @@ namespace Bloom.TeamCollection
 		protected override void FetchBookFromRepo(string destinationCollectionFolder, string bookName)
 		{
 			var bookPath = GetPathToBookFileInRepo(bookName);
-			byte[] buffer = new byte[4096];     // 4K is optimum
+			var destFolder = Path.Combine(destinationCollectionFolder, GetBookNameWithoutSuffix(bookName));
+			Debug.Assert(!destFolder.EndsWith(".bloom"),
+				$"Copying zipFile to folder \"{destFolder}\", which ends with .bloom. This is probably an error, unless the book title literally contains .bloom");
+
 			try
 			{
-				using (var zipFile = new ZipFile(bookPath))
-				{
-					var destFolder = Path.Combine(destinationCollectionFolder, GetBookNameWithoutSuffix(bookName));
-					Debug.Assert(!destFolder.EndsWith(".bloom"), $"Copying zipFile to folder \"{destFolder}\", which ends with .bloom. This is probably an error, unless the book title literally contains .bloom");
-
-					foreach (ZipEntry entry in zipFile)
-					{
-						var fullOutputPath = Path.Combine(destFolder, entry.Name);
-						if (entry.IsDirectory)
-						{
-							Directory.CreateDirectory(fullOutputPath);
-							// In the SharpZipLib code, IsFile and IsDirectory are not defined exactly as inverse: a third
-							// (or fourth) type of entry might be possible.  In practice in .bloom files, this should not be
-							// an issue.
-							continue;
-						}
-
-						var directoryName = Path.GetDirectoryName(fullOutputPath);
-						if (!String.IsNullOrEmpty(directoryName))
-							Directory.CreateDirectory(directoryName);
-						using (var instream = zipFile.GetInputStream(entry))
-						{
-							using (var writer = RobustFile.Create(fullOutputPath))
-							{
-								ICSharpCode.SharpZipLib.Core.StreamUtils.Copy(instream, writer, buffer);
-							}
-						}
-					}
-				}
+				RobustZip.UnzipDirectory(destFolder, bookPath);
 			}
-			catch (Exception e) when (e is ZipException || e is IOException)
+			catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
 			{
 				NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not unpack a file in your Team Collection: " + bookPath, exception: e);
 			}
@@ -218,17 +192,7 @@ namespace Bloom.TeamCollection
 		public override void PutCollectionFiles(string[] names)
 		{
 			var destPath = GetRepoProjectFilesZipPath(_repoFolderPath);
-			Directory.CreateDirectory(Path.GetDirectoryName(destPath));
-			var zipFile = new BloomZipFile(destPath);
-			foreach (var name in names)
-			{
-				var path = Path.Combine(_localCollectionFolder, name);
-				if (!RobustFile.Exists(path))
-					continue;
-				zipFile.AddTopLevelFile(path, true);
-			}
-
-			zipFile.Save();
+			RobustZip.WriteFilesToZip(names, _localCollectionFolder, destPath);
 		}
 
 		protected override DateTime LastRepoCollectionFileModifyTime
@@ -265,14 +229,7 @@ namespace Bloom.TeamCollection
 			if (!Directory.Exists(sourceDir))
 				return;
 			var destPath = GetZipFileForFolder(folderName, _repoFolderPath);
-			Directory.CreateDirectory(Path.GetDirectoryName(destPath));
-			var zipFile = new BloomZipFile(destPath);
-			foreach (var path in Directory.EnumerateFiles(sourceDir))
-			{
-				zipFile.AddTopLevelFile(path);
-			}
-
-			zipFile.Save();
+			RobustZip.WriteAllTopLevelFilesToZip(destPath, sourceDir);
 		}
 
 		public override string RepoDescription => _repoFolderPath;
@@ -330,45 +287,12 @@ namespace Bloom.TeamCollection
 			var collectionZipPath = GetRepoProjectFilesZipPath(repoFolder);
 			if (!RobustFile.Exists(collectionZipPath))
 				return;
-			ExtractFolderFromZip(destFolder, collectionZipPath, () => new HashSet<string>(RootLevelCollectionFilesIn(destFolder,
-				Path.GetFileName(GetLocalCollectionNameFromTcName(repoFolder)))));
-		}
-
-		// Extract files from the given zip to the given destination folder. Delete any files in the destFolder which
-		// are identified by filesToDeleteIfNotInZip() and which were not found in the zip file.
-		private static void ExtractFolderFromZip(string destFolder, string collectionZipPath, Func<HashSet<string>> filesToDeleteIfNotInZip)
-		{
-			byte[] buffer = new byte[4096]; // 4K is optimum
 			try
 			{
-				var filesInZip = new HashSet<string>();
-				using (var zipFile = new ZipFile(collectionZipPath))
-				{
-					foreach (ZipEntry entry in zipFile)
-					{
-						filesInZip.Add(entry.Name);
-						var fullOutputPath = Path.Combine(destFolder, entry.Name);
-
-						var directoryName = Path.GetDirectoryName(fullOutputPath);
-						if (!String.IsNullOrEmpty(directoryName))
-							Directory.CreateDirectory(directoryName);
-						using (var instream = zipFile.GetInputStream(entry))
-						using (var writer = RobustFile.Create(fullOutputPath))
-						{
-							ICSharpCode.SharpZipLib.Core.StreamUtils.Copy(instream, writer, buffer);
-						}
-					}
-				}
-
-				// Remove any sharing-eligible files that are NOT in the zip
-				var filesToDelete = filesToDeleteIfNotInZip();
-				filesToDelete.ExceptWith(filesInZip);
-				foreach (var discard in filesToDelete)
-				{
-					RobustFile.Delete(Path.Combine(destFolder, discard));
-				}
+				RobustZip.ExtractFolderFromZip(destFolder, collectionZipPath, () => new HashSet<string>(RootLevelCollectionFilesIn(destFolder,
+				Path.GetFileName(GetLocalCollectionNameFromTcName(repoFolder)))));
 			}
-			catch (Exception e) when (e is ZipException || e is IOException)
+			catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
 			{
 				NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
 					"Bloom could not unpack the collection files in your Team Collection");
@@ -388,10 +312,18 @@ namespace Bloom.TeamCollection
 			if (!RobustFile.Exists(sourceZip))
 				return;
 			var destFolder = Path.Combine(collectionFolder, folderName);
-			ExtractFolderFromZip(destFolder, sourceZip,
-				() => Directory.Exists(destFolder)
-					? new HashSet<string>(Directory.EnumerateFiles(destFolder).Select(p => Path.GetFileName(p)))
-					: new HashSet<string>());
+			try
+			{
+				RobustZip.ExtractFolderFromZip(destFolder, sourceZip,
+					() => Directory.Exists(destFolder)
+						? new HashSet<string>(Directory.EnumerateFiles(destFolder).Select(p => Path.GetFileName(p)))
+						: new HashSet<string>());
+			}
+			catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
+			{
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
+					$"Bloom could not unpack the file {sourceZip} in your Team Collection");
+			}
 		}
 
 		// All the people who have something checked out in the repo.
@@ -601,10 +533,8 @@ namespace Bloom.TeamCollection
 			{
 				return null;
 			}
-			using (var zipFile = new ZipFile(bookPath))
-			{
-				return zipFile.ZipFileComment;
-			}
+
+			return RobustZip.GetComment(bookPath);
 		}
 
 		/// <summary>
@@ -637,15 +567,7 @@ namespace Bloom.TeamCollection
 			// We've had some failures on very fast clicking of Checkin/Checkout.
 			// Not clear how they come to overlap, but it's worth just trying again
 			// as a recovery strategy.
-			RetryUtility.Retry(() =>
-			{
-				using (var zipFile = new ZipFile(bookPath))
-				{
-					zipFile.BeginUpdate();
-					zipFile.SetComment(status);
-					zipFile.CommitUpdate();
-				}
-			});
+			RobustZip.WriteZipComment(status, bookPath);
 			lock (_lockObject)
 			{
 				_writeBookInProgress = false;
