@@ -2587,6 +2587,8 @@
       <trans-unit id="Errors.CopyImageMetadata">
         <source xml:lang="en">Bloom was not able to copy the metadata to {0} image(s): {1}. Try restarting your computer. If that does not fix the problem, please send us a report and we will help you fix it.</source>
         <note>ID: Errors.BookProblem</note>
+        <note>The placeholder {0} will get a number that is the count of how many image files had a problem.</note>
+        <note>The placeholder {1} will get a list of the names of image files that had a problem.</note>
       </trans-unit>
       <trans-unit id="Errors.CannotAccessFile" sil:dynamic="true">
         <source xml:lang="en">Cannot access {0}</source>
