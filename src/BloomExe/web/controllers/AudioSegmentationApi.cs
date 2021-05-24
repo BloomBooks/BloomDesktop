@@ -291,6 +291,22 @@ namespace Bloom.web.controllers
 
 			// The client was supposed to validate this already, but double-check in case something strange happened.
 			string directoryName = GetAudioDirectory();
+
+			if (!Platform.IsLinux)
+			{
+				if (directoryName.StartsWith("\\"))
+				{
+					// I'm intentionally not adding this to the l10n load, as it seems like a pretty sophisticated thing, to be running in a VM
+					// or directly off a server, and it seems a bit hard to translate.  Ref BL-9959.
+					ErrorReport.NotifyUserOfProblem(
+						"Sorry, Bloom cannot split timings if the collection's path does not start with a drive letter. Feel free to contact us for more help."+
+						"\r\n\r\n"+GetAudioDirectory());
+					audioFilenameToSegment = null;
+					return null;
+				}
+			}
+
+
 			audioFilenameToSegment = GetFileNameToSegment(directoryName, requestParameters.audioFilenameBase);
 			if (string.IsNullOrEmpty(audioFilenameToSegment))
 			{
