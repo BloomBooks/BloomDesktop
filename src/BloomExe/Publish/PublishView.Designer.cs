@@ -307,14 +307,14 @@ namespace Bloom.Publish
 			this._pdfOptions.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
 			this._pdfOptions.ForeColor = System.Drawing.Color.White;
 			this._pdfOptions.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._pdfOptions, "Choose a page size and orientation");
+			this._L10NSharpExtender.SetLocalizableToolTip(this._pdfOptions, "Choose print shop setup");
 			this._L10NSharpExtender.SetLocalizationComment(this._pdfOptions, "menu header in the Publish tab");
 			this._L10NSharpExtender.SetLocalizationPriority(this._pdfOptions, L10NSharp.LocalizationPriority.Low);
 			this._L10NSharpExtender.SetLocalizingId(this._pdfOptions, "PublishTab.Options");
 			this._pdfOptions.Name = "_pdfOptions";
 			this._pdfOptions.Size = new System.Drawing.Size(62, 19);
 			this._pdfOptions.Text = "PDF Options";
-			this._pdfOptions.ToolTipText = "Choose a page size and orientation";
+			this._pdfOptions.ToolTipText = "Choose print shop setup";
 			// 
 			// _bookletCoverRadio
 			// 
