@@ -55,6 +55,12 @@
         padding-right: 20px;
         padding-top: 1em;
         height: 100%;
+
+        // Originally, .progress-messages was a div.
+        // Then it was changed to a span because it was nested
+        // in a p tag (and you can't have divs insides ps).
+        // But that caused a layout issue. This fixes it. BL-9951
+        display: block;
     }
     .instruction {
         margin-bottom: 1em;
