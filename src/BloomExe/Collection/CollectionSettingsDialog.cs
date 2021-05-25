@@ -44,6 +44,10 @@ namespace Bloom.Collection
 			// moved from the Designer where it was deleted if the Designer was touched
 			_xmatterList.Columns.AddRange(new[] { new ColumnHeader() { Width = 250 } });
 
+			_language1Name.UseMnemonic = false;	// Allow & to be part of the language display names.
+			_language2Name.UseMnemonic = false;	// This may be unlikely, but can't be ruled out.
+			_language3Name.UseMnemonic = false;	// See https://issues.bloomlibrary.org/youtrack/issue/BL-9919.
+
 			if (_collectionSettings.IsSourceCollection)
 			{
 				_language1Label.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.Language1InSourceCollection", "Language 1", "In a local language collection, we say 'Local Language', but in a source collection, Local Language has no relevance, so we use this different label");
