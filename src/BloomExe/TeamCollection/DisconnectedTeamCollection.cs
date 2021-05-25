@@ -40,7 +40,7 @@ namespace Bloom.TeamCollection
 		// Later it might be something else, perhaps a git URL.
 		public override string RepoDescription { get; }
 
-		protected override void PutBookInRepo(string sourceBookFolderPath, BookStatus newStatus, bool inLostAndFound = false)
+		protected override void PutBookInRepo(string sourceBookFolderPath, BookStatus newStatus, bool inLostAndFound = false, Action<float> progressCallback = null)
 		{
 			throw new NotImplementedException();
 		}

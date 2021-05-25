@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -283,10 +284,21 @@ namespace Bloom.TeamCollection
 					request.Failed();
 					return;
 				}
+
+				Action<float> reportCheckinProgress = (fraction) =>
+				{
+					dynamic messageBundle = new DynamicJson();
+					messageBundle.fraction = fraction;
+					_socketServer.SendBundle("checkinProgress", "progress", messageBundle);
+					// The status panel is supposed to be showing a progress bar in response to getting the bundle,
+					// but since we're doing the checkin on the UI thread, it doesn't get painted without this.
+					Application.DoEvents();
+				};
 				var bookName = Path.GetFileName(_bookSelection.CurrentSelection.FolderPath);
 				if (_tcManager.CurrentCollection.OkToCheckIn(bookName))
 				{
-					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, true);
+					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, true, false, reportCheckinProgress);
+					reportCheckinProgress(0); // cleans up panel for next time
 
 					Analytics.Track("TeamCollectionCheckinBook",
 						new Dictionary<string, string>(){
@@ -303,7 +315,8 @@ namespace Bloom.TeamCollection
 				{
 					// We can't check in! The system has broken down...perhaps conflicting checkouts while offline.
 					// Save our version in Lost-and-Found
-					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, false, true);
+					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, false, true, reportCheckinProgress);
+					reportCheckinProgress(0); // cleans up panel for next time
 					// overwrite it with the current repo version.
 					_tcManager.CurrentCollection.CopyBookFromRepoToLocal(bookName);
 					// Force a full reload of the book from disk and update the UI to match.

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
@@ -62,7 +63,7 @@ namespace Bloom
 		/// <param name="extensionsToExclude">An array of extensions to exlude from the zip file, null excludes nothing.</param>
 		public void AddDirectoryContents(string directoryPath, string[] extensionsToExclude = null)
 		{
-			AddDirectory(directoryPath, directoryPath.Length, extensionsToExclude);
+			AddDirectory(directoryPath, directoryPath.Length + 1, extensionsToExclude, null);
 		}
 
 		/// <summary>
@@ -77,11 +78,61 @@ namespace Bloom
 				return;
 
 			var dirNameOffset = directoryPath.Length - rootName.Length;
-			AddDirectory(directoryPath, dirNameOffset, extensionsToExclude);
+			AddDirectory(directoryPath, dirNameOffset, extensionsToExclude, null);
 		}
 
-		public void AddDirectory(string directoryPath, int dirNameOffest, string[] extensionsToExclude)
+		/// <summary>
+		/// Add everything in directoryPath, including subfolders recursively, to the zip.
+		/// The names of the zip entries are made by removing dirNameOffset from the full path
+		/// to the file, so usually directoryPath.Length + 1 should be passed.
+		/// Doing that will make a zip where the children of directoryPath are the root elements
+		/// in the zip. Another common option is where directoryPath ends with a folder name
+		/// that should be put as a folder into the zip. So for example, if a folder Foo
+		/// contains Bar1 and Bar2, passing pathToFoo.Length + 1 will result in a zip file
+		/// that directly contains the contents of Foo:
+		/// - Bar1
+		/// - Bar2
+		/// while passing pathToFoo.Length - "Foo".Length will result in a zip that contains
+		/// the folder Foo with its children:
+		/// - Foo
+		///    - Bar1
+		///    - Bar2 
+		/// Files with the specified extensions will be excluded.
+		/// If progressCallback is non-null, it is invoked after adding each file,
+		/// with a value that is the fraction of the total number of files.
+		/// </summary>
+		public void AddDirectory(string directoryPath, int dirNameOffest, string[] extensionsToExclude,
+			Action<float> progressCallback = null)
 		{
+			var count = 0;
+			var done = 0;
+			Action<string> perFileCallback = null;
+			if (progressCallback != null)
+			{
+				count = AddDirectory(directoryPath, dirNameOffest, null, true);
+				// if count is zero, perFileCallback will never be called, so we don't need to fear
+				// divide by zero.
+				perFileCallback = (path) => progressCallback((float)(++done) / count);
+			}
+
+			AddDirectory(directoryPath, dirNameOffest, null, false, perFileCallback);
+		}
+
+
+		/// <summary>
+		/// Add everything in directoryPath, including subfolders recursively, to the zip.
+		/// The names of the zip entries are made by removing dirNameOffset chars from the start
+		/// of the full path to the file. See the other overload for a fuller explanation.
+		/// Files with the specified extensions will be excluded.
+		/// <returns>The number of files added (or that would be added, if justCount were false)</returns>
+		/// <param name="justCount">If true, returns the count without actually adding them. This is usually
+		/// to prepare for a second call with the next param a function that will report progress</param>
+		/// <param name="perFileCallback">A callback that will be invoked with the full path of each file added,
+		/// once the addition has been done</param>
+		/// </summary>
+		public int AddDirectory(string directoryPath, int dirNameOffest, string[] extensionsToExclude, bool justCount = false, Action<string> perFileCallback = null)
+		{
+			var count = 0;
 			var files = Directory.GetFiles(directoryPath);
 			foreach (var path in files)
 			{
@@ -93,7 +144,10 @@ namespace Bloom
 					if (extensionsToExclude.Contains(fileExtension))
 						continue;
 				}
-				AddFile(path, entryName);
+				if (!justCount)
+					AddFile(path, entryName);
+				perFileCallback?.Invoke(path);
+				count++;
 			}
 
 			var folders = Directory.GetDirectories(directoryPath);
@@ -104,8 +158,10 @@ namespace Bloom
 				if (dirName == null)
 					continue; // Don't want to bundle these up
 
-				AddDirectory(folder, dirNameOffest, extensionsToExclude);
+				count += AddDirectory(folder, dirNameOffest, extensionsToExclude, justCount);
 			}
+
+			return count;
 		}
 	}
 }
