@@ -391,6 +391,12 @@ const ComicToolControls: React.FunctionComponent = () => {
             defaultSwatchColors: defaultBackgroundColors,
             onChange: color => updateBackgroundColor(color)
         };
+        // If the background color is fully transparent, change it to fully opaque
+        // so that the user can choose a color immediately (and adjust opacity to
+        // a lower value as well if wanted).
+        // See https://issues.bloomlibrary.org/youtrack/issue/BL-9922.
+        if (colorPickerDialogProps.initialColor.opacity === 0)
+            colorPickerDialogProps.initialColor.opacity = 100;
         getEditViewFrameExports().showColorPickerDialog(colorPickerDialogProps);
     };
 

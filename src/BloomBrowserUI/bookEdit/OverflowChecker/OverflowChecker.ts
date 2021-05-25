@@ -304,6 +304,7 @@ export default class OverflowChecker {
         }
 
         const container = $box.closest(".marginBox");
+        const quizPage = $(container).closest(".simple-comprehension-quiz");
         //NB: for some historical reason in March 2014 the calendar still uses textareas
         const queryElementsThatCanOverflow =
             ".bloom-editable:visible, textarea:visible";
@@ -337,6 +338,10 @@ export default class OverflowChecker {
                 // BL-1261: don't want the typed-in box to be marked overflow just because it made another box
                 // go past the margins
                 // $box.addClass('overflow'); // probably typing in the focused element caused this
+                if (quizPage) {
+                    // We want to ignore overflow on quiz pages.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9952.
+                    return;
+                }
                 $this.addClass("thisOverflowingParent"); // but it's this one that is actually overflowing
                 $overflowingAncestor.addClass("childOverflowingThis");
                 theOneLocalizationManager

@@ -191,7 +191,11 @@ namespace Bloom.Publish.BloomLibrary
 			var hasEnterpriseFeatures = _model.Book.CollectionSettings.HaveEnterpriseFeatures;
 			_blindCheckBox.Checked = bookInfoMetaData.Feature_Blind;
 			_signLanguageCheckBox.Enabled = hasEnterpriseFeatures && _model.Book.HasSignLanguageVideos();
-			_signLanguageCheckBox.Checked = hasEnterpriseFeatures && bookInfoMetaData.Feature_SignLanguage;
+			_signLanguageCheckBox.Checked = _signLanguageCheckBox.Enabled
+				  //the previous setting of the check box (would be nice if we had a 3-way value here
+				  // so that we could default to checked if we knew they had not previously unchecked it
+				  // (as they would if the video was not sign language)
+				  && bookInfoMetaData.Feature_SignLanguage;
 
 			// Set Sign Language link
 			_changeSignLanguageLinkLabel.Visible = _signLanguageCheckBox.Checked;

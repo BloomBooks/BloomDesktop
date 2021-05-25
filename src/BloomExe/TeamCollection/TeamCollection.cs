@@ -911,7 +911,7 @@ namespace Bloom.TeamCollection
 			if (IsBookPresentInRepo(bookBaseName))
 				return;
 			var status = GetLocalStatus(bookBaseName);
-			if (status.IsCheckedOut())
+			if (status.IsCheckedOutHereBy(TeamCollectionManager.CurrentUser))
 			{
 				// Argh! Somebody deleted the book I'm working on! This is an error, but Reloading the collection
 				// won't help; I just need to check it in to undo the deletion, or delete the local copy myself.
@@ -1146,11 +1146,24 @@ namespace Bloom.TeamCollection
 
 		/// <summary>
 		/// Add to the list any TC-specific files that should be deleted or not copied
-		/// when making most kinds of duplicates or publications of the book.
+		/// when making most kinds of duplicates or publications of the book (folderPath is for book)
+		/// and when making a bloompack (folderPath is for collection).
 		/// </summary>
-		public static void AddTCSpecificFiles(string bookFolderPath, List<string> paths)
+		public static void AddTCSpecificFiles(string folderPath, List<string> paths)
 		{
-			paths.Add(GetStatusFilePathFromBookFolderPath(bookFolderPath));
+			AddIfExists(paths, GetStatusFilePathFromBookFolderPath(folderPath));
+			AddIfExists(paths, Path.Combine(folderPath, kLastcollectionfilesynctimeTxt));
+			AddIfExists(paths, Path.Combine(folderPath, TeamCollectionManager.TeamCollectionLinkFileName));
+			AddIfExists(paths, Path.Combine(folderPath, "log.txt"));
+			AddIfExists(paths, Path.Combine(folderPath, "impersonate.txt"));
+		}
+
+		static void AddIfExists(List<string> paths, string path)
+		{
+			if (File.Exists(path))
+			{
+				paths.Add(path);
+			}
 		}
 
 		internal BookStatus GetLocalStatus(string bookFolderName, string collectionFolder = null)

@@ -574,9 +574,7 @@ namespace Bloom.CollectionTab
 				{
 					Debug.WriteLine(buttonText + " --> " + titleBestForUserDisplay);
 					button.SetTextSafely(titleBestForUserDisplay);
-					// We changed the tooltip to show the folder name to help when you have duplicates of the book, e.g. when
-					// something goes amiss when using Dropbox and it creates copies.
-					toolTip1.SetToolTip(button, Path.GetFileName(bookInfo.FolderPath));
+					
 				}
 			}
 			if (buttonRefreshInfo.ThumbnailRefreshNeeded)
@@ -587,8 +585,23 @@ namespace Bloom.CollectionTab
 				if (book != null)
 					ScheduleRefreshOfOneThumbnail(book);
 			}
+			SetBookButtonTooltip(button);
 		}
 
+		private void SetBookButtonTooltip(Button button)
+		{
+			// We changed the tooltip to show the folder name to help when you have duplicates of the book, e.g. when
+			// something goes amiss when using Dropbox and it creates copies.
+			var info = GetBookInfoFromButton(button);
+			if (info == null)
+			{
+				toolTip1.SetToolTip(button,"error");
+			}
+			else
+			{
+				toolTip1.SetToolTip(button, Path.GetFileName(info.FolderPath));
+			}
+		}
 		private Book.Book LoadBookAndBringItUpToDate(BookInfo bookInfo, out bool badBook)
 		{
 			try
@@ -829,7 +842,7 @@ namespace Bloom.CollectionTab
 			button.FlatAppearance.BorderSize = 1;
 			button.FlatAppearance.BorderColor = BackColor;
 
-			toolTip1.SetToolTip(button, title);
+			SetBookButtonTooltip(button);
 
 			Image thumbnail = Resources.PagePlaceHolder;
 			_bookThumbnails.Images.Add(bookInfo.Id, thumbnail);
@@ -1100,7 +1113,7 @@ namespace Bloom.CollectionTab
 				{
 					var bestTitle = book.TitleBestForUserDisplay;
 					SelectedButton.SetTextSafely(ShortenTitleIfNeeded(bestTitle, SelectedButton));
-					toolTip1.SetToolTip(SelectedButton, bestTitle);
+					SetBookButtonTooltip(SelectedButton);
 					if (_thumbnailRefreshPending)
 					{
 						_thumbnailRefreshPending = false;

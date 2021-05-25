@@ -173,12 +173,6 @@ td {
     width: 100%;
 }
 
-//user can get this in by pressing shift-enter. See bloomField.ts
-span.bloom-linebreak {
-    display: block;
-    text-indent: 0;
-}
-
 div.bloom-page {
     display: block;
 
@@ -549,6 +543,9 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
     }
     .HalfLetterPortrait & {
         .SetMarginBox(@HalfLetterPortrait-Width, @HalfLetterPortrait-Height);
+    }
+    .HalfLetterLandscape & {
+        .SetMarginBox(@HalfLetterLandscape-Width, @HalfLetterLandscape-Height);
     }
     .LetterPortrait & {
         .SetMarginBox(@LetterPortrait-Width, @LetterPortrait-Height);

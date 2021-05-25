@@ -27,7 +27,7 @@ namespace Bloom.Book
 		internal static readonly string[] ImageFileExtensions = { ".tif", ".tiff", ".png", ".bmp", ".jpg", ".jpeg" };
 
 		// these files (if encountered) won't be included in the compressed version
-		internal static readonly string[] ExcludedFileExtensionsLowerCase = { ".db", ".pdf", ".bloompack", ".bak", ".userprefs", ".wav", ".bloombookorder", ".map" };
+		internal static readonly string[] ExcludedFileExtensionsLowerCase = { ".db", ".pdf", ".bloompack", ".bak", ".userprefs", ".bloombookorder", ".map" };
 
 		internal static void MakeSizedThumbnail(Book book, Color backColor, string destinationFolder, int heightAndWidth)
 		{
@@ -163,6 +163,7 @@ namespace Bloom.Book
 				{
 					imagesToGiveTransparentBackgrounds = FindCoverImages(dom);
 				}
+				FindBackgroundAudioFiles(dom);
 			}
 			else
 			{
@@ -176,6 +177,8 @@ namespace Bloom.Book
 			{
 				if (ExcludedFileExtensionsLowerCase.Contains(Path.GetExtension(filePath.ToLowerInvariant())))
 					continue; // BL-2246: skip putting this one into the BloomPack
+				if (IsUnneededWaveFile(filePath, depthFromCollection))
+					continue;
 				if (localOnlyFiles.Contains(filePath))
 					continue;
 				var fileName = Path.GetFileName(filePath).ToLowerInvariant();
@@ -281,6 +284,36 @@ namespace Bloom.Book
 
 				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection + 1, forReaderTools, excludeAudio, reduceImages);
 			}
+		}
+
+		private static HashSet<string> _backgroundAudioFiles = new HashSet<string>();
+
+		private static void FindBackgroundAudioFiles(XmlDocument dom)
+		{
+			_backgroundAudioFiles.Clear();
+			foreach (var div in dom.DocumentElement.SafeSelectNodes("//div[@data-backgroundaudio]").Cast<XmlElement>())
+			{
+				var filename = div.GetStringAttribute("data-backgroundaudio");
+				if (!String.IsNullOrEmpty(filename))
+					_backgroundAudioFiles.Add(filename);
+			}
+		}
+
+		/// <summary>
+		/// We used to record narration in a .wav file that got converted to mp3 if the user set
+		/// up LAME when we published the book.  LAME is now freely available so we automatically
+		/// convert narration to mp3 as soon as we record it.  But we never want to upload old
+		/// narration .wav files.  On the other hand, the user can select .wav files for background
+		/// music, and we don't try to convert those so they do need to be uploaded.  We detect
+		/// this situation by saving background audio (music) filenames in an earlier pass from
+		/// scanning the XHTML file and saving the set of filenames found.
+		/// </summary>
+		private static bool IsUnneededWaveFile(string filePath, int depthFromCollection)
+		{
+			if (Path.GetExtension(filePath).ToLowerInvariant() != ".wav")
+				return false;   // not a wave file
+			var filename = Path.GetFileName(filePath);
+			return !_backgroundAudioFiles.Contains(filename);
 		}
 
 		private const string kBackgroundImage = "background-image:url('";	// must match format string in HtmlDom.SetImageElementUrl()

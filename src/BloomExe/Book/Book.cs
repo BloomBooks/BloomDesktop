@@ -249,6 +249,7 @@ namespace Bloom.Book
 			return display;
 		}
 
+		// might be better named RemoveMarkup; what can be in here is *HTML*, e.g. bold, italics, etc.
 		public static string RemoveXmlMarkup(string input)
 		{
 			try

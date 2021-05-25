@@ -18,6 +18,9 @@ SHARE   = usr/share/$(PACKAGE)
 override_dh_auto_configure:
 
 override_dh_auto_build:
+	# some checks for diagnosing jenkins build failures
+	/usr/bin/top -b -n1
+	/bin/ps -ef | /bin/grep localize-binaries
 	build/getDependencies-Linux.sh
 	# This seems to be the only reliable way to get the version of nodejs/npm that we need.
 	# Note that Node dropped 32-bit support in version 10, so downloads would fail, killing the build.

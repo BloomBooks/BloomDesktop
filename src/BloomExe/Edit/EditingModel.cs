@@ -881,7 +881,16 @@ namespace Bloom.Edit
 
 		internal void SaveToolboxSettings(string data)
 		{
-			ToolboxView.SaveToolboxSettings(CurrentBook,data);
+			// ref BL-9859, BL-9912, BL-9978
+			// If _currentlyDisplayedBook is null, it's because we go the API call to save
+			// tool state too late. The Book has already been saved and we're back on
+			// the Collection Tab. In testing with the leveled and decodable readers,
+			// I found that the important state, like what
+			// level we are on, sort order, etc. has already been saved.
+			if (_currentlyDisplayedBook != null)
+			{
+				ToolboxView.SaveToolboxSettings(_currentlyDisplayedBook, data);
+			}
 		}
 
 		/// <summary>

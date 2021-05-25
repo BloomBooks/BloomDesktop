@@ -315,8 +315,9 @@ namespace BloomTests.TeamCollection
 			Assert.That(repoStatus.oldName, Is.Null, "repo status still has null oldName field after rename");
 		}
 
-		[Test]
-		public void HandleDeletedFile_NoConflictBook_DeletesAndRaisesCheckedOutByDeletedButNoMessage()
+		[TestCase(null)]
+		[TestCase("someone.else@nowhere.org")]
+		public void HandleDeletedFile_NoConflictBook_DeletesAndRaisesCheckedOutByDeletedButNoMessage(string checkedOutTo)
 		{
 			// Simulate that a book was just deleted in the repo
 			const string bookFolderName = "My book";
@@ -327,6 +328,8 @@ namespace BloomTests.TeamCollection
 			string bookFolderPath = bookBuilder.BuiltBookFolderPath;
 
 			var status = _collection.PutBook(bookFolderPath);
+			if (checkedOutTo != null)
+				_collection.AttemptLock(bookFolderName, checkedOutTo);
 			_collection.DeleteBookFromRepo(bookFolderPath);
 
 			var prevMessages = _tcLog.Messages.Count;

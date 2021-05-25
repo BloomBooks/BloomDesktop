@@ -800,19 +800,16 @@ namespace Bloom.Edit
 								LocalizationManager.GetString("EditTab.TitleOfCopyIPToWholeBooksDialog",
 									"Picture Intellectual Property Information"), MessageBoxButtons.YesNo, MessageBoxIcon.Question,
 								MessageBoxDefaultButton.Button2);
-						if(answer == DialogResult.Yes)
+						if (answer == DialogResult.Yes)
 						{
 							Cursor = Cursors.WaitCursor;
-							try
-							{
-								_model.CopyImageMetadataToWholeBook(dlg.Metadata);
-								// There might be more than one image on this page. Update overlays.
-								_model.RefreshDisplayOfCurrentPage();
-							}
-							catch(Exception e)
-							{
-								ErrorReport.NotifyUserOfProblem(e, "There was a problem copying the metadata to all the images.");
-							}
+
+							// Note: if something goes wrong in this call, the user gets notified, so we don't have
+							// to catch errors here.
+							_model.CopyImageMetadataToWholeBook(dlg.Metadata);
+							// There might be more than one image on this page. Update overlays.
+							_model.RefreshDisplayOfCurrentPage();
+
 							Cursor = Cursors.Default;
 						}
 					}
@@ -1387,6 +1384,11 @@ namespace Bloom.Edit
 		/// </summary>
 		public void CleanHtmlAndCopyToPageDom()
 		{
+			// NOTE: these calls to may lead to API calls from the JS. These are async, so the actions
+			// that JS might perform may not actually happen until well after this method. We ran into a problem in
+			// BL-9912 where the Leveled Reader Tool was prompted by some of this to call us back with a save to the
+			// tool state, but by then the editingModel had cleared out its knowledge of what book it had previously
+			// been editing, so there was an null.
 			RunJavaScript("if (typeof(FrameExports) !=='undefined' && typeof(FrameExports.getPageFrameExports()) !=='undefined') {FrameExports.getToolboxFrameExports().removeToolboxMarkup();}");
 			var bodyHtml = RunJavaScript("if (typeof(FrameExports && typeof(FrameExports.getPageFrameExports()) !=='undefined') !=='undefined') {return FrameExports.getPageFrameExports().getBodyContentForSavePage();}");
 			var userCssContent = RunJavaScript("if (typeof(FrameExports) !=='undefined' && typeof(FrameExports.getPageFrameExports()) !=='undefined') {return FrameExports.getPageFrameExports().userStylesheetContent();}");

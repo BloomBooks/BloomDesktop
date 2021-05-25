@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -420,6 +420,7 @@
     <Compile Include="Utils\FileSystemWatcherExtensions.cs" />
     <Compile Include="Utils\MiscUtils.cs" />
     <Compile Include="Utils\PerformanceMeasurement.cs" />
+    <Compile Include="Utils\RobustZip.cs" />
     <Compile Include="WebLibraryIntegration\FirebaseLoginDialog.cs" />
     <Compile Include="WebLibraryIntegration\S3Extensions.cs" />
     <Compile Include="web\ReactControl.cs">

@@ -576,8 +576,13 @@ namespace Bloom.Book
 			DataSetElementValue langData;
 			if (!data.TextVariables.TryGetValue("languagesOfBook", out langData))
 				return;
-			var languages = langData.TextAlternatives.GetExactAlternative("*");
-			if (string.IsNullOrEmpty(languages))
+
+			// NOTE: The DataSetElementValue class defines that its TextAlternatives should always contains the InnerXml (or otherwise encoded) form
+			// of the element, not its InnerText (unencoded) form
+			// For example, the text alternatives might store strings with entity encoding, such as "Hak&#246;" instead of "Hakö"
+			// We want to make sure that this "&#246;" gets displayed to the user as "ö" rather than as "&#246;".  See BL-9972
+			var languagesXml = langData.TextAlternatives.GetExactAlternative("*");	
+			if (string.IsNullOrEmpty(languagesXml))
 				return;
 			var elements = this._dom.SafeSelectNodes("//div[@data-derived='languagesOfBook']");
 
@@ -590,7 +595,7 @@ namespace Bloom.Book
 			foreach (var element in elements.Cast<XmlElement>().ToList())
 			{
 				element.SetAttribute("lang", MetadataLanguage1IsoCode);
-				SetNodeXml("languagesOfBook", XmlString.FromXml(languages), element );
+				SetNodeXml("languagesOfBook", XmlString.FromXml(languagesXml), element );
 				// Was until April 2021
 				//element.InnerText = languages;
 				// This is wrong because languages, coming from data.TextVariables, is encoded.

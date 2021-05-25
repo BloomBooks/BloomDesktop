@@ -104,3 +104,10 @@ body {
 .bloom-background-gray {
     background-color: @preferredBackgroundGray;
 }
+
+// The user can get this in by pressing shift-enter. See bloomField.ts
+// BL-9960 Moving this rule here from basePage.less, so that it will work for ePubs too.
+span.bloom-linebreak {
+    display: block;
+    text-indent: 0;
+}

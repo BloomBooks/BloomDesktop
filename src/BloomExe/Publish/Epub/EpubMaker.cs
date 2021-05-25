@@ -1087,7 +1087,7 @@ namespace Bloom.Publish.Epub
 
 			var pageDom = GetEpubFriendlyHtmlDomForPage(pageElement);
 
-			// Note, the following stylsheet stuff can be quite bewildering...
+			// Note, the following stylesheet stuff can be quite bewildering...
 			// Testing shows that these stylesheets are not actually used
 			// in PublishHelper.RemoveUnwantedContent(), which falls back to the stylesheets in place for the book, which in turn,
 			// in unit tests, is backed by a simple mocked BookStorage which doesn't have the stylesheet smarts. Sigh.

@@ -2604,6 +2604,12 @@
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
         <note>ID: Errors.BookProblem</note>
       </trans-unit>
+      <trans-unit id="Errors.CopyImageMetadata">
+        <source xml:lang="en">Bloom was not able to copy the metadata to {0} image(s): {1}. Try restarting your computer. If that does not fix the problem, please send us a report and we will help you fix it.</source>
+        <note>ID: Errors.BookProblem</note>
+        <note>The placeholder {0} will get a number that is the count of how many image files had a problem.</note>
+        <note>The placeholder {1} will get a list of the names of image files that had a problem.</note>
+      </trans-unit>
       <trans-unit id="Errors.CannotAccessFile" sil:dynamic="true">
         <source xml:lang="en">Cannot access {0}</source>
         <note>ID: Errors.CannotAccessFile</note>
@@ -3635,9 +3641,9 @@
         <note>Header for a region of the menu which lists various options useful for jobs that will be printed at a commercial print shop</note>
       </trans-unit>
       <trans-unit id="PublishTab.Options_ToolTip_">
-        <source xml:lang="en">Choose a page size and orientation</source>
+        <source xml:lang="en">Choose print shop setup</source>
         <note>ID: PublishTab.Options_ToolTip_</note>
-        <note>menu header in the Publish tab</note>
+        <note>tooltip for the menu header in the Publish tab</note>
       </trans-unit>
       <trans-unit id="PublishTab.OverwriteWarning.ReplaceExistingButton">
         <source xml:lang="en">Replace Existing</source>

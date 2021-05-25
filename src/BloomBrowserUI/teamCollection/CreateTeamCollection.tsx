@@ -56,7 +56,11 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
 
     const dialogTitle = useL10n(
         "Create a Team Collection",
-        "TeamCollection.CreateTeamCollection"
+        "TeamCollection.CreateTeamCollection",
+        undefined,
+        undefined,
+        undefined,
+        true
     );
 
     const [collectionName] = BloomApi.useApiString(
@@ -167,7 +171,10 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
                     }
                     temporarilyDisableI18nWarning={true}
                     onClick={() => {
-                        BloomApi.post("teamCollection/createTeamCollection");
+                        BloomApi.postString(
+                            "teamCollection/createTeamCollection",
+                            repoFolderPath
+                        );
                     }}
                 >
                     Create &amp; Restart
