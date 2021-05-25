@@ -557,6 +557,24 @@ namespace Bloom.TeamCollection
 			{
 				throw new ArgumentException("trying to write status on a book not in the repo");
 			}
+
+			// This is a low-level check, mainly to handle the case where the book is locked in Dropbox.
+			// Locking is supposed to prevent writes and creation of conflict files. However, something
+			// about how our zip library updates comments instead results in creating a conflict...
+			// every time we try to check it out. This check is enough to prevent that (unless the lock
+			// happens at exactly the wrong instant between when we check and when we write the status).
+			// Enhance: if we want to support this case, it would be much nicer to check at a higher level
+			// and have a new state of the BookStatusPanel indicating that the TC version of the book is
+			// locked in a non-standard way (i.e., not checked out, but still not writeable). Possibly
+			// a new color for the state circle, too. But we want to DIScourage people from using file
+			// locking to achieve something that our Checkout mechanism is designed to handle. Throwing
+			// this argument exception puts the TC in the "problems encountered" state with a rather
+			// cryptic message in the dialog box, and no change in the book status panel. But at least
+			// we are not cluttering the TC with conflicts.
+			if (IsFileLocked(bookPath))
+			{
+				throw new ArgumentException("Book is locked in the Team Collection");
+			}
 			lock (_lockObject)
 			{
 				_lastWriteBookPath = bookPath;
@@ -572,6 +590,31 @@ namespace Bloom.TeamCollection
 			{
 				_writeBookInProgress = false;
 			}
+		}
+
+		private bool IsFileLocked(string filePath)
+		{
+			try
+			{
+				// If something recently changed it we might get some spurious failures
+				// to open it for modification.
+				RetryUtility.Retry(() =>
+				{
+					using (File.Open(filePath, FileMode.Open))
+					{
+					}
+				});
+			}
+			catch (IOException e)
+			{
+				return true;
+			}
+			catch (UnauthorizedAccessException e)
+			{
+				return true;
+			}
+
+			return false;
 		}
 
 		/// <summary>
