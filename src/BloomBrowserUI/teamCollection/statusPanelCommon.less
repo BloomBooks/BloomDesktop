@@ -6,6 +6,9 @@
 @panel-button-padding: 15px;
 @panel-button-icon-size: 28px;
 @panel-width: 560px; // roughly A5 width
+@panel-height: 180px;
+@panel-top-padding: 12px;
+@panel-button-total-height: @panel-button-height + @panel-button-padding;
 
 .status-panel {
     max-width: @panel-width;
@@ -16,7 +19,9 @@
         display: flex;
         flex-direction: row;
         flex: 1;
-        padding-top: 12px;
+        padding-top: @panel-top-padding;
+        // If absolutely necessary, we allow a scroll bar in the part above the button.
+        overflow-y: auto;
         .icon-or-avatar {
             width: @icon-size;
             padding-top: @icon-top-padding;
@@ -32,6 +37,16 @@
         .panel-titles {
             display: flex;
             flex-direction: column;
+            // If we get too much text in the titles (think i18n), this could cause scrolling,
+            // but only within the title area.
+            max-height: calc(
+                @panel-height - @panel-top-padding - @panel-button-total-height
+            );
+            // In a few cases, there won't be an .icon-or-avatar div (e.g. "problem" state).
+            // If that's the case, we need a bit of margin.
+            &:first-child {
+                margin-left: 20px;
+            }
         }
         .status-panel-menu {
             display: flex;

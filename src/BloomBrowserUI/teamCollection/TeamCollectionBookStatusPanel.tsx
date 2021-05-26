@@ -109,7 +109,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         false
     );
 
-    let avatar;
+    let avatar: JSX.Element;
     if (state.startsWith("locked")) {
         avatar = (
             <BloomAvatar
