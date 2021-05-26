@@ -453,9 +453,9 @@ namespace Bloom.Collection
 				Administrators=ReadString(xml, "Administrators", "")
 					.Split(new[] {","}, StringSplitOptions.RemoveEmptyEntries);
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
-				string settingsContents = "";
+				string settingsContents;
 				try
 				{
 					settingsContents = RobustFile.ReadAllText(SettingsFilePath);
@@ -464,8 +464,11 @@ namespace Bloom.Collection
 				{
 					settingsContents = error.Message;
 				}
-				Logger.WriteEvent("Contents of "+SettingsFilePath+": /r/n"+ settingsContents);
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e, "There was an error reading the file {0}.  Please report this error to the developers. To get access to your books, you should make a new collection, then copy your book folders from this broken collection into the new one, then run Bloom again.",SettingsFilePath);
+				Logger.WriteEvent("Contents of " + SettingsFilePath + ": /r/n" + settingsContents);
+
+				// We used to notify the user of a problem here.
+				// But now we decided it is better to catch at a higher level, at OpenProjectWindow(), else we have two different
+				// error UI dialogs for the same problem. See BL-9916.
 				throw;
 			}
 

@@ -11,6 +11,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.ErrorReporter;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.WebLibraryIntegration;
@@ -180,19 +181,34 @@ namespace Bloom.web.controllers
 				(ApiRequest request) =>
 				{
 					var report = DynamicJson.Parse(request.RequiredPostJson());
-					var subject = report.kind == "User" ? "User Problem" : report.kind == "Fatal" ? "Crash Report" : "Error Report";
 
-					var issueSubmission = new YouTrackIssueSubmitter(YouTrackProjectKey);
-					var userDesc = report.userInput as string;
-					var userEmail = report.email as string;
-					if (report.includeScreenshot && _reportInfo?.ScreenshotTempFile != null && RobustFile.Exists(_reportInfo.ScreenshotTempFile.Path))
-					{
-						issueSubmission.AddAttachmentWhenWeHaveAnIssue(_reportInfo.ScreenshotTempFile.Path);
-					}
-					string diagnosticInfo = GetDiagnosticInfo(report.includeBook, userDesc, userEmail);
-					if (!string.IsNullOrWhiteSpace(userEmail))
-					{
-						// remember their email
+					string issueLink = SubmitToYouTrack(report.kind, report.userInput, report.email, report.includeBook, report.includeScreenshot, null);
+
+					object linkToNewIssue = new { issueLink };
+					request.ReplyWithJson(linkToNewIssue);
+				}, true);
+		}
+
+		internal string SubmitToYouTrack(string reportKind, string userDesc, string userEmail, bool includeBook, bool includeScreenshot, IEnumerable<string> additionalPathsToInclude)
+		{
+			var subject = reportKind == "User" ? "User Problem" : reportKind == "Fatal" ? "Crash Report" : "Error Report";
+
+			var issueSubmission = new YouTrackIssueSubmitter(YouTrackProjectKey);
+			if (includeScreenshot && _reportInfo?.ScreenshotTempFile != null && RobustFile.Exists(_reportInfo.ScreenshotTempFile.Path))
+			{
+				issueSubmission.AddAttachmentWhenWeHaveAnIssue(_reportInfo.ScreenshotTempFile.Path);
+			}
+			if (additionalPathsToInclude != null)
+			{
+				foreach (var path in additionalPathsToInclude)
+				{
+					issueSubmission.AddAttachmentWhenWeHaveAnIssue(path);
+				}
+			}
+			string diagnosticInfo = GetDiagnosticInfo(includeBook, userDesc, userEmail);
+			if (!string.IsNullOrWhiteSpace(userEmail))
+			{
+				// remember their email
 						SIL.Windows.Forms.Registration.Registration.Default.Email = userEmail;
 					}
 
@@ -204,22 +220,23 @@ namespace Bloom.web.controllers
 					}
 					catch (Exception e)
 					{
-						Debug.Fail("Submitting problem report to YouTrack failed with '" + e.Message + "'.");
-						issueId = failureResult;
-					}
-					object linkToNewIssue;
-					if (issueId == failureResult)
+				Debug.Fail("Submitting problem report to YouTrack failed with '" + e.Message + "'.");
+				issueId = failureResult;
+			}
+
+			string issueLink;
+			if (issueId == failureResult)
+			{
+				var zipPath = MakeEmailableReportFile(includeBook, includeScreenshot, userDesc, diagnosticInfo);
+				issueLink = failureResult + ":" + zipPath;
+			}
+			else
+			{
+				issueLink = "https://issues.bloomlibrary.org/youtrack/issue/" + issueId;
+				if (includeBook)
+				{
+					try
 					{
-						var zipPath = MakeEmailableReportFile(report.includeBook, report.includeScreenshot, userDesc, diagnosticInfo);
-						linkToNewIssue = new {issueLink = failureResult + ":" + zipPath};
-					}
-					else
-					{
-						linkToNewIssue = new { issueLink = "https://issues.bloomlibrary.org/youtrack/issue/" + issueId};
-						if (report.includeBook)
-						{
-							try
-							{
 								string zipPath = CreateBookZipFile(issueId, userDesc);
 								if (zipPath != null)
 								{
@@ -248,13 +265,13 @@ namespace Bloom.web.controllers
 
 							finally {
 								_bookZipFileTemp.Detach();
-							}
-						}
 					}
-					request.ReplyWithJson(linkToNewIssue);
-				}, true);
+				}
+			}
+			return issueLink;
 		}
-
+		
+		
 		private string CreateBookZipFile(string basename, string userDesc)
 		{
 			try
@@ -427,7 +444,7 @@ namespace Bloom.web.controllers
 			{
 				// We got an error really early, before we can use HTML dialogs. Report using the old dialog.
 				// Hopefully we're still on the one main thread.
-				ErrorReport.ReportNonFatalExceptionWithMessage(exception, shortUserLevelMessage);
+				HtmlErrorReporter.ShowFallbackProblemDialog(levelOfProblem, exception, detailedMessage, shortUserLevelMessage, isShortMessagePreEncoded);
 				return;
 			}
 
@@ -445,14 +462,7 @@ namespace Bloom.web.controllers
 					if (!BloomServer.ServerIsListening)
 					{
 						// We can't use the react dialog!
-						var fallbackReporter = new WinFormsErrorReporter();
-						if (exception != null)
-							fallbackReporter.ReportNonFatalException(exception, new ShowAlwaysPolicy());
-						else
-						{
-							fallbackReporter.NotifyUserOfProblem(new ShowAlwaysPolicy(), null, ErrorResult.OK,
-								detailedMessage);
-						}
+						HtmlErrorReporter.ShowFallbackProblemDialog(levelOfProblem, exception, detailedMessage, shortUserLevelMessage, isShortMessagePreEncoded);
 						return;
 					}
 
@@ -503,6 +513,59 @@ namespace Bloom.web.controllers
 					}
 				}
 			});
+		}
+
+		/// <summary>
+		/// Sends a problem report directly (without bringing up the UI dialog).
+		/// This may be useful when the user has selected "Report" after receiving a Notify, especially if we can't bring up the HTML-based UI.
+		/// </summary>
+		/// <param name="levelOfProblem">One of the values of ProblemLevel. e.g. fatal, nonfatal, user, notify</param>
+		/// <param name="exception">Optional - the exception to report. </param>
+		/// <param name="shortUserLevelMessage">Optional. Short Description. If provided, must be the raw, literal, unencoded text... No using HTML to apply formatting</param>
+		/// <param name="detailedMessage">Optional. Additional Description.</param>
+		/// <param name="additionalPathsToInclude">Optional. If provided, the paths in this IEnumerable will be attached to the issue</param>
+		public void SendReportWithoutUI(string levelOfProblem, Exception exception, string shortUserLevelMessage, string detailedMessage, IEnumerable<string> additionalPathsToInclude)
+		{
+			// Before we do anything that might be "risky", put the problem in the log.
+			LogProblem(exception, detailedMessage, levelOfProblem);
+
+			// Acquire the lock (even though we're not technically SHOWING a problem report dialog)
+			// so that there's no interference with the member variables
+			lock (_showingProblemReportLock)
+			{
+				if (_showingProblemReport)
+				{
+					// Prevent multiple calls, in case of unbounded recursion
+					const string msg = "MULTIPLE CALLS to ShowProblemDialog. Suppressing the subsequent calls";
+					Console.Write(msg);
+					Logger.WriteEvent(msg);
+					return; // Abort
+				}
+
+				_showingProblemReport = true;
+			}
+
+			try
+			{
+				GatherReportInfoExceptScreenshot(exception, detailedMessage, shortUserLevelMessage, false);
+
+				// NOTE: Taking screenshots not supported in this mode (yet)
+
+				var issueLink = SubmitToYouTrack(levelOfProblem, "", SIL.Windows.Forms.Registration.Registration.Default.Email, false, false, additionalPathsToInclude);
+				if (issueLink.StartsWith("failed"))
+				{
+					MessageBox.Show("Failed to report issue. Please email Bloom team manually.");
+				}
+				else
+				{
+					// Note: Can't copy/paste from these.
+					MessageBox.Show("Successfully reported issue: " + issueLink);
+				}
+			}
+			finally
+			{
+				_showingProblemReport = false;
+			}
 		}
 
 		/// <summary>
