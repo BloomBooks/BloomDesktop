@@ -37,7 +37,6 @@ using SIL.WritingSystems;
 using SIL.Xml;
 using Bloom.ErrorReporter;
 
-
 namespace Bloom
 {
 	static class Program
@@ -902,10 +901,33 @@ namespace Bloom
 				_projectContext = null;
 			}
 
-			SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-				new SIL.Reporting.ShowAlwaysPolicy(), error,
-				"{0} had a problem loading the {1} project. Please report this problem to the developers by clicking 'Details' below.",
-				Application.ProductName, Path.GetFileNameWithoutExtension(projectPath));
+			ErrorResult reportPressedResult = ErrorResult.Yes;
+			string errorMessage = $"Bloom had a problem loading the {Path.GetFileNameWithoutExtension(projectPath)} project. Send us a report and we'll help you get things fixed up.";
+			var result = SIL.Reporting.ErrorReport.NotifyUserOfProblem(
+				new SIL.Reporting.ShowAlwaysPolicy(), "Report", reportPressedResult,
+				errorMessage
+				);
+
+			// User clicked the report button.
+			if (result == reportPressedResult)
+			{
+				var userEmail = SIL.Windows.Forms.Registration.Registration.Default.Email;
+				if (!String.IsNullOrWhiteSpace(userEmail))
+				{
+					// Just send the report in for them.
+					// Include the .bloomCollection file (projectPath)
+					// as well as any other files at the same level, in case they're helpful for debugging
+					var dirName = Path.GetDirectoryName(projectPath);
+					var additionalPathsToInclude = Directory.GetFiles(dirName);
+					_applicationContainer.ProblemReportApi.SendReportWithoutUI(ProblemLevel.kNonFatal, error, errorMessage, "", additionalPathsToInclude);
+				}
+				else
+				{
+					// No email... just fallback to the WinFormsErrorReporter, which will allow the user to email us.
+					// Unfortunately, we won't be able to automatically get the .bloomCollection file from that.
+					SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(error, errorMessage);
+				}
+			}
 		}
 
 		/// ------------------------------------------------------------------------------------
