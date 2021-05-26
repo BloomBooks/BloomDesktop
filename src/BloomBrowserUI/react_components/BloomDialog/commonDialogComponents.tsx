@@ -1,7 +1,7 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
 import * as React from "react";
-import { kDialogPadding } from "../../bloomMaterialUITheme";
+import { kDialogPadding, kBloomBlue } from "../../bloomMaterialUITheme";
 import { BloomApi } from "../../utils/bloomApi";
 import BloomButton from "../bloomButton";
 
@@ -10,6 +10,10 @@ import WarningIcon from "@material-ui/icons/Warning";
 import ErrorIcon from "@material-ui/icons/Error";
 
 export const kErrorBoxColor = "#eb3941";
+const kWarningBoxColor = "#FEBF00"; // isn't exactly bloom gold. This looks more orangy, intentionally.
+const kTextOverWarningColor = "#000000CC"; // black with 20% transparency
+const kLightBlueBackground = "#e5f9f0";
+const kBorderRadiusForSpecialBlocks = "3px";
 
 // just puts a rounded rectangle around the children
 export const DialogControlGroup: React.FunctionComponent<{}> = props => (
@@ -145,13 +149,17 @@ export const DialogReportButton: React.FunctionComponent<{
         Report
     </BloomButton>
 );
+
 export const NoteBox: React.FunctionComponent<{}> = props => (
-    <div
+    // using <p> so that we get normal spacing when we intermix prose with the warning
+    <p
         css={css`
             display: flex;
-            background-color: #e5f9f0;
+            background-color: ${kLightBlueBackground};
+            border-radius: ${kBorderRadiusForSpecialBlocks};
             padding: ${kDialogPadding};
-            margin-top: ${kDialogPadding};
+            color: ${kBloomBlue};
+            font-weight: 500;
         `}
         {...props} // allows defining more css rules from container
     >
@@ -162,35 +170,42 @@ export const NoteBox: React.FunctionComponent<{}> = props => (
             `}
         />
         {props.children}
-    </div>
+    </p>
 );
-export const CautionBox: React.FunctionComponent<{}> = props => (
-    <div
+export const WarningBox: React.FunctionComponent<{}> = props => (
+    // using <p> so that we get normal spacing when we intermix prose with the warning
+    <p
         css={css`
             display: flex;
-            background-color: #e5f9f0;
+            &,
+            * {
+                color: ${kTextOverWarningColor} !important;
+            }
+            background-color: ${kWarningBoxColor};
+            border-radius: ${kBorderRadiusForSpecialBlocks};
             padding: ${kDialogPadding};
-            margin-top: ${kDialogPadding};
+            font-weight: 500;
         `}
         {...props} // allows defining more css rules from container
     >
         <WarningIcon
-            color="primary"
             css={css`
                 margin-right: ${kDialogPadding};
+                color: ${kTextOverWarningColor};
             `}
         />
         {props.children}
-    </div>
+    </p>
 );
 
 export const ErrorBox: React.FunctionComponent<{}> = props => (
-    <div
+    // using <p> so that we get normal spacing when we intermix prose with the warning
+    <p
         css={css`
             display: flex;
             background-color: ${kErrorBoxColor};
+            border-radius: ${kBorderRadiusForSpecialBlocks};
             padding: ${kDialogPadding};
-            margin-top: ${kDialogPadding};
             &,
             * {
                 color: white;
@@ -204,5 +219,5 @@ export const ErrorBox: React.FunctionComponent<{}> = props => (
             `}
         />
         {props.children}
-    </div>
+    </p>
 );

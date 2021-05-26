@@ -11,13 +11,10 @@ import {
 import "./TeamCollectionSettingsPanel.less";
 import theme from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
-import { kBloomBlue } from "../bloomMaterialUITheme";
 
 import BloomButton from "../react_components/bloomButton";
 
-import StarIcon from "@material-ui/icons/Star";
-import { CreateTeamCollectionDialog } from "./CreateTeamCollection";
-//import joiningImage from "../images/joining-team-collection.png";
+import { WarningBox } from "../react_components/BloomDialog/commonDialogComponents";
 
 // The contents of the Team Collection panel of the Settings dialog.
 
@@ -29,28 +26,20 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
 
     const intro: JSX.Element = (
         <div>
-            <div
-                css={css`
-                    background-color: ${kBloomBlue};
-                    padding: 10px;
-                    margin-bottom: 21px !important;
-                    &,
-                    a {
-                        color: white !important;
-                    }
-                `}
-            >
-                <StarIcon /> This is an <strong>experimental</strong> feature.
-                Please contact us at{" "}
-                <a
-                    href="mailto:experimental@bloomlibrary.org?subject= Our interest in Team Collections"
-                    target="blank"
-                >
-                    experimental@bloomlibrary.org
-                </a>{" "}
-                so that we can talk over your needs and make sure that this
-                feature is ready for you.
-            </div>
+            <WarningBox>
+                <span>
+                    This is an <strong>experimental</strong> feature. Please
+                    contact us at{" "}
+                    <a
+                        href="mailto:experimental@bloomlibrary.org?subject= Our interest in Team Collections"
+                        target="blank"
+                    >
+                        experimental@bloomlibrary.org
+                    </a>{" "}
+                    so that we can talk over your needs and make sure that this
+                    feature is ready for you.
+                </span>
+            </WarningBox>
             <P
                 l10nKey="TeamCollection.Intro"
                 l10nParam0="https://docs.google.com/document/d/1DOhy7hnmG37NzcQN8oP6NkXW_X3WU7YH4ez_P1hV1mo/edit?usp=sharing"

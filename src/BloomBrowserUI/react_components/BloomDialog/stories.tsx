@@ -14,8 +14,11 @@ import {
 } from "./BloomDialog";
 import { Button, CircularProgress } from "@material-ui/core";
 import {
+    WarningBox,
     DialogCancelButton,
-    DialogCloseButton
+    DialogCloseButton,
+    ErrorBox,
+    NoteBox
 } from "./commonDialogComponents";
 
 storiesOf("Bloom Dialog", module)
@@ -106,16 +109,20 @@ storiesOf("Bloom Dialog", module)
                             borders of the dialog box. This will overflow which
                             should lead to a vertical scroll bar.
                         </p>
+                        <WarningBox>Don't step on Superman's cape.</WarningBox>
                         <p>
-                            Ea non consequat irure et elit enim laboris fugiat
-                            ipsum. Lorem ipsum velit ut duis ex magna aliquip
-                            quis. Magna incididunt ullamco qui in aliquip. Est
-                            anim nisi aute cupidatat elit voluptate ut aute quis
-                            esse excepteur. Deserunt irure eiusmod occaecat nisi
-                            est exercitation. Reprehenderit excepteur excepteur
-                            cupidatat nisi esse nisi. Nostrud excepteur irure
-                            incididunt nisi velit voluptate velit proident.
-                        </p>{" "}
+                            I notice at the moment that the spacing between
+                            these paragraphs and special boxes is messed up.
+                        </p>
+                        <NoteBox>
+                            The Broncos will have a winning season some year.
+                        </NoteBox>
+                        <p>
+                            Est anim nisi aute cupidatat elit voluptate ut aute
+                            quis esse excepteur. Deserunt irure eiusmod occaecat
+                            nisi est exercitation.
+                        </p>
+                        <ErrorBox>Abandon all hope.</ErrorBox>
                         <p>
                             Ea non consequat irure et elit enim laboris fugiat
                             ipsum. Lorem ipsum velit ut duis ex magna aliquip
