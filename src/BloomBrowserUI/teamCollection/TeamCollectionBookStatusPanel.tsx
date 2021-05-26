@@ -43,59 +43,62 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [busy, setBusy] = useState(false);
     React.useEffect(() => {
         var lockedByMe = false;
-        BloomApi.get(
-            "teamCollection/currentBookStatus",
-            data => {
-                const bookStatus = data.data;
-                if (bookStatus.problem) {
-                    setState("problem");
-                } else if (bookStatus.changedRemotely) {
-                    setState("needsReload");
-                } else if (bookStatus.who) {
-                    // locked by someone
-                    setLockedBy(bookStatus.who);
-                    const lockedByFullName = `${bookStatus.whoFirstName} ${bookStatus.whoSurname}`.trim();
-                    setLockedByDisplay(lockedByFullName || lockedBy);
-                    if (
-                        bookStatus.who === bookStatus.currentUser &&
-                        bookStatus.where === bookStatus.currentMachine
-                    ) {
-                        setState("lockedByMe");
-                        lockedByMe = true;
-                    } else {
-                        const isCurrentUser =
-                            bookStatus.who === bookStatus.currentUser;
-                        if (isCurrentUser) {
-                            setState("lockedByMeElsewhere");
-                        } else {
-                            setState("locked");
-                        }
-                        setLockedWhen(bookStatus.when);
-                        setLockedMachine(bookStatus.where);
-                    }
-                } else {
-                    setState("unlocked");
-                }
-                if (bookStatus.disconnected) {
-                    if (lockedByMe) {
-                        setState("lockedByMeDisconnected");
-                    } else {
-                        setState("disconnected");
-                    }
-                }
-            },
-            err => {
-                // something went wrong. Maybe not registered. Already reported to Sentry, we don't need another throw
-                // here, with less information. Displaying the message may tell the user something. I don't think it's
-                // worth localizing the fallback message here, which is even less likely to be seen.
-                // Enhance: we could display a message telling them to register and perhaps a link to the registration dialog, if the error is 'not registered'.
-                setError(
-                    err?.response?.statusText ??
-                        "Bloom could not determine the status of this book"
-                );
-                setState("error");
-            }
-        );
+        // BloomApi.get(
+        //     "teamCollection/currentBookStatus",
+        //     data => {
+        //         const bookStatus = data.data;
+        //         if (bookStatus.problem) {
+        //             setState("problem");
+        //         } else if (bookStatus.changedRemotely) {
+        //             setState("needsReload");
+        //         } else if (bookStatus.who) {
+        //             // locked by someone
+        //             setLockedBy(bookStatus.who);
+        //             const lockedByFullName = `${bookStatus.whoFirstName} ${bookStatus.whoSurname}`.trim();
+        //             setLockedByDisplay(lockedByFullName || lockedBy);
+        //             if (
+        //                 bookStatus.who === bookStatus.currentUser &&
+        //                 bookStatus.where === bookStatus.currentMachine
+        //             ) {
+        //                 setState("lockedByMe");
+        //                 lockedByMe = true;
+        //             } else {
+        //                 const isCurrentUser =
+        //                     bookStatus.who === bookStatus.currentUser;
+        //                 if (isCurrentUser) {
+        //                     setState("lockedByMeElsewhere");
+        //                 } else {
+        //                     setState("locked");
+        //                 }
+        //                 setLockedWhen(bookStatus.when);
+        //                 setLockedMachine(bookStatus.where);
+        //             }
+        //         } else {
+        //             setState("unlocked");
+        //         }
+        //         if (bookStatus.disconnected) {
+        //             if (lockedByMe) {
+        //                 setState("lockedByMeDisconnected");
+        //             } else {
+        //                 setState("disconnected");
+        //             }
+        //         }
+        //     },
+        //     err => {
+        //         // something went wrong. Maybe not registered. Already reported to Sentry, we don't need another throw
+        //         // here, with less information. Displaying the message may tell the user something. I don't think it's
+        //         // worth localizing the fallback message here, which is even less likely to be seen.
+        //         // Enhance: we could display a message telling them to register and perhaps a link to the registration dialog, if the error is 'not registered'.
+        //         setError(
+        //             err?.response?.statusText ??
+        //                 "Bloom could not determine the status of this book"
+        //         );
+        //         setState("error");
+        //     }
+        // );
+        setState("problem"); // don't commit this!!!
+        // states to test: initializing unlocked locked lockedByMe lockedByMeElsewhere
+        //      needsReload problem disconnected lockedByMeDisconnected error
     }, [reload]);
 
     useSubscribeToWebSocketForEvent("bookStatus", "reload", () =>
@@ -109,7 +112,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         false
     );
 
-    let avatar;
+    let avatar: JSX.Element;
     if (state.startsWith("locked")) {
         avatar = (
             <BloomAvatar

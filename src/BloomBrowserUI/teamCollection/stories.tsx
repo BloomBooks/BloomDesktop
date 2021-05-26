@@ -56,6 +56,12 @@ const checkinButton = getBloomButton(
     "Check In.svg"
 );
 
+const reloadButton = getBloomButton(
+    "Reload",
+    "TeamCollection.Reload",
+    "reload-button"
+);
+
 const avatar = (lockedByMe: boolean) => (
     <BloomAvatar
         email={"test@example.com"}
@@ -63,6 +69,8 @@ const avatar = (lockedByMe: boolean) => (
         borderColor={lockedByMe && theme.palette.warning.main}
     />
 );
+
+let emptyAvatarForProblemState: JSX.Element;
 
 storiesOf("Team Collection components/StatusPanelCommon", module)
     .add("Available", () =>
@@ -110,6 +118,18 @@ storiesOf("Team Collection components/StatusPanelCommon", module)
                 children={getLockedInfoChild(
                     "Fred checked out this book on 10 February 2021."
                 )}
+            />
+        )
+    )
+    .add("Problem state", () =>
+        testPage(
+            <StatusPanelCommon
+                lockState="problem"
+                title="The Team Collection folder received a changed version of the book you were editing."
+                subTitle="The Checkin/Checkout system should normally prevent this, but it has happened. Bloom cannot automatically join the work that came in with the work you were doing; you will need Bloom team support for that. Bloom will move your version of the book to the Team Collection Lost & Found when you Reload."
+                icon={emptyAvatarForProblemState}
+                children={getLockedInfoChild("")}
+                button={reloadButton}
             />
         )
     )
