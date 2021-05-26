@@ -4,8 +4,14 @@
 @panel-button-height: 40px;
 @panel-button-width: 180px;
 @panel-button-padding: 15px;
+@panel-button-top-padding: 10px;
 @panel-button-icon-size: 28px;
 @panel-width: 560px; // roughly A5 width
+@panel-height: 180px;
+@panel-top-padding: 12px;
+@panel-left-margin-noIcon: 20px;
+@main-title-height: 52px;
+@main-title-bottom-shim: 6px; // equalizes spacing around main-title
 
 .status-panel {
     max-width: @panel-width;
@@ -16,7 +22,7 @@
         display: flex;
         flex-direction: row;
         flex: 1;
-        padding-top: 12px;
+        padding-top: @panel-top-padding;
         .icon-or-avatar {
             width: @icon-size;
             padding-top: @icon-top-padding;
@@ -32,6 +38,24 @@
         .panel-titles {
             display: flex;
             flex-direction: column;
+            // In a few cases, there won't be an .icon-or-avatar div (e.g. "problem" state).
+            // If that's the case, we need a bit of margin.
+            &:first-child {
+                margin-left: @panel-left-margin-noIcon;
+            }
+            .main-title {
+                max-height: @main-title-height;
+                // If the main title runs to more than two lines, we allow a scroll bar.
+                overflow-y: auto;
+                // We don't need much here, but without this the spacing between the title lines
+                // is more than the space between the main and sub titles.
+                margin-bottom: @main-title-bottom-shim;
+            }
+            .sub-title {
+                max-height: @panel-height - @main-title-height;
+                // If absolutely necessary, we allow a scroll bar in the subtitle.
+                overflow-y: auto;
+            }
         }
         .status-panel-menu {
             display: flex;
@@ -53,6 +77,7 @@
         height: @panel-button-height;
         padding-right: @panel-button-padding;
         padding-bottom: @panel-button-padding;
+        padding-top: @panel-button-top-padding;
         align-self: flex-end;
         display: flex;
         justify-content: flex-end;
