@@ -338,7 +338,7 @@ export default class OverflowChecker {
                 // BL-1261: don't want the typed-in box to be marked overflow just because it made another box
                 // go past the margins
                 // $box.addClass('overflow'); // probably typing in the focused element caused this
-                if (quizPage) {
+                if (quizPage.length) {
                     // We want to ignore overflow on quiz pages.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9952.
                     return;
                 }
