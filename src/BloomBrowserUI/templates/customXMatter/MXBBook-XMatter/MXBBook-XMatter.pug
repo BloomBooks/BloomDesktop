@@ -23,10 +23,10 @@ mixin mxb-titlePage
 			label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()')
 				| The contributions made by writers, illustrators, editors, etc., in {lang}
 			+editable(kLanguageForPrototypeOnly).contributions.OriginalContributions-style.bloom-copyFromOtherLanguageIfNecessary(data-book='originalContributions')
-		+field-prototypeDeclaredExplicity("N1")#localizedAcknowledgments
-			label.bubble
-				| Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.
-			+editable(kLanguageForPrototypeOnly).versionAcknowledgments.LocalizedAcknowledgments-style.bloom-copyFromOtherLanguageIfNecessary(data-book="versionAcknowledgments")
+		+field-prototypeDeclaredExplicity("N1")#originalAcknowledgments
+			label.bubble Original (or Shell) Acknowledgments in {lang}
+			+editable(kLanguageForPrototypeOnly).OriginalAcknowledgments-style.bloom-copyFromOtherLanguageIfNecessary(data-book='originalAcknowledgments')
+				| {Original Acknowledgments}
 		+field-prototypeDeclaredExplicity("N1")#funding
 			label.bubble Use this to acknowledge any funding agencies.
 			+editable(kLanguageForPrototypeOnly).funding.Funding-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
@@ -37,10 +37,10 @@ mixin mxb-nationalSummaryCreditsPage-back-title-page
 	+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits', data-xmatter-page='credits')#69EF35AE-5BF1-49F1-89E7-2A932DAD932C
 		+field-mono-meta("N1","insideCredits").NationalLanguage-style.bloom-copyFromOtherLanguageIfNecessary
 			label.bubble If your publication is not diglot, you can include a national language summary here, which is the back of the title page.
-		+field-prototypeDeclaredExplicity("N1")#originalAcknowledgments
-			label.bubble Original (or Shell) Acknowledgments in {lang}
-			+editable(kLanguageForPrototypeOnly).OriginalAcknowledgments-style.bloom-copyFromOtherLanguageIfNecessary(data-book='originalAcknowledgments')
-				| {Original Acknowledgments}
+		+field-prototypeDeclaredExplicity("N1")#localizedAcknowledgments
+			label.bubble
+				| Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.
+			+editable(kLanguageForPrototypeOnly).versionAcknowledgments.LocalizedAcknowledgments-style.bloom-copyFromOtherLanguageIfNecessary(data-book="versionAcknowledgments")
 		+block-licenseAndCopyright
 		//- Here code puts in something like "From the original Copyright Pratham Books 2016. CC-BY. Any license notes here."
 		.copyright(data-derived="originalCopyrightAndLicense").Credits-Page-style.bloom-copyFromOtherLanguageIfNecessary
