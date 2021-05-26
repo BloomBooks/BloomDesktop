@@ -74,14 +74,37 @@ namespace Bloom.TeamCollection
 			var bookFolderName = Path.GetFileName(sourceBookFolderPath);
 			var bookPath = GetPathToBookFileInRepo(bookFolderName);
 
+			string pathToWrite = bookPath;
+
 			if (inLostAndFound)
 			{
 				bookPath = AvailableLostAndFoundPath(bookFolderName);
+				pathToWrite = bookPath;
 			}
 			else
 			{
 				// Make sure the repo directory that holds books exists
-				Directory.CreateDirectory(Path.GetDirectoryName(bookPath));
+				var bookDirectoryPath = Path.GetDirectoryName(bookPath);
+				Directory.CreateDirectory(bookDirectoryPath);
+				if (RobustFile.Exists(bookPath))
+				{
+					// We'll write the book initially to a new zip file. This may help with
+					// the problem of the main file being temporarily locked from a recent
+					// operation, such as checking out and then immediately in again (BL-9926).
+					// Also, if there is any sort of crash while writing the book, we won't
+					// leave a corrupt, incomplete zip file pretending to be a valid book.
+					// I'm not entirely happy with putting the tmp file in the shared
+					// directory. It's conceivable that Dropbox might try to replicate it.
+					// But File.Replace() won't handle things on different volumes,
+					// and we can't count on the system temp folder being on the same volume.
+					// In fact, in the LAN case, the shared directory may be the ONLY place
+					// this user is authorized to write on the destination volume.
+					// We could use delete and copy when they are on different volumes, but
+					// Dropbox sometimes throws up user warnings when Bloom deletes a Dropbox file;
+					// it doesn't seem to do so with Replace(). So this is the best option
+					// I can find.
+					pathToWrite = AvailablePath(bookFolderName, bookDirectoryPath, ".tmp");
+				}
 			}
 
 			lock (_lockObject)
@@ -90,18 +113,24 @@ namespace Bloom.TeamCollection
 				_writeBookInProgress = true;
 			}
 
-			RetryUtility.Retry(() =>
+			try
 			{
-				// Although there's quite a bit of use of RobustFile in the methods called here,
-				// We've found it's still possible to find the repo file locked, for example,
-				// clicking the checkin/checkout button very fast it seems we may still have
-				// the file locked from writing the status as we check it out when we try to
-				// check it in.
-				var zipFile = new BloomZipFile(bookPath);
+				var zipFile = new BloomZipFile(pathToWrite);
 				zipFile.AddDirectory(sourceBookFolderPath, sourceBookFolderPath.Length + 1, null, progressCallback);
 				zipFile.SetComment(status.WithCollectionId(CollectionId).ToJson());
 				zipFile.Save();
-			});
+			}
+			catch (Exception)
+			{
+				RobustFile.Delete(pathToWrite); // try to clean up
+				throw;
+			}
+
+			if (pathToWrite != bookPath)
+			{
+				RobustFile.Replace(pathToWrite, bookPath, null);
+			}
+
 			lock (_lockObject)
 			{
 				_lastWriteBookTime = DateTime.Now;
@@ -118,14 +147,20 @@ namespace Bloom.TeamCollection
 		{
 			string bookPath;
 			var lfPath = Path.Combine(_repoFolderPath, "Lost and Found");
-			Directory.CreateDirectory(lfPath);
+			return AvailablePath(bookFolderName, lfPath, ".bloom");
+		}
+
+		private static string AvailablePath(string bookFolderName, string folderName, string extension)
+		{
+			string bookPath;
+			Directory.CreateDirectory(folderName);
 			int counter = 0;
 			do
 			{
 				counter++;
 				// Don't use ChangeExtension here, bookFolderName may have arbitrary period
 				bookPath =
-					Path.Combine(lfPath, bookFolderName + (counter == 1 ? "" : counter.ToString())) + ".bloom";
+					Path.Combine(folderName, bookFolderName + (counter == 1 ? "" : counter.ToString())) + extension;
 			} while (RobustFile.Exists(bookPath));
 
 			return bookPath;
@@ -389,6 +424,11 @@ namespace Bloom.TeamCollection
 		{
 			lock (_lockObject)
 			{
+				// not interested in changes to tmp files.
+				// (If by any chance a .tmp file gets propagated to another system, we're
+				// still not interested in it, so harmless to respond 'true'.)
+				if (Path.GetExtension(path) == ".tmp")
+					return true;
 				// Not the book we most recently wrote, so not an 'own write'.
 				// Note that our zip library sometimes creates a temp file by adding a suffix to the
 				// path, so it's very likely that a recent write of a path starting with the name of the book we
