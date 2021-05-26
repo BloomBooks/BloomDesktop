@@ -6,6 +6,7 @@ using Bloom.Properties;
 using System.Linq;
 using L10NSharp;
 using System.Windows.Forms;
+using Bloom.web.controllers;
 
 namespace Bloom
 {
@@ -70,6 +71,8 @@ namespace Bloom
 			public HtmlThumbNailer HtmlThumbnailer => _container.Resolve<HtmlThumbNailer>();
 
 			public BookThumbNailer BookThumbNailer => _container.Resolve<BookThumbNailer>();
+
+			internal ProblemReportApi ProblemReportApi => _container.Resolve<ProblemReportApi>();
 
 			public void Dispose()
 			{
