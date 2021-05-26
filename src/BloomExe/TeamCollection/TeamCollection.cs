@@ -81,7 +81,7 @@ namespace Bloom.TeamCollection
 		/// <param name="newStatus">Updated status to write in new book</param>
 		/// <param name="inLostAndFound">See PutBook</param>
 		/// <remarks>Usually PutBook should be used; this method is meant for use by TeamCollection methods.</remarks>
-		protected abstract void PutBookInRepo(string sourceBookFolderPath, BookStatus newStatus, bool inLostAndFound = false);
+		protected abstract void PutBookInRepo(string sourceBookFolderPath, BookStatus newStatus, bool inLostAndFound = false, Action<float> progressCallback = null);
 
 		/// <summary>
 		/// Returns null if connection to repo is fine, otherwise, a message describing the problem.
@@ -138,7 +138,7 @@ namespace Bloom.TeamCollection
 		///     if necessary generating a unique name for it. If false, put it into the main repo
 		///     folder, overwriting any existing book.</param>
 		/// <returns>Updated book status</returns>
-		public BookStatus PutBook(string folderPath, bool checkin = false, bool inLostAndFound = false)
+		public BookStatus PutBook(string folderPath, bool checkin = false, bool inLostAndFound = false, Action<float> progressCallback = null)
 		{
 			var bookFolderName = Path.GetFileName(folderPath);
 			var checksum = MakeChecksum(folderPath);
@@ -151,7 +151,7 @@ namespace Bloom.TeamCollection
 			if (checkin)
 				status = status.WithLockedBy(null);
 			var oldName = GetLocalStatus(bookFolderName).oldName;
-			PutBookInRepo(folderPath, status, inLostAndFound);
+			PutBookInRepo(folderPath, status, inLostAndFound, progressCallback);
 			// We want the local status to reflect the latest repo status.
 			// In particular, it should have the correct checksum, and if
 			// we've renamed the book, we should no longer record the old name.

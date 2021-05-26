@@ -69,7 +69,7 @@ namespace Bloom.TeamCollection
 		///     folder, overwriting any existing book.</param>
 		/// <returns>The book's new status, with the new VersionCode</returns>
 		protected override void PutBookInRepo(string sourceBookFolderPath, BookStatus status,
-			bool inLostAndFound = false)
+			bool inLostAndFound = false, Action<float> progressCallback = null)
 		{
 			var bookFolderName = Path.GetFileName(sourceBookFolderPath);
 			var bookPath = GetPathToBookFileInRepo(bookFolderName);
@@ -98,7 +98,7 @@ namespace Bloom.TeamCollection
 				// the file locked from writing the status as we check it out when we try to
 				// check it in.
 				var zipFile = new BloomZipFile(bookPath);
-				zipFile.AddDirectory(sourceBookFolderPath, sourceBookFolderPath.Length + 1, null);
+				zipFile.AddDirectory(sourceBookFolderPath, sourceBookFolderPath.Length + 1, null, progressCallback);
 				zipFile.SetComment(status.WithCollectionId(CollectionId).ToJson());
 				zipFile.Save();
 			});
