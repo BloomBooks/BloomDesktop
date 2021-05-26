@@ -19,6 +19,7 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using SIL.Reporting;
 using DesktopAnalytics;
+using SIL.Code;
 
 namespace Bloom.TeamCollection
 {
@@ -1187,7 +1188,15 @@ namespace Bloom.TeamCollection
 				return "";
 			}
 			var sourceBookPath = Path.Combine(folderPath, sourceBookName);
-			return Book.Book.MakeVersionCode(RobustFile.ReadAllText(sourceBookPath), sourceBookPath);
+			string result = null;
+			// Wish we could retry at the level of reading individual files, but
+			// each bit we successfully read modifies the state of the sha.
+			// If something goes wrong, all we can really do is start over.
+			RetryUtility.Retry(() =>
+			{
+				result = Book.Book.MakeVersionCode(RobustFile.ReadAllText(sourceBookPath), sourceBookPath);
+			});
+			return result;
 		}
 
 		/// <summary>
