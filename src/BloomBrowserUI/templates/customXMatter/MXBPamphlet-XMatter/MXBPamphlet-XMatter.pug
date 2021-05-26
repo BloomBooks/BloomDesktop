@@ -26,8 +26,8 @@ mixin mxb-combinedTitleCreditsPage-inside-front-cover
 				label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()')
 					| The contributions made by writers, illustrators, editors, etc., in {lang}
 			+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Credits-Page-style(data-book='originalContributions')
-		+field-acknowledgments-localizedVersion
 		+field-acknowledgments-originalVersion
+		+field-acknowledgments-localizedVersion
 		+field-prototypeDeclaredExplicity("N1")#funding
 			label.bubble Use this to acknowledge any funding agencies.
 			+editable(kLanguageForPrototypeOnly).funding.Credits-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')

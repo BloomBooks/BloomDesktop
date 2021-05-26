@@ -10,6 +10,8 @@ In order to release a new Custom XMatter pack:
 3. Send the BloomPack to testers via Dropbox or GoogleDrive.
 4. Send the BloomPack to the user via Dropbox or GoogleDrive (or attach it to a YouTrack issue and 'at' mention
    the user).
+5. Add the new BloomPack to the Bloom Team's GoogleDrive "Custom xMatter" folder
+    (if you didn't already in steps 3 or 4).
 
 However, note the following for the Afghan xmatters (Dari and Pashti):
 I (AP) tried to give SIL LEAD updated packs following the above in May 2020.
