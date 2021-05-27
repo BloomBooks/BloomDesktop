@@ -278,6 +278,13 @@ namespace Bloom.TeamCollection
 		{
 			try
 			{
+				// Right before calling this API, the status panel makes a change that
+				// should make the progress bar visible. But this method is running on
+				// the UI thread so without this call it won't appear until later, when
+				// we have Application.DoEvents() as part of reporting progress. We do
+				// quite a bit on large books before the first file is written to the
+				// zip, so one more DoEvents() here lets the bar appear at once.
+				Application.DoEvents();
 				_bookSelection.CurrentSelection.Save();
 				if (!_tcManager.CheckConnection())
 				{
