@@ -693,15 +693,19 @@ namespace Bloom
 			catch (System.Reflection.TargetInvocationException bad)
 			{
 				if (bad.InnerException is System.AccessViolationException)
-					Logger.ShowUserATextFileRelatedToCatastrophicError(bad.InnerException);
+					Logger.WriteError("Exception caught at outermost level of Bloom: ", bad.InnerException);
 				else
-					Logger.ShowUserATextFileRelatedToCatastrophicError(bad);
-				System.Environment.FailFast("TargetInvocationException");
+					Logger.WriteError("Exception caught at outermost level of Bloom:", bad);
+				var exceptMsg = "TargetInvocationException";
+				try { SentrySdk.CaptureException(bad); } catch (Exception e) { exceptMsg += $" (SentrySdk.CaptureException failed: {e})"; }
+				System.Environment.FailFast(exceptMsg);
 			}
 			catch (System.AccessViolationException nasty)
 			{
-				Logger.ShowUserATextFileRelatedToCatastrophicError(nasty);
-				System.Environment.FailFast("AccessViolationException");
+				Logger.WriteError("Exception caught at outermost level of Bloom: ", nasty);
+				var exceptMsg = "AccessViolationException";
+				try { SentrySdk.CaptureException(nasty); } catch (Exception e) { exceptMsg += $" (SentrySdk.CaptureException failed: {e})"; }
+				System.Environment.FailFast(exceptMsg);
 			}
 
 			Settings.Default.Save();
