@@ -47,6 +47,9 @@ namespace Bloom.Collection
 			_language1Name.UseMnemonic = false;	// Allow & to be part of the language display names.
 			_language2Name.UseMnemonic = false;	// This may be unlikely, but can't be ruled out.
 			_language3Name.UseMnemonic = false;	// See https://issues.bloomlibrary.org/youtrack/issue/BL-9919.
+			_language1FontLabel.UseMnemonic = false;
+			_language2FontLabel.UseMnemonic = false;
+			_language3FontLabel.UseMnemonic = false;
 
 			if (_collectionSettings.IsSourceCollection)
 			{
