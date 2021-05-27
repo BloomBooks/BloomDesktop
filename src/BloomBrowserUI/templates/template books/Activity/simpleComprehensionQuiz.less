@@ -183,9 +183,12 @@
 .bloom-editable.QuizQuestion-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
     margin-right: 24px;
 }
-// Also hide the label except in the focused item.
-.bloom-editable.QuizAnswer-style:not(.cke_focus)[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after,
-.bloom-editable.QuizQuestion-style:not(.cke_focus)[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
+// Also hide the label except in the focused item (but only in editMode, where we have this label and other rules about it.
+// In PDF, we don't want an :after at all...will mess up page layout. (BL-10019).
+.editMode
+    .bloom-editable.QuizAnswer-style:not(.cke_focus)[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after,
+.editMode
+    .bloom-editable.QuizQuestion-style:not(.cke_focus)[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
     content: "";
 }
 
