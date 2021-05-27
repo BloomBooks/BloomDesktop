@@ -606,8 +606,7 @@ namespace Bloom.TeamCollection
 		/// <returns></returns>
 		internal List<string> FilesToMonitorForCollection()
 		{
-			var collectionName = Path.GetFileName(_localCollectionFolder);
-			var files = RootLevelCollectionFilesIn(_localCollectionFolder, collectionName);
+			var files = RootLevelCollectionFilesIn(_localCollectionFolder);
 			AddFiles(files, "Allowed Words");
 			AddFiles(files, "Sample Texts");
 			return files.Select(f => Path.Combine(_localCollectionFolder, f)).ToList();
@@ -778,9 +777,8 @@ namespace Bloom.TeamCollection
 			return result;
 		}
 
-		public static List<string> RootLevelCollectionFilesIn(string folder, string collectionNameOrNull = null)
+		public static List<string> RootLevelCollectionFilesIn(string folder)
 		{
-			var collectionName = collectionNameOrNull ?? Path.GetFileName(folder);
 			var files = new List<string>();
 			files.Add(Path.GetFileName(CollectionPath(folder)));
 			foreach (var file in new[] {"customCollectionStyles.css", "configuration.txt"})
@@ -821,8 +819,7 @@ namespace Bloom.TeamCollection
 			try
 			{
 				_updatingCollectionFiles = true;
-				var collectionName = Path.GetFileName(localCollectionFolder);
-				var files = RootLevelCollectionFilesIn(localCollectionFolder, collectionName);
+				var files = RootLevelCollectionFilesIn(localCollectionFolder);
 				// Review: there would be some benefit to atomicity in saving all of this to a single zip file.
 				// But it feels cleaner to have a distinct repo store for each folder we need.
 				PutCollectionFiles(files.ToArray());

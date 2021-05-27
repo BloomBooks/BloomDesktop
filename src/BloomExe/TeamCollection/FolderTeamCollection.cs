@@ -289,8 +289,7 @@ namespace Bloom.TeamCollection
 				return;
 			try
 			{
-				RobustZip.ExtractFolderFromZip(destFolder, collectionZipPath, () => new HashSet<string>(RootLevelCollectionFilesIn(destFolder,
-				Path.GetFileName(GetLocalCollectionNameFromTcName(repoFolder)))));
+				RobustZip.ExtractFolderFromZip(destFolder, collectionZipPath, () => new HashSet<string>(RootLevelCollectionFilesIn(destFolder)));
 			}
 			catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
 			{
@@ -677,7 +676,8 @@ namespace Bloom.TeamCollection
 				});
 		}
 
-		private static string _joinCollectionPath;
+		private static string _joinCollectionPath; // when joining a TC, the path to the repo we're joining
+		private static string _joinCollectionName; // when joining a TC, the collection name derived from the temporary Settings object.
 		private static string _newCollectionToJoin;
 
 		// Create a new local collection from the team collection at the specified path.
@@ -693,9 +693,9 @@ namespace Bloom.TeamCollection
 			_joinCollectionPath = path;
 			_newCollectionToJoin = null; // set if JoinCollectionTeam called successfully
 			var repoFolder = Path.GetDirectoryName(path);
-			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(repoFolder));
+			_joinCollectionName = tcManager.Settings.CollectionName;
 			var localCollectionFolder =
-				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, collectionName);
+				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, _joinCollectionName);
 			var isExistingCollection = Directory.Exists(localCollectionFolder);
 			var tcLinkPath = TeamCollectionManager.GetTcLinkPathFromLcPath(localCollectionFolder);
 			var isAlreadyTcCollection = isExistingCollection &&
@@ -710,7 +710,7 @@ namespace Bloom.TeamCollection
 
 			using (var dlg = new ReactDialog("JoinTeamCollectionDialog", new
 			{
-				collectionName,
+				collectionName = _joinCollectionName,
 				existingCollection = isExistingCollection,
 				isAlreadyTcCollection,
 				isCurrentCollection,
@@ -742,9 +742,8 @@ namespace Bloom.TeamCollection
 		public static void JoinCollectionTeam()
 		{
 			var repoFolder = Path.GetDirectoryName(_joinCollectionPath);
-			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(repoFolder));
 			var localCollectionFolder =
-				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, collectionName);
+				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, _joinCollectionName);
 			var firstTimeJoin = !Directory.Exists(localCollectionFolder) || !RobustFile.Exists(TeamCollectionManager.GetTcLinkPathFromLcPath(localCollectionFolder));
 			// Most of the collection settings files will be copied later when we create the repo
 			// in TeamRepo.MakeInstance() and call CopyRepoCollectionFilesToLocal.

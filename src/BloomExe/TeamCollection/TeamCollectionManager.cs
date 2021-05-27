@@ -371,7 +371,7 @@ namespace Bloom.TeamCollection
 
 		public string PlannedRepoFolderPath(string repoFolderParentPath)
 		{
-			return Path.Combine(repoFolderParentPath, Path.GetFileName(_localCollectionFolder)+ " - TC");
+			return Path.Combine(repoFolderParentPath, Settings.CollectionName + " - TC");
 		}
 
 		public const string TeamCollectionLinkFileName = "TeamCollectionLink.txt";
