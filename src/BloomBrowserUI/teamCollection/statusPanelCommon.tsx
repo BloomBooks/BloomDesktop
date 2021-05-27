@@ -34,6 +34,11 @@ export const StatusPanelCommon: React.FunctionComponent<IStatusPanelProps> = (
         palette: {
             primary: {
                 main: buttonColor
+            },
+            action: {
+                // Yagni: currently the only time we disable a button is when using the warning color
+                // If we ever disable the other version, we probably want primary.dark here.
+                disabledBackground: outerTheme.palette.warning.dark
             }
         }
     });

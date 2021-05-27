@@ -334,7 +334,8 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                             "TeamCollection.CheckIn",
                             "checkin-button",
                             "Check In.svg",
-                            checkinHandler
+                            checkinHandler,
+                            progress > 0
                         )}
                     >
                         <div
@@ -442,13 +443,14 @@ export const getBloomButton = (
     l10nKey: string,
     buttonClass: string,
     icon?: string,
-    clickHandler?: () => void
+    clickHandler?: () => void,
+    disabled?: boolean
 ) => (
     <BloomButton
         iconBeforeText={icon ? <img src={icon} /> : <div />}
         l10nKey={l10nKey}
         hasText={true}
-        enabled={true}
+        enabled={!disabled}
         className={buttonClass}
         onClick={clickHandler}
         temporarilyDisableI18nWarning={true}
