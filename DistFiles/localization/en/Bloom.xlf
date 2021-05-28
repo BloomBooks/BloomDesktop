@@ -2220,6 +2220,10 @@
         <source xml:lang="en">Choice of Topic</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.CopyBookStatistics" sil:dynamic="true">
+        <source xml:lang="en">COPY BOOK STATS</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.CopyBookStatistics</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.FoThisLevel" sil:dynamic="true">
         <source xml:lang="en">For this Level</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.FoThisLevel</note>

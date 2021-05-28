@@ -212,3 +212,25 @@ div.checkbox-and-label {
     opacity: 0.4;
     pointer-events: none;
 }
+
+@smallGap: 4px;
+.copyBookStats {
+    p {
+        cursor: pointer;
+        display: inline-flex;
+        flex-direction: row;
+        align-items: center;
+        // Provide a small amount of space between the svg image and the text.
+        // (Trick stolen from https://coryrylan.com/blog/css-gap-space-with-flexbox.)
+        // "gap: @smallGap;" would be a lot simpler, but doesn't work until FF 63
+        margin: -@smallGap 0 0 -@smallGap;
+        width: calc(100% + @smallGap);
+        svg {
+            max-width: 17px;
+            max-height: 20px;
+        }
+        * {
+            margin: @smallGap 0 0 @smallGap;
+        }
+    }
+}
