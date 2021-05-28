@@ -1182,6 +1182,7 @@ export class ReaderToolsModel {
     }
 
     private gettingTextOfWholeBook = false;
+    private bookStatistics = {};
 
     public displayBookTotals(): void {
         if (this.gettingTextOfWholeBook) {
@@ -1201,6 +1202,7 @@ export class ReaderToolsModel {
             return;
         }
 
+        this.bookStatistics = {};
         const pageStrings = _.values(this.pageIDToText);
 
         const pageElementsToCheck = this.getElementsToCheck();
@@ -1212,6 +1214,8 @@ export class ReaderToolsModel {
             .stringToSentences(pageText)
             .filter(x => x.isSentence);
         const sentenceFragmentsByPage = this.getSentences(pageStrings);
+        this.bookStatistics["levelNumber"] = this.levelNumber;
+        this.bookStatistics["pageCount"] = sentenceFragmentsByPage.length;
         this.updateActualCount(
             ReaderToolsModel.countSentences(sentences),
             this.maxSentencesPerPage(),
@@ -1285,6 +1289,13 @@ export class ReaderToolsModel {
             ReaderToolsModel.averageSentencesInPage(sentenceFragmentsByPage),
             this.maxAverageSentencesPerPage(),
             "actualAverageSentencesPerPage"
+        );
+    }
+
+    public copyLeveledReaderStatsToClipboard(): void {
+        BloomApi.postData(
+            "readers/ui/copyBookStatsToClipboard",
+            this.bookStatistics
         );
     }
 
@@ -1479,6 +1490,7 @@ export class ReaderToolsModel {
         // instead of tooLarge). That will mess things up going from the longer to the shorter.
         this.setPresenceOfClass(id, acceptable, "acceptable");
         this.setPresenceOfClass(id, !acceptable, "tooLarge");
+        this.bookStatistics[id] = actual;
     }
 
     public updateActualAverageCount(
@@ -1493,6 +1505,7 @@ export class ReaderToolsModel {
         // instead of tooLarge). That will mess things up going from the longer to the shorter.
         this.setPresenceOfClass(id, acceptable, "acceptable");
         this.setPresenceOfClass(id, !acceptable, "tooLarge");
+        this.bookStatistics[id] = average;
     }
 
     public static countSentences(sentences: TextFragment[]): number {
