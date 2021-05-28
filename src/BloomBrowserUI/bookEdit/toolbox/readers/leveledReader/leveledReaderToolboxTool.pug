@@ -117,3 +117,8 @@ html
 						a(href='api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=IllustrationSupport', data-i18n='EditTab.Toolbox.LeveledReaderTool.IllustrationSupport') Illustration Support
 					li
 						a(href='api/externalLink/leveledRTInfo/leveledReaderInfo-en.html?fragment=ChoiceOfTopic', data-i18n='EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic') Choice of Topic
+
+			div.copyBookStats(onclick='FrameExports.copyLeveledReaderStatsToClipboard();')
+				p
+					include ../../../../images/copy.svg
+					span(data-i18n='EditTab.Toolbox.LeveledReaderTool.CopyBookStatistics') Copy Book Stats

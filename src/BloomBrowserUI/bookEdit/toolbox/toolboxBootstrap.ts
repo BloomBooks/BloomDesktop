@@ -77,6 +77,13 @@ export function applyToolboxStateToPage() {
     applyToolboxStateToUpdatedPage();
 }
 
+export function copyLeveledReaderStatsToClipboard() {
+    const readerToolsModel = getTheOneReaderToolsModel();
+    if (readerToolsModel) {
+        readerToolsModel.copyLeveledReaderStatsToClipboard();
+    }
+}
+
 $(document).ready(() => {
     getTheOneToolbox().initialize();
 });
