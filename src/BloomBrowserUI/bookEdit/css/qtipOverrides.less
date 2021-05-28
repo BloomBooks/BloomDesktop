@@ -5,6 +5,10 @@
         padding-right: 20px;
         overflow-y: hidden !important;
         max-height: inherit;
+        // I have absolutely no idea why this makes any difference, since the element has no borders.
+        // But somehow without it things are out of alignment such that a few pixels are allowed
+        // to escape the overflow-y hidden above. And I can't find any more rational way to stop it.
+        box-sizing: border-box;
 
         .ui-sourceTextsForBubble {
             margin-top: 0;
