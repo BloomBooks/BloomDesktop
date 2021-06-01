@@ -19,6 +19,7 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using SIL.Reporting;
 using DesktopAnalytics;
+using SIL.Code;
 
 namespace Bloom.TeamCollection
 {
@@ -80,7 +81,7 @@ namespace Bloom.TeamCollection
 		/// <param name="newStatus">Updated status to write in new book</param>
 		/// <param name="inLostAndFound">See PutBook</param>
 		/// <remarks>Usually PutBook should be used; this method is meant for use by TeamCollection methods.</remarks>
-		protected abstract void PutBookInRepo(string sourceBookFolderPath, BookStatus newStatus, bool inLostAndFound = false);
+		protected abstract void PutBookInRepo(string sourceBookFolderPath, BookStatus newStatus, bool inLostAndFound = false, Action<float> progressCallback = null);
 
 		/// <summary>
 		/// Returns null if connection to repo is fine, otherwise, a message describing the problem.
@@ -137,7 +138,7 @@ namespace Bloom.TeamCollection
 		///     if necessary generating a unique name for it. If false, put it into the main repo
 		///     folder, overwriting any existing book.</param>
 		/// <returns>Updated book status</returns>
-		public BookStatus PutBook(string folderPath, bool checkin = false, bool inLostAndFound = false)
+		public BookStatus PutBook(string folderPath, bool checkin = false, bool inLostAndFound = false, Action<float> progressCallback = null)
 		{
 			var bookFolderName = Path.GetFileName(folderPath);
 			var checksum = MakeChecksum(folderPath);
@@ -150,7 +151,7 @@ namespace Bloom.TeamCollection
 			if (checkin)
 				status = status.WithLockedBy(null);
 			var oldName = GetLocalStatus(bookFolderName).oldName;
-			PutBookInRepo(folderPath, status, inLostAndFound);
+			PutBookInRepo(folderPath, status, inLostAndFound, progressCallback);
 			// We want the local status to reflect the latest repo status.
 			// In particular, it should have the correct checksum, and if
 			// we've renamed the book, we should no longer record the old name.
@@ -605,8 +606,7 @@ namespace Bloom.TeamCollection
 		/// <returns></returns>
 		internal List<string> FilesToMonitorForCollection()
 		{
-			var collectionName = Path.GetFileName(_localCollectionFolder);
-			var files = RootLevelCollectionFilesIn(_localCollectionFolder, collectionName);
+			var files = RootLevelCollectionFilesIn(_localCollectionFolder);
 			AddFiles(files, "Allowed Words");
 			AddFiles(files, "Sample Texts");
 			return files.Select(f => Path.Combine(_localCollectionFolder, f)).ToList();
@@ -777,9 +777,8 @@ namespace Bloom.TeamCollection
 			return result;
 		}
 
-		public static List<string> RootLevelCollectionFilesIn(string folder, string collectionNameOrNull = null)
+		public static List<string> RootLevelCollectionFilesIn(string folder)
 		{
-			var collectionName = collectionNameOrNull ?? Path.GetFileName(folder);
 			var files = new List<string>();
 			files.Add(Path.GetFileName(CollectionPath(folder)));
 			foreach (var file in new[] {"customCollectionStyles.css", "configuration.txt"})
@@ -820,8 +819,7 @@ namespace Bloom.TeamCollection
 			try
 			{
 				_updatingCollectionFiles = true;
-				var collectionName = Path.GetFileName(localCollectionFolder);
-				var files = RootLevelCollectionFilesIn(localCollectionFolder, collectionName);
+				var files = RootLevelCollectionFilesIn(localCollectionFolder);
 				// Review: there would be some benefit to atomicity in saving all of this to a single zip file.
 				// But it feels cleaner to have a distinct repo store for each folder we need.
 				PutCollectionFiles(files.ToArray());
@@ -1187,7 +1185,15 @@ namespace Bloom.TeamCollection
 				return "";
 			}
 			var sourceBookPath = Path.Combine(folderPath, sourceBookName);
-			return Book.Book.MakeVersionCode(RobustFile.ReadAllText(sourceBookPath), sourceBookPath);
+			string result = null;
+			// Wish we could retry at the level of reading individual files, but
+			// each bit we successfully read modifies the state of the sha.
+			// If something goes wrong, all we can really do is start over.
+			RetryUtility.Retry(() =>
+			{
+				result = Book.Book.MakeVersionCode(RobustFile.ReadAllText(sourceBookPath), sourceBookPath);
+			});
+			return result;
 		}
 
 		/// <summary>

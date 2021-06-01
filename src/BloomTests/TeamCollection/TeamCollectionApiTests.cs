@@ -30,14 +30,17 @@ namespace BloomTests.TeamCollection
 	{
 		private TeamCollectionApi _api;
 		private TemporaryFolder _localCollection;
+		private TeamCollectionManager _tcManager;
+
 		[OneTimeSetUp]
 		public void OneTimeSetUp()
 		{
 			_localCollection = new TemporaryFolder("TeamCollectionApiTests");
 			var collectionPath = Path.Combine(_localCollection.FolderPath,
 				Path.ChangeExtension(Path.GetFileName(_localCollection.FolderPath), ".bloomCollection"));
+			_tcManager = new TeamCollectionManager(collectionPath, new BloomWebSocketServer(), new BookRenamedEvent(), null, null, null);
 			_api = new TeamCollectionApi(new CollectionSettings(collectionPath), new BookSelection(),
-				new TeamCollectionManager(collectionPath, new BloomWebSocketServer(), new BookRenamedEvent(), null, null, null), null,  null);
+				_tcManager, null,  null);
 		}
 
 		[OneTimeTearDown]
@@ -45,11 +48,23 @@ namespace BloomTests.TeamCollection
 		{
 			_localCollection.Dispose();
 		}
+
+		// a hack for making a settings with a specified name
+		class ControlledNameSettings : CollectionSettings
+		{
+			public ControlledNameSettings(string name) : base()
+			{
+				CollectionName = name;
+			}
+		}
+
 		[Test]
 		public void ProblemsWithLocation_NoProblem_Succeeds()
 		{
 			using (var tempFolder = new TemporaryFolder(MethodBase.GetCurrentMethod().Name))
 			{
+				var settings = new ControlledNameSettings("SomeCollection");
+				_tcManager.Settings = settings;
 				Assert.That(_api.ProblemsWithLocation(tempFolder.FolderPath), Is.EqualTo(""));
 			}
 		}
@@ -79,7 +94,9 @@ namespace BloomTests.TeamCollection
 		{
 			using (var tempFolder = new TemporaryFolder(MethodBase.GetCurrentMethod().Name))
 			{
-				Directory.CreateDirectory(Path.Combine(tempFolder.FolderPath, Path.GetFileName(_localCollection.FolderPath) + " - TC"));
+				var settings = new ControlledNameSettings("SomeCollection");
+				_tcManager.Settings = settings;
+				Directory.CreateDirectory(Path.Combine(tempFolder.FolderPath, "SomeCollection - TC"));
 				Assert.That(_api.ProblemsWithLocation(tempFolder.FolderPath), Is.EqualTo("There is a problem with this location"));
 			}
 		}

@@ -693,15 +693,21 @@ namespace Bloom
 			catch (System.Reflection.TargetInvocationException bad)
 			{
 				if (bad.InnerException is System.AccessViolationException)
-					Logger.ShowUserATextFileRelatedToCatastrophicError(bad.InnerException);
+					Logger.WriteError("Exception caught at outermost level of Bloom: ", bad.InnerException);
 				else
-					Logger.ShowUserATextFileRelatedToCatastrophicError(bad);
-				System.Environment.FailFast("TargetInvocationException");
+					Logger.WriteError("Exception caught at outermost level of Bloom:", bad);
+				var exceptMsg = "TargetInvocationException";
+				try { SentrySdk.CaptureException(bad); } catch (Exception e) { exceptMsg += $" (SentrySdk.CaptureException failed: {e})"; }
+				ShowUserEmergencyShutdownMessage(bad);
+				System.Environment.FailFast(exceptMsg);
 			}
 			catch (System.AccessViolationException nasty)
 			{
-				Logger.ShowUserATextFileRelatedToCatastrophicError(nasty);
-				System.Environment.FailFast("AccessViolationException");
+				Logger.WriteError("Exception caught at outermost level of Bloom: ", nasty);
+				var exceptMsg = "AccessViolationException";
+				try { SentrySdk.CaptureException(nasty); } catch (Exception e) { exceptMsg += $" (SentrySdk.CaptureException failed: {e})"; }
+				ShowUserEmergencyShutdownMessage(nasty);
+				System.Environment.FailFast(exceptMsg);
 			}
 
 			Settings.Default.Save();
@@ -711,6 +717,27 @@ namespace Bloom
 
 			if (_projectContext != null)
 				_projectContext.Dispose();
+		}
+
+
+		/// <summary>
+		/// Show the user an emergency shutdown message.  The application event loop is almost
+		/// certainly dead when this method is called, so write out a text file and start another
+		/// process to show it to the user using the default program for opening .txt files.
+		/// </summary>
+		private static void ShowUserEmergencyShutdownMessage(Exception nasty)
+		{
+			string tempFileName = TempFile.WithExtension(".txt").Path;
+			using (var writer = File.CreateText(tempFileName))
+			{
+				writer.WriteLine("Something unusual happened and Bloom needs to quit.  A report has been sent to the Bloom Team.");
+				writer.WriteLine("If this keeps happening to you, please write to issues@BloomLibrary.org.");
+				writer.WriteLine();
+				writer.WriteLine(nasty.Message);
+				writer.Flush();
+				writer.Close();
+			}
+			Process.Start(tempFileName);
 		}
 
 		private static bool IsBloomBookOrder(string[] args)

@@ -119,6 +119,7 @@ namespace Bloom.Publish.BloomLibrary
 			foreach (var lang in allLanguages.Keys)
 			{
 				var checkBox = new CheckBox();
+				checkBox.UseMnemonic = false;
 				checkBox.Text = _model.PrettyLanguageName(lang);
 				if (allLanguages[lang])
 					checkBox.Checked = true;

@@ -69,19 +69,42 @@ namespace Bloom.TeamCollection
 		///     folder, overwriting any existing book.</param>
 		/// <returns>The book's new status, with the new VersionCode</returns>
 		protected override void PutBookInRepo(string sourceBookFolderPath, BookStatus status,
-			bool inLostAndFound = false)
+			bool inLostAndFound = false, Action<float> progressCallback = null)
 		{
 			var bookFolderName = Path.GetFileName(sourceBookFolderPath);
 			var bookPath = GetPathToBookFileInRepo(bookFolderName);
 
+			string pathToWrite = bookPath;
+
 			if (inLostAndFound)
 			{
 				bookPath = AvailableLostAndFoundPath(bookFolderName);
+				pathToWrite = bookPath;
 			}
 			else
 			{
 				// Make sure the repo directory that holds books exists
-				Directory.CreateDirectory(Path.GetDirectoryName(bookPath));
+				var bookDirectoryPath = Path.GetDirectoryName(bookPath);
+				Directory.CreateDirectory(bookDirectoryPath);
+				if (RobustFile.Exists(bookPath))
+				{
+					// We'll write the book initially to a new zip file. This may help with
+					// the problem of the main file being temporarily locked from a recent
+					// operation, such as checking out and then immediately in again (BL-9926).
+					// Also, if there is any sort of crash while writing the book, we won't
+					// leave a corrupt, incomplete zip file pretending to be a valid book.
+					// I'm not entirely happy with putting the tmp file in the shared
+					// directory. It's conceivable that Dropbox might try to replicate it.
+					// But File.Replace() won't handle things on different volumes,
+					// and we can't count on the system temp folder being on the same volume.
+					// In fact, in the LAN case, the shared directory may be the ONLY place
+					// this user is authorized to write on the destination volume.
+					// We could use delete and copy when they are on different volumes, but
+					// Dropbox sometimes throws up user warnings when Bloom deletes a Dropbox file;
+					// it doesn't seem to do so with Replace(). So this is the best option
+					// I can find.
+					pathToWrite = AvailablePath(bookFolderName, bookDirectoryPath, ".tmp");
+				}
 			}
 
 			lock (_lockObject)
@@ -90,18 +113,24 @@ namespace Bloom.TeamCollection
 				_writeBookInProgress = true;
 			}
 
-			RetryUtility.Retry(() =>
+			try
 			{
-				// Although there's quite a bit of use of RobustFile in the methods called here,
-				// We've found it's still possible to find the repo file locked, for example,
-				// clicking the checkin/checkout button very fast it seems we may still have
-				// the file locked from writing the status as we check it out when we try to
-				// check it in.
-				var zipFile = new BloomZipFile(bookPath);
-				zipFile.AddDirectory(sourceBookFolderPath, sourceBookFolderPath.Length + 1, null);
+				var zipFile = new BloomZipFile(pathToWrite);
+				zipFile.AddDirectory(sourceBookFolderPath, sourceBookFolderPath.Length + 1, null, progressCallback);
 				zipFile.SetComment(status.WithCollectionId(CollectionId).ToJson());
 				zipFile.Save();
-			});
+			}
+			catch (Exception)
+			{
+				RobustFile.Delete(pathToWrite); // try to clean up
+				throw;
+			}
+
+			if (pathToWrite != bookPath)
+			{
+				RobustFile.Replace(pathToWrite, bookPath, null);
+			}
+
 			lock (_lockObject)
 			{
 				_lastWriteBookTime = DateTime.Now;
@@ -118,14 +147,20 @@ namespace Bloom.TeamCollection
 		{
 			string bookPath;
 			var lfPath = Path.Combine(_repoFolderPath, "Lost and Found");
-			Directory.CreateDirectory(lfPath);
+			return AvailablePath(bookFolderName, lfPath, ".bloom");
+		}
+
+		private static string AvailablePath(string bookFolderName, string folderName, string extension)
+		{
+			string bookPath;
+			Directory.CreateDirectory(folderName);
 			int counter = 0;
 			do
 			{
 				counter++;
 				// Don't use ChangeExtension here, bookFolderName may have arbitrary period
 				bookPath =
-					Path.Combine(lfPath, bookFolderName + (counter == 1 ? "" : counter.ToString())) + ".bloom";
+					Path.Combine(folderName, bookFolderName + (counter == 1 ? "" : counter.ToString())) + extension;
 			} while (RobustFile.Exists(bookPath));
 
 			return bookPath;
@@ -289,8 +324,7 @@ namespace Bloom.TeamCollection
 				return;
 			try
 			{
-				RobustZip.ExtractFolderFromZip(destFolder, collectionZipPath, () => new HashSet<string>(RootLevelCollectionFilesIn(destFolder,
-				Path.GetFileName(GetLocalCollectionNameFromTcName(repoFolder)))));
+				RobustZip.ExtractFolderFromZip(destFolder, collectionZipPath, () => new HashSet<string>(RootLevelCollectionFilesIn(destFolder)));
 			}
 			catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
 			{
@@ -389,6 +423,11 @@ namespace Bloom.TeamCollection
 		{
 			lock (_lockObject)
 			{
+				// not interested in changes to tmp files.
+				// (If by any chance a .tmp file gets propagated to another system, we're
+				// still not interested in it, so harmless to respond 'true'.)
+				if (Path.GetExtension(path) == ".tmp")
+					return true;
 				// Not the book we most recently wrote, so not an 'own write'.
 				// Note that our zip library sometimes creates a temp file by adding a suffix to the
 				// path, so it's very likely that a recent write of a path starting with the name of the book we
@@ -557,6 +596,24 @@ namespace Bloom.TeamCollection
 			{
 				throw new ArgumentException("trying to write status on a book not in the repo");
 			}
+
+			// This is a low-level check, mainly to handle the case where the book is locked in Dropbox.
+			// Locking is supposed to prevent writes and creation of conflict files. However, something
+			// about how our zip library updates comments instead results in creating a conflict...
+			// every time we try to check it out. This check is enough to prevent that (unless the lock
+			// happens at exactly the wrong instant between when we check and when we write the status).
+			// Enhance: if we want to support this case, it would be much nicer to check at a higher level
+			// and have a new state of the BookStatusPanel indicating that the TC version of the book is
+			// locked in a non-standard way (i.e., not checked out, but still not writeable). Possibly
+			// a new color for the state circle, too. But we want to DIScourage people from using file
+			// locking to achieve something that our Checkout mechanism is designed to handle. Throwing
+			// this argument exception puts the TC in the "problems encountered" state with a rather
+			// cryptic message in the dialog box, and no change in the book status panel. But at least
+			// we are not cluttering the TC with conflicts.
+			if (IsFileLocked(bookPath))
+			{
+				throw new ArgumentException("Book is locked in the Team Collection");
+			}
 			lock (_lockObject)
 			{
 				_lastWriteBookPath = bookPath;
@@ -572,6 +629,31 @@ namespace Bloom.TeamCollection
 			{
 				_writeBookInProgress = false;
 			}
+		}
+
+		private bool IsFileLocked(string filePath)
+		{
+			try
+			{
+				// If something recently changed it we might get some spurious failures
+				// to open it for modification.
+				RetryUtility.Retry(() =>
+				{
+					using (File.Open(filePath, FileMode.Open))
+					{
+					}
+				});
+			}
+			catch (IOException e)
+			{
+				return true;
+			}
+			catch (UnauthorizedAccessException e)
+			{
+				return true;
+			}
+
+			return false;
 		}
 
 		/// <summary>
@@ -634,7 +716,8 @@ namespace Bloom.TeamCollection
 				});
 		}
 
-		private static string _joinCollectionPath;
+		private static string _joinCollectionPath; // when joining a TC, the path to the repo we're joining
+		private static string _joinCollectionName; // when joining a TC, the collection name derived from the temporary Settings object.
 		private static string _newCollectionToJoin;
 
 		// Create a new local collection from the team collection at the specified path.
@@ -650,9 +733,9 @@ namespace Bloom.TeamCollection
 			_joinCollectionPath = path;
 			_newCollectionToJoin = null; // set if JoinCollectionTeam called successfully
 			var repoFolder = Path.GetDirectoryName(path);
-			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(repoFolder));
+			_joinCollectionName = tcManager.Settings.CollectionName;
 			var localCollectionFolder =
-				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, collectionName);
+				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, _joinCollectionName);
 			var isExistingCollection = Directory.Exists(localCollectionFolder);
 			var tcLinkPath = TeamCollectionManager.GetTcLinkPathFromLcPath(localCollectionFolder);
 			var isAlreadyTcCollection = isExistingCollection &&
@@ -667,7 +750,7 @@ namespace Bloom.TeamCollection
 
 			using (var dlg = new ReactDialog("JoinTeamCollectionDialog", new
 			{
-				collectionName,
+				collectionName = _joinCollectionName,
 				existingCollection = isExistingCollection,
 				isAlreadyTcCollection,
 				isCurrentCollection,
@@ -699,9 +782,8 @@ namespace Bloom.TeamCollection
 		public static void JoinCollectionTeam()
 		{
 			var repoFolder = Path.GetDirectoryName(_joinCollectionPath);
-			var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(repoFolder));
 			var localCollectionFolder =
-				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, collectionName);
+				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, _joinCollectionName);
 			var firstTimeJoin = !Directory.Exists(localCollectionFolder) || !RobustFile.Exists(TeamCollectionManager.GetTcLinkPathFromLcPath(localCollectionFolder));
 			// Most of the collection settings files will be copied later when we create the repo
 			// in TeamRepo.MakeInstance() and call CopyRepoCollectionFilesToLocal.

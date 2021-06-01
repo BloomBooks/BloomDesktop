@@ -11,6 +11,7 @@ namespace Bloom.Collection
 			InitializeComponent();
 			SetLineHeightList();
 			LoadFontSizeCombo();
+			_languageNameLabel.UseMnemonic = false;
 		}
 
 		private void SetLineHeightList()

@@ -425,7 +425,7 @@ namespace Bloom.Book
 			var decodableTool = tools.FirstOrDefault(t => t.ToolId == "decodableReader");
 			if (decodableTool != null && bookClass.Contains("decodable-reader"))
 			{
-				var stageString = decodableTool.State.Split(';').FirstOrDefault()?.Split(':').Skip(1).FirstOrDefault();
+				var stageString = decodableTool.State?.Split(';').FirstOrDefault()?.Split(':').Skip(1).FirstOrDefault();
 				if (!string.IsNullOrEmpty(stageString))
 				{
 					incomingData.UpdateGenericLanguageString("levelOrStageNumber", XmlString.FromUnencoded(stageString), false);

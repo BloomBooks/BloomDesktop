@@ -1,3 +1,6 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+
 import Typography from "@material-ui/core/Typography";
 import * as React from "react";
 import {
@@ -16,6 +19,7 @@ export interface IStatusPanelProps {
     button?: JSX.Element;
     children?: JSX.Element;
     menu?: JSX.Element; // when book is checked out, About my Avatar... and Forget Changes and Check in Book
+    className?: string; // additional class for  root div; enables emotion CSS.
 }
 
 export const StatusPanelCommon: React.FunctionComponent<IStatusPanelProps> = (
@@ -30,6 +34,11 @@ export const StatusPanelCommon: React.FunctionComponent<IStatusPanelProps> = (
         palette: {
             primary: {
                 main: buttonColor
+            },
+            action: {
+                // Yagni: currently the only time we disable a button is when using the warning color
+                // If we ever disable the other version, we probably want primary.dark here.
+                disabledBackground: outerTheme.palette.warning.dark
             }
         }
     });
@@ -39,7 +48,11 @@ export const StatusPanelCommon: React.FunctionComponent<IStatusPanelProps> = (
     buttonTheme.typography = outerTheme.typography;
 
     return (
-        <div className="status-panel">
+        <div
+            className={
+                "status-panel" + (props.className ? " " + props.className : "")
+            }
+        >
             <div className="panel-top">
                 {props.icon && (
                     <div className="icon-or-avatar">{props.icon}</div>

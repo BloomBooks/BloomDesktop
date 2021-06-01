@@ -1,5 +1,8 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+
 import * as React from "react";
-import theme from "../bloomMaterialUITheme";
+import theme, { kBloomYellow } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { useState } from "react";
 import { BloomApi } from "../utils/bloomApi";
@@ -8,7 +11,11 @@ import "./TeamCollectionBookStatusPanel.less";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import BloomButton from "../react_components/bloomButton";
 import { BloomAvatar } from "../react_components/bloomAvatar";
-import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
+import {
+    useSubscribeToWebSocketForEvent,
+    useSubscribeToWebSocketForObject
+} from "../utils/WebSocketManager";
+import { Block } from "@material-ui/icons";
 
 // The panel that shows the book preview and settings in the collection tab in a Team Collection.
 
@@ -32,6 +39,8 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [lockedMachine, setLockedMachine] = useState("");
     const [reload, setReload] = useState(0);
     const [error, setError] = useState("");
+    const [progress, setProgress] = useState(0);
+    const [busy, setBusy] = useState(false);
     React.useEffect(() => {
         var lockedByMe = false;
         BloomApi.get(
@@ -91,6 +100,13 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
 
     useSubscribeToWebSocketForEvent("bookStatus", "reload", () =>
         setReload(oldValue => oldValue + 1)
+    );
+
+    useSubscribeToWebSocketForEvent(
+        "checkinProgress",
+        "progress",
+        e => setProgress((e as any).fraction),
+        false
     );
 
     let avatar;
@@ -243,6 +259,9 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         undefined,
         true
     );
+    if (state != "lockedByMe" && busy) {
+        setBusy(false);
+    }
 
     const panelContents = (state: LockState): JSX.Element => {
         switch (state) {
@@ -292,6 +311,8 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                 );
             case "lockedByMe":
                 const checkinHandler = () => {
+                    setBusy(true);
+                    setProgress(0.0001); // just enough to show the bar at once
                     BloomApi.post("teamCollection/checkInCurrentBook", () => {
                         // nothing to do. Change of state is handled by websocket notifications.
                     });
@@ -299,6 +320,10 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
 
                 return (
                     <StatusPanelCommon
+                        css={css`
+                            ${busy &&
+                                "cursor: progress; .checkin-button{cursor:progress;}"};
+                        `}
                         lockState={state}
                         title={mainTitleLockedByMe}
                         subTitle={subTitleLockedByMe}
@@ -309,9 +334,29 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                             "TeamCollection.CheckIn",
                             "checkin-button",
                             "Check In.svg",
-                            checkinHandler
+                            checkinHandler,
+                            progress > 0
                         )}
-                    />
+                    >
+                        <div
+                            css={css`
+                                display: ${progress === 0 ? "none" : "block"};
+                                height: 10px;
+                                background-color: transparent;
+                                width: 100%;
+                                border: 1px solid ${kBloomYellow};
+                                margin-bottom: 8px;
+                            `}
+                        >
+                            <div
+                                css={css`
+                                    height: 10px;
+                                    background-color: ${kBloomYellow};
+                                    width: ${progress * 100}%;
+                                `}
+                            ></div>
+                        </div>
+                    </StatusPanelCommon>
                 );
             case "lockedByMeElsewhere":
                 return (
@@ -398,13 +443,14 @@ export const getBloomButton = (
     l10nKey: string,
     buttonClass: string,
     icon?: string,
-    clickHandler?: () => void
+    clickHandler?: () => void,
+    disabled?: boolean
 ) => (
     <BloomButton
         iconBeforeText={icon ? <img src={icon} /> : <div />}
         l10nKey={l10nKey}
         hasText={true}
-        enabled={true}
+        enabled={!disabled}
         className={buttonClass}
         onClick={clickHandler}
         temporarilyDisableI18nWarning={true}

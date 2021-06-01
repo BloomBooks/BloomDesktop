@@ -3,6 +3,8 @@
 
 @XMatterPackName: "unknown";
 
+@kFrontCoverImageOrder: 1;
+
 //This hack is used to localize the xMatter label. data-after-content is set in bloomEditing.ts
 .bloom-frontMatter,
 .bloom-backMatter {
@@ -162,10 +164,19 @@
     }
     .placeholder,
     .bloom-imageContainer {
-        order: 1; //second part of the page, after the title
+        order: kFrontCoverImageOrder; //second part of the page, after the title
         flex: 1 1 auto;
         margin-top: @MarginBetweenMajorItems;
         margin-bottom: @MarginBetweenMajorItems;
+    }
+
+    // Give the image description the same order as the image we are describing, so that document order is used and we end up with it below, as it is in interior pages. (Ref BL-9946)
+    .asideContainer {
+        order: kFrontCoverImageOrder;
+        // reduce the space between the image and the test that describes it
+        p:first-child {
+            margin-top: 0;
+        }
     }
 
     .bottomBlock {
