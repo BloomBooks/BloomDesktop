@@ -1,4 +1,5 @@
 using System.IO;
+using System.Xml.Linq;
 using Bloom.Book;
 using Bloom.Collection;
 using NUnit.Framework;
@@ -95,6 +96,26 @@ namespace BloomTests.Collection
 			settings.Save();
 			var newSettings = CreateCollectionSettings(_folder.Path, collectionName);
 			Assert.AreEqual(style, newSettings.PageNumberStyle, "Numbering style 'Gurmukhi' should round trip");
+		}
+
+		[Test]
+		public void DefaultBookshelf_ReadWrite()
+		{
+			var bloomCollectionFileContents =
+				@"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<DefaultBookTags>bookshelf:kygyzstan2020-ky-grade1-term1</DefaultBookTags>
+</Collection>";
+			const string collectionName = "test";
+			var collectionPath = CollectionSettings.GetPathForNewSettings(_folder.Path, collectionName);
+			Directory.CreateDirectory(Path.GetDirectoryName(collectionPath));
+			RobustFile.WriteAllText(collectionPath, bloomCollectionFileContents);
+			var settings = CreateCollectionSettings(_folder.Path, collectionName);
+			Assert.That(settings.DefaultBookshelf, Is.EqualTo("kygyzstan2020-ky-grade1-term1"));
+			settings.DefaultBookshelf = "some-other-shelf";
+			settings.Save();
+			var newContents = RobustFile.ReadAllText(collectionPath);
+			AssertThatXmlIn.String(newContents).HasSpecifiedNumberOfMatchesForXpath("//DefaultBookTags[text()='bookshelf:some-other-shelf']", 1);
 		}
 
 

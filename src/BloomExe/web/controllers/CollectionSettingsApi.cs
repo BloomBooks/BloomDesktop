@@ -28,6 +28,11 @@ namespace Bloom.web.controllers
 		// True if the part of the subscription code that identifies the branding is one this version of Bloom knows about
 		private static bool _knownBrandingInSubscriptionCode = false;
 		private static EnterpriseStatus _enterpriseStatus;
+
+		// While displaying the CollectionSettingsDialog, which is what this API mainly exists to serve
+		// we keep a reference to it here so pending settings can be updated there.
+		public static CollectionSettingsDialog DialogBeingEdited;
+
 		// This is set when we are running the collection settings dialog in a special mode  where it is
 		// brought up automatically to inform the user that a previously used branding name is invalid.
 		// (It might be a legacy branding from an earlier Bloom that did not require a validation code,
@@ -142,6 +147,24 @@ namespace Bloom.web.controllers
 				else
 				{
 					request.ReplyWithText("unknown");
+				}
+			}, false);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "bookShelfData", request =>
+			{
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					var brandingProjectName = _collectionSettings.BrandingProjectKey;
+					var defaultBookshelf = _collectionSettings.DefaultBookshelf;
+					request.ReplyWithJson(new {brandingProjectName, defaultBookshelf});
+				}
+				else
+				{
+					// post: doesn't include the brandingProjectName, as this is not where we edit that.
+					var newShelf = request.RequiredPostString();
+					if (newShelf == "none")
+						newShelf = ""; // RequiredPostString won't allow us to just pass this
+					DialogBeingEdited.PendingDefaultBookshelf = newShelf;
+					request.PostSucceeded();
 				}
 			}, false);
 		}

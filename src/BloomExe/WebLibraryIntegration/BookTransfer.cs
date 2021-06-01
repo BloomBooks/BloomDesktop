@@ -364,7 +364,8 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		private string UploadBook(string bookFolder, IProgress progress, out string parseId,
-			string pdfToInclude = null, ISet<string> audioFilesToInclude = null, IEnumerable<string> videoFilesToInclude = null, string[] languages = null)
+			string pdfToInclude = null, ISet<string> audioFilesToInclude = null, IEnumerable<string> videoFilesToInclude = null, string[] languages = null,
+			CollectionSettings collectionSettings = null)
 		{
 			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
 			// Occasionally we may want to upload a new authoring template, that is, a 'book' that is suitableForMakingShells.
@@ -411,6 +412,17 @@ namespace Bloom.WebLibraryIntegration
 				progress.WriteMessage("s3BookId: " + s3BookId);
 #endif
 				metadata.DownloadSource = s3BookId;
+				// If the collection has a default bookshelf, make sure the book has that tag.
+				// Also make sure it doesn't have any other bookshelf tags (which would typically be
+				// from a previous default bookshelf upload), including a duplicate of the one
+				// we may be about to add.
+				var tags = metadata.Tags.Where(t => !t.StartsWith("bookshelf:"));
+				if (!string.IsNullOrEmpty(collectionSettings?.DefaultBookshelf))
+				{
+					tags = tags.Concat(new [] {"bookshelf:" + collectionSettings.DefaultBookshelf});
+				}
+				metadata.Tags = tags.ToArray();
+
 				// Any updated ID at least needs to become a permanent part of the book.
 				// The file uploaded must also contain the correct DownloadSource data, so that it can be used
 				// as an 'order' to download the book.
@@ -971,7 +983,7 @@ namespace Bloom.WebLibraryIntegration
 				return "";
 
 			return UploadBook(bookFolder, progressBox, out parseId, Path.GetFileName(uploadPdfPath),
-				GetAudioFilesToInclude(book, excludeNarrationAudio, excludeMusic), GetVideoFilesToInclude(book), languages);
+				GetAudioFilesToInclude(book, excludeNarrationAudio, excludeMusic), GetVideoFilesToInclude(book), languages, book.CollectionSettings);
 		}
 
 		/// <summary>
