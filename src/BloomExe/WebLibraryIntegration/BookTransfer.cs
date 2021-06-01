@@ -364,7 +364,8 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		private string UploadBook(string bookFolder, IProgress progress, out string parseId,
-			string pdfToInclude = null, ISet<string> audioFilesToInclude = null, IEnumerable<string> videoFilesToInclude = null, string[] languages = null)
+			string pdfToInclude = null, ISet<string> audioFilesToInclude = null, IEnumerable<string> videoFilesToInclude = null, string[] languages = null,
+			CollectionSettings collectionSettings = null)
 		{
 			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
 			// Occasionally we may want to upload a new authoring template, that is, a 'book' that is suitableForMakingShells.
@@ -411,6 +412,24 @@ namespace Bloom.WebLibraryIntegration
 				progress.WriteMessage("s3BookId: " + s3BookId);
 #endif
 				metadata.DownloadSource = s3BookId;
+				// If the collection has a default book shelf, make sure the book has that tag.
+				// Review: should we force it not to have any other bookshelf tag?
+				// I think so, otherwise, after uploading and changing the default, the book would get both.
+				// Note however: editing the book removes the bookshelf tag, so if we want it to stay,
+				// we'll have to do something about that. This check is currently only potentially useful if we
+				// upload again having changed the default bookshelf without intermediate editing.
+				// Note also that currently although we uploaded meta.json with only the current default bookshelf,
+				// any previous bookshelves are retained by Bloom Library. We have a separate card to
+				// change that, so that the list of tags uploaded will be decisive
+				// Suspicion: Bloom editor only handles the topic tag and loses any others;
+				// BL was made to retain bookshelf to overcome that problem.
+				var tags = metadata.Tags.Where(t => !t.StartsWith("bookshelf:"));
+				if (!string.IsNullOrEmpty(collectionSettings?.DefaultBookshelf))
+				{
+					tags = tags.Concat(new [] {"bookshelf:" + collectionSettings.DefaultBookshelf});
+				}
+				metadata.Tags = tags.ToArray();
+
 				// Any updated ID at least needs to become a permanent part of the book.
 				// The file uploaded must also contain the correct DownloadSource data, so that it can be used
 				// as an 'order' to download the book.
@@ -971,7 +990,7 @@ namespace Bloom.WebLibraryIntegration
 				return "";
 
 			return UploadBook(bookFolder, progressBox, out parseId, Path.GetFileName(uploadPdfPath),
-				GetAudioFilesToInclude(book, excludeNarrationAudio, excludeMusic), GetVideoFilesToInclude(book), languages);
+				GetAudioFilesToInclude(book, excludeNarrationAudio, excludeMusic), GetVideoFilesToInclude(book), languages, book.CollectionSettings);
 		}
 
 		/// <summary>
