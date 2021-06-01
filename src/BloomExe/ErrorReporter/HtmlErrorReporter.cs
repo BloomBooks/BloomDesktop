@@ -275,7 +275,7 @@ namespace Bloom.ErrorReporter
 					ErrorReport.OnShowDetails = null;
 					ProblemReportApi.NotifyMessage = null;
 					var reportButtonLabel = GetReportButtonLabel(alternateButton1Label);
-					result = ShowNotifyDialog(ProblemLevel.kNonFatal, message, null, reportButtonLabel, resultIfAlternateButtonPressed, this.SecondaryActionButtonLabel, this.SecondaryActionResult);
+					result = ShowNotifyDialog(ProblemLevel.kNotify, message, null, reportButtonLabel, resultIfAlternateButtonPressed, this.SecondaryActionButtonLabel, this.SecondaryActionResult);
 				}
 
 				ResetToDefaults();
@@ -407,14 +407,11 @@ namespace Bloom.ErrorReporter
 						// the exception handler below. Besides, failure of HtmlErrorReporter in these circumstances
 						// is expected; we just want to cleanly report the original problem, not to report a
 						// failure of error handling.
-						var fallbackReporter = new WinFormsErrorReporter();
-						if (exception != null)
-							fallbackReporter.ReportNonFatalException(exception, new ShowAlwaysPolicy());
-						else
-						{
-							fallbackReporter.NotifyUserOfProblem(new ShowAlwaysPolicy(), null, ErrorResult.OK,
-								message.NotEncoded);
-						}
+
+						// Note: HtmlErrorReporter supports up to 3 buttons (OK, Report, and [Secondary action]), but the fallback reporter only supports a max of two.
+						// Well, just going to have to drop the secondary action.
+
+						returnResult = (ErrorResult)ShowFallbackProblemDialog(severity, exception, messageText, null, false, reportButtonLabel, reportPressedResult);
 						return;
 					}
 
@@ -545,6 +542,54 @@ namespace Bloom.ErrorReporter
 		public static void OnReportPressed(Exception error, string message)
 		{
 			ErrorReport.ReportNonFatalExceptionWithMessage(error, message);
+		}
+
+		public static ErrorResult? ShowFallbackProblemDialog(string levelOfProblem, Exception exception, string detailedMessage, string shortUserLevelMessage, bool isShortMessagePreEncoded = false,
+			string notifySecondaryButtonLabel = null, ErrorResult? notifySecondaryPressedResult = null)
+		{
+			var fallbackReporter = new WinFormsErrorReporter();
+
+			if (shortUserLevelMessage == null)
+				shortUserLevelMessage = "";
+
+			string decodedShortUserLevelMessage = isShortMessagePreEncoded ? XmlString.FromXml(shortUserLevelMessage).Unencoded : shortUserLevelMessage;
+			string message = decodedShortUserLevelMessage;
+			if (!String.IsNullOrEmpty(detailedMessage))
+				message += $"\n{detailedMessage}";
+
+			if (levelOfProblem == ProblemLevel.kFatal)
+			{
+				if (exception != null)
+					fallbackReporter.ReportFatalException(exception);
+				else
+					fallbackReporter.ReportFatalMessageWithStackTrace(message, null);
+
+				return null;
+			}
+			else if (levelOfProblem == ProblemLevel.kNonFatal || levelOfProblem == ProblemLevel.kUser)
+			{
+				// FYI, if levelOfProblem==kUser, we're unfortunately going to be
+				// using the messaging from NonFatal even though we would ideally like to have the customized messaging for levelOfProblem==kUser,
+				// but we'll just live with it because there's no easy way to customize it. It's probably an extremely rare situation anyway
+				if (String.IsNullOrEmpty(message))
+					fallbackReporter.ReportNonFatalException(exception, new ShowAlwaysPolicy());
+				else
+					fallbackReporter.ReportNonFatalExceptionWithMessage(exception, message);
+
+				return null;
+			}
+			else // Presumably, levelOfProblem = "notify" now
+			{
+				if (String.IsNullOrEmpty(notifySecondaryButtonLabel) || notifySecondaryPressedResult == null)
+				{
+					return fallbackReporter.NotifyUserOfProblem(new ShowAlwaysPolicy(), null, ErrorResult.OK,
+						message);
+				}
+				else
+				{
+					return fallbackReporter.NotifyUserOfProblem(new ShowAlwaysPolicy(), notifySecondaryButtonLabel, notifySecondaryPressedResult ?? ErrorResult.OK, message);
+				}
+			}
 		}
 	}
 }
