@@ -4,7 +4,7 @@ import { ThemeProvider } from "@material-ui/styles";
 import { storiesOf } from "@storybook/react";
 import { addDecorator } from "@storybook/react";
 import { StorybookContext } from "../.storybook/StoryBookContext";
-import { ProblemKind } from "./ProblemDialog";
+import { ProblemDialog, ProblemKind } from "./ProblemDialog";
 import { NotifyDialog } from "./NotifyDialog";
 import { ReportDialog } from "./ReportDialog";
 
@@ -17,6 +17,9 @@ addDecorator(storyFn => (
     </ThemeProvider>
 ));
 
+const message =
+    "Fake error with a line break<br> and <b>bold</b> and <a href='https://google.com'>link</a>...";
+
 storiesOf("Problem Report", module)
     .add("FatalError", () => <ReportDialog kind={ProblemKind.Fatal} />)
     .add("NonFatalError", () => <ReportDialog kind={ProblemKind.NonFatal} />)
@@ -25,20 +28,61 @@ storiesOf("Problem Report", module)
         <NotifyDialog
             reportLabel={null}
             secondaryLabel={null}
-            messageParam="Fake error"
+            message={message}
         />
     ))
     .add("NotifyUser, Reportable", () => (
         <NotifyDialog
             reportLabel="Report"
             secondaryLabel={null}
-            messageParam="Fake error"
+            message={message}
         />
     ))
     .add("NotifyUser, Report & Retry", () => (
         <NotifyDialog
             reportLabel="Report"
             secondaryLabel="Retry"
-            messageParam="Fake error"
+            message={message}
+        />
+    ));
+storiesOf("ReportDialog", module)
+    .add("ProblemDialog ProblemKind.Fatal", () => (
+        <ProblemDialog level={ProblemKind.Fatal} message={message} />
+    ))
+    .add('ProblemDialog "fatal"', () => (
+        // @ts-ignore
+        // We want to prove that the string "notify" works even though the type is ProblemKind.
+        // That's because this prop actually comes from C# which is only able to send strings.
+        <ProblemDialog level={"fatal"} message={message} />
+    ))
+    .add("ProblemDialog notify", () => (
+        <ProblemDialog
+            // @ts-ignore
+            // We want to prove that the string "notify" works even though the type is ProblemKind.
+            // That's because this prop actually comes from C# which is only able to send strings.
+            level={"notify"}
+            message={message}
+        />
+    ))
+    .add("ProblemDialog notify with Report", () => (
+        <ProblemDialog
+            level={ProblemKind.Notify}
+            message={message}
+            reportLabel="Report"
+        />
+    ))
+    .add("ProblemDialog notify with secondary button", () => (
+        <ProblemDialog
+            level={ProblemKind.Notify}
+            message={message}
+            secondaryLabel="Secondary"
+        />
+    ))
+    .add("ProblemDialog notify with both", () => (
+        <ProblemDialog
+            level={ProblemKind.Notify}
+            message={message}
+            reportLabel="Report"
+            secondaryLabel="Secondary"
         />
     ));

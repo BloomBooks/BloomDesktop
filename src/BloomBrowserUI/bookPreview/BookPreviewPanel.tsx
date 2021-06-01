@@ -7,30 +7,35 @@ import "./BookPreviewPanel.less";
 import { useSubscribeToWebSocketForStringMessage } from "../utils/WebSocketManager";
 import { TeamCollectionBookStatusPanel } from "../teamCollection/TeamCollectionBookStatusPanel";
 
-const urlParams = new URLSearchParams(window.location.search);
-const urlPreview = urlParams.get("urlPreview") ?? "about:blank";
-
-export const BookPreviewPanel: React.FunctionComponent = props => {
+export const BookPreviewPanel: React.FunctionComponent<{
+    initialBookPreviewUrl: string;
+}> = props => {
     const [isTeamCollection, setIsTeamCollection] = useState(false);
-    const [previewUrl, setPreviewUrl] = useState(urlPreview);
+    const [currentBookPreviewUrl, setCurrentBookPreviewUrl] = useState(
+        props.initialBookPreviewUrl ?? "about:blank"
+    );
 
     React.useEffect(() => {
         BloomApi.getBoolean(
             "teamCollection/isTeamCollectionEnabled",
             teamCollection => setIsTeamCollection(teamCollection)
         );
-    }, [previewUrl]);
+    }, [currentBookPreviewUrl]);
 
     useSubscribeToWebSocketForStringMessage(
         "bookStatus",
         "changeBook",
-        message => setPreviewUrl(message)
+        message => setCurrentBookPreviewUrl(message)
     );
 
     return (
         <div>
             <div id="preview" className={isTeamCollection ? "abovePanel" : ""}>
-                <iframe src={previewUrl} height="100%" width="100%" />
+                <iframe
+                    src={currentBookPreviewUrl}
+                    height="100%"
+                    width="100%"
+                />
             </div>
             {isTeamCollection ? (
                 <div id="teamCollection">

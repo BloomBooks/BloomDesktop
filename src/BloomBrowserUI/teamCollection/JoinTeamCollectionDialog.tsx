@@ -63,7 +63,9 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
         'Join the Bloom Team Collection "%0"',
         "TeamCollection.JoinHeading",
         undefined,
-        props.collectionName
+        props.collectionName,
+        undefined,
+        true // temporarilyDisableI18nWarning
     );
     const dialogState = getDialogStateFromProps();
     const l10nJoinButtonKey = getL10nKeyForJoinButton();
