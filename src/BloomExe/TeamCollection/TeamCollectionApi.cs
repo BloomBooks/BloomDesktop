@@ -160,7 +160,10 @@ namespace Bloom.TeamCollection
 				ErrorReport.NotifyUserOfProblem(e, msg);
 				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
 				SentrySdk.CaptureException(e);
-				request.Failed("join team failed");
+
+				// Since we have already informed the user above, it is better to just report a success here.
+				// Otherwise, they will also get a toast.
+				request.PostSucceeded();
 			}
 		}
 
@@ -505,7 +508,10 @@ namespace Bloom.TeamCollection
 				Logger.WriteError(String.Format(msgEnglish, repoFolderParentPath, e.Message), e);
 				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
 				SentrySdk.CaptureException(e);
-				request.Failed("create team failed");
+
+				// Since we have already informed the user above, it is better to just report a success here.
+				// Otherwise, they will also get a toast.
+				request.PostSucceeded();
 			}
 		}
 

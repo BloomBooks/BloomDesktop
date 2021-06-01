@@ -14,7 +14,6 @@ using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
-using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -141,7 +140,7 @@ namespace Bloom.web.controllers
 					request.PostSucceeded();
 				}, false);
 
-			// At this point we open dialogs from c# code; if we opened dialog from javascript, we wouldn't need this
+			// At this point we open dialogs from c# code; if we opened dialogs from javascript, we wouldn't need this
 			// api to do it. We just need a way to close a c#-opened dialog from javascript (e.g. the Close button of the dialog).
 			apiHandler.RegisterEndpointHandler("common/closeReactDialog", request =>
 			{
@@ -251,7 +250,7 @@ namespace Bloom.web.controllers
 		/// Open the folder containing the specified file and select it.
 		/// </summary>
 		/// <param name="filePath"></param>
-		public static void SelectFileInExplorer(string filePath)
+		private static void SelectFileInExplorer(string filePath)
 		{
 			try
 			{

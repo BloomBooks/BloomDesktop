@@ -167,7 +167,7 @@ namespace Bloom.ErrorReporter
 		/// <param name="error">Optional - Any exception that was encountered that should be included in the notification/report. May be null</param>
 		/// <param name="message">The message to show to the user. May be a format string.</param>
 		/// <param name="args">The args to pass to the {message} format string</param>
-		public void CustomNotifyUserAuto(string reportButtonLabel, string secondaryActionButtonLabel, Action<Exception, string> onSecondaryActionPressed ,
+		public void CustomNotifyUserAuto(string reportButtonLabel, string secondaryActionButtonLabel, Action<Exception, string> onSecondaryActionPressed,
 			IRepeatNoticePolicy policy, Exception error, string message, params object[] args)
 		{
 			Debug.Assert(!System.Threading.Monitor.IsEntered(_lock), "Expected object not to have been locked yet, but the current thread already aquired it earlier. Bug?");
@@ -273,7 +273,6 @@ namespace Bloom.ErrorReporter
 				if (policy.ShouldShowMessage(message))
 				{
 					ErrorReport.OnShowDetails = null;
-					ProblemReportApi.NotifyMessage = null;
 					var reportButtonLabel = GetReportButtonLabel(alternateButton1Label);
 					result = ShowNotifyDialog(ProblemLevel.kNotify, message, null, reportButtonLabel, resultIfAlternateButtonPressed, this.SecondaryActionButtonLabel, this.SecondaryActionResult);
 				}
@@ -415,11 +414,10 @@ namespace Bloom.ErrorReporter
 						return;
 					}
 
-					string urlQueryString = CreateNotifyUrlQueryString(message, reportButtonLabel, secondaryButtonLabel);
+					object props = new { level = ProblemLevel.kNotify, reportLabel = reportButtonLabel, secondaryLabel = secondaryButtonLabel, message = message };
 
-					
 					// Precondition: we must be on the UI thread for Gecko to work.
-					using (var dlg = BrowserDialogFactory.CreateReactDialog("ProblemDialog", null, urlQueryString))
+					using (var dlg = BrowserDialogFactory.CreateReactDialog("ProblemDialog", props))
 					{
 						dlg.FormBorderStyle = FormBorderStyle.FixedToolWindow;	// Allows the window to be dragged around
 						dlg.ControlBox = true;	// Add controls like the X button back to the top bar
@@ -431,7 +429,7 @@ namespace Bloom.ErrorReporter
 						// (which is "Before saving, Bloom did an integrity check of your book [...]" from BookStorage.cs)
 						// You can make this height taller if need be.
 						// A scrollbar will appear if the height is not tall enough for the text
-						dlg.Height = 360;	
+						dlg.Height = 360;
 
 						// ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
 						BloomServer.RegisterThreadBlocking();
@@ -489,54 +487,9 @@ namespace Bloom.ErrorReporter
 			return returnResult;
 		}
 
-		internal static UrlPathString GetMessage(string detailedMessage, Exception exception)
+		internal static string GetMessage(string detailedMessage, Exception exception)
 		{
-			string textToReport = !string.IsNullOrEmpty(detailedMessage) ? detailedMessage : exception.Message;
-			return UrlPathString.CreateFromUnencodedString(textToReport, true);
-		}
-				
-		/// <summary>
-		/// Generates the query component for the URL to bring up the Notify Dialog
-		/// (The query component is the optional part after the "?" in the URL)
-		/// </summary>
-		/// <param name="message">The final message to show the user, as a UrlPathString</param>
-		/// <param name="reportButtonLabel">Optional. The localized text for the Report button. Pass null/"" to disable.</param>
-		/// <param name="secondaryActionButtonLabel">Optional. The localized text for the Secondary Action button. Pass null/"" to disable</param>
-		/// <returns></returns>
-		protected static string CreateNotifyUrlQueryString(UrlPathString message, string reportButtonLabel, string secondaryActionButtonLabel)
-		{
-			var queryComponents = new List<string>();
-			queryComponents.Add($"level={ProblemLevel.kNotify}");
-
-			if (!String.IsNullOrEmpty(reportButtonLabel))
-			{
-				var encodedReportLabel = UrlPathString.CreateFromUnencodedString(reportButtonLabel).UrlEncoded;
-				queryComponents.Add($"reportLabel={encodedReportLabel}");
-			}
-
-			if (!String.IsNullOrEmpty(secondaryActionButtonLabel))
-			{
-				var encodedSecondaryLabel = UrlPathString.CreateFromUnencodedString(secondaryActionButtonLabel).UrlEncoded;
-				queryComponents.Add($"secondaryLabel={encodedSecondaryLabel}");
-			}
-
-			var query = String.Join("&", queryComponents);
-			// Prefer putting the message in the URL parameters, so it can just be a simple one-and-done GET request.
-			//   (IMO, this makes debugging easier and simplifies the rendering process).
-			// But very long URL's cause our BrowserDialog problems.
-			// Although there are suggestions that Firefox based browsers could have URL's about 60k in length,
-			// we'll just stick to <2k because that was recommended as a length with basically universal support across browser platforms
-			string encodedMessage = message.UrlEncoded;
-			if (query.Length + encodedMessage.Length < 2048)
-			{
-				query += $"&msg={encodedMessage}";
-			}
-			else
-			{
-				ProblemReportApi.NotifyMessage = message.NotEncoded;
-			}
-
-			return query;
+			return !string.IsNullOrEmpty(detailedMessage) ? detailedMessage : exception.Message;
 		}
 
 		public static void OnReportPressed(Exception error, string message)

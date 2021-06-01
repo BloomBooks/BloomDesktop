@@ -15,7 +15,6 @@ using Bloom.ErrorReporter;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.WebLibraryIntegration;
-using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
@@ -84,8 +83,6 @@ namespace Bloom.web.controllers
 
 		private static BookSelection _bookSelection;
 
-		internal static string NotifyMessage { get; set; }
-
 		private BloomZipFile _bookZipFile;
 		private TempFile _bookZipFileTemp;
 		protected string YouTrackProjectKey = "BL";
@@ -107,7 +104,7 @@ namespace Bloom.web.controllers
 		void HandleShowDialog(ApiRequest request)
 		{
 			var requestData = DynamicJson.Parse(request.RequiredPostJson());
-			ShowProblemDialog(null, null, requestData.message,"user",requestData.shortMessage);
+			ShowProblemDialog(null, null, requestData.message, ProblemLevel.kUser, requestData.shortMessage);
 			request.PostSucceeded();
 		}
 
@@ -117,13 +114,6 @@ namespace Bloom.web.controllers
 			// from Javascript. However, it also must not require the lock, because if it holds it,
 			// no calls that need it can run (such as one put forth by the Cancel button).
 			apiHandler.RegisterEndpointHandler("problemReport/showDialog", HandleShowDialog, true, false);
-
-			apiHandler.RegisterEndpointHandlerUsedByOthers("problemReport/notify/message",
-				(ApiRequest request) =>
-				{
-					request.ReplyWithText(NotifyMessage ?? "");
-				}, false);
-
 
 			// For the paranoid - We could also have showProblemReport block these handlers while _reportInfo is being populated.
 			// I think it's unnecessary since the problem report dialog's URL isn't even set until after the _reportInfo is populated,
@@ -457,7 +447,6 @@ namespace Bloom.web.controllers
 					// this one, while apparently redundant might be wise to keep since closing the splash screen
 					// needs to be done on the UI thread.
 					StartupScreenManager.CloseSplashScreen();
-					var query = $"?level={levelOfProblem}";
 
 					if (!BloomServer.ServerIsListening)
 					{
@@ -467,7 +456,7 @@ namespace Bloom.web.controllers
 					}
 
 					// Precondition: we must be on the UI thread for Gecko to work.
-					using (var dlg = new ReactDialog("ProblemDialog", null, query))
+					using (var dlg = new ReactDialog("ProblemDialog", new { level = levelOfProblem}))
 					{
 						dlg.FormBorderStyle = FormBorderStyle.FixedToolWindow; // Allows the window to be dragged around
 						dlg.ControlBox = true; // Add controls like the X button back to the top bar

@@ -161,16 +161,16 @@ export const ReportDialog: React.FunctionComponent<{
     // Gives us a Cancel, Close, or Quit button.
     const getEndingButton = (): JSX.Element | null => {
         let l10nKey: string;
-        let text: string;
+        let buttonLabel: string;
         if (mode === Mode.gather && props.kind === ProblemKind.User) {
             l10nKey = "Common.Cancel";
-            text = "Cancel";
+            buttonLabel = "Cancel";
         } else {
             // Note: At one point, we only included this button if mode was not Submitted nor SubmissionFailed.
             // Now, we include it all the time. Since we have Sentry reporting too, there's less need to
             // try to funnel people towards submitting.
-            text = props.kind === ProblemKind.Fatal ? "Quit" : "Close";
-            l10nKey = `ReportProblemDialog.${text}`;
+            buttonLabel = props.kind === ProblemKind.Fatal ? "Quit" : "Close";
+            l10nKey = `ReportProblemDialog.${buttonLabel}`;
         }
 
         return (
@@ -183,7 +183,7 @@ export const ReportDialog: React.FunctionComponent<{
                     BloomApi.post("common/closeReactDialog");
                 }}
             >
-                {text}
+                {buttonLabel}
             </BloomButton>
         );
     };

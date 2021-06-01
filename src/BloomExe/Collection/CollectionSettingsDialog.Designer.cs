@@ -719,7 +719,6 @@ namespace Bloom.Collection
 			this.reactControl1.ReactComponentName = "TeamCollectionSettingsPanel";
 			this.reactControl1.Size = new System.Drawing.Size(636, 446);
 			this.reactControl1.TabIndex = 0;
-			this.reactControl1.UrlQueryString = null;
 			// 
 			// tabPage4
 			// 

@@ -7,12 +7,13 @@ import "./BookPreviewPanel.less";
 import { useSubscribeToWebSocketForStringMessage } from "../utils/WebSocketManager";
 import { TeamCollectionBookStatusPanel } from "../teamCollection/TeamCollectionBookStatusPanel";
 
-const urlParams = new URLSearchParams(window.location.search);
-const urlPreview = urlParams.get("urlPreview") ?? "about:blank";
-
-export const BookPreviewPanel: React.FunctionComponent = props => {
+export const BookPreviewPanel: React.FunctionComponent<{
+    urlPreview: string;
+}> = props => {
     const [isTeamCollection, setIsTeamCollection] = useState(false);
-    const [previewUrl, setPreviewUrl] = useState(urlPreview);
+    const [previewUrl, setPreviewUrl] = useState(
+        props.urlPreview ?? "about:blank"
+    );
 
     React.useEffect(() => {
         BloomApi.getBoolean(

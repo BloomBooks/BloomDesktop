@@ -5,26 +5,26 @@ const kBloomBlue = "#1d94a4";
 const kNonFatalColor = "#F3AA18";
 export const kBloomRed = "#d65649";
 export const kindParams = {
-    User: {
+    user: {
         dialogHeaderColor: kBloomBlue,
         primaryColor: kBloomBlue,
         title: "Report a Problem",
         l10nKey: "ReportProblemDialog.UserTitle"
     },
-    Fatal: {
+    fatal: {
         dialogHeaderColor: "#f44336", // bright red
         primaryColor: "#f44336", // FYI, we originally had #2F58EA (bright blue), but now we decided to have it all one color
         title: "Bloom encountered an error and needs to quit",
         l10nKey: "ReportProblemDialog.FatalTitle"
     },
-    NonFatal: {
+    nonfatal: {
         dialogHeaderColor: kNonFatalColor,
         primaryColor: kNonFatalColor,
         title: "Bloom had a problem",
         l10nKey: "ReportProblemDialog.NonFatalTitle"
     },
     // Notify uses many of the same settings as NonFatal
-    Notify: {
+    notify: {
         dialogHeaderColor: kNonFatalColor,
         primaryColor: kNonFatalColor,
         title: "Bloom had a problem",
@@ -38,7 +38,7 @@ export function makeTheme(kind: ProblemKind): Theme {
     return createMuiTheme(<any>{
         palette: {
             primary: { main: kindParams[kind.toString()].primaryColor },
-            error: { main: kindParams["NonFatal"].primaryColor }
+            error: { main: kindParams["nonfatal"].primaryColor }
         },
         typography: {
             fontSize: 12,
