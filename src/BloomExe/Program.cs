@@ -39,6 +39,13 @@ using Bloom.ErrorReporter;
 
 namespace Bloom
 {
+	static class Win32Imports
+	{
+		// Use DllImport to import the Win32 MessageBox function.  This is used for a fatal crash message on Windows.
+		[System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+		public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
+	}
+
 	static class Program
 	{
 		private const string _mutexId = "bloom";
@@ -718,7 +725,6 @@ namespace Bloom
 				_projectContext.Dispose();
 		}
 
-
 		/// <summary>
 		/// Show the user an emergency shutdown message.  The application event loop is almost
 		/// certainly dead when this method is called, so write out a text file and start another
@@ -726,6 +732,22 @@ namespace Bloom
 		/// </summary>
 		private static void ShowUserEmergencyShutdownMessage(Exception nasty)
 		{
+			if (SIL.PlatformUtilities.Platform.IsWindows)
+			{
+				try
+				{
+					Win32Imports.MessageBox(new IntPtr(0),
+						"Something unusual happened and Bloom needs to quit.  A report has been sent to the Bloom Team.\r\nIf this keeps happening to you, please write to issues@BloomLibrary.org.\r\n\r\n"+nasty.Message,
+						"Bloom Crash",
+						0);
+					return;
+				}
+				catch
+				{
+					// nothing we can do if Win32Imports.MessageBox throws: try the fallback approach
+					// of writing a text file and opening it in a different process.
+				}
+			}
 			string tempFileName = TempFile.WithExtension(".txt").Path;
 			using (var writer = File.CreateText(tempFileName))
 			{
