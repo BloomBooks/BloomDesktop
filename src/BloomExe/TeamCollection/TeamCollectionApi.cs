@@ -60,24 +60,8 @@ namespace Bloom.TeamCollection
 
 		private void HandleShowCreateTeamCollectionDialog(ApiRequest request)
 		{
-			// If we create the dialog here, the request that launched it will still be active.
-			// This means our server is still locked, and all kinds of things the dialog wants to
-			// do through the server won't work, or have to be made to work unlocked.
-			// Instead, we arrange for it to be launched when the system is idle
-			// (and the server is no longer locked).
-			Application.Idle += ShowCreateTeamCollectionDialog;
+			ReactDialog.ShowOnIdle("CreateTeamCollectionDialog", new { defaultRepoFolder = DropboxUtils.GetDropboxFolderPath() }, 600, 580);
 			request.PostSucceeded();
-		}
-
-		private void ShowCreateTeamCollectionDialog(object sender, EventArgs e)
-		{
-			Application.Idle -= ShowCreateTeamCollectionDialog;
-			using (var dlg = new ReactDialog("CreateTeamCollectionDialog", new { defaultRepoFolder = DropboxUtils.GetDropboxFolderPath() }))
-			{
-				dlg.Width = 600;
-				dlg.Height = 580;
-				dlg.ShowDialog();
-			}
 		}
 
 		private void HandleGetCollectionName(ApiRequest request)

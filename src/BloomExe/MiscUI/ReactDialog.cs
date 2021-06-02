@@ -67,6 +67,38 @@ namespace Bloom.MiscUI
 			}
 		}
 
+		/// <summary>
+		/// A shortcut version of <see cref="ShowOnIdle(Action)"/> which only needs the minimum information to launch a ReactDialog
+		/// </summary>
+		public static void ShowOnIdle(string reactComponent, object props, int width, int height)
+		{
+			ShowOnIdle(() =>
+			{
+				using (var dlg = new ReactDialog(reactComponent, props))
+				{
+					dlg.Width = width;
+					dlg.Height = height;
+					dlg.ShowDialog();
+				}
+			});
+		}
+
+		/// <summary>
+		/// Use this to create any ReactDialog from within an API handler which has requiresSync == true (the default).
+		/// Otherwise, our server is still locked, and all kinds of things the dialog wants to do through the server won't work.
+		/// Instead, we arrange for it to be launched when the system is idle (and the server is no longer locked).
+		/// </summary>
+		public static void ShowOnIdle(Action createDialogAction)
+		{
+			void HandleAction(object sender, EventArgs eventArgs)
+			{
+				Application.Idle -= HandleAction;
+				createDialogAction();
+			}
+
+			Application.Idle += HandleAction;
+		}
+
 		private void ReactDialog_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			_activeDialogs.Remove(this);
