@@ -123,7 +123,7 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
             <React.Fragment>
                 {getBloomWillSetYouUp()}
                 <NoteBox>
-                    <P
+                    <Span
                         l10nKey="TeamCollection.Merging"
                         l10nParam0={props.collectionName}
                         temporarilyDisableI18nWarning={true}
@@ -132,7 +132,7 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
                         you continue, Bloom will merge your existing "%0"
                         collection with the Team Collection that you are
                         joining.
-                    </P>
+                    </Span>
                 </NoteBox>
                 {getMatchingCollection()}
             </React.Fragment>
@@ -141,21 +141,13 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
 
     function getMatchingCollection() {
         return (
-            <p
-                // Something with pretty high priority sets the top margin to zero.
-                // But this one is always right below a NoteBox or ErrorBox and needs
-                // some space above. In this context padding is fine.
-                css={css`
-                    padding-top: 10px;
-                `}
-            >
+            <p>
                 <Span
                     l10nKey="TeamCollection.MatchingLocal"
                     temporarilyDisableI18nWarning={true}
                 >
                     Matching local collection:
-                </Span>
-                <span> </span>
+                </Span>{" "}
                 <span>{props.existingCollectionFolder}</span>
             </p>
         );
@@ -207,7 +199,6 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
                     >
                         Conflicting Team collection:
                     </Span>
-                    <span> </span>
                     <span>{props.conflictingCollection}</span>
                 </p>
             </React.Fragment>
