@@ -67,7 +67,9 @@ namespace Bloom.Book
 		void CleanupUnusedImageFiles(bool keepFilesForEditing=true);
 		void CleanupUnusedAudioFiles(bool isForPublish);
 		void CleanupUnusedVideoFiles();
-        BookInfo BookInfo { get; set; }
+		void CleanupUnusedActivities();
+
+		BookInfo BookInfo { get; set; }
 		string NormalBaseForRelativepaths { get; }
 		string InitialLoadErrors { get; }
 		bool ErrorAllowsReporting { get; }
