@@ -2208,9 +2208,9 @@ namespace Bloom.Publish.Epub
 					continue;
 				if (href != null && Path.GetFileName(href.Value) == "defaultLangStyles.css")
 					continue;
-				// BL-9844 Let's keep our xmatter stylesheets. If it causes problems, we can use the .epub class
-				// as a "media query".
-				if (href != null && Path.GetFileName(href.Value).EndsWith("-XMatter.css"))
+				// BL-9844 Let's keep the Kyrgyzstan xmatter stylesheet
+				// (just for 4.9/5.0; we will keep ePub-specific css in 5.1).
+				if (href != null && Path.GetFileName(href.Value).StartsWith("Kyrgyzstan2020"))
 					continue;
 				link.ParentNode.RemoveChild (link);
 			}
