@@ -147,3 +147,31 @@ div.section ul li {
     background-color: @bloom-darkestBackground;
     color: #87cefa;
 }
+
+// Tailor the display of the "COPY BOOK STATS" link in the leveled reader tool.
+@smallGap: 4px;
+@smallButtonSize: 20px;
+.copyBookStats {
+    display: inline-block;
+    position: relative;
+    margin: 10px 10px;
+    p {
+        cursor: pointer;
+        text-transform: uppercase;
+        display: inline-flex;
+        flex-direction: row;
+        align-items: center;
+        // Provide a small amount of space between the svg image and the text.
+        // (Trick stolen from https://coryrylan.com/blog/css-gap-space-with-flexbox.)
+        // "gap: @smallGap;" would be a lot simpler, but doesn't work until FF 63
+        margin: -@smallGap 0 0 -@smallGap;
+        width: calc(100% + @smallGap);
+        svg {
+            max-width: @smallButtonSize;
+            max-height: @smallButtonSize;
+        }
+        * {
+            margin: @smallGap 0 0 @smallGap;
+        }
+    }
+}
