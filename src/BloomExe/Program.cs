@@ -37,9 +37,15 @@ using SIL.WritingSystems;
 using SIL.Xml;
 using Bloom.ErrorReporter;
 
-
 namespace Bloom
 {
+	static class Win32Imports
+	{
+		// Use DllImport to import the Win32 MessageBox function.  This is used for a fatal crash message on Windows.
+		[System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+		public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
+	}
+
 	static class Program
 	{
 		private const string _mutexId = "bloom";
@@ -719,7 +725,6 @@ namespace Bloom
 				_projectContext.Dispose();
 		}
 
-
 		/// <summary>
 		/// Show the user an emergency shutdown message.  The application event loop is almost
 		/// certainly dead when this method is called, so write out a text file and start another
@@ -727,6 +732,22 @@ namespace Bloom
 		/// </summary>
 		private static void ShowUserEmergencyShutdownMessage(Exception nasty)
 		{
+			if (SIL.PlatformUtilities.Platform.IsWindows)
+			{
+				try
+				{
+					Win32Imports.MessageBox(new IntPtr(0),
+						"Something unusual happened and Bloom needs to quit.  A report has been sent to the Bloom Team.\r\nIf this keeps happening to you, please write to issues@BloomLibrary.org.\r\n\r\n"+nasty.Message,
+						"Bloom Crash",
+						0);
+					return;
+				}
+				catch
+				{
+					// nothing we can do if Win32Imports.MessageBox throws: try the fallback approach
+					// of writing a text file and opening it in a different process.
+				}
+			}
 			string tempFileName = TempFile.WithExtension(".txt").Path;
 			using (var writer = File.CreateText(tempFileName))
 			{
@@ -929,10 +950,33 @@ namespace Bloom
 				_projectContext = null;
 			}
 
-			SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-				new SIL.Reporting.ShowAlwaysPolicy(), error,
-				"{0} had a problem loading the {1} project. Please report this problem to the developers by clicking 'Details' below.",
-				Application.ProductName, Path.GetFileNameWithoutExtension(projectPath));
+			ErrorResult reportPressedResult = ErrorResult.Yes;
+			string errorMessage = $"Bloom had a problem loading the {Path.GetFileNameWithoutExtension(projectPath)} project. Send us a report and we'll help you get things fixed up.";
+			var result = SIL.Reporting.ErrorReport.NotifyUserOfProblem(
+				new SIL.Reporting.ShowAlwaysPolicy(), "Report", reportPressedResult,
+				errorMessage
+				);
+
+			// User clicked the report button.
+			if (result == reportPressedResult)
+			{
+				var userEmail = SIL.Windows.Forms.Registration.Registration.Default.Email;
+				if (!String.IsNullOrWhiteSpace(userEmail))
+				{
+					// Just send the report in for them.
+					// Include the .bloomCollection file (projectPath)
+					// as well as any other files at the same level, in case they're helpful for debugging
+					var dirName = Path.GetDirectoryName(projectPath);
+					var additionalPathsToInclude = Directory.GetFiles(dirName);
+					_applicationContainer.ProblemReportApi.SendReportWithoutUI(ProblemLevel.kNonFatal, error, errorMessage, "", additionalPathsToInclude);
+				}
+				else
+				{
+					// No email... just fallback to the WinFormsErrorReporter, which will allow the user to email us.
+					// Unfortunately, we won't be able to automatically get the .bloomCollection file from that.
+					SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(error, errorMessage);
+				}
+			}
 		}
 
 		/// ------------------------------------------------------------------------------------

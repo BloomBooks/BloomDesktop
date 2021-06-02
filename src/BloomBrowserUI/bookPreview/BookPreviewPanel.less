@@ -1,8 +1,16 @@
 // styles controlling the Book Preview Panel display
 
-#preview {
-    height: 100vh; // overridden when there is a team collection panel
-    width: 100vw;
-    overflow-y: hidden; // inner iframe shows scrollbars as needed
-    overflow-x: hidden;
+#preview-and-status-panel {
+    height: 100%;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    #preview {
+        // We want the preview to take up the available space, limiting the Team Collection panel
+        // (if present) to what it needs.
+        flex: 4;
+        width: 100vw;
+        overflow-y: hidden; // inner iframe shows scrollbars as needed
+        overflow-x: hidden;
+    }
 }

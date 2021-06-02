@@ -28,7 +28,7 @@ export const BookPreviewPanel: React.FunctionComponent = props => {
     );
 
     return (
-        <div>
+        <div id="preview-and-status-panel">
             <div id="preview" className={isTeamCollection ? "abovePanel" : ""}>
                 <iframe src={previewUrl} height="100%" width="100%" />
             </div>

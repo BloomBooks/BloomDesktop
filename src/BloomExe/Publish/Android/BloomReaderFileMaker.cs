@@ -145,6 +145,7 @@ namespace Bloom.Publish.Android
 			modifiedBook.Storage.CleanupUnusedAudioFiles(isForPublish: true);
 			modifiedBook.RemoveObsoleteAudioMarkup();
 			modifiedBook.Storage.CleanupUnusedVideoFiles();
+			modifiedBook.Storage.CleanupUnusedActivities();
 
 			// We want these to run after RemoveUnwantedContent() so that the metadata will more accurately reflect
 			// the subset of contents that are included in the .bloomd

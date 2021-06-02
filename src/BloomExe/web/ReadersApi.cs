@@ -21,6 +21,7 @@ using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json.Linq;
 using SIL.PlatformUtilities;
+using SIL.Windows.Forms.Miscellaneous;
 
 namespace Bloom.Api
 {
@@ -234,6 +235,55 @@ namespace Bloom.Api
 						request.PostSucceeded(); // technically it didn't if we didn't parse the number
 					}
 					break;
+
+				case "copyBookStatsToClipboard":
+					// See https://issues.bloomlibrary.org/youtrack/issue/BL-10018.
+					string bookStatsString;
+					try
+					{
+						bookStatsString = request.RequiredPostJson();
+						dynamic bookStats = DynamicJson.Parse(bookStatsString);
+						var headerBldr = new StringBuilder();
+						var dataBldr = new StringBuilder();
+						headerBldr.Append("Book Title");
+						var title = _bookSelection.CurrentSelection.Title;
+						title = title.Replace("\"","\"\"");	// Double double quotes to get Excel to recognize them.
+						dataBldr.AppendFormat("\"{0}\"", title);
+						headerBldr.Append(",Level");
+						dataBldr.AppendFormat(",\"Level {0}\"", bookStats["levelNumber"]);
+						headerBldr.Append(",Number of Pages with Text");
+						dataBldr.AppendFormat(",{0}", bookStats["pageCount"]);
+						headerBldr.Append(",Total Number of Words");
+						dataBldr.AppendFormat(",{0}", bookStats["actualWordCount"]);
+						headerBldr.Append(",Total Number of Sentences");
+						dataBldr.AppendFormat(",{0}", bookStats["actualSentenceCount"]);
+						headerBldr.Append(",Average No of Words per Page with Text");
+						dataBldr.AppendFormat(",{0:0.#}", bookStats["actualAverageWordsPerPage"]);
+						headerBldr.Append(",Average No of Sentences per Page with Text");
+						dataBldr.AppendFormat(",{0:0.#}", bookStats["actualAverageSentencesPerPage"]);
+						headerBldr.Append(",Number of Unique Words");
+						dataBldr.AppendFormat(",{0}", bookStats["actualUniqueWords"]);
+						headerBldr.Append(",Average Word Length");
+						dataBldr.AppendFormat(",{0:0.#}", bookStats["actualAverageGlyphsPerWord"]);
+						headerBldr.Append(",Average Sentence Length");
+						dataBldr.AppendFormat(",{0:0.#}", bookStats["actualAverageWordsPerSentence"]);
+						headerBldr.Append(",Maximum Word Length");
+						dataBldr.AppendFormat(",{0}", bookStats["actualMaxGlyphsPerWord"]);
+						headerBldr.Append(",Maximum Sentence Length");
+						dataBldr.AppendFormat(",{0}", bookStats["actualMaxWordsPerSentence"]);
+						// "actualWordsPerPageBook" is the maximum number of words on a page in the book
+						// It's in the json data, but not asked for in the clipboard copying.
+						var stringToSave = headerBldr.ToString() + Environment.NewLine + dataBldr.ToString();
+						PortableClipboard.SetText(stringToSave);
+					}
+					catch (IOException e)
+					{
+						SIL.Reporting.Logger.WriteError("Copying book statistics to clipboard failed to get Json", e);
+						break;
+					}
+					request.PostSucceeded();
+					break;
+
 				default:
 					request.Failed("Don't understand '" + lastSegment + "' in " + request.LocalPath());
 					break;

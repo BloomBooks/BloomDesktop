@@ -99,7 +99,6 @@ export const DialogTitle: React.FunctionComponent<{
                     src={props.icon}
                     alt="Decorative Icon"
                     css={css`
-                        /* margin-left: ${kDialogPadding}; */
                         margin-right: ${kDialogPadding};
                         color: ${color};
                     `}
@@ -133,11 +132,8 @@ export const DialogMiddle: React.FunctionComponent<{}> = props => {
 
                 p {
                     margin-block-start: 0;
+                    margin-block-end: 1em;
                 }
-                /* p:first-of-type {
-                    margin-block-start: 0;
-                    background-color: yellow;
-                } */
             `}
             {...props}
         >
@@ -177,7 +173,7 @@ export const DialogBottomButtons: React.FunctionComponent<{}> = props => {
             css={css`
                 margin-left: auto;
                 margin-top: auto; // push to bottom
-                padding-top: ${kDialogPadding}; // leave room between us and the content above us
+                padding-top: 20px; // leave room between us and the content above us
                 display: flex;
                 justify-content: flex-end; // make buttons line up on the right, unless wrapped in <DialogBottomLeftButtons>
                       // this is better but Firefox doesn't support it until FF 63:  gap: ${kDialogPadding};

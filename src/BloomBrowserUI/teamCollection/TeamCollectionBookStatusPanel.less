@@ -2,17 +2,10 @@
 // used from bloomUI so far: bloom-panelBackground
 @import "./teamCollection.less";
 
-@status-panel-height: 180px;
-
-#preview.abovePanel {
-    height: calc(100vh - @status-panel-height);
-}
-
 #teamCollection {
     color: white;
     background-color: @bloom-panelBackground;
     display: flex;
     flex-direction: column;
-    flex: 1;
-    height: @status-panel-height;
+    flex: 1; // less than the 4 of the preview panel, so it will limit itself to what it needs.
 }
