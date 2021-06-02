@@ -21,11 +21,23 @@ mixin field-languageNeutral
 block append stylesheets
 	+stylesheets('StoryProducer-XMatter.css')
 
+block cover-title
+	+field-prototypeDeclaredExplicity("V,N1").bookTitle
+		label.bubble Story number plus short title or index label
+		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
+
+block cover-bottom-credits
+	//NB: don't convert this to an inline label; that interferes with the bloom-copyFromOtherLanguageIfNecessary,
+	// because it is never empty
+	.creditsRow(data-hint='Story Scripture reference(s)')
+		+field-prototypeDeclaredExplicity("V")
+			+editable(kLanguageForPrototypeOnly).smallCoverCredits.Cover-Default-style(data-book='smallCoverCredits')
+
 block optionalAddition
 	+page-xmatter("Story Producer Configuration").spConfigurationPage.bloom-frontMatter(data-xmatter-page='spConfigurationPage')&attributes(attributes)#c2b5a77b-1536-49d5-8ccf-c348fff32fa3
 		.heading Content for the Title Slide (slide #0) in the Story Producer App
 		+label-and-field-languageNeutral(data-book='spGraphic')
-			p Either "gray-background" or "front-cover-picture", to indicate your choice for the title slide image:
+			p.user-selectable-text Either "gray-background" or "front-cover-picture", to indicate your choice for the title slide image:
 		+label-and-field(data-book='spReference')
 			p Scripture reference or a subtitle for your story, in the LWC:
 		+label-and-field(data-book='spTitleIdeasHeading')
