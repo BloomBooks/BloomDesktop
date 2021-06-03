@@ -493,20 +493,14 @@ export class BubbleManager {
         this.setActiveElement(originalActiveElement);
     }
 
-    public getBackgroundColorArray(spec: BubbleSpec): string[] {
-        let newSpec = spec;
-        // First, check to see if this is a child bubble, if so, get the parent's specs.
-        const patriarchBubbleSpec = this.getSelectedFamilySpec();
-        if (patriarchBubbleSpec) {
-            newSpec = patriarchBubbleSpec;
-        }
+    public getBackgroundColorArray(familySpec: BubbleSpec): string[] {
         if (
-            !newSpec.backgroundColors ||
-            newSpec.backgroundColors.length === 0
+            !familySpec.backgroundColors ||
+            familySpec.backgroundColors.length === 0
         ) {
             return ["white"];
         }
-        return newSpec.backgroundColors;
+        return familySpec.backgroundColors;
     }
 
     // drag-and-drop support for bubbles from comical toolbox
