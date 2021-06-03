@@ -174,11 +174,13 @@ namespace Bloom.TeamCollection
 			RobustFile.Move(source, dest);
 		}
 
+		private static string GetPathToBookFolder(string repoFolderPath) => Path.Combine(repoFolderPath, "Books");
+
 		internal string GetPathToBookFileInRepo(string bookFolderName)
 		{
 			// Don't use ChangeExtension here, it will fail if the folderName contains
 			// some arbitrary period.
-			return Path.Combine(_repoFolderPath, "Books", bookFolderName) + ".bloom";
+			return Path.Combine(GetPathToBookFolder(_repoFolderPath), bookFolderName) + ".bloom";
 		}
 
 		public override void RemoveBook(string bookName)
@@ -774,6 +776,13 @@ namespace Bloom.TeamCollection
 			// Unless the user canceled, this will have been set in JoinCollectionTeam()
 			// before the dialog closes.
 			return _newCollectionToJoin;
+		}
+
+		public static bool IsJoinCollectionGood(string joinCollectionPath)
+		{
+			var repoFolder = Path.GetDirectoryName(joinCollectionPath);
+			return Directory.Exists(GetPathToBookFolder(repoFolder)) &&
+			       File.Exists(GetRepoProjectFilesZipPath(repoFolder));
 		}
 
 		/// <summary>

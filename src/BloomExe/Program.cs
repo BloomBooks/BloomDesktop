@@ -270,6 +270,17 @@ namespace Bloom
 					if (FolderTeamCollection.IsJoinTeamCollectionFile(args))
 					{
 						SetUpErrorHandling();
+						if (!FolderTeamCollection.IsJoinCollectionGood(args[0]))
+						{
+							var message = LocalizationManager.GetString("TeamCollection.MissingFiles",
+								"Bloom cannot find the other parts of the Team Collection you are trying to join. This may be because you just downloaded the 'Join this Team Collection.JoinBloomTC' file. Instead, you should arrange to have shared access to the whole Team Collection folder, and then open this file."
+							);
+							ErrorReport.NotifyUserOfProblem(message);
+							return 1;
+						}
+						var repoFolder = Path.GetDirectoryName(args[0]);
+
+						
 						string newCollection;
 						// When we're spinning up a fake local collection in "projectName", we don't want
 						// any chance of copying FROM there to the repo.
