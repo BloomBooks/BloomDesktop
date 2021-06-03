@@ -1,3 +1,8 @@
+// Note to future selves: In looking at BL-10037, Andrew and Gordon looked for some time to see how
+// this file might be loaded by bloom-player. It isn't. The somewhat slimmed down file
+// ".\src\activities\domActivities\SimpleCheckboxQuiz.ts" is included instead. In fact the solution
+// for BL-10037 turned out to be an oversimplification of this code in that version.
+
 // The js generated from this file is used in the template page generated from simpleComprehensionQuiz.pug.
 // It makes sure the body element has the editMode class (if the editMode stylesheet is loaded)
 // and installs appropriate click handlers (depending on edit mode) which manipulate the classes
