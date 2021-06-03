@@ -176,7 +176,7 @@ const ComicToolControls: React.FunctionComponent = () => {
         // Update the Comical canvas on the page frame
         const bubbleMgr = ComicTool.bubbleManager();
         if (bubbleMgr) {
-            bubbleMgr.updateSelectedItemBubbleSpec({
+            bubbleMgr.updateSelectedFamilyBubbleSpec({
                 tails: value ? [bubbleMgr.getDefaultTailSpec() as TailSpec] : []
             });
         }
@@ -425,6 +425,15 @@ const ComicToolControls: React.FunctionComponent = () => {
         return percent === "0" ? undefined : transparencyString;
     };
 
+    // Note: Make sure bubble spec is the current ITEM's spec, not the current FAMILY's spec.
+    const isChild = (bubbleSpec: BubbleSpec | undefined) => {
+        const order = bubbleSpec?.order ?? 0;
+        return order > 1;
+    };
+
+    const bubbleManager = ComicTool.bubbleManager();
+    const currentItemSpec = bubbleManager?.getSelectedItemBubbleSpec();
+
     const deleteTooltip = useL10n("Delete", "Common.Delete");
 
     const duplicateTooltip = useL10n(
@@ -547,6 +556,7 @@ const ComicToolControls: React.FunctionComponent = () => {
                                 label="Show Tail"
                                 l10nKey="EditTab.Toolbox.ComicTool.Options.ShowTail"
                                 checked={showTailChecked}
+                                disabled={isChild(currentItemSpec)}
                                 onCheckChanged={v => {
                                     handleShowTailChanged(v as boolean);
                                 }}
