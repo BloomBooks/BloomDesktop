@@ -416,7 +416,7 @@ namespace Bloom.WebLibraryIntegration
 				// Also make sure it doesn't have any other bookshelf tags (which would typically be
 				// from a previous default bookshelf upload), including a duplicate of the one
 				// we may be about to add.
-				var tags = metadata.Tags.Where(t => !t.StartsWith("bookshelf:"));
+				var tags = (metadata.Tags?? new string[0]).Where(t => !t.StartsWith("bookshelf:"));
 				if (!string.IsNullOrEmpty(collectionSettings?.DefaultBookshelf))
 				{
 					tags = tags.Concat(new [] {"bookshelf:" + collectionSettings.DefaultBookshelf});
