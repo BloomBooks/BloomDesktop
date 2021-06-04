@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using Bloom.Api;
 using Bloom.TeamCollection;
 using Bloom.MiscUI;
+using Bloom.web;
 using Bloom.web.controllers;
 
 namespace Bloom.Collection
@@ -33,6 +34,10 @@ namespace Bloom.Collection
 		private Browser _enterpriseBrowser;
 		private string _subscriptionCode;
 		private string _brand;
+		private ReactControl _defaultBookshelfControl;
+
+		// Pending values edited through the CollectionSettingsApi
+		public string PendingDefaultBookshelf;
 
 		public CollectionSettingsDialog(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder, QueueRenameOfCollection queueRenameOfCollection, PageRefreshEvent pageRefreshEvent, TeamCollectionManager tcManager)
 		{
@@ -50,6 +55,7 @@ namespace Bloom.Collection
 			_language1FontLabel.UseMnemonic = false;
 			_language2FontLabel.UseMnemonic = false;
 			_language3FontLabel.UseMnemonic = false;
+			CollectionSettingsApi.DialogBeingEdited = this;
 
 			if (_collectionSettings.IsSourceCollection)
 			{
@@ -108,6 +114,19 @@ namespace Bloom.Collection
 			{
 				_bloomCollectionName.Enabled = false;
 			}
+
+			// This code would mostly more naturally go in Designer. Unfortunately we can't run designer
+			// until we get back in a state where all our dependencies are sufficiently consistent.
+
+			_defaultBookshelfControl = new ReactControl() { ReactComponentName ="DefaultBookshelfControl"};
+			_defaultBookshelfControl.Name = "_defaultBookshelfControl";
+
+			tabPage2.Controls.Add(_defaultBookshelfControl);
+			_defaultBookshelfControl.Location = new Point(_xmatterDescription.Left, _xmatterDescription.Bottom + 30);
+			// We'd like it to be as big as possible, not just big enough for the immediate content.
+			// Until React takes over at least the whole tab, the pull-down part of the combo can't
+			// stretch outside the Gecko control.
+			_defaultBookshelfControl.Size = new Size(_xmatterList.Width, 200);
 		}
 
 		private void SetupEnterpriseBrowser()
@@ -342,6 +361,8 @@ namespace Bloom.Collection
 				_collectionSettings.XMatterPackName = ((XMatterInfo)_xmatterList.SelectedItems[0].Tag).Key;
 				_restartRequired = true;// now that we've made them match, we won't detect by the normal means, so set this hard flag
 			}
+
+			_collectionSettings.DefaultBookshelf = PendingDefaultBookshelf;
 			_collectionSettings.Save();
 			Close();
 			if (!AnyReasonToRestart())
