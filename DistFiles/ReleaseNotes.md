@@ -16,6 +16,10 @@ There is now a "Widget Page" that gives you a full-screen page to host your html
 
 ![screenshot-online-only](https://i.imgur.com/EEoBfHe.png)
 
+## Leveled Reader
+
+Text on Simple Quiz pages is no longer counted when computing whole-book statistics. Note that this change only applies to newly created Quizzes. Contact us for instructions about applying this change to pre-exiting quiz pages.
+
 ## BloomLibrary.org
 
 When you download books from BloomLibrary.org that have audio, Bloom will now download the audio as part of the shell book.
