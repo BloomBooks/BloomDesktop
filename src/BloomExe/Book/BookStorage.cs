@@ -64,6 +64,8 @@ namespace Bloom.Book
 		string HandleRetiredXMatterPacks(HtmlDom dom, string nameOfXMatterPack);
 		IFileLocator GetFileLocator();
 		event EventHandler FolderPathChanged;
+
+		void CleanupUnusedSupportFiles(bool isForPublish);
 		void CleanupUnusedImageFiles(bool keepFilesForEditing=true);
 		void CleanupUnusedAudioFiles(bool isForPublish);
 		void CleanupUnusedVideoFiles();
@@ -1787,12 +1789,17 @@ namespace Bloom.Book
 				if (forSelectedBook)
 				{
 					UpdateSupportFiles();
-					CleanupUnusedImageFiles();
-					CleanupUnusedAudioFiles(isForPublish: false);
-					CleanupUnusedVideoFiles();
-					CleanupUnusedActivities();
+					CleanupUnusedSupportFiles(false);
 				}
 			}
+		}
+
+		public void CleanupUnusedSupportFiles(bool isForPublish)
+		{
+			CleanupUnusedImageFiles(!isForPublish);
+			CleanupUnusedAudioFiles(isForPublish: isForPublish);
+			CleanupUnusedVideoFiles();
+			CleanupUnusedActivities();
 		}
 
 		private void RestoreBackup(string pathToExistingHtml, Exception error)

@@ -920,6 +920,7 @@ namespace Bloom.WebLibraryIntegration
 		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, bool excludeNarrationAudio, bool excludeMusic,
 			bool preserveThumbnails, out string parseId)
 		{
+			book.Storage.CleanupUnusedSupportFiles(isForPublish:false); // we are publishing, but this is the real folder not a copy, so play safe.
 			var bookFolder = book.FolderPath;
 			parseId = ""; // in case of early return
 			// Set this in the metadata so it gets uploaded. Do this in the background task as it can take some time.
