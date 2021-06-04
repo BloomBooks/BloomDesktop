@@ -1,14 +1,24 @@
 # 5.0 (Beta)
 
+## Reminder for SILers
+
+Most SIL projects can freely use the SIL internal Enterprise License. Questions? Shoot us an email at **enterprise (preposition) bloomlibrary.org**.
+
 ## Collection Tab
 
 We made hovering over a book thumbnail show the folder name of the book. This is helpful to see what's-what when you have multiple copies of a book.
 
 ## Edit Tab
 
-In the Comic Tool, you can now control the transparency, and make corners round. You can also show a line that you can use to point to something in a diagram:
+### Comic Tool
+
+You can now control the transparency of comic element and make corners round. You can also show a line that you can use to point to something in a diagram:
 
 ![screenshot-online-only](https://i.imgur.com/HqlfqxN.png)
+
+You can now make circle comic elements.
+
+### Widgets
 
 We've made it easier to add HTML5 widgets from [Active Presenter](https://atomisystems.com/activepresenter/demo/). No more zipping/unzipping.
 
@@ -16,22 +26,17 @@ There is now a "Widget Page" that gives you a full-screen page to host your html
 
 ![screenshot-online-only](https://i.imgur.com/EEoBfHe.png)
 
-## Leveled Reader
+### Leveled Reader
+
+We added some new measures.
+
+We added a button to copy all the leveled reader measures of a book to the clipboard, in a form that can be pasted into spreadsheets.
 
 Text on Simple Quiz pages is no longer counted when computing whole-book statistics. Note that this change only applies to newly created Quizzes. Contact us for instructions about applying this change to pre-exiting quiz pages.
 
-## BloomLibrary.org
-
-When you download books from BloomLibrary.org that have audio, Bloom will now download the audio as part of the shell book.
-
-We've improved what you see when you look at a template books on BloomLibrary.org, in ways that will make it easier to understand what the template pages are for.
-
-![screenshot-online-only](https://i.imgur.com/JU0m0SD.png)
-![screenshot-online-only](https://i.imgur.com/lx9FVMz.png)
-
 ## Team Collections
 
-The new Team Collection _enterprise_ feature debuts in this release. With a Team Collection, you can safely share a collection within your team, across the internet, without full-time internet access. For this release, we're going to keep this feature behind the "Experimental" checkbox. For now, we are only supporting Dropbox & LAN environments. If you would like to help test it out, that'd be great! Just contact us.
+The new Team Collection _enterprise_ feature debuts in this release. With a Team Collection, you can safely share a collection within your team, across the internet, without full-time internet access. For this release, we're going to keep this feature behind the "Experimental" checkbox. For now, we are only supporting Dropbox & LAN environments. Please contact us if you are considering using this. We really need to benefit from understanding how this will be used, and how the experience goes.
 
 ![screenshot-online-only](https://i.imgur.com/VCqWEft.png)
 
@@ -41,6 +46,15 @@ Recently we spent weeks improving Bloom's ability to deal with large books and l
 
 ![screenshot-online-only](https://i.imgur.com/fkTafND.png)
 ![screenshot-online-only](https://i.imgur.com/3fsm9ae.png)
+
+## BloomLibrary.org
+
+When you download books from BloomLibrary.org that have audio, Bloom will now download the audio as part of the shell book.
+
+We've improved what you see when you look at a template books on BloomLibrary.org, in ways that will make it easier to understand what the template pages are for.
+
+![screenshot-online-only](https://i.imgur.com/JU0m0SD.png)
+![screenshot-online-only](https://i.imgur.com/lx9FVMz.png)
 
 <br/>
 <br/>
