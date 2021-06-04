@@ -23,7 +23,7 @@ import {
     NoteBox
 } from "../react_components/BloomDialog/commonDialogComponents";
 
-// Five variations are all handled here.
+// Six variations are all handled here.
 enum JoinCollectionState {
     // there is no local collection with the same name. Offer to create one.
     "CreateNewCollection",
@@ -34,13 +34,16 @@ enum JoinCollectionState {
     // there is an existing local collection of the same name joined to this TC (same ID) but at another location. Offer to report.
     "MatchesExistingTeamCollectionElsewhere",
     // there is an existing local collection of the same name joined to another TC (different ID). Offer to report.
-    "MatchesDifferentTeamCollection"
+    "MatchesDifferentTeamCollection",
+    // The JoinCollection file is lost...other necessary parts of the TC are missing.
+    "IncompleteTeamCollection"
 }
 
 // In normal use (not storybook), this is a top-level component in a ReactDialog.
 // The props are set in C# and passed to the ReactDialog constructor in FolderTeamCollection.ShowJoinCollectionTeamDialog()
 
 export const JoinTeamCollectionDialog: React.FunctionComponent<{
+    missingTcPieces?: string;
     collectionName: string;
     existingCollection: boolean;
     isAlreadyTcCollection: boolean;
@@ -70,6 +73,9 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
     const joinButtonEnglish = getJoinButtonEnglish();
 
     function getDialogStateFromProps(): JoinCollectionState {
+        if (props.missingTcPieces) {
+            return JoinCollectionState.IncompleteTeamCollection;
+        }
         if (!props.existingCollection) {
             return JoinCollectionState.CreateNewCollection;
         }
@@ -205,6 +211,22 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
         );
     }
 
+    function getDialogBodyMissingTCParts() {
+        return (
+            <ErrorBox>
+                <Div
+                    l10nKey="TeamCollection.NotValidTeamCollection"
+                    temporarilyDisableI18nWarning={true}
+                >
+                    This does not appear to be a valid Team Collection Folder.
+                    Make sure you have file-syncing set up with the entire Bloom
+                    Collection folder, and that the synchronization has had time
+                    to complete.
+                </Div>
+            </ErrorBox>
+        );
+    }
+
     // Existing local local collection is a TC linked to another location.
     function getDialogBodyExistingTcElsewhere() {
         return (
@@ -237,6 +259,8 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
 
     function getBodyOfDialogByState(): JSX.Element {
         switch (dialogState) {
+            case JoinCollectionState.IncompleteTeamCollection:
+                return getDialogBodyMissingTCParts();
             case JoinCollectionState.MatchesExistingNonTeamCollection:
                 return getDialogBodyExistingNonTC();
             case JoinCollectionState.MatchesExistingTeamCollection:
@@ -253,6 +277,7 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
     }
 
     const wantReportButton =
+        dialogState === JoinCollectionState.IncompleteTeamCollection ||
         dialogState === JoinCollectionState.MatchesDifferentTeamCollection ||
         dialogState ===
             JoinCollectionState.MatchesExistingTeamCollectionElsewhere;
@@ -264,18 +289,32 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
             <DialogBottomButtons>
                 {wantReportButton && (
                     <DialogBottomLeftButtons>
-                        <DialogReportButton
-                            shortMessage="Problem joining Team Collection due to conflicting local collection"
-                            messageGenerator={() =>
-                                `trying to join ${props.joiningRepo} (${props.joiningGuid}), but local collection ${props.existingCollectionFolder} (${props.localGuid}) is linked to ${props.conflictingCollection}`
-                            }
-                            // It's tempting to look for a way to closeDialog() when Report is clicked;
-                            // but if we do it after opening the problem dialog, it closes that instead.
-                            // If we do it before opening the problem dialog, then the code to open it may get unloaded before it runs.
-                            // It's also just possible that the user might want to see some information in the dialog while writing
-                            // something helpful to us in the problem report dialog. So I decided not to. If we do want to do it,
-                            // we probably need a new API, as well as a click handler on DialogReportButton.
-                        />
+                        {props.missingTcPieces ? (
+                            <DialogReportButton
+                                buttonText="Ask for help"
+                                l10nKey="Common.AskForHelp"
+                                temporarilyDisableI18nWarning={true}
+                                shortMessage="Problem joining Team Collection due to missing pieces of the collection"
+                                messageGenerator={() =>
+                                    // Not trying to be very nice about this message. The user will not usually see it.
+                                    // It will be buried in the details of the report sent to YouTrack to tell US what went wrong.
+                                    `Trying to join ${props.joiningRepo} but ${props.missingTcPieces} were not found`
+                                }
+                            />
+                        ) : (
+                            <DialogReportButton
+                                shortMessage="Problem joining Team Collection due to conflicting local collection"
+                                messageGenerator={() =>
+                                    `trying to join ${props.joiningRepo} (${props.joiningGuid}), but local collection ${props.existingCollectionFolder} (${props.localGuid}) is linked to ${props.conflictingCollection}`
+                                }
+                                // It's tempting to look for a way to closeDialog() when Report is clicked;
+                                // but if we do it after opening the problem dialog, it closes that instead.
+                                // If we do it before opening the problem dialog, then the code to open it may get unloaded before it runs.
+                                // It's also just possible that the user might want to see some information in the dialog while writing
+                                // something helpful to us in the problem report dialog. So I decided not to. If we do want to do it,
+                                // we probably need a new API, as well as a click handler on DialogReportButton.
+                            />
+                        )}
                     </DialogBottomLeftButtons>
                 )}
                 <BloomButton
