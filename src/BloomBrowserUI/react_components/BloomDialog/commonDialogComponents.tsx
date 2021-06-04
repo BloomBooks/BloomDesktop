@@ -125,15 +125,19 @@ export const DialogCancelButton: React.FunctionComponent<{
 );
 export const DialogReportButton: React.FunctionComponent<{
     className?: string; // also supports Emotion CSS
+    buttonText?: string; // defaults to 'Report'
+    l10nKey?: string; // MUST replace this if you change buttonText
+    temporarilyDisableI18nWarning?: boolean; // may use this if the passed L10nKey is temporarily disabled
     shortMessage: string;
     messageGenerator: () => string;
 }> = props => (
     <BloomButton
         className={props.className}
-        l10nKey="ErrorReport.Report"
+        l10nKey={props.l10nKey ?? "ErrorReport.Report"}
         hasText={true}
         enabled={true}
         variant="text"
+        temporarilyDisableI18nWarning={props.temporarilyDisableI18nWarning}
         onClick={() =>
             BloomApi.postJson("problemReport/showDialog", {
                 shortMessage: props.shortMessage,
@@ -146,7 +150,7 @@ export const DialogReportButton: React.FunctionComponent<{
             }
         `}
     >
-        Report
+        {props.buttonText ?? "Report"}
     </BloomButton>
 );
 

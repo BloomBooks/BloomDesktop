@@ -174,11 +174,13 @@ namespace Bloom.TeamCollection
 			RobustFile.Move(source, dest);
 		}
 
+		private static string GetPathToBookFolder(string repoFolderPath) => Path.Combine(repoFolderPath, "Books");
+
 		internal string GetPathToBookFileInRepo(string bookFolderName)
 		{
 			// Don't use ChangeExtension here, it will fail if the folderName contains
 			// some arbitrary period.
-			return Path.Combine(_repoFolderPath, "Books", bookFolderName) + ".bloom";
+			return Path.Combine(GetPathToBookFolder(_repoFolderPath), bookFolderName) + ".bloom";
 		}
 
 		public override void RemoveBook(string bookName)
@@ -384,7 +386,10 @@ namespace Bloom.TeamCollection
 			base.StartMonitoring();
 			_booksWatcher = new FileSystemWatcher();
 
-			_booksWatcher.Path = Path.Combine(_repoFolderPath, "Books");
+			var booksPath = Path.Combine(_repoFolderPath, "Books");
+			if (!Directory.Exists(booksPath))
+				return; // probably joining a TC and didn't get it synced properly.
+			_booksWatcher.Path = booksPath;
 
 			// Enhance: maybe one day we want to watch collection files too?
 
@@ -734,6 +739,14 @@ namespace Bloom.TeamCollection
 			_newCollectionToJoin = null; // set if JoinCollectionTeam called successfully
 			var repoFolder = Path.GetDirectoryName(path);
 			_joinCollectionName = tcManager.Settings.CollectionName;
+			if (_joinCollectionName == "projectName")
+			{
+				// This is what comes up when the TC has no zipped settings file.
+				// We MIGHT get a useful name from the parent folder.
+				// (It doesn't matter much because in any case we don't have enough
+				// of a collection to join.)
+				_joinCollectionName = Path.GetFileName(repoFolder);
+			}
 			var localCollectionFolder =
 				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, _joinCollectionName);
 			var isExistingCollection = Directory.Exists(localCollectionFolder);
@@ -750,6 +763,7 @@ namespace Bloom.TeamCollection
 
 			using (var dlg = new ReactDialog("JoinTeamCollectionDialog", new
 			{
+				missingTcPieces = MissingTcPieces(path),
 				collectionName = _joinCollectionName,
 				existingCollection = isExistingCollection,
 				isAlreadyTcCollection,
@@ -774,6 +788,26 @@ namespace Bloom.TeamCollection
 			// Unless the user canceled, this will have been set in JoinCollectionTeam()
 			// before the dialog closes.
 			return _newCollectionToJoin;
+		}
+
+		public static string MissingTcPieces(string joinCollectionPath)
+		{
+			var repoFolder = Path.GetDirectoryName(joinCollectionPath);
+			var result = "";
+			if (!Directory.Exists(GetPathToBookFolder(repoFolder)))
+			{
+				result += "book folder at " + repoFolder;
+			}
+
+			var repoProjectFilesZipPath = GetRepoProjectFilesZipPath(repoFolder);
+			if (!File.Exists(repoProjectFilesZipPath))
+			{
+				if (result.Length > 0)
+					result += " and ";
+				result += "project files zip at " + repoProjectFilesZipPath;
+			}
+
+			return result;
 		}
 
 		/// <summary>
