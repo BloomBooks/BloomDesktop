@@ -303,7 +303,10 @@ export class SignLanguageToolControls extends React.Component<
 
     // Used to determine the case where there is no video.
     private showDefaultSlider(): boolean {
-        return !this.doesVideoExist();
+        return (
+            !this.doesVideoExist() ||
+            this.state.videoStatistics.duration === "unknown"
+        );
     }
 
     private getTrimSlider(): JSX.Element {
@@ -346,13 +349,15 @@ export class SignLanguageToolControls extends React.Component<
         return (
             <div id="videoStatsWrapper">
                 <Label l10nKey="Common.Info">Info</Label>
-                <div>
-                    {/* duration is stored with tenths of seconds, but only displayed with seconds*/
-                    this.state.videoStatistics.duration.substr(
-                        0,
-                        this.state.videoStatistics.duration.length - 2
-                    )}
-                </div>
+                {this.state.videoStatistics.duration !== "unknown" && (
+                    <div>
+                        {/* duration is stored with tenths of seconds, but only displayed with seconds*/
+                        this.state.videoStatistics.duration.substr(
+                            0,
+                            this.state.videoStatistics.duration.length - 2
+                        )}
+                    </div>
+                )}
                 <div>{this.state.videoStatistics.fileSize}</div>
                 <div>
                     {this.state.videoStatistics.frameSize +

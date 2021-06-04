@@ -560,7 +560,6 @@ div.bloom-editable.Heading2-style {
 .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
     position: absolute;
     right: 0;
-    bottom: 0px;
     /*Same grey color as pageLabel*/
     color: rgba(0, 0, 0, 0.2);
     font-family: @UIFontStack;
@@ -570,13 +569,13 @@ div.bloom-editable.Heading2-style {
     line-height: 1; //else it will draw up in the box somewhere if the font is large
 }
 .languageTip {
-    /* 'top' is added by javascript (StyleEditor.AttachLanguageTip) based on the height of the element */
     margin-right: 1px;
     text-align: right;
+    bottom: 0;
 }
 .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
     content: attr(data-languageTipContent);
-    bottom: 0px;
+    bottom: 2px; // See Bl-10017
     margin-right: 2px;
 }
 /*Simulate the html5 placeholder attribute which is not available on divs

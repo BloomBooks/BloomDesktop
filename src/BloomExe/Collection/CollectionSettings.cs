@@ -56,6 +56,8 @@ namespace Bloom.Collection
 		/// </summary>
 		public string InvalidBranding { get; private set; }
 
+		public string DefaultBookshelf = "";
+
 		public static readonly Dictionary<string, string> CssNumberStylesToCultureOrDigits =
 			new Dictionary<string, string>()
 			{
@@ -317,6 +319,10 @@ namespace Bloom.Collection
 			xml.Add(new XElement("AudioRecordingTrimEndMilliseconds", AudioRecordingTrimEndMilliseconds));
 			if (Administrators != null && Administrators.Length > 0)
 				xml.Add(new XElement("Administrators", string.Join(",", Administrators)));
+			if (!string.IsNullOrEmpty(DefaultBookshelf))
+			{
+				xml.Add(new XElement("DefaultBookTags", "bookshelf:" + DefaultBookshelf));
+			}
 			SIL.IO.RobustIO.SaveXElement(xml, SettingsFilePath);
 		}
 
@@ -452,6 +458,11 @@ namespace Bloom.Collection
 					kDefaultAudioRecordingTrimEndMilliseconds);
 				Administrators=ReadString(xml, "Administrators", "")
 					.Split(new[] {","}, StringSplitOptions.RemoveEmptyEntries);
+				var defaultTags = ReadString(xml, "DefaultBookTags", "").Split(',');
+				var defaultBookshelfTag = defaultTags.Where(t => t.StartsWith("bookshelf:")).FirstOrDefault();
+				DefaultBookshelf = defaultBookshelfTag == null
+					? ""
+					: defaultBookshelfTag.Substring("bookshelf:".Length);
 			}
 			catch (Exception)
 			{

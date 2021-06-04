@@ -142,7 +142,6 @@
 			this._reactBookPreviewControl.ReactComponentName = "BookPreviewPanel";
 			this._reactBookPreviewControl.Size = new System.Drawing.Size(900, 193);
 			this._reactBookPreviewControl.TabIndex = 2;
-			this._reactBookPreviewControl.UrlQueryString = null;
 			// 
 			// LibraryBookView
 			// 

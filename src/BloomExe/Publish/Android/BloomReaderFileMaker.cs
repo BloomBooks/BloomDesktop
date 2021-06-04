@@ -138,14 +138,10 @@ namespace Bloom.Publish.Android
 
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6835.
 			RemoveInvisibleImageElements(modifiedBook);
-			modifiedBook.Storage.CleanupUnusedImageFiles(keepFilesForEditing: false);
+			modifiedBook.Storage.CleanupUnusedSupportFiles(isForPublish:true);
 			if (!modifiedBook.IsTemplateBook && RobustFile.Exists(Path.Combine(modifiedBookFolderPath, "placeHolder.png")))
 				RobustFile.Delete(Path.Combine(modifiedBookFolderPath, "placeHolder.png"));
-
-			modifiedBook.Storage.CleanupUnusedAudioFiles(isForPublish: true);
 			modifiedBook.RemoveObsoleteAudioMarkup();
-			modifiedBook.Storage.CleanupUnusedVideoFiles();
-			modifiedBook.Storage.CleanupUnusedActivities();
 
 			// We want these to run after RemoveUnwantedContent() so that the metadata will more accurately reflect
 			// the subset of contents that are included in the .bloomd
