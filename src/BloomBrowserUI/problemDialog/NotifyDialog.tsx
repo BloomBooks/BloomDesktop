@@ -14,26 +14,17 @@ import BloomButton from "../react_components/bloomButton";
 import { makeTheme, kindParams } from "./theme";
 import { useL10n } from "../react_components/l10nHooks";
 import { ProblemKind } from "./ProblemDialog";
-import { formatForHtml } from "../utils/encodingUtils";
 
 export const NotifyDialog: React.FunctionComponent<{
-    reportLabel: string | null;
-    secondaryLabel: string | null;
-    messageParam: string | null;
+    reportLabel?: string | null;
+    secondaryLabel?: string | null;
+    message: string | null;
 }> = props => {
     const theme = makeTheme(ProblemKind.NonFatal);
 
     const englishTitle = kindParams[ProblemKind.NonFatal].title;
     const titleKey = kindParams[ProblemKind.NonFatal].l10nKey;
     const localizedDlgTitle = useL10n(englishTitle, titleKey);
-
-    const [message] = BloomApi.useApiString(
-        "problemReport/notify/message",
-        props.messageParam || "",
-        () => {
-            return props.messageParam === null;
-        }
-    );
 
     const getDialog = () => {
         return (
@@ -60,13 +51,13 @@ export const NotifyDialog: React.FunctionComponent<{
                     /> */}
                 </DialogTitle>
                 <DialogContent className={"dialog-content"}>
-                    {/* InnerHTML is used so that we can insert <br> entities into the message. */}
+                    {/* InnerHTML is used so that we can insert markup like <br> into the message. */}
                     <DialogContentText
                         className="allowSelect"
                         dangerouslySetInnerHTML={{
-                            __html: formatForHtml(message)
+                            __html: props.message || ""
                         }}
-                    ></DialogContentText>
+                    />
                 </DialogContent>
                 {getDialogActionButtons()}
             </Dialog>
@@ -91,7 +82,7 @@ export const NotifyDialog: React.FunctionComponent<{
                             onClick={() => {
                                 BloomApi.postString(
                                     "common/closeReactDialog",
-                                    "closedByAlternateButton" // The value is the close source
+                                    "closedByAlternateButton" // The close source; informs HtmlErrorReporter what to do
                                 );
                             }}
                         >
@@ -112,7 +103,7 @@ export const NotifyDialog: React.FunctionComponent<{
                             onClick={() => {
                                 BloomApi.postString(
                                     "common/closeReactDialog",
-                                    "closedByReportButton" // The value is the close source
+                                    "closedByReportButton" // The close source; informs HtmlErrorReporter what to do
                                 );
                             }}
                         >

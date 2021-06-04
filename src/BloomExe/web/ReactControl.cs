@@ -23,7 +23,6 @@ namespace Bloom.web
 	public partial class ReactControl : UserControl
 	{
 		private string _reactComponentName;
-		private string _urlQueryString;
 		// props to provide to the react component
 		public object Props;
 
@@ -38,13 +37,6 @@ namespace Bloom.web
 		{
 			get { return _reactComponentName; }
 			set { _reactComponentName = value; }
-		}
-
-		[Browsable(true), Category("Setup")]
-		public string UrlQueryString
-		{
-			get { return _urlQueryString; }
-			set { _urlQueryString = value; }
 		}
 
 		public bool UseEditContextMenu;
@@ -111,7 +103,7 @@ namespace Bloom.web
 			{
 				Controls.Add(browser);
 			};
-			browser.NavigateToTempFileThenRemoveIt(tempFile.Path, _urlQueryString);
+			browser.NavigateToTempFileThenRemoveIt(tempFile.Path);
 		}
 	}
 }
