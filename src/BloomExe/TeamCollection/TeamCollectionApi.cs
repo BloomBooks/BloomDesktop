@@ -27,13 +27,15 @@ namespace Bloom.TeamCollection
 		private BookServer _bookServer;
 		private string CurrentUser => TeamCollectionManager.CurrentUser;
 		private BloomWebSocketServer _socketServer;
+		private readonly CurrentEditableCollectionSelection _currentBookCollectionSelection;
 		private CollectionSettings _settings;
 
 		public static TeamCollectionApi TheOneInstance { get; private set; }
 
 		// Called by autofac, which creates the one instance and registers it with the server.
-		public TeamCollectionApi(CollectionSettings settings, BookSelection bookSelection, ITeamCollectionManager tcManager, BookServer bookServer, BloomWebSocketServer socketServer)
+		public TeamCollectionApi(CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings settings, BookSelection bookSelection, ITeamCollectionManager tcManager, BookServer bookServer, BloomWebSocketServer socketServer)
 		{
+			_currentBookCollectionSelection = currentBookCollectionSelection;
 			_settings = settings;
 			_tcManager = tcManager;
 			_tcManager.CurrentCollection?.SetupMonitoringBehavior();
@@ -56,6 +58,7 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/getLog", HandleGetLog, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/getCollectionName", HandleGetCollectionName, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/showCreateTeamCollectionDialog", HandleShowCreateTeamCollectionDialog, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/getHistory", HandleGetHistory, true);
 		}
 
 		private void HandleShowCreateTeamCollectionDialog(ApiRequest request)
@@ -230,6 +233,14 @@ namespace Bloom.TeamCollection
 			}
 		}
 
+		public void HandleGetHistory(ApiRequest request)
+		{
+			var x = CollectionHistory.GetAllEvents(_currentBookCollectionSelection.CurrentSelection).ToArray();
+			request.ReplyWithJson(JsonConvert.SerializeObject(
+				x
+			));
+		}
+
 		private string BookFolderName => Path.GetFileName(_bookSelection.CurrentSelection?.FolderPath);
 
 		public void HandleAttemptLockOfCurrentBook(ApiRequest request)
@@ -309,6 +320,11 @@ namespace Bloom.TeamCollection
 				{
 					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, true, false, reportCheckinProgress);
 					reportCheckinProgress(0); // cleans up panel for next time
+					// review: not super happy about this being here in the api. Was stymied by
+					// PutBook not knowing about the actual book object, but maybe that could be passed in.
+					BookHistory.AddEvent(_bookSelection.CurrentSelection, BookHistoryEventType.CheckIn);
+
+					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, checkin:true);
 
 					Analytics.Track("TeamCollectionCheckinBook",
 						new Dictionary<string, string>(){
@@ -319,7 +335,6 @@ namespace Bloom.TeamCollection
 							{"BookId", _bookSelection?.CurrentSelection.ID },
 							{"BookName", _bookSelection?.CurrentSelection.Title }
 						});
-
 				}
 				else
 				{
