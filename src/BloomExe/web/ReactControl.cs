@@ -84,7 +84,16 @@ namespace Bloom.web
 				Location = new Point(3, 3),
 				Size = new Size(Width - 6, Height - 6),
 				BackColor = Color.White
+				
 			};
+			// This is mainly so that the mailTo: link in the Team Collection settings panel
+			// works with the user's default mail program rather than whatever GeckoFx60 does,
+			// which seems to be very buggy (BL-10050). However, I'm pretty sure there are
+			// no external links or mailTos in any of our ReactControls that we want the
+			// browser to handle itself, so for now, I'm making them all use the more reliable
+			// code in Bloom. This means, for example, that the "See how it works here" link
+			// will open the URL in the user's default browser.
+			browser.OnBrowserClick += Browser.HandleExternalLinkClick;
 			if (UseEditContextMenu)
 				browser.ContextMenuProvider = args => {
 					args.ContextMenu.MenuItems.Add(new MenuItem(L10NSharp.LocalizationManager.GetString("Common.Copy", "Copy"),
