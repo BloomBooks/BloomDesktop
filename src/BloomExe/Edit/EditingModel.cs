@@ -463,7 +463,7 @@ namespace Bloom.Edit
 				return;
 			}
 			CurrentBook.PrepareForEditing();
-			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+			RefreshDisplayOfCurrentPage();
 
 			_view.UpdatePageList(true);//counting on this to redo the thumbnails
 		}
@@ -480,7 +480,7 @@ namespace Bloom.Edit
 			CurrentBook.SetMultilingualContentLanguages(contentLanguages);	// set langs before saving page
 			SaveNow();
 			CurrentBook.PrepareForEditing();
-			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+			RefreshDisplayOfCurrentPage();
 			_view.UpdatePageList(true);//counting on this to redo the thumbnails
 
 			Logger.WriteEvent("ChangingContentLanguages");
@@ -647,7 +647,7 @@ namespace Bloom.Edit
 				}
 
 				_pageSelection.CurrentSelection.Book.BringPageUpToDate(_pageSelection.CurrentSelection.GetDivNodeForThisPage());
-				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+				RefreshDisplayOfCurrentPage();
 				_duplicatePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
 				_deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
 
@@ -1165,7 +1165,7 @@ namespace Bloom.Edit
 				//CurrentBook.Storage.CleanupUnusedImageFiles();
 
 				// But after saving, we need the non-cleaned version back there
-				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+				RefreshDisplayOfCurrentPage();
 
 				_view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
 				Logger.WriteMinorEvent("Finished ChangePicture {0} (except for async thumbnail) ...", imageInfo.FileName);

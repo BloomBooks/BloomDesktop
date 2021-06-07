@@ -53,7 +53,6 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("common/error", HandleJavascriptError, false); // Common
 			apiHandler.RegisterEndpointHandler("common/preliminaryError", HandlePreliminaryJavascriptError, false); // Common
 			apiHandler.RegisterEndpointHandler("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true); // Move to EditingViewApi
-			apiHandler.RegisterEndpointHandler("common/requestTranslationGroups", RequestTranslationGroups, true); // Move to EditingViewApi
 			apiHandler.RegisterEndpointHandler("common/showInFolder", HandleShowInFolderRequest, true); // Common
 			apiHandler.RegisterEndpointHandler("common/canModifyCurrentBook", HandleCanModifyCurrentBook, true);
 			apiHandler.RegisterEndpointHandler("common/showSettingsDialog", HandleShowSettingsDialog, false); // Common
@@ -291,11 +290,6 @@ namespace Bloom.web.controllers
 		private void RethinkPageAndReloadIt(ApiRequest request)
 		{
 			Model.RethinkPageAndReloadIt(request);
-		}
-
-		private void RequestTranslationGroups(ApiRequest request)
-		{
-			Model.RequestTranslationGroups(request);
 		}
 
 		/// <summary>
