@@ -8,6 +8,17 @@ body {
         "Gentium Book Basic", "Doulos SIL", Sans-Serif;
 }
 
+textarea,
+.bloom-editable {
+    // visible .bloom-editables are made display:flex rather than display:none
+    // to allow for possible vertical alignment options. Once using display:flex,
+    // the direction must be column, or paragraphs arrange in a row.
+    // (We generally try not to use display:flex in epubs, because some readers don't handle it.
+    // But it can easily sneak into custom xmatter and similar things, and then without this rule
+    // we get an unexpected row behavior in readers that DO handle it.)
+    flex-direction: column;
+}
+
 // Centers the img in the container making it as large as possible while preserving aspect ratio
 // (for any obsolete xmatter pages which use a background image)
 .bloom-backgroundImage {
