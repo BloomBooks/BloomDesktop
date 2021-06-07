@@ -405,18 +405,29 @@ div.pageLabel[contenteditable="true"]:focus {
     //position: relative;
     z-index: 1; // make room for the ¶ to show underneath the text
     // make paragraph markers visible
-    p::after {
-        content: "¶";
+    p::after,
+    .bloom-linebreak:after {
         color: @EditBoxItemsColor;
         position: absolute;
         right: 0;
         z-index: -1; // go under any text that reach the end of the line (I don't know why, but 0 doesn't work)
     }
-    &[dir="rtl"] p:after {
-        right: auto;
-        left: 0;
+    p::after {
+        content: "¶";
     }
-    // these are weird edit-time only <br>s that gecko inserts. They push the ¶ down and, at least in latin script, don't seem to do anything,
+    .bloom-linebreak:after {
+        content: "↲";
+        bottom: 0;
+    }
+    &[dir="rtl"] {
+        p:after,
+        .bloom-linebreak:after {
+            right: auto;
+            left: 0;
+        }
+    }
+
+    // these are weird edit-time only <br>s that gecko inserts. They push the "¶ down and, at least in latin script, don't see to do anything,
     // so let's hide them.
     p br {
         display: none;
