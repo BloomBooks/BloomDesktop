@@ -3,6 +3,7 @@
 @import "../sourceBubbles/sourceBubbles.less";
 @import (reference) "../../bookLayout/basePage.less"; // constants only
 
+@EditBoxItemsColor: #0000001a;
 @MediumGray: #c0b9b9;
 @ImageHoverOverlay: #d5d5e4;
 @ImageButtonBorder: #716666;
@@ -54,7 +55,7 @@ body {
         right: @bleed;
         top: @bleed;
         bottom: @bleed;
-        border: 3mm solid rgba(0, 0, 0, 0.1); // light gray
+        border: 3mm solid @EditBoxItemsColor;
         z-index: 2;
     }
 }
@@ -400,6 +401,28 @@ div.pageLabel[contenteditable="true"]:focus {
         0 0 8px rgba(82, 168, 236, 0.6);
     outline: 0;
 }
+.bloom-editable:focus {
+    //position: relative;
+    z-index: 1; // make room for the ¶ to show underneath the text
+    // make paragraph markers visible
+    p::after {
+        content: "¶";
+        color: @EditBoxItemsColor;
+        position: absolute;
+        right: 0;
+        z-index: -1; // go under any text that reach the end of the line (I don't know why, but 0 doesn't work)
+    }
+    &[dir="rtl"] p:after {
+        right: auto;
+        left: 0;
+    }
+    // these are weird edit-time only <br>s that gecko inserts. They push the "¶ down and, at least in latin script, don't see to do anything,
+    // so let's hide them.
+    p br {
+        display: none;
+    }
+}
+
 textarea.province {
     width: 151px;
     height: 33px;
