@@ -19,6 +19,7 @@ import {
     useSetupBloomDialog
 } from "../react_components/BloomDialog/BloomDialog";
 import { DialogCloseButton } from "../react_components/BloomDialog/commonDialogComponents";
+import { CollectionHistoryTable } from "./CollectionHistoryTable";
 export let showTeamCollectionDialog: () => void;
 
 export const TeamCollectionDialog: React.FunctionComponent<{
@@ -54,7 +55,8 @@ export const TeamCollectionDialog: React.FunctionComponent<{
                 color={"white"}
             />
             <DialogMiddle>
-                <ProgressBox
+                {/* TODO: add tabs and restore Progress. See https://www.figma.com/file/IlNPkoMn4Y8nlHMTCZrXfQSZ/Bloom-Collection-Tab?node-id=2707%3A6882 */}
+                {/* <ProgressBox
                     preloadedProgressEvents={events}
                     css={css`
                         // If we have omitOuterFrame that means the dialog height is controlled by c#, so let the progress grow to fit it.
@@ -65,7 +67,8 @@ export const TeamCollectionDialog: React.FunctionComponent<{
                         // enhance: there is a bug I haven't found where, if this is > 530px, then it overflows. Instead, the BloomDialog should keep growing.
                         min-width: 530px;
                     `}
-                />
+                /> */}
+                <CollectionHistoryTable />
             </DialogMiddle>
 
             <DialogBottomButtons>
