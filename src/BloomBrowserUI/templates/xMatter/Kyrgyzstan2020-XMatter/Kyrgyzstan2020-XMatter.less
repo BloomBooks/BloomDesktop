@@ -3,30 +3,35 @@
 
 @XMatterPackName: "Kyrgyz";
 @bleed: 3mm;
-:root {
+// :root {
+//   Normally, we would put the defaults in a :root psuedo-element like this.
+//   But something about the way scoped styles work in bloom-player causes this not to work.
+//   So instead, we set the defaults on the .bloom-page class and override on the specific
+//   layouts as necessary.
+// }
+.bloom-page {
     --HeaderHeight: 3.5cm;
     --OutsideBackCoverLogoHeight: 15mm;
     --OutsideBackCoverCreditsFontSize: 9pt;
     --DividerDiamondsFontSize: 16px;
-}
-.A3Portrait {
-    --HeaderHeight: 6cm;
-    --OutsideBackCoverLogoHeight: 30mm;
-    --DividerDiamondsFontSize: 20pt;
-    --OutsideBackCoverCreditsFontSize: 14pt;
-}
-.A5Landscape {
-    --OutsideBackCoverLogoHeight: 14mm;
-}
-.Device16x9Portrait {
-    --HeaderHeight: 3cm; // enough for two lines
-    --OutsideBackCoverLogoHeight: 10mm;
-    --OutsideBackCoverCreditsFontSize: 9pt;
-}
-.Device16x9Landscape {
-    --HeaderHeight: 2.5cm;
-    --OutsideBackCoverLogoHeight: 10mm;
-    --OutsideBackCoverCreditsFontSize: 9pt;
+
+    &.A3Portrait {
+        --HeaderHeight: 6cm;
+        --OutsideBackCoverLogoHeight: 30mm;
+        --DividerDiamondsFontSize: 20pt;
+        --OutsideBackCoverCreditsFontSize: 14pt;
+    }
+    &.A5Landscape {
+        --OutsideBackCoverLogoHeight: 14mm;
+    }
+    &.Device16x9Portrait {
+        --HeaderHeight: 3cm; // enough for two lines
+        --OutsideBackCoverLogoHeight: 10mm;
+    }
+    &.Device16x9Landscape {
+        --HeaderHeight: 2.5cm;
+        --OutsideBackCoverLogoHeight: 10mm;
+    }
 }
 
 // we need a lot of classes here to overcome the unfortunately "!important" class put in by Bloom at runtime
@@ -135,7 +140,7 @@ div.bloom-page.outsideBackCover.coverColor {
         margin-left: 75px; // Note: this must cause the left edge of the logo to align with the text below
     }
 
-    .outsideBackCover {
+    &.outsideBackCover {
         .bottomHalfGrid {
             height: 100%;
             display: grid;
@@ -315,6 +320,7 @@ div.bloom-page.outsideBackCover.coverColor {
     margin-top: auto;
     margin-right: auto;
     height: 7cm;
+    width: 100%;
     border: none !important;
 }
 
@@ -466,14 +472,12 @@ div.bloom-page {
 
         .bottomHalfGrid {
             height: 600px;
-            display: grid;
-            grid-template-columns: auto;
-            grid-template-rows: 250px 30px auto;
-            // Keep level image from moving off to the next page where it's not visible by moving it up
-            // one grid-row in epubs.
+            // Our theory is that because epubs are always portrait, we are better off just letting
+            // the level-image flow below the text. So override the display:grid for other publications.
+            // With display:grid, you can have the text and the image overlapping.
+            // (But with display:block, you can get the image partially off the page...)
+            display: block;
             [data-book="level-image"] {
-                grid-row: 2;
-                grid-column: 1;
                 margin-left: auto;
                 margin-right: auto;
                 margin-bottom: 10px; //separate from preceding text
@@ -482,7 +486,18 @@ div.bloom-page {
                 }
             }
             .bloom-translationGroup {
-                grid-row: 1;
+                .bloom-editable p {
+                    // Some day, we probably want to move this rule (and others?) from basePage.less
+                    // to basePage-sharedRules.less to get better WYSIWYG in epubs. But for 5.0, at least,
+                    // we are just doing this in this one specific case.
+                    margin: 0;
+
+                    // Actually, pages normally get 1.5em as the default, but
+                    // since the purpose of it here is just to give us something rather than nothing for empty paragraphs and
+                    // since epubs are usually more space-limited,
+                    // we reduce it a bit.
+                    min-height: 0.7em;
+                }
             }
         }
 
