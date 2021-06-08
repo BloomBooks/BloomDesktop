@@ -70,8 +70,8 @@ const ComicToolControls: React.FunctionComponent = () => {
         defaultBackgroundColors[1]
     );
 
-    // if bubbleActive is true, corresponds to the active bubble. Otherwise, corresponds to the most recently active bubble.
-    const [currentBubbleSpec, setCurrentBubbleSpec] = useState(
+    // if bubbleActive is true, corresponds to the active bubble's family. Otherwise, corresponds to the most recently active bubble's family.
+    const [currentFamilySpec, setCurrentFamilySpec] = useState(
         undefined as BubbleSpec | undefined
     );
 
@@ -89,17 +89,17 @@ const ComicToolControls: React.FunctionComponent = () => {
         bubbleManager.turnOnBubbleEditing();
         bubbleManager.turnOnHidingImageButtons();
 
-        const bubbleSpec = bubbleManager.getSelectedItemBubbleSpec();
+        const bubbleSpec = bubbleManager.getSelectedFamilySpec();
 
         // The callback function is (currently) called when switching between bubbles, but is not called
         // if the tail spec changes, or for style and similar changes to the bubble that are initiated by React.
         bubbleManager.requestBubbleChangeNotification(
             (bubble: BubbleSpec | undefined) => {
-                setCurrentBubbleSpec(bubble);
+                setCurrentFamilySpec(bubble);
             }
         );
 
-        setCurrentBubbleSpec(bubbleSpec);
+        setCurrentFamilySpec(bubbleSpec);
     };
 
     // Enhance: if we don't want to have a static, or don't want
@@ -112,20 +112,20 @@ const ComicToolControls: React.FunctionComponent = () => {
 
     // Reset UI when current bubble spec changes (e.g. user clicked on a bubble).
     useEffect(() => {
-        if (currentBubbleSpec) {
-            setStyle(currentBubbleSpec.style);
+        if (currentFamilySpec) {
+            setStyle(currentFamilySpec.style);
             setShowTailChecked(
-                currentBubbleSpec.tails && currentBubbleSpec.tails.length > 0
+                currentFamilySpec.tails && currentFamilySpec.tails.length > 0
             );
             setIsRoundedCornersChecked(
-                !!currentBubbleSpec.cornerRadiusX &&
-                    !!currentBubbleSpec.cornerRadiusY &&
-                    currentBubbleSpec.cornerRadiusX > 0 &&
-                    currentBubbleSpec.cornerRadiusY > 0
+                !!currentFamilySpec.cornerRadiusX &&
+                    !!currentFamilySpec.cornerRadiusY &&
+                    currentFamilySpec.cornerRadiusX > 0 &&
+                    currentFamilySpec.cornerRadiusY > 0
             );
-            setOutlineColor(currentBubbleSpec.outerBorderColor);
+            setOutlineColor(currentFamilySpec.outerBorderColor);
             setBubbleActive(true);
-            const backColor = getBackgroundColorValue(currentBubbleSpec);
+            const backColor = getBackgroundColorValue(currentFamilySpec);
             const newSwatch = getSwatchFromBubbleSpecColor(backColor);
             setBackgroundColorSwatch(newSwatch);
 
@@ -139,7 +139,7 @@ const ComicToolControls: React.FunctionComponent = () => {
         } else {
             setBubbleActive(false);
         }
-    }, [currentBubbleSpec]);
+    }, [currentFamilySpec]);
 
     // Callback for style changed
     const handleStyleChanged = event => {
@@ -152,7 +152,7 @@ const ComicToolControls: React.FunctionComponent = () => {
         const bubbleMgr = ComicTool.bubbleManager();
         if (bubbleMgr) {
             // BL-8537: If we are choosing "caption" style, we make sure that the background color is opaque.
-            let backgroundColorArray = currentBubbleSpec?.backgroundColors;
+            let backgroundColorArray = currentFamilySpec?.backgroundColors;
             if (
                 newStyle === "caption" &&
                 backgroundColorArray &&
@@ -164,7 +164,7 @@ const ComicToolControls: React.FunctionComponent = () => {
                 backgroundColors: backgroundColorArray,
                 style: newStyle
             });
-            setCurrentBubbleSpec(newSpec); // we do this because the new style's spec may affect Show Tail too
+            setCurrentFamilySpec(newSpec); // we do this because the new style's spec may affect Show Tail too
         }
     };
 
@@ -190,18 +190,18 @@ const ComicToolControls: React.FunctionComponent = () => {
         const bubbleMgr = ComicTool.bubbleManager();
         if (bubbleMgr) {
             const radius = newValue ? 8 : undefined; // 8 is semi-arbitrary for now. We may add a control in the future to set it.
-            bubbleMgr.updateSelectedItemBubbleSpec({
+            bubbleMgr.updateSelectedFamilyBubbleSpec({
                 cornerRadiusX: radius,
                 cornerRadiusY: radius
             });
         }
     };
 
-    const getBackgroundColorValue = (spec: BubbleSpec): string => {
+    const getBackgroundColorValue = (familySpec: BubbleSpec): string => {
         const bubbleMgr = ComicTool.bubbleManager();
         if (bubbleMgr) {
             const backgroundColorArray = bubbleMgr.getBackgroundColorArray(
-                spec
+                familySpec
             );
             if (backgroundColorArray.length === 1) {
                 return backgroundColorArray[0]; // This could be a hex string or an rgba() string
@@ -255,7 +255,7 @@ const ComicToolControls: React.FunctionComponent = () => {
             setOutlineColor(newValue);
 
             // Update the Comical canvas on the page frame
-            bubbleMgr.updateSelectedItemBubbleSpec({
+            bubbleMgr.updateSelectedFamilyBubbleSpec({
                 outerBorderColor: newValue
             });
         }
@@ -434,7 +434,7 @@ const ComicToolControls: React.FunctionComponent = () => {
 
     // BL-8537 Because of the black shadow background, partly transparent backgrounds don't work for
     // captions. We'll use this to tell the color chooser not to show the alpha option.
-    const isCaption = currentBubbleSpec?.style === "caption";
+    const isCaption = currentFamilySpec?.style === "caption";
 
     return (
         <div id="comicToolControls">
@@ -559,7 +559,7 @@ const ComicToolControls: React.FunctionComponent = () => {
                                 checked={isRoundedCornersChecked}
                                 disabled={
                                     !styleSupportsRoundedCorners(
-                                        currentBubbleSpec
+                                        currentFamilySpec
                                     )
                                 }
                                 onCheckChanged={newValue => {
