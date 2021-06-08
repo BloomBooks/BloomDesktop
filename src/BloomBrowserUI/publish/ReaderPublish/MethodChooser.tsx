@@ -1,3 +1,7 @@
+/** @jsx jsx **/
+/** @jsxFrag React.Fragment */
+import { jsx, css } from "@emotion/core";
+
 import * as React from "react";
 import "./ReaderPublish.less";
 import { RadioGroup } from "../../react_components/RadioGroup";
@@ -133,6 +137,16 @@ function getHint(method: string) {
         case "usb":
             return (
                 <>
+                    <Typography
+                        css={css`
+                            margin-bottom: 10px;
+                        `}
+                    >
+                        <LocalizedString l10nKey="PublishTab.Android.USB.OpenMenuItem">
+                            On the Android device, run Bloom Reader, open the
+                            menu and choose 'Receive books via USB'.
+                        </LocalizedString>
+                    </Typography>
                     <div className="hint-heading">
                         <InfoIcon className="warning" />
                         <Typography variant="h6">

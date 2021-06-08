@@ -15,7 +15,6 @@ namespace Bloom.Publish.Android.usb
 	{
 		Unknown,
 		NoDeviceFound,
-		NoBloomDirectory,
 		MoreThanOneReadyDevice
 	}
 
@@ -46,8 +45,7 @@ namespace Bloom.Publish.Android.usb
 		private bool _stopLookingForDevice;
 
 		/// <summary>
-		/// Attempt to establish a connection with a device which has the Bloom Reader app,
-		/// then send it the book.
+		/// Attempt to establish a connection with an Android device; then send it the book.
 		/// </summary>
 		public void ConnectAndSendToOneDevice(Book.Book book, Color backColor, AndroidPublishSettings settings = null)
 		{
@@ -93,7 +91,7 @@ namespace Bloom.Publish.Android.usb
 				throw new ArgumentNullException(nameof(bloomdPath));
 
 			if (_device == null || _bloomFolderPath == null)
-				throw new InvalidOperationException("Must connect before calling SendBookAsync");
+				throw new InvalidOperationException("Must connect before calling SendBook");
 
 			using (var sourceStream = File.OpenRead(bloomdPath))
 			using (var targetStream = _device.OpenWrite(Path.Combine(_bloomFolderPath, Path.GetFileName(bloomdPath)),
@@ -109,7 +107,6 @@ namespace Bloom.Publish.Android.usb
 				targetStream.Write(buffer, 0, buffer.Length);
 				targetStream.Flush();
 			}
-
 		}
 
 		public string GetDeviceName()
@@ -147,59 +144,68 @@ namespace Bloom.Publish.Android.usb
 		}
 
 		/// <summary>
-		/// Find the one with Bloom Reader installed (indicated by the presence of the Bloom directory
-		/// as a direct child of a root storage object)
+		/// Find the one Android device
+		/// (indicated by the presence of the Android directory as a direct child of a root storage object)
+		/// and send to it.
 		/// </summary>
-		/// <param name="devices"></param>
-		/// <returns>true if it found a ready device</returns>
+		/// <returns>true if it found one ready device</returns>
 		private bool ConnectAndSendToOneDeviceInternal(IEnumerable<IDevice> devices, Book.Book book, Color backColor, AndroidPublishSettings settings = null)
 		{
 			List<IDevice> applicableDevices = new List<IDevice>();
-			int totalDevicesFound = 0;
 			foreach (var device in devices)
 			{
-				_bloomFolderPath = GetBloomFolderPath(device);
-				if (_bloomFolderPath != null)
+				var androidFolderPath = GetAndroidFolderPath(device);
+				if (androidFolderPath != null)
+				{
 					applicableDevices.Add(device);
-				totalDevicesFound++;
+					_bloomFolderPath = Path.GetDirectoryName(androidFolderPath) + "\\" + kBloomFolderOnDevice;
+					_device = device;
+				}
 			}
 
 			if (applicableDevices.Count == 1)
 			{
-				_device = applicableDevices[0];
-				// Without this, we're depending on the LAST device we tried being the applicable one.
-				_bloomFolderPath = GetBloomFolderPath(_device);
+				try
+				{
+					_device.CreateFolderObjectFromPath(_bloomFolderPath);
+				}
+				catch (Exception e)
+				{
+					SIL.Reporting.Logger.WriteError("Unable to create Bloom folder on device.", e);
+
+					// Treat it as a no-device situation.
+					_bloomFolderPath = null;
+					_device = null;
+					OneReadyDeviceNotFound?.Invoke(DeviceNotFoundReportType.NoDeviceFound, new List<string>(0));
+
+					return false;
+				}
 				OneReadyDeviceFound(book, backColor, settings);
 				return true;
 			}
 
 			_bloomFolderPath = null;
+			_device = null;
 
-			if (totalDevicesFound > 0 && applicableDevices.Count == 0)
-			{
-				OneReadyDeviceNotFound(DeviceNotFoundReportType.NoBloomDirectory,
-					devices.Select(d => d.Name).ToList());
-				return false;
-			}
-
-			DeviceNotFoundReportType deviceNotFoundReportType = DeviceNotFoundReportType.NoDeviceFound;
-			if (applicableDevices.Count > 1)
-			{
-				deviceNotFoundReportType = DeviceNotFoundReportType.MoreThanOneReadyDevice;
-			}
+			DeviceNotFoundReportType deviceNotFoundReportType =
+				applicableDevices.Count > 1
+				?
+				DeviceNotFoundReportType.MoreThanOneReadyDevice
+				:
+				DeviceNotFoundReportType.NoDeviceFound;
 			OneReadyDeviceNotFound?.Invoke(deviceNotFoundReportType,
 				devices.Select(d => d.Name).ToList());
 
 			return false;
 		}
 
-		private string GetBloomFolderPath(IDevice device)
+		private string GetAndroidFolderPath(IDevice device)
 		{
 			try
 			{
 				foreach (var rso in device.GetDeviceRootStorageObjects())
 				{
-					var possiblePath = Path.Combine(rso.Name, kBloomFolderOnDevice);
+					var possiblePath = Path.Combine(rso.Name, "Android");
 					if (device.GetObjectFromPath(possiblePath) != null)
 						return possiblePath;
 				}
@@ -207,8 +213,8 @@ namespace Bloom.Publish.Android.usb
 			catch (COMException e)
 			{
 				// This can happen when the device is unplugged at just the wrong moment after we enumerated it.
-				// Just treat it as not a device that has Bloom.
-				SIL.Reporting.Logger.WriteError("Unable to check device for Bloom folder", e);
+				// Just treat it as an unusable device.
+				SIL.Reporting.Logger.WriteError("Unable to check device for Android folder", e);
 			}
 			return null;
 		}
