@@ -418,7 +418,7 @@ export class BubbleManager {
         }
         this.activeElement = element;
         if (this.notifyBubbleChange) {
-            this.notifyBubbleChange(this.getSelectedItemBubbleSpec());
+            this.notifyBubbleChange(this.getSelectedFamilySpec());
         }
         Comical.activateElement(this.activeElement);
     }
@@ -469,11 +469,6 @@ export class BubbleManager {
         return ancestors.length > 0 ? ancestors[0] : tempBubble;
     }
 
-    public getSpecsOfPatriarchBubble(): BubbleSpec | undefined {
-        const tempBubble = this.getPatriarchBubbleOfActiveElement();
-        return tempBubble ? tempBubble.getBubbleSpec() : undefined;
-    }
-
     // Set the color of the background in all of the active bubble family's TextOverPicture boxes.
     public setBackgroundColor(colors: string[], opacity: number | undefined) {
         if (!this.activeElement) {
@@ -498,20 +493,14 @@ export class BubbleManager {
         this.setActiveElement(originalActiveElement);
     }
 
-    public getBackgroundColorArray(spec: BubbleSpec): string[] {
-        let newSpec = spec;
-        // First, check to see if this is a child bubble, if so, get the parent's specs.
-        const parentBubbleSpec = this.getSpecsOfPatriarchBubble();
-        if (parentBubbleSpec) {
-            newSpec = parentBubbleSpec;
-        }
+    public getBackgroundColorArray(familySpec: BubbleSpec): string[] {
         if (
-            !newSpec.backgroundColors ||
-            newSpec.backgroundColors.length === 0
+            !familySpec.backgroundColors ||
+            familySpec.backgroundColors.length === 0
         ) {
             return ["white"];
         }
-        return newSpec.backgroundColors;
+        return familySpec.backgroundColors;
     }
 
     // drag-and-drop support for bubbles from comical toolbox
@@ -1244,11 +1233,18 @@ export class BubbleManager {
         // We used to close a WebSocket here; saving the hook in case we need it someday.
     }
 
+    // Gets the bubble spec of the active element. (If it is a child, the child's partial bubble spec will be returned)
     public getSelectedItemBubbleSpec(): BubbleSpec | undefined {
         if (!this.activeElement) {
             return undefined;
         }
         return Bubble.getBubbleSpec(this.activeElement);
+    }
+
+    // Get the active element's family's bubble spec. (i.e., the root/patriarch of the active element)
+    public getSelectedFamilySpec(): BubbleSpec | undefined {
+        const tempBubble = this.getPatriarchBubbleOfActiveElement();
+        return tempBubble ? tempBubble.getBubbleSpec() : undefined;
     }
 
     public requestBubbleChangeNotification(
@@ -1268,13 +1264,34 @@ export class BubbleManager {
             return undefined;
         }
 
+        // ENHANCE: Constructing new bubble instances is dangerous. It may get out of sync with the instance that Comical knows about.
+        // It would be preferable if we asked Comical to find the bubble instance corresponding to this element.
         const activeBubble = new Bubble(this.activeElement);
-        activeBubble.mergeWithNewBubbleProps(newBubbleProps);
+
+        return this.updateBubbleWithPropsHelper(activeBubble, newBubbleProps);
+    }
+
+    public updateSelectedFamilyBubbleSpec(newBubbleProps: BubbleSpecPattern) {
+        const parentBubble = this.getPatriarchBubbleOfActiveElement();
+        return this.updateBubbleWithPropsHelper(parentBubble, newBubbleProps);
+    }
+
+    private updateBubbleWithPropsHelper(
+        bubble: Bubble | undefined,
+        newBubbleProps: BubbleSpecPattern
+    ): BubbleSpec | undefined {
+        if (!this.activeElement || !bubble) {
+            return undefined;
+        }
+
+        bubble.mergeWithNewBubbleProps(newBubbleProps);
         Comical.update(this.activeElement.parentElement!);
+
         // BL-9548: Interaction with the toolbox panel makes the bubble lose focus, which requires
         // we re-activate the current comical element.
         Comical.activateElement(this.activeElement);
-        return activeBubble.getBubbleSpec() as BubbleSpec;
+
+        return bubble.getBubbleSpec();
     }
 
     // Note: After reloading the page, you can't have any of your other code execute safely
