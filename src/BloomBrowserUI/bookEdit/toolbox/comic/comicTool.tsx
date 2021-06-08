@@ -151,6 +151,10 @@ const ComicToolControls: React.FunctionComponent = () => {
         // Update the Comical canvas on the page frame
         const bubbleMgr = ComicTool.bubbleManager();
         if (bubbleMgr) {
+            const newBubbleProps = {
+                style: newStyle
+            };
+
             // BL-8537: If we are choosing "caption" style, we make sure that the background color is opaque.
             let backgroundColorArray = currentFamilySpec?.backgroundColors;
             if (
@@ -160,10 +164,18 @@ const ComicToolControls: React.FunctionComponent = () => {
             ) {
                 backgroundColorArray[0] = setOpaque(backgroundColorArray[0]);
             }
-            const newSpec = bubbleMgr.updateSelectedItemBubbleSpec({
-                backgroundColors: backgroundColorArray,
-                style: newStyle
-            });
+
+            // Avoid setting backgroundColorArray if it's just undefined.
+            // Setting it to be undefined defines it as a property. This means that when objects are merged,
+            // this object is considered to have a backgroundColors property, even though it may not be visible via JSON.stringify and even though
+            // you may not have intended for it to overwrite prior values.
+            if (backgroundColorArray !== undefined) {
+                newBubbleProps["backgroundColors"] = backgroundColorArray;
+            }
+
+            const newSpec = bubbleMgr.updateSelectedFamilyBubbleSpec(
+                newBubbleProps
+            );
             setCurrentFamilySpec(newSpec); // we do this because the new style's spec may affect Show Tail too
         }
     };
