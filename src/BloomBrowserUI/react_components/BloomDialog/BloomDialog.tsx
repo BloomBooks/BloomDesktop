@@ -26,6 +26,7 @@ export const BloomDialog: React.FunctionComponent<{
     const inner = (
         <div
             css={css`
+                background-color: white;
                 display: flex;
                 flex-direction: column;
                 padding-left: ${kDialogSidePadding};

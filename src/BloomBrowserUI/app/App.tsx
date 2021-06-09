@@ -2,7 +2,7 @@ import Button from "@material-ui/core/Button";
 import * as React from "react";
 import { useState } from "react";
 import "App.less";
-import { CollectionTabPane } from "../collectionTab/CollectionTabPane";
+import { CollectionsTabPane } from "../collectionTab/CollectionTabPane";
 
 const kBloomBlue = "#1d94a4";
 const kBackgroundGray = "#2e2e2e";
@@ -12,7 +12,7 @@ export const App: React.FunctionComponent<{}> = props => {
             <div style={{ backgroundColor: kBloomBlue, paddingTop: "3px" }}>
                 <Tabs />
             </div>
-            <CollectionTabPane />
+            <CollectionsTabPane />
         </div>
     );
 };

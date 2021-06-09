@@ -109,7 +109,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                     err?.response?.statusText ??
                         "Bloom could not determine the status of this book"
                 );
-                setState("error");
             }
         );
     }, [reload]);
@@ -126,7 +125,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     );
 
     let avatar: JSX.Element;
-    if (state.startsWith("locked")) {
+    if (lockState.startsWith("locked")) {
         avatar = (
             <BloomAvatar
                 email={lockedBy}
@@ -275,7 +274,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         undefined,
         true
     );
-    if (state != "lockedByMe" && busy) {
+    if (lockState != "lockedByMe" && busy) {
         setBusy(false);
     }
 

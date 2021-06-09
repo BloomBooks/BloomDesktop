@@ -6,7 +6,7 @@ import Splitter from "m-react-splitters";
 import "m-react-splitters/lib/splitters.css";
 import "CollectionTabPane.less";
 
-export const CollectionTabPane: React.FunctionComponent<{}> = () => {
+export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     const [collections] = BloomApi.useApiJson("collections/list");
 
     if (collections) {

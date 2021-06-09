@@ -1,9 +1,7 @@
 import React = require("react");
 import * as ReactDOM from "react-dom";
 import { BookPreviewPanel } from "../bookPreview/BookPreviewPanel";
-import { BookListPane } from "../collectionTab/BookListPane";
-import { CollectionsPane } from "../collectionTab/CollectionTabPane";
-import { CollectionTabPane } from "../collectionTab/CollectionTabPane";
+import { CollectionsTabPane } from "../collectionTab/CollectionTabPane";
 import { TeamCollectionSettingsPanel } from "../teamCollection/TeamCollectionSettingsPanel";
 import { TeamCollectionDialog } from "../teamCollection/TeamCollectionDialog";
 import { JoinTeamCollectionDialog } from "../teamCollection/JoinTeamCollectionDialog";
@@ -25,11 +23,8 @@ const knownComponents = {
     ProblemDialog: ProblemDialog,
     ProgressDialog: ProgressDialog,
     CreateTeamCollectionDialog: CreateTeamCollectionDialog,
-    DefaultBookshelfControl: DefaultBookshelfControl
-    BookListPane: BookListPane
-    BookListPane: BookListPane,
-    CollectionsPane: CollectionsPane
-    CollectionsTabPane: CollectionTabPane,
+    DefaultBookshelfControl: DefaultBookshelfControl,
+    CollectionsTabPane: CollectionsTabPane,
     App: App
 };
 
@@ -39,19 +34,25 @@ const knownComponents = {
     reactComponentName: string,
     props?: Object
 ) => {
-    const dialogParamsWhenWrappedByWinforms: IBloomDialogEnvironmentParams = {
-        omitOuterFrame: true,
-        initiallyOpen: true
-    };
-    const p = {
-        dialogEnvironment: dialogParamsWhenWrappedByWinforms,
-        ...props
-    };
-    ReactDOM.render(
-        React.createElement(knownComponents[reactComponentName], p, null),
-        root
-    );
-}
+    try {
+        const dialogParamsWhenWrappedByWinforms: IBloomDialogEnvironmentParams = {
+            omitOuterFrame: true,
+            initiallyOpen: true
+        };
+        const p = {
+            dialogEnvironment: dialogParamsWhenWrappedByWinforms,
+            ...props
+        };
+        ReactDOM.render(
+            React.createElement(knownComponents[reactComponentName], p, null),
+            root
+        );
+    } catch (error) {
+        throw new Error(
+            `Error wiring up ${reactComponentName}: ${error.toString()}`
+        );
+    }
+};
 export function wireUpReact(root: HTMLElement, reactComponentName: string) {
     ReactDOM.render(
         React.createElement(knownComponents[reactComponentName], {}, null),

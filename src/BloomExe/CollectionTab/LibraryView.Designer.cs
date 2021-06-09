@@ -189,7 +189,6 @@ namespace Bloom.CollectionTab
 			// 
 			this.reactControl1.BackColor = System.Drawing.Color.White;
 			this.reactControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.reactControl1.JavascriptBundleName = "collectionTabBundle.js";
 			this._L10NSharpExtender.SetLocalizableToolTip(this.reactControl1, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.reactControl1, null);
 			this._L10NSharpExtender.SetLocalizingId(this.reactControl1, "ReactControl");
@@ -198,7 +197,6 @@ namespace Bloom.CollectionTab
 			this.reactControl1.ReactComponentName = "CollectionsTabPane";
 			this.reactControl1.Size = new System.Drawing.Size(773, 518);
 			this.reactControl1.TabIndex = 16;
-			this.reactControl1.UrlQueryString = null;
 			// 
 			// LibraryView
 			// 
