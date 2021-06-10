@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using System.Collections.Generic;
+using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
@@ -709,6 +710,34 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-editable' and @lang='xyz' and contains(., 'First Xyz text"+ System.Environment.NewLine +"Second Xyz text')]", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-editable' and @lang='en']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-editable' and @lang='fr']", 1);
+		}
+
+		[Test]
+		public void SortTranslationGroups_YieldsExpectedOrder()
+		{
+			var doc = new XmlDocument();
+			var input = new List<XmlElement>();
+			for (int i = 0; i < 7; i++)
+			{
+				var div = doc.CreateElement("div");
+				input.Add(div);
+				div.SetAttribute("data-which", i.ToString());
+			}
+
+			input[1].SetAttribute("tabindex", "4");
+			input[3].SetAttribute("tabindex", "2");
+			input[5].SetAttribute("tabindex", "3");
+			input[6].SetAttribute("tabindex", "1");
+			var output = TranslationGroupManager.SortTranslationGroups(input);
+			// Bafflingly, this assert seems to work for any pair of items from the list.
+			//Assert.That(output[0], Is.EqualTo(input[6]));
+			Assert.That(output[0].Equals(input[6]));
+			Assert.That(output[1].Equals(input[3]));
+			Assert.That(output[2].Equals(input[5]));
+			Assert.That(output[3].Equals(input[1]));
+			Assert.That(output[4].Equals(input[0]));
+			Assert.That(output[5].Equals(input[2]));
+			Assert.That(output[6].Equals(input[4]));
 		}
 	}
 }
