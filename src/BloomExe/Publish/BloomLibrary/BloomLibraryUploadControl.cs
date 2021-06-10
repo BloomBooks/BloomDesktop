@@ -162,7 +162,7 @@ namespace Bloom.Publish.BloomLibrary
 				RequireValue(_copyrightLabel);
 			RequireValue(_titleLabel);
 
-			if (BookTransfer.UseSandbox)
+			if (BookTransfer.IsTesting)
 			{
 				var oldTextWidth = TextRenderer.MeasureText(_uploadButton.Text, _uploadButton.Font).Width;
 				// Do not localize the following string (https://issues.bloomlibrary.org/youtrack/issue/BL-7383).
@@ -505,7 +505,7 @@ namespace Bloom.Publish.BloomLibrary
 
 		public static string BloomLibraryUrlPrefix
 		{
-			get { return UrlLookup.LookupUrl(UrlType.LibrarySite, BookTransfer.UseSandbox); }
+			get { return UrlLookup.LookupUrl(UrlType.LibrarySite, BookTransfer.IsTesting); }
 		}
 
 		string _parseId;
