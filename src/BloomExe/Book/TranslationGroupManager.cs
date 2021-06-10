@@ -206,7 +206,7 @@ namespace Bloom.Book
 
 
 			// This is the "code" part of the visibility system: https://goo.gl/EgnSJo
-			foreach (XmlElement group in elementOrDom.SafeSelectNodes(".//*[contains(@class,'bloom-translationGroup')]"))
+			foreach (XmlElement group in GetTranslationGroups(elementOrDom))
 			{
 				var dataDefaultLanguages = HtmlDom.GetAttributeValue(group, "data-default-languages").Split(new char[] { ',', ' ' },
 					StringSplitOptions.RemoveEmptyEntries);
@@ -228,6 +228,11 @@ namespace Bloom.Book
 					UpdateContentLanguageClassesOnElement(e, contentLanguages, bookData, language2IsoCode, language3IsoCode, dataDefaultLanguages);
 				}
 			}
+		}
+
+		public static XmlElement[] GetTranslationGroups(XmlNode elementOrDom)
+		{
+			return elementOrDom.SafeSelectNodes(".//*[contains(@class,'bloom-translationGroup')]").Cast<XmlElement>().ToArray();
 		}
 
 		private static void UpdateContentLanguageClassesOnElement(XmlElement e, Dictionary<string, string> contentLanguages, BookData bookData, string contentLanguageIso2, string contentLanguageIso3, string[] dataDefaultLanguages)

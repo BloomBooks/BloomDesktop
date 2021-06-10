@@ -1,0 +1,68 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Bloom.Book;
+using Bloom.Spreadsheet;
+using CommandLine;
+
+namespace Bloom.CLI
+{
+	/// <summary>
+	/// Imports a book from an xslx spreadsheet
+	/// usage:
+	///		spreadsheetImport [--params {path}] -i {path to get xslx} {path to book file}
+	/// </summary>
+	class SpreadsheetImportCommand
+	{
+		public static int Handle(SpreadsheetImportParameters options)
+		{
+			try
+			{
+				var sheet = InternalSpreadsheet.ReadFromFile(options.InputPath);
+				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(options.BookPath, false));
+				var importer = new SpreadsheetImporter(dom,sheet);
+				if (!string.IsNullOrEmpty(options.ParamsPath))
+					importer.Params = SpreadsheetImportParams.FromFile(options.ParamsPath);
+				var messages = importer.Import();
+				foreach (var message in messages)
+				{
+					Debug.WriteLine(message);
+					Console.WriteLine(message);
+				}
+				// Review: A lot of other stuff happens in Book.Save() and BookStorage.SaveHtml().
+				// I doubt we need any of it for current purposes, but later we might.
+				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, options.BookPath);
+				Console.WriteLine("done");
+				return 0; // all went well
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine(ex.Message);
+				Console.WriteLine(ex.Message);
+				Console.WriteLine(ex.StackTrace);
+				return 1;
+			}
+		}
+	}
+
+
+	// Used with https://github.com/gsscoder/commandline, which we get via nuget.
+	// (using the beta of commandline 2.0, as of Bloom 3.8)
+
+	[Verb("spreadsheetImport", HelpText = "Import a book from an Excel spreadsheet (xslx)")]
+	public class SpreadsheetImportParameters
+	{
+		[Value(0, MetaName = "path", HelpText = "Path to the book to import into.", Required = true)]
+		public string BookPath { get; set; }
+
+		[Option('i', "input", HelpText = "The file to be imported", Required = true)]
+		public string InputPath { get; set; }
+
+		[Option('p', "params", HelpText = "Path to a file containing parameters for the import", Required = false)]
+		public string ParamsPath { get; set; }
+	}
+}
+

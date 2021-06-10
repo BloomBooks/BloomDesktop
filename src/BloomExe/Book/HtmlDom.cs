@@ -50,6 +50,7 @@ namespace Bloom.Book
 		public HtmlDom(string xhtml)
 		{
 			_dom = new XmlDocument();
+			_dom.PreserveWhitespace = true;
 			_dom.LoadXml(xhtml);
 		}
 
