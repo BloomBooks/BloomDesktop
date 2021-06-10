@@ -276,7 +276,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                     // Preferable to only send a request for the info we need and not save and refresh the whole page.
                     //   (Allows us to avoid the synchronous reload of the page, makes the UI experience much snappier)
                     BloomApi.post(
-                        "editView/requestTranslationGroups",
+                        "editView/requestTranslationGroupContent",
                         result => {
                             // newPageReady() can be called twice, and both calls might occur before this async
                             // callback happens for either of them, so both may take this "no translation groups"
