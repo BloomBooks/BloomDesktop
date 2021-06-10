@@ -67,16 +67,22 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
         // to leave the combo blank.
         bookshelves = [];
     } else if (!loading && result && result.length > 0 && !error) {
-        var collections: any[] = result[0].fields.collections;
-        // If all is well and we've completed the contentful query, we got an object that
-        // has a list of collections connected to this branding, and will
-        // now generate the list of menu items (prepending the 'None' we already made).
-        bookshelves = bookshelves.concat(
-            collections.map<{ value: string; label: string }>((c: any) => ({
-                value: c.fields.urlKey,
-                label: c.fields.label
-            }))
-        );
+        if (result[0].fields && result[0].fields.collections) {
+            // The test above is needed because, apparently, if the enterpriseSubscription has no collections,
+            // we don't get fields.collections as an empty array; we get nothing at all for collections,
+            // and since that's the only field of the ES that we asked for, the result has 'fields' undefined.
+            // So trying to get result[0].fields.collections will crash.
+            var collections: any[] = result[0].fields.collections;
+            // If all is well and we've completed the contentful query, we got an object that
+            // has a list of collections connected to this branding, and will
+            // now generate the list of menu items (prepending the 'None' we already made).
+            bookshelves = bookshelves.concat(
+                collections.map<{ value: string; label: string }>((c: any) => ({
+                    value: c.fields.urlKey,
+                    label: c.fields.label
+                }))
+            );
+        }
     } else if (defaultBookshelf) {
         // This will usually be overwritten soon, but if we can't get to contentful
         // to get the actual list of possibilities we will leave it here.
@@ -225,7 +231,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
                     // The normal case.
                     <Div
                         css={css`
-                            color: grey;
+                            color: dimgrey; // not darkgrey, which is lighter than grey!
                         `}
                         l10nKey="CollectionSettingsDialog.DefaultBookshelfDescription"
                         temporarilyDisableI18nWarning={true}
