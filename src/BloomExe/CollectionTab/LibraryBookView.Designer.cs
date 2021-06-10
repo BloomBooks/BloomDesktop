@@ -1,4 +1,6 @@
-﻿namespace Bloom.CollectionTab
+﻿using Bloom.web;
+
+namespace Bloom.CollectionTab
 {
     partial class LibraryBookView
     {
@@ -38,7 +40,7 @@
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._splitContainerForPreviewAndAboutBrowsers = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._readmeBrowser = new Bloom.Browser();
-			this._reactBookPreviewControl = new Bloom.web.ReactControl();
+			this._reactBookPreviewControl = new ReactControl();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._splitContainerForPreviewAndAboutBrowsers)).BeginInit();
 			this._splitContainerForPreviewAndAboutBrowsers.Panel1.SuspendLayout();
@@ -114,6 +116,19 @@
 			this._splitContainerForPreviewAndAboutBrowsers.TabStop = false;
 			this._splitContainerForPreviewAndAboutBrowsers.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this._splitContainerForPreviewAndAboutBrowsers_SplitterMoved);
 			// 
+			// _reactBookPreviewControl
+			// 
+			this._reactBookPreviewControl.BackColor = System.Drawing.Color.DarkGray;
+			this._reactBookPreviewControl.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._reactBookPreviewControl.JavascriptBundleName = "bookPreviewBundle";
+			this._L10NSharpExtender.SetLocalizableToolTip(this._reactBookPreviewControl, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._reactBookPreviewControl, null);
+			this._L10NSharpExtender.SetLocalizingId(this._reactBookPreviewControl, "ReactControl");
+			this._reactBookPreviewControl.Location = new System.Drawing.Point(0, 0);
+			this._reactBookPreviewControl.Name = "_reactBookPreviewControl";
+			this._reactBookPreviewControl.Size = new System.Drawing.Size(900, 193);
+			this._reactBookPreviewControl.TabIndex = 2;
+			// 
 			// _readmeBrowser
 			// 
 			this._readmeBrowser.BackColor = System.Drawing.Color.DarkGray;
@@ -129,19 +144,6 @@
 			this._readmeBrowser.TabIndex = 2;
 			this._readmeBrowser.VerticalScrollDistance = 0;
 			this._readmeBrowser.OnBrowserClick += new System.EventHandler(this._readmeBrowser_OnBrowserClick);
-			// 
-			// _reactBookPreviewControl
-			// 
-			this._reactBookPreviewControl.BackColor = System.Drawing.Color.DarkGray;
-			this._reactBookPreviewControl.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._reactBookPreviewControl, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._reactBookPreviewControl, null);
-			this._L10NSharpExtender.SetLocalizingId(this._reactBookPreviewControl, "ReactControl");
-			this._reactBookPreviewControl.Location = new System.Drawing.Point(0, 0);
-			this._reactBookPreviewControl.Name = "_reactBookPreviewControl";
-			this._reactBookPreviewControl.ReactComponentName = "BookPreviewPanel";
-			this._reactBookPreviewControl.Size = new System.Drawing.Size(900, 193);
-			this._reactBookPreviewControl.TabIndex = 2;
 			// 
 			// LibraryBookView
 			// 

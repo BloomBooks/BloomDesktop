@@ -15,6 +15,7 @@ import { ThemeProvider } from "@material-ui/styles";
 import BloomButton from "../react_components/bloomButton";
 
 import { WarningBox } from "../react_components/BloomDialog/commonDialogComponents";
+import { WireUpForWinforms } from "../utils/WireUpWinform";
 
 // The contents of the Team Collection panel of the Settings dialog.
 
@@ -172,3 +173,5 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
         </ThemeProvider>
     );
 };
+
+WireUpForWinforms(TeamCollectionSettingsPanel);

@@ -31,13 +31,11 @@ module.exports = merge(core, {
     // The root file for each bundle should import errorHandler.ts to enable Bloom's custom
     // error handling for that web page.
     entry: {
-        wireUpBundle: "./utils/WireUpReact.ts",
-        problemReportBundle: "./problemDialog/ProblemDialog.tsx",
         editTabRootBundle: "./bookEdit/editViewFrame.ts",
         readerSetupBundle:
             "./bookEdit/toolbox/readers/readerSetup/readerSetup.ts",
         editablePageBundle: "./bookEdit/editablePage.ts",
-        bookPreviewBundle: "./bookPreview/bookPreview.ts",
+        bookPreviewBundle: "./bookPreview/bookPreviewPanel.tsx",
         toolboxBundle: "./bookEdit/toolbox/toolboxBootstrap.ts",
         pageChooserBundle: "./pageChooser/page-chooser.ts",
         pageThumbnailListBundle:
@@ -49,10 +47,7 @@ module.exports = merge(core, {
             "!./publish/**/stories.tsx"
         ]),
         enterpriseSettingsBundle: "./collection/enterpriseSettings.tsx",
-        teamCollectionSettingsBundle:
-            "./teamCollection/TeamCollectionSettingsPanel.tsx",
-        autoUpdateSoftwareDlgBundle:
-            "./react_components/AutoUpdateSoftwareDialog.tsx",
+
         performanceLogBundle: "./performance/PerformanceLogPage.tsx",
         testBundle: globule.find([
             "./bookEdit/**/*Spec.ts",
@@ -61,7 +56,23 @@ module.exports = merge(core, {
             "./lib/**/*Spec.js",
             "./publish/**/*Spec.ts",
             "./publish/**/*Spec.js"
-        ])
+        ]),
+
+        // These work with c# ReactControl:
+        problemReportBundle: "./problemDialog/ProblemDialog.tsx",
+        defaultBookshelfControlBundle:
+            "./react_components/DefaultBookshelfControl.tsx",
+        progressDialogBundle: "./react_components/Progress/ProgressDialog.tsx",
+        problemReportBundle: "./problemDialog/ProblemDialog.tsx",
+        createTeamCollectionDialog: "./teamCollection/CreateTeamCollection.tsx",
+        teamCollectionDialog: "./teamCollection/TeamCollectionDialog.tsx",
+        teamCollectionSettingsBundle:
+            "./teamCollection/TeamCollectionSettingsPanel.tsx",
+        joinTeamCollectionDialogBundle:
+            "./teamCollection/JoinTeamCollectionDialog.tsx",
+        autoUpdateSoftwareDlgBundle:
+            "./react_components/AutoUpdateSoftwareDialog.tsx"
+
         //             testBundle: globule.find(["./**/*Spec.ts", "./**/*Spec.js", "!./node_modules/**"])//This slowed down webpack a ton, becuase the way it works is that it 1st it finds it all, then it excludes node_modules
     },
 

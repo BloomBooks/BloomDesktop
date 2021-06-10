@@ -26,6 +26,7 @@ import {
 import { useL10n } from "../react_components/l10nHooks";
 import { Checkbox } from "../react_components/checkbox";
 import { TextWithEmbeddedLink } from "../react_components/link";
+import { WireUpForWinforms } from "../utils/WireUpWinform";
 
 // Contents of a dialog launched from TeamCollectionSettingsPanel Create Team Collection button.
 
@@ -186,3 +187,5 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
         </BloomDialog>
     );
 };
+
+WireUpForWinforms(CreateTeamCollectionDialog);

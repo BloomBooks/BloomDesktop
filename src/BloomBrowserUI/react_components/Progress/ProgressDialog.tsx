@@ -21,6 +21,7 @@ import {
     useSetupBloomDialog
 } from "../BloomDialog/BloomDialog";
 import { DialogCloseButton } from "../BloomDialog/commonDialogComponents";
+import { WireUpForWinforms } from "../../utils/WireUpWinform";
 
 export const ProgressDialog: React.FunctionComponent<{
     title: string;
@@ -175,3 +176,5 @@ export const ProgressDialog: React.FunctionComponent<{
         </BloomDialog>
     );
 };
+
+WireUpForWinforms(ProgressDialog);

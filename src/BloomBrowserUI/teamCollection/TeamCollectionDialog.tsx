@@ -19,6 +19,7 @@ import {
     useSetupBloomDialog
 } from "../react_components/BloomDialog/BloomDialog";
 import { DialogCloseButton } from "../react_components/BloomDialog/commonDialogComponents";
+import { WireUpForWinforms } from "../utils/WireUpWinform";
 export let showTeamCollectionDialog: () => void;
 
 export const TeamCollectionDialog: React.FunctionComponent<{
@@ -95,3 +96,5 @@ export const TeamCollectionDialog: React.FunctionComponent<{
         </BloomDialog>
     );
 };
+
+WireUpForWinforms(TeamCollectionDialog);

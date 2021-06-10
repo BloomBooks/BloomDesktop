@@ -11,6 +11,7 @@ import BloomSelect from "./bloomSelect";
 import { makeStyles, MenuItem, Select } from "@material-ui/core";
 import XRegExp = require("xregexp/types");
 import { useContentful } from "../contentful/UseContentful";
+import { WireUpForWinforms } from "../utils/WireUpWinform";
 
 const windowsSelectColor = "rgb(0,120,215)";
 
@@ -240,3 +241,5 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
         </ThemeProvider>
     );
 };
+
+WireUpForWinforms(DefaultBookshelfControl);

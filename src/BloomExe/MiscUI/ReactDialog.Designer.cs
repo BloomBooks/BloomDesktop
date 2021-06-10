@@ -38,7 +38,6 @@ namespace Bloom.MiscUI
 			this.reactControl.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.reactControl.Location = new System.Drawing.Point(0, 0);
 			this.reactControl.Name = "reactControl";
-			this.reactControl.ReactComponentName = null;
 			this.reactControl.Size = new System.Drawing.Size(800, 450);
 			this.reactControl.TabIndex = 0;
 			this.reactControl.UseEditContextMenu = true;

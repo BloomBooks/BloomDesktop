@@ -900,7 +900,7 @@ namespace Bloom.Workspace
 				// hide the progress dialog. This is as much as we can postpone.
 				StartupScreenManager.AddStartupAction( () =>
 					{
-						using (var dlg = new ReactDialog("AutoUpdateSoftwareDialog"))
+						using (var dlg = new ReactDialog("AutoUpdateSoftwareDialog", "autoUpdateSoftwareDlgBundle"))
 						{
 							dlg.Height = 350;
 							dlg.FormBorderStyle = FormBorderStyle.FixedDialog;

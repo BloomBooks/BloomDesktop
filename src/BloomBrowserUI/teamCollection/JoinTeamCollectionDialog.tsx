@@ -22,6 +22,7 @@ import {
     ErrorBox,
     NoteBox
 } from "../react_components/BloomDialog/commonDialogComponents";
+import { WireUpForWinforms } from "../utils/WireUpWinform";
 
 // Six variations are all handled here.
 enum JoinCollectionState {
@@ -335,3 +336,5 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
         </BloomDialog>
     );
 };
+
+WireUpForWinforms(JoinTeamCollectionDialog);

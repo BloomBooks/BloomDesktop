@@ -79,7 +79,7 @@ namespace BloomTests.ErrorReporter
 			reporter.NotifyUserOfProblem(new ShowAlwaysPolicy(), "", ErrorResult.Yes, "<b>Tags should not be encoded</b>");
 
 			mockFactory.Verify(x => x.CreateReactDialog(
-				It.Is<string>(name => name == "ProblemDialog"),
+				It.Is<string>(b=> b == "problemReportBundle"),
 				It.Is<object>(props => (string)props.GetType().GetProperty("level").GetValue(props) == ProblemLevel.kNotify &&
 					(string)props.GetType().GetProperty("message").GetValue(props) == "<b>Tags should not be encoded</b>")
 			));
@@ -106,7 +106,7 @@ namespace BloomTests.ErrorReporter
 
 			// Verification
 			mockFactory.Verify(x => x.CreateReactDialog(
-				It.Is<string>(name => name == "ProblemDialog"),
+			 It.Is<string>(b => b == "problemReportBundle"),
 				It.Is<object>(props => (string)props.GetType().GetProperty("level").GetValue(props) == ProblemLevel.kNotify &&
 						(string)props.GetType().GetProperty("message").GetValue(props) == messageText)
 				));
@@ -127,7 +127,7 @@ namespace BloomTests.ErrorReporter
 
 			mockFactory.Verify(x =>
 				x.CreateReactDialog(
-					It.Is<string>(name => name == "ProblemDialog"),
+				It.Is<string>(b => b == "problemReportBundle"),
 					It.Is<object>(props => (string)props.GetType().GetProperty("level").GetValue(props) == ProblemLevel.kNotify &&
 						(string)props.GetType().GetProperty("reportLabel").GetValue(props) == reportLabel &&
 						(string)props.GetType().GetProperty("message").GetValue(props) == "message")
@@ -153,7 +153,7 @@ namespace BloomTests.ErrorReporter
 
 			mockFactory.Verify(x => x.
 				CreateReactDialog(
-					It.Is<string>(name => name == "ProblemDialog"),
+					It.Is<string>(b => b == "problemReportBundle"),
 					It.Is<object>(props => (string)props.GetType().GetProperty("level").GetValue(props) == ProblemLevel.kNotify &&
 						(string)props.GetType().GetProperty("reportLabel").GetValue(props) == "Report" &&
 						(string)props.GetType().GetProperty("message").GetValue(props) == "message")
@@ -184,7 +184,7 @@ namespace BloomTests.ErrorReporter
 
 			mockFactory.Verify(x =>
 				x.CreateReactDialog(
-					It.Is<string>(name => name == "ProblemDialog"),
+					It.Is<string>(b => b == "problemReportBundle"),
 					It.Is<object>(props => (string)props.GetType().GetProperty("level").GetValue(props) == ProblemLevel.kNotify &&
 						(string)props.GetType().GetProperty("reportLabel").GetValue(props) == "Details" &&
 						(string)props.GetType().GetProperty("message").GetValue(props) == "message")
@@ -212,7 +212,7 @@ namespace BloomTests.ErrorReporter
 
 			// Verification
 			mockFactory.Verify(x => x.CreateReactDialog(
-				It.Is<string>(name => name == "ProblemDialog"),
+				It.Is<string>(b => b == "problemReportBundle"),
 				It.Is<object>(props => (string)props.GetType().GetProperty("level").GetValue(props) == ProblemLevel.kNotify &&
 					(string)props.GetType().GetProperty("secondaryLabel").GetValue(props) == "Retry" &&
 					(string)props.GetType().GetProperty("message").GetValue(props) == "message")
@@ -269,7 +269,7 @@ namespace BloomTests.ErrorReporter
 			{
 				mockBrowserDialog.Object.CloseSource = "closedByAlternateButton";
 			});
-			mockFactory.Setup(x => x.CreateReactDialog(It.IsAny<string>(), It.IsAny<object>())).Returns(mockBrowserDialog.Object);
+			mockFactory.Setup(x => x.CreateReactDialog( It.IsAny<string>(),It.IsAny<object>())).Returns(mockBrowserDialog.Object);
 
 			var reporter = new HtmlErrorReporterBuilder()
 				.WithTestValues()
@@ -302,7 +302,7 @@ namespace BloomTests.ErrorReporter
 			{
 				mockBrowserDialog.Object.CloseSource = "closedByReportButton";
 			});
-			mockFactory.Setup(x => x.CreateReactDialog(It.IsAny<string>(), It.IsAny<object>()))
+			mockFactory.Setup(x => x.CreateReactDialog( It.IsAny<string>(), It.IsAny<object>()))
 				.Returns(mockBrowserDialog.Object);
 
 			var reporter = new HtmlErrorReporterBuilder()
