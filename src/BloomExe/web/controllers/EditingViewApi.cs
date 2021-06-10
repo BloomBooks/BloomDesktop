@@ -26,12 +26,12 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("editView/setTopic", HandleSetTopic, true);
 			apiHandler.RegisterEndpointHandler("editView/isTextSelected", HandleIsTextSelected, false);
 			apiHandler.RegisterEndpointHandler("editView/getBookLangs", HandleGetBookLangs, false);
-			apiHandler.RegisterEndpointHandler("editView/requestTranslationGroups", RequestTranslationGroups, true);
+			apiHandler.RegisterEndpointHandler("editView/requestTranslationGroupContent", RequestDefaultTranslationGroupContent, true);
 		}
 
-		private void RequestTranslationGroups(ApiRequest request)
+		private void RequestDefaultTranslationGroupContent(ApiRequest request)
 		{
-			View.Model.RequestTranslationGroups(request);
+			View.Model.RequestDefaultTranslationGroupContent(request);
 		}
 
 		private void HandleGetBookLangs(ApiRequest request)
