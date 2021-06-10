@@ -114,6 +114,8 @@ namespace BloomTests.TeamCollection
 					var bloomCollectionPath = Bloom.TeamCollection.TeamCollection.CollectionPath(collectionFolder.FolderPath);
 					Assert.That(tc.LocalCollectionFilesRecordedSyncTime, Is.EqualTo(DateTime.MinValue));
 					File.WriteAllText(bloomCollectionPath, "This is a fake collection file");
+					var collectionStylesPath = Path.Combine(collectionFolder.FolderPath, "customCollectionStyles.css");
+					RobustFile.WriteAllText(collectionStylesPath, "This is the collection styles");
 
 					// SUT 1: nothing in repo, no sync time file. Copies to repo.
 					tc.SyncLocalAndRepoCollectionFiles();
@@ -251,6 +253,21 @@ namespace BloomTests.TeamCollection
 					Assert.That(repoWriteTimeAfterSut10, Is.EqualTo(repoWriteTimeBeforeSut10), "repo should not be modified by idle sync where both changed"); // not modified by sync
 					Assert.That(new FileInfo(bloomCollectionPath).LastWriteTime, Is.EqualTo(collectionWriteTimeBeforeSut10),
 						"bloomCollection LastWriteTime should not be changed by idle sync both changed");
+
+					// Get everything back in sync
+					tc.SyncLocalAndRepoCollectionFiles();
+					var localWriteTimeBeforeSut11 = tc.LocalCollectionFilesRecordedSyncTime();
+					var repoWriteTimeBeforeSut11 = new FileInfo(otherFilesPath).LastWriteTime;
+					RobustFile.WriteAllText(collectionStylesPath, "This is the modified collection styles");
+
+					// SUT11: custom collection styles modified while Bloom was not running. Copied to repo.
+					tc.SyncLocalAndRepoCollectionFiles();
+					var repoWriteTimeAfterSut11 = new FileInfo(otherFilesPath).LastWriteTime;
+					Assert.That(repoWriteTimeAfterSut11, Is.GreaterThanOrEqualTo(repoWriteTimeBeforeSut11));
+					var localWriteTimeAfterSut11 = tc.LocalCollectionFilesRecordedSyncTime();
+					// We will update the sync time even though the write is the other way.
+					Assert.That(localWriteTimeAfterSut11, Is.GreaterThan(localWriteTimeBeforeSut11));
+					Assert.That(File.ReadAllText(collectionStylesPath), Is.EqualTo("This is the modified collection styles"));
 				}
 			}
 		}

@@ -569,6 +569,20 @@ namespace Bloom.TeamCollection
 				// thing is that, as of each reload, the local settings match the repo ones.
 				// In the future, we will have various limits to make conflicts even less likely.
 				// For now, the important thing is that whatever wins in the repo wins everywhere.
+				// One exception: customCollectionStyles.css changes while Bloom is not running
+				// should be kept.
+				var customCollectionStylesPath = Path.Combine(_localCollectionFolder, "customCollectionStyles.css");
+				var stylesModTime = new FileInfo(customCollectionStylesPath).LastWriteTime;
+				if (stylesModTime > savedSyncTime)
+				{
+					// OK, it got modified while we weren't looking. If this user is an admin,
+					// and no settings changed remotely, we'll let the local ones win.
+					if (_tcManager.OkToEditCollectionSettings && savedSyncTime >= repoModTime)
+					{
+						CopyRepoCollectionFilesFromLocal(_localCollectionFolder);
+						return;
+					}
+				}
 				CopyRepoCollectionFilesToLocal(_localCollectionFolder);
 			}
 			else
