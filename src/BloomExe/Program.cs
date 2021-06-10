@@ -121,7 +121,7 @@ namespace Bloom
 			// The following is how we will do things from now on, and things can be moved
 			// into this as time allows. See CommandLineOptions.cs.
 			if (args1.Length > 0 &&
-			    new[] {"--help", "hydrate", "upload", "download", "getfonts", "changeLayout", "createArtifacts"}
+			    new[] {"--help", "hydrate", "upload", "download", "getfonts", "changeLayout", "createArtifacts", "spreadsheetExport", "spreadsheetImport" }
 				    .Contains(args1[0])) //restrict using the commandline parser to cases were it should work
 			{
 #if !__MonoCS__
@@ -134,7 +134,8 @@ namespace Bloom
 						new[]
 						{
 							typeof(HydrateParameters), typeof(UploadParameters), typeof(DownloadBookOptions), typeof(GetUsedFontsParameters),
-							typeof(ChangeLayoutParameters), typeof(CreateArtifactsParameters)
+							typeof(ChangeLayoutParameters), typeof(CreateArtifactsParameters), typeof(SpreadsheetExportParameters),
+							typeof(SpreadsheetImportParameters)
 						})
 					.MapResult(
 						(HydrateParameters opts) => HydrateBookCommand.Handle(opts),
@@ -149,6 +150,8 @@ namespace Bloom
 						(GetUsedFontsParameters opts) => GetUsedFontsCommand.Handle(opts),
 						(ChangeLayoutParameters opts) => ChangeLayoutCommand.Handle(opts),
 						(CreateArtifactsParameters opts) => CreateArtifactsCommand.Handle(opts),
+						(SpreadsheetExportParameters opts) => SpreadsheetExportCommand.Handle(opts),
+						(SpreadsheetImportParameters opts) => SpreadsheetImportCommand.Handle(opts),
 						errors =>
 						{
 							var code = 0;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Xml;
+using Bloom.Spreadsheet;
 using Bloom.ToPalaso;
 using L10NSharp;
 using SIL.Reporting;
@@ -113,7 +114,7 @@ namespace Bloom.Book
 			{
 				var englishText = editableDiv.InnerText;
 				var l10nId = editableDiv.Attributes["data-i18n"].Value;
-				if (string.IsNullOrWhiteSpace(l10nId))
+				if (String.IsNullOrWhiteSpace(l10nId))
 					continue;
 
 				foreach (var uiLanguage in LocalizationManager.GetAvailableLocalizedLanguages())
@@ -160,7 +161,7 @@ namespace Bloom.Book
 				bookData.Set("contentLanguage2Rtl", XmlString.FromUnencoded(language2.IsRightToLeft.ToString()), false);
 			}
 			var language3 = bookData.CollectionSettings.Language3;
-			if (oneTwoOrThreeContentLanguages > 2 && !string.IsNullOrEmpty(language3.Iso639Code))
+			if (oneTwoOrThreeContentLanguages > 2 && !String.IsNullOrEmpty(language3.Iso639Code))
 			{
 				bookData.Set("contentLanguage3", XmlString.FromUnencoded(language3.Iso639Code), false);
 				bookData.Set("contentLanguage3Rtl", XmlString.FromUnencoded(language3.IsRightToLeft.ToString()), false);
@@ -206,9 +207,9 @@ namespace Bloom.Book
 
 
 			// This is the "code" part of the visibility system: https://goo.gl/EgnSJo
-			foreach (XmlElement group in elementOrDom.SafeSelectNodes(".//*[contains(@class,'bloom-translationGroup')]"))
+			foreach (XmlElement group in GetTranslationGroups(elementOrDom))
 			{
-				var dataDefaultLanguages = HtmlDom.GetAttributeValue(group, "data-default-languages").Split(new char[] { ',', ' ' },
+				var dataDefaultLanguages = HtmlDom.GetAttributeValue(@group, "data-default-languages").Split(new char[] { ',', ' ' },
 					StringSplitOptions.RemoveEmptyEntries);
 
 				//nb: we don't necessarily care that a div is editable or not
@@ -228,6 +229,11 @@ namespace Bloom.Book
 					UpdateContentLanguageClassesOnElement(e, contentLanguages, bookData, language2IsoCode, language3IsoCode, dataDefaultLanguages);
 				}
 			}
+		}
+
+		public static XmlElement[] GetTranslationGroups(XmlNode elementOrDom)
+		{
+			return elementOrDom.SafeSelectNodes(".//*[contains(@class,'bloom-translationGroup')]").Cast<XmlElement>().ToArray();
 		}
 
 		private static void UpdateContentLanguageClassesOnElement(XmlElement e, Dictionary<string, string> contentLanguages, BookData bookData, string contentLanguageIso2, string contentLanguageIso3, string[] dataDefaultLanguages)
@@ -286,8 +292,8 @@ namespace Bloom.Book
 			//       If this function changes, you should check in bloom-player's bloom-player-core.tsx file, function shouldNormallyShowEditable().
 			//       It may benefit from being updated too.
 			if (dataDefaultLanguages == null || dataDefaultLanguages.Length == 0
-				|| string.IsNullOrWhiteSpace(dataDefaultLanguages[0])
-				|| dataDefaultLanguages[0].Equals("auto",StringComparison.InvariantCultureIgnoreCase))
+			                                 || String.IsNullOrWhiteSpace(dataDefaultLanguages[0])
+			                                 || dataDefaultLanguages[0].Equals("auto",StringComparison.InvariantCultureIgnoreCase))
 			{
 				return lang == bookData.Language1.Iso639Code || lang == contentLanguageIso2 || lang == contentLanguageIso3;
 			}
@@ -540,6 +546,41 @@ namespace Bloom.Book
 				if(node.ParentNode != null)
 					node.ParentNode.RemoveChild(node);
 			}
+		}
+
+		/// <summary>
+		/// Sort the list of translation groups into the order their audio should be spoken,
+		/// which is also the order used for Spreadsheet import/export. Ones that have tabindex are
+		/// sorted by that. Ones that don't sort after ones that do, in the order
+		/// they occur in the input list (that is, the sort is stable, typically preserving
+		/// document order if that is how the input list was generated).
+		/// </summary>
+		/// <param name="groups"></param>
+		/// <returns></returns>
+		public static List<XmlElement> SortTranslationGroups(IEnumerable<XmlElement> groups)
+		{
+			// This is better than making the list and then using List's Sort method,
+			// because it is guaranteed to be a stable sort, keeping things with the same
+			// (or no) tabindex in the original, typically document, order.
+			return groups.OrderBy(GetTabIndex).ToList();
+		}
+
+		private static int GetTabIndex(XmlElement x)
+		{
+			if (Int32.TryParse(x.Attributes["tabindex"]?.Value ?? "x", out int val))
+				return val;
+			return Int32.MaxValue;
+		}
+
+		/// <summary>
+		/// bloom-translationGroup elements on the page in audio-reading order.
+		/// </summary>
+		public static List<XmlElement> SortedGroupsOnPage(XmlElement page)
+		{
+			return TranslationGroupManager.SortTranslationGroups(page
+				.SafeSelectNodes(".//div[contains(@class, 'bloom-translationGroup')]")
+				.Cast<XmlElement>());
+
 		}
 	}
 }
