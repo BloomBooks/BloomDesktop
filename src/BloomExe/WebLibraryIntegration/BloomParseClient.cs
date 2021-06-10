@@ -74,7 +74,7 @@ namespace Bloom.WebLibraryIntegration
 
 		public string GetRealUrl()
 		{
-			return UrlLookup.LookupUrl(UrlType.Parse, BookTransfer.UseSandbox);
+			return UrlLookup.LookupUrl(UrlType.Parse, BookTransfer.Destination == UploadDestination.Production ? false : BookTransfer.UseSandbox);
 		}
 
 		private RestRequest MakeRequest(string path, Method requestType)

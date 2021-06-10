@@ -60,6 +60,9 @@ namespace Bloom.WebLibraryIntegration
 				case BloomS3Client.BloomDesktopFiles:
 					// For now, this is public read, and no one needs to write.
 					return new AccessKeys(null, null, null, null);
+				case BloomS3Client.DryRunBucketName:
+					// no writing for dry runs
+					return new AccessKeys(null, null, null, null);
 
 				default: throw new ApplicationException("Bucket name not recognized: " + bucket);
 			}

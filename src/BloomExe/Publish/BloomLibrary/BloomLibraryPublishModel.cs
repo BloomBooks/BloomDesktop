@@ -151,7 +151,14 @@ namespace Bloom.Publish.BloomLibrary
 			using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))
 			{
 				BookTransfer.PrepareBookForUpload(ref book, _publishModel.BookServer, tempFolder.FolderPath, progressBox);
-				return _transferrer.FullUpload(book, progressBox, publishView, languages, excludeNarrationAudio, excludeMusic, false, out parseId);
+				var bookParams = new BookUploadParameters
+				{
+					ExcludeNarrationAudio = excludeNarrationAudio,
+					ExcludeMusic = excludeMusic,
+					PreserveThumbnails = false,
+					LanguagesToUpload = languages,
+				};
+				return _transferrer.FullUpload(book, progressBox, publishView, bookParams, out parseId);
 			}
 		}
 
