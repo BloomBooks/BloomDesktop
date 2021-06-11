@@ -1,10 +1,14 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+
 import React = require("react");
 import { BloomApi } from "../utils/bloomApi";
 import { BooksOfCollection } from "./BooksOfCollection";
 import { Transition } from "react-transition-group";
 import Splitter from "m-react-splitters";
 import "m-react-splitters/lib/splitters.css";
-import "CollectionTabPane.less";
+//import "CollectionTabPane.less";
+import { kPanelBackground, kDarkestBackground } from "../bloomMaterialUITheme";
 
 export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     const [collections] = BloomApi.useApiJson("collections/list");
@@ -28,29 +32,52 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
         });
 
         return (
-            <Splitter position="vertical">
-                <Splitter position="horizontal">
-                    <div style={{ padding: "10px" }}>
-                        <h1>{collections[0].name}</h1>
+            <div
+                css={css`
+                    background-color: ${kPanelBackground};
+                    color: white;
+                    padding: 25px;
+                    h1 {
+                        font-size: 20px;
+                        margin: 0;
+                    }
+                    h2 {
+                        font-size: 16px;
+                        margin: 0;
+                    }
 
-                        <BooksOfCollection collectionId={collections[0].id} />
-                    </div>
-                    <Transition in={true} appear={true} timeout={2000}>
-                        {state => (
-                            <div
-                                style={{ padding: "10px" }}
-                                className={`group fade-${state}`}
-                            >
-                                {/*-${state} */}
-                                <h1>Sources For New Books</h1>
-                                {collectionComponents}
-                            </div>
-                        )}
-                    </Transition>
+                    .handle-bar,
+                    .handle-bar:hover {
+                        background-color: ${kDarkestBackground};
+                    }
+                `}
+            >
+                <Splitter position="vertical">
+                    <Splitter position="horizontal">
+                        <div style={{ padding: "10px" }}>
+                            <h1>{collections[0].name}</h1>
+
+                            <BooksOfCollection
+                                collectionId={collections[0].id}
+                            />
+                        </div>
+                        <Transition in={true} appear={true} timeout={2000}>
+                            {state => (
+                                <div
+                                    style={{ padding: "10px" }}
+                                    className={`group fade-${state}`}
+                                >
+                                    {/*-${state} */}
+                                    <h1>Sources For New Books</h1>
+                                    {collectionComponents}
+                                </div>
+                            )}
+                        </Transition>
+                    </Splitter>
+
+                    <h1>TODO: Preview</h1>
                 </Splitter>
-
-                <h1>TODO: Preview</h1>
-            </Splitter>
+            </div>
         );
     } else {
         return <div />;
