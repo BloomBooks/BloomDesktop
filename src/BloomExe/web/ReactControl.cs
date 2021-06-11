@@ -92,7 +92,7 @@ namespace Bloom.web
 						}};
 					</script>					
 				</head>
-				<body>
+				<body style='margin:0'>
 					<div id='reactRoot'>Javascript should have replaced this. Make sure that the javascript bundle '{bundleNameWithExtension}' includes a single call to WireUpForWinforms()</div>
 				</body>
 				</html>");
