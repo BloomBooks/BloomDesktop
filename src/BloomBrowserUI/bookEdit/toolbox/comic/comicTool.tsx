@@ -297,7 +297,7 @@ const ComicToolControls: React.FunctionComponent = () => {
                 parentElement,
                 bubbleSpec
             );
-            bubbleManager.addChildTOPBoxAndReloadPage(
+            bubbleManager.addChildTOPBoxAndRefreshPage(
                 parentElement,
                 offsetX,
                 offsetY

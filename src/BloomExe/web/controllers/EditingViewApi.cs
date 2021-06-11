@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Dynamic;
 using System.IO;
 using System.Windows.Forms;
@@ -26,6 +26,12 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("editView/setTopic", HandleSetTopic, true);
 			apiHandler.RegisterEndpointHandler("editView/isTextSelected", HandleIsTextSelected, false);
 			apiHandler.RegisterEndpointHandler("editView/getBookLangs", HandleGetBookLangs, false);
+			apiHandler.RegisterEndpointHandler("editView/requestTranslationGroupContent", RequestDefaultTranslationGroupContent, true);
+		}
+
+		private void RequestDefaultTranslationGroupContent(ApiRequest request)
+		{
+			View.Model.RequestDefaultTranslationGroupContent(request);
 		}
 
 		private void HandleGetBookLangs(ApiRequest request)
