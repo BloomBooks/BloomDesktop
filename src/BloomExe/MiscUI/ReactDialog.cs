@@ -67,6 +67,48 @@ namespace Bloom.MiscUI
 			}
 		}
 
+		/// <summary>
+		/// Use this to create any ReactDialog from within an API handler which has requiresSync == true (the default).
+		/// Otherwise, our server is still locked, and all kinds of things the dialog wants to do through the server won't work.
+		/// Instead, we arrange for it to be launched when the system is idle (and the server is no longer locked).
+		/// </summary>
+		/// <param name="reactComponent">passed to ReactDialog constructor</param>
+		/// <param name="props">passed to ReactDialog constructor</param>
+		/// <param name="width">used to set the WinForms dialog Width property</param>
+		/// <param name="height">used to set the WinForms dialog Height property</param>
+		/// <param name="initialize">an optional action done after width and height are set but before ShowDialog is called</param>
+		/// <param name="handleResult">an optional action done after the dialog is closed; takes a DialogResult</param>
+		public static void ShowOnIdle(string reactComponentName, object props, int width, int height, Action initialize = null, Action<DialogResult> handleResult = null)
+		{
+			DoOnceOnIdle(() =>
+			{
+				using (var dlg = new ReactDialog(reactComponentName, props))
+				{
+					dlg.Width = width;
+					dlg.Height = height;
+
+					if (initialize != null)
+						initialize();
+
+					var result = dlg.ShowDialog();
+
+					if (handleResult != null)
+						handleResult(result);
+				}
+			});
+		}
+
+		private static void DoOnceOnIdle(Action actionToDoOnIdle)
+		{
+			void HandleAction(object sender, EventArgs eventArgs)
+			{
+				Application.Idle -= HandleAction;
+				actionToDoOnIdle();
+			}
+
+			Application.Idle += HandleAction;
+		}
+
 		private void ReactDialog_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			_activeDialogs.Remove(this);

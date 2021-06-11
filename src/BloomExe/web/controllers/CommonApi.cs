@@ -142,11 +142,18 @@ namespace Bloom.web.controllers
 
 			// At this point we open dialogs from c# code; if we opened dialogs from javascript, we wouldn't need this
 			// api to do it. We just need a way to close a c#-opened dialog from javascript (e.g. the Close button of the dialog).
+			//
+			// This must set requiresSync:false because the API call which opened the dialog may already have
+			// the lock in which case we would be deadlocked.
+			// ErrorReport.NotifyUserOfProblem is a particularly problematic case. We tried to come up with some
+			// other solutions for that including opening the dialog on Application.Idle. But the dialog needs
+			// to give a real-time result so callers can know what do with button presses. Since some of those
+			// callers are in libpalaso, we can't just ignore the result and handle the actions ourselves.
 			apiHandler.RegisterEndpointHandler("common/closeReactDialog", request =>
 			{
 				ReactDialog.CloseCurrentModal(request.GetPostStringOrNull());
 				request.PostSucceeded();
-			}, true);
+			}, true, requiresSync: false);
 
 			// TODO: move to the new App API (BL-9635)
 			apiHandler.RegisterEndpointHandler("common/reloadCollection", HandleReloadCollection, true);

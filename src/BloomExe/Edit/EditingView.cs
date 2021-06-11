@@ -581,10 +581,9 @@ namespace Bloom.Edit
 		// by occasionally reloading everything.
 		// Easy to change between never, if-shift-key-is-down, always, or MemoryUtils.SystemIsShortOfMemory().
 		//
-		// For 4.9, we set this to MemoryUtils.SystemIsShortOfMemory().
-		// For 5.0, we are setting it true for now so the full reload gets more testing.
-		// We anticipate changing 5.0 back to MemoryUtils.SystemIsShortOfMemory() before it goes beta.
-		private bool ShouldDoFullReload() => true;
+		// For 4.9 and 5.0 betas/releases, we set this to MemoryUtils.SystemIsShortOfMemory(),
+		// but you can also set it to true so the full reload gets more testing (e.g. in alpha).
+		private bool ShouldDoFullReload() => MemoryUtils.SystemIsShortOfMemory();
 
 		private bool ReloadCurrentPage()
 		{
