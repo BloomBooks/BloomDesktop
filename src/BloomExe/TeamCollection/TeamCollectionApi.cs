@@ -74,7 +74,7 @@ namespace Bloom.TeamCollection
 		private void ShowCreateTeamCollectionDialog(object sender, EventArgs e)
 		{
 			Application.Idle -= ShowCreateTeamCollectionDialog;
-			using (var dlg = new ReactDialog("CreateTeamCollectionDialog", new { defaultRepoFolder = DropboxUtils.GetDropboxFolderPath() }))
+			using (var dlg = new ReactDialog("createTeamCollectionDialog", new { defaultRepoFolder = DropboxUtils.GetDropboxFolderPath() }))
 			{
 				dlg.Width = 600;
 				dlg.Height = 580;

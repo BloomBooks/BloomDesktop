@@ -6,6 +6,7 @@ import { BloomApi } from "../utils/bloomApi";
 import "./BookPreviewPanel.less";
 import { useSubscribeToWebSocketForStringMessage } from "../utils/WebSocketManager";
 import { TeamCollectionBookStatusPanel } from "../teamCollection/TeamCollectionBookStatusPanel";
+import { WireUpForWinforms } from "../utils/WireUpWinform";
 
 export const BookPreviewPanel: React.FunctionComponent<{
     initialBookPreviewUrl: string;
@@ -47,3 +48,5 @@ export const BookPreviewPanel: React.FunctionComponent<{
         </div>
     );
 };
+
+WireUpForWinforms(BookPreviewPanel);

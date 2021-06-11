@@ -19,7 +19,7 @@ interface IStoryMessage {
 
 const noFrameProps = {
     dialogEnvironment: {
-        omitOuterFrame: true,
+        dialogFrameProvidedExternally: true,
         initiallyOpen: true
     }
 };

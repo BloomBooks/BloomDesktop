@@ -2,6 +2,7 @@ import * as React from "react";
 import "./ProblemDialog.less";
 import { NotifyDialog } from "./NotifyDialog";
 import { ReportDialog } from "./ReportDialog";
+import { WireUpForWinforms } from "../utils/WireUpWinform";
 
 // Matches values in Bloom.ErrorReporter.ProblemLevel
 export enum ProblemKind {
@@ -23,3 +24,5 @@ export const ProblemDialog: React.FunctionComponent<{
         return <ReportDialog kind={props.level} />;
     }
 };
+
+WireUpForWinforms(ProblemDialog);

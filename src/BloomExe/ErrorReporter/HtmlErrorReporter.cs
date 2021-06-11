@@ -417,7 +417,7 @@ namespace Bloom.ErrorReporter
 					object props = new { level = ProblemLevel.kNotify, reportLabel = reportButtonLabel, secondaryLabel = secondaryButtonLabel, message = message };
 
 					// Precondition: we must be on the UI thread for Gecko to work.
-					using (var dlg = BrowserDialogFactory.CreateReactDialog("ProblemDialog", props))
+					using (var dlg = BrowserDialogFactory.CreateReactDialog("problemReportBundle", props))
 					{
 						dlg.FormBorderStyle = FormBorderStyle.FixedToolWindow;	// Allows the window to be dragged around
 						dlg.ControlBox = true;	// Add controls like the X button back to the top bar

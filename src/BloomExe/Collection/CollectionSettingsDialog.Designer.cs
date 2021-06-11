@@ -716,7 +716,7 @@ namespace Bloom.Collection
 			this.reactControl1.Location = new System.Drawing.Point(3, 3);
 			this.reactControl1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 			this.reactControl1.Name = "reactControl1";
-			this.reactControl1.ReactComponentName = "TeamCollectionSettingsPanel";
+			this.reactControl1.JavascriptBundleName = "teamCollectionSettingsBundle";
 			this.reactControl1.Size = new System.Drawing.Size(636, 446);
 			this.reactControl1.TabIndex = 0;
 			// 
