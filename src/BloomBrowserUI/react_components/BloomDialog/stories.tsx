@@ -34,10 +34,7 @@ storiesOf("Bloom Dialog", module)
             // really work here in story-land, so we'll just use it below in a button.
             return (
                 <div>
-                    <BloomDialog
-                        {...propsForBloomDialog}
-                        dialogFrameProvidedExternally={false}
-                    >
+                    <BloomDialog {...propsForBloomDialog}>
                         <DialogTitle title="A Simple <BloomDialog>" />
                         <DialogMiddle
                             css={css`

@@ -2,7 +2,7 @@ import Button from "@material-ui/core/Button";
 import * as React from "react";
 import { useState } from "react";
 import "App.less";
-import { CollectionsTabPane } from "../collectionTab/CollectionTabPane";
+import { CollectionsTabPane } from "../collectionsTab/CollectionsTabPane";
 
 const kBloomBlue = "#1d94a4";
 const kBackgroundGray = "#2e2e2e";

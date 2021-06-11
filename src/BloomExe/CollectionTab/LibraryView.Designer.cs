@@ -194,7 +194,7 @@ namespace Bloom.CollectionTab
 			this._L10NSharpExtender.SetLocalizingId(this.reactControl1, "ReactControl");
 			this.reactControl1.Location = new System.Drawing.Point(0, 0);
 			this.reactControl1.Name = "reactControl1";
-			this.reactControl1.ReactComponentName = "CollectionsTabPane";
+			this.reactControl1.JavascriptBundleName = "CollectionsTabPaneBundle";
 			this.reactControl1.Size = new System.Drawing.Size(773, 518);
 			this.reactControl1.TabIndex = 16;
 			// 

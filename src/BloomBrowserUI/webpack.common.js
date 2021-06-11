@@ -73,7 +73,8 @@ module.exports = merge(core, {
         joinTeamCollectionDialogBundle:
             "./teamCollection/JoinTeamCollectionDialog.tsx",
         autoUpdateSoftwareDlgBundle:
-            "./react_components/AutoUpdateSoftwareDialog.tsx"
+            "./react_components/AutoUpdateSoftwareDialog.tsx",
+        CollectionsTabPaneBundle: "./collectionsTab/CollectionsTabPane.tsx"
 
         //             testBundle: globule.find(["./**/*Spec.ts", "./**/*Spec.js", "!./node_modules/**"])//This slowed down webpack a ton, becuase the way it works is that it 1st it finds it all, then it excludes node_modules
     },

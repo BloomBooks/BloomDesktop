@@ -1,8 +1,6 @@
 import Grid from "@material-ui/core/Grid";
 import React = require("react");
 import { BloomApi } from "../utils/bloomApi";
-import Menu from "@material-ui/core/Menu";
-import MenuItem from "@material-ui/core/MenuItem";
 import { Button } from "@material-ui/core";
 import TruncateMarkup from "react-truncate-markup";
 import { IBookTeamCollectionStatus } from "../teamCollection/TeamCollectionBookStatusPanel";
