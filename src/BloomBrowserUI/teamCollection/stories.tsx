@@ -229,7 +229,7 @@ storiesOf("Team Collection components/JoinTeamCollection", module)
                 existingCollectionFolder="somewhere"
                 conflictingCollection=""
                 dialogEnvironment={{
-                    omitOuterFrame: true,
+                    dialogFrameProvidedExternally: true,
                     initiallyOpen: true
                 }}
             />
@@ -245,7 +245,10 @@ storiesOf("Team Collection components/TeamCollectionDialog", module)
     ))
     .add("no dialog frame", () => (
         <TeamCollectionDialog
-            dialogEnvironment={{ omitOuterFrame: true, initiallyOpen: true }}
+            dialogEnvironment={{
+                dialogFrameProvidedExternally: true,
+                initiallyOpen: true
+            }}
             showReloadButton={false}
         />
     ));

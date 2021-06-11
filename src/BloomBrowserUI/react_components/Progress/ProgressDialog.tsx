@@ -124,9 +124,10 @@ export const ProgressDialog: React.FunctionComponent<{
                     webSocketContext={props.webSocketContext}
                     onReadyToReceive={props.onReadyToReceive}
                     css={css`
-                        // If we have omitOuterFrame that means the dialog height is controlled by c#, so let the progress grow to fit it.
+                        // If we have dialogFrameProvidedExternally that means the dialog height is controlled by c#, so let the progress grow to fit it.
                         // Maybe we could have that approach *all* the time?
-                        height: ${props.dialogEnvironment?.omitOuterFrame
+                        height: ${props.dialogEnvironment
+                            ?.dialogFrameProvidedExternally
                             ? "100%"
                             : "400px"};
                         min-width: 540px;

@@ -20,7 +20,7 @@ export function WireUpForWinforms(component: React.FunctionComponent) {
 // These props will not be wanted when we call the dialog component from within browser-land.
 function AddDialogPropsWhenWrappedByWinforms(props?: Object) {
     const dialogParamsWhenWrappedByWinforms: IBloomDialogEnvironmentParams = {
-        omitOuterFrame: true,
+        dialogFrameProvidedExternally: true,
         initiallyOpen: true
     };
     return props
