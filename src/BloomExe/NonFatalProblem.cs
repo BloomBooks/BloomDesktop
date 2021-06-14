@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -69,31 +69,12 @@ namespace Bloom
 					return;
 				}
 
-				try
+				if (!skipSentryReport)
 				{
-					if (!ApplicationUpdateSupport.IsDev && !skipSentryReport)
-					{
-						if (originalException != null)
-						{
-							SentrySdk.WithScope(scope =>
-							{
-								scope.SetTag("fullDetailedMessage", fullDetailedMessage);
-								SentrySdk.CaptureException(originalException);
-							});
-						}
-						else
-						{
-							var evt = new SentryEvent() {Message = shortUserLevelMessage};
-							evt.SetExtra("fullDetailedMessage", fullDetailedMessage);
-							evt.SetExtra("stackTrace", (new StackTrace()).ToString());
-							SentrySdk.CaptureEvent(evt);
-						}
-					}
-				}
-				catch (Exception err)
-				{
-					// will only "do something" if we're testing reporting and have thus turned off checking for dev
-					Debug.Fail(err.Message);
+					if (originalException != null)
+						ReportSentryOnly(originalException, fullDetailedMessage, useTagInsteadOfBreadcrumb: true);
+					else
+						ReportSentryOnly(shortUserLevelMessage, fullDetailedMessage);
 				}
 
 				//if this isn't going modal even for devs, it's just background noise and we don't want the
@@ -168,6 +149,78 @@ namespace Bloom
 				}
 				if (channel.Contains("developer") || channel.Contains("alpha"))
 					ErrorReport.NotifyUserOfProblem(errorWhileReporting,"Error while reporting non fatal error");
+			}
+		}
+
+		/// <summary>
+		/// Send a report only to Sentry (no log, no toast, etc.)
+		/// Does nothing if ApplicationUpdateSupport.IsDev is true.
+		/// Fails silently (unless throwOnException is true).
+		/// </summary>
+		/// <param name="exception">The exception to report to Sentry</param>
+		/// <param name="message">An optional message to send with the exception to provide more context</param>
+		/// <param name="useTagInsteadOfBreadcrumb">If true, puts the message in a tag instead of adding it as a breadcrumb.
+		/// Note, it seems like we should be able to standardize one way to send such messages,
+		/// but I could not find any useful information about why one should be used over the other.
+		/// So when doing the refactoring to create this method, I just kept all the original logic in place from each caller.</param>
+		/// <param name="throwOnException">If true, will rethrow any exception which occurs while reporting to Sentry.</param>
+		public static void ReportSentryOnly(
+			Exception exception,
+			string message = null,
+			bool useTagInsteadOfBreadcrumb = false,
+			bool throwOnException = false)
+		{
+			if (ApplicationUpdateSupport.IsDev)
+				return;
+			try
+			{
+				if (useTagInsteadOfBreadcrumb)
+				{
+					SentrySdk.WithScope(scope =>
+					{
+						scope.SetTag("fullDetailedMessage", message);
+						SentrySdk.CaptureException(exception);
+					});
+				}
+				else
+				{
+					if (message != null)
+						SentrySdk.AddBreadcrumb(message);
+					SentrySdk.CaptureException(exception);
+				}
+			}
+			catch (Exception err)
+			{
+				// will only "do something" if we're testing reporting and have thus turned off checking for dev
+				Debug.Fail(err.Message);
+				if (throwOnException)
+					throw;
+			}
+		}
+
+		/// <summary>
+		/// Send a report only to Sentry (no log, no toast, etc.).
+		/// Does nothing if ApplicationUpdateSupport.IsDev is true.
+		/// Fails silently.
+		/// </summary>
+		/// <param name="message">The message to send with the exception to provide more context</param>
+		/// <param name="fullDetailedMessage">An optional message which can be added to the Sentry report</param>
+		public static void ReportSentryOnly(string message, string fullDetailedMessage = null)
+		{
+			if (ApplicationUpdateSupport.IsDev)
+				return;
+			try
+			{
+				var evt = new SentryEvent { Message = message };
+				if (fullDetailedMessage != null)
+					evt.SetExtra("fullDetailedMessage", fullDetailedMessage);
+				evt.SetExtra("stackTrace", new StackTrace().ToString());
+				SentrySdk.CaptureEvent(evt);
+			}
+			catch (Exception err)
+			{
+				// will only "do something" if we're testing reporting and have thus turned off checking for dev
+				Debug.Fail(err.Message);
 			}
 		}
 

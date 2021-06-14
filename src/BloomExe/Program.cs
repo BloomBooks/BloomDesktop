@@ -703,7 +703,7 @@ namespace Bloom
 				else
 					Logger.WriteError("Exception caught at outermost level of Bloom:", bad);
 				var exceptMsg = "TargetInvocationException";
-				try { SentrySdk.CaptureException(bad); } catch (Exception e) { exceptMsg += $" (SentrySdk.CaptureException failed: {e})"; }
+				try { NonFatalProblem.ReportSentryOnly(bad, throwOnException: true); } catch (Exception e) { exceptMsg += $" (Sentry report failed: {e})"; }
 				ShowUserEmergencyShutdownMessage(bad);
 				System.Environment.FailFast(exceptMsg);
 			}
@@ -711,7 +711,7 @@ namespace Bloom
 			{
 				Logger.WriteError("Exception caught at outermost level of Bloom: ", nasty);
 				var exceptMsg = "AccessViolationException";
-				try { SentrySdk.CaptureException(nasty); } catch (Exception e) { exceptMsg += $" (SentrySdk.CaptureException failed: {e})"; }
+				try { NonFatalProblem.ReportSentryOnly(nasty, throwOnException: true); } catch (Exception e) { exceptMsg += $" (Sentry report failed: {e})"; }
 				ShowUserEmergencyShutdownMessage(nasty);
 				System.Environment.FailFast(exceptMsg);
 			}
@@ -1364,16 +1364,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			{
 				ExceptionHandler.AddDelegate((w, e) =>
 				{
-					try
-					{
-							SentrySdk.CaptureException(e.Exception);
-					}
-					catch (Exception err)
-					{
-						// Will only "do something" if we're testing reporting and have thus turned off checking for dev.
-						// // Else we're swallowing.
-						Debug.Fail(err.Message);
-					}
+					NonFatalProblem.ReportSentryOnly(e.Exception);
 				});
 			}
 			_errorHandlingHasBeenSetUp = true;

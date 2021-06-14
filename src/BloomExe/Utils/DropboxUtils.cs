@@ -76,7 +76,7 @@ namespace Bloom.Utils
 				// If something goes wrong trying to figure out whether it's a Dropbox folder,
 				// just assume it isn't. Nothing crucial currently depends on knowing this, just
 				// some more helpful error reporting if there's a problem.
-				SentrySdk.CaptureException(ex);
+				NonFatalProblem.ReportSentryOnly(ex);
 			}
 
 			return false;
@@ -131,7 +131,7 @@ namespace Bloom.Utils
 			}
 			catch (Exception ex)
 			{
-				SentrySdk.CaptureException(ex);
+				NonFatalProblem.ReportSentryOnly(ex);
 			}
 			return null;
 		}

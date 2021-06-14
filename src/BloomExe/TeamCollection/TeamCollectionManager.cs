@@ -230,7 +230,7 @@ namespace Bloom.TeamCollection
 							}
 							else
 							{
-								NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not save your settings to the Team Collection: " + problemWithConnection,
+								NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not save your settings to the Team Collection: " + problemWithConnection.TextForDisplay,
 									null, null, true);
 							}
 						}
@@ -317,7 +317,7 @@ namespace Bloom.TeamCollection
 			}
 			catch (Exception ex)
 			{
-				SentrySdk.CaptureException(ex);
+				NonFatalProblem.ReportSentryOnly(ex);
 				// Unless whatever went wrong left us disconnected, we may as well go ahead and try
 				// whatever we were about to do.
 				return CurrentCollection != null;
