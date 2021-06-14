@@ -95,8 +95,7 @@ namespace Bloom.TeamCollection
 			{
 				// Not sure what to do here: getting the log should never crash.
 				Logger.WriteError("TeamCollectionApi.HandleGetLog() crashed", e);
-				SentrySdk.AddBreadcrumb($"Something went wrong for {request.LocalPath()}");
-				SentrySdk.CaptureException(e);
+				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()}");
 				request.Failed("get log failed");
 			}
 		}
@@ -112,8 +111,7 @@ namespace Bloom.TeamCollection
 			{
 				// Not sure what to do here: getting the repo's folder path should never crash.
 				Logger.WriteError("TeamCollectionApi.HandleRepoFolderPath() crashed", e);
-				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
-				SentrySdk.CaptureException(e);
+				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()}");
 				request.Failed("get repo folder path failed");
 			}
 		}
@@ -141,8 +139,7 @@ namespace Bloom.TeamCollection
 				Logger.WriteError("TeamCollectionApi.HandleJoinTeamCollection() crashed", e);
 				var msg = LocalizationManager.GetString("TeamCollection.ErrorJoining", "Could not join Team Collection");
 				ErrorReport.NotifyUserOfProblem(e, msg);
-				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
-				SentrySdk.CaptureException(e);
+				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()}");
 
 				// Since we have already informed the user above, it is better to just report a success here.
 				// Otherwise, they will also get a toast.
@@ -163,8 +160,7 @@ namespace Bloom.TeamCollection
 			{
 				// Not sure what to do here: checking whether TeamCollection is enabled should never crash.
 				Logger.WriteError("TeamCollectionApi.HandleIsTeamCollectionEnabled() crashed", e);
-				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
-				SentrySdk.CaptureException(e);
+				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()}");
 				request.Failed("checking if Team Collections are enabled failed");
 			}
 		}
@@ -207,8 +203,7 @@ namespace Bloom.TeamCollection
 			{
 				// Not sure what to do here: getting the current book status crashed.
 				Logger.WriteError("TeamCollectionApi.HandleCurrentBookStatus() crashed", e);
-				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
-				SentrySdk.CaptureException(e);
+				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()}");
 				request.Failed("getting the current book status failed");
 			}
 		}
@@ -254,8 +249,7 @@ namespace Bloom.TeamCollection
 				if (log != null)
 					log.WriteMessage(MessageAndMilestoneType.Error, msgId, msgEnglish, BookFolderName, e.Message);
 				Logger.WriteError(String.Format(msgEnglish, BookFolderName, e.Message), e);
-				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
-				SentrySdk.CaptureException(e);
+				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()}");
 				request.Failed("lock failed");
 			}
 		}
@@ -342,9 +336,7 @@ namespace Bloom.TeamCollection
 				if (log != null)
 					log.WriteMessage(MessageAndMilestoneType.Error, msgId, msgEnglish, _bookSelection?.CurrentSelection?.FolderPath, e.Message);
 				Logger.WriteError(String.Format(msgEnglish, _bookSelection?.CurrentSelection?.FolderPath, e.Message), e);
-				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0} ({1})",
-					request.LocalPath(), _bookSelection?.CurrentSelection?.FolderPath));
-				SentrySdk.CaptureException(e);
+				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()} ({_bookSelection?.CurrentSelection?.FolderPath})");
 				request.Failed("checkin failed");
 			}
 		}
@@ -404,8 +396,7 @@ namespace Bloom.TeamCollection
 			{
 				// Not sure what to do here: choosing the collection folder should never crash.
 				Logger.WriteError("TeamCollectionApi.HandleChooseFolderLocation() crashed", e);
-				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
-				SentrySdk.CaptureException(e);
+				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()}");
 				request.Failed("choose folder location failed");
 			}
 		}
@@ -489,8 +480,7 @@ namespace Bloom.TeamCollection
 				var msgFmt = LocalizationManager.GetString("TeamCollection.ErrorCreating", msgEnglish);
 				ErrorReport.NotifyUserOfProblem(e, msgFmt, repoFolderParentPath, e.Message);
 				Logger.WriteError(String.Format(msgEnglish, repoFolderParentPath, e.Message), e);
-				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
-				SentrySdk.CaptureException(e);
+				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()}");
 
 				// Since we have already informed the user above, it is better to just report a success here.
 				// Otherwise, they will also get a toast.

@@ -1322,7 +1322,7 @@ namespace Bloom.TeamCollection
 						// the local version.
 
 						if (statusLocal.lockedBy != TeamCollectionManager.CurrentUser
-						    || statusLocal.lockedWhere != TeamCollectionManager.CurrentMachine)
+							|| statusLocal.lockedWhere != TeamCollectionManager.CurrentMachine)
 						{
 							ReportProgressAndLog(progress, ProgressKind.Warning, "DeleteLocal",
 								"Deleting '{0}' from local folder as it is no longer in the Team Collection",
@@ -1351,11 +1351,9 @@ namespace Bloom.TeamCollection
 				{
 					// Something went wrong with dealing with this book, but we'd like to carry on with
 					// syncing the rest of the collection
-					ReportProgressAndLog(progress, ProgressKind.Error, "SomethingWentWrong",englishSomethingWrongMessage,
-						path, null);
-					SentrySdk.AddBreadcrumb(string.Format(englishSomethingWrongMessage, path));
-					SentrySdk.CaptureException(ex);
-					hasProblems= true;
+					ReportProgressAndLog(progress, ProgressKind.Error, "SomethingWentWrong", englishSomethingWrongMessage, path, null);
+					NonFatalProblem.ReportSentryOnly(ex, string.Format(englishSomethingWrongMessage, path));
+					hasProblems = true;
 				}
 			}
 
@@ -1543,10 +1541,8 @@ namespace Bloom.TeamCollection
 				{
 					// Something went wrong with dealing with this book, but we'd like to carry on with
 					// syncing the rest of the collection
-					ReportProgressAndLog(progress, ProgressKind.Error, "SomethingWentWrong", englishSomethingWrongMessage,
-						bookName);
-					SentrySdk.AddBreadcrumb(string.Format(englishSomethingWrongMessage, bookName));
-					SentrySdk.CaptureException(ex);
+					ReportProgressAndLog(progress, ProgressKind.Error, "SomethingWentWrong", englishSomethingWrongMessage, bookName);
+					NonFatalProblem.ReportSentryOnly(ex, string.Format(englishSomethingWrongMessage, bookName));
 					hasProblems = true;
 				}
 			}
