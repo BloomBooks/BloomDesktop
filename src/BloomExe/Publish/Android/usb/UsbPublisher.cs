@@ -57,13 +57,12 @@ namespace Bloom.Publish.Android.usb
 				}
 				_progress.Message(idSuffix: "LookingForDevice",
 					comment: "This is a progress message; MTP is an acronym for the system that allows computers to access files on devices.",
-					message: "Looking for an Android device connected by USB cable and set up for MTP...");
+					message: "Looking for an Android device connected by USB cable and set up for file transfer (MTP)...");
 
-				_androidDeviceUsbConnection.OneReadyDeviceFound = HandleFoundAReadyDevice;
-				_androidDeviceUsbConnection.OneReadyDeviceNotFound = HandleFoundOneNonReadyDevice;
+				_androidDeviceUsbConnection.OneReadyDeviceFound = HandleOneReadyDeviceFound;
+				_androidDeviceUsbConnection.OneReadyDeviceNotFound = HandleOneReadyDeviceNotFound;
 				// Don't suppress the first message after (re)starting.
 				_previousDeviceNotFoundReportType = DeviceNotFoundReportType.Unknown;
-
 
 				_connectionHandler.DoWork += (sender, args) => _androidDeviceUsbConnection.ConnectAndSendToOneDevice(book, backColor, settings);
 				_connectionHandler.RunWorkerCompleted += (sender, args) =>
@@ -92,14 +91,14 @@ namespace Bloom.Publish.Android.usb
 		{
 			Stop();
 			_progress.Message(idSuffix: "UnableToConnect",
-				 message: "Unable to connect to any Android device which has Bloom Reader.");
+				 message: "Unable to connect to any Android device.");
 
 			_progress.ErrorWithoutLocalizing("\tTechnical details to share with the development team: " + e);
 			Logger.WriteError(e);
 			Stopped();
 		}
 
-		private void HandleFoundAReadyDevice(Book.Book book, Color backColor, AndroidPublishSettings settings = null)
+		private void HandleOneReadyDeviceFound(Book.Book book, Color backColor, AndroidPublishSettings settings = null)
 		{
 			_progress.MessageWithParams(idSuffix: "Connected",
 				message: "Connected to {0} via USB...",
@@ -110,7 +109,7 @@ namespace Bloom.Publish.Android.usb
 			SendBookAsync(book, backColor, settings);
 		}
 
-		private void HandleFoundOneNonReadyDevice(DeviceNotFoundReportType reportType, List<string> deviceNames)
+		private void HandleOneReadyDeviceNotFound(DeviceNotFoundReportType reportType, List<string> deviceNames)
 		{
 			// Don't report the same thing over and over
 			if (_previousDeviceNotFoundReportType == reportType)
@@ -123,18 +122,9 @@ namespace Bloom.Publish.Android.usb
 				case DeviceNotFoundReportType.NoDeviceFound:
 					_progress.Message("NoDeviceFound", "No device found. Still looking...");
 					break;
-				case DeviceNotFoundReportType.NoBloomDirectory:
-					// I made this "running" instead of "installed" because I'm assuming
-					// we wouldn't get a bloom directory just from installing. We don't actually need it to be
-					// running, but this keeps the instructions simple.
-					_progress.Message(idSuffix: "DeviceWithoutBloomReader",
-						message: "The following devices are connected but do not seem to have Bloom Reader running:");
-					foreach (var deviceName in deviceNames)
-						_progress.MessageWithoutLocalizing($"\t{deviceName}");
-					break;
 				case DeviceNotFoundReportType.MoreThanOneReadyDevice:
 					_progress.Message(idSuffix: "MoreThanOne",
-						message: "The following connected devices all have Bloom Reader installed. Please connect only one of these devices.");
+						message: "Please connect only one of the following devices.");
 					foreach (var deviceName in deviceNames)
 						_progress.MessageWithoutLocalizing($"\t{deviceName}");
 					break;
@@ -144,7 +134,6 @@ namespace Bloom.Publish.Android.usb
 		/// <summary>
 		/// Attempt to send the book to the device
 		/// </summary>
-		/// <param name="book"></param>
 		public void SendBookAsync(Book.Book book, Color backColor, AndroidPublishSettings settings = null)
 		{
 			try
@@ -178,7 +167,6 @@ namespace Bloom.Publish.Android.usb
 			return size.ToString("F1");
 		}
 
-		// internal virtual for testing only
 		protected virtual void SendBookDoWork(Book.Book book, Color backColor, AndroidPublishSettings settings = null)
 		{
 			PublishToAndroidApi.SendBook(book, _bookServer,
