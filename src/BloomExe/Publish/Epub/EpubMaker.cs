@@ -2208,10 +2208,21 @@ namespace Bloom.Publish.Epub
 					continue;
 				if (href != null && Path.GetFileName(href.Value) == "defaultLangStyles.css")
 					continue;
-				// BL-9844 Let's keep the Kyrgyzstan xmatter stylesheet
-				// (just for 4.9/5.0; we will keep ePub-specific css in 5.1).
+				// BL-9844, BL-10080 We need some special style rules for Kyrgyzstan2020
+				// Xmatter even in epubs, but including the whole standard stylesheet
+				// doesn't work well in many readers, which don't handle various
+				// sophisticated techniques it uses like css variables and, in some readers,
+				// flexbox. So we have a custom Kyrgyzstan2020 style sheet for epubs.
+				// In 5.1 there will be a more general approach to supporting custom
+				// xmatter stylesheets for epubs.
 				if (href != null && Path.GetFileName(href.Value).StartsWith("Kyrgyzstan2020"))
+				{
+					// We need to get rid of the link to the standard Kyrgz xmatter and
+					// add a link to the special epub-specific one. We can conveniently
+					// accomplish both by changing the HREF and KEEPING the link.
+					link.SetAttribute("href", "Kyrgyzstan2020-Xmatter-epub.css");
 					continue;
+				};
 				link.ParentNode.RemoveChild (link);
 			}
 		}
