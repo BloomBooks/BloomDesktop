@@ -2,10 +2,11 @@
 // textboxes are intended for use in making comic books, but could also be useful in the case of
 // any book that uses a picture where there is space for text within the bounds of the picture.
 ///<reference path="../../typings/jquery/jquery.d.ts"/>
+// This collectionSettings reference defines the function GetSettings(): ICollectionSettings
+// The actual function is injected by C#.
+/// <reference path="./collectionSettings.d.ts"/>
 
 import { EditableDivUtils } from "./editableDivUtils";
-import BloomField from "../bloomField/BloomField";
-import { BloomApi } from "../../utils/bloomApi";
 import {
     Bubble,
     BubbleSpec,
@@ -17,11 +18,12 @@ import { Point, PointScaling } from "./point";
 import { isLinux } from "../../utils/isLinux";
 import { reportError } from "../../lib/errorHandler";
 import { getRgbaColorStringFromColorAndOpacity } from "../toolbox/comic/comicToolColorHelper";
-import { makeElement, attachToCkEditor } from "./bloomEditing";
+import { SetupElements, attachToCkEditor } from "./bloomEditing";
 
 const kComicalGeneratedClass: string = "comical-generated";
 const kTextOverPictureClass = "bloom-textOverPicture";
 const kTextOverPictureSelector = `.${kTextOverPictureClass}`;
+const kImageContainerSelector = ".bloom-imageContainer";
 
 // references to "TOP" in the code refer to the actual TextOverPicture box (what "Bubble"s were originally called) installed in the Bloom page.
 export class BubbleManager {
@@ -79,7 +81,7 @@ export class BubbleManager {
             return false; // we can't fix it
         }
 
-        const container = wrapperBox.closest(".bloom-imageContainer");
+        const container = BubbleManager.getImageContainerElement(wrapperBox);
         if (!container) {
             return false; // paranoia; TOP box should always be in image container
         }
@@ -155,14 +157,26 @@ export class BubbleManager {
         });
     }
 
-    private focusFirstVisibleEditable(activeElement: HTMLElement) {
-        const focusElements = Array.from(
+    private getAllVisibleEditableDivs(activeElement: HTMLElement): Element[] {
+        return Array.from(
             activeElement.getElementsByClassName(
                 "bloom-editable bloom-visibility-code-on"
             )
         ).filter(el => !el.parentElement!.classList.contains("box-header-off"));
+    }
+
+    private focusFirstVisibleEditable(activeElement: HTMLElement) {
+        const focusElements = this.getAllVisibleEditableDivs(activeElement);
         if (focusElements.length > 0) {
             (focusElements[0] as HTMLElement).focus();
+        }
+    }
+
+    private focusLastVisibleEditable(activeElement: HTMLElement) {
+        const focusElements = this.getAllVisibleEditableDivs(activeElement);
+        const numberOfElements = focusElements.length;
+        if (numberOfElements > 0) {
+            (focusElements[numberOfElements - 1] as HTMLElement).focus();
         }
     }
 
@@ -346,42 +360,58 @@ export class BubbleManager {
     }
 
     // Use this one when adding/duplicating a bubble to avoid re-navigating the page.
-    // This is a simplified/repeatable version of "turnOnBubbleEditing()"
-    // Usually if we are passing "undefined" as the bubble, it's because we just deleted a bubble
+    // If we are passing "undefined" as the bubble, it's because we just deleted a bubble
     // and we want Bloom to determine what to select next (it might not be a bubble at all).
     public refreshBubbleEditing(
         imageContainer: HTMLElement,
-        bubble: Bubble | undefined
+        bubble: Bubble | undefined,
+        attachEventsToEditables: boolean
     ): void {
         Comical.startEditing([imageContainer]);
         if (bubble) {
             const newTextOverPictureElement = bubble.content;
             Comical.activateBubble(bubble);
             this.updateComicalForSelectedElement(newTextOverPictureElement);
-            Array.from(
-                newTextOverPictureElement.getElementsByClassName(
-                    "bloom-editable"
-                )
-            ).forEach(element => {
-                BloomField.ManageField(element as HTMLElement);
-                attachToCkEditor(element);
-                element.setAttribute("contenteditable", "true");
-
-                // Don't use an arrow function as an event handler here. These can never be identified as duplicate event listeners, so we'll end up with tons of duplicates
-                element.addEventListener(
-                    "focusin",
-                    BubbleManager.onFocusSetActiveElement
-                );
-            });
-            this.makeTOPBoxesDraggableClickableAndResizable();
-            this.setActiveElement(newTextOverPictureElement); // update toolbox UI
-        } else {
-            const marginBox = document.getElementsByClassName("marginBox");
-            if (marginBox.length > 0) {
-                this.focusFirstVisibleEditable(marginBox[0] as HTMLElement);
-                // When the first visible editable gets focus, onFocusSetActiveElement()
-                // will call setActiveElement() to update the toolbox UI.
+            SetupElements(imageContainer);
+            // SetupElements (above) will do most of what we need, but when it gets to
+            // 'turnOnBubbleEditing()', it's already on, so the method will get skipped.
+            // The only piece left from that method that still needs doing is to set the
+            // 'focusin' eventlistener.
+            // And then the only thing left from a full refresh that needs to happen here is
+            // to attach the new bloom-editable to ckEditor.
+            // If attachEventsToEditables is false, then this is a child or duplicate bubble that
+            // was already sent through here once. We don't need to add more focusin listeners and
+            // re-attach to the StyleEditor again.
+            if (attachEventsToEditables) {
+                Array.from(
+                    newTextOverPictureElement.getElementsByClassName(
+                        "bloom-editable"
+                    )
+                ).forEach(element => {
+                    // Don't use an arrow function as an event handler here. These can never be identified
+                    // as duplicate event listeners, so we'll end up with tons of duplicates
+                    element.addEventListener(
+                        "focusin",
+                        BubbleManager.onFocusSetActiveElement
+                    );
+                    attachToCkEditor(element);
+                });
             }
+        } else {
+            let focusableContainer: HTMLElement = imageContainer;
+            if (
+                imageContainer.getElementsByClassName("bloom-editable")
+                    .length == 0
+            ) {
+                focusableContainer = document.getElementsByClassName(
+                    "marginBox"
+                )[0] as HTMLElement;
+            }
+            // We just deleted a bubble, so focus the most recently added bubble in the same
+            // imageContainer.
+            this.focusLastVisibleEditable(focusableContainer);
+            // When the last visible editable gets focus, onFocusSetActiveElement()
+            // will call setActiveElement() to update the toolbox UI.
         }
     }
 
@@ -393,9 +423,7 @@ export class BubbleManager {
                 // it would be nice to do this only once, but there MIGHT
                 // be TOP elements in more than one image container...too complicated,
                 // and this only happens once per TOP.
-                Comical.update(
-                    top.closest(".bloom-imageContainer") as HTMLElement
-                );
+                Comical.update(BubbleManager.getImageContainerElement(top)!);
             }
         });
     }
@@ -429,7 +457,7 @@ export class BubbleManager {
     private static onDocClickClearActiveElement(event: Event) {
         const clickedElement = event.target as Element; // most local thing clicked on
         if (
-            clickedElement.closest(".bloom-imageContainer") ||
+            BubbleManager.getImageContainerElement(clickedElement) ||
             clickedElement.closest(".source-copy-button")
         ) {
             // We have other code to handle setting and clearing Comical handles
@@ -777,7 +805,7 @@ export class BubbleManager {
         );
         this.placeElementAtPosition(
             $(this.bubbleToDrag.content),
-            $(container),
+            container,
             newPosition
         );
 
@@ -904,7 +932,7 @@ export class BubbleManager {
             PointScaling.Scaled,
             "Created by handleMouseMoveResizeBubble()"
         );
-        this.placeElementAtPosition(content, $(container), newPoint);
+        this.placeElementAtPosition(content, container, newPoint);
     }
 
     private onMouseUp(event: MouseEvent, container: HTMLElement) {
@@ -1351,9 +1379,7 @@ export class BubbleManager {
         if (!element) {
             return;
         }
-        const imageContainer = element.closest(
-            ".bloom-imageContainer"
-        ) as HTMLElement;
+        const imageContainer = BubbleManager.getImageContainerElement(element);
         if (!imageContainer) {
             return; // shouldn't happen...
         }
@@ -1400,15 +1426,14 @@ export class BubbleManager {
         }
 
         Comical.initializeChild(childElement, parentElement);
-        // In this case, the "addFloatingTOPBox()" above will already have done the new bubble's
-        // refresh. We still want to refresh, but not for the new bubble, so we pass "undefined".
-        // Otherwise, we will duplicate our attach to ckeditor, etc.
+        // In this case, the 'addFloatingTOPBox()' above will already have done the new bubble's
+        // refresh. We still want to refresh, but not attach to ckeditor, etc., so we pass
+        // attachEventsToEditables as false.
         this.refreshBubbleEditing(
-            parentElement.closest(".bloom-imageContainer")!,
-            undefined
+            BubbleManager.getImageContainerElement(parentElement)!,
+            new Bubble(childElement),
+            false
         );
-        // But now we'd like the child bubble to be selected.
-        this.setActiveElement(childElement);
         return childElement;
     }
 
@@ -1421,7 +1446,7 @@ export class BubbleManager {
         const parentBoundingRect = parentElement.getBoundingClientRect();
 
         // // Ensure newX and newY is within the bounds of the container.
-        const container = parentElement.closest(".bloom-imageContainer");
+        const container = BubbleManager.getImageContainerElement(parentElement);
         if (!container) {
             //toastr.warning("Failed to create child or duplicate element.");
             return undefined;
@@ -1505,10 +1530,10 @@ export class BubbleManager {
         screenX: number,
         screenY: number,
         style: string
-    ): HTMLElement | undefined {
+    ) {
         const clientX = screenX - window.screenX;
         const clientY = screenY - window.screenY;
-        return this.addFloatingTOPBox(clientX, clientY, style);
+        this.addFloatingTOPBox(clientX, clientY, style);
     }
 
     private addFloatingTOPBoxFromOriginal(
@@ -1517,7 +1542,9 @@ export class BubbleManager {
         originalElement: HTMLElement,
         style?: string
     ): HTMLElement | undefined {
-        const imageContainer = originalElement.closest(".bloom-imageContainer");
+        const imageContainer = BubbleManager.getImageContainerElement(
+            originalElement
+        );
         if (!imageContainer) {
             return undefined;
         }
@@ -1562,11 +1589,16 @@ export class BubbleManager {
         imageContainerJQuery: JQuery,
         style?: string
     ): HTMLElement {
+        const defaultNewTextLanguage = GetSettings().languageForNewTextBoxes;
         // add a draggable text bubble to the html dom of the current page
         const editableDivClasses =
             "bloom-editable bloom-content1 bloom-visibility-code-on Bubble-style";
         const editableDivHtml =
-            "<div class='" + editableDivClasses + "' ><p></p></div>";
+            "<div class='" +
+            editableDivClasses +
+            "' lang='" +
+            defaultNewTextLanguage +
+            "'><p></p></div>";
         const transGroupDivClasses =
             "bloom-translationGroup bloom-leadingElement Bubble-style";
         const transGroupHtml =
@@ -1588,7 +1620,7 @@ export class BubbleManager {
         const contentElement = wrapperJQuery.get(0);
         this.placeElementAtPosition(
             wrapperJQuery,
-            imageContainerJQuery,
+            imageContainerJQuery.get(0),
             location
         );
 
@@ -1599,7 +1631,7 @@ export class BubbleManager {
         );
         bubble.setBubbleSpec(bubbleSpec);
         const imageContainer = imageContainerJQuery.get(0);
-        this.refreshBubbleEditing(imageContainer, bubble);
+        this.refreshBubbleEditing(imageContainer, bubble, true);
         return contentElement;
     }
 
@@ -1610,18 +1642,18 @@ export class BubbleManager {
             // method not specified to return null
             return $();
         }
-        return $(clickElement).closest(".bloom-imageContainer");
+        return $(BubbleManager.getImageContainerElement(clickElement)!);
     }
 
     // positionInViewport is the position to place the top-left corner of the wrapperBox
     private placeElementAtPosition(
         wrapperBox: JQuery,
-        container: JQuery,
+        container: Element,
         positionInViewport: Point
     ) {
         const newPoint = BubbleManager.convertPointFromViewportToElementFrame(
             positionInViewport,
-            container[0]
+            container
         );
         const xOffset = newPoint.getUnscaledX();
         const yOffset = newPoint.getUnscaledY();
@@ -1660,7 +1692,7 @@ export class BubbleManager {
         Comical.deleteBubbleFromFamily(textOverPicDiv, containerElement);
 
         // Update UI and make sure things get redrawn correctly.
-        this.refreshBubbleEditing(containerElement, undefined);
+        this.refreshBubbleEditing(containerElement, undefined, false);
     }
 
     // We verify that 'textElement' is the active element before calling this method.
@@ -1688,19 +1720,10 @@ export class BubbleManager {
                 // Oddness! Bail!
                 // reset active element to what it was
                 this.setActiveElement(textElement as HTMLElement);
-                //toastr.info("Failed to duplicate bubble.");
                 return;
             }
 
-            const duplicateHtml = this.duplicateBubbleFamily(
-                patriarchBubble,
-                bubbleSpecToDuplicate
-            );
-            let bubble: Bubble | undefined = undefined;
-            if (duplicateHtml) {
-                bubble = new Bubble(duplicateHtml);
-            }
-            this.refreshBubbleEditing(imageContainer, bubble);
+            this.duplicateBubbleFamily(patriarchBubble, bubbleSpecToDuplicate);
         }
     }
 
@@ -1712,7 +1735,7 @@ export class BubbleManager {
     // The 'bubbleSpecToDuplicate' param is the bubbleSpec for the patriarch source bubble.
     // The function returns the patriarch textOverPicture element of the new
     // duplicated bubble family.
-    // When we return, the caller will call 'refreshBubbleEditing'.
+    // This method handles all needed refreshing of the duplicate bubbles.
     private duplicateBubbleFamily(
         patriarchSourceBubble: Bubble,
         bubbleSpecToDuplicate: BubbleSpec
@@ -1742,8 +1765,8 @@ export class BubbleManager {
         );
         this.setActiveElement(patriarchDuplicateElement);
         this.matchWidthOfSource(sourceElement, patriarchDuplicateElement);
-        const container = patriarchDuplicateElement.closest(
-            ".bloom-imageContainer"
+        const container = BubbleManager.getImageContainerElement(
+            patriarchDuplicateElement
         );
         if (!container) {
             return; // highly unlikely!
@@ -1770,6 +1793,15 @@ export class BubbleManager {
             level: specOfCopiedElement.level,
             version: specOfCopiedElement.version
         });
+        // OK, now we're done with our manipulation of the patriarch bubble and we're about to go on
+        // and deal with the child bubbles (if any). But we replaced the innerHTML after creating the
+        // initial duplicate bubble and the editable divs may not have the appropriate events attached,
+        // so we'll refresh again with 'attachEventsToEditables' set to 'true'.
+        this.refreshBubbleEditing(
+            container,
+            new Bubble(patriarchDuplicateElement),
+            true
+        );
         const childBubbles = Comical.findRelatives(patriarchSourceBubble);
         childBubbles.forEach(childBubble => {
             const childOffsetFromPatriarch = this.getOffsetFrom(
@@ -1858,6 +1890,15 @@ export class BubbleManager {
             sourceElement
         );
         this.matchWidthOfSource(sourceElement, newChildElement);
+        // We just replaced the bloom-editables from the 'addChildInternal' with a clone of the source
+        // bubble's HTML. This will undo any event handlers that might have been attached by the
+        // refresh triggered by 'addChildInternal'. So we send the newly modified child through again,
+        // with 'attachEventsToEditables' set to 'true'.
+        this.refreshBubbleEditing(
+            BubbleManager.getImageContainerElement(parentElement)!,
+            new Bubble(newChildElement),
+            true
+        );
     }
 
     private safelyCloneHtmlStructure(elementToClone: HTMLElement): string {
@@ -1907,8 +1948,10 @@ export class BubbleManager {
     private makeTOPBoxesDraggableAndClickable(thisTOPBoxes: JQuery): void {
         thisTOPBoxes.each((index, element) => {
             const thisTOPBox = $(element);
-            const imageContainer = this.getImageContainer(thisTOPBox);
-            const containerPos = imageContainer[0].getBoundingClientRect();
+            const imageContainer = BubbleManager.getImageContainerElement(
+                thisTOPBox.get(0)
+            )!;
+            const containerPos = imageContainer.getBoundingClientRect();
             const wrapperBoxRectangle = thisTOPBox[0].getBoundingClientRect();
 
             // Add the dragHandles (if needed). The visible one has a zindex below the canvas. The transparent one is above.
@@ -1944,7 +1987,7 @@ export class BubbleManager {
 
             transparentHandle.addEventListener("mouseover", event => {
                 this.setDraggableStateOnDragHandles(
-                    imageContainer[0],
+                    imageContainer,
                     transparentHandle
                 );
             });
@@ -1983,7 +2026,7 @@ export class BubbleManager {
                     // I'm having too hard of a time figuring out how to adjust it properly across all zoom factors.
                     // Neither unadjusted, container.scrollTop, nor delta between container and canvas are right.
                     const scroll = BubbleManager.getScrollAmount(
-                        imageContainer[0]
+                        imageContainer
                     );
                     console.assert(
                         scroll.length() <= 0.0001,
@@ -2011,7 +2054,7 @@ export class BubbleManager {
                     // We may have changed which handles are occluded; reset state on the current TOP box handles.
                     // Other handles will be reset whenever we mouseover them.
                     this.setDraggableStateOnDragHandles(
-                        imageContainer[0],
+                        imageContainer,
                         transparentHandle
                     );
                 }
@@ -2246,7 +2289,7 @@ export class BubbleManager {
     private static addResizingClassHandler(event: MouseEvent) {
         const handle = event.currentTarget as Element;
 
-        const container = handle.closest(".bloom-imageContainer");
+        const container = BubbleManager.getImageContainerElement(handle);
         if (container) {
             container.classList.add("bloom-resizing");
         }
@@ -2258,7 +2301,7 @@ export class BubbleManager {
     }
 
     private static clearResizingClass(element: Element) {
-        const container = element.closest(".bloom-imageContainer");
+        const container = BubbleManager.getImageContainerElement(element);
         if (container) {
             container.classList.remove("bloom-resizing");
         }
@@ -2275,7 +2318,9 @@ export class BubbleManager {
         let unscaledRelativeTop: number;
 
         if (!container) {
-            container = wrapperBoxElement.closest(".bloom-imageContainer");
+            container = BubbleManager.getImageContainerElement(
+                wrapperBoxElement
+            );
         }
 
         if (container) {
@@ -2322,8 +2367,13 @@ export class BubbleManager {
         unscaledRelativeLeft: number,
         unscaledRelativeTop: number
     ) {
-        const container = wrapperBox.closest(".bloom-imageContainer");
-        const containerSize = this.getInteriorWidthHeight(container[0]);
+        const container = BubbleManager.getImageContainerElement(
+            wrapperBox.get(0)
+        );
+        if (!container) {
+            return; // highly unlikely!
+        }
+        const containerSize = this.getInteriorWidthHeight(container);
         const width = containerSize.getUnscaledX();
         const height = containerSize.getUnscaledY();
 
@@ -2363,10 +2413,12 @@ export class BubbleManager {
         return interior;
     }
 
-    // Gets the bloom-imageContainer that hosts this BubbleManager textbox.
-    // The imageContainer will define the dragging boundaries for the textbox.
-    private getImageContainer(wrapperBox: JQuery): JQuery {
-        return wrapperBox.parent(".bloom-imageContainer").first();
+    // Lots of places we need to find the bloom-imageContainer that a particular element resides in.
+    // Method is static because several of the callers are static.
+    private static getImageContainerElement(
+        element: Element
+    ): HTMLElement | null {
+        return element.closest(kImageContainerSelector);
     }
 
     // When showing a tail for a bubble style that doesn't have one by default, we get one here.

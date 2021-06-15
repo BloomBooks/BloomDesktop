@@ -1,16 +1,17 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
-/// <reference path="collectionSettings.d.ts" />
+// This collectionSettings reference defines the function GetSettings(): ICollectionSettings
+// The actual function is injected by C#.
+/// <reference path="./collectionSettings.d.ts" />
 /// <reference path="bloomQtipUtils.ts" />
 /// <reference path="../../typings/jquery.qtipSecondary.d.ts" />
 /// <reference path="../../typings/jquery.qtip.d.ts" />
+
 import { BloomApi } from "../../utils/bloomApi";
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { IsPageXMatter } from "../js/bloomEditing";
 import bloomQtipUtils from "./bloomQtipUtils";
-
-declare function GetSettings(): any; //c# injects this
 
 export default class BloomHintBubbles {
     // Add (yellow) hint bubbles from (usually) label.bubble elements.
