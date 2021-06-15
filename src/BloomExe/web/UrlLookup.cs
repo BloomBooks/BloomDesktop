@@ -70,8 +70,9 @@ namespace Bloom.web
 				return url;
 			}
 
-			NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "Bloom could not retrieve the URL (type: " + urlType + ") from the live lookup", "We will try to continue with the fallback URL");
-			return LookupFallbackUrl(urlType);
+			var fallbackUrl = LookupFallbackUrl(urlType);
+			Logger.WriteEvent($"Using fallback URL: {fallbackUrl}");
+			return fallbackUrl;
 		}
 
 		private static UrlType GetSandboxUrlType(UrlType urlType)
@@ -114,10 +115,9 @@ namespace Bloom.web
 			catch (Exception e)
 			{
 				_internetAvailable = false;
-				var msg = e.ToString();
-				if (urlType == UrlType.IssueTrackingSystem || urlType == UrlType.IssueTrackingSystemBackend)
-					msg = e.Message;
-				Logger.WriteEvent($"Exception while attempting look up of URL type {urlType}: {msg}");
+				var msg = $"Exception while attempting look up of URL type {urlType}";
+				Logger.WriteEvent($"{msg}: {e.Message}");
+				NonFatalProblem.ReportSentryOnly(e, msg);
 			}
 			return false;
 		}
