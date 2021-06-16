@@ -774,7 +774,7 @@ namespace Bloom.TeamCollection
 				joiningRepo = repoFolder,
 				joiningGuid,
 				localGuid
-			}))
+			}, "Join Team Collection"))
 			{
 				dlg.Width = 560;
 				dlg.Height = 400;

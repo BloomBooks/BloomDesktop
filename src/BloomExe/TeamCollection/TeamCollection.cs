@@ -1132,7 +1132,7 @@ namespace Bloom.TeamCollection
 
 		private static string GetStatusFilePathFromBookFolderPath(string bookFolderPath)
 		{
-			var statusFile = Path.Combine(bookFolderPath, "book.status");
+			var statusFile = Path.Combine(bookFolderPath, "TeamCollection.status");
 			return statusFile;
 		}
 
@@ -1287,6 +1287,16 @@ namespace Bloom.TeamCollection
 					if (!IsBloomBookFolder(path))
 						continue;
 					var bookFolderName = Path.GetFileName(path);
+					var statusFilePath = GetStatusFilePath(bookFolderName, _localCollectionFolder);
+					// data migration
+					var obsoleteTcStatusPath = Path.Combine(path, "book.status");
+					if (RobustFile.Exists(obsoleteTcStatusPath))
+					{
+						if (RobustFile.Exists(statusFilePath))
+							RobustFile.Delete(obsoleteTcStatusPath); // somehow left behind
+						else
+							RobustFile.Move(obsoleteTcStatusPath, statusFilePath); // migrate
+					}
 					var statusJson = GetBookStatusJsonFromRepo(bookFolderName);
 					if (statusJson == null)
 					{
@@ -1298,7 +1308,6 @@ namespace Bloom.TeamCollection
 						}
 
 						// no sign of book in repo...should we delete it?
-						var statusFilePath = GetStatusFilePath(bookFolderName, _localCollectionFolder);
 						if (!File.Exists(statusFilePath))
 						{
 							// If there's no local status, presume it's a newly created local file and keep it
@@ -1583,7 +1592,7 @@ namespace Bloom.TeamCollection
 						titleBackgroundColor = Palette.kBloomBlueHex,
 						webSocketContext = TeamCollection.kWebSocketContext,
 						showReportButton = "if-error"
-		})
+		}, "Sync Team Collection")
 					// winforms dialog properties
 					{Width = 620, Height = 550},
 				doWhat, doWhenMainActionFalse);
