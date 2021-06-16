@@ -57,10 +57,13 @@
 // the whole page. It is fine tuned for the readers we currently care most about (Ekitabu and
 // Lithium); 94% or more causes Lithium to make another page with a tiny strip of red.
 // Of course, there may be other readers where even 93vh is a problem, and there are
-// certainly ones that ignore this.
+// certainly ones that ignore this. Using min-height rather than height because, on small
+// screens, the back cover image may get pushed to its own page. Then the 'page' element may
+// want to be MORE than 100vh...it's split over two device pages. And we really want the
+// cover color to extend all the way to the bottom of the level image.
 .outsideBackCover,
 .outsideFrontCover {
-    height: 93vh;
+    min-height: 93vh;
 }
 
 .outsideBackCover .marginBox {
