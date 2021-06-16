@@ -16,6 +16,8 @@ import {
     useSubscribeToWebSocketForObject
 } from "../utils/WebSocketManager";
 import { Block } from "@material-ui/icons";
+import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
+import { AvatarDialog } from "./AvatarDialog";
 
 // The panel that shows the book preview and settings in the collection tab in a Team Collection.
 
@@ -41,12 +43,19 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [error, setError] = useState("");
     const [progress, setProgress] = useState(0);
     const [busy, setBusy] = useState(false);
+    const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
+    const [bookStatus, setBookStatus] = useState<any>({
+        currentUser: "",
+        currentUserName: ""
+    });
+    const [currentUserName, setCurrentUserName] = useState("");
     React.useEffect(() => {
         var lockedByMe = false;
         BloomApi.get(
             "teamCollection/currentBookStatus",
             data => {
                 const bookStatus = data.data;
+                setBookStatus(bookStatus);
                 if (bookStatus.problem) {
                     setState("problem");
                 } else if (bookStatus.changedRemotely) {
@@ -263,6 +272,21 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         setBusy(false);
     }
 
+    const menu = (
+        <SimpleMenu
+            text="..."
+            l10nKey="Common.Ellipsis"
+            temporarilyDisableI18nWarning={true}
+            items={[
+                {
+                    text: "About my Avatar...",
+                    l10nKey: "TeamCollection.AboutAvatar",
+                    action: () => setAvatarDialogOpen(true)
+                }
+            ]}
+        ></SimpleMenu>
+    );
+
     const panelContents = (state: LockState): JSX.Element => {
         switch (state) {
             default:
@@ -307,6 +331,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                             "Check Out.svg",
                             checkoutHandler
                         )}
+                        menu={menu}
                     />
                 );
             case "lockedByMe":
@@ -337,6 +362,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                             checkinHandler,
                             progress > 0
                         )}
+                        menu={menu}
                     >
                         <div
                             css={css`
@@ -366,6 +392,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         subTitle={subTitleLockedElsewhere}
                         icon={avatar}
                         children={getLockedInfoChild(lockedElsewhereInfo)}
+                        menu={menu}
                     />
                 );
             case "locked":
@@ -376,6 +403,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         subTitle={subTitleLocked}
                         icon={avatar}
                         children={getLockedInfoChild(lockedInfo)}
+                        menu={menu}
                     />
                 );
             case "problem":
@@ -393,6 +421,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                             undefined,
                             () => BloomApi.post("common/reloadCollection")
                         )}
+                        menu={menu}
                     />
                 );
             case "needsReload":
@@ -410,6 +439,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                             undefined,
                             () => BloomApi.post("common/reloadCollection")
                         )}
+                        menu={menu}
                     />
                 );
             case "disconnected":
@@ -430,12 +460,23 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         title={mainTitleLockedByMe}
                         subTitle={subTitleDisconnectedCheckedOut}
                         icon={avatar}
+                        menu={menu}
                     />
                 );
         }
     };
 
-    return <ThemeProvider theme={theme}>{panelContents(state)}</ThemeProvider>;
+    return (
+        <ThemeProvider theme={theme}>
+            {panelContents(state)}
+            <AvatarDialog
+                open={avatarDialogOpen}
+                close={() => setAvatarDialogOpen(false)}
+                currentUser={bookStatus.currentUser}
+                currentUserName={bookStatus.currentUserName}
+            ></AvatarDialog>
+        </ThemeProvider>
+    );
 };
 
 export const getBloomButton = (
