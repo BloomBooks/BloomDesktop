@@ -14,6 +14,7 @@ using Bloom.Publish.Epub;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using Gecko;
+using L10NSharp;
 using Microsoft.CSharp.RuntimeBinder;
 using SIL.Code;
 using SIL.Extensions;
@@ -50,6 +51,7 @@ namespace Bloom.Book
 		public HtmlDom(string xhtml)
 		{
 			_dom = new XmlDocument();
+			_dom.PreserveWhitespace = true;
 			_dom.LoadXml(xhtml);
 		}
 
@@ -146,7 +148,7 @@ namespace Bloom.Book
 			// HTML ids must start with a letter.  This is true of audio ids in Bloom, and possibly
 			// other id attribute values.  Page id values do not have this requirement.
 			var newId = Guid.NewGuid().ToString();
-			if (char.IsDigit(newId[0]))
+			if (Char.IsDigit(newId[0]))
 				newId = "i" + newId;
 			element.SetAttribute("id", newId);
 			return newId;
@@ -172,7 +174,7 @@ namespace Bloom.Book
 				}
 				foreach (XmlElement description in GetAllDivsWithClass(node, "pageDescription"))
 				{
-					description.InnerText = string.Empty;
+					description.InnerText = String.Empty;
 					break;
 				}
 			}
@@ -325,7 +327,7 @@ namespace Bloom.Book
 				{
 					var id = pageNode.Attributes["id"]?.Value;
 					// if there is a .bloom-page div with no id attribute, we're probably in a test.
-					if (string.IsNullOrEmpty(id) && Program.RunningUnitTests)
+					if (String.IsNullOrEmpty(id) && Program.RunningUnitTests)
 						continue;
 					// test that the "page" is at the right level in the DOM
 					if (pageNode.ParentNode?.Name.ToLowerInvariant() != "body")
@@ -854,11 +856,11 @@ namespace Bloom.Book
 			foreach (var node in textOverPictureElements)
 			{
 				var styleAttr = node.GetOptionalStringAttribute("style", "");
-				if (!string.IsNullOrEmpty(styleAttr))
+				if (!String.IsNullOrEmpty(styleAttr))
 				{
 					// Possible bubble text color
 					var textColorValue = GetColorValueFromStyle(styleAttr);
-					if (!string.IsNullOrEmpty(textColorValue))
+					if (!String.IsNullOrEmpty(textColorValue))
 					{
 						var textColorString = DynamicJson.Serialize(new
 						{
@@ -868,7 +870,7 @@ namespace Bloom.Book
 					}
 				}
 				var dataBubbleAttr = node.GetOptionalStringAttribute("data-bubble", "");
-				if (string.IsNullOrEmpty(dataBubbleAttr))
+				if (String.IsNullOrEmpty(dataBubbleAttr))
 					continue;
 
 				// Possible bubble background color
@@ -890,7 +892,7 @@ namespace Bloom.Book
 				colorElementList.Add(backgroundColorString);
 			}
 
-			return "[" + string.Join(",", colorElementList) + "]";
+			return "[" + String.Join(",", colorElementList) + "]";
 		}
 
 		private static string GetColorValueFromStyle(string styleAttrVal)
@@ -899,7 +901,7 @@ namespace Bloom.Book
 			var styleRegex = new Regex(@"\s*color\s*:\s*(.+)\s*;");
 			var match = styleRegex.Match(styleAttrVal);
 			// If successful, group 1 should be everything between "color: " and ";"
-			return match.Success ? match.Groups[1].Value : string.Empty;
+			return match.Success ? match.Groups[1].Value : String.Empty;
 		}
 
 		internal static dynamic GetJsonObjectFromDataBubble(string dataBubbleAttrVal)
@@ -1002,7 +1004,7 @@ namespace Bloom.Book
 			langDivSet.AddRange(GetLanguageDivs(false));
 			foreach (var div in langDivSet)
 			{
-				if (!string.IsNullOrWhiteSpace(div.InnerText))
+				if (!String.IsNullOrWhiteSpace(div.InnerText))
 					result.Add(div.Attributes["lang"].Value);
 			}
 			return result;
@@ -1026,7 +1028,7 @@ namespace Bloom.Book
 				{
 					// We migrated a video node into here, delete the placeholder class.
 					XmlUtils.SetAttribute(placeholderDiv, "class", XmlUtils.GetStringAttribute(placeholderDiv, "class").
-						Replace(videoPlaceholderClass, string.Empty));
+						Replace(videoPlaceholderClass, String.Empty));
 				}
 			}
 		}
@@ -1580,7 +1582,7 @@ namespace Bloom.Book
 			foreach (XmlElement elt in edittedPageDiv.SafeSelectNodes("//*[contains(@class, 'cke_')]"))
 			{
 				elt.SetAttribute("class",
-					string.Join(" ",
+					String.Join(" ",
 						elt.GetAttribute("class")
 							.Split(' ')
 							.Where(c => !c.StartsWith("cke_"))
@@ -1956,10 +1958,10 @@ namespace Bloom.Book
 			// we choose to return an empty path for failure instead of null to reduce errors created by things like
 			// HtmlDom.GetImageElementUrl(element).UrlEncoded.
 			if (videoElt == null)
-				return UrlPathString.CreateFromUnencodedString(string.Empty);
+				return UrlPathString.CreateFromUnencodedString(String.Empty);
 			var srcElt = videoElt.GetChildWithName("source");
 			if (srcElt == null)
-				return UrlPathString.CreateFromUnencodedString(string.Empty);
+				return UrlPathString.CreateFromUnencodedString(String.Empty);
 
 			var src = srcElt.GetAttribute("src");
 			string dummy;
@@ -2074,7 +2076,7 @@ namespace Bloom.Book
 		{
 			if (encodedParamString == null)
 				encodedParamString = "";
-			if (!string.IsNullOrEmpty(encodedParamString) && !(encodedParamString.StartsWith("?")))
+			if (!String.IsNullOrEmpty(encodedParamString) && !(encodedParamString.StartsWith("?")))
 				encodedParamString = "?" + encodedParamString;
 			srcElement.SetAttribute("src",
 				(urlEncodePath ? url.PathOnly.UrlEncodedForHttpPath : url.PathOnly.NotEncoded) + encodedParamString);
@@ -2437,7 +2439,7 @@ namespace Bloom.Book
 		/// </summary>
 		private string GetNumberStringRepresentation(int postiveInteger, string charactersForDigits)
 		{
-			if(string.IsNullOrEmpty(charactersForDigits))
+			if(String.IsNullOrEmpty(charactersForDigits))
 				return postiveInteger.ToString(CultureInfo.InvariantCulture);
 
 			// normal charactersForDigits.length gives 20 for chakma's 10 characters... I gather because it is converted to utf 16  and then
@@ -2502,7 +2504,7 @@ namespace Bloom.Book
 			var pageNumber = pageElement.GetOptionalStringAttribute("data-page-number","unknown");
 			if (
 				// front matter won't have a pageNumber
-				string.IsNullOrWhiteSpace(pageNumber)
+				String.IsNullOrWhiteSpace(pageNumber)
 
 			    // back matter pages actually have page numbers (maybe that's an oversight in some other code?)
 			    // but it's clearer to just call them by name.
@@ -2516,10 +2518,10 @@ namespace Bloom.Book
 
 		private static string LocalizePageLabel(string label, IEnumerable<string> langs)
 		{
-			if (langs == null || string.IsNullOrEmpty(label))
+			if (langs == null || String.IsNullOrEmpty(label))
 				return label;
 			var id = "TemplateBooks.PageLabel." + label;
-			return L10NSharp.LocalizationManager.GetString(id, label, "", langs, out _);
+			return LocalizationManager.GetString(id, label, "", langs, out _);
 		}
 
 		public static bool IsBackMatterPage(XmlElement pageElement)
@@ -2592,7 +2594,7 @@ namespace Bloom.Book
 			}
 
 			// Check for an exact match on localized string.
-			string localizedFormatString = L10NSharp.LocalizationManager.GetString("EditTab.Image.AltMsg", "This picture, {0}, is missing or was loading too slowly.");
+			string localizedFormatString = LocalizationManager.GetString("EditTab.Image.AltMsg", "This picture, {0}, is missing or was loading too slowly.");
 			string localizedString = String.Format(localizedFormatString, imageElement.GetAttribute("src"));
 
 			if (altText.Equals(localizedString, StringComparison.CurrentCultureIgnoreCase))
@@ -2632,7 +2634,7 @@ namespace Bloom.Book
 		public static void SetInlineStyle(XmlElement element, string styleToSet)
 		{
 			var styleString = GetAttributeValue(element, "style");
-			if (!string.IsNullOrWhiteSpace(styleString))
+			if (!String.IsNullOrWhiteSpace(styleString))
 				styleString += " ";
 			styleString += styleToSet;
 			element.SetAttribute("style", styleString);
@@ -2672,7 +2674,7 @@ namespace Bloom.Book
 		{
 			string xKey = ExtractKeyForMultilingualDivs(x);
 			string yKey = ExtractKeyForMultilingualDivs(y);
-			return string.Compare(xKey, yKey, StringComparison.Ordinal);
+			return String.Compare(xKey, yKey, StringComparison.Ordinal);
 		}
 
 		private static string ExtractKeyForMultilingualDivs(XmlElement x)
@@ -2745,6 +2747,38 @@ namespace Bloom.Book
 					.First(x => x.EndsWith("Portrait") || x.EndsWith("Landscape"));
 				mediaBoxDiv.SetAttribute("class", $"bloom-mediaBox {pageSizeClass}");
 			}
+		}
+
+		public static string NumberOfPage(XmlElement page)
+		{
+			return (page?.Attributes["data-page-number"]?.Value) ?? "";
+		}
+
+		/// <summary>
+		/// Remove from the argument (presumed to be a translation group) any children not in the list
+		/// of languages to keep.
+		/// </summary>
+		public static void RemoveOtherLanguages(XmlElement group, List<string> languagesToKeep)
+		{
+			foreach (var editable in @group.ChildNodes.Cast<XmlNode>()
+				.Where(x => x is XmlElement e
+				            && (e.Attributes["class"]?.Value ?? "").Contains("bloom-editable"))
+				.Cast<XmlElement>().ToList())
+			{
+				var lang = editable.Attributes["lang"]?.Value;
+				if (lang == "z")
+					continue;
+				if (!languagesToKeep.Contains(lang))
+					@group.RemoveChild(editable);
+			}
+		}
+
+		public static XmlElement GetEditableChildInLang(XmlElement parent, string lang)
+		{
+			return parent.ChildNodes.Cast<XmlNode>().FirstOrDefault(
+				x => x is XmlElement e
+				     && (lang == null || e.Attributes["lang"]?.Value == lang)
+				     && (e.Attributes["class"]?.Value ?? "").Contains("bloom-editable")) as XmlElement;
 		}
 	}
 }
