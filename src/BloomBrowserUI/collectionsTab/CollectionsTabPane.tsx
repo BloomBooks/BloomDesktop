@@ -6,9 +6,9 @@ import { BloomApi } from "../utils/bloomApi";
 import { BooksOfCollection } from "./BooksOfCollection";
 import { Transition } from "react-transition-group";
 import { SplitPane } from "react-collapse-pane";
-
 import { kPanelBackground, kDarkestBackground } from "../bloomMaterialUITheme";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
+import { CollectionsTabBookPane } from "./collectionsTabBookPane/CollectionsTabBookPane";
 
 const kResizerSize = 10;
 
@@ -116,13 +116,14 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                     </SplitPane>
                     <div
                         css={css`
+                            height: 100%;
                             margin: 10px;
 
                             margin-left: ${10 +
                                 kResizerSize}px; // sigh. has to be left to make room for the splitter. I hate this splitter library!
                         `}
                     >
-                        <h1>TODO: Preview</h1>
+                        <CollectionsTabBookPane />
                     </div>
                 </SplitPane>
             </div>

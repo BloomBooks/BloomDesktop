@@ -287,7 +287,8 @@ namespace Bloom.Api
 			{
 				ReplaceAnyVideoElementsWithPlaceholder(dom);
 			}
-			var html5String = TempFileUtils.CreateHtml5StringFromXml(dom.RawDom);
+
+			var html5String = dom.getHtmlStringDisplayOnly();
 			lock (_theOneInstance._queue)
 			{
 				foreach (var item in _theOneInstance._idleTasks)
@@ -388,6 +389,35 @@ namespace Bloom.Api
 			//enhance: something feeds back these branding logos with a weird URL, that shouldn't be.
 			if (ApiHandler.IsInvalidApiCall(localPath))
 				return false;
+
+
+			// this alias is used by the javascript preview pane
+			if (localPath.StartsWith("book-preview"))
+			{
+				if (localPath == "book-preview")
+				{
+					// if we're just working in a browser and forget that you have to have the index.htm
+					localPath = "book-preview/index.htm";
+				}
+
+				if (CurrentBook == null)
+				{
+					info.WriteCompleteOutput("");
+					return true;
+				}
+
+				if (localPath == "book-preview/index.htm")
+				{
+					info.ResponseContentType = "text/html";
+					var html = (CurrentBook.GetPreviewHtmlFileForWholeBook().getHtmlStringDisplayOnly());
+					info.WriteCompleteOutput(html);
+					return true;
+				}
+				else
+				{
+					localPath = localPath.Replace("book-preview", CurrentBook.FolderPath);
+				}
+			}
 
 			// process request for directory index
 			if (info.RawUrl.EndsWith("/") && (Directory.Exists(localPath)))
@@ -577,6 +607,7 @@ namespace Bloom.Api
 		{
 			if (localPath.EndsWith(".css"))
 			{
+				
 				return ProcessCssFile(info, localPath);
 			}
 
@@ -819,6 +850,8 @@ namespace Bloom.Api
 
 		private bool ProcessCssFile(IRequestInfo info, string incomingPath)
 		{
+			Console.WriteLine("css: " + incomingPath);
+
 			// BL-2219: "OriginalImages" means we're generating a pdf and want full images,
 			// but it has nothing to do with css files and defeats the following 'if'
 			var localPath = incomingPath.Replace(OriginalImageMarker + "/", "");

@@ -1,5 +1,5 @@
 import { BloomApi } from "./bloomApi";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export interface IBloomWebSocketEvent {
     clientContext: string;
@@ -68,6 +68,17 @@ export function useSubscribeToWebSocketForStringMessage(
         e => e.message!,
         e => !!e.message // ignore if no message
     );
+}
+
+export function useSelectedBookId() {
+    const [currentBookId, setCurrentBookId] = useState<string | undefined>(
+        undefined
+    );
+
+    useSubscribeToWebSocketForStringMessage("book-selection", "changed", id =>
+        setCurrentBookId(id)
+    );
+    return currentBookId;
 }
 
 // Subscribe to an event where the message string is holding a JSON object

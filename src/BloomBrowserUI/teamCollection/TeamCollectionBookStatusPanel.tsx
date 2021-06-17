@@ -12,6 +12,7 @@ import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import BloomButton from "../react_components/bloomButton";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import {
+    useSelectedBookId,
     useSubscribeToWebSocketForEvent,
     useSubscribeToWebSocketForObject
 } from "../utils/WebSocketManager";
@@ -44,6 +45,8 @@ export interface IBookTeamCollectionStatus {
     hasAProblem: boolean;
 }
 export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
+    const currentBookId = useSelectedBookId();
+
     const [lockState, setLockState] = useState<TeamCollectionBookLockState>(
         "initializing"
     );
@@ -111,11 +114,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                 );
             }
         );
-    }, [reload]);
-
-    useSubscribeToWebSocketForEvent("bookStatus", "reload", () =>
-        setReload(oldValue => oldValue + 1)
-    );
+    }, [currentBookId]);
 
     useSubscribeToWebSocketForEvent(
         "checkinProgress",

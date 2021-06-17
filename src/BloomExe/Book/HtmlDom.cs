@@ -2746,5 +2746,51 @@ namespace Bloom.Book
 				mediaBoxDiv.SetAttribute("class", $"bloom-mediaBox {pageSizeClass}");
 			}
 		}
+
+		// Note, this doesn't do XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml()
+		// which would be needed if we were going to come back to xml at some point.
+		public string getHtmlStringDisplayOnly()
+		{
+			var output = new StringBuilder();
+			using (var writer = XmlWriter.Create(output, GetXmlWriterSettingsForHtml5()))
+			{
+				this.RawDom.WriteContentTo(writer);
+				writer.Close();
+			}
+
+			return CleanupHtml5(output.ToString());
+
+		}
+
+		// xml output will produce things like <title /> or <div /> for empty elements, which are not valid HTML 5 and produce
+		// weird results; for example, the browser interprets <title /> as the beginning of an element that is not terminated
+		// until the end of the whole document. Thus, everything becomes part of the title. This then causes errors in our
+		// thumbnail generation because gecko thinks the document has an empty  body (the real one is lost inside the title).
+		// Also, embedded controls (like ReaderTools.htm) now pass through this xml-to-html conversion, and this file contains
+		// several more kinds of empty element, some of which have attributes.
+		// There are probably more elements than these which may not be empty. However we can't just use [^ ]* in place of title|div
+		// because there are some elements that never have content like <br /> which should NOT be converted.
+		// It seems safest to just list the ones that can occur empty in Bloom...if we can't find a more reliable way to convert to HTML5.
+		private static string CleanupHtml5(string xhtml)
+		{
+			var re = new Regex("<(title|div|i|table|td|span|style) ([^<]*)/>");
+			xhtml = re.Replace(xhtml, "<$1 $2></$1>");
+			//now insert the non-xml-ish <!doctype html>
+			return string.Format("<!DOCTYPE html>{0}{1}", Environment.NewLine, xhtml);
+		}
+		/// <summary>
+		/// Return the settings that should be used for an XmlWriter to write a DOM as HTML5.
+		/// (The writer results should then be passed through CleanupHtml5.)
+		/// </summary>
+		/// <returns></returns>
+		private static XmlWriterSettings GetXmlWriterSettingsForHtml5()
+		{
+			XmlWriterSettings settings = new XmlWriterSettings();
+			settings.Indent = true;
+			settings.CheckCharacters = true;
+			settings.OmitXmlDeclaration = true; //we're aiming at normal html5, here. Not xhtml.
+			//CAN'T DO THIS: settings.OutputMethod = XmlOutputMethod.Html; // JohnT: someone please explain why not?
+			return settings;
+		}
 	}
 }

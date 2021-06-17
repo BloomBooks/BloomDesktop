@@ -275,6 +275,13 @@ namespace Bloom.Api
 			ReplyWithFileContent(path, originalPath);
 		}
 
+		public void WriteRedirect(string url)
+		{
+			//_actualContext.Response.StatusCode = 308;// temporary redirect
+			//_actualContext.Response.RedirectLocation = url;
+			_actualContext.Response.Redirect(url);
+			HaveOutput = true;
+		}
 		public void WriteError(int errorCode, string errorDescription)
 		{
 			_actualContext.Response.StatusCode = errorCode;

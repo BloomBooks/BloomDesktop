@@ -87,7 +87,7 @@ namespace Bloom.Edit
 			var path = BloomFileLocator.GetBrowserFile(false, "bookEdit/toolbox", "toolbox.html");
 			var domForToolbox = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForToolbox.RawDom);
-			return TempFileUtils.CreateHtml5StringFromXml(domForToolbox.RawDom);
+			return domForToolbox.getHtmlStringDisplayOnly();
 		}
 
 		private static void HandleSettings(ApiRequest request)

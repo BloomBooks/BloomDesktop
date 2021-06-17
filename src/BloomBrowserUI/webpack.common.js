@@ -32,11 +32,12 @@ module.exports = merge(core, {
     // The root file for each bundle should import errorHandler.ts to enable Bloom's custom
     // error handling for that web page.
     entry: {
-        editTabRootBundle: "./bookEdit/editViewFrame.ts",
+        editTabBundle: "./bookEdit/editViewFrame.ts",
         readerSetupBundle:
             "./bookEdit/toolbox/readers/readerSetup/readerSetup.ts",
         editablePageBundle: "./bookEdit/editablePage.ts",
-        bookPreviewBundle: "./bookPreview/bookPreviewPanel.tsx",
+        bookPreviewBundle:
+            "./collectionsTab/collectionsTabBookPane/bookPreview.ts",
         toolboxBundle: "./bookEdit/toolbox/toolboxBootstrap.ts",
         pageChooserBundle: "./pageChooser/page-chooser.ts",
         pageThumbnailListBundle:
