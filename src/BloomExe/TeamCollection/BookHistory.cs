@@ -40,6 +40,7 @@ namespace Bloom.TeamCollection
 		public int Id { get; set; }
 
 		[Column("userid")] public string UserId { get; set; }
+		[Column(name:"username")] public string UserName { get; set; }
 		[Column("type")] public BookHistoryEventType Type { get; set; }
 		[Column("user_message")] public string Message { get; set; }
 		[Column("date")] public DateTime When { get; set; }
@@ -107,6 +108,7 @@ public class BookHistory
 					BookId = book.ID,
 					Message = message,
 					UserId = TeamCollectionManager.CurrentUser,
+					UserName = TeamCollectionManager.CurrentUserFirstName,
 					Type = eventType,
 					When = DateTime.Now
 				};

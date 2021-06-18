@@ -225,7 +225,8 @@ namespace Bloom.TeamCollection
 
 		public void HandleGetHistory(ApiRequest request)
 		{
-			var x = CollectionHistory.GetAllEvents(_currentBookCollectionSelection.CurrentSelection).ToArray();
+			var x = CollectionHistory.GetAllEvents(_currentBookCollectionSelection.CurrentSelection)
+				.OrderByDescending(b => b.When).ToArray();
 			request.ReplyWithJson(JsonConvert.SerializeObject(
 				x
 			));

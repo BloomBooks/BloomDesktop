@@ -16,6 +16,8 @@ interface IBookHistoryEvent {
     When: string;
     Message: string;
     Type: number;
+    UserId: string;
+    UserName: string;
 }
 
 const kEventTypes = ["Check In"]; // REVIEW maybe better to do this in c# and just send it over?
@@ -33,9 +35,20 @@ export const CollectionHistoryTable: React.FunctionComponent = props => {
         // TODO: get user name
         // TODO: get user avatar
 
-        <table>
-            <tr>
+        <table
+            css={css`
+                td {
+                    padding-right: 15px;
+                }
+            `}
+        >
+            <tr
+                css={css`
+                    font-weight: 900;
+                `}
+            >
                 <td>Title</td> <td>When</td>
+                <td>Who</td>
                 <td>What</td>
                 <td>Comment</td>
             </tr>
@@ -45,6 +58,7 @@ export const CollectionHistoryTable: React.FunctionComponent = props => {
 
                     {/* Review: can we get away with this? I do want the 2021-11-01 format, and this gives that */}
                     <td>{e.When.substring(0, 10)}</td>
+                    <td>{e.UserName || e.UserId}</td>
                     <td>{kEventTypes[e.Type]}</td>
                     <td>{e.Message}</td>
                 </tr>
