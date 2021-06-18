@@ -261,6 +261,21 @@
     <Reference Include="Splat">
       <HintPath>..\..\lib\dotnet\Splat.dll</HintPath>
     </Reference>
+    <Reference Include="SQLite-net, Version=1.7.335.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\sqlite-net-pcl.1.7.335\lib\netstandard2.0\SQLite-net.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.batteries_v2, Version=2.0.3.851, Culture=neutral, PublicKeyToken=8226ea5df37bcae9, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SQLitePCLRaw.bundle_green.2.0.3\lib\net461\SQLitePCLRaw.batteries_v2.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.core, Version=2.0.3.851, Culture=neutral, PublicKeyToken=1488e028ca7ab535, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SQLitePCLRaw.core.2.0.3\lib\netstandard2.0\SQLitePCLRaw.core.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.nativelibrary, Version=2.0.3.851, Culture=neutral, PublicKeyToken=502ed628492ab262, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SQLitePCLRaw.bundle_green.2.0.3\lib\net461\SQLitePCLRaw.nativelibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.provider.dynamic_cdecl, Version=2.0.3.851, Culture=neutral, PublicKeyToken=b68184102cba0b3b, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SQLitePCLRaw.provider.dynamic_cdecl.2.0.3\lib\netstandard2.0\SQLitePCLRaw.provider.dynamic_cdecl.dll</HintPath>
+    </Reference>
     <Reference Include="Squirrel" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\lib\dotnet\Squirrel.dll</HintPath>
     </Reference>
@@ -355,6 +370,7 @@
     <Compile Include="Spreadsheet\SpreadsheetImportParams.cs" />
     <Compile Include="Spreadsheet\SpreadsheetIO.cs" />
     <Compile Include="Spreadsheet\SpreadsheetRow.cs" />
+    <Compile Include="TeamCollection\BookHistory.cs" />
     <Compile Include="TeamCollection\BookRepoChangeEventArgs.cs" />
     <Compile Include="TeamCollection\DeleteRepoBookFileEventArgs.cs" />
     <Compile Include="TeamCollection\BookStatus.cs" />
@@ -1574,6 +1590,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Error Condition="!Exists('..\..\packages\SIL.Media.8.0.1-beta0026\build\SIL.Media.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Media.8.0.1-beta0026\build\SIL.Media.targets'))" />
     <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.8.0.1-beta0026\build\SIL.Windows.Forms.Keyboarding.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.8.0.1-beta0026\build\SIL.Windows.Forms.Keyboarding.targets'))" />
     <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.8.0.1-beta0026\build\SIL.Windows.Forms.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.8.0.1-beta0026\build\SIL.Windows.Forms.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets'))" />
   </Target>
   <!-- msbuild mistakenly copies the 64-bit version of irrKlang.NET4.dll to $(Output) as it resolves
        SIL.Media.dll in our 32-bit build.  It also always copies both the 32-bit and 64-bit versions
@@ -1598,6 +1615,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Delete Files="@(DeleteForSILMedia)" TreatErrorsAsWarnings="true" />
     <RemoveDir Directories="@(RemoveForSILMedia)" />
   </Target>
+  <Import Project="..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets" Condition="Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" />
   <!-- Note: Visual Studio automatically inserts any imports from installing packages into the end here,
   but the AfterBuild target may not run if .targets files are imported after it.
   I recommend you move the Import statements before the "AfterBuild" target,
