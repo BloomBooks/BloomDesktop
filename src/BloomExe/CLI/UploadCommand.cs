@@ -10,7 +10,7 @@ namespace Bloom.CLI
 	/// <summary>
 	/// Uploads a book or folder of books to BloomLibrary
 	/// usage:
-	///		upload [--excludeNarrationAudio/-x] {path to book or collection directory}
+	///		upload [options] {path to book or collection directory}
 	/// </summary>
 	class UploadCommand
 	{
@@ -18,21 +18,12 @@ namespace Bloom.CLI
 
 		public static int Handle(UploadParameters options)
 		{
-			bool valid = true;
-			if (String.IsNullOrWhiteSpace(options.UploadUser))
-				valid = String.IsNullOrWhiteSpace(options.UploadPassword);
-			else
-				valid = !String.IsNullOrWhiteSpace(options.UploadPassword);
-			if (!valid)
-			{
-				Console.WriteLine("Error: upload -u user and -p password must be used together");
-				return 1;
-			}
 			IsUploading = true;
-			if (String.IsNullOrWhiteSpace(options.Dest))
-				options.Dest = UploadDestination.DryRun;
-			else
-				options.Dest = options.Dest.ToLowerInvariant();
+			// -u user, -p password, and <path> are all required, so they must contain strings.
+			// -d destination has a default value, so it also must contain a string.
+			options.Path = options.Path.TrimEnd(new[] { '/', '\\', System.IO.Path.PathSeparator });	// remove any trailing slashes
+			// validate the value for the upload destination.
+			options.Dest = options.Dest.ToLowerInvariant();
 			switch (options.Dest)
 			{
 				case UploadDestination.DryRun:
@@ -96,30 +87,36 @@ namespace Bloom.CLI
 [Verb("upload", HelpText = "Upload a book or folder of books to bloomlibrary.org.  A folder that contains exactly one .htm file is interpreted as a book and uploaded." +
 	"  Other folders are searched recursively for children that appear to be Bloom books.  The parent folder of a Bloom book is searched for a .bloomCollection file" +
 	" and, if one is found, the book is treated as part of that collection (e.g., for determining vernacular language).  If no .bloomCollection file is found there," +
-	" it uses whatever collection was last open.\n"+
-	"When a book is uploaded, that fact is recorded in a local file named BloomBulkUploadLog.txt in the folder given to the upload command.  Books will not be" +
-	" uploaded again unless either the reference to the book is removed from that file or that file is itself deleted.  Nothing on the website prevents books from" +
-	" being overwritten by being uploaded again."
+	" the book is not uploaded.\n"+
+	"When a book is uploaded, that fact is recorded in a file named .lastUploadInfo in the book's folder given to the upload command.  Books will not be" +
+	" uploaded again unless something changes in the local book files or unless the user uses the -F (--force) command line option.  Nothing on the website" +
+	" prevents books from being overwritten by being uploaded again."
 	)]
 public class UploadParameters
 {
 	[Value(0, MetaName = "path", HelpText = "Specify the path to a folder containing books to upload at some level within.", Required = true)]
 	public string Path { get; set; }
 
-	[Option('x', "excludeNarrationAudio", HelpText = "Exclude narration audio files from upload. (The default is to upload audio files.)", Required = false)]
+	[Option('x', "excludeNarrationAudio", HelpText = "Exclude narration audio files from upload. (The default is to upload narration files.)", Required = false)]
 	public bool ExcludeNarrationAudio { get; set; }
 
-	[Option('u', "user", HelpText = "Specify the Bloom Library user for the upload.", Required = false)]
+	[Option('e', "excludeMusicAudio", HelpText = "Exclude music (background) audio files from upload.  (The default is to upload music files.)", Required = false)]
+	public bool ExcludeMusicAudio { get; set; }
+
+	[Option('u', "user", HelpText = "Specify the Bloom Library user for the upload.", Required = true)]
 	public string UploadUser { get; set; }
 
-	[Option('p', "password", HelpText = "Specify the password for the given upload user.", Required = false)]
+	[Option('p', "password", HelpText = "Specify the password for the given upload user.", Required = true)]
 	public string UploadPassword { get; set; }
 
 	[Option('T', "preserveThumbnails", HelpText = "Preserve any existing thumbnail images: don't try to recreate them.", Required = false)]
 	public bool PreserveThumbnails { get; set; }
 
-	[Option('d', "destination", HelpText = "If present, this must be one of dry-run, dev, or production. 'dry-run' (the default) will just print out what would happen. 'dev' will upload to dev.bloomlibrary.org (you will need to use an account from there). 'production' will upload to bloomlibrary.org", Required = false)]
+	[Option('d', "destination", Default ="dry-run", HelpText = "If present, this must be one of dry-run, dev, or production. 'dry-run' will just print out what would happen. 'dev' will upload to dev.bloomlibrary.org (you will need to use an account from there). 'production' will upload to bloomlibrary.org", Required = false)]
 	public string Dest { get; set; }
+
+	[Option('F', "force", HelpText = "Force the upload even if existing .lastUploadInfo content indicates that the book has already been uploaded.", Required = false)]
+	public bool ForceUpload { get; set; }
 }
 
 /// <summary>

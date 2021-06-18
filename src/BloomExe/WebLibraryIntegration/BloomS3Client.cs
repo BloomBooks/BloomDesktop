@@ -46,11 +46,6 @@ namespace Bloom.WebLibraryIntegration
 		public BloomS3Client(string bucketName)
 		{
 			_bucketName = bucketName;
-			if (BookTransfer.IsDryRun)
-			{
-				_s3Config = null;
-				return;
-			}
 			_s3Config = new AmazonS3Config { ServiceURL = "https://s3.amazonaws.com" };
 			var proxy = new ProxyManager();
 			if (!string.IsNullOrEmpty(proxy.Hostname))
@@ -81,9 +76,6 @@ namespace Bloom.WebLibraryIntegration
 
 		protected virtual IAmazonS3 CreateAmazonS3Client(string bucketName, AmazonS3Config s3Config)
 		{
-			if (BookTransfer.IsDryRun)
-				return null;
-
 			var accessKeys = AccessKeys.GetAccessKeys(bucketName);
 			return new AmazonS3Client(accessKeys.S3AccessKey,
 				accessKeys.S3SecretAccessKey, s3Config);
@@ -417,6 +409,8 @@ namespace Bloom.WebLibraryIntegration
 					request.Headers.CacheControl = "no-cache";
 					request.CannedACL = S3CannedACL.PublicRead; // Allows any browser to download it.
 					var uploadMsgFmt = LocalizationManager.GetString("PublishTab.Upload.UploadingStatus", "Uploading {0}");
+					if (BookTransfer.IsDryRun)
+						uploadMsgFmt = "(Dry run) Would upload {0}";	// TODO: localize?
 					progress.WriteStatus(uploadMsgFmt, fileName);
 					Console.WriteLine(uploadMsgFmt, fileName);
 					if (progress.CancelRequested)
