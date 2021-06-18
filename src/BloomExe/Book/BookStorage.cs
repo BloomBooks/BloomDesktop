@@ -65,9 +65,9 @@ namespace Bloom.Book
 		IFileLocator GetFileLocator();
 		event EventHandler FolderPathChanged;
 
-		void CleanupUnusedSupportFiles(bool isForPublish);
+		void CleanupUnusedSupportFiles(bool isForPublish, HashSet<string> langsToExcludeAudioFor = null);
 		void CleanupUnusedImageFiles(bool keepFilesForEditing=true);
-		void CleanupUnusedAudioFiles(bool isForPublish);
+		void CleanupUnusedAudioFiles(bool isForPublish, HashSet<string> langsToExcludeAudioFor);
 		void CleanupUnusedVideoFiles();
 		void CleanupUnusedActivities();
 
@@ -931,7 +931,8 @@ namespace Bloom.Book
 		/// Compare the audio we find in the audio folder in the book folder to those referenced
 		/// in the dom, and remove any unreferenced ones.
 		/// </summary>
-		public void CleanupUnusedAudioFiles(bool isForPublish)
+		/// <param name="langsToExcludeAudioFor">If non-null and isForPublish=true, specifies the languages for which narration audio will not be included.</param>
+		public void CleanupUnusedAudioFiles(bool isForPublish, HashSet<string> langsToExcludeAudioFor = null)
 		{
 			if (IsStaticContent(FolderPath))
 				return;
@@ -967,11 +968,16 @@ namespace Bloom.Book
 			var backgroundMusicFileNames = GetBackgroundMusicFileNamesReferencedInBook();
 			usedAudioFileNames.AddRange(backgroundMusicFileNames);
 
+			// Don't get too trigger-happy with the delete button if you're not in publish mode
+			if (!isForPublish)
+			{
+				langsToExcludeAudioFor = null;
+			}
 			// re BL-7617: If we decide we want to clean up .wav files from earlier versions of Bloom, we just need to flip
 			// the first boolean parameter here and fix up one test in BookStorageTests.cs:
 			//   CleanupUnusedAudioFiles_BookHadUnusedAudio_AudiosRemoved()
-			// var narrationAudioFileNames = GetNarrationAudioFileNamesReferencedInBook(false, includeSplitTextBoxAudio: !isForPublish);
-			var narrationAudioFileNames = GetNarrationAudioFileNamesReferencedInBook(true, includeSplitTextBoxAudio: !isForPublish);
+			// var narrationAudioFileNames = GetNarrationAudioFileNamesReferencedInBook(false, includeSplitTextBoxAudio: !isForPublish, langsToExclude: langsToExcludeAudioFor);
+			var narrationAudioFileNames = GetNarrationAudioFileNamesReferencedInBook(true, includeSplitTextBoxAudio: !isForPublish, langsToExclude: langsToExcludeAudioFor);
 			usedAudioFileNames.AddRange(narrationAudioFileNames);
 
 			audioFilesToDeleteIfNotUsed.ExceptWith(usedAudioFileNames);
@@ -1019,7 +1025,7 @@ namespace Bloom.Book
 		/// <param name="includeWav">Optionally include/exclude .wav files</param>
 		public IEnumerable<string> GetNarrationAudioFileNamesReferencedInBook(bool includeWav)
 		{
-			return GetNarrationAudioFileNamesReferencedInBook(includeWav, includeSplitTextBoxAudio: false);
+			return GetNarrationAudioFileNamesReferencedInBook(includeWav, includeSplitTextBoxAudio: false, langsToExclude: null);
 		}
 
 		/// <summary>
@@ -1027,11 +1033,12 @@ namespace Bloom.Book
 		/// This should include items from the data div.
 		/// </summary>
 		/// <param name="includeWav">Optionally include/exclude .wav files</param>
-		/// /// <param name="includeSplitTextBoxAudio">True if the function should also return the filenames for text boxes which are not audio sentences but contain sub-elements which are (e.g. after a hard split of whole-text-box audio)</param>
-		public IEnumerable<string> GetNarrationAudioFileNamesReferencedInBook(bool includeWav, bool includeSplitTextBoxAudio)
+		/// <param name="includeSplitTextBoxAudio">True if the function should also return the filenames for text boxes which are not audio sentences but contain sub-elements which are (e.g. after a hard split of whole-text-box audio)</param>
+		/// <param name="langsToExclude">If non-null, specifies the languages for which narration audio will not be included.</param>
+		public IEnumerable<string> GetNarrationAudioFileNamesReferencedInBook(bool includeWav, bool includeSplitTextBoxAudio, HashSet<string> langsToExclude)
 		{
-			var narrationElements = HtmlDom.SelectChildNarrationAudioElements(Dom.RawDom.DocumentElement, includeSplitTextBoxAudio);
-			var narrationIds = narrationElements.Cast<XmlNode>().Select(node => node.GetOptionalStringAttribute("id", null)).Where(id => id != null);
+			var narrationElements = HtmlDom.SelectChildNarrationAudioElements(Dom.RawDom.DocumentElement, includeSplitTextBoxAudio, langsToExclude).Cast<XmlNode>();
+			var narrationIds = narrationElements.Select(node => node.GetOptionalStringAttribute("id", null)).Where(id => id != null);
 
 			var extensionsToInclude = AudioProcessor.NarrationAudioExtensions.ToList();
 			if (!includeWav)
@@ -1794,10 +1801,10 @@ namespace Bloom.Book
 			}
 		}
 
-		public void CleanupUnusedSupportFiles(bool isForPublish)
+		public void CleanupUnusedSupportFiles(bool isForPublish, HashSet<string> langsToExcludeAudioFor = null)
 		{
 			CleanupUnusedImageFiles(!isForPublish);
-			CleanupUnusedAudioFiles(isForPublish: isForPublish);
+			CleanupUnusedAudioFiles(isForPublish: isForPublish, langsToExcludeAudioFor);
 			CleanupUnusedVideoFiles();
 			CleanupUnusedActivities();
 		}
