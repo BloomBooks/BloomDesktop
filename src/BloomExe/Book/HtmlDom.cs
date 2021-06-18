@@ -2132,14 +2132,22 @@ namespace Bloom.Book
 			return element.SelectNodes(".//img | .//*[contains(@style,'background-image')]");
 		}
 
-		public static XmlNodeList SelectChildNarrationAudioElements(XmlElement element, bool includeSplitTextBoxAudio)
+		public static XmlNodeList SelectChildNarrationAudioElements(XmlElement element, bool includeSplitTextBoxAudio, IEnumerable<string> langsToExclude = null)
 		{
-			string xPath = "descendant-or-self::node()[contains(concat(' ', @class, ' '), ' audio-sentence ')]";
+			string xPathToEditable = "";
+			if (langsToExclude != null && langsToExclude.Any())
+			{
+				var langXPath = String.Join(" and ", langsToExclude.Select(lang => $"@lang!='{lang}'"));
+				xPathToEditable = $"descendant-or-self::div[contains(concat(' ', @class, ' '), ' bloom-editable ') and {langXPath}]/";
+			}
+
+			string xPathToAudioSentence = xPathToEditable + "descendant-or-self::node()[contains(concat(' ', @class, ' '), ' audio-sentence ')]";
+			string xPath = xPathToAudioSentence;
 			if (includeSplitTextBoxAudio)
 			{
 				// This will select bloom-editables (i.e. text boxes) recorded in TextBox mode which might not be audio-sentences, but do contain descendants which are.
 				// (That is, find cases where RecordingMode=TextBox but PlaybackMode=Sentence, a.k.a. the result of a Hard Split.
-				xPath += " | descendant-or-self::node()[contains(concat(' ', @class, ' '), ' audio-sentence ')]/ancestor::div[contains(concat(' ', @class, ' '), ' bloom-editable ') and @data-audiorecordingmode='TextBox']";
+				xPath += $" | {xPathToAudioSentence}/ancestor::div[contains(concat(' ', @class, ' '), ' bloom-editable ') and @data-audiorecordingmode='TextBox']";
 			}
 			return element.SelectNodes(xPath);
 		}
