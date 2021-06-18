@@ -26,6 +26,7 @@ using SIL.Windows.Forms.Progress;
 using BloomTemp;
 using System.Xml;
 using Bloom.web.controllers;
+using System.Text;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -42,6 +43,7 @@ namespace Bloom.WebLibraryIntegration
 		private readonly BookDownloadStartingEvent _bookDownloadStartingEvent;
 
 		private const string UploadLogFilename = "BloomBulkUploadLog.txt";
+		public const string UploadHashesFilename = ".lastUploadInfo";	// this filename must begin with a period
 
 		// The full path of the log text file used to restart failed bulk uploads.
 		private string _bulkUploadLogPath;
@@ -591,11 +593,7 @@ namespace Bloom.WebLibraryIntegration
 
 		private string S3BookId(BookMetaData metadata)
 		{
-			// It's tempting to use '/' so that S3 tools will treat all the books with the same ID as a folder.
-			// But this complicates things because that character is taken as a path separator (even in Windows),
-			// which gives us an extra level of folder in our temp folder...too much trouble for now, anyway.
-			// So use a different separator.
-			var s3BookId = _parseClient.Account + "/" + metadata.Id;
+			var s3BookId = _parseClient.Account + BloomS3Client.kDirectoryDelimeterForS3 + metadata.Id;
 			return s3BookId;
 		}
 
@@ -684,9 +682,9 @@ namespace Bloom.WebLibraryIntegration
 		/// Upload bloom books in the specified folder to the bloom library.
 		/// Folders that contain exactly one .htm file are interpreted as books and uploaded.
 		/// Other folders are searched recursively for children that appear to be bloom books.
-		/// The parent folder of a bloom book is searched for a .bloomContainer file and, if one is found,
+		/// The parent folder of a bloom book is searched for a .bloomCollection file and, if one is found,
 		/// the book is treated as part of that collection (e.g., for determining vernacular language).
-		/// If no collection is found there it uses whatever collection was last open, or the current default.
+		/// If the .bloomCollection file is not found, the book is not uploaded.
 		/// N.B. The bulk upload process will go ahead and upload templates and books that are already on the server
 		/// (over-writing the existing book) without informing the user.
 		/// </summary>
@@ -700,24 +698,18 @@ namespace Bloom.WebLibraryIntegration
 				Console.WriteLine(oldVersionMsg);
 				return;
 			}
-			if (!String.IsNullOrWhiteSpace(options.UploadUser) && !String.IsNullOrWhiteSpace(options.UploadPassword))
+			Debug.Assert(!String.IsNullOrWhiteSpace(options.UploadUser) && !String.IsNullOrWhiteSpace(options.UploadPassword));
+			if (!LogIn(options.UploadUser, options.UploadPassword))
 			{
-				if (!LogIn(options.UploadUser, options.UploadPassword))
-				{
-					SIL.Reporting.ErrorReport.NotifyUserOfProblem($"Could not log you in using user='{options.UploadUser}' and password='{options.UploadPassword}'.");
-					Console.WriteLine();
-					Console.WriteLine("Bloom could not log you in as {0} with password {1}.", options.UploadUser, options.UploadPassword);
-					Console.WriteLine("Open a book in the Bloom editor, go to the Publish tab and sign in to BloomLibrary.org");
-					Console.WriteLine("using your username and password (or a Google account).  Then close Bloom editor without");
-					Console.WriteLine("signing out.  This may enable logging in for the bulk upload operation.");
-					return;
-				}
-				Console.WriteLine("Uploading books as user {0}", options.UploadUser);
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem($"Could not log you in using user='{options.UploadUser}' with the provided password.");
+				Console.WriteLine();
+				Console.WriteLine("Bloom could not log you in as {0} with the provided password.", options.UploadUser);
+				Console.WriteLine("Open a book in the Bloom editor, go to the Publish tab and sign in to BloomLibrary.org");
+				Console.WriteLine("using your username and password (or a Google account).  Then close Bloom editor without");
+				Console.WriteLine("signing out.  This may enable logging in for the bulk upload operation.");
+				return;
 			}
-			else
-			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-					"Command line upload currently requires an old-style username and password.");
+			Console.WriteLine("Uploading books as user {0}", options.UploadUser);
 
 				// This seems as though it should work, but we get a message, apparently from Gecko,
 				// saying "Access to the port number given has been disabled for security reasons."
@@ -745,7 +737,6 @@ namespace Bloom.WebLibraryIntegration
 				//	Thread.Sleep(30);
 				//	Application.DoEvents();
 				//}
-			}
 
 			using (var dlg = new BulkUploadProgressDlg())
 			{
@@ -769,15 +760,14 @@ namespace Bloom.WebLibraryIntegration
 		/// <summary>
 		/// Worker function for a background thread task. See first lines for required args passed to RunWorkerAsync, which triggers this.
 		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="doWorkEventArgs"></param>
 		private void BackgroundUpload(object sender, DoWorkEventArgs doWorkEventArgs)
 		{
 			var args = (object[]) doWorkEventArgs.Argument;
 			var dlg = (BulkUploadProgressDlg) args[0];
 			var appContainer = (ApplicationContainer)args[1];
 			var options = (UploadParameters)args[2];
-			var bookParams = new BookUploadParameters(options, GetUploadedPathsFromLogIfPresent(options.Path));
+			var bookParams = new BookUploadParameters(options);
+			_bulkUploadLogPath = Path.Combine(options.Path, UploadLogFilename);
 			BulkRepairInstanceIds(options.Path);
 			ProjectContext context = null; // Expensive to create; hold each one we make until we find a book that needs a different one.
 			try
@@ -785,7 +775,7 @@ namespace Bloom.WebLibraryIntegration
 				UploadInternal(dlg, appContainer, bookParams, ref context);
 
 				// If we make it here, append a "finished" note to our log file
-				AppendBookToUploadLogFile("\n\nAll finished!\nIn order to repeat the uploading, this file will need to be deleted.");
+				AppendBookToUploadLogFile("\n\nAll finished!");
 			}
 			finally
 			{
@@ -814,20 +804,6 @@ namespace Bloom.WebLibraryIntegration
 			File.AppendAllLines(path, new []{message, extra});
 		}
 
-		private string[] GetUploadedPathsFromLogIfPresent(string folder)
-		{
-			var results = new string[0];
-			var fullFilepath = Path.Combine(folder, UploadLogFilename);
-			if (RobustFile.Exists(fullFilepath)) // this is just looking in the same directory that we're uploading from
-			{
-				results = RobustFile.ReadAllLines(fullFilepath);
-			}
-			_bulkUploadLogPath = fullFilepath;
-			if (IsDryRun)
-				RobustFile.Delete(GetUploadFilePath());
-			return results;
-		}
-
 		/// <summary>
 		/// Handles the recursion through directories: if a folder looks like a Bloom book upload it; otherwise, try its children.
 		/// Invisible folders like .hg are ignored.
@@ -836,16 +812,11 @@ namespace Bloom.WebLibraryIntegration
 			ref ProjectContext context)
 		{
 			var lastFolderPart = Path.GetFileName(bookParams.Folder);
-			if (lastFolderPart != null && lastFolderPart.StartsWith("."))
-				return; // secret folder, probably .hg
+			if (lastFolderPart != null && lastFolderPart.StartsWith(".", StringComparison.Ordinal))
+				return; // secret folder or file, probably .hg or .lastUploadInfo
 
 			if (Directory.GetFiles(bookParams.Folder, "*.htm").Length == 1)
 			{
-				if (bookParams.AlreadyUploaded.Contains(bookParams.Folder))
-				{
-					Console.WriteLine("{0} has already been uploaded.", bookParams.Folder);
-					return; // skip this one; we already successfully uploaded it at some point
-				}
 				// Exactly one htm file, assume this is a bloom book folder.
 				dlg.Progress.WriteMessage("Starting to upload " + bookParams.Folder);
 				Console.WriteLine($"Starting to upload {bookParams.Folder}");
@@ -854,23 +825,41 @@ namespace Bloom.WebLibraryIntegration
 				// proper parent book collection if possible.
 				var parent = Path.GetDirectoryName(bookParams.Folder);
 				var collectionPath = Directory.GetFiles(parent, "*.bloomCollection").FirstOrDefault();
-				if (collectionPath == null)
+				if (collectionPath == null || !RobustFile.Exists(collectionPath))
 				{
-					var latestCollectionPath = Settings.Default.MruProjects.Latest;
-					if (RobustFile.Exists(latestCollectionPath))
-					{
-						var msg =
-							"Collection settings will be gathered from the most recently used collection for this channel:" +
-							Environment.NewLine + latestCollectionPath + Environment.NewLine + Environment.NewLine +
-							"Do you want to continue?";
-
-						if (DialogResult.Yes == MessageBox.Show(msg, "Collection Settings Not Found", MessageBoxButtons.YesNo, MessageBoxIcon.Warning))
-							collectionPath = latestCollectionPath;
-					}
+					var msg = "Skipping book because no collection file was found in its parent directory.";
+					dlg.Progress.WriteError(msg);
+					Console.WriteLine(msg);
+					return;
 				}
 
-				if (collectionPath == null || !RobustFile.Exists(collectionPath))
-					throw new ApplicationException("Collection not found in this or parent directory.");
+				// Compute the book hash file and compare it to the existing one for bulk upload.
+				var currentHashes = HashBookFolder(bookParams.Folder);
+				var uploadInfoPath = Path.Combine(bookParams.Folder, UploadHashesFilename);
+				if (!bookParams.ForceUpload)
+				{
+					var uploadedAlready = false;
+					if (Program.RunningUnitTests)
+					{
+						uploadedAlready = CheckAgainstLocalHashfile(currentHashes, uploadInfoPath);
+					}
+					else
+					{
+						uploadedAlready = CheckAgainstUploadedHashfile(currentHashes, bookParams.Folder);
+						RobustFile.WriteAllText(uploadInfoPath, currentHashes); // ensure local copy is saved
+					}
+					if (uploadedAlready)
+					{
+						// local copy of hashes file is identical or has been saved
+						var msg = "Skipping book because it has not changed since being uploaded.";
+						dlg.Progress.WriteMessage(msg);
+						Console.WriteLine(msg);
+						return; // skip this one; we already uploaded it earlier.
+					}
+				}
+				// save local copy of hashes file: it will be uploaded with the other book files
+				RobustFile.WriteAllText(uploadInfoPath, currentHashes);
+
 				if (context == null || context.SettingsPath != collectionPath)
 				{
 					context?.Dispose();
@@ -942,6 +931,35 @@ namespace Bloom.WebLibraryIntegration
 				bookParams.Folder = sub;
 				UploadInternal(dlg, container, bookParams, ref context);
 			}
+		}
+
+		private bool CheckAgainstUploadedHashfile(string currentHashes, string bookFolder)
+		{
+			string uploadedHashes = null;
+			try
+			{
+				if (!IsBookOnServer(bookFolder))
+					return false;
+				var bkInfo = new BookInfo(bookFolder, true);
+				var s3id = S3BookId(bkInfo.MetaData);
+				var key = s3id + BloomS3Client.kDirectoryDelimeterForS3 + Path.GetFileName(bookFolder) + BloomS3Client.kDirectoryDelimeterForS3 + UploadHashesFilename;
+				uploadedHashes = _s3Client.DownloadFile(UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName, key);
+			}
+			catch
+			{
+				uploadedHashes = "";	// probably file doesn't exist because it hasn't yet been uploaded
+			}
+			return currentHashes == uploadedHashes;
+		}
+
+		private bool CheckAgainstLocalHashfile(string currentHashes, string uploadInfoPath)
+		{
+			if (RobustFile.Exists(uploadInfoPath))
+			{
+				var previousHashes = RobustFile.ReadAllText(uploadInfoPath);
+				return currentHashes == previousHashes;
+			}
+			return false;
 		}
 
 		private static void ReportToLogBoxAndLogger(IProgress logBox, string bookFolder, string msg)
@@ -1097,6 +1115,23 @@ namespace Bloom.WebLibraryIntegration
 		{
 			BookInfo.RepairDuplicateInstanceIds(rootFolderPath);
 		}
+
+		public static string HashBookFolder(string directory)
+		{
+			var bldr = new StringBuilder();
+			// Start file with the Bloom version.
+			var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+			bldr.AppendLineFormat("{0} Version {1} [{2}]", assembly.GetName().Name, assembly.GetName().Version,
+				UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName);
+			Debug.Assert(Directory.Exists(directory));
+			var dirInfo = new DirectoryInfo(directory);
+			var htmFiles = dirInfo.GetFiles("*.htm", SearchOption.TopDirectoryOnly);
+			Debug.Assert(htmFiles.Length == 1);
+			var htmContent = RobustFile.ReadAllText(htmFiles[0].FullName);
+			var hash = Book.Book.MakeVersionCode(htmContent, htmFiles[0].FullName);
+			bldr.AppendLineFormat("{0} {1}", htmFiles[0].Name, hash);
+			return bldr.ToString().Replace(Environment.NewLine,"\r\n");	// cross-platform line endings for this file
+		}
 	}
 
 	public class BookUploadParameters
@@ -1105,20 +1140,20 @@ namespace Bloom.WebLibraryIntegration
 		public bool ExcludeNarrationAudio;
 		public bool ExcludeMusic;
 		public bool PreserveThumbnails;
-		public string[] AlreadyUploaded;
+		public bool ForceUpload;
 		public string[] LanguagesToUpload;
 
 		public BookUploadParameters()
 		{
 		}
 
-		public BookUploadParameters(UploadParameters options, string[] alreadyUploaded)
+		public BookUploadParameters(UploadParameters options)
 		{
 			Folder = options.Path;
 			ExcludeNarrationAudio = options.ExcludeNarrationAudio;
-			ExcludeMusic = false;    // I (AP) made the executive decision this wasn't worth another option right now
+			ExcludeMusic = options.ExcludeMusicAudio;
 			PreserveThumbnails = options.PreserveThumbnails;
-			AlreadyUploaded = alreadyUploaded;
+			ForceUpload = options.ForceUpload;
 		}
 	}
 }
