@@ -21,14 +21,14 @@ namespace Bloom.Workspace
 			_bookSelection.SelectionChanged += OnSelectionChanged;
 		}
 
-		public bool ShowEditPage
+		public bool ShowEditTab
 		{
 			get { return _bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.IsEditable && !_bookSelection.CurrentSelection.HasFatalError; }
 		}
 
 		public bool EditTabLocked => !TeamCollectionApi.TheOneInstance.CanEditBook();
 
-		public bool ShowPublishPage
+		public bool ShowPublishTab
 		{
 			get { return _bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanPublish; }
 		}

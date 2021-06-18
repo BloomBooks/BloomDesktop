@@ -1,4 +1,5 @@
-﻿using Bloom.Properties;
+﻿using Bloom.Book;
+using Bloom.Properties;
 using Newtonsoft.Json;
 
 namespace Bloom.Api
@@ -10,6 +11,16 @@ namespace Bloom.Api
 	public class AppApi
 	{
 		private const string kAppUrlPrefix = "app/";
+
+		private readonly BookSelection _bookSelection;
+		private readonly EditBookCommand _editBookCommand;
+
+		public AppApi(BookSelection bookSelection, EditBookCommand editBookCommand)
+
+		{
+			_bookSelection = bookSelection;
+			_editBookCommand = editBookCommand;
+		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
@@ -26,6 +37,18 @@ namespace Bloom.Api
 				}
 			}, false);
 			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "autoUpdateSoftwareChoice", HandleAutoUpdate, false);
+
+
+			/* It's not totally clear if these kinds of things fit well in this App api, or if we
+			 will want to introduce a separate api for dealing with these kinds of things. I'm
+			erring on the side of less classes, code, for now, easy to split later.*/
+			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "editCurrentBook",
+				request =>
+				{
+					_editBookCommand.Raise(_bookSelection.CurrentSelection);
+					request.PostSucceeded();
+				}, true);
+
 		}
 
 		public void HandleAutoUpdate(ApiRequest request)

@@ -45,7 +45,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{}> = props => {
                     enabled={editable}
                     variant={"outlined"}
                     l10nKey="CollectionTab.EditBookButton"
-                    clickApiEndpoint="something"
+                    clickApiEndpoint="app/editCurrentBook"
                     mightNavigate={true}
                     enabledImageFile="EditTab.svg"
                     hasText={true}

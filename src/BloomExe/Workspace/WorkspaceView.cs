@@ -595,14 +595,14 @@ namespace Bloom.Workspace
 
 		private void OnUpdateDisplay(object sender, EventArgs e)
 		{
-			SetTabVisibility(_editTab, _model.ShowEditPage);
-			SetTabVisibility(_publishTab, _model.ShowPublishPage);
+			SetTabVisibility(_editTab, _model.ShowEditTab);
+			SetTabVisibility(_publishTab, _model.ShowPublishTab);
 			_editTab.Enabled = !_model.EditTabLocked;
 		}
 
-		private void SetTabVisibility(TabStripButton page, bool visible)
+		private void SetTabVisibility(TabStripButton tab, bool visible)
 		{
-			page.Visible = visible;
+			tab.Visible = visible;
 		}
 
 		public void OpenCreateLibrary()
