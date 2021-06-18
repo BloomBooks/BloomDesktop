@@ -297,7 +297,10 @@ namespace Bloom.WebLibraryIntegration
 			if (!LoggedIn)
 				throw new ApplicationException();
 			if (BookTransfer.IsDryRun)
-				throw new ApplicationException("Should not call CreateLanguage during dry run!");
+			{
+				Console.WriteLine("Simulating CreateLanguage during dry run for {0} ({1})", lang.Name, lang.EthnologueCode);
+				return JObject.Parse($"{{\"objectId\":\"xyzzy{lang.EthnologueCode}\"}}");
+			}
 			var request = MakePostRequest(ClassesLanguagePath);
 			var langjson = lang.Json;
 			request.AddParameter("application/json", langjson, ParameterType.RequestBody);

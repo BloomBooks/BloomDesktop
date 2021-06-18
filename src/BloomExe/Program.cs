@@ -157,10 +157,9 @@ namespace Bloom
 							var code = 0;
 							foreach (var error in errors)
 							{
-								if (!(error is HelpVerbRequestedError))
+								if (!(error is HelpVerbRequestedError) && !(error is HelpRequestedError))
 								{
-									Debug.WriteLine(error.ToString());
-									Console.WriteLine(error.ToString());
+									// Debug.WriteLine(error.ToString());
 									code = 1;
 								}
 							}
