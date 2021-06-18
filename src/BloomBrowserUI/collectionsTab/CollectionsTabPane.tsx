@@ -114,13 +114,11 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                             )}
                         </Transition>
                     </SplitPane>
+                    {/* This wrapper is used to... fix up some margin/color stuff I was having trouble with from SplitPane */}
                     <div
                         css={css`
                             height: 100%;
-                            margin: 10px;
-
-                            margin-left: ${10 +
-                                kResizerSize}px; // sigh. has to be left to make room for the splitter. I hate this splitter library!
+                            background-color: yellow;
                         `}
                     >
                         <CollectionsTabBookPane />

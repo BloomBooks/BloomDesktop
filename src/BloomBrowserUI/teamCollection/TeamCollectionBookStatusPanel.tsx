@@ -12,9 +12,8 @@ import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import BloomButton from "../react_components/bloomButton";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import {
-    useSelectedBookId,
-    useSubscribeToWebSocketForEvent,
-    useSubscribeToWebSocketForObject
+    useCurrentBookInfo,
+    useSubscribeToWebSocketForEvent
 } from "../utils/WebSocketManager";
 import { Block } from "@material-ui/icons";
 
@@ -45,7 +44,7 @@ export interface IBookTeamCollectionStatus {
     hasAProblem: boolean;
 }
 export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
-    const currentBookId = useSelectedBookId();
+    const { id: currentBookId, editable } = useCurrentBookInfo();
 
     const [lockState, setLockState] = useState<TeamCollectionBookLockState>(
         "initializing"

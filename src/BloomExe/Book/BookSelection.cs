@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Dynamic;
 using Bloom.Api;
 using Bloom.Properties;
+using Newtonsoft.Json;
 using SIL.Progress;
 
 namespace Bloom.Book
@@ -29,7 +31,10 @@ namespace Bloom.Book
 			if (_currentSelection == book)
 				return;
 
-			book?.BringBookUpToDate(new NullProgress());
+			if (book!=null && book.IsEditable)
+			{
+				book?.BringBookUpToDate(new NullProgress());
+			}
 
 			_currentSelection = book;
 
@@ -39,8 +44,10 @@ namespace Bloom.Book
 
 
 			// notify browser components that are listening to this event
-			// REVIEW: are we even going to use the id?
-			_webSocketServer.SendString("book-selection", "changed", book.ID);
+			var result = JsonConvert.SerializeObject(new { 
+				id = book.ID, editable = book.IsEditable
+			});
+			_webSocketServer.SendString("book-selection", "changed",result);
 		}
 
 		// virtual for mocking

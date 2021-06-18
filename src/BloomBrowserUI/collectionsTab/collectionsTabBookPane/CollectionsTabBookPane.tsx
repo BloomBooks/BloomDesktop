@@ -4,14 +4,15 @@ import * as React from "react";
 import { useState } from "react";
 import { BloomApi } from "../../utils/bloomApi";
 import { TeamCollectionBookStatusPanel } from "../../teamCollection/TeamCollectionBookStatusPanel";
-import { useSelectedBookId } from "../../utils/WebSocketManager";
-import { Button } from "@material-ui/core";
+import { useCurrentBookInfo } from "../../utils/WebSocketManager";
+import BloomButton from "../../react_components/bloomButton";
+import { kDarkestBackground } from "../../bloomMaterialUITheme";
 
 export const CollectionsTabBookPane: React.FunctionComponent<{}> = props => {
     const [isTeamCollection, setIsTeamCollection] = useState(false);
 
     // this is just to make react refresh (and the browser not cache) since we're always asking for the same "book-preview/index.htm"
-    const currentBookId = useSelectedBookId();
+    const { id: currentBookId, editable } = useCurrentBookInfo();
 
     React.useEffect(
         () => {
@@ -30,25 +31,39 @@ export const CollectionsTabBookPane: React.FunctionComponent<{}> = props => {
                 display: flex;
                 flex: 1;
                 flex-direction: column;
+                padding: 10px;
+                background-color: ${kDarkestBackground};
             `}
+            {...props} // allows defining more css rules from container
         >
             <div
                 css={css`
                     margin-bottom: 10px;
                 `}
             >
-                <Button
-                    color="primary"
-                    variant="outlined"
-                    // startIcon={<img src="../../images/edit.png" />}
+                <BloomButton
+                    enabled={editable}
+                    variant={"outlined"}
+                    l10nKey="CollectionTab.EditBookButton"
+                    clickApiEndpoint="something"
+                    mightNavigate={true}
+                    enabledImageFile="EditTab.svg"
+                    hasText={true}
+                    color={"secondary"}
                     css={css`
-                        color: black !important;
                         background-color: white !important;
-                        width: fit-content;
+                        color: ${editable
+                            ? "black !important"
+                            : "rgba(0, 0, 0, 0.26);"};
+
+                        img {
+                            height: 2em;
+                            margin-right: 10px;
+                        }
                     `}
                 >
                     Edit this book
-                </Button>
+                </BloomButton>
             </div>
             <div
                 css={css`
@@ -64,6 +79,9 @@ export const CollectionsTabBookPane: React.FunctionComponent<{}> = props => {
                     src={`/book-preview/index.htm?dummy=${currentBookId}`}
                     height="100%"
                     width="100%"
+                    css={css`
+                        border: none;
+                    `}
                 />
             </div>
             {isTeamCollection ? (

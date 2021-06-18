@@ -255,8 +255,6 @@ export class BloomApi {
         const [value, setValue] = React.useState<any | undefined>();
         React.useEffect(() => {
             BloomApi.get(urlSuffix, c => {
-                console.log(c.data);
-                //                console.log(JSON.parse(c.data));
                 setValue(c.data);
             });
         }, []);

@@ -24,6 +24,7 @@ export interface IBloomButtonProps extends ILocalizationProps {
     l10nTipEnglishDisabled?: string;
     iconBeforeText?: React.ReactNode;
     size?: "small" | "medium" | "large" | undefined;
+    color?: "primary" | "secondary" | undefined;
 }
 
 // A button that takes a Bloom API endpoint to post() when clicked
@@ -79,7 +80,7 @@ export default class BloomButton extends LocalizableElement<
             <Button
                 {...commonProps}
                 variant={this.props.variant || "contained"}
-                color="primary"
+                color={this.props.color}
                 startIcon={this.props.iconBeforeText}
                 size={this.props.size}
                 {...this.props} // allows defining more css rules from container

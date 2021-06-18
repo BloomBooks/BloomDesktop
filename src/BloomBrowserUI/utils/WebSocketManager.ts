@@ -70,15 +70,22 @@ export function useSubscribeToWebSocketForStringMessage(
     );
 }
 
-export function useSelectedBookId() {
-    const [currentBookId, setCurrentBookId] = useState<string | undefined>(
-        undefined
-    );
+interface ISelectedBookInfo {
+    id: string | undefined;
+    editable: boolean;
+}
+export function useCurrentBookInfo(): ISelectedBookInfo {
+    const [currentBookInfo, setCurrentBookInfo] = useState<ISelectedBookInfo>({
+        id: undefined,
+        editable: false
+    });
 
-    useSubscribeToWebSocketForStringMessage("book-selection", "changed", id =>
-        setCurrentBookId(id)
+    useSubscribeToWebSocketForObject<ISelectedBookInfo>(
+        "book-selection",
+        "changed",
+        e => setCurrentBookInfo(e)
     );
-    return currentBookId;
+    return currentBookInfo;
 }
 
 // Subscribe to an event where the message string is holding a JSON object

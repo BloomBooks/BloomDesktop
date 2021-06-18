@@ -850,8 +850,6 @@ namespace Bloom.Api
 
 		private bool ProcessCssFile(IRequestInfo info, string incomingPath)
 		{
-			Console.WriteLine("css: " + incomingPath);
-
 			// BL-2219: "OriginalImages" means we're generating a pdf and want full images,
 			// but it has nothing to do with css files and defeats the following 'if'
 			var localPath = incomingPath.Replace(OriginalImageMarker + "/", "");
