@@ -1789,7 +1789,21 @@ namespace Bloom.TeamCollection
 				RaiseBookStatusChanged(bookName, CheckedOutBy.Deleted);
 				return;
 			}
-			var status = GetStatus(bookName);
+
+			BookStatus status;
+			try
+			{
+				status = GetStatus(bookName);
+			}
+			catch (Exception ex)
+			{
+				// We may want to do more, such as put a red circle on the book. But at least don't crash.
+				// The case where we observed this, a corrupt zip file that can't be read, caused
+				// plenty of other errors, so I'm thinking just giving up is enough. This is just
+				// trying to give the user a quick idea of status.
+				return;
+			}
+
 			if (IsCheckedOutHereBy(status))
 				RaiseBookStatusChanged(bookName, CheckedOutBy.Self);
 			else if (status.IsCheckedOut())

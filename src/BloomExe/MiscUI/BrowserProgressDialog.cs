@@ -51,7 +51,21 @@ namespace Bloom.MiscUI
 					// A way of waiting until the dialog is ready to receive progress messages
 					while (!socketServer.IsSocketOpen(socketContext))
 						Thread.Sleep(50);
-					var waitForUserToCloseDialogOrReportProblems = doWhat(progress);
+					bool waitForUserToCloseDialogOrReportProblems;
+					try
+					{
+						waitForUserToCloseDialogOrReportProblems = doWhat(progress);
+					}
+					catch (Exception ex)
+					{
+						// depending on the nature of the problem, we might want to do more or less than this.
+						// But at least this lets the dialog reach one of the states where it can be closed,
+						// and gives the user some idea things are not right.
+						socketServer.SendEvent(socketContext, "finished");
+						waitForUserToCloseDialogOrReportProblems = true;
+						progress.MessageWithoutLocalizing("Something went wrong: " + ex.Message, ProgressKind.Error);
+					}
+
 					// stop the spinner
 					socketServer.SendEvent(socketContext, "finished");
 					if (waitForUserToCloseDialogOrReportProblems)
