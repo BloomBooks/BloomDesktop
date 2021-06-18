@@ -169,7 +169,7 @@ namespace BloomTests.Spreadsheet
 		[OneTimeSetUp]
 		public void OneTimeSetUp()
 		{
-			var dom = new HtmlDom(kSimpleTwoPageBook);
+			var dom = new HtmlDom(kSimpleTwoPageBook, true);
 			_exporter = new SpreadsheetExporter();
 			_sheetFromExport = _exporter.Export(dom);
 			_rowsFromExport = _sheetFromExport.ContentRows.ToList();
@@ -321,7 +321,7 @@ namespace BloomTests.Spreadsheet
 		[Test]
 		public void RetainMarkup_KeepsIt()
 		{
-			var dom = new HtmlDom(kVerySimpleBook);
+			var dom = new HtmlDom(kVerySimpleBook, true);
 			var exporter = new SpreadsheetExporter();
 			exporter.Params = new SpreadsheetExportParams() {RetainMarkup = true};
 			var sheet = exporter.Export(dom);
@@ -334,7 +334,7 @@ namespace BloomTests.Spreadsheet
 		[Test]
 		public void NoRetainMarkup_OmitsIt()
 		{
-			var dom = new HtmlDom(kVerySimpleBook);
+			var dom = new HtmlDom(kVerySimpleBook, true);
 			var exporter = new SpreadsheetExporter();
 			var sheet = exporter.Export(dom);
 			var rows = sheet.ContentRows.ToList();

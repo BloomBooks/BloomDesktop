@@ -48,10 +48,20 @@ namespace Bloom.Book
 			_dom = (XmlDocument) domToClone.Clone();
 		}
 
-		public HtmlDom(string xhtml)
+		/// <summary>
+		/// Make a DOM out of the input
+		/// </summary>
+		/// <param name="xhtml"></param>
+		/// <param name="preserveWhiteSpace">True to set PreserveWhiteSpace. My intuition is that this
+		/// should always be true, as otherwise, it seems we can lose white space between spans in
+		/// paragraphs. Moreover, our main XmlHtmlConverter.GetXmlDomFromHtml() sets it.
+		/// But several of our unit tests fail if we set it here. So for now, just
+		/// set it where we know we do need it.</param>
+		public HtmlDom(string xhtml, bool preserveWhiteSpace = false)
 		{
 			_dom = new XmlDocument();
-			_dom.PreserveWhitespace = true;
+			if (preserveWhiteSpace)
+				_dom.PreserveWhitespace = true;
 			_dom.LoadXml(xhtml);
 		}
 

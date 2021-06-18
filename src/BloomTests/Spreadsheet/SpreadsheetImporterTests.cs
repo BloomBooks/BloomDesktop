@@ -23,7 +23,7 @@ namespace BloomTests.Spreadsheet
 		[OneTimeSetUp]
 		public void OneTimeSetUp()
 		{
-			_dom = new HtmlDom(SpreadsheetTests.kSimpleTwoPageBook);
+			_dom = new HtmlDom(SpreadsheetTests.kSimpleTwoPageBook, true);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en']/p[text()='Riding on elephants can be risky.']", 1); // unchanged
 
 			var exporter = new SpreadsheetExporter();
@@ -232,7 +232,7 @@ namespace BloomTests.Spreadsheet
 			// In this test suite, the blocks on the last page and the pages run out before
 			// we run out of lines. So we can't test the case of running out of lines first.
 			// Another class tests that.
-			_dom = new HtmlDom(inputBook);
+			_dom = new HtmlDom(inputBook, true);
 			_sheet = new InternalSpreadsheet();
 			_sheet.ColumnForLang("en");
 			_sheet.ColumnForLang("fr");
@@ -422,7 +422,7 @@ namespace BloomTests.Spreadsheet
 			//		- V1: warn, leave unchanged.
 			//		- eventual: ?
 			// In this test suite, lines run out before the blocks.
-			_dom = new HtmlDom(inputBook);
+			_dom = new HtmlDom(inputBook, true);
 			_sheet = new InternalSpreadsheet();
 			_sheet.ColumnForLang("en");
 			_sheet.ColumnForLang("fr");
