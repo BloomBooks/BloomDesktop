@@ -8,6 +8,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
+using Bloom.Registration;
 using Bloom.Utils;
 using DesktopAnalytics;
 using L10NSharp;
@@ -55,6 +56,16 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/getLog", HandleGetLog, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/getCollectionName", HandleGetCollectionName, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/showCreateTeamCollectionDialog", HandleShowCreateTeamCollectionDialog, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/showRegistrationDialog", HandleShowRegistrationDialog, true, false);
+		}
+
+		private void HandleShowRegistrationDialog(ApiRequest request)
+		{
+			using (var dlg = new RegistrationDialog(false))
+			{
+				dlg.ShowDialog();
+			}
+			request.PostSucceeded();
 		}
 
 		private void HandleShowCreateTeamCollectionDialog(ApiRequest request)
@@ -193,6 +204,7 @@ namespace Bloom.TeamCollection
 						when = whenLocked.ToLocalTime().ToShortDateString(),
 						where = _tcManager.CurrentCollectionEvenIfDisconnected?.WhatComputerHasBookLocked(BookFolderName),
 						currentUser = CurrentUser,
+						currentUserName = TeamCollectionManager.CurrentUserFirstName,
 						currentMachine = TeamCollectionManager.CurrentMachine,
 						problem,
 						changedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(BookFolderName),
