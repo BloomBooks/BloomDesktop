@@ -19,6 +19,7 @@ using Bloom.web;
 using BloomTemp;
 using DesktopAnalytics;
 using SIL.IO;
+using Newtonsoft.Json;
 
 namespace Bloom.Publish.Android
 {
@@ -42,7 +43,8 @@ namespace Bloom.Publish.Android
 
 		private object _lockForLanguages = new object();
 		private Dictionary<string, bool> _allLanguages;
-		private HashSet<string> _languagesToPublish = new HashSet<string>();
+		private HashSet<string> _textLanguagesToPublish = new HashSet<string>();
+		private HashSet<string> _audioLanguagesToExclude = new HashSet<string>();
 		private Bloom.Book.Book _bookForLanguagesToPublish = null;
 
 		private RuntimeImageProcessor _imageProcessor;
@@ -84,8 +86,12 @@ namespace Bloom.Publish.Android
 
 		private AndroidPublishSettings GetSettings()
 		{
-			// We need a copy of the hashset, so that if _languagesToPublish changes, this settings object won't.
-			return new AndroidPublishSettings() {LanguagesToInclude = new HashSet<string>(_languagesToPublish)};
+			return new AndroidPublishSettings()
+			{
+				// We need a copy of the hashset, so that if _languagesToPublish changes, this settings object won't.
+				LanguagesToInclude = new HashSet<string>(_textLanguagesToPublish),
+				AudioLanguagesToExclude = new HashSet<string>(_audioLanguagesToExclude)
+			};
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -294,9 +300,16 @@ namespace Bloom.Publish.Android
 					InitializeLanguagesInBook(request);
 					var result = "[" + string.Join(",", _allLanguages.Select(kvp =>
 					{
-						var complete = kvp.Value ? "true" : "false";
-						var include = _languagesToPublish.Contains(kvp.Key) ? "true" : "false";
-						return $"{{\"code\":\"{kvp.Key}\", \"name\":\"{request.CurrentBook.PrettyPrintLanguage((kvp.Key))}\",\"complete\":{complete},\"include\":{include}}}";
+						var value = new LanguagePublishInfo()
+						{
+							code = kvp.Key,
+							name = request.CurrentBook.PrettyPrintLanguage(kvp.Key),
+							complete = kvp.Value,
+							includeText = _textLanguagesToPublish.Contains(kvp.Key),
+							includeAudio = !_audioLanguagesToExclude.Contains(kvp.Key)
+						};
+						var json = JsonConvert.SerializeObject(value);
+						return json;
 					})) + "]";
 
 					request.ReplyWithText(result);
@@ -312,14 +325,27 @@ namespace Bloom.Publish.Android
 				var langCode = request.RequiredParam("langCode");
 				if (request.HttpMethod == HttpMethods.Post)
 				{
-					var val = request.RequiredParam("include") == "true";
-					if (val)
+					var includeText = request.RequiredParam("includeText") == "true";
+					if (includeText)
 					{
-						_languagesToPublish.Add(langCode);
+						_textLanguagesToPublish.Add(langCode);
 					}
 					else
 					{
-						_languagesToPublish.Remove(langCode);
+						_textLanguagesToPublish.Remove(langCode);
+					}
+
+					// NOTE: If includeText is false, then we don't need the narration audio for it either.
+					// FYI, the check for includeText isn't strictly necessary... if the text is missing, the audio for it will get deleted too.
+					// But I think the values are more consistent by adding the includeText check.
+					var includeAudio = includeText && request.RequiredParam("includeAudio") == "true";
+					if (includeAudio)
+					{
+						_audioLanguagesToExclude.Remove(langCode);
+					}
+					else
+					{
+						_audioLanguagesToExclude.Add(langCode);						
 					}
 					request.PostSucceeded();
 				}
@@ -356,7 +382,7 @@ namespace Bloom.Publish.Android
 					// whenever a check box is changed, so it's very important not to do this set-to-default
 					// code when we haven't changed books.
 					_bookForLanguagesToPublish = request.CurrentBook;
-					_languagesToPublish.Clear();
+					_textLanguagesToPublish.Clear();
 					foreach (var kvp in _allLanguages)
 					{
 						if (kvp.Value ||
@@ -365,8 +391,10 @@ namespace Bloom.Publish.Android
 							// If he really doesn't want to publish L1, he can deselect it.
 							// See BL-9587.
 							kvp.Key == request.CurrentCollectionSettings?.Language1Iso639Code)
-							_languagesToPublish.Add(kvp.Key);
+							_textLanguagesToPublish.Add(kvp.Key);
 					}
+
+					_audioLanguagesToExclude.Clear();
 				}
 			}
 		}
