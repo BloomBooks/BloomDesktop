@@ -19,7 +19,13 @@ import {
     useSetupBloomDialog
 } from "../react_components/BloomDialog/BloomDialog";
 import { DialogCloseButton } from "../react_components/BloomDialog/commonDialogComponents";
+import { CollectionHistoryTable } from "./CollectionHistoryTable";
+import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
+import { LocalizedString } from "../react_components/l10nComponents";
+import { ThemeProvider } from "@material-ui/styles";
+import theme from "../bloomMaterialUITheme";
 export let showTeamCollectionDialog: () => void;
+import "react-tabs/style/react-tabs.less";
 
 export const TeamCollectionDialog: React.FunctionComponent<{
     showReloadButton: boolean;
@@ -47,51 +53,101 @@ export const TeamCollectionDialog: React.FunctionComponent<{
 
     return (
         <BloomDialog {...propsForBloomDialog}>
-            <DialogTitle
-                title={`${dialogTitle} (experimental)`}
-                icon={"Team Collection.svg"}
-                backgroundColor={kBloomBlue}
-                color={"white"}
-            />
-            <DialogMiddle>
-                <ProgressBox
-                    preloadedProgressEvents={events}
-                    css={css`
-                        // If we have omitOuterFrame that means the dialog height is controlled by c#, so let the progress grow to fit it.
-                        // Maybe we could have that approach *all* the time?
-                        height: ${props.dialogEnvironment?.omitOuterFrame
-                            ? "100%"
-                            : "350px"};
-                        // enhance: there is a bug I haven't found where, if this is > 530px, then it overflows. Instead, the BloomDialog should keep growing.
-                        min-width: 530px;
-                    `}
+            <ThemeProvider theme={theme}>
+                <DialogTitle
+                    title={`${dialogTitle} (experimental)`}
+                    icon={"Team Collection.svg"}
+                    backgroundColor={kBloomBlue}
+                    color={"white"}
                 />
-            </DialogMiddle>
-
-            <DialogBottomButtons>
-                {props.showReloadButton && (
-                    <DialogBottomLeftButtons>
-                        <BloomButton
-                            id="reload"
-                            l10nKey="TeamCollection.Reload"
-                            temporarilyDisableI18nWarning={true}
-                            //variant="text"
-                            enabled={true}
-                            hasText={true}
-                            onClick={() =>
-                                BloomApi.post("common/reloadCollection")
+                <DialogMiddle>
+                    <Tabs
+                        defaultIndex={0}
+                        // Seems like there should be some sort of Material-UI mode that would produce the look
+                        // John wants. A lot of their examples are quite like it, but I can't find any reason
+                        // why their examples are different from what I get with similar code. Possibly the
+                        // makeStyles that is in most of their examples pulls in this look. But we're using Emotion.
+                        css={css`
+                            .react-tabs__tab.react-tabs__tab {
+                                background-color: white;
+                                text-transform: uppercase;
                             }
-                        >
-                            Reload Collection
-                        </BloomButton>
-                    </DialogBottomLeftButtons>
-                )}
-                <DialogCloseButton
-                    onClick={closeDialog}
-                    // default action is to close *unless* we're showing reload
-                    default={!props.showReloadButton}
-                />
-            </DialogBottomButtons>
+                            .react-tabs__tab--selected {
+                                color: ${kBloomBlue};
+                                border-color: transparent;
+                                border-bottom: 2px solid ${kBloomBlue};
+                            }
+                            .react-tabs__tab-list {
+                                border: none;
+                            }
+                        `}
+                    >
+                        <TabList>
+                            <Tab>
+                                <LocalizedString
+                                    l10nKey="TeamCollection.Status"
+                                    l10nComment="Used as the name on a tab of the Team Collection dialog."
+                                    temporarilyDisableI18nWarning={true}
+                                >
+                                    Status
+                                </LocalizedString>
+                            </Tab>
+                            <Tab>
+                                <LocalizedString
+                                    l10nKey="TeamCollection.History"
+                                    l10nComment="Used as the name on a tab of the Team Collection dialog."
+                                    temporarilyDisableI18nWarning={true}
+                                >
+                                    History
+                                </LocalizedString>
+                            </Tab>
+                        </TabList>
+                        <TabPanel>
+                            <ProgressBox
+                                preloadedProgressEvents={events}
+                                css={css`
+                                    // If we have omitOuterFrame that means the dialog height is controlled by c#, so let the progress grow to fit it.
+                                    // Maybe we could have that approach *all* the time?
+                                    height: ${props.dialogEnvironment
+                                        ?.omitOuterFrame
+                                        ? "100%"
+                                        : "350px"};
+                                    // enhance: there is a bug I haven't found where, if this is > 530px, then it overflows. Instead, the BloomDialog should keep growing.
+                                    min-width: 530px;
+                                `}
+                            />
+                        </TabPanel>
+                        <TabPanel>
+                            <CollectionHistoryTable />
+                        </TabPanel>
+                    </Tabs>
+                </DialogMiddle>
+
+                <DialogBottomButtons>
+                    {props.showReloadButton && (
+                        <DialogBottomLeftButtons>
+                            <BloomButton
+                                id="reload"
+                                l10nKey="TeamCollection.Reload"
+                                temporarilyDisableI18nWarning={true}
+                                //variant="text"
+                                enabled={true}
+                                hasText={true}
+                                onClick={() =>
+                                    BloomApi.post("common/reloadCollection")
+                                }
+                            >
+                                Reload Collection
+                            </BloomButton>
+                        </DialogBottomLeftButtons>
+                    )}
+                    <DialogCloseButton
+                        onClick={closeDialog}
+                        // default action is to close *unless* we're showing reload
+                        default={!props.showReloadButton}
+                    />
+                </DialogBottomButtons>
+            </ThemeProvider>
         </BloomDialog>
     );
 };
