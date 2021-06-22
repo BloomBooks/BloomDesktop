@@ -2323,7 +2323,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// if necessary, append a number to make the folder path unique
 		/// </summary>
-		private static string GetUniqueFolderPath(string folderPath)
+		public static string GetUniqueFolderPath(string folderPath)
 		{
 			var parent = Directory.GetParent(folderPath).FullName;
 			var name = GetUniqueFolderName(parent, Path.GetFileName(folderPath));

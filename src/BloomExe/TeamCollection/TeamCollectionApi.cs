@@ -50,6 +50,7 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/currentBookStatus", HandleCurrentBookStatus, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/attemptLockOfCurrentBook", HandleAttemptLockOfCurrentBook, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/checkInCurrentBook", HandleCheckInCurrentBook, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/forgetChanges", HandleForgetChanges, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/chooseFolderLocation", HandleChooseFolderLocation, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/createTeamCollection", HandleCreateTeamCollection, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/joinTeamCollection", HandleJoinTeamCollection, true);
@@ -263,6 +264,45 @@ namespace Bloom.TeamCollection
 				Logger.WriteError(String.Format(msgEnglish, BookFolderName, e.Message), e);
 				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()}");
 				request.Failed("lock failed");
+			}
+		}
+		
+
+			public void HandleForgetChanges(ApiRequest request)
+		{
+			try
+			{
+				if (!_tcManager.CheckConnection())
+				{
+					request.Failed();
+					return;
+				}
+
+				// Enhance: do we need progress here?
+				var bookName = Path.GetFileName(_bookSelection.CurrentSelection.FolderPath);
+				// Todo before 5.1: forgetting changes might involve undoing a rename.
+				// If so, ForgetChanges will return a list of folders affected (up to 3).
+				// We need to notify the new collection tab to update its book list
+				// and also possibly update the current selection, and in case we undid
+				// things in the book, we should update the preview.
+				_tcManager.CurrentCollection.ForgetChangesCheckin(bookName);
+				UpdateUiForBook();
+				request.PostSucceeded();
+			}
+			catch (Exception ex)
+			{
+				var msgId = "TeamCollection.ErrorForgettingChanges";
+				var msgEnglish = "Error forgetting changes for {0}: {1}";
+				var log = _tcManager?.CurrentCollection?.MessageLog;
+				// Pushing an error into the log will show the Reload Collection button. It's not obvious this
+				// is useful here, since we don't know exactly what went wrong. However, it at least gives the user
+				// the option to try it.
+				if (log != null)
+					log.WriteMessage(MessageAndMilestoneType.Error, msgId, msgEnglish, _bookSelection?.CurrentSelection?.FolderPath, ex.Message);
+				Logger.WriteError(String.Format(msgEnglish, _bookSelection?.CurrentSelection?.FolderPath, ex.Message), ex);
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.All, $"Something went wrong forgetting changes",
+					_bookSelection?.CurrentSelection?.FolderPath, ex);
+				request.Failed("forget changes failed");
 			}
 		}
 

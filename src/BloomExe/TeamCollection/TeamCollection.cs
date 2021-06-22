@@ -128,6 +128,61 @@ namespace Bloom.TeamCollection
 		}
 
 		/// <summary>
+		/// Abandon all the user's changes and undo the checkout of the specified book.
+		/// </summary>
+		/// <returns>A list of book folders created and destroyed. Typically this is empty...
+		/// the book just got checked in. If the changes being abandoned included renaming
+		/// the book, it will include the paths to the current book folder [0] as well as the
+		/// one it was renamed to [1]. Pathologically, if the user created in the meantime
+		/// another book at the old name, it may include [2] the name of the folder to which
+		/// the new book was renamed.</returns>
+		public List<string> ForgetChangesCheckin(string bookName)
+		{
+			var foldersNeedingUpdate = new List<string>();
+			var status = GetLocalStatus(bookName);
+			var finalBookName = bookName;
+			if (!string.IsNullOrEmpty(status.oldName))
+			{
+				
+				finalBookName = status.oldName;
+				var oldBookFolder = Path.Combine(_localCollectionFolder, finalBookName);
+				foldersNeedingUpdate.Add(Path.Combine(oldBookFolder));
+				foldersNeedingUpdate.Add(Path.Combine(_localCollectionFolder, bookName));
+				
+				if (Directory.Exists(oldBookFolder))
+				{
+					// pathologically, there's a new book where we need to put the old one! Move it.
+					var newPathForExtraBook = BookStorage.GetUniqueFolderPath(oldBookFolder);
+					Directory.Move(oldBookFolder, newPathForExtraBook);
+					var extraBookPath = Path.Combine(newPathForExtraBook, Path.ChangeExtension(finalBookName, "htm"));
+					if (File.Exists(extraBookPath))
+						RobustFile.Move(extraBookPath,
+							Path.Combine(newPathForExtraBook, Path.ChangeExtension(Path.GetFileName(newPathForExtraBook), "htm")));
+					foldersNeedingUpdate.Add(newPathForExtraBook);
+				}
+
+				CopyBookFromRepoToLocal(status.oldName);
+				status = status.WithOldName(null);
+				// Get rid of the moved and possibly edited version
+				SIL.IO.RobustIO.DeleteDirectoryAndContents(Path.Combine(_localCollectionFolder, bookName), true);
+				// Todo: when we have the new implemetation of CollectionTab,
+				// we need to tell it to update, getting rid of the book we
+				// just renamed and adding it by the new name, and ideally
+				// selecting it by the new name. This might be better done
+				// by code in TeamCollectionApi, perhaps by having this method
+				// return the restored name as an indication it is needed.
+			}
+			else
+			{
+				CopyBookFromRepoToLocal(bookName);
+			}
+
+			status = status.WithLockedBy(null);
+			WriteBookStatus(finalBookName, status);
+			return foldersNeedingUpdate;
+		}
+
+		/// <summary>
 		/// Put the book into the repo. Usually includes unlocking it. Its new status, with new checksum,
 		/// is written to the repo and also to a file in the local collection for later comparisons.
 		/// </summary>
