@@ -6,12 +6,14 @@ import Button from "@material-ui/core/Button";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import { useL10n } from "./l10nHooks";
+import { Divider } from "@material-ui/core";
 
 export class SimpleMenuItem {
     text: string;
     l10nKey: string;
     temporarilyDisableI18nWarning?: boolean;
     action: () => void; // in addition to closing the menu
+    disabled?: boolean;
 }
 
 // This class defines a simple menu. Currently it's optimized to be the pull-down from the "..." button
@@ -29,7 +31,7 @@ export const SimpleMenu: React.FunctionComponent<{
     text: string;
     l10nKey: string;
     temporarilyDisableI18nWarning?: boolean;
-    items: SimpleMenuItem[];
+    items: (SimpleMenuItem | "-")[];
 }> = props => {
     // When this is not null, the menu appears, positioned relative to the anchorEl (which here is always the
     // main button).
@@ -52,28 +54,19 @@ export const SimpleMenu: React.FunctionComponent<{
         props.temporarilyDisableI18nWarning
     );
 
-    const items = props.items.map(item => {
-        const itemText = useL10n(
-            item.text,
-            item.l10nKey,
-            undefined,
-            undefined,
-            undefined,
-            item.temporarilyDisableI18nWarning ||
-                props.temporarilyDisableI18nWarning
-        );
-        return (
-            <MenuItem
-                key={item.text}
-                onClick={() => {
-                    handleClose();
-                    item.action();
-                }}
-            >
-                {itemText}
-            </MenuItem>
-        );
-    });
+    const items = props.items.map(item =>
+        item === "-" ? (
+            <Divider />
+        ) : (
+            <SimpleMenuRow
+                handleClose={handleClose}
+                item={item}
+                temporarilyDisableI18nWarning={
+                    props.temporarilyDisableI18nWarning
+                }
+            />
+        )
+    );
 
     return (
         <div
@@ -95,7 +88,7 @@ export const SimpleMenu: React.FunctionComponent<{
             <Menu
                 css={css`
                     .MuiPaper-root {
-                        margin-top: 45px; // the origins below SHOULD position it below the button, but don't. This corrects.
+                        margin-top: 10px; // the origins below SHOULD position it below the button, but don't. This corrects.
                         margin-left: -20px;
                         overflow: visible; // allows the :after to produce the up arrow effect
                         :after {
@@ -122,5 +115,33 @@ export const SimpleMenu: React.FunctionComponent<{
                 {items}
             </Menu>
         </div>
+    );
+};
+
+const SimpleMenuRow: React.FunctionComponent<{
+    handleClose: () => void;
+    item: SimpleMenuItem;
+    temporarilyDisableI18nWarning?: boolean;
+}> = props => {
+    const itemText = useL10n(
+        props.item.text,
+        props.item.l10nKey,
+        undefined,
+        undefined,
+        undefined,
+        props.item.temporarilyDisableI18nWarning ||
+            props.temporarilyDisableI18nWarning
+    );
+    return (
+        <MenuItem
+            key={props.item.text}
+            onClick={() => {
+                props.handleClose();
+                props.item.action();
+            }}
+            disabled={props.item.disabled}
+        >
+            {itemText}
+        </MenuItem>
     );
 };

@@ -128,6 +128,77 @@ namespace Bloom.TeamCollection
 		}
 
 		/// <summary>
+		/// Abandon all the user's changes and undo the checkout of the specified book.
+		/// </summary>
+		/// <returns>A list of book folders created and destroyed. Typically this is empty...
+		/// the book just got checked in. If the changes being abandoned included renaming
+		/// the book, it will include the paths to the current book folder [0] as well as the
+		/// one it was renamed to [1]. Pathologically, if the user created in the meantime
+		/// another book at the old name, it may include [2] the name of the folder to which
+		/// the new book was renamed.</returns>
+		public List<string> ForgetChangesCheckin(string bookName)
+		{
+			var foldersNeedingUpdate = new List<string>();
+			var status = GetLocalStatus(bookName);
+			var finalBookName = bookName;
+			if (!string.IsNullOrEmpty(status.oldName))
+			{
+				
+				finalBookName = status.oldName;
+				var oldBookFolder = Path.Combine(_localCollectionFolder, finalBookName);
+				foldersNeedingUpdate.Add(Path.Combine(oldBookFolder));
+				foldersNeedingUpdate.Add(Path.Combine(_localCollectionFolder, bookName));
+				
+				if (Directory.Exists(oldBookFolder))
+				{
+					// This is pathological, but it may not be obvious why.
+					// For example: we renamed NastyBook to NiceBook. We expect that there is a NastyBook.bloom
+					// in the repo, and a folder NiceBook with a file NiceBook.htm in the local folder,
+					// and a status file in the NiceBook folder indicating that it is checked out locally and is
+					// a rename of NastyBook.
+					// Since we're undoing everything since the checkout, we need to move NiceBook/NiceBook.htm
+					// back to NastyBook/NastyBook.htm
+					// We do NOT expect to find a NastyBook folder in local BEFORE we undo the rename! At this point
+					// the renamed book is, locally, in the NiceBook folder.
+					// But we did find a NastyBook folder, right where we want to put NiceBook when we undo renaming it.
+					// About the only way is that the user made a new book called NastyBook since renaming the old NastyBook.
+					// Undoing the checkout of the renamed NastyBook will result in two books called NastyBook.
+					// The original (renamed) NastyBook must get back the original folder name, because that matches
+					// the .bloom file in the repo. So something must be done about the unexpected one.
+					// It's not very obvious what to do about it. Actually, possibly we should have prevented
+					// creating the new NastyBook at that folder location, because if the user were to check it in
+					// before checking in the rename, the new NastyBook would try to overwrite the old, renamed one.
+					// Maybe we will do that one day. But for now, we have to somehow recover so that the original
+					// NastyBook is restored to the pre-checkout state. To do that we have to get the new NastyBook
+					// out of the way. We do that by moving it to the location it would have occupied if it had been
+					// created without first renaming the old NastyBook.
+					var newPathForExtraBook = BookStorage.MoveBookToAvailableName(oldBookFolder);
+					foldersNeedingUpdate.Add(newPathForExtraBook);
+				}
+
+				CopyBookFromRepoToLocal(status.oldName);
+				status = status.WithOldName(null);
+				// Get rid of the moved and possibly edited version
+				SIL.IO.RobustIO.DeleteDirectoryAndContents(Path.Combine(_localCollectionFolder, bookName), true);
+				// Todo: when we have the new implemetation of CollectionTab,
+				// we need to tell it to update, getting rid of the book we
+				// just renamed and adding it by the new name, and ideally
+				// selecting it by the new name. This might be better done
+				// by code in TeamCollectionApi, perhaps by having this method
+				// return the restored name as an indication it is needed.
+			}
+			else
+			{
+				CopyBookFromRepoToLocal(bookName);
+			}
+
+			status = status.WithLockedBy(null);
+			WriteBookStatus(finalBookName, status);
+			UpdateBookStatus(finalBookName, true);
+			return foldersNeedingUpdate;
+		}
+
+		/// <summary>
 		/// Put the book into the repo. Usually includes unlocking it. Its new status, with new checksum,
 		/// is written to the repo and also to a file in the local collection for later comparisons.
 		/// </summary>

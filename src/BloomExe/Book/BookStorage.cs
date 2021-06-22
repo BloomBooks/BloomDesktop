@@ -2603,5 +2603,24 @@ namespace Bloom.Book
 			// future additional levels will add additional "if (level < N)" blocks.
 			Dom.UpdateMetaElement("maintenanceLevel", kMaintenanceLevel.ToString(CultureInfo.InvariantCulture));
 		}
+
+
+		/// <summary>
+		/// Move the book at the specified location to a similar location that is not in use.
+		/// </summary>
+		/// <returns>The path to the new book folder</returns>
+		public static string MoveBookToAvailableName(string oldBookFolder)
+		{
+			var newPathForExtraBook = BookStorage.GetUniqueFolderPath(oldBookFolder);
+			Directory.Move(oldBookFolder, newPathForExtraBook);
+			var extraBookPath = Path.Combine(newPathForExtraBook, Path.ChangeExtension(Path.GetFileName(oldBookFolder), "htm"));
+			// This will usually succeed, since it is standard to name the book the same as the folder.
+			// But if it doesn't, we can't move it, so it seems worth a check.
+			// (And if we change our minds about keeping them in sync, this will be one less place to fix.)
+			if (File.Exists(extraBookPath))
+				RobustFile.Move(extraBookPath,
+					Path.Combine(newPathForExtraBook, Path.ChangeExtension(Path.GetFileName(newPathForExtraBook), "htm")));
+			return newPathForExtraBook;
+		}
 	}
 }
