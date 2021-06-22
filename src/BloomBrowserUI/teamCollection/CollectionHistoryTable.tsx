@@ -13,6 +13,7 @@ import { string } from "prop-types";
 
 interface IBookHistoryEvent {
     Title: string;
+    ThumbnailPath: string;
     When: string;
     Message: string;
     Type: number;
@@ -45,20 +46,70 @@ export const CollectionHistoryTable: React.FunctionComponent = props => {
             <tr
                 css={css`
                     font-weight: 900;
+                    margin-top: 10px;
+                    margin-bottom: 5px;
                 `}
             >
-                <td>Title</td> <td>When</td>
-                <td>Who</td>
+                <td
+                    colSpan={2}
+                    // This would be more natural on the row, but padding <tr> has no effect.
+                    css={css`
+                        padding-top: 10px;
+                        padding-bottom: 5px;
+                    `}
+                >
+                    Title
+                </td>{" "}
+                <td>When</td>
+                <td colSpan={2}>Who</td>
                 <td>What</td>
                 <td>Comment</td>
             </tr>
             {events.map((e, index) => (
-                <tr key={index}>
+                <tr
+                    css={css`
+                        margin-bottom: 5px;
+                    `}
+                    key={index}
+                >
+                    <td
+                        css={css`
+                            padding-right: 4px !important;
+                        `}
+                    >
+                        <img
+                            css={css`
+                                height: 2em;
+                            `}
+                            src={e.ThumbnailPath}
+                        />
+                    </td>
                     <td>{e.Title}</td>
 
                     {/* Review: can we get away with this? I do want the 2021-11-01 format, and this gives that */}
                     <td>{e.When.substring(0, 10)}</td>
-                    <td>{e.UserName || e.UserId}</td>
+                    <td
+                        css={css`
+                            padding-right: 2px !important;
+                            padding-bottom: 8px; // this is to help separate rows
+                        `}
+                    >
+                        <BloomAvatar
+                            email={e.UserId}
+                            name={e.UserName}
+                            avatarSizeInt={30}
+                        />
+                    </td>
+                    <td>
+                        <div
+                            css={css`
+                                overflow-wrap: break-word;
+                                max-width: 7em;
+                            `}
+                        >
+                            {e.UserName || e.UserId}
+                        </div>
+                    </td>
                     <td>{kEventTypes[e.Type]}</td>
                     <td>{e.Message}</td>
                 </tr>

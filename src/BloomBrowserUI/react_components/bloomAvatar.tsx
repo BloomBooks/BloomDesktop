@@ -6,9 +6,10 @@ export const BloomAvatar: React.FunctionComponent<{
     email: string;
     name: string;
     borderColor?: string;
+    avatarSizeInt?: number;
 }> = props => {
     const borderSizeInt = 3;
-    const avatarSizeInt = 48;
+    const avatarSizeInt = props.avatarSizeInt || 48;
     const avatarSize = props.borderColor
         ? `${avatarSizeInt - borderSizeInt}px`
         : `${avatarSizeInt}px`;

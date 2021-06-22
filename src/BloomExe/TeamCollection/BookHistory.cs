@@ -35,6 +35,7 @@ namespace Bloom.TeamCollection
 	{
 		// we don't put this in the database. We always show the current title.
 		public string Title;
+		public string ThumbnailPath;
 
 		[PrimaryKey, AutoIncrement]
 		public int Id { get; set; }
@@ -58,7 +59,11 @@ public class CollectionHistory
 		{
 			var events = BookHistory.GetHistory(bookInfo);
 			// add in the title, which isn't in the database (this could done in a way that involves less duplication)
-			events.ForEach(e=>e.Title=bookInfo.Title);
+			events.ForEach(e=>
+			{
+				e.Title = bookInfo.Title;
+				e.ThumbnailPath = Path.Combine(bookInfo.FolderPath, "thumbnail.png").ToLocalhost();
+			});
 			return events;
 		});
 
