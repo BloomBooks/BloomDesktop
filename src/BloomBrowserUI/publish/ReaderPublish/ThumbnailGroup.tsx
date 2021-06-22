@@ -16,7 +16,7 @@ export const ThumbnailGroup: React.FunctionComponent<{
 const ThumbnailControl: React.FunctionComponent<{
     onChange?: () => void;
 }> = props => {
-    const [bookCoverColor, setBookCoverColor] = BloomApi.useApiString(
+    const [bookCoverColor, setBookCoverColor] = BloomApi.useApiStringState(
         "publish/android/backColor",
         "white"
     );

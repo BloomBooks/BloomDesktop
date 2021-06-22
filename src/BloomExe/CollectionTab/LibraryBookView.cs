@@ -116,6 +116,7 @@ namespace Bloom.CollectionTab
 
 		void OnBookSelectionChanged(object sender, BookSelectionChangedEventArgs args)
 		{
+			return; // we don't want this running when we're using the react version of the tab. 
 			try
 			{
 				// If we just created this book and are right about to switch to edit mode,

@@ -6,18 +6,30 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import { BookButton } from "./BookButton";
 
+interface IBookInfo {
+    id: string;
+    title: string;
+    collectionId: string;
+    folderName: string;
+}
 export const BooksOfCollection: React.FunctionComponent<{
     collectionId: string;
 }> = props => {
     if (!props.collectionId) {
         window.alert("null collectionId");
     }
-    const collectionQuery = React.useMemo(() => {
-        return `collection-id=${encodeURIComponent(props.collectionId)}`;
-    }, [props.collectionId]);
-    const [books] = BloomApi.useApiJson(`collections/books?${collectionQuery}`);
-    const bookArray = books as Array<any>;
-    const [selectedBookId, selectBook] = BloomApi.useApiString(
+    const collectionQuery = `collection-id=${encodeURIComponent(
+        props.collectionId
+    )}`;
+
+    const books = BloomApi.useApiData<Array<IBookInfo>>(
+        `collections/books?${collectionQuery}`,
+        []
+    );
+    const [
+        selectedBookId,
+        setSelectedBookIdWithApi
+    ] = BloomApi.useApiStringState(
         `collections/selected-book-id?${collectionQuery}`,
         ""
     );
@@ -31,11 +43,11 @@ export const BooksOfCollection: React.FunctionComponent<{
     >();
 
     const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-        // event.preventDefault();
-        // setContextMousePoint({
-        //     mouseX: event.clientX - 2,
-        //     mouseY: event.clientY - 4
-        // });
+        event.preventDefault();
+        setContextMousePoint({
+            mouseX: event.clientX - 2,
+            mouseY: event.clientY - 4
+        });
     };
 
     const handleClose = () => {
@@ -66,14 +78,14 @@ export const BooksOfCollection: React.FunctionComponent<{
                 justify="flex-start"
                 alignItems="flex-start"
             >
-                {bookArray?.map(book => {
+                {books?.map(book => {
                     return (
                         <BookButton
                             key={book.id}
                             book={book}
                             selected={selectedBookId === book.id}
                             onClick={bookId => {
-                                selectBook(bookId);
+                                setSelectedBookIdWithApi(bookId);
                             }}
                         />
                     );

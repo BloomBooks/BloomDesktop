@@ -42,7 +42,7 @@ namespace Bloom.Api
 			/* It's not totally clear if these kinds of things fit well in this App api, or if we
 			 will want to introduce a separate api for dealing with these kinds of things. I'm
 			erring on the side of less classes, code, for now, easy to split later.*/
-			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "editCurrentBook",
+			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "editSelectedBook",
 				request =>
 				{
 					_editBookCommand.Raise(_bookSelection.CurrentSelection);

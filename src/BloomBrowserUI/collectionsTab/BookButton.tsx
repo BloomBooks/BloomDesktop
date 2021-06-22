@@ -1,3 +1,6 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+
 import Grid from "@material-ui/core/Grid";
 import React = require("react");
 import { BloomApi } from "../utils/bloomApi";
@@ -5,21 +8,16 @@ import { Button } from "@material-ui/core";
 import TruncateMarkup from "react-truncate-markup";
 import { IBookTeamCollectionStatus } from "../teamCollection/TeamCollectionBookStatusPanel";
 import { BloomAvatar } from "../react_components/bloomAvatar";
-
-const bloomBlue = "#1d94a4"; // enhance we need to export these somewhere
+import { kBloomBlue, kBloomGold } from "../bloomMaterialUiTheme.js";
 
 export const BookButton: React.FunctionComponent<{
     book: any;
     selected: boolean;
     onClick: (bookId: string) => void;
 }> = props => {
-    // const [thumbnailUrl] = BloomApi.useApiString(
-    //     `collection/book/thumbnail?book-id=${props.book.id}`,
-    //     ""
-    // );
     // TODO: the c# had Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont,
 
-    const [teamCollectionStatus] = BloomApi.useApiObject<
+    const teamCollectionStatus = BloomApi.useApiData<
         IBookTeamCollectionStatus | undefined
     >(
         `teamCollection/bookStatus?folderName=${props.book.folderName}`,
@@ -28,10 +26,7 @@ export const BookButton: React.FunctionComponent<{
 
     const label =
         props.book.title.length > 20 ? (
-            <TruncateMarkup
-                // test false positives css={css`color: red;`}
-                lines={2}
-            >
+            <TruncateMarkup lines={2}>
                 <span>{props.book.title}</span>
             </TruncateMarkup>
         ) : (
@@ -49,8 +44,8 @@ export const BookButton: React.FunctionComponent<{
                         borderColor={
                             teamCollectionStatus.who ===
                             teamCollectionStatus.currentUser
-                                ? "yellow"
-                                : bloomBlue
+                                ? kBloomGold
+                                : kBloomBlue
                         }
                     />
                 )}
@@ -75,7 +70,7 @@ export const BookButton: React.FunctionComponent<{
                         </div>
                     }
                 >
-                    <div>{label}</div>
+                    {label}
                 </Button>
             </div>
         </Grid>

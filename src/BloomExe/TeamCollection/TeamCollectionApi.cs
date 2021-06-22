@@ -49,7 +49,7 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/repoFolderPath", HandleRepoFolderPath, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/isTeamCollectionEnabled", HandleIsTeamCollectionEnabled, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/bookStatus", HandleBookStatus, false);
-			apiHandler.RegisterEndpointHandler("teamCollection/currentBookStatus", HandleCurrentBookStatus, false);
+			apiHandler.RegisterEndpointHandler("teamCollection/selectedBookStatus", HandleSelectedBookStatus, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/attemptLockOfCurrentBook", HandleAttemptLockOfCurrentBook, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/checkInCurrentBook", HandleCheckInCurrentBook, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/chooseFolderLocation", HandleChooseFolderLocation, true);
@@ -74,7 +74,7 @@ namespace Bloom.TeamCollection
 		private void ShowCreateTeamCollectionDialog(object sender, EventArgs e)
 		{
 			Application.Idle -= ShowCreateTeamCollectionDialog;
-			using (var dlg = new ReactDialog("createTeamCollectionDialog", new { defaultRepoFolder = DropboxUtils.GetDropboxFolderPath() }))
+			using (var dlg = new ReactDialog("createTeamCollectionDialogBundle", new { defaultRepoFolder = DropboxUtils.GetDropboxFolderPath() }))
 			{
 				dlg.Width = 600;
 				dlg.Height = 580;
@@ -237,7 +237,7 @@ namespace Bloom.TeamCollection
 					disconnected = _tcManager.CurrentCollectionEvenIfDisconnected?.IsDisconnected
 				});
 		}
-		public void HandleCurrentBookStatus(ApiRequest request)
+		public void HandleSelectedBookStatus(ApiRequest request)
 		{
 			try
 			{
@@ -251,7 +251,7 @@ namespace Bloom.TeamCollection
 			catch (Exception e)
 			{
 				// Not sure what to do here: getting the current book status crashed.
-				Logger.WriteError("TeamCollectionApi.HandleCurrentBookStatus() crashed", e);
+				Logger.WriteError("TeamCollectionApi.HandleSelectedBookStatus() crashed", e);
 				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
 				SentrySdk.CaptureException(e);
 				request.Failed("getting the current book status failed");

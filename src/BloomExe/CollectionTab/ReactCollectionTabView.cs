@@ -9,19 +9,20 @@ using System.Drawing;
 using Bloom.MiscUI;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
+using Bloom.web;
 using SIL.Windows.Forms.SettingProtection;
 
 namespace Bloom.CollectionTab
 {
-	public partial class LibraryView : UserControl, IBloomTabArea
+	public partial class ReactCollectionTabView : UserControl, IBloomTabArea
 	{
 		private readonly LibraryModel _model;
 
 
-		private LibraryListView _collectionListView;
+
 		private LibraryBookView _bookView;
 
-		public LibraryView(LibraryModel model, LibraryListView.Factory libraryListViewFactory,
+		public ReactCollectionTabView(LibraryModel model, LibraryListView.Factory libraryListViewFactory,
 			LibraryBookView.Factory templateBookViewFactory,
 			SelectedTabChangedEvent selectedTabChangedEvent,
 			SendReceiveCommand sendReceiveCommand,
@@ -29,25 +30,15 @@ namespace Bloom.CollectionTab
 		{
 			_model = model;
 			InitializeComponent();
-			splitContainer1.BackColor = Palette.BookListSplitterColor; // controls the left vs. right splitter
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 			_toolStripLeft.Renderer = new NoBorderToolStripRenderer();
-
-			_collectionListView = libraryListViewFactory();
-			_collectionListView.Dock = DockStyle.Fill;
-			splitContainer1.Panel1.Controls.Add(_collectionListView);
-
-			_bookView = templateBookViewFactory();
-			_bookView.TeamCollectionMgr = tcManager;
-			_bookView.Dock = DockStyle.Fill;
-			splitContainer1.Panel2.Controls.Add(_bookView);
 
 			// When going down to Shrink Stage 3 (see WorkspaceView), we want the right-side toolstrip to take precedence
 			// (Settings, Other Collection).
 			// This essentially makes the TC Status button's zIndex less than the buttons on the right side.
 			_toolStripLeft.SendToBack();
 
-			splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
+			//TODO splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
 			_makeBloomPackButton.Visible = model.IsShellProject;
 			_sendReceiveButton.Visible = Settings.Default.ShowSendReceive;
 
@@ -76,6 +67,7 @@ namespace Bloom.CollectionTab
 			SetTeamCollectionStatus(tcManager);
 			TeamCollectionManager.TeamCollectionStatusChanged += (sender, args) =>
 			{
+				return; 
 				if (!IsDisposed)
 				{
 					SafeInvoke.InvokeIfPossible("update TC status", this, false,
@@ -91,15 +83,10 @@ namespace Bloom.CollectionTab
 				// Instead, in the short term we may add a button to show the file.
 				// Later we may implement some efficient way to scroll through them.
 				// tcManager.CurrentCollection?.MessageLog?.LoadSavedMessages();
-				using (var dlg = new ReactDialog("teamCollectionDialogBundle", new
+				using (var dlg = new ReactDialog("teamCollectionDialog", new { showReloadButton }))
 				{
-					showReloadButton
-				}))
-				{
-
 					dlg.ShowDialog(this);
-					tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(MessageAndMilestoneType
-						.LogDisplayed);
+					tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
 				}
 			};
 		}
@@ -151,13 +138,15 @@ namespace Bloom.CollectionTab
 			if (SIL.PlatformUtilities.Platform.IsMono)
 				Application.Idle += DeferredBloompackFileChooser;
 			else
-				_collectionListView.MakeBloomPack(false);
+			//_collectionListView.MakeBloomPack(false);
+			{
+			}
 		}
 
 		private void DeferredBloompackFileChooser(object sender, EventArgs e)
 		{
 			Application.Idle -= DeferredBloompackFileChooser;
-			_collectionListView.MakeBloomPack(false);
+			//TODO _collectionListView.MakeBloomPack(false);
 		}
 
 		public string HelpTopicUrl

@@ -57,9 +57,10 @@ namespace Bloom.Workspace
 		private string _originalHelpText;
 		private Image _originalHelpImage;
 		private string _originalUiLanguageSelection;
-		private LibraryView _collectionView;
+		private LibraryView _legacyCollectionView;
 		private EditingView _editingView;
 		private PublishView _publishView;
+		private ReactCollectionTabView _reactCollectionTabView;
 		private Control _previouslySelectedControl;
 		public event EventHandler CloseCurrentProject;
 		public event EventHandler ReopenCurrentProject;
@@ -78,6 +79,7 @@ namespace Bloom.Workspace
 
 		public WorkspaceView(WorkspaceModel model,
 							Control libraryView,
+							ReactCollectionTabView reactCollectionsTabsView,
 							EditingView.Factory editingViewFactory,
 							PublishView.Factory pdfViewFactory,
 							CollectionSettingsDialog.Factory settingsDialogFactory,
@@ -150,10 +152,16 @@ namespace Bloom.Workspace
 			//
 			// _collectionView
 			//
-			this._collectionView = (LibraryView) libraryView;
-			_collectionView.ManageSettings(_settingsLauncherHelper);
-			this._collectionView.Dock = DockStyle.Fill;
+			this._legacyCollectionView = (LibraryView) libraryView;
+			_legacyCollectionView.ManageSettings(_settingsLauncherHelper);
+			this._legacyCollectionView.Dock = DockStyle.Fill;
+			_legacyCollectionTab.Tag = _legacyCollectionView;
 
+			_reactCollectionTabView = reactCollectionsTabsView;
+			_reactCollectionTabView.ManageSettings(_settingsLauncherHelper);
+			_reactCollectionTabView.Dock = DockStyle.Fill;
+			_reactCollectionTab.Tag = _reactCollectionTabView;
+			
 			//
 			// _editingView
 			//
@@ -166,17 +174,21 @@ namespace Bloom.Workspace
 			this._publishView = pdfViewFactory();
 			this._publishView.Dock = DockStyle.Fill;
 
-			_collectionTab.Tag = _collectionView;
+
+			
+
 			_publishTab.Tag = _publishView;
 			_editTab.Tag = _editingView;
 
-			this._collectionTab.Text = _collectionView.CollectionTabLabel;
+			
+			this._legacyCollectionTab.Text = "Legacy"; // _legacyCollectionView.CollectionTabLabel;
+			this._reactCollectionTab.Text = _reactCollectionTabView.CollectionTabLabel;
 
 			SetTabVisibility(_publishTab, false);
 			SetTabVisibility(_editTab, false);
 
-			_tabStrip.SelectedTab = _collectionTab;
-			SelectPage(_collectionView);
+			_tabStrip.SelectedTab = _reactCollectionTab;
+			SelectPage(_reactCollectionTabView);
 
 			if (Platform.IsMono)
 			{
@@ -206,7 +218,7 @@ namespace Bloom.Workspace
 				return;
 			if (bookName != Path.GetFileName(_bookSelection.CurrentSelection?.FolderPath))
 				return; // change is not to the book we're interested in.
-			if (_tabStrip.SelectedTab == _collectionTab)
+			if (_tabStrip.SelectedTab == _legacyCollectionTab)
 				return; // this toast is all about returning to the collection tab
 			if (_returnToCollectionTabNotifier != null)
 				return; // notification already up
@@ -221,7 +233,7 @@ namespace Bloom.Workspace
 					_returnToCollectionTabNotifier.ToastClicked += (sender, _) =>
 					{
 						_returnToCollectionTabNotifier.CloseSafely();
-						_tabStrip.SelectedTab = _collectionTab;
+						_tabStrip.SelectedTab = _legacyCollectionTab;
 					};
 					_returnToCollectionTabNotifier.Show(msg, "", -1);
 				});
@@ -787,7 +799,8 @@ namespace Bloom.Workspace
 
 		private void _tabStrip_SelectedTabChanged(object sender, SelectedTabChangedEventArgs e)
 		{
-			if (_returnToCollectionTabNotifier != null && _tabStrip.SelectedTab == _collectionTab)
+			// TODO: React version
+			if (_returnToCollectionTabNotifier != null && _tabStrip.SelectedTab == _legacyCollectionTab)
 			{
 				_returnToCollectionTabNotifier.CloseSafely();
 				_returnToCollectionTabNotifier = null;
@@ -900,7 +913,7 @@ namespace Bloom.Workspace
 				// hide the progress dialog. This is as much as we can postpone.
 				StartupScreenManager.AddStartupAction( () =>
 					{
-						using (var dlg = new ReactDialog("AutoUpdateSoftwareDialog", "autoUpdateSoftwareDlgBundle"))
+						using (var dlg = new ReactDialog("autoUpdateSoftwareDlgBundle"))
 						{
 							dlg.Height = 350;
 							dlg.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -1042,7 +1055,7 @@ namespace Bloom.Workspace
 
 		public void SetStateOfNonPublishTabs(bool enable)
 		{
-			_collectionTab.Enabled = enable;
+			_legacyCollectionTab.Enabled = enable;
 			_editTab.Enabled = enable;
 		}
 
@@ -1064,6 +1077,7 @@ namespace Bloom.Workspace
 		enum Shrinkage { FullSize, Stage1, Stage2, Stage3 }
 		private Shrinkage _currentShrinkage = Shrinkage.FullSize;
 		private ToolStripControlHost _zoomWrapper;
+		
 
 		private const int MinToolStripMargin = 3;
 

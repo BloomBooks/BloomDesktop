@@ -13,7 +13,7 @@ import { CollectionsTabBookPane } from "./collectionsTabBookPane/CollectionsTabB
 const kResizerSize = 10;
 
 export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
-    const [collections] = BloomApi.useApiJson("collections/list");
+    const collections = BloomApi.useApiJson("collections/list");
 
     if (collections) {
         const sourcesCollections = collections.slice(1);
@@ -118,7 +118,6 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                     <div
                         css={css`
                             height: 100%;
-                            background-color: yellow;
                         `}
                     >
                         <CollectionsTabBookPane />

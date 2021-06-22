@@ -8,8 +8,7 @@ namespace Bloom.MiscUI
 {
 	/// <summary>
 	/// A dialog whose entire content is a react control. The constructor specifies
-	/// the component. Note that currently the component must be added to
-	/// WireUpReact.ts to make things work.
+	/// the js bundle.
 	/// All the interesting content and behavior is in the tsx file of the component.
 	/// The connection is through the child ReactControl, which entirely fills the dialog.
 	/// </summary>

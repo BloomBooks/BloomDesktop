@@ -120,7 +120,7 @@ namespace Bloom.CollectionTab
 			// 
 			this._reactBookPreviewControl.BackColor = System.Drawing.Color.DarkGray;
 			this._reactBookPreviewControl.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._reactBookPreviewControl.JavascriptBundleName = "bookPreviewBundle";
+			this._reactBookPreviewControl.JavascriptBundleName = "collectionsTabBookPaneBundle";
 			this._L10NSharpExtender.SetLocalizableToolTip(this._reactBookPreviewControl, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._reactBookPreviewControl, null);
 			this._L10NSharpExtender.SetLocalizingId(this._reactBookPreviewControl, "ReactControl");

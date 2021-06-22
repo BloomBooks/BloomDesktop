@@ -7,7 +7,6 @@ var pathToOriginalJavascriptFilesInModified_Libraries = path.resolve(
     "modified_libraries"
 );
 var globule = require("globule");
-const RenameWebpackPlugin = require("rename-webpack-plugin");
 
 //note: if you change this, change it in gulpfile.js & karma.conf.js as well
 var outputDir = "../../output/browser";
@@ -67,15 +66,25 @@ module.exports = merge(core, {
             "./react_components/DefaultBookshelfControl.tsx",
         progressDialogBundle: "./react_components/Progress/ProgressDialog.tsx",
         problemReportBundle: "./problemDialog/ProblemDialog.tsx",
-        createTeamCollectionDialog: "./teamCollection/CreateTeamCollection.tsx",
-        teamCollectionDialog: "./teamCollection/TeamCollectionDialog.tsx",
+        createTeamCollectionDialogBundle:
+            "./teamCollection/CreateTeamCollection.tsx",
+        teamCollectionDialogBundle: "./teamCollection/TeamCollectionDialog.tsx",
         teamCollectionSettingsBundle:
             "./teamCollection/TeamCollectionSettingsPanel.tsx",
         joinTeamCollectionDialogBundle:
             "./teamCollection/JoinTeamCollectionDialog.tsx",
         autoUpdateSoftwareDlgBundle:
             "./react_components/AutoUpdateSoftwareDialog.tsx",
-        CollectionsTabPaneBundle: "./collectionsTab/CollectionsTabPane.tsx"
+
+        collectionsTabPaneBundle: "./collectionsTab/CollectionsTabPane.tsx",
+
+        // this is here for the "legacy" collections tab, though it's actually new for 5.1
+        // we decided that the "legacy" bit we are trying to preserve a bit longer is the left side, the list of books.
+        collectionsTabBookPaneBundle:
+            "./collectionsTab/collectionsTabBookPane/CollectionsTabBookPane.tsx",
+
+        legacyBookPreviewBundle:
+            "./collectionsTab/collectionsTabBookPane/bookPreview.ts"
 
         //             testBundle: globule.find(["./**/*Spec.ts", "./**/*Spec.js", "!./node_modules/**"])//This slowed down webpack a ton, becuase the way it works is that it 1st it finds it all, then it excludes node_modules
     },
@@ -89,12 +98,6 @@ module.exports = merge(core, {
         // Makes a single entry point module's exports accessible via Exports.
         library: "[name]"
     },
-    // plugins: [
-    //     new RenameWebpackPlugin({
-    //         originNameReg: /editTabBundle.js/,
-    //         targetName: "editTabBundle.js"
-    //     })
-    // ],
     resolve: {
         // For some reason, webpack began to complain about being given minified source.
         // alias: {

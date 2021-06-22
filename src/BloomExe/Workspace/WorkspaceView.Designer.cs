@@ -35,7 +35,7 @@
 			this._toolSpecificPanel = new System.Windows.Forms.Panel();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._tabStrip = new Messir.Windows.Forms.TabStrip();
-			this._collectionTab = new Messir.Windows.Forms.TabStripButton();
+			this._legacyCollectionTab = new Messir.Windows.Forms.TabStripButton();
 			this._editTab = new Messir.Windows.Forms.TabStripButton();
 			this._publishTab = new Messir.Windows.Forms.TabStripButton();
 			this._toolStrip = new System.Windows.Forms.ToolStrip();
@@ -58,6 +58,7 @@
 			this._aboutBloomMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._panelHoldingToolStrip = new Bloom.Workspace.NestedDockedChildPanel();
 			this._applicationUpdateCheckTimer = new System.Windows.Forms.Timer(this.components);
+			this._reactCollectionTab = new Messir.Windows.Forms.TabStripButton();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this._tabStrip.SuspendLayout();
 			this._toolStrip.SuspendLayout();
@@ -79,9 +80,9 @@
 			this._toolSpecificPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._toolSpecificPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
-			this._toolSpecificPanel.Location = new System.Drawing.Point(291, 2);
+			this._toolSpecificPanel.Location = new System.Drawing.Point(357, 2);
 			this._toolSpecificPanel.Name = "_toolSpecificPanel";
-			this._toolSpecificPanel.Size = new System.Drawing.Size(718, 66);
+			this._toolSpecificPanel.Size = new System.Drawing.Size(652, 66);
 			this._toolSpecificPanel.TabIndex = 17;
 			// 
 			// _L10NSharpExtender
@@ -96,7 +97,8 @@
 			this._tabStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
 			this._tabStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
 			this._tabStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._collectionTab,
+            this._reactCollectionTab,
+            this._legacyCollectionTab,
             this._editTab,
             this._publishTab});
 			this._L10NSharpExtender.SetLocalizableToolTip(this._tabStrip, null);
@@ -106,7 +108,7 @@
 			this._tabStrip.Location = new System.Drawing.Point(0, 0);
 			this._tabStrip.Name = "_tabStrip";
 			this._tabStrip.RenderStyle = System.Windows.Forms.ToolStripRenderMode.ManagerRenderMode;
-			this._tabStrip.SelectedTab = this._publishTab;
+			this._tabStrip.SelectedTab = this._reactCollectionTab;
 			this._tabStrip.Size = new System.Drawing.Size(1098, 71);
 			this._tabStrip.TabIndex = 15;
 			this._tabStrip.Text = "tabStrip1";
@@ -114,27 +116,27 @@
 			this._tabStrip.SelectedTabChanged += new System.EventHandler<Messir.Windows.Forms.SelectedTabChangedEventArgs>(this._tabStrip_SelectedTabChanged);
 			this._tabStrip.BackColorChanged += new System.EventHandler(this._tabStrip_BackColorChanged);
 			// 
-			// _collectionTab
+			// _legacyCollectionTab
 			// 
-			this._collectionTab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
-			this._collectionTab.BarColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
-			this._collectionTab.ForeColor = System.Drawing.Color.Black;
-			this._collectionTab.HotTextColor = System.Drawing.Color.Black;
-			this._collectionTab.Image = global::Bloom.Properties.Resources.library32x32;
-			this._collectionTab.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._collectionTab.IsSelected = false;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._collectionTab, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._collectionTab, null);
-			this._L10NSharpExtender.SetLocalizingId(this._collectionTab, "CollectionTab.Collections");
-			this._collectionTab.Margin = new System.Windows.Forms.Padding(0);
-			this._collectionTab.Name = "_collectionTab";
-			this._collectionTab.Padding = new System.Windows.Forms.Padding(0);
-			this._collectionTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-			this._collectionTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
-			this._collectionTab.Size = new System.Drawing.Size(103, 71);
-			this._collectionTab.Text = "Collections";
-			this._collectionTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._collectionTab.TextChanged += new System.EventHandler(this.HandleTabTextChanged);
+			this._legacyCollectionTab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
+			this._legacyCollectionTab.BarColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
+			this._legacyCollectionTab.ForeColor = System.Drawing.Color.Black;
+			this._legacyCollectionTab.HotTextColor = System.Drawing.Color.Black;
+			this._legacyCollectionTab.Image = global::Bloom.Properties.Resources.library32x32;
+			this._legacyCollectionTab.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this._legacyCollectionTab.IsSelected = false;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._legacyCollectionTab, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._legacyCollectionTab, null);
+			this._L10NSharpExtender.SetLocalizingId(this._legacyCollectionTab, "CollectionTab.Collections");
+			this._legacyCollectionTab.Margin = new System.Windows.Forms.Padding(0);
+			this._legacyCollectionTab.Name = "_legacyCollectionTab";
+			this._legacyCollectionTab.Padding = new System.Windows.Forms.Padding(0);
+			this._legacyCollectionTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+			this._legacyCollectionTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
+			this._legacyCollectionTab.Size = new System.Drawing.Size(81, 71);
+			this._legacyCollectionTab.Text = "Legacy";
+			this._legacyCollectionTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._legacyCollectionTab.TextChanged += new System.EventHandler(this.HandleTabTextChanged);
 			// 
 			// _editTab
 			// 
@@ -162,13 +164,12 @@
 			// 
 			this._publishTab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
 			this._publishTab.BarColor = System.Drawing.Color.FromArgb(((int)(((byte)(214)))), ((int)(((byte)(86)))), ((int)(((byte)(73)))));
-			this._publishTab.Checked = true;
 			this._publishTab.ForeColor = System.Drawing.Color.Black;
 			this._publishTab.HotTextColor = System.Drawing.Color.Black;
 			this._publishTab.Image = global::Bloom.Properties.Resources.publish32x32;
 			this._publishTab.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
 			this._publishTab.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._publishTab.IsSelected = true;
+			this._publishTab.IsSelected = false;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._publishTab, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._publishTab, null);
 			this._L10NSharpExtender.SetLocalizingId(this._publishTab, "PublishTab.Publish");
@@ -409,6 +410,28 @@
 			this._applicationUpdateCheckTimer.Interval = 60000;
 			this._applicationUpdateCheckTimer.Tick += new System.EventHandler(this._applicationUpdateCheckTimer_Tick);
 			// 
+			// _reactCollectionTab
+			// 
+			this._reactCollectionTab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
+			this._reactCollectionTab.BarColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
+			this._reactCollectionTab.Checked = true;
+			this._reactCollectionTab.ForeColor = System.Drawing.Color.Black;
+			this._reactCollectionTab.HotTextColor = System.Drawing.Color.Black;
+			this._reactCollectionTab.Image = global::Bloom.Properties.Resources.library32x32;
+			this._reactCollectionTab.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this._reactCollectionTab.IsSelected = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._reactCollectionTab, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._reactCollectionTab, null);
+			this._L10NSharpExtender.SetLocalizingId(this._reactCollectionTab, "CollectionTab.Collections");
+			this._reactCollectionTab.Margin = new System.Windows.Forms.Padding(0);
+			this._reactCollectionTab.Name = "_reactCollectionTab";
+			this._reactCollectionTab.Padding = new System.Windows.Forms.Padding(0);
+			this._reactCollectionTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+			this._reactCollectionTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
+			this._reactCollectionTab.Size = new System.Drawing.Size(103, 71);
+			this._reactCollectionTab.Text = "Collections";
+			this._reactCollectionTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			// 
 			// WorkspaceView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -442,7 +465,7 @@
 		private SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper _settingsLauncherHelper;
 		private System.Windows.Forms.Panel _containerPanel;
 		private System.Windows.Forms.Panel _toolSpecificPanel;
-		private Messir.Windows.Forms.TabStripButton _collectionTab;
+		private Messir.Windows.Forms.TabStripButton _legacyCollectionTab;
 		private Messir.Windows.Forms.TabStripButton _editTab;
 		private Messir.Windows.Forms.TabStripButton _publishTab;
 		private Messir.Windows.Forms.TabStrip _tabStrip;
@@ -467,5 +490,6 @@
 		private System.Windows.Forms.ToolStripMenuItem _aboutBloomMenuItem;
 		private NestedDockedChildPanel _panelHoldingToolStrip;
 		private System.Windows.Forms.ToolStripMenuItem _askAQuestionMenuItem;
+		private Messir.Windows.Forms.TabStripButton _reactCollectionTab;
 	}
 }

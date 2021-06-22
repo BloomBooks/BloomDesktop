@@ -39,6 +39,7 @@ Factory-XMatter.css
 **/Templates/**/previewMode.css
 **/Templates/**/basePage.css
 **/Templates/**/origami.css
+**/collectionTab/*.css
 Acorns*
 _NCrunch*
 *.vsp

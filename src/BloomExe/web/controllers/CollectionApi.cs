@@ -110,34 +110,23 @@ namespace Bloom.web.controllers
 
 		public void HandleThumbnailRequest(ApiRequest request)
 		{
-			//try
-			//{
-				var bookInfo = GetBookInfoFromRequestParam(request);
+			var bookInfo = GetBookInfoFromRequestParam(request);
 
-				// TODO: This is just a hack to get something showing. It can't make new thumbnails
-				string path = Path.Combine(bookInfo.FolderPath, "thumbnail.png");
-				if (RobustFile.Exists(path))
-					request.ReplyWithImage(path);
-				else request.Failed("Thumbnail doesn't exist, and making a new thumbnail is not yet implemented.");
-			//}
-			//catch(Exception e)
-			//{
-			//	request.Failed(e.Message);
-			//}
+			// TODO: This is just a hack to get something showing. It can't make new thumbnails
+			string path = Path.Combine(bookInfo.FolderPath, "thumbnail.png");
+			if (RobustFile.Exists(path))
+				request.ReplyWithImage(path);
+			else request.Failed("Thumbnail doesn't exist, and making a new thumbnail is not yet implemented.");
 		}
 
 		private BookInfo GetBookInfoFromRequestParam(ApiRequest request)
 		{
 			var bookId = request.RequiredParam("book-id");
-			// TODO don't assume what collection it is
-			//var collectionId = request.RequiredParam("collection-id");
 			return GetCollectionOfRequest(request).GetBookInfos().FirstOrDefault(info => info.Id == bookId);
 		}
 		private BookInfo GetBookInfoFromPost(ApiRequest request)
 		{
 			var bookId = request.RequiredPostString();
-			// TODO don't assume what collection it is
-			//var collectionId = request.RequiredParam("collection-id");
 			return GetCollectionOfRequest(request).GetBookInfos().FirstOrDefault(info => info.Id == bookId);
 		}
 

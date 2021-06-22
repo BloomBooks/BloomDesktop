@@ -41,7 +41,7 @@ export const TeamCollectionDialog: React.FunctionComponent<{
         "TeamCollection.TeamCollection"
     );
 
-    const [events] = BloomApi.useApiObject<IBloomWebSocketProgressEvent[]>(
+    const events = BloomApi.useApiData<IBloomWebSocketProgressEvent[]>(
         "teamCollection/getLog",
         []
     );

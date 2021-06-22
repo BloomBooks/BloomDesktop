@@ -64,7 +64,7 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
         true
     );
 
-    const [collectionName] = BloomApi.useApiString(
+    const [collectionName] = BloomApi.useApiStringState(
         "teamCollection/getCollectionName",
         ""
     );

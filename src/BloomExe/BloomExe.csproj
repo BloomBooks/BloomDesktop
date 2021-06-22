@@ -325,6 +325,12 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Book\LicenseChecker.cs" />
+    <Compile Include="CollectionTab\ReactCollectionTabView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CollectionTab\ReactCollectionTabView.Designer.cs">
+      <DependentUpon>ReactCollectionTabView.cs</DependentUpon>
+    </Compile>
     <Compile Include="ErrorReporter\CompositeErrorReporter.cs" />
     <Compile Include="ErrorReporter\ErrorReportUtils.cs" />
     <Compile Include="ErrorReporter\ProblemLevel.cs" />
@@ -899,6 +905,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionTab\MakeReaderTemplateBloomPackDlg.resx">
       <DependentUpon>MakeReaderTemplateBloomPackDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CollectionTab\ReactCollectionTabView.resx">
+      <DependentUpon>ReactCollectionTabView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Collection\ScriptSettingsDialog.resx">
       <DependentUpon>ScriptSettingsDialog.cs</DependentUpon>

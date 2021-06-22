@@ -1497,12 +1497,11 @@ namespace Bloom.Api
 				<head>
 					<meta charset = 'UTF-8' />
 					<script src = '/commonBundle.js' ></script>
-					<script src = '/wireUpBundle.js' ></script>
 					<script src = '/appBundle.js'></script>
 					<script>
 						window.onload = () => {{
 							const rootDiv = document.getElementById('reactRoot');
-							wireUpBundle.wireUpReact(rootDiv,'App');
+							window.wireUpRootComponentFromWinforms(rootDiv);
 						}};
 					</script>
 				</head>

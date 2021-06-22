@@ -11,10 +11,9 @@ import "./TeamCollectionBookStatusPanel.less";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import BloomButton from "../react_components/bloomButton";
 import { BloomAvatar } from "../react_components/bloomAvatar";
-import {
-    useCurrentBookInfo,
-    useSubscribeToWebSocketForEvent
-} from "../utils/WebSocketManager";
+import { useSelectedBookInfo } from "../app/selectedBook";
+import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
+
 import { Block } from "@material-ui/icons";
 
 // The panel that shows the book preview and settings in the collection tab in a Team Collection.
@@ -44,7 +43,7 @@ export interface IBookTeamCollectionStatus {
     hasAProblem: boolean;
 }
 export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
-    const { id: currentBookId, editable } = useCurrentBookInfo();
+    const { id: selectedBookId, editable } = useSelectedBookInfo();
 
     const [lockState, setLockState] = useState<TeamCollectionBookLockState>(
         "initializing"
@@ -60,11 +59,9 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     React.useEffect(() => {
         let lockedByMe = false;
         BloomApi.get(
-            "teamCollection/currentBookStatus",
+            "teamCollection/selectedBookStatus",
             data => {
                 const bookStatus: IBookTeamCollectionStatus = data.data;
-                //if (bookStatus.status) { // review this is what we had, but on the c# side, I didn't see anything setting a "status",
-                // so this would always be false. There was, however, a "problem",  which I have renamed to "hasAProblem" and I'm using that.
                 if (bookStatus.hasAProblem) {
                     setLockState("problem");
                 } else if (bookStatus.changedRemotely) {
@@ -113,7 +110,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                 );
             }
         );
-    }, [currentBookId]);
+    }, [selectedBookId]);
 
     useSubscribeToWebSocketForEvent(
         "checkinProgress",

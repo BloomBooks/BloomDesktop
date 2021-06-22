@@ -20,7 +20,7 @@ import { WireUpForWinforms } from "../utils/WireUpWinform";
 // The contents of the Team Collection panel of the Settings dialog.
 
 export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
-    const [repoFolderPath] = BloomApi.useApiString(
+    const [repoFolderPath] = BloomApi.useApiStringState(
         "teamCollection/repoFolderPath",
         ""
     );

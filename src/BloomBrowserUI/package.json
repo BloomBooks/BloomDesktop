@@ -185,7 +185,6 @@
         "path": "^0.12.7",
         "prettier": "^1.19.0",
         "pretty-quick": "^1.10.0",
-        "rename-webpack-plugin": "^2.0.0",
         "replace-ext": "^2.0.0",
         "run-sequence": "^2.2.1",
         "semver": "^7.3.4",

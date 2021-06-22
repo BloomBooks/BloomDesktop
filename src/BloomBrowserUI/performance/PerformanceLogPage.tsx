@@ -23,12 +23,12 @@ export const PerformanceLogPage: React.FunctionComponent<{
         props.initialPoints || []
     );
 
-    const [applicationInfo] = BloomApi.useApiString(
+    const [applicationInfo] = BloomApi.useApiStringState(
         "performance/applicationInfo",
         ""
     );
 
-    const [earlierMeasurements] = BloomApi.useApiObject<IMeasurement[]>(
+    const earlierMeasurements = BloomApi.useApiData<IMeasurement[]>(
         "performance/allMeasurements",
         []
     );

@@ -4,15 +4,17 @@ import * as React from "react";
 import { useState } from "react";
 import { BloomApi } from "../../utils/bloomApi";
 import { TeamCollectionBookStatusPanel } from "../../teamCollection/TeamCollectionBookStatusPanel";
-import { useCurrentBookInfo } from "../../utils/WebSocketManager";
+import { useSelectedBookInfo } from "../../app/selectedBook";
 import BloomButton from "../../react_components/bloomButton";
 import { kDarkestBackground } from "../../bloomMaterialUITheme";
+import { CollectionsTabPane } from "../CollectionsTabPane";
+import { WireUpForWinforms } from "../../utils/WireUpWinform";
 
 export const CollectionsTabBookPane: React.FunctionComponent<{}> = props => {
     const [isTeamCollection, setIsTeamCollection] = useState(false);
 
     // this is just to make react refresh (and the browser not cache) since we're always asking for the same "book-preview/index.htm"
-    const { id: currentBookId, editable } = useCurrentBookInfo();
+    const { id: selectedBookId, editable } = useSelectedBookInfo();
 
     React.useEffect(
         () => {
@@ -45,7 +47,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{}> = props => {
                     enabled={editable}
                     variant={"outlined"}
                     l10nKey="CollectionTab.EditBookButton"
-                    clickApiEndpoint="app/editCurrentBook"
+                    clickApiEndpoint="app/editSelectedBook"
                     mightNavigate={true}
                     enabledImageFile="EditTab.svg"
                     hasText={true}
@@ -76,7 +78,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{}> = props => {
                 `}
             >
                 <iframe
-                    src={`/book-preview/index.htm?dummy=${currentBookId}`}
+                    src={`/book-preview/index.htm?dummy=${selectedBookId}`}
                     height="100%"
                     width="100%"
                     css={css`
@@ -92,3 +94,6 @@ export const CollectionsTabBookPane: React.FunctionComponent<{}> = props => {
         </div>
     );
 };
+
+// this is here for the "legacy" collections tab
+WireUpForWinforms(CollectionsTabPane);

@@ -33,7 +33,7 @@ export const BloomDialog: React.FunctionComponent<{
                 padding-right: ${kDialogSidePadding};
                 padding-bottom: ${kDialogBottomPadding};
 
-                // dialogFrameProvidedExternally means that we're inside of a winforms dialog (I don't like this name anymore!).
+                // dialogFrameProvidedExternally means that we're inside of a winforms dialog.
                 /// So we grow to fit it, and we supply a single black border for some reason (?)
                 ${props.dialogFrameProvidedExternally
                     ? `height: 100%; border: solid thin black; box-sizing: border-box;`
