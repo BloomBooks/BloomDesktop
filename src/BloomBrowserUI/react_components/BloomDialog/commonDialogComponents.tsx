@@ -114,10 +114,8 @@ export const DialogCancelButton: React.FunctionComponent<{
         l10nKey="Common.Cancel"
         hasText={true}
         enabled={true}
-        // cancel button defaults to being the not-default default
-        variant={
-            !props.default || props.default === true ? "outlined" : "contained"
-        }
+        // by default, Cancel is NOT the default button
+        variant={props.default === true ? "contained" : "outlined"}
         onClick={props.onClick}
     >
         Cancel
