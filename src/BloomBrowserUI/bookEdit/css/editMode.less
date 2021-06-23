@@ -410,6 +410,7 @@ div.pageLabel[contenteditable="true"]:focus {
         color: @EditBoxItemsColor;
         position: absolute;
         right: 0;
+        bottom: 0; // For the p::after case, this helps prevent the edit-time <br> elements from pushing the "¶ down onto the next (wrong) line
         z-index: -1; // go under any text that reach the end of the line (I don't know why, but 0 doesn't work)
     }
     p::after {
@@ -417,7 +418,6 @@ div.pageLabel[contenteditable="true"]:focus {
     }
     .bloom-linebreak:after {
         content: "↲";
-        bottom: 0;
     }
     &[dir="rtl"] {
         p:after,
@@ -425,12 +425,6 @@ div.pageLabel[contenteditable="true"]:focus {
             right: auto;
             left: 0;
         }
-    }
-
-    // these are weird edit-time only <br>s that gecko inserts. They push the "¶ down and, at least in latin script, don't see to do anything,
-    // so let's hide them.
-    p br {
-        display: none;
     }
 }
 
