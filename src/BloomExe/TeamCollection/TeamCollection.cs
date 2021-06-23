@@ -569,6 +569,20 @@ namespace Bloom.TeamCollection
 				// thing is that, as of each reload, the local settings match the repo ones.
 				// In the future, we will have various limits to make conflicts even less likely.
 				// For now, the important thing is that whatever wins in the repo wins everywhere.
+				// One exception: customCollectionStyles.css changes while Bloom is not running
+				// should be kept.
+				var customCollectionStylesPath = Path.Combine(_localCollectionFolder, "customCollectionStyles.css");
+				var stylesModTime = new FileInfo(customCollectionStylesPath).LastWriteTime;
+				if (stylesModTime > savedSyncTime)
+				{
+					// OK, it got modified while we weren't looking. If this user is an admin,
+					// and no settings changed remotely, we'll let the local ones win.
+					if (_tcManager.OkToEditCollectionSettings && savedSyncTime >= repoModTime)
+					{
+						CopyRepoCollectionFilesFromLocal(_localCollectionFolder);
+						return;
+					}
+				}
 				CopyRepoCollectionFilesToLocal(_localCollectionFolder);
 			}
 			else
@@ -1308,7 +1322,7 @@ namespace Bloom.TeamCollection
 						// the local version.
 
 						if (statusLocal.lockedBy != TeamCollectionManager.CurrentUser
-						    || statusLocal.lockedWhere != TeamCollectionManager.CurrentMachine)
+							|| statusLocal.lockedWhere != TeamCollectionManager.CurrentMachine)
 						{
 							ReportProgressAndLog(progress, ProgressKind.Warning, "DeleteLocal",
 								"Deleting '{0}' from local folder as it is no longer in the Team Collection",
@@ -1337,11 +1351,9 @@ namespace Bloom.TeamCollection
 				{
 					// Something went wrong with dealing with this book, but we'd like to carry on with
 					// syncing the rest of the collection
-					ReportProgressAndLog(progress, ProgressKind.Error, "SomethingWentWrong",englishSomethingWrongMessage,
-						path, null);
-					SentrySdk.AddBreadcrumb(string.Format(englishSomethingWrongMessage, path));
-					SentrySdk.CaptureException(ex);
-					hasProblems= true;
+					ReportProgressAndLog(progress, ProgressKind.Error, "SomethingWentWrong", englishSomethingWrongMessage, path, null);
+					NonFatalProblem.ReportSentryOnly(ex, string.Format(englishSomethingWrongMessage, path));
+					hasProblems = true;
 				}
 			}
 
@@ -1529,10 +1541,8 @@ namespace Bloom.TeamCollection
 				{
 					// Something went wrong with dealing with this book, but we'd like to carry on with
 					// syncing the rest of the collection
-					ReportProgressAndLog(progress, ProgressKind.Error, "SomethingWentWrong", englishSomethingWrongMessage,
-						bookName);
-					SentrySdk.AddBreadcrumb(string.Format(englishSomethingWrongMessage, bookName));
-					SentrySdk.CaptureException(ex);
+					ReportProgressAndLog(progress, ProgressKind.Error, "SomethingWentWrong", englishSomethingWrongMessage, bookName);
+					NonFatalProblem.ReportSentryOnly(ex, string.Format(englishSomethingWrongMessage, bookName));
 					hasProblems = true;
 				}
 			}

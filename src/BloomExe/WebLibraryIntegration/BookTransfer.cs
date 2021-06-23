@@ -46,9 +46,6 @@ namespace Bloom.WebLibraryIntegration
 		// The full path of the log text file used to restart failed bulk uploads.
 		private string _bulkUploadLogPath;
 
-		// Restrict folder parsing to only top-level bookshelf name, with no subshelf.
-		private bool _singleBookshelfLevel;
-
 		public event EventHandler<BookDownloadedEventArgs> BookDownLoaded;
 
 		public BookTransfer(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, BookThumbNailer htmlThumbnailer, BookDownloadStartingEvent bookDownloadStartingEvent)
@@ -61,7 +58,11 @@ namespace Bloom.WebLibraryIntegration
 
 		public string LastBookDownloadedPath { get; set; }
 
-		public static bool UseSandbox
+		/// <summary>
+		/// Implicitly use the sandbox as the destination target.  Can be explicitly overridden
+		/// on the command line in upload commands.  See <see cref="Destination"/>.
+		/// </summary>
+		internal static bool UseSandboxByDefault
 		{
 			get
 			{
@@ -91,7 +92,6 @@ namespace Bloom.WebLibraryIntegration
 				{
 					return BloomS3Client.UnitTestBucketName;
 				}
-
 				return BookTransfer.UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName;
 			}
 		}
@@ -409,7 +409,9 @@ namespace Bloom.WebLibraryIntegration
 				// S3 URL can be reasonably deduced, as long as we have the S3 ID, so print that out in Debug mode.
 				// Format: $"https://s3.amazonaws.com/BloomLibraryBooks{isSandbox}/{s3BookId}/{title}"
 				// Example: https://s3.amazonaws.com/BloomLibraryBooks-Sandbox/jeffrey_su@sil.org/8d0d9043-a1bb-422d-aa5b-29726cdcd96a/AutoSplit+Timings
-				progress.WriteMessage("s3BookId: " + s3BookId);
+				var msgBookId = "s3BookId: " + s3BookId;
+				progress.WriteMessage(msgBookId);
+				Console.WriteLine(msgBookId);
 #endif
 				metadata.DownloadSource = s3BookId;
 				// If the collection has a default bookshelf, make sure the book has that tag.
@@ -441,27 +443,32 @@ namespace Bloom.WebLibraryIntegration
 					_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, audioFilesToInclude, videoFilesToInclude, languages);
 					metadata.BaseUrl = _s3Client.BaseUrl;
 					metadata.BookOrder = _s3Client.BookOrderUrlOfRecentUpload;
-					progress.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database."));
+					var metaMsg = LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database.");
+					progress.WriteStatus(metaMsg);
+					Console.WriteLine(metaMsg);
 					// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
-					var response = _parseClient.SetBookRecord(metadata.WebDataJson);
-					parseId = response.ResponseUri.LocalPath;
-					int index = parseId.LastIndexOf('/');
-					parseId = parseId.Substring(index + 1);
-					if (parseId == "books")
+					if (!IsDryRun)
 					{
-						// For NEW books the response URL is useless...need to do a new query to get the ID.
-						var json = _parseClient.GetSingleBookRecord(metadata.Id);
-						parseId = json.objectId.Value;
-					}
-					//   if (!UseSandbox) // don't make it seem like there are more uploads than their really are if this a tester pushing to the sandbox
-					{
-						Analytics.Track("UploadBook-Success", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title } });
+						var response = _parseClient.SetBookRecord(metadata.WebDataJson);
+						parseId = response.ResponseUri.LocalPath;
+						int index = parseId.LastIndexOf('/');
+						parseId = parseId.Substring(index + 1);
+						if (parseId == "books")
+						{
+							// For NEW books the response URL is useless...need to do a new query to get the ID.
+							var json = _parseClient.GetSingleBookRecord(metadata.Id);
+							parseId = json.objectId.Value;
+						}
+						//   if (!UseSandbox) // don't make it seem like there are more uploads than their really are if this a tester pushing to the sandbox
+						{
+							Analytics.Track("UploadBook-Success", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title } });
+						}
 					}
 				}
 				catch (WebException e)
 				{
 					DisplayNetworkUploadProblem(e, progress);
-					if (!UseSandbox) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
+					if (IsProductionRun) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
 						Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
 					return "";
 				}
@@ -471,14 +478,14 @@ namespace Bloom.WebLibraryIntegration
 					{
 						progress.WriteError(LocalizationManager.GetString("PublishTab.Upload.TimeProblem",
 							"There was a problem uploading your book. This is probably because your computer is set to use the wrong timezone or your system time is badly wrong. See http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html for how to fix this."));
-						if (!UseSandbox)
+						if (IsProductionRun)
 							Analytics.Track("UploadBook-Failure-SystemTime");
 					}
 					else
 					{
 						DisplayNetworkUploadProblem(e, progress);
-						if (!UseSandbox)
-							// don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
+						if (IsProductionRun)
+							// don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
 							Analytics.Track("UploadBook-Failure",
 								new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
 					}
@@ -487,7 +494,7 @@ namespace Bloom.WebLibraryIntegration
 				catch (AmazonServiceException e)
 				{
 					DisplayNetworkUploadProblem(e, progress);
-					if (!UseSandbox) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
+					if (IsProductionRun) // don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
 						Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
 					return "";
 				}
@@ -499,8 +506,11 @@ namespace Bloom.WebLibraryIntegration
 					progress.WriteError(msg1);
 					progress.WriteError(msg2);
 					progress.WriteVerbose(e.StackTrace);
-					if (!UseSandbox) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
-						Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() {{"url", metadata.BookOrder}, {"title", metadata.Title}, {"error", e.Message}});
+					Console.WriteLine(msg1);
+					Console.WriteLine(msg2);
+					Console.WriteLine(e.StackTrace);
+					if (IsProductionRun) // don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
+						Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
 					AppendErrorMessageToUploadLogFile(msg1, msg2);
 					return "";
 				}
@@ -518,6 +528,61 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		internal string BookOrderUrl {get { return _s3Client.BookOrderUrlOfRecentUpload; }}
+
+		static string _destination;
+		/// <summary>
+		/// The upload destination possibly set from the command line.  This must be set even before calling
+		/// the constructor of this class because it is used in UploadBucketNameForCurrentEnvironment
+		/// which is called by the BloomParseClient constructor.  And the constructor for this class has a
+		/// BloomParseClient argument.
+		/// </summary>
+		/// <remarks>
+		/// If not set explicitly before accessing, the destination is set according to <see cref="UseSandboxByDefault"/>.
+		/// It can only be set once while the program is running.  Trying to change it will cause an
+		/// exception to be thrown.
+		/// </remarks>
+		internal static string Destination
+		{
+			private get
+			{
+				if (_destination == null)
+					Destination = UseSandboxByDefault ? UploadDestination.Development : UploadDestination.Production;
+				return _destination;
+			}
+			set
+			{
+				if (_destination == null && value != null)
+					_destination = value;
+				else if (_destination != value)
+					throw new Exception("Cannot change upload destination after setting it!");
+			}
+		}
+
+		/// <summary>
+		/// Is this dry run (regardless of whether we're supposedly targetting the sandbox or production)?
+		/// </summary>
+		public static bool IsDryRun => Destination == UploadDestination.DryRun;
+
+		/// <summary>
+		/// Are we actually uploading to production (not a dry run)?
+		/// </summary>
+		public static bool IsProductionRun => Destination == UploadDestination.Production;
+
+		/// <summary>
+		/// Are we supposed to upload to the sandbox, either explicitly or by default?  (could be a dry run)
+		/// </summary>
+		public static bool UseSandbox
+		{
+			get
+			{
+				switch (Destination)
+				{
+					case UploadDestination.Development: return true;
+					case UploadDestination.Production: return false;
+					default: return UseSandboxByDefault;	// dry run
+				}
+			}
+		}
 
 		private static string MetaDataText(string bookFolder)
 		{
@@ -626,25 +691,28 @@ namespace Bloom.WebLibraryIntegration
 		/// (over-writing the existing book) without informing the user.
 		/// </summary>
 		/// <remarks>This method is triggered by starting Bloom with "upload" on the cmd line.</remarks>
-		public void UploadFolder(string folder, ApplicationContainer container, bool excludeNarrationAudio = false, string user = null, string password = null,
-			bool singleBookshelfLevel = false, bool preserveThumbnails = false)
+		public void UploadFolder(ApplicationContainer container, UploadParameters options)
 		{
 			if (!IsThisVersionAllowedToUpload())
 			{
 				var oldVersionMsg = LocalizationManager.GetString("PublishTab.Upload.OldVersion",
 					"Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.");
 				Console.WriteLine(oldVersionMsg);
+				return;
 			}
-			if (!String.IsNullOrWhiteSpace(user) && !String.IsNullOrWhiteSpace(password))
+			if (!String.IsNullOrWhiteSpace(options.UploadUser) && !String.IsNullOrWhiteSpace(options.UploadPassword))
 			{
-				if (!LogIn(user, password))
+				if (!LogIn(options.UploadUser, options.UploadPassword))
 				{
-					SIL.Reporting.ErrorReport.NotifyUserOfProblem($"Could not log you in using user='{user}' and password='{password}'.");
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem($"Could not log you in using user='{options.UploadUser}' and password='{options.UploadPassword}'.");
 					Console.WriteLine();
-					Console.WriteLine("Failed to login as {0} with password {1}.", user, password);
+					Console.WriteLine("Bloom could not log you in as {0} with password {1}.", options.UploadUser, options.UploadPassword);
+					Console.WriteLine("Open a book in the Bloom editor, go to the Publish tab and sign in to BloomLibrary.org");
+					Console.WriteLine("using your username and password (or a Google account).  Then close Bloom editor without");
+					Console.WriteLine("signing out.  This may enable logging in for the bulk upload operation.");
 					return;
 				}
-				Console.WriteLine("Uploading books as user {0}", user);
+				Console.WriteLine("Uploading books as user {0}", options.UploadUser);
 			}
 			else
 			{
@@ -679,7 +747,6 @@ namespace Bloom.WebLibraryIntegration
 				//}
 			}
 
-			_singleBookshelfLevel = singleBookshelfLevel;
 			using (var dlg = new BulkUploadProgressDlg())
 			{
 				var worker = new BackgroundWorker();
@@ -687,11 +754,14 @@ namespace Bloom.WebLibraryIntegration
 				worker.DoWork += BackgroundUpload;
 				worker.RunWorkerCompleted += (sender, args) =>
 				{
-					if (args.Error != null)
-						throw args.Error;
 					dlg.Close();
+					if (args.Error != null)
+					{
+						Console.WriteLine("ERROR: {0}", args.Error);
+						throw args.Error;
+					}
 				};
-				worker.RunWorkerAsync(new object[] {folder, dlg, container, excludeNarrationAudio, preserveThumbnails});
+				worker.RunWorkerAsync(new object[] {dlg, container, options});
 				dlg.ShowDialog(); // waits until worker completed closes it.
 			}
 		}
@@ -704,18 +774,15 @@ namespace Bloom.WebLibraryIntegration
 		private void BackgroundUpload(object sender, DoWorkEventArgs doWorkEventArgs)
 		{
 			var args = (object[]) doWorkEventArgs.Argument;
-			var folder = (string) args[0];
-			var dlg = (BulkUploadProgressDlg) args[1];
-			var appContext = (ApplicationContainer)args[2];
-			var excludeNarrationAudio = (bool)args[3];
-			var preserveThumbnails = (bool)args[4];
-			var excludeMusic = false; // I (AP) made the executive decision this wasn't worth another option right now
-			var alreadyUploaded = GetUploadedPathsFromLogIfPresent(folder);
-			BulkRepairInstanceIds(folder);
+			var dlg = (BulkUploadProgressDlg) args[0];
+			var appContainer = (ApplicationContainer)args[1];
+			var options = (UploadParameters)args[2];
+			var bookParams = new BookUploadParameters(options, GetUploadedPathsFromLogIfPresent(options.Path));
+			BulkRepairInstanceIds(options.Path);
 			ProjectContext context = null; // Expensive to create; hold each one we make until we find a book that needs a different one.
 			try
 			{
-				UploadInternal(folder, dlg, appContext, excludeNarrationAudio, excludeMusic, preserveThumbnails, alreadyUploaded, ref context);
+				UploadInternal(dlg, appContainer, bookParams, ref context);
 
 				// If we make it here, append a "finished" note to our log file
 				AppendBookToUploadLogFile("\n\nAll finished!\nIn order to repeat the uploading, this file will need to be deleted.");
@@ -728,6 +795,8 @@ namespace Bloom.WebLibraryIntegration
 
 		private string GetUploadFilePath()
 		{
+			if (IsDryRun)
+				return String.IsNullOrEmpty(_bulkUploadLogPath) ? string.Empty : Path.Combine(Path.GetDirectoryName(_bulkUploadLogPath), "DryRun"+UploadLogFilename);
 			return _bulkUploadLogPath ?? string.Empty;
 		}
 
@@ -754,54 +823,36 @@ namespace Bloom.WebLibraryIntegration
 				results = RobustFile.ReadAllLines(fullFilepath);
 			}
 			_bulkUploadLogPath = fullFilepath;
+			if (IsDryRun)
+				RobustFile.Delete(GetUploadFilePath());
 			return results;
-		}
-
-		private string GetBookshelfName(string folder)
-		{
-			// Start by excluding the Book folder itself
-			var pathUsedToDetermineBookshelf = Path.GetDirectoryName(folder);
-
-			// Now take off the root (the directory the user gave us)
-			var bulkUploadRoot = Path.GetDirectoryName(GetUploadFilePath());
-			pathUsedToDetermineBookshelf = pathUsedToDetermineBookshelf.Substring(bulkUploadRoot.Length);
-
-			if (pathUsedToDetermineBookshelf == string.Empty)
-				return "";
-
-			// With what remains, the first directory is our shelf and second, if any, is our sub-shelf
-			// (unless we've requested no sub-shelf)
-			var splitPathArray = pathUsedToDetermineBookshelf.Replace("\\", "/").Split('/').ToList();
-			splitPathArray.RemoveAll(string.IsNullOrWhiteSpace);
-			if (splitPathArray.Count == 1 || _singleBookshelfLevel)
-				return splitPathArray[0];
-			return $"{splitPathArray[0]}/{splitPathArray[1]}";
 		}
 
 		/// <summary>
 		/// Handles the recursion through directories: if a folder looks like a Bloom book upload it; otherwise, try its children.
 		/// Invisible folders like .hg are ignored.
 		/// </summary>
-		private void UploadInternal(string folder, BulkUploadProgressDlg dlg, ApplicationContainer container, bool excludeNarrationAudio, bool excludeMusic, bool preserveThumbnails,
-			string[] alreadyUploaded, ref ProjectContext context)
+		private void UploadInternal(BulkUploadProgressDlg dlg, ApplicationContainer container, BookUploadParameters bookParams,
+			ref ProjectContext context)
 		{
-			var lastFolderPart = Path.GetFileName(folder);
+			var lastFolderPart = Path.GetFileName(bookParams.Folder);
 			if (lastFolderPart != null && lastFolderPart.StartsWith("."))
 				return; // secret folder, probably .hg
 
-			if (Directory.GetFiles(folder, "*.htm").Length == 1)
+			if (Directory.GetFiles(bookParams.Folder, "*.htm").Length == 1)
 			{
-				if (alreadyUploaded.Contains(folder))
+				if (bookParams.AlreadyUploaded.Contains(bookParams.Folder))
 				{
+					Console.WriteLine("{0} has already been uploaded.", bookParams.Folder);
 					return; // skip this one; we already successfully uploaded it at some point
 				}
 				// Exactly one htm file, assume this is a bloom book folder.
-				dlg.Progress.WriteMessage("Starting to upload " + folder);
-
+				dlg.Progress.WriteMessage("Starting to upload " + bookParams.Folder);
+				Console.WriteLine($"Starting to upload {bookParams.Folder}");
 				// Make sure the files we want to upload are up to date.
 				// Unfortunately this requires making a book object, which requires making a ProjectContext, which must be created with the
 				// proper parent book collection if possible.
-				var parent = Path.GetDirectoryName(folder);
+				var parent = Path.GetDirectoryName(bookParams.Folder);
 				var collectionPath = Directory.GetFiles(parent, "*.bloomCollection").FirstOrDefault();
 				if (collectionPath == null)
 				{
@@ -831,10 +882,12 @@ namespace Bloom.WebLibraryIntegration
 					Program.SetProjectContext(context);
 				}
 				var server = context.BookServer;
-				var bookInfo = new BookInfo(folder, true);
-				bookInfo.Bookshelf = GetBookshelfName(folder);
+				var bookInfo = new BookInfo(bookParams.Folder, true);
 				var book = server.GetBookFromBookInfo(bookInfo);
 				book.BringBookUpToDate(new NullProgress());
+				bookInfo.Bookshelf = book.CollectionSettings.DefaultBookshelf;
+				var bookshelfName = String.IsNullOrWhiteSpace(book.CollectionSettings.DefaultBookshelf) ? "(none)" : book.CollectionSettings.DefaultBookshelf;
+				Console.WriteLine($"Bookshelf={bookshelfName}");
 
 				// Assemble the various arguments needed to make the objects normally involved in an upload.
 				// We leave some constructor arguments not actually needed for this purpose null.
@@ -863,28 +916,31 @@ namespace Bloom.WebLibraryIntegration
 					if (blPublishModel.BookIsAlreadyOnServer)
 					{
 						var msg = "Apparently this book is already on the server. Overwriting...";
-						ReportToLogBoxAndLogger(dlg.Progress, folder, msg);
+						ReportToLogBoxAndLogger(dlg.Progress, bookParams.Folder, msg);
+						Console.WriteLine(msg);
 					}
 					using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))
 					{
 						PrepareBookForUpload(ref book, server, tempFolder.FolderPath, dlg.Progress);
-						FullUpload(book, dlg.Progress, view, languagesToUpload.ToArray(), excludeNarrationAudio, excludeMusic, preserveThumbnails, out dummy);
+						bookParams.LanguagesToUpload = languagesToUpload.ToArray();
+						FullUpload(book, dlg.Progress, view, bookParams, out dummy);
 					}
-					AppendBookToUploadLogFile(folder);
-					Console.WriteLine("{0} has been uploaded", folder);
+					AppendBookToUploadLogFile(bookParams.Folder);
+					Console.WriteLine("{0} has been uploaded", bookParams.Folder);
 				}
 				else
 				{
 					// report to the user why we are not uploading their book
 					var reason = blPublishModel.GetReasonForNotUploadingBook();
-					ReportToLogBoxAndLogger(dlg.Progress, folder, reason);
-					Console.WriteLine("{0} was not uploaded.  {1}", folder, reason);
+					ReportToLogBoxAndLogger(dlg.Progress, bookParams.Folder, reason);
+					Console.WriteLine("{0} was not uploaded.  {1}", bookParams.Folder, reason);
 				}
 				return;
 			}
-			foreach (var sub in Directory.GetDirectories(folder))
+			foreach (var sub in Directory.GetDirectories(bookParams.Folder))
 			{
-				UploadInternal(sub, dlg, container, excludeNarrationAudio, excludeMusic, preserveThumbnails, alreadyUploaded, ref context);
+				bookParams.Folder = sub;
+				UploadInternal(dlg, container, bookParams, ref context);
 			}
 		}
 
@@ -929,8 +985,7 @@ namespace Bloom.WebLibraryIntegration
 		/// <summary>
 		/// Common routine used in normal upload and bulk upload.
 		/// </summary>
-		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, bool excludeNarrationAudio, bool excludeMusic,
-			bool preserveThumbnails, out string parseId)
+		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, BookUploadParameters bookParams, out string parseId)
 		{
 			book.Storage.CleanupUnusedSupportFiles(isForPublish:false); // we are publishing, but this is the real folder not a copy, so play safe.
 			var bookFolder = book.FolderPath;
@@ -938,16 +993,18 @@ namespace Bloom.WebLibraryIntegration
 			// Set this in the metadata so it gets uploaded. Do this in the background task as it can take some time.
 			// These bits of data can't easily be set while saving the book because we save one page at a time
 			// and they apply to the book as a whole.
-			book.BookInfo.LanguageTableReferences = _parseClient.GetLanguagePointers(book.BookData.MakeLanguageUploadData(languages));
+			book.BookInfo.LanguageTableReferences = _parseClient.GetLanguagePointers(book.BookData.MakeLanguageUploadData(bookParams.LanguagesToUpload));
 			book.BookInfo.PageCount = book.GetPages().Count();
 			book.BookInfo.Save();
 			// If the caller wants to preserve existing thumbnails, recreate them only if one or more of them do not exist.
 			var thumbnailsExist = File.Exists(Path.Combine(bookFolder, "thumbnail-70.png")) &&
 				File.Exists(Path.Combine(bookFolder, "thumbnail-256.png")) &&
 				File.Exists(Path.Combine(bookFolder, "thumbnail.png"));
-			if (!preserveThumbnails || !thumbnailsExist)
+			if (!bookParams.PreserveThumbnails || !thumbnailsExist)
 			{
-				progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingThumbnail", "Making thumbnail image..."));
+				var thumbnailMsg = LocalizationManager.GetString("PublishTab.Upload.MakingThumbnail", "Making thumbnail image...");
+				progressBox.WriteStatus(thumbnailMsg);
+				Console.WriteLine(thumbnailMsg);
 				//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
 				_thumbnailer.MakeThumbnailOfCover(book, 70); // this is a sacrificial one to prime the pump, to fix BL-2673
 				_thumbnailer.MakeThumbnailOfCover(book, 70);
@@ -969,7 +1026,9 @@ namespace Bloom.WebLibraryIntegration
 			// make sure we have a current correct preview and then copy it to the book folder so it gets uploaded.
 			if (!FileHelper.IsLocked(uploadPdfPath))
 			{
-				progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingPdf", "Making PDF Preview..."));
+				var pdfMsg = LocalizationManager.GetString("PublishTab.Upload.MakingPdf", "Making PDF Preview...");
+				progressBox.WriteStatus(pdfMsg);
+				Console.WriteLine(pdfMsg);
 				publishView.MakePublishPreview(progressBox);
 				if (RobustFile.Exists(publishView.PdfPreviewPath))
 				{
@@ -984,7 +1043,8 @@ namespace Bloom.WebLibraryIntegration
 				return "";
 
 			return UploadBook(bookFolder, progressBox, out parseId, Path.GetFileName(uploadPdfPath),
-				GetAudioFilesToInclude(book, excludeNarrationAudio, excludeMusic), GetVideoFilesToInclude(book), languages, book.CollectionSettings);
+				GetAudioFilesToInclude(book, bookParams.ExcludeNarrationAudio, bookParams.ExcludeMusic), GetVideoFilesToInclude(book),
+				bookParams.LanguagesToUpload, book.CollectionSettings);
 		}
 
 		/// <summary>
@@ -1036,6 +1096,29 @@ namespace Bloom.WebLibraryIntegration
 		internal static void BulkRepairInstanceIds(string rootFolderPath)
 		{
 			BookInfo.RepairDuplicateInstanceIds(rootFolderPath);
+		}
+	}
+
+	public class BookUploadParameters
+	{
+		public string Folder;
+		public bool ExcludeNarrationAudio;
+		public bool ExcludeMusic;
+		public bool PreserveThumbnails;
+		public string[] AlreadyUploaded;
+		public string[] LanguagesToUpload;
+
+		public BookUploadParameters()
+		{
+		}
+
+		public BookUploadParameters(UploadParameters options, string[] alreadyUploaded)
+		{
+			Folder = options.Path;
+			ExcludeNarrationAudio = options.ExcludeNarrationAudio;
+			ExcludeMusic = false;    // I (AP) made the executive decision this wasn't worth another option right now
+			PreserveThumbnails = options.PreserveThumbnails;
+			AlreadyUploaded = alreadyUploaded;
 		}
 	}
 }

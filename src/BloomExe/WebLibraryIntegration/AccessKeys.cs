@@ -48,12 +48,16 @@ namespace Bloom.WebLibraryIntegration
 				case BloomS3Client.SandboxBucketName:
 					// S3 'uploaderDev' user, who has permission to use the BloomLibraryBooks-Sandbox bucket.
 					//parse.com silbloomlibrarysandbox
+					if (BookTransfer.IsDryRun)
+						return new AccessKeys(null, null, lines[6], lines[7]);
 					return new AccessKeys(lines[2], lines[3],lines[6],lines[7]);
 				case BloomS3Client.UnitTestBucketName:
 					return new AccessKeys(lines[2], lines[3], lines[8], lines[9]);
 				case BloomS3Client.ProductionBucketName:
 					//S3 'uploader' user, who has permission to use the BloomLibraryBooks bucket
 					//parse.com silbloomlibrary
+					if (BookTransfer.IsDryRun)
+						return new AccessKeys(null, null, lines[4], lines[5]);
 					return new AccessKeys(lines[0], lines[1], lines[4], lines[5]);
 				case BloomS3Client.ProblemBookUploadsBucketName:
 					return new AccessKeys(lines[2], lines[3], null,null);

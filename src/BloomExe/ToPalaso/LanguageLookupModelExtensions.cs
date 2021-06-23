@@ -117,7 +117,7 @@ namespace Bloom.ToPalaso
 			catch (Exception e)
 			{
 				// ignore exception, but log on terminal.
-				Console.WriteLine(@"GetLocalizedLanguageName ignoring exception: {0}", e.Message);
+				System.Diagnostics.Debug.WriteLine($"GetLocalizedLanguageName ignoring exception: {e.Message}");
 			}
 			// We get here after either an exception was thrown or the returned CultureInfo
 			// helpfully told us it is for an unknown language (instead of throwing).
@@ -198,7 +198,7 @@ namespace Bloom.ToPalaso
 			catch (Exception e)
 			{
 				// ignore exception, but log on terminal.
-				Console.WriteLine(@"GetNativeLanguageNameWithEnglishSubtitle ignoring exception: {0}", e.Message);
+				System.Diagnostics.Debug.WriteLine($"GetNativeLanguageNameWithEnglishSubtitle ignoring exception: {e.Message}");
 			}
 			// We get here after either an exception was thrown or the returned CultureInfo
 			// helpfully told us it is for an unknown language (instead of throwing).

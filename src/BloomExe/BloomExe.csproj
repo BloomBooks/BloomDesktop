@@ -120,6 +120,9 @@
     <Reference Include="Enchant.Net, Version=1.4.0.0, Culture=neutral, PublicKeyToken=ae135aeb3d479ab9, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Enchant.Net.1.4.2\lib\net461\Enchant.Net.dll</HintPath>
     </Reference>
+    <Reference Include="EPPlus, Version=5.6.4.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\EPPlus.5.6.4\lib\net45\EPPlus.dll</HintPath>
+    </Reference>
     <Reference Include="Fleck, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Fleck.1.1.0\lib\net45\Fleck.dll</HintPath>
     </Reference>
@@ -178,6 +181,9 @@
     </Reference>
     <Reference Include="Microsoft.Extensions.DependencyModel, Version=3.1.6.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Extensions.DependencyModel.3.1.6\lib\net451\Microsoft.Extensions.DependencyModel.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.IO.RecyclableMemoryStream, Version=1.4.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.IO.RecyclableMemoryStream.1.4.1\lib\net46\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="NAudio, Version=1.10.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -255,11 +261,30 @@
     <Reference Include="Splat">
       <HintPath>..\..\lib\dotnet\Splat.dll</HintPath>
     </Reference>
+    <Reference Include="SQLite-net, Version=1.7.335.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\sqlite-net-pcl.1.7.335\lib\netstandard2.0\SQLite-net.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.batteries_v2, Version=2.0.3.851, Culture=neutral, PublicKeyToken=8226ea5df37bcae9, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SQLitePCLRaw.bundle_green.2.0.3\lib\net461\SQLitePCLRaw.batteries_v2.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.core, Version=2.0.3.851, Culture=neutral, PublicKeyToken=1488e028ca7ab535, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SQLitePCLRaw.core.2.0.3\lib\netstandard2.0\SQLitePCLRaw.core.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.nativelibrary, Version=2.0.3.851, Culture=neutral, PublicKeyToken=502ed628492ab262, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SQLitePCLRaw.bundle_green.2.0.3\lib\net461\SQLitePCLRaw.nativelibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.provider.dynamic_cdecl, Version=2.0.3.851, Culture=neutral, PublicKeyToken=b68184102cba0b3b, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SQLitePCLRaw.provider.dynamic_cdecl.2.0.3\lib\netstandard2.0\SQLitePCLRaw.provider.dynamic_cdecl.dll</HintPath>
+    </Reference>
     <Reference Include="Squirrel" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\lib\dotnet\Squirrel.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.ComponentModel.Annotations.4.7.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
+    </Reference>
     <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -288,6 +313,7 @@
       <HintPath>..\..\packages\System.Security.Principal.Windows.4.7.0\lib\net461\System.Security.Principal.Windows.dll</HintPath>
     </Reference>
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Threading.Tasks, Version=4.0.11.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.ValueTuple.4.5.0\lib\net461\System.ValueTuple.dll</HintPath>
     </Reference>
@@ -325,6 +351,8 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Book\LicenseChecker.cs" />
+    <Compile Include="CLI\SpreadsheetExportCommand.cs" />
+    <Compile Include="CLI\SpreadsheetImportCommand.cs" />
     <Compile Include="CollectionTab\ReactCollectionTabView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -337,6 +365,18 @@
     <Compile Include="ExperimentalFeatures.cs" />
     <Compile Include="MiscUI\BrowserProgressDialog.cs" />
     <Compile Include="MiscUI\StartupScreenManager.cs" />
+    <Compile Include="Publish\LanguagePublishInfo.cs" />
+    <Compile Include="Spreadsheet\ContentRow.cs" />
+    <Compile Include="Spreadsheet\HeaderRow.cs" />
+    <Compile Include="Spreadsheet\InternalSpreadsheet.cs" />
+    <Compile Include="Spreadsheet\SpreadsheetCell.cs" />
+    <Compile Include="Spreadsheet\SpreadsheetExporter.cs" />
+    <Compile Include="Spreadsheet\SpreadsheetExportParams.cs" />
+    <Compile Include="Spreadsheet\SpreadsheetImporter.cs" />
+    <Compile Include="Spreadsheet\SpreadsheetImportParams.cs" />
+    <Compile Include="Spreadsheet\SpreadsheetIO.cs" />
+    <Compile Include="Spreadsheet\SpreadsheetRow.cs" />
+    <Compile Include="TeamCollection\BookHistory.cs" />
     <Compile Include="TeamCollection\BookRepoChangeEventArgs.cs" />
     <Compile Include="TeamCollection\DeleteRepoBookFileEventArgs.cs" />
     <Compile Include="TeamCollection\BookStatus.cs" />
@@ -1560,6 +1600,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Error Condition="!Exists('..\..\packages\SIL.Media.8.0.1-beta0026\build\SIL.Media.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Media.8.0.1-beta0026\build\SIL.Media.targets'))" />
     <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.8.0.1-beta0026\build\SIL.Windows.Forms.Keyboarding.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.8.0.1-beta0026\build\SIL.Windows.Forms.Keyboarding.targets'))" />
     <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.8.0.1-beta0026\build\SIL.Windows.Forms.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.8.0.1-beta0026\build\SIL.Windows.Forms.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets'))" />
   </Target>
   <!-- msbuild mistakenly copies the 64-bit version of irrKlang.NET4.dll to $(Output) as it resolves
        SIL.Media.dll in our 32-bit build.  It also always copies both the 32-bit and 64-bit versions
@@ -1584,6 +1625,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Delete Files="@(DeleteForSILMedia)" TreatErrorsAsWarnings="true" />
     <RemoveDir Directories="@(RemoveForSILMedia)" />
   </Target>
+  <Import Project="..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets" Condition="Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" />
   <!-- Note: Visual Studio automatically inserts any imports from installing packages into the end here,
   but the AfterBuild target may not run if .targets files are imported after it.
   I recommend you move the Import statements before the "AfterBuild" target,

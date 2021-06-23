@@ -210,6 +210,8 @@ namespace Bloom.WebLibraryIntegration
 		{
 			if (!LoggedIn)
 				throw new ApplicationException();
+			if (BookTransfer.IsDryRun)
+				throw new ApplicationException("Should not call CreateBookRecord during dry run!");
 			var request = MakePostRequest("classes/books");
 			request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
 			var response = Client.Execute(request);
@@ -231,6 +233,8 @@ namespace Bloom.WebLibraryIntegration
 		{
 			if (!LoggedIn)
 				throw new ApplicationException();
+			if (BookTransfer.IsDryRun)
+				throw new ApplicationException("Should not call SetBookRecord during dry run!");
 			var metadata = BookMetaData.FromString(metadataJson);
 			var book = GetSingleBookRecord(metadata.Id);
 			metadataJson = ChangeJsonBeforeCreatingOrModifyingBook(metadataJson);
@@ -260,6 +264,8 @@ namespace Bloom.WebLibraryIntegration
 		{
 			if (!LoggedIn)
 				throw new ApplicationException("Must be logged in to delete book");
+			if (BookTransfer.IsDryRun)
+				throw new ApplicationException("Should not call DeleteBookRecord during dry run!");
 			var request = MakeDeleteRequest("classes/books/" + bookObjectId);
 			var response = Client.Execute(request);
 			if (response.StatusCode != HttpStatusCode.OK)
@@ -270,6 +276,8 @@ namespace Bloom.WebLibraryIntegration
 		{
 			if (!LoggedIn)
 				throw new ApplicationException();
+			if (BookTransfer.IsDryRun)
+				throw new ApplicationException("Should not call DeleteLanguages during dry run!");
 			var getLangs = MakeGetRequest(ClassesLanguagePath);
 			var response1 = Client.Execute(getLangs);
 			dynamic json = JObject.Parse(response1.Content);
@@ -288,6 +296,8 @@ namespace Bloom.WebLibraryIntegration
 		{
 			if (!LoggedIn)
 				throw new ApplicationException();
+			if (BookTransfer.IsDryRun)
+				throw new ApplicationException("Should not call CreateLanguage during dry run!");
 			var request = MakePostRequest(ClassesLanguagePath);
 			var langjson = lang.Json;
 			request.AddParameter("application/json", langjson, ParameterType.RequestBody);
@@ -349,6 +359,8 @@ namespace Bloom.WebLibraryIntegration
 
 		internal void SendResetPassword(string account)
 		{
+			if (BookTransfer.IsDryRun)
+				throw new ApplicationException("Should not call SendResetPassword during dry run!");
 			var request = MakePostRequest("requestPasswordReset");
 			request.AddParameter("application/json; charset=utf-8", "{\"email\":\""+account+ "\"}", ParameterType.RequestBody);
 			request.RequestFormat = DataFormat.Json;

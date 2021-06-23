@@ -6,6 +6,8 @@
 /// <reference path="../../lib/misc-types.d.ts" />
 /// <reference path="../../lib/jquery.alphanum.d.ts"/>
 /// <reference path="../js/toolbar/toolbar.d.ts"/>
+// This collectionSettings reference defines the function GetSettings(): ICollectionSettings
+// The actual function is injected by C#.
 /// <reference path="../js/collectionSettings.d.ts"/>
 /// <reference path="../OverflowChecker/OverflowChecker.ts"/>
 
@@ -21,13 +23,6 @@ import "../../lib/jquery.alphanum";
 import axios from "axios";
 import { BloomApi } from "../../utils/bloomApi";
 import { EditableDivUtils } from "../js/editableDivUtils";
-
-declare function GetSettings(): any; //c# injects this
-declare function WebFxTabPane(
-    element: HTMLElement,
-    useCookie: boolean,
-    callback: any
-): any; // from tabpane, from a <script> tag
 
 interface IFormattingValues {
     ptSize: string;
@@ -719,11 +714,13 @@ export default class StyleEditor {
                 "EditTab.FormatDialog.DefaultStyles." +
                 formattingStyle.styleId +
                 "-style";
-            promises.push(theOneLocalizationManager.asyncGetText(
-                completeStyleName,
-                formattingStyle.englishDisplayName,
-                ""
-            ) as JQueryPromise<string>);
+            promises.push(
+                theOneLocalizationManager.asyncGetText(
+                    completeStyleName,
+                    formattingStyle.englishDisplayName,
+                    ""
+                ) as JQueryPromise<string>
+            );
         });
         return promises;
     }
@@ -1636,8 +1633,7 @@ export default class StyleEditor {
     public shouldSetDefaultRule() {
         const target = this.boxBeingEdited;
         // GetSettings is injected into the page by C#.
-        const defLang = (<any>GetSettings()).languageForNewTextBoxes;
-        if ($(target).attr("lang") !== defLang) {
+        if ($(target).attr("lang") !== GetSettings().languageForNewTextBoxes) {
             return false;
         }
         // We need to some way of detecting that we don't want to set

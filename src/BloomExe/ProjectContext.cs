@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -215,18 +215,7 @@ namespace Bloom
 						builder.Register<CollectionSettings>(c =>
 						{
 							c.Resolve<TeamCollectionManager>();
-							if (!RobustFile.Exists(projectSettingsPath))
-							{
-								// TCManager constructor may have deleted it in the process of syncing TC settings
-								var collections = Directory.EnumerateFiles(Path.GetDirectoryName(projectSettingsPath),
-									"*.bloomCollection").ToList();
-								if (collections.Count >= 1)
-								{
-									// Hopefully this repairs things.
-									projectSettingsPath = collections[0];
-								}
-							}
-							return new CollectionSettings(projectSettingsPath);
+							return GetCollectionSettings(projectSettingsPath);
 						}).InstancePerLifetimeScope();
 					}
 					catch (Exception)
@@ -382,6 +371,24 @@ namespace Bloom
 			_scope.Resolve<PerformanceMeasurement>().RegisterWithApiHandler(server.ApiHandler);
 		}
 
+		// Get the collection settings. Passed the expected path, but if not found,
+		// will look for any other bloomCollection file in the folder.
+		public static CollectionSettings GetCollectionSettings(string projectSettingsPath)
+		{
+			if (!RobustFile.Exists(projectSettingsPath))
+			{
+				// TCManager constructor may have deleted it in the process of syncing TC settings
+				var collections = Directory.EnumerateFiles(Path.GetDirectoryName(projectSettingsPath),
+					"*.bloomCollection").ToList();
+				if (collections.Count >= 1)
+				{
+					// Hopefully this repairs things.
+					projectSettingsPath = collections[0];
+				}
+			}
+
+			return new CollectionSettings(projectSettingsPath);
+		}
 
 		internal static BloomS3Client CreateBloomS3Client()
 		{

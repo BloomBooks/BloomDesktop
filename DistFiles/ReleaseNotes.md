@@ -1,3 +1,5 @@
+If you run Bloom on _beta_ channel, you are a crucial part of the Bloom team. Your help ensures that folks who don't have easy access to technical help get a solid product when the beta becomes the _release_ version. **Thank you!**
+
 # 5.0 (Beta)
 
 ## Reminder for SILers
@@ -36,7 +38,7 @@ Text on Simple Quiz pages is no longer counted when computing whole-book statist
 
 ## Team Collections
 
-The new Team Collection _enterprise_ feature debuts in this release. With a Team Collection, you can safely share a collection within your team, across the internet, without full-time internet access. For this release, we're going to keep this feature behind the "Experimental" checkbox. For now, we are only supporting Dropbox & LAN environments. Please contact us if you are considering using this. We really need to benefit from understanding how this will be used, and how the experience goes.
+The new Team Collection _enterprise_ feature debuts in this release. With a Team Collection, you can safely share a collection within your team, across the internet, without full-time internet access. For this release, we're going to keep this feature behind the "Experimental" checkbox. For now, we are only supporting Dropbox & LAN environments. Please contact us if you are considering using this. We need your help to fully understand how this will be used, and how the experience goes.
 
 ![screenshot-online-only](https://i.imgur.com/VCqWEft.png)
 
@@ -45,15 +47,17 @@ The new Team Collection _enterprise_ feature debuts in this release. With a Team
 Recently we spent weeks improving Bloom's ability to deal with large books and long Bloom sessions without running out of memory. As part of that effort, we've added a tool for watching what happens to available memory and speed as Bloom does various things. This is mostly for our own use, but it's also available to you, in case you suspect that Bloom is eating memory or slowing down as you use it.
 
 ![screenshot-online-only](https://i.imgur.com/fkTafND.png)
+
 ![screenshot-online-only](https://i.imgur.com/3fsm9ae.png)
 
 ## BloomLibrary.org
 
 When you download books from BloomLibrary.org that have audio, Bloom will now download the audio as part of the shell book.
 
-We've improved what you see when you look at a template books on BloomLibrary.org, in ways that will make it easier to understand what the template pages are for.
+We've improved what you see when you look at a [template books on BloomLibrary.org](https://bloomlibrary.org/create/create-templates). It is now easier to understand what the template pages are for:
 
 ![screenshot-online-only](https://i.imgur.com/JU0m0SD.png)
+
 ![screenshot-online-only](https://i.imgur.com/lx9FVMz.png)
 
 <br/>

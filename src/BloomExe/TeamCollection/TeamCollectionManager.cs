@@ -24,6 +24,8 @@ namespace Bloom.TeamCollection
 		bool NeedCheckoutToEdit(string bookFolderPath);
 		string PlannedRepoFolderPath(string repoFolderParentPath);
 
+		bool OkToEditCollectionSettings { get; }
+
 		// ENHANCE: Add other properties and methods as needed
 	}
 
@@ -92,6 +94,7 @@ namespace Bloom.TeamCollection
 		// to use the setter.)
 		public CollectionSettings Settings { get; internal set; }
 
+
 		public bool OkToEditCollectionSettings
 		{
 			get
@@ -99,6 +102,19 @@ namespace Bloom.TeamCollection
 				if (CurrentCollectionEvenIfDisconnected == null)
 					return true; // restrictions only apply to TCs
 				var settings = Settings;
+				if (settings == null)
+				{
+					// We can be asked this during startup, before we have settings.
+					// This is rare, so we can afford to be slow.
+					// Conceivably, of course, there could be a newer version of settings
+					// in the TC, which (even more remotely) might change the administrators.
+					// But (a) we're not trying to be perfectly foolproof, and (b) we
+					// don't make the change that this case handles if the repo settings
+					// are newer than the most recent sync.
+					var projectSettingsPath = Path.Combine(_localCollectionFolder,
+						Path.GetFileName(_localCollectionFolder) + ".bloomCollection");
+					settings = ProjectContext.GetCollectionSettings(projectSettingsPath);
+				}
 				if (settings.Administrators.Length == 0)
 					return true; // legacy TC, no admin recorded
 				return settings.Administrators.Contains(CurrentUser);
@@ -214,7 +230,7 @@ namespace Bloom.TeamCollection
 							}
 							else
 							{
-								NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not save your settings to the Team Collection: " + problemWithConnection,
+								NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not save your settings to the Team Collection: " + problemWithConnection.TextForDisplay,
 									null, null, true);
 							}
 						}
@@ -301,7 +317,7 @@ namespace Bloom.TeamCollection
 			}
 			catch (Exception ex)
 			{
-				SentrySdk.CaptureException(ex);
+				NonFatalProblem.ReportSentryOnly(ex);
 				// Unless whatever went wrong left us disconnected, we may as well go ahead and try
 				// whatever we were about to do.
 				return CurrentCollection != null;

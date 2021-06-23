@@ -5,6 +5,9 @@
 /// <reference path="../../typings/jquery.qtipSecondary.d.ts" />
 /// <reference path="../../typings/jquery.qtip.d.ts" />
 /// <reference path="../../typings/jquery.easytabs.d.ts" />
+// This collectionSettings reference defines the function GetSettings(): ICollectionSettings
+// The actual function is injected by C#.
+/// <reference path="../js/collectionSettings.d.ts"/>
 import React = require("react");
 import ReactDOM = require("react-dom");
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
@@ -16,8 +19,6 @@ import { BloomApi } from "../../utils/bloomApi";
 import CopyContentButton, {
     ICopyContentButtonProps
 } from "../../react_components/CopyContentButton";
-
-declare function GetSettings(): any; //c# injects this
 
 export default class BloomSourceBubbles {
     //:empty is not quite enough... we don't want to show bubbles if all there is is an empty paragraph

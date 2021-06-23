@@ -10,6 +10,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
+using Bloom.Registration;
 using Bloom.Utils;
 using DesktopAnalytics;
 using L10NSharp;
@@ -28,13 +29,15 @@ namespace Bloom.TeamCollection
 		private BookServer _bookServer;
 		private string CurrentUser => TeamCollectionManager.CurrentUser;
 		private BloomWebSocketServer _socketServer;
+		private readonly CurrentEditableCollectionSelection _currentBookCollectionSelection;
 		private CollectionSettings _settings;
 
 		public static TeamCollectionApi TheOneInstance { get; private set; }
 
 		// Called by autofac, which creates the one instance and registers it with the server.
-		public TeamCollectionApi(CollectionSettings settings, BookSelection bookSelection, ITeamCollectionManager tcManager, BookServer bookServer, BloomWebSocketServer socketServer)
+		public TeamCollectionApi(CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings settings, BookSelection bookSelection, ITeamCollectionManager tcManager, BookServer bookServer, BloomWebSocketServer socketServer)
 		{
+			_currentBookCollectionSelection = currentBookCollectionSelection;
 			_settings = settings;
 			_tcManager = tcManager;
 			_tcManager.CurrentCollection?.SetupMonitoringBehavior();
@@ -58,28 +61,23 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/getLog", HandleGetLog, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/getCollectionName", HandleGetCollectionName, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/showCreateTeamCollectionDialog", HandleShowCreateTeamCollectionDialog, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/showRegistrationDialog", HandleShowRegistrationDialog, true, false);
+			apiHandler.RegisterEndpointHandler("teamCollection/getHistory", HandleGetHistory, true);
+		}
+
+		private void HandleShowRegistrationDialog(ApiRequest request)
+		{
+			using (var dlg = new RegistrationDialog(false))
+			{
+				dlg.ShowDialog();
+			}
+			request.PostSucceeded();
 		}
 
 		private void HandleShowCreateTeamCollectionDialog(ApiRequest request)
 		{
-			// If we create the dialog here, the request that launched it will still be active.
-			// This means our server is still locked, and all kinds of things the dialog wants to
-			// do through the server won't work, or have to be made to work unlocked.
-			// Instead, we arrange for it to be launched when the system is idle
-			// (and the server is no longer locked).
-			Application.Idle += ShowCreateTeamCollectionDialog;
+			ReactDialog.ShowOnIdle("createTeamCollectionDialogBundle", new { defaultRepoFolder = DropboxUtils.GetDropboxFolderPath() }, 600, 580);
 			request.PostSucceeded();
-		}
-
-		private void ShowCreateTeamCollectionDialog(object sender, EventArgs e)
-		{
-			Application.Idle -= ShowCreateTeamCollectionDialog;
-			using (var dlg = new ReactDialog("createTeamCollectionDialogBundle", new { defaultRepoFolder = DropboxUtils.GetDropboxFolderPath() }))
-			{
-				dlg.Width = 600;
-				dlg.Height = 580;
-				dlg.ShowDialog();
-			}
 		}
 
 		private void HandleGetCollectionName(ApiRequest request)
@@ -114,8 +112,7 @@ namespace Bloom.TeamCollection
 			{
 				// Not sure what to do here: getting the log should never crash.
 				Logger.WriteError("TeamCollectionApi.HandleGetLog() crashed", e);
-				SentrySdk.AddBreadcrumb($"Something went wrong for {request.LocalPath()}");
-				SentrySdk.CaptureException(e);
+				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()}");
 				request.Failed("get log failed");
 			}
 		}
@@ -131,8 +128,7 @@ namespace Bloom.TeamCollection
 			{
 				// Not sure what to do here: getting the repo's folder path should never crash.
 				Logger.WriteError("TeamCollectionApi.HandleRepoFolderPath() crashed", e);
-				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
-				SentrySdk.CaptureException(e);
+				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()}");
 				request.Failed("get repo folder path failed");
 			}
 		}
@@ -160,8 +156,7 @@ namespace Bloom.TeamCollection
 				Logger.WriteError("TeamCollectionApi.HandleJoinTeamCollection() crashed", e);
 				var msg = LocalizationManager.GetString("TeamCollection.ErrorJoining", "Could not join Team Collection");
 				ErrorReport.NotifyUserOfProblem(e, msg);
-				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
-				SentrySdk.CaptureException(e);
+				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()}");
 
 				// Since we have already informed the user above, it is better to just report a success here.
 				// Otherwise, they will also get a toast.
@@ -182,8 +177,7 @@ namespace Bloom.TeamCollection
 			{
 				// Not sure what to do here: checking whether TeamCollection is enabled should never crash.
 				Logger.WriteError("TeamCollectionApi.HandleIsTeamCollectionEnabled() crashed", e);
-				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
-				SentrySdk.CaptureException(e);
+				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()}");
 				request.Failed("checking if Team Collections are enabled failed");
 			}
 		}
@@ -204,9 +198,8 @@ namespace Bloom.TeamCollection
 			catch (Exception e)
 			{
 				// Not sure what to do here: getting the current book status crashed.
-				Logger.WriteError("TeamCollectionApi.HandleBookStatus() crashed", e);
-				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
-				SentrySdk.CaptureException(e);
+				Logger.WriteError("TeamCollectionApi.HandleCurrentBookStatus() crashed", e);
+				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()}");
 				request.Failed("getting the book status failed");
 			}
 		}
@@ -258,6 +251,15 @@ namespace Bloom.TeamCollection
 			}
 		}
 
+		public void HandleGetHistory(ApiRequest request)
+		{
+			var x = CollectionHistory.GetAllEvents(_currentBookCollectionSelection.CurrentSelection)
+				.OrderByDescending(b => b.When).ToArray();
+			request.ReplyWithJson(JsonConvert.SerializeObject(
+				x
+			));
+		}
+
 		private string BookFolderName => Path.GetFileName(_bookSelection.CurrentSelection?.FolderPath);
 
 		public void HandleAttemptLockOfCurrentBook(ApiRequest request)
@@ -299,8 +301,7 @@ namespace Bloom.TeamCollection
 				if (log != null)
 					log.WriteMessage(MessageAndMilestoneType.Error, msgId, msgEnglish, BookFolderName, e.Message);
 				Logger.WriteError(String.Format(msgEnglish, BookFolderName, e.Message), e);
-				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
-				SentrySdk.CaptureException(e);
+				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()}");
 				request.Failed("lock failed");
 			}
 		}
@@ -337,6 +338,11 @@ namespace Bloom.TeamCollection
 				{
 					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, true, false, reportCheckinProgress);
 					reportCheckinProgress(0); // cleans up panel for next time
+					// review: not super happy about this being here in the api. Was stymied by
+					// PutBook not knowing about the actual book object, but maybe that could be passed in.
+					BookHistory.AddEvent(_bookSelection.CurrentSelection, BookHistoryEventType.CheckIn);
+
+					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, checkin:true);
 
 					Analytics.Track("TeamCollectionCheckinBook",
 						new Dictionary<string, string>(){
@@ -347,7 +353,6 @@ namespace Bloom.TeamCollection
 							{"BookId", _bookSelection?.CurrentSelection.ID },
 							{"BookName", _bookSelection?.CurrentSelection.Title }
 						});
-
 				}
 				else
 				{
@@ -387,9 +392,7 @@ namespace Bloom.TeamCollection
 				if (log != null)
 					log.WriteMessage(MessageAndMilestoneType.Error, msgId, msgEnglish, _bookSelection?.CurrentSelection?.FolderPath, e.Message);
 				Logger.WriteError(String.Format(msgEnglish, _bookSelection?.CurrentSelection?.FolderPath, e.Message), e);
-				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0} ({1})",
-					request.LocalPath(), _bookSelection?.CurrentSelection?.FolderPath));
-				SentrySdk.CaptureException(e);
+				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()} ({_bookSelection?.CurrentSelection?.FolderPath})");
 				request.Failed("checkin failed");
 			}
 		}
@@ -449,8 +452,7 @@ namespace Bloom.TeamCollection
 			{
 				// Not sure what to do here: choosing the collection folder should never crash.
 				Logger.WriteError("TeamCollectionApi.HandleChooseFolderLocation() crashed", e);
-				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
-				SentrySdk.CaptureException(e);
+				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()}");
 				request.Failed("choose folder location failed");
 			}
 		}
@@ -534,8 +536,7 @@ namespace Bloom.TeamCollection
 				var msgFmt = LocalizationManager.GetString("TeamCollection.ErrorCreating", msgEnglish);
 				ErrorReport.NotifyUserOfProblem(e, msgFmt, repoFolderParentPath, e.Message);
 				Logger.WriteError(String.Format(msgEnglish, repoFolderParentPath, e.Message), e);
-				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
-				SentrySdk.CaptureException(e);
+				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()}");
 
 				// Since we have already informed the user above, it is better to just report a success here.
 				// Otherwise, they will also get a toast.

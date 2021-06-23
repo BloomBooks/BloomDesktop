@@ -303,7 +303,7 @@ namespace Bloom.TeamCollection
 			}
 			catch (Exception ex)
 			{
-				SentrySdk.CaptureException(ex);
+				NonFatalProblem.ReportSentryOnly(ex);
 				return false;
 			}
 		}

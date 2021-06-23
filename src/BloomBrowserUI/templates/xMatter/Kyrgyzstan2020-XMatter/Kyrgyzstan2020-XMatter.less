@@ -1,5 +1,6 @@
 @import "../../xMatter/bloom-xmatter-common.less";
 @import (reference) "../../../bookLayout/basePage.less";
+@import "./Kyrgyzstan2020-Xmatter-common.less";
 
 @XMatterPackName: "Kyrgyz";
 @bleed: 3mm;
@@ -34,20 +35,6 @@
     }
 }
 
-// we need a lot of classes here to overcome the unfortunately "!important" class put in by Bloom at runtime
-div.bloom-page.outsideFrontCover.coverColor,
-div.bloom-page.outsideBackCover.coverColor {
-    background-color: #193970 !important;
-    color: white;
-}
-
-.outsideFrontCover .marginBox {
-    top: 0;
-    left: 0 !important;
-    height: 100% !important;
-    width: 100% !important;
-}
-
 .outsideBackCover .marginBox {
     top: 0;
     height: calc(100% - 15mm) !important;
@@ -58,74 +45,10 @@ div.bloom-page.outsideBackCover.coverColor {
     }
 }
 
-.frontCover .placeholder,
-.frontCover .bloom-imageContainer {
-    margin-left: 1cm;
-
-    margin-right: 1cm;
-    display: flex;
-}
-
 .outsideBackCover [data-book="level-image"] img {
     // This unset was used to allow left-align, but we were subsequently asked to (re-)center it.
     // Leaving this for if/when they change their mind.
     //width: unset; // allow it to left-align
-}
-.frontCover .bottomBlock {
-    margin-left: 1cm;
-    margin-right: 1cm;
-    margin-bottom: 1.5cm; // leave room for divider
-}
-.frontCover .bottomRow {
-    display: grid !important;
-    overflow: hidden;
-}
-
-// don't show second language on cover
-.frontCover
-    .bloom-translationGroup.bookTitle
-    .bloom-editable.bloom-contentNational1:not(.bloom-content1) {
-    display: none;
-}
-
-.frontCover .bloom-translationGroup.bookTitle {
-    color: black;
-    background-color: white;
-    // if you touch this make sure the header is the same height on front and back covers!;
-    height: var(--HeaderHeight);
-    box-sizing: border-box; // padding doesn't affect height.
-    /*flex-basis: content;*/
-    flex-direction: column;
-    justify-content: center;
-
-    // padding here instead of margin so that it's still white in these areas instead of blue
-    padding-top: @bleed; // center it calculating the height below the bleed
-    padding-left: 1cm;
-    padding-right: 1cm;
-
-    // repeat to make more specific than other rules
-    .bloom-editable.bloom-editable.bloom-content1 {
-        margin-bottom: 0; // don't want this to mess with vertical centering
-        flex-grow: 0; // center it, don't grow it
-    }
-}
-
-// This much of the translation group will be trimmed off if the printer
-// achieves the ideal trim cut: the bleed area plus the amount of the original
-// A5 page that is cut off when we scale the width to RA4 which makes the height
-// a bit more than RA5. And similarly for other sizes.
-.frontCover.A5Portrait .bloom-translationGroup.bookTitle {
-    padding-top: @bleed + @A5Portrait-Height-Excess / 2;
-}
-.frontCover.USComicPortrait .bloom-translationGroup.bookTitle {
-    padding-top: @bleed + @USComicPortrait-Height-Excess / 2;
-}
-
-.outsideBackCover {
-    .Outside-Back-Cover-style {
-        margin-top: 8mm; // 15mm wasn't enough room for text 15mm;  In Landscape mode, we remove this
-        font-size: var(--OutsideBackCoverCreditsFontSize);
-    }
 }
 
 @A5Landscape-column2-left: 11.5mm;
@@ -214,29 +137,6 @@ div.bloom-page.outsideBackCover.coverColor {
 .outsideBackCover .divider {
     bottom: -31px !important;
 }
-.frontCover {
-    .coverBottomLangName,
-    .coverBottomBookTopic {
-        display: none;
-    }
-}
-
-/* Element | http://localhost:8089/bloom/C%3A/Users/hatto/Documents/Bloom/Kyrgyz%20Branding%20Test/Book/8444a5b9-4b6a-476a-90da-cc003fbc1fea-memsim-Preview.html */
-
-//.frontCover div.bloom-imageContainer:nth-child(2) > img:nth-child(1) {
-.frontCover div.bloom-imageContainer > img {
-    // We use "contain" instead of "unset" so that when previewing a book
-    // that has not been edited yet, we don't get a distorted picture. Instead,
-    // we get a white border that doesn't tightly fit the image. Then in
-    // bloomImage.SetImageDisplaySizeIfCalledFor(), we overwrite this to become object-fit:cover.
-    object-fit: contain;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: auto;
-    margin-bottom: auto;
-    border: solid white 3px;
-    box-sizing: border-box; // keep it within the image-container, not 6px beyond it because of the border
-}
 
 .A5Portrait,
 .A4Portrait,
@@ -324,14 +224,6 @@ div.bloom-page.outsideBackCover.coverColor {
     border: none !important;
 }
 
-/* only white makes sense, e.g. for the inside cover colors */
-div.bloom-page {
-    &.insideFrontCover,
-    &.insideBackCover {
-        background-color: white !important;
-    }
-}
-
 .bloom-mediaBox {
     :not(.Device16x9Portrait):not(.Device16x9Landscape)&::before {
         // we're not expecting an edge-to-edge images, so no need to show the transparent bleed area. Just make it black.
@@ -357,12 +249,6 @@ div.bloom-page {
 // NOTE. The existence of this selector tells XMatterHelper that we can handle device layout, so don't revert to a specialized one.
 .Device16x9Portrait,
 .Device16x9Landscape {
-    &.frontCover {
-        .bloom-translationGroup.bookTitle {
-            padding-top: 0;
-            padding-bottom: 0;
-        }
-    }
     &.outsideBackCover {
         .marginBox {
             left: 19px !important;
@@ -439,70 +325,10 @@ div.bloom-page {
     }
 }
 
-.epub {
-    .divider {
-        display: none;
-    }
+.frontCover .bloom-translationGroup.bookTitle {
+    // if you touch this make sure the header is the same height on front and back covers!;
+    height: var(--HeaderHeight);
 
-    // For ePub, set things as if we're doing Device16x9Portrait layout
-    --HeaderHeight: 3cm; // enough for two lines
-    --OutsideBackCoverLogoHeight: 10mm;
-    --OutsideBackCoverCreditsFontSize: 9pt;
-
-    .frontCover .bloom-translationGroup.bookTitle {
-        padding-top: 0;
-        padding-bottom: 0;
-    }
-
-    // Most modern smartphones have dppx settings of 2.1+, this is only for lower res phones.
-    @media (max-resolution: 2dppx) {
-        .frontCover .bottomBlock {
-            margin: unset; // eliminate some extra spacing that messes up smaller epubs.
-        }
-    }
-
-    .outsideBackCover .marginBox {
-        width: 100%; // Override non-epub rule to ensure width will handle both government logos.
-
-        // Keep logos on back cover from bleeding to next page
-        .outside-back-cover-branding-top-block {
-            margin: 0;
-            padding: 0;
-        }
-
-        .bottomHalfGrid {
-            height: 600px;
-            // Our theory is that because epubs are always portrait, we are better off just letting
-            // the level-image flow below the text. So override the display:grid for other publications.
-            // With display:grid, you can have the text and the image overlapping.
-            // (But with display:block, you can get the image partially off the page...)
-            display: block;
-            [data-book="level-image"] {
-                margin-left: auto;
-                margin-right: auto;
-                margin-bottom: 10px; //separate from preceding text
-                img {
-                    height: 250px;
-                }
-            }
-            .bloom-translationGroup {
-                .bloom-editable p {
-                    // Some day, we probably want to move this rule (and others?) from basePage.less
-                    // to basePage-sharedRules.less to get better WYSIWYG in epubs. But for 5.0, at least,
-                    // we are just doing this in this one specific case.
-                    margin: 0;
-
-                    // Actually, pages normally get 1.5em as the default, but
-                    // since the purpose of it here is just to give us something rather than nothing for empty paragraphs and
-                    // since epubs are usually more space-limited,
-                    // we reduce it a bit.
-                    min-height: 0.7em;
-                }
-            }
-        }
-
-        @media (max-resolution: 2dppx) {
-            height: unset !important; // override non-epub version for low-res phones
-        }
-    }
+    // padding here instead of margin so that it's still white in these areas instead of blue
+    padding-top: @bleed; // center it calculating the height below the bleed
 }

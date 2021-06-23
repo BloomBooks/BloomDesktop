@@ -297,7 +297,7 @@ const ComicToolControls: React.FunctionComponent = () => {
                 parentElement,
                 bubbleSpec
             );
-            bubbleManager.addChildTOPBoxAndReloadPage(
+            bubbleManager.addChildTOPBoxAndRefreshPage(
                 parentElement,
                 offsetX,
                 offsetY
@@ -321,17 +321,11 @@ const ComicToolControls: React.FunctionComponent = () => {
         // for the source element with screen coordinates of where the mouse was released.
         // This can be used to simulate the drop event with coordinate transformation.
         // See https://issues.bloomlibrary.org/youtrack/issue/BL-7958.
-        if (
-            isLinux() &&
-            bubbleManager &&
+        if (isLinux() && bubbleManager) {
             bubbleManager.addFloatingTOPBoxWithScreenCoords(
                 ev.screenX,
                 ev.screenY,
                 style
-            )
-        ) {
-            BloomApi.postThatMightNavigate(
-                "common/saveChangesAndRethinkPageEvent"
             );
         }
     };

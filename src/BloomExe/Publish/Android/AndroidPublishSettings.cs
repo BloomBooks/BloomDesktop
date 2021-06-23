@@ -8,7 +8,12 @@ namespace Bloom.Publish.Android
 	// just extending this class.
 	public class AndroidPublishSettings
 	{
+		// Specifies the languages whose text should be included in the published book.
 		public HashSet<string> LanguagesToInclude;
+
+		// Specifies the languages for which narration audio should not be included, even if their text is include
+		// NOTE: It's more natural for consumers to think about what languages they want to EXCLUDE, rather than what languages they want to INCLUDE
+		public HashSet<string> AudioLanguagesToExclude;
 
 		public override bool Equals(object obj)
 		{

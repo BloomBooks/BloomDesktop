@@ -179,6 +179,8 @@ namespace Bloom.Publish
 
 		private SimulatedPageFile MakeFinalHtmlForPdfMaker()
 		{
+			if (_currentlyLoadedBook == null)
+				_currentlyLoadedBook = BookSelection.CurrentSelection;
 			PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
 			var orientationChanging = BookSelection.CurrentSelection.GetLayout().SizeAndOrientation.IsLandScape !=

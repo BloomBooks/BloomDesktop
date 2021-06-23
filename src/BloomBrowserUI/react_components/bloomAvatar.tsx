@@ -9,11 +9,10 @@ export const BloomAvatar: React.FunctionComponent<{
     email: string;
     name: string;
     borderColor?: string;
-    radius?: number;
+    avatarSizeInt?: number;
 }> = props => {
     const borderSizeInt = 3;
-
-    const radius = props.radius ?? 48;
+    const avatarSizeInt = props.avatarSizeInt || 48;
     const avatarSize = props.borderColor
         ? `${radius - borderSizeInt}px`
         : `${radius}px`;

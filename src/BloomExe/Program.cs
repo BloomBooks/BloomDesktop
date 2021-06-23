@@ -121,7 +121,7 @@ namespace Bloom
 			// The following is how we will do things from now on, and things can be moved
 			// into this as time allows. See CommandLineOptions.cs.
 			if (args1.Length > 0 &&
-			    new[] {"--help", "hydrate", "upload", "download", "getfonts", "changeLayout", "createArtifacts"}
+			    new[] {"--help", "hydrate", "upload", "download", "getfonts", "changeLayout", "createArtifacts", "spreadsheetExport", "spreadsheetImport" }
 				    .Contains(args1[0])) //restrict using the commandline parser to cases were it should work
 			{
 #if !__MonoCS__
@@ -134,7 +134,8 @@ namespace Bloom
 						new[]
 						{
 							typeof(HydrateParameters), typeof(UploadParameters), typeof(DownloadBookOptions), typeof(GetUsedFontsParameters),
-							typeof(ChangeLayoutParameters), typeof(CreateArtifactsParameters)
+							typeof(ChangeLayoutParameters), typeof(CreateArtifactsParameters), typeof(SpreadsheetExportParameters),
+							typeof(SpreadsheetImportParameters)
 						})
 					.MapResult(
 						(HydrateParameters opts) => HydrateBookCommand.Handle(opts),
@@ -149,6 +150,8 @@ namespace Bloom
 						(GetUsedFontsParameters opts) => GetUsedFontsCommand.Handle(opts),
 						(ChangeLayoutParameters opts) => ChangeLayoutCommand.Handle(opts),
 						(CreateArtifactsParameters opts) => CreateArtifactsCommand.Handle(opts),
+						(SpreadsheetExportParameters opts) => SpreadsheetExportCommand.Handle(opts),
+						(SpreadsheetImportParameters opts) => SpreadsheetImportCommand.Handle(opts),
 						errors =>
 						{
 							var code = 0;
@@ -703,7 +706,7 @@ namespace Bloom
 				else
 					Logger.WriteError("Exception caught at outermost level of Bloom:", bad);
 				var exceptMsg = "TargetInvocationException";
-				try { SentrySdk.CaptureException(bad); } catch (Exception e) { exceptMsg += $" (SentrySdk.CaptureException failed: {e})"; }
+				try { NonFatalProblem.ReportSentryOnly(bad, throwOnException: true); } catch (Exception e) { exceptMsg += $" (Sentry report failed: {e})"; }
 				ShowUserEmergencyShutdownMessage(bad);
 				System.Environment.FailFast(exceptMsg);
 			}
@@ -711,7 +714,7 @@ namespace Bloom
 			{
 				Logger.WriteError("Exception caught at outermost level of Bloom: ", nasty);
 				var exceptMsg = "AccessViolationException";
-				try { SentrySdk.CaptureException(nasty); } catch (Exception e) { exceptMsg += $" (SentrySdk.CaptureException failed: {e})"; }
+				try { NonFatalProblem.ReportSentryOnly(nasty, throwOnException: true); } catch (Exception e) { exceptMsg += $" (Sentry report failed: {e})"; }
 				ShowUserEmergencyShutdownMessage(nasty);
 				System.Environment.FailFast(exceptMsg);
 			}
@@ -1364,16 +1367,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			{
 				ExceptionHandler.AddDelegate((w, e) =>
 				{
-					try
-					{
-							SentrySdk.CaptureException(e.Exception);
-					}
-					catch (Exception err)
-					{
-						// Will only "do something" if we're testing reporting and have thus turned off checking for dev.
-						// // Else we're swallowing.
-						Debug.Fail(err.Message);
-					}
+					NonFatalProblem.ReportSentryOnly(e.Exception);
 				});
 			}
 			_errorHandlingHasBeenSetUp = true;

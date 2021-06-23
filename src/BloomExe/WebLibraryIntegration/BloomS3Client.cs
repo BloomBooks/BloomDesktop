@@ -46,6 +46,11 @@ namespace Bloom.WebLibraryIntegration
 		public BloomS3Client(string bucketName)
 		{
 			_bucketName = bucketName;
+			if (BookTransfer.IsDryRun)
+			{
+				_s3Config = null;
+				return;
+			}
 			_s3Config = new AmazonS3Config { ServiceURL = "https://s3.amazonaws.com" };
 			var proxy = new ProxyManager();
 			if (!string.IsNullOrEmpty(proxy.Hostname))
@@ -76,6 +81,9 @@ namespace Bloom.WebLibraryIntegration
 
 		protected virtual IAmazonS3 CreateAmazonS3Client(string bucketName, AmazonS3Config s3Config)
 		{
+			if (BookTransfer.IsDryRun)
+				return null;
+
 			var accessKeys = AccessKeys.GetAccessKeys(bucketName);
 			return new AmazonS3Client(accessKeys.S3AccessKey,
 				accessKeys.S3SecretAccessKey, s3Config);
@@ -135,6 +143,9 @@ namespace Bloom.WebLibraryIntegration
 
 		public void DeleteBookData(string bucketName, string key)
 		{
+			if (BookTransfer.IsDryRun)
+				return;
+
 			var listMatchingObjectsRequest = new ListObjectsRequest()
 			{
 				BucketName = bucketName,
@@ -178,7 +189,7 @@ namespace Bloom.WebLibraryIntegration
 		/// <returns>url to the uploaded file</returns>
 		public string UploadSingleFile(string pathToFile, IProgress progress)
 		{
-			using(var transferUtility = new TransferUtility(GetAmazonS3(_bucketName)))
+			using (var transferUtility =  (BookTransfer.IsDryRun) ? null : new TransferUtility(GetAmazonS3(_bucketName)))
 			{
 				var request = new TransferUtilityUploadRequest
 				{
@@ -191,7 +202,9 @@ namespace Bloom.WebLibraryIntegration
 				// the stored response MUST always go through validation with the origin server first before using it..."
 				request.Headers.CacheControl = "no-cache";
 				progress.WriteStatus("Uploading book to Bloom Support...");
-				transferUtility.Upload(request);
+				Console.WriteLine("Uploading book to Bloom Support...");
+				if (!BookTransfer.IsDryRun)
+					transferUtility.Upload(request);
 				return "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(request.Key);
 			}
 		}
@@ -368,7 +381,7 @@ namespace Bloom.WebLibraryIntegration
 			if (BaseUrl == null && filesToUpload.Length > 0)
 				BaseUrl = "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(prefix);;
 
-			using(var transferUtility = new TransferUtility(_amazonS3))
+			using (var transferUtility = (BookTransfer.IsDryRun) ? null : new TransferUtility(_amazonS3))
 			{
 				foreach(string file in filesToUpload)
 				{
@@ -403,16 +416,16 @@ namespace Bloom.WebLibraryIntegration
 					// the stored response MUST always go through validation with the origin server first before using it..."
 					request.Headers.CacheControl = "no-cache";
 					request.CannedACL = S3CannedACL.PublicRead; // Allows any browser to download it.
-
-					progress.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.UploadingStatus", "Uploading {0}"),
-						fileName);
+					var uploadMsgFmt = LocalizationManager.GetString("PublishTab.Upload.UploadingStatus", "Uploading {0}");
+					progress.WriteStatus(uploadMsgFmt, fileName);
+					Console.WriteLine(uploadMsgFmt, fileName);
 					if (progress.CancelRequested)
 						return;
 
 					try
 					{
-						transferUtility.Upload(request);
-
+						if (!BookTransfer.IsDryRun)
+							transferUtility.Upload(request);
 					}
 					catch(Exception e)
 					{
