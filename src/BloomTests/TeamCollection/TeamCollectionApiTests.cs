@@ -39,7 +39,7 @@ namespace BloomTests.TeamCollection
 			var collectionPath = Path.Combine(_localCollection.FolderPath,
 				Path.ChangeExtension(Path.GetFileName(_localCollection.FolderPath), ".bloomCollection"));
 			_tcManager = new TeamCollectionManager(collectionPath, new BloomWebSocketServer(), new BookRenamedEvent(), null, null, null);
-			_api = new TeamCollectionApi(new CollectionSettings(collectionPath), new BookSelection(),
+			_api = new TeamCollectionApi(new CurrentEditableCollectionSelection(), new CollectionSettings(collectionPath), new BookSelection(),
 				_tcManager, null,  null);
 		}
 
