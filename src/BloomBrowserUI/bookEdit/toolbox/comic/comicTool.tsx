@@ -472,6 +472,24 @@ const ComicToolControls: React.FunctionComponent = () => {
                         onDragStart={ev => ondragstart(ev, "speech")}
                         onDragEnd={ev => ondragend(ev, "speech")}
                     />
+                    <img
+                        id="shapeChooserImagePlaceholder"
+                        className="comicToolControlDraggableBubble"
+                        src="placeHolder.png"
+                        draggable={true}
+                        onDragStart={ev => ondragstart(ev, "image")}
+                        onDragEnd={ev => ondragend(ev, "image")}
+                    />
+                    <img
+                        id="shapeChooserVideoPlaceholder"
+                        className="comicToolControlDraggableBubble"
+                        src="signLanguageTool.svg"
+                        draggable={true}
+                        onDragStart={ev => ondragstart(ev, "video")}
+                        onDragEnd={ev => ondragend(ev, "video")}
+                    />
+                </div>
+                <div className={"shapeChooserRow"} id={"shapeChooserRow2"}>
                     <Span
                         id="shapeChooserTextBlock"
                         l10nKey="EditTab.Toolbox.ComicTool.TextBlock"
@@ -482,8 +500,6 @@ const ComicToolControls: React.FunctionComponent = () => {
                     >
                         Text Block
                     </Span>
-                </div>
-                <div className={"shapeChooserRow"} id={"shapeChooserRow2"}>
                     <Span
                         id="shapeChooserCaption"
                         l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"

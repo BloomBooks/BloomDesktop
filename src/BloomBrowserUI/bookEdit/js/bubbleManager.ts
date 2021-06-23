@@ -1,6 +1,7 @@
-// This class makes it possible to add and delete textboxes that float over images. These floating
-// textboxes are intended for use in making comic books, but could also be useful in the case of
-// any book that uses a picture where there is space for text within the bounds of the picture.
+// This class makes it possible to add and delete elements that float over images. These floating
+// elements were originally intended for use in making comic books, but could also be useful for many
+// other cases of where there is space for text or another image or a video within the bounds of
+// the picture.
 ///<reference path="../../typings/jquery/jquery.d.ts"/>
 // This collectionSettings reference defines the function GetSettings(): ICollectionSettings
 // The actual function is injected by C#.
@@ -25,7 +26,11 @@ const kTextOverPictureClass = "bloom-textOverPicture";
 const kTextOverPictureSelector = `.${kTextOverPictureClass}`;
 const kImageContainerSelector = ".bloom-imageContainer";
 
-// references to "TOP" in the code refer to the actual TextOverPicture box (what "Bubble"s were originally called) installed in the Bloom page.
+// References to "TOP" in the code refer to the actual TextOverPicture box (what "Bubble"s were
+// originally called) installed in the Bloom page. We are gradually removing these, since now there
+// are multiple types of elements that can be placed over pictures, not just Text.
+// "Bubble" now becomes a generic name for any element placed over a picture that communicates with
+// comicaljs.
 export class BubbleManager {
     // The min width/height needs to be kept in sync with the corresponding values in bubble.less
     public minTextBoxWidthPx = 30;
@@ -1589,6 +1594,7 @@ export class BubbleManager {
         imageContainerJQuery: JQuery,
         style?: string
     ): HTMLElement {
+        // todo: handle additional styles; image/video
         const defaultNewTextLanguage = GetSettings().languageForNewTextBoxes;
         // add a draggable text bubble to the html dom of the current page
         const editableDivClasses =
