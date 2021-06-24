@@ -14,8 +14,8 @@ export const BloomAvatar: React.FunctionComponent<{
     const borderSizeInt = 3;
     const avatarSizeInt = props.avatarSizeInt || 48;
     const avatarSize = props.borderColor
-        ? `${radius - borderSizeInt}px`
-        : `${radius}px`;
+        ? `${avatarSizeInt - borderSizeInt}px`
+        : `${avatarSizeInt}px`;
     const borderStyle = props.borderColor
         ? `${borderSizeInt}px solid ${props.borderColor}`
         : undefined;

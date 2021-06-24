@@ -100,7 +100,7 @@ module.exports = merge(core, {
     },
     resolve: {
         // For some reason, webpack began to complain about being given minified source.
-        // alias: {
+        // alias: { x
         //   "react-dom": pathToReactDom,
         //   react: pathToReact // the point of this is to use the minified version. https://christianalfoni.github.io/react-webpack-cookbook/Optimizing-rebundling.html
         // },

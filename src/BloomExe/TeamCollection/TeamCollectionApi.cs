@@ -571,13 +571,7 @@ namespace Bloom.TeamCollection
 		// that it is checked-out to this user 
 		public bool CanEditBook()
 		{
-			if (_bookSelection.CurrentSelection == null || !_bookSelection.CurrentSelection.IsEditable)
-			{
-				return false; // no book, or the book's own logic says it's not editable
-			}
-
-			// We can edit it unless TC says we need a checkout to do it.
-			return !_tcManager.NeedCheckoutToEdit(_bookSelection.CurrentSelection.FolderPath);
+			return _tcManager.CanEditBook();
 		}
 	}
 }

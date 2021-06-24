@@ -20,13 +20,15 @@ import { IToolboxFrameExports } from "../toolbox/toolboxBootstrap";
 interface WindowWithExports extends Window {
     editTabBundle: any;
 }
-export function getToolboxFrameExports(): IToolboxFrameExports | null {
-    return getFrameExports("toolbox") as IToolboxFrameExports | null;
+export function getToolboxBundleExports(): IToolboxFrameExports | null {
+    return (getFrame("toolbox") as any)
+        ?.toolboxBundle as IToolboxFrameExports | null;
 }
-export function getPageFrameExports(): IPageFrameExports | null {
-    return getFrameExports("page") as IPageFrameExports | null;
+export function getEditablePageBundleExports(): IPageFrameExports | null {
+    return (getFrame("page") as any)
+        ?.editablePageBundle as IPageFrameExports | null;
 }
-export function getEditViewFrameExports(): IEditViewFrameExports {
+export function getEditTabBundleExports(): IEditViewFrameExports {
     return (<any>getRootWindow()).editTabBundle as IEditViewFrameExports;
 }
 
@@ -42,8 +44,4 @@ function getFrame(id: string): WindowWithExports | null {
     }
 
     return (<HTMLIFrameElement>element).contentWindow as WindowWithExports;
-}
-
-function getFrameExports(id: string): any {
-    return getFrame(id)?.editTabBundle;
 }

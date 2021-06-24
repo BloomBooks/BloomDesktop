@@ -37,7 +37,7 @@ export interface IPageFrameExports {
 }
 
 // This exports the functions that should be accessible from other IFrames or from C#.
-// For example, editTabBundle.getPageFrameExports().pageSelectionChanging() can be called.
+// For example, editTabBundle.getEditablePageBundleExports().pageSelectionChanging() can be called.
 import {
     pageSelectionChanging,
     getBodyContentForSavePage,

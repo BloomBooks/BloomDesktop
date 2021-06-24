@@ -40,7 +40,7 @@ export const BookButton: React.FunctionComponent<{
                     <BloomAvatar
                         email={teamCollectionStatus.who}
                         name={teamCollectionStatus.whoFirstName}
-                        radius={32}
+                        avatarSizeInt={32}
                         borderColor={
                             teamCollectionStatus.who ===
                             teamCollectionStatus.currentUser

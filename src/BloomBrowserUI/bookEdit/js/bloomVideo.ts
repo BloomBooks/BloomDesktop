@@ -6,7 +6,7 @@ import { BloomApi } from "../../utils/bloomApi";
 // Currently the button actions are entirely in C#.
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
-import { getToolboxFrameExports } from "./bloomFrames";
+import { getToolboxBundleExports } from "./bloomFrames";
 import {
     SignLanguageToolControls,
     SignLanguageTool
@@ -172,7 +172,7 @@ function SetupClickToShowSignLanguageTool(containerDiv: Element) {
     // if the user clicks on the video placeholder (or the video for that matter--see BL-6149),
     // bring up the sign language tool
     $(containerDiv).click(() => {
-        getToolboxFrameExports()
+        getToolboxBundleExports()
             ?.getTheOneToolbox()
             .activateToolFromId(SignLanguageToolControls.kToolID);
     });

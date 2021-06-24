@@ -42,7 +42,7 @@ import {
     DialogResult
 } from "../../../react_components/confirmDialog";
 import ImportIcon from "../../../react_components/icons/ImportIcon";
-import { getEditViewFrameExports } from "../../js/bloomFrames";
+import { getEditTabBundleExports } from "../../js/bloomFrames";
 import PlaybackOrderControls from "../../../react_components/playbackOrderControls";
 import Recordable from "./recordable";
 import { getMd5 } from "./md5Util";
@@ -3963,7 +3963,7 @@ export default class AudioRecording {
     };
     private handleImportRecordingClick(): void {
         if (this.doesRecordingExistForCurrentSelection()) {
-            getEditViewFrameExports().showConfirmDialog(
+            getEditTabBundleExports().showConfirmDialog(
                 this.confirmReplaceProps
             );
         } else {

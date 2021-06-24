@@ -1,5 +1,7 @@
-﻿using Bloom.Book;
+﻿using System;
+using Bloom.Book;
 using Bloom.Properties;
+using Bloom.Workspace;
 using Newtonsoft.Json;
 
 namespace Bloom.Api
@@ -14,12 +16,16 @@ namespace Bloom.Api
 
 		private readonly BookSelection _bookSelection;
 		private readonly EditBookCommand _editBookCommand;
+		private readonly CreateFromSourceBookCommand _createFromSourceBookCommand;
+		public WorkspaceView WorkspaceView;
 
-		public AppApi(BookSelection bookSelection, EditBookCommand editBookCommand)
+
+		public AppApi(BookSelection bookSelection, EditBookCommand editBookCommand, CreateFromSourceBookCommand createFromSourceBookCommand)
 
 		{
 			_bookSelection = bookSelection;
 			_editBookCommand = editBookCommand;
+			_createFromSourceBookCommand = createFromSourceBookCommand;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -48,7 +54,32 @@ namespace Bloom.Api
 					_editBookCommand.Raise(_bookSelection.CurrentSelection);
 					request.PostSucceeded();
 				}, true);
+			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "makeFromSelectedBook",
+				request =>
+				{
+					// Original in LibraryBookView had this...not sure if we might want it again.
+					//nb: don't move this to after the raise command, as the selection changes
+					// var checkinNotice = string.Format("Created book from '{0}'", _bookSelection.CurrentSelection.TitleBestForUserDisplay);
 
+					try
+					{
+						_createFromSourceBookCommand.Raise(_bookSelection.CurrentSelection);
+					}
+					catch (Exception error)
+					{
+						SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,
+							"Bloom could not add that book to the library.");
+					}
+
+					request.PostSucceeded();
+				}, true);
+			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "selectedBookInfo",
+				request =>
+				{
+					// Requests the same information that is sent to the websocket
+					// when the selection changes.
+					request.ReplyWithJson(WorkspaceView.GetCurrentSelectedBookInfo());
+				}, true);
 		}
 
 		public void HandleAutoUpdate(ApiRequest request)

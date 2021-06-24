@@ -6,7 +6,7 @@ import { DialogTitle, DialogActions, DialogContent } from "@material-ui/core";
 import CloseOnEscape from "react-close-on-escape";
 import { useL10n } from "./l10nHooks";
 import BloomButton from "./bloomButton";
-import { getEditViewFrameExports } from "../bookEdit/js/bloomFrames";
+import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";
 import { BloomApi } from "../utils/bloomApi";
 
 // All strings are assumed localized by the caller
@@ -86,6 +86,6 @@ export const showConfirmDialog = (
 const doRender = (props: IConfirmDialogProps, container?: Element | null) => {
     let modalContainer;
     if (container) modalContainer = container;
-    else modalContainer = getEditViewFrameExports().getModalDialogContainer();
+    else modalContainer = getEditTabBundleExports().getModalDialogContainer();
     ReactDOM.render(<ConfirmDialog {...props} />, modalContainer);
 };

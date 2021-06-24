@@ -1198,14 +1198,14 @@ function wordListChangedCallback() {
     requestWordsForSelectedStage();
 }
 
-import { getToolboxFrameExports } from "../../../js/bloomFrames";
+import { getToolboxBundleExports } from "../../../js/bloomFrames";
 
 $(document).ready(() => {
     attachEventHandlers();
     $("body")
         .find("*[data-i18n]")
         .localize(finishInitializing);
-    getToolboxFrameExports()!.addWordListChangedListener(
+    getToolboxBundleExports()!.addWordListChangedListener(
         "wordListChanged.ReaderSetup",
         wordListChangedCallback
     );
@@ -1214,7 +1214,7 @@ $(document).ready(() => {
     const container = $("body");
     //   const pageIframe = parent.frames['page'];
     //   pageIframe.editTabBundle.loadLongpressInstructions(container.find('textarea'));
-    getToolboxFrameExports()!.loadLongpressInstructions(
+    getToolboxBundleExports()!.loadLongpressInstructions(
         container.find("textarea")
     );
 });

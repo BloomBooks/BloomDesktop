@@ -5,7 +5,7 @@ import { BloomApi } from "../../utils/bloomApi";
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { ImageDescriptionAdapter } from "../toolbox/imageDescription/imageDescription";
-import { getToolboxFrameExports } from "../editViewFrame";
+import { getToolboxBundleExports } from "../editViewFrame";
 
 declare function ResetRememberedSize(element: HTMLElement);
 
@@ -181,7 +181,7 @@ function SetupImageContainer(containerDiv: HTMLElement) {
             if (
                 // Only show this button if the toolbox is also offering it. It might not offer it
                 // if it's experimental and that settings isn't on, or for Bloom Enterprise reasons, or whatever.
-                getToolboxFrameExports()
+                getToolboxBundleExports()
                     ?.getTheOneToolbox()
                     .getToolIfOffered(ImageDescriptionAdapter.kToolID)
             ) {
@@ -195,7 +195,7 @@ function SetupImageContainer(containerDiv: HTMLElement) {
                         '"></button>'
                 );
                 $this.find(".imageDescriptionButton").click(() => {
-                    getToolboxFrameExports()
+                    getToolboxBundleExports()
                         ?.getTheOneToolbox()
                         .activateToolFromId(ImageDescriptionAdapter.kToolID);
                 });

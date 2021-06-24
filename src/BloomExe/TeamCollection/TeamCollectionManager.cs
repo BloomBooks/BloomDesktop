@@ -26,6 +26,8 @@ namespace Bloom.TeamCollection
 
 		bool OkToEditCollectionSettings { get; }
 
+		bool CanEditBook();
+
 		// ENHANCE: Add other properties and methods as needed
 	}
 
@@ -147,6 +149,17 @@ namespace Bloom.TeamCollection
 			if (CurrentCollectionEvenIfDisconnected == null || string.IsNullOrEmpty(bookFolderPath))
 				return false;
 			return CurrentCollectionEvenIfDisconnected.NeedCheckoutToEdit(bookFolderPath);
+		}
+
+		public bool CanEditBook()
+		{
+			if (BookSelection.CurrentSelection == null || !BookSelection.CurrentSelection.IsEditable)
+			{
+				return false; // no book, or the book's own logic says it's not editable
+			}
+
+			// We can edit it unless TC says we need a checkout to do it.
+			return !NeedCheckoutToEdit(BookSelection.CurrentSelection.FolderPath);
 		}
 
 		/// <summary>

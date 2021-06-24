@@ -17,6 +17,7 @@ import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import { Block } from "@material-ui/icons";
 import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
 import { AvatarDialog } from "./AvatarDialog";
+import { PropTypes } from "mobx-react";
 
 // The panel that shows the book preview and settings in the collection tab in a Team Collection.
 
@@ -64,6 +65,9 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         currentUserName: ""
     });
     const [currentUserName, setCurrentUserName] = useState("");
+    useSubscribeToWebSocketForEvent("bookStatus", "reload", () =>
+        setReload(old => old + 1)
+    );
     React.useEffect(() => {
         let lockedByMe = false;
         BloomApi.get(
@@ -72,7 +76,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                 const bookStatus: IBookTeamCollectionStatus = data.data;
                 setBookStatus(bookStatus);
                 if (bookStatus.hasAProblem) {
-                    setState("problem");
+                    setLockState("problem");
                 } else if (bookStatus.changedRemotely) {
                     setLockState("needsReload");
                 } else if (bookStatus.who) {
@@ -119,7 +123,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                 );
             }
         );
-    }, [selectedBookId]);
+    }, [selectedBookId, reload]);
 
     useSubscribeToWebSocketForEvent(
         "checkinProgress",
@@ -370,7 +374,8 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                             "checkin-button",
                             "Check In.svg",
                             checkinHandler,
-                            progress > 0
+                            progress > 0,
+                            "secondary"
                         )}
                         menu={menu}
                     >
@@ -478,7 +483,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
 
     return (
         <ThemeProvider theme={theme}>
-            {panelContents(state)}
+            {panelContents(lockState)}
             <AvatarDialog
                 open={avatarDialogOpen}
                 close={() => setAvatarDialogOpen(false)}
@@ -495,7 +500,8 @@ export const getBloomButton = (
     buttonClass: string,
     icon?: string,
     clickHandler?: () => void,
-    disabled?: boolean
+    disabled?: boolean,
+    color?: "primary" | "secondary" | undefined
 ) => (
     <BloomButton
         iconBeforeText={icon ? <img src={icon} /> : <div />}
@@ -505,6 +511,7 @@ export const getBloomButton = (
         className={buttonClass}
         onClick={clickHandler}
         temporarilyDisableI18nWarning={true}
+        color={color || "primary"}
     >
         {english}
     </BloomButton>

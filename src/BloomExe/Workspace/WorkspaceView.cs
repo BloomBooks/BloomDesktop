@@ -20,6 +20,7 @@ using SIL.Windows.Forms.ReleaseNotes;
 using SIL.Windows.Forms.SettingProtection;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.TeamCollection;
@@ -27,6 +28,7 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using Gecko.Cache;
+using Newtonsoft.Json;
 using SIL.Windows.Forms.WritingSystems;
 using SIL.PlatformUtilities;
 using SIL.Windows.Forms.Miscellaneous;
@@ -74,6 +76,7 @@ namespace Bloom.Workspace
 		private TeamCollectionManager _tcManager;
 		private BookSelection _bookSelection;
 		private ToastNotifier _returnToCollectionTabNotifier;
+		private BloomWebSocketServer _webSocketServer;
 
 		//autofac uses this
 
@@ -94,7 +97,9 @@ namespace Bloom.Workspace
 							CommonApi commonApi,
 							BookSelection bookSelection,
 							BookStatusChangeEvent bookStatusChangeEvent,
-							TeamCollectionManager tcManager
+							TeamCollectionManager tcManager,
+							BloomWebSocketServer webSocketServer,
+							AppApi appApi
 			)
 		{
 			_model = model;
@@ -104,6 +109,8 @@ namespace Bloom.Workspace
 			_bookSelection = bookSelection;
 			_localizationChangedEvent = localizationChangedEvent;
 			_tcManager = tcManager;
+			_webSocketServer = webSocketServer;
+			appApi.WorkspaceView = this; // it needs to know, and there's some circularity involved in having factory pass it in
 
 			_collectionSettings = collectionSettings;
 			// This provides the common API with a hook it can use to reload
@@ -206,8 +213,29 @@ namespace Bloom.Workspace
 			_viewInitialized = false;
 			CommonApi.WorkspaceView = this;
 
+			bookSelection.SelectionChanged += HandleBookSelectionChanged;
 			bookStatusChangeEvent.Subscribe(args => { HandleBookStatusChange(args); });
 		}
+
+		private void HandleBookSelectionChanged(object sender, BookSelectionChangedEventArgs e)
+		{
+			var result = GetCurrentSelectedBookInfo();
+			_webSocketServer.SendString("book-selection", "changed", result);
+		}
+
+		public string GetCurrentSelectedBookInfo()
+		{
+			var book = _bookSelection.CurrentSelection;
+			// notify browser components that are listening to this event
+			var result = JsonConvert.SerializeObject(new
+			{
+				id = book?.ID,
+				editable = _tcManager.CanEditBook(),
+				canMakeBook = book != null && book.IsShellOrTemplate && !_bookSelection.CurrentSelection.HasFatalError
+			});
+			return result;
+		}
+
 		public static string MustBeAdminMessage => LocalizationManager.GetString("TeamCollection.MustBeAdmin",
 			"You must be an administrator to change collection settings");
 
@@ -218,6 +246,12 @@ namespace Bloom.Workspace
 				return;
 			if (bookName != Path.GetFileName(_bookSelection.CurrentSelection?.FolderPath))
 				return; // change is not to the book we're interested in.
+			// Notify anything on the Javascript side that might care about the status change.
+			SafeInvoke.Invoke("sending reload status", this, false, true,
+				() =>
+				{
+					_webSocketServer.SendEvent("bookStatus", "reload");
+				});
 			if (_tabStrip.SelectedTab == _legacyCollectionTab)
 				return; // this toast is all about returning to the collection tab
 			if (_returnToCollectionTabNotifier != null)

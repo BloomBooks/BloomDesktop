@@ -10,7 +10,7 @@ import {
     Paper
 } from "@material-ui/core";
 import CloseOnEscape from "react-close-on-escape";
-import { getEditViewFrameExports } from "../bookEdit/js/bloomFrames";
+import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";
 import { useL10n } from "./l10nHooks";
 import { ThemeProvider } from "@material-ui/styles";
 import theme from "../bloomMaterialUITheme";
@@ -262,6 +262,6 @@ const doRender = (
 ) => {
     let modalContainer;
     if (container) modalContainer = container;
-    else modalContainer = getEditViewFrameExports().getModalDialogContainer();
+    else modalContainer = getEditTabBundleExports().getModalDialogContainer();
     ReactDOM.render(<ColorPickerDialog {...props} />, modalContainer);
 };

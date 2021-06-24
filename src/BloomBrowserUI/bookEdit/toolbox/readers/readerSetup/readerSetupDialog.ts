@@ -11,7 +11,7 @@
 
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
-import { getEditViewFrameExports } from "../../../js/bloomFrames";
+import { getEditTabBundleExports } from "../../../js/bloomFrames";
 import { BloomApi } from "../../../../utils/bloomApi";
 
 function getDialogHtml(title) {
@@ -108,7 +108,7 @@ export function showSetupDialog(showWhat) {
                 // The showDialog function is a device to get the dialog element and its JQuery wrapper created in the frame
                 // where it is displayed. The main dialog() function doesn't work quite right (can't drag or resize it), and other functions
                 // like dialog("close") don't do anything, if the wrapper is created in the toolbox frame.
-                setupDialogElement = getEditViewFrameExports().showDialog(
+                setupDialogElement = getEditTabBundleExports().showDialog(
                     result.data
                         ? getSettingsForbidden(title, result.data)
                         : getDialogHtml(title),

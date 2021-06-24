@@ -1388,9 +1388,9 @@ namespace Bloom.Edit
 			// BL-9912 where the Leveled Reader Tool was prompted by some of this to call us back with a save to the
 			// tool state, but by then the editingModel had cleared out its knowledge of what book it had previously
 			// been editing, so there was an null.
-			RunJavaScript("if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getPageeditTabBundle()) !=='undefined') {editTabBundle.getToolboxeditTabBundle().removeToolboxMarkup();}");
-			var bodyHtml = RunJavaScript("if (typeof(editTabBundle && typeof(editTabBundle.getPageeditTabBundle()) !=='undefined') !=='undefined') {return editTabBundle.getPageeditTabBundle().getBodyContentForSavePage();}");
-			var userCssContent = RunJavaScript("if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getPageeditTabBundle()) !=='undefined') {return editTabBundle.getPageeditTabBundle().userStylesheetContent();}");
+			RunJavaScript("if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getToolboxBundleExports()) !=='undefined') {editTabBundle.getToolboxBundleExports().removeToolboxMarkup();}");
+			var bodyHtml = RunJavaScript("if (typeof(editTabBundle !=='undefined') && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined') {return editTabBundle.getEditablePageBundleExports().getBodyContentForSavePage();}");
+			var userCssContent = RunJavaScript("if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined') {return editTabBundle.getEditablePageBundleExports().userStylesheetContent();}");
 			_browser1.ReadEditableAreasNow(bodyHtml, userCssContent);
 		}
 
@@ -1718,7 +1718,7 @@ namespace Bloom.Edit
 			Application.Idle -= SaveWhenIdle; // don't need to do again till next Deactivate.
 			_model.SaveNow();
 			// Restore any tool state removed by CleanHtmlAndCopyToPageDom(), which is called by _model.SaveNow().
-			RunJavaScript("if (typeof(editTabBundle) !=='undefined') {editTabBundle.getToolboxeditTabBundle().applyToolboxStateToPage();}");
+			RunJavaScript("if (typeof(editTabBundle) !=='undefined') {editTabBundle.getToolboxBundleExports().applyToolboxStateToPage();}");
 		}
 
 		public string HelpTopicUrl => "/Tasks/Edit_tasks/Edit_tasks_overview.htm";

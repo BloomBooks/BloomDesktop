@@ -41,13 +41,6 @@ namespace Bloom.Book
 			InvokeSelectionChanged(aboutToEdit);
 			Settings.Default.CurrentBookPath = book?.FolderPath ?? "";
 			Settings.Default.Save();
-
-
-			// notify browser components that are listening to this event
-			var result = JsonConvert.SerializeObject(new { 
-				id = book.ID, editable = book.IsEditable
-			});
-			_webSocketServer.SendString("book-selection", "changed",result);
 		}
 
 		// virtual for mocking

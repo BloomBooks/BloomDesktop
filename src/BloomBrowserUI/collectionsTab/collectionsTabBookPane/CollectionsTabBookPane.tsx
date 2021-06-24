@@ -13,8 +13,7 @@ import { WireUpForWinforms } from "../../utils/WireUpWinform";
 export const CollectionsTabBookPane: React.FunctionComponent<{}> = props => {
     const [isTeamCollection, setIsTeamCollection] = useState(false);
 
-    // this is just to make react refresh (and the browser not cache) since we're always asking for the same "book-preview/index.htm"
-    const { id: selectedBookId, editable } = useSelectedBookInfo();
+    const { id: selectedBookId, editable, canMakeBook } = useSelectedBookInfo();
 
     React.useEffect(
         () => {
@@ -43,29 +42,57 @@ export const CollectionsTabBookPane: React.FunctionComponent<{}> = props => {
                     margin-bottom: 10px;
                 `}
             >
-                <BloomButton
-                    enabled={editable}
-                    variant={"outlined"}
-                    l10nKey="CollectionTab.EditBookButton"
-                    clickApiEndpoint="app/editSelectedBook"
-                    mightNavigate={true}
-                    enabledImageFile="EditTab.svg"
-                    hasText={true}
-                    color={"secondary"}
-                    css={css`
-                        background-color: white !important;
-                        color: ${editable
-                            ? "black !important"
-                            : "rgba(0, 0, 0, 0.26);"};
+                {canMakeBook || (
+                    <BloomButton
+                        enabled={editable}
+                        variant={"outlined"}
+                        l10nKey="CollectionTab.EditBookButton"
+                        clickApiEndpoint="app/editSelectedBook"
+                        mightNavigate={true}
+                        enabledImageFile="EditTab.svg"
+                        disabledImageFile="EditTab.svg"
+                        hasText={true}
+                        color="secondary"
+                        css={css`
+                            background-color: white !important;
+                            color: ${editable
+                                ? "black !important"
+                                : "rgba(0, 0, 0, 0.26);"};
 
-                        img {
-                            height: 2em;
-                            margin-right: 10px;
-                        }
-                    `}
-                >
-                    Edit this book
-                </BloomButton>
+                            img {
+                                height: 2em;
+                                margin-right: 10px;
+                            }
+                        `}
+                    >
+                        Edit this book
+                    </BloomButton>
+                )}
+                {canMakeBook && (
+                    <BloomButton
+                        enabled={true}
+                        variant={"outlined"}
+                        l10nKey="CollectionTab.MakeBookUsingThisTemplate"
+                        clickApiEndpoint="app/makeFromSelectedBook"
+                        mightNavigate={true}
+                        enabledImageFile="newBook.png"
+                        hasText={true}
+                        color="secondary"
+                        css={css`
+                            background-color: white !important;
+                            color: ${editable
+                                ? "black !important"
+                                : "rgba(0, 0, 0, 0.26);"};
+
+                            img {
+                                height: 2em;
+                                margin-right: 10px;
+                            }
+                        `}
+                    >
+                        Make a book using this source
+                    </BloomButton>
+                )}
             </div>
             <div
                 css={css`
@@ -86,7 +113,9 @@ export const CollectionsTabBookPane: React.FunctionComponent<{}> = props => {
                     `}
                 />
             </div>
-            {isTeamCollection ? (
+            {// Currently, canMakeBook is a synonym for 'book is not in the  current TC'
+            // If that stops being true we might need another more specialized status flag.
+            isTeamCollection && !canMakeBook ? (
                 <div id="teamCollection">
                     <TeamCollectionBookStatusPanel />
                 </div>
@@ -94,6 +123,3 @@ export const CollectionsTabBookPane: React.FunctionComponent<{}> = props => {
         </div>
     );
 };
-
-// this is here for the "legacy" collections tab
-WireUpForWinforms(CollectionsTabPane);
