@@ -5,6 +5,7 @@ import { BloomApi } from "../utils/bloomApi";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import { BookButton } from "./BookButton";
+import { useSelectedBookInfo } from "../app/selectedBook";
 
 interface IBookInfo {
     id: string;
@@ -33,6 +34,7 @@ export const BooksOfCollection: React.FunctionComponent<{
         `collections/selected-book-id?${collectionQuery}`,
         ""
     );
+    const selectedBookInfo = useSelectedBookInfo();
 
     const [contextMousePoint, setContextMousePoint] = React.useState<
         | {
@@ -83,7 +85,7 @@ export const BooksOfCollection: React.FunctionComponent<{
                         <BookButton
                             key={book.id}
                             book={book}
-                            selected={selectedBookId === book.id}
+                            selected={selectedBookInfo.id === book.id}
                             onClick={bookId => {
                                 setSelectedBookIdWithApi(bookId);
                             }}

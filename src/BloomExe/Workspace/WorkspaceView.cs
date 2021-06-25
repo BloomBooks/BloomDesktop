@@ -77,6 +77,7 @@ namespace Bloom.Workspace
 		private BookSelection _bookSelection;
 		private ToastNotifier _returnToCollectionTabNotifier;
 		private BloomWebSocketServer _webSocketServer;
+		private BookServer _bookServer;
 
 		//autofac uses this
 
@@ -99,7 +100,8 @@ namespace Bloom.Workspace
 							BookStatusChangeEvent bookStatusChangeEvent,
 							TeamCollectionManager tcManager,
 							BloomWebSocketServer webSocketServer,
-							AppApi appApi
+							AppApi appApi,
+							BookServer bookServer
 			)
 		{
 			_model = model;
@@ -110,6 +112,7 @@ namespace Bloom.Workspace
 			_localizationChangedEvent = localizationChangedEvent;
 			_tcManager = tcManager;
 			_webSocketServer = webSocketServer;
+			_bookServer = bookServer;
 			appApi.WorkspaceView = this; // it needs to know, and there's some circularity involved in having factory pass it in
 
 			_collectionSettings = collectionSettings;
@@ -215,6 +218,18 @@ namespace Bloom.Workspace
 
 			bookSelection.SelectionChanged += HandleBookSelectionChanged;
 			bookStatusChangeEvent.Subscribe(args => { HandleBookStatusChange(args); });
+			SelectPreviouslySelectedBook();
+		}
+
+		private void SelectPreviouslySelectedBook()
+		{
+			var selBookPath = Settings.Default.CurrentBookPath;
+			if (string.IsNullOrEmpty(selBookPath))
+				return;
+			var inEditableCollection = selBookPath.StartsWith(_collectionSettings.FolderPath);
+			var info = new BookInfo(selBookPath, inEditableCollection);
+			var book = _bookServer.GetBookFromBookInfo(info);
+			_bookSelection.SelectBook(book);
 		}
 
 		private void HandleBookSelectionChanged(object sender, BookSelectionChangedEventArgs e)
