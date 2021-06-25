@@ -26,13 +26,23 @@ namespace Bloom.WebLibraryIntegration
 			ApplicationId = keys.ParseApplicationKey;
 		}
 
-		public void SetLoginData(string account, string userId, string sessionToken)
+		public void SetLoginData(string account, string parseUserObjectId, string sessionToken)
 		{
 			Account = account;
 			Settings.Default.WebUserId = account;
+			Settings.Default.LastLoginSessionToken = sessionToken;
+			Settings.Default.LastLoginDest = BookTransfer.Destination;
+			Settings.Default.LastLoginParseObjectId = parseUserObjectId;
 			Settings.Default.Save();
-			_userId = userId;
+			_userId = parseUserObjectId;
 			_sessionToken = sessionToken;
+		}
+
+		public void SignInAgainForCommandLine(string userEmail)
+		{
+			// TODO: check userEmail against Settings.Default.WebUserId
+			// TODO: check current destination against Settings.Default.LastLoginDest
+			SetLoginData(Settings.Default.WebUserId, Settings.Default.LastLoginParseObjectId, Settings.Default.LastLoginSessionToken);
 		}
 
 		protected BloomParseClient(RestClient client)
