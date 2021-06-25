@@ -41,6 +41,7 @@ namespace Bloom.WebLibraryIntegration
 		private BloomS3Client _s3Client;
 		private readonly BookThumbNailer _thumbnailer;
 		private readonly BookDownloadStartingEvent _bookDownloadStartingEvent;
+		public IProgress Progress;
 
 		private HashSet<string> _collectionFoldersUploaded;
 		private int _newBooksUploaded;
@@ -48,7 +49,7 @@ namespace Bloom.WebLibraryIntegration
 		private int _booksSkipped;
 		private int _booksWithErrors;
 
-		private const string UploadLogFilename = "BloomBulkUploadLog.txt";
+		//private const string UploadLogFilename = "BloomBulkUploadLog.txt";
 		public const string UploadHashesFilename = ".lastUploadInfo";	// this filename must begin with a period
 
 		// The full path of the log text file used to restart failed bulk uploads.
@@ -204,7 +205,6 @@ namespace Bloom.WebLibraryIntegration
 			progress.WriteError(msg1);
 			progress.WriteError(msg2);
 			progress.WriteVerbose(e.StackTrace);
-			AppendErrorMessageToUploadLogFile(msg1, msg2);
 		}
 
 		public static string DownloadFolder
@@ -516,12 +516,9 @@ namespace Bloom.WebLibraryIntegration
 					progress.WriteError(msg1);
 					progress.WriteError(msg2);
 					progress.WriteVerbose(e.StackTrace);
-					Console.WriteLine(msg1);
-					Console.WriteLine(msg2);
-					Console.WriteLine(e.StackTrace);
+
 					if (IsProductionRun) // don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
 						Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
-					AppendErrorMessageToUploadLogFile(msg1, msg2);
 					return "";
 				}
 			}
@@ -697,144 +694,130 @@ namespace Bloom.WebLibraryIntegration
 		/// (over-writing the existing book) without informing the user.
 		/// </summary>
 		/// <remarks>This method is triggered by starting Bloom with "upload" on the cmd line.</remarks>
-		public void CommandLineUpload(ApplicationContainer container, UploadParameters options)
+		public void BulkUpload(ApplicationContainer container, UploadParameters options)
 		{
-			if (!IsThisVersionAllowedToUpload())
+			var kLogFile = "BloomBulkUploadLog.txt";
+			using (var progress = new MultiProgress())
 			{
-				var oldVersionMsg = LocalizationManager.GetString("PublishTab.Upload.OldVersion",
-					"Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.");
-				Console.WriteLine(oldVersionMsg);
-				return;
-			}
-			Debug.Assert(!String.IsNullOrWhiteSpace(options.UploadUser));
+				progress.Add(new Bloom.Utils.ConsoleProgress());
+				progress.Add(new FileLogProgress(Path.Combine(options.Path, kLogFile)));
 
-
-			_parseClient.SignInAgainForCommandLine(options.UploadUser);
-
-			//_parseClient.SetLoginData("okuukeremetbooks@gmail.com", "FGXZwn0cFl", "r:3bc8eff4c97657af298d02430a9e42b6");
-
-			Console.WriteLine("Uploading books as user {0}", options.UploadUser);
-
-			using (var dlg = new BulkUploadProgressDlg())
-			{
-				var worker = new BackgroundWorker();
-				worker.WorkerReportsProgress = true;
-				worker.DoWork += BackgroundUpload;
-				worker.RunWorkerCompleted += (sender, args) =>
+				if (!IsThisVersionAllowedToUpload())
 				{
-					dlg.Close();
-					if (args.Error != null)
+					var oldVersionMsg = LocalizationManager.GetString("PublishTab.Upload.OldVersion",
+						"Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.");
+					progress.WriteMessage(oldVersionMsg);
+					return;
+				}
+
+				Debug.Assert(!String.IsNullOrWhiteSpace(options.UploadUser));
+
+				_parseClient.SignInAgainForCommandLine(options.UploadUser);
+
+				progress.WriteMessage("Uploading books as user {0}", options.UploadUser);
+				
+				var bookParams = new BookUploadParameters(options);
+
+				BulkRepairInstanceIds(options.Path);
+				ProjectContext
+					context = null; // Expensive to create; hold each one we make until we find a book that needs a different one.
+				try
+				{
+					_collectionFoldersUploaded = new HashSet<string>();
+					_newBooksUploaded = 0;
+					_booksUpdated = 0;
+					_booksSkipped = 0;
+					_booksWithErrors = 0;
+
+					progress.WriteMessageWithColor("green", $"\n\nStarting upload at {DateTime.Now.ToString()}\n");
+
+					BulkUploadInternal(progress, container, bookParams, ref context);
+
+					if (_collectionFoldersUploaded.Count > 0)
 					{
-						Console.WriteLine("ERROR: {0}", args.Error);
-						throw args.Error;
+						progress.WriteMessageWithColor("green", "\n\nAll finished!");
+						progress.WriteMessage("Processed {0} collection folders.", _collectionFoldersUploaded.Count);
 					}
-				};
-				worker.RunWorkerAsync(new object[] {dlg, container, options});
-				dlg.ShowDialog(); // waits until worker completed closes it.
+					else
+					{
+						progress.WriteError("Did not find any collections to upload.");
+					}
+
+					progress.WriteMessage("Uploaded {0} new books.", _newBooksUploaded);
+					progress.WriteMessage("Updated {0} books that had changed.", _booksUpdated);
+					progress.WriteMessage("Skipped {0} books that had not changed.", _booksSkipped);
+					if (_booksWithErrors > 0)
+					{
+						progress.WriteError("Failed to upload {0} books. See \"{1}\" for details.", _booksWithErrors,
+							kLogFile);
+					}
+				}
+				finally
+				{
+					context?.Dispose();
+				}
 			}
 		}
 
-		/// <summary>
-		/// Worker function for a background thread task. See first lines for required args passed to RunWorkerAsync, which triggers this.
-		/// </summary>
-		private void BackgroundUpload(object sender, DoWorkEventArgs doWorkEventArgs)
-		{
-			var args = (object[]) doWorkEventArgs.Argument;
-			var dlg = (BulkUploadProgressDlg) args[0];
-			var appContainer = (ApplicationContainer)args[1];
-			var options = (UploadParameters)args[2];
-			var bookParams = new BookUploadParameters(options);
-			_bulkUploadLogPath = Path.Combine(options.Path, UploadLogFilename);
-			BulkRepairInstanceIds(options.Path);
-			ProjectContext context = null; // Expensive to create; hold each one we make until we find a book that needs a different one.
-			try
-			{
-				_collectionFoldersUploaded = new HashSet<string>();
-				_newBooksUploaded = 0;
-				_booksUpdated = 0;
-				_booksSkipped = 0;
-				_booksWithErrors = 0;
-
-				AppendBookToUploadLogFile($"\n\nStarting upload at {DateTime.Now.ToString()}\n");
-
-				UploadInternal(dlg, appContainer, bookParams, ref context);
-
-				// If we make it here, append a "finished" note to our log file
-				AppendBookToUploadLogFile("\n\nAll finished!");
-
-				Console.WriteLine("Processed {0} collection folders.", _collectionFoldersUploaded.Count);
-				Console.WriteLine("Uploaded {0} new books.", _newBooksUploaded);
-				Console.WriteLine("Updated {0} books that had changed.", _booksUpdated);
-				Console.WriteLine("Skipped {0} books that had not changed.", _booksSkipped);
-				Console.WriteLine("Failed to upload {0} books. See \"{1}\" for details.", _booksWithErrors, GetUploadLogFilePath());
-			}
-			finally
-			{
-				context?.Dispose();
-			}
-		}
-
-		private string GetUploadLogFilePath()
-		{
-			if (IsDryRun)
-				return String.IsNullOrEmpty(_bulkUploadLogPath) ? string.Empty : Path.Combine(Path.GetDirectoryName(_bulkUploadLogPath), "DryRun"+UploadLogFilename);
-			return _bulkUploadLogPath ?? string.Empty;
-		}
-
-		private void AppendBookToUploadLogFile(string newBook)
-		{
-			var path = GetUploadLogFilePath();
-			Debug.Assert(path.Length > 0);
-			File.AppendAllLines(path, new []{ newBook });
-		}
-
-		private void AppendErrorMessageToUploadLogFile(string message, string extra)
-		{
-			var path = GetUploadLogFilePath();
-			Debug.Assert(path.Length > 0);
-			File.AppendAllLines(path, new []{message, extra});
-		}
 
 		/// <summary>
 		/// Handles the recursion through directories: if a folder looks like a Bloom book upload it; otherwise, try its children.
 		/// Invisible folders like .hg are ignored.
 		/// </summary>
-		private void UploadInternal(BulkUploadProgressDlg dlg, ApplicationContainer container, BookUploadParameters bookParams,
+		private void BulkUploadInternal(IProgress progress, ApplicationContainer container, BookUploadParameters bookParams,
 			ref ProjectContext context)
 		{
 			var lastFolderPart = Path.GetFileName(bookParams.Folder);
 			if (lastFolderPart != null && lastFolderPart.StartsWith(".", StringComparison.Ordinal))
 				return; // secret folder or file, probably .hg or .lastUploadInfo
 
-			if (Directory.GetFiles(bookParams.Folder, "*.htm").Length == 1)
+			var htmlFileCount  = Directory.GetFiles(bookParams.Folder, "*.htm").Length;
+			if (htmlFileCount == 1)
 			{
 				// Exactly one htm file, assume this is a bloom book folder.
 				try
 				{
-					UploadBookInternal(dlg, container, bookParams, ref context);
+					UploadBookInternal(progress, container, bookParams, ref context);
 				}
 				catch (Exception e)
 				{
-					var msg = String.Format("{0} was not uploaded due to program crash: {1}", bookParams.Folder, e.Message);
-					dlg.Progress.WriteError(msg);
-					Console.WriteLine(msg);
-					AppendErrorMessageToUploadLogFile(msg, e.StackTrace);
+					var msg = String.Format("{0} was not uploaded due to error: {1}", bookParams.Folder, e.Message);
+					progress.WriteError(msg);
+					progress.WriteException(e);
 					++_booksWithErrors;
 				}
 				return;
 			}
+			else
+			{
+				if (htmlFileCount > 1)
+				{
+					progress.WriteError($"{bookParams.Folder} has ${htmlFileCount}");
+				}
+				else
+				{
+					if (Directory.GetFiles(bookParams.Folder, "*.css").Length > 0)
+					{
+						progress.WriteWarning($"{bookParams.Folder} has no html but has css. Suspicious.");
+					}
+					else
+					{
+						progress.WriteMessageWithColor("Gray", $"No book in {bookParams.Folder}");
+					}
+				}
+			}
+
 			foreach (var sub in Directory.GetDirectories(bookParams.Folder))
 			{
 				bookParams.Folder = sub;
-				UploadInternal(dlg, container, bookParams, ref context);
+				BulkUploadInternal(progress, container, bookParams, ref context);
 			}
 		}
 
-		private void UploadBookInternal(BulkUploadProgressDlg dlg, ApplicationContainer container, BookUploadParameters bookParams,
+		private void UploadBookInternal(IProgress progress, ApplicationContainer container, BookUploadParameters bookParams,
 			ref ProjectContext context)
 		{
-			dlg.Progress.WriteMessage("Starting to upload " + bookParams.Folder);
-			Console.WriteLine($"Starting to upload {bookParams.Folder}");
+			progress.WriteMessage("Starting to upload " + bookParams.Folder);
 			// Make sure the files we want to upload are up to date.
 			// Unfortunately this requires making a book object, which requires making a ProjectContext, which must be created with the
 			// proper parent book collection if possible.
@@ -842,9 +825,7 @@ namespace Bloom.WebLibraryIntegration
 			var collectionPath = Directory.GetFiles(parent, "*.bloomCollection").FirstOrDefault();
 			if (collectionPath == null || !RobustFile.Exists(collectionPath))
 			{
-				var msg = "Skipping book because no collection file was found in its parent directory.";
-				dlg.Progress.WriteError(msg);
-				Console.WriteLine(msg);
+				progress.WriteError("Skipping book because no collection file was found in its parent directory.");
 				return;
 			}
 			_collectionFoldersUploaded.Add(collectionPath);
@@ -867,9 +848,7 @@ namespace Bloom.WebLibraryIntegration
 				if (uploadedAlready)
 				{
 					// local copy of hashes file is identical or has been saved
-					var msg = "Skipping book because it has not changed since being uploaded.";
-					dlg.Progress.WriteMessage(msg);
-					Console.WriteLine(msg);
+					progress.WriteMessageWithColor("green", "Skipping book because it has not changed since being uploaded.");
 					++_booksSkipped;
 					return; // skip this one; we already uploaded it earlier.
 				}
@@ -893,7 +872,7 @@ namespace Bloom.WebLibraryIntegration
 			book.BringBookUpToDate(new NullProgress());
 			bookInfo.Bookshelf = book.CollectionSettings.DefaultBookshelf;
 			var bookshelfName = String.IsNullOrWhiteSpace(book.CollectionSettings.DefaultBookshelf) ? "(none)" : book.CollectionSettings.DefaultBookshelf;
-			Console.WriteLine($"Bookshelf={bookshelfName}");
+			progress.WriteError($"Bookshelf={bookshelfName}");
 
 			// Assemble the various arguments needed to make the objects normally involved in an upload.
 			// We leave some constructor arguments not actually needed for this purpose null.
@@ -922,17 +901,17 @@ namespace Bloom.WebLibraryIntegration
 				if (blPublishModel.BookIsAlreadyOnServer)
 				{
 					var msg = "Apparently this book is already on the server. Overwriting...";
-					ReportToLogBoxAndLogger(dlg.Progress, bookParams.Folder, msg);
-					Console.WriteLine(msg);
+					ReportToLogBoxAndLogger(progress, bookParams.Folder, msg);
+					progress.WriteError(msg);
 				}
 				using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))
 				{
-					PrepareBookForUpload(ref book, server, tempFolder.FolderPath, dlg.Progress);
+					PrepareBookForUpload(ref book, server, tempFolder.FolderPath, progress);
 					bookParams.LanguagesToUpload = languagesToUpload.ToArray();
-					FullUpload(book, dlg.Progress, view, bookParams, out dummy);
+					FullUpload(book, progress, view, bookParams, out dummy);
 				}
-				AppendBookToUploadLogFile(bookParams.Folder);
-				Console.WriteLine("{0} has been uploaded", bookParams.Folder);
+
+				progress.WriteMessageWithColor("Cyan","{0} has been uploaded", bookParams.Folder);
 				if (blPublishModel.BookIsAlreadyOnServer)
 					++_booksUpdated;
 				else
@@ -942,8 +921,7 @@ namespace Bloom.WebLibraryIntegration
 			{
 				// report to the user why we are not uploading their book
 				var reason = blPublishModel.GetReasonForNotUploadingBook();
-				ReportToLogBoxAndLogger(dlg.Progress, bookParams.Folder, reason);
-				Console.WriteLine("{0} was not uploaded.  {1}", bookParams.Folder, reason);
+				progress.WriteError("{0} was not uploaded.  {1}", bookParams.Folder, reason);
 				++_booksWithErrors;
 			}
 		}
@@ -988,7 +966,7 @@ namespace Bloom.WebLibraryIntegration
 		/// <summary>
 		/// If we do not have enterprise enabled, copy the book and remove all enterprise level features.
 		/// </summary>
-		internal static bool PrepareBookForUpload(ref Book.Book book, BookServer bookServer, string tempFolderPath, LogBox progressBox)
+		internal static bool PrepareBookForUpload(ref Book.Book book, BookServer bookServer, string tempFolderPath, IProgress progress)
 		{
 			if (book.CollectionSettings.HaveEnterpriseFeatures)
 				return false;
@@ -1007,7 +985,7 @@ namespace Bloom.WebLibraryIntegration
 				pages.Add(page);
 			ISet<string> warningMessages = new HashSet<string>();
 			PublishHelper.RemoveEnterpriseFeaturesIfNeeded(copiedBook, pages, warningMessages);
-			PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progressBox);
+			PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
 			copiedBook.Save();
 			copiedBook.Storage.UpdateSupportFiles();
 			book = copiedBook;
@@ -1018,7 +996,7 @@ namespace Bloom.WebLibraryIntegration
 		/// <summary>
 		/// Common routine used in normal upload and bulk upload.
 		/// </summary>
-		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, BookUploadParameters bookParams, out string parseId)
+		internal string FullUpload(Book.Book book, IProgress progress , PublishView publishView, BookUploadParameters bookParams, out string parseId)
 		{
 			book.Storage.CleanupUnusedSupportFiles(isForPublish:false); // we are publishing, but this is the real folder not a copy, so play safe.
 			var bookFolder = book.FolderPath;
@@ -1036,21 +1014,20 @@ namespace Bloom.WebLibraryIntegration
 			if (!bookParams.PreserveThumbnails || !thumbnailsExist)
 			{
 				var thumbnailMsg = LocalizationManager.GetString("PublishTab.Upload.MakingThumbnail", "Making thumbnail image...");
-				progressBox.WriteStatus(thumbnailMsg);
-				Console.WriteLine(thumbnailMsg);
+				progress.WriteStatus(thumbnailMsg);
 				//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
 				_thumbnailer.MakeThumbnailOfCover(book, 70); // this is a sacrificial one to prime the pump, to fix BL-2673
 				_thumbnailer.MakeThumbnailOfCover(book, 70);
-				if (progressBox.CancelRequested)
+				if (progress.CancelRequested)
 					return "";
 				_thumbnailer.MakeThumbnailOfCover(book, 256);
-				if (progressBox.CancelRequested)
+				if (progress.CancelRequested)
 					return "";
 
 				// It is possible the user never went back to the Collection tab after creating/updating the book, in which case
 				// the 'normal' thumbnail never got created/updating. See http://issues.bloomlibrary.org/youtrack/issue/BL-3469.
 				_thumbnailer.MakeThumbnailOfCover(book);
-				if (progressBox.CancelRequested)
+				if (progress.CancelRequested)
 					return "";
 			}
 			var uploadPdfPath = UploadPdfPath(bookFolder);
@@ -1060,9 +1037,9 @@ namespace Bloom.WebLibraryIntegration
 			if (!FileHelper.IsLocked(uploadPdfPath))
 			{
 				var pdfMsg = LocalizationManager.GetString("PublishTab.Upload.MakingPdf", "Making PDF Preview...");
-				progressBox.WriteStatus(pdfMsg);
-				Console.WriteLine(pdfMsg);
-				publishView.MakePublishPreview(progressBox);
+				progress.WriteStatus(pdfMsg);
+				
+				publishView.MakePublishPreview(progress);
 				if (RobustFile.Exists(publishView.PdfPreviewPath))
 				{
 					RobustFile.Copy(publishView.PdfPreviewPath, uploadPdfPath, true);
@@ -1072,10 +1049,10 @@ namespace Bloom.WebLibraryIntegration
 					return "";		// no PDF, no upload (See BL-6719)
 				}
 			}
-			if (progressBox.CancelRequested)
+			if (progress.CancelRequested)
 				return "";
 
-			return UploadBook(bookFolder, progressBox, out parseId, Path.GetFileName(uploadPdfPath),
+			return UploadBook(bookFolder, progress, out parseId, Path.GetFileName(uploadPdfPath),
 				GetAudioFilesToInclude(book, bookParams.ExcludeNarrationAudio, bookParams.ExcludeMusic), GetVideoFilesToInclude(book),
 				bookParams.LanguagesToUpload, book.CollectionSettings);
 		}

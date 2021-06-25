@@ -65,7 +65,7 @@ namespace Bloom.CLI
 							break;
 					}
 					Console.WriteLine("\nstarting upload");
-					transfer.CommandLineUpload(applicationContainer, options);
+					transfer.BulkUpload(applicationContainer, options);
 					Console.WriteLine(("\nupload complete\n"));
 				}
 				return 0;
