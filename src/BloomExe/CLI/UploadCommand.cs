@@ -65,7 +65,7 @@ namespace Bloom.CLI
 							break;
 					}
 					Console.WriteLine("\nstarting upload");
-					transfer.UploadFolder(applicationContainer, options);
+					transfer.CommandLineUpload(applicationContainer, options);
 					Console.WriteLine(("\nupload complete\n"));
 				}
 				return 0;
@@ -103,11 +103,8 @@ public class UploadParameters
 	[Option('e', "excludeMusicAudio", HelpText = "Exclude music (background) audio files from upload.  (The default is to upload music files.)", Required = false)]
 	public bool ExcludeMusicAudio { get; set; }
 
-	[Option('u', "user", HelpText = "Specify the Bloom Library user for the upload.", Required = true)]
+	[Option('u', "user", HelpText = "Specify the email account for the upload. Must match the currently logged in email from Bloom:Publish:Upload (share on the web) screen.", Required = true)]
 	public string UploadUser { get; set; }
-
-	[Option('p', "password", HelpText = "Specify the password for the given upload user.", Required = true)]
-	public string UploadPassword { get; set; }
 
 	[Option('T', "preserveThumbnails", HelpText = "Preserve any existing thumbnail images: don't try to recreate them.", Required = false)]
 	public bool PreserveThumbnails { get; set; }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -689,7 +689,7 @@ namespace Bloom.WebLibraryIntegration
 		/// (over-writing the existing book) without informing the user.
 		/// </summary>
 		/// <remarks>This method is triggered by starting Bloom with "upload" on the cmd line.</remarks>
-		public void UploadFolder(ApplicationContainer container, UploadParameters options)
+		public void CommandLineUpload(ApplicationContainer container, UploadParameters options)
 		{
 			if (!IsThisVersionAllowedToUpload())
 			{
@@ -698,45 +698,15 @@ namespace Bloom.WebLibraryIntegration
 				Console.WriteLine(oldVersionMsg);
 				return;
 			}
-			Debug.Assert(!String.IsNullOrWhiteSpace(options.UploadUser) && !String.IsNullOrWhiteSpace(options.UploadPassword));
-			if (!LogIn(options.UploadUser, options.UploadPassword))
-			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem($"Could not log you in using user='{options.UploadUser}' with the provided password.");
-				Console.WriteLine();
-				Console.WriteLine("Bloom could not log you in as {0} with the provided password.", options.UploadUser);
-				Console.WriteLine("Open a book in the Bloom editor, go to the Publish tab and sign in to BloomLibrary.org");
-				Console.WriteLine("using your username and password (or a Google account).  Then close Bloom editor without");
-				Console.WriteLine("signing out.  This may enable logging in for the bulk upload operation.");
-				return;
-			}
+			Debug.Assert(!String.IsNullOrWhiteSpace(options.UploadUser));
+
+
+			_parseClient.SignInAgainForCommandLine(options.UploadUser);
+
+			//_parseClient.SetLoginData("okuukeremetbooks@gmail.com", "FGXZwn0cFl", "r:3bc8eff4c97657af298d02430a9e42b6");
+
 			Console.WriteLine("Uploading books as user {0}", options.UploadUser);
 
-				// This seems as though it should work, but we get a message, apparently from Gecko,
-				// saying "Access to the port number given has been disabled for security reasons."
-				// Could not find any reason for this to happen while we execute the same code as
-				// getting a fresh token while running normally. We decided it was not worth further
-				// effort at present.
-				// I tried showing a dialog while attempting to connect with the last saved credentials,
-				// but it didn't help. We could try actually displaying the full login dialog.
-				//bool done = false;
-				//FirebaseLoginDialog.FirebaseUpdateToken(() =>
-				//{
-				//	if (!_parseClient.LoggedIn)
-				//	{
-				//		SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-				//			"Could not connect using saved credentials. You need to run Bloom normally (gui), go to publish, and make sure you are logged in. Then quit and try this again.");
-				//		Console.WriteLine("\nFailed to login.");
-				//		return;
-				//	}
-
-				//	done = true;
-				//});
-				//// Now we have to wait for it to happen;
-				//while (!done)
-				//{
-				//	Thread.Sleep(30);
-				//	Application.DoEvents();
-				//}
 
 			using (var dlg = new BulkUploadProgressDlg())
 			{
