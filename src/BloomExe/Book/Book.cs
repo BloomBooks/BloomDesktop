@@ -4100,6 +4100,51 @@ namespace Bloom.Book
 			return Path.GetInvalidFileNameChars().Aggregate(
 				languageName, (current, character) => current.Replace(character, ' '));
 		}
+
+		/// <summary>
+		/// Returns which languages in the book have at least one recorded audio
+		/// </summary>
+		public HashSet<string> GetLanguagesWithAudio()
+		{
+			var languagesWithAudio = new HashSet<string>();
+			var narrationNodeList = HtmlDom.SelectChildNarrationAudioElements(OurHtmlDom.Body, true);
+
+			for (int i = 0; i < narrationNodeList.Count; ++i)
+			{
+				var node = narrationNodeList[i];
+
+				var id = node.GetOptionalStringAttribute("id", null);
+				if (String.IsNullOrEmpty(id))
+					continue;
+						
+				var fileNames = BookStorage.GetNarrationAudioFileNames(id, true);
+
+				bool doesAnyAudioFileExist = false;
+				foreach (var audioFileName in fileNames)
+				{
+					var fullPath = Path.Combine(FolderPath, "audio", audioFileName);
+					if (RobustFile.Exists(fullPath))
+					{
+						doesAnyAudioFileExist = true;
+						break;
+					}
+				}
+
+				if (!doesAnyAudioFileExist)
+					continue;
+
+				// At this point, we know that node contains an audio file associated with it.
+				var nodeWithLangAttr = HtmlDom.FindSelfOrAncestorMatchingCondition(node, n => {
+					var tempLang = n.GetOptionalStringAttribute("lang", "");
+					return !String.IsNullOrEmpty(tempLang);
+				});
+
+				var lang = nodeWithLangAttr.GetOptionalStringAttribute("lang", "");
+				languagesWithAudio.Add(lang);
+			}
+
+			return languagesWithAudio;
+		}
 }
 }
 

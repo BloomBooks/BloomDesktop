@@ -20,6 +20,7 @@ using BloomTemp;
 using DesktopAnalytics;
 using SIL.IO;
 using Newtonsoft.Json;
+using SIL.Xml;
 
 namespace Bloom.Publish.Android
 {
@@ -44,6 +45,7 @@ namespace Bloom.Publish.Android
 		private object _lockForLanguages = new object();
 		private Dictionary<string, bool> _allLanguages;
 		private HashSet<string> _textLanguagesToPublish = new HashSet<string>();
+		private HashSet<string> _languagesWithAudio = new HashSet<string>();
 		private HashSet<string> _audioLanguagesToExclude = new HashSet<string>();
 		private Bloom.Book.Book _bookForLanguagesToPublish = null;
 
@@ -306,6 +308,7 @@ namespace Bloom.Publish.Android
 							name = request.CurrentBook.PrettyPrintLanguage(kvp.Key),
 							complete = kvp.Value,
 							includeText = _textLanguagesToPublish.Contains(kvp.Key),
+							containsAnyAudio = _languagesWithAudio.Contains(kvp.Key),
 							includeAudio = !_audioLanguagesToExclude.Contains(kvp.Key)
 						};
 						var json = JsonConvert.SerializeObject(value);
@@ -393,6 +396,8 @@ namespace Bloom.Publish.Android
 							kvp.Key == request.CurrentCollectionSettings?.Language1Iso639Code)
 							_textLanguagesToPublish.Add(kvp.Key);
 					}
+
+					_languagesWithAudio = request.CurrentBook.GetLanguagesWithAudio();
 
 					_audioLanguagesToExclude.Clear();
 				}
