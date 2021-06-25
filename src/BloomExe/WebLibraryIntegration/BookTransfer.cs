@@ -42,6 +42,12 @@ namespace Bloom.WebLibraryIntegration
 		private readonly BookThumbNailer _thumbnailer;
 		private readonly BookDownloadStartingEvent _bookDownloadStartingEvent;
 
+		private HashSet<string> _collectionFoldersUploaded;
+		private int _newBooksUploaded;
+		private int _booksUpdated;
+		private int _booksSkipped;
+		private int _booksWithErrors;
+
 		private const string UploadLogFilename = "BloomBulkUploadLog.txt";
 		public const string UploadHashesFilename = ".lastUploadInfo";	// this filename must begin with a period
 
@@ -743,10 +749,24 @@ namespace Bloom.WebLibraryIntegration
 			ProjectContext context = null; // Expensive to create; hold each one we make until we find a book that needs a different one.
 			try
 			{
+				_collectionFoldersUploaded = new HashSet<string>();
+				_newBooksUploaded = 0;
+				_booksUpdated = 0;
+				_booksSkipped = 0;
+				_booksWithErrors = 0;
+
+				AppendBookToUploadLogFile($"\n\nStarting upload at {DateTime.Now.ToString()}\n");
+
 				UploadInternal(dlg, appContainer, bookParams, ref context);
 
 				// If we make it here, append a "finished" note to our log file
 				AppendBookToUploadLogFile("\n\nAll finished!");
+
+				Console.WriteLine("Processed {0} collection folders.", _collectionFoldersUploaded.Count);
+				Console.WriteLine("Uploaded {0} new books.", _newBooksUploaded);
+				Console.WriteLine("Updated {0} books that had changed.", _booksUpdated);
+				Console.WriteLine("Skipped {0} books that had not changed.", _booksSkipped);
+				Console.WriteLine("Failed to upload {0} books. See \"{1}\" for details.", _booksWithErrors, GetUploadLogFilePath());
 			}
 			finally
 			{
@@ -754,7 +774,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		private string GetUploadFilePath()
+		private string GetUploadLogFilePath()
 		{
 			if (IsDryRun)
 				return String.IsNullOrEmpty(_bulkUploadLogPath) ? string.Empty : Path.Combine(Path.GetDirectoryName(_bulkUploadLogPath), "DryRun"+UploadLogFilename);
@@ -763,14 +783,14 @@ namespace Bloom.WebLibraryIntegration
 
 		private void AppendBookToUploadLogFile(string newBook)
 		{
-			var path = GetUploadFilePath();
+			var path = GetUploadLogFilePath();
 			Debug.Assert(path.Length > 0);
 			File.AppendAllLines(path, new []{ newBook });
 		}
 
 		private void AppendErrorMessageToUploadLogFile(string message, string extra)
 		{
-			var path = GetUploadFilePath();
+			var path = GetUploadLogFilePath();
 			Debug.Assert(path.Length > 0);
 			File.AppendAllLines(path, new []{message, extra});
 		}
@@ -789,111 +809,17 @@ namespace Bloom.WebLibraryIntegration
 			if (Directory.GetFiles(bookParams.Folder, "*.htm").Length == 1)
 			{
 				// Exactly one htm file, assume this is a bloom book folder.
-				dlg.Progress.WriteMessage("Starting to upload " + bookParams.Folder);
-				Console.WriteLine($"Starting to upload {bookParams.Folder}");
-				// Make sure the files we want to upload are up to date.
-				// Unfortunately this requires making a book object, which requires making a ProjectContext, which must be created with the
-				// proper parent book collection if possible.
-				var parent = Path.GetDirectoryName(bookParams.Folder);
-				var collectionPath = Directory.GetFiles(parent, "*.bloomCollection").FirstOrDefault();
-				if (collectionPath == null || !RobustFile.Exists(collectionPath))
+				try
 				{
-					var msg = "Skipping book because no collection file was found in its parent directory.";
+					UploadBookInternal(dlg, container, bookParams, ref context);
+				}
+				catch (Exception e)
+				{
+					var msg = String.Format("{0} was not uploaded due to program crash: {1}", bookParams.Folder, e.Message);
 					dlg.Progress.WriteError(msg);
 					Console.WriteLine(msg);
-					return;
-				}
-
-				// Compute the book hash file and compare it to the existing one for bulk upload.
-				var currentHashes = HashBookFolder(bookParams.Folder);
-				var uploadInfoPath = Path.Combine(bookParams.Folder, UploadHashesFilename);
-				if (!bookParams.ForceUpload)
-				{
-					var uploadedAlready = false;
-					if (Program.RunningUnitTests)
-					{
-						uploadedAlready = CheckAgainstLocalHashfile(currentHashes, uploadInfoPath);
-					}
-					else
-					{
-						uploadedAlready = CheckAgainstUploadedHashfile(currentHashes, bookParams.Folder);
-						RobustFile.WriteAllText(uploadInfoPath, currentHashes); // ensure local copy is saved
-					}
-					if (uploadedAlready)
-					{
-						// local copy of hashes file is identical or has been saved
-						var msg = "Skipping book because it has not changed since being uploaded.";
-						dlg.Progress.WriteMessage(msg);
-						Console.WriteLine(msg);
-						return; // skip this one; we already uploaded it earlier.
-					}
-				}
-				// save local copy of hashes file: it will be uploaded with the other book files
-				RobustFile.WriteAllText(uploadInfoPath, currentHashes);
-
-				if (context == null || context.SettingsPath != collectionPath)
-				{
-					context?.Dispose();
-					// optimise: creating a context seems to be quite expensive. Probably the only thing we need to change is
-					// the collection. If we could update that in place...despite autofac being told it has lifetime scope...we would save some time.
-					// Note however that it's not good enough to just store it in the project context. The one that is actually in
-					// the autofac object (_scope in the ProjectContext) is used by autofac to create various objects, in particular, books.
-					context = container.CreateProjectContext(collectionPath);
-					Program.SetProjectContext(context);
-				}
-				var server = context.BookServer;
-				var bookInfo = new BookInfo(bookParams.Folder, true);
-				var book = server.GetBookFromBookInfo(bookInfo);
-				book.BringBookUpToDate(new NullProgress());
-				bookInfo.Bookshelf = book.CollectionSettings.DefaultBookshelf;
-				var bookshelfName = String.IsNullOrWhiteSpace(book.CollectionSettings.DefaultBookshelf) ? "(none)" : book.CollectionSettings.DefaultBookshelf;
-				Console.WriteLine($"Bookshelf={bookshelfName}");
-
-				// Assemble the various arguments needed to make the objects normally involved in an upload.
-				// We leave some constructor arguments not actually needed for this purpose null.
-				var bookSelection = new BookSelection();
-				bookSelection.SelectBook(book);
-				var currentEditableCollectionSelection = new CurrentEditableCollectionSelection();
-
-				var collection = new BookCollection(collectionPath, BookCollection.CollectionType.SourceCollection, bookSelection);
-				currentEditableCollectionSelection.SelectCollection(collection);
-
-				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, context.Settings, server, _thumbnailer);
-				publishModel.PageLayout = book.GetLayout();
-				var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), this, null, null, null, null);
-				var blPublishModel = new BloomLibraryPublishModel(this, book, publishModel);
-				string dummy;
-
-				// Normally we let the user choose which languages to upload. Here, just the ones that have complete information.
-				var langDict = book.AllPublishableLanguages();
-				var languagesToUpload = langDict.Keys.Where(l => langDict[l]).ToList();
-				if (!string.IsNullOrEmpty(book.CollectionSettings.SignLanguageIso639Code) && GetVideoFilesToInclude(book).Any())
-				{
-					languagesToUpload.Insert(0, book.CollectionSettings.SignLanguageIso639Code);
-				}
-				if (blPublishModel.MetadataIsReadyToPublish && (languagesToUpload.Any() || blPublishModel.OkToUploadWithNoLanguages))
-				{
-					if (blPublishModel.BookIsAlreadyOnServer)
-					{
-						var msg = "Apparently this book is already on the server. Overwriting...";
-						ReportToLogBoxAndLogger(dlg.Progress, bookParams.Folder, msg);
-						Console.WriteLine(msg);
-					}
-					using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))
-					{
-						PrepareBookForUpload(ref book, server, tempFolder.FolderPath, dlg.Progress);
-						bookParams.LanguagesToUpload = languagesToUpload.ToArray();
-						FullUpload(book, dlg.Progress, view, bookParams, out dummy);
-					}
-					AppendBookToUploadLogFile(bookParams.Folder);
-					Console.WriteLine("{0} has been uploaded", bookParams.Folder);
-				}
-				else
-				{
-					// report to the user why we are not uploading their book
-					var reason = blPublishModel.GetReasonForNotUploadingBook();
-					ReportToLogBoxAndLogger(dlg.Progress, bookParams.Folder, reason);
-					Console.WriteLine("{0} was not uploaded.  {1}", bookParams.Folder, reason);
+					AppendErrorMessageToUploadLogFile(msg, e.StackTrace);
+					++_booksWithErrors;
 				}
 				return;
 			}
@@ -901,6 +827,124 @@ namespace Bloom.WebLibraryIntegration
 			{
 				bookParams.Folder = sub;
 				UploadInternal(dlg, container, bookParams, ref context);
+			}
+		}
+
+		private void UploadBookInternal(BulkUploadProgressDlg dlg, ApplicationContainer container, BookUploadParameters bookParams,
+			ref ProjectContext context)
+		{
+			dlg.Progress.WriteMessage("Starting to upload " + bookParams.Folder);
+			Console.WriteLine($"Starting to upload {bookParams.Folder}");
+			// Make sure the files we want to upload are up to date.
+			// Unfortunately this requires making a book object, which requires making a ProjectContext, which must be created with the
+			// proper parent book collection if possible.
+			var parent = Path.GetDirectoryName(bookParams.Folder);
+			var collectionPath = Directory.GetFiles(parent, "*.bloomCollection").FirstOrDefault();
+			if (collectionPath == null || !RobustFile.Exists(collectionPath))
+			{
+				var msg = "Skipping book because no collection file was found in its parent directory.";
+				dlg.Progress.WriteError(msg);
+				Console.WriteLine(msg);
+				return;
+			}
+			_collectionFoldersUploaded.Add(collectionPath);
+
+			// Compute the book hash file and compare it to the existing one for bulk upload.
+			var currentHashes = HashBookFolder(bookParams.Folder);
+			var uploadInfoPath = Path.Combine(bookParams.Folder, UploadHashesFilename);
+			if (!bookParams.ForceUpload)
+			{
+				var uploadedAlready = false;
+				if (Program.RunningUnitTests)
+				{
+					uploadedAlready = CheckAgainstLocalHashfile(currentHashes, uploadInfoPath);
+				}
+				else
+				{
+					uploadedAlready = CheckAgainstUploadedHashfile(currentHashes, bookParams.Folder);
+					RobustFile.WriteAllText(uploadInfoPath, currentHashes); // ensure local copy is saved
+				}
+				if (uploadedAlready)
+				{
+					// local copy of hashes file is identical or has been saved
+					var msg = "Skipping book because it has not changed since being uploaded.";
+					dlg.Progress.WriteMessage(msg);
+					Console.WriteLine(msg);
+					++_booksSkipped;
+					return; // skip this one; we already uploaded it earlier.
+				}
+			}
+			// save local copy of hashes file: it will be uploaded with the other book files
+			RobustFile.WriteAllText(uploadInfoPath, currentHashes);
+
+			if (context == null || context.SettingsPath != collectionPath)
+			{
+				context?.Dispose();
+				// optimise: creating a context seems to be quite expensive. Probably the only thing we need to change is
+				// the collection. If we could update that in place...despite autofac being told it has lifetime scope...we would save some time.
+				// Note however that it's not good enough to just store it in the project context. The one that is actually in
+				// the autofac object (_scope in the ProjectContext) is used by autofac to create various objects, in particular, books.
+				context = container.CreateProjectContext(collectionPath);
+				Program.SetProjectContext(context);
+			}
+			var server = context.BookServer;
+			var bookInfo = new BookInfo(bookParams.Folder, true);
+			var book = server.GetBookFromBookInfo(bookInfo);
+			book.BringBookUpToDate(new NullProgress());
+			bookInfo.Bookshelf = book.CollectionSettings.DefaultBookshelf;
+			var bookshelfName = String.IsNullOrWhiteSpace(book.CollectionSettings.DefaultBookshelf) ? "(none)" : book.CollectionSettings.DefaultBookshelf;
+			Console.WriteLine($"Bookshelf={bookshelfName}");
+
+			// Assemble the various arguments needed to make the objects normally involved in an upload.
+			// We leave some constructor arguments not actually needed for this purpose null.
+			var bookSelection = new BookSelection();
+			bookSelection.SelectBook(book);
+			var currentEditableCollectionSelection = new CurrentEditableCollectionSelection();
+
+			var collection = new BookCollection(collectionPath, BookCollection.CollectionType.SourceCollection, bookSelection);
+			currentEditableCollectionSelection.SelectCollection(collection);
+
+			var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, context.Settings, server, _thumbnailer);
+			publishModel.PageLayout = book.GetLayout();
+			var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), this, null, null, null, null);
+			var blPublishModel = new BloomLibraryPublishModel(this, book, publishModel);
+			string dummy;
+
+			// Normally we let the user choose which languages to upload. Here, just the ones that have complete information.
+			var langDict = book.AllPublishableLanguages();
+			var languagesToUpload = langDict.Keys.Where(l => langDict[l]).ToList();
+			if (!string.IsNullOrEmpty(book.CollectionSettings.SignLanguageIso639Code) && GetVideoFilesToInclude(book).Any())
+			{
+				languagesToUpload.Insert(0, book.CollectionSettings.SignLanguageIso639Code);
+			}
+			if (blPublishModel.MetadataIsReadyToPublish && (languagesToUpload.Any() || blPublishModel.OkToUploadWithNoLanguages))
+			{
+				if (blPublishModel.BookIsAlreadyOnServer)
+				{
+					var msg = "Apparently this book is already on the server. Overwriting...";
+					ReportToLogBoxAndLogger(dlg.Progress, bookParams.Folder, msg);
+					Console.WriteLine(msg);
+				}
+				using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))
+				{
+					PrepareBookForUpload(ref book, server, tempFolder.FolderPath, dlg.Progress);
+					bookParams.LanguagesToUpload = languagesToUpload.ToArray();
+					FullUpload(book, dlg.Progress, view, bookParams, out dummy);
+				}
+				AppendBookToUploadLogFile(bookParams.Folder);
+				Console.WriteLine("{0} has been uploaded", bookParams.Folder);
+				if (blPublishModel.BookIsAlreadyOnServer)
+					++_booksUpdated;
+				else
+					++_newBooksUploaded;
+			}
+			else
+			{
+				// report to the user why we are not uploading their book
+				var reason = blPublishModel.GetReasonForNotUploadingBook();
+				ReportToLogBoxAndLogger(dlg.Progress, bookParams.Folder, reason);
+				Console.WriteLine("{0} was not uploaded.  {1}", bookParams.Folder, reason);
+				++_booksWithErrors;
 			}
 		}
 
