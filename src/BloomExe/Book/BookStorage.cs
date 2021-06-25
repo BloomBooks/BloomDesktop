@@ -1040,15 +1040,24 @@ namespace Bloom.Book
 			var narrationElements = HtmlDom.SelectChildNarrationAudioElements(Dom.RawDom.DocumentElement, includeSplitTextBoxAudio, langsToExclude).Cast<XmlNode>();
 			var narrationIds = narrationElements.Select(node => node.GetOptionalStringAttribute("id", null)).Where(id => id != null);
 
+			// The dom only includes the ID, so we return all possible file names
+			foreach (var narrationId in narrationIds)
+				foreach (var filename in GetNarrationAudioFileNames(narrationId, includeWav))
+					yield return filename;
+		}
+
+		/// <summary>
+		/// Given a narration ID, yields the associated audio filenames (just the filename, not the full path) for that narration ID
+		/// </summary>
+		internal static IEnumerable<string> GetNarrationAudioFileNames(string narrationId, bool includeWav)
+		{
 			var extensionsToInclude = AudioProcessor.NarrationAudioExtensions.ToList();
 			if (!includeWav)
 				extensionsToInclude.Remove(".wav");
 
-			// The dom only includes the ID, so we return all possible file names
-			foreach (var narrationId in narrationIds)
-				foreach (var extension in extensionsToInclude)
-					// Should be a simple append, but previous code had ChangeExtension, so being defensive
-					yield return GetNormalizedPathForOS(Path.ChangeExtension(narrationId, extension));
+			foreach (var extension in extensionsToInclude)
+				// Should be a simple append, but previous code had ChangeExtension, so being defensive
+				yield return GetNormalizedPathForOS(Path.ChangeExtension(narrationId, extension));
 		}
 
 		public IEnumerable<string> GetActivityFolderNamesReferencedInBook()
