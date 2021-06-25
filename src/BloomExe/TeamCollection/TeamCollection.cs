@@ -1289,8 +1289,7 @@ namespace Bloom.TeamCollection
 				}
 				catch (Exception ex)
 				{
-					SentrySdk.AddBreadcrumb(string.Format("failed to migrate status file for {0}", path));
-					SentrySdk.CaptureException(ex);
+					NonFatalProblem.ReportSentryOnly(ex, $"failed to migrate status file for {path}");
 				}
 			}
 		}
