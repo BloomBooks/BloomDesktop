@@ -76,7 +76,7 @@ namespace Bloom.CollectionTab
 			SetTeamCollectionStatus(tcManager);
 			TeamCollectionManager.TeamCollectionStatusChanged += (sender, args) =>
 			{
-				if (!IsDisposed)
+				if (IsHandleCreated && !IsDisposed)
 				{
 					SafeInvoke.InvokeIfPossible("update TC status", this, false,
 						() => SetTeamCollectionStatus(tcManager));

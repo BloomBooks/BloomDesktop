@@ -221,6 +221,27 @@ namespace Bloom.Workspace
 			SelectPreviouslySelectedBook();
 		}
 
+		protected override void OnLoad(EventArgs e)
+		{
+			base.OnLoad(e);
+			// If we're loading a team collection, we need to do that...with its progress dialog...
+			// before anything else, and we'll need to close the splash screen to make room for
+			// that dialog.
+			// Note, this not put into _startupActions...it should never be disabled.
+			if (_tcManager?.CurrentCollectionEvenIfDisconnected == null)
+			{
+				_reactCollectionTabView.ReadyToShowCollections();
+			} else
+			{
+				StartupScreenManager.AddStartupAction(() =>
+				{
+					// Don't do anything else after this as part of this idle task.
+					// See the comment near the end of HandleTeamStuffBeforeGetBookCollections.
+					_model.HandleTeamStuffBeforeGetBookCollections(() => _reactCollectionTabView.ReadyToShowCollections());
+				}, shouldHideSplashScreen: true);
+			}
+		}
+
 		private void SelectPreviouslySelectedBook()
 		{
 			var selBookPath = Settings.Default.CurrentBookPath;

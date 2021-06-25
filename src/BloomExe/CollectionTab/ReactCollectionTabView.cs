@@ -18,10 +18,6 @@ namespace Bloom.CollectionTab
 	{
 		private readonly LibraryModel _model;
 
-
-
-		private LibraryBookView _bookView;
-
 		public ReactCollectionTabView(LibraryModel model, LibraryListView.Factory libraryListViewFactory,
 			LibraryBookView.Factory templateBookViewFactory,
 			SelectedTabChangedEvent selectedTabChangedEvent,
@@ -30,6 +26,7 @@ namespace Bloom.CollectionTab
 		{
 			_model = model;
 			InitializeComponent();
+			BackColor = _reactControl.BackColor = Palette.GeneralBackground;
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 			_toolStripLeft.Renderer = new NoBorderToolStripRenderer();
 
@@ -89,6 +86,14 @@ namespace Bloom.CollectionTab
 					tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
 				}
 			};
+
+			// We don't want this control initializing until team collections sync (if any) is done.
+			Controls.Remove(_reactControl);
+		}
+
+		public void ReadyToShowCollections()
+		{
+			Controls.Add(_reactControl);
 		}
 
 		internal void ManageSettings(SettingsProtectionHelper settingsLauncherHelper)
