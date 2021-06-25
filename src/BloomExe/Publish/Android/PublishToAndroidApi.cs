@@ -20,6 +20,7 @@ using BloomTemp;
 using DesktopAnalytics;
 using SIL.IO;
 using Newtonsoft.Json;
+using SIL.Xml;
 
 namespace Bloom.Publish.Android
 {
@@ -44,6 +45,7 @@ namespace Bloom.Publish.Android
 		private object _lockForLanguages = new object();
 		private Dictionary<string, bool> _allLanguages;
 		private HashSet<string> _textLanguagesToPublish = new HashSet<string>();
+		private HashSet<string> _languagesWithAudio = new HashSet<string>();
 		private HashSet<string> _audioLanguagesToExclude = new HashSet<string>();
 		private Bloom.Book.Book _bookForLanguagesToPublish = null;
 
@@ -306,6 +308,7 @@ namespace Bloom.Publish.Android
 							name = request.CurrentBook.PrettyPrintLanguage(kvp.Key),
 							complete = kvp.Value,
 							includeText = _textLanguagesToPublish.Contains(kvp.Key),
+							containsAnyAudio = _languagesWithAudio.Contains(kvp.Key),
 							includeAudio = !_audioLanguagesToExclude.Contains(kvp.Key)
 						};
 						var json = JsonConvert.SerializeObject(value);
@@ -392,6 +395,46 @@ namespace Bloom.Publish.Android
 							// See BL-9587.
 							kvp.Key == request.CurrentCollectionSettings?.Language1Iso639Code)
 							_textLanguagesToPublish.Add(kvp.Key);
+					}
+
+
+					// Now determine which audio languages to include vs . exclude
+					var htmlDom = request.CurrentBook.OurHtmlDom;
+					var narrationNodeList = HtmlDom.SelectChildNarrationAudioElements(htmlDom.Body, true);
+
+					_languagesWithAudio.Clear();
+					for (int i = 0; i < narrationNodeList.Count; ++i)
+					{
+						var node = narrationNodeList[i];
+
+						var id = node.GetOptionalStringAttribute("id", null);
+						if (String.IsNullOrEmpty(id))
+							continue;
+						
+						var fileNames = BookStorage.GetNarrationAudioFileNames(id, true);
+
+						bool doesAnyAudioFileExist = false;
+						foreach (var audioFileName in fileNames)
+						{
+							var fullPath = Path.Combine(request.CurrentBook.FolderPath, "audio", audioFileName);
+							if (RobustFile.Exists(fullPath))
+							{
+								doesAnyAudioFileExist = true;
+								break;
+							}
+						}
+
+						if (!doesAnyAudioFileExist)
+							continue;
+
+						// At this point, we know that node contains an audio file associated with it.
+						var nodeWithLangAttr = HtmlDom.FindSelfOrAncestorMatchingCondition(node, n => {
+							var tempLang = n.GetOptionalStringAttribute("lang", "");
+							return !String.IsNullOrEmpty(tempLang);
+						});
+
+						var lang = nodeWithLangAttr.GetOptionalStringAttribute("lang", "");
+						_languagesWithAudio.Add(lang);
 					}
 
 					_audioLanguagesToExclude.Clear();

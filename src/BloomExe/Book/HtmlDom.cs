@@ -2750,6 +2750,34 @@ namespace Bloom.Book
 			return false;			
 		}
 
+		/// <summary>
+		/// Returns the first node, starting from {startNode} and going up toward the earliest ancestor, that matchesthe condition (i.e. the provided {matcher} function returns true
+		/// </summary>
+		/// <param name="startNode">The XmlNode to start the search from. The search is inclusive.</param>
+		/// <param name="matcher">A function that, given a node in the tree, returns true if it matches the desired condition</param>
+		/// <returns></returns>
+		public static XmlNode FindSelfOrAncestorMatchingCondition(XmlNode startNode, Func<XmlNode, bool> matcher)
+		{
+			if (startNode == null)
+			{
+				return null;
+			}
+
+			var ancestor = startNode;
+
+			while (ancestor != null)
+			{
+				if (matcher(ancestor))
+				{
+					return ancestor;
+				}
+
+				ancestor = ancestor.ParentNode;
+			}
+
+			return null;
+		}
+
 		public static void InsertFullBleedMarkup(XmlElement body)
 		{
 			AddClassIfMissing(body, "bloom-fullBleed");

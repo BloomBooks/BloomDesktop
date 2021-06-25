@@ -13,6 +13,7 @@ namespace Bloom.Publish
 		public string name;
 		public bool complete;
 		public bool includeText;
+		public bool containsAnyAudio;
 		public bool includeAudio;
 	}
 }
