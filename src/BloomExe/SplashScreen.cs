@@ -29,7 +29,8 @@ namespace Bloom
 
 		public void FadeAndClose()
 		{
-			_fadeOutTimer.Enabled = true;
+			Invoke((Action) (() =>
+				_fadeOutTimer.Enabled = true));
 		}
 
 		private SplashScreen()

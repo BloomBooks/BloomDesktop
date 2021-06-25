@@ -24,13 +24,15 @@ namespace Bloom.MiscUI
 
 		private static readonly List<ReactDialog> _activeDialogs = new List<ReactDialog>();
 
-		public ReactDialog(string reactComponentName, object props = null)
+		public ReactDialog(string reactComponentName, object props = null, string taskBarTitle="Bloom")
 		{
 			InitializeComponent();
 			FormClosing += ReactDialog_FormClosing;
 			reactControl.ReactComponentName = reactComponentName;
             reactControl.Props = props;
 			_activeDialogs.Add(this);
+			Text = taskBarTitle;
+			ShowInTaskbar = false;
 
 			Icon = global::Bloom.Properties.Resources.BloomIcon;
 		}
@@ -78,11 +80,13 @@ namespace Bloom.MiscUI
 		/// <param name="height">used to set the WinForms dialog Height property</param>
 		/// <param name="initialize">an optional action done after width and height are set but before ShowDialog is called</param>
 		/// <param name="handleResult">an optional action done after the dialog is closed; takes a DialogResult</param>
-		public static void ShowOnIdle(string reactComponentName, object props, int width, int height, Action initialize = null, Action<DialogResult> handleResult = null)
+		/// <param name="taskBarTitle">Label to show in the task bar for this form</param>
+		public static void ShowOnIdle(string reactComponentName, object props, int width, int height,
+			Action initialize = null, Action<DialogResult> handleResult = null, string taskBarTitle="Bloom")
 		{
 			DoOnceOnIdle(() =>
 			{
-				using (var dlg = new ReactDialog(reactComponentName, props))
+				using (var dlg = new ReactDialog(reactComponentName, props, taskBarTitle))
 				{
 					dlg.Width = width;
 					dlg.Height = height;

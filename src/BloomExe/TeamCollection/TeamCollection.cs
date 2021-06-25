@@ -1132,7 +1132,7 @@ namespace Bloom.TeamCollection
 
 		private static string GetStatusFilePathFromBookFolderPath(string bookFolderPath)
 		{
-			var statusFile = Path.Combine(bookFolderPath, "book.status");
+			var statusFile = Path.Combine(bookFolderPath, "TeamCollection.status");
 			return statusFile;
 		}
 
@@ -1260,6 +1260,40 @@ namespace Bloom.TeamCollection
 			"衝突複本" // zh-tx, taiwan
 			// Probably many others
 		};
+
+		/// <summary>
+		/// In our early TC alphas and very early 5.0 betas, the TeamCollection.status files we keep in each book's folder
+		/// were called book.status. This code converts them. It can be discarded once all early adopters
+		/// have used a version that has this once.
+		/// </summary>
+		public void MigrateStatusFiles()
+		{
+			foreach (var path in Directory.EnumerateDirectories(_localCollectionFolder))
+			{
+
+				try
+				{
+					if (!IsBloomBookFolder(path))
+						continue;
+					var bookFolderName = Path.GetFileName(path);
+					var statusFilePath = GetStatusFilePath(bookFolderName, _localCollectionFolder);
+					// data migration
+					var obsoleteTcStatusPath = Path.Combine(path, "book.status");
+					if (RobustFile.Exists(obsoleteTcStatusPath))
+					{
+						if (RobustFile.Exists(statusFilePath))
+							RobustFile.Delete(obsoleteTcStatusPath); // somehow left behind
+						else
+							RobustFile.Move(obsoleteTcStatusPath, statusFilePath); // migrate
+					}
+				}
+				catch (Exception ex)
+				{
+					SentrySdk.AddBreadcrumb(string.Format("failed to migrate status file for {0}", path));
+					SentrySdk.CaptureException(ex);
+				}
+			}
+		}
 
 		/// <summary>
 		/// Run this when Bloom starts up to get the repo and local directories as sync'd as possible.
@@ -1579,7 +1613,7 @@ namespace Bloom.TeamCollection
 						titleBackgroundColor = Palette.kBloomBlueHex,
 						webSocketContext = TeamCollection.kWebSocketContext,
 						showReportButton = "if-error"
-		})
+		}, "Sync Team Collection")
 					// winforms dialog properties
 					{Width = 620, Height = 550},
 				doWhat, doWhenMainActionFalse);
@@ -1619,6 +1653,10 @@ namespace Bloom.TeamCollection
 					// enough when we do several close together.
 					StopMonitoring();
 
+					// We don't want to do this until we have things in a state where we can push the same
+					// change to BetaInternal, Beta, and Alpha all at once. Things will get messy if a version
+					// that doesn't know about the new Status files opens a migrated collection.
+					//MigrateStatusFiles();
 					var waitForUserToCloseDialogOrReportProblems = SyncAtStartup(progress, doingFirstTimeJoinCollectionMerge);
 
 					// Now that we've finished synchronizing, update these icons based on the post-sync result
@@ -1747,7 +1785,21 @@ namespace Bloom.TeamCollection
 				RaiseBookStatusChanged(bookName, CheckedOutBy.Deleted);
 				return;
 			}
-			var status = GetStatus(bookName);
+
+			BookStatus status;
+			try
+			{
+				status = GetStatus(bookName);
+			}
+			catch (Exception ex)
+			{
+				// We may want to do more, such as put a red circle on the book. But at least don't crash.
+				// The case where we observed this, a corrupt zip file that can't be read, caused
+				// plenty of other errors, so I'm thinking just giving up is enough. This is just
+				// trying to give the user a quick idea of status.
+				return;
+			}
+
 			if (IsCheckedOutHereBy(status))
 				RaiseBookStatusChanged(bookName, CheckedOutBy.Self);
 			else if (status.IsCheckedOut())

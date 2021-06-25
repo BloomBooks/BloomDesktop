@@ -95,7 +95,7 @@ namespace Bloom.Publish.Android.wifi
 			_wifiAdvertiser.Start();
 
 			var part1 = LocalizationManager.GetDynamicString(appId: "Bloom", id: "PublishTab.Android.Wifi.Progress.WifiInstructions1",
-				englishText: "On the Android, run Bloom Reader, open the menu and choose 'Receive Books from computer'.");
+				englishText: "On the Android, run Bloom Reader, open the menu and choose 'Receive Books via WiFi'.");
 			var part2 = LocalizationManager.GetDynamicString(appId: "Bloom", id: "PublishTab.Android.Wifi.Progress.WifiInstructions2",
 				englishText: "You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.");
 

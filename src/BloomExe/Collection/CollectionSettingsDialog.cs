@@ -79,6 +79,10 @@ namespace Bloom.Collection
 			else
 				_automaticallyUpdate.Hide();
 
+			// Without this, PendingDefaultBookshelf stays null unless the user changes it.
+			// The result is the bookshelf selection gets cleared when other collection settings are saved. See BL-10093.
+			PendingDefaultBookshelf = _collectionSettings.DefaultBookshelf;
+
 //		    _showSendReceive.CheckStateChanged += (sender, args) =>
 //		                                              {
 //		                                                  Settings.Default.ShowSendReceive = _showSendReceive.CheckState ==

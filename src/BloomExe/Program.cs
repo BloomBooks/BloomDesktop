@@ -684,7 +684,7 @@ namespace Bloom
 						var shell = _projectContext.ProjectWindow as Shell;
 						if (shell != null)
 						{
-							shell.ReallyComeToFront();
+							shell.Invoke((Action) (()=> shell.ReallyComeToFront()));
 						}
 					}
 				};

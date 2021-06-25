@@ -126,7 +126,7 @@ namespace Bloom
 							}
 						}
 					}
-					catch(Exception)
+					catch(Exception ex)
 					{
 						//if we're running when the UI is already shut down, the above is going to throw.
 						//At least if we're running in a debugger, we'll stop here:

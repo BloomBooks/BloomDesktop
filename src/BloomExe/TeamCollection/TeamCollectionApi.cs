@@ -73,7 +73,7 @@ namespace Bloom.TeamCollection
 
 		private void HandleShowCreateTeamCollectionDialog(ApiRequest request)
 		{
-			ReactDialog.ShowOnIdle("CreateTeamCollectionDialog", new { defaultRepoFolder = DropboxUtils.GetDropboxFolderPath() }, 600, 580);
+			ReactDialog.ShowOnIdle("CreateTeamCollectionDialog", new { defaultRepoFolder = DropboxUtils.GetDropboxFolderPath() }, 600, 580, null, null, "Create Team Collection");
 			request.PostSucceeded();
 		}
 
