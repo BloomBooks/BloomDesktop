@@ -4,7 +4,7 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import theme, { kBloomYellow } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { BloomApi } from "../utils/bloomApi";
 import { useL10n } from "../react_components/l10nHooks";
 import "./TeamCollectionBookStatusPanel.less";
@@ -18,6 +18,7 @@ import { Block } from "@material-ui/icons";
 import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
 import { AvatarDialog } from "./AvatarDialog";
 import { PropTypes } from "mobx-react";
+import { createMuiTheme } from "@material-ui/core";
 
 // The panel that shows the book preview and settings in the collection tab in a Team Collection.
 
@@ -301,6 +302,18 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         ></SimpleMenu>
     );
 
+    const dangerTheme = useMemo(
+        () =>
+            createMuiTheme({
+                palette: {
+                    primary: {
+                        main: kBloomYellow
+                    }
+                }
+            }),
+        []
+    );
+
     const panelContents = (state: TeamCollectionBookLockState): JSX.Element => {
         switch (state) {
             default:
@@ -368,15 +381,19 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         subTitle={subTitleLockedByMe}
                         icon={avatar}
                         //menu={} // eventually the "About my Avatar..." and "Forget Changes" menu gets passed in here.
-                        button={getBloomButton(
-                            "Check in book",
-                            "TeamCollection.CheckIn",
-                            "checkin-button",
-                            "Check In.svg",
-                            checkinHandler,
-                            progress > 0,
-                            "secondary"
-                        )}
+                        button={
+                            <ThemeProvider theme={dangerTheme}>
+                                {getBloomButton(
+                                    "Check in book",
+                                    "TeamCollection.CheckIn",
+                                    "checkin-button",
+                                    "Check In.svg",
+                                    checkinHandler,
+                                    progress > 0,
+                                    "primary"
+                                )}
+                            </ThemeProvider>
+                        }
                         menu={menu}
                     >
                         <div
