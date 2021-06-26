@@ -893,7 +893,7 @@ namespace Bloom.WebLibraryIntegration
 			book.BringBookUpToDate(new NullProgress());
 			bookInfo.Bookshelf = book.CollectionSettings.DefaultBookshelf;
 			var bookshelfName = String.IsNullOrWhiteSpace(book.CollectionSettings.DefaultBookshelf) ? "(none)" : book.CollectionSettings.DefaultBookshelf;
-			progress.WriteError($"Bookshelf={bookshelfName}");
+			progress.WriteMessage($"Bookshelf is '{bookshelfName}'");
 
 			// Assemble the various arguments needed to make the objects normally involved in an upload.
 			// We leave some constructor arguments not actually needed for this purpose null.
