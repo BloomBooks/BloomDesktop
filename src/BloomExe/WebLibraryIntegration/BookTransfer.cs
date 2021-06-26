@@ -427,6 +427,7 @@ namespace Bloom.WebLibraryIntegration
 				// from a previous default bookshelf upload), including a duplicate of the one
 				// we may be about to add.
 				var tags = (metadata.Tags?? new string[0]).Where(t => !t.StartsWith("bookshelf:"));
+
 				if (!string.IsNullOrEmpty(collectionSettings?.DefaultBookshelf))
 				{
 					tags = tags.Concat(new [] {"bookshelf:" + collectionSettings.DefaultBookshelf});
@@ -738,7 +739,7 @@ namespace Bloom.WebLibraryIntegration
 					progress.WriteMessageWithColor("green", $"\n\nStarting upload at {DateTime.Now.ToString()}\n");
 
 					progress.WriteMessageWithColor("Magenta", $"Looking in '{bookParams.Folder}'...");
-					BulkUploadFolderOrChildren(progress, container, bookParams, ref context);
+					UploadCollectionOrKeepLookingDeeper(progress, container, bookParams, ref context);
 
 					if (_collectionFoldersUploaded.Count > 0)
 					{
@@ -771,78 +772,123 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
+		// identify folder or files like probably .hg or .lastUploadInfo
+		private bool IsPrivateFolder(string path)
+		{
+			var lastFolderPart = Path.GetFileName(path);
+			return lastFolderPart != null && lastFolderPart.StartsWith(".", StringComparison.Ordinal);
+		}
 
 		/// <summary>
 		/// Handles the recursion through directories: if a folder looks like a Bloom book upload it; otherwise, try its children.
 		/// Invisible folders like .hg are ignored.
 		/// </summary>
-		private void BulkUploadFolderOrChildren(IProgress progress, ApplicationContainer container, BookUploadParameters bookParams,
+		private void UploadCollectionOrKeepLookingDeeper(IProgress progress, ApplicationContainer container, BookUploadParameters uploadParams,
 			ref ProjectContext context)
 		{
-			var lastFolderPart = Path.GetFileName(bookParams.Folder);
-			if (lastFolderPart != null && lastFolderPart.StartsWith(".", StringComparison.Ordinal))
-				return; // secret folder or file, probably .hg or .lastUploadInfo
+			if (IsPrivateFolder(uploadParams.Folder))
+				return;
 
-			var htmlFileCount  = Directory.GetFiles(bookParams.Folder, "*.htm").Length;
-			if (htmlFileCount == 1)
+			var collectionPath = Directory.GetFiles(uploadParams.Folder, "*.bloomCollection").FirstOrDefault();
+			if (collectionPath != null)
 			{
-				// Exactly one htm file, assume this is a bloom book folder.
-				try
+				var settings = new CollectionSettings(collectionPath);
+				if (string.IsNullOrEmpty(settings.DefaultBookshelf))
 				{
-					UploadBookInternal(progress, container, bookParams, ref context);
+					// My thinking here is that if we are bothering to do a bulk upload, they should have set a
+					// default bookshelf. If this expectation proves false, then we can just add an argument
+					// to disable it. For Kyrgyzstan, missing bookshelves was a problem I needed to catch.
+					progress.WriteError($"Skipping {uploadParams.Folder} because there is no default bookshelf.");
+					return;
 				}
-				catch (Exception e)
+				if (!settings.HaveEnterpriseFeatures)
 				{
-					var msg = String.Format("{0} was not uploaded due to error: {1}", bookParams.Folder, e.Message);
-					progress.WriteError(msg);
-					progress.WriteException(e);
-					++_booksWithErrors;
+					progress.WriteError($"Skipping {uploadParams.Folder} because bulk upload is an Enterprise-only feature.");
+					return;
 				}
+				BulkUploadBooksOfOneCollection(progress, container, uploadParams, ref context);
 				return;
 			}
-			else
+			else // go looking deeper for collection folders
 			{
-				if (htmlFileCount > 1)
+		
+				foreach (var sub in Directory.GetDirectories(uploadParams.Folder))
 				{
-					progress.WriteError($"{bookParams.Folder} has ${htmlFileCount}");
-				}
-				else
-				{
-					if (Directory.GetFiles(bookParams.Folder, "origami.css").Length > 0)
+					if (!IsPrivateFolder(uploadParams.Folder))
 					{
-						progress.WriteWarning($"{bookParams.Folder} has no html but has origami.css. This is highly suspicious.");
-					}
-					else if (Directory.GetFiles(bookParams.Folder, "*.png").Length > 0)
-					{
-						progress.WriteWarning($"{bookParams.Folder} has no html but has a png. This is highly suspicious.");
-					}
-					else if (Directory.GetFiles(bookParams.Folder, "*.jpg").Length > 0)
-					{
-						progress.WriteWarning($"{bookParams.Folder} has no html but has a jpg. This is highly suspicious.");
-					}
-					else
-					{
-						// nah
+						var childParams = uploadParams;
+						childParams.Folder = sub;
+						progress.WriteMessageWithColor("Magenta", $"\nLooking in '{sub}'...");
+						UploadCollectionOrKeepLookingDeeper(progress, container, childParams, ref context);
 					}
 				}
-			}
-
-			foreach (var sub in Directory.GetDirectories(bookParams.Folder))
-			{
-				bookParams.Folder = sub;
-				progress.WriteMessageWithColor("Magenta",$"\nLooking in '{sub}'...");
-				BulkUploadFolderOrChildren(progress, container, bookParams, ref context);
 			}
 		}
 
-		private void UploadBookInternal(IProgress progress, ApplicationContainer container, BookUploadParameters bookParams,
+		private void BulkUploadBooksOfOneCollection(IProgress progress, ApplicationContainer container, BookUploadParameters uploadParams,
+		ref ProjectContext context)
+		{
+			foreach (var sub in Directory.GetDirectories(uploadParams.Folder))
+			{
+				var bookParams = uploadParams;
+				bookParams.Folder = sub;
+
+				var htmlFileCount = Directory.GetFiles(bookParams.Folder, "*.htm").Length;
+				if (htmlFileCount == 1)
+				{
+					// Exactly one htm file, assume this is a bloom book folder.
+					try
+					{
+						UploadBookInternal(progress, container, bookParams, ref context);
+					}
+					catch (Exception e)
+					{
+						var msg = String.Format("{0} was not uploaded due to error: {1}", bookParams.Folder, e.Message);
+						progress.WriteError(msg);
+						progress.WriteException(e);
+						++_booksWithErrors;
+					}
+				}
+				else
+				{
+					if (htmlFileCount > 1)
+					{
+						progress.WriteError($"{bookParams.Folder} has ${htmlFileCount}");
+					}
+					else
+					{
+						if (Directory.GetFiles(bookParams.Folder, "origami.css").Length > 0)
+						{
+							progress.WriteWarning(
+								$"{bookParams.Folder} has no html but has origami.css. This is highly suspicious.");
+						}
+						else if (Directory.GetFiles(bookParams.Folder, "*.png").Length > 0)
+						{
+							progress.WriteWarning(
+								$"{bookParams.Folder} has no html but has a png. This is highly suspicious.");
+						}
+						else if (Directory.GetFiles(bookParams.Folder, "*.jpg").Length > 0)
+						{
+							progress.WriteWarning(
+								$"{bookParams.Folder} has no html but has a jpg. This is highly suspicious.");
+						}
+						else
+						{
+							// nah
+						}
+					}
+				}
+			}
+		}
+
+		private void UploadBookInternal(IProgress progress, ApplicationContainer container, BookUploadParameters uploadParams,
 			ref ProjectContext context)
 		{
-			progress.WriteMessageWithColor("Cyan","Starting to upload " + bookParams.Folder);
+			progress.WriteMessageWithColor("Cyan","Starting to upload " + uploadParams.Folder);
 			// Make sure the files we want to upload are up to date.
 			// Unfortunately this requires making a book object, which requires making a ProjectContext, which must be created with the
 			// proper parent book collection if possible.
-			var parent = Path.GetDirectoryName(bookParams.Folder);
+			var parent = Path.GetDirectoryName(uploadParams.Folder);
 			var collectionPath = Directory.GetFiles(parent, "*.bloomCollection").FirstOrDefault();
 			if (collectionPath == null || !RobustFile.Exists(collectionPath))
 			{
@@ -852,9 +898,9 @@ namespace Bloom.WebLibraryIntegration
 			_collectionFoldersUploaded.Add(collectionPath);
 
 			// Compute the book hash file and compare it to the existing one for bulk upload.
-			var currentHashes = HashBookFolder(bookParams.Folder);
-			var uploadInfoPath = Path.Combine(bookParams.Folder, UploadHashesFilename);
-			if (!bookParams.ForceUpload)
+			var currentHashes = HashBookFolder(uploadParams.Folder);
+			var uploadInfoPath = Path.Combine(uploadParams.Folder, UploadHashesFilename);
+			if (!uploadParams.ForceUpload)
 			{
 				var uploadedAlready = false;
 				if (Program.RunningUnitTests)
@@ -863,13 +909,13 @@ namespace Bloom.WebLibraryIntegration
 				}
 				else
 				{
-					uploadedAlready = CheckAgainstUploadedHashfile(currentHashes, bookParams.Folder);
+					uploadedAlready = CheckAgainstUploadedHashfile(currentHashes, uploadParams.Folder);
 					RobustFile.WriteAllText(uploadInfoPath, currentHashes); // ensure local copy is saved
 				}
 				if (uploadedAlready)
 				{
 					// local copy of hashes file is identical or has been saved
-					progress.WriteMessageWithColor("green", $"Skipping '{Path.GetFileName(bookParams.Folder)}' because it has not changed since being uploaded.");
+					progress.WriteMessageWithColor("green", $"Skipping '{Path.GetFileName(uploadParams.Folder)}' because it has not changed since being uploaded.");
 					++_booksSkipped;
 					return; // skip this one; we already uploaded it earlier.
 				}
@@ -888,7 +934,7 @@ namespace Bloom.WebLibraryIntegration
 				Program.SetProjectContext(context);
 			}
 			var server = context.BookServer;
-			var bookInfo = new BookInfo(bookParams.Folder, true);
+			var bookInfo = new BookInfo(uploadParams.Folder, true);
 			var book = server.GetBookFromBookInfo(bookInfo);
 			book.BringBookUpToDate(new NullProgress());
 			bookInfo.Bookshelf = book.CollectionSettings.DefaultBookshelf;
@@ -921,17 +967,17 @@ namespace Bloom.WebLibraryIntegration
 			{
 				if (blPublishModel.BookIsAlreadyOnServer)
 				{
-					var msg = $"Apparently {bookParams.Folder} is already on the server. Overwriting...";
+					var msg = $"Apparently {uploadParams.Folder} is already on the server. Overwriting...";
 					progress.WriteWarning(msg);
 				}
 				using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))
 				{
 					PrepareBookForUpload(ref book, server, tempFolder.FolderPath, progress);
-					bookParams.LanguagesToUpload = languagesToUpload.ToArray();
-					FullUpload(book, progress, view, bookParams, out dummy);
+					uploadParams.LanguagesToUpload = languagesToUpload.ToArray();
+					FullUpload(book, progress, view, uploadParams, out dummy);
 				}
 
-				progress.WriteMessageWithColor("Green","{0} has been uploaded", bookParams.Folder);
+				progress.WriteMessageWithColor("Green","{0} has been uploaded", uploadParams.Folder);
 				if (blPublishModel.BookIsAlreadyOnServer)
 					++_booksUpdated;
 				else
@@ -941,7 +987,7 @@ namespace Bloom.WebLibraryIntegration
 			{
 				// report to the user why we are not uploading their book
 				var reason = blPublishModel.GetReasonForNotUploadingBook();
-				progress.WriteError("{0} was not uploaded.  {1}", bookParams.Folder, reason);
+				progress.WriteError("{0} was not uploaded.  {1}", uploadParams.Folder, reason);
 				++_booksWithErrors;
 			}
 		}
