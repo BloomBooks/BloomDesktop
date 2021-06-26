@@ -9,6 +9,8 @@ using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
+using SIL.Code;
+using SIL.Progress;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -26,23 +28,44 @@ namespace Bloom.WebLibraryIntegration
 			ApplicationId = keys.ParseApplicationKey;
 		}
 
-		public void SetLoginData(string account, string parseUserObjectId, string sessionToken)
+		public void SetLoginData(string account, string parseUserObjectId, string sessionToken, string destination)
 		{
 			Account = account;
 			Settings.Default.WebUserId = account;
 			Settings.Default.LastLoginSessionToken = sessionToken;
-			Settings.Default.LastLoginDest = BookTransfer.Destination;
+			Settings.Default.LastLoginDest = destination;
 			Settings.Default.LastLoginParseObjectId = parseUserObjectId;
 			Settings.Default.Save();
 			_userId = parseUserObjectId;
 			_sessionToken = sessionToken;
 		}
 
-		public void SignInAgainForCommandLine(string userEmail)
+		public bool AttemptSignInAgainForCommandLine(string userEmail, string destination, IProgress progress)
 		{
-			// TODO: check userEmail against Settings.Default.WebUserId
-			// TODO: check current destination against Settings.Default.LastLoginDest
-			SetLoginData(Settings.Default.WebUserId, Settings.Default.LastLoginParseObjectId, Settings.Default.LastLoginSessionToken);
+			if (string.IsNullOrEmpty(Settings.Default.LastLoginSessionToken)){
+				progress.WriteError("Please first log in from Bloom:Publish:Upload, then quit and try again. (LastLoginSessionToken)");
+				return false;
+			}
+			if (string.IsNullOrEmpty(Settings.Default.LastLoginParseObjectId))
+			{
+				progress.WriteError("Please first log in from Bloom:Publish:Upload, then quit and try again. (LastLoginParseObjectId)");
+				return false;
+			}
+			if (Settings.Default.WebUserId != userEmail)
+			{
+				progress.WriteError("The email from the last login from the Bloom UI does not match the -u argument.");
+				return false;
+			}
+			if (Settings.Default.LastLoginDest != destination)
+			{
+				progress.WriteError("The destination (production or dev of the last login from the Bloom UI does not match the -d argument.");
+				return false;
+			}
+
+			SetLoginData(Settings.Default.WebUserId, Settings.Default.LastLoginParseObjectId,
+				Settings.Default.LastLoginSessionToken, destination);
+
+			return true;
 		}
 
 		protected BloomParseClient(RestClient client)
@@ -242,7 +265,7 @@ namespace Bloom.WebLibraryIntegration
 		public IRestResponse SetBookRecord(string metadataJson)
 		{
 			if (!LoggedIn)
-				throw new ApplicationException();
+				throw new ApplicationException("BloomParseClient got SetBookRecord, but the user is not logged in.");
 			if (BookTransfer.IsDryRun)
 				throw new ApplicationException("Should not call SetBookRecord during dry run!");
 			var metadata = BookMetaData.FromString(metadataJson);
@@ -255,7 +278,7 @@ namespace Bloom.WebLibraryIntegration
 			request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
 			var response = Client.Execute(request);
 			if (response.StatusCode != HttpStatusCode.OK)
-				throw new ApplicationException(response.StatusDescription + " " + response.Content);
+				throw new ApplicationException("BloomParseClient.SetBookRecord: "+response.StatusDescription + " " + response.Content);
 			return response;
 		}
 

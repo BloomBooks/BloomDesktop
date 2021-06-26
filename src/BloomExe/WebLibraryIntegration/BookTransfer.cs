@@ -696,6 +696,8 @@ namespace Bloom.WebLibraryIntegration
 		/// <remarks>This method is triggered by starting Bloom with "upload" on the cmd line.</remarks>
 		public void BulkUpload(ApplicationContainer container, UploadParameters options)
 		{
+			Destination = options.Dest;
+
 			var kLogFile = "BloomBulkUploadLog.txt";
 			using (var progress = new MultiProgress())
 			{
@@ -712,13 +714,17 @@ namespace Bloom.WebLibraryIntegration
 
 				Debug.Assert(!String.IsNullOrWhiteSpace(options.UploadUser));
 
-				_parseClient.SignInAgainForCommandLine(options.UploadUser);
+				if (!_parseClient.AttemptSignInAgainForCommandLine(options.UploadUser, options.Dest, progress))
+				{
+					progress.WriteError("Problem logging in. See messages above.");
+					System.Environment.Exit(1); 
+				}
 
 				progress.WriteMessage("Uploading books as user {0}", options.UploadUser);
 				
 				var bookParams = new BookUploadParameters(options);
 
-				BulkRepairInstanceIds(options.Path);
+				BulkRepairInstanceIds(options.Path); 
 				ProjectContext
 					context = null; // Expensive to create; hold each one we make until we find a book that needs a different one.
 				try
@@ -731,7 +737,8 @@ namespace Bloom.WebLibraryIntegration
 
 					progress.WriteMessageWithColor("green", $"\n\nStarting upload at {DateTime.Now.ToString()}\n");
 
-					BulkUploadInternal(progress, container, bookParams, ref context);
+					progress.WriteMessageWithColor("Magenta", $"Looking in '{bookParams.Folder}'...");
+					BulkUploadFolderOrChildren(progress, container, bookParams, ref context);
 
 					if (_collectionFoldersUploaded.Count > 0)
 					{
@@ -746,6 +753,11 @@ namespace Bloom.WebLibraryIntegration
 					progress.WriteMessage("Uploaded {0} new books.", _newBooksUploaded);
 					progress.WriteMessage("Updated {0} books that had changed.", _booksUpdated);
 					progress.WriteMessage("Skipped {0} books that had not changed.", _booksSkipped);
+					if (_booksSkipped>0)
+					{
+						progress.WriteMessage("(If you don't want Bloom to skip books it thinks have not changed, you can use the --force argument to force all books to re-upload, or just use the Bloom UI to force upload this one book).");
+					}
+
 					if (_booksWithErrors > 0)
 					{
 						progress.WriteError("Failed to upload {0} books. See \"{1}\" for details.", _booksWithErrors,
@@ -764,7 +776,7 @@ namespace Bloom.WebLibraryIntegration
 		/// Handles the recursion through directories: if a folder looks like a Bloom book upload it; otherwise, try its children.
 		/// Invisible folders like .hg are ignored.
 		/// </summary>
-		private void BulkUploadInternal(IProgress progress, ApplicationContainer container, BookUploadParameters bookParams,
+		private void BulkUploadFolderOrChildren(IProgress progress, ApplicationContainer container, BookUploadParameters bookParams,
 			ref ProjectContext context)
 		{
 			var lastFolderPart = Path.GetFileName(bookParams.Folder);
@@ -796,13 +808,21 @@ namespace Bloom.WebLibraryIntegration
 				}
 				else
 				{
-					if (Directory.GetFiles(bookParams.Folder, "*.css").Length > 0)
+					if (Directory.GetFiles(bookParams.Folder, "origami.css").Length > 0)
 					{
-						progress.WriteWarning($"{bookParams.Folder} has no html but has css. Suspicious.");
+						progress.WriteWarning($"{bookParams.Folder} has no html but has origami.css. This is highly suspicious.");
+					}
+					else if (Directory.GetFiles(bookParams.Folder, "*.png").Length > 0)
+					{
+						progress.WriteWarning($"{bookParams.Folder} has no html but has a png. This is highly suspicious.");
+					}
+					else if (Directory.GetFiles(bookParams.Folder, "*.jpg").Length > 0)
+					{
+						progress.WriteWarning($"{bookParams.Folder} has no html but has a jpg. This is highly suspicious.");
 					}
 					else
 					{
-						progress.WriteMessageWithColor("Gray", $"No book in {bookParams.Folder}");
+						// nah
 					}
 				}
 			}
@@ -810,14 +830,15 @@ namespace Bloom.WebLibraryIntegration
 			foreach (var sub in Directory.GetDirectories(bookParams.Folder))
 			{
 				bookParams.Folder = sub;
-				BulkUploadInternal(progress, container, bookParams, ref context);
+				progress.WriteMessageWithColor("Magenta",$"\nLooking in '{sub}'...");
+				BulkUploadFolderOrChildren(progress, container, bookParams, ref context);
 			}
 		}
 
 		private void UploadBookInternal(IProgress progress, ApplicationContainer container, BookUploadParameters bookParams,
 			ref ProjectContext context)
 		{
-			progress.WriteMessage("Starting to upload " + bookParams.Folder);
+			progress.WriteMessageWithColor("Cyan","Starting to upload " + bookParams.Folder);
 			// Make sure the files we want to upload are up to date.
 			// Unfortunately this requires making a book object, which requires making a ProjectContext, which must be created with the
 			// proper parent book collection if possible.
@@ -848,7 +869,7 @@ namespace Bloom.WebLibraryIntegration
 				if (uploadedAlready)
 				{
 					// local copy of hashes file is identical or has been saved
-					progress.WriteMessageWithColor("green", "Skipping book because it has not changed since being uploaded.");
+					progress.WriteMessageWithColor("green", $"Skipping '{Path.GetFileName(bookParams.Folder)}' because it has not changed since being uploaded.");
 					++_booksSkipped;
 					return; // skip this one; we already uploaded it earlier.
 				}
@@ -900,9 +921,8 @@ namespace Bloom.WebLibraryIntegration
 			{
 				if (blPublishModel.BookIsAlreadyOnServer)
 				{
-					var msg = "Apparently this book is already on the server. Overwriting...";
-					ReportToLogBoxAndLogger(progress, bookParams.Folder, msg);
-					progress.WriteError(msg);
+					var msg = $"Apparently {bookParams.Folder} is already on the server. Overwriting...";
+					progress.WriteWarning(msg);
 				}
 				using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))
 				{
@@ -911,7 +931,7 @@ namespace Bloom.WebLibraryIntegration
 					FullUpload(book, progress, view, bookParams, out dummy);
 				}
 
-				progress.WriteMessageWithColor("Cyan","{0} has been uploaded", bookParams.Folder);
+				progress.WriteMessageWithColor("Green","{0} has been uploaded", bookParams.Folder);
 				if (blPublishModel.BookIsAlreadyOnServer)
 					++_booksUpdated;
 				else
@@ -953,14 +973,6 @@ namespace Bloom.WebLibraryIntegration
 				return currentHashes == previousHashes;
 			}
 			return false;
-		}
-
-		private static void ReportToLogBoxAndLogger(IProgress logBox, string bookFolder, string msg)
-		{
-			// We've just told the user we are uploading book 'x'. Now tell them why we aren't.
-			const string seeLogFile = "\n  See log file for details.";
-			logBox.WriteMessage($"\n  {msg}{seeLogFile}");
-			Logger.WriteEvent($"***{bookFolder}: {msg}");
 		}
 
 		/// <summary>

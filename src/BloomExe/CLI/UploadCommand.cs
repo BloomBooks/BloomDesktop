@@ -64,9 +64,9 @@ namespace Bloom.CLI
 							Console.WriteLine("\nThe upload will go to bloomlibrary.org.");
 							break;
 					}
-					Console.WriteLine("\nstarting upload");
+					Console.WriteLine("\nStarting upload...");
 					transfer.BulkUpload(applicationContainer, options);
-					Console.WriteLine(("\nupload complete\n"));
+					Console.WriteLine(("\nBulk upload complete.\n"));
 				}
 				return 0;
 			}
