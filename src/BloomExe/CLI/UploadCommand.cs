@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Text;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using CommandLine;
@@ -18,6 +19,8 @@ namespace Bloom.CLI
 
 		public static int Handle(UploadParameters options)
 		{
+			Console.OutputEncoding = Encoding.UTF8;
+
 			IsUploading = true;
 			// -u user, -p password, and <path> are all required, so they must contain strings.
 			// -d destination has a default value, so it also must contain a string.
