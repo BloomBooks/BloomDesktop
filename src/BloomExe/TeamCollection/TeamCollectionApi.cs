@@ -52,6 +52,7 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/currentBookStatus", HandleCurrentBookStatus, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/attemptLockOfCurrentBook", HandleAttemptLockOfCurrentBook, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/checkInCurrentBook", HandleCheckInCurrentBook, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/forgetChangesInSelectedBook", HandleForgetChangesInSelectedBook, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/chooseFolderLocation", HandleChooseFolderLocation, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/createTeamCollection", HandleCreateTeamCollection, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/joinTeamCollection", HandleJoinTeamCollection, true);
@@ -193,9 +194,8 @@ namespace Bloom.TeamCollection
 				// It's debatable whether to use CurrentCollectionEvenIfDisconnected everywhere. For now, I've only changed
 				// it for the two bits of information actually needed by the status panel when disconnected.
 				var whenLocked = _tcManager.CurrentCollection?.WhenWasBookLocked(BookFolderName) ?? DateTime.MaxValue;
-				// review: or better to pass on to JS? We may want to show slightly different
-				// text like "This book is not yet shared. Check it in to make it part of the Team Collection"
-				if (whoHasBookLocked == TeamCollection.FakeUserIndicatingNewBook)
+				var newLocalBook = whoHasBookLocked == TeamCollection.FakeUserIndicatingNewBook;
+				if (newLocalBook)
 					whoHasBookLocked = CurrentUser;
 				var problem = _tcManager.CurrentCollection?.HasLocalChangesThatMustBeClobbered(BookFolderName);
 				request.ReplyWithJson(JsonConvert.SerializeObject(
@@ -211,7 +211,8 @@ namespace Bloom.TeamCollection
 						currentMachine = TeamCollectionManager.CurrentMachine,
 						problem,
 						changedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(BookFolderName),
-						disconnected = _tcManager.CurrentCollectionEvenIfDisconnected?.IsDisconnected
+						disconnected = _tcManager.CurrentCollectionEvenIfDisconnected?.IsDisconnected,
+						newLocalBook
 					}));
 			}
 			catch (Exception e)
@@ -275,6 +276,43 @@ namespace Bloom.TeamCollection
 				Logger.WriteError(String.Format(msgEnglish, BookFolderName, e.Message), e);
 				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()}");
 				request.Failed("lock failed");
+			}
+		}
+		
+
+			public void HandleForgetChangesInSelectedBook(ApiRequest request)
+		{
+			try
+			{
+				if (!_tcManager.CheckConnection())
+				{
+					request.Failed();
+					return;
+				}
+
+				// Enhance: do we need progress here?
+				var bookName = Path.GetFileName(_bookSelection.CurrentSelection.FolderPath);
+				// Todo before 5.1: forgetting changes might involve undoing a rename.
+				// If so, ForgetChanges will return a list of folders affected (up to 3).
+				// We need to notify the new collection tab to update its book list
+				// and also possibly update the current selection, and in case we undid
+				// things in the book, we should update the preview.
+				_tcManager.CurrentCollection.ForgetChangesCheckin(bookName);
+				UpdateUiForBook();
+				request.PostSucceeded();
+			}
+			catch (Exception ex)
+			{
+				var msgId = "TeamCollection.ErrorForgettingChanges";
+				var msgEnglish = "Error forgetting changes for {0}: {1}";
+				var log = _tcManager?.CurrentCollection?.MessageLog;
+				// Pushing an error into the log will show the Reload Collection button. It's not obvious this
+				// is useful here, since we don't know exactly what went wrong. However, it at least gives the user
+				// the option to try it.
+				if (log != null)
+					log.WriteMessage(MessageAndMilestoneType.Error, msgId, msgEnglish, _bookSelection?.CurrentSelection?.FolderPath, ex.Message);
+				Logger.WriteError(String.Format(msgEnglish, _bookSelection?.CurrentSelection?.FolderPath, ex.Message), ex);
+				request.Failed("forget changes failed");
 			}
 		}
 

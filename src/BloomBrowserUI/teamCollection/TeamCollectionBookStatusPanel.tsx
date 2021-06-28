@@ -18,6 +18,7 @@ import {
 import { Block } from "@material-ui/icons";
 import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
 import { AvatarDialog } from "./AvatarDialog";
+import { ForgetChangesDialog } from "./ForgetChangesDialog";
 
 // The panel that shows the book preview and settings in the collection tab in a Team Collection.
 
@@ -44,6 +45,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [progress, setProgress] = useState(0);
     const [busy, setBusy] = useState(false);
     const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
+    const [forgetDialogOpen, setForgetDialogOpen] = useState(false);
     const [bookStatus, setBookStatus] = useState<any>({
         currentUser: "",
         currentUserName: ""
@@ -272,18 +274,30 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         setBusy(false);
     }
 
+    const menuItems: (SimpleMenuItem | "-")[] = [
+        {
+            text: "About my Avatar...",
+            l10nKey: "TeamCollection.AboutAvatar",
+            action: () => setAvatarDialogOpen(true)
+        }
+    ];
+
+    if (state == "lockedByMe") {
+        menuItems.push("-");
+        menuItems.push({
+            text: "Forget Changes & Check in Book...",
+            l10nKey: "TeamCollection.ForgetChangesMenuItem",
+            action: () => setForgetDialogOpen(true),
+            disabled: bookStatus.newLocalBook as boolean
+        });
+    }
+
     const menu = (
         <SimpleMenu
             text="..."
             l10nKey="Common.Ellipsis"
             temporarilyDisableI18nWarning={true}
-            items={[
-                {
-                    text: "About my Avatar...",
-                    l10nKey: "TeamCollection.AboutAvatar",
-                    action: () => setAvatarDialogOpen(true)
-                }
-            ]}
+            items={menuItems}
         ></SimpleMenu>
     );
 
@@ -475,6 +489,10 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                 currentUser={bookStatus.currentUser}
                 currentUserName={bookStatus.currentUserName}
             ></AvatarDialog>
+            <ForgetChangesDialog
+                open={forgetDialogOpen}
+                close={() => setForgetDialogOpen(false)}
+            ></ForgetChangesDialog>
         </ThemeProvider>
     );
 };
