@@ -60,6 +60,55 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void MoveBookToSafeName_NameGood_DoesNothing()
+		{
+			var oldName = "Some nice book";
+			var bookFolder = Path.Combine(_fixtureFolder.Path, oldName);
+			Directory.CreateDirectory(bookFolder);
+			var bookPath = Path.Combine(bookFolder, oldName + ".htm");
+			File.WriteAllText(bookPath, "this is a test");
+
+			Assert.That(BookStorage.MoveBookToSafeName(bookFolder), Is.EqualTo(bookFolder));
+		}
+
+		[Test]
+		public void MoveBookToSafeName_NameNotNFC_Moves()
+		{
+			var oldName = "Some nice\x0301 book";
+			var bookFolder = Path.Combine(_fixtureFolder.Path, oldName);
+			Directory.CreateDirectory(bookFolder);
+			var bookPath = Path.Combine(bookFolder, oldName + ".htm");
+			File.WriteAllText(bookPath, "this is a test");
+
+			var expectedFolder = bookFolder.Replace("e\x0301", "\x00e9");
+
+			Assert.That(BookStorage.MoveBookToSafeName(bookFolder), Is.EqualTo(expectedFolder));
+			Assert.That(Directory.Exists(expectedFolder));
+			var expectedBookPath = bookPath.Replace("e\x0301", "\x00e9");
+			Assert.That(File.ReadAllText(expectedBookPath), Is.EqualTo("this is a test"));
+		}
+
+		[Test]
+		public void MoveBookToSafeName_NameNotNFC_NewNameConflicts_Moves()
+		{
+			var oldName = "Some nice\x0301 book";
+			var bookFolder = Path.Combine(_fixtureFolder.Path, oldName);
+			Directory.CreateDirectory(bookFolder);
+			var bookPath = Path.Combine(bookFolder, oldName + ".htm");
+			File.WriteAllText(bookPath, "this is a test");
+
+			var desiredFolder = bookFolder.Replace("e\x0301", "\x00e9");
+			Directory.CreateDirectory(desiredFolder);
+			var expectedFolder = desiredFolder + "1";
+
+
+			Assert.That(BookStorage.MoveBookToSafeName(bookFolder), Is.EqualTo(expectedFolder));
+			Assert.That(Directory.Exists(expectedFolder));
+			var expectedBookPath = Path.Combine(expectedFolder, Path.GetFileName(expectedFolder) + ".htm");
+			Assert.That(File.ReadAllText(expectedBookPath), Is.EqualTo("this is a test"));
+		}
+
+		[Test]
 		public void Save_BookHadOnlyPaperSizeStyleSheet_StillHasIt()
 		{
 			GetInitialStorageWithCustomHtml("<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");

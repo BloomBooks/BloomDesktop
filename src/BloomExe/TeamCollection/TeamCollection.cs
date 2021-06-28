@@ -181,8 +181,9 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		public void SynchronizeBooksFromLocalToRepo(IWebSocketProgress progress)
 		{
-			foreach (var path in Directory.EnumerateDirectories(_localCollectionFolder))
+			foreach (var path1 in Directory.EnumerateDirectories(_localCollectionFolder))
 			{
+				var path = BookStorage.MoveBookToSafeName(path1);
 				try
 				{
 					var bookFolderName = Path.GetFileName(path);
@@ -1314,8 +1315,12 @@ namespace Bloom.TeamCollection
 			// If it's a join collection merge, check new books in instead.
 			var englishSomethingWrongMessage = "Something went wrong trying to sync with the book {0} in your Team Collection.";
 			var oldBookNames = new HashSet<string>();
-			foreach (var path in Directory.EnumerateDirectories(_localCollectionFolder))
+			foreach (var path1 in Directory.EnumerateDirectories(_localCollectionFolder))
 			{
+				// This should only affect new books (when firstTimeJoin is true),
+				// at least once things stabilize so we only ever put things with
+				// safe names in TCs.
+				var path = BookStorage.MoveBookToSafeName(path1);
 				try
 				{
 					if (!IsBloomBookFolder(path))
