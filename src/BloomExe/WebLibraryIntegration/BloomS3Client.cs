@@ -412,7 +412,6 @@ namespace Bloom.WebLibraryIntegration
 					if (BookTransfer.IsDryRun)
 						uploadMsgFmt = "(Dry run) Would upload {0}";	// TODO: localize?
 					progress.WriteStatus(uploadMsgFmt, fileName);
-					Console.WriteLine(uploadMsgFmt, fileName);
 					if (progress.CancelRequested)
 						return;
 
