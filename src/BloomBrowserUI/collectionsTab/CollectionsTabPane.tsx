@@ -9,11 +9,22 @@ import { SplitPane } from "react-collapse-pane";
 import { kPanelBackground, kDarkestBackground } from "../bloomMaterialUITheme";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { CollectionsTabBookPane } from "./collectionsTabBookPane/CollectionsTabBookPane";
+import { useState } from "react";
 
 const kResizerSize = 10;
 
 export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     const collections = BloomApi.useApiJson("collections/list");
+
+    const [draggingVSplitter, setDraggingVSplitter] = useState(false);
+
+    React.useEffect(
+        () =>
+            document.addEventListener("mouseup", () =>
+                setDraggingVSplitter(false)
+            ),
+        []
+    );
 
     if (collections) {
         const sourcesCollections = collections.slice(1);
@@ -72,6 +83,15 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                             background: `${kDarkestBackground}`
                         }
                     }}
+                    hooks={{
+                        onDragStarted: () => {
+                            setDraggingVSplitter(true);
+                        }
+                    }}
+                    // onDragFinished={() => {
+                    //     alert("stopped dragging");
+                    //     setDraggingVSplitter(false);
+                    // }}
                 >
                     <SplitPane
                         split="horizontal"
@@ -120,7 +140,11 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                             height: 100%;
                         `}
                     >
-                        <CollectionsTabBookPane />
+                        <CollectionsTabBookPane
+                            // While we're dragging the splitter, we need to overlay the iframe book preview
+                            // so it doesn't steal the mouse events we need for dragging the splitter.
+                            disableEventsInIframe={draggingVSplitter}
+                        />
                     </div>
                 </SplitPane>
             </div>
