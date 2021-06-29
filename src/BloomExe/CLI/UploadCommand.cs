@@ -85,15 +85,11 @@ namespace Bloom.CLI
 }
 
 // Used with https://github.com/gsscoder/commandline, which we get via nuget.
-// (using the beta of commandline 2.0, as of Bloom 3.8)
 
-[Verb("upload", HelpText = "Upload a book or folder of books to bloomlibrary.org.  A folder that contains exactly one .htm file is interpreted as a book and uploaded." +
-	"  Other folders are searched recursively for children that appear to be Bloom books.  The parent folder of a Bloom book is searched for a .bloomCollection file" +
-	" and, if one is found, the book is treated as part of that collection (e.g., for determining vernacular language).  If no .bloomCollection file is found there," +
-	" the book is not uploaded.\n"+
-	"When a book is uploaded, that fact is recorded in a file named .lastUploadInfo in the book's folder given to the upload command.  Books will not be" +
-	" uploaded again unless something changes in the local book files or unless the user uses the -F (--force) command line option.  Nothing on the website" +
-	" prevents books from being overwritten by being uploaded again."
+// TODO: this does not work (does not show up in help), and I don't understand how to make it work
+
+[Verb("upload", HelpText = "Upload collections of books to bloomlibrary.org. Cannot be used to upload only a single book. Given a folder that is a collection, this will upload the it. Given a folder that is not a collection, it will search for descendant folders that contain collections.\r\nExample: bloom upload \"c:\\foo\\all my collections\". (Do not use a trailing slash). " +
+	" Normally, this command will skip books that have not changed.\r\nIn order to authenticate, you must first log in with the Bloom UI:Publish:Share on the Web, then quit."
 	)]
 public class UploadParameters
 {
