@@ -19,7 +19,7 @@ using SIL.Reflection;
 namespace BloomTests.WebLibraryIntegration
 {
 	[TestFixture]
-	public class BookTransferTests
+	public class BookUploadAndDownloadTests
 	{
 		private TemporaryFolder _workFolder;
 		private string _workFolderPath;
