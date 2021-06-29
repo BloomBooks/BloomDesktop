@@ -135,7 +135,7 @@ namespace Bloom.WebLibraryIntegration
 
 		public void DeleteBookData(string bucketName, string key)
 		{
-			if (BookTransfer.IsDryRun)
+			if (BookUpload.IsDryRun)
 				return;
 
 			var listMatchingObjectsRequest = new ListObjectsRequest()
@@ -181,7 +181,7 @@ namespace Bloom.WebLibraryIntegration
 		/// <returns>url to the uploaded file</returns>
 		public string UploadSingleFile(string pathToFile, IProgress progress)
 		{
-			using (var transferUtility =  (BookTransfer.IsDryRun) ? null : new TransferUtility(GetAmazonS3(_bucketName)))
+			using (var transferUtility =  (BookUpload.IsDryRun) ? null : new TransferUtility(GetAmazonS3(_bucketName)))
 			{
 				var request = new TransferUtilityUploadRequest
 				{
@@ -195,7 +195,7 @@ namespace Bloom.WebLibraryIntegration
 				request.Headers.CacheControl = "no-cache";
 				progress.WriteStatus("Uploading book to Bloom Support...");
 				Console.WriteLine("Uploading book to Bloom Support...");
-				if (!BookTransfer.IsDryRun)
+				if (!BookUpload.IsDryRun)
 					transferUtility.Upload(request);
 				return "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(request.Key);
 			}
@@ -373,7 +373,7 @@ namespace Bloom.WebLibraryIntegration
 			if (BaseUrl == null && filesToUpload.Length > 0)
 				BaseUrl = "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(prefix);;
 
-			using (var transferUtility = (BookTransfer.IsDryRun) ? null : new TransferUtility(_amazonS3))
+			using (var transferUtility = (BookUpload.IsDryRun) ? null : new TransferUtility(_amazonS3))
 			{
 				foreach(string file in filesToUpload)
 				{
@@ -409,7 +409,7 @@ namespace Bloom.WebLibraryIntegration
 					request.Headers.CacheControl = "no-cache";
 					request.CannedACL = S3CannedACL.PublicRead; // Allows any browser to download it.
 					var uploadMsgFmt = LocalizationManager.GetString("PublishTab.Upload.UploadingStatus", "Uploading {0}");
-					if (BookTransfer.IsDryRun)
+					if (BookUpload.IsDryRun)
 						uploadMsgFmt = "(Dry run) Would upload {0}";	// TODO: localize?
 					progress.WriteStatus(uploadMsgFmt, fileName);
 					if (progress.CancelRequested)
@@ -417,7 +417,7 @@ namespace Bloom.WebLibraryIntegration
 
 					try
 					{
-						if (!BookTransfer.IsDryRun)
+						if (!BookUpload.IsDryRun)
 							transferUtility.Upload(request);
 					}
 					catch(Exception e)
@@ -693,11 +693,6 @@ namespace Bloom.WebLibraryIntegration
 
 		public void Dispose()
 		{
-//			if (_transferUtility != null)
-//			{
-//				_transferUtility.Dispose();
-//				_transferUtility = null;
-//			}
 			if (_amazonS3 != null)
 			{
 				_amazonS3.Dispose();

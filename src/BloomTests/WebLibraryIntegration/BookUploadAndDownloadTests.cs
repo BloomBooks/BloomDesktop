@@ -23,7 +23,8 @@ namespace BloomTests.WebLibraryIntegration
 	{
 		private TemporaryFolder _workFolder;
 		private string _workFolderPath;
-		private BookTransfer _transfer;
+		private BookUpload _uploader;
+		private BookDownload _downloader;
 		private BloomParseClientDouble _parseClient;
 		List<BookInfo> _downloadedBooks = new List<BookInfo>();
 		private HtmlThumbNailer _htmlThumbNailer;
@@ -65,8 +66,9 @@ namespace BloomTests.WebLibraryIntegration
 			// Todo: Make sure the parse.com unit test book table is empty
 			_parseClient = new BloomParseClientDouble(_thisTestId);
 			_htmlThumbNailer = new HtmlThumbNailer(NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
-			_transfer = new BookTransfer(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new BookThumbNailer(_htmlThumbNailer), new BookDownloadStartingEvent());
-			_transfer.BookDownLoaded += (sender, args) => _downloadedBooks.Add(args.BookDetails);
+			_uploader = new BookUpload(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new BookThumbNailer(_htmlThumbNailer));
+			_downloader = new BookDownload(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new BookDownloadStartingEvent());
+			_downloader.BookDownLoaded += (sender, args) => _downloadedBooks.Add(args.BookDetails);
 		}
 
 		[TearDown]
@@ -92,7 +94,7 @@ namespace BloomTests.WebLibraryIntegration
 
 		private void Login()
 		{
-			Assert.That(_transfer.LogIn("unittest@example.com", "unittest"), Is.True,
+			Assert.That(_uploader.LogIn("unittest@example.com", "unittest"), Is.True,
 				"Could not log in using the unittest@example.com account");
 		}
 
@@ -124,7 +126,7 @@ namespace BloomTests.WebLibraryIntegration
 			//HashSet<string> notifications = new HashSet<string>();
 
 			var progress = new SIL.Progress.StringBuilderProgress();
-			var s3Id = _transfer.UploadBook(originalBookFolder,progress);
+			var s3Id = _uploader.UploadBook(originalBookFolder,progress);
 
 			var uploadMessages = progress.Text.Split(new string[] {Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries);
 
@@ -138,12 +140,12 @@ namespace BloomTests.WebLibraryIntegration
 				"In this step, Bloom is uploading things like title, languages, & topic tags to the bloomlibrary.org database.")));
 			Assert.That(progress.Text, Does.Contain(Path.GetFileName(filesToUpload.First())));
 
-			_transfer.WaitUntilS3DataIsOnServer(BloomS3Client.UnitTestBucketName, originalBookFolder);
+			_uploader.WaitUntilS3DataIsOnServer(BloomS3Client.UnitTestBucketName, originalBookFolder);
 			var dest = _workFolderPath.CombineForPath("output");
 			Directory.CreateDirectory(dest);
 			_downloadedBooks.Clear();
-			var url = BookTransfer.BloomS3UrlPrefix + BloomS3Client.UnitTestBucketName + "/" + s3Id;
-			var newBookFolder = _transfer.HandleDownloadWithoutProgress(url, dest);
+			var url = BookUpload.BloomS3UrlPrefix + BloomS3Client.UnitTestBucketName + "/" + s3Id;
+			var newBookFolder = _downloader.HandleDownloadWithoutProgress(url, dest);
 
 			Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount + 1), "Book order was not added during upload"); // book order is added during upload
 
@@ -158,15 +160,15 @@ namespace BloomTests.WebLibraryIntegration
 		{
 			var someBookPath = MakeBook("local", Guid.NewGuid().ToString(), "someone", "test");
 			Login();
-			_transfer.UploadBook(someBookPath, new NullProgress());
-			Assert.That(_transfer.IsBookOnServer(someBookPath), Is.True);
+			_uploader.UploadBook(someBookPath, new NullProgress());
+			Assert.That(_uploader.IsBookOnServer(someBookPath), Is.True);
 		}
 
 		[Test]
 		public void BookExists_NonExistentBook_ReturnsFalse()
 		{
 			var localBook = MakeBook("local", "someId", "someone", "test");
-			Assert.That(_transfer.IsBookOnServer(localBook), Is.False);
+			Assert.That(_uploader.IsBookOnServer(localBook), Is.False);
 		}
 
 		/// <summary>
@@ -179,7 +181,7 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(BookTransfer.UploadPdfPath("/somewhere/Look at the sky. What do you see"),
 				Is.EqualTo("/somewhere/Look at the sky. What do you see/Look at the sky. What do you see.pdf"));
 #else
-			Assert.That(BookTransfer.UploadPdfPath(@"c:\somewhere\Look at the sky. What do you see"),
+			Assert.That(BookUpload.UploadPdfPath(@"c:\somewhere\Look at the sky. What do you see"),
 				Is.EqualTo(@"c:\somewhere\Look at the sky. What do you see\Look at the sky. What do you see.pdf"));
 #endif
 		}
@@ -244,7 +246,7 @@ namespace BloomTests.WebLibraryIntegration
 			var newJson = jsonStart + ",\"bookLineage\":\"original\"}";
 			File.WriteAllText(jsonPath, newJson);
 			Login();
-			string s3Id = _transfer.UploadBook(bookFolder, new NullProgress());
+			string s3Id = _uploader.UploadBook(bookFolder, new NullProgress());
 			File.Delete(bookFolder.CombineForPath("one.css"));
 			File.WriteAllText(Path.Combine(bookFolder, "one.htm"), "something new");
 			File.WriteAllText(Path.Combine(bookFolder, "two.css"), @"test");
@@ -252,11 +254,11 @@ namespace BloomTests.WebLibraryIntegration
 			newJson = jsonStart + ",\"bookLineage\":\"other\"}";
 			File.WriteAllText(jsonPath, newJson);
 
-			_transfer.UploadBook(bookFolder, new NullProgress());
+			_uploader.UploadBook(bookFolder, new NullProgress());
 
 			var dest = _workFolderPath.CombineForPath("output");
 			Directory.CreateDirectory(dest);
-			var newBookFolder = _transfer.DownloadBook(BloomS3Client.UnitTestBucketName, s3Id, dest);
+			var newBookFolder = _downloader.DownloadBook(BloomS3Client.UnitTestBucketName, s3Id, dest);
 
 			var firstData = File.ReadAllText(newBookFolder.CombineForPath("one.htm"));
 			Assert.That(firstData, Does.Contain("something new"), "We should have overwritten the changed file");
@@ -275,7 +277,7 @@ namespace BloomTests.WebLibraryIntegration
 		{
 			Login();
 			var bookFolder = MakeBook(MethodBase.GetCurrentMethod().Name, "myId", "me", "something");
-			_transfer.UploadBook(bookFolder, new NullProgress());
+			_uploader.UploadBook(bookFolder, new NullProgress());
 			var bookInstanceId = "myId" + _thisTestId;
 			var bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
 
@@ -305,7 +307,7 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(bookRecord.updateSource.Value, Is.EqualTo("not Bloom"));
 			Assert.That(bookRecord.lastUploaded.Value, Is.Null);
 
-			_transfer.UploadBook(bookFolder, new NullProgress());
+			_uploader.UploadBook(bookFolder, new NullProgress());
 			bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
 
 			// Verify re-upload
@@ -334,7 +336,7 @@ namespace BloomTests.WebLibraryIntegration
 
 				Login();
 				var bookFolder = MakeBook(MethodBase.GetCurrentMethod().Name, "myId", "me", "something");
-				_transfer.UploadBook(bookFolder, new NullProgress());
+				_uploader.UploadBook(bookFolder, new NullProgress());
 				var bookInstanceId = "myId" + _thisTestId;
 				var bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
 
@@ -366,7 +368,7 @@ namespace BloomTests.WebLibraryIntegration
 				Assert.That(bookRecord.lastUploaded.Value, Is.Null);
 				_parseClient.SimulateOldBloomUpload = true;
 
-				_transfer.UploadBook(bookFolder, new NullProgress());
+				_uploader.UploadBook(bookFolder, new NullProgress());
 				bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
 
 				// Verify re-upload
@@ -394,11 +396,11 @@ namespace BloomTests.WebLibraryIntegration
 			File.WriteAllText(Path.Combine(bookFolder, "thumbnail.png"), @"this should be a binary picture");
 
 			Login();
-			string s3Id = _transfer.UploadBook(bookFolder, new NullProgress());
-			_transfer.WaitUntilS3DataIsOnServer(BloomS3Client.UnitTestBucketName, bookFolder);
+			string s3Id = _uploader.UploadBook(bookFolder, new NullProgress());
+			_uploader.WaitUntilS3DataIsOnServer(BloomS3Client.UnitTestBucketName, bookFolder);
 			var dest = _workFolderPath.CombineForPath("output");
 			Directory.CreateDirectory(dest);
-			var newBookFolder = _transfer.DownloadBook(BloomS3Client.UnitTestBucketName, s3Id, dest);
+			var newBookFolder = _downloader.DownloadBook(BloomS3Client.UnitTestBucketName, s3Id, dest);
 			var metadata = BookMetaData.FromString(File.ReadAllText(Path.Combine(newBookFolder, BookInfo.MetaDataFileName)));
 			Assert.That(string.IsNullOrEmpty(metadata.Id), Is.False, "should have filled in missing ID");
 			Assert.That(metadata.Uploader.ObjectId, Is.EqualTo(_parseClient.UserId), "should have set uploader to id of logged-in user");
@@ -422,12 +424,12 @@ namespace BloomTests.WebLibraryIntegration
 			var bookFolder = MakeBook("My Url Book", id, "someone", "My content");
 			int fileCount = Directory.GetFiles(bookFolder).Length;
 			Login();
-			string s3Id = _transfer.UploadBook(bookFolder, new NullProgress());
-			_transfer.WaitUntilS3DataIsOnServer(BloomS3Client.UnitTestBucketName, bookFolder);
+			string s3Id = _uploader.UploadBook(bookFolder, new NullProgress());
+			_uploader.WaitUntilS3DataIsOnServer(BloomS3Client.UnitTestBucketName, bookFolder);
 			var dest = _workFolderPath.CombineForPath("output");
 			Directory.CreateDirectory(dest);
 
-			var newBookFolder = _transfer.DownloadFromOrderUrl(_transfer.BookOrderUrl, dest, "nonsense");
+			var newBookFolder = _downloader.DownloadFromOrderUrl(_uploader.BookOrderUrlOfLastUploadForUnitTest, dest, "nonsense");
 			Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount + 1)); // book order is added during upload
 		}
 
@@ -440,7 +442,7 @@ namespace BloomTests.WebLibraryIntegration
 			//if this fails, don't panic... maybe the book is gone. If so, just pick another one.
 			var url =
 			"bloom://localhost/order?orderFile=BloomLibraryBooks/cara_ediger%40sil-lead.org%2ff0665264-4f1f-43d3-aa7e-fc832fe45dd0%2fBreakfast%2fBreakfast.BloomBookOrder&title=Breakfast";
-			var destBookFolder = _transfer.DownloadFromOrderUrl(url, dest, "nonsense");
+			var destBookFolder = _downloader.DownloadFromOrderUrl(url, dest, "nonsense");
 			Assert.That(Directory.GetFiles(destBookFolder).Length, Is.GreaterThan(3));
 		}
 

@@ -593,7 +593,7 @@ namespace Bloom.Book
 			return new HtmlDom(builder.ToString());
 		}
 
-		private bool IsDownloaded => FolderPath.StartsWith(BookTransfer.DownloadFolder);
+		private bool IsDownloaded => FolderPath.StartsWith(BookDownload.DownloadFolder);
 
 		// BL-2678: we want the user to be able to delete troublesome/no longer needed books
 		// downloaded from BloomLibrary.org

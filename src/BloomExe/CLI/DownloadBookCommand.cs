@@ -26,12 +26,12 @@ namespace Bloom.CLI
 					Browser.SetUpXulRunner();
 					Browser.XulRunnerShutdown += Program.OnXulRunnerShutdown;
 					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
-					var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
-						applicationContainer.BookThumbNailer, new BookDownloadStartingEvent()) /*not hooked to anything*/;
+					var downloader = new BookDownload(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
+						 new BookDownloadStartingEvent()); /*not hooked to anything*/;
 					// Since Bloom is not a normal console app, when run from a command line, the new command prompt
 					// appears at once. The extra newlines here are attempting to separate this from our output.
 					Console.WriteLine("\nstarting download");
-					transfer.HandleDownloadWithoutProgress(options.Url, options.DestinationPath);
+					downloader.HandleDownloadWithoutProgress(options.Url, options.DestinationPath);
 					Console.WriteLine(("\ndownload complete\n"));
 				}
 				return 0;

@@ -572,10 +572,10 @@ namespace Bloom
 				Browser.SetUpXulRunner();
 				Browser.XulRunnerShutdown += OnXulRunnerShutdown;
 				LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
-				var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
-					_applicationContainer.BookThumbNailer, new BookDownloadStartingEvent()) /*not hooked to anything*/;
-				transfer.HandleBloomBookOrder(order);
-				PathToBookDownloadedAtStartup = transfer.LastBookDownloadedPath;
+				var downloader = new BookDownload(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
+					new BookDownloadStartingEvent()) /*not hooked to anything*/;
+				downloader.HandleBloomBookOrder(order);
+				PathToBookDownloadedAtStartup = downloader.LastBookDownloadedPath;
 				// BL-2143: Don't show download complete message if download was not successful
 				if (!string.IsNullOrEmpty(PathToBookDownloadedAtStartup))
 				{

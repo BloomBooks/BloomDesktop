@@ -37,7 +37,7 @@ namespace Bloom.CLI
 					Console.WriteLine($"Error: if present, upload destination (-d) must be one of {UploadDestination.DryRun}, {UploadDestination.Development}, or {UploadDestination.Production}");
 					return 1;
 			}
-			BookTransfer.Destination = options.Dest;    // must be set before calling SetupErrorHandling() (or BloomParseClient constructor)
+			BookUpload.Destination = options.Dest;    // must be set before calling SetupErrorHandling() (or BloomParseClient constructor)
 
 			// This task will be all the program does. We need to do enough setup so that
 			// the upload code can work, then tear it down.
@@ -50,15 +50,15 @@ namespace Bloom.CLI
 					Browser.SetUpXulRunner();
 					Browser.XulRunnerShutdown += Program.OnXulRunnerShutdown;
 					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
-					var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
-						applicationContainer.BookThumbNailer, new BookDownloadStartingEvent());
+					var uploader = new BookUpload(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
+						applicationContainer.BookThumbNailer);
 
 					// Since Bloom is not a normal console app, when run from a command line, the new command prompt
 					// appears at once. The extra newlines here are attempting to separate this from our output.
 					switch (options.Dest)
 					{
 						case UploadDestination.DryRun:
-							Console.WriteLine($"\nThe following actions would happen if you set destination to '{(BookTransfer.UseSandboxByDefault ? UploadDestination.Development : UploadDestination.Production)}'.");
+							Console.WriteLine($"\nThe following actions would happen if you set destination to '{(BookUpload.UseSandboxByDefault ? UploadDestination.Development : UploadDestination.Production)}'.");
 							break;
 						case UploadDestination.Development:
 							Console.WriteLine("\nThe upload will go to dev.bloomlibrary.org.");
@@ -68,7 +68,7 @@ namespace Bloom.CLI
 							break;
 					}
 					Console.WriteLine("\nStarting upload...");
-					transfer.BulkUpload(applicationContainer, options);
+					uploader.BulkUpload(applicationContainer, options);
 					Console.WriteLine(("\nBulk upload complete.\n"));
 				}
 				return 0;

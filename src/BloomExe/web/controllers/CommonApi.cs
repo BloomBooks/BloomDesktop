@@ -134,7 +134,7 @@ namespace Bloom.web.controllers
 					string email = requestData.email;
 					string userId = requestData.userId;
 					//Debug.WriteLine("Got login data " + email + " with token " + token + " and id " + userId);
-					_parseClient.SetLoginData(email, userId, token, BookTransfer.Destination);
+					_parseClient.SetLoginData(email, userId, token, BookUpload.Destination);
 					_doWhenLoggedIn?.Invoke();
 					request.PostSucceeded();
 				}, false);

@@ -636,7 +636,7 @@ namespace Bloom.CollectionTab
 				if (dialogResult != DialogResult.OK)
 					return;
 			}
-			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.LibrarySite, BookTransfer.UseSandbox) + "/books");
+			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.LibrarySite, BookUpload.UseSandbox) + "/books");
 		}
 
 		DialogResult ShowBloomLibraryLinkVerificationDialog()

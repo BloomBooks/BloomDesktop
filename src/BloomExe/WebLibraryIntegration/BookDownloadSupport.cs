@@ -16,8 +16,6 @@ namespace Bloom.WebLibraryIntegration
 	/// </summary>
 	public class BookDownloadSupport
 	{
-		private static Thread _serverThread;
-		private static bool _shuttingDown;
 		public delegate BookDownloadSupport Factory();//autofac uses this
 		public const string ArgsPipeName = @"SendBloomArgs";
 
@@ -28,7 +26,7 @@ namespace Bloom.WebLibraryIntegration
 			// Another advantage of creating it early is that we don't have to create it in the UI when we want to add
 			// a downloaded book to the UI.
 			// So, we just make sure it exists here at startup.
-			string downloadFolder = BookTransfer.DownloadFolder;
+			string downloadFolder = BookDownload.DownloadFolder;
 			if (!Directory.Exists(downloadFolder))
 			{
 				var pathToSettingsFile = CollectionSettings.GetPathForNewSettings(Path.GetDirectoryName(downloadFolder),

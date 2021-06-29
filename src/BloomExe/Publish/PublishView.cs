@@ -30,7 +30,7 @@ namespace Bloom.Publish
 		private readonly ComposablePartCatalog _extensionCatalog;
 		private bool _activated;
 		private BloomLibraryUploadControl _uploadControl;
-		private BookTransfer _bookTransferrer;
+		private BookUpload _bookTransferrer;
 		private PictureBox _previewBox;
 		private HtmlPublishPanel _htmlControl;
 		private NavigationIsolator _isolator;
@@ -42,7 +42,7 @@ namespace Bloom.Publish
 		public delegate PublishView Factory();//autofac uses this
 
 		public PublishView(PublishModel model,
-			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, NavigationIsolator isolator,
+			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookUpload bookTransferrer, NavigationIsolator isolator,
 			PublishToAndroidApi publishApi, PublishEpubApi publishEpubApi, BloomWebSocketServer webSocketServer)
 		{
 			_bookTransferrer = bookTransferrer;

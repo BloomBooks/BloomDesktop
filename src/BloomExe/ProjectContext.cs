@@ -275,7 +275,7 @@ namespace Bloom
 
 					// Enhance: may need some way to test a release build in the sandbox.
 					builder.Register(c => CreateBloomS3Client()).AsSelf().SingleInstance();
-					builder.RegisterType<BookTransfer>().AsSelf().SingleInstance();
+					builder.RegisterType<BookUpload>().AsSelf().SingleInstance();
 
 					//TODO: this gave a stackoverflow exception
 //				builder.Register<WorkspaceModel>(c => c.Resolve<WorkspaceModel.Factory>()(rootDirectoryPath)).InstancePerLifetimeScope();
@@ -390,7 +390,7 @@ namespace Bloom
 
 		internal static BloomS3Client CreateBloomS3Client()
 		{
-			return new BloomS3Client(BookTransfer.UploadBucketNameForCurrentEnvironment);
+			return new BloomS3Client(BookUpload.UploadBucketNameForCurrentEnvironment);
 		}
 
 
