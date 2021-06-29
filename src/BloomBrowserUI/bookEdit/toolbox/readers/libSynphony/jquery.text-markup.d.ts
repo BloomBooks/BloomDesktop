@@ -12,6 +12,7 @@ interface JQueryStatic {
         gpcForm: string[],
         desiredGPCs?: string[]
     ): string;
+    removeAllHtmlMarkupFromString(textHtml: string): string;
 }
 
 declare var jQuery: JQueryStatic;

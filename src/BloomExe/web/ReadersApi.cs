@@ -317,8 +317,10 @@ namespace Bloom.Api
 				// Skip the page if it contains no visible vernacular text elements.  (picture only)
 				if (textDivs.Count == 0)
 					continue;
+				// javascript code will strip the XHTML markup out of the returned strings.  This guarantees
+				// that entire books and individual pages are treated the same way.  (See BL-10129.)
 				foreach (XmlElement node in textDivs)
-					pageWords += " " + node.InnerText;
+					pageWords += " " + node.InnerXml;
 
 				pageTexts.Add("\"" + page.GetAttribute("id") + "\":\"" + EscapeJsonValue(pageWords.Trim()) + "\"");
 			}

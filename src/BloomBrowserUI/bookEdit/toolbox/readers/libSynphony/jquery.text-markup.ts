@@ -405,6 +405,17 @@ import { ReaderToolsModel } from "../readerToolsModel";
     });
 
     $.extend({
+        /**
+         * Strip the HTML markup from a string
+         * @param {String} textHtml
+         * @returns {String}
+         */
+        removeAllHtmlMarkupFromString: textHtml => {
+            return removeAllMarkup(textHtml);
+        }
+    });
+
+    $.extend({
         cssSentenceTooLong: () => {
             return cssSentenceTooLong;
         }
@@ -431,8 +442,8 @@ import { ReaderToolsModel } from "../readerToolsModel";
      * @returns {String}
      */
     function removeAllMarkup(textHTML) {
-        // preserve spaces after line breaks and paragraph breaks
-        var regex = /(<br><\/br>|<br>|<br \/>|<br\/>|<p><\/p>|<p>|<p \/>|<p\/>|\n)/g;
+        // ensure spaces after line breaks and paragraph breaks
+        var regex = /(<br><\/br>|<br>|<br ?\/>|<p><\/p>|<\/?p>|<p ?\/>|\n)/g;
         textHTML = textHTML.replace(regex, " ");
 
         // This regex is rather specific to the spans ckeditor sticks in as
@@ -444,6 +455,9 @@ import { ReaderToolsModel } from "../readerToolsModel";
         // complication doesn't seem worthwhile.
         var ckeRegex = /<span [^>]*style="display: none;"[^>]*>[^<]*<\/span>/g;
         textHTML = textHTML.replace(ckeRegex, "");
+
+        var markupRegex = /<\/?(strong|em|sup|u)>/g;
+        textHTML = textHTML.replace(markupRegex, "");
 
         return $("<div>" + textHTML + "</div>").text();
     }

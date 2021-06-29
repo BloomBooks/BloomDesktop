@@ -1203,7 +1203,9 @@ export class ReaderToolsModel {
         }
 
         this.bookStatistics = {};
-        const pageStrings = _.values(this.pageIDToText);
+        const pageStrings = _.values(this.pageIDToText).map(x =>
+            $.removeAllHtmlMarkupFromString(x)
+        );
 
         const pageElementsToCheck = this.getElementsToCheck();
         const pageText = pageElementsToCheck
