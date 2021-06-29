@@ -2273,7 +2273,10 @@ namespace Bloom.Book
 
 		internal static string SanitizeNameForFileSystem(string name)
 		{
-			// First make sure it's not too long.
+			// We want NFC to prevent Dropbox complaining about encoding conflicts.
+			// May as well do that first as it may result in less truncation.
+			name = name.Normalize(NormalizationForm.FormC);
+			// Then make sure it's not too long.
 			const int MAX = 50;	//arbitrary
 			if (name.Length > MAX)
 				name = name.Substring(0, MAX);
@@ -2595,6 +2598,40 @@ namespace Bloom.Book
 			}
 			// future additional levels will add additional "if (level < N)" blocks.
 			Dom.UpdateMetaElement("maintenanceLevel", kMaintenanceLevel.ToString(CultureInfo.InvariantCulture));
+		}
+
+		/// <summary>
+		/// Move the book in the specified folder to a name that is safe (especially for DropBox)
+		/// </summary>
+		/// <returns>path to book folder</returns>
+		public static string MoveBookToSafeName(string oldBookFolder)
+		{
+			var fileName = Path.GetFileName(oldBookFolder);
+			var goodName = SanitizeNameForFileSystem(fileName);
+			if (goodName == fileName)
+				return oldBookFolder; // no need to change.
+			var goodPath = Path.Combine(Path.GetDirectoryName(oldBookFolder), goodName);
+			return MoveBookToAvailableName(oldBookFolder, goodPath);
+		}
+
+		/// <summary>
+		/// Move the book at the specified location to a similar location that is not in use.
+		/// </summary>
+		/// <returns>The path to the new book folder</returns>
+		public static string MoveBookToAvailableName(string oldBookFolder, string desiredPath = null)
+		{
+			if (desiredPath == null)
+				desiredPath = oldBookFolder;
+			var newPathForExtraBook = BookStorage.GetUniqueFolderPath(desiredPath);
+			Directory.Move(oldBookFolder, newPathForExtraBook);
+			var extraBookPath = Path.Combine(newPathForExtraBook, Path.ChangeExtension(Path.GetFileName(oldBookFolder), "htm"));
+			// This will usually succeed, since it is standard to name the book the same as the folder.
+			// But if it doesn't, we can't move it, so it seems worth a check.
+			// (And if we change our minds about keeping them in sync, this will be one less place to fix.)
+			if (File.Exists(extraBookPath))
+				RobustFile.Move(extraBookPath,
+					Path.Combine(newPathForExtraBook, Path.ChangeExtension(Path.GetFileName(newPathForExtraBook), "htm")));
+			return newPathForExtraBook;
 		}
 	}
 }
