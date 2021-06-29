@@ -13,6 +13,7 @@ import { resizeWordList } from "./readerTools";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import { ToolBox } from "../toolbox";
 import "./libSynphony/jquery.text-markup.ts";
+import { removeAllHtmlMarkupFromString } from "./libSynphony/jquery.text-markup";
 import "./jquery.div-columns.ts";
 import { ReaderStage, ReaderLevel } from "./ReaderSettings";
 import * as _ from "underscore";
@@ -1203,7 +1204,9 @@ export class ReaderToolsModel {
         }
 
         this.bookStatistics = {};
-        const pageStrings = _.values(this.pageIDToText);
+        const pageStrings = _.values(this.pageIDToText).map(x =>
+            removeAllHtmlMarkupFromString(x)
+        );
 
         const pageElementsToCheck = this.getElementsToCheck();
         const pageText = pageElementsToCheck
