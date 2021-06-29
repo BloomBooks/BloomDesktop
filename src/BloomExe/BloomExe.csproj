@@ -463,6 +463,7 @@
     <Compile Include="Utils\PerformanceMeasurement.cs" />
     <Compile Include="Utils\RobustZip.cs" />
     <Compile Include="WebLibraryIntegration\BookDownload.cs" />
+    <Compile Include="WebLibraryIntegration\BulkUploader.cs" />
     <Compile Include="WebLibraryIntegration\FirebaseLoginDialog.cs" />
     <Compile Include="WebLibraryIntegration\S3Extensions.cs" />
     <Compile Include="web\ReactControl.cs">

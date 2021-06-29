@@ -963,7 +963,7 @@ namespace Bloom.Publish
 		/// <summary>
 		/// Make the preview required for publishing the book.
 		/// </summary>
-		internal void MakePublishPreview(IProgress progress)
+		internal void MakePDFForUpload(IProgress progress)
 		{
 			if (IsMakingPdf)
 			{

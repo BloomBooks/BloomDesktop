@@ -50,8 +50,10 @@ namespace Bloom.CLI
 					Browser.SetUpXulRunner();
 					Browser.XulRunnerShutdown += Program.OnXulRunnerShutdown;
 					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
-					var uploader = new BookUpload(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
+					var singleBookUploader = new BookUpload(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
 						applicationContainer.BookThumbNailer);
+					var uploader = new BulkUploader(singleBookUploader);
+
 
 					// Since Bloom is not a normal console app, when run from a command line, the new command prompt
 					// appears at once. The extra newlines here are attempting to separate this from our output.
