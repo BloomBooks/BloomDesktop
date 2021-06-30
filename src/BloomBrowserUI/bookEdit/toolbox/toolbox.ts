@@ -32,7 +32,12 @@ export interface ITool {
     showTool(); // called when a new tool is chosen, but not necessarily when a new page is displayed.
     hideTool(); // called when changing tools or hiding the toolbox.
     updateMarkup(); // called on most keypresses (but notably, not on arrow navigation, also not Ctrl+C). It is called on typing letters (obviously), Ctrl+X, Ctrl+V, Ctrl+Z, Ctrl+Y etc... or even just pressing and releasing Ctrl or Shift.
-    isUpdateMarkupAsync(): boolean; // should return true if updateMarkup does any async work that we should wait for.
+    // like updateMarkup, but expected to be async. Implement instead of updateMarkup if you need to use async functions.
+    // Because it is async, it is not guaranteed that all the async processing will complete before another keystroke is received.
+    // To guard against this, it should make no changes to the document; rather, it returns a function which will,
+    // synchronously, make the changes. Toolbox will call this returned function iff no more keystrokes have been received.
+    updateMarkupAsync(): Promise<() => void>;
+    isUpdateMarkupAsync(): boolean; // should return true if updateMarkupAsync should be called and awaited instead of updateMarkup.
     newPageReady(); // called when a new page is displayed or tool is activated (called after showTool completes)
     detachFromPage(); // called when a page is going away AND before hideTool
     id(): string; // without trailing "Tool"!
@@ -834,6 +839,8 @@ function beginAddTool(
     }
 }
 
+var keydownEventCounter = 0;
+
 function handleKeyboardInput(): void {
     // BL-599: "Unresponsive script" while typing in text.
     // The function setTimeout() returns an integer, not a timer object, and therefore it does not have a member
@@ -846,6 +853,7 @@ function handleKeyboardInput(): void {
     //if (this.keypressTimer && $.isFunction(this.keypressTimer.clearTimeout)) {
     //  this.keypressTimer.clearTimeout();
     //}
+    var counterValueThatIdentifiesThisKeyDown = ++keydownEventCounter;
     if (keypressTimer) clearTimeout(keypressTimer);
     keypressTimer = setTimeout(async () => {
         // This happens 500ms after the user stops typing.
@@ -926,6 +934,14 @@ function handleKeyboardInput(): void {
                 if (currentTool && toolbox.toolboxIsShowing()) {
                     if (currentTool.isUpdateMarkupAsync()) {
                         // Set the selection now before starting off asynchronous work
+                        // JT: Following is the comment from before we had updateMarkupAsync return the function that makes
+                        // the actual change. Even before that, I don't _think_ it was true. We didn't make
+                        // any changes to the DOM BEFORE calling updateMarkup(). And BL-10133 reported that we
+                        // were NOT succeeding in preventing the flash-insertion-point-at-start (nor preventing
+                        // the user possibly inserting text there by mistake!) So it may now be redundant to do
+                        // this cursor reset before calling updateMarkupAsync. Leaving it in in case it serves
+                        // a purpose I don't understand.
+                        // Original comment:
                         // Since we've possibly already modified the DOM, CKEditor's selection will be reset back to the beginning.
                         // If you wait for async work to finish before resetting the selection, then there will be a brief flash
                         // as the selection moves to the front (when the async work is kicked off) and then back to the final destination
@@ -938,7 +954,17 @@ function handleKeyboardInput(): void {
                         ckeditorSelection = ckeditorOfThisBox.getSelection();
                         bookmarks = ckeditorSelection.createBookmarks(true);
 
-                        await currentTool.updateMarkup();
+                        const actualUpdateFunc = await currentTool.updateMarkupAsync();
+                        if (
+                            keydownEventCounter ==
+                            counterValueThatIdentifiesThisKeyDown
+                        ) {
+                            // go ahead and make the change. (If the counts are different,
+                            // we got another keystroke, and initiated a new updatemarkup,
+                            // while processing this one. We don't want to save the results
+                            // of updating for the earlier keystroke.)
+                            actualUpdateFunc();
+                        }
                     } else {
                         currentTool.updateMarkup();
                     }

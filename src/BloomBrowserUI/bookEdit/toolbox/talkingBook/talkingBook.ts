@@ -69,9 +69,13 @@ export default class TalkingBookTool implements ITool {
     }
 
     // Called whenever the user edits text.
-    public async updateMarkup(): Promise<void> {
+    public async updateMarkupAsync(): Promise<() => void> {
         this.showImageDescriptionsIfAny();
-        return AudioRecorder.theOneAudioRecorder.updateMarkup();
+        return AudioRecorder.theOneAudioRecorder.getUpdateMarkupAction();
+    }
+
+    public updateMarkup() {
+        throw "not implemented, use updateMarkupAsync";
     }
 
     public isUpdateMarkupAsync(): boolean {
