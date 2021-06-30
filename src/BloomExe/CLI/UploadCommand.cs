@@ -19,7 +19,14 @@ namespace Bloom.CLI
 
 		public static int Handle(UploadParameters options)
 		{
-			Console.OutputEncoding = Encoding.UTF8;
+			try
+			{
+				Console.OutputEncoding = Encoding.UTF8;
+			}
+			catch (Exception)
+			{
+				// swallow. The above throws a handle error when run in Visual Studio
+			}
 
 			IsUploading = true;
 			// -u user, -p password, and <path> are all required, so they must contain strings.

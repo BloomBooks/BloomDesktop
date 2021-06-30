@@ -18,8 +18,7 @@ namespace Bloom.WebLibraryIntegration
 	public class BulkUploader
 	{
 		private readonly BookUpload _singleBookUploader;
-		private BloomParseClient _parseClient;
-		private BloomS3Client _s3Client;
+		
 		private readonly BookThumbNailer _thumbnailer;
 		public IProgress Progress;
 
@@ -31,40 +30,14 @@ namespace Bloom.WebLibraryIntegration
 
 		//private const string UploadLogFilename = "BloomBulkUploadLog.txt";
 		public const string UploadHashesFilename = ".lastUploadInfo";   // this filename must begin with a period
-		public bool LoggedIn => _parseClient.LoggedIn;
+		public bool LoggedIn => _singleBookUploader.ParseClient.LoggedIn;
 		private string _uploadedBy;
 		private string _accountWhenUploadedByLastSet;
+		
 
 		public BulkUploader(BookUpload singleBookUploader)
 		{
 			_singleBookUploader = singleBookUploader;
-		}
-
-		public bool LogIn(string account, string password)
-		{
-			return _parseClient.LegacyLogIn(account, password);
-		}
-
-		/// <summary>
-		/// The string that should be used to indicate who is uploading books.
-		/// When set, this is remembered until someone different logs in; when next
-		/// retrieved, it resets to the new account.
-		/// </summary>
-		public string UploadedBy
-		{
-			get
-			{
-				if (_accountWhenUploadedByLastSet == _parseClient.Account)
-					return _uploadedBy;
-				// If a different login has since occurred, default to uploaded by that account.
-				UploadedBy = _parseClient.Account;
-				return _uploadedBy;
-			}
-			set
-			{
-				_accountWhenUploadedByLastSet = _parseClient.Account;
-				_uploadedBy = value;
-			}
 		}
 
 		/// <summary>
@@ -82,11 +55,13 @@ namespace Bloom.WebLibraryIntegration
 		{
 			BookUpload.Destination = options.Dest;
 
-			var kLogFile = "BloomBulkUploadLog.txt";
 			using (var progress = new MultiProgress())
 			{
+				var logFilePath = Path.Combine(options.Path, "BloomBulkUploadLog.txt");
+
 				progress.Add(new Bloom.Utils.ConsoleProgress());
-				progress.Add(new FileLogProgress(Path.Combine(options.Path, kLogFile)));
+				
+				progress.Add(new FileLogProgress(logFilePath));
 
 				if (!_singleBookUploader.IsThisVersionAllowedToUpload())
 				{
@@ -98,7 +73,7 @@ namespace Bloom.WebLibraryIntegration
 
 				Debug.Assert(!String.IsNullOrWhiteSpace(options.UploadUser));
 
-				if (!_parseClient.AttemptSignInAgainForCommandLine(options.UploadUser, options.Dest, progress))
+				if (!_singleBookUploader.ParseClient.AttemptSignInAgainForCommandLine(options.UploadUser, options.Dest, progress))
 				{
 					progress.WriteError("Problem logging in. See messages above.");
 					System.Environment.Exit(1); 
@@ -145,7 +120,7 @@ namespace Bloom.WebLibraryIntegration
 					if (_booksWithErrors > 0)
 					{
 						progress.WriteError("Failed to upload {0} books. See \"{1}\" for details.", _booksWithErrors,
-							kLogFile);
+							logFilePath);
 					}
 				}
 				finally
