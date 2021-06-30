@@ -127,7 +127,7 @@ namespace BloomTests.TeamCollection
 					tc.SyncLocalAndRepoCollectionFiles();
 
 					var localWriteTime1 = tc.LocalCollectionFilesRecordedSyncTime();
-					Assert.That(localWriteTime1, Is.LessThan(DateTime.Now));
+					Assert.That(localWriteTime1, Is.LessThanOrEqualTo(DateTime.Now));
 					Assert.That(localWriteTime1, Is.GreaterThan(DateTime.Now.Subtract(new TimeSpan(0, 0, 5, 0))));
 					var otherFilesPath = FolderTeamCollection.GetRepoProjectFilesZipPath(repoFolder.FolderPath);
 					Assert.That(File.Exists(otherFilesPath));
