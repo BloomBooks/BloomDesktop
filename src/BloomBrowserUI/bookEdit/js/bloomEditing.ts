@@ -886,9 +886,9 @@ export function SetupElements(container: HTMLElement) {
         element.addEventListener("keydown", fixUpDownArrowEventHandler);
     });
 
-    // make any added text-over-picture bubbles draggable and clickable
+    // make any added over-picture elements draggable and clickable
     if (theOneBubbleManager) {
-        theOneBubbleManager.initializeTextOverPictureEditing();
+        theOneBubbleManager.initializeOverPictureEditing();
     }
 
     // focus on the first editable field

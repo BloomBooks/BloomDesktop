@@ -59,8 +59,8 @@ export class BubbleManager {
     };
 
     public initializeBubbleManager(): void {
-        // currently nothing to do; used to set up web socket listener
-        // for right-click messages to add and delete TOP boxes.
+        // Currently nothing to do; used to set up web socket listener
+        // for right-click messages to add and delete OverPicture elements.
         // Keeping hook in case we want it one day...
     }
 
@@ -69,14 +69,13 @@ export class BubbleManager {
     }
 
     // Given the box has been determined to be overflowing vertically by
-    // needToGrow pixels, if it's inside a TOP box enlarge the TOP box
+    // 'overflowY' pixels, if it's inside an OverPicture element, enlarge the OverPicture element
     // by that much so it won't overflow.
-    // (Caller may wish to do box.scrollTop = 0 to make sure the whole
-    // content shows now there is room for it all.)
+    // (Caller may wish to do box.scrollTop = 0 to make sure the whole content shows now there
+    // is room for it all.)
     // Returns true if successful; it will currently fail if box is not
-    // inside a valid TOP box or if the TOP box can't grow this much while remaining
-    // inside the image container. If it returns false it makes no changes
-    // at all.
+    // inside a valid OverPicture element or if the OverPicture element can't grow this much while
+    // remaining inside the image container. If it returns false, it makes no changes at all.
     public static growOverflowingBox(
         box: HTMLElement,
         overflowY: number
@@ -88,7 +87,7 @@ export class BubbleManager {
 
         const container = BubbleManager.getImageContainerElement(wrapperBox);
         if (!container) {
-            return false; // paranoia; TOP box should always be in image container
+            return false; // paranoia; OverPicture element should always be in image container
         }
 
         if (overflowY > -6 && overflowY < -2) {
@@ -98,7 +97,7 @@ export class BubbleManager {
         // in OverflowChecker.getSelfOverflowAmounts, which I don't want to mess with
         // as a lot of work went into getting overflow reporting right. We seem to
         // need a bit of extra space to make sure the last line of text fits.
-        // The 27 is the minimumSize that CSS imposes on TOP boxes; it may cause
+        // The 27 is the minimumSize that CSS imposes on OverPicture elements; it may cause
         // Comical some problems if we try to set the actual size smaller.
         // (I think I saw background gradients behaving strangely, for example.)
         let newHeight = Math.max(wrapperBox.clientHeight + overflowY + 4, 27);
@@ -201,18 +200,19 @@ export class BubbleManager {
             document.getElementsByClassName("bloom-imageContainer") as any
         );
         // todo: select the right one...in particular, currently we just select the last one.
-        // This is reasonable when just coming to the page, and when we add a new TOP,
+        // This is reasonable when just coming to the page, and when we add a new OverPicture element,
         // we make the new one the last in its parent, so with only one image container
         // the new one gets selected after we refresh. However, once we have more than one
-        // image container, I don't think the new TOP box will get selected if it's not on
+        // image container, I don't think the new OverPicture element will get selected if it's not on
         // the first image.
-        // todo: make sure comical is turned on for the right parent, in case there's more than one image on the page?
-        const textOverPictureElems: HTMLElement[] = Array.from(
+        // todo: make sure comical is turned on for the right parent, in case there's more than one
+        // image on the page?
+        const overPictureElements: HTMLElement[] = Array.from(
             document.getElementsByClassName(kTextOverPictureClass) as any
         );
-        if (textOverPictureElems.length > 0) {
-            this.activeElement = textOverPictureElems[
-                textOverPictureElems.length - 1
+        if (overPictureElements.length > 0) {
+            this.activeElement = overPictureElements[
+                overPictureElements.length - 1
             ] as HTMLElement;
             // This focus call doesn't seem to work, at least in a lasting fashion.
             // See the code in bloomEditing.ts/SetupElements() that sets focus after
@@ -223,7 +223,7 @@ export class BubbleManager {
             this.focusFirstVisibleEditable(this.activeElement);
             Comical.setUserInterfaceProperties({ tailHandleColor: "#96668F" }); // light bloom purple
             Comical.startEditing(imageContainers);
-            this.migrateOldTopElems(textOverPictureElems);
+            this.migrateOldTextOverPictureElements(overPictureElements);
             Comical.activateElement(this.activeElement);
             Array.from(
                 document.getElementsByClassName("bloom-editable")
@@ -260,7 +260,7 @@ export class BubbleManager {
                 // the user can see exactly what the final comic will look like.
                 // This is a difficult and horrible kludge.
                 // First problem is that this click handler is fired for a click
-                // ANYWHERE in the image...none of the bubble- or TOP- related
+                // ANYWHERE in the image...none of the bubble- or OverPicture element- related
                 // click handlers preventDefault(). So we have to figure out
                 // whether the click was simply on the picture, or on something
                 // inside it. A first step is to ignore any clicks where the target
@@ -420,7 +420,9 @@ export class BubbleManager {
         }
     }
 
-    private migrateOldTopElems(textOverPictureElems: HTMLElement[]): void {
+    private migrateOldTextOverPictureElements(
+        textOverPictureElems: HTMLElement[]
+    ): void {
         textOverPictureElems.forEach(top => {
             if (!top.getAttribute("data-bubble")) {
                 const bubbleSpec = Bubble.getDefaultBubbleSpec(top, "none");
@@ -596,7 +598,7 @@ export class BubbleManager {
                 const style = ev.dataTransfer
                     ? ev.dataTransfer.getData("bloomBubble")
                     : "speech";
-                this.addFloatingTOPBox(ev.clientX, ev.clientY, style);
+                this.addOverPictureElement(ev.clientX, ev.clientY, style);
             }
         };
     }
@@ -1363,13 +1365,13 @@ export class BubbleManager {
         return bubble.getBubbleSpec();
     }
 
-    // Adds a new text-over-picture element as a child of the specified {parentElement}
+    // Adds a new over-picture element as a child of the specified {parentElement}
     //    (It is a child in the sense that the Comical library will recognize it as a child)
     // {offsetX}/{offsetY} is the offset in position from the parent to the child elements
     //    (i.e., offsetX = child.left - parent.left)
     //    (remember that positive values of Y are further to the bottom)
     // This is what the comic tool calls when the user clicks ADD CHILD BUBBLE.
-    public addChildTOPBoxAndRefreshPage(
+    public addChildOverPictureElementAndRefreshPage(
         parentElement: HTMLElement,
         offsetX: number,
         offsetY: number
@@ -1413,7 +1415,7 @@ export class BubbleManager {
             return undefined;
         }
 
-        const childElement = this.addFloatingTOPBox(
+        const childElement = this.addOverPictureElement(
             newPoint.getScaledX(),
             newPoint.getScaledY(),
             undefined
@@ -1431,7 +1433,7 @@ export class BubbleManager {
         }
 
         Comical.initializeChild(childElement, parentElement);
-        // In this case, the 'addFloatingTOPBox()' above will already have done the new bubble's
+        // In this case, the 'addOverPictureElement()' above will already have done the new bubble's
         // refresh. We still want to refresh, but not attach to ckeditor, etc., so we pass
         // attachEventsToEditables as false.
         this.refreshBubbleEditing(
@@ -1531,17 +1533,17 @@ export class BubbleManager {
         );
     }
 
-    public addFloatingTOPBoxWithScreenCoords(
+    public addOverPictureElementWithScreenCoords(
         screenX: number,
         screenY: number,
         style: string
     ) {
         const clientX = screenX - window.screenX;
         const clientY = screenY - window.screenY;
-        this.addFloatingTOPBox(clientX, clientY, style);
+        this.addOverPictureElement(clientX, clientY, style);
     }
 
-    private addFloatingTOPBoxFromOriginal(
+    private addOverPictureElementFromOriginal(
         offsetX: number,
         offsetY: number,
         originalElement: HTMLElement,
@@ -1566,14 +1568,17 @@ export class BubbleManager {
         );
     }
 
-    public addFloatingTOPBox(
+    // This method is called when the user "drops" an element from the comicTool onto an image.
+    // It is also called by addChildInternal() and by the Linux version of dropping "ondragend".
+    public addOverPictureElement(
         mouseX: number,
         mouseY: number,
         style?: string
     ): HTMLElement | undefined {
         const imageContainer = this.getImageContainerFromMouse(mouseX, mouseY);
         if (!imageContainer || imageContainer.length === 0) {
-            return undefined; // don't add a TOP box if we can't find the containing imageContainer
+            // Don't add an OverPicture element if we can't find the containing imageContainer.
+            return undefined;
         }
         // initial mouseX, mouseY coordinates are relative to viewport
         const positionInViewport = new Point(
@@ -1756,7 +1761,7 @@ export class BubbleManager {
         if (!newPoint) {
             return;
         }
-        const patriarchDuplicateElement = this.addFloatingTOPBoxFromOriginal(
+        const patriarchDuplicateElement = this.addOverPictureElementFromOriginal(
             newPoint.getScaledX(),
             newPoint.getScaledY(),
             sourceElement,
@@ -1951,23 +1956,27 @@ export class BubbleManager {
         );
     }
 
-    private makeTOPBoxesDraggableAndClickable(thisTOPBoxes: JQuery): void {
-        thisTOPBoxes.each((index, element) => {
-            const thisTOPBox = $(element);
+    private makeOverPictureElementsDraggableAndClickable(
+        thisOverPictureElements: JQuery
+    ): void {
+        thisOverPictureElements.each((index, element) => {
+            const thisOverPictureElement = $(element);
             const imageContainer = BubbleManager.getImageContainerElement(
-                thisTOPBox.get(0)
+                thisOverPictureElement.get(0)
             )!;
             const containerPos = imageContainer.getBoundingClientRect();
-            const wrapperBoxRectangle = thisTOPBox[0].getBoundingClientRect();
+            const wrapperBoxRectangle = thisOverPictureElement[0].getBoundingClientRect();
 
             // Add the dragHandles (if needed). The visible one has a zindex below the canvas. The transparent one is above.
             // The 'mouseover' event listener below will make sure the .ui-draggable-handle class
             // on the transparent one is set to the right state depending on whether the visible handle
             // is occluded or not.
-            const visibleHandles = thisTOPBox.find(".bloom-dragHandle.visible");
+            const visibleHandles = thisOverPictureElement.find(
+                ".bloom-dragHandle.visible"
+            );
             if (visibleHandles.length == 0) {
                 // Not added yet. Let's create it
-                thisTOPBox.append(
+                thisOverPictureElement.append(
                     "<img class='bloom-ui bloom-dragHandle visible' src='/bloom/bookEdit/img/dragHandle.svg'/>"
                 );
             }
@@ -1975,15 +1984,15 @@ export class BubbleManager {
             // Save the dragHandle that's above the canvas and setup the 'mouseover' event to determine if we
             // should be able to drag with it or not.
             let transparentHandle: HTMLElement;
-            const transparentHandles = thisTOPBox.find(
+            const transparentHandles = thisOverPictureElement.find(
                 ".bloom-dragHandle.transparent"
             );
             if (transparentHandles.length == 0) {
                 // Not added yet. Let's create it
-                thisTOPBox.append(
+                thisOverPictureElement.append(
                     "<img class='bloom-ui bloom-dragHandle transparent' src='/bloom/bookEdit/img/dragHandle.svg'/>"
                 );
-                transparentHandle = thisTOPBox.find(
+                transparentHandle = thisOverPictureElement.find(
                     ".bloom-dragHandle.transparent"
                 )[0];
             } else {
@@ -2001,7 +2010,7 @@ export class BubbleManager {
             // Containment, drag and stop work when scaled (zoomed) as long as the page has been saved since the zoom
             // factor was last changed. Therefore we force reconstructing the page
             // in the EditingView.Zoom setter (in C#).
-            thisTOPBox.draggable({
+            thisOverPictureElement.draggable({
                 // Adjust containment by scaling
                 containment: [
                     containerPos.left,
@@ -2044,7 +2053,9 @@ export class BubbleManager {
                     ui.position.left = position.getUnscaledX();
                     ui.position.top = position.getUnscaledY();
 
-                    thisTOPBox.find(".bloom-dragHandle").addClass("grabbing");
+                    thisOverPictureElement
+                        .find(".bloom-dragHandle")
+                        .addClass("grabbing");
                 },
                 stop: event => {
                     const target = event.target as Element;
@@ -2054,11 +2065,12 @@ export class BubbleManager {
                         );
                     }
 
-                    thisTOPBox
+                    thisOverPictureElement
                         .find(".bloom-dragHandle")
                         .removeClass("grabbing");
-                    // We may have changed which handles are occluded; reset state on the current TOP box handles.
-                    // Other handles will be reset whenever we mouseover them.
+                    // We may have changed which handles are occluded; reset state on the current
+                    // OverPicture element handles. Other handles will be reset whenever we
+                    // mouseover them.
                     this.setDraggableStateOnDragHandles(
                         imageContainer,
                         transparentHandle
@@ -2066,7 +2078,7 @@ export class BubbleManager {
                 }
             });
 
-            thisTOPBox.find(".bloom-editable").click(function(e) {
+            thisOverPictureElement.find(".bloom-editable").click(function(e) {
                 this.focus();
             });
         });
@@ -2144,11 +2156,11 @@ export class BubbleManager {
         if (!handle || !imgContainerElement) {
             return true; // paranoia
         }
-        const divTOPElement = handle.parentElement;
+        const divOverPictureElement = handle.parentElement;
 
-        const left = divTOPElement!.offsetLeft + handle.offsetLeft;
+        const left = divOverPictureElement!.offsetLeft + handle.offsetLeft;
         const right = left + handle.offsetWidth;
-        const top = divTOPElement!.offsetTop + handle.offsetTop;
+        const top = divOverPictureElement!.offsetTop + handle.offsetTop;
         const bottom = top + handle.offsetHeight;
         return Comical.isAreaCompletelyIntersected(
             imgContainerElement,
@@ -2159,30 +2171,30 @@ export class BubbleManager {
         );
     }
 
-    public initializeTextOverPictureEditing(): void {
+    public initializeOverPictureEditing(): void {
         // Cleanup old .bloom-ui elements and old drag handles etc.
         // We want to clean these up sooner rather than later so that there's less chance of accidentally blowing away
         // a UI element that we'll actually need now
         // (e.g. the ui-resizable-handles or the format gear, which both have .bloom-ui applied to them)
-        this.cleanupTOPBoxes();
+        this.cleanupOverPictureElements();
 
-        this.makeTOPBoxesDraggableClickableAndResizable();
+        this.makeOverPictureElementsDraggableClickableAndResizable();
         this.turnOnBubbleEditing();
     }
 
-    public cleanupTOPBoxes() {
-        const allTOPBoxes = $("body").find(kTextOverPictureSelector);
-        allTOPBoxes.each((index, element) => {
-            const thisTOPBox = $(element);
+    public cleanupOverPictureElements() {
+        const allOverPictureElements = $("body").find(kTextOverPictureSelector);
+        allOverPictureElements.each((index, element) => {
+            const thisOverPictureElement = $(element);
 
-            thisTOPBox.find(".bloom-ui").remove(); // Just in case somehow one is stuck in there
-            thisTOPBox.find(".bloom-dragHandleTOP").remove(); // BL-7903 remove any left over drag handles (this was the class used in 4.7 alpha)
+            thisOverPictureElement.find(".bloom-ui").remove(); // Just in case somehow one is stuck in there
+            thisOverPictureElement.find(".bloom-dragHandleTOP").remove(); // BL-7903 remove any left over drag handles (this was the class used in 4.7 alpha)
         });
     }
 
     // Make any added BubbleManager textboxes draggable, clickable, and resizable.
     // Called by bloomEditing.ts.
-    public makeTOPBoxesDraggableClickableAndResizable() {
+    public makeOverPictureElementsDraggableClickableAndResizable() {
         // get all textOverPicture elements
         const textOverPictureElems = $("body").find(kTextOverPictureSelector);
         if (textOverPictureElems.length === 0) {
@@ -2210,7 +2222,9 @@ export class BubbleManager {
 
                     // There was a problem where resizing a box messed up its draggable containment,
                     // so now after we resize we go back through making it draggable and clickable again.
-                    this.makeTOPBoxesDraggableAndClickable($(target));
+                    this.makeOverPictureElementsDraggableAndClickable(
+                        $(target)
+                    );
 
                     // Clear the custom class used to indicate that a resize action may have been started
                     BubbleManager.clearResizingClass(target);
@@ -2264,7 +2278,7 @@ export class BubbleManager {
             }
         }
 
-        this.makeTOPBoxesDraggableAndClickable(textOverPictureElems);
+        this.makeOverPictureElementsDraggableAndClickable(textOverPictureElems);
     }
 
     // BL-8134: Keeps mouse movement in sync with bubble resizing when scale is not 100%.

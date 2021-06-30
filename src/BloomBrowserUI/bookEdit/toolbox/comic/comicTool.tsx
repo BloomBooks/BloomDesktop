@@ -297,7 +297,7 @@ const ComicToolControls: React.FunctionComponent = () => {
                 parentElement,
                 bubbleSpec
             );
-            bubbleManager.addChildTOPBoxAndRefreshPage(
+            bubbleManager.addChildOverPictureElementAndRefreshPage(
                 parentElement,
                 offsetX,
                 offsetY
@@ -322,7 +322,7 @@ const ComicToolControls: React.FunctionComponent = () => {
         // This can be used to simulate the drop event with coordinate transformation.
         // See https://issues.bloomlibrary.org/youtrack/issue/BL-7958.
         if (isLinux() && bubbleManager) {
-            bubbleManager.addFloatingTOPBoxWithScreenCoords(
+            bubbleManager.addOverPictureElementWithScreenCoords(
                 ev.screenX,
                 ev.screenY,
                 style
