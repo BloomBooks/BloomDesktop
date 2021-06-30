@@ -1662,10 +1662,7 @@ namespace Bloom.TeamCollection
 					// enough when we do several close together.
 					StopMonitoring();
 
-					// We don't want to do this until we have things in a state where we can push the same
-					// change to BetaInternal, Beta, and Alpha all at once. Things will get messy if a version
-					// that doesn't know about the new Status files opens a migrated collection.
-					//MigrateStatusFiles();
+					MigrateStatusFiles();
 					var waitForUserToCloseDialogOrReportProblems = SyncAtStartup(progress, doingFirstTimeJoinCollectionMerge);
 
 					// Now that we've finished synchronizing, update these icons based on the post-sync result
