@@ -126,9 +126,9 @@ namespace Bloom.ErrorReporter
 			// from this code (even if the titles required are unlikely real titles)
 			#if DEBUG
 				bool checkAllowed = true;
-			#else
-				bool checkAllowed = BookTransfer.UseSandbox;
-			#endif
+#else
+				bool checkAllowed = BookUpload.UseSandbox;
+#endif
 
 
 			if (checkAllowed)

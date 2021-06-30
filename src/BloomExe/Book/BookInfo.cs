@@ -958,7 +958,7 @@ namespace Bloom.Book
 		public string BookLineage { get; set; }
 
 		// This tells Bloom where the data files can be found.
-		// Strictly it is the first argument that needs to be passed to BookTransfer.DownloadBook in order to get the entire book data.
+		// Strictly it is the first argument that needs to be passed to BookUpload.DownloadBook in order to get the entire book data.
 		[JsonProperty("downloadSource")]
 		public string DownloadSource { get; set; }
 

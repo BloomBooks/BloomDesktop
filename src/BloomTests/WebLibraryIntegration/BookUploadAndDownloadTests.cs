@@ -178,7 +178,7 @@ namespace BloomTests.WebLibraryIntegration
 		public void BookWithPeriodInTitle_DoesNotGetTruncatedPdfName()
 		{
 #if __MonoCS__
-			Assert.That(BookTransfer.UploadPdfPath("/somewhere/Look at the sky. What do you see"),
+			Assert.That(BookUpload.UploadPdfPath("/somewhere/Look at the sky. What do you see"),
 				Is.EqualTo("/somewhere/Look at the sky. What do you see/Look at the sky. What do you see.pdf"));
 #else
 			Assert.That(BookUpload.UploadPdfPath(@"c:\somewhere\Look at the sky. What do you see"),
