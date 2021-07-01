@@ -593,7 +593,7 @@ namespace Bloom.Book
 			return new HtmlDom(builder.ToString());
 		}
 
-		private bool IsDownloaded => FolderPath.StartsWith(BookTransfer.DownloadFolder);
+		private bool IsDownloaded => FolderPath.StartsWith(BookDownload.DownloadFolder);
 
 		// BL-2678: we want the user to be able to delete troublesome/no longer needed books
 		// downloaded from BloomLibrary.org
@@ -3628,36 +3628,53 @@ namespace Bloom.Book
 			// Then we grab everything up to the closing wedge and transfer that to the output as $3.)
 			simplified = new Regex("(<[^>]*)\\s*id\\s*=\\s*(['\"]).*?\\2\\s*([^>]*>)").Replace(simplified, "$1$3");
 			var bytes = Encoding.UTF8.GetBytes(simplified);
-			var sha = SHA256Managed.Create();
-			sha.TransformBlock(bytes, 0, bytes.Length, bytes, 0);
-			if (filePath != null)
+			using (var sha = SHA256.Create())
 			{
-				var folder = Path.GetDirectoryName(filePath);
-				// Order must be predictable but does not otherwise matter.
-				foreach (var path in Directory.GetFiles(folder, "*", SearchOption.AllDirectories).OrderBy(x => x))
+				sha.TransformBlock(bytes, 0, bytes.Length, bytes, 0);
+				if (filePath != null)
 				{
-					var ext = Path.GetExtension(path);
-					// PDF files are generated, we don't care whether they are identical.
-					// .status files contain the output of this function among other team collection
-					// information; counting them would mean that writing a new status with the
-					// new version code would immediately change the next version code computed.
-					if (ext == ".pdf" || ext == ".status")
-						continue;
-					if (path == filePath)
-						continue; // we already included a simplified version of the main HTML file
-					using (var input = new FileStream(path, FileMode.Open))
+					var folder = Path.GetDirectoryName(filePath);
+					// Order must be predictable but does not otherwise matter.
+					foreach (var path in Directory.GetFiles(folder, "*", SearchOption.AllDirectories).OrderBy(x => x))
 					{
-						byte[] buffer = new byte[4096];
-						int count;
-						while ((count = input.Read(buffer, 0, 4096)) > 0)
+						var name = Path.GetFileName(path);
+						// ignore files like .lastUploadInfo: they may contain output from this function anyway
+						// these are "hidden" files on Linux.
+						if (name.StartsWith(".", StringComparison.Ordinal))
+							continue;
+						var ext = Path.GetExtension(path);
+						// PDF files are generated, we don't care whether they are identical.
+						// we don't care about .bak files either.
+						// .status files contain the output of this function among other team collection
+						// information; counting them would mean that writing a new status with the
+						// new version code would immediately change the next version code computed.
+						if (ext == ".pdf" || ext == ".status" || ext == ".bak")
+							continue;
+						if (path == filePath)
+							continue; // we already included a simplified version of the main HTML file
+						using (var input = new FileStream(path, FileMode.Open))
 						{
-							sha.TransformBlock(buffer, 0, count, buffer, 0);
+							byte[] buffer = new byte[4096];
+							int count;
+							while ((count = input.Read(buffer, 0, 4096)) > 0)
+							{
+								sha.TransformBlock(buffer, 0, count, buffer, 0);
+							}
+						}
+					}
+					foreach (var path in Directory.GetFiles(Path.GetDirectoryName(folder), "*.*", SearchOption.TopDirectoryOnly).OrderBy(x => x))
+					{
+						var name = Path.GetFileName(path);
+						if (name == "customCollectionStyles.css" || name.EndsWith(".bloomCollection", StringComparison.Ordinal))
+						{
+							byte[] buffer = RobustFile.ReadAllBytes(path);
+							sha.TransformBlock(buffer, 0, buffer.Length, buffer, 0);
 						}
 					}
 				}
+				sha.TransformFinalBlock(new byte[0], 0, 0);
+				return Convert.ToBase64String(sha.Hash);
 			}
-			sha.TransformFinalBlock(new byte[0], 0, 0);
-			return Convert.ToBase64String(sha.Hash);
 		}
 
 		/// <summary>

@@ -41,7 +41,7 @@ namespace Bloom.WebLibraryIntegration
 		{
 			var firebaseDialogRootPath =
 				BloomFileLocator.GetBrowserFile(false, "publish", "LibraryPublish", "loginLoader.html");
-			return firebaseDialogRootPath.ToLocalhost() + "?bucket=" + BookTransfer.UploadBucketNameForCurrentEnvironment;
+			return firebaseDialogRootPath.ToLocalhost() + "?bucket=" + BookUpload.UploadBucketNameForCurrentEnvironment;
 		}
 
 		// We again use the BrowserDialog to give us a GeckoFx component loaded into a window. But here we don't actually show it;

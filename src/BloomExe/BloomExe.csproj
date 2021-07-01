@@ -455,12 +455,15 @@
     </Compile>
     <Compile Include="ToPalaso\BackgroundWorkerProgressAdapter.cs" />
     <Compile Include="Utils\BloomUnauthorizedAccessException.cs" />
+    <Compile Include="Utils\ConsoleProgress.cs" />
     <Compile Include="Utils\DropboxUtils.cs" />
     <Compile Include="Utils\MemoryUtils.cs" />
     <Compile Include="Utils\FileSystemWatcherExtensions.cs" />
     <Compile Include="Utils\MiscUtils.cs" />
     <Compile Include="Utils\PerformanceMeasurement.cs" />
     <Compile Include="Utils\RobustZip.cs" />
+    <Compile Include="WebLibraryIntegration\BookDownload.cs" />
+    <Compile Include="WebLibraryIntegration\BulkUploader.cs" />
     <Compile Include="WebLibraryIntegration\FirebaseLoginDialog.cs" />
     <Compile Include="WebLibraryIntegration\S3Extensions.cs" />
     <Compile Include="web\ReactControl.cs">
@@ -791,7 +794,7 @@
     <Compile Include="WebLibraryIntegration\BloomParseClient.cs" />
     <Compile Include="WebLibraryIntegration\BloomS3Client.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadedEventArgs.cs" />
-    <Compile Include="WebLibraryIntegration\BookTransfer.cs" />
+    <Compile Include="WebLibraryIntegration\BookUpload.cs" />
     <Compile Include="WebLibraryIntegration\AccessKeys.cs" />
     <Compile Include="WebLibraryIntegration\OverwriteWarningDialog.cs">
       <SubType>Form</SubType>

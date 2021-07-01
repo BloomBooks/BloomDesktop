@@ -68,6 +68,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._signLanguageCheckBox = new System.Windows.Forms.CheckBox();
 			this.label4 = new System.Windows.Forms.Label();
 			this._changeSignLanguageLinkLabel = new System.Windows.Forms.LinkLabel();
+			this.bulkUploadLink = new System.Windows.Forms.LinkLabel();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.panel1 = new System.Windows.Forms.Panel();
 			this._ccPanel = new System.Windows.Forms.Panel();
@@ -630,6 +631,22 @@ namespace Bloom.Publish.BloomLibrary
 			this._changeSignLanguageLinkLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this._changeSignLanguageLinkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._changeSignLanguageLinkLabel_LinkClicked);
 			// 
+			// bulkUploadLink
+			// 
+			this.bulkUploadLink.AutoSize = true;
+			this.bulkUploadLink.Dock = System.Windows.Forms.DockStyle.Left;
+			this._L10NSharpExtender.SetLocalizableToolTip(this.bulkUploadLink, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.bulkUploadLink, null);
+			this._L10NSharpExtender.SetLocalizingId(this.bulkUploadLink, "PublishTab.Upload.UploadCollectionLink");
+			this.bulkUploadLink.Location = new System.Drawing.Point(101, 0);
+			this.bulkUploadLink.Name = "bulkUploadLink";
+			this.bulkUploadLink.Size = new System.Drawing.Size(124, 13);
+			this.bulkUploadLink.TabIndex = 19;
+			this.bulkUploadLink.TabStop = true;
+			this.bulkUploadLink.Text = "Upload Whole Collection";
+			this.bulkUploadLink.TextAlign = System.Drawing.ContentAlignment.TopRight;
+			this.bulkUploadLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.bulkUploadLink_LinkClicked);
+			// 
 			// tableLayoutPanel1
 			// 
 			this.tableLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -767,6 +784,7 @@ namespace Bloom.Publish.BloomLibrary
 			// panel2
 			// 
 			this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+			this.panel2.Controls.Add(this.bulkUploadLink);
 			this.panel2.Controls.Add(this._uploadButton);
 			this.panel2.Controls.Add(this._loginLink);
 			this.panel2.Location = new System.Drawing.Point(3, 536);
@@ -906,5 +924,6 @@ namespace Bloom.Publish.BloomLibrary
 		private Panel panel6;
 		private Label label4;
 		private LinkLabel _changeSignLanguageLinkLabel;
+		private LinkLabel bulkUploadLink;
 	}
 }

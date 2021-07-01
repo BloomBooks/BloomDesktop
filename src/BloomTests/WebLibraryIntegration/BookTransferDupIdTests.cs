@@ -109,7 +109,7 @@ namespace BloomTests.WebLibraryIntegration
 		public void DuplicateIdTest()
 		{
 			// SUT (use workFolder as the root directory)
-			BookTransfer.BulkRepairInstanceIds(_workFolderPath);
+			BookUpload.BulkRepairInstanceIds(_workFolderPath);
 
 			// Verification
 			var book1 = _foldersToDispose[3];

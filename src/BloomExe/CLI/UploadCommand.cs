@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Text;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using CommandLine;
@@ -10,7 +11,7 @@ namespace Bloom.CLI
 	/// <summary>
 	/// Uploads a book or folder of books to BloomLibrary
 	/// usage:
-	///		upload [--excludeNarrationAudio/-x] {path to book or collection directory}
+	///		upload [options] {path to book or collection directory}
 	/// </summary>
 	class UploadCommand
 	{
@@ -18,21 +19,21 @@ namespace Bloom.CLI
 
 		public static int Handle(UploadParameters options)
 		{
-			bool valid = true;
-			if (String.IsNullOrWhiteSpace(options.UploadUser))
-				valid = String.IsNullOrWhiteSpace(options.UploadPassword);
-			else
-				valid = !String.IsNullOrWhiteSpace(options.UploadPassword);
-			if (!valid)
+			try
 			{
-				Console.WriteLine("Error: upload -u user and -p password must be used together");
-				return 1;
+				Console.OutputEncoding = Encoding.UTF8;
 			}
+			catch (Exception)
+			{
+				// swallow. The above throws a handle error when run in Visual Studio
+			}
+
 			IsUploading = true;
-			if (String.IsNullOrWhiteSpace(options.Dest))
-				options.Dest = UploadDestination.DryRun;
-			else
-				options.Dest = options.Dest.ToLowerInvariant();
+			// -u user, and <path> are all required, so they must contain strings.
+			// -d destination has a default value, so it also must contain a string.
+			options.Path = options.Path.TrimEnd(new[] { '/', '\\', System.IO.Path.PathSeparator });	// remove any trailing slashes
+			// validate the value for the upload destination.
+			options.Dest = options.Dest.ToLowerInvariant();
 			switch (options.Dest)
 			{
 				case UploadDestination.DryRun:
@@ -43,7 +44,7 @@ namespace Bloom.CLI
 					Console.WriteLine($"Error: if present, upload destination (-d) must be one of {UploadDestination.DryRun}, {UploadDestination.Development}, or {UploadDestination.Production}");
 					return 1;
 			}
-			BookTransfer.Destination = options.Dest;    // must be set before calling SetupErrorHandling() (or BloomParseClient constructor)
+			BookUpload.Destination = options.Dest;    // must be set before calling SetupErrorHandling() (or BloomParseClient constructor)
 
 			// This task will be all the program does. We need to do enough setup so that
 			// the upload code can work, then tear it down.
@@ -56,15 +57,17 @@ namespace Bloom.CLI
 					Browser.SetUpXulRunner();
 					Browser.XulRunnerShutdown += Program.OnXulRunnerShutdown;
 					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
-					var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
-						applicationContainer.BookThumbNailer, new BookDownloadStartingEvent());
+					var singleBookUploader = new BookUpload(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
+						applicationContainer.BookThumbNailer);
+					var uploader = new BulkUploader(singleBookUploader);
+
 
 					// Since Bloom is not a normal console app, when run from a command line, the new command prompt
 					// appears at once. The extra newlines here are attempting to separate this from our output.
 					switch (options.Dest)
 					{
 						case UploadDestination.DryRun:
-							Console.WriteLine($"\nThe following actions would happen if you set destination to '{(BookTransfer.UseSandboxByDefault ? UploadDestination.Development : UploadDestination.Production)}'.");
+							Console.WriteLine($"\nThe following actions would happen if you set destination to '{(BookUpload.UseSandboxByDefault ? UploadDestination.Development : UploadDestination.Production)}'.");
 							break;
 						case UploadDestination.Development:
 							Console.WriteLine("\nThe upload will go to dev.bloomlibrary.org.");
@@ -73,9 +76,9 @@ namespace Bloom.CLI
 							Console.WriteLine("\nThe upload will go to bloomlibrary.org.");
 							break;
 					}
-					Console.WriteLine("\nstarting upload");
-					transfer.UploadFolder(applicationContainer, options);
-					Console.WriteLine(("\nupload complete\n"));
+					Console.WriteLine("\nStarting upload...");
+					uploader.BulkUpload(applicationContainer, options);
+					Console.WriteLine(("\nBulk upload complete.\n"));
 				}
 				return 0;
 			}
@@ -91,35 +94,34 @@ namespace Bloom.CLI
 }
 
 // Used with https://github.com/gsscoder/commandline, which we get via nuget.
-// (using the beta of commandline 2.0, as of Bloom 3.8)
 
-[Verb("upload", HelpText = "Upload a book or folder of books to bloomlibrary.org.  A folder that contains exactly one .htm file is interpreted as a book and uploaded." +
-	"  Other folders are searched recursively for children that appear to be Bloom books.  The parent folder of a Bloom book is searched for a .bloomCollection file" +
-	" and, if one is found, the book is treated as part of that collection (e.g., for determining vernacular language).  If no .bloomCollection file is found there," +
-	" it uses whatever collection was last open.\n"+
-	"When a book is uploaded, that fact is recorded in a local file named BloomBulkUploadLog.txt in the folder given to the upload command.  Books will not be" +
-	" uploaded again unless either the reference to the book is removed from that file or that file is itself deleted.  Nothing on the website prevents books from" +
-	" being overwritten by being uploaded again."
+// Note: you only see this help via "bloom --help", not via "bloom upload --help".
+
+[Verb("upload", HelpText = "Upload collections of books to bloomlibrary.org. Cannot be used to upload only a single book. Given a folder that is a collection, this will upload the it. Given a folder that is not a collection, it will search for descendant folders that contain collections.\r\nExample: bloom upload \"c:\\foo\\all my collections\". (Do not use a trailing slash). " +
+	" Normally, this command will skip books that have not changed.\r\nIn order to authenticate, you must first log in with the Bloom UI:Publish:Share on the Web, then quit."
 	)]
 public class UploadParameters
 {
 	[Value(0, MetaName = "path", HelpText = "Specify the path to a folder containing books to upload at some level within.", Required = true)]
 	public string Path { get; set; }
 
-	[Option('x', "excludeNarrationAudio", HelpText = "Exclude narration audio files from upload. (The default is to upload audio files.)", Required = false)]
+	[Option('x', "excludeNarrationAudio", HelpText = "Exclude narration audio files from upload. (The default is to upload narration files.)", Required = false)]
 	public bool ExcludeNarrationAudio { get; set; }
 
-	[Option('u', "user", HelpText = "Specify the Bloom Library user for the upload.", Required = false)]
-	public string UploadUser { get; set; }
+	[Option('e', "excludeMusicAudio", HelpText = "Exclude music (background) audio files from upload.  (The default is to upload music files.)", Required = false)]
+	public bool ExcludeMusicAudio { get; set; }
 
-	[Option('p', "password", HelpText = "Specify the password for the given upload user.", Required = false)]
-	public string UploadPassword { get; set; }
+	[Option('u', "user", HelpText = "Specify the email account for the upload. Must match the currently logged in email from Bloom:Publish:Upload (share on the web) screen.", Required = true)]
+	public string UploadUser { get; set; }
 
 	[Option('T', "preserveThumbnails", HelpText = "Preserve any existing thumbnail images: don't try to recreate them.", Required = false)]
 	public bool PreserveThumbnails { get; set; }
 
-	[Option('d', "destination", HelpText = "If present, this must be one of dry-run, dev, or production. 'dry-run' (the default) will just print out what would happen. 'dev' will upload to dev.bloomlibrary.org (you will need to use an account from there). 'production' will upload to bloomlibrary.org", Required = false)]
+	[Option('d', "destination", Default ="dry-run", HelpText = "If present, this must be one of dry-run, dev, or production. 'dry-run' will just print out what would happen. 'dev' will upload to dev.bloomlibrary.org (you will need to use an account from there). 'production' will upload to bloomlibrary.org", Required = false)]
 	public string Dest { get; set; }
+
+	[Option('F', "force", HelpText = "Force the upload even if existing .lastUploadInfo content indicates that the book has already been uploaded.", Required = false)]
+	public bool ForceUpload { get; set; }
 }
 
 /// <summary>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\NUnit.3.13.0\build\NUnit.props" Condition="Exists('..\..\packages\NUnit.3.13.0\build\NUnit.props')" />
   <PropertyGroup>
@@ -351,7 +351,7 @@
     <Compile Include="WebLibraryIntegration\BloomS3ClientTests.cs" />
     <Compile Include="WebLibraryIntegration\BloomS3StandardUpDownloadTests.cs" />
     <Compile Include="WebLibraryIntegration\BookTransferDupIdTests.cs" />
-    <Compile Include="WebLibraryIntegration\BookTransferTests.cs" />
+    <Compile Include="WebLibraryIntegration\BookUploadAndDownloadTests.cs" />
     <Compile Include="Book\AccessibilityCheckersTests.cs" />
     <Compile Include="web\controllers\AudioSegmentationApiTests.cs" />
     <Compile Include="web\controllers\FileIOApiTests.cs" />

@@ -9,6 +9,8 @@ using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
+using SIL.Code;
+using SIL.Progress;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -20,24 +22,50 @@ namespace Bloom.WebLibraryIntegration
 
 		public BloomParseClient()
 		{
-			var keys = AccessKeys.GetAccessKeys(BookTransfer.UploadBucketNameForCurrentEnvironment);
+			var keys = AccessKeys.GetAccessKeys(BookUpload.UploadBucketNameForCurrentEnvironment);
 
 			RestApiKey = keys.ParseApiKey;
 			ApplicationId = keys.ParseApplicationKey;
 		}
 
-		public void SetLoginData(string account, string userId, string sessionToken)
+		public void SetLoginData(string account, string parseUserObjectId, string sessionToken, string destination)
 		{
 			Account = account;
 			Settings.Default.WebUserId = account;
+			Settings.Default.LastLoginSessionToken = sessionToken;
+			Settings.Default.LastLoginDest = destination;
+			Settings.Default.LastLoginParseObjectId = parseUserObjectId;
 			Settings.Default.Save();
-			_userId = userId;
+			_userId = parseUserObjectId;
 			_sessionToken = sessionToken;
 		}
 
-		protected BloomParseClient(RestClient client)
+		public bool AttemptSignInAgainForCommandLine(string userEmail, string destination, IProgress progress)
 		{
-			_client = client;
+			if (string.IsNullOrEmpty(Settings.Default.LastLoginSessionToken)){
+				progress.WriteError("Please first log in from Bloom:Publish:Upload, then quit and try again. (LastLoginSessionToken)");
+				return false;
+			}
+			if (string.IsNullOrEmpty(Settings.Default.LastLoginParseObjectId))
+			{
+				progress.WriteError("Please first log in from Bloom:Publish:Upload, then quit and try again. (LastLoginParseObjectId)");
+				return false;
+			}
+			if (Settings.Default.WebUserId != userEmail)
+			{
+				progress.WriteError("The email from the last login from the Bloom UI does not match the -u argument.");
+				return false;
+			}
+			if (Settings.Default.LastLoginDest != destination)
+			{
+				progress.WriteError("The destination (production or dev) of the last login from the Bloom UI does not match the -d argument.");
+				return false;
+			}
+
+			SetLoginData(Settings.Default.WebUserId, Settings.Default.LastLoginParseObjectId,
+				Settings.Default.LastLoginSessionToken, destination);
+
+			return true;
 		}
 
 		protected RestClient Client
@@ -74,7 +102,7 @@ namespace Bloom.WebLibraryIntegration
 
 		public string GetRealUrl()
 		{
-			return UrlLookup.LookupUrl(UrlType.Parse, BookTransfer.UseSandbox);
+			return UrlLookup.LookupUrl(UrlType.Parse, BookUpload.UseSandbox);
 		}
 
 		private RestRequest MakeRequest(string path, Method requestType)
@@ -210,7 +238,7 @@ namespace Bloom.WebLibraryIntegration
 		{
 			if (!LoggedIn)
 				throw new ApplicationException();
-			if (BookTransfer.IsDryRun)
+			if (BookUpload.IsDryRun)
 				throw new ApplicationException("Should not call CreateBookRecord during dry run!");
 			var request = MakePostRequest("classes/books");
 			request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
@@ -232,8 +260,8 @@ namespace Bloom.WebLibraryIntegration
 		public IRestResponse SetBookRecord(string metadataJson)
 		{
 			if (!LoggedIn)
-				throw new ApplicationException();
-			if (BookTransfer.IsDryRun)
+				throw new ApplicationException("BloomParseClient got SetBookRecord, but the user is not logged in.");
+			if (BookUpload.IsDryRun)
 				throw new ApplicationException("Should not call SetBookRecord during dry run!");
 			var metadata = BookMetaData.FromString(metadataJson);
 			var book = GetSingleBookRecord(metadata.Id);
@@ -245,7 +273,7 @@ namespace Bloom.WebLibraryIntegration
 			request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
 			var response = Client.Execute(request);
 			if (response.StatusCode != HttpStatusCode.OK)
-				throw new ApplicationException(response.StatusDescription + " " + response.Content);
+				throw new ApplicationException("BloomParseClient.SetBookRecord: "+response.StatusDescription + " " + response.Content);
 			return response;
 		}
 
@@ -264,7 +292,7 @@ namespace Bloom.WebLibraryIntegration
 		{
 			if (!LoggedIn)
 				throw new ApplicationException("Must be logged in to delete book");
-			if (BookTransfer.IsDryRun)
+			if (BookUpload.IsDryRun)
 				throw new ApplicationException("Should not call DeleteBookRecord during dry run!");
 			var request = MakeDeleteRequest("classes/books/" + bookObjectId);
 			var response = Client.Execute(request);
@@ -276,7 +304,7 @@ namespace Bloom.WebLibraryIntegration
 		{
 			if (!LoggedIn)
 				throw new ApplicationException();
-			if (BookTransfer.IsDryRun)
+			if (BookUpload.IsDryRun)
 				throw new ApplicationException("Should not call DeleteLanguages during dry run!");
 			var getLangs = MakeGetRequest(ClassesLanguagePath);
 			var response1 = Client.Execute(getLangs);
@@ -296,8 +324,11 @@ namespace Bloom.WebLibraryIntegration
 		{
 			if (!LoggedIn)
 				throw new ApplicationException();
-			if (BookTransfer.IsDryRun)
-				throw new ApplicationException("Should not call CreateLanguage during dry run!");
+			if (BookUpload.IsDryRun)
+			{
+				Console.WriteLine("Simulating CreateLanguage during dry run for {0} ({1})", lang.Name, lang.EthnologueCode);
+				return JObject.Parse($"{{\"objectId\":\"xyzzy{lang.EthnologueCode}\"}}");
+			}
 			var request = MakePostRequest(ClassesLanguagePath);
 			var langjson = lang.Json;
 			request.AddParameter("application/json", langjson, ParameterType.RequestBody);
@@ -359,7 +390,7 @@ namespace Bloom.WebLibraryIntegration
 
 		internal void SendResetPassword(string account)
 		{
-			if (BookTransfer.IsDryRun)
+			if (BookUpload.IsDryRun)
 				throw new ApplicationException("Should not call SendResetPassword during dry run!");
 			var request = MakePostRequest("requestPasswordReset");
 			request.AddParameter("application/json; charset=utf-8", "{\"email\":\""+account+ "\"}", ParameterType.RequestBody);

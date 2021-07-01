@@ -491,17 +491,17 @@ namespace Bloom.Publish
 		// from bloomUI.less, @bloom-warning: #f3aa18;
 		// WriteMessageWithColor doesn't work on Linux (the message is displayed in the normal black).
 		static System.Drawing.Color _bloomWarning = System.Drawing.Color.FromArgb(0xFF, 0xF3, 0xAA, 0x18);
-		public static void SendBatchedWarningMessagesToProgress(ISet<string> warningMessages, SIL.Windows.Forms.Progress.LogBox progress)
+		public static void SendBatchedWarningMessagesToProgress(ISet<string> warningMessages, IProgress progress)
 		{
 			if (warningMessages.Any())
 			{
 				var warning = L10NSharp.LocalizationManager.GetString("Common.Warning", "Warning");
-				progress.WriteMessageWithColor(_bloomWarning, "{0}", warning);
+				progress.WriteMessageWithColor(_bloomWarning.ToString(), "{0}", warning);
 			}
 			foreach (var warningMessage in warningMessages)
 			{
 				// Messages are already localized
-				progress.WriteMessageWithColor(_bloomWarning, "{0}", warningMessage);
+				progress.WriteMessageWithColor(_bloomWarning.ToString(), "{0}", warningMessage);
 			}
 		}
 	}

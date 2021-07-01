@@ -157,10 +157,12 @@ namespace Bloom
 							var code = 0;
 							foreach (var error in errors)
 							{
-								if (!(error is HelpVerbRequestedError))
+								if (!(error is HelpVerbRequestedError) && !(error is HelpRequestedError))
 								{
-									Debug.WriteLine(error.ToString());
-									Console.WriteLine(error.ToString());
+									// All of the errors have already been reported in English text. This would just add
+									// a cryptic class name to the output, possibly in the middle of a line in the usage
+									// message displayed as a result of the errors.
+									// Console.WriteLine(error.ToString());
 									code = 1;
 								}
 							}
@@ -570,10 +572,10 @@ namespace Bloom
 				Browser.SetUpXulRunner();
 				Browser.XulRunnerShutdown += OnXulRunnerShutdown;
 				LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
-				var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
-					_applicationContainer.BookThumbNailer, new BookDownloadStartingEvent()) /*not hooked to anything*/;
-				transfer.HandleBloomBookOrder(order);
-				PathToBookDownloadedAtStartup = transfer.LastBookDownloadedPath;
+				var downloader = new BookDownload(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
+					new BookDownloadStartingEvent()) /*not hooked to anything*/;
+				downloader.HandleBloomBookOrder(order);
+				PathToBookDownloadedAtStartup = downloader.LastBookDownloadedPath;
 				// BL-2143: Don't show download complete message if download was not successful
 				if (!string.IsNullOrEmpty(PathToBookDownloadedAtStartup))
 				{

@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -162,7 +163,7 @@ namespace Bloom.Publish.BloomLibrary
 				RequireValue(_copyrightLabel);
 			RequireValue(_titleLabel);
 
-			if (BookTransfer.UseSandbox)
+			if (BookUpload.UseSandbox)
 			{
 				var oldTextWidth = TextRenderer.MeasureText(_uploadButton.Text, _uploadButton.Font).Width;
 				// Do not localize the following string (https://issues.bloomlibrary.org/youtrack/issue/BL-7383).
@@ -289,6 +290,15 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			_uploadButton.Enabled = _model.MetadataIsReadyToPublish && _model.LoggedIn && _okToUpload;
 			_progressBox.Clear();
+			bulkUploadLink.Enabled = _uploadButton.Enabled;
+
+			bulkUploadLink.Visible = _model.Book.CollectionSettings.HaveEnterpriseFeatures
+									// for now, we're limiting this to projects that have set up a default bookshelf
+									// so that all their books go to the correct place.
+			                         && !String.IsNullOrEmpty(_model.Book.CollectionSettings.DefaultBookshelf);
+
+			
+
 			if (!_uploadButton.Enabled)
 			{
 				if (!_okToUpload)
@@ -505,7 +515,7 @@ namespace Bloom.Publish.BloomLibrary
 
 		public static string BloomLibraryUrlPrefix
 		{
-			get { return UrlLookup.LookupUrl(UrlType.LibrarySite, BookTransfer.UseSandbox); }
+			get { return UrlLookup.LookupUrl(UrlType.LibrarySite, BookUpload.UseSandbox); }
 		}
 
 		string _parseId;
@@ -587,6 +597,45 @@ namespace Bloom.Publish.BloomLibrary
 			{
 				return _model.Book.CollectionSettings.SignLanguageName;
 			}
+		}
+
+		private void bulkUploadLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			var target = BookUpload.UseSandbox ? UploadDestination.Development : UploadDestination.Production;
+			var collectionFolder = Path.GetDirectoryName(_model.Book.Storage.FolderPath);
+			var bloom = Application.ExecutablePath;
+			var command = $"{bloom} upload \"{collectionFolder}\" -u {_userId.Text} -d {target}";
+
+			ProcessStartInfo startInfo;
+			if (SIL.PlatformUtilities.Platform.IsWindows)
+			{
+				startInfo = new ProcessStartInfo()
+				{
+					FileName = "cmd.exe",
+					Arguments = "/k " + command,
+					
+					WorkingDirectory = Path.GetDirectoryName(Application.ExecutablePath)
+				};
+			}
+			else
+			{
+				startInfo = new ProcessStartInfo()
+				{
+					// TODO: Steve can you check/test this?
+					FileName = "/bin/bash",
+					Arguments = "-c " + command,
+					WorkingDirectory = Path.GetDirectoryName(Application.ExecutablePath)
+				};
+			}
+
+			Process.Start(startInfo);
+			_progressBox.Clear();
+			_progressBox.WriteMessage("Starting bulk upload in a terminal window...");
+			_progressBox.WriteMessage("This process will skip books if it can tell that nothing has changed since the last bulk upload.");
+			_progressBox.WriteMessage("When the upload is complete, there will be a file named 'BloomBulkUploadLog.txt' in your collection folder.");
+			var url = "https://bloomlibrary.org/" +_model.Book.CollectionSettings.DefaultBookshelf;
+			_progressBox.WriteMessage("You books will show up at {0}", url);
+		
 		}
 	}
 }

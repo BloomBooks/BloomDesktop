@@ -22,13 +22,13 @@ namespace Bloom.Publish.BloomLibrary
 	{
 		private readonly Metadata _licenseMetadata;
 		private readonly LicenseInfo _license;
-		private readonly BookTransfer _transferrer;
+		private readonly BookUpload _uploader;
 		private readonly PublishModel _publishModel;
 
-		public BloomLibraryPublishModel(BookTransfer transferer, BookInstance book, PublishModel model)
+		public BloomLibraryPublishModel(BookUpload uploader, BookInstance book, PublishModel model)
 		{
 			Book = book;
-			_transferrer = transferer;
+			_uploader = uploader;
 			_publishModel = model;
 
 			_licenseMetadata = Book.GetLicenseMetadata();
@@ -105,9 +105,9 @@ namespace Bloom.Publish.BloomLibrary
 
 		internal bool IsBookPublicDomain => _license?.Url != null && _license.Url.StartsWith("http://creativecommons.org/publicdomain/zero/");
 
-		internal bool BookIsAlreadyOnServer => LoggedIn && _transferrer.IsBookOnServer(Book.FolderPath);
+		internal bool BookIsAlreadyOnServer => LoggedIn && _uploader.IsBookOnServer(Book.FolderPath);
 
-		private string Uploader => _transferrer.UserId;
+		private string Uploader => _uploader.UserId;
 
 		/// <summary>
 		/// The model alone cannot determine whether a book is OK to upload, because the language requirements
@@ -127,7 +127,7 @@ namespace Bloom.Publish.BloomLibrary
 		    (IsBookPublicDomain || !string.IsNullOrWhiteSpace(Copyright) || HasOriginalCopyrightInfoInSourceCollection) &&
 		    !string.IsNullOrWhiteSpace(Title);
 
-		internal bool LoggedIn => _transferrer.LoggedIn;
+		internal bool LoggedIn => _uploader.LoggedIn;
 
 		/// <summary>
 		/// Stored Web user Id
@@ -144,13 +144,13 @@ namespace Bloom.Publish.BloomLibrary
 		/// </summary>
 		internal bool OkToUploadWithNoLanguages => Book.BookInfo.IsSuitableForMakingShells || Book.HasOnlyPictureOnlyPages();
 
-		internal bool IsThisVersionAllowedToUpload => _transferrer.IsThisVersionAllowedToUpload();
+		internal bool IsThisVersionAllowedToUpload => _uploader.IsThisVersionAllowedToUpload();
 
 		internal string UploadOneBook(BookInstance book, LogBox progressBox, PublishView publishView, string[] languages, bool excludeNarrationAudio, bool excludeMusic, out string parseId)
 		{
 			using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))
 			{
-				BookTransfer.PrepareBookForUpload(ref book, _publishModel.BookServer, tempFolder.FolderPath, progressBox);
+				BookUpload.PrepareBookForUpload(ref book, _publishModel.BookServer, tempFolder.FolderPath, progressBox);
 				var bookParams = new BookUploadParameters
 				{
 					ExcludeNarrationAudio = excludeNarrationAudio,
@@ -158,7 +158,7 @@ namespace Bloom.Publish.BloomLibrary
 					PreserveThumbnails = false,
 					LanguagesToUpload = languages,
 				};
-				return _transferrer.FullUpload(book, progressBox, publishView, bookParams, out parseId);
+				return _uploader.FullUpload(book, progressBox, publishView, bookParams, out parseId);
 			}
 		}
 
@@ -174,7 +174,7 @@ namespace Bloom.Publish.BloomLibrary
 
 		internal void Logout()
 		{
-			_transferrer.Logout();
+			_uploader.Logout();
 		}
 
 		internal LicenseState LicenseType
