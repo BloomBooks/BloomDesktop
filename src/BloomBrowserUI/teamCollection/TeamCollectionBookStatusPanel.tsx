@@ -11,13 +11,12 @@ import "./TeamCollectionBookStatusPanel.less";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import BloomButton from "../react_components/bloomButton";
 import { BloomAvatar } from "../react_components/bloomAvatar";
-import { useSelectedBookInfo } from "../app/selectedBook";
+import { useMonitorBookSelection } from "../app/selectedBook";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 
 import { Block } from "@material-ui/icons";
 import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
 import { AvatarDialog } from "./AvatarDialog";
-import { PropTypes } from "mobx-react";
 import { createMuiTheme } from "@material-ui/core";
 
 // The panel that shows the book preview and settings in the collection tab in a Team Collection.
@@ -47,7 +46,7 @@ export interface IBookTeamCollectionStatus {
     hasAProblem: boolean;
 }
 export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
-    const { id: selectedBookId, editable } = useSelectedBookInfo();
+    const { id: selectedBookId, editable } = useMonitorBookSelection();
 
     const [lockState, setLockState] = useState<TeamCollectionBookLockState>(
         "initializing"
@@ -302,6 +301,9 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         ></SimpleMenu>
     );
 
+    // We want the checkin button in an orange color that isn't one of the two(!)
+    // colors that a material UI theme can have. So we make another theme just to
+    // show the button. Next version of Material should be able to do more theme colors.
     const dangerTheme = useMemo(
         () =>
             createMuiTheme({

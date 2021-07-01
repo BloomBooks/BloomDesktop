@@ -88,6 +88,9 @@ namespace Bloom.CollectionTab
 			};
 
 			// We don't want this control initializing until team collections sync (if any) is done.
+			// That could change, but for now we're not trying to handle async changes arriving from
+			// the TC to the local collection, and as part of that, the collection tab doesn't expect
+			// the local collection to change because of TC stuff once it starts loading.
 			Controls.Remove(_reactControl);
 		}
 

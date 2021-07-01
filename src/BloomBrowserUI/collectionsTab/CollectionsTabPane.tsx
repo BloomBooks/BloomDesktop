@@ -10,6 +10,7 @@ import { kPanelBackground, kDarkestBackground } from "../bloomMaterialUITheme";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { CollectionsTabBookPane } from "./collectionsTabBookPane/CollectionsTabBookPane";
 import { useState } from "react";
+import useEventListener from "@use-it/event-listener";
 
 const kResizerSize = 10;
 
@@ -18,13 +19,10 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
 
     const [draggingVSplitter, setDraggingVSplitter] = useState(false);
 
-    React.useEffect(
-        () =>
-            document.addEventListener("mouseup", () =>
-                setDraggingVSplitter(false)
-            ),
-        []
-    );
+    // There's no event built into the splitter that will tell us when drag is done.
+    // So to tell that it's over, we have a global listener for mouseup.
+    // useEventListener handles cleaning up the listener when this component is disposed.
+    useEventListener("mouseup", () => setDraggingVSplitter(false));
 
     if (collections) {
         const sourcesCollections = collections.slice(1);

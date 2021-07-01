@@ -75,6 +75,7 @@
         "@nivo/scatterplot": "^0.67.0",
         "@types/filesize": "^5.0.0",
         "@types/react-transition-group": "^4.4.1",
+        "@use-it/event-listener": "^0.1.6",
         "axios": "^0.21.1",
         "bloom-player": "^2.0.4",
         "calculate-aspect-ratio": "^0.1.3",

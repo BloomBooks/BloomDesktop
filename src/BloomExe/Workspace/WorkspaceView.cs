@@ -262,12 +262,25 @@ namespace Bloom.Workspace
 		public string GetCurrentSelectedBookInfo()
 		{
 			var book = _bookSelection.CurrentSelection;
+			var collectionKind = "other";
+			if (book.IsEditable)
+			{
+				collectionKind = "main";
+			}
+			// Review: we're tentatively thinking that "delete book" and "open folder on disk"
+			// will both be enabled for all but factory collections. Currently, Bloom is more
+			// restrictive on delete: only books in main or "Books from BloomLibrary.org" can be deleted.
+			// But there doesn't seem to be any reason to prevent deleting books from e.g. a bloompack.
+			else if (BloomFileLocator.IsInstalledFileOrDirectory(book.CollectionSettings.FolderPath))
+			{
+				collectionKind = "factory";
+			}
 			// notify browser components that are listening to this event
 			var result = JsonConvert.SerializeObject(new
 			{
 				id = book?.ID,
 				editable = _tcManager.CanEditBook(),
-				canMakeBook = book != null && book.IsShellOrTemplate && !_bookSelection.CurrentSelection.HasFatalError
+				collectionKind
 			});
 			return result;
 		}

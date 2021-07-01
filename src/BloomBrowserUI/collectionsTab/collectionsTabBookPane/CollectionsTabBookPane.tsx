@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRef, useState } from "react";
 import { BloomApi } from "../../utils/bloomApi";
 import { TeamCollectionBookStatusPanel } from "../../teamCollection/TeamCollectionBookStatusPanel";
-import { useSelectedBookInfo } from "../../app/selectedBook";
+import { useMonitorBookSelection } from "../../app/selectedBook";
 import BloomButton from "../../react_components/bloomButton";
 import { kDarkestBackground } from "../../bloomMaterialUITheme";
 import { CollectionsTabPane } from "../CollectionsTabPane";
@@ -21,7 +21,12 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
 }> = props => {
     const [isTeamCollection, setIsTeamCollection] = useState(false);
 
-    const { id: selectedBookId, editable, canMakeBook } = useSelectedBookInfo();
+    const {
+        id: selectedBookId,
+        editable,
+        collectionKind
+    } = useMonitorBookSelection();
+    const canMakeBook = collectionKind != "main";
 
     const iframeRef = useRef<HTMLIFrameElement>(null);
 

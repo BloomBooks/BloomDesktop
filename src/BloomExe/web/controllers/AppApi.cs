@@ -68,7 +68,7 @@ namespace Bloom.Api
 					catch (Exception error)
 					{
 						SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,
-							"Bloom could not add that book to the library.");
+							"Bloom could not add that book to the collection.");
 					}
 
 					request.PostSucceeded();
