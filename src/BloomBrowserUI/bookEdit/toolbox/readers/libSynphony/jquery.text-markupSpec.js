@@ -68,6 +68,17 @@ describe("jquery.text-markup", function() {
         expect(result).toBe(out2);
     });
 
+    // check the bug reported in BL-10119
+    it("checkLeveledReader.handlesSentencesWithInitialMarkup", function() {
+        const input =
+            '<p>Short sentences exist. <em>Four</em> <strong>"word"</strong> sentences exist.</p><p>A five word sentence exists. <u>Shorter</u> sentences also exist.</p>';
+        $("#text_entry1")
+            .html(input)
+            .checkLeveledReader({ maxWordsPerSentence: 5 });
+        const result = $("#text_entry1").html();
+        expect(result).toBe(input);
+    });
+
     it("checkLeveledReader.handleDefaults.maxWordsPerSentence", function() {
         var input = "This sentence should have enough words";
         var out = "This sentence should have enough words";
