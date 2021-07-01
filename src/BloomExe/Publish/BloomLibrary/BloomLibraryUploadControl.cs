@@ -13,6 +13,7 @@ using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -48,6 +49,13 @@ namespace Bloom.Publish.BloomLibrary
 			InitializeComponent();
 			_originalLoginText = _loginLink.Text; // Before anything might modify it (but after InitializeComponent creates it).
 			_titleLabel.Text = _model.Title;
+
+			// currently folder choosing isn't supported (but wouldn't be hard)
+			if (!SIL.PlatformUtilities.Platform.IsWindows)
+			{
+				_uploadSource.Items.RemoveAt(2);
+			}
+			_uploadSource.SelectedIndex = 0;
 
 			_progressBox.ShowDetailsMenuItem = true;
 			_progressBox.ShowCopyToClipboardMenuItem = true;
@@ -167,7 +175,7 @@ namespace Bloom.Publish.BloomLibrary
 			{
 				var oldTextWidth = TextRenderer.MeasureText(_uploadButton.Text, _uploadButton.Font).Width;
 				// Do not localize the following string (https://issues.bloomlibrary.org/youtrack/issue/BL-7383).
-				_uploadButton.Text = "Upload Book (to Sandbox)";
+				_uploadButton.Text = "Upload (to dev.bloomlibrary.org)";
 				var neededWidth = TextRenderer.MeasureText(_uploadButton.Text, _uploadButton.Font).Width;
 				_uploadButton.Width += neededWidth - oldTextWidth;
 			}
@@ -290,14 +298,21 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			_uploadButton.Enabled = _model.MetadataIsReadyToPublish && _model.LoggedIn && _okToUpload;
 			_progressBox.Clear();
-			bulkUploadLink.Enabled = _uploadButton.Enabled;
+			_uploadSource.Enabled = _uploadButton.Enabled;
 
-			bulkUploadLink.Visible = _model.Book.CollectionSettings.HaveEnterpriseFeatures
-									// for now, we're limiting this to projects that have set up a default bookshelf
-									// so that all their books go to the correct place.
-			                         && !String.IsNullOrEmpty(_model.Book.CollectionSettings.DefaultBookshelf);
+			_uploadSource.Visible = _model.Book.CollectionSettings.HaveEnterpriseFeatures
+			                        // for now, we're limiting this to projects that have set up a default bookshelf
+			                        // so that all their books go to the correct place.
+			                        && !String.IsNullOrEmpty(_model.Book.CollectionSettings.DefaultBookshelf);
 
-			
+
+			if (_uploadSource.SelectedIndex != 0)
+			{
+				// we are uploading a collection a collection of a folders, so shorten the "Upload Book" label.
+				// This is not localized. Also, once it is shown, it will not go back to the old label.
+				// I don't want to go  to the trouble, because only handful of people will ever see this.
+				_uploadButton.Text = "Upload"; 
+			}
 
 			if (!_uploadButton.Enabled)
 			{
@@ -375,6 +390,16 @@ namespace Bloom.Publish.BloomLibrary
 
 		private void _uploadButton_Click(object sender, EventArgs e)
 		{
+			if (_uploadSource.SelectedIndex == 1)
+			{
+				BulkUploadThisCollection();
+				return;
+			}
+			if (_uploadSource.SelectedIndex == 2)
+			{
+				SelectFolderAndUploadCollectionsWithinIt();
+				return;
+			}
 			if (_uploadWorker != null)
 			{
 				// We're already doing an upload, this is now the Cancel button.
@@ -599,12 +624,34 @@ namespace Bloom.Publish.BloomLibrary
 			}
 		}
 
-		private void bulkUploadLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		private void SelectFolderAndUploadCollectionsWithinIt()
+		{
+			// Note not actually Microsoft anymore: https://github.com/contre/Windows-API-Code-Pack-1.1
+			if (SIL.PlatformUtilities.Platform.IsWindows)
+			{
+				// Note, this is Windows only.
+				CommonOpenFileDialog dialog = new CommonOpenFileDialog
+				{
+					InitialDirectory = _model.Book.CollectionSettings.FolderPath,
+					IsFolderPicker = true
+				};
+				if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+				{
+					BulkUpload(dialog.FileName);
+				}
+			}
+		}
+
+		private void BulkUploadThisCollection()
+		{
+			BulkUpload(Path.GetDirectoryName(_model.Book.CollectionSettings.FolderPath));
+		}
+
+		private void BulkUpload(string rootFolderPath)
 		{
 			var target = BookUpload.UseSandbox ? UploadDestination.Development : UploadDestination.Production;
-			var collectionFolder = Path.GetDirectoryName(_model.Book.Storage.FolderPath);
 			var bloom = Application.ExecutablePath;
-			var command = $"{bloom} upload \"{collectionFolder}\" -u {_userId.Text} -d {target}";
+			var command = $"{bloom} upload \"{rootFolderPath}\" -u {_userId.Text} -d {target}";
 
 			ProcessStartInfo startInfo;
 			if (SIL.PlatformUtilities.Platform.IsWindows)
@@ -636,6 +683,11 @@ namespace Bloom.Publish.BloomLibrary
 			var url = "https://bloomlibrary.org/" +_model.Book.CollectionSettings.DefaultBookshelf;
 			_progressBox.WriteMessage("You books will show up at {0}", url);
 		
+		}
+
+		private void _uploadSource_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			UpdateDisplay();
 		}
 	}
 }
