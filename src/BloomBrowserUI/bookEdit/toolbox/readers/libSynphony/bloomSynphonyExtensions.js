@@ -133,7 +133,6 @@ LibSynphony.prototype.stringToSentences = function(textHTML) {
     var tagHolderEmpty = String.fromCharCode(7); // u0007 is a replacement character for empty html tags
     var nbsp = String.fromCharCode(8); // u0008 is a replacement character for &nbsp;
     if (textHTML === null) textHTML = "";
-
     // look for html break tags, replace them with the htmlLineBreak place holder
     var regex = /(<br><\/br>|<br>|<br \/>|<br\/>)/g;
     textHTML = textHTML.replace(regex, htmlLineBreak);
@@ -143,22 +142,31 @@ LibSynphony.prototype.stringToSentences = function(textHTML) {
     textHTML = textHTML.replace(regex, windowsLineBreak);
 
     // collect opening html tags and replace with tagHolderOpen place holder
-    var openTags = textHTML.match(/<[^\/][^<>]+[^\/]>/g);
-    textHTML = textHTML.replace(/<[^\/][^<>]+[^\/]>/g, tagHolderOpen);
+    // Remember, tag names can be as short as a single character!  See BL-10119.
+    // We want to match tags like <strong> or <a href="https://sil.org/"> but not
+    // <br /> or <img src="image.png"/>.  Self-closing tags are matched later.
+    const regexOpenTag = /<[a-zA-Z]+([^<>]*[^\/<>])?>/g;
+    const openTags = textHTML.match(regexOpenTag);
+    textHTML = textHTML.replace(regexOpenTag, tagHolderOpen);
 
     // collect closing html tags and replace with tagHolderClose place holder
-    var closeTags = textHTML.match(/<[\/][^<>]+>/g);
-    textHTML = textHTML.replace(/<[\/][^<>]+>/g, tagHolderClose);
+    // We want to match tags like </span> or </u>.
+    const regexCloseTag = /<[\/][a-zA-Z]+>/g;
+    const closeTags = textHTML.match(regexCloseTag);
+    textHTML = textHTML.replace(regexCloseTag, tagHolderClose);
 
     // collect self-closing html tags and replace with tagHolderSelf place holder
-    var selfTags = textHTML.match(/<[^<>]+[\/]>/g);
-    textHTML = textHTML.replace(/<[^<>]+[\/]>/g, tagHolderSelf);
+    // We want to match tags like <br/> or <img src="picture.jpg" />.
+    const regexSelfTag = /<[a-zA-Z]+[^<>]*[\/]>/g;
+    const selfTags = textHTML.match(regexSelfTag);
+    textHTML = textHTML.replace(regexSelfTag, tagHolderSelf);
 
     // collect empty html tags and replace with tagHolderEmpty place holder
-    var emptyTags = textHTML.match(/\u0004\u0005/g);
-    textHTML = textHTML.replace(/\u0004\u0005/g, tagHolderEmpty);
+    const regexEmptyTag = /\u0004\u0005/g;
+    const emptyTags = textHTML.match(regexEmptyTag);
+    textHTML = textHTML.replace(regexEmptyTag, tagHolderEmpty);
 
-    // replace &nbsp; with nbsp
+    // replace &nbsp; with nbsp place holder
     textHTML = textHTML.replace(/&nbsp;/g, nbsp);
 
     // look for paragraph ending sequences
