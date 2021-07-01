@@ -29,7 +29,7 @@ namespace Bloom.CLI
 			}
 
 			IsUploading = true;
-			// -u user, -p password, and <path> are all required, so they must contain strings.
+			// -u user, and <path> are all required, so they must contain strings.
 			// -d destination has a default value, so it also must contain a string.
 			options.Path = options.Path.TrimEnd(new[] { '/', '\\', System.IO.Path.PathSeparator });	// remove any trailing slashes
 			// validate the value for the upload destination.
@@ -95,7 +95,7 @@ namespace Bloom.CLI
 
 // Used with https://github.com/gsscoder/commandline, which we get via nuget.
 
-// TODO: this does not work (does not show up in help), and I don't understand how to make it work
+// Note: you only see this help via "bloom --help", not via "bloom upload --help".
 
 [Verb("upload", HelpText = "Upload collections of books to bloomlibrary.org. Cannot be used to upload only a single book. Given a folder that is a collection, this will upload the it. Given a folder that is not a collection, it will search for descendant folders that contain collections.\r\nExample: bloom upload \"c:\\foo\\all my collections\". (Do not use a trailing slash). " +
 	" Normally, this command will skip books that have not changed.\r\nIn order to authenticate, you must first log in with the Bloom UI:Publish:Share on the Web, then quit."

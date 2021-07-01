@@ -40,7 +40,6 @@ namespace Bloom.WebLibraryIntegration
 		private int _booksSkipped;
 		private int _booksWithErrors;
 
-		//private const string UploadLogFilename = "BloomBulkUploadLog.txt";
 		public const string UploadHashesFilename = ".lastUploadInfo";	// this filename must begin with a period
 
 		// The full path of the log text file used to restart failed bulk uploads.
@@ -218,7 +217,6 @@ namespace Bloom.WebLibraryIntegration
 				// Example: https://s3.amazonaws.com/BloomLibraryBooks-Sandbox/jeffrey_su@sil.org/8d0d9043-a1bb-422d-aa5b-29726cdcd96a/AutoSplit+Timings
 				var msgBookId = "s3BookId: " + s3BookId;
 				progress.WriteMessage(msgBookId);
-				Console.WriteLine(msgBookId);
 #endif
 				metadata.DownloadSource = s3BookId;
 				// If the collection has a default bookshelf, make sure the book has that tag.
@@ -255,7 +253,6 @@ namespace Bloom.WebLibraryIntegration
 					if (IsDryRun)
 						metaMsg = "(Dry run) Would upload book metadata";	// TODO: localize?
 					progress.WriteStatus(metaMsg);
-					Console.WriteLine(metaMsg);
 					// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
 					if (!IsDryRun)
 					{

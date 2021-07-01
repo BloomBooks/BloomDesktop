@@ -58,7 +58,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 			if (Settings.Default.LastLoginDest != destination)
 			{
-				progress.WriteError("The destination (production or dev of the last login from the Bloom UI does not match the -d argument.");
+				progress.WriteError("The destination (production or dev) of the last login from the Bloom UI does not match the -d argument.");
 				return false;
 			}
 
@@ -66,11 +66,6 @@ namespace Bloom.WebLibraryIntegration
 				Settings.Default.LastLoginSessionToken, destination);
 
 			return true;
-		}
-
-		protected BloomParseClient(RestClient client)
-		{
-			_client = client;
 		}
 
 		protected RestClient Client

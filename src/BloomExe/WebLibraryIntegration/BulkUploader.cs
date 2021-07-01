@@ -28,7 +28,6 @@ namespace Bloom.WebLibraryIntegration
 		private int _booksSkipped;
 		private int _booksWithErrors;
 
-		//private const string UploadLogFilename = "BloomBulkUploadLog.txt";
 		public const string UploadHashesFilename = ".lastUploadInfo";   // this filename must begin with a period
 		public bool LoggedIn => _singleBookUploader.ParseClient.LoggedIn;
 		private string _uploadedBy;
@@ -189,20 +188,19 @@ namespace Bloom.WebLibraryIntegration
 		{
 			foreach (var sub in Directory.GetDirectories(uploadParams.Folder))
 			{
-				var bookParams = uploadParams;
-				bookParams.Folder = sub;
-
-				var htmlFileCount = Directory.GetFiles(bookParams.Folder, "*.htm").Length;
+				var htmlFileCount = Directory.GetFiles(sub, "*.htm").Length;
 				if (htmlFileCount == 1)
 				{
-					// Exactly one htm file, assume this is a bloom book folder.
+					// Our (perhaps insufficient) definition of a book folder is that it has exactly 1 htm file.
 					try
 					{
+						var bookParams = uploadParams;
+						bookParams.Folder = sub;
 						UploadBookInternal(progress, container, bookParams, ref context);
 					}
 					catch (Exception e)
 					{
-						var msg = String.Format("{0} was not uploaded due to error: {1}", bookParams.Folder, e.Message);
+						var msg = String.Format("{0} was not uploaded due to error: {1}", sub, e.Message);
 						progress.WriteError(msg);
 						progress.WriteException(e);
 						++_booksWithErrors;
@@ -212,31 +210,41 @@ namespace Bloom.WebLibraryIntegration
 				{
 					if (htmlFileCount > 1)
 					{
-						progress.WriteError($"{bookParams.Folder} has ${htmlFileCount}");
+						progress.WriteError($"{sub} has ${htmlFileCount} html files. One of them should be removed.");
+						++_booksWithErrors;
 					}
 					else
 					{
-						if (Directory.GetFiles(bookParams.Folder, "origami.css").Length > 0)
-						{
-							progress.WriteWarning(
-								$"{bookParams.Folder} has no html but has origami.css. This is highly suspicious.");
-						}
-						else if (Directory.GetFiles(bookParams.Folder, "*.png").Length > 0)
-						{
-							progress.WriteWarning(
-								$"{bookParams.Folder} has no html but has a png. This is highly suspicious.");
-						}
-						else if (Directory.GetFiles(bookParams.Folder, "*.jpg").Length > 0)
-						{
-							progress.WriteWarning(
-								$"{bookParams.Folder} has no html but has a jpg. This is highly suspicious.");
-						}
-						else
-						{
-							// nah
-						}
+						ReportSuspiciousFilesInFolderLackingHtml(progress, sub);
 					}
 				}
+			}
+		}
+
+		private void ReportSuspiciousFilesInFolderLackingHtml(IProgress progress, string folder)
+		{
+			if (Directory.GetFiles(folder, "origami.css").Length > 0)
+			{
+				progress.WriteWarning(
+					$"{folder} has no html but has origami.css. This is highly suspicious.");
+			}
+
+			if (Directory.GetFiles(folder, "origami.css").Length > 0)
+			{
+				progress.WriteWarning(
+					$"{folder} has no html but has origami.css. This is highly suspicious.");
+			}
+
+			if (Directory.GetFiles(folder, "*.png").Length > 0)
+			{
+				progress.WriteWarning(
+					$"{folder} has no html but has a png. This is highly suspicious.");
+			}
+
+			if (Directory.GetFiles(folder, "*.jpg").Length > 0)
+			{
+				progress.WriteWarning(
+					$"{folder} has no html but has a jpg. This is highly suspicious.");
 			}
 		}
 

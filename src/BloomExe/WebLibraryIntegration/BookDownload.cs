@@ -31,14 +31,12 @@ using System.Text;
 namespace Bloom.WebLibraryIntegration
 {
 	/// <summary>
-	/// Currently pushes a book's metadata to Parse.com (a mongodb service) and files to Amazon S3.
-	/// We are using both because Parse offers a more structured, query-able data organization
-	/// that is useful for metadata, but does not allow large enough files for some of what we need.
+	/// Gets files from Amazon S3.
 	/// </summary>
 	public class BookDownload
 	{
-		private BloomParseClient _parseClient;
-		private BloomS3Client _s3Client;
+		
+		private readonly BloomS3Client _s3Client;
 		private readonly BookDownloadStartingEvent _bookDownloadStartingEvent;
 		public IProgress Progress;
 
@@ -46,7 +44,6 @@ namespace Bloom.WebLibraryIntegration
 
 		public BookDownload(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, BookDownloadStartingEvent bookDownloadStartingEvent)
 		{
-			this._parseClient = bloomParseClient;
 			this._s3Client = bloomS3Client;
 			_bookDownloadStartingEvent = bookDownloadStartingEvent;
 		}
@@ -249,11 +246,6 @@ namespace Bloom.WebLibraryIntegration
 		{
 			HandleBookOrder(bookOrderPath, DownloadFolder);
 		}
-		
-		public bool LoggedIn
-		{
-			get { return _parseClient.LoggedIn; }
-		}
 
 		internal const string BloomS3UrlPrefix = "https://s3.amazonaws.com/";
 
@@ -261,12 +253,6 @@ namespace Bloom.WebLibraryIntegration
 		private static string MetaDataText(string bookFolder)
 		{
 			return RobustFile.ReadAllText(bookFolder.CombineForPath(BookInfo.MetaDataFileName));
-		}
-
-		private string S3BookId(BookMetaData metadata)
-		{
-			var s3BookId = _parseClient.Account + BloomS3Client.kDirectoryDelimeterForS3 + metadata.Id;
-			return s3BookId;
 		}
 
 		/// <summary>
@@ -322,32 +308,6 @@ namespace Bloom.WebLibraryIntegration
 			var s3BookId = metadata.DownloadSource;
 			var bucket = BloomS3Client.ProductionBucketName; //TODO
 			_s3Client.DownloadBook(bucket, s3BookId, Path.GetDirectoryName(projectPath));
-		}
-
-		public bool IsBookOnServer(string bookPath)
-		{
-			var metadata = BookMetaData.FromString(RobustFile.ReadAllText(bookPath.CombineForPath(BookInfo.MetaDataFileName)));
-			return _parseClient.GetSingleBookRecord(metadata.Id) != null;
-		}
-
-		// Wait (up to three seconds) for data uploaded to become available.
-		// Currently only used in unit testing.
-		// I have no idea whether 3s is an adequate time to wait for 'eventual consistency'. So far it seems to work.
-		internal void WaitUntilS3DataIsOnServer(string bucket, string bookPath)
-		{
-			var s3Id = S3BookId(BookMetaData.FromFolder(bookPath));
-			// There's a few files we don't upload, but meta.bak is the only one that regularly messes up the count.
-			// Some tests also deliberately include a _broken_ file to check they aren't uploaded,
-			// so we'd better not wait for that to be there, either.
-			var count = Directory.GetFiles(bookPath).Count(p=>!p.EndsWith(".bak") && !p.Contains(BookStorage.PrefixForCorruptHtmFiles));
-			for (int i = 0; i < 30; i++)
-			{
-				var uploaded = _s3Client.GetBookFileCount(bucket, s3Id);
-				if (uploaded >= count)
-					return;
-				Thread.Sleep(100);
-			}
-			throw new ApplicationException("S3 is very slow today");
 		}
 	}
 }
