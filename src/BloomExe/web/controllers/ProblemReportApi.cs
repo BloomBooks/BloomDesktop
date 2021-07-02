@@ -108,8 +108,6 @@ namespace Bloom.web.controllers
 			request.PostSucceeded();
 		}
 
-		private static IEnumerable<string> _additionalPathsToInclude;
-
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			// This one is an exception: it's not used BY the problem report dialog, but to launch one
@@ -175,7 +173,7 @@ namespace Bloom.web.controllers
 				{
 					var report = DynamicJson.Parse(request.RequiredPostJson());
 
-					string issueLink = SubmitToYouTrack(report.kind, report.userInput, report.email, report.includeBook, report.includeScreenshot, _additionalPathsToInclude);
+					string issueLink = SubmitToYouTrack(report.kind, report.userInput, report.email, report.includeBook, report.includeScreenshot, null);
 
 					object linkToNewIssue = new { issueLink };
 					request.ReplyWithJson(linkToNewIssue);
@@ -391,10 +389,8 @@ namespace Bloom.web.controllers
 		/// <param name="exception"></param>
 		/// <param name="detailedMessage"></param>
 		/// <param name="levelOfProblem">"user", "nonfatal", or "fatal"</param>
-		/// <param name="additionalFilesToInclude"></param>
 		public static void ShowProblemDialog(Control controlForScreenshotting, Exception exception,
-			string detailedMessage = "", string levelOfProblem = "user", string shortUserLevelMessage = "", bool isShortMessagePreEncoded = false,
-			string[] additionalFilesToInclude = null)
+			string detailedMessage = "", string levelOfProblem = "user", string shortUserLevelMessage = "", bool isShortMessagePreEncoded = false)
 		{
 			// Before we do anything that might be "risky", put the problem in the log.
 			LogProblem(exception, detailedMessage, levelOfProblem);
@@ -462,7 +458,6 @@ namespace Bloom.web.controllers
 					// Precondition: we must be on the UI thread for Gecko to work.
 					using (var dlg = new ReactDialog("ProblemDialog", new { level = levelOfProblem}, "Problem Report"))
 					{
-						_additionalPathsToInclude = additionalFilesToInclude;
 						dlg.FormBorderStyle = FormBorderStyle.FixedToolWindow; // Allows the window to be dragged around
 						dlg.ControlBox = true; // Add controls like the X button back to the top bar
 						dlg.Text = ""; // Remove the title from the WinForms top bar
@@ -479,7 +474,6 @@ namespace Bloom.web.controllers
 						finally
 						{
 							BloomServer._theOneInstance.RegisterThreadUnblocked();
-							_additionalPathsToInclude = null;
 						}
 					}
 				}

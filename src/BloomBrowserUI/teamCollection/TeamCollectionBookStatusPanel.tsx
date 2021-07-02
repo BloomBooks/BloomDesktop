@@ -16,7 +16,6 @@ import {
     useSubscribeToWebSocketForObject
 } from "../utils/WebSocketManager";
 import { Block } from "@material-ui/icons";
-import { StringWithOptionalLink } from "../react_components/stringWithOptionalLink";
 
 // The panel that shows the book preview and settings in the collection tab in a Team Collection.
 
@@ -28,24 +27,9 @@ export type LockState =
     | "lockedByMeElsewhere"
     | "needsReload"
     | "problem"
-    | "invalidRepoData"
     | "disconnected"
     | "lockedByMeDisconnected"
     | "error";
-
-export interface IBookTeamCollectionStatus {
-    changedRemotely: boolean;
-    who: string;
-    whoFirstName: string;
-    whoSurname: string;
-    currentUser: string;
-    where: string;
-    currentMachine: string;
-    when: string;
-    disconnected: boolean;
-    problem: boolean; // hasAProblem in master
-    invalidRepoData: string; // error message, or empty if repo data is valid
-}
 
 export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [state, setState] = useState<LockState>("initializing");
@@ -57,20 +41,13 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [error, setError] = useState("");
     const [progress, setProgress] = useState(0);
     const [busy, setBusy] = useState(false);
-    const [bookStatus, setBookStatus] = useState<any>({
-        currentUser: "",
-        currentUserName: ""
-    });
     React.useEffect(() => {
         var lockedByMe = false;
         BloomApi.get(
             "teamCollection/currentBookStatus",
             data => {
-                const bookStatus: IBookTeamCollectionStatus = data.data;
-                setBookStatus(bookStatus);
-                if (bookStatus.invalidRepoData) {
-                    setState("invalidRepoData");
-                } else if (bookStatus.problem) {
+                const bookStatus = data.data;
+                if (bookStatus.problem) {
                     setState("problem");
                 } else if (bookStatus.changedRemotely) {
                     setState("needsReload");
@@ -417,20 +394,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                             () => BloomApi.post("common/reloadCollection")
                         )}
                     />
-                );
-            case "invalidRepoData":
-                return (
-                    <p
-                        css={css`
-                            a {
-                                color: cyan;
-                            }
-                        `}
-                    >
-                        <StringWithOptionalLink
-                            message={bookStatus.invalidRepoData}
-                        />
-                    </p>
                 );
             case "needsReload":
                 return (

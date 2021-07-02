@@ -84,10 +84,6 @@ namespace Bloom.TeamCollection
 
 		public DateTime When { get; set; }
 		public MessageAndMilestoneType MessageType { get; set; }
-		/// <summary>
-		/// May be empty to indicate raw message is already localized, though this is not
-		/// ideal as it's just possible someone wants to view the log in different languages.
-		/// </summary>
 		public string L10NId { get; set; }
 		// Possibly containing {0} and {1}, which will be replaced with Param0 and Param1.
 		// The string corresponding to L10NId in the xlf, if any, wins, even in English.
@@ -122,7 +118,7 @@ namespace Bloom.TeamCollection
 					}
 				}
 
-				var msg = string.IsNullOrEmpty(L10NId) ? RawEnglishMessageTemplate : LocalizationManager.GetString(L10NId, RawEnglishMessageTemplate);
+				var msg = LocalizationManager.GetString(L10NId, RawEnglishMessageTemplate);
 				return leadIn + string.Format(msg, Param0, Param1);
 			}
 		}

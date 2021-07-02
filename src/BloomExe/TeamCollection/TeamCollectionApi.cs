@@ -10,7 +10,6 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
 using Bloom.Utils;
-using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -57,17 +56,6 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/getLog", HandleGetLog, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/getCollectionName", HandleGetCollectionName, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/showCreateTeamCollectionDialog", HandleShowCreateTeamCollectionDialog, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/reportBadZip", HandleReportBadZip, true);
-		}
-
-		public static string BadZipPath;
-
-		private void HandleReportBadZip(ApiRequest request)
-		{
-			var fileEncoded = request.Parameters["file"];
-			var file = UrlPathString.CreateFromUrlEncodedString(fileEncoded).NotEncoded;
-			NonFatalProblem.Report(ModalIf.All, PassiveIf.All, (_tcManager.CurrentCollection as FolderTeamCollection).GetSimpleBadZipFileMessage(file),additionalFilesToInclude: new[] { file });
-			request.PostSucceeded();
 		}
 
 		private void HandleShowCreateTeamCollectionDialog(ApiRequest request)
@@ -192,32 +180,15 @@ namespace Bloom.TeamCollection
 					return;
 				}
 
-				string whoHasBookLocked = null;
-				DateTime whenLocked = DateTime.MaxValue;
-				bool problem = false;
-				var status = _tcManager.CurrentCollection?.GetStatus(BookFolderName);
-				string invalidRepoData = (status?.invalidRepoData ?? false) ?
-					(_tcManager.CurrentCollection as FolderTeamCollection)?.GetBadZipFileMessage(BookFolderName)
-					: "";
-				try
-				{
-					whoHasBookLocked =
-						_tcManager.CurrentCollectionEvenIfDisconnected?.WhoHasBookLocked(BookFolderName);
-					// It's debatable whether to use CurrentCollectionEvenIfDisconnected everywhere. For now, I've only changed
-					// it for the two bits of information actually needed by the status panel when disconnected.
-					whenLocked = _tcManager.CurrentCollection?.WhenWasBookLocked(BookFolderName) ??
-					                 DateTime.MaxValue;
-					// review: or better to pass on to JS? We may want to show slightly different
-					// text like "This book is not yet shared. Check it in to make it part of the Team Collection"
-					if (whoHasBookLocked == TeamCollection.FakeUserIndicatingNewBook)
-						whoHasBookLocked = CurrentUser;
-					problem = _tcManager.CurrentCollection?.HasLocalChangesThatMustBeClobbered(BookFolderName) ?? false;
-				}
-				catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
-				{
-					invalidRepoData = (_tcManager.CurrentCollection as FolderTeamCollection)?.GetBadZipFileMessage(BookFolderName);
-				}
-
+				var whoHasBookLocked = _tcManager.CurrentCollectionEvenIfDisconnected?.WhoHasBookLocked(BookFolderName);
+				// It's debatable whether to use CurrentCollectionEvenIfDisconnected everywhere. For now, I've only changed
+				// it for the two bits of information actually needed by the status panel when disconnected.
+				var whenLocked = _tcManager.CurrentCollection?.WhenWasBookLocked(BookFolderName) ?? DateTime.MaxValue;
+				// review: or better to pass on to JS? We may want to show slightly different
+				// text like "This book is not yet shared. Check it in to make it part of the Team Collection"
+				if (whoHasBookLocked == TeamCollection.FakeUserIndicatingNewBook)
+					whoHasBookLocked = CurrentUser;
+				var problem = _tcManager.CurrentCollection?.HasLocalChangesThatMustBeClobbered(BookFolderName);
 				request.ReplyWithJson(JsonConvert.SerializeObject(
 					new
 					{
@@ -229,9 +200,8 @@ namespace Bloom.TeamCollection
 						currentUser = CurrentUser,
 						currentMachine = TeamCollectionManager.CurrentMachine,
 						problem,
-						invalidRepoData,
 						changedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(BookFolderName),
-						disconnected = _tcManager.CurrentCollectionEvenIfDisconnected?.IsDisconnected,
+						disconnected = _tcManager.CurrentCollectionEvenIfDisconnected?.IsDisconnected
 					}));
 			}
 			catch (Exception e)
@@ -342,7 +312,7 @@ namespace Bloom.TeamCollection
 					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, false, true, reportCheckinProgress);
 					reportCheckinProgress(0); // cleans up panel for next time
 					// overwrite it with the current repo version.
-					_tcManager.CurrentCollection.CopyBookFromRepoToLocal(bookName, dialogOnError:true);
+					_tcManager.CurrentCollection.CopyBookFromRepoToLocal(bookName);
 					// Force a full reload of the book from disk and update the UI to match.
 					_bookSelection.SelectBook(_bookServer.GetBookFromBookInfo(_bookSelection.CurrentSelection.BookInfo, true));
 					var msg = LocalizationManager.GetString("TeamCollection.ConflictingEditOrCheckout",

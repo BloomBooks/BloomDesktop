@@ -161,14 +161,6 @@ namespace BloomTests.TeamCollection
 
 			_collection.WriteLocalStatus(copiedEx, new BookStatus(), collectionId: Bloom.TeamCollection.TeamCollection.GenerateCollectionId());
 
-			// Simulate a corrupt zip file, only in the repo
-			File.WriteAllText(Path.Combine(_repoFolder.FolderPath, "Books", "new corrupt book.bloom"), "This is not a valid zip!");
-
-			// Simulate a corrupt zip file that corresponds to a local book.
-			var badZip = "has a bad zip in repo";
-			MakeBook(badZip, "This book seems to be in both places, but the repo is corrupt");
-			File.WriteAllText(Path.Combine(_repoFolder.FolderPath, "Books", badZip + ".bloom"), "This is also not a valid zip!");
-
 			// Make a couple of folders that are legitimately present, but not books.
 			var allowedWords = Path.Combine(_collectionFolder.FolderPath, "Allowed Words");
 			Directory.CreateDirectory(allowedWords);
@@ -220,7 +212,7 @@ namespace BloomTests.TeamCollection
 		public virtual void SyncAtStartup_ProducesNoUnexpectedMessages()
 		{
 			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(2), "Unexpected number of progress warnings produced.");
-			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(5), "Unexpected number of progress errors produced. Did you mean to add one?");
+			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(3), "Unexpected number of progress errors produced. Did you mean to add one?");
 			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(3), "Unexpected number of progress messages produced. Did you mean to add one?");
 		}
 
@@ -421,29 +413,6 @@ namespace BloomTests.TeamCollection
 			AssertProgress("Updating '{0}' to match the Team Collection", "Update me");
 		}
 
-		[Test]
-		public void SyncAtStartup_BadBookInRepo_NoLocalBook_GivesError_NoChanges()
-		{
-			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", "new corrupt book.bloom")));
-			Assert.That(Directory.Exists(Path.Combine(_collectionFolder.FolderPath, "new corrupt book")), Is.False);
-			// I think this is better than spelling it out. We have a test for the method itself.
-			var msg = _collection.GetBadZipFileMessage("new corrupt book");
-			AssertProgress(msg, null, null,MessageAndMilestoneType.ErrorNoReload);
-		}
-
-		[Test]
-		public void SyncAtStartup_BadBookInRepo_LocalBook_GivesError_NoChanges()
-		{
-			var badZip = "has a bad zip in repo";
-			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", badZip + ".bloom")));
-			// we didn't delete the local one!
-			AssertLocalContent(badZip, "This book seems to be in both places, but the repo is corrupt");
-
-			// I think this is better than spelling it out. We have a test for the method itself.
-			var msg = _collection.GetBadZipFileMessage(badZip);
-			AssertProgress(msg, null, null, MessageAndMilestoneType.ErrorNoReload);
-		}
-
 		// Check that the indicated message made it into the progress report, and ALSO
 		// into the log.
 
@@ -545,11 +514,10 @@ namespace BloomTests.TeamCollection
 		public override void SyncAtStartup_ProducesNoUnexpectedMessages()
 		{
 			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(0), "Unexpected number of progress warnings produced. We're not using warning any more");
-			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(6), "Unexpected number of progress errors produced. Did you mean to add one?");
+			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(4), "Unexpected number of progress errors produced. Did you mean to add one?");
 			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(3), "Unexpected number of progress messages produced. Did you mean to add one?");
 		}
 
-		[Test]
 		public override void SyncAtStartup_BookDeletedRemotely_GetsDeletedLocally_UnlessJoin()
 		{
 			Assert.That(Directory.Exists(Path.Combine(_collectionFolder.FolderPath, "Should be deleted")), Is.True);

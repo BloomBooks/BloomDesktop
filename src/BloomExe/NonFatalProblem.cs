@@ -32,8 +32,7 @@ namespace Bloom
 		/// <param name="showSendReport">Set to 'false' to eliminate yellow screens and "Report" links on toasts</param>
 		public static void Report(ModalIf modalThreshold, PassiveIf passiveThreshold, string shortUserLevelMessage = null,
 			string moreDetails = null,
-			Exception exception = null, bool showSendReport = true, bool isShortMessagePreEncoded = false, bool skipSentryReport = false, bool showRequestDetails = false,
-			string[] additionalFilesToInclude = null)
+			Exception exception = null, bool showSendReport = true, bool isShortMessagePreEncoded = false, bool skipSentryReport = false, bool showRequestDetails = false)
 		{
 			var originalException = exception;
 			s_expectedByUnitTest?.ProblemWasReported();
@@ -131,7 +130,7 @@ namespace Bloom
 						{
 							// N.B.: We should be more careful than ever about when we want 'showSendReport' to be 'true',
 							// since this new "nonfatal" UI doesn't have a "Cancel" button.
-							ProblemReportApi.ShowProblemDialog(Form.ActiveForm, exception, fullDetailedMessage, "nonfatal", shortUserLevelMessage, isShortMessagePreEncoded,additionalFilesToInclude);
+							ProblemReportApi.ShowProblemDialog(Form.ActiveForm, exception, fullDetailedMessage, "nonfatal", shortUserLevelMessage, isShortMessagePreEncoded);
 						}
 						else
 						{

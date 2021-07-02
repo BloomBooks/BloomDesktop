@@ -11,7 +11,6 @@ import {
     kLogBackgroundColor,
     kDialogPadding
 } from "../../bloomMaterialUITheme";
-import { StringWithOptionalLink } from "../stringWithOptionalLink";
 
 export interface IProgressBoxProps {
     webSocketContext?: string;
@@ -83,7 +82,7 @@ export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => 
                     color: ${color};
                 `}
             >
-                <StringWithOptionalLink message={message} />
+                {message}
             </p>
         );
         setMessages(old => [...old, line]);

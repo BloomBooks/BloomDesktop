@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
@@ -16,7 +15,6 @@ using Bloom.CollectionCreating;
 using Bloom.MiscUI;
 using Bloom.Utils;
 using Bloom.web;
-using L10NSharp;
 using Sentry;
 using SIL.Code;
 using SIL.IO;
@@ -211,8 +209,7 @@ namespace Bloom.TeamCollection
 		/// <param name="destinationCollectionFolder">Where to put the retrieved book folder,
 		/// typically the local collection folder.</param>
 		/// <param name="bookName">The name of the book, with or without the .bloom suffix - either way is fine</param>
-		/// <returns>error message if there was a problem, otherwise, null</returns>
-		protected override string FetchBookFromRepo(string destinationCollectionFolder, string bookName)
+		protected override void FetchBookFromRepo(string destinationCollectionFolder, string bookName)
 		{
 			var bookPath = GetPathToBookFileInRepo(bookName);
 			var destFolder = Path.Combine(destinationCollectionFolder, GetBookNameWithoutSuffix(bookName));
@@ -222,31 +219,11 @@ namespace Bloom.TeamCollection
 			try
 			{
 				RobustZip.UnzipDirectory(destFolder, bookPath);
-				return null;
 			}
 			catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
 			{
-				return GetBadZipFileMessage(bookName);
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not unpack a file in your Team Collection: " + bookPath, exception: e);
 			}
-		}
-
-		public string GetBadZipFileMessage(string zipName)
-		{
-			var zipPath = GetPathToBookFileInRepo(zipName);
-			var part1 = GetSimpleBadZipFileMessage(zipPath);
-			var template2 = LocalizationManager.GetString("Common.ClickHereForHelp", "Please click [here] to get help from the Bloom support team.",
-				"[here] will become a link. Keep the brackets to mark the translated text that should form the link.");
-			
-			var pattern = new Regex(@"\[(.*)\]");
-			var part2 = pattern.Replace(template2, $"<a href='/bloom/api/teamCollection/reportBadZip?file={ UrlPathString.CreateFromUnencodedString(zipPath).UrlEncoded}'>$1</a>");
-			return part1 + " " + part2;
-		}
-
-		public string GetSimpleBadZipFileMessage(string zipPath)
-		{
-			var template = LocalizationManager.GetString("TeamCollection.BadZipFile",
-				"There is a problem with the book \"{0}\" in the Team Collection system.");
-			return string.Format(template, Path.GetFileNameWithoutExtension(zipPath));
 		}
 
 		public override void PutCollectionFiles(string[] names)
@@ -602,20 +579,6 @@ namespace Bloom.TeamCollection
 			}
 
 			return RobustZip.GetComment(bookPath);
-		}
-
-		protected override bool TryGetBookStatusJsonFromRepo(string bookFolderName, out string status)
-		{
-			try
-			{
-				status = GetBookStatusJsonFromRepo(bookFolderName);
-				return true;
-			} catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
-			{
-				MessageLog.WriteMessage(MessageAndMilestoneType.ErrorNoReload, "", GetBadZipFileMessage(bookFolderName));
-				status = null;
-				return false;
-			}
 		}
 
 		/// <summary>
