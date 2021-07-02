@@ -67,7 +67,7 @@ namespace Bloom.TeamCollection
 			return new string[0];
 		}
 
-		protected override void FetchBookFromRepo(string destinationCollectionFolder, string bookName)
+		protected override string FetchBookFromRepo(string destinationCollectionFolder, string bookName)
 		{
 			throw new NotImplementedException();
 		}
@@ -106,6 +106,12 @@ namespace Bloom.TeamCollection
 			// ANYTHING under that in a disconnected TC. The closest approximation we
 			// can get to the unavailable repo status is the local status without the oldName.)
 			return localStatus.WithOldName(null).ToJson();
+		}
+
+		protected override bool TryGetBookStatusJsonFromRepo(string bookFolderName, out string status)
+		{
+			status = GetBookStatusJsonFromRepo(bookFolderName);
+			return true;
 		}
 
 		protected override bool IsBookPresentInRepo(string bookFolderName)
