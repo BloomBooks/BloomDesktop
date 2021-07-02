@@ -150,7 +150,7 @@ namespace Bloom.TeamCollection
 
 		public void WriteMessage(MessageAndMilestoneType messageType, string l10nId, string message, string param0="", string param1="")
 		{
-			if (IsRedundantMessage(messageType, l10nId, param0, param1))
+			if (IsRedundantMessage(messageType, l10nId, message, param0, param1))
 				return;
 			var msg = new TeamCollectionMessage(messageType, l10nId, message, param0, param1);
 			WriteMessage(msg);
@@ -169,13 +169,31 @@ namespace Bloom.TeamCollection
 			// However, as this promises to close the file each call, it should be pretty reliable.
 			RetryUtility.Retry(() => File.AppendAllText(_logFilePath, toPersist));
 		}
+
+		private bool MatchParams(string p1, string p2)
+		{
+			if (string.IsNullOrEmpty(p1) && string.IsNullOrEmpty(p2))
+				return true;
+			return p1 == p2;
+		}
 		
 
-		private bool IsRedundantMessage(MessageAndMilestoneType messageType, string l10nId, string param0, string param1)
+		private bool IsRedundantMessage(MessageAndMilestoneType messageType, string l10nId, string message, string param0, string param1)
 		{
 			if (messageType == MessageAndMilestoneType.NewStuff)
 			{
-				return CurrentNewStuff.Any((msg) => msg.MessageType == messageType && msg.L10NId == l10nId && msg.Param0 == param0 && msg.Param1 == param1);
+				return CurrentNewStuff.Any((msg) => msg.MessageType == messageType && msg.L10NId == l10nId && MatchParams(msg.Param0, param0) && MatchParams(msg.Param1, param1));
+			}
+
+			if (messageType == MessageAndMilestoneType.Error || messageType == MessageAndMilestoneType.ErrorNoReload)
+			{
+				// At some point, if we're loading the whole history of messages, this might want to consider whether
+				// the message is redundant with a current session report. But currently we reset completely for each
+				// session, and problems (particularly the one produced by a bad zip file in the repo) tend to be very
+				// frequent. We need to look at everything to weed out duplicates.
+				return Messages.Any(msg => (msg.MessageType == MessageAndMilestoneType.Error || msg.MessageType== MessageAndMilestoneType.ErrorNoReload) && msg.L10NId == l10nId &&
+				                                msg.RawEnglishMessageTemplate == message
+				                                && MatchParams(msg.Param0, param0) && MatchParams(msg.Param1, param1));
 			}
 			return false;
 		}

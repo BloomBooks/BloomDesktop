@@ -18,6 +18,7 @@ namespace Bloom.TeamCollection
 		public string lockedWhere; // Environment.MachineName
 		public string oldName; // When a book is renamed, we store the previous name here until checkin.
 		public string collectionId; // used only locally, distinguishes which collection stored the book.
+		public bool hasInvalidRepoData; // currently this is true if we detect that a repo file exists but is not readable as a zip
 
 		public string ToJson()
 		{
