@@ -387,25 +387,41 @@ namespace Bloom.ImageProcessing
 					// Very large PNG files can cause "out of memory" errors here, while making thumbnails,
 					// and when creating ePUBs or BloomPub books.  So, we check for sizes bigger than our
 					// maximum and return true if any are found.
-					var tagFile = TagLib.File.Create(path);
-					if (tagFile.Properties != null && tagFile.Properties.Description.Contains("PNG"))
+					try
 					{
-						if (IsImageSizeTooBig(tagFile.Properties.PhotoWidth, tagFile.Properties.PhotoHeight))
-							return true;
+						var tagFile = TagLib.File.Create(path);
+						if (tagFile.Properties != null && tagFile.Properties.Description.Contains("PNG"))
+						{
+							if (IsImageSizeTooBig(tagFile.Properties.PhotoWidth, tagFile.Properties.PhotoHeight))
+								return true;
+						}
+					}
+					catch (Exception ex)
+					{
+						continue; // if something goes wrong, well, we'll just hope this image isn't too big.
 					}
 				}
+
 				foreach (string path in jpgFiles)
 				{
 					// Very large JPG files can cause "out of memory" errors while making thumbnails and
 					// when creating ePUBs or BloomPub books.  So, we check for sizes bigger than our
 					// maximum and return true if any are found.
-					var tagFile = TagLib.File.Create(path);
-					if (tagFile.Properties != null && tagFile.Properties.Description.Contains("JFIF"))
+					try
 					{
-						if (IsImageSizeTooBig(tagFile.Properties.PhotoWidth, tagFile.Properties.PhotoHeight))
-							return true;
+						var tagFile = TagLib.File.Create(path);
+						if (tagFile.Properties != null && tagFile.Properties.Description.Contains("JFIF"))
+						{
+							if (IsImageSizeTooBig(tagFile.Properties.PhotoWidth, tagFile.Properties.PhotoHeight))
+								return true;
+						}
+					}
+					catch (Exception ex)
+					{
+						continue; // if something goes wrong, well, we'll just hope this image isn't too big.
 					}
 				}
+
 				return false;
 			}
 			finally
