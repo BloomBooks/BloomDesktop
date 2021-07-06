@@ -20,6 +20,8 @@ namespace Bloom.TeamCollection
 			RepoDescription = description;
 		}
 
+		public bool DisconnectedBecauseNoEnterprise = false;
+
 		// For Moq
 		// Alternatively,  you could make it implement an ITeamCollection interface instead.
 		public DisconnectedTeamCollection()
