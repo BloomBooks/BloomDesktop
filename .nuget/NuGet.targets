@@ -117,7 +117,11 @@
 
 					Log.LogMessage("Downloading latest version of NuGet.exe...");
 					WebClient webClient = new WebClient();
-					webClient.DownloadFile("https://dist.nuget.org/win-x86-commandline/latest/nuget.exe", OutputFilename);
+					// We want https://dist.nuget.org/win-x86-commandline/latest/nuget.exe but in July 2021, 5.10 started giving
+					// > error NU5050: Attempted to pack multiple files into the same location(s).
+					// > The following destinations were used multiple times: lib\net45\license.md, lib\net45\ffmpeg\LICENSE-ffmpeg.md
+					// Until we can fix that, temporarily pinning to 5.9.
+					webClient.DownloadFile("https://dist.nuget.org/win-x86-commandline/v5.9.1/nuget.exe", OutputFilename);
 
 					return true;
 				}

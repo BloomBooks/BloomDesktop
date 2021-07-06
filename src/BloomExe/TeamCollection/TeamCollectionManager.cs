@@ -208,9 +208,10 @@ namespace Bloom.TeamCollection
 				{
 					CurrentCollection.SyncLocalAndRepoCollectionFiles(false);
 				}
-				else if (Settings.HaveEnterpriseFeatures && CurrentCollectionEvenIfDisconnected != null)
+				else if (Settings.HaveEnterpriseFeatures && CurrentCollectionEvenIfDisconnected != null
+				    && CurrentCollectionEvenIfDisconnected is DisconnectedTeamCollection disconnectedTC && disconnectedTC.DisconnectedBecauseNoEnterprise)
 				{
-					// Possibly we were disconnected because of Enterprise being off, but now the user has
+					// We were disconnected because of Enterprise being off, but now the user has
 					// turned Enterprise on again. We really need to save that, even though we usually don't
 					// save settings changes when disconnected. Otherwise, restarting will restore the
 					// no-enterprise state, and we will be stuck.
@@ -447,6 +448,9 @@ namespace Bloom.TeamCollection
 			if (msg != null)
 			{
 				MakeDisconnected(new TeamCollectionMessage(MessageAndMilestoneType.Error, l10nId, msg), CurrentCollection.RepoDescription);
+				if (!settings.HaveEnterpriseFeatures)
+					(CurrentCollectionEvenIfDisconnected as DisconnectedTeamCollection)
+						.DisconnectedBecauseNoEnterprise = true;
 			}
 		}
 
