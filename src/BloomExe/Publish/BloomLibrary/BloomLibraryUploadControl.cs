@@ -604,6 +604,8 @@ namespace Bloom.Publish.BloomLibrary
 			var target = BookUpload.UseSandbox ? UploadDestination.Development : UploadDestination.Production;
 			var collectionFolder = Path.GetDirectoryName(_model.Book.Storage.FolderPath);
 			var bloom = Application.ExecutablePath;
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+				bloom = $"/opt/mono5-sil/bin/mono {bloom}";
 			var command = $"{bloom} upload \"{collectionFolder}\" -u {_userId.Text} -d {target}";
 
 			ProcessStartInfo startInfo;
@@ -619,11 +621,17 @@ namespace Bloom.Publish.BloomLibrary
 			}
 			else
 			{
+				string program = GetLinuxTerminalProgramAndAdjustCommand(ref command);
+				if (String.IsNullOrEmpty(program))
+				{
+					_progressBox.Clear();
+					_progressBox.WriteMessage("Cannot bulk upload because unable to find terminal window for output messages.");
+					return;
+				}
 				startInfo = new ProcessStartInfo()
 				{
-					// TODO: Steve can you check/test this?
-					FileName = "/bin/bash",
-					Arguments = "-c " + command,
+					FileName = program,
+					Arguments = command,
 					WorkingDirectory = Path.GetDirectoryName(Application.ExecutablePath)
 				};
 			}
@@ -634,8 +642,49 @@ namespace Bloom.Publish.BloomLibrary
 			_progressBox.WriteMessage("This process will skip books if it can tell that nothing has changed since the last bulk upload.");
 			_progressBox.WriteMessage("When the upload is complete, there will be a file named 'BloomBulkUploadLog.txt' in your collection folder.");
 			var url = "https://bloomlibrary.org/" +_model.Book.CollectionSettings.DefaultBookshelf;
-			_progressBox.WriteMessage("You books will show up at {0}", url);
+			_progressBox.WriteMessage("Your books will show up at {0}", url);
 		
+		}
+
+		private string QuoteQuotes(string command)
+		{
+			return command.Replace("\\", "\\\\").Replace("\"", "\\\"");
+		}
+
+		private string GetLinuxTerminalProgramAndAdjustCommand(ref string command)
+		{
+			// See https://askubuntu.com/questions/484993/run-command-on-anothernew-terminal-window
+
+			if (RobustFile.Exists("/usr/bin/gnome-terminal"))	// standard for GNOME (Ubuntu/Wasta)
+			{
+				// /usr/bin/gnome-terminal -- /bin/bash -c "bloom upload \"folder\" -u user -d dest; read line"
+				command = $"-- /bin/bash -c \"{QuoteQuotes(command)}; read line\"";
+				return "/usr/bin/gnome-terminal";
+			}
+			if (RobustFile.Exists("/usr/bin/terminator")) // popular alternative
+			{
+				// /usr/bin/terminator -x /bin/bash -c "bloom upload \"folder\" -u user -d dest; read line"
+				command = $"-x /bin/bash -c \"{QuoteQuotes(command)}; read line\"";
+				return "/usr/bin/terminator";
+			}
+			if (RobustFile.Exists("/usr/bin/xfce4-terminal"))    // standard for XFCE4 (XUbuntu)
+			{
+				// /usr/bin/xterm -hold -x /bin/bash -c "bloom upload \"folder\" -u user -d dest"
+				command = $"-T \"Bloom upload\" --hold -x /bin/bash -c \"{QuoteQuotes(command)}\"";
+				return "/usr/bin/xfce4-terminal";
+			}
+			if (RobustFile.Exists("/usr/bin/xterm"))	// antique original (slightly better than nothing)
+			{
+				// /usr/bin/xterm -hold -x /bin/bash -c "bloom upload \"folder\" -u user -d dest"
+				command = $"-T \"Bloom upload\" -hold -e /bin/bash -c \"{QuoteQuotes(command)}\"";
+				return "/usr/bin/xterm";
+			}
+			// Neither konsole nor qterminal will launch with Bloom.  The ones above have been tested on Wasta 20.
+			// symbol lookup error: /usr/lib/x86_64-linux-gnu/qt5/plugins/styles/libqgtk2style.so: undefined symbol: gtk_combo_box_entry_new
+			// I suspect because they're still linking with GTK2 while Bloom has to use GTK3 with Geckofx60.
+
+			// Give up.
+			return null;
 		}
 	}
 }
