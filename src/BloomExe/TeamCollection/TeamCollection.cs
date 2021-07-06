@@ -163,9 +163,13 @@ namespace Bloom.TeamCollection
 			// All this is achieved by writing the new repo status to local, since we just
 			// gave it the right checksum, and the repo status never has oldName.
 			WriteLocalStatus(bookFolderName, status);
+			// Usually we want to delete the old repo file. 
 			if (!string.IsNullOrEmpty(oldName))
 			{
-				RemoveBook(oldName);
+				// Usually we want to remove the old Repo file. But if the rename is just changing case and we're
+				// not on a case-sensitive platform, that would remove the current book!! (BL-10156)
+				if (SIL.PlatformUtilities.Platform.IsLinux || oldName.ToLowerInvariant() != bookFolderName.ToLowerInvariant())
+					RemoveBook(oldName);
 			}
 			UpdateBookStatus(bookFolderName, true);
 			return status;

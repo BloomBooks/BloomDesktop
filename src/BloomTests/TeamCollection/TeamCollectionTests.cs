@@ -315,6 +315,59 @@ namespace BloomTests.TeamCollection
 			Assert.That(repoStatus.oldName, Is.Null, "repo status still has null oldName field after rename");
 		}
 
+		[Test]
+		public void HandleBookRename_CaseChangeOnly_WorksRight()
+		{
+			// Setup //
+			const string originalBookName = "A new book";
+			var bookBuilder = new BookFolderBuilder()
+				.WithRootFolder(_collectionFolder.FolderPath)
+				.WithTitle(originalBookName)
+				.WithHtm("<html><body>This is just a dummy</body></html>")
+				.Build();
+			string bookFolderPath = bookBuilder.BuiltBookFolderPath;
+			string htmlPath = bookBuilder.BuiltBookHtmPath;
+
+			TeamCollectionManager.ForceCurrentUserForTests("steve@somewhere.org");
+			_collection.PutBook(bookFolderPath);
+
+			var locked = _collection.AttemptLock(originalBookName);
+
+			Assert.That(locked, Is.True, "successfully checked out book to steve@somewhere.org");
+
+			// SUT: rename changes status in local collection folder, but not in shared repo folder
+			const string newBookName = "A New Book";
+			var newBookFolderPath = Path.Combine(_collectionFolder.FolderPath, newBookName);
+			File.Move(htmlPath, Path.Combine(bookFolderPath, newBookName + ".htm"));
+			// renaming directory doesn't work when names are 'the same'
+			var tempPath = Path.Combine(_collectionFolder.FolderPath, "tempxxyy");
+			Directory.Move(bookFolderPath, tempPath);
+			Directory.Move(tempPath, newBookFolderPath);
+
+			_collection.HandleBookRename(originalBookName, newBookName);
+
+			_collection.PutBook(newBookFolderPath, true);
+
+			var newRepoPath = Path.Combine(_sharedFolder.FolderPath, "Books", newBookName + ".bloom");
+			// It should not have been deleted! This is a regression test for BL-10156.
+			// The danger is that Windows considers the old and new names the same, so after
+			// we move the file to the new name, if we go to delete the old name, we get rid of the new one.
+			Assert.That(File.Exists(newRepoPath));
+
+			// Did it get renamed?
+			var matchingFiles = Directory.EnumerateFiles(Path.Combine(_sharedFolder.FolderPath, "Books"), newBookName + ".bloom").ToArray();
+			Assert.That(matchingFiles[0], Is.EqualTo(Path.Combine(_sharedFolder.FolderPath, "Books", newBookName + ".bloom")));
+
+			var newStatus = _collection.GetLocalStatus(newBookName);
+			var repoStatus = _collection.GetStatus(newBookName);
+
+			Assert.That(newStatus, Is.Not.Null, "local status of renamed book is not null");
+			Assert.That(repoStatus, Is.Not.Null, "repo status of renamed book is not null");
+			Assert.That(newStatus.checksum, Is.EqualTo(repoStatus.checksum), "checksums of local and remote match after rename");
+			Assert.That(newStatus.lockedBy, Is.EqualTo(null), "lockedBy of local and remote match after rename");
+			Assert.That(newStatus.oldName, Is.Null, "local status has original name cleared after commit");
+		}
+
 		[TestCase(null)]
 		[TestCase("someone.else@nowhere.org")]
 		public void HandleDeletedFile_NoConflictBook_DeletesAndRaisesCheckedOutByDeletedButNoMessage(string checkedOutTo)
