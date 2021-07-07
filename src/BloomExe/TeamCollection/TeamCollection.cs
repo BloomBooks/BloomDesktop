@@ -191,11 +191,12 @@ namespace Bloom.TeamCollection
 				try
 				{
 					var bookFolderName = Path.GetFileName(path);
-					var statusString = GetBookStatusJsonFromRepo(bookFolderName);
 					// don't just use GetStatus().checksum here, since if the book isn't in the repo but DOES have a local
 					// status, perhaps from being previously in another TC, it will retrieve the local status, which
 					// will have the same checksum as localStatus, and we will wrongly conclude we don't need to copy
 					// the book to the repo.
+					// if it's corrupt, statusString will be null, and we'll try to overwrite.
+					TryGetBookStatusJsonFromRepo(bookFolderName, out string statusString);
 					var repoChecksum = string.IsNullOrEmpty(statusString) ? null : BookStatus.FromJson(statusString).checksum;
 					var localStatus = GetLocalStatus(bookFolderName);
 					var localHtmlFilePath = Path.Combine(path, BookStorage.FindBookHtmlInFolder(path));
@@ -220,12 +221,22 @@ namespace Bloom.TeamCollection
 		public abstract string[] GetBookList();
 
 		// Unzip one book in the collection to the specified destination. Usually GetBook should be used
-		protected abstract void FetchBookFromRepo(string destinationCollectionFolder, string bookName);
+		protected abstract string FetchBookFromRepo(string destinationCollectionFolder, string bookName);
 
-		public void CopyBookFromRepoToLocal(string bookName, string destinationCollectionFolder = null)
+		public string CopyBookFromRepoToLocal(string bookName, string destinationCollectionFolder = null, bool dialogOnError = false)
 		{
-			FetchBookFromRepo(destinationCollectionFolder ?? _localCollectionFolder, bookName);
+			var error = FetchBookFromRepo(destinationCollectionFolder ?? _localCollectionFolder, bookName);
+			if (error != null)
+			{
+				if (dialogOnError)
+				{
+					NonFatalProblem.Report(ModalIf.All, PassiveIf.All, error);
+				}
+				return error;
+			}
+
 			WriteLocalStatus(bookName, GetStatus(bookName), destinationCollectionFolder ?? _localCollectionFolder);
+			return null;
 		}
 
 		// Write the specified file to the repo's collection files.
@@ -348,7 +359,8 @@ namespace Bloom.TeamCollection
 		/// <returns></returns>
 		public BookStatus GetStatus(string bookFolderName)
 		{
-			var statusString = GetBookStatusJsonFromRepo(bookFolderName);
+			if (!TryGetBookStatusJsonFromRepo(bookFolderName, out string statusString))
+				return new BookStatus() {hasInvalidRepoData = true, collectionId = CollectionId};
 			if (String.IsNullOrEmpty(statusString))
 			{
 				// a book that doesn't exist (by this name) in the repo should only exist locally if it's new
@@ -399,6 +411,15 @@ namespace Bloom.TeamCollection
 		/// Get the raw status data from however the repo implementation stores it.
 		/// </summary>
 		protected abstract string GetBookStatusJsonFromRepo(string bookFolderName);
+
+		/// <summary>
+		/// Try to get the status, typically from a new or modified .bloom file.
+		/// If not successful, an error is written to the log.
+		/// Note that false indicates a repo file was found but we could not read it.
+		/// We return TRUE (but status null) if there is no repo file at all.
+		/// (That's a valid repo status...null indicates the book is not in the repo.)
+		/// </summary>
+		protected abstract bool TryGetBookStatusJsonFromRepo(string bookFolderName, out string status);
 
 		/// <summary>
 		/// Return true if the book exists in the repo.
@@ -453,7 +474,7 @@ namespace Bloom.TeamCollection
 			var dest = destinationCollectionFolder ?? _localCollectionFolder;
 			foreach (var bookName in GetBookList())
 			{
-				CopyBookFromRepoToLocal(bookName, dest);
+				CopyBookFromRepoToLocal(bookName, dest, true);
 			}
 		}
 
@@ -1025,6 +1046,10 @@ namespace Bloom.TeamCollection
 			{
 				var bookBaseName = GetBookNameWithoutSuffix(args.BookFileName);
 
+				if (!TryGetBookStatusJsonFromRepo(bookBaseName, out string status))
+					return; // new file is corrupt somehow, already reported to log.
+				
+
 				// The most serious concern is that there are local changes to the book that must be clobbered.
 				if (HasLocalChangesThatMustBeClobbered(bookBaseName))
 				{
@@ -1243,8 +1268,8 @@ namespace Bloom.TeamCollection
 		void ReportProgressAndLog(IWebSocketProgress progress, ProgressKind kind, string l10nIdSuffix, string message,
 			string param0 = null, string param1= null)
 		{
-			var fullL10nId = "TeamCollection." + l10nIdSuffix;
-			var msg = string.Format(LocalizationManager.GetString(fullL10nId, message), param0, param1);
+			var fullL10nId = string.IsNullOrEmpty(l10nIdSuffix) ? "" : "TeamCollection." + l10nIdSuffix;
+			var msg = string.IsNullOrEmpty(l10nIdSuffix) ? message : string.Format(LocalizationManager.GetString(fullL10nId, message), param0, param1);
 			progress.MessageWithoutLocalizing(msg, kind);
 			_tcLog.WriteMessage((kind == ProgressKind.Progress) ? MessageAndMilestoneType.History : MessageAndMilestoneType.ErrorNoReload,
 				fullL10nId, message, param0, param1);
@@ -1309,7 +1334,8 @@ namespace Bloom.TeamCollection
 		/// keeping the progress dialog open until the user responds</returns>
 		public bool SyncAtStartup(IWebSocketProgress progress, bool firstTimeJoin = false)
 		{
-			Debug.Assert(!string.IsNullOrEmpty(CollectionId), "Collection ID must get set before we start syncing books");
+			Debug.Assert(!string.IsNullOrEmpty(CollectionId),
+				"Collection ID must get set before we start syncing books");
 			_tcLog.WriteMilestone(MessageAndMilestoneType.Reloaded);
 
 
@@ -1317,7 +1343,8 @@ namespace Bloom.TeamCollection
 
 			// Delete books that we think have been deleted remotely from the repo.
 			// If it's a join collection merge, check new books in instead.
-			var englishSomethingWrongMessage = "Something went wrong trying to sync with the book {0} in your Team Collection.";
+			var englishSomethingWrongMessage =
+				"Something went wrong trying to sync with the book {0} in your Team Collection.";
 			var oldBookNames = new HashSet<string>();
 			foreach (var path1 in Directory.EnumerateDirectories(_localCollectionFolder))
 			{
@@ -1330,10 +1357,10 @@ namespace Bloom.TeamCollection
 					if (!IsBloomBookFolder(path))
 						continue;
 					var bookFolderName = Path.GetFileName(path);
-					var statusJson = GetBookStatusJsonFromRepo(bookFolderName);
-					if (statusJson == null)
+					var validRepoStatus = TryGetBookStatusJsonFromRepo(bookFolderName, out string statusJson);
+					if (statusJson == null) // includes cases where validRepoStatus is false
 					{
-						if (firstTimeJoin)
+						if (firstTimeJoin && validRepoStatus)
 						{
 							// We want to copy all local books into the repo
 							PutBook(path, true);
@@ -1360,12 +1387,13 @@ namespace Bloom.TeamCollection
 						}
 
 						// On this branch, there is valid local status, so the book has previously been shared.
-						// Since it's now missing from the repo, we assume it's been deleted.
+						// Since it's now missing from the repo, we assume it's been deleted (unless we found something
+						// invalid in the repo).
 						// Unless it's checked out to the current user on the current computer, delete
 						// the local version.
 
-						if (statusLocal.lockedBy != TeamCollectionManager.CurrentUser
-						    || statusLocal.lockedWhere != TeamCollectionManager.CurrentMachine)
+						if (validRepoStatus && (statusLocal.lockedBy != TeamCollectionManager.CurrentUser
+						    || statusLocal.lockedWhere != TeamCollectionManager.CurrentMachine))
 						{
 							ReportProgressAndLog(progress, ProgressKind.Warning, "DeleteLocal",
 								"Deleting '{0}' from local folder as it is no longer in the Team Collection",
@@ -1394,11 +1422,12 @@ namespace Bloom.TeamCollection
 				{
 					// Something went wrong with dealing with this book, but we'd like to carry on with
 					// syncing the rest of the collection
-					ReportProgressAndLog(progress, ProgressKind.Error, "SomethingWentWrong",englishSomethingWrongMessage,
+					ReportProgressAndLog(progress, ProgressKind.Error, "SomethingWentWrong",
+						englishSomethingWrongMessage,
 						path, null);
 					SentrySdk.AddBreadcrumb(string.Format(englishSomethingWrongMessage, path));
 					SentrySdk.CaptureException(ex);
-					hasProblems= true;
+					hasProblems = true;
 				}
 			}
 
@@ -1408,185 +1437,197 @@ namespace Bloom.TeamCollection
 			// situation we've identified.
 			foreach (var bookName in GetBookList())
 			{
-				try {
-				var localFolderPath = Path.Combine(_localCollectionFolder, bookName);
-				if (!Directory.Exists(localFolderPath))
+				try
 				{
-					if (oldBookNames.Contains(bookName))
+					var localFolderPath = Path.Combine(_localCollectionFolder, bookName);
+					if (!Directory.Exists(localFolderPath))
 					{
-						// it's a book we're in the process of renaming, but hasn't yet been
-						// checked in using the new name. Leave it alone.
-						continue;
-					}
-
-					var nameLc = bookName.ToLowerInvariant();
-					if (_conflictMarkers.Any(m => nameLc.Contains(m.ToLowerInvariant())))
-					{
-						// Book looks like a DropBox conflict file. Typically results when two users checked
-						// in changes while both were offline.
-						ReportProgressAndLog(progress, ProgressKind.Error, "ResolvedDropboxConflict",
-						"Two members of your team had a book checked out at the same time, so the Team Collection got two different versions of it. Bloom has moved \"{0}\" to the Lost & Found.",
-						bookName);
-						MoveRepoBookToLostAndFound(bookName);
-						hasProblems = true;
-						continue;
-					}
-					// brand new book! Get it.
-					ReportProgressAndLog(progress, ProgressKind.Progress, "FetchedNewBook",
-						"Fetching a new book '{0}' from the Team Collection", bookName);
-					CopyBookFromRepoToLocal(bookName);
-					continue;
-				}
-
-				var repoStatus = GetStatus(bookName); // we know it's in the repo, so status will certainly be from there.
-				var statusFilePath = GetStatusFilePath(bookName, _localCollectionFolder);
-				if (!File.Exists(statusFilePath))
-				{
-					var currentChecksum = MakeChecksum(localFolderPath);
-					if (currentChecksum == repoStatus.checksum)
-					{
-						// We have the same book with the same name and content in both places, but no local status.
-						// Somehow the book was copied not using the TeamCollection. Possibly, we are merging
-						// two versions of the same collection. Clean up by copying status.
-						WriteLocalStatus(bookName, repoStatus);
-					}
-					else
-					{
-						// The remote book has the same name as a local book that is not known to be in the Team Collection.
-						if (firstTimeJoin)
+						if (oldBookNames.Contains(bookName))
 						{
-							// We don't know the previous history of the collection. Quite likely it was duplicated some
-							// other way and these books have been edited independently. Treat it as a conflict.
-							PutBook(localFolderPath, inLostAndFound: true);
-							// warn the user
+							// it's a book we're in the process of renaming, but hasn't yet been
+							// checked in using the new name. Leave it alone.
+							continue;
+						}
+
+						var nameLc = bookName.ToLowerInvariant();
+						if (_conflictMarkers.Any(m => nameLc.Contains(m.ToLowerInvariant())))
+						{
+							// Book looks like a DropBox conflict file. Typically results when two users checked
+							// in changes while both were offline.
+							ReportProgressAndLog(progress, ProgressKind.Error, "ResolvedDropboxConflict",
+								"Two members of your team had a book checked out at the same time, so the Team Collection got two different versions of it. Bloom has moved \"{0}\" to the Lost & Found.",
+								bookName);
+							MoveRepoBookToLostAndFound(bookName);
 							hasProblems = true;
-							ReportProgressAndLog(progress, ProgressKind.Error, "ConflictingCheckout",
-								"Found different versions of '{0}' in both collections. The team version has been copied to your local collection, and the old local version to Lost and Found"
-								, bookName);
-							// Make the local folder match the repo (this is where 'they win')
-							CopyBookFromRepoToLocal(bookName);
+							continue;
+						}
+
+						// brand new book! Get it.
+						hasProblems |= !CopyBookFromRepoToLocalAndReport(progress, bookName, () =>
+						{
+							ReportProgressAndLog(progress, ProgressKind.Progress, "FetchedNewBook",
+								"Fetching a new book '{0}' from the Team Collection", bookName);
+						});
+
+						continue;
+					}
+
+					var repoStatus =
+						GetStatus(bookName); // we know it's in the repo, so status will certainly be from there.
+					var statusFilePath = GetStatusFilePath(bookName, _localCollectionFolder);
+					if (!File.Exists(statusFilePath))
+					{
+						var currentChecksum = MakeChecksum(localFolderPath);
+						if (currentChecksum == repoStatus.checksum)
+						{
+							// We have the same book with the same name and content in both places, but no local status.
+							// Somehow the book was copied not using the TeamCollection. Possibly, we are merging
+							// two versions of the same collection. Clean up by copying status.
+							WriteLocalStatus(bookName, repoStatus);
+						}
+						else
+						{
+							// The remote book has the same name as a local book that is not known to be in the Team Collection.
+							if (firstTimeJoin)
+							{
+								// We don't know the previous history of the collection. Quite likely it was duplicated some
+								// other way and these books have been edited independently. Treat it as a conflict.
+								PutBook(localFolderPath, inLostAndFound: true);
+								// warn the user
+								hasProblems = true;
+								// Make the local folder match the repo (this is where 'they win')
+								CopyBookFromRepoToLocalAndReport(progress, bookName, () =>
+									ReportProgressAndLog(progress, ProgressKind.Error, "ConflictingCheckout",
+										"Found different versions of '{0}' in both collections. The team version has been copied to your local collection, and the old local version to Lost and Found"
+										, bookName));
+								continue;
+							}
+							else
+							{
+								// Presume it is newly created locally, coincidentally with the same name. Move the new local book
+								int count = 0;
+								string renameFolder = "";
+								do
+								{
+									count++;
+									renameFolder = localFolderPath + count;
+								} while (Directory.Exists(renameFolder));
+
+								Directory.Move(localFolderPath, renameFolder);
+								// Don't use ChangeExtension here, bookName may have arbitrary periods.
+								var renamePath = Path.Combine(renameFolder, Path.GetFileName(renameFolder) + ".htm");
+								var oldBookPath = Path.Combine(renameFolder, bookName + ".htm");
+								ReportProgressAndLog(progress, ProgressKind.Warning, "RenamingBook",
+									"Renaming the local book '{0}' because there is a new one with the same name from the Team Collection",
+									bookName);
+								RobustFile.Move(oldBookPath, renamePath);
+
+								hasProblems |=
+									!CopyBookFromRepoToLocalAndReport(progress, bookName,
+										() => { }); // Get repo book and status
+								// Review: does this deserve a warning?
+								continue;
+							}
+						}
+					}
+
+					// We know there's a local book by this name and both have status.
+					var localStatus = GetLocalStatus(bookName);
+
+					if (!IsCheckedOutHereBy(localStatus))
+					{
+						if (localStatus.checksum != repoStatus.checksum)
+						{
+							// Changed and not checked out. Just bring it up to date.
+							hasProblems |= !CopyBookFromRepoToLocalAndReport(progress, bookName, () =>
+								ReportProgressAndLog(progress, ProgressKind.Progress, "Updating",
+									"Updating '{0}' to match the Team Collection",
+									bookName)); // updates everything local.
+						}
+
+						// whether or not we updated it, if it's not checked out there's no more to do.
+						continue;
+					}
+
+					// At this point, we know there's a version of the book in the repo
+					// and a local version that is checked out here according to local status.
+					if (IsCheckedOutHereBy(repoStatus))
+					{
+						// the repo agrees. We could check that the checksums match, but there's no
+						// likely scenario for them not to. Everything is consistent, so we can move on
+						continue;
+					}
+
+					// Now we know there's some sort of conflict. The local and repo status of this
+					// book don't match.
+					if (localStatus.checksum == repoStatus.checksum)
+					{
+						if (String.IsNullOrEmpty(repoStatus.lockedBy))
+						{
+							// Likely someone started a checkout remotely, but changed their mind without making edits.
+							// Just restore our checkout.
+							WriteBookStatus(bookName, localStatus);
 							continue;
 						}
 						else
 						{
-							// Presume it is newly created locally, coincidentally with the same name. Move the new local book
-							int count = 0;
-							string renameFolder = "";
-							do
+							// Checked out by someone else in the repo folder. They win.
+							// Do we need to save local edits?
+							var currentChecksum = MakeChecksum(localFolderPath);
+							if (currentChecksum != localStatus.checksum)
 							{
-								count++;
-								renameFolder = localFolderPath + count;
-							} while (Directory.Exists(renameFolder));
-
-							Directory.Move(localFolderPath, renameFolder);
-							// Don't use ChangeExtension here, bookName may have arbitrary periods.
-							var renamePath = Path.Combine(renameFolder, Path.GetFileName(renameFolder) + ".htm");
-							var oldBookPath = Path.Combine(renameFolder, bookName +  ".htm");
-							ReportProgressAndLog(progress, ProgressKind.Warning, "RenamingBook",
-								"Renaming the local book '{0}' because there is a new one with the same name from the Team Collection",
-								bookName);
-							RobustFile.Move(oldBookPath, renamePath);
-
-							CopyBookFromRepoToLocal(bookName); // Get repo book and status
-							// Review: does this deserve a warning?
-							continue;
+								// Edited locally while someone else has it checked out. Copy current local to lost and found
+								PutBook(localFolderPath, inLostAndFound: true);
+								// warn the user
+								hasProblems = true;
+								// Make the local folder match the repo (this is where 'they win')
+								CopyBookFromRepoToLocalAndReport(progress, bookName, () =>
+									ReportProgressAndLog(progress, ProgressKind.Error, "ConflictingCheckout",
+										"The book '{0}', which you have checked out and edited, is checked out to someone else in the Team Collection. Your changes have been overwritten, but are saved to Lost-and-found.",
+										bookName));
+								continue;
+							}
+							else
+							{
+								// No local edits yet. Just correct the local checkout status.
+								WriteBookStatus(bookName, repoStatus);
+								continue;
+							}
 						}
-					}
-				}
-
-				// We know there's a local book by this name and both have status.
-				var localStatus = GetLocalStatus(bookName);
-
-				if (!IsCheckedOutHereBy(localStatus)) {
-					if (localStatus.checksum != repoStatus.checksum)
-					{
-						// Changed and not checked out. Just bring it up to date.
-						ReportProgressAndLog(progress, ProgressKind.Progress,"Updating",
-							"Updating '{0}' to match the Team Collection", bookName);
-						CopyBookFromRepoToLocal(bookName); // updates everything local.
-					}
-
-					// whether or not we updated it, if it's not checked out there's no more to do.
-				    continue;
-				}
-
-				// At this point, we know there's a version of the book in the repo
-				// and a local version that is checked out here according to local status.
-				if (IsCheckedOutHereBy(repoStatus))
-				{
-					// the repo agrees. We could check that the checksums match, but there's no
-					// likely scenario for them not to. Everything is consistent, so we can move on
-					continue;
-				}
-
-				// Now we know there's some sort of conflict. The local and repo status of this
-				// book don't match.
-				if (localStatus.checksum == repoStatus.checksum)
-				{
-					if (String.IsNullOrEmpty(repoStatus.lockedBy))
-					{
-						// Likely someone started a checkout remotely, but changed their mind without making edits.
-						// Just restore our checkout.
-						WriteBookStatus(bookName, localStatus);
-						continue;
 					}
 					else
 					{
-						// Checked out by someone else in the repo folder. They win.
-						// Do we need to save local edits?
+						// Book has been changed remotely. They win, whether or not currently checked out.
 						var currentChecksum = MakeChecksum(localFolderPath);
-						if (currentChecksum != localStatus.checksum)
+						if (currentChecksum == localStatus.checksum)
 						{
-							// Edited locally while someone else has it checked out. Copy current local to lost and found
-							PutBook(localFolderPath, inLostAndFound: true);
-							// warn the user
-							hasProblems= true;
-							ReportProgressAndLog(progress, ProgressKind.Error, "ConflictingCheckout",
-								"The book '{0}', which you have checked out and edited, is checked out to someone else in the Team Collection. Your changes have been overwritten, but are saved to Lost-and-found.",
-								bookName);
-							// Make the local folder match the repo (this is where 'they win')
-							CopyBookFromRepoToLocal(bookName);
+							// not edited locally. No warning needed, but we need to update it. We can keep local checkout.
+							hasProblems |= !CopyBookFromRepoToLocalAndReport(progress, bookName, () =>
+								ReportProgressAndLog(progress, ProgressKind.Progress, "Updating",
+									"Updating '{0}' to match the Team Collection", bookName));
+							WriteBookStatus(bookName, localStatus.WithChecksum(repoStatus.checksum));
 							continue;
 						}
-						else
-						{
-							// No local edits yet. Just correct the local checkout status.
-							WriteBookStatus(bookName, repoStatus);
-							continue;
-						}
-					}
-				}
-				else
-				{
-					// Book has been changed remotely. They win, whether or not currently checked out.
-					var currentChecksum = MakeChecksum(localFolderPath);
-					if (currentChecksum == localStatus.checksum)
-					{
-						// not edited locally. No warning needed, but we need to update it. We can keep local checkout.
-						ReportProgressAndLog(progress, ProgressKind.Progress,"Updating",
-							"Updating '{0}' to match the Team Collection", bookName);
-						CopyBookFromRepoToLocal(bookName);
-						WriteBookStatus(bookName, localStatus.WithChecksum(repoStatus.checksum));
-						continue;
-					}
 
-					// Copy current local to lost and found
-					PutBook(Path.Combine(_localCollectionFolder, bookName), inLostAndFound:true);
-					// copy repo book and status to local
-					CopyBookFromRepoToLocal(bookName);
+						// Copy current local to lost and found
+						PutBook(Path.Combine(_localCollectionFolder, bookName), inLostAndFound: true);
+						// copy repo book and status to local
 						// warn the user
 						hasProblems = true;
-						ReportProgressAndLog(progress, ProgressKind.Error, "ConflictingEdit",
-						"The book '{0}', which you have checked out and edited, was modified in the Team Collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.",
-						bookName);
+						CopyBookFromRepoToLocalAndReport(progress, bookName, () =>
+							ReportProgressAndLog(progress, ProgressKind.Error, "ConflictingEdit",
+								"The book '{0}', which you have checked out and edited, was modified in the Team Collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.",
+								bookName));
+
 						continue;
-				}
+					}
 				}
 				catch (Exception ex)
 				{
 					// Something went wrong with dealing with this book, but we'd like to carry on with
 					// syncing the rest of the collection
-					ReportProgressAndLog(progress, ProgressKind.Error, "SomethingWentWrong", englishSomethingWrongMessage,
+					ReportProgressAndLog(progress, ProgressKind.Error, "SomethingWentWrong",
+						englishSomethingWrongMessage,
 						bookName);
 					SentrySdk.AddBreadcrumb(string.Format(englishSomethingWrongMessage, bookName));
 					SentrySdk.CaptureException(ex);
@@ -1601,7 +1642,25 @@ namespace Bloom.TeamCollection
 				// that any we return here are immediately shown.
 				_tcLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
 			}
+
 			return hasProblems;
+		}
+
+		// Return true if copied successfully, false if there is a problem (which this method will report).
+		private bool CopyBookFromRepoToLocalAndReport(IWebSocketProgress progress, string bookName, Action reportSuccess)
+		{
+			var error = CopyBookFromRepoToLocal(bookName);
+			if (error != null)
+			{
+				ReportProgressAndLog(progress, ProgressKind.Error, "", error);
+				return false;
+			}
+			else
+			{
+				reportSuccess();
+			}
+
+			return true;
 		}
 
 		// must match what is in ProgressDialog.tsx passed as clientContext to ProgressBox.
