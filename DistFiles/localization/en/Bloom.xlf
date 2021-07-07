@@ -4876,9 +4876,17 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Decodable Reader</source>
         <note>ID: TemplateBooks.BookName.Decodable Reader</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Digital Comic Book" sil:dynamic="true">
+        <source xml:lang="en">Digital Comic Book</source>
+        <note>ID: TemplateBooks.BookName.Digital Comic Book</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true">
         <source xml:lang="en">Leveled Reader</source>
         <note>ID: TemplateBooks.BookName.Leveled Reader</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Paper Comic Book" sil:dynamic="true">
+        <source xml:lang="en">Paper Comic Book</source>
+        <note>ID: TemplateBooks.BookName.Paper Comic Book</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true">
         <source xml:lang="en">Picture Dictionary</source>

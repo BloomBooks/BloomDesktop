@@ -44,6 +44,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [error, setError] = useState("");
     const [progress, setProgress] = useState(0);
     const [busy, setBusy] = useState(false);
+    const [checkinFailed, setCheckinFailed] = useState(false);
     const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
     const [forgetDialogOpen, setForgetDialogOpen] = useState(false);
     const [bookStatus, setBookStatus] = useState<any>({
@@ -262,6 +263,15 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         true
     );
 
+    const subTitleCheckinFailed = useL10n(
+        "Checkin failed. You may need to check your network connection and reload the collection.",
+        "TeamCollection.CheckinFailed",
+        "",
+        undefined,
+        undefined,
+        true
+    );
+
     const subTitleDisconnectedCheckedOut = useL10n(
         "You can edit this book, but you will need to reconnect in order to send your changes to your team.",
         "TeamCollection.DisconnectedCheckedOut",
@@ -352,9 +362,19 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                 const checkinHandler = () => {
                     setBusy(true);
                     setProgress(0.0001); // just enough to show the bar at once
-                    BloomApi.post("teamCollection/checkInCurrentBook", () => {
-                        // nothing to do. Change of state is handled by websocket notifications.
-                    });
+                    BloomApi.post(
+                        "teamCollection/checkInCurrentBook",
+                        () => {
+                            // not much to do. Most change of state is handled by websocket notifications.
+                            setCheckinFailed(false); // in case of previous failure, but it will change to "checked in" anyway.
+                        },
+                        // failure handler
+                        () => {
+                            setBusy(false);
+                            setCheckinFailed(true);
+                            setProgress(0); // Should be redundant, but makes sure.
+                        }
+                    );
                 };
 
                 return (
@@ -365,7 +385,11 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         `}
                         lockState={state}
                         title={mainTitleLockedByMe}
-                        subTitle={subTitleLockedByMe}
+                        subTitle={
+                            checkinFailed
+                                ? subTitleCheckinFailed
+                                : subTitleLockedByMe
+                        }
                         icon={avatar}
                         //menu={} // eventually the "About my Avatar..." and "Forget Changes" menu gets passed in here.
                         button={getBloomButton(
