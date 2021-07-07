@@ -263,6 +263,15 @@ namespace Bloom.TeamCollection
 
 		public void HandleCheckInCurrentBook(ApiRequest request)
 		{
+			Action<float> reportCheckinProgress = (fraction) =>
+			{
+				dynamic messageBundle = new DynamicJson();
+				messageBundle.fraction = fraction;
+				_socketServer.SendBundle("checkinProgress", "progress", messageBundle);
+				// The status panel is supposed to be showing a progress bar in response to getting the bundle,
+				// but since we're doing the checkin on the UI thread, it doesn't get painted without this.
+				Application.DoEvents();
+			};
 			try
 			{
 				// Right before calling this API, the status panel makes a change that
@@ -279,15 +288,6 @@ namespace Bloom.TeamCollection
 					return;
 				}
 
-				Action<float> reportCheckinProgress = (fraction) =>
-				{
-					dynamic messageBundle = new DynamicJson();
-					messageBundle.fraction = fraction;
-					_socketServer.SendBundle("checkinProgress", "progress", messageBundle);
-					// The status panel is supposed to be showing a progress bar in response to getting the bundle,
-					// but since we're doing the checkin on the UI thread, it doesn't get painted without this.
-					Application.DoEvents();
-				};
 				var bookName = Path.GetFileName(_bookSelection.CurrentSelection.FolderPath);
 				if (_tcManager.CurrentCollection.OkToCheckIn(bookName))
 				{
@@ -334,6 +334,7 @@ namespace Bloom.TeamCollection
 			}
 			catch (Exception e)
 			{
+				reportCheckinProgress(0); // cleans up panel progress indicator
 				var msgId = "TeamCollection.ErrorCheckingBookIn";
 				var msgEnglish = "Error checking in {0}: {1}";
 				var log = _tcManager?.CurrentCollection?.MessageLog;
