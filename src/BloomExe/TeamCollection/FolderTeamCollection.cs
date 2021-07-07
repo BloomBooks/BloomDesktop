@@ -661,7 +661,7 @@ namespace Bloom.TeamCollection
 			// we are not cluttering the TC with conflicts.
 			if (IsFileLocked(bookPath))
 			{
-				throw new ArgumentException("Book is locked in the Team Collection");
+				throw new ArgumentException("Book is locked in the Team Collection. This may be because the Team Collection system is busy sharing it. Please try again later.");
 			}
 			lock (_lockObject)
 			{
@@ -686,12 +686,17 @@ namespace Bloom.TeamCollection
 			{
 				// If something recently changed it we might get some spurious failures
 				// to open it for modification.
+				// BL-10139 indicated that the default 10 retries over two seconds
+				// is sometimes not enough, so I've increased it here.
+				// No guarantee that even 5s is enough if Dropbox is busy syncing a large
+				// file across a poor internet, but I think after that it's better to give
+				// the user a failed message.
 				RetryUtility.Retry(() =>
 				{
 					using (File.Open(filePath, FileMode.Open))
 					{
 					}
-				});
+				}, maxRetryAttempts:25);
 			}
 			catch (IOException e)
 			{
