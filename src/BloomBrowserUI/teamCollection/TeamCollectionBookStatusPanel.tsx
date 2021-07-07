@@ -292,9 +292,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         undefined,
         true
     );
-    if (state != "lockedByMe" && busy) {
-        setBusy(false);
-    }
 
     const panelContents = (state: LockState): JSX.Element => {
         switch (state) {
@@ -315,18 +312,27 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                 );
             case "unlocked":
                 const checkoutHandler = () => {
+                    setBusy(true);
                     BloomApi.post(
                         "teamCollection/attemptLockOfCurrentBook",
                         response => {
-                            // nothing to do. Change of state is handled by websocket notifications.
+                            // Not much to do. Change of state is handled by websocket notifications.
                             // We want to keep it that way, so we don't have to worry about here about
                             // whether the checkout attempt succeeded or not.
+                            setBusy(false);
+                        },
+                        error => {
+                            setBusy(false);
                         }
                     );
                 };
 
                 return (
                     <StatusPanelCommon
+                        css={css`
+                            ${busy &&
+                                "cursor: progress; .checkout-button{cursor:progress;}"}
+                        `}
                         lockState={state}
                         title={mainTitleUnlocked}
                         subTitle={subTitleUnlocked}
@@ -351,6 +357,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         () => {
                             // not much to do. Most change of state is handled by websocket notifications.
                             setCheckinFailed(false); // in case of previous failure, but it will change to "checked in" anyway.
+                            setBusy(false);
                         },
                         // failure handler
                         () => {
