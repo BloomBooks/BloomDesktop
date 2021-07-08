@@ -1,23 +1,23 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Threading;
 using Bloom.WebLibraryIntegration;
+using Microsoft.CSharp.RuntimeBinder;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
-using NUnit.Framework.Constraints;
-using RestSharp.Extensions;
-using SayMore.UI.Utilities;
 
 namespace BloomTests.WebLibraryIntegration
 {
 	[TestFixture]
 	public class BloomParseClientTests
 	{
-		private BloomParseClient _client;
+		private BloomParseClientTestDouble _client;
 
 		[SetUp]
 		public void Setup()
 		{
-			_client = new BloomParseClient();
+			_client = new BloomParseClientTestDouble();
 		}
 
 		/// <summary>
@@ -51,18 +51,15 @@ namespace BloomTests.WebLibraryIntegration
 
 		private void Login()
 		{
-			// This line can be uncommented for a single run of one test as an easy way to re-create the record that we assume
-			// always exists on parse.com.
-			//_client.CreateUser("unittest@example.com", "unittest");
-			Assert.IsTrue(_client.LegacyLogIn("unittest@example.com", "unittest"),
+			Assert.IsTrue(_client.TestOnly_LegacyLogIn("unittest@example.com", "unittest"),
 				"Could not log in using the unittest@example.com account");
 		}
 
-		[Test]
+		[Test, Ignore("This is failing sometimes on TeamCity; and since the main logic it tests is TestOnly_LegacyLogIn (which is no longer production code), it doesn't seem worth the intermittent failures.")]
 		public void LogIn_BadCredentials_ReturnsFalse()
 		{
 			Assert.IsFalse(_client.LoggedIn);
-			Assert.IsFalse(_client.LegacyLogIn("bogus@example.com", "abc"));
+			Assert.IsFalse(_client.TestOnly_LegacyLogIn("bogus@example.com", "abc"));
 			Assert.IsFalse(_client.LoggedIn);
 		}
 
@@ -90,7 +87,7 @@ namespace BloomTests.WebLibraryIntegration
 		public void GetBookRecord_BookIsThere_Succeeds()
 		{
 			//first make a book so that we know it is there
-			var id= CreateBookRecord();
+			var id = CreateBookRecord();
 			var bookjson = _client.GetSingleBookRecord(id);
 
 			Assert.AreEqual(id, bookjson.bookInstanceId.Value);
@@ -98,11 +95,12 @@ namespace BloomTests.WebLibraryIntegration
 			// Partial matches are no good
 			Assert.IsNull(_client.GetSingleBookRecord(new Guid().ToString()));
 
-			// Can't match if logged in as different user
-			_client.LegacyLogIn("someotheruser@example.com", "unittest2");
+			// Our lookup uses the logged in user as part of the query.
+			// Ensure the lookup fails if not logged in as the uploader.
+			_client.Logout();
 			Assert.IsNull(_client.GetSingleBookRecord(id));
-
 		}
+
 		[Test]
 		public void GetBookRecord_BookIsNotThere_Fails()
 		{
@@ -110,5 +108,62 @@ namespace BloomTests.WebLibraryIntegration
 		}
 
 		//{"authors":["Heinrich Poschinger"],"categories":[],"description":"This is an EXACT reproduction of a book published before 1923. This IS NOT an OCR\"d book with strange characters, introduced typographical errors, and jumbled words. This book may have occasional imperfections such as missing or blurred pages, poor pictures, errant marks, etc. that were either part of the original artifact, or were introduced by the scanning process. We believe this work is culturally important, and despite the imperfections, have elected to bring it back into print as part of our continuing commitment to the preservation of printed works worldwide. We appreciate your understanding of the imperfections in the preservation process, and hope you enjoy this valuable book.","imageLinks":{"smallThumbnail":"http://bks1.books.google.co.th/books?id=MxhvSQAACAAJ&printsec=frontcover&img=1&zoom=5&source=gbs_api","thumbnail":"http://bks1.books.google.co.th/books?id=MxhvSQAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"},"industryIdentifiers":[{"identifier":"1148362096","type":"ISBN_10"},{"identifier":"9781148362090","type":"ISBN_13"}],"language":"en","pageCount":270,"previewLink":"http://books.google.co.th/books?id=MxhvSQAACAAJ&dq=hamburger&hl=&cd=520&source=gbs_api","printType":"BOOK","publishedDate":"2010-04","publisher":"Nabu Press","title":"Fürst Bismarck und Seine Hamburger Freunde"}
+	}
+
+	public class BloomParseClientTestDouble : BloomParseClient
+	{
+		public BloomParseClientTestDouble() { }
+
+		public BloomParseClientTestDouble(string testId)
+		{
+			// Do NOT do this...it results in creating a garbage class in Parse.com which is hard to delete (manual only).
+			//ClassesLanguagePath = "classes/language_" + testId;
+		}
+
+		public bool SimulateOldBloomUpload = false;
+
+		public override string ChangeJsonBeforeCreatingOrModifyingBook(string json)
+		{
+			if (SimulateOldBloomUpload)
+			{
+				var bookRecord = JObject.Parse(json);
+				bookRecord.Remove("lastUploaded");
+				bookRecord.Remove("updateSource");
+				return bookRecord.ToString();
+			}
+			return base.ChangeJsonBeforeCreatingOrModifyingBook(json);
+		}
+
+		// Log in directly to parse server with name and password.
+		// Some unit tests need it, since we haven't been able to get the new firebase login to work
+		// except when Bloom is actually running.
+		public bool TestOnly_LegacyLogIn(string account, string password)
+		{
+			_sessionToken = string.Empty;
+			Account = string.Empty;
+			var request = MakeGetRequest("login");
+			request.AddParameter("username", account.ToLowerInvariant());
+			request.AddParameter("password", password);
+
+			var response = Client.Execute(request);
+			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
+			try
+			{
+				_sessionToken = dy.sessionToken; //there's also an "error" in there if it fails, but a null sessionToken tells us all we need to know
+			}
+			catch (RuntimeBinderException)
+			{
+				// We are seeing this sometimes while running unit tests.
+				// This is simply an attempt to diagnose what is happening.
+				Console.WriteLine("Attempt to deserialize response content session token failed while attempting log in to parse (BL-4099).");
+				Console.WriteLine($"response.Content: {response.Content}");
+				Console.WriteLine($"response.ErrorMessage: {response.ErrorMessage}");
+				Console.WriteLine($"deserialized: {dy}");
+				throw;
+			}
+			_userId = dy.objectId;
+			Account = account;
+			return LoggedIn;
+		}
 	}
 }
