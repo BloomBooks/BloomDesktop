@@ -68,7 +68,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._signLanguageCheckBox = new System.Windows.Forms.CheckBox();
 			this.label4 = new System.Windows.Forms.Label();
 			this._changeSignLanguageLinkLabel = new System.Windows.Forms.LinkLabel();
-			this.bulkUploadLink = new System.Windows.Forms.LinkLabel();
+			this._uploadSource = new System.Windows.Forms.ComboBox();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.panel1 = new System.Windows.Forms.Panel();
 			this._ccPanel = new System.Windows.Forms.Panel();
@@ -77,6 +77,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._audioFlow = new System.Windows.Forms.FlowLayoutPanel();
 			this.panel1a = new System.Windows.Forms.Panel();
 			this.panel2 = new System.Windows.Forms.Panel();
+			this.padding = new System.Windows.Forms.Panel();
 			this.panel4 = new System.Windows.Forms.Panel();
 			this.panel5 = new System.Windows.Forms.Panel();
 			this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
@@ -631,21 +632,26 @@ namespace Bloom.Publish.BloomLibrary
 			this._changeSignLanguageLinkLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this._changeSignLanguageLinkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._changeSignLanguageLinkLabel_LinkClicked);
 			// 
-			// bulkUploadLink
+			// _uploadSource
 			// 
-			this.bulkUploadLink.AutoSize = true;
-			this.bulkUploadLink.Dock = System.Windows.Forms.DockStyle.Left;
-			this._L10NSharpExtender.SetLocalizableToolTip(this.bulkUploadLink, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.bulkUploadLink, null);
-			this._L10NSharpExtender.SetLocalizingId(this.bulkUploadLink, "PublishTab.Upload.UploadCollectionLink");
-			this.bulkUploadLink.Location = new System.Drawing.Point(101, 0);
-			this.bulkUploadLink.Name = "bulkUploadLink";
-			this.bulkUploadLink.Size = new System.Drawing.Size(124, 13);
-			this.bulkUploadLink.TabIndex = 19;
-			this.bulkUploadLink.TabStop = true;
-			this.bulkUploadLink.Text = "Upload Whole Collection";
-			this.bulkUploadLink.TextAlign = System.Drawing.ContentAlignment.TopRight;
-			this.bulkUploadLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.bulkUploadLink_LinkClicked);
+			this._uploadSource.Dock = System.Windows.Forms.DockStyle.Left;
+			this._uploadSource.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this._uploadSource.FormattingEnabled = true;
+			this._uploadSource.IntegralHeight = false;
+			this._uploadSource.ItemHeight = 13;
+			this._uploadSource.Items.AddRange(new object[] {
+            "This Book",
+            "This Collection",
+            "Folder of Collections"});
+			this._L10NSharpExtender.SetLocalizableToolTip(this._uploadSource, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._uploadSource, null);
+			this._L10NSharpExtender.SetLocalizingId(this._uploadSource, "PublishTab.Upload.comboBox1");
+			this._uploadSource.Location = new System.Drawing.Point(121, 0);
+			this._uploadSource.Margin = new System.Windows.Forms.Padding(20, 3, 3, 3);
+			this._uploadSource.Name = "_uploadSource";
+			this._uploadSource.Size = new System.Drawing.Size(161, 21);
+			this._uploadSource.TabIndex = 22;
+			this._uploadSource.SelectedIndexChanged += new System.EventHandler(this._uploadSource_SelectedIndexChanged);
 			// 
 			// tableLayoutPanel1
 			// 
@@ -784,13 +790,22 @@ namespace Bloom.Publish.BloomLibrary
 			// panel2
 			// 
 			this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-			this.panel2.Controls.Add(this.bulkUploadLink);
+			this.panel2.Controls.Add(this._uploadSource);
+			this.panel2.Controls.Add(this.padding);
 			this.panel2.Controls.Add(this._uploadButton);
 			this.panel2.Controls.Add(this._loginLink);
 			this.panel2.Location = new System.Drawing.Point(3, 536);
 			this.panel2.Name = "panel2";
 			this.panel2.Size = new System.Drawing.Size(604, 25);
 			this.panel2.TabIndex = 28;
+			// 
+			// padding
+			// 
+			this.padding.Dock = System.Windows.Forms.DockStyle.Left;
+			this.padding.Location = new System.Drawing.Point(101, 0);
+			this.padding.Name = "padding";
+			this.padding.Size = new System.Drawing.Size(20, 25);
+			this.padding.TabIndex = 21;
 			// 
 			// panel4
 			// 
@@ -924,6 +939,7 @@ namespace Bloom.Publish.BloomLibrary
 		private Panel panel6;
 		private Label label4;
 		private LinkLabel _changeSignLanguageLinkLabel;
-		private LinkLabel bulkUploadLink;
+		private ComboBox _uploadSource;
+		private Panel padding;
 	}
 }
