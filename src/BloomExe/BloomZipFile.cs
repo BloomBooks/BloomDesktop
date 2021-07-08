@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using ICSharpCode.SharpZipLib.Core;
@@ -118,6 +119,10 @@ namespace Bloom
 			AddDirectory(directoryPath, dirNameOffest, null, false, perFileCallback);
 		}
 
+		// These file types are already highly compressed; further compression wastes time
+		// and is unlikely to save space. It might also increase the likelihood of spurious
+		// differences between file versions making Dropbox's sync less efficient.
+		private HashSet<string> extensionsNotToCompress = new HashSet<string>(new[] {".png", ".jpg", ".mp3", ".mp4"});
 
 		/// <summary>
 		/// Add everything in directoryPath, including subfolders recursively, to the zip.
@@ -138,14 +143,14 @@ namespace Bloom
 			{
 				var entryName = path.Substring(dirNameOffest);
 				entryName = ZipEntry.CleanName(entryName); // Removes drive from name and fixes slash direction
+				var fileExtension = Path.GetExtension(entryName).ToLowerInvariant();
 				if (extensionsToExclude != null)
 				{
-					var fileExtension = Path.GetExtension(entryName).ToLowerInvariant();
 					if (extensionsToExclude.Contains(fileExtension))
 						continue;
 				}
 				if (!justCount)
-					AddFile(path, entryName);
+					AddFile(path, entryName, !extensionsNotToCompress.Contains(fileExtension));
 				perFileCallback?.Invoke(path);
 				count++;
 			}
