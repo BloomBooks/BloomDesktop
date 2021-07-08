@@ -634,6 +634,16 @@ namespace Bloom.TeamCollection
 			return RobustFile.Exists(bookPath);
 		}
 
+		public class CannotLockException : Exception
+		{
+			public CannotLockException(string msg) :base(msg)
+			{
+
+			}
+
+			public string SyncAgent;
+		}
+
 		/// <summary>
 		/// Write the raw (JSON) string that stores the status information. Currently stored
 		/// in the zip file comment.
@@ -661,7 +671,11 @@ namespace Bloom.TeamCollection
 			// we are not cluttering the TC with conflicts.
 			if (IsFileLocked(bookPath))
 			{
-				throw new ArgumentException("Book is locked in the Team Collection. This may be because the Team Collection system is busy sharing it. Please try again later.");
+				var isDropbox = DropboxUtils.IsPathInDropboxFolder(bookPath);
+				var msg = $"Bloom was not able to modify {bookName} because some other program is busy with it. " +
+				          (isDropbox ? "This may just be Dropbox synchronizing the file. " : "") +
+				          "Please try again later. If the problem continues, restart your computer.";
+				throw new CannotLockException(msg) { SyncAgent = isDropbox ? @"Dropbox" : "Unknown"};
 			}
 			lock (_lockObject)
 			{
