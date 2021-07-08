@@ -9,12 +9,9 @@ using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using L10NSharp;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using SIL.Extensions;
-using SIL.PlatformUtilities;
 using SIL.Progress;
-using SIL.Reflection;
 
 namespace BloomTests.WebLibraryIntegration
 {
@@ -25,33 +22,10 @@ namespace BloomTests.WebLibraryIntegration
 		private string _workFolderPath;
 		private BookUpload _uploader;
 		private BookDownload _downloader;
-		private BloomParseClientDouble _parseClient;
+		private BloomParseClientTestDouble _parseClient;
 		List<BookInfo> _downloadedBooks = new List<BookInfo>();
 		private HtmlThumbNailer _htmlThumbNailer;
 		private string _thisTestId;
-
-		private class BloomParseClientDouble: BloomParseClient
-		{
-			public BloomParseClientDouble(string testId)
-			{
-				// Do NOT do this...it results in creating a garbage class in Parse.com which is hard to delete (manual only).
-				//ClassesLanguagePath = "classes/language_" + testId;
-			}
-
-			public bool SimulateOldBloomUpload = false;
-
-			public override string ChangeJsonBeforeCreatingOrModifyingBook(string json)
-			{
-				if (SimulateOldBloomUpload)
-				{
-					var bookRecord = JObject.Parse(json);
-					bookRecord.Remove("lastUploaded");
-					bookRecord.Remove("updateSource");
-					return bookRecord.ToString();
-				}
-				return base.ChangeJsonBeforeCreatingOrModifyingBook(json);
-			}
-		}
 
 		[SetUp]
 		public void Setup()
@@ -64,7 +38,7 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.AreEqual(0, Directory.GetFiles(_workFolderPath).Count(),"Some stuff was left over from a previous test");
 			// Todo: Make sure the S3 unit test bucket is empty.
 			// Todo: Make sure the parse.com unit test book table is empty
-			_parseClient = new BloomParseClientDouble(_thisTestId);
+			_parseClient = new BloomParseClientTestDouble(_thisTestId);
 			_htmlThumbNailer = new HtmlThumbNailer(NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
 			_uploader = new BookUpload(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new BookThumbNailer(_htmlThumbNailer));
 			_downloader = new BookDownload(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new BookDownloadStartingEvent());
@@ -91,10 +65,9 @@ namespace BloomTests.WebLibraryIntegration
 			return f.FolderPath;
 		}
 
-
 		private void Login()
 		{
-			Assert.That(_uploader.LogIn("unittest@example.com", "unittest"), Is.True,
+			Assert.That(_parseClient.TestOnly_LegacyLogIn("unittest@example.com", "unittest"), Is.True,
 				"Could not log in using the unittest@example.com account");
 		}
 

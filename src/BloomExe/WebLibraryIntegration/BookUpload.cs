@@ -111,12 +111,6 @@ namespace Bloom.WebLibraryIntegration
 			get { return Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell); }
 		}
 
-
-		public bool LogIn(string account, string password)
-		{
-			return ParseClient.LegacyLogIn(account, password);
-		}
-
 		public void Logout()
 		{
 			ParseClient.Logout();

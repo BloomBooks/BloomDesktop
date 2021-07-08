@@ -5,11 +5,9 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
 using Bloom.web;
-using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
-using SIL.Code;
 using SIL.Progress;
 
 namespace Bloom.WebLibraryIntegration
@@ -18,7 +16,7 @@ namespace Bloom.WebLibraryIntegration
 	{
 		 RestClient _client;
 		protected string _sessionToken = String.Empty;
-		private string _userId;
+		protected string _userId;
 
 		public BloomParseClient()
 		{
@@ -90,7 +88,7 @@ namespace Bloom.WebLibraryIntegration
 
 		public string UserId {get { return _userId; }}
 
-		public string Account { get; private set; }
+		public string Account { get; protected set; }
 
 		public bool LoggedIn
 		{
@@ -115,8 +113,7 @@ namespace Bloom.WebLibraryIntegration
 			return request;
 		}
 
-
-		private RestRequest MakeGetRequest(string path)
+		protected RestRequest MakeGetRequest(string path)
 		{
 			return MakeRequest(path, Method.GET);
 		}
@@ -188,41 +185,6 @@ namespace Bloom.WebLibraryIntegration
 			if (json == null)
 				return null;
 			return json.results;
-		}
-
-
-		// Log in directly to parse server with name and password. This strategy is largely no longer used,
-		// but some unit tests need it, since we haven't been able to get the new firebase login to work
-		// except when Bloom is actually running. For the same reason, this is still used for command-line
-		// uploads.
-		public bool LegacyLogIn(string account, string password)
-		{
-			_sessionToken = String.Empty;
-			Account = string.Empty;
-			var request = MakeGetRequest("login");
-			request.AddParameter("username", account.ToLowerInvariant());
-			request.AddParameter("password", password);
-			// a problem here is that behind the sil.org.pg captive portal, this hangs for a long while
-			var response = Client.Execute(request);
-			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
-			// behind sil.org.png, if the user isn't logged in to the captive portal,
-			// at this point dy is null. Response.Content is "". repsonse.ErrorMessage is "Unable to connect to the remote server".
-			try
-			{
-				_sessionToken = dy.sessionToken;//there's also an "error" in there if it fails, but a null sessionToken tells us all we need to know
-			}
-			catch (RuntimeBinderException)
-			{
-				// We are seeing this sometimes while running unit tests.
-				// This is simply an attempt to diagnose what is happening.
-				Console.WriteLine("Attempt to deserialize response content session token failed while attempting log in to parse (BL-4099).");
-				Console.WriteLine("response.Content: {0}", response.Content);
-				Console.WriteLine("deserialized: {0}", dy);
-				throw;
-			}
-			_userId = dy.objectId;
-			Account = account;
-			return LoggedIn;
 		}
 
 		public void Logout()
