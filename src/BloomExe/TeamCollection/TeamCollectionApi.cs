@@ -253,6 +253,7 @@ namespace Bloom.TeamCollection
 				request.Failed();
 				return;
 			}
+
 			try
 			{
 				// Could be a problem if there's no current book or it's not in the collection folder.
@@ -263,33 +264,67 @@ namespace Bloom.TeamCollection
 					UpdateUiForBook();
 
 					Analytics.Track("TeamCollectionCheckoutBook",
-						new Dictionary<string, string>(){
+						new Dictionary<string, string>()
+						{
 							{"CollectionId", _settings?.CollectionId},
 							{"CollectionName", _settings?.CollectionName},
 							{"Backend", _tcManager?.CurrentCollection?.GetBackendType()},
 							{"User", CurrentUser},
-							{"BookId", _bookSelection?.CurrentSelection?.ID },
-							{"BookName", _bookSelection?.CurrentSelection?.Title }
+							{"BookId", _bookSelection?.CurrentSelection?.ID},
+							{"BookName", _bookSelection?.CurrentSelection?.Title}
 						});
 				}
+
 				request.ReplyWithBoolean(success);
 			}
 			catch (Exception e)
 			{
-				var msgId = "TeamCollection.ErrorLockingBook";
-				var msgEnglish = "Error locking access to {0}: {1}";
-				var log = _tcManager?.CurrentCollection?.MessageLog;
+				var msg = MakeLockFailedMessageFromException(e, BookFolderName);
 				// Pushing an error into the log will show the Reload Collection button. It's not obvious this
 				// is useful here, since we don't know exactly what went wrong. However, it at least gives the user
 				// the option to try it.
+				var log = _tcManager?.CurrentCollection?.MessageLog;
 				if (log != null)
-					log.WriteMessage(MessageAndMilestoneType.Error, msgId, msgEnglish, BookFolderName, e.Message);
-				Logger.WriteError(String.Format(msgEnglish, BookFolderName, e.Message), e);
+					log.WriteMessage(msg);
+				Logger.WriteError(msg.TextForDisplay, e);
 				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
 				SentrySdk.CaptureException(e);
 				request.Failed("lock failed");
 			}
 		}
+
+		// internal, and taking bookFolder (which is always this.BookFolderName in production) for ease of testing.
+		internal TeamCollectionMessage MakeLockFailedMessageFromException(Exception e, string bookFolder)
+		{
+			var msgId = "TeamCollection.CheckoutError";
+			var msgEnglish = "Bloom was not able to check out \"{0}\".";
+			var syncAgent = ""; // becomes SyncAgent for longer versions of message that need it
+			if (e is FolderTeamCollection.CannotLockException cannotLockException)
+			{
+				var msgCantCheckOut = string.Format(LocalizationManager.GetString("TeamCollection.CannotCheckout",
+					"Bloom was not able to check out \"{0}\" because some other program is busy with it."), Path.GetFileName(bookFolder));
+				var msgTryAgain = LocalizationManager.GetString("TeamCollection.TryAgainOrRestart",
+					"Please try again later. If the problem continues, restart your computer.");
+				msgId = null; // this branch uses a 3-part message which can't be relocalized later.
+				string part2;
+				if (cannotLockException.SyncAgent != "Unknown")
+				{
+					part2 = string.Format(LocalizationManager.GetString("TeamCollection.AgentSynchronizing",
+						"This may just be {0} synchronizing the file."), cannotLockException.SyncAgent);
+				}
+				else
+				{
+					part2 = LocalizationManager.GetString("TeamCollection.SomethingSynchronizing",
+						"This may just be something synchronizing the file.");
+				}
+				msgEnglish = msgCantCheckOut + " " + part2 + " " + msgTryAgain;
+			}
+
+			var msg = new TeamCollectionMessage(MessageAndMilestoneType.Error, msgId, msgEnglish,
+				Path.GetFileName(bookFolder), syncAgent);
+			return msg;
+		}
+
 
 		public void HandleCheckInCurrentBook(ApiRequest request)
 		{
