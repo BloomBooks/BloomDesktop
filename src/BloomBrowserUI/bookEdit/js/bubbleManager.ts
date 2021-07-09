@@ -22,9 +22,13 @@ import { getRgbaColorStringFromColorAndOpacity } from "../toolbox/comic/comicToo
 import { SetupElements, attachToCkEditor } from "./bloomEditing";
 
 const kComicalGeneratedClass: string = "comical-generated";
+// We could rename this class to "bloom-overPictureElement", but that would involve a migration.
+// For now we're keeping this name for backwards-compatibility, even though now the element could be
+// a video or even another picture.
 const kTextOverPictureClass = "bloom-textOverPicture";
 const kTextOverPictureSelector = `.${kTextOverPictureClass}`;
-const kImageContainerSelector = ".bloom-imageContainer";
+const kImageContainerClass = "bloom-imageContainer";
+const kImageContainerSelector = `.${kImageContainerClass}`;
 
 // References to "TOP" in the code refer to the actual TextOverPicture box (what "Bubble"s were
 // originally called) installed in the Bloom page. We are gradually removing these, since now there
@@ -85,7 +89,9 @@ export class BubbleManager {
             return false; // we can't fix it
         }
 
-        const container = BubbleManager.getImageContainerElement(wrapperBox);
+        const container = BubbleManager.getTopLevelImageContainerElement(
+            wrapperBox
+        );
         if (!container) {
             return false; // paranoia; OverPicture element should always be in image container
         }
@@ -154,30 +160,55 @@ export class BubbleManager {
 
     public turnOnHidingImageButtons() {
         const imageContainers: HTMLElement[] = Array.from(
-            document.getElementsByClassName("bloom-imageContainer") as any
+            document.getElementsByClassName(kImageContainerClass) as any
         );
         imageContainers.forEach(e => {
             BubbleManager.hideImageButtonsIfNotPlaceHolder(e);
         });
     }
 
-    private getAllVisibleEditableDivs(activeElement: HTMLElement): Element[] {
-        return Array.from(
-            activeElement.getElementsByClassName(
+    private getAllVisibleFocusableDivs(
+        overPictureContainerElement: HTMLElement
+    ): Element[] {
+        // If the Over Picture element has visible bloom-editables, we want them.
+        // Otherwise, look for video and image elements. At this point, an over picture element
+        // can only have one of three types of content and each are mutually exclusive.
+        // bloom-editable or bloom-videoContainer or bloom-imageContainer. It doesn't even really
+        // matter which order we look for them.
+        let focusableDivs = Array.from(
+            overPictureContainerElement.getElementsByClassName(
                 "bloom-editable bloom-visibility-code-on"
             )
         ).filter(el => !el.parentElement!.classList.contains("box-header-off"));
+        if (focusableDivs.length === 0) {
+            focusableDivs = Array.from(
+                overPictureContainerElement.getElementsByClassName(
+                    "bloom-videoContainer"
+                )
+            );
+        }
+        if (focusableDivs.length === 0) {
+            // This could be a bit tricky, since the whole canvas is in a 'bloom-imageContainer'.
+            // But 'overPictureContainerElement' here is a div.bloom-textOverPicture element,
+            // so if we find any imageContainers inside of that, they are picture over picture elements.
+            focusableDivs = Array.from(
+                overPictureContainerElement.getElementsByClassName(
+                    kImageContainerClass
+                )
+            );
+        }
+        return focusableDivs;
     }
 
-    private focusFirstVisibleEditable(activeElement: HTMLElement) {
-        const focusElements = this.getAllVisibleEditableDivs(activeElement);
+    private focusFirstVisibleFocusable(activeElement: HTMLElement) {
+        const focusElements = this.getAllVisibleFocusableDivs(activeElement);
         if (focusElements.length > 0) {
             (focusElements[0] as HTMLElement).focus();
         }
     }
 
-    private focusLastVisibleEditable(activeElement: HTMLElement) {
-        const focusElements = this.getAllVisibleEditableDivs(activeElement);
+    private focusLastVisibleFocusable(activeElement: HTMLElement) {
+        const focusElements = this.getAllVisibleFocusableDivs(activeElement);
         const numberOfElements = focusElements.length;
         if (numberOfElements > 0) {
             (focusElements[numberOfElements - 1] as HTMLElement).focus();
@@ -192,13 +223,12 @@ export class BubbleManager {
 
         Comical.setActiveBubbleListener(activeElement => {
             if (activeElement) {
-                this.focusFirstVisibleEditable(activeElement);
+                this.focusFirstVisibleFocusable(activeElement);
             }
         });
 
-        const imageContainers: HTMLElement[] = Array.from(
-            document.getElementsByClassName("bloom-imageContainer") as any
-        );
+        const imageContainers: HTMLElement[] = this.getAllPrimaryImageContainersOnPage();
+
         // todo: select the right one...in particular, currently we just select the last one.
         // This is reasonable when just coming to the page, and when we add a new OverPicture element,
         // we make the new one the last in its parent, so with only one image container
@@ -217,22 +247,16 @@ export class BubbleManager {
             // This focus call doesn't seem to work, at least in a lasting fashion.
             // See the code in bloomEditing.ts/SetupElements() that sets focus after
             // calling BloomSourceBubbles.MakeSourceBubblesIntoQtips() in a delayed loop.
-            // That code usually finds that nothing is focused. (??)
-            // (gjm: I reworked the code that finds a visible element a bit, it's possible the above comment
-            // is no longer accurate)
-            this.focusFirstVisibleEditable(this.activeElement);
+            // That code usually finds that nothing is focused.
+            // (gjm: I reworked the code that finds a visible element a bit,
+            // it's possible the above comment is no longer accurate)
+            this.focusFirstVisibleFocusable(this.activeElement);
             Comical.setUserInterfaceProperties({ tailHandleColor: "#96668F" }); // light bloom purple
             Comical.startEditing(imageContainers);
             this.migrateOldTextOverPictureElements(overPictureElements);
             Comical.activateElement(this.activeElement);
-            Array.from(
-                document.getElementsByClassName("bloom-editable")
-            ).forEach(element => {
-                // Don't use an arrow function as an event handler here. These can never be identified as duplicate event listeners, so we'll end up with tons of duplicates
-                element.addEventListener(
-                    "focusin",
-                    BubbleManager.onFocusSetActiveElement
-                );
+            overPictureElements.forEach(container => {
+                this.addEventsToFocusableElements(container, false);
             });
             document.addEventListener(
                 "click",
@@ -242,114 +266,125 @@ export class BubbleManager {
             // Focus something!
             // BL-8073: if Comic Tool is open, this 'turnOnBubbleEditing()' method will get run.
             // If this particular page has no comic bubbles, we can actually arrive here with the 'body'
-            // as the document's activeElement. So we focus the first visible editable we come to.
+            // as the document's activeElement. So we focus the first visible focusable element
+            // we come to.
             const marginBox = document.getElementsByClassName("marginBox");
             if (marginBox.length > 0) {
-                this.focusFirstVisibleEditable(marginBox[0] as HTMLElement);
+                this.focusFirstVisibleFocusable(marginBox[0] as HTMLElement);
             }
         }
 
         // turn on various behaviors for each image
-        Array.from(
-            document.getElementsByClassName("bloom-imageContainer")
-        ).forEach((container: HTMLElement) => {
-            container.addEventListener("click", event => {
-                // The goal here is that if the user clicks outside any comical bubble,
-                // we want none of the comical bubbles selected, so that
-                // (after moving the mouse away to get rid of hover effects)
-                // the user can see exactly what the final comic will look like.
-                // This is a difficult and horrible kludge.
-                // First problem is that this click handler is fired for a click
-                // ANYWHERE in the image...none of the bubble- or OverPicture element- related
-                // click handlers preventDefault(). So we have to figure out
-                // whether the click was simply on the picture, or on something
-                // inside it. A first step is to ignore any clicks where the target
-                // is one of the picture's children. Even that's complicated...
-                // the Comical canvas covers the whole picture, so the target
-                // is NEVER the picture itself. But we can at least check that
-                // the target is the comical canvas itself, not something overlayed
-                // on it.
-                if (
-                    (event.target as HTMLElement).classList.contains(
-                        "comical-editing"
-                    )
-                ) {
-                    // OK, we clicked on the canvas, but we may still have clicked on
-                    // some part of a bubble rather than away from it.
-                    // We now use a Comical function to determine whether we clicked
-                    // on a Comical object.
-                    const x = event.offsetX;
-                    const y = event.offsetY;
-                    if (!Comical.somethingHit(container, x, y)) {
-                        // So far so good. We have now determined that we want to remove
-                        // focus from anything in this image.
-                        // (Enhance: should we check that something within this image
-                        // is currently focused, so clicking on a picture won't
-                        // arbitrarily move the focus if it's not in this image?)
-                        // Leaving nothing at all selected is something of a last resort,
-                        // so we first look for something we can focus that is outside the
-                        // image.
-                        let somethingElseToFocus = Array.from(
-                            document.getElementsByClassName("bloom-editable")
-                        ).filter(
-                            e =>
-                                !container.contains(e) &&
-                                (e as HTMLElement).offsetHeight > 0 // a crude but here adequate way to pick a visible one
-                        )[0] as HTMLElement;
-                        if (!somethingElseToFocus) {
-                            // If the page contains only images (or videos, etc...no text except bubbles
-                            // then we will make something temporary and hidden to focus.
-                            // There may be some alternative to this but it is the most reliable
-                            // thing I can think of to remove all the focus effects from the bubbles.
-                            // Even so it's not as reliable as I would like because some of those
-                            // effects are produced by focus handlers that won't automatically get
-                            // attached to this temporary element.
-                            somethingElseToFocus = document.createElement(
-                                "div"
-                            );
-                            container.parentElement!.insertBefore(
-                                somethingElseToFocus,
-                                container
-                            );
-                            // We give it this class so it won't persist...Bloom cleans out such
-                            // elements when saving the page.
-                            somethingElseToFocus.classList.add("bloom-ui");
-                            // it needs to be bloom-editable to trigger the code in
-                            // onFocusSetActiveElement that hides the handles on the active bubble.
-                            somethingElseToFocus.classList.add(
-                                "bloom-editable"
-                            );
-                            // These properties are necessary (or at least sufficient) to make it possible to focus it
-                            somethingElseToFocus.setAttribute(
-                                "contenteditable",
-                                "true"
-                            );
-                            somethingElseToFocus.setAttribute("tabindex", "0");
-                            somethingElseToFocus.style.display = "block"; // defeat rules making it display:none and hence not focusable
+        Array.from(this.getAllPrimaryImageContainersOnPage()).forEach(
+            (container: HTMLElement) => {
+                container.addEventListener("click", event => {
+                    // The goal here is that if the user clicks outside any comical bubble,
+                    // we want none of the comical bubbles selected, so that
+                    // (after moving the mouse away to get rid of hover effects)
+                    // the user can see exactly what the final comic will look like.
+                    // This is a difficult and horrible kludge.
+                    // First problem is that this click handler is fired for a click
+                    // ANYWHERE in the image...none of the bubble- or OverPicture element- related
+                    // click handlers preventDefault(). So we have to figure out
+                    // whether the click was simply on the picture, or on something
+                    // inside it. A first step is to ignore any clicks where the target
+                    // is one of the picture's children. Even that's complicated...
+                    // the Comical canvas covers the whole picture, so the target
+                    // is NEVER the picture itself. But we can at least check that
+                    // the target is the comical canvas itself, not something overlayed
+                    // on it.
+                    if (
+                        (event.target as HTMLElement).classList.contains(
+                            "comical-editing"
+                        )
+                    ) {
+                        // OK, we clicked on the canvas, but we may still have clicked on
+                        // some part of a bubble rather than away from it.
+                        // We now use a Comical function to determine whether we clicked
+                        // on a Comical object.
+                        const x = event.offsetX;
+                        const y = event.offsetY;
+                        if (!Comical.somethingHit(container, x, y)) {
+                            // So far so good. We have now determined that we want to remove
+                            // focus from anything in this image.
+                            // (Enhance: should we check that something within this image
+                            // is currently focused, so clicking on a picture won't
+                            // arbitrarily move the focus if it's not in this image?)
+                            // Leaving nothing at all selected is something of a last resort,
+                            // so we first look for something we can focus that is outside the
+                            // image.
+                            let somethingElseToFocus = Array.from(
+                                document.getElementsByClassName(
+                                    "bloom-editable"
+                                )
+                            ).filter(
+                                e =>
+                                    !container.contains(e) &&
+                                    (e as HTMLElement).offsetHeight > 0 // a crude but here adequate way to pick a visible one
+                            )[0] as HTMLElement;
+                            if (!somethingElseToFocus) {
+                                // If the page contains only images (or videos, etc...no text except bubbles
+                                // then we will make something temporary and hidden to focus.
+                                // There may be some alternative to this but it is the most reliable
+                                // thing I can think of to remove all the focus effects from the bubbles.
+                                // Even so it's not as reliable as I would like because some of those
+                                // effects are produced by focus handlers that won't automatically get
+                                // attached to this temporary element.
+                                somethingElseToFocus = document.createElement(
+                                    "div"
+                                );
+                                container.parentElement!.insertBefore(
+                                    somethingElseToFocus,
+                                    container
+                                );
+                                // We give it this class so it won't persist...Bloom cleans out such
+                                // elements when saving the page.
+                                somethingElseToFocus.classList.add("bloom-ui");
+                                // it needs to be bloom-editable to trigger the code in
+                                // onFocusSetActiveElement that hides the handles on the active bubble.
+                                somethingElseToFocus.classList.add(
+                                    "bloom-editable"
+                                );
+                                // These properties are necessary (or at least sufficient) to make it possible to focus it
+                                somethingElseToFocus.setAttribute(
+                                    "contenteditable",
+                                    "true"
+                                );
+                                somethingElseToFocus.setAttribute(
+                                    "tabindex",
+                                    "0"
+                                );
+                                somethingElseToFocus.style.display = "block"; // defeat rules making it display:none and hence not focusable
 
-                            // However, we don't actually want to see it; these rules
-                            // (somewhat redundantly) make it have no size and be positioned
-                            // off-screen.
-                            somethingElseToFocus.style.width = "0";
-                            somethingElseToFocus.style.height = "0";
-                            somethingElseToFocus.style.overflow = "hidden";
-                            somethingElseToFocus.style.position = "absolute";
-                            somethingElseToFocus.style.left = "-1000px";
-
+                                // However, we don't actually want to see it; these rules
+                                // (somewhat redundantly) make it have no size and be positioned
+                                // off-screen.
+                                somethingElseToFocus.style.width = "0";
+                                somethingElseToFocus.style.height = "0";
+                                somethingElseToFocus.style.overflow = "hidden";
+                                somethingElseToFocus.style.position =
+                                    "absolute";
+                                somethingElseToFocus.style.left = "-1000px";
+                            }
+                            // In case we've already set this listener, remove it before setting it again.
+                            somethingElseToFocus.removeEventListener(
+                                "focusin",
+                                BubbleManager.onFocusSetActiveElement
+                            );
                             // And we want the usual behavior when it gets focus!
                             somethingElseToFocus.addEventListener(
                                 "focusin",
                                 BubbleManager.onFocusSetActiveElement
                             );
+                            somethingElseToFocus.focus();
                         }
-                        somethingElseToFocus.focus();
                     }
-                }
-            });
+                });
 
-            this.setDragAndDropHandlers(container);
-            this.setMouseDragHandlers(container);
-        });
+                this.setDragAndDropHandlers(container);
+                this.setMouseDragHandlers(container);
+            }
+        );
 
         // The container's onmousemove handler isn't capable of reliably detecting in all cases
         // when it goes out of bounds, because the mouse is no longer over the container.
@@ -362,6 +397,40 @@ export class BubbleManager {
                 );
             }
         );
+    }
+
+    // "container" refers to a .bloom-textOverPicture div, which holds one (and only one) of the
+    // 3 main types of "bubble": text, video or image.
+    // This method will attach the focusin event to each of these.
+    private addEventsToFocusableElements(
+        container: HTMLElement,
+        includeCkEditor: boolean
+    ) {
+        const focusables = this.getAllVisibleFocusableDivs(container);
+        focusables.forEach(element => {
+            // Don't use an arrow function as an event handler here. These can never be identified as duplicate event listeners, so we'll end up with tons of duplicates
+            element.addEventListener(
+                "focusin",
+                BubbleManager.onFocusSetActiveElement
+            );
+            if (
+                includeCkEditor &&
+                element.classList.contains("bloom-editable")
+            ) {
+                attachToCkEditor(element);
+            }
+        });
+    }
+
+    // This should not return any .bloom-imageContainers that have imageContainer ancestors.
+    private getAllPrimaryImageContainersOnPage() {
+        const unfilteredContainers = document.getElementsByClassName(
+            kImageContainerClass
+        );
+        return Array.from(unfilteredContainers).filter(
+            (el: Element) =>
+                el.parentElement!.closest(kImageContainerSelector) === null
+        ) as any;
     }
 
     // Use this one when adding/duplicating a bubble to avoid re-navigating the page.
@@ -385,28 +454,18 @@ export class BubbleManager {
             // And then the only thing left from a full refresh that needs to happen here is
             // to attach the new bloom-editable to ckEditor.
             // If attachEventsToEditables is false, then this is a child or duplicate bubble that
-            // was already sent through here once. We don't need to add more focusin listeners and
+            // was already sent through here once. We don't need to add more 'focusin' listeners and
             // re-attach to the StyleEditor again.
             if (attachEventsToEditables) {
-                Array.from(
-                    newTextOverPictureElement.getElementsByClassName(
-                        "bloom-editable"
-                    )
-                ).forEach(element => {
-                    // Don't use an arrow function as an event handler here. These can never be identified
-                    // as duplicate event listeners, so we'll end up with tons of duplicates
-                    element.addEventListener(
-                        "focusin",
-                        BubbleManager.onFocusSetActiveElement
-                    );
-                    attachToCkEditor(element);
-                });
+                this.addEventsToFocusableElements(
+                    newTextOverPictureElement,
+                    attachEventsToEditables
+                );
             }
         } else {
             let focusableContainer: HTMLElement = imageContainer;
             if (
-                imageContainer.getElementsByClassName("bloom-editable")
-                    .length == 0
+                this.getAllVisibleFocusableDivs(focusableContainer).length === 0
             ) {
                 focusableContainer = document.getElementsByClassName(
                     "marginBox"
@@ -414,7 +473,7 @@ export class BubbleManager {
             }
             // We just deleted a bubble, so focus the most recently added bubble in the same
             // imageContainer.
-            this.focusLastVisibleEditable(focusableContainer);
+            this.focusLastVisibleFocusable(focusableContainer);
             // When the last visible editable gets focus, onFocusSetActiveElement()
             // will call setActiveElement() to update the toolbox UI.
         }
@@ -430,41 +489,40 @@ export class BubbleManager {
                 // it would be nice to do this only once, but there MIGHT
                 // be TOP elements in more than one image container...too complicated,
                 // and this only happens once per TOP.
-                Comical.update(BubbleManager.getImageContainerElement(top)!);
+                Comical.update(
+                    BubbleManager.getTopLevelImageContainerElement(top)!
+                );
             }
         });
     }
 
-    // Event Handler to be called when something relevant on the page frame gets focus.  Will set the active textOverPicture element.
+    // The event handler to be called when something relevant on the page frame gets focus.
+    // This will set the active textOverPicture element.
     public static onFocusSetActiveElement(event: Event) {
-        const focusedElement = event.currentTarget as Element; // The current target is the element we attached the event listener to
-        if (focusedElement.classList.contains("bloom-editable")) {
-            // If we focus something on the page that isn't in a bubble, we need to switch
-            // to having no active bubble element. Note: we don't want to use focusout
-            // on the bubble elements, because then we lose the active element while clicking
-            // on controls in the toolbox (and while debugging).
+        // The current target is the element we attached the event listener to
+        const focusedElement = event.currentTarget as Element;
 
-            // We don't think this function ever gets called when it's not initialized, but it doesn't
-            // hurt to make sure.
-            initializeBubbleManager();
+        // If we focus something on the page that isn't in a bubble, we need to switch
+        // to having no active bubble element. Note: we don't want to use focusout
+        // on the bubble elements, because then we lose the active element while clicking
+        // on controls in the toolbox (and while debugging).
 
-            const bubbleElement = focusedElement.closest(
-                kTextOverPictureSelector
-            );
-            if (bubbleElement) {
-                theOneBubbleManager.setActiveElement(
-                    bubbleElement as HTMLElement
-                );
-            } else {
-                theOneBubbleManager.setActiveElement(undefined);
-            }
+        // We don't think this function ever gets called when it's not initialized, but it doesn't
+        // hurt to make sure.
+        initializeBubbleManager();
+
+        const bubbleElement = focusedElement.closest(kTextOverPictureSelector);
+        if (bubbleElement) {
+            theOneBubbleManager.setActiveElement(bubbleElement as HTMLElement);
+        } else {
+            theOneBubbleManager.setActiveElement(undefined);
         }
     }
 
     private static onDocClickClearActiveElement(event: Event) {
         const clickedElement = event.target as Element; // most local thing clicked on
         if (
-            BubbleManager.getImageContainerElement(clickedElement) ||
+            BubbleManager.getTopLevelImageContainerElement(clickedElement) ||
             clickedElement.closest(".source-copy-button")
         ) {
             // We have other code to handle setting and clearing Comical handles
@@ -1286,14 +1344,20 @@ export class BubbleManager {
         this.turnOffHidingImageButtons();
 
         // Clean up event listeners that we no longer need
-        Array.from(document.getElementsByClassName("bloom-editable")).forEach(
-            element => {
+        Array.from(
+            document.getElementsByClassName(kTextOverPictureClass)
+        ).forEach(container => {
+            const focusables = this.getAllVisibleFocusableDivs(
+                container as HTMLElement
+            );
+            focusables.forEach(element => {
+                // Don't use an arrow function as an event handler here. These can never be identified as duplicate event listeners, so we'll end up with tons of duplicates
                 element.removeEventListener(
-                    "focus",
+                    "focusin",
                     BubbleManager.onFocusSetActiveElement
                 );
-            }
-        );
+            });
+        });
         document.removeEventListener(
             "click",
             BubbleManager.onDocClickClearActiveElement
@@ -1386,7 +1450,9 @@ export class BubbleManager {
         if (!element) {
             return;
         }
-        const imageContainer = BubbleManager.getImageContainerElement(element);
+        const imageContainer = BubbleManager.getTopLevelImageContainerElement(
+            element
+        );
         if (!imageContainer) {
             return; // shouldn't happen...
         }
@@ -1437,7 +1503,7 @@ export class BubbleManager {
         // refresh. We still want to refresh, but not attach to ckeditor, etc., so we pass
         // attachEventsToEditables as false.
         this.refreshBubbleEditing(
-            BubbleManager.getImageContainerElement(parentElement)!,
+            BubbleManager.getTopLevelImageContainerElement(parentElement)!,
             new Bubble(childElement),
             false
         );
@@ -1453,7 +1519,9 @@ export class BubbleManager {
         const parentBoundingRect = parentElement.getBoundingClientRect();
 
         // // Ensure newX and newY is within the bounds of the container.
-        const container = BubbleManager.getImageContainerElement(parentElement);
+        const container = BubbleManager.getTopLevelImageContainerElement(
+            parentElement
+        );
         if (!container) {
             //toastr.warning("Failed to create child or duplicate element.");
             return undefined;
@@ -1549,7 +1617,7 @@ export class BubbleManager {
         originalElement: HTMLElement,
         style?: string
     ): HTMLElement | undefined {
-        const imageContainer = BubbleManager.getImageContainerElement(
+        const imageContainer = BubbleManager.getTopLevelImageContainerElement(
             originalElement
         );
         if (!imageContainer) {
@@ -1561,7 +1629,7 @@ export class BubbleManager {
             PointScaling.Scaled,
             "Scaled Viewport coordinates"
         );
-        return this.addTOPBoxInternal(
+        return this.addTextOverPicture(
             positionInViewport,
             $(imageContainer),
             style
@@ -1569,7 +1637,7 @@ export class BubbleManager {
     }
 
     // This method is called when the user "drops" an element from the comicTool onto an image.
-    // It is also called by addChildInternal() and by the Linux version of dropping "ondragend".
+    // It is also called by addChildInternal() and by the Linux version of dropping: "ondragend".
     public addOverPictureElement(
         mouseX: number,
         mouseY: number,
@@ -1587,19 +1655,27 @@ export class BubbleManager {
             PointScaling.Scaled,
             "Scaled Viewport coordinates"
         );
-        return this.addTOPBoxInternal(
+        if (style === "video") {
+            return this.addVideoOverPicture(positionInViewport, imageContainer);
+        }
+        if (style === "image") {
+            return this.addPictureOverPicture(
+                positionInViewport,
+                imageContainer
+            );
+        }
+        return this.addTextOverPicture(
             positionInViewport,
             imageContainer,
             style
         );
     }
 
-    private addTOPBoxInternal(
+    private addTextOverPicture(
         location: Point,
         imageContainerJQuery: JQuery,
         style?: string
     ): HTMLElement {
-        // todo: handle additional styles; image/video
         const defaultNewTextLanguage = GetSettings().languageForNewTextBoxes;
         // add a draggable text bubble to the html dom of the current page
         const editableDivClasses =
@@ -1619,14 +1695,66 @@ export class BubbleManager {
             editableDivHtml +
             "</div>";
 
+        return this.finishAddingOverPictureElement(
+            imageContainerJQuery,
+            transGroupHtml,
+            location,
+            style
+        );
+    }
+
+    private addVideoOverPicture(
+        location: Point,
+        imageContainerJQuery: JQuery
+    ): HTMLElement {
+        const standardVideoClasses =
+            "bloom-videoContainer bloom-noVideoSelected bloom-leadingElement bloom-selected";
+        const videoContainerHtml =
+            "<div class='" + standardVideoClasses + "'></div>";
+        return this.finishAddingOverPictureElement(
+            imageContainerJQuery,
+            videoContainerHtml,
+            location,
+            "none"
+        );
+    }
+
+    private addPictureOverPicture(
+        location: Point,
+        imageContainerJQuery: JQuery
+    ): HTMLElement {
+        const standardImageClasses =
+            kImageContainerClass + " bloom-leadingElement";
+        const imagePlaceHolderHtml = "<img src='placeHolder.png' alt=''></img>";
+        const imageContainerHtml =
+            // The tabindex here is necessary to get focus to work on an image.
+            "<div tabindex='0' class='" +
+            standardImageClasses +
+            "'>" +
+            imagePlaceHolderHtml +
+            "</div>";
+        return this.finishAddingOverPictureElement(
+            imageContainerJQuery,
+            imageContainerHtml,
+            location,
+            "none"
+        );
+    }
+
+    private finishAddingOverPictureElement(
+        imageContainerJQuery: JQuery,
+        internalHtml: string,
+        location: Point,
+        style?: string
+    ): HTMLElement {
+        // add OverPicture element as last child of .bloom-imageContainer (BL-7883)
+        const lastContainerChild = imageContainerJQuery.children().last();
         const wrapperHtml =
             "<div class='" +
             kTextOverPictureClass +
             "'>" +
-            transGroupHtml +
+            internalHtml +
             "</div>";
-        // add textbox as last child of .bloom-imageContainer (BL-7883)
-        const lastContainerChild = imageContainerJQuery.children().last();
         const wrapperJQuery = $(wrapperHtml).insertAfter(lastContainerChild);
         const contentElement = wrapperJQuery.get(0);
         this.placeElementAtPosition(
@@ -1653,7 +1781,7 @@ export class BubbleManager {
             // method not specified to return null
             return $();
         }
-        return $(BubbleManager.getImageContainerElement(clickElement)!);
+        return $(BubbleManager.getTopLevelImageContainerElement(clickElement)!);
     }
 
     // positionInViewport is the position to place the top-left corner of the wrapperBox
@@ -1776,7 +1904,7 @@ export class BubbleManager {
         );
         this.setActiveElement(patriarchDuplicateElement);
         this.matchWidthOfSource(sourceElement, patriarchDuplicateElement);
-        const container = BubbleManager.getImageContainerElement(
+        const container = BubbleManager.getTopLevelImageContainerElement(
             patriarchDuplicateElement
         );
         if (!container) {
@@ -1906,7 +2034,7 @@ export class BubbleManager {
         // refresh triggered by 'addChildInternal'. So we send the newly modified child through again,
         // with 'attachEventsToEditables' set to 'true'.
         this.refreshBubbleEditing(
-            BubbleManager.getImageContainerElement(parentElement)!,
+            BubbleManager.getTopLevelImageContainerElement(parentElement)!,
             new Bubble(newChildElement),
             true
         );
@@ -1960,44 +2088,44 @@ export class BubbleManager {
         thisOverPictureElements: JQuery
     ): void {
         thisOverPictureElements.each((index, element) => {
-            const thisOverPictureElement = $(element);
-            const imageContainer = BubbleManager.getImageContainerElement(
-                thisOverPictureElement.get(0)
+            const thisOverPictureElement = element as HTMLElement;
+            const imageContainer = BubbleManager.getTopLevelImageContainerElement(
+                thisOverPictureElement
             )!;
             const containerPos = imageContainer.getBoundingClientRect();
-            const wrapperBoxRectangle = thisOverPictureElement[0].getBoundingClientRect();
+            const wrapperBoxRectangle = thisOverPictureElement.getBoundingClientRect();
 
             // Add the dragHandles (if needed). The visible one has a zindex below the canvas. The transparent one is above.
             // The 'mouseover' event listener below will make sure the .ui-draggable-handle class
             // on the transparent one is set to the right state depending on whether the visible handle
             // is occluded or not.
-            const visibleHandles = thisOverPictureElement.find(
-                ".bloom-dragHandle.visible"
+            const visibleHandles = thisOverPictureElement.getElementsByClassName(
+                "bloom-dragHandle visible"
             );
             if (visibleHandles.length == 0) {
                 // Not added yet. Let's create it
-                thisOverPictureElement.append(
-                    "<img class='bloom-ui bloom-dragHandle visible' src='/bloom/bookEdit/img/dragHandle.svg'/>"
-                );
+                const imgElement = document.createElement("img");
+                imgElement.className = "bloom-ui bloom-dragHandle visible";
+                imgElement.src = "/bloom/bookEdit/img/dragHandle.svg";
+                thisOverPictureElement.append(imgElement);
             }
 
             // Save the dragHandle that's above the canvas and setup the 'mouseover' event to determine if we
             // should be able to drag with it or not.
             let transparentHandle: HTMLElement;
-            const transparentHandles = thisOverPictureElement.find(
-                ".bloom-dragHandle.transparent"
+            const transparentHandles = thisOverPictureElement.getElementsByClassName(
+                "bloom-dragHandle transparent"
             );
             if (transparentHandles.length == 0) {
                 // Not added yet. Let's create it
-                thisOverPictureElement.append(
-                    "<img class='bloom-ui bloom-dragHandle transparent' src='/bloom/bookEdit/img/dragHandle.svg'/>"
-                );
-                transparentHandle = thisOverPictureElement.find(
-                    ".bloom-dragHandle.transparent"
-                )[0];
+                const imgElement = document.createElement("img");
+                imgElement.className = "bloom-ui bloom-dragHandle transparent";
+                imgElement.src = "/bloom/bookEdit/img/dragHandle.svg";
+                thisOverPictureElement.append(imgElement);
+                transparentHandle = imgElement;
             } else {
                 // No need to append it again. Just use the existing one.
-                transparentHandle = transparentHandles[0];
+                transparentHandle = transparentHandles[0] as HTMLElement;
             }
 
             transparentHandle.addEventListener("mouseover", event => {
@@ -2010,7 +2138,7 @@ export class BubbleManager {
             // Containment, drag and stop work when scaled (zoomed) as long as the page has been saved since the zoom
             // factor was last changed. Therefore we force reconstructing the page
             // in the EditingView.Zoom setter (in C#).
-            thisOverPictureElement.draggable({
+            $(thisOverPictureElement).draggable({
                 // Adjust containment by scaling
                 containment: [
                     containerPos.left,
@@ -2053,9 +2181,12 @@ export class BubbleManager {
                     ui.position.left = position.getUnscaledX();
                     ui.position.top = position.getUnscaledY();
 
-                    thisOverPictureElement
-                        .find(".bloom-dragHandle")
-                        .addClass("grabbing");
+                    const handles = thisOverPictureElement.getElementsByClassName(
+                        "bloom-dragHandle"
+                    );
+                    Array.from(handles).forEach(element => {
+                        (element as HTMLElement).classList.add("grabbing");
+                    });
                 },
                 stop: event => {
                     const target = event.target as Element;
@@ -2065,9 +2196,12 @@ export class BubbleManager {
                         );
                     }
 
-                    thisOverPictureElement
-                        .find(".bloom-dragHandle")
-                        .removeClass("grabbing");
+                    const handles = thisOverPictureElement.getElementsByClassName(
+                        "bloom-dragHandle"
+                    );
+                    Array.from(handles).forEach(element => {
+                        (element as HTMLElement).classList.remove("grabbing");
+                    });
                     // We may have changed which handles are occluded; reset state on the current
                     // OverPicture element handles. Other handles will be reset whenever we
                     // mouseover them.
@@ -2076,10 +2210,6 @@ export class BubbleManager {
                         transparentHandle
                     );
                 }
-            });
-
-            thisOverPictureElement.find(".bloom-editable").click(function(e) {
-                this.focus();
             });
         });
     }
@@ -2309,7 +2439,9 @@ export class BubbleManager {
     private static addResizingClassHandler(event: MouseEvent) {
         const handle = event.currentTarget as Element;
 
-        const container = BubbleManager.getImageContainerElement(handle);
+        const container = BubbleManager.getTopLevelImageContainerElement(
+            handle
+        );
         if (container) {
             container.classList.add("bloom-resizing");
         }
@@ -2321,7 +2453,9 @@ export class BubbleManager {
     }
 
     private static clearResizingClass(element: Element) {
-        const container = BubbleManager.getImageContainerElement(element);
+        const container = BubbleManager.getTopLevelImageContainerElement(
+            element
+        );
         if (container) {
             container.classList.remove("bloom-resizing");
         }
@@ -2338,7 +2472,7 @@ export class BubbleManager {
         let unscaledRelativeTop: number;
 
         if (!container) {
-            container = BubbleManager.getImageContainerElement(
+            container = BubbleManager.getTopLevelImageContainerElement(
                 wrapperBoxElement
             );
         }
@@ -2387,7 +2521,7 @@ export class BubbleManager {
         unscaledRelativeLeft: number,
         unscaledRelativeTop: number
     ) {
-        const container = BubbleManager.getImageContainerElement(
+        const container = BubbleManager.getTopLevelImageContainerElement(
             wrapperBox.get(0)
         );
         if (!container) {
@@ -2435,10 +2569,21 @@ export class BubbleManager {
 
     // Lots of places we need to find the bloom-imageContainer that a particular element resides in.
     // Method is static because several of the callers are static.
-    private static getImageContainerElement(
+    // BL-9976: now that we can have images on top of images, we need to ensure that we don't return
+    // a "sub-imageContainer". But we do want to return null if we aren't in an imageContainer at all.
+    private static getTopLevelImageContainerElement(
         element: Element
     ): HTMLElement | null {
-        return element.closest(kImageContainerSelector);
+        const firstTry = element.closest(kImageContainerSelector);
+        if (!firstTry) {
+            return null; // 'element' is not in an imageContainer at all
+        }
+        const secondTry = firstTry.parentElement!.closest(
+            kImageContainerSelector
+        );
+        return secondTry
+            ? (secondTry as HTMLElement) // element was inside of a image over image
+            : (firstTry as HTMLElement); // element was just inside of a top level imageContainer
     }
 
     // When showing a tail for a bubble style that doesn't have one by default, we get one here.
