@@ -1,5 +1,4 @@
 @icon-size: 60px;
-@icon-top-padding: 4px; // Headings have top space which we want to match
 @icon-side-padding: 8px;
 @panel-button-height: 40px;
 @panel-button-width: 180px;
@@ -7,64 +6,13 @@
 @panel-button-top-padding: 10px;
 @panel-button-icon-size: 28px;
 @panel-width: 560px; // roughly A5 width
-@panel-height: 180px;
-@panel-top-padding: 12px;
-@panel-left-margin-noIcon: 20px;
-@main-title-height: 52px;
-@main-title-bottom-shim: 6px; // equalizes spacing around main-title
 
 .status-panel {
     max-width: @panel-width;
     display: flex;
     flex-direction: column;
     flex: 1;
-    .panel-top {
-        display: flex;
-        flex-direction: row;
-        flex: 1;
-        padding-top: @panel-top-padding;
-        .icon-or-avatar {
-            width: @icon-size;
-            padding-top: @icon-top-padding;
-            padding-left: @icon-side-padding;
-            padding-right: @icon-side-padding;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            img {
-                width: 90%;
-            }
-        }
-        .panel-titles {
-            display: flex;
-            flex-direction: column;
-            // In a few cases, there won't be an .icon-or-avatar div (e.g. "problem" state).
-            // If that's the case, we need a bit of margin.
-            &:first-child {
-                margin-left: @panel-left-margin-noIcon;
-            }
-            .main-title {
-                max-height: @main-title-height;
-                // If the main title runs to more than two lines, we allow a scroll bar.
-                overflow-y: auto;
-                // We don't need much here, but without this the spacing between the title lines
-                // is more than the space between the main and sub titles.
-                margin-bottom: @main-title-bottom-shim;
-            }
-            .sub-title {
-                max-height: @panel-height - @main-title-height;
-                // If absolutely necessary, we allow a scroll bar in the subtitle.
-                overflow-y: auto;
-            }
-        }
-        .status-panel-menu {
-            display: flex;
-            flex: 1;
-            flex-direction: column;
-            align-items: flex-end;
-            padding-right: @panel-button-padding; // match right alignment of button below
-        }
-    }
+
     .panel-children {
         padding-left: @icon-side-padding + 4px; // to match the alignment of the icon or avatar above
         padding-right: @panel-button-padding; // to match alignment of the button below
