@@ -644,12 +644,13 @@ namespace Bloom.Publish.BloomLibrary
 
 		private void BulkUploadThisCollection()
 		{
-			BulkUpload(Path.GetDirectoryName(_model.Book.CollectionSettings.FolderPath));
+			BulkUpload(_model.Book.CollectionSettings.FolderPath);
 		}
 
 		private void BulkUpload(string rootFolderPath)
 		{
 			var target = BookUpload.UseSandbox ? UploadDestination.Development : UploadDestination.Production;
+
 			var bloom = Application.ExecutablePath;
 			if (SIL.PlatformUtilities.Platform.IsLinux)
 				bloom = $"/opt/mono5-sil/bin/mono {bloom}";
