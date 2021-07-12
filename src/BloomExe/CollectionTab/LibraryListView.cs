@@ -25,6 +25,7 @@ using DesktopAnalytics;
 using L10NSharp;
 using SIL.IO;
 using SIL.Reporting;
+using Bloom.Spreadsheet;
 
 namespace Bloom.CollectionTab
 {
@@ -1698,6 +1699,49 @@ namespace Bloom.CollectionTab
 		private void _decodableReaderMenuItem_Click(object sender, EventArgs e)
 		{
 			_model.SetIsBookDecodable(!_model.IsBookDecodable);
+		}
+
+		private void _bookContextMenu_Opening_1(object sender, CancelEventArgs e)
+		{
+
+		}
+
+		private void exportToExcelToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			var bookPath = _bookSelection.CurrentSelection.GetPathHtmlFile();
+			try
+			{
+				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));
+				var exporter = new SpreadsheetExporter();
+				//if (!string.IsNullOrEmpty(options.ParamsPath))
+				//	exporter.Params = SpreadsheetExportParams.FromFile(options.ParamsPath);\
+
+				string outputFilename;
+
+				using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
+				{
+					var extension = "xlsx";
+					var filename = _bookSelection.CurrentSelection.Storage.FileName;
+					dlg.FileName = Path.ChangeExtension(filename, extension);
+					dlg.Filter = "xlsx|*.xlsx";
+					dlg.RestoreDirectory = true;
+					//dlg.OverwritePrompt = true;
+					if (DialogResult.Cancel == dlg.ShowDialog())
+					{
+						return;
+					}
+					outputFilename = dlg.FileName;
+				}
+
+				var _sheet = exporter.Export(dom);
+				_sheet.WriteToFile(outputFilename);
+				//TODO capture any error output
+			}
+			catch (Exception ex)
+			{
+				var msg = LocalizationManager.GetString("Spreadsheet:ExportFailed", "Export failed: ");
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg + ex.Message, exception:ex);
+			}
 		}
 	}
 

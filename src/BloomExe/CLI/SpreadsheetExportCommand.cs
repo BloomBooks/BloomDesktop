@@ -13,7 +13,7 @@ namespace Bloom.CLI
 	/// <summary>
 	/// Exports a book to an xslx spreadsheet
 	/// usage:
-	///		spreadsheetExport [--params {path}] -o {path to put xslx} {path to book file}
+	///		spreadsheetExport [--params {path}] -o {path to put xlsx} {path to book file}
 	/// </summary>
 	class SpreadsheetExportCommand
 	{
