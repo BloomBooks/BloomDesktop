@@ -417,9 +417,9 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 
-		internal bool CheckAgainstUploadedHashfile(string currentHashes, string bookFolder)
+		internal bool CheckAgainstHashFileOnS3(string currentHashes, string bookFolder, IProgress progress)
 		{
-			string uploadedHashes = null;
+			string hashInfoOnS3 = null;
 			try
 			{
 				if (!IsBookOnServer(bookFolder))
@@ -427,13 +427,23 @@ namespace Bloom.WebLibraryIntegration
 				var bkInfo = new BookInfo(bookFolder, true);
 				var s3id = S3BookId(bkInfo.MetaData);
 				var key = s3id + BloomS3Client.kDirectoryDelimeterForS3 + Path.GetFileName(bookFolder) + BloomS3Client.kDirectoryDelimeterForS3 + UploadHashesFilename;
-				uploadedHashes = _s3Client.DownloadFile(UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName, key);
+				hashInfoOnS3 = _s3Client.DownloadFile(UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName, key);
 			}
 			catch
 			{
-				uploadedHashes = "";	// probably file doesn't exist because it hasn't yet been uploaded
+				hashInfoOnS3 = "";	// probably file doesn't exist because it hasn't yet been uploaded
 			}
-			return currentHashes == uploadedHashes;
+
+#if DEBUG
+			if (currentHashes != hashInfoOnS3)
+			{
+				progress.WriteMessage("local hash");
+				progress.WriteMessage(currentHashes);
+				progress.WriteMessage("s3 hash");
+				progress.WriteMessage(hashInfoOnS3);
+			}
+#endif
+			return currentHashes == hashInfoOnS3;
 		}
 
 		internal bool CheckAgainstLocalHashfile(string currentHashes, string uploadInfoPath)
@@ -592,20 +602,42 @@ namespace Bloom.WebLibraryIntegration
 			BookInfo.RepairDuplicateInstanceIds(rootFolderPath);
 		}
 
-		public static string HashBookFolder(string directory)
+		public static string HashBookFolder(string collectionPath, string directory) 
 		{
 			var bldr = new StringBuilder();
 			// Start file with the Bloom version.
-			var assembly = Assembly.GetExecutingAssembly();
-			bldr.AppendLineFormat("{0} Version {1} [{2}]", assembly.GetName().Name, assembly.GetName().Version,
+
+
+			// I (JH) removed this... it's extra safe, because theoretically we could make a change
+			// to bloom that makes us want to re-upload. But it comes at the cost of only skipping a book
+			// if you previously uploaded with *exactly* the same version. I judge that not worth it, and
+			// we can rely on the --force option if it is needed.
+
+			/* var assembly = Assembly.GetExecutingAssembly();
+				bldr.AppendLineFormat("{0} Version {1} [{2}]", assembly.GetName().Name, assembly.GetName().Version,
 				UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName);
+			*/
 			Debug.Assert(Directory.Exists(directory));
 			var dirInfo = new DirectoryInfo(directory);
 			var htmFiles = dirInfo.GetFiles("*.htm", SearchOption.TopDirectoryOnly);
 			Debug.Assert(htmFiles.Length == 1);
+
 			var htmContent = RobustFile.ReadAllText(htmFiles[0].FullName);
+
+			// REVIEW: why is this called "version code"?
 			var hash = Book.Book.MakeVersionCode(htmContent, htmFiles[0].FullName);
 			bldr.AppendLineFormat("{0} {1}", htmFiles[0].Name, hash);
+
+			// REVIEW: what about changes to image, sound, video, and widget files? SM must have thought about and
+			// chosen to ignore them, but why?
+
+			// detect changes in collection settings
+			var collectionSettingsContent = RobustFile.ReadAllText(collectionPath);
+			hash = collectionSettingsContent.GetHashCode().ToString();
+			bldr.AppendLineFormat("collectionsSettings {0}", hash);
+
+			// TODO: detect changes in customCollectionStyles.css
+
 			return bldr.ToString().Replace(Environment.NewLine,"\r\n");	// cross-platform line endings for this file
 		}
 	}
