@@ -35,58 +35,67 @@
     }
 
     .shapeChooserRow {
-        // Each row fills the entire width of the parent horizontally
-        width: 100%;
-
-        // Each row gets a little vertical cushion
-        margin-top: 10px;
-        margin-bottom: 10px;
-    }
-
-    #shapeChooserRow1 {
         // Using display: flex helps us grow some of the children
         // while also allowing us to adapt to the presence or absence of the vertical scrollbar
         display: flex;
+
+        // Each row fills the entire width of the parent horizontally
+        width: 100%;
         height: 50px;
-        align-items: center;
+        align-items: center; // vertical
+        justify-content: space-between; // horizontal
+        margin-right: 4px; // matches the space on the left
 
-        #shapeChooserSpeechBubble {
-            width: 50px;
-            height: 50px;
-        }
-
-        #shapeChooserTextBlock {
-            margin-left: 15px; // Create enough spacing between this and the icon to its left
-            flex-grow: 1; // Let it fill as much space as possible to the right
-            text-align: center; // Center the text horizontally
-
-            padding-top: 1em;
-            vertical-align: middle;
-            padding-bottom: 1em;
-
-            color: white;
-            border: 1px dotted white;
+        // Each row gets a little vertical cushion
+        margin-top: 10px;
+        > .shapeChooserRow {
+            // second row
+            margin-top: 0;
+            margin-bottom: 10px;
         }
     }
 
-    #shapeChooserRow2 {
-        display: flex; // Lets us have the button expand to fill the appropriate area
+    #shapeChooserSpeechBubble {
+        width: 50px;
+        height: 50px;
+    }
 
-        #shapeChooserCaption {
-            // Horizontal positioning / sizing of the element
-            margin-left: 14px;
-            flex-grow: 1; // Allow it to fill the entire space (but with margin-left and margin-right outside of it)
-            margin-right: 14px;
-            text-align: center;
+    #shapeChooserImagePlaceholder {
+        width: 50px;
+        height: 50px;
+    }
 
-            // Vertical sizing
-            padding-top: 5px;
-            padding-bottom: 5px;
+    #shapeChooserVideoPlaceholder {
+        width: 50px;
+        height: 50px;
+    }
 
-            border: 1px solid black;
-            color: black;
-            background-color: white;
-        }
+    #shapeChooserTextBlock {
+        margin-left: 5px; // Match the spacing on the bubble icon above
+        flex-grow: 1; // Let it fill as much space as possible to the right
+        text-align: center; // Center the text horizontally
+
+        padding-top: 1em;
+        vertical-align: middle;
+        padding-bottom: 1em;
+
+        color: white;
+        border: 1px dotted white;
+    }
+
+    #shapeChooserCaption {
+        // Horizontal positioning / sizing of the element
+        margin-left: 10px;
+        flex-grow: 1; // Allow it to fill the entire space (but with margin-left and margin-right outside of it)
+        text-align: center;
+
+        // Vertical sizing
+        padding-top: 5px;
+        padding-bottom: 5px;
+
+        border: 1px solid black;
+        color: black;
+        background-color: white;
     }
 }
 
