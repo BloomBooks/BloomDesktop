@@ -60,10 +60,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [error, setError] = useState("");
     const [progress, setProgress] = useState(0);
     const [busy, setBusy] = useState(false);
-    const [bookStatus, setBookStatus] = useState<any>({
-        currentUser: "",
-        currentUserName: ""
-    });
     const [checkinFailed, setCheckinFailed] = useState(false);
     const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
     const [forgetDialogOpen, setForgetDialogOpen] = useState(false);
@@ -71,7 +67,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         currentUser: "",
         currentUserName: ""
     });
-    const [currentUserName, setCurrentUserName] = useState("");
     React.useEffect(() => {
         var lockedByMe = false;
         BloomApi.get(
