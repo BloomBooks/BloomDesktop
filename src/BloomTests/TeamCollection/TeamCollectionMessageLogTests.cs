@@ -450,5 +450,47 @@ namespace BloomTests.TeamCollection
 			MakeHistory2();
 			Assert.That(_messageLog.TeamCollectionStatus, Is.EqualTo(TeamCollectionStatus.ClobberPending));
 		}
+
+		[Test]
+		public void WriteMessage_RedundantMessages_NotAdded()
+		{
+			MakeError1();
+			Assert.That(_messageLog.Messages, Has.Count.EqualTo(1));
+
+			// Exact same message, not added
+			MakeError1();
+			Assert.That(_messageLog.Messages, Has.Count.EqualTo(1));
+
+			// Same except param1 is empty instead of null
+			_messageLog.WriteMessage(MessageAndMilestoneType.Error,
+				"TeamCollection.ConflictingCheckout",
+				"The book '{0}' is checked out to someone else. Your changes are saved to Lost-and-found.",
+				"Joe hunts pigs",
+				"");
+			Assert.That(_messageLog.Messages, Has.Count.EqualTo(1));
+
+			_messageLog.WriteMessage(MessageAndMilestoneType.Error,
+				"TeamCollection.ConflictingCheckout",
+				"This is a new message",
+				"",
+				null);
+			Assert.That(_messageLog.Messages, Has.Count.EqualTo(2));
+
+			// nulls and empty strings reversed
+			_messageLog.WriteMessage(MessageAndMilestoneType.Error,
+				"TeamCollection.ConflictingCheckout",
+				"This is a new message",
+				null,
+				"");
+			Assert.That(_messageLog.Messages, Has.Count.EqualTo(2));
+
+			// non-empty string is different from null
+			_messageLog.WriteMessage(MessageAndMilestoneType.Error,
+				"TeamCollection.ConflictingCheckout",
+				"This is a new message",
+				"something",
+				"");
+			Assert.That(_messageLog.Messages, Has.Count.EqualTo(3));
+		}
 	}
 }

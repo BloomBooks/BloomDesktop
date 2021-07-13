@@ -16,6 +16,7 @@ import {
     useSubscribeToWebSocketForObject
 } from "../utils/WebSocketManager";
 import { Block } from "@material-ui/icons";
+import { StringWithOptionalLink } from "../react_components/stringWithOptionalLink";
 import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
 import { AvatarDialog } from "./AvatarDialog";
 import { ForgetChangesDialog } from "./ForgetChangesDialog";
@@ -30,9 +31,24 @@ export type LockState =
     | "lockedByMeElsewhere"
     | "needsReload"
     | "problem"
+    | "hasInvalidRepoData"
     | "disconnected"
     | "lockedByMeDisconnected"
     | "error";
+
+export interface IBookTeamCollectionStatus {
+    changedRemotely: boolean;
+    who: string;
+    whoFirstName: string;
+    whoSurname: string;
+    currentUser: string;
+    where: string;
+    currentMachine: string;
+    when: string;
+    disconnected: boolean;
+    problem: boolean; // hasAProblem in master
+    hasInvalidRepoData: string; // error message, or empty if repo data is valid
+}
 
 export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [state, setState] = useState<LockState>("initializing");
@@ -44,6 +60,10 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     const [error, setError] = useState("");
     const [progress, setProgress] = useState(0);
     const [busy, setBusy] = useState(false);
+    const [bookStatus, setBookStatus] = useState<any>({
+        currentUser: "",
+        currentUserName: ""
+    });
     const [checkinFailed, setCheckinFailed] = useState(false);
     const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
     const [forgetDialogOpen, setForgetDialogOpen] = useState(false);
@@ -57,9 +77,11 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         BloomApi.get(
             "teamCollection/currentBookStatus",
             data => {
-                const bookStatus = data.data;
+                const bookStatus: IBookTeamCollectionStatus = data.data;
                 setBookStatus(bookStatus);
-                if (bookStatus.problem) {
+                if (bookStatus.hasInvalidRepoData) {
+                    setState("hasInvalidRepoData");
+                } else if (bookStatus.problem) {
                     setState("problem");
                 } else if (bookStatus.changedRemotely) {
                     setState("needsReload");
@@ -280,9 +302,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         undefined,
         true
     );
-    if (state != "lockedByMe" && busy) {
-        setBusy(false);
-    }
 
     const menuItems: (SimpleMenuItem | "-")[] = [
         {
@@ -330,18 +349,27 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                 );
             case "unlocked":
                 const checkoutHandler = () => {
+                    setBusy(true);
                     BloomApi.post(
                         "teamCollection/attemptLockOfCurrentBook",
                         response => {
-                            // nothing to do. Change of state is handled by websocket notifications.
+                            // Not much to do. Change of state is handled by websocket notifications.
                             // We want to keep it that way, so we don't have to worry about here about
                             // whether the checkout attempt succeeded or not.
+                            setBusy(false);
+                        },
+                        error => {
+                            setBusy(false);
                         }
                     );
                 };
 
                 return (
                     <StatusPanelCommon
+                        css={css`
+                            ${busy &&
+                                "cursor: progress; .checkout-button{cursor:progress;}"}
+                        `}
                         lockState={state}
                         title={mainTitleUnlocked}
                         subTitle={subTitleUnlocked}
@@ -367,6 +395,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         () => {
                             // not much to do. Most change of state is handled by websocket notifications.
                             setCheckinFailed(false); // in case of previous failure, but it will change to "checked in" anyway.
+                            setBusy(false);
                         },
                         // failure handler
                         () => {
@@ -461,6 +490,20 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         )}
                         menu={menu}
                     />
+                );
+            case "hasInvalidRepoData":
+                return (
+                    <p
+                        css={css`
+                            a {
+                                color: cyan;
+                            }
+                        `}
+                    >
+                        <StringWithOptionalLink
+                            message={bookStatus.hasInvalidRepoData}
+                        />
+                    </p>
                 );
             case "needsReload":
                 return (

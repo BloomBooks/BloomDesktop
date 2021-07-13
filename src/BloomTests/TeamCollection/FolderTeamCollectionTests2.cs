@@ -503,6 +503,28 @@ namespace BloomTests.TeamCollection
 		}
 
 		[Test]
+		public void GetBadZipFileMessage_InsertsLinkAndFilename()
+		{
+			using (var collectionFolder =
+				new TemporaryFolder("GetBadZipFileMessage_InsertsLinkAndFilename_Collection"))
+			{
+				using (var repoFolder =
+					new TemporaryFolder("GetBadZipFileMessage_InsertsLinkAndFilename_Repo"))
+				{
+					var mockTcManager = new Mock<ITeamCollectionManager>();
+					var tc = new TestFolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath,
+						repoFolder.FolderPath);
+					var result = tc.GetBadZipFileMessage("Roses are red& Violets are blue.");
+					Assert.That(result,
+						Is.EqualTo(
+							"There is a problem with the book \"Roses are red& Violets are blue.\" in the Team Collection system. Bloom was not able to open the zip file, which may be corrupted. Please click <a href='/bloom/api/teamCollection/reportBadZip?file="
+							+ UrlPathString.CreateFromUnencodedString(repoFolder.FolderPath).UrlEncoded
+							+ "%5cBooks%5cRoses%20are%20red%26%20Violets%20are%20blue..bloom'>here</a> to get help from the Bloom support team."));
+				}
+			}
+		}
+
+		[Test]
 		public void ForgetChanges_HtmlChange_UndoesIt()
 		{
 			using (var collectionFolder =

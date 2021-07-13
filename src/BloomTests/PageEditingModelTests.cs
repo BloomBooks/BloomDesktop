@@ -7,6 +7,7 @@ using Bloom.Edit;
 using Bloom.ImageProcessing;
 using NUnit.Framework;
 using SIL.TestUtilities;
+using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
 
 namespace BloomTests
@@ -18,7 +19,7 @@ namespace BloomTests
 
 		[Test]
 		[Category("RequiresUI")]
-		public void ChangePicture_PictureIsFromOutsideProject_PictureCopiedAndAttributeChanged()
+		public void ChangePicture_PictureIsFromOutsideProject_PictureCopiedAndAttributeChanged_AndMetadataSaved()
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml("<html><body><div/><div><img id='one'/><img id='two' src='old.png'/></div></body></html>");
@@ -29,12 +30,16 @@ namespace BloomTests
 				var newImagePath = src.Combine("new.png");
 				using (var original = MakeSamplePngImage(newImagePath))
 				{
+					original.Metadata.Creator = "Some nice user";
+					original.Metadata.HasChanges = true;
 					ChangePicture(dest.Path, dom, "two", original);
-					Assert.IsTrue(File.Exists(dest.Combine("new.png")));
+					var pathToNewImage = dest.Combine("new.png");
+					Assert.IsTrue(File.Exists(pathToNewImage));
 					AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(@"//img[@id='two' and @src='new.png']", 1);
+					var metadataFromImage = Metadata.FromFile(pathToNewImage);
+					Assert.That(metadataFromImage.Creator, Is.EqualTo("Some nice user"));
 				}
 			}
-
 		}
 
 		/// <summary>

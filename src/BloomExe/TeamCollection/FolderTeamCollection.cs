@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
@@ -15,6 +16,7 @@ using Bloom.CollectionCreating;
 using Bloom.MiscUI;
 using Bloom.Utils;
 using Bloom.web;
+using L10NSharp;
 using Sentry;
 using SIL.Code;
 using SIL.IO;
@@ -209,7 +211,8 @@ namespace Bloom.TeamCollection
 		/// <param name="destinationCollectionFolder">Where to put the retrieved book folder,
 		/// typically the local collection folder.</param>
 		/// <param name="bookName">The name of the book, with or without the .bloom suffix - either way is fine</param>
-		protected override void FetchBookFromRepo(string destinationCollectionFolder, string bookName)
+		/// <returns>error message if there was a problem, otherwise, null</returns>
+		protected override string FetchBookFromRepo(string destinationCollectionFolder, string bookName)
 		{
 			var bookPath = GetPathToBookFileInRepo(bookName);
 			var destFolder = Path.Combine(destinationCollectionFolder, GetBookNameWithoutSuffix(bookName));
@@ -219,11 +222,38 @@ namespace Bloom.TeamCollection
 			try
 			{
 				RobustZip.UnzipDirectory(destFolder, bookPath);
+				return null;
 			}
 			catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
 			{
-				NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not unpack a file in your Team Collection: " + bookPath, exception: e);
+				return GetBadZipFileMessage(bookName);
 			}
+		}
+
+		public string GetBadZipFileMessage(string zipName)
+		{
+			var zipPath = GetPathToBookFileInRepo(zipName);
+			var part1 = GetSimpleBadZipFileMessage(zipPath);
+			var template2 = LocalizationManager.GetString("Common.ClickHereForHelp", "Please click [here] to get help from the Bloom support team.",
+				"[here] will become a link. Keep the brackets to mark the translated text that should form the link.");
+
+			var pattern = new Regex(@"\[(.*)\]");
+			if (!pattern.IsMatch(template2))
+			{
+				// If the translator messed up and didn't mark the bit that should be the hot link, we'll make the whole sentence hot.
+				// So it will be something like "Please click here to get help from the Bloom support team", and you can click anywhere
+				// on the sentence.
+				template2 = "[" + template2 + "]";
+			}
+			var part2 = pattern.Replace(template2, $"<a href='/bloom/api/teamCollection/reportBadZip?file={ UrlPathString.CreateFromUnencodedString(zipPath).UrlEncoded}'>$1</a>");
+			return part1 + " " + part2;
+		}
+
+		public string GetSimpleBadZipFileMessage(string zipPath)
+		{
+			var template = LocalizationManager.GetString("TeamCollection.BadZipFile",
+				"There is a problem with the book \"{0}\" in the Team Collection system. Bloom was not able to open the zip file, which may be corrupted.");
+			return string.Format(template, Path.GetFileNameWithoutExtension(zipPath));
 		}
 
 		public override void PutCollectionFiles(string[] names)
@@ -581,6 +611,20 @@ namespace Bloom.TeamCollection
 			return RobustZip.GetComment(bookPath);
 		}
 
+		protected override bool TryGetBookStatusJsonFromRepo(string bookFolderName, out string status)
+		{
+			try
+			{
+				status = GetBookStatusJsonFromRepo(bookFolderName);
+				return true;
+			} catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
+			{
+				MessageLog.WriteMessage(MessageAndMilestoneType.ErrorNoReload, "", GetBadZipFileMessage(bookFolderName));
+				status = null;
+				return false;
+			}
+		}
+
 		/// <summary>
 		/// Return true if the book exists in the repo.
 		/// </summary>
@@ -617,7 +661,7 @@ namespace Bloom.TeamCollection
 			// we are not cluttering the TC with conflicts.
 			if (IsFileLocked(bookPath))
 			{
-				throw new ArgumentException("Book is locked in the Team Collection");
+				throw new ArgumentException("Book is locked in the Team Collection. This may be because the Team Collection system is busy sharing it. Please try again later.");
 			}
 			lock (_lockObject)
 			{
@@ -642,12 +686,17 @@ namespace Bloom.TeamCollection
 			{
 				// If something recently changed it we might get some spurious failures
 				// to open it for modification.
+				// BL-10139 indicated that the default 10 retries over two seconds
+				// is sometimes not enough, so I've increased it here.
+				// No guarantee that even 5s is enough if Dropbox is busy syncing a large
+				// file across a poor internet, but I think after that it's better to give
+				// the user a failed message.
 				RetryUtility.Retry(() =>
 				{
 					using (File.Open(filePath, FileMode.Open))
 					{
 					}
-				});
+				}, maxRetryAttempts:25);
 			}
 			catch (IOException e)
 			{
