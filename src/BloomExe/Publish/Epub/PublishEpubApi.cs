@@ -400,7 +400,7 @@ namespace Bloom.Publish.Epub
 				_webSocketServer.SendString(kWebsocketContext, "startingEbookCreation", _previewSrc);
 
 				var htmlPath = _bookSelection.CurrentSelection.GetPathHtmlFile();
-				var newVersion = Book.Book.MakeVersionCode(File.ReadAllText(htmlPath), htmlPath);
+				var newVersion = Book.Book.ComputeHashForAllBookRelatedFiles(htmlPath);
 				bool previewIsAlreadyCurrent;
 				lock (_epubMakerLock)
 				{

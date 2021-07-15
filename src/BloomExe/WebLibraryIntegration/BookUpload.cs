@@ -602,41 +602,23 @@ namespace Bloom.WebLibraryIntegration
 			BookInfo.RepairDuplicateInstanceIds(rootFolderPath);
 		}
 
-		public static string HashBookFolder(string collectionPath, string directory) 
+		/// <summary>
+		/// Compute a hash for the book in the given directory.  The hash includes the book's HTML file
+		/// (suitably pruned to remove insignificant changes such as whitespace between elements), other
+		/// relevant files in the directory and its subdirectories (CSS, audio, video, images, etc.) and
+		/// the two basic collection level files in the parent directory (customCollectionStyles.css and
+		/// *.bloomCollection).
+		/// </summary>
+		public static string HashBookFolder(string directory) 
 		{
 			var bldr = new StringBuilder();
-			// Start file with the Bloom version.
-
-
-			// I (JH) removed this... it's extra safe, because theoretically we could make a change
-			// to bloom that makes us want to re-upload. But it comes at the cost of only skipping a book
-			// if you previously uploaded with *exactly* the same version. I judge that not worth it, and
-			// we can rely on the --force option if it is needed.
-
-			/* var assembly = Assembly.GetExecutingAssembly();
-				bldr.AppendLineFormat("{0} Version {1} [{2}]", assembly.GetName().Name, assembly.GetName().Version,
-				UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName);
-			*/
 			Debug.Assert(Directory.Exists(directory));
 			var dirInfo = new DirectoryInfo(directory);
 			var htmFiles = dirInfo.GetFiles("*.htm", SearchOption.TopDirectoryOnly);
 			Debug.Assert(htmFiles.Length == 1);
 
-			var htmContent = RobustFile.ReadAllText(htmFiles[0].FullName);
-
-			// REVIEW: why is this called "version code"?
-			var hash = Book.Book.MakeVersionCode(htmContent, htmFiles[0].FullName);
+			var hash = Book.Book.ComputeHashForAllBookRelatedFiles(htmFiles[0].FullName);
 			bldr.AppendLineFormat("{0} {1}", htmFiles[0].Name, hash);
-
-			// REVIEW: what about changes to image, sound, video, and widget files? SM must have thought about and
-			// chosen to ignore them, but why?
-
-			// detect changes in collection settings
-			var collectionSettingsContent = RobustFile.ReadAllText(collectionPath);
-			hash = collectionSettingsContent.GetHashCode().ToString();
-			bldr.AppendLineFormat("collectionsSettings {0}", hash);
-
-			// TODO: detect changes in customCollectionStyles.css
 
 			return bldr.ToString().Replace(Environment.NewLine,"\r\n");	// cross-platform line endings for this file
 		}

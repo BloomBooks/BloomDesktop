@@ -265,7 +265,7 @@ namespace Bloom.WebLibraryIntegration
 				_collectionFoldersUploaded.Add(collectionPath);
 
 				// Compute the book hash file and compare it to the existing one for bulk upload.
-				var currentHashes = BookUpload.HashBookFolder(collectionPath, uploadParams.Folder);
+				var currentHashes = BookUpload.HashBookFolder(uploadParams.Folder);
 				progress.WriteMessage(currentHashes);
 				var pathToLocalHashInfoFromLastUpload = Path.Combine(uploadParams.Folder, HashInfoFromLastUpload);
 				if (!uploadParams.ForceUpload)
