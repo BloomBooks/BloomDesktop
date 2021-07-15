@@ -612,35 +612,44 @@ namespace Bloom
 		public void OnGetTroubleShootingInformation(object sender, EventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
-			//we can imagine doing a lot more than this... the main thing I wanted was access to the <link> paths for stylesheets,
-			//as those can be the cause of errors if Bloom is using the wrong version of some stylesheet, and it might not do that
-			//on a developer/ support-person computer.
-			var builder = new StringBuilder();
 
-			foreach (string label in ErrorReport.Properties.Keys)
+			try
 			{
-				 builder.AppendLine(label + ": " + ErrorReport.Properties[label] + Environment.NewLine);
+				//we can imagine doing a lot more than this... the main thing I wanted was access to the <link> paths for stylesheets,
+				//as those can be the cause of errors if Bloom is using the wrong version of some stylesheet, and it might not do that
+				//on a developer/ support-person computer.
+				var builder = new StringBuilder();
+
+				foreach (string label in ErrorReport.Properties.Keys)
+				{
+					builder.AppendLine(label + ": " + ErrorReport.Properties[label] + Environment.NewLine);
+				}
+
+				builder.AppendLine();
+
+				using (var client = new WebClient())
+				{
+					builder.AppendLine(client.DownloadString(_url));
+				}
+				PortableClipboard.SetText(builder.ToString());
+
+				// NOTE: it seems strange to call BeginInvoke to display the MessageBox. However, this
+				// is necessary on Linux: this method gets called from the context menu which on Linux
+				// is displayed by GTK (which has its own message loop). Calling MessageBox.Show
+				// directly kind of works but has all kinds of side-effects like the message box not
+				// properly updating and geckofx not properly working anymore. Displaying the message
+				// box asynchronously lets us get out of the GTK message loop and displays it
+				// properly on the SWF message loop. Technically this is only necessary on Linux, but
+				// it doesn't hurt on Windows.
+				BeginInvoke((Action) delegate()
+				{
+					MessageBox.Show("Debugging information has been placed on your clipboard. You can paste it into an email.");
+				});
 			}
-
-			builder.AppendLine();
-
-			using (var client = new WebClient())
+			catch (Exception ex)
 			{
-				builder.AppendLine(client.DownloadString(_url));
+				NonFatalProblem.ReportSentryOnly(ex);
 			}
-			PortableClipboard.SetText(builder.ToString());
-
-			// NOTE: it seems strange to call BeginInvoke to display the MessageBox. However, this
-			// is necessary on Linux: this method gets called from the context menu which on Linux
-			// is displayed by GTK (which has its own message loop). Calling MessageBox.Show
-			// directly kind of works but has all kinds of side-effects like the message box not
-			// properly updating and geckofx not properly working anymore. Displaying the message
-			// box asynchronously lets us get out of the GTK message loop and displays it
-			// properly on the SWF message loop. Technically this is only necessary on Linux, but
-			// it doesn't hurt on Windows.
-			BeginInvoke((Action) delegate() {
-				MessageBox.Show("Debugging information has been placed on your clipboard. You can paste it into an email.");
-			});
 		}
 
 		public void OnOpenPageInSystemBrowser(object sender, EventArgs e)
