@@ -238,7 +238,7 @@ namespace BloomTests.web
 			_bookSelection.SelectBook(book);
 
 			var result = ApiTest.GetString(_server, "readers/io/textOfContentPages");
-			Assert.That(result, Is.EqualTo("{\"85a320a4-b73f-4149-87a1-9a1297ef04b0\":\"A cat stares at you.\",\"d46e4259-2a99-4197-b21d-bf97a992b7d0\":\"\",\"5a424678-ec70-4c97-a547-015ff38dfd11\":\"See the two kittens.\",\"ebbd7f47-05fa-4e6d-a7a1-cb526bb5efb8\":\"local language text\"}"));
+			Assert.That(result, Is.EqualTo("{\"85a320a4-b73f-4149-87a1-9a1297ef04b0\":\"<p>A cat stares at you.</p>\",\"d46e4259-2a99-4197-b21d-bf97a992b7d0\":\"<p />\",\"5a424678-ec70-4c97-a547-015ff38dfd11\":\"<p>See the two kittens.</p>\",\"ebbd7f47-05fa-4e6d-a7a1-cb526bb5efb8\":\"<p>local language text</p>\"}"));
 		}
 
 		Mock<IBookStorage> CreateMockStorage(HtmlDom htmlDom, string subfolder)
