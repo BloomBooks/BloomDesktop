@@ -1306,7 +1306,7 @@ namespace Bloom.TeamCollection
 			// If something goes wrong, all we can really do is start over.
 			RetryUtility.Retry(() =>
 			{
-				result = Book.Book.MakeVersionCode(RobustFile.ReadAllText(sourceBookPath), sourceBookPath);
+				result = Book.Book.ComputeHashForAllBookRelatedFiles(sourceBookPath);
 			});
 			return result;
 		}

@@ -239,7 +239,7 @@ namespace Bloom.Book
 					if (pathToFileForSha != null)
 					{
 						// Make an extra entry containing the sha
-						var sha = Book.MakeVersionCode(File.ReadAllText(pathToFileForSha, Encoding.UTF8), pathToFileForSha);
+						var sha = Book.ComputeHashForAllBookRelatedFiles(pathToFileForSha);
 						var name = "version.txt"; // must match what BloomReader is looking for in NewBookListenerService.IsBookUpToDate()
 						MakeExtraEntry(zipStream, name, sha);
 						LastVersionCode = sha;

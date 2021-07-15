@@ -622,14 +622,8 @@ namespace Bloom.WebLibraryIntegration
 			var htmFiles = dirInfo.GetFiles("*.htm", SearchOption.TopDirectoryOnly);
 			Debug.Assert(htmFiles.Length == 1);
 
-			var htmContent = RobustFile.ReadAllText(htmFiles[0].FullName);
-
-			// REVIEW: why is this called "version code"?
-			var hash = Book.Book.MakeVersionCode(htmContent, htmFiles[0].FullName);
+			var hash = Book.Book.ComputeHashForAllBookRelatedFiles(htmFiles[0].FullName);
 			bldr.AppendLineFormat("{0} {1}", htmFiles[0].Name, hash);
-
-			// REVIEW: what about changes to image, sound, video, and widget files? SM must have thought about and
-			// chosen to ignore them, but why?
 
 			// detect changes in collection settings
 			var collectionSettingsContent = RobustFile.ReadAllText(collectionPath);
