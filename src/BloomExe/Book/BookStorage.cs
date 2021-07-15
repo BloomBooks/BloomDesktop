@@ -1813,7 +1813,7 @@ namespace Bloom.Book
 		public void CleanupUnusedSupportFiles(bool isForPublish, HashSet<string> langsToExcludeAudioFor = null)
 		{
 			CleanupUnusedImageFiles(!isForPublish);
-			CleanupUnusedAudioFiles(isForPublish: isForPublish, langsToExcludeAudioFor);
+			CleanupUnusedAudioFiles(isForPublish, langsToExcludeAudioFor);
 			CleanupUnusedVideoFiles();
 			CleanupUnusedActivities();
 		}
