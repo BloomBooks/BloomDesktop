@@ -76,18 +76,20 @@ import { ReaderToolsModel } from "../readerToolsModel";
                     allWords += " ";
                 } else {
                     // This is basically duplicating how stringToSentences comes up with
-                    // fragment.text but with removeAllMarkup applied.
-                    // I don't much like that duplication. But we need removeAllMarkup
+                    // fragment.text but with removeAllHtmlMarkupFromString applied.
+                    // I don't much like that duplication. But we need removeAllHtmlMarkupFromString
                     // so that the words we count won't be messed up by (e.g.) invisible spaces
                     // that ckEdit puts in as bookmarks to keep our place. We can't apply it
                     // to the input to stringToSentences, because we want to preserve the markup
                     // and bookmark when we put the fragments back together to make the new
                     // text. I tried making two parallel fragments arrays, one using the
-                    // unmodified text, and one from removeAllMarkup; but in general they
+                    // unmodified text, and one from removeAllHtmlMarkupFromString; but in general they
                     // don't come out the same length, or with pieces corresponding. For example,
-                    // removeAllMarkup cleans out <br>, which otherwise becomes an element in
+                    // removeAllHtmlMarkupFromString cleans out <br>, which otherwise becomes an element in
                     // the list.
-                    const cleanText = removeAllMarkup(fragment.text);
+                    const cleanText = removeAllHtmlMarkupFromString(
+                        fragment.text
+                    );
                     const words = theOneLibSynphony.getWordsFromHtmlString(
                         cleanText
                     );
@@ -211,7 +213,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
 
         // get all text
         this.each(function() {
-            text += " " + removeAllMarkup($(this).html());
+            text += " " + removeAllHtmlMarkupFromString($(this).html());
         });
 
         /**
@@ -275,7 +277,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
         this.each(function() {
             // split into sentences
             var fragments = theOneLibSynphony.stringToSentences(
-                removeAllMarkup($(this).html())
+                removeAllHtmlMarkupFromString($(this).html())
             );
 
             if (!fragments || fragments.length === 0) return;
@@ -308,7 +310,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
         this.each(function() {
             // split into sentences
             var fragments = theOneLibSynphony.stringToSentences(
-                removeAllMarkup($(this).html())
+                removeAllHtmlMarkupFromString($(this).html())
             );
 
             // remove inter-sentence space
@@ -425,29 +427,6 @@ import { ReaderToolsModel } from "../readerToolsModel";
         }
     });
 
-    /**
-     * Strips all html from the input string
-     * @param {String} textHTML
-     * @returns {String}
-     */
-    function removeAllMarkup(textHTML) {
-        // preserve spaces after line breaks and paragraph breaks
-        var regex = /(<br><\/br>|<br>|<br \/>|<br\/>|<p><\/p>|<p>|<p \/>|<p\/>|\n)/g;
-        textHTML = textHTML.replace(regex, " ");
-
-        // This regex is rather specific to the spans ckeditor sticks in as
-        // 'landmarks' so the selection can be restored after manipulating the
-        // markup. In principle we could have a more complex regex that would
-        // remove all display:none spans, even if there are other explicit styles
-        // or with single quotes around the style or with different white space.
-        // However, we don't have a current need for it, so the extra
-        // complication doesn't seem worthwhile.
-        var ckeRegex = /<span [^>]*style="display: none;"[^>]*>[^<]*<\/span>/g;
-        textHTML = textHTML.replace(ckeRegex, "");
-
-        return $("<div>" + textHTML + "</div>").text();
-    }
-
     function oldMarkup(gpcForm, desiredGPCs) {
         var returnVal = "";
 
@@ -490,3 +469,34 @@ import { ReaderToolsModel } from "../readerToolsModel";
         }
     }
 })(jQuery);
+
+/**
+ * Strip the HTML markup from a string
+ * @param {string} textHtml
+ * @returns {string}
+ */
+export function removeAllHtmlMarkupFromString(textHtml: string): string {
+    // ensure spaces after line breaks and paragraph breaks
+    var regex = /(<br><\/br>|<br>|<br ?\/>|<p><\/p>|<\/?p>|<p ?\/>|\n)/g;
+    textHtml = textHtml.replace(regex, " ");
+
+    // This regex is rather specific to the spans ckeditor sticks in as
+    // 'landmarks' so the selection can be restored after manipulating the
+    // markup. In principle we could have a more complex regex that would
+    // remove all display:none spans, even if there are other explicit styles
+    // or with single quotes around the style or with different white space.
+    // However, we don't have a current need for it, so the extra
+    // complication doesn't seem worthwhile.
+    var ckeRegex = /<span [^>]*style="display: none;"[^>]*>[^<]*<\/span>/g;
+    textHtml = textHtml.replace(ckeRegex, "");
+
+    // Both open and close tags for markup
+    var markupRegex = /<\/?(strong|em|sup|u|i|b|a|span)>/g;
+    textHtml = textHtml.replace(markupRegex, "");
+
+    // Open tags for more complex markup (ie, span and a tags).
+    var complexMarkupRegex = /<(span|a)[ \r\n\t][^>]*>/g;
+    textHtml = textHtml.replace(complexMarkupRegex, "");
+
+    return $("<div>" + textHtml + "</div>").text();
+}

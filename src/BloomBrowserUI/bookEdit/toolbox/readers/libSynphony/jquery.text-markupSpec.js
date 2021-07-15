@@ -7,6 +7,7 @@
  *
  */
 import { theOneLibSynphony } from "./synphony_lib";
+import { removeAllHtmlMarkupFromString } from "./jquery.text-markup.ts";
 
 describe("jquery.text-markup", function() {
     function addDiv(id) {
@@ -204,5 +205,29 @@ describe("jquery.text-markup", function() {
 
         var result = $("div").getTotalWordCount();
         expect(result).toBe(12);
+    });
+
+    it("removeAllHtmlMarkup testing", function() {
+        var out1 = removeAllHtmlMarkupFromString(
+            '<p>An malipayon na adlaw ni Mando nabalyuh<span data-cke-bookmark="1" style="display: none;" id="cke_bm_78C">&nbsp;</span>an san pagkahanda kan Ondo.<span data-cke-bookmark="1" style="display: none;" id="cke_bm_36C">&nbsp;</span> <span data-cke-bookmark="1" style="display: none;" id="cke_bm_47C"></span></p>'
+        );
+        expect(out1).toBe(
+            " An malipayon na adlaw ni Mando nabalyuhan san pagkahanda kan Ondo.  "
+        );
+
+        var out2 = removeAllHtmlMarkupFromString(
+            "<p>This <strong>is</strong> <em>a</em> <u>test</u> of <sup>some</sup> sort.</p>"
+        );
+        expect(out2).toBe(" This is a test of some sort. ");
+
+        var out3 = removeAllHtmlMarkupFromString(
+            "W<p></p>X<p/>Y<p />Z<p>A<br></br>B<br/>C<br />D</p>E"
+        );
+        expect(out3).toBe("W X Y Z A B C D E");
+
+        var out4 = removeAllHtmlMarkupFromString(
+            "A sti<span class='something'>tch</span> in <a href='https://somewhere.com/abcde/'>time</a> saves <i><b>nine</b></i>!"
+        );
+        expect(out4).toBe("A stitch in time saves nine!");
     });
 });
