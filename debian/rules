@@ -142,14 +142,15 @@ override_dh_clideps:
 		--exclude-moduleref=libtidy.dll --exclude-moduleref=msdelta.dll \
 		--exclude-moduleref=mspatcha.dll --exclude-moduleref=mspatchc.dll \
 		--exclude-moduleref=libdl.so --exclude-moduleref=ntdll \
-		--exclude-moduleref=MAPI32.DLL --exclude-moduleref=__Internal \
+		--exclude-moduleref=i:MAPI32.DLL --exclude-moduleref=__Internal \
 		--exclude-moduleref=api-ms-win-core-sysinfo-l1-1-0.dll \
 		--exclude-moduleref=api-ms-win-core-sysinfo-l1-2-0.dll \
-		--exclude-moduleref=Mpr.dll --exclude-moduleref=keyman32.dll \
+		--exclude-moduleref=i:Mpr.dll --exclude-moduleref=keyman32.dll \
 		--exclude-moduleref=libenchant.dll --exclude-moduleref=libxklavier \
 		--exclude-moduleref=libgio-2.0.so --exclude-moduleref=libglib-2.0.so \
 		--exclude-moduleref=libgobject-2.0.so \
-		--exclude-moduleref=ole32.dll --exclude-moduleref=version.dll && \
+		--exclude-moduleref=dl --exclude-moduleref=propsys.dll --exclude-moduleref=powrprof.dll \
+		--exclude-moduleref=i:ole32.dll --exclude-moduleref=version.dll && \
 	rm -rf debian/tmp/usr && \
 	mv $(DESTDIR)/$(LIB)/Newtonsoft.Json.delel $(DESTDIR)/$(LIB)/Newtonsoft.Json.dll && \
 	mv $(DESTDIR)/$(LIB)/Autofac.delel $(DESTDIR)/$(LIB)/Autofac.dll && \

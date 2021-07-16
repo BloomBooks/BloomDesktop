@@ -448,6 +448,30 @@
     <Delete Files="@(DeleteForSILMedia)" TreatErrorsAsWarnings="true" />
     <RemoveDir Directories="@(RemoveForSILMedia)" />
   </Target>
+  <ItemGroup Condition="'$(OS)'!='Windows_NT'">
+    <CopyForLinux Include="$(SolutionDir)packages/SQLitePCLRaw.lib.e_sqlite3.2.0.3/runtimes/linux-x64/native/libe_sqlite3.so" />
+    <DeleteForLinux Include="$(OutDir)runtimes/linux-arm/native/*.*" />
+    <DeleteForLinux Include="$(OutDir)runtimes/linux-armel/native/*.*" />
+    <DeleteForLinux Include="$(OutDir)runtimes/linux-arm64/native/*.*" />
+    <DeleteForLinux Include="$(OutDir)runtimes/linux-x86/native/*.*" />
+    <DeleteForLinux Include="$(OutDir)runtimes/linux-x64/native/*.*" />
+    <RemoveForLinux Include="$(OutDir)runtimes/linux-arm/native" />
+    <RemoveForLinux Include="$(OutDir)runtimes/linux-armel/native" />
+    <RemoveForLinux Include="$(OutDir)runtimes/linux-arm64/native" />
+    <RemoveForLinux Include="$(OutDir)runtimes/linux-x86/native" />
+    <RemoveForLinux Include="$(OutDir)runtimes/linux-x64/native" />
+    <RemoveForLinux Include="$(OutDir)runtimes/linux-arm" />
+    <RemoveForLinux Include="$(OutDir)runtimes/linux-armel" />
+    <RemoveForLinux Include="$(OutDir)runtimes/linux-arm64" />
+    <RemoveForLinux Include="$(OutDir)runtimes/linux-x86" />
+    <RemoveForLinux Include="$(OutDir)runtimes/linux-x64" />
+    <RemoveForLinux Include="$(OutDir)runtimes" />
+  </ItemGroup>
+  <Target Name="ReallyAfterLinuxBuild" AfterTargets="AfterBuild;CopyFilesToOutputDirectory" Condition="'$(OS)'!='Windows_NT'">
+    <Copy SourceFiles="@(CopyForLinux)" DestinationFolder="$(OutDir)" />
+    <Delete Files="@(DeleteForLinux)" TreatErrorsAsWarnings="true" />
+    <RemoveDir Directories="@(RemoveForLinux)" />
+  </Target>
   <!-- Note: Visual Studio automatically inserts any imports from installing packages into the end here,
   but the AfterBuild target may not run if .targets files are imported after it.
   I recommend you move the Import statements before the "AfterBuild" target,
