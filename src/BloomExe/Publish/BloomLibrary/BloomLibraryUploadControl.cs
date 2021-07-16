@@ -50,11 +50,6 @@ namespace Bloom.Publish.BloomLibrary
 			_originalLoginText = _loginLink.Text; // Before anything might modify it (but after InitializeComponent creates it).
 			_titleLabel.Text = _model.Title;
 
-			// currently folder choosing isn't supported (but wouldn't be hard)
-			if (!SIL.PlatformUtilities.Platform.IsWindows)
-			{
-				_uploadSource.Items.RemoveAt(2);
-			}
 			_uploadSource.SelectedIndex = 0;
 
 			_progressBox.ShowDetailsMenuItem = true;
@@ -629,16 +624,30 @@ namespace Bloom.Publish.BloomLibrary
 			// Note not actually Microsoft anymore: https://github.com/contre/Windows-API-Code-Pack-1.1
 			if (SIL.PlatformUtilities.Platform.IsWindows)
 			{
-				// Note, this is Windows only.
-				CommonOpenFileDialog dialog = new CommonOpenFileDialog
-				{
-					InitialDirectory = _model.Book.CollectionSettings.FolderPath,
-					IsFolderPicker = true
-				};
-				if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
-				{
-					BulkUpload(dialog.FileName);
-				}
+				// Split into separate method to prevent Mono runtime from trying to
+				// reference Windows-only assemblies.
+				SelectWindowsFolderAndUploadCollectionsWithinIt();
+			}
+			else
+			{
+				var dialog = new DialogAdapters.FolderBrowserDialogAdapter();
+				dialog.SelectedPath = _model.Book.CollectionSettings.FolderPath;
+				if (dialog.ShowDialog() == DialogResult.OK)
+					BulkUpload(dialog.SelectedPath);
+			}
+		}
+
+		private void SelectWindowsFolderAndUploadCollectionsWithinIt()
+		{
+			// Note, this is Windows only.
+			CommonOpenFileDialog dialog = new CommonOpenFileDialog
+			{
+				InitialDirectory = _model.Book.CollectionSettings.FolderPath,
+				IsFolderPicker = true
+			};
+			if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+			{
+				BulkUpload(dialog.FileName);
 			}
 		}
 
