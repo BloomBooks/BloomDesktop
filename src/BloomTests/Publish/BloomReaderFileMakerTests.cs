@@ -35,7 +35,7 @@ namespace BloomTests.Publish
 			var page = new XmlDocument();
 			page.LoadXml(@"<div><div class='bloom-editable' lang='abc'>"+contents+"</div></div>");
 			var questionGroups = new List<QuestionGroup>();
-			BloomReaderFileMaker.ExtractQuestionGroups(page.DocumentElement, questionGroups);
+			BloomPubMaker.ExtractQuestionGroups(page.DocumentElement, questionGroups);
 			Assert.AreEqual(1, questionGroups.Count);
 			Assert.AreEqual(2, questionGroups[0].questions.Length);
 			Assert.AreEqual("first", questionGroups[0].questions[0].question);
@@ -91,7 +91,7 @@ namespace BloomTests.Publish
 			var page = new XmlDocument();
 			page.LoadXml(@"<div><div class='bloom-editable' lang='abc'>" + contents + "</div></div>");
 			var questionGroups = new List<QuestionGroup>();
-			BloomReaderFileMaker.ExtractQuestionGroups(page.DocumentElement, questionGroups);
+			BloomPubMaker.ExtractQuestionGroups(page.DocumentElement, questionGroups);
 			Assert.AreEqual(1, questionGroups.Count);
 			Assert.AreEqual(4, questionGroups[0].questions.Length);
 		}

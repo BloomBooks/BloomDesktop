@@ -415,7 +415,7 @@ namespace Bloom.Publish.Android
 			InitializeLanguagesInBook(request);
 			_lastSettings = GetSettings();
 			_lastThumbnailBackgroundColor = _thumbnailBackgroundColor;
-			PreviewUrl = StageBloomD(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor, _lastSettings);
+			PreviewUrl = MakeBloomPubForPreview(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor, _lastSettings);
 			_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, PreviewUrl);
 		}
 
@@ -477,7 +477,12 @@ namespace Bloom.Publish.Android
 			var bookTitle = book.Title;
 			progress.MessageUsingTitle("PackagingBook", "Packaging \"{0}\" for use with Bloom Reader...", bookTitle, ProgressKind.Progress);
 
-			// compress audio if needed, with progress message
+
+			// REVIEW: Why is this here in this method? We do a bunch of things to convert a book, but this one thing, audio, was
+			// put here instead in BloomReaderFileMaker along with all the other operations.
+
+
+			// Compress audio if needed, with progress message
 			if (AudioProcessor.IsAnyCompressedAudioMissing(book.FolderPath, book.RawDom))
 			{
 				progress.Message("CompressingAudio", "Compressing audio files");
@@ -491,7 +496,7 @@ namespace Bloom.Publish.Android
 				// wifi or usb...make the .bloomd in a temp folder.
 				using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
 				{
-					BloomReaderFileMaker.CreateBloomDigitalBook(bloomdTempFile.Path, book, bookServer, backColor, progress, settings);
+					BloomPubMaker.CreateBloomPub(bloomdTempFile.Path, book, bookServer, backColor, progress, settings);
 					sendAction(publishedFileName, bloomdTempFile.Path);
 					if (confirmFunction != null && !confirmFunction(publishedFileName))
 						throw new ApplicationException("Book does not exist after write operation.");
@@ -502,7 +507,7 @@ namespace Bloom.Publish.Android
 			{
 				// save file...user has supplied name, there is no further action.
 				Debug.Assert(sendAction == null, "further actions are not supported when passing a path name");
-				BloomReaderFileMaker.CreateBloomDigitalBook(destFileName, book, bookServer, backColor, progress, settings);
+				BloomPubMaker.CreateBloomPub(destFileName, book, bookServer, backColor, progress, settings);
 				progress.Message("PublishTab.Epub.Done", "Done", useL10nIdPrefix: false);	// share message string with epub publishing
 			}
 
@@ -519,7 +524,7 @@ namespace Bloom.Publish.Android
 		/// <param name="backColor"></param>
 		/// <param name="settings"></param>
 		/// <returns>A valid, well-formed URL on localhost that points to the bloomd</returns>
-		public static string StageBloomD(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor, AndroidPublishSettings settings = null)
+		public static string MakeBloomPubForPreview(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor, AndroidPublishSettings settings = null)
 		{
 			progress.Message("PublishTab.Epub.PreparingPreview", "Preparing Preview");	// message shared with Epub publishing
 			if (settings?.LanguagesToInclude != null)
@@ -546,7 +551,7 @@ namespace Bloom.Publish.Android
 			// I'd prefer this to include the book folder, but we need it before PrepareBookForBloomReader returns.
 			// I believe we only ever have one book being made there, so it works.
 			CurrentPublicationFolder = _stagingFolder.FolderPath;
-			var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book.FolderPath, bookServer, _stagingFolder, progress,book.IsTemplateBook, settings: settings);
+			var modifiedBook = BloomPubMaker.PrepareBookForBloomReader(book.FolderPath, bookServer, _stagingFolder, progress,book.IsTemplateBook, settings: settings);
 			progress.Message("Common.Done", "Shown in a list of messages when Bloom has completed a task.", "Done");
 			return modifiedBook.FolderPath.ToLocalhost();
 		}

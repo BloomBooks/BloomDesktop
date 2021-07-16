@@ -20,7 +20,7 @@ namespace Bloom.Publish.Android
 	/// Much of the logic is still in BookCompressor. Eventually we might move more of it here,
 	/// so that making a bloomd actually starts here and calls BookCompressor.
 	/// </summary>
-	public static class BloomReaderFileMaker
+	public static class BloomPubMaker
 	{
 		public const string kQuestionFileName = "questions.json";
 		public const string BRExportFolder = "BloomReaderExport";
@@ -32,20 +32,20 @@ namespace Bloom.Publish.Android
 
 		public static Control ControlForInvoke { get; set; }
 
-		public static void CreateBloomDigitalBook(string outputPath, Book.Book book, BookServer bookServer, Color backColor, WebSocketProgress progress, AndroidPublishSettings settings = null)
+		public static void CreateBloomPub(string outputPath, Book.Book book, BookServer bookServer, Color backColor, WebSocketProgress progress, AndroidPublishSettings settings = null)
 		{
-			CreateBloomDigitalBook(outputPath, book.FolderPath, bookServer, backColor, progress, book.IsTemplateBook, settings:settings);
+			CreateBloomPub(outputPath, book.FolderPath, bookServer, backColor, progress, book.IsTemplateBook, settings:settings);
 		}
 
 		// Create a BloomReader book while also creating the temporary folder for it (according to the specified parameter) and disposing of it
-		public static void CreateBloomDigitalBook(string outputPath, string bookFolderPath, BookServer bookServer,
+		public static void CreateBloomPub(string outputPath, string bookFolderPath, BookServer bookServer,
 			Color backColor,
 			WebSocketProgress progress, bool isTemplateBook, string tempFolderName = BRExportFolder,
 			string creator = kCreatorBloom, AndroidPublishSettings settings = null)
 		{
 			using (var temp = new TemporaryFolder(tempFolderName))
 			{
-				CreateBloomDigitalBook(outputPath, bookFolderPath, bookServer, backColor, progress, temp, creator, isTemplateBook, settings);
+				CreateBloomPub(outputPath, bookFolderPath, bookServer, backColor, progress, temp, creator, isTemplateBook, settings);
 			}
 		}
 
@@ -62,7 +62,7 @@ namespace Bloom.Publish.Android
 		/// <param name="isTemplateBook"></param>
 		/// <param name="settings"></param>
 		/// <returns>Path to the unzipped .bloomd</returns>
-		public static string CreateBloomDigitalBook(string outputPath, string bookFolderPath, BookServer bookServer,
+		public static string CreateBloomPub(string outputPath, string bookFolderPath, BookServer bookServer,
 			Color backColor,
 			WebSocketProgress progress, TemporaryFolder tempFolder, string creator = kCreatorBloom, bool isTemplateBook=false,
 			AndroidPublishSettings settings = null)

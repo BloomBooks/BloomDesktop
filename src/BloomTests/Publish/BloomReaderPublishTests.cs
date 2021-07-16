@@ -69,7 +69,7 @@ namespace BloomTests.Publish
 
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
 			{
-				BloomReaderFileMaker.CreateBloomDigitalBook(bloomdTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
+				BloomPubMaker.CreateBloomPub(bloomdTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
 				Assert.AreEqual(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook,
 					Path.GetFileName(bloomdTempFile.Path));
 			}
@@ -422,14 +422,14 @@ namespace BloomTests.Publish
 				});
 		}
 
-		[TestCase(BloomReaderFileMaker.kCreatorBloom, BloomReaderFileMaker.kDistributionBloomDirect)]
-		[TestCase(BloomReaderFileMaker.kCreatorHarvester, BloomReaderFileMaker.kDistributionBloomWeb)]
+		[TestCase(BloomPubMaker.kCreatorBloom, BloomPubMaker.kDistributionBloomDirect)]
+		[TestCase(BloomPubMaker.kCreatorHarvester, BloomPubMaker.kDistributionBloomWeb)]
 		public void CompressBookForDevice_IncludesDistributionFile(string creator, string expectedContent)
 		{
 			TestHtmlAfterCompression(kMinimumValidBookHtml,
 				assertionsOnZipArchive: zipHtmlObj =>
 				{
-					Assert.AreEqual(expectedContent, GetEntryContents(zipHtmlObj.ZipFile, BloomReaderFileMaker.kDistributionFileName));
+					Assert.AreEqual(expectedContent, GetEntryContents(zipHtmlObj.ZipFile, BloomPubMaker.kDistributionFileName));
 				},
 				creator: creator);
 		}
@@ -589,7 +589,7 @@ namespace BloomTests.Publish
 				assertionsOnZipArchive: paramObj =>
 				{
 					var zip = paramObj.ZipFile;
-					Assert.That(zip.FindEntry(BloomReaderFileMaker.kQuestionFileName, false), Is.EqualTo(-1));
+					Assert.That(zip.FindEntry(BloomPubMaker.kQuestionFileName, false), Is.EqualTo(-1));
 				},
 
 				branding: "Default"
@@ -614,7 +614,7 @@ namespace BloomTests.Publish
 				assertionsOnZipArchive: paramObj =>
 				{
 					var zip = paramObj.ZipFile;
-					var json = GetEntryContents(zip, BloomReaderFileMaker.kQuestionFileName);
+					var json = GetEntryContents(zip, BloomPubMaker.kQuestionFileName);
 					var groups = QuestionGroup.FromJson(json);
 					// Two (non-z-language) groups in first question page, one in second.
 					Assert.That(groups, Has.Length.EqualTo(3));
@@ -744,7 +744,7 @@ namespace BloomTests.Publish
 				{
 					var zip = paramObj.ZipFile;
 					Assert.AreNotEqual(-1, zip.FindEntry(PublishHelper.kSimpleComprehensionQuizJs, false));
-					var json = GetEntryContents(zip, BloomReaderFileMaker.kQuestionFileName);
+					var json = GetEntryContents(zip, BloomPubMaker.kQuestionFileName);
 					var groups = QuestionGroup.FromJson(json);
 					Assert.That(groups, Has.Length.EqualTo(1));
 					Assert.That(groups[0].lang, Is.EqualTo("xyz"));
@@ -788,7 +788,7 @@ namespace BloomTests.Publish
 				assertionsOnZipArchive: paramObj =>
 				{
 					var zip = paramObj.ZipFile;
-					Assert.AreEqual(-1, zip.FindEntry(BloomReaderFileMaker.kQuestionFileName, false));
+					Assert.AreEqual(-1, zip.FindEntry(BloomPubMaker.kQuestionFileName, false));
 					Assert.AreEqual(-1, zip.FindEntry(PublishHelper.kSimpleComprehensionQuizJs, false));
 				},
 
@@ -1279,7 +1279,7 @@ namespace BloomTests.Publish
 				fontsWanted.Add("NotAllowed");
 				fontsWanted.Add("NotFound");	// probably wouldn't happen with new approach for fonts, but leave in the test
 
-				BloomReaderFileMaker.EmbedFonts(testBook, stubProgress, fontsWanted, fontFileFinder);
+				BloomPubMaker.EmbedFonts(testBook, stubProgress, fontsWanted, fontFileFinder);
 
 				Assert.That(File.Exists(Path.Combine(testBook.FolderPath, timesNewRomanFileName)));
 				Assert.That(File.Exists(Path.Combine(testBook.FolderPath, calibreFileName)));
@@ -1325,7 +1325,7 @@ namespace BloomTests.Publish
 			Action<ZipFile> assertionsOnRepeat = null,
 			string branding = "Default",
 			HashSet<string> languagesToInclude = null,
-			string creator = BloomReaderFileMaker.kCreatorBloom)
+			string creator = BloomPubMaker.kCreatorBloom)
 		{
 			var testBook = CreateBookWithPhysicalFile(originalBookHtml, bringBookUpToDate: true);
 
@@ -1338,7 +1338,7 @@ namespace BloomTests.Publish
 
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
 			{
-				BloomReaderFileMaker.CreateBloomDigitalBook(bloomdTempFile.Path, testBook.FolderPath, _bookServer, Color.Azure, new NullWebSocketProgress(),
+				BloomPubMaker.CreateBloomPub(bloomdTempFile.Path, testBook.FolderPath, _bookServer, Color.Azure, new NullWebSocketProgress(),
 					isTemplateBook: false, creator: creator, 
 					settings: new AndroidPublishSettings() {LanguagesToInclude = languagesToInclude});
 				var zip = new ZipFile(bloomdTempFile.Path);
@@ -1352,7 +1352,7 @@ namespace BloomTests.Publish
 					using (var extraTempFile =
 						TempFile.WithFilenameInTempFolder(testBook.Title + "2" + BookCompressor.ExtensionForDeviceBloomBook))
 					{
-						BloomReaderFileMaker.CreateBloomDigitalBook(extraTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
+						BloomPubMaker.CreateBloomPub(extraTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
 						zip = new ZipFile(extraTempFile.Path);
 						assertionsOnRepeat(zip);
 					}

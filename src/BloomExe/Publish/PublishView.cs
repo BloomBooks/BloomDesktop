@@ -574,7 +574,7 @@ namespace Bloom.Publish
 				}
 				case PublishModel.DisplayModes.Android:
 					_saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
-					BloomReaderFileMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
+					BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "ReaderPublish", "loader.html"));
 					break;
 				case PublishModel.DisplayModes.EPUB:

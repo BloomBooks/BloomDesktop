@@ -190,7 +190,7 @@ namespace Bloom.CLI
 					// Ensure directory exists, just in case.
 					Directory.CreateDirectory(Path.GetDirectoryName(zippedBloomDOutputPath));
 					// Make the bloomd
-					string unzippedPath = Publish.Android.BloomReaderFileMaker.CreateBloomDigitalBook(
+					string unzippedPath = Publish.Android.BloomPubMaker.CreateBloomPub(
 					zippedBloomDOutputPath,
 					bookPath,
 					bookServer,
@@ -334,7 +334,7 @@ namespace Bloom.CLI
 		[Option("thumbnailOutputInfoPath", HelpText = "Output destination path for a text file which contains path information for generated thumbnail files", Required = false)]
 		public string ThumbnailOutputInfoPath { get; set; }
 
-		[Option("creator", Required = false, Default = BloomReaderFileMaker.kCreatorHarvester, HelpText = "The value of the \"creator\" meta tag passed along when creating the bloomdigital.")]
+		[Option("creator", Required = false, Default = BloomPubMaker.kCreatorHarvester, HelpText = "The value of the \"creator\" meta tag passed along when creating the bloomdigital.")]
 		public string Creator{ get; set; }
 	}
 }

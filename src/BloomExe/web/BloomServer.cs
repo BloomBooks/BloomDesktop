@@ -1343,7 +1343,7 @@ namespace Bloom.Api
 				EpubMaker.kEPUBExportFolder.ToLowerInvariant(),
 				// bloom-player always asks for questions.json for every book.
 				// Being only for quiz pages, not every book has it, so we don't want spurious error reports.
-				BloomReaderFileMaker.kQuestionFileName.ToLowerInvariant()
+				BloomPubMaker.kQuestionFileName.ToLowerInvariant()
 			};
 			return !stuffToIgnore.Any(s => localPath.ToLowerInvariant().Contains(s));
 		}
