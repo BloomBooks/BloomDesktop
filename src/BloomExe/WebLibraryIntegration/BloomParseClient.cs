@@ -56,7 +56,10 @@ namespace Bloom.WebLibraryIntegration
 			}
 			if (Settings.Default.LastLoginDest != destination)
 			{
-				progress.WriteError("The destination (production or dev) of the last login from the Bloom UI does not match the -d argument.");
+				// this is important because the user settings we're going to read are from the version of Bloom, and so the
+				// token will be whatever we logged into last here, and it won't work if it is from one Parse server and
+				// we're using the other.
+				progress.WriteError($"The destination of the last login from Bloom {ApplicationUpdateSupport.ChannelName} was '{Settings.Default.LastLoginDest}' which does not match the -d argument, '{destination}'");
 				return false;
 			}
 
