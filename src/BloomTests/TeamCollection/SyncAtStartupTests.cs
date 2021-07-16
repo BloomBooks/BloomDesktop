@@ -16,7 +16,7 @@ namespace BloomTests.TeamCollection
 	public class SyncAtStartupTests
 	{
 		private const string kConflictName = "My book (FRED SOMEONE's conflicted copy 2021-03-18)";
-		private TemporaryFolder _repoFolder;
+		protected TemporaryFolder _repoFolder;
 		protected TemporaryFolder _collectionFolder;
 		protected Mock<ITeamCollectionManager> _mockTcManager;
 		protected FolderTeamCollection _collection;
@@ -25,6 +25,8 @@ namespace BloomTests.TeamCollection
 		protected List<string> _syncMessages;
 		protected ProgressSpy _progressSpy;
 		private TeamCollectionMessageLog _tcLog;
+		string kBookRenamedRemotely = "Book renamed remotely";
+		private string kNewNameForRemoteRename = "New name for remote rename";
 
 		[OneTimeSetUp]
 		public void OneTimeSetup()
@@ -39,9 +41,16 @@ namespace BloomTests.TeamCollection
 			_collection.CollectionId = Bloom.TeamCollection.TeamCollection.GenerateCollectionId();
 			TeamCollectionManager.ForceCurrentUserForTests("test@somewhere.org");
 
-			// Simulate a book that was once shared, but has been deleted from the repo folder.
+			// Simulate a book that was once shared, but has been deleted from the repo folder (has a tombstone).
 			MakeBook("Should be deleted", "This should be deleted as it has local status but is not shared", true);
-			var delPath = Path.Combine(_repoFolder.FolderPath, "Books", "Should be deleted.bloom");
+			var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, "Should be deleted");
+			_collection.DeleteBookFromRepo(bookFolderPath);
+
+			// Simulate a book that was once shared, but has been deleted from the repo folder. But there is no tombstone.
+			// (Despite the name, it is only converted to a new local in the default case. When we do a First Time Join,
+			// it just gets copied into the repo.)
+			MakeBook("Should be converted to new local", "This should become a new local (no status) book as it has local status but is not in the repo", true);
+			var delPath = Path.Combine(_repoFolder.FolderPath, "Books", "Should be converted to new local.bloom");
 			RobustFile.Delete(delPath);
 
 			// Simulate a book newly created locally. Not in repo, but should not be deleted.
@@ -169,6 +178,20 @@ namespace BloomTests.TeamCollection
 			MakeBook(badZip, "This book seems to be in both places, but the repo is corrupt");
 			File.WriteAllText(Path.Combine(_repoFolder.FolderPath, "Books", badZip + ".bloom"), "This is also not a valid zip!");
 
+			// Simulate a book that was renamed remotely. That is, there's a local book Old Name, with local status,
+			// and there's no repo book by that name, but there's a repo book New Name (and no such local book).
+			// The book's meta.json indicates they are the same book.
+			// We'll initially make both, with the new name and new content.
+			MakeBook(kNewNameForRemoteRename, "This is the new book content after remote editing and rename");
+			var oldFolder = Path.Combine(_collectionFolder.FolderPath, kBookRenamedRemotely);
+			var newFolder = Path.Combine(_collectionFolder.FolderPath, kNewNameForRemoteRename);
+			RobustIO.MoveDirectory(newFolder, oldFolder); // made at new path, simulate still at old.
+			var oldPath = Path.Combine(_collectionFolder.FolderPath, kBookRenamedRemotely,
+				kBookRenamedRemotely + ".htm"); // simulate old book name and content
+			RobustFile.WriteAllText(oldPath, "This is the simulated original book content");
+			RobustFile.Delete(Path.Combine(_collectionFolder.FolderPath, kBookRenamedRemotely,
+				kNewNameForRemoteRename + ".htm")); // get rid of the 'new' content
+
 			// Make a couple of folders that are legitimately present, but not books.
 			var allowedWords = Path.Combine(_collectionFolder.FolderPath, "Allowed Words");
 			Directory.CreateDirectory(allowedWords);
@@ -219,9 +242,9 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public virtual void SyncAtStartup_ProducesNoUnexpectedMessages()
 		{
-			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(2), "Unexpected number of progress warnings produced.");
+			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(3), "Unexpected number of progress warnings produced.");
 			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(5), "Unexpected number of progress errors produced. Did you mean to add one?");
-			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(3), "Unexpected number of progress messages produced. Did you mean to add one?");
+			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(4), "Unexpected number of progress messages produced. Did you mean to add one?");
 		}
 
 		[Test]
@@ -245,17 +268,31 @@ namespace BloomTests.TeamCollection
 			var renamedBookFolder = Path.Combine(_collectionFolder.FolderPath, "A renamed book");
 			Assert.That(Directory.Exists(renamedBookFolder), Is.True);
 			Assert.That(File.Exists(Path.Combine(renamedBookFolder, "A renamed book.htm")));
-			// This is debatable. We definitely should not delete the old repo book that has been renamed
-			// in a normal sync. If we're doing a 'first time join', then it's weird to find a book in
-			// the state of being checked out at all...that implies we're already connected to the repo.
-			// Weirder still to find it checked out AND renamed. What currently happens is that the renamed
-			// book looks new, and in a first time join, new books get checked in, and in the course of
-			// the checkin, the old repo file gets deleted. Not certain this is the right behavior,
-			// but it's plausible and falls naturally out of other decisions we made, so I'm leaving
-			// both the code and the test that way. However, I'm not adding additional tests to verify
-			// the the checkin happened, since I'm not sure we want it to.
+			// It's obvious that we should not do anything to a checked-out, renamed book during a normal
+			// sync. It's somewhat more debatable during a first-time-join sync...of course it is
+			// weird to find a book checked out at all...that implies we're already connected to the repo.
+			// Weirder still to find it checked out AND renamed. Still, this is clearly not a new book
+			// that just needs to be added, so we should probably not check it in.
 			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", "An old name.bloom")),
-				Is.EqualTo(!FirstTimeJoin()));
+				Is.True);
+		}
+
+		[Test]
+		public void SyncAtStartup_RemoteRename_RenamedLocally()
+		{
+			var oldFolder = Path.Combine(_collectionFolder.FolderPath, kBookRenamedRemotely);
+			Assert.That(Directory.Exists(oldFolder), Is.False);
+			var newFolder = Path.Combine(_collectionFolder.FolderPath, kNewNameForRemoteRename);
+			Assert.That(Directory.Exists(newFolder), Is.True);
+			var newBookFile = Path.Combine(_collectionFolder.FolderPath, kNewNameForRemoteRename,
+				kNewNameForRemoteRename + ".htm");
+			Assert.That(RobustFile.ReadAllText(newBookFile), Does.Contain("This is the new book content after remote editing and rename"));
+		}
+
+		[Test]
+		public void SyncAtStartup_RemoteRename_ProducesRenameMessage()
+		{
+			AssertProgress("The book \"{0}\" has been renamed to \"{1}\" by a teammate.", kBookRenamedRemotely, kNewNameForRemoteRename);
 		}
 
 		[Test]
@@ -281,10 +318,18 @@ namespace BloomTests.TeamCollection
 		}
 
 		[Test]
-		public virtual void SyncAtStartup_BookDeletedRemotely_GetsDeletedLocally_UnlessJoin()
+		public virtual void SyncAtStartup_BookDeletedRemotely_GetsDeletedLocally()
 		{
 			Assert.That(Directory.Exists(Path.Combine(_collectionFolder.FolderPath, "Should be deleted")), Is.False);
-			AssertWarning("Deleting '{0}' from local folder as it is no longer in the Team Collection","Should be deleted");
+			AssertWarning("Moving '{0}' to your recycle bin as it was deleted in the Team Collection.", "Should be deleted");
+			// It would be nice to assert that it actually got moved to the recycle bin. But I don't know how.
+		}
+
+		[Test]
+		public virtual void SyncAtStartup_BookDeletedRemotely_NoTombstone_BecomesNewLocalBook()
+		{
+			Assert.That(Directory.Exists(Path.Combine(_collectionFolder.FolderPath, "Should be converted to new local")), Is.True);
+			AssertWarning("The book '{0}' is no longer in the Team Collection. It has been kept in your local collection.", "Should be converted to new local");
 		}
 
 		[Test]
@@ -544,15 +589,21 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public override void SyncAtStartup_ProducesNoUnexpectedMessages()
 		{
-			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(0), "Unexpected number of progress warnings produced. We're not using warning any more");
+			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(1), "Unexpected number of progress warnings produced. Did you mean to add one?");
 			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(6), "Unexpected number of progress errors produced. Did you mean to add one?");
-			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(3), "Unexpected number of progress messages produced. Did you mean to add one?");
+			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(4), "Unexpected number of progress messages produced. Did you mean to add one?");
+		}
+
+		public override void SyncAtStartup_BookDeletedRemotely_NoTombstone_BecomesNewLocalBook()
+		{
+			// In the FirstTimeJoin case, this is not true. It just gets merged.
+			// (Since the override is not marked as a test, this doesn't show up in the tests for this class at all.)
 		}
 
 		[Test]
-		public override void SyncAtStartup_BookDeletedRemotely_GetsDeletedLocally_UnlessJoin()
+		public void SyncAtStartup_BookDeletedRemotely_NoTombstone_RestoredToTC()
 		{
-			Assert.That(Directory.Exists(Path.Combine(_collectionFolder.FolderPath, "Should be deleted")), Is.True);
+			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", "Should be converted to new local.bloom")));
 		}
 	}
 }

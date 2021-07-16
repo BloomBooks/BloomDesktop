@@ -121,6 +121,9 @@ namespace Bloom.TeamCollection
 				zipFile.AddDirectory(sourceBookFolderPath, sourceBookFolderPath.Length + 1, null, progressCallback);
 				zipFile.SetComment(status.WithCollectionId(CollectionId).ToJson());
 				zipFile.Save();
+				// If by any chance we've previously created a tombstone for this book, get rid of it.
+				var pathForTombstone = Path.ChangeExtension(pathToWrite, ".tombstone");
+				RobustFile.Delete(pathForTombstone);
 			}
 			catch (Exception)
 			{
@@ -138,6 +141,13 @@ namespace Bloom.TeamCollection
 				_lastWriteBookTime = DateTime.Now;
 				_writeBookInProgress = false;
 			}
+		}
+
+		public override bool KnownToHaveBeenDeleted(string bookFolderPath)
+		{
+			var pathToBookFileInRepo = GetPathToBookFileInRepo(Path.GetFileName(bookFolderPath));
+			var pathForTombstone = Path.ChangeExtension(pathToBookFileInRepo, ".tombstone");
+			return !RobustFile.Exists(pathToBookFileInRepo) && RobustFile.Exists(pathForTombstone);
 		}
 
 		/// <summary>
@@ -185,10 +195,10 @@ namespace Bloom.TeamCollection
 			return Path.Combine(GetPathToBookFolder(_repoFolderPath), bookFolderName) + ".bloom";
 		}
 
-		public override void RemoveBook(string bookName)
+		public override string GetRepoBookFile(string bookName, string fileName)
 		{
 			var path = GetPathToBookFileInRepo(bookName);
-			RobustFile.Delete(path);
+			return RobustZip.GetZipEntryContent(path, fileName);
 		}
 
 		/// <summary>
@@ -535,7 +545,8 @@ namespace Bloom.TeamCollection
 		/// only local).
 		/// </summary>
 		/// <param name="bookFolderPath"></param>
-		public override void DeleteBookFromRepo(string bookFolderPath)
+		/// <param name="makeTombstone"></param>
+		public override void DeleteBookFromRepo(string bookFolderPath, bool makeTombstone = true)
 		{
 			var pathToBookFileInRepo = GetPathToBookFileInRepo(Path.GetFileName(bookFolderPath));
 			// The test here is mostly unnecessary, since Delete won't throw if the file doesn't exist
@@ -544,6 +555,12 @@ namespace Bloom.TeamCollection
 			// WOULD cause an exception if by any chance it did not.
 			if (RobustFile.Exists(pathToBookFileInRepo))
 				RobustFile.Delete(pathToBookFileInRepo);
+			if (makeTombstone)
+			{
+				var pathForTombstone = Path.ChangeExtension(pathToBookFileInRepo, ".tombstone");
+				RobustFile.WriteAllText(pathForTombstone,
+					"This file marks the deletion of a book previously in the collection");
+			}
 		}
 
 		protected virtual void OnCreated(object sender, FileSystemEventArgs e)
