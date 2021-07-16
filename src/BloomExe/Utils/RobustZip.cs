@@ -42,6 +42,35 @@ namespace Bloom.Utils
 			});
 		}
 
+		/// <summary>
+		/// Get the content of the specified entry in the specified zip file as a string.
+		/// </summary>
+		public static string GetZipEntryContent(string zipPath, string entryName)
+		{
+			string result = "error";
+			RetryUtility.Retry(() =>
+			{
+				using (var zipFile = new ZipFile(zipPath))
+				{
+					var entry = zipFile.GetEntry(entryName);
+					if (entry == null)
+						result = "";
+					else
+					{
+						using (var instream = zipFile.GetInputStream(entry))
+						{
+							using (var reader = new StreamReader(instream))
+							{
+								// don't just use Return here; it returns from the function being retried, not this whole method.
+								result = reader.ReadToEnd();
+							}
+						}
+					}
+				}
+			});
+			return result;
+		}
+
 		public static void UnzipDirectory(string destFolder, string zipPath)
 		{
 			byte[] buffer = new byte[4096]; // 4K is optimum
