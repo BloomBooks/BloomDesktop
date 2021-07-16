@@ -933,38 +933,17 @@ function handleKeyboardInput(): void {
                 // If there's no tool active, we don't need to update the markup.
                 if (currentTool && toolbox.toolboxIsShowing()) {
                     if (currentTool.isUpdateMarkupAsync()) {
-                        // Updating markup involves Async functions. Not generally because we want there
-                        // to be anything async about updating markup, but just because one or more of
-                        // the functions involved needs to be async for other reasons.
-                        // This gets us into a tricky situation where some parts of the update may
-                        // move the selection (typically to the beginning) and then typing could go
-                        // to the wrong place if we aren't careful. CkEditor has a mechanism
-                        // for creating bookmarks and restoring the selection to them which can
-                        // help counteract this, but we need to be careful or another keystroke may arrive
-                        // while the selection is in the wrong place, and then the character gets inserted
-                        // in the wrong place (BL-1033).
-                        // Part of the answer is that updateMarkupAsync doesn't make changes to the DOM (which can
-                        // move the selection, another thing I don't fully understand)...
-                        // at least not when called in response to typing...except by means of a
-                        // function it returns, which is NOT async, and which we call here after carefully
-                        // checking that no further typing has occurred which might get messed up by
-                        // finishing the async work from previous typing. (If new keystrokes HAVE arrived,
-                        // they will result in new calls to updateMarkupAsync...last one wins.)
-                        // I (JT) don't understand why we need this selection-restoring code BEFORE
-                        // we run updateMarkupAsync, especially since we apparently do NOT need it before
-                        // running the synchronous version. But we definitely do. Without this call, all
-                        // keystrokes are misdirected to the start of the block when the talking book tool
-                        // is active.
-                        // Following is the comment from before we had updateMarkupAsync return the function that makes
-                        // the actual change. Unfortunately, I don't know what modification we've "possibly already"
-                        // made to the DOM. But change this code only with care, and test with talking book active.
-                        // Original comment:
-                        // Since we've possibly already modified the DOM, CKEditor's selection will be reset back to the beginning.
-                        // If you wait for async work to finish before resetting the selection, then there will be a brief flash
-                        // as the selection moves to the front (when the async work is kicked off) and then back to the final destination
-                        // (after the async work is finished).
-                        // To counteract that minor annoyance, we set the selection before async works gets kicked off.
-                        // (and then the code below sets it again after the async work finishes)
+                        // It's possible that removeCommentsFromEditableHtml moved the selection, typically
+                        // to the start of the editableDiv. This doesn't matter on the synchronous branch,
+                        // because we restore it at the end of this method, after the other updates, and no
+                        // keystroke can occur in the meantime.
+                        // But on this branch, with an await, the 'rest of this method' may execute much
+                        // later, possibly after the next keystroke is processed. If we wait till then to fix
+                        // the selection, the selection may be briefly visible in the wrong place. Much worse,
+                        // any intervening keystrokes go to that incorrect position (BL-10133). So fix
+                        // it now, and then again after actually changing the markup, which might move the selection again.
+                        // (This is why we don't allow updateMarkupAsync to modify the DOM, except by means of
+                        // the function it returns, which is executed synchronously with fixing the selection.)
                         ckeditorOfThisBox
                             .getSelection()
                             .selectBookmarks(bookmarks);
@@ -1001,9 +980,17 @@ function handleKeyboardInput(): void {
 }
 
 // exported for testing
+// Warning: if the current selection is inside the element we're fixing,
+// and there are comments to remove, the selection will contract to an
+// insertion point at the start.
 export function removeCommentsFromEditableHtml(editable: HTMLElement) {
     // [\s\S] is a hack representing every character (including newline)
-    editable.innerHTML = editable.innerHTML.replace(/<!--[\s\S]*?-->/g, "");
+    var fixedHtml = editable.innerHTML.replace(/<!--[\s\S]*?-->/g, "");
+    // This test makes it less likely we will move the selection. But you should still allow for
+    // the possibility.
+    if (fixedHtml != editable.innerHTML) {
+        editable.innerHTML = fixedHtml;
+    }
 }
 
 let resizeTimer;
