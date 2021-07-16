@@ -122,11 +122,12 @@ namespace Bloom.CollectionTab
 			get { return TheOneEditableCollection.GetBookInfos().Select(book => book.Title); }
 		}
 
-		internal BookCollection TheOneEditableCollection
+		public BookCollection TheOneEditableCollection
 		{
 			get { return GetBookCollections().First(c => c.Type == BookCollection.CollectionType.TheOneEditableCollection); }
 		}
 
+		
 		public string VernacularLibraryNamePhrase
 		{
 			get { return _collectionSettings.VernacularCollectionNamePhrase; }

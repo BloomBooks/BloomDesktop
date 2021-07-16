@@ -163,7 +163,8 @@ namespace Bloom
 							typeof(FileIOApi),
 							typeof(EditingViewApi),
 							typeof(BrowserDialogApi),
-							typeof(ProblemReportApi)
+							typeof(ProblemReportApi),
+							typeof(BulkBloomPubCreator)
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())

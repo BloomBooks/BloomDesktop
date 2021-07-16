@@ -29,6 +29,8 @@ import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
 import { PublishLanguagesGroup } from "./PublishLanguagesGroup";
+import BloomButton from "../../react_components/bloomButton";
+import { ProgressDialog } from "../../react_components/Progress/ProgressDialog";
 
 export const ReaderPublishScreen = () => {
     // When the user changes some features, included languages, etc., we
@@ -115,9 +117,15 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
             }
         }
     );
-
+    let showProgress: () => void = () => {};
     return (
         <>
+            <ProgressDialog
+                title="Bulk Save BloomPubs"
+                webSocketContext="bulk-save-bloompubs"
+                onReadyToReceive={() => {}}
+                setShowDialog={show => (showProgress = show)}
+            />
             <BasePublishScreen className="ReaderPublishScreen">
                 <PreviewPanel>
                     <DeviceAndControls
@@ -147,6 +155,20 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     <PublishLanguagesGroup
                         onChange={() => setHighlightRefresh(true)}
                     />
+                    <BloomButton
+                        variant="text"
+                        enabled={true} // TODO: enterprise only
+                        l10nKey="PublishTab.Android.SaveWholeCollection"
+                        onClick={() => {
+                            showProgress();
+                            BloomApi.postData(
+                                "publish/android/file/bulksave",
+                                {}
+                            );
+                        }}
+                    >
+                        Save Whole Collection
+                    </BloomButton>
                     <HelpGroup>
                         <HelpLink
                             l10nKey="PublishTab.Android.AboutBookFeatures"

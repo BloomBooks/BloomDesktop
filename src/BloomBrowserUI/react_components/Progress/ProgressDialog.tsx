@@ -33,6 +33,7 @@ export const ProgressDialog: React.FunctionComponent<{
 
     webSocketContext: string;
     onReadyToReceive?: () => void;
+    setShowDialog?: (show: () => void) => void;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = props => {
     const {
@@ -40,6 +41,9 @@ export const ProgressDialog: React.FunctionComponent<{
         closeDialog,
         propsForBloomDialog
     } = useSetupBloomDialog(props.dialogEnvironment);
+    if (props.setShowDialog) {
+        props.setShowDialog(showDialog);
+    }
     const [showButtons, setShowButtons] = useState(false);
     const [sawAnError, setSawAnError] = useState(false);
     const [sawAWarning, setSawAWarning] = useState(false);

@@ -37,6 +37,7 @@ namespace Bloom.Publish.Android
 #endif
 		private readonly BloomWebSocketServer _webSocketServer;
 		private readonly BookServer _bookServer;
+		private readonly BulkBloomPubCreator _bulkBloomPubCreator;
 		private readonly WebSocketProgress _progress;
 		private const string kWebSocketContext = "publish-android"; // must match what is in AndroidPublishUI.tsx
 		private Color _thumbnailBackgroundColor = Color.Transparent; // can't be actual book cover color <--- why not?
@@ -47,19 +48,17 @@ namespace Bloom.Publish.Android
 		private HashSet<string> _languagesWithAudio = new HashSet<string>();
 		private Bloom.Book.Book _bookForLanguagesToPublish = null;
 
-		private RuntimeImageProcessor _imageProcessor;
-
 		// This constant must match the ID that is used for the listener set up in the React component AndroidPublishUI
 		private const string kWebsocketEventId_Preview = "androidPreview";
 		public const string StagingFolder = "PlaceForStagingBook";
 
 		public static string PreviewUrl { get; set; }
 
-		public PublishToAndroidApi(BloomWebSocketServer bloomWebSocketServer, BookServer bookServer, RuntimeImageProcessor imageProcessor)
+		public PublishToAndroidApi(BloomWebSocketServer bloomWebSocketServer, BookServer bookServer, RuntimeImageProcessor imageProcessor, BulkBloomPubCreator bulkBloomPubCreator)
 		{
 			_webSocketServer = bloomWebSocketServer;
 			_bookServer = bookServer;
-			_imageProcessor = imageProcessor;
+			_bulkBloomPubCreator = bulkBloomPubCreator;
 			_progress = new WebSocketProgress(_webSocketServer, kWebSocketContext);
 			_wifiPublisher = new WiFiPublisher(_progress, _bookServer);
 #if !__MonoCS__
@@ -252,6 +251,14 @@ namespace Bloom.Publish.Android
 			{
 				UpdatePreviewIfNeeded(request);
 				FilePublisher.Save(request.CurrentBook, _bookServer, _thumbnailBackgroundColor, _progress, GetSettings());
+				SetState("stopped");
+				request.PostSucceeded();
+			}, true);
+
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/bulksave", request =>
+			{
+				var progress = new WebSocketProgress(_webSocketServer, "bulk-save-bloompubs");
+				_bulkBloomPubCreator.SaveAll(progress);
 				SetState("stopped");
 				request.PostSucceeded();
 			}, true);
