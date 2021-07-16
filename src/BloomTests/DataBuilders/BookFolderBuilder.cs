@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Bloom.Book;
 
 namespace BloomTests.DataBuilders
 {
@@ -55,6 +56,9 @@ namespace BloomTests.DataBuilders
 				RobustFile.WriteAllText(htmPath, _htmContents);
 				BuiltBookHtmPath = htmPath;
 			}
+
+			var meta = new BookMetaData();
+			meta.WriteToFolder(bookFolderPath);
 
 			// Returns the builder object again so that callers can call post-build properties
 			return this;
