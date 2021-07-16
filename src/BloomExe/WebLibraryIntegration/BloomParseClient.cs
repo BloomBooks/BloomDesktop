@@ -14,7 +14,7 @@ namespace Bloom.WebLibraryIntegration
 {
 	public class BloomParseClient
 	{
-		 RestClient _client;
+		protected RestClient _client;
 		protected string _sessionToken = String.Empty;
 		protected string _userId;
 
