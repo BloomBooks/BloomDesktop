@@ -64,6 +64,9 @@ export class BookSettings implements ITool {
     public showTool() {}
     public hideTool() {}
     public updateMarkup() {}
+    public async updateMarkupAsync() {
+        return () => {};
+    }
     public isUpdateMarkupAsync(): boolean {
         return false;
     }

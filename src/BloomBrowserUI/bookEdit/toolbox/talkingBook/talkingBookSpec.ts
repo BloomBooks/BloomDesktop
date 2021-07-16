@@ -46,8 +46,9 @@ describe("talking book tests", () => {
             div2Element.tabIndex = -1; // focus() won't work if no tabindex.
             div2Element.focus();
 
-            // System under test - TalkingBook.updateMarkup() is called after typing
-            await tbTool.updateMarkup();
+            // System under test - TalkingBook.updateMarkupAsync() is called after typing
+            const doUpdate = await tbTool.updateMarkupAsync();
+            doUpdate();
 
             // Verification
             const currentTextBox = theOneAudioRecorder.getCurrentTextBox()!;
@@ -113,9 +114,7 @@ describe("talking book tests", () => {
                 }
                 default: {
                     throw new Error(
-                        `Unhandled scenario: ${scenario} (${
-                            AudioMode[scenario]
-                        })`
+                        `Unhandled scenario: ${scenario} (${AudioMode[scenario]})`
                     );
                 }
             }
@@ -176,40 +175,20 @@ describe("talking book tests", () => {
         }
 
         function getPureSentenceModeHtml(checksums: string[]): string {
-            const div1Html = `<div class="bloom-editable" id="div1" data-audioRecordingMode="Sentence"><p><span id="1.1" class="audio-sentence ui-audioCurrent" recordingmd5="${
-                checksums[0]
-            }">Sentence 1.1၊</span> <span id="1.2" class="audio-sentence" recordingmd5="${
-                checksums[1]
-            }">Sentence 1.2</span></p></div>`;
-            const div2Html = `<div class="bloom-editable" id="div2" data-audioRecordingMode="Sentence" recordingmd5=""><p><span id="2.1" class="audio-sentence" recordingmd5="${
-                checksums[2]
-            }">Sentence 2.1၊</span> <span id="2.2" class="audio-sentence" recordingmd5="${
-                checksums[3]
-            }">Sentence 2.2</span></p></div>`;
+            const div1Html = `<div class="bloom-editable" id="div1" data-audioRecordingMode="Sentence"><p><span id="1.1" class="audio-sentence ui-audioCurrent" recordingmd5="${checksums[0]}">Sentence 1.1၊</span> <span id="1.2" class="audio-sentence" recordingmd5="${checksums[1]}">Sentence 1.2</span></p></div>`;
+            const div2Html = `<div class="bloom-editable" id="div2" data-audioRecordingMode="Sentence" recordingmd5=""><p><span id="2.1" class="audio-sentence" recordingmd5="${checksums[2]}">Sentence 2.1၊</span> <span id="2.2" class="audio-sentence" recordingmd5="${checksums[3]}">Sentence 2.2</span></p></div>`;
             return `${div1Html}${div2Html}`;
         }
 
         function getPreTextBoxModeHtml(checksums: string[]): string {
-            const div1Html = `<div class="bloom-editable ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox"><p><span id="1.1" class="audio-sentence" recordingmd5="${
-                checksums[0]
-            }">Sentence 1.1၊</span> <span id="1.2" class="audio-sentence" recordingmd5="${
-                checksums[1]
-            }">Sentence 1.2</span></p></div>`;
-            const div2Html = `<div class="bloom-editable" id="div2" data-audiorecordingmode="TextBox"><p><span id="2.1" class="audio-sentence" recordingmd5="${
-                checksums[2]
-            }">Sentence 2.1၊</span> <span id="2.2" class="audio-sentence" recordingmd5="${
-                checksums[3]
-            }">Sentence 2.2</span></p></div>`;
+            const div1Html = `<div class="bloom-editable ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox"><p><span id="1.1" class="audio-sentence" recordingmd5="${checksums[0]}">Sentence 1.1၊</span> <span id="1.2" class="audio-sentence" recordingmd5="${checksums[1]}">Sentence 1.2</span></p></div>`;
+            const div2Html = `<div class="bloom-editable" id="div2" data-audiorecordingmode="TextBox"><p><span id="2.1" class="audio-sentence" recordingmd5="${checksums[2]}">Sentence 2.1၊</span> <span id="2.2" class="audio-sentence" recordingmd5="${checksums[3]}">Sentence 2.2</span></p></div>`;
             return `${div1Html}${div2Html}`;
         }
 
         function setupPureTextBoxModeHtml(checksums: string[]): string {
-            const div1Html = `<div class="bloom-editable audio-sentence ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox" recordingmd5="${
-                checksums[0]
-            }"><p>Sentence 1.1၊ Sentence 1.2</p></div>`;
-            const div2Html = `<div class="bloom-editable audio-sentence" id="div2" data-audiorecordingmode="TextBox" recordingmd5="${
-                checksums[1]
-            }"><p>Sentence 2.1၊ Sentence 2.2</p></div>`;
+            const div1Html = `<div class="bloom-editable audio-sentence ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox" recordingmd5="${checksums[0]}"><p>Sentence 1.1၊ Sentence 1.2</p></div>`;
+            const div2Html = `<div class="bloom-editable audio-sentence" id="div2" data-audiorecordingmode="TextBox" recordingmd5="${checksums[1]}"><p>Sentence 2.1၊ Sentence 2.2</p></div>`;
             return `${div1Html}${div2Html}`;
         }
 
@@ -282,9 +261,7 @@ describe("talking book tests", () => {
                 }
                 default: {
                     throw new Error(
-                        `Unhandled scenario: ${scenario} (${
-                            AudioMode[scenario]
-                        })`
+                        `Unhandled scenario: ${scenario} (${AudioMode[scenario]})`
                     );
                 }
             }
@@ -438,9 +415,7 @@ describe("talking book tests", () => {
 
                 default: {
                     throw new Error(
-                        `Unhandled scenario: ${scenario} (${
-                            AudioMode[scenario]
-                        })`
+                        `Unhandled scenario: ${scenario} (${AudioMode[scenario]})`
                     );
                 }
             }
@@ -729,11 +704,7 @@ describe("talking book tests", () => {
                 "ec04d9efb823169732254a756f9fa641",
                 "99070d1ff8cd1dbe8f6273089fce9176"
             ];
-            const divHtml = `<div class="bloom-editable" id="div1" data-audioRecordingMode="Sentence"><p><span id="1.1" class="audio-sentence ui-audioCurrent" recordingmd5="${
-                checksums[0]
-            }">Phrase 1|</span> <span id="1.2" class="audio-sentence" recordingmd5="${
-                checksums[1]
-            }">Phrase 2.</span></p></div>`;
+            const divHtml = `<div class="bloom-editable" id="div1" data-audioRecordingMode="Sentence"><p><span id="1.1" class="audio-sentence ui-audioCurrent" recordingmd5="${checksums[0]}">Phrase 1|</span> <span id="1.2" class="audio-sentence" recordingmd5="${checksums[1]}">Phrase 2.</span></p></div>`;
             SetupIFrameFromHtml(divHtml);
 
             setAllAudioFilesPresent();
@@ -742,7 +713,8 @@ describe("talking book tests", () => {
             // Simulate user deleting the vertical bar character
             getFrameElementById("page", "1.1")!.innerText = "Phrase 1";
             const tbTool = new TalkingBookTool();
-            await tbTool.updateMarkup();
+            const doUpdate = await tbTool.updateMarkupAsync();
+            doUpdate();
 
             // Verify - That splits were unchanged.
             const spans = getAudioSentenceSpans("div1");

@@ -36,6 +36,10 @@ export default abstract class ToolboxToolReactAdaptor
     public showTool() {}
     public hideTool() {}
     public updateMarkup() {}
+    public async updateMarkupAsync() {
+        throw "not implemented...you must override this if you make isUpdateMarkupAsync return true";
+        return () => {};
+    }
     public isUpdateMarkupAsync(): boolean {
         return false;
     }
