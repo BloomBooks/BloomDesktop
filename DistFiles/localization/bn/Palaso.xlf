@@ -489,7 +489,7 @@
       <trans-unit id="MetadataEditor.CopyrightYear" approved="yes">
         <source xml:lang="en">Copyright Year</source>
         <note>ID: MetadataEditor.CopyrightYear</note>
-        <target xml:lang="bn" state="final">কপিরাইট বছর </target>
+        <target xml:lang="bn" state="final">কপিরাইট বছর</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons" approved="yes">
         <source xml:lang="en">Creative Commons</source>
@@ -747,7 +747,7 @@
       <trans-unit id="WSKeyboardControl.SetupKeyboards" approved="yes">
         <source xml:lang="en">Set up keyboards</source>
         <note>ID: WSKeyboardControl.SetupKeyboards</note>
-        <target xml:lang="bn" state="final">কী –বোর্ড স্থাপনা   </target>
+        <target xml:lang="bn" state="final">কী –বোর্ড স্থাপনা</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.TestAreaCaption" approved="yes">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>

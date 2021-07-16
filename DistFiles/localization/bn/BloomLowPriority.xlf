@@ -12,13 +12,13 @@
         <source xml:lang="en">eSpeak failed.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
         <note>This text is shown if an error occurred while running eSpeak. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
-        <target xml:lang="bn" state="final">ইকথা ব্যর্থ হয়েছে </target>
+        <target xml:lang="bn" state="final">ইকথা ব্যর্থ হয়েছে</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed" approved="yes">
         <source xml:lang="en">eSpeak language:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed</note>
         <note>After this text, the program will display the language code of the language settings that eSpeak used. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
-        <target xml:lang="bn" state="final">ইবলার ভাষা </target>
+        <target xml:lang="bn" state="final">ইবলার ভাষা</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion" approved="yes">
         <source xml:lang="en">Result of orthography conversion:</source>

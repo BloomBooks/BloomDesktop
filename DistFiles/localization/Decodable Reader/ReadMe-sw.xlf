@@ -28,9 +28,9 @@
         <target xml:lang="sw" state="final">Kutazama <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">video hizi za mafundisho</g>.</target>
         <note>ID: decodable.learn.videos</note>
       </trans-unit>
-      <trans-unit id="decodable.learn.helpindex">
+      <trans-unit id="decodable.learn.helpindex" approved="yes">
         <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</source>
-        <target xml:lang="sw" state="translated">Nenda kwa Menyu ya Usaidizi, chagua 'Usaidizi', na utazame katika kielezo chini ya "Vifaa vya Kusoma vinavyoweza Kufasiriwa".</target>
+        <target xml:lang="sw" state="final">Nenda kwenye Menyu ya Usaidizi, chagua 'Nyaraka', na utazame katika kielelezo chini ya "Vifaa vya Kusoma vinavyoweza Kufasiriwa".</target>
         <note>ID: decodable.learn.helpindex</note>
       </trans-unit>
       <trans-unit id="decodable.learn.helpmenu" approved="yes">

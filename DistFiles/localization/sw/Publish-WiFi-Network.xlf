@@ -2,29 +2,29 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Publish-WiFi-Network-en.htm" datatype="html" source-language="en" target-language="sw">
     <body>
-      <trans-unit id="publish.help.tips.tempWiFi.title">
+      <trans-unit id="publish.help.tips.tempWiFi.title" approved="yes">
         <source xml:lang="en">Ways to make a temporary Wi-Fi Network</source>
-        <target xml:lang="sw" state="translated">Njia za kutengeneza Mtandao wa Wi-Fi wa muda mfupi</target>
+        <target xml:lang="sw" state="final">Njia za kutengeneza Mtandao wa Wi-Fi wa muda mfupi</target>
         <note>ID: publish.help.tips.tempWiFi.title</note>
       </trans-unit>
-      <trans-unit id="publish.help.tips.tempWiFi.hotspot">
+      <trans-unit id="publish.help.tips.tempWiFi.hotspot" approved="yes">
         <source xml:lang="en">Start a phone hotspot</source>
-        <target xml:lang="sw" state="translated">Anza hotspot kwenye simu</target>
+        <target xml:lang="sw" state="final">Anzisha muunganisho wa Wi-Fi kwenye simu</target>
         <note>ID: publish.help.tips.tempWiFi.hotspot</note>
       </trans-unit>
-      <trans-unit id="publish.help.tips.tempWiFi.hotspot.text">
+      <trans-unit id="publish.help.tips.tempWiFi.hotspot.text" approved="yes">
         <source xml:lang="en">Many mobile phones have a feature called a 'hotspot' that creates a Wi-Fi network. First disconnect from the mobile network (so that there are no data charges). Next, enable the hotspot. Finally, set your laptop and other phones to join that network.</source>
-        <target xml:lang="sw" state="translated">Simu nyingi za rununu zina huduma inayoitwa 'hotspot' ambayo huunda mtandao wa Wi-Fi. Kwanza ondoa kutoka kwa mtandao wa rununu (ili kusiwe na malipo ya data). Ifuatayo, wezesha hotspot. Mwishowe, weka kompyuta yako ndogo na simu zingine ili ujiunge na mtandao huo.</target>
+        <target xml:lang="sw" state="final">Simu nyingi za rununu zina kipengele kinachoitwa 'hotspot' ambacho huunda mtandao wa Wi-Fi. Kwanza katisha muunganisho wa mtandao wa rununu (ili kusiwe na malipo ya data). Kisha, washa hotspot. Mwishowe, weka kompyuta yako ndogo na simu zingine ili kujiunga na mtandao huo.</target>
         <note>ID: publish.help.tips.tempWiFi.hotspot.text</note>
       </trans-unit>
-      <trans-unit id="publish.help.tips.tempWiFi.hostednetwork">
+      <trans-unit id="publish.help.tips.tempWiFi.hostednetwork" approved="yes">
         <source xml:lang="en">Start a network using your laptop</source>
-        <target xml:lang="sw" state="translated">Anza mtandao ukitumia kompyuta yako ndogo</target>
+        <target xml:lang="sw" state="final">Anza mtandao ukitumia kompyuta yako ndogo</target>
         <note>ID: publish.help.tips.tempWiFi.hostednetwork</note>
       </trans-unit>
-      <trans-unit id="publish.help.tips.tempWiFi.hostednetwork.text">
+      <trans-unit id="publish.help.tips.tempWiFi.hostednetwork.text" approved="yes">
         <source xml:lang="en">Windows 10 laptops can also create local Wi-Fi networks. Do a web search for "windows netsh hostednetwork". If your laptop does not support this, you can get inexpensive USB Wi-Fi adaptors that do. When shopping, make sure the adaptor supports "hosted network".</source>
-        <target xml:lang="sw" state="translated">Kompyuta ndogo za Windows 10 zinaweza pia kuunda mitandao ya ndani ya Wi-Fi. Tafuta wavuti kwa "windows netsh hostednetwork". Ikiwa kompyuta yako ndogo haiwezi kuunga mkono hii, unaweza kupata adapta za bei rahisi za USB ambazo hufanya hivyo. Wakati wa ununuzi, hakikisha adapta inasaidia "mtandao uliopangwa".</target>
+        <target xml:lang="sw" state="final">Kompyuta ndogo za Windows 10 zinaweza pia kuunda mitandao ya ndani ya Wi-Fi. Tafuta kwenye wavuti "windows netsh hostednetwork". Ikiwa kompyuta yako ndogo haiwezi kuunga mkono hii, unaweza kupata adapta za bei rahisi za USB ambazo hufanya hivyo. Wakati wa ununuzi, hakikisha adapta inasaidia "mtandao ulioambatanishwa".</target>
         <note>ID: publish.help.tips.tempWiFi.hostednetwork.text</note>
       </trans-unit>
     </body>

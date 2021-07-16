@@ -134,8 +134,7 @@
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Confirm Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.WindowTitle</note>
-        <target xml:lang="mam" state="final">Tzi'yb'il tu'n tel
-</target>
+        <target xml:lang="mam" state="final">Tzi'yb'il tu'n tel</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
@@ -485,7 +484,7 @@
       <trans-unit id="MetadataEditor.CopyrightHolder" approved="yes">
         <source xml:lang="en">Copyright Holder</source>
         <note>ID: MetadataEditor.CopyrightHolder</note>
-        <target xml:lang="mam" state="final">Tajawil toklen b'inchalte </target>
+        <target xml:lang="mam" state="final">Tajawil toklen b'inchalte</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightYear" approved="yes">
         <source xml:lang="en">Copyright Year</source>

@@ -79,7 +79,7 @@
         <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
         <note>ID: Settings.Enterprise.NeedsCode</note>
         <note>%0 will be replaced with the name of the branding. Keep surrounding **...**. [here](%1) will become a hot link; %1 will not be seen, but will be the URL for the destination page. Translate "here" and keep the [](%1) around it.</note>
-        <target xml:lang="mam" state="final">Toj tnejnel tu'mel Bloom, ma ajb'en aq'untl lu' **%0**. Tu'n tajb'en jun majtl teya tz'ib'ankub'a techlal tok te ja'la. Aqe' techlal SIL jaku' yajet tu'na toj [here](%1). Tu'n tku'x junjuntl b'ib'aj ilti'j tu'n tyolina tuk' ajka'yil aq'unb'il te twitz aq'untl lu'. </target>
+        <target xml:lang="mam" state="final">Toj tnejnel tu'mel Bloom, ma ajb'en aq'untl lu' **%0**. Tu'n tajb'en jun majtl teya tz'ib'ankub'a techlal tok te ja'la. Aqe' techlal SIL jaku' yajet tu'na toj [here](%1). Tu'n tku'x junjuntl b'ib'aj ilti'j tu'n tyolina tuk' ajka'yil aq'unb'il te twitz aq'untl lu'.</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NotValid" approved="yes">
         <source xml:lang="en">That code appears to be incorrect.</source>
