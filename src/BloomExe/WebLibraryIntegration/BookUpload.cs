@@ -417,9 +417,9 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 
-		internal bool CheckAgainstUploadedHashfile(string currentHashes, string bookFolder)
+		internal bool CheckAgainstHashFileOnS3(string currentHashes, string bookFolder, IProgress progress)
 		{
-			string uploadedHashes = null;
+			string hashInfoOnS3 = null;
 			try
 			{
 				if (!IsBookOnServer(bookFolder))
@@ -427,13 +427,23 @@ namespace Bloom.WebLibraryIntegration
 				var bkInfo = new BookInfo(bookFolder, true);
 				var s3id = S3BookId(bkInfo.MetaData);
 				var key = s3id + BloomS3Client.kDirectoryDelimeterForS3 + Path.GetFileName(bookFolder) + BloomS3Client.kDirectoryDelimeterForS3 + UploadHashesFilename;
-				uploadedHashes = _s3Client.DownloadFile(UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName, key);
+				hashInfoOnS3 = _s3Client.DownloadFile(UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName, key);
 			}
 			catch
 			{
-				uploadedHashes = "";	// probably file doesn't exist because it hasn't yet been uploaded
+				hashInfoOnS3 = "";	// probably file doesn't exist because it hasn't yet been uploaded
 			}
-			return currentHashes == uploadedHashes;
+
+#if DEBUG
+			if (currentHashes != hashInfoOnS3)
+			{
+				progress.WriteMessage("local hash");
+				progress.WriteMessage(currentHashes);
+				progress.WriteMessage("s3 hash");
+				progress.WriteMessage(hashInfoOnS3);
+			}
+#endif
+			return currentHashes == hashInfoOnS3;
 		}
 
 		internal bool CheckAgainstLocalHashfile(string currentHashes, string uploadInfoPath)
@@ -592,20 +602,24 @@ namespace Bloom.WebLibraryIntegration
 			BookInfo.RepairDuplicateInstanceIds(rootFolderPath);
 		}
 
-		public static string HashBookFolder(string directory)
+		/// <summary>
+		/// Compute a hash for the book in the given directory.  The hash includes the book's HTML file
+		/// (suitably pruned to remove insignificant changes such as whitespace between elements), other
+		/// relevant files in the directory and its subdirectories (CSS, audio, video, images, etc.) and
+		/// the two basic collection level files in the parent directory (customCollectionStyles.css and
+		/// *.bloomCollection).
+		/// </summary>
+		public static string HashBookFolder(string directory) 
 		{
 			var bldr = new StringBuilder();
-			// Start file with the Bloom version.
-			var assembly = Assembly.GetExecutingAssembly();
-			bldr.AppendLineFormat("{0} Version {1} [{2}]", assembly.GetName().Name, assembly.GetName().Version,
-				UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName);
 			Debug.Assert(Directory.Exists(directory));
 			var dirInfo = new DirectoryInfo(directory);
 			var htmFiles = dirInfo.GetFiles("*.htm", SearchOption.TopDirectoryOnly);
 			Debug.Assert(htmFiles.Length == 1);
-			var htmContent = RobustFile.ReadAllText(htmFiles[0].FullName);
-			var hash = Book.Book.MakeVersionCode(htmContent, htmFiles[0].FullName);
+
+			var hash = Book.Book.ComputeHashForAllBookRelatedFiles(htmFiles[0].FullName);
 			bldr.AppendLineFormat("{0} {1}", htmFiles[0].Name, hash);
+
 			return bldr.ToString().Replace(Environment.NewLine,"\r\n");	// cross-platform line endings for this file
 		}
 	}

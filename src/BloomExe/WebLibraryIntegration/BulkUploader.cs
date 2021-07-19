@@ -28,7 +28,7 @@ namespace Bloom.WebLibraryIntegration
 		private int _booksSkipped;
 		private int _booksWithErrors;
 
-		public const string UploadHashesFilename = ".lastUploadInfo";   // this filename must begin with a period
+		public const string HashInfoFromLastUpload = ".lastUploadInfo";   // this filename must begin with a period
 		public bool LoggedIn => _singleBookUploader.ParseClient.LoggedIn;
 		private string _uploadedBy;
 		private string _accountWhenUploadedByLastSet;
@@ -266,20 +266,21 @@ namespace Bloom.WebLibraryIntegration
 
 				// Compute the book hash file and compare it to the existing one for bulk upload.
 				var currentHashes = BookUpload.HashBookFolder(uploadParams.Folder);
-				var uploadInfoPath = Path.Combine(uploadParams.Folder, UploadHashesFilename);
+				progress.WriteMessage(currentHashes);
+				var pathToLocalHashInfoFromLastUpload = Path.Combine(uploadParams.Folder, HashInfoFromLastUpload);
 				if (!uploadParams.ForceUpload)
 				{
-					var uploadedAlready = false;
+					var canSkip = false;
 					if (Program.RunningUnitTests)
 					{
-						uploadedAlready = _singleBookUploader.CheckAgainstLocalHashfile(currentHashes, uploadInfoPath);
+						canSkip = _singleBookUploader.CheckAgainstLocalHashfile(currentHashes, pathToLocalHashInfoFromLastUpload);
 					}
 					else
 					{
-						uploadedAlready = _singleBookUploader.CheckAgainstUploadedHashfile(currentHashes, uploadParams.Folder);
-						RobustFile.WriteAllText(uploadInfoPath, currentHashes); // ensure local copy is saved
+						canSkip = _singleBookUploader.CheckAgainstHashFileOnS3(currentHashes, uploadParams.Folder, progress);
+						RobustFile.WriteAllText(pathToLocalHashInfoFromLastUpload, currentHashes); // ensure local copy is saved
 					}
-					if (uploadedAlready)
+					if (canSkip)
 					{
 						// local copy of hashes file is identical or has been saved
 						progress.WriteMessageWithColor("green", $"Skipping '{Path.GetFileName(uploadParams.Folder)}' because it has not changed since being uploaded.");
@@ -288,7 +289,7 @@ namespace Bloom.WebLibraryIntegration
 					}
 				}
 				// save local copy of hashes file: it will be uploaded with the other book files
-				RobustFile.WriteAllText(uploadInfoPath, currentHashes);
+				RobustFile.WriteAllText(pathToLocalHashInfoFromLastUpload, currentHashes);
 
 				if (context == null || context.SettingsPath != collectionPath)
 				{
@@ -334,7 +335,7 @@ namespace Bloom.WebLibraryIntegration
 				{
 					if (blPublishModel.BookIsAlreadyOnServer)
 					{
-						var msg = $"Apparently {uploadParams.Folder} is already on the server. Overwriting...";
+						var msg = $"Overwriting the copy of {uploadParams.Folder} on the server...";
 						progress.WriteWarning(msg);
 					}
 					using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))

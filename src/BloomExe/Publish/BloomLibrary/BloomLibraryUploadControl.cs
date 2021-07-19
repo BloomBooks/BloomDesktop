@@ -173,6 +173,7 @@ namespace Bloom.Publish.BloomLibrary
 				var neededWidth = TextRenderer.MeasureText(_uploadButton.Text, _uploadButton.Font).Width;
 				_uploadButton.Width += neededWidth - oldTextWidth;
 			}
+
 			// After considering all the factors except whether any languages are selected,
 			// if we can upload at this point, whether we can from here on depends on whether one is checked.
 			// This test needs to come after evaluating everything else uploading depends on (except login)
@@ -290,6 +291,14 @@ namespace Bloom.Publish.BloomLibrary
 
 		private void UpdateDisplay()
 		{
+			
+//TODO I would really like something like this, but at the moment the code is so convoluted and you can't set it once someone has checked it. Grrrr.
+ //#if !DEBUG
+ _targetProduction.Visible = false;
+//#endif
+	//		 _targetProduction.Checked = !BookUpload.UseSandbox;
+		
+
 			_uploadButton.Enabled = _model.MetadataIsReadyToPublish && _model.LoggedIn && _okToUpload;
 			_progressBox.Clear();
 			_uploadSource.Enabled = _uploadButton.Enabled;
@@ -721,6 +730,12 @@ namespace Bloom.Publish.BloomLibrary
 
 			// Give up.
 			return null;
+		}
+
+		private void _targetProduction_CheckedChanged(object sender, EventArgs e)
+		{
+			BookUpload.Destination =
+				_targetProduction.Checked ? UploadDestination.Production : UploadDestination.Development;
 		}
 	}
 }
