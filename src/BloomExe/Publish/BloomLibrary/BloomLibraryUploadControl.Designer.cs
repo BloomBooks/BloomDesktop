@@ -69,6 +69,7 @@ namespace Bloom.Publish.BloomLibrary
 			this.label4 = new System.Windows.Forms.Label();
 			this._changeSignLanguageLinkLabel = new System.Windows.Forms.LinkLabel();
 			this._uploadSource = new System.Windows.Forms.ComboBox();
+			this._targetProduction = new System.Windows.Forms.CheckBox();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.panel1 = new System.Windows.Forms.Panel();
 			this._ccPanel = new System.Windows.Forms.Panel();
@@ -653,6 +654,20 @@ namespace Bloom.Publish.BloomLibrary
 			this._uploadSource.TabIndex = 22;
 			this._uploadSource.SelectedIndexChanged += new System.EventHandler(this._uploadSource_SelectedIndexChanged);
 			// 
+			// _targetProduction
+			// 
+			this._targetProduction.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._targetProduction, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._targetProduction, null);
+			this._L10NSharpExtender.SetLocalizingId(this._targetProduction, "PublishTab.Upload.checkBox1");
+			this._targetProduction.Location = new System.Drawing.Point(313, 5);
+			this._targetProduction.Name = "_targetProduction";
+			this._targetProduction.Size = new System.Drawing.Size(180, 17);
+			this._targetProduction.TabIndex = 23;
+			this._targetProduction.Text = "Target Production (DEBUG only)";
+			this._targetProduction.UseVisualStyleBackColor = true;
+			this._targetProduction.CheckedChanged += new System.EventHandler(this._targetProduction_CheckedChanged);
+			// 
 			// tableLayoutPanel1
 			// 
 			this.tableLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -790,6 +805,7 @@ namespace Bloom.Publish.BloomLibrary
 			// panel2
 			// 
 			this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+			this.panel2.Controls.Add(this._targetProduction);
 			this.panel2.Controls.Add(this._uploadSource);
 			this.panel2.Controls.Add(this.padding);
 			this.panel2.Controls.Add(this._uploadButton);
@@ -941,5 +957,6 @@ namespace Bloom.Publish.BloomLibrary
 		private LinkLabel _changeSignLanguageLinkLabel;
 		private ComboBox _uploadSource;
 		private Panel padding;
+		private CheckBox _targetProduction;
 	}
 }

@@ -3593,12 +3593,23 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// Compute a hash for all of the book related files that will detect any significant
+		/// changes to a Bloom book.  All of the significant files in the folder and subfolders
+		/// and basic collection files in the parent folder are included in the hash.
+		/// </summary>
+		/// <param name="bookFilePath">path to the book's HTML file inside its folder</param>
+		public static string ComputeHashForAllBookRelatedFiles(string bookFilePath)
+		{
+			return MakeVersionCode(RobustFile.ReadAllText(bookFilePath, Encoding.UTF8), bookFilePath);
+		}
+
+		/// <summary>
 		/// Make a version code which will detect any significant changes to the content of a bloom book.
 		/// fileContent is typically the content of the file at filePath which is the book's main HTM file;
 		/// however (for testing) filePath may be omitted.
 		/// The method computes a SHA of the file content and, if a path is passed, all other files
-		/// in the same folder and its subfolders. The file is transformed somewhat so that (some) changes
-		/// that are not significant are ignored.
+		/// in the same folder and its subfolders (plus collection level files in the parent folder.)
+		/// The file is transformed somewhat so that (some) changes that are not significant are ignored.
 		/// Notes:
 		/// - renaming a file may or may not produce a different code (depends on whether it changes
 		/// the alphabetical order of the files).
@@ -3609,17 +3620,24 @@ namespace Bloom.Book
 		/// For one thing, depending on the exact file transfer process, one or more files might have
 		/// different line endings, which is enough to produce a different SHA.
 		/// </summary>
-		/// <param name="fileContent"></param>
-		/// <param name="filePath"></param>
-		/// <returns></returns>
+		/// <remarks>
+		/// This method is used by TeamCollection, bulk upload, and a few other places to detect
+		/// changes to books.
+		/// </remarks>
 		public static string MakeVersionCode(string fileContent, string filePath = null)
 		{
 			var simplified = fileContent;
 			// In general, whitespace sequences are equivalent to a single space.
-			// If the user types multiple spaces all but one will be turned to &nbsp;
+			// If the user types multiple spaces all but one will be removed.
 			simplified = new Regex(@"\s+").Replace(simplified, " ");
 			// Between the end of one tag and the start of the next white space doesn't count at all
 			simplified = new Regex(@">\s+<").Replace(simplified, "><");
+			// A space before (or inside) a <br/> element doesn't matter.
+			simplified = new Regex(@"\s+<br\s*/>").Replace(simplified, "<br/>");
+			// Ignore the generator metadata: precise version of Bloom doesn't matter
+			simplified = new Regex(@"<meta name=""Generator""[^>]*></meta>").Replace(simplified, "");
+			// The order of divs inside the bloomDataDiv is neither important nor deterministic, so we sort it.
+			simplified = SortDataDivElements(simplified);
 			// Page IDs (actually any element ids) are ignored
 			// (the bit before the 'id' matches an opening wedge followed by anything but a closing one,
 			// and is transferred to the output by $1. Then we look for an id='whatever', with optional
@@ -3675,6 +3693,29 @@ namespace Bloom.Book
 				sha.TransformFinalBlock(new byte[0], 0, 0);
 				return Convert.ToBase64String(sha.Hash);
 			}
+		}
+
+		private static string SortDataDivElements(string htmlText)
+		{
+			// Extract the text block that contains the outer #bloomDataDiv
+			var begin = htmlText.IndexOf("<div id=\"bloomDataDiv\">", StringComparison.Ordinal);
+			var end = htmlText.IndexOf("<div class=\"bloom-page", StringComparison.Ordinal);
+			if (begin < 0 || end <= begin)
+				return htmlText;
+			var dataDivBlock = htmlText.Substring(begin, end - begin);
+			// Extract the text block that contains the inner #bloomDataDiv, split it into lines, and sort the lines.
+			var beginDivs = dataDivBlock.IndexOf("<div data-book=\"", StringComparison.Ordinal);
+			var endDivs = dataDivBlock.LastIndexOf("</div>", StringComparison.Ordinal);
+			if (beginDivs < 0 || endDivs <= beginDivs)
+				return htmlText;
+			var innerDataDiv = dataDivBlock.Substring(beginDivs, endDivs - beginDivs);
+			innerDataDiv = innerDataDiv.Replace("</div><div data-book=", "</div>\n<div data-book=");
+			var dataDivs = innerDataDiv.Split(new[] { '\n' });
+			dataDivs.Sort((x, y) => string.Compare(x, y, StringComparison.Ordinal));
+			// Replace the original outer #bloomDataDiv text with one containing the sorted inner #bloomDataDiv.
+			var sortedInnerDataDiv = string.Join("", dataDivs);
+			var newHtml = htmlText.Replace(dataDivBlock, "<div id=\"bloomDataDiv\">" + sortedInnerDataDiv + "</div>");
+			return newHtml;
 		}
 
 		/// <summary>

@@ -156,9 +156,16 @@ namespace BloomTests.WebLibraryIntegration
 				// We are seeing this sometimes while running unit tests.
 				// This is simply an attempt to diagnose what is happening.
 				Console.WriteLine("Attempt to deserialize response content session token failed while attempting log in to parse (BL-4099).");
+				Console.WriteLine($"response.IsSuccessful: {response.IsSuccessful}");
 				Console.WriteLine($"response.Content: {response.Content}");
+				Console.WriteLine($"response.ContentLength: {response.ContentLength}");
+				Console.WriteLine($"response.ContentType: {response.ContentType}");
+				Console.WriteLine($"response.ResponseStatus: {response.ResponseStatus}");
+				Console.WriteLine($"response.StatusCode: {response.StatusCode}");
+				Console.WriteLine($"response.StatusDescription: {response.StatusDescription}");
 				Console.WriteLine($"response.ErrorMessage: {response.ErrorMessage}");
-				Console.WriteLine($"deserialized: {dy}");
+				Console.WriteLine($"response.ErrorException: {response.ErrorException}");
+				Console.WriteLine($"deserialized response.Content: {dy}");
 				throw;
 			}
 			_userId = dy.objectId;

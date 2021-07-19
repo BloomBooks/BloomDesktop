@@ -13,7 +13,6 @@ using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
-using Microsoft.WindowsAPICodePack.Dialogs;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -50,11 +49,6 @@ namespace Bloom.Publish.BloomLibrary
 			_originalLoginText = _loginLink.Text; // Before anything might modify it (but after InitializeComponent creates it).
 			_titleLabel.Text = _model.Title;
 
-			// currently folder choosing isn't supported (but wouldn't be hard)
-			if (!SIL.PlatformUtilities.Platform.IsWindows)
-			{
-				_uploadSource.Items.RemoveAt(2);
-			}
 			_uploadSource.SelectedIndex = 0;
 
 			_progressBox.ShowDetailsMenuItem = true;
@@ -179,6 +173,7 @@ namespace Bloom.Publish.BloomLibrary
 				var neededWidth = TextRenderer.MeasureText(_uploadButton.Text, _uploadButton.Font).Width;
 				_uploadButton.Width += neededWidth - oldTextWidth;
 			}
+
 			// After considering all the factors except whether any languages are selected,
 			// if we can upload at this point, whether we can from here on depends on whether one is checked.
 			// This test needs to come after evaluating everything else uploading depends on (except login)
@@ -296,6 +291,14 @@ namespace Bloom.Publish.BloomLibrary
 
 		private void UpdateDisplay()
 		{
+			
+//TODO I would really like something like this, but at the moment the code is so convoluted and you can't set it once someone has checked it. Grrrr.
+ //#if !DEBUG
+ _targetProduction.Visible = false;
+//#endif
+	//		 _targetProduction.Checked = !BookUpload.UseSandbox;
+		
+
 			_uploadButton.Enabled = _model.MetadataIsReadyToPublish && _model.LoggedIn && _okToUpload;
 			_progressBox.Clear();
 			_uploadSource.Enabled = _uploadButton.Enabled;
@@ -626,20 +629,9 @@ namespace Bloom.Publish.BloomLibrary
 
 		private void SelectFolderAndUploadCollectionsWithinIt()
 		{
-			// Note not actually Microsoft anymore: https://github.com/contre/Windows-API-Code-Pack-1.1
-			if (SIL.PlatformUtilities.Platform.IsWindows)
-			{
-				// Note, this is Windows only.
-				CommonOpenFileDialog dialog = new CommonOpenFileDialog
-				{
-					InitialDirectory = _model.Book.CollectionSettings.FolderPath,
-					IsFolderPicker = true
-				};
-				if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
-				{
-					BulkUpload(dialog.FileName);
-				}
-			}
+			var folderPath = MiscUI.BloomFolderChooser.ChooseFolder(_model.Book.CollectionSettings.FolderPath);
+			if (!String.IsNullOrEmpty(folderPath) && Directory.Exists(folderPath))
+				BulkUpload(folderPath);
 		}
 
 		private void BulkUploadThisCollection()
@@ -738,6 +730,12 @@ namespace Bloom.Publish.BloomLibrary
 
 			// Give up.
 			return null;
+		}
+
+		private void _targetProduction_CheckedChanged(object sender, EventArgs e)
+		{
+			BookUpload.Destination =
+				_targetProduction.Checked ? UploadDestination.Production : UploadDestination.Development;
 		}
 	}
 }
