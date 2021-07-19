@@ -47,12 +47,17 @@ namespace Bloom.TeamCollection
 			throw new NotImplementedException();
 		}
 
+		public override bool KnownToHaveBeenDeleted(string oldName)
+		{
+			throw new NotImplementedException();
+		}
+
 		protected override void MoveRepoBookToLostAndFound(string bookName)
 		{
 			throw new NotImplementedException();
 		}
 
-		public override void RemoveBook(string bookName)
+		public override string GetRepoBookFile(string bookName, string fileName)
 		{
 			throw new NotImplementedException();
 		}
@@ -79,7 +84,7 @@ namespace Bloom.TeamCollection
 			throw new NotImplementedException();
 		}
 
-		public override void DeleteBookFromRepo(string bookFolderPath)
+		public override void DeleteBookFromRepo(string bookFolderPath, bool makeTombstone = true)
 		{
 			throw new NotImplementedException();
 		}

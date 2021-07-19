@@ -1,4 +1,4 @@
-﻿using Bloom.Api;
+using Bloom.Api;
 using Bloom.MiscUI;
 using Bloom.web;
 using L10NSharp;
@@ -82,6 +82,8 @@ namespace Bloom.TeamCollection
 		/// <param name="inLostAndFound">See PutBook</param>
 		/// <remarks>Usually PutBook should be used; this method is meant for use by TeamCollection methods.</remarks>
 		protected abstract void PutBookInRepo(string sourceBookFolderPath, BookStatus newStatus, bool inLostAndFound = false, Action<float> progressCallback = null);
+
+		public abstract bool KnownToHaveBeenDeleted(string oldName);
 
 		/// <summary>
 		/// Returns null if connection to repo is fine, otherwise, a message describing the problem.
@@ -240,13 +242,18 @@ namespace Bloom.TeamCollection
 				// Usually we want to remove the old Repo file. But if the rename is just changing case and we're
 				// not on a case-sensitive platform, that would remove the current book!! (BL-10156)
 				if (SIL.PlatformUtilities.Platform.IsLinux || oldName.ToLowerInvariant() != bookFolderName.ToLowerInvariant())
-					RemoveBook(oldName);
+					// Do NOT make a tombstone; we don't want other clients removing the book before recognizing
+					// that it has been renamed. (The deletion, and possibly the tombstone as it is very small,
+					// might easily get through the sync process before the new, renamed book,
+					// and we process remote deletions without waiting for a full reload.)
+					DeleteBookFromRepo(oldName, false);
 			}
 			UpdateBookStatus(bookFolderName, true);
 			return status;
 		}
 
-		public abstract void RemoveBook(string bookName);
+		// Get just one file from the repo version of the specified book.
+		public abstract string GetRepoBookFile(string bookName, string fileName);
 
 		/// <summary>
 		/// Sync every book from the local collection (every folder that has a corresponding htm file) from local
@@ -389,7 +396,7 @@ namespace Bloom.TeamCollection
 			return !IsCheckedOutHereBy(GetStatus(Path.GetFileName(bookFolderPath)));
 		}
 
-		public abstract void DeleteBookFromRepo(string bookFolderPath);
+		public abstract void DeleteBookFromRepo(string bookFolderPath, bool makeTombstone = true);
 
 		private void SyncCollectionFilesToRepoOnIdle(object sender, EventArgs e)
 		{
@@ -1006,7 +1013,10 @@ namespace Bloom.TeamCollection
 		private void HandleDeletedRepoFileAfterPause(DeleteRepoBookFileEventArgs delArgs)
 		{
 			// I'm nervous about allegedly deleted files. It's a common pattern to update a file
-			// by writing a temp file, deleting the original, and renaming the temp. We're not
+			// by writing a temp file, deleting the original, and renaming the temp.
+			// Another issue is that the remote checkin might be a rename rather than a delete,
+			// and the replacement file may take a while to arrive. If we process before
+			// it arrives, we won't be able to report the rename correctly. We're not
 			// in any hurry to update the UI when a repo file is deleted. So let's wait...and
 			// then check it's really gone. This is too slow to unit test, so all the logic
 			// is in the HandleDeletedRepoFile method.
@@ -1018,6 +1028,11 @@ namespace Bloom.TeamCollection
 			var bookBaseName = GetBookNameWithoutSuffix(fileName);
 			// Maybe the deletion was just a temporary part of an update?
 			if (IsBookPresentInRepo(bookBaseName))
+				return;
+			// Maybe the book is being renamed rather than deleted? Or something weird is going on?
+			// Anyway, we'll only delete it locally if there is a tombstone in the TC indicating that
+			// someone, somewhere, deliberately deleted it.
+			if (!KnownToHaveBeenDeleted(bookBaseName))
 				return;
 			var status = GetLocalStatus(bookBaseName);
 			if (status.IsCheckedOutHereBy(TeamCollectionManager.CurrentUser))
@@ -1408,13 +1423,16 @@ namespace Bloom.TeamCollection
 				"Collection ID must get set before we start syncing books");
 			_tcLog.WriteMilestone(MessageAndMilestoneType.Reloaded);
 
-
 			var hasProblems = false; //set true if we get any problems
+
+			var newBooks = GetNewRepoBookMap();
+
+			var remotelyRenamedBooks = new HashSet<string>(); // Books actually found to be renamed (by new name)
 
 			// Delete books that we think have been deleted remotely from the repo.
 			// If it's a join collection merge, check new books in instead.
 			var englishSomethingWrongMessage =
-				"Something went wrong trying to sync with the book {0} in your Team Collection.";
+			"Something went wrong trying to sync with the book {0} in your Team Collection.";
 			var oldBookNames = new HashSet<string>();
 			foreach (var path1 in Directory.EnumerateDirectories(_localCollectionFolder))
 			{
@@ -1428,18 +1446,38 @@ namespace Bloom.TeamCollection
 						continue;
 					var bookFolderName = Path.GetFileName(path);
 					var validRepoStatus = TryGetBookStatusJsonFromRepo(bookFolderName, out string statusJson);
+					var localStatusFilePath = GetStatusFilePath(bookFolderName, _localCollectionFolder);
 					if (statusJson == null) // includes cases where validRepoStatus is false
 					{
 						if (firstTimeJoin && validRepoStatus)
 						{
-							// We want to copy all local books into the repo
-							PutBook(path, true);
-							continue;
+							// There's no corresponding book in the repo (the null repo status is valid).
+							// We generally want to copy all local books into the repo.
+							// However, it's just possible that we have it in the repo by a different name.
+							// This catches some unlikely scenarios:
+							// - the book has been checked out and renamed locally (how is this possible if we're just now
+							// joining the repo for the first time?). We will leave it checked out.
+							// - the book was renamed remotely since we made the local collection we're merging with
+							// - the book was renamed locally since we made the local collection we're merging with
+							// (but independent of any checkout process)
+							// In the latter two cases we will keep the local version but not do an automatic checkin.
+							var id = GetBookId(bookFolderName);
+							var bookHasBeenRenamed = id != null && newBooks.TryGetValue(id, out string newName);
+							// We also don't want to add it back if it is known to have been deleted.
+							// It's somewhat questionable what should happen if it has local status but isn't one
+							// of the cases above. Suggests it has somehow gone away remotely, but not in one
+							// of the expected ways. Seems safest to go ahead and merge it.
+							if (!bookHasBeenRenamed && !KnownToHaveBeenDeleted(bookFolderName))
+							{
+								PutBook(path, true);
+								continue;
+							}
+
+							// the remote rename case is handled below.
 						}
 
 						// no sign of book in repo...should we delete it?
-						var statusFilePath = GetStatusFilePath(bookFolderName, _localCollectionFolder);
-						if (!File.Exists(statusFilePath))
+						if (!File.Exists(localStatusFilePath))
 						{
 							// If there's no local status, presume it's a newly created local file and keep it
 							continue;
@@ -1452,40 +1490,71 @@ namespace Bloom.TeamCollection
 							// Most likely, the book was copied from another TC using Explorer or similar.
 							// We'll treat it like any other locally newly-created book by getting rid of the
 							// bogus status.
-							RobustFile.Delete(statusFilePath);
+							RobustFile.Delete(localStatusFilePath);
 							continue;
 						}
 
 						// On this branch, there is valid local status, so the book has previously been shared.
-						// Since it's now missing from the repo, we assume it's been deleted (unless we found something
-						// invalid in the repo).
-						// Unless it's checked out to the current user on the current computer, delete
-						// the local version.
-
-						if (validRepoStatus && (statusLocal.lockedBy != TeamCollectionManager.CurrentUser
-						    || statusLocal.lockedWhere != TeamCollectionManager.CurrentMachine))
+						// If the repo file is corrupt, it's safest to do nothing more.
+						if (!validRepoStatus)
+							continue;
+						// It's now missing from the repo. Explore more options.
+						if (statusLocal.lockedBy == TeamCollectionManager.CurrentUser &&
+						    statusLocal.lockedWhere == TeamCollectionManager.CurrentMachine)
 						{
-							ReportProgressAndLog(progress, ProgressKind.Warning, "DeleteLocal",
-								"Deleting '{0}' from local folder as it is no longer in the Team Collection",
-								bookFolderName);
+							// existing book folder checked out with status file, but nothing matching in repo.
+							// Most likely it is in the process of being renamed. In that case, not only
+							// should we not delete it, we should avoid re-creating the local book it was
+							// renamed from, for which we most likely have a .bloom in the repo.
+							// Here we just remember the name.
+							var oldName = GetLocalStatus(bookFolderName).oldName;
+							if (!string.IsNullOrEmpty(oldName))
+							{
+								oldBookNames.Add(oldName);
+								continue;
+							}
+
+							// If it's checked out here, assume current user wants it and keep it.
+							// If he checks it in, that will undo the delete...may annoy the user
+							// who deleted it, but that's life in a shared collection.
+							// However, since it's not in the repo, it's most natural for it to be in the
+							// 'newly created book' state, that is, with no status. So get rid of the local status.
+							RobustFile.Delete(localStatusFilePath);
+							continue;
+						}
+
+						// It's not checked out here and has local status (implying it was once shared) and isn't in the repo now.
+						// Can we identify it as a rename?
+						var localId = BookMetaData.FromFolder(Path.Combine(_localCollectionFolder, bookFolderName)).Id;
+						if (newBooks.TryGetValue(localId, out string newName1))
+						{
+							// We have the same book in the repo under a new name, report a remote rename.
+							ReportProgressAndLog(progress, ProgressKind.Progress, "RenameFromRemote",
+								"The book \"{0}\" has been renamed to \"{1}\" by a teammate.",
+								bookFolderName, newName1);
+							remotelyRenamedBooks.Add(newName1);
+							// It may have been edited too. We'll copy the new version to local in the other pass.
 							SIL.IO.RobustIO.DeleteDirectoryAndContents(path);
 							continue;
 						}
 
-						// existing book folder checked out with status file, but nothing matching in repo.
-						// Most likely it is in the process of being renamed. In that case, not only
-						// should we not delete it, we should avoid re-creating the local book it was
-						// renamed from, for which we most likely have a .bloom in the repo.
-						// Here we just remember the name.
-						var oldName = GetLocalStatus(bookFolderName).oldName;
-						if (!string.IsNullOrEmpty(oldName))
+						// Can we confirm that someone deliberately deleted it? If so we will get rid of it.
+						if (KnownToHaveBeenDeleted(bookFolderName))
 						{
-							oldBookNames.Add(oldName);
+
+							ReportProgressAndLog(progress, ProgressKind.Warning, "DeleteLocal",
+								"Moving '{0}' to your recycle bin as it was deleted in the Team Collection.",
+								bookFolderName);
+							PathUtilities.DeleteToRecycleBin(path);
+							continue;
 						}
 
-						// If it's checked out here, assume current user wants it and keep it.
-						// If he checks it in, that will undo the delete...may annoy the user
-						// who deleted it, but that's life in a shared collection.
+						// Gone from the repo, but we don't know why. The safest thing seems to be to
+						// treat it as a new locally-created book.
+						ReportProgressAndLog(progress, ProgressKind.Warning, "RemoteBookMissing",
+							"The book '{0}' is no longer in the Team Collection. It has been kept in your local collection.",
+							bookFolderName);
+						RobustFile.Delete(localStatusFilePath);
 					}
 				}
 				catch (Exception ex)
@@ -1532,8 +1601,12 @@ namespace Bloom.TeamCollection
 						// brand new book! Get it.
 						hasProblems |= !CopyBookFromRepoToLocalAndReport(progress, bookName, () =>
 						{
-							ReportProgressAndLog(progress, ProgressKind.Progress, "FetchedNewBook",
-								"Fetching a new book '{0}' from the Team Collection", bookName);
+							if (!remotelyRenamedBooks.Contains(bookName))
+							{
+								// Report the new book, unless we already reported it as a rename.
+								ReportProgressAndLog(progress, ProgressKind.Progress, "FetchedNewBook",
+									"Fetching a new book '{0}' from the Team Collection", bookName);
+							}
 						});
 
 						continue;
@@ -1708,6 +1781,44 @@ namespace Bloom.TeamCollection
 			}
 
 			return hasProblems;
+		}
+
+		protected string GetBookId(string bookFolderName)
+		{
+			return BookMetaData.FromFolder(Path.Combine(_localCollectionFolder, bookFolderName))?.Id;
+		}
+
+		/// <summary>
+		/// Return a dictionary of all books in the repo which do not correspond to a local book folder.
+		/// key: book GUID; value: book name in repo (without extension).
+		/// </summary>
+		private Dictionary<string, string> GetNewRepoBookMap()
+		{
+			var newBooks = new Dictionary<string, string>();
+
+			foreach (var bookName in GetBookList())
+			{
+				var localFolderPath = Path.Combine(_localCollectionFolder, bookName);
+				if (!Directory.Exists(localFolderPath))
+				{
+					// This book MIGHT be the result of renaming a book we have locally.
+					try
+					{
+						var meta = GetRepoBookFile(bookName, "meta.json");
+						if (!string.IsNullOrEmpty(meta) && meta != "error")
+						{
+							var metaData = BookMetaData.FromString(meta);
+							newBooks[metaData.Id] = bookName;
+						}
+					}
+					catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
+					{
+						// we just won't treat it as a possible rename if we can't get the meta.json.
+					}
+				}
+			}
+
+			return newBooks;
 		}
 
 		// Return true if copied successfully, false if there is a problem (which this method will report).

@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using NUnit.Framework.Constraints;
 using SIL.Reporting;
 
 namespace BloomTests.TeamCollection
@@ -299,7 +300,7 @@ namespace BloomTests.TeamCollection
 		}
 
 		[Test]
-		public void Checkin_RenamedBook_DeletesOriginal()
+		public void Checkin_RenamedBook_DeletesOriginal_NoTombstone()
 		{
 			using (var collectionFolder =
 				new TemporaryFolder("Checkin_RenamedBook_DeletesOriginal_Collection"))
@@ -325,6 +326,7 @@ namespace BloomTests.TeamCollection
 					var status = tc.GetLocalStatus("new name");
 					Assert.That(status.oldName ?? "", Is.Empty,
 						"Should stop tracking previous name once we cleaned it up");
+					Assert.That(tc.KnownToHaveBeenDeleted("old name"), Is.False);
 					TeamCollectionManager.ForceCurrentUserForTests(null);
 				}
 			}
