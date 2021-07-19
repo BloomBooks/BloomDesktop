@@ -8,7 +8,7 @@ import { Button } from "@material-ui/core";
 import TruncateMarkup from "react-truncate-markup";
 import { IBookTeamCollectionStatus } from "../teamCollection/TeamCollectionBookStatusPanel";
 import { BloomAvatar } from "../react_components/bloomAvatar";
-import { kBloomBlue, kBloomGold } from "../bloomMaterialUiTheme.js";
+import { kBloomBlue, kBloomGold } from "../bloomMaterialUITheme.js";
 
 export const BookButton: React.FunctionComponent<{
     book: any;
