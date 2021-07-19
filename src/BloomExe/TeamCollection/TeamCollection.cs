@@ -1739,7 +1739,7 @@ namespace Bloom.TeamCollection
 		protected void ShowProgressDialog(string title, Func<IWebSocketProgress, bool> doWhat, Action<Form> doWhenMainActionFalse = null)
 		{
 			BrowserProgressDialog.DoWorkWithProgressDialog(SocketServer, TeamCollection.kWebSocketContext,
-				() => new ReactDialog("ProgressDialog",
+				() => new ReactDialog("progressDialogBundle",
 					// props to send to the react component
 					new
 					{
@@ -1760,7 +1760,7 @@ namespace Bloom.TeamCollection
 		/// repo one, if any. Not unit tested, as it mainly handles wrapping SyncAtStartup with a
 		/// progress dialog.
 		/// </summary>
-		public void SynchronizeRepoAndLocal()
+		public void SynchronizeRepoAndLocal(Action whenDone = null)
 		{
 			Analytics.Track("TeamCollectionOpen", new Dictionary<string, string>()
 			{
@@ -1804,6 +1804,7 @@ namespace Bloom.TeamCollection
 					return waitForUserToCloseDialogOrReportProblems;
 				}, (dlg) =>
 				{
+					whenDone?.Invoke();
 					// The dialog may continue to show for a bit, but other idle-time startup tasks
 					// may continue.
 					StartupScreenManager.ConsiderCurrentTaskDone();

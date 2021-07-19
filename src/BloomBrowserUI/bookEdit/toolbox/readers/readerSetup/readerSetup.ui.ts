@@ -1198,14 +1198,14 @@ function wordListChangedCallback() {
     requestWordsForSelectedStage();
 }
 
-import { getToolboxFrameExports } from "../../../js/bloomFrames";
+import { getToolboxBundleExports } from "../../../js/bloomFrames";
 
 $(document).ready(() => {
     attachEventHandlers();
     $("body")
         .find("*[data-i18n]")
         .localize(finishInitializing);
-    getToolboxFrameExports()!.addWordListChangedListener(
+    getToolboxBundleExports()!.addWordListChangedListener(
         "wordListChanged.ReaderSetup",
         wordListChangedCallback
     );
@@ -1213,8 +1213,8 @@ $(document).ready(() => {
     // http://stackoverflow.com/questions/3032770/execute-javascript-function-in-a-another-iframe-when-parent-is-from-different-do
     const container = $("body");
     //   const pageIframe = parent.frames['page'];
-    //   pageIframe.FrameExports.loadLongpressInstructions(container.find('textarea'));
-    getToolboxFrameExports()!.loadLongpressInstructions(
+    //   pageIframe.editTabBundle.loadLongpressInstructions(container.find('textarea'));
+    getToolboxBundleExports()!.loadLongpressInstructions(
         container.find("textarea")
     );
 });

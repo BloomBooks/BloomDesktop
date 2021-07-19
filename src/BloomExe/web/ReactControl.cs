@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SIL.IO;
+using SIL.Windows.Forms.Extensions;
+using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
@@ -22,21 +24,31 @@ namespace Bloom.web
 
 	public partial class ReactControl : UserControl
 	{
+		private string _javascriptBundleName;
 		private string _reactComponentName;
 		// props to provide to the react component
 		public object Props;
 
-		public ReactControl()
+		public static ReactControl Create(string _javascriptBundleName)
+		{
+			return new ReactControl()
+			{
+				JavascriptBundleName = _javascriptBundleName
+			};
+		}
+
+		/* Ideally this would be private but I don't know how to do that without messing up winform Designer code that uses it */
+		internal ReactControl()
 		{
 			InitializeComponent();
 			BackColor = Color.White;// we use a different color in design mode
 		}
 
 		[Browsable(true), Category("Setup")]
-		public string ReactComponentName
+		public string JavascriptBundleName
 		{
-			get { return _reactComponentName; }
-			set { _reactComponentName = value; }
+			get { return _javascriptBundleName; }
+			set { _javascriptBundleName = value; }
 		}
 
 		public bool UseEditContextMenu;
@@ -46,7 +58,7 @@ namespace Bloom.web
 			if (this.DesignModeAtAll())
 			{
 				_settingsDisplay.Visible = true;
-				_settingsDisplay.Text = $"ReactControl{Environment.NewLine}{Environment.NewLine}React Component Name: {_reactComponentName}{Environment.NewLine}{Environment.NewLine}Remember to add the component to the map in WireUpReact.ts";
+				_settingsDisplay.Text = $"ReactControl{Environment.NewLine}{Environment.NewLine}Javascript Bundle: {_javascriptBundleName}{Environment.NewLine}{Environment.NewLine}Remember to call WireUpForWinforms() from the bundle.";
 				return;
 			}
 
@@ -57,21 +69,31 @@ namespace Bloom.web
 
 			var props = Props==null ? "{}":JsonConvert.SerializeObject(Props);
 
+			if (_javascriptBundleName == null)
+			{
+				throw new ArgumentNullException("React Control needs a _javascriptBundleName" );
+			}
+
+			var bundleNameWithExtension = _javascriptBundleName;
+			if (!bundleNameWithExtension.EndsWith(".js"))
+			{
+				bundleNameWithExtension += ".js";
+			}
 			RobustFile.WriteAllText(tempFile.Path, $@"<!DOCTYPE html>
 				<html>
 				<head>
 					<meta charset = 'UTF-8' />
 					<script src = '/commonBundle.js' ></script>
-					<script src = '/wireUpBundle.js' ></script>
+                    <script src = '/{bundleNameWithExtension}'></script>
 					<script>
 						window.onload = () => {{
 							const rootDiv = document.getElementById('reactRoot');
-							window.wireUpReact(rootDiv,'{_reactComponentName}', {props});
+							window.wireUpRootComponentFromWinforms(rootDiv, {props});
 						}};
-					</script>
+					</script>					
 				</head>
-				<body>
-					<div id='reactRoot' class='{_reactComponentName}'>Component should replace this</div>
+				<body style='margin:0'>
+					<div id='reactRoot'>Javascript should have replaced this. Make sure that the javascript bundle '{bundleNameWithExtension}' includes a single call to WireUpForWinforms()</div>
 				</body>
 				</html>");
 

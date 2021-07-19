@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -50,7 +52,8 @@ namespace Bloom.TeamCollection
 		{
 			apiHandler.RegisterEndpointHandler("teamCollection/repoFolderPath", HandleRepoFolderPath, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/isTeamCollectionEnabled", HandleIsTeamCollectionEnabled, false);
-			apiHandler.RegisterEndpointHandler("teamCollection/currentBookStatus", HandleCurrentBookStatus, false);
+			apiHandler.RegisterEndpointHandler("teamCollection/bookStatus", HandleBookStatus, false);
+			apiHandler.RegisterEndpointHandler("teamCollection/selectedBookStatus", HandleSelectedBookStatus, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/attemptLockOfCurrentBook", HandleAttemptLockOfCurrentBook, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/checkInCurrentBook", HandleCheckInCurrentBook, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/forgetChangesInSelectedBook", HandleForgetChangesInSelectedBook, true);
@@ -86,7 +89,7 @@ namespace Bloom.TeamCollection
 
 		private void HandleShowCreateTeamCollectionDialog(ApiRequest request)
 		{
-			ReactDialog.ShowOnIdle("CreateTeamCollectionDialog", new { defaultRepoFolder = DropboxUtils.GetDropboxFolderPath() }, 600, 580, null, null, "Create Team Collection");
+			ReactDialog.ShowOnIdle("createTeamCollectionDialogBundle", new { defaultRepoFolder = DropboxUtils.GetDropboxFolderPath() }, 600, 580, null, null, "Create Team Collection");
 			request.PostSucceeded();
 		}
 
@@ -192,7 +195,75 @@ namespace Bloom.TeamCollection
 			}
 		}
 
-		public void HandleCurrentBookStatus(ApiRequest request)
+		public void HandleBookStatus(ApiRequest request)
+		{
+			try
+			{
+				if (!TeamCollectionManager.IsRegistrationSufficient())
+				{
+					request.Failed(HttpStatusCode.ServiceUnavailable, "Team Collection not active");
+					return;
+				}
+
+				var bookFolderName = request.RequiredParam("folderName");
+				request.ReplyWithJson(GetBookStatusJson(bookFolderName));
+			}
+			catch (Exception e)
+			{
+				// Not sure what to do here: getting the current book status crashed.
+				Logger.WriteError("TeamCollectionApi.HandleCurrentBookStatus() crashed", e);
+				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()}");
+				request.Failed("getting the book status failed");
+			}
+		}
+
+		private string GetBookStatusJson(string bookFolderName)
+		{
+			string whoHasBookLocked = null;
+			DateTime whenLocked = DateTime.MaxValue;
+			bool problem = false;
+			var status = _tcManager.CurrentCollection?.GetStatus(BookFolderName);
+			string hasInvalidRepoData = (status?.hasInvalidRepoData ?? false) ?
+				(_tcManager.CurrentCollection as FolderTeamCollection)?.GetBadZipFileMessage(BookFolderName)
+				: "";
+
+			bool newLocalBook = false;
+			try
+			{
+				whoHasBookLocked =
+					_tcManager.CurrentCollectionEvenIfDisconnected?.WhoHasBookLocked(BookFolderName);
+				// It's debatable whether to use CurrentCollectionEvenIfDisconnected everywhere. For now, I've only changed
+				// it for the two bits of information actually needed by the status panel when disconnected.
+				whenLocked = _tcManager.CurrentCollection?.WhenWasBookLocked(BookFolderName) ??
+				             DateTime.MaxValue;
+				newLocalBook = whoHasBookLocked == TeamCollection.FakeUserIndicatingNewBook;
+				if (newLocalBook)
+					whoHasBookLocked = CurrentUser;
+				problem = _tcManager.CurrentCollection?.HasLocalChangesThatMustBeClobbered(BookFolderName) ?? false;
+			}
+			catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
+			{
+				hasInvalidRepoData = (_tcManager.CurrentCollection as FolderTeamCollection)?.GetBadZipFileMessage(BookFolderName);
+			}
+			return JsonConvert.SerializeObject(
+				new
+				{
+					who = whoHasBookLocked,
+					whoFirstName = _tcManager.CurrentCollection?.WhoHasBookLockedFirstName(BookFolderName),
+					whoSurname = _tcManager.CurrentCollection?.WhoHasBookLockedSurname(BookFolderName),
+					when = whenLocked.ToLocalTime().ToShortDateString(),
+					where = _tcManager.CurrentCollectionEvenIfDisconnected?.WhatComputerHasBookLocked(BookFolderName),
+					currentUser = CurrentUser,
+					currentUserName = TeamCollectionManager.CurrentUserFirstName,
+					currentMachine = TeamCollectionManager.CurrentMachine,
+					problem,
+					hasInvalidRepoData,
+					changedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(BookFolderName),
+					disconnected = _tcManager.CurrentCollectionEvenIfDisconnected?.IsDisconnected,
+					newLocalBook
+				});
+		}
+		public void HandleSelectedBookStatus(ApiRequest request)
 		{
 			try
 			{
@@ -201,58 +272,14 @@ namespace Bloom.TeamCollection
 					request.Failed("not registered");
 					return;
 				}
-
-				string whoHasBookLocked = null;
-				DateTime whenLocked = DateTime.MaxValue;
-				bool problem = false;
-				var status = _tcManager.CurrentCollection?.GetStatus(BookFolderName);
-				string hasInvalidRepoData = (status?.hasInvalidRepoData ?? false) ?
-					(_tcManager.CurrentCollection as FolderTeamCollection)?.GetBadZipFileMessage(BookFolderName)
-					: "";
-
-				bool newLocalBook = false;
-				try
-				{
-					whoHasBookLocked =
-						_tcManager.CurrentCollectionEvenIfDisconnected?.WhoHasBookLocked(BookFolderName);
-					// It's debatable whether to use CurrentCollectionEvenIfDisconnected everywhere. For now, I've only changed
-					// it for the two bits of information actually needed by the status panel when disconnected.
-					whenLocked = _tcManager.CurrentCollection?.WhenWasBookLocked(BookFolderName) ??
-					                 DateTime.MaxValue;
-			    	newLocalBook = whoHasBookLocked == TeamCollection.FakeUserIndicatingNewBook;
-			    	if (newLocalBook)
-						whoHasBookLocked = CurrentUser;
-					problem = _tcManager.CurrentCollection?.HasLocalChangesThatMustBeClobbered(BookFolderName) ?? false;
-				}
-				catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
-				{
-					hasInvalidRepoData = (_tcManager.CurrentCollection as FolderTeamCollection)?.GetBadZipFileMessage(BookFolderName);
-				}
-
-
-				request.ReplyWithJson(JsonConvert.SerializeObject(
-					new
-					{
-						who = whoHasBookLocked,
-						whoFirstName = _tcManager.CurrentCollection?.WhoHasBookLockedFirstName(BookFolderName),
-						whoSurname = _tcManager.CurrentCollection?.WhoHasBookLockedSurname(BookFolderName),
-						when = whenLocked.ToLocalTime().ToShortDateString(),
-						where = _tcManager.CurrentCollectionEvenIfDisconnected?.WhatComputerHasBookLocked(BookFolderName),
-						currentUser = CurrentUser,
-						currentUserName = TeamCollectionManager.CurrentUserFirstName,
-						currentMachine = TeamCollectionManager.CurrentMachine,
-						problem,
-						hasInvalidRepoData,
-						changedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(BookFolderName),
-						disconnected = _tcManager.CurrentCollectionEvenIfDisconnected?.IsDisconnected,
-						newLocalBook
-					}));
+				request.ReplyWithJson(GetBookStatusJson(BookFolderName));
 			}
 			catch (Exception e)
 			{
 				// Not sure what to do here: getting the current book status crashed.
-				Logger.WriteError("TeamCollectionApi.HandleCurrentBookStatus() crashed", e);
-				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()}");
+				Logger.WriteError("TeamCollectionApi.HandleSelectedBookStatus() crashed", e);
+				SentrySdk.AddBreadcrumb(string.Format("Something went wrong for {0}", request.LocalPath()));
+				SentrySdk.CaptureException(e);
 				request.Failed("getting the current book status failed");
 			}
 		}
@@ -615,13 +642,7 @@ namespace Bloom.TeamCollection
 		// that it is checked-out to this user 
 		public bool CanEditBook()
 		{
-			if (_bookSelection.CurrentSelection == null || !_bookSelection.CurrentSelection.IsEditable)
-			{
-				return false; // no book, or the book's own logic says it's not editable
-			}
-
-			// We can edit it unless TC says we need a checkout to do it.
-			return !_tcManager.NeedCheckoutToEdit(_bookSelection.CurrentSelection.FolderPath);
+			return _tcManager.CanEditBook();
 		}
 	}
 }

@@ -15,6 +15,8 @@ export const kErrorColor = "red";
 export const kDialogPadding = "10px";
 export const kLogBackgroundColor = "#fcfcfc";
 export const kBloomYellow = "#FEBF00";
+export const kPanelBackground = "#2e2e2e";
+export const kDarkestBackground = "#1a1a1a";
 
 // the value that gets us to the 4.5 AA ratio depends on the background.
 // So the "aside"/features right-panel color effects this.

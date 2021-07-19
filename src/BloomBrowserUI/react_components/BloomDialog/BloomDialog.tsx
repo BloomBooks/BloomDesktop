@@ -20,19 +20,22 @@ const kDialogBottomPadding = "10px"; // per material, the bottom buttons are sup
 export const BloomDialog: React.FunctionComponent<{
     open: boolean;
     // true if the caller is wrapping in a winforms dialog already
-    omitOuterFrame?: boolean;
+    dialogFrameProvidedExternally?: boolean;
     onClose: () => void;
 }> = props => {
     const inner = (
         <div
             css={css`
+                background-color: white;
                 display: flex;
                 flex-direction: column;
                 padding-left: ${kDialogSidePadding};
                 padding-right: ${kDialogSidePadding};
                 padding-bottom: ${kDialogBottomPadding};
-                // todo: I can't understand why this "- 10px" is needed. This and all its parents have no margin, so I don't understand why it ends up being 10px larger than the available space
-                ${props.omitOuterFrame
+
+                // dialogFrameProvidedExternally means that we're inside of a winforms dialog.
+                /// So we grow to fit it, and we supply a single black border for some reason (?)
+                ${props.dialogFrameProvidedExternally
                     ? `height: 100%; border: solid thin black; box-sizing: border-box;`
                     : ""}
 
@@ -52,7 +55,7 @@ export const BloomDialog: React.FunctionComponent<{
             }}
         >
             <ThemeProvider theme={theme}>
-                {props.omitOuterFrame ? (
+                {props.dialogFrameProvidedExternally ? (
                     inner
                 ) : (
                     <Dialog open={props.open}>{inner}</Dialog>
@@ -198,13 +201,13 @@ export const DialogBottomButtons: React.FunctionComponent<{}> = props => {
 
 export interface IBloomDialogEnvironmentParams {
     // true if the caller is wrapping in a winforms dialog already
-    omitOuterFrame: boolean;
+    dialogFrameProvidedExternally: boolean;
     // storybook stories will usually set this to true so we don't have to do anything to see the dialog
     initiallyOpen: boolean;
 }
 
 export const normalDialogEnvironmentForStorybook = {
-    omitOuterFrame: false,
+    dialogFrameProvidedExternally: false,
     initiallyOpen: true
 };
 
@@ -221,7 +224,7 @@ export function useSetupBloomDialog(
         setOpen(true);
     }
     function closeDialog() {
-        if (dialogEnvironment?.omitOuterFrame)
+        if (dialogEnvironment?.dialogFrameProvidedExternally)
             BloomApi.post("common/closeReactDialog");
         else setOpen(false);
     }
@@ -231,7 +234,8 @@ export function useSetupBloomDialog(
         propsForBloomDialog: {
             open: currentlyOpen,
             onClose: closeDialog,
-            omitOuterFrame: dialogEnvironment?.omitOuterFrame || false
+            dialogFrameProvidedExternally:
+                dialogEnvironment?.dialogFrameProvidedExternally || false
         }
     };
 }

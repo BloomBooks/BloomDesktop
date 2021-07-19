@@ -4,8 +4,8 @@ import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import * as ReactDOM from "react-dom";
 import "./comic.less";
 import {
-    getPageFrameExports,
-    getEditViewFrameExports
+    getEditablePageBundleExports,
+    getEditTabBundleExports
 } from "../../js/bloomFrames";
 import { BubbleManager } from "../../js/bubbleManager";
 import { BubbleSpec, TailSpec } from "comicaljs";
@@ -383,7 +383,7 @@ const ComicToolControls: React.FunctionComponent = () => {
             defaultSwatchColors: defaultTextColors,
             onChange: color => updateTextColor(color)
         };
-        getEditViewFrameExports().showColorPickerDialog(colorPickerDialogProps);
+        getEditTabBundleExports().showColorPickerDialog(colorPickerDialogProps);
     };
 
     // The background color chooser uses an alpha slider for transparency.
@@ -403,7 +403,7 @@ const ComicToolControls: React.FunctionComponent = () => {
         // See https://issues.bloomlibrary.org/youtrack/issue/BL-9922.
         if (colorPickerDialogProps.initialColor.opacity === 0)
             colorPickerDialogProps.initialColor.opacity = 100;
-        getEditViewFrameExports().showColorPickerDialog(colorPickerDialogProps);
+        getEditTabBundleExports().showColorPickerDialog(colorPickerDialogProps);
     };
 
     const needToCalculateTransparency = (): boolean => {
@@ -770,7 +770,7 @@ export class ComicTool extends ToolboxToolReactAdaptor {
     }
 
     public static bubbleManager(): BubbleManager | undefined {
-        const exports = getPageFrameExports();
+        const exports = getEditablePageBundleExports();
         return exports ? exports.getTheOneBubbleManager() : undefined;
     }
 

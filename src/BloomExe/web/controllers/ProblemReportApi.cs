@@ -461,7 +461,7 @@ namespace Bloom.web.controllers
 					}
 
 					// Precondition: we must be on the UI thread for Gecko to work.
-					using (var dlg = new ReactDialog("ProblemDialog", new { level = levelOfProblem}, "Problem Report"))
+					using (var dlg = new ReactDialog( "problemReportBundle", new { level = levelOfProblem}, "Problem Report"))
 					{
 						_additionalPathsToInclude = additionalFilesToInclude;
 						dlg.FormBorderStyle = FormBorderStyle.FixedToolWindow; // Allows the window to be dragged around

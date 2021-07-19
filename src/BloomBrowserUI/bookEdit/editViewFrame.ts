@@ -25,27 +25,27 @@ export function SayHello() {
 }
 
 // These functions should be available for calling by non-module code (such as C# directly)
-// using the FrameExports object (see more details in bloomFrames.ts)
-import { getToolboxFrameExports } from "./js/bloomFrames";
-export { getToolboxFrameExports };
-import { getPageFrameExports } from "./js/bloomFrames";
-export { getPageFrameExports };
+// using the editTabBundle object (see more details in bloomFrames.ts)
+import { getToolboxBundleExports } from "./js/bloomFrames";
+export { getToolboxBundleExports };
+import { getEditablePageBundleExports } from "./js/bloomFrames";
+export { getEditablePageBundleExports };
 import { showAddPageDialog } from "../pageChooser/launch-page-chooser";
 export { showAddPageDialog };
 import "errorHandler";
 import { reportError } from "../lib/errorHandler";
 import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 
-//Called by c# using FrameExports.handleUndo()
+//Called by c# using editTabBundle.handleUndo()
 export function handleUndo(): void {
     // First see if origami is active and knows about something we can undo.
-    var contentWindow = getPageFrameExports();
+    var contentWindow = getEditablePageBundleExports();
     if (contentWindow && contentWindow.origamiCanUndo()) {
         contentWindow.origamiUndo();
     }
     // Undoing changes made by commands and dialogs in the toolbox can't be undone using
     // ckeditor, and has its own mechanism. Look next to see whether we know about any Undos there.
-    var toolboxWindow = getToolboxFrameExports();
+    var toolboxWindow = getToolboxBundleExports();
     if (toolboxWindow && toolboxWindow.canUndo()) {
         toolboxWindow.undo();
     } else if (contentWindow && contentWindow.ckeditorCanUndo()) {
@@ -57,10 +57,10 @@ export function handleUndo(): void {
 export function switchContentPage(newSource: string) {
     try {
         if (
-            this.getPageFrameExports &&
-            this.getPageFrameExports().pageUnloading
+            this.getEditablePageBundleExports &&
+            this.getEditablePageBundleExports().pageUnloading
         ) {
-            this.getPageFrameExports().pageUnloading();
+            this.getEditablePageBundleExports().pageUnloading();
         }
     } catch (e) {
         // It's not too unlikely something goes wrong while trying to unload the previous
@@ -74,7 +74,7 @@ export function switchContentPage(newSource: string) {
         } catch (e2) {}
     }
     let iframe = <HTMLIFrameElement>document.getElementById("page");
-    // We want to call getToolboxFrameExports().applyToolboxStateToPage() to allow
+    // We want to call getToolboxBundleExports().applyToolboxStateToPage() to allow
     // any tool that is active to update its state to match the new page content.
     // This gets a bit complicated because we want the tool to actually see the new
     // content in the DOM, and it won't be present right when we set the src attribute.
@@ -85,7 +85,7 @@ export function switchContentPage(newSource: string) {
     const handler = () => {
         handlerCalled = true;
         iframe.removeEventListener("load", handler);
-        getToolboxFrameExports()!.applyToolboxStateToPage();
+        getToolboxBundleExports()!.applyToolboxStateToPage();
     };
     iframe.removeEventListener("load", handler);
     iframe.addEventListener("load", handler);
@@ -129,12 +129,12 @@ export function toolboxIsShowing() {
 }
 
 // Do this task when the toolbox is loaded. If it isn't already, we set a timeout and do it when we can.
-// (The value passed to the task function will be the value from getToolboxFrameExports(). Unfortunately we
+// (The value passed to the task function will be the value from getToolboxBundleExports(). Unfortunately we
 // haven't yet managed to declare a type for that, so I can't easily specify it here.)
 export function doWhenToolboxLoaded(
     task: (toolboxFrameExports: IToolboxFrameExports) => any
 ) {
-    const toolboxWindow = getToolboxFrameExports();
+    const toolboxWindow = getToolboxBundleExports();
     if (toolboxWindow) {
         task(toolboxWindow);
     } else {
@@ -144,14 +144,14 @@ export function doWhenToolboxLoaded(
     }
 }
 
-//Called by c# using FrameExports.canUndo()
+//Called by c# using editTabBundle.canUndo()
 export function canUndo(): string {
     // See comments on handleUndo()
-    const contentWindow = getPageFrameExports();
+    const contentWindow = getEditablePageBundleExports();
     if (contentWindow && (<any>contentWindow).origamiCanUndo()) {
         return "yes";
     }
-    const toolboxWindow = getToolboxFrameExports();
+    const toolboxWindow = getToolboxBundleExports();
     if (toolboxWindow && toolboxWindow.canUndo && toolboxWindow.canUndo()) {
         return "yes";
     }

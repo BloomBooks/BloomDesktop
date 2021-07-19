@@ -530,9 +530,9 @@ namespace Bloom.Edit
 					}
 					else
 					{
-						Logger.WriteEvent("changing page via FrameExports.switchContentPage()");
+						Logger.WriteEvent("changing page via editTabBundle.switchContentPage()");
 						var pageUrl = _model.GetUrlForCurrentPage();
-						RunJavaScript("FrameExports.switchContentPage('" + pageUrl + "');");
+						RunJavaScript("editTabBundle.switchContentPage('" + pageUrl + "');");
 					}
 				}
 				else
@@ -1388,9 +1388,9 @@ namespace Bloom.Edit
 			// BL-9912 where the Leveled Reader Tool was prompted by some of this to call us back with a save to the
 			// tool state, but by then the editingModel had cleared out its knowledge of what book it had previously
 			// been editing, so there was an null.
-			RunJavaScript("if (typeof(FrameExports) !=='undefined' && typeof(FrameExports.getPageFrameExports()) !=='undefined') {FrameExports.getToolboxFrameExports().removeToolboxMarkup();}");
-			var bodyHtml = RunJavaScript("if (typeof(FrameExports && typeof(FrameExports.getPageFrameExports()) !=='undefined') !=='undefined') {return FrameExports.getPageFrameExports().getBodyContentForSavePage();}");
-			var userCssContent = RunJavaScript("if (typeof(FrameExports) !=='undefined' && typeof(FrameExports.getPageFrameExports()) !=='undefined') {return FrameExports.getPageFrameExports().userStylesheetContent();}");
+			RunJavaScript("if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getToolboxBundleExports()) !=='undefined') {editTabBundle.getToolboxBundleExports().removeToolboxMarkup();}");
+			var bodyHtml = RunJavaScript("if (typeof(editTabBundle !=='undefined') && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined') {return editTabBundle.getEditablePageBundleExports().getBodyContentForSavePage();}");
+			var userCssContent = RunJavaScript("if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined') {return editTabBundle.getEditablePageBundleExports().userStylesheetContent();}");
 			_browser1.ReadEditableAreasNow(bodyHtml, userCssContent);
 		}
 
@@ -1718,7 +1718,7 @@ namespace Bloom.Edit
 			Application.Idle -= SaveWhenIdle; // don't need to do again till next Deactivate.
 			_model.SaveNow();
 			// Restore any tool state removed by CleanHtmlAndCopyToPageDom(), which is called by _model.SaveNow().
-			RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getToolboxFrameExports().applyToolboxStateToPage();}");
+			RunJavaScript("if (typeof(editTabBundle) !=='undefined') {editTabBundle.getToolboxBundleExports().applyToolboxStateToPage();}");
 		}
 
 		public string HelpTopicUrl => "/Tasks/Edit_tasks/Edit_tasks_overview.htm";
@@ -1752,14 +1752,14 @@ namespace Bloom.Edit
 		{
 			PageTemplatesApi.ForPageLayout = false;
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
-			RunJavaScript("FrameExports.showAddPageDialog(false);");
+			RunJavaScript("editTabBundle.showAddPageDialog(false);");
 		}
 
 		internal void ShowChangeLayoutDialog()
 		{
 			PageTemplatesApi.ForPageLayout = true;
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
-			RunJavaScript("FrameExports.showAddPageDialog(true);");
+			RunJavaScript("editTabBundle.showAddPageDialog(true);");
 		}
 
 

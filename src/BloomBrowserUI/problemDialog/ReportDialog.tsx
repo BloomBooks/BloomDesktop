@@ -40,18 +40,21 @@ export const ReportDialog: React.FunctionComponent<{
 
     // Precondition: The returned string from BloomServer must already encode any special characters
     // which are not meant to be treated as HTML code.
-    const [reportHeadingHtml] = BloomApi.useApiString(
+    const [reportHeadingHtml] = BloomApi.useApiStringState(
         "problemReport/reportHeadingHtml",
         ""
     );
-    const [email, setEmail] = BloomApi.useApiString(
+    const [email, setEmail] = BloomApi.useApiStringState(
         "problemReport/emailAddress",
         ""
     );
     const [submitAttempts, setSubmitAttempts] = useState(0);
     const theme = makeTheme(props.kind);
     const [whatDoing, setWhatDoing] = useState("");
-    const [bookName] = BloomApi.useApiString("problemReport/bookName", "??");
+    const [bookName] = BloomApi.useApiStringState(
+        "problemReport/bookName",
+        "??"
+    );
 
     // When submitted, this will contain the url of the YouTrack issue.
     const [issueLink, setIssueLink] = useState("");

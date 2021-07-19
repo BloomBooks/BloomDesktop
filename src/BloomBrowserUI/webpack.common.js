@@ -31,13 +31,12 @@ module.exports = merge(core, {
     // The root file for each bundle should import errorHandler.ts to enable Bloom's custom
     // error handling for that web page.
     entry: {
-        wireUpBundle: "./utils/WireUpReact.ts",
-        problemReportBundle: "./problemDialog/ProblemDialog.tsx",
-        editTabRootBundle: "./bookEdit/editViewFrame.ts",
+        editTabBundle: "./bookEdit/editViewFrame.ts",
         readerSetupBundle:
             "./bookEdit/toolbox/readers/readerSetup/readerSetup.ts",
         editablePageBundle: "./bookEdit/editablePage.ts",
-        bookPreviewBundle: "./bookPreview/bookPreview.ts",
+        bookPreviewBundle:
+            "./collectionsTab/collectionsTabBookPane/bookPreview.ts",
         toolboxBundle: "./bookEdit/toolbox/toolboxBootstrap.ts",
         pageChooserBundle: "./pageChooser/page-chooser.ts",
         pageThumbnailListBundle:
@@ -49,11 +48,9 @@ module.exports = merge(core, {
             "!./publish/**/stories.tsx"
         ]),
         enterpriseSettingsBundle: "./collection/enterpriseSettings.tsx",
-        teamCollectionSettingsBundle:
-            "./teamCollection/TeamCollectionSettingsPanel.tsx",
-        autoUpdateSoftwareDlgBundle:
-            "./react_components/AutoUpdateSoftwareDialog.tsx",
+
         performanceLogBundle: "./performance/PerformanceLogPage.tsx",
+        appBundle: "./app/App.tsx",
         testBundle: globule.find([
             "./bookEdit/**/*Spec.ts",
             "./bookEdit/**/*Spec.js",
@@ -61,7 +58,34 @@ module.exports = merge(core, {
             "./lib/**/*Spec.js",
             "./publish/**/*Spec.ts",
             "./publish/**/*Spec.js"
-        ])
+        ]),
+
+        // These work with c# ReactControl:
+        problemReportBundle: "./problemDialog/ProblemDialog.tsx",
+        defaultBookshelfControlBundle:
+            "./react_components/DefaultBookshelfControl.tsx",
+        progressDialogBundle: "./react_components/Progress/ProgressDialog.tsx",
+        problemReportBundle: "./problemDialog/ProblemDialog.tsx",
+        createTeamCollectionDialogBundle:
+            "./teamCollection/CreateTeamCollection.tsx",
+        teamCollectionDialogBundle: "./teamCollection/TeamCollectionDialog.tsx",
+        teamCollectionSettingsBundle:
+            "./teamCollection/TeamCollectionSettingsPanel.tsx",
+        joinTeamCollectionDialogBundle:
+            "./teamCollection/JoinTeamCollectionDialog.tsx",
+        autoUpdateSoftwareDlgBundle:
+            "./react_components/AutoUpdateSoftwareDialog.tsx",
+
+        collectionsTabPaneBundle: "./collectionsTab/CollectionsTabPane.tsx",
+
+        // this is here for the "legacy" collections tab, though it's actually new for 5.1
+        // we decided that the "legacy" bit we are trying to preserve a bit longer is the left side, the list of books.
+        collectionsTabBookPaneBundle:
+            "./collectionsTab/collectionsTabBookPane/CollectionsTabBookPane.tsx",
+
+        legacyBookPreviewBundle:
+            "./collectionsTab/collectionsTabBookPane/bookPreview.ts"
+
         //             testBundle: globule.find(["./**/*Spec.ts", "./**/*Spec.js", "!./node_modules/**"])//This slowed down webpack a ton, becuase the way it works is that it 1st it finds it all, then it excludes node_modules
     },
 
@@ -71,21 +95,12 @@ module.exports = merge(core, {
 
         libraryTarget: "var",
 
-        //makes a single entry point module's epxorts accessible via Exports.
-        //Note that if you include more than one entry point js in the frame, the second one will overwrite the Exports var
-        // (see the other way of doing this, below, if that becomes necessary for some reason)
-        // (JT: later: I think what the above means is that the root pug file for a browser control (or an iframe within it)
-        // should not import more than commonBundle.js and then, after it, the one root bundle for that frame,
-        // one of the bundles specified in the entry: block above. If you do import more than one, only the exports
-        // from the LAST one will be accessible in FrameExports, since each bundle will set FrameExports and the
-        // last one will win. I can't find the 'other way' of doing things if you need both lots of exports;
-        // the preferred solution would be to reorganize the code so that each frame has only one root bundle.)
-        library: "FrameExports"
+        // Makes a single entry point module's exports accessible via Exports.
+        library: "[name]"
     },
-
     resolve: {
         // For some reason, webpack began to complain about being given minified source.
-        // alias: {
+        // alias: { x
         //   "react-dom": pathToReactDom,
         //   react: pathToReact // the point of this is to use the minified version. https://christianalfoni.github.io/react-webpack-cookbook/Optimizing-rebundling.html
         // },
@@ -107,7 +122,7 @@ module.exports = merge(core, {
                 commons: {
                     name: "commonBundle",
                     chunks: "initial",
-                    // Our build process creates 10 independent bundle files.  (See exports.entry
+                    // Our build process creates multiple independent bundle files.  (See exports.entry
                     // above.)  minChunks specifies how many of those bundles must contain a common
                     // chunk for that common chunk to be moved into commonBundle.js.  The default
                     // value 1 moves everything to a massive commonBundle.js, leaving only a small

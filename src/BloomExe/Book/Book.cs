@@ -2470,7 +2470,7 @@ namespace Bloom.Book
 		internal void AddPreviewJavascript(HtmlDom dom)
 		{
 			dom.AddJavascriptFile("commonBundle.js".ToLocalhost());
-			dom.AddJavascriptFile("bookPreviewBundle.js".ToLocalhost());
+			dom.AddJavascriptFile("legacyBookPreviewBundle.js".ToLocalhost());
 		}
 
 		/// <summary>

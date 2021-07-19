@@ -295,19 +295,10 @@ namespace Bloom.CollectionTab
 			// This ensures they don't conflict with any dialogs we want to launch at startup,
 			// and don't happen unexpectedly because of idle events while modal dialogs are open.
 
-			// If we're loading a team collection, we need to do that...with its progress dialog...
-			// before anything else, and we'll need to close the splash screen to make room for
-			// that dialog.
-			// Note, this not put into _startupActions...it should never be disabled.
-			if (_tcManager?.CurrentCollectionEvenIfDisconnected != null)
-			{
-				StartupScreenManager.AddStartupAction( () =>
-					{
-						// Don't do anything else after this as part of this idle task.
-						// See the comment near the end of HandleTeamStuffBeforeGetBookCollections.
-						_model.HandleTeamStuffBeforeGetBookCollections();
-					}, shouldHideSplashScreen:true);
-			}
+			// Note, it's important that WorkspaceView.OnLoad runs before the following.
+			// That will certainly be true currently, as this view loads only when chosen
+			// manually by the user. If it becomes intially selected again, that should be checked.
+
 			// previously: stage LoadPrimary
 			_startupActions.Add(StartupScreenManager.AddStartupAction(() =>
 			{
@@ -319,6 +310,7 @@ namespace Bloom.CollectionTab
 
 				LoadPrimaryCollectionButtons(false);
 				_primaryCollectionFlow.Refresh();
+				_tcManager?.CurrentCollection?.UpdateStatusOfAllCheckedOutBooks();
 			}));
 			// previously: stage ImprovePrimary
 			// here we do any expensive fix up of the buttons in the primary collection (typically, getting vernacular captions, which requires reading their html)
@@ -1178,7 +1170,7 @@ namespace Bloom.CollectionTab
 
 		internal void OnTeamCollectionBookStatusChange(BookStatusChangeEventArgs eventArgs)
 		{
-			if (_disposed)
+			if (_disposed || !IsHandleCreated)
 				return;
 
 			// Need to wait for the button objects to be loaded.

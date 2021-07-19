@@ -1,5 +1,5 @@
 import { BloomApi } from "./bloomApi";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export interface IBloomWebSocketEvent {
     clientContext: string;

@@ -6,7 +6,7 @@ import axios from "axios";
 import { BloomApi } from "../utils/bloomApi";
 import "errorHandler";
 import SelectedTemplatePageControls from "./selectedTemplatePageControls";
-import { getEditViewFrameExports } from "../bookEdit/js/bloomFrames";
+import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";
 import { ThemeProvider } from "@material-ui/styles";
 import theme from "../bloomMaterialUITheme";
 
@@ -313,7 +313,7 @@ export class PageChooser {
         // this fails with a message saying the dialog isn't initialized. Apparently a dialog must be closed
         // by code loaded into the window that opened it.
         //$(parent.document.getElementById('addPageConfig')).dialog('close');
-        getEditViewFrameExports().closeDialog("addPageConfig");
+        getEditTabBundleExports().closeDialog("addPageConfig");
     }
 
     // This is the starting-point method that is invoked to initialize the dialog.

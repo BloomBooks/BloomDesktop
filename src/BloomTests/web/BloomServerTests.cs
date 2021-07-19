@@ -298,7 +298,7 @@ namespace BloomTests.web
 					// I would rather verify the actual output, but don't want this test to be fragile, and the
 					// main point is that we get a file with the DOM content.
 					Assert.That(transaction.ReplyContents,
-						Is.EqualTo(TempFileUtils.CreateHtml5StringFromXml(dom.RawDom)));
+						Is.EqualTo(dom.getHtmlStringDisplayOnly()));
 				}
 				server.DoIdleTasksIfNoActivity();
 				var transactionFail = new PretendRequestInfo(url);
@@ -382,7 +382,7 @@ namespace BloomTests.web
 			// I would rather verify the actual output, but don't want this test to be fragile, and the
 			// main point is that we get a file with the DOM content.
 			Assert.That(transaction.ReplyContents,
-				Is.EqualTo(TempFileUtils.CreateHtml5StringFromXml(dom.RawDom)));
+				Is.EqualTo(dom.getHtmlStringDisplayOnly()));
 		}
 
 		[Test]
@@ -395,7 +395,7 @@ namespace BloomTests.web
 			// I would rather verify the actual output, but don't want this test to be fragile, and the
 			// main point is that we get a file with the DOM content.
 			Assert.That(transaction.ReplyContents,
-				Is.EqualTo(TempFileUtils.CreateHtml5StringFromXml(dom.RawDom)));
+				Is.EqualTo(dom.getHtmlStringDisplayOnly()));
 		}
 
 		private HtmlDom SetupDomWithAmpersandInTitle()

@@ -40,7 +40,7 @@ export class BloomApi {
         // Save the place where the original axios call was made.
         // The stack in the error passed to catch is usually not very
         // useful, containing just a few levels from the axios code
-        // that handle the rejection of a promise, thoug it might contain
+        // that handle the rejection of a promise, though it might contain
         // useful information about a problem within the '.then' block.
         // The stack that we would get by throwing in the catch function
         // itself is even less useful, typically containing nothing but
@@ -195,10 +195,21 @@ export class BloomApi {
         return [value, fn];
     }
 
-    public static useApiObject<T>(
+    public static useApiData<T>(urlSuffix: string, defaultValue: T): T {
+        const [value, setValue] = React.useState<T>(defaultValue);
+        React.useEffect(() => {
+            BloomApi.get(urlSuffix, c => {
+                setValue(c.data);
+            });
+        }, []);
+        return value;
+    }
+
+    // Like UseApiData, except you also get a function for changing the state on the server.
+    public static useApiState<T>(
         urlSuffix: string,
         defaultValue: T
-    ): [T, (value: TextEncoderEncodeIntoResult) => void] {
+    ): [T, (value: T) => void] {
         const [value, setValue] = React.useState<T>(defaultValue);
         React.useEffect(() => {
             BloomApi.get(urlSuffix, c => {
@@ -206,11 +217,11 @@ export class BloomApi {
             });
         }, []);
 
-        const fn = (value: T) => {
+        const setFunction = (value: T) => {
             BloomApi.postData(urlSuffix, value);
             setValue(value);
         };
-        return [value, fn];
+        return [value, setFunction];
     }
 
     // A react hook for controlling an API-backed string from a React pure functional component
@@ -221,7 +232,7 @@ export class BloomApi {
     //
     // The conditional parameter is optional.
     // If defined, the string will be retrieved only if calling conditional() returns true.
-    public static useApiString(
+    public static useApiStringState(
         urlSuffix: string,
         defaultValue: string,
         conditional?: () => boolean
@@ -251,7 +262,17 @@ export class BloomApi {
         });
     }
 
-    // This method is used to get a result from Bloom, passing paramaters to the nested axios call.
+    public static useApiJson(urlSuffix: string): [any | undefined] {
+        const [value, setValue] = React.useState<any | undefined>();
+        React.useEffect(() => {
+            BloomApi.get(urlSuffix, c => {
+                setValue(c.data);
+            });
+        }, []);
+        return value;
+    }
+
+    // This method is used to get a result from Bloom, passing parameters to the nested axios call.
     public static getWithConfig(
         urlSuffix: string,
         config: AxiosRequestConfig,

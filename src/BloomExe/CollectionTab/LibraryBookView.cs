@@ -44,8 +44,7 @@ namespace Bloom.CollectionTab
 			EditBookCommand editBookCommand,
 			SelectedTabChangedEvent selectedTabChangedEvent,
 			SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
-			BloomWebSocketServer webSocketServer,
-			BookStatusChangeEvent bookStatusChangeEvent)
+			BloomWebSocketServer webSocketServer)
 		{
 			InitializeComponent();
 			_bookSelection = bookSelection;
@@ -74,24 +73,6 @@ namespace Bloom.CollectionTab
 				if (_reshowPending || wasVisible != _visible)
 				{
 					ShowBook();
-				}
-			});
-
-			_editBookButton.Visible = false;
-			bookStatusChangeEvent.Subscribe((args) =>
-			{
-				if (_bookSelection.CurrentSelection == null)
-					return;
-				if (Path.GetFileNameWithoutExtension(args.BookName) ==
-				    Path.GetFileName(_bookSelection.CurrentSelection.FolderPath))
-				{
-					// This may not need to be on the UI thread, but let's play safe.
-					SafeInvoke.Invoke("sending reload status", this, false, true,
-						() =>
-						{
-							_webSocketServer.SendEvent("bookStatus", "reload");
-							SetEditButtonVisibility();
-						});
 				}
 			});
 		}
@@ -135,18 +116,11 @@ namespace Bloom.CollectionTab
 
 		private void LoadBook(bool updatePreview = true)
 		{
-			_addToCollectionButton.Visible =  _addToCollectionButton.Enabled = _bookSelection.CurrentSelection != null;
-			SetEditButtonVisibility();
 			ShowBook(updatePreview);
 			if (_bookSelection.CurrentSelection != null)
 			{
 				_bookSelection.CurrentSelection.ContentsChanged += new EventHandler(CurrentSelection_ContentsChanged);
 			}
-		}
-
-		private void SetEditButtonVisibility()
-		{
-			_editBookButton.Visible = TeamCollectionApi.TheOneInstance.CanEditBook();
 		}
 
 		void CurrentSelection_ContentsChanged(object sender, EventArgs e)
@@ -170,8 +144,6 @@ namespace Bloom.CollectionTab
 			{
 				Debug.WriteLine("LibraryBookView.ShowBook() currentselection ok");
 
-				_addToCollectionButton.Visible = _bookSelection.CurrentSelection.IsShellOrTemplate && !_bookSelection.CurrentSelection.HasFatalError;
-				SetEditButtonVisibility();
 				_readmeBrowser.Visible = false;
 				_splitContainerForPreviewAndAboutBrowsers.Visible = true;
 				if (updatePreview && !TroubleShooterDialog.SuppressBookPreview)
@@ -204,8 +176,6 @@ namespace Bloom.CollectionTab
 					}
 				}
 				_reshowPending = false;
-				if (_addToCollectionButton.Visible)
-					_addToCollectionButton.BringToFront();	// ensure it's visible in front of react control
 			}
 		}
 
@@ -225,42 +195,6 @@ namespace Bloom.CollectionTab
 			_reactBookPreviewControl.Visible = false;
 			_splitContainerForPreviewAndAboutBrowsers.Visible = false;
 			BackColor = Palette.GeneralBackground; // NB: this color is only seen in a flash before browser loads
-		}
-
-		private void OnAddToLibraryClick(object sender, EventArgs e)
-		{
-			if (_bookSelection.CurrentSelection != null)
-			{
-				try
-				{
-					//nb: don't move this to after the raise command, as the selection changes
-					var checkinNotice = string.Format("Created book from '{0}'", _bookSelection.CurrentSelection.TitleBestForUserDisplay);
-
-					_createFromSourceBookCommand.Raise(_bookSelection.CurrentSelection);
-					//_sendReceiver.CheckInNow(checkinNotice);
-				}
-				catch(Exception error)
-				{
-					SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,"Bloom could not add that book to the library.");
-				}
-			}
-		}
-
-		private void _addToLibraryButton_MouseEnter(object sender, EventArgs e)
-		{
-//            _addToLibraryButton.Text = string.Format("Add this book to {0}", _librarySettings.VernacularCollectionNamePhrase);
-//            _addToLibraryButton.Width = 250;
-		}
-
-		private void _addToLibraryButton_MouseLeave(object sender, EventArgs e)
-		{
-//            _addToLibraryButton.Text="";
-//            _addToLibraryButton.Width = 50;
-		}
-
-		private void _editBookButton_Click(object sender, EventArgs e)
-		{
-			_editBookCommand.Raise(_bookSelection.CurrentSelection);
 		}
 
 		private void LibraryBookView_Resize(object sender, EventArgs e)

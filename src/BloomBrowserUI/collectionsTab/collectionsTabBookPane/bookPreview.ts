@@ -1,6 +1,8 @@
 import * as $ from "jquery";
 import "jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
 import "errorHandler";
+import { WireUpForWinforms } from "../../utils/WireUpWinform";
+import { CollectionsTabBookPane } from "./CollectionsTabBookPane";
 
 $.fn.CenterVerticallyInParent = function() {
     return this.each(function(i) {
@@ -75,3 +77,6 @@ $(document).ready(() => {
 
     $(".bloom-centerVertically").CenterVerticallyInParent();
 });
+
+// this is here for the "legacy" collections tab
+WireUpForWinforms(CollectionsTabBookPane);

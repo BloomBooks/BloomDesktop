@@ -24,6 +24,7 @@ import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import { LocalizedString } from "../react_components/l10nComponents";
 import { ThemeProvider } from "@material-ui/styles";
 import theme from "../bloomMaterialUITheme";
+import { WireUpForWinforms } from "../utils/WireUpWinform";
 export let showTeamCollectionDialog: () => void;
 import "react-tabs/style/react-tabs.less";
 
@@ -46,7 +47,7 @@ export const TeamCollectionDialog: React.FunctionComponent<{
         "TeamCollection.TeamCollection"
     );
 
-    const [events] = BloomApi.useApiObject<IBloomWebSocketProgressEvent[]>(
+    const events = BloomApi.useApiData<IBloomWebSocketProgressEvent[]>(
         "teamCollection/getLog",
         []
     );
@@ -109,7 +110,7 @@ export const TeamCollectionDialog: React.FunctionComponent<{
                                     // If we have omitOuterFrame that means the dialog height is controlled by c#, so let the progress grow to fit it.
                                     // Maybe we could have that approach *all* the time?
                                     height: ${props.dialogEnvironment
-                                        ?.omitOuterFrame
+                                        ?.dialogFrameProvidedExternally
                                         ? "100%"
                                         : "350px"};
                                     // enhance: there is a bug I haven't found where, if this is > 530px, then it overflows. Instead, the BloomDialog should keep growing.
@@ -151,3 +152,5 @@ export const TeamCollectionDialog: React.FunctionComponent<{
         </BloomDialog>
     );
 };
+
+WireUpForWinforms(TeamCollectionDialog);

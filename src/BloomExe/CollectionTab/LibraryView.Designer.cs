@@ -2,34 +2,34 @@ using Bloom.TeamCollection;
 
 namespace Bloom.CollectionTab
 {
-    partial class LibraryView
-    {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
+	partial class LibraryView
+	{
+		/// <summary>
+		/// Required designer variable.
+		/// </summary>
+		private System.ComponentModel.IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
 		/// </summary>
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 		protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
+		{
+			if (disposing && (components != null))
+			{
+				components.Dispose();
+			}
+			base.Dispose(disposing);
+		}
 
-        #region Component Designer generated code
+		#region Component Designer generated code
 
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
-        {
+		/// <summary>
+		/// Required method for Designer support - do not modify
+		/// the contents of this method with the code editor.
+		/// </summary>
+		private void InitializeComponent()
+		{
 			this.components = new System.ComponentModel.Container();
 			this._topBarControl = new System.Windows.Forms.Panel();
 			this._toolStripLeft = new System.Windows.Forms.ToolStrip();
@@ -67,7 +67,7 @@ namespace Bloom.CollectionTab
 			this._toolStripLeft.Dock = System.Windows.Forms.DockStyle.Left;
 			this._toolStripLeft.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
 			this._toolStripLeft.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._tcStatusButton});
+			this._tcStatusButton});
 			this._toolStripLeft.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._toolStripLeft, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._toolStripLeft, null);
@@ -106,10 +106,10 @@ namespace Bloom.CollectionTab
 			this._toolStrip.Dock = System.Windows.Forms.DockStyle.Right;
 			this._toolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
 			this._toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._sendReceiveButton,
-            this._makeBloomPackButton,
-            this._settingsButton,
-            this._openCreateCollectionButton});
+			this._sendReceiveButton,
+			this._makeBloomPackButton,
+			this._settingsButton,
+			this._openCreateCollectionButton});
 			this._toolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._toolStrip, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._toolStrip, null);
@@ -174,7 +174,7 @@ namespace Bloom.CollectionTab
 			this._openCreateCollectionButton.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._openCreateCollectionButton, "Open/Create/Get Collection");
 			this._L10NSharpExtender.SetLocalizationComment(this._openCreateCollectionButton, "This is the button you use to create a new collection, open a new one, or get one" +
-        " from a repository somewhere.");
+		" from a repository somewhere.");
 			this._L10NSharpExtender.SetLocalizingId(this._openCreateCollectionButton, "CollectionTab.Open/CreateCollectionButton");
 			this._openCreateCollectionButton.Name = "_openCreateCollectionButton";
 			this._openCreateCollectionButton.Size = new System.Drawing.Size(98, 66);
@@ -225,9 +225,9 @@ namespace Bloom.CollectionTab
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
-        }
+		}
 
-        #endregion
+		#endregion
 
 		private Bloom.ToPalaso.BetterSplitContainer splitContainer1;
 		public System.Windows.Forms.Panel _topBarControl;

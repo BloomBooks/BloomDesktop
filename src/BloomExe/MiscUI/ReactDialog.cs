@@ -8,8 +8,7 @@ namespace Bloom.MiscUI
 {
 	/// <summary>
 	/// A dialog whose entire content is a react control. The constructor specifies
-	/// the component. Note that currently the component must be added to
-	/// WireUpReact.ts to make things work.
+	/// the js bundle.
 	/// All the interesting content and behavior is in the tsx file of the component.
 	/// The connection is through the child ReactControl, which entirely fills the dialog.
 	/// </summary>
@@ -24,12 +23,13 @@ namespace Bloom.MiscUI
 
 		private static readonly List<ReactDialog> _activeDialogs = new List<ReactDialog>();
 
-		public ReactDialog(string reactComponentName, object props = null, string taskBarTitle="Bloom")
+		public ReactDialog(string javascriptBundleName, object props = null, string taskBarTitle="Bloom")
 		{
 			InitializeComponent();
 			FormClosing += ReactDialog_FormClosing;
-			reactControl.ReactComponentName = reactComponentName;
-            reactControl.Props = props;
+			reactControl.JavascriptBundleName = javascriptBundleName;
+
+			reactControl.Props = props;
 			_activeDialogs.Add(this);
 			Text = taskBarTitle;
 			ShowInTaskbar = false;

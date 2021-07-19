@@ -20,6 +20,7 @@ using SIL.Windows.Forms.ReleaseNotes;
 using SIL.Windows.Forms.SettingProtection;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.TeamCollection;
@@ -27,6 +28,7 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using Gecko.Cache;
+using Newtonsoft.Json;
 using SIL.Windows.Forms.WritingSystems;
 using SIL.PlatformUtilities;
 using SIL.Windows.Forms.Miscellaneous;
@@ -57,9 +59,10 @@ namespace Bloom.Workspace
 		private string _originalHelpText;
 		private Image _originalHelpImage;
 		private string _originalUiLanguageSelection;
-		private LibraryView _collectionView;
+		private LibraryView _legacyCollectionView;
 		private EditingView _editingView;
 		private PublishView _publishView;
+		private ReactCollectionTabView _reactCollectionTabView;
 		private Control _previouslySelectedControl;
 		public event EventHandler CloseCurrentProject;
 		public event EventHandler ReopenCurrentProject;
@@ -73,11 +76,14 @@ namespace Bloom.Workspace
 		private TeamCollectionManager _tcManager;
 		private BookSelection _bookSelection;
 		private ToastNotifier _returnToCollectionTabNotifier;
+		private BloomWebSocketServer _webSocketServer;
+		private BookServer _bookServer;
 
 		//autofac uses this
 
 		public WorkspaceView(WorkspaceModel model,
 							Control libraryView,
+							ReactCollectionTabView reactCollectionsTabsView,
 							EditingView.Factory editingViewFactory,
 							PublishView.Factory pdfViewFactory,
 							CollectionSettingsDialog.Factory settingsDialogFactory,
@@ -92,7 +98,10 @@ namespace Bloom.Workspace
 							CommonApi commonApi,
 							BookSelection bookSelection,
 							BookStatusChangeEvent bookStatusChangeEvent,
-							TeamCollectionManager tcManager
+							TeamCollectionManager tcManager,
+							BloomWebSocketServer webSocketServer,
+							AppApi appApi,
+							BookServer bookServer
 			)
 		{
 			_model = model;
@@ -102,6 +111,9 @@ namespace Bloom.Workspace
 			_bookSelection = bookSelection;
 			_localizationChangedEvent = localizationChangedEvent;
 			_tcManager = tcManager;
+			_webSocketServer = webSocketServer;
+			_bookServer = bookServer;
+			appApi.WorkspaceView = this; // it needs to know, and there's some circularity involved in having factory pass it in
 
 			_collectionSettings = collectionSettings;
 			// This provides the common API with a hook it can use to reload
@@ -150,10 +162,16 @@ namespace Bloom.Workspace
 			//
 			// _collectionView
 			//
-			this._collectionView = (LibraryView) libraryView;
-			_collectionView.ManageSettings(_settingsLauncherHelper);
-			this._collectionView.Dock = DockStyle.Fill;
+			this._legacyCollectionView = (LibraryView) libraryView;
+			_legacyCollectionView.ManageSettings(_settingsLauncherHelper);
+			this._legacyCollectionView.Dock = DockStyle.Fill;
+			_legacyCollectionTab.Tag = _legacyCollectionView;
 
+			_reactCollectionTabView = reactCollectionsTabsView;
+			_reactCollectionTabView.ManageSettings(_settingsLauncherHelper);
+			_reactCollectionTabView.Dock = DockStyle.Fill;
+			_reactCollectionTab.Tag = _reactCollectionTabView;
+			
 			//
 			// _editingView
 			//
@@ -166,17 +184,21 @@ namespace Bloom.Workspace
 			this._publishView = pdfViewFactory();
 			this._publishView.Dock = DockStyle.Fill;
 
-			_collectionTab.Tag = _collectionView;
+
+			
+
 			_publishTab.Tag = _publishView;
 			_editTab.Tag = _editingView;
 
-			this._collectionTab.Text = _collectionView.CollectionTabLabel;
+			
+			this._legacyCollectionTab.Text = "Legacy"; // _legacyCollectionView.CollectionTabLabel;
+			this._reactCollectionTab.Text = _reactCollectionTabView.CollectionTabLabel;
 
 			SetTabVisibility(_publishTab, false);
 			SetTabVisibility(_editTab, false);
 
-			_tabStrip.SelectedTab = _collectionTab;
-			SelectPage(_collectionView);
+			_tabStrip.SelectedTab = _reactCollectionTab;
+			SelectPage(_reactCollectionTabView);
 
 			if (Platform.IsMono)
 			{
@@ -194,8 +216,78 @@ namespace Bloom.Workspace
 			_viewInitialized = false;
 			CommonApi.WorkspaceView = this;
 
+			bookSelection.SelectionChanged += HandleBookSelectionChanged;
 			bookStatusChangeEvent.Subscribe(args => { HandleBookStatusChange(args); });
+			SelectPreviouslySelectedBook();
 		}
+
+		protected override void OnLoad(EventArgs e)
+		{
+			base.OnLoad(e);
+			// If we're loading a team collection, we need to do that...with its progress dialog...
+			// before anything else, and we'll need to close the splash screen to make room for
+			// that dialog.
+			// Note, this not put into _startupActions...it should never be disabled.
+			if (_tcManager?.CurrentCollectionEvenIfDisconnected == null)
+			{
+				_reactCollectionTabView.ReadyToShowCollections();
+			} else
+			{
+				StartupScreenManager.AddStartupAction(() =>
+				{
+					// Don't do anything else after this as part of this idle task.
+					// See the comment near the end of HandleTeamStuffBeforeGetBookCollections.
+					_model.HandleTeamStuffBeforeGetBookCollections(() => _reactCollectionTabView.ReadyToShowCollections());
+				}, shouldHideSplashScreen: true);
+			}
+		}
+
+		private void SelectPreviouslySelectedBook()
+		{
+			var selBookPath = Settings.Default.CurrentBookPath;
+			if (string.IsNullOrEmpty(selBookPath))
+				return;
+			var inEditableCollection = selBookPath.StartsWith(_collectionSettings.FolderPath);
+			if (Directory.Exists(selBookPath))
+			{
+				var info = new BookInfo(selBookPath, inEditableCollection);
+				var book = _bookServer.GetBookFromBookInfo(info);
+				_bookSelection.SelectBook(book);
+			}
+		}
+
+		private void HandleBookSelectionChanged(object sender, BookSelectionChangedEventArgs e)
+		{
+			var result = GetCurrentSelectedBookInfo();
+			_webSocketServer.SendString("book-selection", "changed", result);
+		}
+
+		public string GetCurrentSelectedBookInfo()
+		{
+			var book = _bookSelection.CurrentSelection;
+			var collectionKind = "other";
+			if (book != null && book.IsEditable)
+			{
+				collectionKind = "main";
+			}
+			// Review: we're tentatively thinking that "delete book" and "open folder on disk"
+			// will both be enabled for all but factory collections. Currently, Bloom is more
+			// restrictive on delete: only books in main or "Books from BloomLibrary.org" can be deleted.
+			// But there doesn't seem to be any reason to prevent deleting books from e.g. a bloompack.
+			else if (book != null && BloomFileLocator.IsInstalledFileOrDirectory(book.CollectionSettings.FolderPath))
+			{
+				collectionKind = "factory";
+			}
+			// notify browser components that are listening to this event
+			var result = JsonConvert.SerializeObject(new
+			{
+				id = book?.ID,
+				editable = _tcManager.CanEditBook(),
+				collectionKind
+			});
+			return result;
+		}
+
 		public static string MustBeAdminMessage => LocalizationManager.GetString("TeamCollection.MustBeAdmin",
 			"You must be an administrator to change collection settings");
 
@@ -206,7 +298,13 @@ namespace Bloom.Workspace
 				return;
 			if (bookName != Path.GetFileName(_bookSelection.CurrentSelection?.FolderPath))
 				return; // change is not to the book we're interested in.
-			if (_tabStrip.SelectedTab == _collectionTab)
+			// Notify anything on the Javascript side that might care about the status change.
+			SafeInvoke.Invoke("sending reload status", this, false, true,
+				() =>
+				{
+					_webSocketServer.SendEvent("bookStatus", "reload");
+				});
+			if (_tabStrip.SelectedTab == _legacyCollectionTab)
 				return; // this toast is all about returning to the collection tab
 			if (_returnToCollectionTabNotifier != null)
 				return; // notification already up
@@ -221,7 +319,7 @@ namespace Bloom.Workspace
 					_returnToCollectionTabNotifier.ToastClicked += (sender, _) =>
 					{
 						_returnToCollectionTabNotifier.CloseSafely();
-						_tabStrip.SelectedTab = _collectionTab;
+						_tabStrip.SelectedTab = _legacyCollectionTab;
 					};
 					_returnToCollectionTabNotifier.Show(msg, "", -1);
 				});
@@ -595,14 +693,14 @@ namespace Bloom.Workspace
 
 		private void OnUpdateDisplay(object sender, EventArgs e)
 		{
-			SetTabVisibility(_editTab, _model.ShowEditPage);
-			SetTabVisibility(_publishTab, _model.ShowPublishPage);
+			SetTabVisibility(_editTab, _model.ShowEditTab);
+			SetTabVisibility(_publishTab, _model.ShowPublishTab);
 			_editTab.Enabled = !_model.EditTabLocked;
 		}
 
-		private void SetTabVisibility(TabStripButton page, bool visible)
+		private void SetTabVisibility(TabStripButton tab, bool visible)
 		{
-			page.Visible = visible;
+			tab.Visible = visible;
 		}
 
 		public void OpenCreateLibrary()
@@ -787,7 +885,8 @@ namespace Bloom.Workspace
 
 		private void _tabStrip_SelectedTabChanged(object sender, SelectedTabChangedEventArgs e)
 		{
-			if (_returnToCollectionTabNotifier != null && _tabStrip.SelectedTab == _collectionTab)
+			// TODO: React version
+			if (_returnToCollectionTabNotifier != null && _tabStrip.SelectedTab == _legacyCollectionTab)
 			{
 				_returnToCollectionTabNotifier.CloseSafely();
 				_returnToCollectionTabNotifier = null;
@@ -900,7 +999,7 @@ namespace Bloom.Workspace
 				// hide the progress dialog. This is as much as we can postpone.
 				StartupScreenManager.AddStartupAction( () =>
 					{
-						using (var dlg = new ReactDialog("AutoUpdateSoftwareDialog", "Auto Update"))
+						using (var dlg = new ReactDialog("autoUpdateSoftwareDlgBundle", "Auto Update"))
 						{
 							dlg.Height = 350;
 							dlg.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -1042,7 +1141,7 @@ namespace Bloom.Workspace
 
 		public void SetStateOfNonPublishTabs(bool enable)
 		{
-			_collectionTab.Enabled = enable;
+			_legacyCollectionTab.Enabled = enable;
 			_editTab.Enabled = enable;
 		}
 
@@ -1064,6 +1163,7 @@ namespace Bloom.Workspace
 		enum Shrinkage { FullSize, Stage1, Stage2, Stage3 }
 		private Shrinkage _currentShrinkage = Shrinkage.FullSize;
 		private ToolStripControlHost _zoomWrapper;
+		
 
 		private const int MinToolStripMargin = 3;
 

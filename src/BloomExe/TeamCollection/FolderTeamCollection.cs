@@ -810,7 +810,7 @@ namespace Bloom.TeamCollection
 			var localGuid = CollectionSettings.CollectionIdFromCollectionFolder(localCollectionFolder);
 			var isSameCollection = joiningGuid == localGuid;
 
-			using (var dlg = new ReactDialog("JoinTeamCollectionDialog", new
+			using (var dlg = new ReactDialog("joinTeamCollectionDialogBundle", new
 			{
 				missingTcPieces = MissingTcPieces(path),
 				collectionName = _joinCollectionName,

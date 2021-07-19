@@ -13,7 +13,7 @@ using SIL.Windows.Forms.SettingProtection;
 
 namespace Bloom.CollectionTab
 {
-	public partial class LibraryView :  UserControl, IBloomTabArea
+	public partial class LibraryView : UserControl, IBloomTabArea
 	{
 		private readonly LibraryModel _model;
 
@@ -66,17 +66,17 @@ namespace Bloom.CollectionTab
 				BackgroundColorsForLinux();
 			}
 
-			selectedTabChangedEvent.Subscribe(c=>
-												{
-													if (c.To == this)
-													{
-														Logger.WriteEvent("Entered Collections Tab");
-													}
-												});
+			selectedTabChangedEvent.Subscribe(c =>
+			{
+				if (c.To == this)
+				{
+					Logger.WriteEvent("Entered Collections Tab");
+				}
+			});
 			SetTeamCollectionStatus(tcManager);
 			TeamCollectionManager.TeamCollectionStatusChanged += (sender, args) =>
 			{
-				if (!IsDisposed)
+				if (IsHandleCreated && !IsDisposed)
 				{
 					SafeInvoke.InvokeIfPossible("update TC status", this, false,
 						() => SetTeamCollectionStatus(tcManager));
@@ -91,10 +91,15 @@ namespace Bloom.CollectionTab
 				// Instead, in the short term we may add a button to show the file.
 				// Later we may implement some efficient way to scroll through them.
 				// tcManager.CurrentCollection?.MessageLog?.LoadSavedMessages();
-				using (var dlg = new ReactDialog("TeamCollectionDialog", new {showReloadButton}, "Team Collection"))
+				using (var dlg = new ReactDialog("teamCollectionDialogBundle", new
 				{
+					showReloadButton
+				}, "Team Collection"))
+				{
+
 					dlg.ShowDialog(this);
-					tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
+					tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(MessageAndMilestoneType
+						.LogDisplayed);
 				}
 			};
 		}
@@ -108,7 +113,8 @@ namespace Bloom.CollectionTab
 			settingsLauncherHelper.ManageComponent(_openCreateCollectionButton);
 		}
 
-		private void BackgroundColorsForLinux() {
+		private void BackgroundColorsForLinux()
+		{
 
 			// Set the background image for Mono because the background color does not paint,
 			// and if we override the background paint handler, the default styling of the child
@@ -131,7 +137,7 @@ namespace Bloom.CollectionTab
 
 		public string CollectionTabLabel
 		{
-			get { return LocalizationManager.GetString("CollectionTab.CollectionTabLabel","Collections"); }//_model.IsShellProject ? "Shell Collection" : "Collection"; }
+			get { return LocalizationManager.GetString("CollectionTab.CollectionTabLabel", "Collections"); }//_model.IsShellProject ? "Shell Collection" : "Collection"; }
 
 		}
 
@@ -180,7 +186,7 @@ namespace Bloom.CollectionTab
 		/// </summary>
 		public int WidthToReserveForTopBarControl => _openCreateCollectionButton.Width + _settingsButton.Width +
 			(_makeBloomPackButton.Visible ? _makeBloomPackButton.Width : 0) +
-		    (_tcStatusButton.Visible ? _tcStatusButton.Width : 0);
+			(_tcStatusButton.Visible ? _tcStatusButton.Width : 0);
 
 		public void PlaceTopBarControl()
 		{

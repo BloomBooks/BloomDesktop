@@ -7,6 +7,7 @@ import { ThemeProvider } from "@material-ui/styles";
 import { FormControlLabel, Radio, RadioGroup } from "@material-ui/core";
 import { L10nLabel } from "./L10nLabel";
 import { useEffect, useState } from "react";
+import { WireUpForWinforms } from "../utils/WireUpWinform";
 
 export const AutoUpdateSoftwareDialog: React.FunctionComponent = () => {
     const [chosenRadio, setChosenRadio] = useState<"automatic" | "inform">(
@@ -92,3 +93,5 @@ export const AutoUpdateSoftwareDialog: React.FunctionComponent = () => {
         </ThemeProvider>
     );
 };
+
+WireUpForWinforms(AutoUpdateSoftwareDialog);

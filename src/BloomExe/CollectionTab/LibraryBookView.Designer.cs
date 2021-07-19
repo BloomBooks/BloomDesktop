@@ -1,4 +1,6 @@
-﻿namespace Bloom.CollectionTab
+﻿using Bloom.web;
+
+namespace Bloom.CollectionTab
 {
     partial class LibraryBookView
     {
@@ -33,57 +35,16 @@
         {
 			this.components = new System.ComponentModel.Container();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this._addToCollectionButton = new System.Windows.Forms.Button();
-			this._editBookButton = new System.Windows.Forms.Button();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._splitContainerForPreviewAndAboutBrowsers = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._readmeBrowser = new Bloom.Browser();
-			this._reactBookPreviewControl = new Bloom.web.ReactControl();
+			this._reactBookPreviewControl = new ReactControl();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._splitContainerForPreviewAndAboutBrowsers)).BeginInit();
 			this._splitContainerForPreviewAndAboutBrowsers.Panel1.SuspendLayout();
 			this._splitContainerForPreviewAndAboutBrowsers.Panel2.SuspendLayout();
 			this._splitContainerForPreviewAndAboutBrowsers.SuspendLayout();
 			this.SuspendLayout();
-			// 
-			// _addToCollectionButton
-			// 
-			this._addToCollectionButton.BackColor = System.Drawing.SystemColors.ControlLightLight;
-			this._addToCollectionButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._addToCollectionButton.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._addToCollectionButton.Image = global::Bloom.Properties.Resources.newBook;
-			this._addToCollectionButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._addToCollectionButton, "Create a book in my language using this source book");
-			this._L10NSharpExtender.SetLocalizationComment(this._addToCollectionButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._addToCollectionButton, "CollectionTab.MakeBookUsingThisTemplate");
-			this._addToCollectionButton.Location = new System.Drawing.Point(12, 6);
-			this._addToCollectionButton.Name = "_addToCollectionButton";
-			this._addToCollectionButton.Size = new System.Drawing.Size(255, 48);
-			this._addToCollectionButton.TabIndex = 0;
-			this._addToCollectionButton.Text = "Make a book using this source";
-			this._addToCollectionButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-			this._addToCollectionButton.UseVisualStyleBackColor = false;
-			this._addToCollectionButton.Click += new System.EventHandler(this.OnAddToLibraryClick);
-			this._addToCollectionButton.MouseEnter += new System.EventHandler(this._addToLibraryButton_MouseEnter);
-			this._addToCollectionButton.MouseLeave += new System.EventHandler(this._addToLibraryButton_MouseLeave);
-			// 
-			// _editBookButton
-			// 
-			this._editBookButton.BackColor = System.Drawing.SystemColors.ControlLightLight;
-			this._editBookButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._editBookButton.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._editBookButton.Image = global::Bloom.Properties.Resources.edit;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._editBookButton, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._editBookButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._editBookButton, "CollectionTab.EditBookButton");
-			this._editBookButton.Location = new System.Drawing.Point(12, 6);
-			this._editBookButton.Name = "_editBookButton";
-			this._editBookButton.Size = new System.Drawing.Size(170, 42);
-			this._editBookButton.TabIndex = 2;
-			this._editBookButton.Text = "Edit this book";
-			this._editBookButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-			this._editBookButton.UseVisualStyleBackColor = false;
-			this._editBookButton.Click += new System.EventHandler(this._editBookButton_Click);
 			// 
 			// _L10NSharpExtender
 			// 
@@ -103,7 +64,6 @@
 			// _splitContainerForPreviewAndAboutBrowsers.Panel1
 			// 
 			this._splitContainerForPreviewAndAboutBrowsers.Panel1.Controls.Add(this._reactBookPreviewControl);
-			this._splitContainerForPreviewAndAboutBrowsers.Panel1.Controls.Add(this._addToCollectionButton);
 			// 
 			// _splitContainerForPreviewAndAboutBrowsers.Panel2
 			// 
@@ -113,6 +73,19 @@
 			this._splitContainerForPreviewAndAboutBrowsers.TabIndex = 3;
 			this._splitContainerForPreviewAndAboutBrowsers.TabStop = false;
 			this._splitContainerForPreviewAndAboutBrowsers.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this._splitContainerForPreviewAndAboutBrowsers_SplitterMoved);
+			// 
+			// _reactBookPreviewControl
+			// 
+			this._reactBookPreviewControl.BackColor = System.Drawing.Color.DarkGray;
+			this._reactBookPreviewControl.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._reactBookPreviewControl.JavascriptBundleName = "legacyBookPreviewBundle";
+			this._L10NSharpExtender.SetLocalizableToolTip(this._reactBookPreviewControl, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._reactBookPreviewControl, null);
+			this._L10NSharpExtender.SetLocalizingId(this._reactBookPreviewControl, "ReactControl");
+			this._reactBookPreviewControl.Location = new System.Drawing.Point(0, 0);
+			this._reactBookPreviewControl.Name = "_reactBookPreviewControl";
+			this._reactBookPreviewControl.Size = new System.Drawing.Size(900, 193);
+			this._reactBookPreviewControl.TabIndex = 2;
 			// 
 			// _readmeBrowser
 			// 
@@ -130,25 +103,11 @@
 			this._readmeBrowser.VerticalScrollDistance = 0;
 			this._readmeBrowser.OnBrowserClick += new System.EventHandler(this._readmeBrowser_OnBrowserClick);
 			// 
-			// _reactBookPreviewControl
-			// 
-			this._reactBookPreviewControl.BackColor = System.Drawing.Color.DarkGray;
-			this._reactBookPreviewControl.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._reactBookPreviewControl, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._reactBookPreviewControl, null);
-			this._L10NSharpExtender.SetLocalizingId(this._reactBookPreviewControl, "ReactControl");
-			this._reactBookPreviewControl.Location = new System.Drawing.Point(0, 0);
-			this._reactBookPreviewControl.Name = "_reactBookPreviewControl";
-			this._reactBookPreviewControl.ReactComponentName = "BookPreviewPanel";
-			this._reactBookPreviewControl.Size = new System.Drawing.Size(900, 193);
-			this._reactBookPreviewControl.TabIndex = 2;
-			// 
 			// LibraryBookView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.White;
-			this.Controls.Add(this._editBookButton);
 			this.Controls.Add(this._splitContainerForPreviewAndAboutBrowsers);
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
@@ -167,10 +126,8 @@
 
         #endregion
 
-        private System.Windows.Forms.Button _addToCollectionButton;
         private System.Windows.Forms.ToolTip toolTip1;
-        private System.Windows.Forms.Button _editBookButton;
-		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
+        private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
         private ToPalaso.BetterSplitContainer _splitContainerForPreviewAndAboutBrowsers;
         private Browser _readmeBrowser;
 		private web.ReactControl _reactBookPreviewControl;

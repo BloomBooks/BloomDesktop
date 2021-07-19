@@ -2,14 +2,14 @@
 {
 	public interface IReactDialogFactory
 	{
-		IBrowserDialog CreateReactDialog(string reactComponentName, object props);
+		IBrowserDialog CreateReactDialog(string javascriptBundleName, object props);
 	}
 
 	class ReactDialogFactory: IReactDialogFactory
 	{
-		public IBrowserDialog CreateReactDialog(string reactComponentName, object props)
+		public IBrowserDialog CreateReactDialog( string javascriptBundleName,  object props)
 		{
-			return new ReactDialog(reactComponentName, props);
+			return new ReactDialog( javascriptBundleName, props);
 		}
 	}
 }

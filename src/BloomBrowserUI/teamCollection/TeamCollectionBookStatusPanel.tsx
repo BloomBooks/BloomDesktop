@@ -4,37 +4,37 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import theme, { kBloomYellow } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { BloomApi } from "../utils/bloomApi";
 import { useL10n } from "../react_components/l10nHooks";
 import "./TeamCollectionBookStatusPanel.less";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import BloomButton from "../react_components/bloomButton";
 import { BloomAvatar } from "../react_components/bloomAvatar";
-import {
-    useSubscribeToWebSocketForEvent,
-    useSubscribeToWebSocketForObject
-} from "../utils/WebSocketManager";
+import { useMonitorBookSelection } from "../app/selectedBook";
+import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
+
 import { Block } from "@material-ui/icons";
 import { StringWithOptionalLink } from "../react_components/stringWithOptionalLink";
 import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
 import { AvatarDialog } from "./AvatarDialog";
 import { ForgetChangesDialog } from "./ForgetChangesDialog";
+import { createMuiTheme } from "@material-ui/core";
 
 // The panel that shows the book preview and settings in the collection tab in a Team Collection.
 
-export type LockState =
-    | "initializing"
-    | "unlocked"
-    | "locked"
-    | "lockedByMe"
-    | "lockedByMeElsewhere"
-    | "needsReload"
-    | "problem"
-    | "hasInvalidRepoData"
-    | "disconnected"
-    | "lockedByMeDisconnected"
-    | "error";
+export type StatusPanelState =
+    | "initializing" // initial retrieval of IBookTeamCollectionStatus not yet completed
+    | "unlocked" // book is available to edit, but not checked out
+    | "locked" // book is checked out (to someone else)
+    | "lockedByMe" // book is checked out to me, here...I can edit it
+    | "lockedByMeElsewhere" // book is checked out to me, but on another computer, so I can't edit it here
+    | "needsReload" // the collection needs to be reloaded before we can do anything with this book
+    | "problem" // The book has a problem, like a conflict between my changes and someone else's
+    | "hasInvalidRepoData" // the book has a catastrophic problem: the repo version is unreadable.
+    | "disconnected" // Can't tell what's going on, because we don't have a good connection to the repo
+    | "lockedByMeDisconnected" // We're disconnected, but before that happened the book was checked out to me, here
+    | "error"; // we couldn't get the IBookTeamCollectionStatus; should never happen.
 
 export interface IBookTeamCollectionStatus {
     changedRemotely: boolean;
@@ -46,12 +46,16 @@ export interface IBookTeamCollectionStatus {
     currentMachine: string;
     when: string;
     disconnected: boolean;
-    problem: boolean; // hasAProblem in master
+    hasAProblem: boolean;
     hasInvalidRepoData: string; // error message, or empty if repo data is valid
 }
 
 export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
-    const [state, setState] = useState<LockState>("initializing");
+    const { id: selectedBookId, editable } = useMonitorBookSelection();
+
+    const [tcPanelState, setTcPanelState] = useState<StatusPanelState>(
+        "initializing"
+    );
     const [lockedBy, setLockedBy] = useState("");
     const [lockedByDisplay, setLockedByDisplay] = useState("");
     const [lockedWhen, setLockedWhen] = useState("");
@@ -67,19 +71,23 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         currentUser: "",
         currentUserName: ""
     });
+    const [currentUserName, setCurrentUserName] = useState("");
+    useSubscribeToWebSocketForEvent("bookStatus", "reload", () =>
+        setReload(old => old + 1)
+    );
     React.useEffect(() => {
-        var lockedByMe = false;
+        let lockedByMe = false;
         BloomApi.get(
-            "teamCollection/currentBookStatus",
+            "teamCollection/selectedBookStatus",
             data => {
                 const bookStatus: IBookTeamCollectionStatus = data.data;
                 setBookStatus(bookStatus);
                 if (bookStatus.hasInvalidRepoData) {
-                    setState("hasInvalidRepoData");
-                } else if (bookStatus.problem) {
-                    setState("problem");
+                    setTcPanelState("hasInvalidRepoData");
+                } else if (bookStatus.hasAProblem) {
+                    setTcPanelState("problem");
                 } else if (bookStatus.changedRemotely) {
-                    setState("needsReload");
+                    setTcPanelState("needsReload");
                 } else if (bookStatus.who) {
                     // locked by someone
                     setLockedBy(bookStatus.who);
@@ -89,27 +97,27 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         bookStatus.who === bookStatus.currentUser &&
                         bookStatus.where === bookStatus.currentMachine
                     ) {
-                        setState("lockedByMe");
+                        setTcPanelState("lockedByMe");
                         lockedByMe = true;
                     } else {
                         const isCurrentUser =
                             bookStatus.who === bookStatus.currentUser;
                         if (isCurrentUser) {
-                            setState("lockedByMeElsewhere");
+                            setTcPanelState("lockedByMeElsewhere");
                         } else {
-                            setState("locked");
+                            setTcPanelState("locked");
                         }
                         setLockedWhen(bookStatus.when);
                         setLockedMachine(bookStatus.where);
                     }
                 } else {
-                    setState("unlocked");
+                    setTcPanelState("unlocked");
                 }
                 if (bookStatus.disconnected) {
                     if (lockedByMe) {
-                        setState("lockedByMeDisconnected");
+                        setTcPanelState("lockedByMeDisconnected");
                     } else {
-                        setState("disconnected");
+                        setTcPanelState("disconnected");
                     }
                 }
             },
@@ -122,14 +130,9 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                     err?.response?.statusText ??
                         "Bloom could not determine the status of this book"
                 );
-                setState("error");
             }
         );
-    }, [reload]);
-
-    useSubscribeToWebSocketForEvent("bookStatus", "reload", () =>
-        setReload(oldValue => oldValue + 1)
-    );
+    }, [selectedBookId, reload]);
 
     useSubscribeToWebSocketForEvent(
         "checkinProgress",
@@ -139,13 +142,13 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     );
 
     let avatar: JSX.Element;
-    if (state.startsWith("locked")) {
+    if (tcPanelState.startsWith("locked")) {
         avatar = (
             <BloomAvatar
                 email={lockedBy}
                 name={lockedByDisplay}
                 borderColor={
-                    state === "lockedByMe" && theme.palette.warning.main
+                    tcPanelState === "lockedByMe" && theme.palette.warning.main
                 }
             />
         );
@@ -306,7 +309,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         }
     ];
 
-    if (state == "lockedByMe") {
+    if (tcPanelState == "lockedByMe") {
         menuItems.push("-");
         menuItems.push({
             text: "Forget Changes & Check in Book...",
@@ -325,7 +328,22 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         ></SimpleMenu>
     );
 
-    const panelContents = (state: LockState): JSX.Element => {
+    // We want the checkin button in an orange color that isn't one of the two(!)
+    // colors that a material UI theme can have. So we make another theme just to
+    // show the button. Next version of Material should be able to do more theme colors.
+    const dangerTheme = useMemo(
+        () =>
+            createMuiTheme({
+                palette: {
+                    primary: {
+                        main: kBloomYellow
+                    }
+                }
+            }),
+        []
+    );
+
+    const panelContents = (state: StatusPanelState): JSX.Element => {
         switch (state) {
             default:
                 return <div />; // just while initializing
@@ -416,14 +434,19 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                         }
                         icon={avatar}
                         //menu={} // eventually the "About my Avatar..." and "Forget Changes" menu gets passed in here.
-                        button={getBloomButton(
-                            "Check in book",
-                            "TeamCollection.CheckIn",
-                            "checkin-button",
-                            "Check In.svg",
-                            checkinHandler,
-                            progress > 0
-                        )}
+                        button={
+                            <ThemeProvider theme={dangerTheme}>
+                                {getBloomButton(
+                                    "Check in book",
+                                    "TeamCollection.CheckIn",
+                                    "checkin-button",
+                                    "Check In.svg",
+                                    checkinHandler,
+                                    progress > 0,
+                                    "primary"
+                                )}
+                            </ThemeProvider>
+                        }
                         menu={menu}
                     >
                         <div
@@ -544,7 +567,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
 
     return (
         <ThemeProvider theme={theme}>
-            {panelContents(state)}
+            {panelContents(tcPanelState)}
             <AvatarDialog
                 open={avatarDialogOpen}
                 close={() => setAvatarDialogOpen(false)}
@@ -565,7 +588,8 @@ export const getBloomButton = (
     buttonClass: string,
     icon?: string,
     clickHandler?: () => void,
-    disabled?: boolean
+    disabled?: boolean,
+    color?: "primary" | "secondary" | undefined
 ) => (
     <BloomButton
         iconBeforeText={icon ? <img src={icon} /> : <div />}
@@ -575,6 +599,7 @@ export const getBloomButton = (
         className={buttonClass}
         onClick={clickHandler}
         temporarilyDisableI18nWarning={true}
+        color={color || "primary"}
     >
         {english}
     </BloomButton>

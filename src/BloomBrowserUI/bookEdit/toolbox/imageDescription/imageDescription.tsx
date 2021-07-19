@@ -5,7 +5,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { BloomApi } from "../../../utils/bloomApi";
 import { ToolBox } from "../toolbox";
-import { getPageFrameExports } from "../../js/bloomFrames";
+import { getEditablePageBundleExports } from "../../js/bloomFrames";
 import "./imageDescription.less";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { Label } from "../../../react_components/l10nComponents";
@@ -360,20 +360,20 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
             newElementHtmlInterior +
             newElementHtmlSuffix;
 
-        const newTg = getPageFrameExports()!
+        const newTg = getEditablePageBundleExports()!
             .makeElement(newElementHtml)
             .get(0);
 
         container.appendChild(newTg);
 
         // This is necessary for the data-language tooltip to appear, probably among other things.
-        getPageFrameExports()!.SetupElements(container as HTMLElement);
+        getEditablePageBundleExports()!.SetupElements(container as HTMLElement);
 
         $(newTg)
             .find(".bloom-editable")
             .each((index, newEditable) => {
                 // Attaching CKEditor is necessary for range select formatting to work.
-                getPageFrameExports()!.attachToCkEditor(newEditable);
+                getEditablePageBundleExports()!.attachToCkEditor(newEditable);
             });
     }
 }

@@ -27,7 +27,7 @@ const methodNameToImageUrl = {
 // Lets the user choose how they want to "publish" the bloomd, along with a button to start that process.
 // This is a set of radio buttons and image that goes with each choice, plus a button to start off the sharing/saving
 export const MethodChooser: React.FunctionComponent = () => {
-    const [method, setMethod] = BloomApi.useApiString(
+    const [method, setMethod] = BloomApi.useApiStringState(
         "publish/android/method",
         "wifi"
     );

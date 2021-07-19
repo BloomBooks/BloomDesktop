@@ -1,3 +1,6 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+
 import React = require("react");
 import Avatar from "react-avatar";
 import { getMd5 } from "../bookEdit/toolbox/talkingBook/md5Util";
@@ -17,15 +20,16 @@ export const BloomAvatar: React.FunctionComponent<{
         ? `${borderSizeInt}px solid ${props.borderColor}`
         : undefined;
     return (
-        <React.Suspense fallback={<></>}>
+        <React.Suspense fallback={<React.Fragment />}>
             <div
-                style={{
-                    borderRadius: "50%",
-                    overflow: "hidden",
-                    width: avatarSize,
-                    height: avatarSize,
-                    border: borderStyle
-                }}
+                className={"avatar " + props["className"]}
+                css={css`
+                    border-radius: 50%;
+                    overflow: hidden;
+                    width: ${avatarSize};
+                    height: ${avatarSize};
+                    border: ${borderStyle};
+                `}
             >
                 <Avatar
                     md5Email={getMd5(props.email)}

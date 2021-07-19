@@ -287,7 +287,8 @@ namespace Bloom.Api
 			{
 				ReplaceAnyVideoElementsWithPlaceholder(dom);
 			}
-			var html5String = TempFileUtils.CreateHtml5StringFromXml(dom.RawDom);
+
+			var html5String = dom.getHtmlStringDisplayOnly();
 			lock (_theOneInstance._queue)
 			{
 				foreach (var item in _theOneInstance._idleTasks)
@@ -373,9 +374,50 @@ namespace Bloom.Api
 
 			var localPath = GetLocalPathWithoutQuery(info);
 
+			// root of our UI from a web browser pointed at localhost:8089
+			if (localPath == "")
+			{
+				info.ResponseContentType = "text/html";
+				info.WriteCompleteOutput(GetHtmlForRootOfBloomUI());
+				return true;
+			}
+			if (localPath == "test-dialog")
+			{
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, "Test of bringing dialog in front of Browser.");
+				return true;
+			}
 			//enhance: something feeds back these branding logos with a weird URL, that shouldn't be.
 			if (ApiHandler.IsInvalidApiCall(localPath))
 				return false;
+
+
+			// this alias is used by the javascript preview pane
+			if (localPath.StartsWith("book-preview"))
+			{
+				if (localPath == "book-preview")
+				{
+					// if we're just working in a browser and forget that you have to have the index.htm
+					localPath = "book-preview/index.htm";
+				}
+
+				if (CurrentBook == null)
+				{
+					info.WriteCompleteOutput("");
+					return true;
+				}
+
+				if (localPath == "book-preview/index.htm")
+				{
+					info.ResponseContentType = "text/html";
+					var html = (CurrentBook.GetPreviewHtmlFileForWholeBook().getHtmlStringDisplayOnly());
+					info.WriteCompleteOutput(html);
+					return true;
+				}
+				else
+				{
+					localPath = localPath.Replace("book-preview", CurrentBook.FolderPath);
+				}
+			}
 
 			// process request for directory index
 			if (info.RawUrl.EndsWith("/") && (Directory.Exists(localPath)))
@@ -449,6 +491,12 @@ namespace Bloom.Api
 			if(localPath.EndsWith("map"))
 				localPath = localPath.Replace("output/browser/", "");
 
+			if (localPath == "")
+			{
+				info.ResponseContentType = "text/html";
+				info.WriteCompleteOutput(File.ReadAllText(@"D:\temp\test.htm"));
+				return true;
+			}
 			return ProcessContent(info, localPath);
 		}
 
@@ -559,6 +607,7 @@ namespace Bloom.Api
 		{
 			if (localPath.EndsWith(".css"))
 			{
+				
 				return ProcessCssFile(info, localPath);
 			}
 
@@ -1440,6 +1489,27 @@ namespace Bloom.Api
 
 		private bool IsWorkerThread(Thread thread) => thread?.Name?.IndexOf(WorkerThreadNamePrefix) == 0;
 
+
+		private string GetHtmlForRootOfBloomUI()
+		{
+			return $@"<!DOCTYPE html>
+				<html>
+				<head>
+					<meta charset = 'UTF-8' />
+					<script src = '/commonBundle.js' ></script>
+					<script src = '/appBundle.js'></script>
+					<script>
+						window.onload = () => {{
+							const rootDiv = document.getElementById('reactRoot');
+							window.wireUpRootComponentFromWinforms(rootDiv);
+						}};
+					</script>
+				</head>
+				<body>
+					<div id='reactRoot'>Component should replace this</div >
+				</body>
+				</html>";
+		}
 #region Disposable stuff
 
 		private bool IsDisposed { get; set; }

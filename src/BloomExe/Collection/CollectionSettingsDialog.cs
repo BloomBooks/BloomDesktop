@@ -122,8 +122,7 @@ namespace Bloom.Collection
 			// This code would mostly more naturally go in Designer. Unfortunately we can't run designer
 			// until we get back in a state where all our dependencies are sufficiently consistent.
 
-			_defaultBookshelfControl = new ReactControl() { ReactComponentName ="DefaultBookshelfControl"};
-			_defaultBookshelfControl.Name = "_defaultBookshelfControl";
+			_defaultBookshelfControl = ReactControl.Create("defaultBookshelfControlBundle");
 
 			tabPage2.Controls.Add(_defaultBookshelfControl);
 			_defaultBookshelfControl.Location = new Point(_xmatterDescription.Left, _xmatterDescription.Bottom + 30);

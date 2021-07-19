@@ -363,6 +363,12 @@
     <Compile Include="Book\LicenseChecker.cs" />
     <Compile Include="CLI\SpreadsheetExportCommand.cs" />
     <Compile Include="CLI\SpreadsheetImportCommand.cs" />
+    <Compile Include="CollectionTab\ReactCollectionTabView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CollectionTab\ReactCollectionTabView.Designer.cs">
+      <DependentUpon>ReactCollectionTabView.cs</DependentUpon>
+    </Compile>
     <Compile Include="ErrorReporter\CompositeErrorReporter.cs" />
     <Compile Include="ErrorReporter\ErrorReportUtils.cs" />
     <Compile Include="ErrorReporter\ProblemLevel.cs" />
@@ -476,6 +482,7 @@
     <Compile Include="WebLibraryIntegration\BulkUploader.cs" />
     <Compile Include="WebLibraryIntegration\FirebaseLoginDialog.cs" />
     <Compile Include="WebLibraryIntegration\S3Extensions.cs" />
+    <Compile Include="web\controllers\CollectionApi.cs" />
     <Compile Include="web\ReactControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -951,6 +958,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionTab\MakeReaderTemplateBloomPackDlg.resx">
       <DependentUpon>MakeReaderTemplateBloomPackDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CollectionTab\ReactCollectionTabView.resx">
+      <DependentUpon>ReactCollectionTabView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Collection\ScriptSettingsDialog.resx">
       <DependentUpon>ScriptSettingsDialog.cs</DependentUpon>

@@ -26,7 +26,7 @@ import "jquery.qtipSecondary.js";
 import "long-press/jquery.longpress.js";
 import "jquery.hotkeys"; //makes the on(keydown work with keynames)
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
-import { getEditViewFrameExports } from "./bloomFrames";
+import { getEditTabBundleExports } from "./bloomFrames";
 
 //promise may be needed to run tests with phantomjs
 //import promise = require('es6-promise');
@@ -427,7 +427,7 @@ export function SetupElements(container: HTMLElement) {
             this.innerHTML = this.value;
         });
 
-    const rootFrameExports = getEditViewFrameExports();
+    const rootFrameExports = getEditTabBundleExports();
     const toolboxVisible = rootFrameExports.toolboxIsShowing();
     rootFrameExports.doWhenToolboxLoaded(toolboxFrameExports => {
         const toolbox = toolboxFrameExports.getTheOneToolbox();
@@ -1203,7 +1203,7 @@ export const pageSelectionChanging = () => {
     marginBox.find(".bloom-translationGroup .textBox-identifier").remove();
 };
 
-// Called from C# in EditingView.CleanHtmlAndCopyToPageDom via FrameExports.getPageFrameExports()
+// Called from C# in EditingView.CleanHtmlAndCopyToPageDom via editTabBundle.getEditablePageBundleExports()
 export const getBodyContentForSavePage = () => {
     theOneBubbleManager.turnOffBubbleEditing();
     // Active element should be forced to blur

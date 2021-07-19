@@ -17,7 +17,7 @@ export const PrivacyScreen: React.FunctionComponent<{
         "Common.Loading",
         "This is shown when Bloom is slowly loading something, so the user doesn't worry about why they don't see the result immediately."
     );
-    const log = BloomApi.useApiString(
+    const log = BloomApi.useApiStringState(
         `problemReport/diagnosticInfo?includeBook=${
             props.includeBook ? "true" : "false"
         }&email=${props.email}&userInput=${props.userInput}`,
