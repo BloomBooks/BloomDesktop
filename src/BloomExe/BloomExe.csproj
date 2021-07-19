@@ -1166,6 +1166,7 @@
     <Compile Include="web\BloomServer.cs" />
     <Compile Include="WebLibraryIntegration\ProxyManager.cs" />
     <Compile Include="web\BloomApiHandler.cs" />
+    <Compile Include="MiscUI\BloomFolderChooser.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\current-service-urls.json" />

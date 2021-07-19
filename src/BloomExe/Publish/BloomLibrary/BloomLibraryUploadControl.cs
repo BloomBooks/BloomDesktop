@@ -13,7 +13,6 @@ using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
-using Microsoft.WindowsAPICodePack.Dialogs;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -50,11 +49,6 @@ namespace Bloom.Publish.BloomLibrary
 			_originalLoginText = _loginLink.Text; // Before anything might modify it (but after InitializeComponent creates it).
 			_titleLabel.Text = _model.Title;
 
-			// currently folder choosing isn't supported (but wouldn't be hard)
-			if (!SIL.PlatformUtilities.Platform.IsWindows)
-			{
-				_uploadSource.Items.RemoveAt(2);
-			}
 			_uploadSource.SelectedIndex = 0;
 
 			_progressBox.ShowDetailsMenuItem = true;
@@ -626,20 +620,9 @@ namespace Bloom.Publish.BloomLibrary
 
 		private void SelectFolderAndUploadCollectionsWithinIt()
 		{
-			// Note not actually Microsoft anymore: https://github.com/contre/Windows-API-Code-Pack-1.1
-			if (SIL.PlatformUtilities.Platform.IsWindows)
-			{
-				// Note, this is Windows only.
-				CommonOpenFileDialog dialog = new CommonOpenFileDialog
-				{
-					InitialDirectory = _model.Book.CollectionSettings.FolderPath,
-					IsFolderPicker = true
-				};
-				if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
-				{
-					BulkUpload(dialog.FileName);
-				}
-			}
+			var folderPath = MiscUI.BloomFolderChooser.ChooseFolder(_model.Book.CollectionSettings.FolderPath);
+			if (!String.IsNullOrEmpty(folderPath) && Directory.Exists(folderPath))
+				BulkUpload(folderPath);
 		}
 
 		private void BulkUploadThisCollection()
