@@ -31,7 +31,7 @@ enum JoinCollectionState {
     "MatchesExistingNonTeamCollection",
     // we are already joined to a matching TC (same collection ID and already points here). Offer to open.
     "MatchesExistingTeamCollection",
-    // there is an existing local collection of the same name joined to this TC (same ID) but at another location. Offer to report.
+    // there is an existing local collection of the same name joined to this TC (same ID) but at another location. Offer to switch.
     "MatchesExistingTeamCollectionElsewhere",
     // there is an existing local collection of the same name joined to another TC (different ID). Offer to report.
     "MatchesDifferentTeamCollection",
@@ -195,8 +195,8 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
                         temporarilyDisableI18nWarning={true}
                     >
                         Bloom found another collection with this same name that
-                        is already connected to a Team Collection. Click REPORT
-                        to get help from the Bloom team.
+                        is already connected to a different Team Collection.
+                        Click REPORT to get help from the Bloom team.
                     </Div>
                 </ErrorBox>
                 {getMatchingCollection()}
@@ -233,13 +233,17 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
     function getDialogBodyExistingTcElsewhere() {
         return (
             <React.Fragment>
-                {getConflictingCollectionCommon()}
-                <P
-                    l10nKey="TeamCollection.SameIds"
-                    temporarilyDisableI18nWarning={true}
-                >
-                    (Same TC IDs)
-                </P>
+                <NoteBox>
+                    <Div
+                        l10nKey="TeamCollection.AlreadyJoinedElsewhere"
+                        temporarilyDisableI18nWarning={true}
+                    >
+                        This computer is already connected to this collection,
+                        which appears to have moved. Bloom will fix things up
+                        and open it for you.
+                    </Div>
+                </NoteBox>
+                {getMatchingCollection()}
             </React.Fragment>
         );
     }
@@ -280,9 +284,7 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
 
     const wantReportButton =
         dialogState === JoinCollectionState.IncompleteTeamCollection ||
-        dialogState === JoinCollectionState.MatchesDifferentTeamCollection ||
-        dialogState ===
-            JoinCollectionState.MatchesExistingTeamCollectionElsewhere;
+        dialogState === JoinCollectionState.MatchesDifferentTeamCollection;
 
     return (
         <BloomDialog {...propsForBloomDialog}>
