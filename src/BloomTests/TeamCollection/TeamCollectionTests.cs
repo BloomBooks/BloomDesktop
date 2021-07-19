@@ -403,6 +403,22 @@ namespace BloomTests.TeamCollection
 		}
 
 		[Test]
+		public void DeleteBookFromRepo_CreatesTombstone()
+		{
+			const string bookFolderName = "Delete away";
+
+			var bookBuilder = new BookFolderBuilder()
+				.WithRootFolder(_collectionFolder.FolderPath)
+				.WithTitle(bookFolderName)
+				.Build();
+			string bookFolderPath = bookBuilder.BuiltBookFolderPath;
+
+			var status = _collection.PutBook(bookFolderPath);
+			_collection.DeleteBookFromRepo(bookFolderPath);
+			Assert.That(_collection.KnownToHaveBeenDeleted("Delete away"), Is.True);
+		}
+
+		[Test]
 		public void HandleDeletedFile_BookNotDeleted_DoesNothing()
 		{
 			// Simulate that a book was reported as deleted in the repo, but actually, it's still there
@@ -419,6 +435,34 @@ namespace BloomTests.TeamCollection
 			var prevInvocations = _mockTcManager.Invocations.Count;
 
 			// System Under Test: a spurious notification //
+			_collection.HandleDeletedRepoFile($"{bookFolderName}.bloom");
+
+			// Verification
+			Assert.That(_mockTcManager.Invocations.Count, Is.EqualTo(prevInvocations));
+			Assert.That(_tcLog.Messages.Count, Is.EqualTo(prevMessages));
+			Assert.That(Directory.Exists(bookFolderPath), Is.True, "The local book should not have been deleted");
+		}
+
+		[Test]
+		public void HandleDeletedFile_BookDeletedButNoTombstone_DoesNothing()
+		{
+			// Simulate that a book is reported as deleted in the repo (and it is), but there is no tombstone
+			const string bookFolderName = "My other book";
+			var bookBuilder = new BookFolderBuilder()
+				.WithRootFolder(_collectionFolder.FolderPath)
+				.WithTitle(bookFolderName)
+				.Build();
+			string bookFolderPath = bookBuilder.BuiltBookFolderPath;
+
+			var status = _collection.PutBook(bookFolderPath);
+
+			// Delete but do NOT make tombstone
+			_collection.DeleteBookFromRepo(bookFolderPath, false);
+
+			var prevMessages = _tcLog.Messages.Count;
+			var prevInvocations = _mockTcManager.Invocations.Count;
+
+			// System Under Test: a valid notification, but one we want to ignore //
 			_collection.HandleDeletedRepoFile($"{bookFolderName}.bloom");
 
 			// Verification

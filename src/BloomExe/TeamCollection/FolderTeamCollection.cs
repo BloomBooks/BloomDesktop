@@ -59,6 +59,14 @@ namespace Bloom.TeamCollection
 
 		public string RepoFolderPath => _repoFolderPath;
 
+		private string GetPathForTombstone(string bookFolderName)
+		{
+			string id = GetBookId(bookFolderName);
+			if (id == null)
+				return null;
+			return Path.Combine(_repoFolderPath, id + ".tombstone");
+		}
+
 		/// <summary>
 		/// The folder-implementation-specific part of PutBook, the public method in TeamRepo.
 		/// Write the book as a .bloom by zipping the specified folder (and use its name).
@@ -121,6 +129,10 @@ namespace Bloom.TeamCollection
 				zipFile.AddDirectory(sourceBookFolderPath, sourceBookFolderPath.Length + 1, null, progressCallback);
 				zipFile.SetComment(status.WithCollectionId(CollectionId).ToJson());
 				zipFile.Save();
+				// If by any chance we've previously created a tombstone for this book, get rid of it.
+				var pathForTombstone = GetPathForTombstone(bookFolderName);
+				if (pathForTombstone != null)
+					RobustFile.Delete(pathForTombstone);
 			}
 			catch (Exception)
 			{
@@ -138,6 +150,15 @@ namespace Bloom.TeamCollection
 				_lastWriteBookTime = DateTime.Now;
 				_writeBookInProgress = false;
 			}
+		}
+
+		public override bool KnownToHaveBeenDeleted(string bookFolderPath)
+		{
+			var pathToBookFileInRepo = GetPathToBookFileInRepo(Path.GetFileName(bookFolderPath));
+			var pathForTombstone = GetPathForTombstone(Path.GetFileName(bookFolderPath));
+			if (pathForTombstone == null)
+				return false; // if the book doesn't have meta.json, we have no way to know.
+			return !RobustFile.Exists(pathToBookFileInRepo) && RobustFile.Exists(pathForTombstone);
 		}
 
 		/// <summary>
@@ -185,10 +206,10 @@ namespace Bloom.TeamCollection
 			return Path.Combine(GetPathToBookFolder(_repoFolderPath), bookFolderName) + ".bloom";
 		}
 
-		public override void RemoveBook(string bookName)
+		public override string GetRepoBookFile(string bookName, string fileName)
 		{
 			var path = GetPathToBookFileInRepo(bookName);
-			RobustFile.Delete(path);
+			return RobustZip.GetZipEntryContent(path, fileName);
 		}
 
 		/// <summary>
@@ -535,7 +556,8 @@ namespace Bloom.TeamCollection
 		/// only local).
 		/// </summary>
 		/// <param name="bookFolderPath"></param>
-		public override void DeleteBookFromRepo(string bookFolderPath)
+		/// <param name="makeTombstone"></param>
+		public override void DeleteBookFromRepo(string bookFolderPath, bool makeTombstone = true)
 		{
 			var pathToBookFileInRepo = GetPathToBookFileInRepo(Path.GetFileName(bookFolderPath));
 			// The test here is mostly unnecessary, since Delete won't throw if the file doesn't exist
@@ -544,6 +566,15 @@ namespace Bloom.TeamCollection
 			// WOULD cause an exception if by any chance it did not.
 			if (RobustFile.Exists(pathToBookFileInRepo))
 				RobustFile.Delete(pathToBookFileInRepo);
+			if (makeTombstone)
+			{
+				var pathForTombstone = GetPathForTombstone(Path.GetFileName(bookFolderPath));
+				if (pathForTombstone != null)
+				{
+					RobustFile.WriteAllText(pathForTombstone,
+						"This file marks the deletion of a book previously in the collection");
+				}
+			}
 		}
 
 		protected virtual void OnCreated(object sender, FileSystemEventArgs e)
