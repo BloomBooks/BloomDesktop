@@ -294,7 +294,7 @@ describe("audio recording tests", () => {
         it("inserts sentence spans with ids and class when none exist", () => {
             const div = $("<div>This is a sentence. This is another</div>");
             const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.Sentence
             );
@@ -317,7 +317,7 @@ describe("audio recording tests", () => {
                 '<div><p><span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span> This is another</p></div>'
             );
             const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.Sentence
             );
@@ -344,7 +344,7 @@ describe("audio recording tests", () => {
                 '<div><p><span id="abc" class="audio-sentence">This <b>is</b> a sentence.</span> This <i>is</i> another</p></div>'
             );
             const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.Sentence
             );
@@ -362,7 +362,7 @@ describe("audio recording tests", () => {
             it(`treats vertical bar as a phrase delimiter (Input=${testInput})`, () => {
                 const div = $(`<div><p>${testInput}</p></div>`);
                 const recording = new AudioRecording();
-                recording.makeAudioSentenceElements(
+                recording.makeAudioSentenceElementsTest(
                     div,
                     AudioRecordingMode.Sentence
                 );
@@ -386,7 +386,7 @@ describe("audio recording tests", () => {
                 '<div><p>This is a new sentence. <span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span></p></div>'
             );
             const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.Sentence
             );
@@ -423,7 +423,7 @@ describe("audio recording tests", () => {
                 '<div><p><span id="abcd" recordingmd5="qed" class="audio-sentence">This is the first sentence.</span> This is inserted. <span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span> Inserted after.</p></div>'
             );
             const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.Sentence
             );
@@ -501,7 +501,7 @@ describe("audio recording tests", () => {
                 '<div><p>This is the first sentence.<span data-cke-bookmark="1" style="display: none;" id="cke_bm_35C"> </span></p></div>'
             );
             const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.Sentence
             );
@@ -519,7 +519,10 @@ describe("audio recording tests", () => {
                 '<p><span data-cke-bookmark="1" style="display: none;" id="cke_bm_35C">&nbsp;</span><br></p>'
             );
             const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(p, AudioRecordingMode.Sentence);
+            recording.makeAudioSentenceElementsTest(
+                p,
+                AudioRecordingMode.Sentence
+            );
             const spans = p.find("span");
             expect(spans.length).toBe(1);
             expect(spans[0].innerHTML).toBe("&nbsp;");
@@ -531,7 +534,10 @@ describe("audio recording tests", () => {
                 '<p><span id="efgh" recordingmd5="xyz" class="audio-sentence"><span id="abcd" recordingmd5="qed" class="audio-sentence">This is the first.</span> <span id="abde" recordingmd5="qef" class="audio-sentence">This is the second.</span> This is the third.</span></p>'
             );
             const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(p, AudioRecordingMode.Sentence);
+            recording.makeAudioSentenceElementsTest(
+                p,
+                AudioRecordingMode.Sentence
+            );
             const spans = p.find("span");
             // Should have removed the outer span and left the two inner ones and added a third one.
             expect(spans.length).toBe(3);
@@ -568,7 +574,10 @@ describe("audio recording tests", () => {
             );
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.Sentence;
-            recording.makeAudioSentenceElements(p, AudioRecordingMode.Sentence);
+            recording.makeAudioSentenceElementsTest(
+                p,
+                AudioRecordingMode.Sentence
+            );
             const spans = p.find("span");
             // Should have removed the outer span and left the two inner ones and added a third one.
             expect(spans.length).toBe(3); // If regresses, it would probably show twice as many (i.e. 6) instead of 3.
@@ -580,7 +589,10 @@ describe("audio recording tests", () => {
                 '<p>Random text <strong><span data-duration="9.400227" id="abcd" class="audio-sentence" recordingmd5="undefined"><u>underlined</u></span></strong> finish the sentence. Another sentence <u><strong>boldunderlined</strong></u> finish the second.</p>'
             );
             const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(p, AudioRecordingMode.Sentence);
+            recording.makeAudioSentenceElementsTest(
+                p,
+                AudioRecordingMode.Sentence
+            );
             const spans = p.find("span");
             // Should have expanded the first span and created one for the second sentence.
             expect(spans.length).toBe(2);
@@ -607,7 +619,7 @@ describe("audio recording tests", () => {
             const sentence3 = "Click them.";
             const div = $(`<div>${sentence1} ${sentence2} ${sentence3}</div>`);
             const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.Sentence
             );
@@ -644,7 +656,7 @@ describe("audio recording tests", () => {
             const div = $(originalHtml);
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.TextBox
             );
@@ -720,7 +732,7 @@ describe("audio recording tests", () => {
             );
 
             recording.audioRecordingMode = AudioRecordingMode.Sentence;
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.Sentence
             );
@@ -742,7 +754,7 @@ describe("audio recording tests", () => {
             const div = $(originalHtml);
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.TextBox
             );
@@ -801,7 +813,7 @@ describe("audio recording tests", () => {
             );
 
             recording.audioRecordingMode = AudioRecordingMode.Sentence;
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.Sentence
             );
@@ -823,7 +835,7 @@ describe("audio recording tests", () => {
             const div = $(originalHtml);
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.TextBox
             );
@@ -874,7 +886,7 @@ describe("audio recording tests", () => {
             );
 
             recording.audioRecordingMode = AudioRecordingMode.Sentence;
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.Sentence
             );
@@ -888,7 +900,7 @@ describe("audio recording tests", () => {
             const div = $(originalHtml);
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.Sentence; // Should be the new mode
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.Sentence
             );
@@ -926,7 +938,7 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.TextBox
             );
@@ -985,7 +997,7 @@ describe("audio recording tests", () => {
             );
 
             recording.audioRecordingMode = AudioRecordingMode.Sentence;
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.Sentence
             );
@@ -1018,7 +1030,7 @@ describe("audio recording tests", () => {
 
             let recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.Sentence;
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.Sentence
             );
@@ -1067,6 +1079,19 @@ describe("audio recording tests", () => {
                 .replace(/<\/div>/, "");
             const expectedTextBoxInnerHtml =
                 '<p><span class="audio-sentence">Sentence 1.</span> <span class="audio-sentence">Sentence 2.</span> <span class="audio-sentence">Sentence 3.</span><br></p><p><span class="audio-sentence">Paragraph 2.</span><br></p>';
+
+            console.log(
+                "we got this: " +
+                    StripAllGuidIds(StripEmptyClasses(parentDiv.html()))
+            );
+            console.log(
+                "we expected: " +
+                    '<div id="numberedPage">' +
+                    expectedTextBoxDivHtml +
+                    expectedTextBoxInnerHtml +
+                    formatButtonHtml +
+                    "</div></div>"
+            );
             expect(StripAllGuidIds(StripEmptyClasses(parentDiv.html()))).toBe(
                 '<div id="numberedPage">' +
                     expectedTextBoxDivHtml +
@@ -1084,7 +1109,7 @@ describe("audio recording tests", () => {
             // Test that you can switch back and recover more-or-less the original
             recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.TextBox
             );
@@ -1115,7 +1140,7 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.TextBox
             );
@@ -1138,7 +1163,7 @@ describe("audio recording tests", () => {
             const div = $(originalHtml);
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.TextBox
             );
@@ -1179,7 +1204,7 @@ describe("audio recording tests", () => {
             const div = $(originalHtml);
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
-            recording.makeAudioSentenceElements(
+            recording.makeAudioSentenceElementsTest(
                 div,
                 AudioRecordingMode.TextBox
             );
@@ -2263,7 +2288,7 @@ describe("audio recording tests", () => {
         // The outer <p>...</p> is needed to get the right jquery object passed to the method.
         const elt1 = $($.parseHTML(`<p>${sent1}</p>`));
         expect(elt1.html()).toBe(sent1); // verify original state
-        recording.makeAudioSentenceElementsLeaf(elt1);
+        recording.makeAudioSentenceElementsLeafTest(elt1);
         expect(elt1.html()).toBe(sent1);
         const oldId = elt1.find(".audio-sentence").attr("id");
         expect(oldId).toBe("i00c41f76-0d90-41be-988d-084517eea47d");
@@ -2271,7 +2296,7 @@ describe("audio recording tests", () => {
         const sent2 = "This is a test!";
         const elt2 = $($.parseHTML(`<p>${sent2}</p>`));
         expect(elt2.html()).toBe(sent2); // verify original state
-        recording.makeAudioSentenceElementsLeaf(elt2);
+        recording.makeAudioSentenceElementsLeafTest(elt2);
         expect(elt2.html()).not.toBe(sent2);
         const newId = elt2.find(".audio-sentence").attr("id");
         expect(newId).not.toBe(oldId);

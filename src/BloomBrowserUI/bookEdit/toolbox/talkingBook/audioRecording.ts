@@ -2361,11 +2361,14 @@ export default class AudioRecording {
     public async setupAndUpdateMarkupAsync(): Promise<void> {
         const recordables = this.getRecordableDivs();
 
-        const asyncTasks: Promise<void>[] = recordables.map(async elem => {
-            await new Recordable(elem).setMd5IfMissingAsync();
-            return this.tryUpdateMarkupForTextBoxAsync(elem);
-        });
-        await Promise.all(asyncTasks);
+        const asyncTasks: Promise<() => void>[] = recordables.map(
+            async elem => {
+                await new Recordable(elem).setMd5IfMissingAsync();
+                return this.tryGetUpdateMarkupForTextBoxActionAsync(elem);
+            }
+        );
+        var updateFuncs = await Promise.all(asyncTasks);
+        updateFuncs.forEach(x => x());
 
         // seting the current audio element right now is optional - we could also just wait around
         // for the first thing that calls getCurrentTextbox.
@@ -2375,8 +2378,10 @@ export default class AudioRecording {
         return this.changeStateAndSetExpectedAsync("record");
     }
 
-    // Entry point for TalkingBookTool's updateMarkup() function. Does similar but less work than setupAndUpdateMarkupAsync.
-    public async updateMarkup(): Promise<void> {
+    // Entry point for TalkingBookTool's updateMarkupAsync() function. Does similar but less work than setupAndUpdateMarkupAsync.
+    // Makes no changes itself, just figures out what they should be and returns a function that will quickly do the update.
+    // (Typically, the function will be executed immediately unless the user has further edited the document in the meantime.)
+    public async getUpdateMarkupAction(): Promise<() => void> {
         // Basic outline:
         // * This function gets called when the user types something
         // * First, see if we should update the Current Highlight to the element with the active focus instead.
@@ -2385,7 +2390,8 @@ export default class AudioRecording {
         const editables = this.getRecordableDivs(true, false);
         if (editables.length === 0) {
             // no editable text on this page.
-            return this.changeStateAndSetExpectedAsync("");
+            this.changeStateAndSetExpectedAsync("");
+            return () => {};
         }
 
         // First, see if we should update the Current Highlight to the element with the active focus instead.
@@ -2394,23 +2400,32 @@ export default class AudioRecording {
         if (!currentTextBox) {
             // This could be reached if you create a new page with the talking book tool open.
             // It's fine. Don't bother doing anything.
-            return;
+            return () => {};
         }
 
         // Now we can carry on with changing the HTML markup with the audio-sentence classes, ids, etc.
         // Because the user has edited the document, any existing recordings are suspect.
         // Although some might still be useful, and some may survive, we think at this point it is more important
         // that the markup is consistent with the current text in preparation for updating the recordings to match.
-        await this.tryUpdateMarkupForTextBoxAsync(currentTextBox);
+        const updateTheElement = await this.tryGetUpdateMarkupForTextBoxActionAsync(
+            currentTextBox
+        );
 
-        // Adjust the current highlight appropriately
-        // Regardless of whether it's present, we always need to set the current audio element
-        // Obviously, when we update current markup, we normally set the current audio element afterward too.
-        // The tricky case is when opening a hard split (version 4.5) book that has existing audio.
-        // updateMarkupForCurrentText() does not run, but we still need it to move the current audio element.
-        await this.resetCurrentAudioElementAsync(currentTextBox);
+        return async () => {
+            updateTheElement();
+            // Adjust the current highlight appropriately
+            // Regardless of whether it's present, we always need to set the current audio element
+            // Obviously, when we update current markup, we normally set the current audio element afterward too.
+            // The tricky case is when opening a hard split (version 4.5) book that has existing audio.
+            // updateMarkupForCurrentText() does not run, but we still need it to move the current audio element.
 
-        return this.changeStateAndSetExpectedAsync("record");
+            // I'd be happier if these functions didn't do anything async. But as far as I can tell, they
+            // don't change anything that would interfere with typing if the user presses another key before
+            // the async actions complete.
+            await this.resetCurrentAudioElementAsync(currentTextBox);
+
+            await this.changeStateAndSetExpectedAsync("record");
+        };
     }
 
     // Note: This may temporarily put things into a funny state. We ask to move the highlight to the whole div regardless of what the recording mode is.
@@ -2447,10 +2462,11 @@ export default class AudioRecording {
         return false;
     }
 
-    // Asychronously updates the markup on the specified text box, but only if the operation is currently allowed.
-    private async tryUpdateMarkupForTextBoxAsync(
+    // Asychronously works out how to update the markup on the specified text box, but only if the operation is currently allowed.
+    // Returns a function which will actually do the update (but should only be executed if no further edits happened in the meantime).
+    private async tryGetUpdateMarkupForTextBoxActionAsync(
         textBox: HTMLElement
-    ): Promise<void> {
+    ): Promise<() => void> {
         const recordable = new Recordable(textBox);
 
         const shouldUpdateMarkup = await recordable.shouldUpdateMarkupAsync();
@@ -2458,11 +2474,16 @@ export default class AudioRecording {
         if (shouldUpdateMarkup) {
             const recordingMode = this.getRecordingModeOfTextBox(textBox);
             const playbackMode = this.getPlaybackMode(textBox);
-            this.updateMarkupForTextBox(textBox, recordingMode, playbackMode);
+            return this.getUpdateMarkupForTextBoxAction(
+                textBox,
+                recordingMode,
+                playbackMode
+            );
         } else {
             // Just keep the code from changing the splits.
             // No notification right now, which I think in many cases would be fine
             // But if you want to add some notification UI, it can go here.
+            return () => {};
         }
     }
 
@@ -2480,7 +2501,19 @@ export default class AudioRecording {
         audioRecordingMode: AudioRecordingMode,
         audioPlaybackMode
     ): void {
-        this.makeAudioSentenceElements(
+        var updateAction = this.getUpdateMarkupForTextBoxAction(
+            textBox,
+            audioRecordingMode,
+            audioPlaybackMode
+        );
+        updateAction();
+    }
+    private getUpdateMarkupForTextBoxAction(
+        textBox: HTMLElement,
+        audioRecordingMode: AudioRecordingMode,
+        audioPlaybackMode
+    ): () => void {
+        return this.getActionToMakeAudioSentenceElements(
             $(textBox),
             audioRecordingMode,
             audioPlaybackMode
@@ -2771,6 +2804,21 @@ export default class AudioRecording {
         return getMd5(adjustedMessage);
     }
 
+    // Currently only used in testing, this just calls getActionToMakeAudioSentenceElements
+    // and then executes the action.
+    public makeAudioSentenceElementsTest(
+        rootElementList: JQuery,
+        audioRecordingMode: AudioRecordingMode,
+        audioPlaybackMode: AudioRecordingMode = this.audioRecordingMode
+    ): void {
+        const doUpdate = this.getActionToMakeAudioSentenceElements(
+            rootElementList,
+            audioRecordingMode,
+            audioPlaybackMode
+        );
+        doUpdate();
+    }
+
     // AudioRecordingMode=Sentence: We want to make out of each sentence in root a span which has a unique ID.
     // AudioRecordingMode=TextBox: We want to turn the bloom-editable text box into the unit which will be
     // recorded. (It needs a unique ID too). No spans will be created though.
@@ -2780,11 +2828,15 @@ export default class AudioRecording {
     // makeAudioSentenceElementsLeaf does this for roots which don't have children (except a few
     // special cases); this root method scans down and does it for each such child
     // in a root (possibly the root itself, if it has no children).
-    public makeAudioSentenceElements(
+    // To facilitate dynamic updates during typing, this doesn't usually change the elements itself.
+    // Rather, it returns a function which, if no further keystrokes have been received or we
+    // are not responding to typing, should be executed immediately to make the change.
+    // A few kinds of change that don't happen during typing are made immediately.
+    public getActionToMakeAudioSentenceElements(
         rootElementList: JQuery,
         audioRecordingMode: AudioRecordingMode,
         audioPlaybackMode: AudioRecordingMode = this.audioRecordingMode
-    ): void {
+    ): () => void {
         // Preconditions:
         //   bloom-editable ids are not currently used / will be robustly handled in the future / are agnostic to the specific value and format
         //   The first node(s) underneath a bloom-editable should always be <p> elements
@@ -2793,102 +2845,131 @@ export default class AudioRecording {
             "updateMarkupForTextBox() should not be passed mode unknown"
         );
 
-        rootElementList.each((index: number, root: Element) => {
-            if (audioPlaybackMode == AudioRecordingMode.Sentence) {
-                if (this.isRootRecordableDiv(root)) {
-                    this.persistRecordingMode(root, audioRecordingMode);
+        // Each recursive call and each call to the "leaf" function returns a function that needs to be called...
+        // if all the updates are not out of date. We accumulate them here; then our final result will be
+        // a function that executes all of them.
+        var updateFuncs: Array<() => void> = [];
+        const result = () => updateFuncs.forEach(x => x());
 
-                    // Cleanup markup from AudioRecordingMode=TextBox
-                    root.classList.remove(kAudioSentence);
-                }
-            } else if (audioPlaybackMode == AudioRecordingMode.TextBox) {
-                // Note: Includes cases where you are in Soft Split mode. (You will return without running makeAudioSentenceElementsLeaf()
-                if (this.isRootRecordableDiv(root)) {
-                    // Save the RECORDING (not the playback) setting  used, so we can load it properly later
-                    this.persistRecordingMode(root, audioRecordingMode);
+        var needAnotherTry = true; // in pathological situations we need to start over. Usually only true for one iteration.
+        while (needAnotherTry) {
+            needAnotherTry = false;
+            updateFuncs = [];
 
-                    // Cleanup markup from AudioRecordingMode=Sentence
-                    $(root)
-                        .find(kAudioSentenceClassSelector)
-                        .each((index, element) => {
-                            if (!element.classList.contains("bloom-editable")) {
-                                this.deleteElementAndPushChildNodesIntoParent(
-                                    element
-                                );
-                            }
-                        });
+            rootElementList.each((index: number, root: Element) => {
+                // These mode change operations are allowed to change the DOM, as they don't happen during typing.
+                if (audioPlaybackMode == AudioRecordingMode.Sentence) {
+                    if (this.isRootRecordableDiv(root)) {
+                        this.persistRecordingMode(root, audioRecordingMode);
 
-                    // Add the markup for AudioRecordingMode = TextBox
-                    root.classList.add(kAudioSentence);
-                    if (
-                        root.id == undefined ||
-                        root.id == null ||
-                        root.id == ""
+                        // Cleanup markup from AudioRecordingMode=TextBox
+                        root.classList.remove(kAudioSentence);
+                    }
+                } else if (audioPlaybackMode == AudioRecordingMode.TextBox) {
+                    // Note: Includes cases where you are in Soft Split mode. (You will return without running makeAudioSentenceElementsLeaf()
+                    if (this.isRootRecordableDiv(root)) {
+                        // Save the RECORDING (not the playback) setting  used, so we can load it properly later
+                        this.persistRecordingMode(root, audioRecordingMode);
+
+                        // Cleanup markup from AudioRecordingMode=Sentence
+                        $(root)
+                            .find(kAudioSentenceClassSelector)
+                            .each((index, element) => {
+                                if (
+                                    !element.classList.contains(
+                                        "bloom-editable"
+                                    )
+                                ) {
+                                    this.deleteElementAndPushChildNodesIntoParent(
+                                        element
+                                    );
+                                }
+                            });
+
+                        // Add the markup for AudioRecordingMode = TextBox
+                        root.classList.add(kAudioSentence);
+                        if (
+                            root.id == undefined ||
+                            root.id == null ||
+                            root.id == ""
+                        ) {
+                            root.id = AudioRecording.createValidXhtmlUniqueId();
+                        }
+
+                        // All done, no need to process any of the remaining children
+                        return true; //(but continue the each loop in case there are more roots)
+                    } else if (
+                        $(root).find(kBloomEditableTextBoxSelector).length <= 0
                     ) {
-                        root.id = AudioRecording.createValidXhtmlUniqueId();
+                        // Trust that it got setup correctly, which if so means there is nothing to do for any children
+                        return true; // but continue the each loop
+                    }
+                    // Else: Need to continue recursively making our way down the tree until we find that textbox that we can see is somewhere down there
+                }
+
+                const children = $(root).children();
+                let processedChild: boolean = false; // Did we find a significant child?
+
+                for (let i = 0; i < children.length; i++) {
+                    const child: HTMLElement = children[i];
+
+                    if (
+                        $(child).is(kAudioSentenceClassSelector) &&
+                        $(child).find(kAudioSentenceClassSelector).length > 0
+                    ) {
+                        // child is spurious; an extra layer of wrapper around other audio spans.
+                        // (Normally, this method is not allowed to change the DOM except in the action
+                        // function it returns. However, this is fixing a pathological legacy situation.
+                        // If it occurs at all, it should get fixed when the page is first loaded,
+                        // and not happen during typing.)
+                        $(child).replaceWith($(child).html()); // clean up.
+                        needAnotherTry = true; // start the whole method over.
+                        return false; // break the 'each' loop
                     }
 
-                    // All done, no need to process any of the remaining children
-                    return;
-                } else if (
-                    $(root).find(kBloomEditableTextBoxSelector).length <= 0
-                ) {
-                    // Trust that it got setup correctly, which if so means there is nothing to do for anything else
-                    return;
-                }
-                // Else: Need to continue recursively making our way down the tree until we find that textbox that we can see is somewhere down there
-            }
-
-            const children = $(root).children();
-            let processedChild: boolean = false; // Did we find a significant child?
-
-            for (let i = 0; i < children.length; i++) {
-                const child: HTMLElement = children[i];
-
-                if (
-                    $(child).is(kAudioSentenceClassSelector) &&
-                    $(child).find(kAudioSentenceClassSelector).length > 0
-                ) {
-                    // child is spurious; an extra layer of wrapper around other audio spans.
-                    $(child).replaceWith($(child).html()); // clean up.
-                    this.makeAudioSentenceElements(
-                        rootElementList,
-                        audioRecordingMode,
-                        audioPlaybackMode
-                    ); // start over.
-                    return;
+                    // Recursively process non-leaf nodes
+                    const name = child.nodeName.toLowerCase();
+                    // Review: is there a better way to pick out the elements that can occur within content elements?
+                    if (
+                        name != "span" &&
+                        name != "br" &&
+                        name != "i" &&
+                        name != "b" &&
+                        name != "strong" && // ckeditor uses this for bold
+                        name != "em" && // ckeditor italics
+                        name != "u" && // ckeditor underline
+                        name != "sup" && // ckeditor superscript
+                        name != "a" && // Allow users to manually insert hyperlinks 4.5, and support 4.6 hyperlinks
+                        $(child).attr("id") !== "formatButton"
+                    ) {
+                        processedChild = true;
+                        updateFuncs.push(
+                            this.getActionToMakeAudioSentenceElements(
+                                $(child),
+                                audioRecordingMode,
+                                audioPlaybackMode
+                            )
+                        );
+                    }
                 }
 
-                // Recursively process non-leaf nodes
-                const name = child.nodeName.toLowerCase();
-                // Review: is there a better way to pick out the elements that can occur within content elements?
-                if (
-                    name != "span" &&
-                    name != "br" &&
-                    name != "i" &&
-                    name != "b" &&
-                    name != "strong" && // ckeditor uses this for bold
-                    name != "em" && // ckeditor italics
-                    name != "u" && // ckeditor underline
-                    name != "sup" && // ckeditor superscript
-                    name != "a" && // Allow users to manually insert hyperlinks 4.5, and support 4.6 hyperlinks
-                    $(child).attr("id") !== "formatButton"
-                ) {
-                    processedChild = true;
-                    this.makeAudioSentenceElements(
-                        $(child),
-                        audioRecordingMode,
-                        audioPlaybackMode
+                if (!processedChild) {
+                    // root is a leaf; process its actual content
+                    updateFuncs.push(
+                        this.getActionToMakeAudioSentenceElementsLeaf($(root))
                     );
                 }
-            }
-
-            if (!processedChild) {
-                // root is a leaf; process its actual content
-                this.makeAudioSentenceElementsLeaf($(root));
-            }
-        });
+                return true; // continue the 'each' loop
+            });
+        }
         // Review: is there a need to handle elements that contain both sentence text AND child elements with their own text?
+        return result;
+    }
+
+    // Currently only used in testing.
+    public makeAudioSentenceElementsLeafTest(elt: JQuery): void {
+        var doUpdate = this.getActionToMakeAudioSentenceElementsLeaf(elt);
+        doUpdate();
     }
 
     // The goal for existing markup is that if any existing audio-sentence span has an md5 that matches the content of a
@@ -2898,16 +2979,18 @@ export default class AudioRecording {
     // We also attempt to use any sentence IDs specified by this.sentenceToIdListMap.
     // N.B. If Bloom comes in here with spans that have no audio-sentence class, we may end up wrapping spans in spans.
     // public to allow unit testing.
-    public makeAudioSentenceElementsLeaf(elt: JQuery): void {
+    // Returns an action to actually make the change, if it is not obsolete by then.
+    public getActionToMakeAudioSentenceElementsLeaf(elt: JQuery): () => void {
+        var copy = elt.clone(); // don't modify elt except in the function we return
         // When all text is deleted, we get in a temporary state with no paragraph elements, so the root editable div
         // may be processed...and if this happens during editing the format button may be present. The body of this function
         // will do weird things with it (wrap it in a sentence span, for example) so the easiest thing is to remove
         // it at the start and reinstate it at the end. Fortunately its position is predictable. But I wish this
         // otherwise fairly generic code didn't have to know about it.
-        const formatButton = elt.find("#formatButton");
+        const formatButton = copy.find("#formatButton");
         formatButton.remove(); // nothing happens if not found
 
-        const markedSentences = elt.find(
+        const markedSentences = copy.find(
             `${kAudioSentenceClassSelector},.${kSegmentClass}`
         );
         //  TODO: Shouldn't re-use audio if the text box has a different lang associated. "Jesus" pronounced differently in differently langs.
@@ -2922,7 +3005,7 @@ export default class AudioRecording {
         });
 
         const htmlFragments: TextFragment[] = this.stringToSentences(
-            elt.html()
+            copy.html()
         );
         let textFragments: TextFragment[] | null = this.stringToSentences(
             elt.text()
@@ -3016,9 +3099,11 @@ export default class AudioRecording {
             }
         }
 
-        // set the html
-        elt.html(newHtml);
-        elt.append(formatButton);
+        return () => {
+            // set the html (if this function gets called, that is, if there hasn't already been another keystroke)
+            elt.html(newHtml);
+            elt.append(formatButton);
+        };
     }
 
     // Normalization rules for text which has already been processed by CKEditor

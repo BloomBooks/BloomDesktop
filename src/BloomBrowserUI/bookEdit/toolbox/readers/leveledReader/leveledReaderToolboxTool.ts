@@ -69,6 +69,10 @@ export class LeveledReaderToolboxTool implements ITool {
     public updateMarkup() {
         getTheOneReaderToolsModel().doMarkup();
     }
+    public async updateMarkupAsync() {
+        throw "not implemented...use updateMarkup";
+        return () => {};
+    }
 
     public isUpdateMarkupAsync(): boolean {
         return false;
