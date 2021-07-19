@@ -773,6 +773,7 @@ namespace Bloom.TeamCollection
 		private static string _joinCollectionPath; // when joining a TC, the path to the repo we're joining
 		private static string _joinCollectionName; // when joining a TC, the collection name derived from the temporary Settings object.
 		private static string _newCollectionToJoin;
+		private static bool _joiningSameCollection; // when joining a TC, and a corresponding local directory already exists, is it the same collection as we're joining?
 
 		// Create a new local collection from the team collection at the specified path.
 		// Return the path to its settings (not team settings) file...the path we need to
@@ -808,7 +809,12 @@ namespace Bloom.TeamCollection
 			var joiningGuid = CollectionSettings.CollectionIdFromCollectionFolder(tcManager.CurrentCollection
 				.LocalCollectionFolder);
 			var localGuid = CollectionSettings.CollectionIdFromCollectionFolder(localCollectionFolder);
-			var isSameCollection = joiningGuid == localGuid;
+			var isSameCollection = _joiningSameCollection = joiningGuid == localGuid;
+			// If it's a different collection and associated with a TC that exists, we're going to
+			// not allow the user to join. But if the TC doesn't exist...we'll let them just go
+			// ahead and merge, as if it was never linked.
+			if (!isSameCollection && !Directory.Exists(repoFolderPathFromLinkPath))
+				isAlreadyTcCollection = false;
 
 			using (var dlg = new ReactDialog("JoinTeamCollectionDialog", new
 			{
@@ -867,7 +873,25 @@ namespace Bloom.TeamCollection
 			var repoFolder = Path.GetDirectoryName(_joinCollectionPath);
 			var localCollectionFolder =
 				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, _joinCollectionName);
-			var firstTimeJoin = !Directory.Exists(localCollectionFolder) || !RobustFile.Exists(TeamCollectionManager.GetTcLinkPathFromLcPath(localCollectionFolder));
+			var firstTimeJoin = true; // default assumption
+			if (Directory.Exists(localCollectionFolder)) // if not, no merging, so value of firstTimeJoin doesn't matter.
+			{
+				var tcLinkPath = TeamCollectionManager.GetTcLinkPathFromLcPath(localCollectionFolder);
+				if (RobustFile.Exists(tcLinkPath))
+				{
+					// it thinks it's already part of a TC. (If it doesn't, even though it is the same collection
+					// ID, we want a first time join; maybe the local copy has existed independently for some
+					// time and contains extra books we want to merge.)
+					if (_joiningSameCollection)
+					{
+						// It's basically the same collection...the user joined a second time, either
+						// by mistake, or to fix things up after it moved. So we want to sync normally,
+						// not as if we're merging collections.
+						firstTimeJoin = false;
+					}
+
+				}
+			}
 			// Most of the collection settings files will be copied later when we create the repo
 			// in TeamRepo.MakeInstance() and call CopyRepoCollectionFilesToLocal.
 			// However, when we start up with a command line argument that causes JoinCollectionTeam,
