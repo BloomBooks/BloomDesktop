@@ -1072,6 +1072,11 @@
         <source xml:lang="en">This kind of page will be included only in digital book outputs, not in PDF.</source>
         <note>ID: EditTab.AddPageDialog.DigitalPage</note>
       </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.LearnMore" sil:dynamic="true">
+        <source xml:lang="en">Learn More</source>
+        <note>ID: EditTab.AddPageDialog.LearnMore</note>
+        <note>Text of the optional link at the end of a page description.</note>
+      </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true">
         <source xml:lang="en">Could not find {0}</source>
         <note>ID: EditTab.AddPageDialog.NoTemplate</note>
