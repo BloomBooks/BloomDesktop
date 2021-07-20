@@ -477,7 +477,7 @@ namespace Bloom.Publish
 			}
 		}
 
-		public static void SendBatchedWarningMessagesToProgress(ISet<string> warningMessages, WebSocketProgress progress)
+		public static void SendBatchedWarningMessagesToProgress(ISet<string> warningMessages, IWebSocketProgress progress)
 		{
 			if (warningMessages.Any())
 				progress.Message("Common.Warning", "Warning", ProgressKind.Warning, false);

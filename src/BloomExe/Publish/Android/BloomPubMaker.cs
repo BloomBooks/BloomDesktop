@@ -32,7 +32,17 @@ namespace Bloom.Publish.Android
 
 		public static Control ControlForInvoke { get; set; }
 
-		public static void CreateBloomPub(string outputPath, Book.Book book, BookServer bookServer, Color backColor, WebSocketProgress progress, AndroidPublishSettings settings = null)
+		public static void CreateBloomPub(BookInfo bookInfo,  string outputFolder, BookServer bookServer, IWebSocketProgress progress)
+		{
+			// Near Future: JS is working on having the necessary settings saved with the book. At that point,
+			// some function in this stack should just be reading those settings out of the book's files, so this should no longer be a parameter.
+			// In the meantime, the bulk edit tool that uses this overload just doesn't offer an control over settings.
+			var settings = new AndroidPublishSettings();
+
+			var outputPath = Path.Combine(outputFolder, Path.GetFileName(bookInfo.FolderPath) + BookCompressor.BloomPubExtensionWithDot);
+			BloomPubMaker.CreateBloomPub(outputPath, bookInfo.FolderPath, bookServer, Color.Yellow, progress, bookInfo.IsSuitableForMakingShells, settings: settings);
+		}
+		public static void CreateBloomPub(string outputPath, Book.Book book, BookServer bookServer, Color backColor, IWebSocketProgress progress, AndroidPublishSettings settings = null)
 		{
 			CreateBloomPub(outputPath, book.FolderPath, bookServer, backColor, progress, book.IsTemplateBook, settings:settings);
 		}
@@ -40,7 +50,7 @@ namespace Bloom.Publish.Android
 		// Create a BloomReader book while also creating the temporary folder for it (according to the specified parameter) and disposing of it
 		public static void CreateBloomPub(string outputPath, string bookFolderPath, BookServer bookServer,
 			Color backColor,
-			WebSocketProgress progress, bool isTemplateBook, string tempFolderName = BRExportFolder,
+			IWebSocketProgress progress, bool isTemplateBook, string tempFolderName = BRExportFolder,
 			string creator = kCreatorBloom, AndroidPublishSettings settings = null)
 		{
 			using (var temp = new TemporaryFolder(tempFolderName))
@@ -64,7 +74,7 @@ namespace Bloom.Publish.Android
 		/// <returns>Path to the unzipped .bloomd</returns>
 		public static string CreateBloomPub(string outputPath, string bookFolderPath, BookServer bookServer,
 			Color backColor,
-			WebSocketProgress progress, TemporaryFolder tempFolder, string creator = kCreatorBloom, bool isTemplateBook=false,
+			IWebSocketProgress progress, TemporaryFolder tempFolder, string creator = kCreatorBloom, bool isTemplateBook=false,
 			AndroidPublishSettings settings = null)
 		{
 			var modifiedBook = PrepareBookForBloomReader(bookFolderPath, bookServer, tempFolder, progress, isTemplateBook, creator, settings);
@@ -81,7 +91,7 @@ namespace Bloom.Publish.Android
 
 		public static Book.Book PrepareBookForBloomReader(string bookFolderPath, BookServer bookServer,
 			TemporaryFolder temp,
-			WebSocketProgress progress, bool isTemplateBook,
+			IWebSocketProgress progress, bool isTemplateBook,
 			string creator = kCreatorBloom,
 			AndroidPublishSettings settings = null)
 		{
@@ -377,7 +387,7 @@ namespace Bloom.Publish.Android
 		/// <param name="book"></param>
 		/// <param name="progress"></param>
 		/// <param name="fontFileFinder">use new FontFinder() for real, or a stub in testing</param>
-		public static void EmbedFonts(Book.Book book, WebSocketProgress progress, HashSet<string> fontsWanted, IFontFinder fontFileFinder)
+		public static void EmbedFonts(Book.Book book, IWebSocketProgress progress, HashSet<string> fontsWanted, IFontFinder fontFileFinder)
 		{
 			const string defaultFont = "Andika New Basic"; // already in BR, don't need to embed or make rule.
 			fontsWanted.Remove(defaultFont);

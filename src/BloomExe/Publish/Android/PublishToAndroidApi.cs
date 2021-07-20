@@ -255,10 +255,9 @@ namespace Bloom.Publish.Android
 				request.PostSucceeded();
 			}, true);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/bulksave", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/bulkSaveBloomPubs", request =>
 			{
-				var progress = new WebSocketProgress(_webSocketServer, "bulk-save-bloompubs");
-				_bulkBloomPubCreator.SaveAll(progress);
+				_bulkBloomPubCreator.PublishAllBooks();
 				SetState("stopped");
 				request.PostSucceeded();
 			}, true);
@@ -549,7 +548,7 @@ namespace Bloom.Publish.Android
 				progress.Message("CompressingAudio", "Compressing audio files");
 				AudioProcessor.TryCompressingAudioAsNeeded(book.FolderPath, book.RawDom);
 			}
-			var publishedFileName = Path.GetFileName(book.FolderPath) + BookCompressor.ExtensionForDeviceBloomBook;
+			var publishedFileName = Path.GetFileName(book.FolderPath) + BookCompressor.BloomPubExtensionWithDot;
 			if (startingMessageFunction != null)
 				progress.MessageWithoutLocalizing(startingMessageFunction(publishedFileName, bookTitle));
 			if (destFileName == null)

@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Bloom.Api;
 using Bloom.Book;
 using Bloom.CollectionTab;
-using Bloom.web;
+using Bloom.MiscUI;
+using BloomTemp;
+using SIL.Program;
 
 namespace Bloom.Publish.Android
 {
@@ -13,22 +11,31 @@ namespace Bloom.Publish.Android
 	{
 		private readonly BookServer _bookServer;
 		private readonly LibraryModel _libraryModel;
+		private readonly BloomWebSocketServer _webSocketServer;
 
-		public delegate BulkBloomPubCreator Factory(BookServer bookServer, LibraryModel collectionModel);//autofac uses this
+		public delegate BulkBloomPubCreator Factory(BookServer bookServer, LibraryModel collectionModel, BloomWebSocketServer webSocketServer);//autofac uses this
 
-		public BulkBloomPubCreator(BookServer bookServer, LibraryModel libraryModel)
+		public BulkBloomPubCreator(BookServer bookServer, LibraryModel libraryModel, BloomWebSocketServer webSocketServer)
 		{
 			_bookServer = bookServer;
 			_libraryModel = libraryModel;
+			_webSocketServer = webSocketServer;
 		}
-		public void SaveAll(WebSocketProgress progress)
+		public void PublishAllBooks()
 		{
-			foreach (var bookInfo in _libraryModel.TheOneEditableCollection.GetBookInfos())
-			{
-				progress.MessageWithoutLocalizing(bookInfo.FolderPath);
-			}
-			progress.ShowButtons();
-			progress.Finished();
+			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, "Bulk Save BloomPubs",
+				progress =>
+				{
+					var dest = new TemporaryFolder("BloomPubs");
+					foreach (var bookInfo in _libraryModel.TheOneEditableCollection.GetBookInfos())
+					{
+						progress.MessageWithoutLocalizing($"Creating {bookInfo.FolderPath}...");
+						BloomPubMaker.CreateBloomPub(bookInfo, dest.FolderPath, _bookServer, progress);
+					}
+					Process.SafeStart(dest.FolderPath);
+					// true means wait for the user, don't close automatically
+					return true;
+				});
 		}
 	}
 }

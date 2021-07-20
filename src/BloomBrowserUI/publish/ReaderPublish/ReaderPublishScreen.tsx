@@ -1,3 +1,5 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { useState, useContext } from "react";
 
@@ -6,7 +8,8 @@ import {
     PreviewPanel,
     PublishPanel,
     HelpGroup,
-    SettingsPanel
+    SettingsPanel,
+    CommandsGroup
 } from "../commonPublish/BasePublishScreen";
 import { MethodChooser } from "./MethodChooser";
 import { PublishFeaturesGroup } from "./PublishFeaturesGroup";
@@ -117,15 +120,15 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
             }
         }
     );
-    let showProgress: () => void = () => {};
+    //let showProgress: () => void = () => {};
     return (
-        <>
-            <ProgressDialog
+        <React.Fragment>
+            {/* <ProgressDialog
                 title="Bulk Save BloomPubs"
                 webSocketContext="bulk-save-bloompubs"
                 onReadyToReceive={() => {}}
                 setShowDialog={show => (showProgress = show)}
-            />
+            /> */}
             <BasePublishScreen className="ReaderPublishScreen">
                 <PreviewPanel>
                     <DeviceAndControls
@@ -155,20 +158,27 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     <PublishLanguagesGroup
                         onChange={() => setHighlightRefresh(true)}
                     />
-                    <BloomButton
-                        variant="text"
-                        enabled={true} // TODO: enterprise only
-                        l10nKey="PublishTab.Android.SaveWholeCollection"
-                        onClick={() => {
-                            showProgress();
-                            BloomApi.postData(
-                                "publish/android/file/bulksave",
-                                {}
-                            );
-                        }}
-                    >
-                        Save Whole Collection
-                    </BloomButton>
+                    {/* push everything to the bottom */}
+                    <div
+                        css={css`
+                            margin-top: auto;
+                        `}
+                    />
+                    <CommandsGroup>
+                        <Link
+                            //enabled={true} // TODO: enterprise only
+                            l10nKey="PublishTab.Android.SaveWholeCollection"
+                            onClick={() => {
+                                //showProgress();
+                                BloomApi.postData(
+                                    "publish/android/file/bulkSaveBloomPubs",
+                                    {}
+                                );
+                            }}
+                        >
+                            Save All BloomPubs
+                        </Link>
+                    </CommandsGroup>
                     <HelpGroup>
                         <HelpLink
                             l10nKey="PublishTab.Android.AboutBookFeatures"
@@ -224,7 +234,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     }}
                 />
             )}
-        </>
+        </React.Fragment>
     );
 };
 

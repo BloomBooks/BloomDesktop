@@ -70,7 +70,7 @@ namespace BloomTests.Book
 			}
 
 			// System Under Test //
-			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder("BookCompressorBloomd" + BookCompressor.ExtensionForDeviceBloomBook))
+			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder("BookCompressorBloomd" + BookCompressor.BloomPubExtensionWithDot))
 			{
 				BookCompressor.CompressBookDirectory(bloomdTempFile.Path, _bookFolder.Path, "");
 			}
@@ -103,7 +103,7 @@ namespace BloomTests.Book
 				});
 
 			// System Under Test //
-			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder("BookCompressorWithAudio" + BookCompressor.ExtensionForDeviceBloomBook))
+			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder("BookCompressorWithAudio" + BookCompressor.BloomPubExtensionWithDot))
 			{
 				BookCompressor.CompressBookDirectory(bloomdTempFile.Path, _bookFolder.Path, "");
 				// Test by looking at the temp file content.

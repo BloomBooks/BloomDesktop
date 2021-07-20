@@ -34,6 +34,24 @@ namespace Bloom.MiscUI
 	/// responding to paint events, a click on the buttons, and and so forth.</remarks>
 	public class BrowserProgressDialog
 	{
+		public static void DoWorkWithProgressDialog(BloomWebSocketServer socketServer, string title, Func<IWebSocketProgress, bool> doWhat, Action<Form> doWhenMainActionFalse = null)
+		{
+			var kProgressContextName = "progress";
+			BrowserProgressDialog.DoWorkWithProgressDialog(socketServer, kProgressContextName,
+				() => new ReactDialog("ProgressDialog",
+						// props to send to the react component
+						new
+						{
+							title = "Bulk Save",
+							titleColor = "white",
+							titleBackgroundColor = Palette.kBloomBlueHex,
+							webSocketContext = kProgressContextName,
+							showReportButton = "if-error"
+						}, title)
+					// winforms dialog properties
+					{Width = 620, Height = 550}, doWhat, doWhenMainActionFalse);
+		}
+
 		public static void DoWorkWithProgressDialog(BloomWebSocketServer socketServer, string socketContext,  Func<Form> makeDialog,
 			Func<IWebSocketProgress, bool> doWhat, Action<Form> doWhenMainActionFalse = null)
 		{

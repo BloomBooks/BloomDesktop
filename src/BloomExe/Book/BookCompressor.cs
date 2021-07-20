@@ -20,7 +20,7 @@ namespace Bloom.Book
 {
 	public class BookCompressor
 	{
-		public const string ExtensionForDeviceBloomBook = ".bloomd";
+		public const string BloomPubExtensionWithDot = ".bloomd";
 		public static string LastVersionCode { get; private set; }
 
 		// these image files may need to be reduced before being stored in the compressed output file
