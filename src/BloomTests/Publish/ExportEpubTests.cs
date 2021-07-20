@@ -1879,7 +1879,7 @@ $@"<div class='bloom-translationGroup'>
 				book = SetupBookLong(
 					text: "<p>This is some text.</p>",
 					lang: "xyz",
-					extraContent: extraContentDe, // don't include the xyz extraContent, that would make two bloom-editables in the same language in the same group.
+					extraContent: extraContentDe,
 					extraEditDivClasses: "audio-sentence' id='e993d14a-0ec3-4316-840b-ac9143d59a2f",  // Injecting other attributes into the "class" field as well in order to create the ID attribute simultaneously
 					extraContentOutsideTranslationGroup: "<div class='bloom-translationGroup'><div lang='xyz' class='bloom-editable audio-sentence' id='i0d8e9910-dfa3-4376-9373-a869e109b764'><p>Another sentence</p></div></div>"
 				);
