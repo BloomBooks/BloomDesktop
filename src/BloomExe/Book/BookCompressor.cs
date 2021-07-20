@@ -145,6 +145,7 @@ namespace Bloom.Book
 			var bookFile = shouldScanHtml ? BookStorage.FindBookHtmlInFolder(directoryToCompress) : null;
 			XmlDocument dom = null;
 			List<string> imagesToGiveTransparentBackgrounds = null;
+			List<string> imagesToPreserveResolution = null;
 			// Tests can also result in bookFile being null.
 			if (!String.IsNullOrEmpty(bookFile))
 			{
@@ -163,11 +164,13 @@ namespace Bloom.Book
 				{
 					imagesToGiveTransparentBackgrounds = FindCoverImages(dom);
 				}
+				imagesToPreserveResolution = FindImagesToPreserveSharpness(dom);
 				FindBackgroundAudioFiles(dom);
 			}
 			else
 			{
 				imagesToGiveTransparentBackgrounds = new List<string>();
+				imagesToPreserveResolution = new List<string>();
 			}
 
 			// Some of the knowledge about ExcludedFileExtensions might one day move into this method.
@@ -218,9 +221,17 @@ namespace Bloom.Book
 				}
 				else if (reduceImages && ImageFileExtensions.Contains(Path.GetExtension(filePath.ToLowerInvariant())))
 				{
-					// Cover images should be transparent if possible.  Others don't need to be.
-					var makeBackgroundTransparent = imagesToGiveTransparentBackgrounds.Contains(Path.GetFileName(filePath));
-					modifiedContent = GetImageBytesForElectronicPub(filePath, makeBackgroundTransparent);
+					fileName = Path.GetFileName(filePath);	// restore original capitalization
+					if (imagesToPreserveResolution.Contains(fileName))
+					{
+						modifiedContent = RobustFile.ReadAllBytes(filePath);
+					}
+					else
+					{
+						// Cover images should be transparent if possible.  Others don't need to be.
+						var makeBackgroundTransparent = imagesToGiveTransparentBackgrounds.Contains(fileName);
+						modifiedContent = GetImageBytesForElectronicPub(filePath, makeBackgroundTransparent);
+					}
 					newEntry.Size = modifiedContent.Length;
 				}
 				else if (Path.GetExtension(filePath).ToLowerInvariant() == ".bloomcollection")
@@ -339,6 +350,25 @@ namespace Bloom.Book
 				}
 			}
 			return transparentImageFiles;
+		}
+
+		private static List<string> FindImagesToPreserveSharpness(XmlDocument dom)
+		{
+			var preservedImages = new List<string>();
+			foreach (var div in dom.SafeSelectNodes("//div[contains(@class,'marginBox')]//div[contains(@class,'bloom-doNotShrinkImage')]").Cast<XmlElement>())
+			{
+				var style = div.GetAttribute("style");
+				if (!string.IsNullOrEmpty(style) && style.Contains(kBackgroundImage))
+				{
+					System.Diagnostics.Debug.Assert(div.GetStringAttribute("class").Contains("bloom-backgroundImage"));
+					preservedImages.Add(ExtractFilenameFromBackgroundImageStyleUrl(style));
+				}
+			}
+			foreach (var img in dom.SafeSelectNodes("//div[contains(@class,'marginBox')]//img[contains(@class,'bloom-doNotShrinkImage')]").Cast<XmlElement>())
+			{
+				preservedImages.Add(System.Web.HttpUtility.UrlDecode(img.GetStringAttribute("src")));
+			}
+			return preservedImages;
 		}
 
 		private static string ExtractFilenameFromBackgroundImageStyleUrl(string style)
