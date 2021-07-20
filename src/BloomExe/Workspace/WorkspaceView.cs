@@ -308,6 +308,8 @@ namespace Bloom.Workspace
 				return; // this toast is all about returning to the collection tab
 			if (_returnToCollectionTabNotifier != null)
 				return; // notification already up
+			if (_tcManager.CurrentCollection == null)
+				return;
 			if (_tcManager.CurrentCollection.HasClobberProblem(bookName))
 			{
 				SafeInvoke.Invoke("sending reload status", this, false, true, () =>
