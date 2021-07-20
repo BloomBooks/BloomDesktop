@@ -126,6 +126,10 @@ export class PageChooser {
             this._selectedGridItem.getElementsByTagName("img")[0],
             "src"
         );
+        const learnMoreLink = this.getAttributeStringSafely(
+            this._selectedGridItem,
+            "help-link"
+        );
         const previewElement = document.getElementById(
             "singlePagePreview"
         ) as HTMLDivElement;
@@ -156,7 +160,8 @@ export class PageChooser {
                     forChangeLayout: this._forChooseLayout,
                     willLoseData: this._forChooseLayout
                         ? this.willLoseData()
-                        : false
+                        : false,
+                    learnMoreLink: learnMoreLink
                 })
             ),
             previewElement
@@ -563,6 +568,10 @@ export class PageChooser {
                     .getElementsByClassName("bloom-videoContainer")
                     .length.toString()
             );
+            const helpLink = currentPageDiv.getAttribute("help-link");
+            if (helpLink) {
+                currentGridItemHtml.setAttribute("help-link", helpLink);
+            }
 
             // The check for _indexOfPageToSelect here keeps the selection on the *first* matching page. In BL-4500, we found
             // that different templates could reuse the same guid for custom page. That's a problem probably should be

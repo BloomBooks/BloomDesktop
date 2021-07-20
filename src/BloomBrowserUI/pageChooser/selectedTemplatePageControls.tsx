@@ -6,6 +6,7 @@ import BloomButton from "../react_components/bloomButton";
 import { RequiresBloomEnterprise } from "../react_components/requiresBloomEnterprise";
 import { handleAddPageOrChooseLayoutButtonClick } from "./page-chooser";
 import SmallNumberPicker from "../react_components/smallNumberPicker";
+import { Link } from "../react_components/link";
 import { useL10n } from "../react_components/l10nHooks";
 
 interface ISelectedTemplatePageProps {
@@ -19,6 +20,7 @@ interface ISelectedTemplatePageProps {
     pageId: string;
     forChangeLayout?: boolean;
     willLoseData?: boolean;
+    learnMoreLink?: string;
 }
 
 // Displays a large preview of a template page in the Add Page or Change Layout dialog.
@@ -77,6 +79,19 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
                         This kind of page will be included only in digital book
                         outputs, not in PDF.
                     </Div>
+                )}
+                {props.learnMoreLink && (
+                    <div className="learnMoreLink">
+                        <Link
+                            href={props.learnMoreLink}
+                            l10nKey={"Common.LearnMore"}
+                            l10nComment={
+                                "A link or button that leads to something that tells the user more about what they just read."
+                            }
+                        >
+                            Learn More
+                        </Link>
+                    </div>
                 )}
             </div>
             {props.forChangeLayout &&
