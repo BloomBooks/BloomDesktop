@@ -164,7 +164,7 @@ namespace Bloom.Book
 				{
 					imagesToGiveTransparentBackgrounds = FindCoverImages(dom);
 				}
-				imagesToPreserveResolution = FindImagesToPreserveSharpness(dom);
+				imagesToPreserveResolution = FindImagesToPreserveResolution(dom);
 				FindBackgroundAudioFiles(dom);
 			}
 			else
@@ -352,10 +352,10 @@ namespace Bloom.Book
 			return transparentImageFiles;
 		}
 
-		private static List<string> FindImagesToPreserveSharpness(XmlDocument dom)
+		private static List<string> FindImagesToPreserveResolution(XmlDocument dom)
 		{
 			var preservedImages = new List<string>();
-			foreach (var div in dom.SafeSelectNodes("//div[contains(@class,'marginBox')]//div[contains(@class,'bloom-doNotShrinkImage')]").Cast<XmlElement>())
+			foreach (var div in dom.SafeSelectNodes("//div[contains(@class,'marginBox')]//div[contains(@class,'bloom-preserveResolution')]").Cast<XmlElement>())
 			{
 				var style = div.GetAttribute("style");
 				if (!string.IsNullOrEmpty(style) && style.Contains(kBackgroundImage))
@@ -364,7 +364,7 @@ namespace Bloom.Book
 					preservedImages.Add(ExtractFilenameFromBackgroundImageStyleUrl(style));
 				}
 			}
-			foreach (var img in dom.SafeSelectNodes("//div[contains(@class,'marginBox')]//img[contains(@class,'bloom-doNotShrinkImage')]").Cast<XmlElement>())
+			foreach (var img in dom.SafeSelectNodes("//div[contains(@class,'marginBox')]//img[contains(@class,'bloom-preserveResolution')]").Cast<XmlElement>())
 			{
 				preservedImages.Add(System.Web.HttpUtility.UrlDecode(img.GetStringAttribute("src")));
 			}
