@@ -84,7 +84,7 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
                 <TextWithEmbeddedLink
                     l10nKey="TeamCollection.CreateTeamCollection.Intro"
                     temporarilyDisableI18nWarning={true}
-                    href="https://docs.google.com/document/d/1DOhy7hnmG37NzcQN8oP6NkXW_X3WU7YH4ez_P1hV1mo/edit#bookmark=id.52kgqu3o6ny4"
+                    href="https://docs.bloomlibrary.org/team-collections-sharing-services"
                 >
                     Team Collections work by sharing files between team members
                     using Dropbox or a LAN server. Read [this note] about other
