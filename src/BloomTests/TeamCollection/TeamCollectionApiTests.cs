@@ -217,7 +217,7 @@ namespace BloomTests.TeamCollection
 				mockTeamCollection.Setup(x => x.WhatComputerHasBookLocked(It.IsAny<string>())).Returns("Other's Computer");
 
 				// System Under Test
-				var result = ApiTest.GetString(_server, endPoint: "teamCollection/currentBookStatus", returnType: ApiTest.ContentType.Text);
+				var result = ApiTest.GetString(_server, endPoint: "teamCollection/selectedBookStatus", returnType: ApiTest.ContentType.Text);
 
 				// Verification
 				StringAssert.Contains("\"who\":\"other@example.com\"", result);
@@ -248,7 +248,7 @@ namespace BloomTests.TeamCollection
 				mockTeamCollection.Setup(x => x.WhatComputerHasBookLocked(It.IsAny<string>())).Returns("My Computer");
 
 				// System Under Test
-				var result = ApiTest.GetString(_server, endPoint: "teamCollection/currentBookStatus", returnType: ApiTest.ContentType.Text);
+				var result = ApiTest.GetString(_server, endPoint: "teamCollection/selectedBookStatus", returnType: ApiTest.ContentType.Text);
 
 				// Verification
 				StringAssert.Contains("\"who\":\"me@example.com\"", result);

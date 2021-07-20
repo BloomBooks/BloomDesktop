@@ -31,7 +31,9 @@ namespace Bloom.Book
 			if (_currentSelection == book)
 				return;
 
-			if (book!=null && book.IsEditable)
+			// The bookdata null test prevents doing this on books not sufficiently initialized to
+			// BringUpToDate, typically only in unit tests.
+			if (book!=null && book.BookData != null && book.IsEditable)
 			{
 				book?.BringBookUpToDate(new NullProgress());
 			}

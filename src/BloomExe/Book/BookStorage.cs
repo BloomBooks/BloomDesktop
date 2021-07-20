@@ -84,6 +84,8 @@ namespace Bloom.Book
 
 		IEnumerable<string> GetActivityFolderNamesReferencedInBook();
 		void PerformNecessaryMaintenanceOnBook();
+
+		CollectionSettings CollectionSettings { get; }
 	}
 
 	public class BookStorage : IBookStorage
@@ -2615,6 +2617,8 @@ namespace Bloom.Book
 			// future additional levels will add additional "if (level < N)" blocks.
 			Dom.UpdateMetaElement("maintenanceLevel", kMaintenanceLevel.ToString(CultureInfo.InvariantCulture));
 		}
+
+		public CollectionSettings CollectionSettings => _collectionSettings;
 
 		/// <summary>
 		/// Move the book in the specified folder to a name that is safe (especially for DropBox)

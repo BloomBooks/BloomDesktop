@@ -69,6 +69,7 @@ namespace Bloom.Book
 		{
 			BookInfo = info;
 			Storage = storage;
+			CollectionSettings = storage?.CollectionSettings;
 		}
 
 		public Book(BookInfo info, IBookStorage storage, ITemplateFinder templateFinder,
@@ -110,7 +111,7 @@ namespace Bloom.Book
 
 			_templateFinder = templateFinder;
 
-			CollectionSettings = collectionSettings;
+			CollectionSettings = collectionSettings ?? storage.CollectionSettings;
 
 			_pageSelection = pageSelection;
 			_pageListChangedEvent = pageListChangedEvent;
@@ -631,7 +632,7 @@ namespace Bloom.Book
 		public virtual bool IsEditable {
 			get
 			{
-				if (!BookInfo.IsEditable)
+				if (BookInfo == null || !BookInfo.IsEditable)
 					return false;
 				return !HasFatalError;
 			}

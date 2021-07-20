@@ -1865,24 +1865,25 @@ $@"<div class='bloom-translationGroup'>
 		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox)]
 		public void HasFullAudioCoverage_IgnoresOtherLanguage(TalkingBookApi.AudioRecordingMode audioRecordingMode)
 		{
-			string extraContent = @"
+			string extraContentXyz = @"
 					<div class='bloom-editable' lang='xyz' contenteditable='true'>
 						<p><span id='e993d14a-0ec3-4316-840b-ac9143d59a20' class='audio-sentence'>More text with audio</span></p>
-					</div>
+					</div>";
+				string extraContentDe= @"
 					<div class='bloom-editable' lang='de' contenteditable='true'>German should never display in this collection, and audio shouldn't be required either!</div>";
 
 			BloomBook book;
 			if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.Sentence)
 			{
 				book = SetupBookLong("\r\n  <p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2f' class='audio-sentence'>This is some text.</span> <span id='i0d8e9910-dfa3-4376-9373-a869e109b764' class='audio-sentence'>Another sentence</span></p>  \r\n", "xyz",
-								extraContent: extraContent);
+								extraContent: extraContentXyz+extraContentDe);
 			}
 			else if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.TextBox)
 			{
 				book = SetupBookLong(
 					text: "<p>This is some text.</p>",
 					lang: "xyz",
-					extraContent: extraContent,
+					extraContent: extraContentDe, // don't include the xyz extraContent, that would make two bloom-editables in the same language in the same group.
 					extraEditDivClasses: "audio-sentence' id='e993d14a-0ec3-4316-840b-ac9143d59a2f",  // Injecting other attributes into the "class" field as well in order to create the ID attribute simultaneously
 					extraContentOutsideTranslationGroup: "<div class='bloom-translationGroup'><div lang='xyz' class='bloom-editable audio-sentence' id='i0d8e9910-dfa3-4376-9373-a869e109b764'><p>Another sentence</p></div></div>"
 				);
