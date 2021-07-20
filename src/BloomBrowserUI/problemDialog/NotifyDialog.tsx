@@ -41,7 +41,7 @@ export const NotifyDialog: React.FunctionComponent<{
                     Close icon inside of the title's Typography element, where we don't have control over its CSS. */}
                 <DialogTitle
                     className={"dialog-title allowSelect"}
-                    disableTypography={true}
+                    // removed for material-ui v5 // disableTypography={true}
                 >
                     <Typography variant="h6">{localizedDlgTitle}</Typography>
                     {/* We moved the X up to the winforms dialog so that it is draggable

@@ -25,7 +25,7 @@ namespace Bloom.web
 	public partial class ReactControl : UserControl
 	{
 		private string _javascriptBundleName;
-		private string _reactComponentName;
+
 		// props to provide to the react component
 		public object Props;
 
@@ -93,7 +93,7 @@ namespace Bloom.web
 					</script>					
 				</head>
 				<body style='margin:0'>
-					<div id='reactRoot'>Javascript should have replaced this. Make sure that the javascript bundle '{bundleNameWithExtension}' includes a single call to WireUpForWinforms()</div>
+					<div id='reactRoot'>Javascript should have replaced this. Make sure that the javascript bundle '{bundleNameWithExtension}' includes a single call to WireUpForWinforms(). If that is not missing, open in a browser and check the console in case runtime errors have prevented this bundle from fully loading.</div>
 				</body>
 				</html>");
 

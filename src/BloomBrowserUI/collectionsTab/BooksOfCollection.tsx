@@ -77,7 +77,7 @@ export const BooksOfCollection: React.FunctionComponent<{
                 container={true}
                 spacing={3}
                 direction="row"
-                justify="flex-start"
+                // removed for material-ui v5 // justify="flex-start"
                 alignItems="flex-start"
             >
                 {books?.map(book => {

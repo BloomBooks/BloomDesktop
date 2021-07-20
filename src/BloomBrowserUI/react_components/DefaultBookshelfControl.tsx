@@ -1,14 +1,14 @@
 /** @jsx jsx **/
-import { jsx, css } from "@emotion/core";
+import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import { useState } from "react";
 import { BloomApi } from "../utils/bloomApi";
 import { Div } from "./l10nComponents";
 import theme, { kBloomYellow } from "../bloomMaterialUITheme";
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider, makeStyles } from "@material-ui/styles";
 import BloomSelect from "./bloomSelect";
-import { makeStyles, MenuItem, Select } from "@material-ui/core";
+import { MenuItem, Select } from "@material-ui/core";
 import XRegExp = require("xregexp/types");
 import { useContentful } from "../contentful/UseContentful";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
@@ -109,6 +109,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
     // where material-UI places the pull-down, and brings it into line with
     // a Windows combo. Reduced padding makes the menu and items the usual
     // Windows size.
+
     const useStyles = makeStyles({
         select: {
             maxHeight: "calc(100% - 20px)",
@@ -203,8 +204,8 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
                         transformOrigin: {
                             vertical: "top",
                             horizontal: "left"
-                        },
-                        getContentAnchorEl: null
+                        }
+                        // removed for material-ui v5 getContentAnchorEl: null
                     }}
                     // If we can't get the options from contentful, or there are none, disable.
                     disabled={!result || result.length == 0}
