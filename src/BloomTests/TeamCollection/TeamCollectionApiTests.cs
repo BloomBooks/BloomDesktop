@@ -102,6 +102,30 @@ namespace BloomTests.TeamCollection
 		}
 
 		[Test]
+		public void MakeLockFailedMessageFromException_CannotLockException_AgentDropbox_MakesExpectedMessage()
+		{
+			var ex = new FolderTeamCollection.CannotLockException("We can't do it") { SyncAgent = "Dropbox" };
+			var msg =_api.MakeLockFailedMessageFromException(ex, "c:/nowhere/My book");
+			Assert.That(msg.TextForDisplay, Does.Contain("Bloom was not able to check out \"My book\". Some other program may be busy with it. This may just be Dropbox synchronizing the file. Please try again later. If the problem continues, restart your computer."));
+		}
+
+		[Test]
+		public void MakeLockFailedMessageFromException_CannotLockException_AgentUnknown_MakesExpectedMessage()
+		{
+			var ex = new FolderTeamCollection.CannotLockException("We can't do it") { SyncAgent = "Unknown" };
+			var msg = _api.MakeLockFailedMessageFromException(ex, "c:/nowhere/Some book");
+			Assert.That(msg.TextForDisplay, Does.Contain("Bloom was not able to check out \"Some book\". Some other program may be busy with it. This may just be something synchronizing the file. Please try again later. If the problem continues, restart your computer."));
+		}
+
+		[Test]
+		public void MakeLockFailedMessageFromException_OtherException_MakesExpectedMessage()
+		{
+			var ex = new ArgumentException("We can't do it");
+			var msg = _api.MakeLockFailedMessageFromException(ex, "c:/nowhere/Other book");
+			Assert.That(msg.TextForDisplay, Does.Contain("Bloom was not able to check out \"Other book\"."));
+		}
+
+		[Test]
 		public void ProblemsWithLocation_FolderReadOnly_Fails()
 		{
 			using (var tempFolder = new TemporaryFolder(MethodBase.GetCurrentMethod().Name))
