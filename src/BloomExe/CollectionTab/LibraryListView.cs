@@ -1015,7 +1015,7 @@ namespace Bloom.CollectionTab
 			foreach (var btn in AllBookButtons())
 			{
 				var bookButtonInfo = btn.Tag as BookButtonInfo;
-				if (bookButtonInfo.BookInfo == bookInfo)
+				if (bookButtonInfo.BookInfo.FolderPath == bookInfo.FolderPath)
 				{
 					// BL-2678 don't display menu triangle if there's no menu to display
 					if(!bookButtonInfo.HasNoContextMenu) btn.Paint += btn_Paint;
