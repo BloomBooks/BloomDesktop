@@ -6,7 +6,7 @@ import Button from "@material-ui/core/Button";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import { useL10n } from "./l10nHooks";
-import { Divider } from "@material-ui/core";
+import { Divider, makeStyles } from "@material-ui/core";
 
 export class SimpleMenuItem {
     text: string;
@@ -15,6 +15,35 @@ export class SimpleMenuItem {
     action: () => void; // in addition to closing the menu
     disabled?: boolean;
 }
+
+const useButtonStyles = makeStyles({
+    label: {
+        color: "white",
+        fontSize: "20pt",
+        height: "10px"
+    }
+});
+
+// A more commented version of this, in Emotion, is below, with explanation of why
+// we can't currently use Emotion here.
+const useMenuStyles = makeStyles({
+    paper: {
+        marginTop: "10px",
+        marginLeft: "-20px",
+        overflow: "visible",
+        "&:after": {
+            content: "''",
+            width: "0",
+            height: "0",
+            position: "absolute",
+            top: "-8px",
+            right: "4px",
+            borderLeft: "8px solid transparent",
+            borderRight: "8px solid transparent",
+            borderBottom: "8px solid white"
+        }
+    }
+});
 
 // This class defines a simple menu. Currently it's optimized to be the pull-down from the "..." button
 // in the TeamCollectionBookStatusPanel. The idea was to have something pretty general for a localizable
@@ -67,18 +96,22 @@ export const SimpleMenu: React.FunctionComponent<{
             />
         )
     );
+    const buttonClasses = useButtonStyles();
+    const menuClasses = useMenuStyles();
 
     return (
         <div
-            css={css`
-                .MuiButton-label {
-                    color: white;
-                    font-size: 20pt;
-                    height: 10px;
-                }
-            `}
+        // How we'e like to do this. See comment below.
+        // css={css`
+        //     .MuiButton-label {
+        //         color: white;
+        //         font-size: 20pt;
+        //         height: 10px;
+        //     }
+        // `}
         >
             <Button
+                classes={{ label: buttonClasses.label }}
                 aria-controls="simple-menu"
                 aria-haspopup="true"
                 onClick={handleClick}
@@ -86,25 +119,37 @@ export const SimpleMenu: React.FunctionComponent<{
                 {buttonText}
             </Button>
             <Menu
-                css={css`
-                    .MuiPaper-root {
-                        margin-top: 10px; // the origins below SHOULD position it below the button, but don't. This corrects.
-                        margin-left: -20px;
-                        overflow: visible; // allows the :after to produce the up arrow effect
-                        :after {
-                            // A trick for making the up-arrow pointing to the button.
-                            content: "";
-                            width: 0;
-                            height: 0;
-                            position: absolute;
-                            top: -8px;
-                            right: 4px; // aligns it with the button
-                            border-left: 8px solid transparent;
-                            border-right: 8px solid transparent;
-                            border-bottom: 8px solid white;
-                        }
-                    }
-                `}
+                // We'd prefer to style things with emotion, like this.
+                // But somewhere around when we merged the react collection tab (July 2021),
+                // Material-UI started generating unpredictble class names. So for example
+                // instead of the popup having class MuiPaper-root it has ones like
+                // MuiPaper-root-23 (where the 23 is unpredictable). This might relate
+                // to using more than one theme (as we do to make the checkin button
+                // orange, for example). Or some build setting may have changed. For now,
+                // I'm having to do it with the react style system.
+                // Version 5 of Material-UI allows more colors and may remove the
+                // need for multiple themes, which might let us go back to Emotion...
+                // or something else may help, as V5 is supposed to be more friendly to Emotion.
+                // css={css`
+                //     .MuiPaper-root {
+                //         margin-top: 10px; // the origins below SHOULD position it below the button, but don't. This corrects.
+                //         margin-left: -20px;
+                //         overflow: visible; // allows the :after to produce the up arrow effect
+                //         :after {
+                //             // A trick for making the up-arrow pointing to the button.
+                //             content: "";
+                //             width: 0;
+                //             height: 0;
+                //             position: absolute;
+                //             top: -8px;
+                //             right: 4px; // aligns it with the button
+                //             border-left: 8px solid transparent;
+                //             border-right: 8px solid transparent;
+                //             border-bottom: 8px solid white;
+                //         }
+                //     }
+                // `}
+                classes={{ paper: menuClasses.paper }}
                 anchorEl={anchorEl}
                 keepMounted
                 open={Boolean(anchorEl)}

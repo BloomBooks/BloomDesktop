@@ -358,7 +358,7 @@ namespace Bloom.TeamCollection
 				// and also possibly update the current selection, and in case we undid
 				// things in the book, we should update the preview.
 				_tcManager.CurrentCollection.ForgetChangesCheckin(bookName);
-				UpdateUiForBook();
+				UpdateUiForBook(reloadFromDisk:true);
 				request.PostSucceeded();
 			}
 			catch (Exception ex)
@@ -618,7 +618,7 @@ namespace Bloom.TeamCollection
 		// Called when we cause the book's status to change, so things outside the HTML world, like visibility of the
 		// "Edit this book" button, can change appropriately. Pretending the user chose a different book seems to
 		// do all the necessary stuff for now.
-		private void UpdateUiForBook()
+		private void UpdateUiForBook(bool reloadFromDisk = false)
 		{
 			// Todo: This is not how we want to do this. Probably the UI should listen for changes to the status of books,
 			// whether selected or not, talking to the repo directly.
@@ -635,7 +635,12 @@ namespace Bloom.TeamCollection
 					}
 				}
 			}
-			Form.ActiveForm.Invoke((Action) (() => _bookSelection.InvokeSelectionChanged(false)));
+			Form.ActiveForm.Invoke((Action) (() =>
+			{
+				if (reloadFromDisk)
+					_bookSelection.CurrentSelection.ReloadFromDisk();
+				_bookSelection.InvokeSelectionChanged(false);
+			}));
 		}
 
 		// Some pre-existing logic for whether the user can edit the book, combined with checking

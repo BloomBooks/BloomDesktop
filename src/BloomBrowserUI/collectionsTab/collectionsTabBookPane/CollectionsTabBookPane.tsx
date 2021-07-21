@@ -9,6 +9,7 @@ import BloomButton from "../../react_components/bloomButton";
 import { kDarkestBackground } from "../../bloomMaterialUITheme";
 import { CollectionsTabPane } from "../CollectionsTabPane";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
+import { useSubscribeToWebSocketForEvent } from "../../utils/WebSocketManager";
 
 export const CollectionsTabBookPane: React.FunctionComponent<{
     // If false, as it usually is, the overlay above the preview iframe
@@ -20,12 +21,17 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     disableEventsInIframe: boolean;
 }> = props => {
     const [isTeamCollection, setIsTeamCollection] = useState(false);
+    const [reload, setReload] = useState(0);
 
     const {
         id: selectedBookId,
         editable,
         collectionKind
     } = useMonitorBookSelection();
+    // Force a reload when told the book changed, even if it's the same book [id]
+    useSubscribeToWebSocketForEvent("bookStatus", "changeBook", () =>
+        setReload(old => old + 1)
+    );
     const canMakeBook = collectionKind != "main";
 
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -178,7 +184,8 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                     `}
                 ></div>
                 <iframe
-                    src={`/book-preview/index.htm?dummy=${selectedBookId}`}
+                    src={`/book-preview/index.htm?dummy=${(selectedBookId ??
+                        "") + reload}`}
                     height="100%"
                     width="100%"
                     css={css`
