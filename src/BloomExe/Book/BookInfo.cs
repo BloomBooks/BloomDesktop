@@ -688,6 +688,34 @@ namespace Bloom.Book
 				sortedFilepaths.Add(lastWriteTime, bookFolder);
 			}
 		}
+
+		public override bool Equals(object obj)
+		{
+			var otherInfo = obj as BookInfo;
+			return this == otherInfo;
+		}
+
+		public override int GetHashCode()
+		{
+			return FolderPath.GetHashCode();
+		}
+
+		/// <summary>
+		/// Two bookinfos for the same book are considered equal.
+		/// </summary>
+		public static bool operator ==(BookInfo a, BookInfo b)
+		{
+			if (object.ReferenceEquals(a, null))
+				return object.ReferenceEquals(b, null);
+			if (object.ReferenceEquals(b, null))
+				return false;
+			return a.FolderPath == b.FolderPath;
+		}
+
+		public static bool operator !=(BookInfo a, BookInfo b)
+		{
+			return !(a == b);
+		}
 	}
 
 	public class ErrorBookInfo : BookInfo

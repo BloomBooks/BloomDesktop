@@ -331,6 +331,11 @@ namespace Bloom.CollectionTab
 					{
 						// We started up with a command to downloaded a book...Select it.
 						SelectBook(new BookInfo(Program.PathToBookDownloadedAtStartup, false));
+					} else if (_bookSelection.CurrentSelection != null)
+					{
+						// This might have happened already...it might also have happened before
+						// the button we want hilighted got created.
+						HighlightBookButtonAndShowContextMenuButton(_bookSelection.CurrentSelection.BookInfo);
 					}
 				}));
 			// previously: stage FinalizeSetup
@@ -1084,11 +1089,21 @@ namespace Bloom.CollectionTab
 		}
 
 		/// <summary>
-		/// The image to show on the cover might have changed. Just make a note ot re-show it next time we're visible
+		/// The image to show on the cover might have changed.
 		/// </summary>
 		private void OnContentsOfSelectedBookChanged(object sender, EventArgs e)
 		{
-			_thumbnailRefreshPending = true;
+			if (CollectionTabIsActive && _bookSelection.CurrentSelection != null)
+			{
+				// Fix it now
+				ScheduleRefreshOfOneThumbnail(_bookSelection.CurrentSelection);
+				_thumbnailRefreshPending = false; // probably redundant
+			}
+			else
+			{
+				// Just make a note to re-show it next time we're visible
+				_thumbnailRefreshPending = true;
+			}
 		}
 
 		private void OnBackColorChanged(object sender, EventArgs e)

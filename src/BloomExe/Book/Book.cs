@@ -3095,6 +3095,12 @@ namespace Bloom.Book
 			return true;
 		}
 
+		public void ReloadFromDisk()
+		{
+			Storage.ReloadFromDisk();
+			InvokeContentsChanged(null);
+		}
+
 		internal XmlNodeList GetPageElements()
 		{
 			return OurHtmlDom.SafeSelectNodes("/html/body//div[contains(@class,'bloom-page')]");

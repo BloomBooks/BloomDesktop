@@ -86,6 +86,8 @@ namespace Bloom.Book
 		void PerformNecessaryMaintenanceOnBook();
 
 		CollectionSettings CollectionSettings { get; }
+
+		void ReloadFromDisk();
 	}
 
 	public class BookStorage : IBookStorage
@@ -1810,6 +1812,11 @@ namespace Bloom.Book
 					CleanupUnusedSupportFiles(false);
 				}
 			}
+		}
+
+		public void ReloadFromDisk()
+		{
+			ExpensiveInitialization(true);
 		}
 
 		public void CleanupUnusedSupportFiles(bool isForPublish, HashSet<string> langsToExcludeAudioFor = null)
