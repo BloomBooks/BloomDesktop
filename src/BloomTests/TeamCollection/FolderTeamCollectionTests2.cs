@@ -565,7 +565,7 @@ namespace BloomTests.TeamCollection
 		{
 			using (var collectionFolder = new TemporaryFolder("HandleNewBook_NewBook_AddsMessage_Collection"))
 			{
-				using (var repoFolder = new TemporaryFolder("HandleNewBook_NewBook_AddsMessage_Shared"))
+				using (var repoFolder = new TemporaryFolder("HandleNewBook_RenamedBook_AddsRenameMessage_Shared"))
 				{
 					var bookFolderName1 = "Renamed book";
 					var localBookFolderPath = SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, bookFolderName1, "Something");
