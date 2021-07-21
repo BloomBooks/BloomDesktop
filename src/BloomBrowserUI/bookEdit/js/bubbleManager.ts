@@ -162,8 +162,8 @@ export class BubbleManager {
         const imageContainers: HTMLElement[] = Array.from(
             document.getElementsByClassName(kImageContainerClass) as any
         );
-        imageContainers.forEach(e => {
-            BubbleManager.hideImageButtonsIfNotPlaceHolder(e);
+        imageContainers.forEach(container => {
+            BubbleManager.hideImageButtonsIfNotPlaceHolder(container);
         });
     }
 
@@ -1760,7 +1760,8 @@ export class BubbleManager {
         this.placeElementAtPosition(
             wrapperJQuery,
             imageContainerJQuery.get(0),
-            location
+            location,
+            true
         );
 
         const bubble = new Bubble(contentElement);
@@ -1784,11 +1785,14 @@ export class BubbleManager {
         return $(BubbleManager.getTopLevelImageContainerElement(clickElement)!);
     }
 
-    // positionInViewport is the position to place the top-left corner of the wrapperBox
+    // This method is used both for creating new elements and in dragging/resizing.
+    // positionInViewport: is the position to place the top-left corner of the wrapperBox
+    // initialPlacement: only true if we are creating a new element
     private placeElementAtPosition(
         wrapperBox: JQuery,
         container: Element,
-        positionInViewport: Point
+        positionInViewport: Point,
+        initialPlacement?: boolean
     ) {
         const newPoint = BubbleManager.convertPointFromViewportToElementFrame(
             positionInViewport,
@@ -1803,11 +1807,16 @@ export class BubbleManager {
         //       and in that case we want to preserve the bubble's width/height which are set in the style
         wrapperBox.css("left", xOffset); // assumes numbers are in pixels
         wrapperBox.css("top", yOffset); // assumes numbers are in pixels
+        const makeSquare =
+            initialPlacement &&
+            wrapperBox.find(".bloom-videoContainer,.bloom-imageContainer")
+                .length > 0;
 
         BubbleManager.setTextboxPositionAsPercentage(
             wrapperBox,
             xOffset,
-            yOffset
+            yOffset,
+            makeSquare
         ); // translate px to %
     }
 
@@ -2515,11 +2524,14 @@ export class BubbleManager {
 
     // Sets a text box's position in percentages (using CSS styling)
     // wrapperBox: The text box in question
-    // unscaledRelativeLeft/unscaledRelativeTop: The position to set the top-left corner/at. It should be in unscaled pixels, relative to the parent.
+    // unscaledRelativeLeft/unscaledRelativeTop: The position to set the top-left corner/at.
+    // It should be in unscaled pixels, relative to the parent.
+    // makeSquare: Should only be set when initially inserting picture or video over picture placeholders.
     private static setTextboxPositionAsPercentage(
         wrapperBox: JQuery,
         unscaledRelativeLeft: number,
-        unscaledRelativeTop: number
+        unscaledRelativeTop: number,
+        makeSquare?: boolean
     ) {
         const container = BubbleManager.getTopLevelImageContainerElement(
             wrapperBox.get(0)
@@ -2531,6 +2543,11 @@ export class BubbleManager {
         const width = containerSize.getUnscaledX();
         const height = containerSize.getUnscaledY();
 
+        // If the over picture element is itself a picture or a video, we want our initial placement
+        // to be a square. The various text elements remain as short, wide rectangles.
+        const desiredHeight = makeSquare
+            ? wrapperBox.width()
+            : wrapperBox.height();
         // the textbox is contained by the image, and it's actual positioning is now based on the imageContainer too.
         // so we will position by percentage of container size.
         wrapperBox
@@ -2542,7 +2559,7 @@ export class BubbleManager {
             // since getting the bounding rect of the image container once per mousemove event or even 100x per mousemove event caused no ill effect,
             // but getting this one is quite taxing on the CPU
             .css("width", (wrapperBox.width() / width) * 100 + "%")
-            .css("height", (wrapperBox.height() / height) * 100 + "%");
+            .css("height", (desiredHeight / height) * 100 + "%");
     }
 
     // Determines the unrounded width/height of the content of an element (i.e, excluding its margin, border, padding)
