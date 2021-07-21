@@ -29,6 +29,11 @@ export function getEditablePageBundleExports(): IPageFrameExports | null {
         ?.editablePageBundle as IPageFrameExports | null;
 }
 export function getEditTabBundleExports(): IEditViewFrameExports {
+    const rootWindow = getRootWindow();
+    if (!rootWindow["editTabBundle"]) {
+        alert("no editTabBundle!");
+        debugger;
+    }
     return (<any>getRootWindow()).editTabBundle as IEditViewFrameExports;
 }
 
