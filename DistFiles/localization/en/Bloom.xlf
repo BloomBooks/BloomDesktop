@@ -4853,11 +4853,10 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Could not join team collection</source>
         <note>ID: TeamCollection.ErrorJoining</note>
       </trans-unit>
-      <trans-unit id="TeamCollection.ErrorLockingBook">
-        <source xml:lang="en">Error locking access to {0}: {1}</source>
-        <note>ID: TeamCollection.ErrorLockingBook</note>
-        <note>{0} is the path to the book's folder</note>
-        <note>{1} is the error message from the system</note>
+      <trans-unit id="TeamCollection.CheckoutError">
+        <source xml:lang="en">Bloom was not able to check out \"{0}\".</source>
+        <note>ID: TeamCollection.CheckoutError</note>
+        <note>{0} is the name of the book</note>
       </trans-unit>
 -->
       <trans-unit id="TemplateBooks.BookName.Arithmetic Template" sil:dynamic="true">

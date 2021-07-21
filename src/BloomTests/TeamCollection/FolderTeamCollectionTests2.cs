@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading;
 using NUnit.Framework.Constraints;
 using SIL.Reporting;
+using RobustIO = Bloom.RobustIO;
 
 namespace BloomTests.TeamCollection
 {
@@ -522,6 +523,67 @@ namespace BloomTests.TeamCollection
 							"There is a problem with the book \"Roses are red& Violets are blue.\" in the Team Collection system. Bloom was not able to open the zip file, which may be corrupted. Please click <a href='/bloom/api/teamCollection/reportBadZip?file="
 							+ UrlPathString.CreateFromUnencodedString(repoFolder.FolderPath).UrlEncoded
 							+ "%5cBooks%5cRoses%20are%20red%26%20Violets%20are%20blue..bloom'>here</a> to get help from the Bloom support team."));
+				}
+			}
+		}
+
+		[TestCase(true)]
+		[TestCase( false)]
+		public void HandleNewBook_AddsMessage_IffReallyNew(bool reallyNew)
+		{
+			using (var collectionFolder = new TemporaryFolder("HandleNewBook_NewBook_AddsMessage_Collection"))
+			{
+				using (var repoFolder = new TemporaryFolder("HandleNewBook_NewBook_AddsMessage_Shared"))
+				{
+					var bookFolderName1 = "New book";
+					var localBookFolderPath = SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, bookFolderName1, "Something");
+					var mockTcManager = new Mock<ITeamCollectionManager>();
+					var tcLog = new TeamCollectionMessageLog(TeamCollectionManager.GetTcLogPathFromLcPath(collectionFolder.FolderPath));
+					var tc = new TestFolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath,
+						repoFolder.FolderPath,tcLog);
+					tc.PutBook(localBookFolderPath);
+					if (reallyNew)
+						SIL.IO.RobustIO.DeleteDirectory(localBookFolderPath, true);
+
+					tc.HandleNewBook(new NewBookEventArgs() {BookFileName = "New book.bloom"});
+
+					if (reallyNew)
+					{
+						var msg = tcLog.Messages[0];
+						Assert.That(msg.RawEnglishMessageTemplate, Is.EqualTo("A new book called '{0}' was added by a teammate."));
+					}
+					else
+					{
+						Assert.That(tcLog.Messages.Count, Is.EqualTo(0));
+					}
+				}
+			}
+		}
+
+		[Test]
+		public void HandleNewBook_RenamedBook_AddsRenameMessage()
+		{
+			using (var collectionFolder = new TemporaryFolder("HandleNewBook_RenamedBook_AddsRenameMessage_Collection"))
+			{
+				using (var repoFolder = new TemporaryFolder("HandleNewBook_RenamedBook_AddsRenameMessage_Shared"))
+				{
+					var bookFolderName1 = "Renamed book";
+					var localBookFolderPath = SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, bookFolderName1, "Something");
+					var mockTcManager = new Mock<ITeamCollectionManager>();
+					var tcLog = new TeamCollectionMessageLog(TeamCollectionManager.GetTcLogPathFromLcPath(collectionFolder.FolderPath));
+					var tc = new TestFolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath,
+						repoFolder.FolderPath, tcLog);
+					tc.PutBook(localBookFolderPath);
+
+					SIL.IO.RobustIO.MoveDirectory(localBookFolderPath, Path.Combine(collectionFolder.FolderPath, "old name"));
+					// We could rename the book file too, but it doesn't matter for the current SUT
+
+					tc.HandleNewBook(new NewBookEventArgs() { BookFileName = "Renamed book.bloom" });
+
+					var msg = tcLog.Messages[0];
+					Assert.That(msg.RawEnglishMessageTemplate, Is.EqualTo("The book \"{0}\" has been renamed to \"{1}\" by a teammate."));
+					Assert.That(msg.Param0, Is.EqualTo("old name"));
+					Assert.That(msg.Param1, Is.EqualTo("Renamed book"));
 				}
 			}
 		}
