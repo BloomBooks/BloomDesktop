@@ -259,6 +259,13 @@ namespace Bloom.Api
 			throw new ApplicationException("The query " + _requestInfo.RawUrl + " should have parameter " + name);
 		}
 
+		public string GetParamOrNull(string name)
+		{
+			if (Parameters.AllKeys.Contains(name))
+				return Parameters[name];
+			return null;
+		}
+
 		public string RequiredParam(string name)
 		{
 			if (Parameters.AllKeys.Contains(name))
