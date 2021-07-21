@@ -1739,8 +1739,8 @@ namespace Bloom.CollectionTab
 					}
 					outputFilename = dlg.FileName;
 				}
-
-				var _sheet = exporter.Export(dom);
+				string imagesFolderPath = Path.GetDirectoryName(bookPath);
+				var _sheet = exporter.Export(dom, imagesFolderPath);
 				_sheet.WriteToFile(outputFilename);
 				//TODO capture any error output
 			}

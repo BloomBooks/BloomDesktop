@@ -16,7 +16,12 @@ namespace Bloom.Spreadsheet
 	/// </summary>
 	public class InternalSpreadsheet
 	{
-		public const string IndexOnPageLabel = "(index on page)";
+		public const string ImageIndexOnPageLabel = "(image index on page)";
+		public const string ImageThumbnailLabel = "[image thumbnail]";
+		public const string ImageSourceLabel = "[image source]";
+		public const string ImageKeyLabel = "[image]";
+		public const string TextIndexOnPageLabel = "(text index on page)";
+		public const string MetadataKeyLabel = "[metadata key]";
 		public const string PageNumberLabel = "[page]";
 		public const string TextGroupLabel = "[textgroup]";
 		private List<SpreadsheetRow> _rows = new List<SpreadsheetRow>();
@@ -24,13 +29,14 @@ namespace Bloom.Spreadsheet
 
 		public string[] StandardLeadingColumns = new[]
 		{
-			"[metadata key]", // what kind of data is in the row; might be book-data key or [textgroup] or [image]
+			MetadataKeyLabel, // what kind of data is in the row; might be book-data key or [textgroup] or [image]
 			PageNumberLabel, // for textgroups, value from data-page-number of bloom-page
 			// Todo: [page layout], // something that indicates the template for the page
-			IndexOnPageLabel // for textgroups and images, its index in reading order
+			ImageIndexOnPageLabel, // for textgroups, its index in reading order
+			ImageSourceLabel, // where the image comes from, especially for [image] rows
+			ImageThumbnailLabel,
+			TextIndexOnPageLabel, // for textgroups, its index in reading order
 			// Todo: (lang slot) // L1, L2, L3, auto etc...which languages should be visible here?
-			// Todo: (thumbnail) // for text groups, a miniature of any picture we think is associated with the text
-			// Todo: [image source] // where the image comes from, especially for [image] rows
 		};
 
 		public int LangCount => Languages.Count;
@@ -56,9 +62,18 @@ namespace Bloom.Spreadsheet
 			}
 		}
 
-		public InternalSpreadsheet()
+		public InternalSpreadsheet(bool populateHeader=true)
 		{
-			_rows.Add(_header);
+			if (populateHeader)
+			{
+				_rows.Add(_header);
+
+				while (_header.Count < StandardLeadingColumns.Length)
+				{
+					var tag = StandardLeadingColumns[_header.Count];
+					_header.AddCell(tag);
+				}
+			}
 		}
 
 		public IEnumerable<ContentRow> ContentRows
@@ -101,14 +116,6 @@ namespace Bloom.Spreadsheet
 					return i;
 			}
 
-			while (Header.Count < StandardLeadingColumns.Length)
-			{
-				var tag = StandardLeadingColumns[Header.Count];
-				Header.AddCell(tag);
-				if (tag == columnLabel)
-					return Header.Count - 1;
-			}
-
 			_header.AddCell(columnLabel);
 			return _header.Count - 1;
 		}
@@ -122,7 +129,7 @@ namespace Bloom.Spreadsheet
 
 		public static InternalSpreadsheet ReadFromFile(string path)
 		{
-			var result = new InternalSpreadsheet();
+			var result = new InternalSpreadsheet(false);
 			SpreadsheetIO.ReadSpreadsheet(result, path);
 			return result;
 		}

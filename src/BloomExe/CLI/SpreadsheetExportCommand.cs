@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,7 +26,8 @@ namespace Bloom.CLI
 				var exporter = new SpreadsheetExporter();
 				if (!string.IsNullOrEmpty(options.ParamsPath))
 					exporter.Params = SpreadsheetExportParams.FromFile(options.ParamsPath);
-				var _sheet = exporter.Export(dom);
+				string imagesFolderPath = Path.GetDirectoryName(options.BookPath);
+				var _sheet = exporter.Export(dom, imagesFolderPath);
 				_sheet.WriteToFile(options.OutputPath);
 				return 0; // all went well
 			}

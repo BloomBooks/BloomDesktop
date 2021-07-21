@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using Bloom;
 using Bloom.Book;
 using SIL.Xml;
 
@@ -15,12 +17,28 @@ namespace Bloom.Spreadsheet
 		InternalSpreadsheet _spreadsheet = new InternalSpreadsheet();
 
 		public SpreadsheetExportParams Params = new SpreadsheetExportParams();
-		public InternalSpreadsheet Export(HtmlDom dom)
+		public InternalSpreadsheet Export(HtmlDom dom, string imagesFolderPath)
 		{
 			var pages = dom.GetPageElements();
+
 			foreach (var page in pages)
 			{
+				//First get images
 				var pageNumber = page.Attributes["data-page-number"]?.Value ?? "";
+				// For now we will ignore all un-numbered pages, particularly xmatter,
+				// which eventually needs to be handled by exporting data-book items.
+				if (pageNumber == "")
+					continue;
+
+				var imageContainers = GetImageContainers(page);
+				int imageIndex = 1;
+				foreach (var imageContainer in imageContainers)
+				{
+					AddImageRow(imageContainer, pageNumber, imageIndex, imagesFolderPath);
+					imageIndex++;
+				}
+
+				//Get translation groups
 				// For now we will ignore all un-numbered pages, particularly xmatter,
 				// which eventually needs to be handled by exporting data-book items.
 				if (pageNumber == "")
@@ -36,12 +54,32 @@ namespace Bloom.Spreadsheet
 			return _spreadsheet;
 		}
 
+
+		private XmlElement[] GetImageContainers(XmlElement elementOrDom)
+		{
+			return elementOrDom.SafeSelectNodes(".//*[contains(@class,'bloom-imageContainer')]").Cast<XmlElement>().ToArray();
+		}
+
+		private void AddImageRow(XmlElement imageContainer, string pageNumber, int imageIndex, string imagesFolderPath)
+		{
+			foreach (XmlElement image in imageContainer.SafeSelectNodes(".//img"))
+			{
+				var row = new ContentRow(_spreadsheet);
+				row.SetCell(InternalSpreadsheet.MetadataKeyLabel, InternalSpreadsheet.ImageKeyLabel);
+				row.SetCell(InternalSpreadsheet.ImageIndexOnPageLabel, imageIndex.ToString(CultureInfo.InvariantCulture));
+				string imagePath = Path.Combine(imagesFolderPath, image.GetAttribute("src"));
+				var encodedImageSrc = UrlPathString.CreateFromUrlEncodedString(imagePath);
+				var decodedImageSrc = encodedImageSrc.NotEncoded;
+				row.SetCell(InternalSpreadsheet.ImageSourceLabel, decodedImageSrc);
+			}
+		}
+
 		private void AddTranslationGroupRow(XmlNode group, string pageNumber, int groupIndex)
 		{
-			var row = new ContentRow();
-			row.AddCell(InternalSpreadsheet.TextGroupLabel);
-			row.AddCell(pageNumber);
-			row.AddCell(groupIndex.ToString(CultureInfo.InvariantCulture));
+			var row = new ContentRow(_spreadsheet);
+			row.SetCell(InternalSpreadsheet.MetadataKeyLabel, InternalSpreadsheet.TextGroupLabel);
+			row.SetCell(InternalSpreadsheet.PageNumberLabel, pageNumber);
+			row.SetCell(InternalSpreadsheet.TextIndexOnPageLabel, groupIndex.ToString(CultureInfo.InvariantCulture));
 			foreach (var editable in group.SafeSelectNodes("./*[contains(@class, 'bloom-editable')]").Cast<XmlElement>())
 			{
 				var lang = editable.Attributes["lang"]?.Value ?? "";
@@ -51,8 +89,6 @@ namespace Bloom.Spreadsheet
 				var content = Params.RetainMarkup ? editable.InnerXml : GetContent(editable);
 				row.SetCell(index,content);
 			}
-
-			_spreadsheet.AddRow(row);
 		}
 
 		/// <summary>
