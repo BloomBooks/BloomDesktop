@@ -162,8 +162,8 @@ export class BubbleManager {
         const imageContainers: HTMLElement[] = Array.from(
             document.getElementsByClassName(kImageContainerClass) as any
         );
-        imageContainers.forEach(e => {
-            BubbleManager.hideImageButtonsIfNotPlaceHolder(e);
+        imageContainers.forEach(container => {
+            BubbleManager.hideImageButtonsIfNotPlaceHolder(container);
         });
     }
 
@@ -1756,6 +1756,7 @@ export class BubbleManager {
             internalHtml +
             "</div>";
         const wrapperJQuery = $(wrapperHtml).insertAfter(lastContainerChild);
+        this.setDefaultWrapperBoxHeight(wrapperJQuery);
         const contentElement = wrapperJQuery.get(0);
         this.placeElementAtPosition(
             wrapperJQuery,
@@ -1774,6 +1775,18 @@ export class BubbleManager {
         return contentElement;
     }
 
+    private setDefaultWrapperBoxHeight(wrapperBox: JQuery) {
+        const width = parseInt(wrapperBox.css("width"), 10);
+        if (wrapperBox.find(".bloom-videoContainer").length > 0) {
+            // Set the default video aspect to 4:3, the same as the sign language tool generates.
+            wrapperBox.css("height", (width * 3) / 4);
+        }
+        if (wrapperBox.find(".bloom-imageContainer").length > 0) {
+            // Set the default image aspect to square.
+            wrapperBox.css("height", width);
+        }
+    }
+
     // mouseX and mouseY are the location in the viewport of the mouse
     private getImageContainerFromMouse(mouseX: number, mouseY: number): JQuery {
         const clickElement = document.elementFromPoint(mouseX, mouseY);
@@ -1784,7 +1797,9 @@ export class BubbleManager {
         return $(BubbleManager.getTopLevelImageContainerElement(clickElement)!);
     }
 
-    // positionInViewport is the position to place the top-left corner of the wrapperBox
+    // This method is used both for creating new elements and in dragging/resizing.
+    // positionInViewport: is the position to place the top-left corner of the wrapperBox
+    // initialPlacement: only true if we are creating a new element
     private placeElementAtPosition(
         wrapperBox: JQuery,
         container: Element,
@@ -2515,7 +2530,9 @@ export class BubbleManager {
 
     // Sets a text box's position in percentages (using CSS styling)
     // wrapperBox: The text box in question
-    // unscaledRelativeLeft/unscaledRelativeTop: The position to set the top-left corner/at. It should be in unscaled pixels, relative to the parent.
+    // unscaledRelativeLeft/unscaledRelativeTop: The position to set the top-left corner/at.
+    // It should be in unscaled pixels, relative to the parent.
+    // makeSquare: Should only be set when initially inserting picture or video over picture placeholders.
     private static setTextboxPositionAsPercentage(
         wrapperBox: JQuery,
         unscaledRelativeLeft: number,
