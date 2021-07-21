@@ -533,6 +533,9 @@ namespace Bloom.Book
 					// like BL-5740 (where 24bit format files came out in BR with black backgrounds).
 					if (!appearsToBeJpeg)
 						imagePixelFormat = PixelFormat.Format32bppArgb;
+					// Image files may have unknown formats which can be read, but not written.
+					// See https://issues.bloomlibrary.org/youtrack/issue/BH-5812.
+					imagePixelFormat = EnsureValidPixelFormat(imagePixelFormat);
 
 					var needTransparencyConversion =
 						!appearsToBeJpeg && needsTransparentBackground && !ImageUtils.HasTransparency(image);
@@ -589,6 +592,33 @@ namespace Bloom.Book
 				}
 			}
 			return originalBytes;
+		}
+
+		private static PixelFormat EnsureValidPixelFormat(PixelFormat imagePixelFormat)
+		{
+			// If it's a standard, known format, return the input value.
+			// Otherwise, return our old standby, 32bppArgb.
+			switch (imagePixelFormat)
+			{
+				case PixelFormat.Format1bppIndexed:
+				case PixelFormat.Format4bppIndexed:
+				case PixelFormat.Format8bppIndexed:
+				case PixelFormat.Format16bppArgb1555:
+				case PixelFormat.Format16bppGrayScale:
+				case PixelFormat.Format16bppRgb555:
+				case PixelFormat.Format16bppRgb565:
+				case PixelFormat.Format24bppRgb:
+				case PixelFormat.Format32bppArgb:
+				case PixelFormat.Format32bppPArgb:
+				case PixelFormat.Format32bppRgb:
+				case PixelFormat.Format48bppRgb:
+				case PixelFormat.Format64bppArgb:
+				case PixelFormat.Format64bppPArgb:
+					return imagePixelFormat;
+				default:
+					//Console.WriteLine("EnsureValidPixelFormat({0}) changed to {1}", imagePixelFormat, PixelFormat.Format32bppArgb);
+					return PixelFormat.Format32bppArgb;
+			}
 		}
 	}
 }
