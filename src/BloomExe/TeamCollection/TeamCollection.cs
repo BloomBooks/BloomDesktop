@@ -1146,8 +1146,6 @@ namespace Bloom.TeamCollection
 		/// Seems safest to just warn. But if our user goes ahead and checks in, that would be
 		/// an overwrite, so we may need to do something more.
 		/// </summary>
-		/// <param name="localCollectionFolder"></param>
-		/// <param name="args"></param>
 		public void HandleNewBook(NewBookEventArgs args)
 		{
 			var bookBaseName = GetBookNameWithoutSuffix(args.BookFileName);
