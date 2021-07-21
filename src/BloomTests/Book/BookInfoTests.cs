@@ -399,5 +399,18 @@ namespace BloomTests.Book
 			CollectionAssert.AreEqual(expectedResult, metadata.Feature_SignLanguage_LangCodes, "SL Language Codes");
 		}
 
+		[Test]
+		public void AudioLangsToPublishForBloomReader_GivenNonDefaultJson_DeserializesProperly()
+		{
+			var json = "{ \"audioLangsToPublish\": { \"bloomPUB\": { \"en\": \"Include\" } } }";
+
+			// System under test
+			var metadata = BookMetaData.FromString(json);
+
+			// Verification
+			var expected = new Dictionary<string, Bloom.Publish.InclusionSetting>();
+			expected.Add("en", Bloom.Publish.InclusionSetting.Include);
+			CollectionAssert.AreEquivalent(expected, metadata.AudioLangsToPublish.ForBloomPUB);
+		}
 	}
 }

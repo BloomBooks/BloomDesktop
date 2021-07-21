@@ -107,7 +107,7 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
                     newLangObj[fieldToUpdate] = newState;
 
                     BloomApi.post(
-                        `publish/android/includeLanguage?langCode=${newLangObj.code}&includeText=${newLangObj.includeText}&includeAudio=${newLangObj.includeAudio}`
+                        `publish/android/includeLanguage?langCode=${newLangObj.code}&${fieldToUpdate}=${newState}`
                     );
 
                     return newLangObj;
@@ -133,7 +133,7 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
                 onChange={(item, newState: boolean) => {
                     onLanguageUpdated(item, newState, "includeText");
                 }}
-            ></LanguageSelectionSettingsGroup>
+            />
             <LanguageSelectionSettingsGroup
                 label={useL10n(
                     "Talking Book Languages",
@@ -143,7 +143,7 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
                 onChange={(item, newState: boolean) => {
                     onLanguageUpdated(item, newState, "includeAudio");
                 }}
-            ></LanguageSelectionSettingsGroup>
+            />
         </div>
     );
 };
