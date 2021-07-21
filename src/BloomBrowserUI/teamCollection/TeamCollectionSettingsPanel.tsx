@@ -43,9 +43,9 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
             </WarningBox>
             <P
                 l10nKey="TeamCollection.Intro"
-                l10nParam0="https://docs.google.com/document/d/1DOhy7hnmG37NzcQN8oP6NkXW_X3WU7YH4ez_P1hV1mo/edit?usp=sharing"
+                l10nParam0="https://docs.bloomlibrary.org/team-collections"
                 // Todo: once we have an actual video this should link to it! For now just another link to the document.
-                //l10nParam1="https://docs.google.com/document/d/1DOhy7hnmG37NzcQN8oP6NkXW_X3WU7YH4ez_P1hV1mo/edit?usp=sharing"
+                //l10nParam1="https://docs.bloomlibrary.org/team-collections"
                 temporarilyDisableI18nWarning={true}
             >
                 Bloom's Team Collection system helps your team collaborate as
