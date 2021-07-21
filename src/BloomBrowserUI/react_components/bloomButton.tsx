@@ -80,7 +80,7 @@ export default class BloomButton extends LocalizableElement<
             <Button
                 {...commonProps}
                 variant={this.props.variant || "contained"}
-                color={this.props.color}
+                color={this.props.color ? this.props.color : "primary"}
                 startIcon={this.props.iconBeforeText}
                 size={this.props.size}
                 {...this.props} // allows defining more css rules from container
