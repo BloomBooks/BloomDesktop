@@ -1101,6 +1101,43 @@ namespace Bloom.TeamCollection
 		}
 
 		/// <summary>
+		/// Given that newBookName is the name of a book in the repo
+		/// that does not occur locally, can we determine that it is a rename
+		/// of a local book? If so, return the book it is renamed from,
+		/// otherwise, return null.
+		/// </summary>
+		/// <param name="newBookName"></param>
+		/// <returns></returns>
+		private string NewBookRenamedFrom(string newBookName)
+		{
+			var meta = GetRepoBookFile(newBookName, "meta.json");
+			if (string.IsNullOrEmpty(meta) || meta == "error")
+				return null;
+			var metaData = BookMetaData.FromString(meta);
+			var id = metaData.Id;
+			foreach (var path in Directory.EnumerateDirectories(_localCollectionFolder))
+			{
+				try
+				{
+					if (!IsBloomBookFolder(path))
+						continue;
+					var bookFolderName = Path.GetFileName(path);
+					TryGetBookStatusJsonFromRepo(bookFolderName, out string statusJson);
+					if (!string.IsNullOrEmpty(statusJson))
+						continue; // matches book in repo, can't be source of rename
+					if (GetBookId(path) == id)
+						return Path.GetFileName(path);
+				}
+				catch (Exception)
+				{
+					continue;
+				}
+			}
+
+			return null;
+		}
+
+		/// <summary>
 		/// Handle a new book we have detected from NewBook event.
 		/// Might be a new book from remote user. If so unpack to local.
 		/// Just possibly might be a new book from a remote user whose name conflicts
@@ -1125,8 +1162,20 @@ namespace Bloom.TeamCollection
 				// so we don't want a message about it.
 				if (!File.Exists(statusFilePath))
 				{
-					_tcLog.WriteMessage(MessageAndMilestoneType.NewStuff, "TeamCollection.NewBookArrived",
-						"A new book called '{0}' was added by a teammate.", bookBaseName, null);
+					var oldName = NewBookRenamedFrom(bookBaseName);
+					if (oldName == null)
+					{
+
+						_tcLog.WriteMessage(MessageAndMilestoneType.NewStuff, "TeamCollection.NewBookArrived",
+							"A new book called '{0}' was added by a teammate.", bookBaseName, null);
+					}
+					else
+					{
+
+						_tcLog.WriteMessage(MessageAndMilestoneType.NewStuff, "TeamCollection.RenameFromRemote",
+							"The book \"{0}\" has been renamed to \"{1}\" by a teammate.",
+							oldName, bookBaseName);
+					}
 				}
 				// This needs to be AFTER we update the message log, data which it may use.
 				// In case by any chance this is the only notification we get when checkout status changed

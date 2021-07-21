@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading;
 using NUnit.Framework.Constraints;
 using SIL.Reporting;
+using RobustIO = Bloom.RobustIO;
 
 namespace BloomTests.TeamCollection
 {
@@ -41,7 +42,8 @@ namespace BloomTests.TeamCollection
 
 					// As an aside, this is a convenient place to check that a TC manager created when TC settings does not exist
 					// functions and does not have a current collection.
-					var tcManager = new TeamCollectionManager(settingsPath, null, new BookRenamedEvent(), new BookStatusChangeEvent(), null, null);
+					var tcManager = new TeamCollectionManager(settingsPath, null, new BookRenamedEvent(),
+						new BookStatusChangeEvent(), null, null);
 					Assert.That(tcManager.CurrentCollection, Is.Null);
 
 					RobustFile.WriteAllText(settingsPath, "This is a fake settings file");
@@ -50,11 +52,13 @@ namespace BloomTests.TeamCollection
 
 					var nonBookFolder = Path.Combine(collectionFolder.FolderPath, "Some other folder");
 					Directory.CreateDirectory(nonBookFolder);
-					tcManager = new TeamCollectionManager(settingsPath, null, new BookRenamedEvent(), new BookStatusChangeEvent(), null, null);
+					tcManager = new TeamCollectionManager(settingsPath, null, new BookRenamedEvent(),
+						new BookStatusChangeEvent(), null, null);
 					var collection = tcManager.CurrentCollection;
 
 					// sut
-					(collection as FolderTeamCollection)?.SetupTeamCollection(sharedFolder.FolderPath, new NullWebSocketProgress());
+					(collection as FolderTeamCollection)?.SetupTeamCollection(sharedFolder.FolderPath,
+						new NullWebSocketProgress());
 
 					Assert.That(collection, Is.Not.Null);
 					var joinCollectionPath =
@@ -87,7 +91,8 @@ namespace BloomTests.TeamCollection
 					new TemporaryFolder("SyncLocalAndRepoCollectionFiles_SyncsInRightDirection_Shared"))
 				{
 					var mockTcManager = new Mock<ITeamCollectionManager>();
-					var tc = new FolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath, repoFolder.FolderPath);
+					var tc = new FolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath,
+						repoFolder.FolderPath);
 					tc.CollectionId = Bloom.TeamCollection.TeamCollection.GenerateCollectionId();
 					var bcPath = Path.Combine(collectionFolder.FolderPath, "mybooks.bloomCollection");
 					File.WriteAllText(bcPath, "something");
@@ -109,10 +114,12 @@ namespace BloomTests.TeamCollection
 					var settingsFileName =
 						Path.ChangeExtension(Path.GetFileName(collectionFolder.FolderPath), "bloomCollection");
 					var settingsPath = Path.Combine(collectionFolder.FolderPath, settingsFileName);
-					var tcManager = new TeamCollectionManager(settingsPath, null, new BookRenamedEvent(), new BookStatusChangeEvent(), null, null);
+					var tcManager = new TeamCollectionManager(settingsPath, null, new BookRenamedEvent(),
+						new BookStatusChangeEvent(), null, null);
 					var tc = new FolderTeamCollection(tcManager, collectionFolder.FolderPath, repoFolder.FolderPath);
 					tc.CollectionId = Bloom.TeamCollection.TeamCollection.GenerateCollectionId();
-					var bloomCollectionPath = Bloom.TeamCollection.TeamCollection.CollectionPath(collectionFolder.FolderPath);
+					var bloomCollectionPath =
+						Bloom.TeamCollection.TeamCollection.CollectionPath(collectionFolder.FolderPath);
 					Assert.That(tc.LocalCollectionFilesRecordedSyncTime, Is.EqualTo(DateTime.MinValue));
 					File.WriteAllText(bloomCollectionPath, "This is a fake collection file");
 					var collectionStylesPath = Path.Combine(collectionFolder.FolderPath, "customCollectionStyles.css");
@@ -136,7 +143,8 @@ namespace BloomTests.TeamCollection
 					var localWriteTime2 = tc.LocalCollectionFilesRecordedSyncTime();
 					Assert.That(localWriteTime2, Is.GreaterThanOrEqualTo(localWriteTime1));
 					Assert.That(new FileInfo(otherFilesPath).LastWriteTime, Is.EqualTo(repoWriteTime1));
-					Assert.That(new FileInfo(bloomCollectionPath).LastWriteTime, Is.GreaterThanOrEqualTo(collectionWriteTime1));
+					Assert.That(new FileInfo(bloomCollectionPath).LastWriteTime,
+						Is.GreaterThanOrEqualTo(collectionWriteTime1));
 
 					File.WriteAllText(bloomCollectionPath, "This is a modified fake collection file");
 					var collectionWriteTime2 = new FileInfo(bloomCollectionPath).LastWriteTime;
@@ -144,9 +152,11 @@ namespace BloomTests.TeamCollection
 					// SUT 3: local change copied to repo (only when not at startup)
 					tc.SyncLocalAndRepoCollectionFiles(false);
 					var localWriteTime3 = tc.LocalCollectionFilesRecordedSyncTime();
-					Assert.That(localWriteTime3, Is.GreaterThan(localWriteTime1), "localWriteTime3 should be greater than localWriteTime1");
+					Assert.That(localWriteTime3, Is.GreaterThan(localWriteTime1),
+						"localWriteTime3 should be greater than localWriteTime1");
 					var repoWriteTime2 = new FileInfo(otherFilesPath).LastWriteTime;
-					Assert.That(repoWriteTime2, Is.GreaterThan(repoWriteTime1), "repoWriteTime2 should be greater than repoWriteTime1");
+					Assert.That(repoWriteTime2, Is.GreaterThan(repoWriteTime1),
+						"repoWriteTime2 should be greater than repoWriteTime1");
 					// not modified by sync
 					Assert.That(new FileInfo(bloomCollectionPath).LastWriteTime, Is.EqualTo(collectionWriteTime2));
 
@@ -158,18 +168,21 @@ namespace BloomTests.TeamCollection
 					Thread.Sleep(10);
 					RobustFile.Copy(anotherPlace, otherFilesPath, true);
 					var repoWriteTime3 = new FileInfo(otherFilesPath).LastWriteTime;
-					Assert.That(repoWriteTime3, Is.GreaterThan(collectionWriteTime3), "repo file written after local collection file [sanity check]");
+					Assert.That(repoWriteTime3, Is.GreaterThan(collectionWriteTime3),
+						"repo file written after local collection file [sanity check]");
 
 					// SUT 4: both changed: repo wins
 					tc.SyncLocalAndRepoCollectionFiles();
 					var localWriteTime4 = tc.LocalCollectionFilesRecordedSyncTime();
-					Assert.That(localWriteTime4, Is.GreaterThan(localWriteTime3), "localWriteTime4 should be greater than localWriteTime3");
+					Assert.That(localWriteTime4, Is.GreaterThan(localWriteTime3),
+						"localWriteTime4 should be greater than localWriteTime3");
 					var repoWriteTime4 = new FileInfo(otherFilesPath).LastWriteTime;
 					Assert.That(repoWriteTime4, Is.EqualTo(repoWriteTime3)); // not modified by sync
-					Assert.That(new FileInfo(bloomCollectionPath).LastWriteTime, Is.GreaterThan(collectionWriteTime3), "bloomCollection LastWriteTime should be greater than collectionWriteTime3");
+					Assert.That(new FileInfo(bloomCollectionPath).LastWriteTime, Is.GreaterThan(collectionWriteTime3),
+						"bloomCollection LastWriteTime should be greater than collectionWriteTime3");
 					// We got the original back.
 					Assert.That(File.ReadAllText(bloomCollectionPath), Is.EqualTo("This is a fake collection file"));
-					
+
 					Thread.Sleep(10);
 					var allowedWords = Path.Combine(collectionFolder.FolderPath, "Allowed Words");
 					Directory.CreateDirectory(allowedWords);
@@ -178,10 +191,12 @@ namespace BloomTests.TeamCollection
 					// SUT5: local allowed words added
 					tc.SyncLocalAndRepoCollectionFiles(false);
 					var localWriteTime5 = tc.LocalCollectionFilesRecordedSyncTime();
-					Assert.That(localWriteTime5, Is.GreaterThan(localWriteTime4), "localWriteTime5 should be greater than localWriteTime4");
+					Assert.That(localWriteTime5, Is.GreaterThan(localWriteTime4),
+						"localWriteTime5 should be greater than localWriteTime4");
 					var repoWriteTime5 = new FileInfo(otherFilesPath).LastWriteTime;
-					Assert.That(repoWriteTime5, Is.GreaterThan(repoWriteTime4), "repoWriteTime5 should be greater than repoWriteTime4");
-					
+					Assert.That(repoWriteTime5, Is.GreaterThan(repoWriteTime4),
+						"repoWriteTime5 should be greater than repoWriteTime4");
+
 					Thread.Sleep(5);
 					var sampleTexts = Path.Combine(collectionFolder.FolderPath, "Sample Texts");
 					Directory.CreateDirectory(sampleTexts);
@@ -190,10 +205,12 @@ namespace BloomTests.TeamCollection
 					// SUT6: local sample texts added
 					tc.SyncLocalAndRepoCollectionFiles(false);
 					var localWriteTime6 = tc.LocalCollectionFilesRecordedSyncTime();
-					Assert.That(localWriteTime6, Is.GreaterThan(localWriteTime5), "localWriteTime6 should be greater than localWriteTime5");
+					Assert.That(localWriteTime6, Is.GreaterThan(localWriteTime5),
+						"localWriteTime6 should be greater than localWriteTime5");
 					var repoWriteTime6 = new FileInfo(otherFilesPath).LastWriteTime;
-					Assert.That(repoWriteTime6, Is.GreaterThan(repoWriteTime5), "repoWriteTime6 should be greater than repoWriteTime5");
-					
+					Assert.That(repoWriteTime6, Is.GreaterThan(repoWriteTime5),
+						"repoWriteTime6 should be greater than repoWriteTime5");
+
 					Thread.Sleep(10);
 					File.WriteAllText(Path.Combine(allowedWords, "sample1.txt"), "fake sample list");
 
@@ -201,7 +218,8 @@ namespace BloomTests.TeamCollection
 					// update, but NOT to write the remote file.
 					tc.SyncLocalAndRepoCollectionFiles(false);
 					var localWriteTime7 = tc.LocalCollectionFilesRecordedSyncTime();
-					Assert.That(localWriteTime7, Is.GreaterThan(localWriteTime6), "localWriteTime7 should be greater than localWriteTime6");
+					Assert.That(localWriteTime7, Is.GreaterThan(localWriteTime6),
+						"localWriteTime7 should be greater than localWriteTime6");
 					var repoWriteTime7 = new FileInfo(otherFilesPath).LastWriteTime;
 					Assert.That(repoWriteTime7, Is.EqualTo(repoWriteTime6));
 
@@ -215,11 +233,14 @@ namespace BloomTests.TeamCollection
 					tc.SyncLocalAndRepoCollectionFiles(false);
 					Assert.That(tc._haveShownRemoteSettingsChangeWarning, Is.False, "user should not have been warned");
 					var localWriteTimeAfterSut8 = tc.LocalCollectionFilesRecordedSyncTime();
-					Assert.That(localWriteTimeAfterSut8, Is.GreaterThan(localWriteTimeBeforeSut8), "localWriteTime should increase copying on idle");
+					Assert.That(localWriteTimeAfterSut8, Is.GreaterThan(localWriteTimeBeforeSut8),
+						"localWriteTime should increase copying on idle");
 					var repoWriteTimeAfterSut8 = new FileInfo(otherFilesPath).LastWriteTime;
-					Assert.That(repoWriteTimeAfterSut8, Is.GreaterThan(repoWriteTimeBeforeSut8), "repoWriteTime should increase copying on idle");
+					Assert.That(repoWriteTimeAfterSut8, Is.GreaterThan(repoWriteTimeBeforeSut8),
+						"repoWriteTime should increase copying on idle");
 					// not modified by sync
-					Assert.That(new FileInfo(bloomCollectionPath).LastWriteTime, Is.EqualTo(collectionWriteTimeBeforeSut8));
+					Assert.That(new FileInfo(bloomCollectionPath).LastWriteTime,
+						Is.EqualTo(collectionWriteTimeBeforeSut8));
 
 					// modify the remote version by copying version2 back.
 					Thread.Sleep(10);
@@ -227,14 +248,16 @@ namespace BloomTests.TeamCollection
 					RobustFile.Copy(version2Path, otherFilesPath, true);
 					var collectionWriteTimeBeforeSut9 = new FileInfo(bloomCollectionPath).LastWriteTime;
 					var repoWriteTimeBeforeSut9 = new FileInfo(otherFilesPath).LastWriteTime;
-					Assert.That(repoWriteTimeBeforeSut9, Is.GreaterThan(repoWriteTimeBeforeSut9Copy), "repo file written after local collection file [sanity check]");
+					Assert.That(repoWriteTimeBeforeSut9, Is.GreaterThan(repoWriteTimeBeforeSut9Copy),
+						"repo file written after local collection file [sanity check]");
 					tc._haveShownRemoteSettingsChangeWarning = false;
 
 					// SUT9: repo modified, doing check on idle. No changes or warning.
 					tc.SyncLocalAndRepoCollectionFiles(false);
 					Assert.That(tc._haveShownRemoteSettingsChangeWarning, Is.False, "user should not have been warned");
 					var collectionWriteTimeAfterSut9 = new FileInfo(bloomCollectionPath).LastWriteTime;
-					Assert.That(collectionWriteTimeAfterSut9, Is.EqualTo(collectionWriteTimeBeforeSut9), "local settings should not have been modified");
+					Assert.That(collectionWriteTimeAfterSut9, Is.EqualTo(collectionWriteTimeBeforeSut9),
+						"local settings should not have been modified");
 
 					File.WriteAllText(bloomCollectionPath, "This is a modified fake collection file, for SUT 10");
 					var collectionWriteTimeBeforeSut10 = new FileInfo(bloomCollectionPath).LastWriteTime;
@@ -249,10 +272,13 @@ namespace BloomTests.TeamCollection
 
 					Assert.That(tc._haveShownRemoteSettingsChangeWarning, Is.True, "user should have been warned");
 					var localWriteTimeAfterSut10 = tc.LocalCollectionFilesRecordedSyncTime();
-					Assert.That(localWriteTimeAfterSut10, Is.EqualTo(localWriteTimeBeforeSut10), "localWriteTime should not be changed by idle sync where both changed");
+					Assert.That(localWriteTimeAfterSut10, Is.EqualTo(localWriteTimeBeforeSut10),
+						"localWriteTime should not be changed by idle sync where both changed");
 					var repoWriteTimeAfterSut10 = new FileInfo(otherFilesPath).LastWriteTime;
-					Assert.That(repoWriteTimeAfterSut10, Is.EqualTo(repoWriteTimeBeforeSut10), "repo should not be modified by idle sync where both changed"); // not modified by sync
-					Assert.That(new FileInfo(bloomCollectionPath).LastWriteTime, Is.EqualTo(collectionWriteTimeBeforeSut10),
+					Assert.That(repoWriteTimeAfterSut10, Is.EqualTo(repoWriteTimeBeforeSut10),
+						"repo should not be modified by idle sync where both changed"); // not modified by sync
+					Assert.That(new FileInfo(bloomCollectionPath).LastWriteTime,
+						Is.EqualTo(collectionWriteTimeBeforeSut10),
 						"bloomCollection LastWriteTime should not be changed by idle sync both changed");
 
 					// Get everything back in sync
@@ -268,7 +294,8 @@ namespace BloomTests.TeamCollection
 					var localWriteTimeAfterSut11 = tc.LocalCollectionFilesRecordedSyncTime();
 					// We will update the sync time even though the write is the other way.
 					Assert.That(localWriteTimeAfterSut11, Is.GreaterThan(localWriteTimeBeforeSut11));
-					Assert.That(File.ReadAllText(collectionStylesPath), Is.EqualTo("This is the modified collection styles"));
+					Assert.That(File.ReadAllText(collectionStylesPath),
+						Is.EqualTo("This is the modified collection styles"));
 				}
 			}
 		}
@@ -284,16 +311,19 @@ namespace BloomTests.TeamCollection
 				{
 					var mockTcManager = new Mock<ITeamCollectionManager>();
 					TeamCollectionManager.ForceCurrentUserForTests("me@somewhere.org");
-					var tc = new FolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath, repoFolder.FolderPath);
+					var tc = new FolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath,
+						repoFolder.FolderPath);
 					tc.CollectionId = Bloom.TeamCollection.TeamCollection.GenerateCollectionId();
-					var oldFolderPath = SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, "old name", "book content");
+					var oldFolderPath =
+						SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, "old name", "book content");
 					tc.PutBook(oldFolderPath);
 					tc.AttemptLock("old name");
 					SyncAtStartupTests.SimulateRename(tc, "old name", "middle name");
-					SyncAtStartupTests.SimulateRename(tc,  "middle name", "new name");
-					tc.PutBook(Path.Combine(collectionFolder.FolderPath,"new name"), true);
-					Assert.That(File.Exists(tc.GetPathToBookFileInRepo("new name")),Is.True);
-					Assert.That(File.Exists(tc.GetPathToBookFileInRepo("old name")), Is.False, "old name was not deleted");
+					SyncAtStartupTests.SimulateRename(tc, "middle name", "new name");
+					tc.PutBook(Path.Combine(collectionFolder.FolderPath, "new name"), true);
+					Assert.That(File.Exists(tc.GetPathToBookFileInRepo("new name")), Is.True);
+					Assert.That(File.Exists(tc.GetPathToBookFileInRepo("old name")), Is.False,
+						"old name was not deleted");
 					var status = tc.GetLocalStatus("new name");
 					Assert.That(status.oldName ?? "", Is.Empty,
 						"Should stop tracking previous name once we cleaned it up");
@@ -314,7 +344,8 @@ namespace BloomTests.TeamCollection
 				{
 					var mockTcManager = new Mock<ITeamCollectionManager>();
 					TeamCollectionManager.ForceCurrentUserForTests("");
-					var tc = new FolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath, repoFolder.FolderPath);
+					var tc = new FolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath,
+						repoFolder.FolderPath);
 					tc.CollectionId = Bloom.TeamCollection.TeamCollection.GenerateCollectionId();
 					var bookFolderPath =
 						SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, "some name", "book content");
@@ -325,10 +356,12 @@ namespace BloomTests.TeamCollection
 
 					tc.PutBook(bookFolderPath, true);
 					tc.AttemptLock("some name");
-					Assert.That(tc.OkToCheckIn("some name"), Is.True, "can check in unmodified book with normal checkout status");
+					Assert.That(tc.OkToCheckIn("some name"), Is.True,
+						"can check in unmodified book with normal checkout status");
 
 					TeamCollectionManager.ForceCurrentUserForTests("");
-					Assert.That(tc.OkToCheckIn("some name"), Is.False, "normally permitted checkin is forbidden with no registration");
+					Assert.That(tc.OkToCheckIn("some name"), Is.False,
+						"normally permitted checkin is forbidden with no registration");
 					TeamCollectionManager.ForceCurrentUserForTests("fred@somewhere.com");
 
 					var status = tc.GetStatus("some name");
@@ -340,7 +373,8 @@ namespace BloomTests.TeamCollection
 					altStatus = status.WithLockedBy(null);
 					tc.WriteBookStatus("some name", altStatus);
 					tc.WriteLocalStatus("some name", status);
-					Assert.That(tc.OkToCheckIn("some name"), Is.True, "special case, repo has lost checkout status, but not locked or modified");
+					Assert.That(tc.OkToCheckIn("some name"), Is.True,
+						"special case, repo has lost checkout status, but not locked or modified");
 
 					altStatus = status.WithLockedBy("fred@somewhere.org");
 					tc.WriteBookStatus("some name", altStatus);
@@ -364,7 +398,8 @@ namespace BloomTests.TeamCollection
 					var mockTcManager = new Mock<ITeamCollectionManager>();
 					var tc = new TestFolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath,
 						repoFolder.FolderPath);
-					var otherPath = Path.Combine(collectionFolder.FolderPath, Path.GetFileName(collectionFolder.FolderPath) + ".bloomCollection");
+					var otherPath = Path.Combine(collectionFolder.FolderPath,
+						Path.GetFileName(collectionFolder.FolderPath) + ".bloomCollection");
 					Directory.CreateDirectory(Path.GetDirectoryName(otherPath));
 					// this test doesn't need this folder except that StartMonitoring does.
 					Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
@@ -413,7 +448,8 @@ namespace BloomTests.TeamCollection
 					tc.HandleCollectionSettingsChange(new RepoChangeEventArgs());
 					var msg = tc.MessageLog.CurrentNewStuff.First();
 					Assert.That(msg.MessageType, Is.EqualTo(MessageAndMilestoneType.NewStuff));
-					Assert.That(msg.RawEnglishMessageTemplate, Is.EqualTo("One of your teammates has made changes to the collection settings."));
+					Assert.That(msg.RawEnglishMessageTemplate,
+						Is.EqualTo("One of your teammates has made changes to the collection settings."));
 				}
 			}
 		}
@@ -430,7 +466,8 @@ namespace BloomTests.TeamCollection
 					var mockTcManager = new Mock<ITeamCollectionManager>();
 					var tc = new TestFolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath,
 						repoFolder.FolderPath);
-					var otherPath = Path.Combine(collectionFolder.FolderPath, Path.GetFileName(collectionFolder.FolderPath) + ".bloomCollection");
+					var otherPath = Path.Combine(collectionFolder.FolderPath,
+						Path.GetFileName(collectionFolder.FolderPath) + ".bloomCollection");
 					// this test doesn't need this folder except that StartMonitoring does.
 					Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
 					File.WriteAllText(otherPath, "This is the initial value");
@@ -439,7 +476,7 @@ namespace BloomTests.TeamCollection
 					var eventWasRaised = false;
 
 					tc.StartMonitoring();
-					
+
 					ManualResetEvent collectionChangedRaised = new ManualResetEvent(false);
 					// This action should be invoked (by test code, due to an override handler on the
 					// low-level event handler for the watcher).
@@ -486,6 +523,67 @@ namespace BloomTests.TeamCollection
 							"There is a problem with the book \"Roses are red& Violets are blue.\" in the Team Collection system. Bloom was not able to open the zip file, which may be corrupted. Please click <a href='/bloom/api/teamCollection/reportBadZip?file="
 							+ UrlPathString.CreateFromUnencodedString(repoFolder.FolderPath).UrlEncoded
 							+ "%5cBooks%5cRoses%20are%20red%26%20Violets%20are%20blue..bloom'>here</a> to get help from the Bloom support team."));
+				}
+			}
+		}
+
+		[TestCase(true)]
+		[TestCase( false)]
+		public void HandleNewBook_AddsMessage_IffReallyNew(bool reallyNew)
+		{
+			using (var collectionFolder = new TemporaryFolder("HandleNewBook_NewBook_AddsMessage_Collection"))
+			{
+				using (var repoFolder = new TemporaryFolder("HandleNewBook_NewBook_AddsMessage_Shared"))
+				{
+					var bookFolderName1 = "New book";
+					var localBookFolderPath = SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, bookFolderName1, "Something");
+					var mockTcManager = new Mock<ITeamCollectionManager>();
+					var tcLog = new TeamCollectionMessageLog(TeamCollectionManager.GetTcLogPathFromLcPath(collectionFolder.FolderPath));
+					var tc = new TestFolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath,
+						repoFolder.FolderPath,tcLog);
+					tc.PutBook(localBookFolderPath);
+					if (reallyNew)
+						SIL.IO.RobustIO.DeleteDirectory(localBookFolderPath, true);
+
+					tc.HandleNewBook(new NewBookEventArgs() {BookFileName = "New book.bloom"});
+
+					if (reallyNew)
+					{
+						var msg = tcLog.Messages[0];
+						Assert.That(msg.RawEnglishMessageTemplate, Is.EqualTo("A new book called '{0}' was added by a teammate."));
+					}
+					else
+					{
+						Assert.That(tcLog.Messages.Count, Is.EqualTo(0));
+					}
+				}
+			}
+		}
+
+		[Test]
+		public void HandleNewBook_RenamedBook_AddsRenameMessage()
+		{
+			using (var collectionFolder = new TemporaryFolder("HandleNewBook_RenamedBook_AddsRenameMessage_Collection"))
+			{
+				using (var repoFolder = new TemporaryFolder("HandleNewBook_RenamedBook_AddsRenameMessage_Shared"))
+				{
+					var bookFolderName1 = "Renamed book";
+					var localBookFolderPath = SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, bookFolderName1, "Something");
+					var mockTcManager = new Mock<ITeamCollectionManager>();
+					var tcLog = new TeamCollectionMessageLog(TeamCollectionManager.GetTcLogPathFromLcPath(collectionFolder.FolderPath));
+					var tc = new TestFolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath,
+						repoFolder.FolderPath, tcLog);
+					tc.PutBook(localBookFolderPath);
+
+					SIL.IO.RobustIO.MoveDirectory(localBookFolderPath, Path.Combine(collectionFolder.FolderPath, "old name"));
+					// We could rename the book file too, but it doesn't matter for the current SUT
+
+					tc.HandleNewBook(new NewBookEventArgs() { BookFileName = "Renamed book.bloom" });
+
+					var msg = tcLog.Messages[0];
+					Assert.That(msg.RawEnglishMessageTemplate, Is.EqualTo("The book \"{0}\" has been renamed to \"{1}\" by a teammate."));
+					Assert.That(msg.Param0, Is.EqualTo("old name"));
+					Assert.That(msg.Param1, Is.EqualTo("Renamed book"));
 				}
 			}
 		}
