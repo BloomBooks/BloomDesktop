@@ -563,7 +563,7 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public void HandleNewBook_RenamedBook_AddsRenameMessage()
 		{
-			using (var collectionFolder = new TemporaryFolder("HandleNewBook_NewBook_AddsMessage_Collection"))
+			using (var collectionFolder = new TemporaryFolder("HandleNewBook_RenamedBook_AddsRenameMessage_Collection"))
 			{
 				using (var repoFolder = new TemporaryFolder("HandleNewBook_RenamedBook_AddsRenameMessage_Shared"))
 				{
