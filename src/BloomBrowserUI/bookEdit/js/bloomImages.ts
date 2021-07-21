@@ -178,28 +178,29 @@ function SetupImageContainer(containerDiv: HTMLElement) {
                     '"></button>'
             );
 
-            if (
-                // Only show this button if the toolbox is also offering it. It might not offer it
-                // if it's experimental and that settings isn't on, or for Bloom Enterprise reasons, or whatever.
-                getToolboxBundleExports()
-                    ?.getTheOneToolbox()
-                    .getToolIfOffered(ImageDescriptionAdapter.kToolID)
-            ) {
-                $this.prepend(
-                    '<button class="imageDescriptionButton imageButton imageOverlayButton ' +
-                        buttonModifier +
-                        '" title="' +
-                        theOneLocalizationManager.getText(
-                            "EditTab.Toolbox.ImageDescriptionTool" // not quite the "Show Image Description Tool", but... feeling parsimonious
-                        ) +
-                        '"></button>'
-                );
-                $this.find(".imageDescriptionButton").click(() => {
-                    getToolboxBundleExports()
-                        ?.getTheOneToolbox()
-                        .activateToolFromId(ImageDescriptionAdapter.kToolID);
-                });
-            }
+            // As part of BL-9976 JH decided to remove this button as users were getting confused.
+            // if (
+            //     // Only show this button if the toolbox is also offering it. It might not offer it
+            //     // if it's experimental and that settings isn't on, or for Bloom Enterprise reasons, or whatever.
+            //     getToolboxFrameExports()
+            //         ?.getTheOneToolbox()
+            //         .getToolIfOffered(ImageDescriptionAdapter.kToolID)
+            // ) {
+            //     $this.prepend(
+            //         '<button class="imageDescriptionButton imageButton imageOverlayButton ' +
+            //             buttonModifier +
+            //             '" title="' +
+            //             theOneLocalizationManager.getText(
+            //                 "EditTab.Toolbox.ImageDescriptionTool" // not quite the "Show Image Description Tool", but... feeling parsimonious
+            //             ) +
+            //             '"></button>'
+            //     );
+            //     $this.find(".imageDescriptionButton").click(() => {
+            //         getToolboxFrameExports()
+            //             ?.getTheOneToolbox()
+            //             .activateToolFromId(ImageDescriptionAdapter.kToolID);
+            //     });
+            // }
 
             SetImageTooltip(containerDiv);
 
