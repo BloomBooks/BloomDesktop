@@ -36,7 +36,7 @@
 			this._howAreYouUsing = new System.Windows.Forms.TextBox();
 			this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
 			this.label2 = new System.Windows.Forms.Label();
-			this.label3 = new System.Windows.Forms.Label();
+			this._emailLabel = new System.Windows.Forms.Label();
 			this._email = new System.Windows.Forms.TextBox();
 			this._organization = new System.Windows.Forms.TextBox();
 			this._headingLabel = new System.Windows.Forms.Label();
@@ -89,7 +89,7 @@
 			this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.tableLayoutPanel4.Controls.Add(this._howUsingLabel, 0, 0);
 			this.tableLayoutPanel4.Controls.Add(this._howAreYouUsing, 0, 1);
-			this.tableLayoutPanel4.Location = new System.Drawing.Point(3, 205);
+			this.tableLayoutPanel4.Location = new System.Drawing.Point(3, 201);
 			this.tableLayoutPanel4.Name = "tableLayoutPanel4";
 			this.tableLayoutPanel4.RowCount = 2;
 			this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -131,10 +131,10 @@
 			this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
 			this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
 			this.tableLayoutPanel3.Controls.Add(this.label2, 1, 0);
-			this.tableLayoutPanel3.Controls.Add(this.label3, 0, 0);
+			this.tableLayoutPanel3.Controls.Add(this._emailLabel, 0, 0);
 			this.tableLayoutPanel3.Controls.Add(this._email, 0, 1);
 			this.tableLayoutPanel3.Controls.Add(this._organization, 1, 1);
-			this.tableLayoutPanel3.Location = new System.Drawing.Point(3, 128);
+			this.tableLayoutPanel3.Location = new System.Drawing.Point(3, 124);
 			this.tableLayoutPanel3.Name = "tableLayoutPanel3";
 			this.tableLayoutPanel3.RowCount = 2;
 			this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -156,19 +156,19 @@
 			this.label2.TabIndex = 8;
 			this.label2.Text = "Organization";
 			// 
-			// label3
+			// _emailLabel
 			// 
-			this.label3.AutoSize = true;
-			this.label3.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.l10NSharpExtender1.SetLocalizableToolTip(this.label3, null);
-			this.l10NSharpExtender1.SetLocalizationComment(this.label3, null);
-			this.l10NSharpExtender1.SetLocalizingId(this.label3, "RegisterDialog.Email");
-			this.label3.Location = new System.Drawing.Point(3, 20);
-			this.label3.Margin = new System.Windows.Forms.Padding(3, 20, 3, 0);
-			this.label3.Name = "label3";
-			this.label3.Size = new System.Drawing.Size(91, 17);
-			this.label3.TabIndex = 7;
-			this.label3.Text = "Email Address";
+			this._emailLabel.AutoSize = true;
+			this._emailLabel.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.l10NSharpExtender1.SetLocalizableToolTip(this._emailLabel, null);
+			this.l10NSharpExtender1.SetLocalizationComment(this._emailLabel, null);
+			this.l10NSharpExtender1.SetLocalizingId(this._emailLabel, "RegisterDialog.Email");
+			this._emailLabel.Location = new System.Drawing.Point(3, 20);
+			this._emailLabel.Margin = new System.Windows.Forms.Padding(3, 20, 3, 0);
+			this._emailLabel.Name = "_emailLabel";
+			this._emailLabel.Size = new System.Drawing.Size(91, 17);
+			this._emailLabel.TabIndex = 7;
+			this._emailLabel.Text = "Email Address";
 			// 
 			// _email
 			// 
@@ -218,7 +218,7 @@
 			this.tableLayoutPanel2.Controls.Add(this.label5, 0, 0);
 			this.tableLayoutPanel2.Controls.Add(this._firstName, 0, 1);
 			this.tableLayoutPanel2.Controls.Add(this._surname, 1, 1);
-			this.tableLayoutPanel2.Location = new System.Drawing.Point(3, 51);
+			this.tableLayoutPanel2.Location = new System.Drawing.Point(3, 47);
 			this.tableLayoutPanel2.Name = "tableLayoutPanel2";
 			this.tableLayoutPanel2.RowCount = 2;
 			this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -282,9 +282,10 @@
 			// 
 			// _additionalTextLabel
 			// 
-			this._additionalTextLabel.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this._additionalTextLabel.AutoEllipsis = true;
 			this._additionalTextLabel.Enabled = false;
 			this._additionalTextLabel.ForeColor = System.Drawing.SystemColors.ControlText;
+			this._additionalTextLabel.Image = null;
 			this.l10NSharpExtender1.SetLocalizableToolTip(this._additionalTextLabel, null);
 			this.l10NSharpExtender1.SetLocalizationComment(this._additionalTextLabel, null);
 			this.l10NSharpExtender1.SetLocalizationPriority(this._additionalTextLabel, L10NSharp.LocalizationPriority.NotLocalizable);
@@ -292,9 +293,8 @@
 			this._additionalTextLabel.Location = new System.Drawing.Point(3, 31);
 			this._additionalTextLabel.Margin = new System.Windows.Forms.Padding(3, 10, 3, 0);
 			this._additionalTextLabel.Name = "_additionalTextLabel";
-			this._additionalTextLabel.Size = new System.Drawing.Size(398, 17);
+			this._additionalTextLabel.Size = new System.Drawing.Size(398, 13);
 			this._additionalTextLabel.TabIndex = 14;
-			this._additionalTextLabel.TabStop = false;
 			this._additionalTextLabel.Text = "additionalText";
 			// 
 			// _okButton
@@ -353,7 +353,6 @@
 			// 
 			// _userIsStuckDetector
 			// 
-			this._userIsStuckDetector.Interval = 100;
 			this._userIsStuckDetector.Tick += new System.EventHandler(this._userIsStuckDetector_Tick);
 			// 
 			// RegistrationDialog
@@ -404,7 +403,7 @@
 		private System.Windows.Forms.TextBox _howAreYouUsing;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
 		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.Label label3;
+		private System.Windows.Forms.Label _emailLabel;
 		private System.Windows.Forms.TextBox _email;
 		private System.Windows.Forms.TextBox _organization;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
