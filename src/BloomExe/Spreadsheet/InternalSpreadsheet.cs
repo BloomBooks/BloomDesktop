@@ -30,11 +30,11 @@ namespace Bloom.Spreadsheet
 		public string[] StandardLeadingColumns = new[]
 		{
 			MetadataKeyLabel, // what kind of data is in the row; might be book-data key or [textgroup] or [image]
-			PageNumberLabel, // for textgroups, value from data-page-number of bloom-page
+			PageNumberLabel, // value from data-page-number of bloom-page
 			// Todo: [page layout], // something that indicates the template for the page
-			ImageIndexOnPageLabel, // for textgroups, its index in reading order
-			ImageSourceLabel, // where the image comes from, especially for [image] rows
-			ImageThumbnailLabel,
+			ImageIndexOnPageLabel, // for images, its index in document order
+			ImageSourceLabel, // the full path of where the image comes from
+			ImageThumbnailLabel, // a small version of the image embedded and displayed in the excel sheet
 			TextIndexOnPageLabel, // for textgroups, its index in reading order
 			// Todo: (lang slot) // L1, L2, L3, auto etc...which languages should be visible here?
 		};
@@ -62,7 +62,9 @@ namespace Bloom.Spreadsheet
 			}
 		}
 
-		public InternalSpreadsheet(bool populateHeader=true)
+		public InternalSpreadsheet() : this(true) {}
+
+		private InternalSpreadsheet(bool populateHeader)
 		{
 			if (populateHeader)
 			{

@@ -12,9 +12,6 @@ namespace Bloom.Spreadsheet
 	/// </summary>
 	public class ContentRow: SpreadsheetRow
 	{
-		public ContentRow()
-		{
-		}
 		public ContentRow(InternalSpreadsheet sheet)
 		{
 			sheet.AddRow(this);

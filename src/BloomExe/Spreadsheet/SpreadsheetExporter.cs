@@ -23,13 +23,13 @@ namespace Bloom.Spreadsheet
 
 			foreach (var page in pages)
 			{
-				//First get images
 				var pageNumber = page.Attributes["data-page-number"]?.Value ?? "";
 				// For now we will ignore all un-numbered pages, particularly xmatter,
 				// which eventually needs to be handled by exporting data-book items.
 				if (pageNumber == "")
 					continue;
 
+				//Get images
 				var imageContainers = GetImageContainers(page);
 				int imageIndex = 1;
 				foreach (var imageContainer in imageContainers)
@@ -39,10 +39,6 @@ namespace Bloom.Spreadsheet
 				}
 
 				//Get translation groups
-				// For now we will ignore all un-numbered pages, particularly xmatter,
-				// which eventually needs to be handled by exporting data-book items.
-				if (pageNumber == "")
-					continue;
 				var groups = TranslationGroupManager.SortTranslationGroups(TranslationGroupManager.GetTranslationGroups(page));
 				int groupIndex = 1;
 				foreach (var group in groups)
@@ -66,11 +62,11 @@ namespace Bloom.Spreadsheet
 			{
 				var row = new ContentRow(_spreadsheet);
 				row.SetCell(InternalSpreadsheet.MetadataKeyLabel, InternalSpreadsheet.ImageKeyLabel);
+				row.SetCell(InternalSpreadsheet.PageNumberLabel, pageNumber);
 				row.SetCell(InternalSpreadsheet.ImageIndexOnPageLabel, imageIndex.ToString(CultureInfo.InvariantCulture));
-				string imagePath = Path.Combine(imagesFolderPath, image.GetAttribute("src"));
-				var encodedImageSrc = UrlPathString.CreateFromUrlEncodedString(imagePath);
-				var decodedImageSrc = encodedImageSrc.NotEncoded;
-				row.SetCell(InternalSpreadsheet.ImageSourceLabel, decodedImageSrc);
+				var imageSrc = UrlPathString.CreateFromUrlEncodedString(image.GetAttribute("src"));
+				var imagePath = Path.Combine(imagesFolderPath, imageSrc.NotEncoded);
+				row.SetCell(InternalSpreadsheet.ImageSourceLabel, imagePath);
 			}
 		}
 

@@ -10,7 +10,9 @@
 // to use this package. We qualify as non-commercial as a charitable organization
 // (also as educational).
 
+using Bloom.ImageProcessing;
 using System;
+using System.Drawing;
 using System.IO;
 using OfficeOpenXml;
 using SIL.IO;
@@ -90,14 +92,17 @@ namespace Bloom.Spreadsheet
 					{
 						using (System.Drawing.Image image = System.Drawing.Image.FromFile(imageSrcPath))
 						{
-							string imageName = imageSrcPath;
-							var excelImage = worksheet.Drawings.AddPicture(imageName, image);
-							excelImage.SetPosition(rowNum, 1, colNum, 1);
-							var origImageHeight = excelImage.Size.Height;
-							var origImageWidth = excelImage.Size.Width;
+							string imageName = Path.GetFileNameWithoutExtension(imageSrcPath);
+							var origImageHeight = image.Size.Height;
+							var origImageWidth = image.Size.Width;
 							int finalWidth = defaultImageWidth;
 							int finalHeight = (int)(finalWidth * origImageHeight / origImageWidth);
-							excelImage.SetSize(finalWidth, finalHeight);
+							var size = new Size(finalWidth, finalHeight);
+							using (System.Drawing.Image thumbnail = ImageUtils.ResizeImageIfNecessary(size, image, false))
+							{
+								var excelImage = worksheet.Drawings.AddPicture(imageName, thumbnail);
+								excelImage.SetPosition(rowNum, 1, colNum, 1);
+							}
 						}
 					}
 					catch (Exception)

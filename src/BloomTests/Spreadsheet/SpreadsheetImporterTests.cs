@@ -26,6 +26,10 @@ namespace BloomTests.Spreadsheet
 			_dom = new HtmlDom(SpreadsheetTests.kSimpleTwoPageBook, true);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en']/p[text()='Riding on elephants can be risky.']", 1); // unchanged
 
+			// The tests in this class all check the results of importing what export produced,
+			// but with a couple of changes. Here we locate the cells produced from two particular
+			// bloom-editable elements in the kSimpleTwoPageBook DOM and replace them with different text.
+			// The import should update those bloom-editables to these changed values.
 			var exporter = new SpreadsheetExporter();
 			_sheet = exporter.Export(_dom, "fakeImagesFolderpath");
 			var indexDe = _sheet.ColumnForLang("de");
@@ -264,8 +268,7 @@ namespace BloomTests.Spreadsheet
 
 		public static void MakeRow(string pageNum, string langData1, string langData2, InternalSpreadsheet spreadsheet)
 		{
-			var newRow = new ContentRow();
-			spreadsheet.AddRow(newRow);
+			var newRow = new ContentRow(spreadsheet);
 			newRow.SetCell(InternalSpreadsheet.MetadataKeyLabel, InternalSpreadsheet.TextGroupLabel);
 			newRow.SetCell(InternalSpreadsheet.PageNumberLabel, pageNum);
 			newRow.SetCell(InternalSpreadsheet.TextIndexOnPageLabel, "1");// group index placeholder, not exactly right but near enough for this test
