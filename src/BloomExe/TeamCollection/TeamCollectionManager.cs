@@ -149,6 +149,16 @@ namespace Bloom.TeamCollection
 			return CurrentCollectionEvenIfDisconnected.NeedCheckoutToEdit(bookFolderPath);
 		}
 
+		public bool UserMayChangeEmail
+		{
+			get
+			{
+				if (CurrentCollection == null)
+					return true;
+				return !CurrentCollection.AnyBooksCheckedOutHereByCurrentUser;
+			}
+		}
+
 		/// <summary>
 		/// This is an additional check on delete AFTER we make sure the book is checked out.
 		/// Even if it is, we can't delete it while disconnected because we don't have a way

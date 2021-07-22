@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Windows.Forms;
 using Bloom.Properties;
+using Bloom.TeamCollection;
 using DesktopAnalytics;
 
 namespace Bloom.Registration
@@ -16,7 +17,7 @@ namespace Bloom.Registration
 
 		private readonly bool _hadEmailAlready;
 
-		public RegistrationDialog(bool registrationIsOptional)
+		public RegistrationDialog(bool registrationIsOptional, bool mayChangeEmail)
 		{
 			InitializeComponent();
 
@@ -31,6 +32,15 @@ namespace Bloom.Registration
 			_headingLabel.Text = string.Format(_headingLabel.Text, Application.ProductName);
 			_howUsingLabel.Text = string.Format(_howUsingLabel.Text, Application.ProductName);
 			_additionalTextLabel.Text = null;
+
+			_email.Enabled = mayChangeEmail;
+			if (!mayChangeEmail)
+			{
+				// This is a very minimal indication and not yet localizable...
+				// but a long translation will badly mess up the dialog layout, whereas, this
+				// message fits. At least it gives a clue why the control is disabled.
+				_emailLabel.Text = "Check in to change email";
+			}
 		}
 
 		protected override void OnFormClosing(FormClosingEventArgs e)
@@ -198,7 +208,8 @@ namespace Bloom.Registration
 			if (!string.IsNullOrWhiteSpace(SIL.Windows.Forms.Registration.Registration.Default.Email))
 				return true;
 
-			using (var registrationDialog = new RegistrationDialog(false) { AdditionalText = message, IsEmailRequired = true })
+			// We're only doing this because current registration does NOT have email, so changing it must be OK.
+			using (var registrationDialog = new RegistrationDialog(false, true) { AdditionalText = message, IsEmailRequired = true })
 				registrationDialog.ShowDialog();
 
 			return !string.IsNullOrWhiteSpace(SIL.Windows.Forms.Registration.Registration.Default.Email);

@@ -952,6 +952,37 @@ namespace Bloom.TeamCollection
 			MiscUtils.SetTimeout(() => HandleDeletedRepoFile(delArgs.BookFileName), 5000);
 		}
 
+		/// <summary>
+		/// Answer true if the current user has books really checked out.
+		/// For this method, newly created books that are only local don't count.
+		/// </summary>
+		/// <returns></returns>
+		public bool AnyBooksCheckedOutHereByCurrentUser
+		{
+			get
+			{
+				foreach (var path in Directory.EnumerateDirectories(_localCollectionFolder))
+				{
+					try
+					{
+						if (!IsBloomBookFolder(path))
+							continue;
+						var localStatus = GetLocalStatus(Path.GetFileName(path));
+						if (localStatus.lockedBy == TeamCollection.FakeUserIndicatingNewBook)
+							continue;
+						if (localStatus.IsCheckedOutHereBy(TeamCollectionManager.CurrentUser))
+							return true;
+					}
+					catch (Exception)
+					{
+						continue;
+					}
+				}
+
+				return false;
+			}
+		}
+
 		internal void HandleDeletedRepoFile(string fileName)
 		{
 			var bookBaseName = GetBookNameWithoutSuffix(fileName);
