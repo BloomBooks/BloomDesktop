@@ -168,10 +168,15 @@ namespace Bloom.Workspace
 			_legacyCollectionTab.Tag = _legacyCollectionView;
 
 			_reactCollectionTabView = reactCollectionsTabsView;
+#if SHOW_REACT_COLLECTION_TAB // we will turn this back on for Bloom 5.2
+			
 			_reactCollectionTabView.ManageSettings(_settingsLauncherHelper);
 			_reactCollectionTabView.Dock = DockStyle.Fill;
 			_reactCollectionTab.Tag = _reactCollectionTabView;
-			
+#else
+			reactCollectionsTabsView.Visible = false;  
+			_reactCollectionTab.Visible = false;
+#endif
 			//
 			// _editingView
 			//
@@ -190,16 +195,23 @@ namespace Bloom.Workspace
 			_publishTab.Tag = _publishView;
 			_editTab.Tag = _editingView;
 
-			
+#if SHOW_REACT_COLLECTION_TAB
 			this._legacyCollectionTab.Text = "Legacy"; // _legacyCollectionView.CollectionTabLabel;
+#else
+			this._legacyCollectionTab.Text =  _legacyCollectionView.CollectionTabLabel;
+#endif
 			this._reactCollectionTab.Text = _reactCollectionTabView.CollectionTabLabel;
 
 			SetTabVisibility(_publishTab, false);
 			SetTabVisibility(_editTab, false);
+#if SHOW_REACT_COLLECTION_TAB
 
 			_tabStrip.SelectedTab = _reactCollectionTab;
 			SelectPage(_reactCollectionTabView);
-
+#else
+			_tabStrip.SelectedTab = _legacyCollectionTab;
+			SelectPage(_legacyCollectionView);
+#endif
 			if (Platform.IsMono)
 			{
 				// Without this adjustment, we lose some controls on smaller resolutions.
@@ -230,14 +242,20 @@ namespace Bloom.Workspace
 			// Note, this not put into _startupActions...it should never be disabled.
 			if (_tcManager?.CurrentCollectionEvenIfDisconnected == null)
 			{
+#if SHOW_REACT_COLLECTION_TAB
 				_reactCollectionTabView.ReadyToShowCollections();
+#endif
 			} else
 			{
 				StartupScreenManager.AddStartupAction(() =>
 				{
 					// Don't do anything else after this as part of this idle task.
 					// See the comment near the end of HandleTeamStuffBeforeGetBookCollections.
-					_model.HandleTeamStuffBeforeGetBookCollections(() => _reactCollectionTabView.ReadyToShowCollections());
+#if SHOW_REACT_COLLECTION_TAB
+_model.HandleTeamStuffBeforeGetBookCollections(() => _reactCollectionTabView.ReadyToShowCollections());
+#else
+					
+#endif
 				}, shouldHideSplashScreen: true);
 			}
 		}
@@ -259,7 +277,9 @@ namespace Bloom.Workspace
 		private void HandleBookSelectionChanged(object sender, BookSelectionChangedEventArgs e)
 		{
 			var result = GetCurrentSelectedBookInfo();
+#if SHOW_REACT_COLLECTION_TAB
 			_webSocketServer.SendString("book-selection", "changed", result);
+#endif
 		}
 
 		public string GetCurrentSelectedBookInfo()
@@ -1386,7 +1406,7 @@ namespace Bloom.Workspace
 		}
 
 
-		#endregion
+#endregion
 	}
 
 	public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer
