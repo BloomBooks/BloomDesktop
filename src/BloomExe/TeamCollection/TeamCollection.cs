@@ -987,7 +987,7 @@ namespace Bloom.TeamCollection
 				TeamCollectionManager.RaiseTeamCollectionStatusChanged();
 				return;
 			}
-			SIL.IO.RobustIO.DeleteDirectory(Path.Combine(_localCollectionFolder, bookBaseName), true);
+			PathUtilities.DeleteToRecycleBin(Path.Combine(_localCollectionFolder, bookBaseName));
 			UpdateBookStatus(bookBaseName, true);
 		}
 		internal void HandleCollectionSettingsChange(RepoChangeEventArgs result)
