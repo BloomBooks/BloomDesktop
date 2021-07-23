@@ -54,6 +54,14 @@ namespace Bloom.Publish.Android
 
 		public static string PreviewUrl { get; set; }
 
+		public struct IBulkSaveParams
+		{
+			public bool includeBookshelfFile;
+			public string bookshelfColor;
+			public bool includeBloomBundle;
+			public string distributionTag;
+		}
+
 		public PublishToAndroidApi(BloomWebSocketServer bloomWebSocketServer, BookServer bookServer, RuntimeImageProcessor imageProcessor, BulkBloomPubCreator bulkBloomPubCreator)
 		{
 			_webSocketServer = bloomWebSocketServer;
@@ -257,6 +265,7 @@ namespace Bloom.Publish.Android
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/bulkSaveBloomPubs", request =>
 			{
+				var bulkSaveParams = request.RequiredObject<IBulkSaveParams>();
 				_bulkBloomPubCreator.PublishAllBooks();
 				SetState("stopped");
 				request.PostSucceeded();

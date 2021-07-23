@@ -2,12 +2,7 @@
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
-import { useState } from "react";
-
-import { BloomApi } from "../../../utils/bloomApi";
 import BloomButton from "../../../react_components/bloomButton";
-import { Div, P } from "../../../react_components/l10nComponents";
-import { kDialogPadding } from "../../../bloomMaterialUITheme";
 import {
     BloomDialog,
     DialogBottomButtons,
@@ -16,17 +11,14 @@ import {
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog
 } from "../../../react_components/BloomDialog/BloomDialog";
-import {
-    DialogCancelButton,
-    DialogControlGroup,
-    DialogFolderChooser,
-    ErrorBox
-} from "../../../react_components/BloomDialog/commonDialogComponents";
+import { DialogCancelButton } from "../../../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../../../react_components/l10nHooks";
-import { Checkbox } from "../../../react_components/checkbox";
 import { MuiCheckbox } from "../../../react_components/muiCheckBox";
 import TextField from "@material-ui/core/TextField";
 import { WhatsThisBlock } from "../../../react_components/helpLink";
+import { ColorChooser } from "../../../react_components/colorChooser";
+import { ConditionallyEnabledBlock } from "../../../react_components/ConditionallyEnabledBlock";
+import { BloomApi } from "../../../utils/bloomApi";
 
 export let showBulkBloomPubDialog: () => void;
 
@@ -38,8 +30,16 @@ export const BulkBloomPubDialog: React.FunctionComponent<{
         closeDialog,
         propsForBloomDialog
     } = useSetupBloomDialog(props.dialogEnvironment);
+    const [bookshelfColor, setBookshelfColor] = React.useState("lightgreen");
+    const bookShelfColorCallback = React.useCallback(
+        (color: string) => setBookshelfColor(color),
+        []
+    );
+    const [includeBookShelf, setIncludeBookshelf] = React.useState(true);
+    const [makeBloomBundle, setMakeBloomBundle] = React.useState(false);
 
     showBulkBloomPubDialog = showDialog;
+    const kBlockSeparation = "30px";
 
     return (
         <BloomDialog {...propsForBloomDialog}>
@@ -56,54 +56,93 @@ export const BulkBloomPubDialog: React.FunctionComponent<{
                 <WhatsThisBlock helpId="todo">
                     <MuiCheckbox
                         label="Include a .bloomshelf file"
-                        checked={false}
+                        checked={includeBookShelf}
                         l10nKey="Publish.BulkBloomPub.IncludeBloomShelf"
-                        onCheckChanged={() => {}}
+                        onCheckChanged={() =>
+                            setIncludeBookshelf(!includeBookShelf)
+                        }
                     ></MuiCheckbox>
-                    <div
-                        css={css`
-                            margin-left: 28px;
-                        `}
-                    >
+                    <ConditionallyEnabledBlock enable={includeBookShelf}>
                         <div
                             css={css`
-                                font-size: 10px;
-                                color: gray;
-                            `}
-                        >
-                            This file will cause these book to be grouped under
-                            a single bookshelf in Bloom Reader. Collection’s
-                            bookshelf is set to “Edolo Grade 1 Term 2”.
-                        </div>
-                        <div
-                            css={css`
-                                margin-top: 15px;
+                                margin-left: 28px;
                             `}
                         >
                             <div
                                 css={css`
-                                    border: solid 1px black;
-                                    width: 225px;
-                                    height: 20px;
-                                    background-color: #ffe000;
-                                    padding-left: 5px;
-                                    padding-top: 3px;
+                                    font-size: 10px;
+                                    color: gray;
+                                    margin-top: -9px;
                                 `}
                             >
-                                Edolo Grade 1 Term 2
+                                This file will cause these book to be grouped
+                                under a single bookshelf in Bloom Reader. This
+                                collection’s bookshelf is set to “Edolo Grade 1
+                                Term 2”.
                             </div>
-                            <BloomButton
+                            <div
+                                css={css`
+                                    margin-top: 10px;
+                                    display: flex;
+                                `}
+                            >
+                                <div
+                                    css={css`
+                                        border: solid 1px black;
+                                        width: 225px;
+                                        height: 20px;
+                                        background-color: ${bookshelfColor};
+                                        padding-left: 5px;
+                                        padding-top: 3px;
+                                    `}
+                                >
+                                    Edolo Grade 1 Term 2
+                                </div>
+                                {/* <BloomButton
                                 l10nKey={"Common.ChooseColor"}
                                 enabled={true}
                                 hasText={true}
                                 variant={"text"}
+                                onClick={() =>
+                                    showSimpleColorDialog(
+                                        bookShelfColorCallback
+                                    )
+                                }
                             >
                                 Choose Color
-                            </BloomButton>
+                            </BloomButton> */}
+
+                                {/* TODO: for some reason, you can't enter custom colors with enter (but tab works).
+                            After hitting Enter in the color chooser, we get "#" as the color, which appears as white. */}
+                                <ColorChooser
+                                    menuLeft={true}
+                                    disabled={false}
+                                    color={bookshelfColor}
+                                    onColorChanged={colorChoice => {
+                                        console.log("Color = " + colorChoice);
+                                        setBookshelfColor(colorChoice);
+                                    }}
+                                    css={css`
+                                        .cc-menu-arrow {
+                                            margin-top: 8px;
+                                        }
+                                        .cc-pulldown-wrapper {
+                                            left: -127px;
+                                            border: solid 1px lightgray;
+                                            padding: 10px;
+                                        }
+                                    `}
+                                />
+                            </div>
                         </div>
-                    </div>
+                    </ConditionallyEnabledBlock>
                 </WhatsThisBlock>
-                <WhatsThisBlock helpId="todo">
+                <WhatsThisBlock
+                    helpId="todo"
+                    css={css`
+                        margin-top: ${kBlockSeparation};
+                    `}
+                >
                     <TextField
                         label={"Distribution Tag"}
                         defaultValue={"Blah"}
@@ -122,12 +161,19 @@ export const BulkBloomPubDialog: React.FunctionComponent<{
                         // }}
                     ></TextField>
                 </WhatsThisBlock>
-                <WhatsThisBlock helpId="todo">
+                <WhatsThisBlock
+                    helpId="todo"
+                    css={css`
+                        margin-top: ${kBlockSeparation};
+                    `}
+                >
                     <MuiCheckbox
                         label="Zip up into a single .bloomBundle file"
-                        checked={false}
+                        checked={makeBloomBundle}
                         l10nKey="Publish.BulkBloomPub.MakeBloomBundle"
-                        onCheckChanged={() => {}}
+                        onCheckChanged={checked => {
+                            setMakeBloomBundle(!!checked);
+                        }}
                     ></MuiCheckbox>
                 </WhatsThisBlock>
             </DialogMiddle>
@@ -137,7 +183,17 @@ export const BulkBloomPubDialog: React.FunctionComponent<{
                     hasText={true}
                     enabled={true}
                     variant={"contained"}
-                    onClick={() => {}}
+                    onClick={() => {
+                        BloomApi.postData(
+                            "publish/android/file/bulkSaveBloomPubs",
+                            {
+                                includeBookshelfFile: includeBookShelf,
+                                bookshelfColor: bookshelfColor,
+                                includeBloomBundle: true,
+                                distributionTag: "foobar"
+                            }
+                        );
+                    }}
                 >
                     Make
                 </BloomButton>

@@ -52,6 +52,7 @@ export const WhatsThisBlock: React.FunctionComponent<{
                 // the absolute positioning of the button with be with respect to this
                 position: relative;
             `}
+            {...props}
         >
             {props.children}
             <BloomButton
