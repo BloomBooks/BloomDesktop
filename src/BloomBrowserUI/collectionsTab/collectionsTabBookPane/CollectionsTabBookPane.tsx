@@ -75,6 +75,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
         <div
             css={css`
                 height: 100%;
+                box-sizing: border-box;
                 display: flex;
                 flex: 1;
                 flex-direction: column;
