@@ -87,7 +87,7 @@ namespace Bloom.Book
 
 		CollectionSettings CollectionSettings { get; }
 
-		void ReloadFromDisk();
+		void ReloadFromDisk(string renamedTo, Action betweenReloadAndEvents);
 	}
 
 	public class BookStorage : IBookStorage
@@ -1814,9 +1814,21 @@ namespace Bloom.Book
 			}
 		}
 
-		public void ReloadFromDisk()
+		public void ReloadFromDisk(string renamedTo, Action betweenReloadAndEvents)
 		{
+			var fromToPair = new KeyValuePair<string, string>(FolderPath, renamedTo);
+			if (renamedTo!= null)
+				FolderPath = renamedTo;
 			ExpensiveInitialization(true);
+
+			betweenReloadAndEvents();
+
+			if (renamedTo != null)
+			{
+				// The reload has renamed the book. We need to do the usual side effects.
+				_bookRenamedEvent.Raise(fromToPair);
+				OnFolderPathChanged();
+			}
 		}
 
 		public void CleanupUnusedSupportFiles(bool isForPublish, HashSet<string> langsToExcludeAudioFor = null)

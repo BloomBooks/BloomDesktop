@@ -1084,7 +1084,7 @@ namespace Bloom.CollectionTab
 		{
 			get
 			{
-				return AllBookButtons().FirstOrDefault(b => GetBookInfoFromButton(b) == SelectedBook.BookInfo);
+				return AllBookButtons().FirstOrDefault(b => GetBookInfoFromButton(b).FolderPath == SelectedBook?.BookInfo.FolderPath);
 			}
 		}
 
@@ -1104,6 +1104,7 @@ namespace Bloom.CollectionTab
 				// Just make a note to re-show it next time we're visible
 				_thumbnailRefreshPending = true;
 			}
+			BringButtonTitleUpToDate(_bookSelection.CurrentSelection);
 		}
 
 		private void OnBackColorChanged(object sender, EventArgs e)
@@ -1119,14 +1120,16 @@ namespace Bloom.CollectionTab
 				Book.Book book = SelectedBook;
 				if (book != null && SelectedButton != null)
 				{
-					var bestTitle = book.TitleBestForUserDisplay;
-					SelectedButton.SetTextSafely(ShortenTitleIfNeeded(bestTitle, SelectedButton));
-					SetBookButtonTooltip(SelectedButton);
+					BringButtonTitleUpToDate(book);
 					if (_thumbnailRefreshPending)
 					{
 						_thumbnailRefreshPending = false;
 						ScheduleRefreshOfOneThumbnail(book);
 					}
+				}
+				else
+				{
+
 				}
 				if (_primaryCollectionReloadPending)
 				{
@@ -1145,6 +1148,15 @@ namespace Bloom.CollectionTab
 				// We don't need to finish these now if we've already switched tabs.
 				PauseStartupActions();
 			}
+		}
+
+		private void BringButtonTitleUpToDate(Book.Book book)
+		{
+			if (SelectedButton == null || _bookSelection.CurrentSelection == null)
+				return;
+			var bestTitle = book.TitleBestForUserDisplay;
+			SelectedButton.SetTextSafely(ShortenTitleIfNeeded(bestTitle, SelectedButton));
+			SetBookButtonTooltip(SelectedButton);
 		}
 
 		private void RefreshOneThumbnail(Book.BookInfo bookInfo, Image image)
