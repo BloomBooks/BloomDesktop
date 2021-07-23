@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using Bloom.ImageProcessing;
 using Bloom.Utils;
 using L10NSharp;
 using SIL.CommandLineProcessing;
@@ -171,7 +172,7 @@ namespace Bloom.Book
 				}
 				try
 				{
-					metadata = RobustIO.MetadataFromFile(path);
+					metadata = GetMetadataDespiteWrongImageExtension(path);
 				}
 				catch (UnauthorizedAccessException e)
 				{
@@ -185,6 +186,33 @@ namespace Bloom.Book
 							 String.IsNullOrEmpty(metadata.CopyrightNotice) ? "" : metadata.CopyrightNotice);
 			imgElement.SetAttribute("data-creator", String.IsNullOrEmpty(metadata.Creator) ? "" : metadata.Creator);
 			imgElement.SetAttribute("data-license", metadata.License == null ? "" : metadata.License.ToString());
+		}
+
+		/// <summary>
+		/// Books sometimes use image files that are mislabeled.  JPEG files sometimes have been given
+		/// .png extensions, and it's likely that PNG files have been given .jpg extensions.  TagLib crashes
+		/// trying to read the metadata in such cases, so we prevent that particular crash in this method.
+		/// </summary>
+		private static Metadata GetMetadataDespiteWrongImageExtension(string path)
+		{
+			if (Path.GetExtension(path).ToLowerInvariant() == ".png" && ImageUtils.IsJpegFile(path))
+			{
+				using (var jpegFile = TempFile.WithExtension(".jpg"))
+				{
+					RobustFile.Copy(path, jpegFile.Path, true);
+					return RobustIO.MetadataFromFile(jpegFile.Path);
+				}
+			}
+			if (ImageUtils.HasJpegExtension(path) && ImageUtils.IsPngFile(path))
+			{
+				using (var pngFile = TempFile.WithExtension(".png"))
+				{
+					RobustFile.Copy(path, pngFile.Path, true);
+					return RobustIO.MetadataFromFile(pngFile.Path);
+				}
+			}
+			// Assume everything is okay.
+			return RobustIO.MetadataFromFile(path);
 		}
 
 		/// <summary>

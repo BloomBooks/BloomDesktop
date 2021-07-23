@@ -3753,7 +3753,8 @@ namespace Bloom.Book
 			var coverImageFileName = coverImageUrl.PathOnly.NotEncoded;
 			if (string.IsNullOrEmpty(coverImageFileName))
 				return null;
-			var coverImagePath = Path.Combine(StoragePageFolder, coverImageFileName);
+			// The fileName might be URL encoded.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3901.
+			var coverImagePath = UrlPathString.GetFullyDecodedPath(StoragePageFolder, ref coverImageFileName);
 			if (!File.Exists(coverImagePath))
 				return null;
 			return coverImagePath;

@@ -64,7 +64,7 @@ namespace Bloom.ImageProcessing
 			return false;
 		}
 
-		private static bool IsJpegFile(string path)
+		public static bool IsJpegFile(string path)
 		{
 			if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
 				return false;
@@ -102,7 +102,7 @@ namespace Bloom.ImageProcessing
 			return false;
 		}
 
-		private static bool IsPngFile(string path)
+		public static bool IsPngFile(string path)
 		{
 			if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
 				return false;
