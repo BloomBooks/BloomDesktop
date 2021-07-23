@@ -277,9 +277,9 @@ _model.HandleTeamStuffBeforeGetBookCollections(() => _reactCollectionTabView.Rea
 		private void HandleBookSelectionChanged(object sender, BookSelectionChangedEventArgs e)
 		{
 			var result = GetCurrentSelectedBookInfo();
-#if SHOW_REACT_COLLECTION_TAB
+			// important for at least the TeamCollectionBookStatusPanel and the CollectionsTabBookPanel,
+			// as well as eventually the 
 			_webSocketServer.SendString("book-selection", "changed", result);
-#endif
 		}
 
 		public string GetCurrentSelectedBookInfo()
