@@ -390,8 +390,18 @@ namespace Bloom.TeamCollection
 				// We need to notify the new collection tab to update its book list
 				// and also possibly update the current selection, and in case we undid
 				// things in the book, we should update the preview.
-				_tcManager.CurrentCollection.ForgetChangesCheckin(bookName);
-				UpdateUiForBook(reloadFromDisk:true);
+				var modifiedBookFolders =_tcManager.CurrentCollection.ForgetChangesCheckin(bookName);
+				string updatedBookFolder = null;
+				var finalBookName = bookName;
+				if (modifiedBookFolders.Count > 0)
+				{
+					updatedBookFolder = modifiedBookFolders[0];
+					finalBookName = Path.GetFileName(updatedBookFolder);
+				}
+				UpdateUiForBook(reloadFromDisk:true, renamedTo: updatedBookFolder);
+				// We need to do this after updating the rest of the UI, so the button we're
+				// looking for has been adjusted.
+				_tcManager.CurrentCollection.UpdateBookStatus(finalBookName, true);
 				request.PostSucceeded();
 			}
 			catch (Exception ex)
@@ -651,7 +661,7 @@ namespace Bloom.TeamCollection
 		// Called when we cause the book's status to change, so things outside the HTML world, like visibility of the
 		// "Edit this book" button, can change appropriately. Pretending the user chose a different book seems to
 		// do all the necessary stuff for now.
-		private void UpdateUiForBook(bool reloadFromDisk = false)
+		private void UpdateUiForBook(bool reloadFromDisk = false, string renamedTo = null)
 		{
 			// Todo: This is not how we want to do this. Probably the UI should listen for changes to the status of books,
 			// whether selected or not, talking to the repo directly.
@@ -671,7 +681,7 @@ namespace Bloom.TeamCollection
 			Form.ActiveForm.Invoke((Action) (() =>
 			{
 				if (reloadFromDisk)
-					_bookSelection.CurrentSelection.ReloadFromDisk();
+					_bookSelection.CurrentSelection.ReloadFromDisk(renamedTo);
 				_bookSelection.InvokeSelectionChanged(false);
 			}));
 		}

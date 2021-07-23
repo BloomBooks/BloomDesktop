@@ -196,7 +196,6 @@ namespace Bloom.TeamCollection
 
 			status = status.WithLockedBy(null);
 			WriteBookStatus(finalBookName, status);
-			UpdateBookStatus(finalBookName, true);
 			return foldersNeedingUpdate;
 		}
 

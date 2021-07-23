@@ -53,7 +53,7 @@ namespace Bloom.Book
 		internal const string kIdOfBasicBook = "056B6F11-4A6C-4942-B2BC-8861E62B03B3";
 
 		public event EventHandler ContentsChanged;
-		private readonly BookData _bookData;
+		private BookData _bookData;
 		public const string ReadMeImagesFolderName = "ReadMeImages";
 
 		int _audioFilesCopiedForDuplication;
@@ -3095,9 +3095,18 @@ namespace Bloom.Book
 			return true;
 		}
 
-		public void ReloadFromDisk()
+		public void ReloadFromDisk(string renamedTo)
 		{
-			Storage.ReloadFromDisk();
+			if (renamedTo != null)
+				BookInfo.FolderPath = renamedTo;
+			_pagesCache = null; // before updating storage, which sends some events that could use the obsolete one
+			Storage.ReloadFromDisk(renamedTo, () => {
+				// This needs to happen after we've created the new DOM, but before
+				// we start broadcasting rename events that may assume the book is
+				// in a consistent state.
+				_bookData = new BookData(OurHtmlDom,
+					CollectionSettings, UpdateImageMetadataAttributes);
+			});
 			InvokeContentsChanged(null);
 		}
 
