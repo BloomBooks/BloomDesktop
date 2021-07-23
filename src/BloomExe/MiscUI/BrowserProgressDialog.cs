@@ -38,7 +38,7 @@ namespace Bloom.MiscUI
 		{
 			var kProgressContextName = "progress";
 			BrowserProgressDialog.DoWorkWithProgressDialog(socketServer, kProgressContextName,
-				() => new ReactDialog("ProgressDialog",
+				() => new ReactDialog("ProgressDialogBundle",
 						// props to send to the react component
 						new
 						{

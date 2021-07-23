@@ -93,14 +93,9 @@ namespace Bloom.Publish.Android
 
 		private AndroidPublishSettings GetSettings()
 		{
-			return new AndroidPublishSettings()
-			{
-				// Note - we want it such that even if the underlying data changes, this settings object won't.
-				// (Converting the IEnumerable to a HashSet happens to accomplish that)
-				LanguagesToInclude = new HashSet<string>(_bookForLanguagesToPublish.BookInfo.MetaData.TextLangsToPublish.ForBloomPUB.Where(kvp => kvp.Value.IsIncluded()).Select(kvp => kvp.Key)),
-				AudioLanguagesToExclude = new HashSet<string>(_bookForLanguagesToPublish.BookInfo.MetaData.AudioLangsToPublish.ForBloomPUB.Where(kvp => !kvp.Value.IsIncluded()).Select(kvp => kvp.Key))
-			};
+			return AndroidPublishSettings.FromBookInfo(_bookForLanguagesToPublish.BookInfo);
 		}
+
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
@@ -266,7 +261,7 @@ namespace Bloom.Publish.Android
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/bulkSaveBloomPubs", request =>
 			{
 				var bulkSaveParams = request.RequiredObject<IBulkSaveParams>();
-				_bulkBloomPubCreator.PublishAllBooks();
+				_bulkBloomPubCreator.PublishAllBooks(bulkSaveParams.distributionTag);
 				SetState("stopped");
 				request.PostSucceeded();
 			}, true);

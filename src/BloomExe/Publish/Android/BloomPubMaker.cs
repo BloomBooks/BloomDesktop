@@ -32,13 +32,8 @@ namespace Bloom.Publish.Android
 
 		public static Control ControlForInvoke { get; set; }
 
-		public static void CreateBloomPub(BookInfo bookInfo,  string outputFolder, BookServer bookServer, IWebSocketProgress progress)
+		public static void CreateBloomPub(BookInfo bookInfo, AndroidPublishSettings settings, string outputFolder, BookServer bookServer, IWebSocketProgress progress )
 		{
-			// Near Future: JS is working on having the necessary settings saved with the book. At that point,
-			// some function in this stack should just be reading those settings out of the book's files, so this should no longer be a parameter.
-			// In the meantime, the bulk edit tool that uses this overload just doesn't offer an control over settings.
-			var settings = new AndroidPublishSettings();
-
 			var outputPath = Path.Combine(outputFolder, Path.GetFileName(bookInfo.FolderPath) + BookCompressor.BloomPubExtensionWithDot);
 			BloomPubMaker.CreateBloomPub(outputPath, bookInfo.FolderPath, bookServer, Color.Yellow, progress, bookInfo.IsSuitableForMakingShells, settings: settings);
 		}
@@ -100,7 +95,8 @@ namespace Bloom.Publish.Android
 			var htmPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
 			var tentativeBookFolderPath = Path.Combine(temp.FolderPath, Path.GetFileNameWithoutExtension(htmPath));
 			Directory.CreateDirectory(tentativeBookFolderPath);
-			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer, tentativeBookFolderPath, isTemplateBook);
+			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer,
+				tentativeBookFolderPath, isTemplateBook);
 
 			// Although usually tentativeBookFolderPath and modifiedBook.FolderPath are the same, there are some exceptions
 			// In the process of bringing a book up-to-date (called by MakeDeviceXmatterTempBook), the folder path may change.
@@ -117,6 +113,13 @@ namespace Bloom.Publish.Android
 			// Version 1 (as opposed to no BloomdVersion field): the bookFeatures property may be
 			// used to report features analytics (with earlier bloomd's, the reader must use its own logic)
 			modifiedBook.Storage.BookInfo.MetaData.BloomdVersion = 1;
+
+			if (!string.IsNullOrEmpty(settings?.DistributionTag))
+			{
+				var list = modifiedBook.Storage.BookInfo.MetaData.Tags.ToList();
+				list.Add("Distribution:" + settings.DistributionTag);
+				modifiedBook.Storage.BookInfo.MetaData.Tags = list.ToArray();
+			}
 
 			if (settings?.LanguagesToInclude != null)
 				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings.LanguagesToInclude, modifiedBook.BookData.MetadataLanguage1IsoCode);

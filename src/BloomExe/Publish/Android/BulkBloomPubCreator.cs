@@ -21,7 +21,7 @@ namespace Bloom.Publish.Android
 			_libraryModel = libraryModel;
 			_webSocketServer = webSocketServer;
 		}
-		public void PublishAllBooks()
+		public void PublishAllBooks(string distributionTag)
 		{
 			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, "Bulk Save BloomPubs",
 				progress =>
@@ -30,7 +30,9 @@ namespace Bloom.Publish.Android
 					foreach (var bookInfo in _libraryModel.TheOneEditableCollection.GetBookInfos())
 					{
 						progress.MessageWithoutLocalizing($"Creating {bookInfo.FolderPath}...");
-						BloomPubMaker.CreateBloomPub(bookInfo, dest.FolderPath, _bookServer, progress);
+						var settings = AndroidPublishSettings.FromBookInfo(bookInfo);
+						settings.DistributionTag = distributionTag;
+						BloomPubMaker.CreateBloomPub(bookInfo, settings, dest.FolderPath, _bookServer, progress);
 					}
 					Process.SafeStart(dest.FolderPath);
 					// true means wait for the user, don't close automatically

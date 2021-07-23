@@ -25,6 +25,7 @@ export interface IBloomButtonProps extends ILocalizationProps {
     iconBeforeText?: React.ReactNode;
     size?: "small" | "medium" | "large" | undefined;
     color?: "primary" | "secondary" | undefined;
+    href?: string;
 }
 
 // A button that takes a Bloom API endpoint to post() when clicked

@@ -44,7 +44,8 @@ export class ToolBottomHelpLink extends React.Component<{ helpId: string }> {
 
 // puts a "What's this?" in the upper right hand corner of the block
 export const WhatsThisBlock: React.FunctionComponent<{
-    helpId: string;
+    // we could add this when we are using this for built-in help:   helpId: string;
+    url: string;
 }> = props => {
     return (
         <div
@@ -65,7 +66,7 @@ export const WhatsThisBlock: React.FunctionComponent<{
                     right: 0;
                     top: 0;
                 `}
-                href={"/bloom/api/help/" + props.helpId}
+                href={props.url}
             >
                 What's This?
             </BloomButton>

@@ -53,7 +53,7 @@ export const BulkBloomPubDialog: React.FunctionComponent<{
                 />
             </DialogTitle>
             <DialogMiddle>
-                <WhatsThisBlock helpId="todo">
+                <WhatsThisBlock url="https://docs.bloomlibrary.org/todo-something-about-bloom-bookshelves">
                     <MuiCheckbox
                         label="Include a .bloomshelf file"
                         checked={includeBookShelf}
@@ -138,7 +138,7 @@ export const BulkBloomPubDialog: React.FunctionComponent<{
                     </ConditionallyEnabledBlock>
                 </WhatsThisBlock>
                 <WhatsThisBlock
-                    helpId="todo"
+                    url="https://docs.bloomlibrary.org/todo-something-about-distrubution-tags"
                     css={css`
                         margin-top: ${kBlockSeparation};
                     `}
@@ -162,7 +162,7 @@ export const BulkBloomPubDialog: React.FunctionComponent<{
                     ></TextField>
                 </WhatsThisBlock>
                 <WhatsThisBlock
-                    helpId="todo"
+                    url="https://docs.bloomlibrary.org/todo-something-about-bloom-bundles"
                     css={css`
                         margin-top: ${kBlockSeparation};
                     `}

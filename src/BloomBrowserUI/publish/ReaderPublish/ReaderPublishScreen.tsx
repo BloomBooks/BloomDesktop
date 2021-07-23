@@ -170,7 +170,13 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                                 //showProgress();
                                 BloomApi.postData(
                                     "publish/android/file/bulkSaveBloomPubs",
-                                    {}
+                                    {
+                                        distributionTag:
+                                            "foobar-test-distribution",
+                                        includeBookshelfFile: true,
+                                        bookshelfColor: "red",
+                                        includeBloomBundle: true
+                                    }
                                 );
                             }}
                         >
