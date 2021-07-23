@@ -1,8 +1,14 @@
 @import "../branding-base.less";
 
+.outsideBackCover .bloom-translationGroup {
+    display: none;
+}
 [data-book="outside-back-cover-branding-bottom-html"] {
+    margin-top: 0 !important;
     width: 100%;
-    img {
-        //    height: 20mm;
+    height: 100%; // take up full page so that the textAndLogos can push to the bottom
+
+    img.textAndLogos {
+        margin-top: auto;
     }
 }
