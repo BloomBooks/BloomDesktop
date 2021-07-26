@@ -62,7 +62,9 @@ namespace Bloom.Workspace
 		private LibraryView _legacyCollectionView;
 		private EditingView _editingView;
 		private PublishView _publishView;
+#if SHOW_REACT_COLLECTION_TAB
 		private ReactCollectionTabView _reactCollectionTabView;
+#endif
 		private Control _previouslySelectedControl;
 		public event EventHandler CloseCurrentProject;
 		public event EventHandler ReopenCurrentProject;
@@ -83,7 +85,9 @@ namespace Bloom.Workspace
 
 		public WorkspaceView(WorkspaceModel model,
 							Control libraryView,
+#if SHOW_REACT_COLLECTION_TAB
 							ReactCollectionTabView reactCollectionsTabsView,
+#endif
 							EditingView.Factory editingViewFactory,
 							PublishView.Factory pdfViewFactory,
 							CollectionSettingsDialog.Factory settingsDialogFactory,
@@ -167,15 +171,12 @@ namespace Bloom.Workspace
 			this._legacyCollectionView.Dock = DockStyle.Fill;
 			_legacyCollectionTab.Tag = _legacyCollectionView;
 
-			_reactCollectionTabView = reactCollectionsTabsView;
 #if SHOW_REACT_COLLECTION_TAB // we will turn this back on for Bloom 5.2
-			
+			_reactCollectionTabView = reactCollectionsTabsView;
+
 			_reactCollectionTabView.ManageSettings(_settingsLauncherHelper);
 			_reactCollectionTabView.Dock = DockStyle.Fill;
 			_reactCollectionTab.Tag = _reactCollectionTabView;
-#else
-			reactCollectionsTabsView.Visible = false;  
-			_reactCollectionTab.Visible = false;
 #endif
 			//
 			// _editingView
@@ -197,15 +198,15 @@ namespace Bloom.Workspace
 
 #if SHOW_REACT_COLLECTION_TAB
 			this._legacyCollectionTab.Text = "Legacy"; // _legacyCollectionView.CollectionTabLabel;
+			this._reactCollectionTab.Text = _reactCollectionTabView.CollectionTabLabel;
 #else
 			this._legacyCollectionTab.Text =  _legacyCollectionView.CollectionTabLabel;
 #endif
-			this._reactCollectionTab.Text = _reactCollectionTabView.CollectionTabLabel;
 
 			SetTabVisibility(_publishTab, false);
 			SetTabVisibility(_editTab, false);
-#if SHOW_REACT_COLLECTION_TAB
 
+#if SHOW_REACT_COLLECTION_TAB
 			_tabStrip.SelectedTab = _reactCollectionTab;
 			SelectPage(_reactCollectionTabView);
 #else
