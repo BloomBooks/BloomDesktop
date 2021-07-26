@@ -162,6 +162,8 @@ namespace BloomTests.Spreadsheet
 		// or (_sheetFromFile, _rowsFromFile) to set as _sheet and _rows.
 		private InternalSpreadsheet _sheet;
 		private List<ContentRow> _rows;
+		private List<ContentRow> _imageRows;
+		private List<ContentRow> _textRows;
 		private InternalSpreadsheet _sheetFromExport;
 		private List<ContentRow> _rowsFromExport;
 		private InternalSpreadsheet _sheetFromFile;
@@ -171,7 +173,7 @@ namespace BloomTests.Spreadsheet
 		{
 			var dom = new HtmlDom(kSimpleTwoPageBook, true);
 			_exporter = new SpreadsheetExporter();
-			_sheetFromExport = _exporter.Export(dom);
+			_sheetFromExport = _exporter.Export(dom, "fakeImagesFolderpath");
 			_rowsFromExport = _sheetFromExport.ContentRows.ToList();
 			using (var tempFile = TempFile.WithExtension("xslx"))
 			{
@@ -204,6 +206,26 @@ namespace BloomTests.Spreadsheet
 					Assert.That(source, Is.Not.EqualTo(source));
 					break;
 			}
+			(_imageRows, _textRows) = splitRows(_rows);
+		}
+
+		public static (List<ContentRow>, List<ContentRow>) splitRows(List<ContentRow> allRows)
+		{
+			var imageRows = new List<ContentRow>();
+			var textRows = new List<ContentRow>();
+			foreach (ContentRow row in allRows)
+			{
+				// Does not copy any header present
+				if (row.GetCell(InternalSpreadsheet.MetadataKeyLabel).Content.Equals(InternalSpreadsheet.ImageKeyLabel))
+				{
+					imageRows.Add(row);
+				}
+				else if (row.GetCell(InternalSpreadsheet.MetadataKeyLabel).Content.Equals(InternalSpreadsheet.TextGroupLabel))
+				{
+					textRows.Add(row);
+				}
+			}
+			return (imageRows, textRows);
 		}
 
 		[TestCase("fromExport")]
@@ -213,16 +235,16 @@ namespace BloomTests.Spreadsheet
 			SetupFor(source);
 			var offset = _sheet.StandardLeadingColumns.Length;
 			// The first row has data from the second element in the document, because of tabindex.
-			Assert.That(_rows[0].GetCell(offset).Text, Is.EqualTo("This elephant is running amok. Causing much damage."));
-			Assert.That(_rows[0].GetCell(offset + 1).Text, Is.EqualTo("This French elephant is running amok. Causing much damage."));
-			Assert.That(_rows[1].GetCell(offset).Text, Is.EqualTo("Elephants should be handled with much care."));
+			Assert.That(_textRows[0].GetCell(offset).Text, Is.EqualTo("This elephant is running amok. Causing much damage."));
+			Assert.That(_textRows[0].GetCell(offset + 1).Text, Is.EqualTo("This French elephant is running amok. Causing much damage."));
+			Assert.That(_textRows[1].GetCell(offset).Text, Is.EqualTo("Elephants should be handled with much care."));
 			// French is third in its group, but French is the second language encountered, so it should be in the second cell of its row.
-			Assert.That(_rows[1].GetCell(offset + 1).Text, Is.EqualTo("French elephants should be handled with special care."));
-			Assert.That(_rows[1].GetCell(offset + 2).Text, Is.EqualTo("German elephants are quite orderly."));
+			Assert.That(_textRows[1].GetCell(offset + 1).Text, Is.EqualTo("French elephants should be handled with special care."));
+			Assert.That(_textRows[1].GetCell(offset + 2).Text, Is.EqualTo("German elephants are quite orderly."));
 
-			Assert.That(_rows[2].GetCell(offset).Text, Is.EqualTo("Riding on elephants can be risky."));
-			Assert.That(_rows[2].GetCell(offset + 1).Text, Is.EqualTo("Riding on French elephants can be more risky."));
-			Assert.That(_rows[2].GetCell(offset + 2).Text, Is.EqualTo("Riding on German elephants can be less risky."));
+			Assert.That(_textRows[2].GetCell(offset).Text, Is.EqualTo("Riding on elephants can be risky."));
+			Assert.That(_textRows[2].GetCell(offset + 1).Text, Is.EqualTo("Riding on French elephants can be more risky."));
+			Assert.That(_textRows[2].GetCell(offset + 2).Text, Is.EqualTo("Riding on German elephants can be less risky."));
 
 		}
 
@@ -231,10 +253,10 @@ namespace BloomTests.Spreadsheet
 		public void InsertsGroupNumbers(string source)
 		{
 			SetupFor(source);
-			var groupIndex = _sheet.ColumnForTag(InternalSpreadsheet.IndexOnPageLabel);
-			Assert.That(_rows[0].GetCell(groupIndex).Content, Is.EqualTo("1"));
-			Assert.That(_rows[1].GetCell(groupIndex).Content, Is.EqualTo("2"));
-			Assert.That(_rows[2].GetCell(groupIndex).Content, Is.EqualTo("1"));
+			var groupIndex = _sheet.ColumnForTag(InternalSpreadsheet.TextIndexOnPageLabel);
+			Assert.That(_textRows[0].GetCell(groupIndex).Content, Is.EqualTo("1"));
+			Assert.That(_textRows[1].GetCell(groupIndex).Content, Is.EqualTo("2"));
+			Assert.That(_textRows[2].GetCell(groupIndex).Content, Is.EqualTo("1"));
 
 		}
 
@@ -252,13 +274,13 @@ namespace BloomTests.Spreadsheet
 		{
 			SetupFor(source);
 			var pageNumIndex = _sheet.ColumnForTag(InternalSpreadsheet.PageNumberLabel);
-			
-			Assert.That(_rows[0].GetCell(pageNumIndex).Content, Is.EqualTo("1"));
-			Assert.That(_rows[1].GetCell(pageNumIndex).Content, Is.EqualTo("1"));
-			Assert.That(_rows[2].GetCell(pageNumIndex).Content, Is.EqualTo("2"));
-			Assert.That(_rows[0].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.TextGroupLabel));
-			Assert.That(_rows[1].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.TextGroupLabel));
-			Assert.That(_rows[2].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.TextGroupLabel));
+
+			Assert.That(_textRows[0].GetCell(pageNumIndex).Content, Is.EqualTo("1"));
+			Assert.That(_textRows[1].GetCell(pageNumIndex).Content, Is.EqualTo("1"));
+			Assert.That(_textRows[2].GetCell(pageNumIndex).Content, Is.EqualTo("2"));
+			Assert.That(_textRows[0].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.TextGroupLabel));
+			Assert.That(_textRows[1].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.TextGroupLabel));
+			Assert.That(_textRows[2].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.TextGroupLabel));
 		}
 
 		[Test]
@@ -324,10 +346,13 @@ namespace BloomTests.Spreadsheet
 			var dom = new HtmlDom(kVerySimpleBook, true);
 			var exporter = new SpreadsheetExporter();
 			exporter.Params = new SpreadsheetExportParams() {RetainMarkup = true};
-			var sheet = exporter.Export(dom);
+			var sheet = exporter.Export(dom,  "fakeImagesFolderpath");
 			var rows = sheet.ContentRows.ToList();
+			List<ContentRow> imageRows;
+			List<ContentRow> textRows;
+			(imageRows, textRows) = SpreadsheetTests.splitRows(rows);
 			var offset = sheet.StandardLeadingColumns.Length;
-			Assert.That(rows[0].GetCell(offset).Content.Trim(), Is.EqualTo(
+			Assert.That(textRows[0].GetCell(offset).Content.Trim(), Is.EqualTo(
 				"<p><span id=\"e4bc05e5-4d65-4016-9bf3-ab44a0df3ea2\" class=\"bloom-highlightSegment\" recordingmd5=\"undefined\">This elephant is running amok.</span> <span id=\"i2ba966b6-4212-4821-9268-04e820e95f50\" class=\"bloom-highlightSegment\" recordingmd5=\"undefined\">Causing much damage.</span></p>"));
 		}
 
@@ -336,10 +361,13 @@ namespace BloomTests.Spreadsheet
 		{
 			var dom = new HtmlDom(kVerySimpleBook, true);
 			var exporter = new SpreadsheetExporter();
-			var sheet = exporter.Export(dom);
+			var sheet = exporter.Export(dom,  "fakeImagesFolderpath");
 			var rows = sheet.ContentRows.ToList();
+			List<ContentRow> imageRows;
+			List<ContentRow> textRows;
+			(imageRows, textRows) = SpreadsheetTests.splitRows(rows);
 			var offset = sheet.StandardLeadingColumns.Length;
-			Assert.That(rows[0].GetCell(offset).Content.Trim(), Is.EqualTo(
+			Assert.That(textRows[0].GetCell(offset).Content.Trim(), Is.EqualTo(
 				"This elephant is running amok. Causing much damage."));
 		}
 

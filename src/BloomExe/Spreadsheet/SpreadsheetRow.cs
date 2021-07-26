@@ -26,6 +26,12 @@ namespace Bloom.Spreadsheet
 			_cells[index] = content;
 		}
 
+		public void SetCell(string columnName, string content)
+		{
+			int index = Spreadsheet.ColumnForTag(columnName);
+			SetCell(index, content);
+		}
+
 		public string PageNumber
 		{
 			get
@@ -40,6 +46,11 @@ namespace Bloom.Spreadsheet
 			if (index >= _cells.Count)
 				return new SpreadsheetCell() {Content = ""};
 			return new SpreadsheetCell() {Content = _cells[index]};
+		}
+
+		public SpreadsheetCell GetCell(string columnName)
+		{
+			return GetCell(Spreadsheet.ColumnForTag(columnName));
 		}
 
 		public int Count => _cells.Count;
