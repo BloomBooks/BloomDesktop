@@ -111,6 +111,7 @@ export const DialogTitle: React.FunctionComponent<{
                 css={css`
                     margin-top: auto;
                     margin-bottom: auto;
+                    font-family: "Roboto";
                 `}
             >
                 {props.title}
