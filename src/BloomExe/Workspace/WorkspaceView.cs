@@ -265,10 +265,11 @@ _model.HandleTeamStuffBeforeGetBookCollections(() => _reactCollectionTabView.Rea
 			var selBookPath = Settings.Default.CurrentBookPath;
 			if (string.IsNullOrEmpty(selBookPath))
 				return;
-			var inEditableCollection = selBookPath.StartsWith(_collectionSettings.FolderPath);
-			if (Directory.Exists(selBookPath))
+			var inCurrentCollection = selBookPath.StartsWith(_collectionSettings.FolderPath);
+			// Don't restore current book selection unless it's in current collection.  See BL-10225.
+			if (inCurrentCollection && Directory.Exists(selBookPath))
 			{
-				var info = new BookInfo(selBookPath, inEditableCollection);
+				var info = new BookInfo(selBookPath, inCurrentCollection);
 				var book = _bookServer.GetBookFromBookInfo(info);
 				_bookSelection.SelectBook(book);
 			}
