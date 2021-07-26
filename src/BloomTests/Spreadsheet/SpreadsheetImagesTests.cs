@@ -14,10 +14,9 @@ using SIL.IO;
 
 namespace BloomTests.Spreadsheet
 {
-	//TODO
 	/// <summary>
-	/// Class tests using spreadsheet IO to change the language of a set of blocks.
-	/// Also the content of a couple of other elements is changed.
+	/// This class tests exporting a book with images to a spreadsheet and
+	/// verifying that image related information appears properly.
 	/// </summary>
 	public class SpreadsheetImagesTests
 	{
@@ -247,7 +246,5 @@ namespace BloomTests.Spreadsheet
 			var thumbnailColumn = _sheet.ColumnForTag(InternalSpreadsheet.ImageThumbnailLabel);
 			Assert.That(_imageRows[2].GetCell(thumbnailColumn).Text, Is.EqualTo("Bad image file"));
 		}
-
-
 	}
 }

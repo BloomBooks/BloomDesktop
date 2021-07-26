@@ -27,13 +27,15 @@ namespace BloomTests.Spreadsheet
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en']/p[text()='Riding on elephants can be risky.']", 1); // unchanged
 
 			// The tests in this class all check the results of importing what export produced,
-			// but with a couple of changes. Here we locate the cells produced from two particular
-			// bloom-editable elements in the kSimpleTwoPageBook DOM and replace them with different text.
-			// The import should update those bloom-editables to these changed values.
+			// but with some changes. 
 			var exporter = new SpreadsheetExporter();
 			_sheet = exporter.Export(_dom, "fakeImagesFolderpath");
+			// Changing this header will cause all the data that was originally tagged as German to be imported as Tok Pisin.
 			var indexDe = _sheet.ColumnForLang("de");
 			_sheet.Header.SetCell(indexDe, "[tpi]");
+			// Here we locate the cells produced from two particular
+			// bloom-editable elements in the kSimpleTwoPageBook DOM and replace them with different text.
+			// The import should update those bloom-editables to these changed values.
 			var engColumn = _sheet.ColumnForLang("en");
 			var firstCellToModify = _sheet.ContentRows.FirstOrDefault(row => row.GetCell(engColumn).Content == "This elephant is running amok. Causing much damage.");
 			Assert.IsNotNull(firstCellToModify, "Did not find the cell that OneTimeSetup was expecting to modify");
