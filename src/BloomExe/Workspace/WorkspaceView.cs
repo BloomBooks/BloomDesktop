@@ -1041,7 +1041,7 @@ namespace Bloom.Workspace
 
 		private void OnRegistrationMenuItem_Click(object sender, EventArgs e)
 		{
-			using (var dlg = new RegistrationDialog(true))
+			using (var dlg = new RegistrationDialog(true, _tcManager.UserMayChangeEmail))
 			{
 				dlg.ShowDialog();
 			}

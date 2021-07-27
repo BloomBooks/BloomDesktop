@@ -28,6 +28,8 @@ namespace Bloom.TeamCollection
 
 		bool CanEditBook();
 
+		bool UserMayChangeEmail { get; }
+
 		// ENHANCE: Add other properties and methods as needed
 	}
 
@@ -149,6 +151,16 @@ namespace Bloom.TeamCollection
 			if (CurrentCollectionEvenIfDisconnected == null || string.IsNullOrEmpty(bookFolderPath))
 				return false;
 			return CurrentCollectionEvenIfDisconnected.NeedCheckoutToEdit(bookFolderPath);
+		}
+
+		public bool UserMayChangeEmail
+		{
+			get
+			{
+				if (CurrentCollection == null)
+					return true;
+				return !CurrentCollection.AnyBooksCheckedOutHereByCurrentUser;
+			}
 		}
 
 		public bool CanEditBook()

@@ -80,7 +80,7 @@ namespace Bloom.TeamCollection
 
 		private void HandleShowRegistrationDialog(ApiRequest request)
 		{
-			using (var dlg = new RegistrationDialog(false))
+			using (var dlg = new RegistrationDialog(false, _tcManager.UserMayChangeEmail))
 			{
 				dlg.ShowDialog();
 			}

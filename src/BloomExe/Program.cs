@@ -775,7 +775,7 @@ namespace Bloom
 		{
 			if (RegistrationDialog.ShouldWeShowRegistrationDialog() && !_supressRegistrationDialog)
 			{
-				using (var dlg = new RegistrationDialog(false))
+				using (var dlg = new RegistrationDialog(false, _projectContext.TeamCollectionManager.UserMayChangeEmail))
 				{
 					if (_projectContext != null && _projectContext.ProjectWindow != null)
 						dlg.ShowDialog(_projectContext.ProjectWindow);
