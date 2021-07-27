@@ -262,15 +262,25 @@ namespace Bloom.Workspace
 			}
 		}
 
+		/// <summary>
+		/// Restore the the selection of the previously selected book, but only if the book is in either
+		/// the same collection (waiting to be edited) or in a source collection (waiting to be created
+		/// in the current collection).
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-10225.
+		/// </remarks>
 		private void SelectPreviouslySelectedBook()
 		{
 			var selBookPath = Settings.Default.CurrentBookPath;
-			if (string.IsNullOrEmpty(selBookPath))
+			if (string.IsNullOrEmpty(selBookPath) || !Directory.Exists(selBookPath))
 				return;
-			var inEditableCollection = selBookPath.StartsWith(_collectionSettings.FolderPath);
-			if (Directory.Exists(selBookPath))
+			var selBookCollectionFolder = Path.GetDirectoryName(selBookPath);
+			var inCurrentCollection = selBookCollectionFolder == _collectionSettings.FolderPath;
+			var inSourceFolder = !inCurrentCollection && _model.GetSourceCollectionFolders().ToList().Exists(folder => selBookCollectionFolder == folder);
+			if (inCurrentCollection || inSourceFolder)
 			{
-				var info = new BookInfo(selBookPath, inEditableCollection);
+				var info = new BookInfo(selBookPath, inCurrentCollection);
 				var book = _bookServer.GetBookFromBookInfo(info);
 				_bookSelection.SelectBook(book);
 			}
