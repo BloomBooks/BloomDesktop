@@ -172,6 +172,7 @@ namespace Bloom.Book
 		{
 			BookInfo.FolderPath = Storage.FolderPath;
 			UserPrefs.UpdateFileLocation(Storage.FolderPath);
+			ResetPreviewDom();
 		}
 
 		/// <summary>
@@ -707,6 +708,8 @@ namespace Bloom.Book
 		// Tests can run without ever setting Storage.  This check is currently enough for them to work.
 		public virtual string FolderPath => Storage?.FolderPath;
 
+		private HtmlDom _previewDom;
+
 		public virtual HtmlDom GetPreviewHtmlFileForWholeBook()
 		{
 			//we may already know we have an error (we might not discover until later)
@@ -718,7 +721,11 @@ namespace Bloom.Book
 			{
 				return GetErrorDom(Storage.GetValidateErrors());
 			}
-
+			if (_previewDom != null)
+			{
+				//Console.WriteLine("DEBUG GetPreviewHtmlFileForWholeBook(): using cached _previewDOM");
+				return _previewDom;
+			}
 			var previewDom= GetBookDomWithStyleSheets("previewMode.css", "origami.css");
 			AddCreationTypeAttribute(previewDom);
 
@@ -727,7 +734,7 @@ namespace Bloom.Book
 			{
 				return GetErrorDom();
 			}
-
+			//Console.WriteLine("DEBUG GetPreviewHtmlFileForWholeBook(): calling BringBookUpToDate() for new previewDOM");
 			BringBookUpToDate(previewDom, new NullProgress());
 
 			// this is normally the vernacular, but when we're previewing a shell, well it won't have anything for the vernacular
@@ -750,7 +757,8 @@ namespace Bloom.Book
 
 			// Not needed for preview mode, so just remove them to reduce memory usage.
 			PreventVideoAutoLoad(previewDom);
-			
+
+			_previewDom = previewDom;
 			return previewDom;
 		}
 
@@ -2617,7 +2625,7 @@ namespace Bloom.Book
 			// and later do the stuff that involves the new page.
 			_pageSelection.PrepareToSelectPage();
 
-			ClearPagesCache();
+			ClearCachedDataFromDom();
 
 			if(templatePage.Book !=null) // will be null in some unit tests that are unconcerned with stylesheets
 				HtmlDom.AddStylesheetFromAnotherBook(templatePage.Book.OurHtmlDom, OurHtmlDom);
@@ -2871,7 +2879,7 @@ namespace Bloom.Book
 
 			var pageToShowNext = GetPageToShowAfterDeletion(page);
 
-			ClearPagesCache();
+			ClearCachedDataFromDom();
 			//_pagesCache.Remove(page);
 			OrderOrNumberOfPagesChanged();
 
@@ -2895,9 +2903,15 @@ namespace Bloom.Book
 				IsPrimaryLanguageRtl);
 		}
 
-		private void ClearPagesCache()
+		private void ClearCachedDataFromDom()
 		{
 			_pagesCache = null;
+			ResetPreviewDom();
+		}
+
+		internal void ResetPreviewDom()
+		{
+			_previewDom = null;
 		}
 
 		/// <summary>
@@ -3074,7 +3088,7 @@ namespace Bloom.Book
 				return false;
 			}
 
-			ClearPagesCache();
+			ClearCachedDataFromDom();
 
 			var pages = GetPageElements();
 			var pageDiv = FindPageDiv(page);
@@ -3099,7 +3113,7 @@ namespace Bloom.Book
 		{
 			if (renamedTo != null)
 				BookInfo.FolderPath = renamedTo;
-			_pagesCache = null; // before updating storage, which sends some events that could use the obsolete one
+			ClearCachedDataFromDom(); // before updating storage, which sends some events that could use the obsolete one
 			Storage.ReloadFromDisk(renamedTo, () => {
 				// This needs to happen after we've created the new DOM, but before
 				// we start broadcasting rename events that may assume the book is
@@ -3488,6 +3502,7 @@ namespace Bloom.Book
 
 		private void DoPostSaveTasks()
 		{
+			ResetPreviewDom();
 			// Tell the accessibility checker window (and any future subscriber) to re-compute.
 			// This Task.Delay() helps even with a delay of 0, becuase it means we get to finish with this command.
 			// I'm chooing 1 second at the moment as that feels about the longest I would want to
