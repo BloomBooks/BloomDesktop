@@ -1,4 +1,4 @@
-﻿/*************************************************************************************************
+/*************************************************************************************************
   Required Notice: Copyright (C) EPPlus Software AB. 
   This software is licensed under PolyForm Noncommercial License 1.0.0 
   and may only be used for noncommercial purposes 
@@ -14,7 +14,9 @@ using Bloom.ImageProcessing;
 using System;
 using System.Drawing;
 using System.IO;
+using System.Xml;
 using OfficeOpenXml;
+using OfficeOpenXml.Style;
 using SIL.IO;
 
 namespace Bloom.Spreadsheet
@@ -35,7 +37,7 @@ namespace Bloom.Spreadsheet
 			ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 		}
 
-		public static void WriteSpreadsheet(InternalSpreadsheet spreadsheet, string outputPath)
+		public static void WriteSpreadsheet(InternalSpreadsheet spreadsheet, string outputPath, bool retainMarkup)
 		{
 			using (var package = new ExcelPackage())
 			{
@@ -61,7 +63,36 @@ namespace Bloom.Spreadsheet
 						// that contain simple numbers can be treated accordingly.
 						// It might be helpful for some uses of the group-on-page-index
 						// if Excel knew to treat them as numbers.
-						worksheet.Cells[r, c+1].Value = row.GetCell(c).Content;
+
+						var content = row.GetCell(c).Content;
+						// Parse xml for markdown formatting on language columns,
+						// Display formatting in excel spreadsheet
+						if (!retainMarkup && c >= spreadsheet.StandardLeadingColumns.Length)
+                        {
+							//TODO when we implement importing with formatting, make sure this
+							//gets (round-trip) unit tested
+							MarkedUpText markedUpText = ParseXml(content);
+							ExcelRange currentCell = worksheet.Cells[r, c + 1];
+							currentCell.IsRichText = true;
+							foreach (MarkedUpTextRun run in markedUpText)
+							{
+								if (!run.Text.Equals(""))
+								{
+									ExcelRichText text = currentCell.RichText.Add(run.Text);
+									text.Bold = run.Bold;
+									text.Italic = run.Italic;
+									text.UnderLine = run.Underlined;
+									if (run.Superscript)
+									{
+										text.VerticalAlign = ExcelVerticalAlignmentFont.Superscript;
+									}
+								}
+							}
+						}
+						else
+						{
+							worksheet.Cells[r, c + 1].Value = content;
+						}
 
 						//Embed any images in the excel file
 						if (c == imageSourceColumn)
@@ -80,9 +111,6 @@ namespace Bloom.Spreadsheet
 						}
 					}
 				}
-				// Review: is this helpful? Excel typically makes very small cells, so almost
-				// nothing of a cell's content can be seen, and that only markup. But it also
-				// starts out with very narrow cells, so WrapText makes them almost unmanageably tall.
 				worksheet.Cells[1, 1, r, spreadsheet.ColumnCount].Style.WrapText = true;
 
 
@@ -132,6 +160,81 @@ namespace Bloom.Spreadsheet
 				}
 			}
 		}
+
+		/// <summary>
+		/// Extract the text and any bold, italic, underline, and/or superscript formatting
+		/// Adds newlines after paragraphs, but drops leading and trailing, but not intermediate, white space.
+		/// </summary>
+		public static MarkedUpText ParseXml(string xmlString)
+		{
+			try
+			{
+				XmlDocument doc = new XmlDocument();
+				doc.PreserveWhitespace = true;
+				doc.LoadXml(xmlString);
+				XmlNode root = (XmlNode)doc.DocumentElement;
+				MarkedUpText markedUpText = parseXmlRecursive(root);
+
+				//remove leading and trailing whitespace. We don't want a trailing newline which
+				//will make excel put a blank line at the end of the cell
+				while (markedUpText.Count > 0 && string.IsNullOrWhiteSpace(markedUpText[0].Text))
+				{
+					markedUpText.RemoveAt(0);
+				}
+				while (markedUpText.Count > 0 && string.IsNullOrWhiteSpace(markedUpText[markedUpText.Count - 1].Text))
+				{
+					markedUpText.RemoveAt(markedUpText.Count - 1);
+				}
+				return markedUpText;
+			}
+			catch (XmlException) 
+			{
+				//String is not XML, return a MarkedupText object with the original string
+				MarkedUpTextRun run = new MarkedUpTextRun(xmlString);
+				MarkedUpText markedUpText = new MarkedUpText();
+				markedUpText.Add(run);
+				return markedUpText;
+			}
+		}
+
+		private static MarkedUpText parseXmlRecursive(XmlNode node)
+		{
+			MarkedUpText markedUpText;
+			if (!node.HasChildNodes)
+			{
+				MarkedUpTextRun run = new MarkedUpTextRun(node.InnerText);
+				markedUpText = new MarkedUpText();
+				markedUpText.Add(run);
+			}
+			else
+			{
+				markedUpText = new MarkedUpText();
+				foreach (XmlNode child in node.ChildNodes)
+				{
+					MarkedUpText markedUpChild = parseXmlRecursive(child);
+					applyFormatting(node.Name, markedUpChild);
+					markedUpText.AddRange(markedUpChild);
+				}
+			}
+			if (node.Name == "p")
+			{
+				// add a newline
+				markedUpText.Add(new MarkedUpTextRun("\r\n"));
+				// Review or Environment.Newline? But I'd rather generate something consistent.
+				// Linux: what line break is best to use when constructing an Excel spreadsheet in Linux?
+			}
+			return markedUpText;
+			
+		}
+
+		private static void applyFormatting(string formatName, MarkedUpText markedUpText)
+		{
+			foreach (MarkedUpTextRun run in markedUpText)
+			{
+				run.setProperty(formatName);
+			}
+		}
+		
 
 		public static void ReadSpreadsheet(InternalSpreadsheet spreadsheet, string path)
 		{

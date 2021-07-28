@@ -37,11 +37,11 @@ namespace BloomTests.Spreadsheet
 			// bloom-editable elements in the kSimpleTwoPageBook DOM and replace them with different text.
 			// The import should update those bloom-editables to these changed values.
 			var engColumn = _sheet.ColumnForLang("en");
-			var firstCellToModify = _sheet.ContentRows.FirstOrDefault(row => row.GetCell(engColumn).Content == "This elephant is running amok. Causing much damage.");
+			var firstCellToModify = _sheet.ContentRows.FirstOrDefault(row => row.GetCell(engColumn).Content.Contains("This elephant is running amok."));
 			Assert.IsNotNull(firstCellToModify, "Did not find the cell that OneTimeSetup was expecting to modify");
 			firstCellToModify.SetCell(engColumn, "<p>This elephant is running amok.</p>");
 			var frColumn = _sheet.ColumnForLang("fr");
-			var secondCellToModify = _sheet.ContentRows.FirstOrDefault(row => row.GetCell(frColumn).Content == "Riding on French elephants can be more risky.");
+			var secondCellToModify = _sheet.ContentRows.FirstOrDefault(row => row.GetCell(frColumn).Content.Contains("Riding on French elephants can be more risky."));
 			Assert.IsNotNull(secondCellToModify, "Did not find the cell that OneTimeSetup was expecting to modify");
 			secondCellToModify.SetCell(frColumn, "<p>Riding on French elephants can be very risky.</p>");
 			var importer = new SpreadsheetImporter(this._dom, _sheet);

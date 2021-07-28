@@ -378,6 +378,7 @@
     <Compile Include="Publish\InclusionSetting.cs" />
     <Compile Include="Publish\LangsToPublishSetting.cs" />
     <Compile Include="Publish\LanguagePublishInfo.cs" />
+    <Compile Include="Spreadsheet\MarkedUpText.cs" />
     <Compile Include="Spreadsheet\ContentRow.cs" />
     <Compile Include="Spreadsheet\HeaderRow.cs" />
     <Compile Include="Spreadsheet\InternalSpreadsheet.cs" />
