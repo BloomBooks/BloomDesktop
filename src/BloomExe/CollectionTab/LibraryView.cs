@@ -230,5 +230,10 @@ namespace Bloom.CollectionTab
 		{
 			_collectionListView.ReadyToShowCollections();
 		}
+
+		public void HandleRenameCommand()
+		{
+			_collectionListView.HandleRenameCommand();
+		}
 	}
 }
