@@ -288,9 +288,28 @@ namespace Bloom.CollectionTab
 			get { return 300; }
 		}
 
-		protected override void OnLoad(EventArgs e)
+		// Much of our initialization must only be done after synchronizing team collections,
+		// and also after we are loaded. The loading of Team Collections is currently arranged
+		// in the OnLoad method of WorkspaceView, which currently (I'm not sure exactly why)
+		// happens AFTER the LibraryListView OnLoad(), where we used to do this initialization.
+		// ReadyToShowCollections() is called AFTER any necessary TC sync in the WorkspaceView
+		// OnLoad. So, currently it would be OK to just do the init in ReadyToShowCollections.
+		// But I think it's safer not to count on the sequence of OnLoad events. Here, we maintain
+		// two flags, and only when BOTH ReadyToLoadCollections AND OnLoad have been called
+		// do we do the initialization that requires both a valid state of the collection on disk
+		// and that this control is ready.
+		private bool _readyToShowCollections;
+		private bool _loaded;
+		public void ReadyToShowCollections()
 		{
-			base.OnLoad(e);
+			_readyToShowCollections = true;
+			MainInitializationWhenReady();
+		}
+
+		private void MainInitializationWhenReady()
+		{
+			if (!_loaded || !_readyToShowCollections)
+				return; // will be called again when both are true.
 			// Add the distinct stages of initialization we want to do as StartupScreenManager actions.
 			// This ensures they don't conflict with any dialogs we want to launch at startup,
 			// and don't happen unexpectedly because of idle events while modal dialogs are open.
@@ -325,27 +344,35 @@ namespace Bloom.CollectionTab
 
 			// previously: stage LoadSourceCollections
 			_startupActions.Add(StartupScreenManager.AddStartupAction(() =>
+			{
+				LoadSourceCollectionButtons();
+				if (Program.PathToBookDownloadedAtStartup != null)
 				{
-					LoadSourceCollectionButtons();
-					if (Program.PathToBookDownloadedAtStartup != null)
-					{
-						// We started up with a command to downloaded a book...Select it.
-						SelectBook(new BookInfo(Program.PathToBookDownloadedAtStartup, false));
-					} else if (_bookSelection.CurrentSelection != null)
-					{
-						// This might have happened already...it might also have happened before
-						// the button we want hilighted got created.
-						HighlightBookButtonAndShowContextMenuButton(_bookSelection.CurrentSelection.BookInfo);
-					}
-				}));
+					// We started up with a command to downloaded a book...Select it.
+					SelectBook(new BookInfo(Program.PathToBookDownloadedAtStartup, false));
+				}
+				else if (_bookSelection.CurrentSelection != null)
+				{
+					// This might have happened already...it might also have happened before
+					// the button we want hilighted got created.
+					HighlightBookButtonAndShowContextMenuButton(_bookSelection.CurrentSelection.BookInfo);
+				}
+			}));
 			// previously: stage FinalizeSetup
 			_startupActions.Add(StartupScreenManager.AddStartupAction(() =>
-				{
-					// If we repair duplicates and there is a reason to toast (e.g. locked meta.json file),
-					// The ongoing UI activity focuses Bloom over top of the toast after a brief flash.
-					// For that reason, we add a new stage for tasks that need to happen after the UI is updated.
-					RepairDuplicates();
-				}));
+			{
+				// If we repair duplicates and there is a reason to toast (e.g. locked meta.json file),
+				// The ongoing UI activity focuses Bloom over top of the toast after a brief flash.
+				// For that reason, we add a new stage for tasks that need to happen after the UI is updated.
+				RepairDuplicates();
+			}));
+		}
+
+		protected override void OnLoad(EventArgs e)
+		{
+			base.OnLoad(e);
+			_loaded = true;
+			MainInitializationWhenReady();
 		}
 
 		List<IStartupAction> _startupActions = new List<IStartupAction>();
