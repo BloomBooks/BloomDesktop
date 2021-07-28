@@ -200,10 +200,19 @@ namespace Bloom.Book
 		{
 			get
 			{
+				if (BookInfo.NameLocked)
+				{
+					// The user has explicitly chosen a name to use for the book, distinct from its titles.
+					return Path.GetFileName(FolderPath);
+				}
 				return GetBestTitleForDisplay(_bookData.GetMultiTextVariableOrEmpty("bookTitle"), _bookData.GetBasicBookLanguageCodes().ToList(), IsEditable);
 			}
 		}
 
+		/// <summary>
+		/// Get the best title to display for the given multilingual title and list of languages.
+		/// Do NOT use this method for a book if its BookInfo is NameLocked!
+		/// </summary>
 		public static string GetBestTitleForDisplay(MultiTextBase title, List<string> langCodes, bool isEditable)
 		{
 			var display = title.GetExactAlternative(langCodes[0]);
@@ -3009,7 +3018,8 @@ namespace Bloom.Book
 					return;
 				}
 
-				Storage.UpdateBookFileAndFolderName(CollectionSettings);
+				if (!BookInfo.NameLocked)
+					Storage.UpdateBookFileAndFolderName(CollectionSettings);
 				//review used to have   UpdateBookFolderAndFileNames(data);
 
 				//Enhance: if this is only used to re-show the thumbnail, why not limit it to if this is the cover page?
@@ -3468,7 +3478,7 @@ namespace Bloom.Book
 			Guard.Against(!IsEditable, "Tried to save a non-editable book.");
 			RemoveObsoleteSoundAttributes(OurHtmlDom);
 			_bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo);//will update the title if needed
-			if(!LockDownTheFileAndFolderName)
+			if(!LockDownTheFileAndFolderName && !BookInfo.NameLocked)
 			{
 				Storage.UpdateBookFileAndFolderName(CollectionSettings); //which will update the file name if needed
 			}
@@ -4235,6 +4245,33 @@ namespace Bloom.Book
 
 			return languagesWithAudio;
 		}
-}
+
+		/// <summary>
+		/// The book has been given the indicated name by the user, or some other process
+		/// like making a backup that means we permanently want a name not matching the title.
+		/// This is distinct from giving it an automatic name based on editing the Title.
+		/// Typically, the user has explicitly used the Rename command to specify that this
+		/// should be the name. If it is empty, we will go back to using an automatic
+		/// name. Otherwise, this will be its name, and it will not be subject to rename
+		/// by title editing.
+		/// </summary>
+		/// <param name="newName"></param>
+		public void SetAndLockBookName(string newName)
+		{
+			if (!string.IsNullOrWhiteSpace(newName))
+			{
+				Storage.SetBookName(newName);
+				BookInfo.NameLocked = true;
+				BookInfo.Save();
+			}
+			else
+			{
+				// Back to automatic name
+				Storage.UpdateBookFileAndFolderName(CollectionSettings);
+				BookInfo.NameLocked = false;
+				BookInfo.Save();
+			}
+		}
+	}
 }
 

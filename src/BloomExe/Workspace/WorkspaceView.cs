@@ -234,6 +234,12 @@ namespace Bloom.Workspace
 			SelectPreviouslySelectedBook();
 		}
 
+		public void HandleRenameCommand()
+		{
+			if (CurrentTabView == _legacyCollectionView)
+				_legacyCollectionView.HandleRenameCommand();
+		}
+
 		protected override void OnLoad(EventArgs e)
 		{
 			base.OnLoad(e);
