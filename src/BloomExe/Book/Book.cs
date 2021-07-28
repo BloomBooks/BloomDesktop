@@ -3667,6 +3667,8 @@ namespace Bloom.Book
 		/// </remarks>
 		public static string MakeVersionCode(string fileContent, string filePath = null)
 		{
+			//var debugBldr = new StringBuilder();
+			//string debugPath = null;
 			var simplified = fileContent;
 			// In general, whitespace sequences are equivalent to a single space.
 			// If the user types multiple spaces all but one will be removed.
@@ -3675,6 +3677,7 @@ namespace Bloom.Book
 			simplified = new Regex(@">\s+<").Replace(simplified, "><");
 			// A space before (or inside) a <br/> element doesn't matter.
 			simplified = new Regex(@"\s+<br\s*/>").Replace(simplified, "<br/>");
+			simplified = new Regex(@"<br\s+/>").Replace(simplified, "<br/>");
 			// Ignore the generator metadata: precise version of Bloom doesn't matter
 			simplified = new Regex(@"<meta name=""Generator""[^>]*></meta>").Replace(simplified, "");
 			// The order of divs inside the bloomDataDiv is neither important nor deterministic, so we sort it.
@@ -3692,6 +3695,13 @@ namespace Bloom.Book
 				sha.TransformBlock(bytes, 0, bytes.Length, bytes, 0);
 				if (filePath != null)
 				{
+					//debugBldr.AppendLineFormat("Hashing {0}", filePath);
+					//using (var sha2 = SHA256.Create())
+					//{
+					//	sha2.TransformBlock(bytes, 0, bytes.Length, bytes, 0);
+					//	sha2.TransformFinalBlock(new byte[0], 0, 0);
+					//	debugBldr.AppendLineFormat("hashing simplified HTML [{0} bytes] => {1}", bytes.Length, Convert.ToBase64String(sha2.Hash));
+					//}
 					var folder = Path.GetDirectoryName(filePath);
 					// Order must be predictable but does not otherwise matter.
 					foreach (var path in Directory.GetFiles(folder, "*", SearchOption.AllDirectories).OrderBy(x => x))
@@ -3707,10 +3717,12 @@ namespace Bloom.Book
 						// .status files contain the output of this function among other team collection
 						// information; counting them would mean that writing a new status with the
 						// new version code would immediately change the next version code computed.
-						if (ext == ".pdf" || ext == ".status" || ext == ".bak")
+						// .BloomBookOrder files are essentially copies of the meta.json files.
+						if (ext == ".pdf" || ext == ".status" || ext == ".bak" || ext == ".BloomBookOrder")
 							continue;
 						if (path == filePath)
 							continue; // we already included a simplified version of the main HTML file
+						//AppendDebugInfo(debugBldr, path);
 						using (var input = new FileStream(path, FileMode.Open))
 						{
 							byte[] buffer = new byte[4096];
@@ -3726,15 +3738,35 @@ namespace Bloom.Book
 						var name = Path.GetFileName(path);
 						if (name == "customCollectionStyles.css" || name.EndsWith(".bloomCollection", StringComparison.Ordinal))
 						{
+							//AppendDebugInfo(debugBldr, path);
 							byte[] buffer = RobustFile.ReadAllBytes(path);
 							sha.TransformBlock(buffer, 0, buffer.Length, buffer, 0);
 						}
 					}
+					//var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+					//debugPath = Path.Combine(folder, "DebugHashing-" + timestamp + ".bak");	// .bak gets ignored
+					//File.WriteAllText(Path.Combine(folder, "SimplifiedHtml-" + timestamp + ".bak"), simplified);
 				}
 				sha.TransformFinalBlock(new byte[0], 0, 0);
+				//if (debugPath != null)
+				//{
+				//	debugBldr.AppendLineFormat("final hash = {0}", Convert.ToBase64String(sha.Hash));
+				//	File.WriteAllText(debugPath, debugBldr.ToString());
+				//}
 				return Convert.ToBase64String(sha.Hash);
 			}
 		}
+
+		//private static void AppendDebugInfo(StringBuilder debugBldr, string path)
+		//{
+		//	using (var sha2 = SHA256.Create())
+		//	{
+		//		byte[] buffer = RobustFile.ReadAllBytes(path);
+		//		sha2.TransformBlock(buffer, 0, buffer.Length, buffer, 0);
+		//		sha2.TransformFinalBlock(new byte[0], 0, 0);
+		//		debugBldr.AppendLineFormat("hashing {0} [{1} bytes] => {2}", Path.GetFileName(path), buffer.Length, Convert.ToBase64String(sha2.Hash));
+		//	}
+		//}
 
 		private static string SortDataDivElements(string htmlText)
 		{
