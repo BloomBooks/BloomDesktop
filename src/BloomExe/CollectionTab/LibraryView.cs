@@ -225,5 +225,10 @@ namespace Bloom.CollectionTab
 		{
 			// probably will do GetWorkspaceView().OpenTCStatus();
 		}
+
+		public void ReadyToShowCollections()
+		{
+			_collectionListView.ReadyToShowCollections();
+		}
 	}
 }

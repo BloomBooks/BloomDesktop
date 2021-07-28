@@ -246,6 +246,7 @@ namespace Bloom.Workspace
 #if SHOW_REACT_COLLECTION_TAB
 				_reactCollectionTabView.ReadyToShowCollections();
 #endif
+				_legacyCollectionView.ReadyToShowCollections();
 			} else
 			{
 				StartupScreenManager.AddStartupAction(() =>
@@ -259,6 +260,7 @@ namespace Bloom.Workspace
 					{}
 #endif
 					);
+					_legacyCollectionView.ReadyToShowCollections();
 				}, shouldHideSplashScreen: true);
 			}
 		}

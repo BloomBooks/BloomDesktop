@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -57,14 +58,23 @@ public class CollectionHistory
 	{
 		var all = collection.GetBookInfos().Select(bookInfo =>
 		{
-			var events = BookHistory.GetHistory(bookInfo);
-			// add in the title, which isn't in the database (this could done in a way that involves less duplication)
-			events.ForEach(e=>
+			if (Directory.Exists(bookInfo.FolderPath))
 			{
-				e.Title = bookInfo.Title;
-				e.ThumbnailPath = Path.Combine(bookInfo.FolderPath, "thumbnail.png").ToLocalhost();
-			});
-			return events;
+				var events = BookHistory.GetHistory(bookInfo);
+				// add in the title, which isn't in the database (this could done in a way that involves less duplication)
+				events.ForEach(e =>
+				{
+					e.Title = bookInfo.Title;
+					e.ThumbnailPath = Path.Combine(bookInfo.FolderPath, "thumbnail.png").ToLocalhost();
+				});
+				return events;
+			}
+			else
+			{
+				Debug.Fail($"Trying to get history of folder {bookInfo.FolderPath} but it does not exist");
+				// In production, if the book doesn't exist we just don't include any history for it.
+				return new List<BookHistoryEvent>();
+			}
 		});
 
 		// strip out, if there are no events
