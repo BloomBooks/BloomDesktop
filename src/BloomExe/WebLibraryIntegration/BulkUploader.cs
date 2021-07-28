@@ -333,7 +333,8 @@ namespace Bloom.WebLibraryIntegration
 				}
 				if (blPublishModel.MetadataIsReadyToPublish && (languagesToUpload.Any() || blPublishModel.OkToUploadWithNoLanguages))
 				{
-					if (blPublishModel.BookIsAlreadyOnServer)
+					bool updatingBook = blPublishModel.BookIsAlreadyOnServer;	// this is a live value, so make local copy.
+					if (updatingBook)
 					{
 						var msg = $"Overwriting the copy of {uploadParams.Folder} on the server...";
 						progress.WriteWarning(msg);
@@ -346,7 +347,7 @@ namespace Bloom.WebLibraryIntegration
 					}
 
 					progress.WriteMessageWithColor("Green", "{0} has been uploaded", uploadParams.Folder);
-					if (blPublishModel.BookIsAlreadyOnServer)
+					if (updatingBook)
 						++_booksUpdated;
 					else
 						++_newBooksUploaded;
