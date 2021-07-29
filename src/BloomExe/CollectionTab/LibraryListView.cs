@@ -1789,6 +1789,68 @@ namespace Bloom.CollectionTab
 				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg + ex.Message, exception:ex);
 			}
 		}
+
+		private TextBox _renameOverlay;
+
+		private void renameToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			HandleRenameCommand();
+		}
+
+		public void HandleRenameCommand() {
+			var button = SelectedButton;
+			// F2 can bring us here even when the selected book is not editable.
+			if (!GetBookInfoFromButton(button).IsEditable)
+				return;
+			if (_renameOverlay != null)
+			{
+				RemoveRenameOverlay();
+			}
+			// Put an overlay textbox in which the user can edit over the top of the button.
+			// This is deliberately crude. The Windows.Forms implementation is already in
+			// the process of being replaced with an HTML one.
+			_renameOverlay = new TextBox();
+			_renameOverlay.Text = button.Text;
+			_renameOverlay.Top = button.Top + 73;
+			_renameOverlay.Left = button.Left;
+			_renameOverlay.Width = button.Width;
+			_renameOverlay.Multiline = true;
+			_renameOverlay.BackColor = button.BackColor;
+			_renameOverlay.ForeColor = button.ForeColor;
+			_renameOverlay.Height = 40;
+			Controls.Add(_renameOverlay);
+			_renameOverlay.SelectAll();
+			_renameOverlay.Focus();
+			_renameOverlay.AcceptsReturn = true;
+			_renameOverlay.KeyPress += _renameOverlay_KeyPress;
+			_renameOverlay.LostFocus += (sender, args) => RemoveRenameOverlay();
+			_renameOverlay.BringToFront();
+		}
+
+		private void RemoveRenameOverlay()
+		{
+			if (_renameOverlay != null)
+			{
+				var renameOverlay = _renameOverlay;
+				_renameOverlay = null; // removing it may lead to reentrant call through lost focus
+				Controls.Remove(renameOverlay);
+				renameOverlay.Dispose();
+			}
+		}
+
+		private void _renameOverlay_KeyPress(object sender, KeyPressEventArgs e)
+		{
+			if (e.KeyChar == '\x0d') // enter
+			{
+				var newName = _renameOverlay.Text;
+				RemoveRenameOverlay();
+				var book = SelectedBook;
+				if (book == null) //don't think this can happen, but play safe
+					return;
+				book.SetAndLockBookName(newName);
+				BringButtonTitleUpToDate(book);
+			}
+		}
 	}
 
 	internal class BookButtonInfo

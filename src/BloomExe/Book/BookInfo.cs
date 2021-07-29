@@ -130,6 +130,16 @@ namespace Bloom.Book
 			set { MetaData.IsSuitableForMakingShells = value; }
 		}
 
+		/// <summary>
+		/// True if the user explicitly set a name (name is not automatically derived
+		/// from title).
+		/// </summary>
+		public bool NameLocked
+		{
+			get { return MetaData.NameLocked; }
+			set { MetaData.NameLocked = value; }
+		}
+
 		public bool IsSuitableForMakingTemplates
 		{
 			get { return MetaData.IsSuitableForMakingTemplates; }
@@ -644,6 +654,8 @@ namespace Bloom.Book
 
 		internal string GetBestTitleForUserDisplay(List<string> langCodes)
 		{
+			if (NameLocked)
+				return FolderName;
 			try
 			{
 				// JSON parsing requires newlines to be double quoted with backslashes inside string values.
@@ -912,6 +924,13 @@ namespace Bloom.Book
 
 		[JsonProperty("brandingProjectName")]
 		public string BrandingProjectName { get; set; }
+
+		/// <summary>
+		/// True if the user explicitly set a name (name is not automatically derived
+		/// from title).
+		/// </summary>
+		[JsonProperty("nameLocked")]
+		public bool NameLocked { get; set; }
 
 		/// <summary>
 		/// A "Folio" document is one that acts as a wrapper for a number of other books
