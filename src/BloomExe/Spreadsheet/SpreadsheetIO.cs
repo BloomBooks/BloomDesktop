@@ -171,7 +171,9 @@ namespace Bloom.Spreadsheet
 			{
 				XmlDocument doc = new XmlDocument();
 				doc.PreserveWhitespace = true;
-				doc.LoadXml(xmlString);
+				//wrap xml in another tag to make sure it has only one root
+				var wrappedXmlString = "<wrapper>" + xmlString + "</wrapper>";
+				doc.LoadXml(wrappedXmlString);
 				XmlNode root = (XmlNode)doc.DocumentElement;
 				MarkedUpText markedUpText = parseXmlRecursive(root);
 
