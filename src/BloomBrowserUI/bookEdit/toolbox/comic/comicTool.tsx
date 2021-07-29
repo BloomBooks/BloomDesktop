@@ -92,6 +92,7 @@ const ComicToolControls: React.FunctionComponent = () => {
 
         bubbleManager.turnOnBubbleEditing();
         bubbleManager.turnOnHidingImageButtons();
+        bubbleManager.deselectVideoContainers();
 
         const bubbleSpec = bubbleManager.getSelectedFamilySpec();
 
