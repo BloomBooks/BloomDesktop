@@ -29,6 +29,7 @@ const kTextOverPictureClass = "bloom-textOverPicture";
 const kTextOverPictureSelector = `.${kTextOverPictureClass}`;
 const kImageContainerClass = "bloom-imageContainer";
 const kImageContainerSelector = `.${kImageContainerClass}`;
+const kVideoContainerClass = "bloom-videoContainer";
 
 // References to "TOP" in the code refer to the actual TextOverPicture box (what "Bubble"s were
 // originally called) installed in the Bloom page. We are gradually removing these, since now there
@@ -149,11 +150,19 @@ export class BubbleManager {
         return true;
     }
 
+    // Now that we have the possibility of "nested" imageContainer elements,
+    // we need to limit the img tags we look at to those that are immediate children.
     public static hideImageButtonsIfNotPlaceHolder(container: HTMLElement) {
-        const images = Array.from(container.getElementsByTagName("img"));
-        if (
-            !images.some(img => img.getAttribute("src") === "placeHolder.png")
-        ) {
+        const placeHolderImages = Array.from(container.childNodes).filter(
+            child => {
+                return (
+                    child.nodeName === "IMG" &&
+                    (child as HTMLElement).getAttribute("src") ===
+                        "placeHolder.png"
+                );
+            }
+        );
+        if (placeHolderImages.length === 0) {
             container.classList.add("bloom-hideImageButtons");
         }
     }
@@ -164,6 +173,18 @@ export class BubbleManager {
         );
         imageContainers.forEach(container => {
             BubbleManager.hideImageButtonsIfNotPlaceHolder(container);
+        });
+    }
+
+    // When switching to the comicTool from elsewhere (notably the sign language tool), we remove
+    // the 'bloom-selected' class, so the container doesn't have a yellow border like it does in the
+    // sign language tool.
+    public deselectVideoContainers() {
+        const videoContainers: HTMLElement[] = Array.from(
+            document.getElementsByClassName(kVideoContainerClass) as any
+        );
+        videoContainers.forEach(container => {
+            container.classList.remove("bloom-selected");
         });
     }
 
@@ -183,7 +204,7 @@ export class BubbleManager {
         if (focusableDivs.length === 0) {
             focusableDivs = Array.from(
                 overPictureContainerElement.getElementsByClassName(
-                    "bloom-videoContainer"
+                    kVideoContainerClass
                 )
             );
         }
@@ -262,6 +283,21 @@ export class BubbleManager {
                 "click",
                 BubbleManager.onDocClickClearActiveElement
             );
+            // If we have sign language video over picture elements that are so far only placeholders,
+            // they are not focusable by default and so won't get the blue border that elements
+            // are supposed to have when selected. So we add tabindex="0" so they become focusable.
+            overPictureElements.forEach(element => {
+                const videoContainers = Array.from(
+                    element.getElementsByClassName(kVideoContainerClass)
+                );
+                if (videoContainers.length === 1) {
+                    const container = videoContainers[0] as HTMLElement;
+                    // If there is a video childnode, it is already focusable.
+                    if (container.childElementCount === 0) {
+                        container.setAttribute("tabindex", "0");
+                    }
+                }
+            });
         } else {
             // Focus something!
             // BL-8073: if Comic Tool is open, this 'turnOnBubbleEditing()' method will get run.
@@ -1629,10 +1665,54 @@ export class BubbleManager {
             PointScaling.Scaled,
             "Scaled Viewport coordinates"
         );
+        // Detect if the original is a picture over picture or video over picture element.
+        if (this.isPictureOverPictureElement(originalElement)) {
+            return this.addPictureOverPicture(
+                positionInViewport,
+                $(imageContainer)
+            );
+        }
+        if (this.isVideoOverPictureElement(originalElement)) {
+            return this.addVideoOverPicture(
+                positionInViewport,
+                $(imageContainer)
+            );
+        }
         return this.addTextOverPicture(
             positionInViewport,
             $(imageContainer),
             style
+        );
+    }
+
+    private isOverPictureElementWithClass(
+        overPictureElement: HTMLElement,
+        className: string
+    ): boolean {
+        for (let i = 0; i < overPictureElement.childElementCount; i++) {
+            const child = overPictureElement.children[i] as HTMLElement;
+            if (child && child.classList.contains(className)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private isPictureOverPictureElement(
+        overPictureElement: HTMLElement
+    ): boolean {
+        return this.isOverPictureElementWithClass(
+            overPictureElement,
+            kImageContainerClass
+        );
+    }
+
+    private isVideoOverPictureElement(
+        overPictureElement: HTMLElement
+    ): boolean {
+        return this.isOverPictureElementWithClass(
+            overPictureElement,
+            kVideoContainerClass
         );
     }
 
@@ -1708,9 +1788,10 @@ export class BubbleManager {
         imageContainerJQuery: JQuery
     ): HTMLElement {
         const standardVideoClasses =
-            "bloom-videoContainer bloom-noVideoSelected bloom-leadingElement bloom-selected";
+            kVideoContainerClass +
+            " bloom-noVideoSelected bloom-leadingElement";
         const videoContainerHtml =
-            "<div class='" + standardVideoClasses + "'></div>";
+            "<div class='" + standardVideoClasses + "' tabindex='0'></div>";
         return this.finishAddingOverPictureElement(
             imageContainerJQuery,
             videoContainerHtml,
@@ -1781,11 +1862,11 @@ export class BubbleManager {
     // we want something a bit taller.
     private setDefaultWrapperBoxHeight(wrapperBox: JQuery) {
         const width = parseInt(wrapperBox.css("width"), 10);
-        if (wrapperBox.find(".bloom-videoContainer").length > 0) {
+        if (wrapperBox.find(`.${kVideoContainerClass}`).length > 0) {
             // Set the default video aspect to 4:3, the same as the sign language tool generates.
             wrapperBox.css("height", (width * 3) / 4);
         }
-        if (wrapperBox.find(".bloom-imageContainer").length > 0) {
+        if (wrapperBox.find(kImageContainerSelector).length > 0) {
             // Set the default image aspect to square.
             wrapperBox.css("height", width);
         }
@@ -1921,7 +2002,7 @@ export class BubbleManager {
             sourceElement
         );
         this.setActiveElement(patriarchDuplicateElement);
-        this.matchWidthOfSource(sourceElement, patriarchDuplicateElement);
+        this.matchSizeOfSource(sourceElement, patriarchDuplicateElement);
         const container = BubbleManager.getTopLevelImageContainerElement(
             patriarchDuplicateElement
         );
@@ -2010,11 +2091,14 @@ export class BubbleManager {
         });
     }
 
-    private matchWidthOfSource(
+    private matchSizeOfSource(
         sourceElement: HTMLElement,
         destElement: HTMLElement
     ) {
         destElement.style.width = sourceElement.clientWidth.toFixed(0) + "px";
+        // text elements adjust their height automatically based on width and content...
+        // picture over picture and video over picture don't.
+        destElement.style.height = sourceElement.clientHeight.toFixed(0) + "px";
     }
 
     private getOffsetFrom(
@@ -2046,7 +2130,7 @@ export class BubbleManager {
         newChildElement.innerHTML = this.safelyCloneHtmlStructure(
             sourceElement
         );
-        this.matchWidthOfSource(sourceElement, newChildElement);
+        this.matchSizeOfSource(sourceElement, newChildElement);
         // We just replaced the bloom-editables from the 'addChildInternal' with a clone of the source
         // bubble's HTML. This will undo any event handlers that might have been attached by the
         // refresh triggered by 'addChildInternal'. So we send the newly modified child through again,
@@ -2076,7 +2160,10 @@ export class BubbleManager {
 
         // Cleanup this node
         this.safelyRemoveAttribute(element, "id");
-        this.safelyRemoveAttribute(element, "tabindex");
+        // Picture over picture elements need the tabindex (="0") in order to be focusable.
+        // But for text-based bubbles we need to delete positive tabindex, so we don't do weird
+        // things to talking book playback order when we duplicate a family of bubbles.
+        this.removePositiveTabindex(element);
         this.safelyRemoveAttribute(element, "data-duration");
         this.safelyRemoveAttribute(element, "data-audiorecordingendtimes");
 
@@ -2085,6 +2172,20 @@ export class BubbleManager {
         childArray.forEach(element => {
             this.cleanClonedNode(element as Element);
         });
+    }
+
+    private removePositiveTabindex(element: Element) {
+        if (!element.hasAttribute("tabindex")) {
+            return;
+        }
+        const indexStr = element.getAttribute("tabindex");
+        if (!indexStr) {
+            return;
+        }
+        const indexValue = parseInt(indexStr, 10);
+        if (indexValue > 0) {
+            element.attributes.removeNamedItem("tabindex");
+        }
     }
 
     private safelyRemoveAttribute(element: Element, attrName: string) {
@@ -2593,6 +2694,9 @@ export class BubbleManager {
     private static getTopLevelImageContainerElement(
         element: Element
     ): HTMLElement | null {
+        if (!element) {
+            return null; // paranoid, but I have seen this method say 'closest()' didn't exist!?
+        }
         const firstTry = element.closest(kImageContainerSelector);
         if (!firstTry) {
             return null; // 'element' is not in an imageContainer at all
