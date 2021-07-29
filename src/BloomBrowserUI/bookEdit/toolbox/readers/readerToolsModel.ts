@@ -337,6 +337,11 @@ export class ReaderToolsModel {
             "stageNumber",
             "numberOfStages"
         );
+
+        // Ensure the placeholders get updated
+        // (Normally, they get updated during beginRestoreSettings, which is expected to run before this function runs, which is unfortunate...)
+        getTheOneReaderToolsModel().updateStageLabel();
+        getTheOneReaderToolsModel().updateNumberOfStages();
     }
 
     public static prepareLevelNofM() {
@@ -353,6 +358,11 @@ export class ReaderToolsModel {
             "levelNumber",
             "numberOfLevels"
         );
+
+        // Ensure the placeholders get updated
+        // (Normally, they get updated during beginRestoreSettings, which is expected to run before this function runs, which is unfortunate...)
+        getTheOneReaderToolsModel().updateLevelLabel();
+        getTheOneReaderToolsModel().updateNumberOfLevels();
     }
 
     private static appendTextNode(parent: HTMLElement, text: string) {
