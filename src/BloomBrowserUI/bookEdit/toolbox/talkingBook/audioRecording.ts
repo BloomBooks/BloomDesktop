@@ -217,7 +217,7 @@ export default class AudioRecording {
             .click(e => {
                 if (!e.ctrlKey) {
                     // Normal case
-                    this.playCurrentAsync();
+                    this.togglePlayCurrentAsync();
                 } else {
                     // Control + Click case: Special debug mode
                     this.playESpeakPreview();
@@ -1252,8 +1252,19 @@ export default class AudioRecording {
         }
     }
 
-    private async playCurrentAsync(): Promise<void> {
+    // The method called when the 'play' button is clicked. If we are already playing, it stops play.
+    private async togglePlayCurrentAsync(): Promise<void> {
         toastr.clear();
+
+        if (this.getStatus("play") === Status.Active) {
+            const mediaPlayer = this.getMediaPlayer();
+            mediaPlayer.pause();
+            // We want to call playEndedAsync to clean up in various ways,
+            // but we don't want to play anything that is queued up to play next.
+            this.elementsToPlayConsecutivelyStack = [];
+            this.subElementsWithTimings = [];
+            this.playEndedAsync();
+        }
 
         if (!this.isEnabledOrExpected("play")) {
             return;
@@ -3571,8 +3582,36 @@ export default class AudioRecording {
         if (to === Status.Active) {
             // Doesn't make sense to expect something while something else is active.
             this.removeExpectedStatusFromAll();
+            if (which === "play") {
+                // We need a different label.
+                var label = document.getElementById("audio-play-label")!;
+                if (!this.originalPlayLabel) {
+                    this.originalPlayLabel = label.innerText;
+                }
+                label.classList.add("hide-counter-still-count");
+                theOneLocalizationManager
+                    .asyncGetText("Common.Stop", "Stop", "")
+                    .done(stop => {
+                        label.innerText = stop;
+                    });
+            }
+        } else {
+            if (this.originalPlayLabel) {
+                // we've been in the playing active state at some point, make sure we no longer are.
+                // Note: we could clear originalPlayLabel here, which would save us executing this
+                // block more than we really need to. However, there's a lot of async stuff
+                // happening in this class. The very first time we hit play, we can be entirely
+                // confident of capturing the original (localized) label. If we start clearing
+                // the variable, I'm concerned that there may be some small chance that at some
+                // point we will capture "Stop" and then we will be stuck there.
+                var label = document.getElementById("audio-play-label")!;
+                label.innerText = this.originalPlayLabel;
+                label.classList.remove("hide-counter-still-count");
+            }
         }
     }
+
+    private originalPlayLabel: string;
 
     // Review: Where is the best place to put this function?
     public static ToCamelCaseFromPascalCase(text: string) {

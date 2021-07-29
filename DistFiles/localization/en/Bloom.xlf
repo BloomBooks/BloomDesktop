@@ -1010,6 +1010,10 @@
         <source xml:lang="en">Settings</source>
         <note>ID: Common.Settings</note>
       </trans-unit>
+      <trans-unit id="Common.Stop">
+        <source xml:lang="en">Stop</source>
+        <note>ID: Common.Stop</note>
+      </trans-unit>
       <trans-unit id="Common.Warning">
         <source xml:lang="en">Info</source>
         <note>ID: Common.Warning</note>
