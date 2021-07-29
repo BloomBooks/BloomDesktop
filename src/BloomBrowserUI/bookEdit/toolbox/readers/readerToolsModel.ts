@@ -136,7 +136,7 @@ export class ReaderToolsModel {
 
         this.stageNumber = stage;
         this.updateStageLabel();
-        this.updateStageButtonsAvalibility();
+        this.updateStageButtonsAvailability();
 
         theOneLocalizationManager
             .asyncGetText("Common.Loading", "Loading...", "")
@@ -308,7 +308,7 @@ export class ReaderToolsModel {
         this.updateNumberOfStages();
         this.updateNumberOfLevels();
         this.updateStageLabel();
-        this.updateStageButtonsAvalibility();
+        this.updateStageButtonsAvailability();
         this.enableLevelButtons();
         this.updateLevelLimits();
         this.updateLevelLabel();
@@ -409,7 +409,7 @@ export class ReaderToolsModel {
         );
     }
 
-    public updateStageButtonsAvalibility(): void {
+    public updateStageButtonsAvailability(): void {
         this.updateDisabledStatus("decStage", this.stageNumber <= 1);
         if (!this.synphony) {
             return; // Synphony not loaded yet
