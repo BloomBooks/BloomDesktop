@@ -143,7 +143,7 @@ namespace Bloom.Book
 					// Change the id since every element must have a different id value.
 					HtmlDom.SetNewHtmlIdValue(node);
 				}
-				Console.WriteLine("DEBUG ReplaceAllIdValues(\"{0}\") => \"{1}\"", xmlContent, doc.FirstChild.InnerXml);
+				//Console.WriteLine("DEBUG ReplaceAllIdValues(\"{0}\") => \"{1}\"", xmlContent, doc.FirstChild.InnerXml);
 				xmlContent = doc.FirstChild.InnerXml;   // exclude the outer div we introduced
 			}
 			catch (Exception e)
@@ -1829,7 +1829,7 @@ namespace Bloom.Book
 				if (idxEnd > idxStart)
 				{
 					var cssContent = htmlContent.Substring(idxStart, idxEnd - idxStart);
-					Console.WriteLine("DEBUG cssContent from HTML <style> = \"{0}\"", cssContent);
+					//Console.WriteLine("DEBUG cssContent from HTML <style> = \"{0}\"", cssContent);
 					FindFontsUsedInCss(cssContent, result, includeFallbackFonts);
 				}
 			}
