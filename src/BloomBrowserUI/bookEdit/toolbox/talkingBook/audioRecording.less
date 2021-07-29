@@ -128,7 +128,11 @@ div.ui-audioCurrent:not(.disableHighlight) p {
             background-image: url(audio/play_expected.svg);
         }
         &.active {
-            background-image: url(audio/play_active.svg);
+            // we want to switch to a yellow square. This is a cheap way to get it.
+            // If we want some other special shape when play is active, we have a currently-unused
+            // svg we can use/edit at url("audio/play-active.svg")
+            background-image: none;
+            background-color: @bloom-yellow;
         }
     }
     #audio-split {
@@ -283,6 +287,12 @@ div.ui-audioCurrent:not(.disableHighlight) p {
 // (Still could be corner case if we switch from a 2-digit number to a 1-digit number, but we'll live with that)
 .audio-label.talking-book-counter:before {
     content: counter(talkingBookListCounter) ") ";
+}
+
+// This rule supports hiding the count but not changing the counts of subsequent buttons.
+// The one current instance is hiding the '4' when "Check" changes to "Stop" during playback.
+.audio-label.talking-book-counter.hide-counter-still-count:before {
+    display: none;
 }
 // Customized number styles for UI languages which need it:
 *:not(.hide-countable) > .audio-label.talking-book-counter[lang="bn"]:before {
