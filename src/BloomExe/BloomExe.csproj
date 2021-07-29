@@ -304,13 +304,13 @@
       <HintPath>..\..\packages\System.IO.FileSystem.AccessControl.4.7.0\lib\net461\System.IO.FileSystem.AccessControl.dll</HintPath>
     </Reference>
     <Reference Include="System.Management" />
-    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+    <Reference Include="System.Memory">
       <HintPath>..\..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
     </Reference>
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Printing" Condition="'$(OS)'=='Windows_NT'" />
     <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Numerics.Vectors" Condition="'$(OS)'=='Windows_NT'">
+    <Reference Include="System.Numerics.Vectors">
       <HintPath>..\..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
     </Reference>
     <Reference Include="System.Security" />
@@ -1643,26 +1643,20 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <RemoveDir Directories="@(RemoveForSILMedia)" />
   </Target>
   <ItemGroup Condition="'$(OS)'!='Windows_NT'">
-    <CopyForLinux Include="$(SolutionDir)packages/SQLitePCLRaw.lib.e_sqlite3.2.0.3/runtimes/linux-x64/native/libe_sqlite3.so" />
     <DeleteForLinux Include="$(OutDir)runtimes/linux-arm/native/*.*" />
     <DeleteForLinux Include="$(OutDir)runtimes/linux-armel/native/*.*" />
     <DeleteForLinux Include="$(OutDir)runtimes/linux-arm64/native/*.*" />
     <DeleteForLinux Include="$(OutDir)runtimes/linux-x86/native/*.*" />
-    <DeleteForLinux Include="$(OutDir)runtimes/linux-x64/native/*.*" />
     <RemoveForLinux Include="$(OutDir)runtimes/linux-arm/native" />
     <RemoveForLinux Include="$(OutDir)runtimes/linux-armel/native" />
     <RemoveForLinux Include="$(OutDir)runtimes/linux-arm64/native" />
     <RemoveForLinux Include="$(OutDir)runtimes/linux-x86/native" />
-    <RemoveForLinux Include="$(OutDir)runtimes/linux-x64/native" />
     <RemoveForLinux Include="$(OutDir)runtimes/linux-arm" />
     <RemoveForLinux Include="$(OutDir)runtimes/linux-armel" />
     <RemoveForLinux Include="$(OutDir)runtimes/linux-arm64" />
     <RemoveForLinux Include="$(OutDir)runtimes/linux-x86" />
-    <RemoveForLinux Include="$(OutDir)runtimes/linux-x64" />
-    <RemoveForLinux Include="$(OutDir)runtimes" />
   </ItemGroup>
   <Target Name="ReallyAfterLinuxBuild" AfterTargets="AfterBuild;CopyFilesToOutputDirectory" Condition="'$(OS)'!='Windows_NT'">
-    <Copy SourceFiles="@(CopyForLinux)" DestinationFolder="$(OutDir)" />
     <Delete Files="@(DeleteForLinux)" TreatErrorsAsWarnings="true" />
     <RemoveDir Directories="@(RemoveForLinux)" />
   </Target>
