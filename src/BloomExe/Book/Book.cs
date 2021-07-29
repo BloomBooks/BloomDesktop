@@ -1091,6 +1091,8 @@ namespace Bloom.Book
 
 		private object _updateLock = new object();
 		private bool _doingBookUpdate = false;
+		private HtmlDom _domBeingUpdated = null;
+		private string _updateStackTrace = null;
 
 		/// <summary>
 		/// As the bloom format evolves, including structure and classes and other attributes, this
@@ -1102,9 +1104,6 @@ namespace Bloom.Book
 		/// and making older Blooms unable to read new books. But because this is run, the xmatter will be
 		/// migrated to the new template.
 		/// </summary>
-		/// <param name="bookDOM"></param>
-		/// <param name="progress"></param>
-		/// <param name="oldMetaData">optional</param>
 		private void BringBookUpToDate(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress, string oldMetaData = "")
 		{
 			RemoveImgTagInDataDiv(bookDOM);
@@ -1118,12 +1117,27 @@ namespace Bloom.Book
 			{
 				// New version that we hope prevents BL_3166
 				if (_doingBookUpdate)
-					MessageBox.Show("Caught Bloom doing two updates at once! Possible BL-3166 is being prevented");
+				{
+					// Nag user if we appear to be updating the same DOM (OurHtmlDom or the previewDom which is always new)
+					if (bookDOM == _domBeingUpdated || (bookDOM != OurHtmlDom && _domBeingUpdated != OurHtmlDom))
+					{
+#if DEBUG
+						MessageBox.Show("Caught Bloom doing two updates at once! Possible BL-3166 is being prevented");
+#endif
+						Console.WriteLine("WARNING: Bloom appears to be updating the same DOM twice at the same time! (BL-3166??)");
+						Console.WriteLine("Current StackTrace: {0}", Environment.StackTrace);
+						Console.WriteLine("Prior StackTrace: {0}", _updateStackTrace);
+					}
+				}
 				lock (_updateLock)
 				{
+					_domBeingUpdated = bookDOM;
+					_updateStackTrace = Environment.StackTrace;
 					_doingBookUpdate = true;
 					BringBookUpToDateUnprotected(bookDOM, progress);
 					_doingBookUpdate = false;
+					_domBeingUpdated = null;
+					_updateStackTrace = null;
 				}
 			}
 			RemoveObsoleteSoundAttributes(bookDOM);
