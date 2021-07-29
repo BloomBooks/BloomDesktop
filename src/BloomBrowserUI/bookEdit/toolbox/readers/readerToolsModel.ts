@@ -305,13 +305,19 @@ export class ReaderToolsModel {
      */
     public updateControlContents(): void {
         this.updateLetterList();
+
+        // These may be useless in the case where this function is called upon activating the tool,
+        // because finishUpToolLocalization which calls prepareStageNOfM / prepareLevelNOfM have not run yet.
+        // However, this is useful when we call this function because the configuration changed.
+        // (It's not necessary to run the whole prepareStageNOfM function again... just to update the number of stages etc.)
         this.updateNumberOfStages();
         this.updateNumberOfLevels();
         this.updateStageLabel();
+        this.updateLevelLabel();
+
         this.updateStageButtonsAvailability();
         this.enableLevelButtons();
         this.updateLevelLimits();
-        this.updateLevelLabel();
         this.updateWordList();
     }
 
@@ -337,6 +343,18 @@ export class ReaderToolsModel {
             "stageNumber",
             "numberOfStages"
         );
+
+        // Ensure the spans get updated to contain their values
+        // Even though beginRestoreSettings which invokes updateControlContents() is supposed to update them upon activation, it may not do anything
+        // because these spans are not generated until after beginRestoreSettings claims it's done
+        // (Well, beginRestoreSettings may start some delayed async work that calls updateControlContents, and that happens after this prepareStageNOfM function runs,
+        // but that doesn't happen under every control path)
+        // The clearest/safest way to ensure these are indeed updated after replacePlaceholdersWithSpans is called is
+        // to actually call them immediately after calling replacePlaceholdersWithSpans in the same function.
+        // So that's what we do here.
+        // (There is no major harm in calling updateStageLabel multiple times, it already gets invoked multiple times by various callbacks anyway)
+        getTheOneReaderToolsModel().updateStageLabel();
+        getTheOneReaderToolsModel().updateNumberOfStages();
     }
 
     public static prepareLevelNofM() {
@@ -353,6 +371,18 @@ export class ReaderToolsModel {
             "levelNumber",
             "numberOfLevels"
         );
+
+        // Ensure the spans get updated to contain their values
+        // Even though beginRestoreSettings which invokes updateControlContents() is supposed to update them upon activation, it may not do anything
+        // because these spans are not generated until after beginRestoreSettings claims it's done
+        // (Well, beginRestoreSettings may start some delayed async work that calls updateControlContents, and that happens after this prepareLevelNOfM function runs,
+        // but that doesn't happen under every control path)
+        // The clearest/safest way to ensure these are indeed updated after replacePlaceholdersWithSpans is called is
+        // to actually call them immediately after calling replacePlaceholdersWithSpans in the same function.
+        // So that's what we do here.
+        // (There is no major harm in calling updateStageLabel multiple times, it already gets invoked multiple times by various callbacks anyway)
+        getTheOneReaderToolsModel().updateLevelLabel();
+        getTheOneReaderToolsModel().updateNumberOfLevels();
     }
 
     private static appendTextNode(parent: HTMLElement, text: string) {
