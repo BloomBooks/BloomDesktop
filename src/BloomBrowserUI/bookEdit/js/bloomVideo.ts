@@ -172,8 +172,13 @@ function SetupClickToShowSignLanguageTool(containerDiv: Element) {
     // if the user clicks on the video placeholder (or the video for that matter--see BL-6149),
     // bring up the sign language tool
     $(containerDiv).click(() => {
-        getToolboxBundleExports()
-            ?.getTheOneToolbox()
-            .activateToolFromId(SignLanguageToolControls.kToolID);
+        if (containerDiv.classList.contains("bloom-selected")) {
+            // In comic mode, we remove this class, so the click handler won't take us to the sign
+            // language tool, but when we are in the sign language tool and click on a video element
+            // the class gets re-added.
+            getToolboxBundleExports()
+                ?.getTheOneToolbox()
+                .activateToolFromId(SignLanguageToolControls.kToolID);
+        }
     });
 }

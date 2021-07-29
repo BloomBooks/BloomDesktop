@@ -5,7 +5,7 @@
 
 @EditBoxItemsColor: #0000001a;
 @MediumGray: #c0b9b9;
-@ImageHoverOverlay: #d5d5e4;
+@ImageAndVideoHoverOverlay: #d5d5e4;
 @ImageButtonBorder: #716666;
 @ChangeImageButtonColor: @ControlColor;
 @PasteImageButtonColor: @bloom-blue; /*#0C8597; */
@@ -143,21 +143,26 @@ div.page {
     border: medium outset black;
 }
 div.page.coverColor {
-    background-color: @ImageHoverOverlay;
+    background-color: @ImageAndVideoHoverOverlay;
     border: medium outset black;
 }
 /* We want divs which are used for editing to look just like textareas (e.g. border).
-   For now, this readOnlyInTranslationMode is an indicator that this is edtiable,
-   but there could be divs which are always edtiable... unfortunately we can't access
-   the contentEditable thing itself. Note that borders are made transpartent by the languagedisplay.css,
-   and there is javascript which notices that transparnet border and makes the field read-only.
+   For now, this readOnlyInTranslationMode is an indicator that this is editable,
+   but there could be divs which are always editable... unfortunately we can't access
+   the contentEditable thing itself. Note that borders are made transparent by the languagedisplay.css,
+   and there is javascript which notices that transparent border and makes the field read-only.
 */
 div.readOnlyInTranslationMode {
     border: thin solid @MediumGray;
 }
-div.hoverUp {
-    background-color: @ImageHoverOverlay;
+
+// Since 'basePage.less' has a rule that puts the video placeholder in as a background image,
+// '.customPage' is needed to add enough specificity here to override that rule.
+.customPage .bloom-videoContainer.hoverUp,
+.bloom-imageContainer.hoverUp {
+    background-color: @ImageAndVideoHoverOverlay;
 }
+
 .imageButton {
     width: 87px;
     height: 52px;

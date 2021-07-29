@@ -31,6 +31,9 @@
     #formatButton {
         display: none;
     }
+    .bloom-imageContainer {
+        border: none; // overwrite rule from editMode.less
+    }
 }
 
 .bloom-imageContainer {
@@ -130,6 +133,14 @@
             }
         }
 
+        // Overrides the inherited values from editMode.less, which are a slightly different shade of blue.
+        // This rule now works for regular just text bubbles and picture or video over picture.
+        div:focus,
+        video:focus {
+            border: 1px solid @bloom-blue;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px @bloom-blue;
+        }
+
         .bloom-translationGroup {
             background: transparent; // don't want to worry about what background the image has
             border: none;
@@ -151,13 +162,6 @@
                     //right: 100% + 33px;
                     bottom: -18px;
                 }
-            }
-
-            .bloom-editable:focus {
-                // Overrides the inherited values from editMode.less, which are a slightly different shade of blue.
-                border: 1px solid @bloom-blue;
-                box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
-                    0 0 8px @bloom-blue;
             }
 
             // Language tip CSS
@@ -201,7 +205,7 @@
 
 // Code to handle borders
 .bloom-imageContainer {
-    // Text-over-picture elements with speech bubbles
+    // Over picture elements with speech bubbles
     //
     // a TOP element that contains a data-bubble attribute and does NOT contain the substring "`style`:`none`" in the value of the data-bubble attribute
     .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]) {
