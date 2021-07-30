@@ -176,9 +176,13 @@ function SetupClickToShowSignLanguageTool(containerDiv: Element) {
             // In comic mode, we remove this class, so the click handler won't take us to the sign
             // language tool, but when we are in the sign language tool and click on a video element
             // the class gets re-added.
-            getToolboxBundleExports()
-                ?.getTheOneToolbox()
-                .activateToolFromId(SignLanguageToolControls.kToolID);
+            showSignLanguageTool();
         }
     });
+}
+
+export function showSignLanguageTool() {
+    getToolboxBundleExports()
+        ?.getTheOneToolbox()
+        .activateToolFromId(SignLanguageToolControls.kToolID);
 }

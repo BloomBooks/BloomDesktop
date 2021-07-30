@@ -1911,6 +1911,11 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
         <note>Tooltip for the bubble Duplicate icon</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true">
+        <source xml:lang="en">Image selected</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.ImageSelected</note>
+        <note>This notification shows if a picture over picture is selected.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor" sil:dynamic="true">
         <source xml:lang="en">Outer Outline Color</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor</note>
@@ -1924,6 +1929,11 @@
         <source xml:lang="en">Rounded Corners</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.RoundedCorners</note>
         <note>This checkbox indicates whether a text box has rounded corners instead of square corners.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ShowSignLanguageTool" sil:dynamic="true">
+        <source xml:lang="en">Show Sign Language Tool</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.ShowSignLanguageTool</note>
+        <note>This button shows if a video bubble is selected.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ShowTail" sil:dynamic="true">
         <source xml:lang="en">Show Tail</source>

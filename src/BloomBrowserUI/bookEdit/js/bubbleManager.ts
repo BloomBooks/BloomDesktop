@@ -1698,6 +1698,13 @@ export class BubbleManager {
         return false;
     }
 
+    public isActiveElementPictureOverPicture(): boolean {
+        if (!this.activeElement) {
+            return false;
+        }
+        return this.isPictureOverPictureElement(this.activeElement);
+    }
+
     private isPictureOverPictureElement(
         overPictureElement: HTMLElement
     ): boolean {
@@ -1714,6 +1721,13 @@ export class BubbleManager {
             overPictureElement,
             kVideoContainerClass
         );
+    }
+
+    public isActiveElementVideoOverPicture(): boolean {
+        if (!this.activeElement) {
+            return false;
+        }
+        return this.isVideoOverPictureElement(this.activeElement);
     }
 
     // This method is called when the user "drops" an element from the comicTool onto an image.

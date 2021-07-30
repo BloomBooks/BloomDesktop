@@ -221,6 +221,18 @@
     }
 }
 
+// This section replaces the main controls of style, colors, tails, etc. which we don't need
+// for picture over picture or video over picture.
+#videoOrImageSubstituteSection {
+    // This is the height of the main controls section we are replacing.
+    //This will need to be modified if the main controls are changed.
+    height: 342px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
 // Empty region that does all the growing and shrinking.
 // makes the comicToolControlFooterRegion go to the bottom,
 // but unlike making it position: absolute and bottom:3,
