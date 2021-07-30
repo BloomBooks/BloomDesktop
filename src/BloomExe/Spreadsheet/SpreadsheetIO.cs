@@ -67,31 +67,41 @@ namespace Bloom.Spreadsheet
 						var content = row.GetCell(c).Content;
 						// Parse xml for markdown formatting on language columns,
 						// Display formatting in excel spreadsheet
-						if (!retainMarkup && c >= spreadsheet.StandardLeadingColumns.Length)
+						ExcelRange currentCell = worksheet.Cells[r, c + 1];
+						if (!retainMarkup && c >= spreadsheet.StandardLeadingColumns.Length && r > 1)
                         {
 							//TODO when we implement importing with formatting, make sure this
 							//gets (round-trip) unit tested
-							MarkedUpText markedUpText = ParseXml(content);
-							ExcelRange currentCell = worksheet.Cells[r, c + 1];
-							currentCell.IsRichText = true;
-							foreach (MarkedUpTextRun run in markedUpText)
+							MarkedUpText markedUpText = MarkedUpText.ParseXml(content);
+							if (markedUpText.HasFormatting)
 							{
-								if (!run.Text.Equals(""))
+								currentCell.IsRichText = true;
+								foreach (MarkedUpTextRun run in markedUpText.Runs)
 								{
-									ExcelRichText text = currentCell.RichText.Add(run.Text);
-									text.Bold = run.Bold;
-									text.Italic = run.Italic;
-									text.UnderLine = run.Underlined;
-									if (run.Superscript)
+									if (!run.Text.Equals(""))
 									{
-										text.VerticalAlign = ExcelVerticalAlignmentFont.Superscript;
+										ExcelRichText text = currentCell.RichText.Add(run.Text);
+										text.Bold = run.Bold;
+										text.Italic = run.Italic;
+										text.UnderLine = run.Underlined;
+										if (run.Superscript)
+										{
+											text.VerticalAlign = ExcelVerticalAlignmentFont.Superscript;
+										}
 									}
 								}
+							}
+							else
+							{
+								//TODO test
+								currentCell.Value = markedUpText.PlainText();
 							}
 						}
 						else
 						{
-							worksheet.Cells[r, c + 1].Value = content;
+							//TODO this is convoluted do we need all 3 cases? now that we wrap the xml, is it ok if it is a header or something?
+							// This is not book text, or we are retaining the markup
+							currentCell.Value = content;
 						}
 
 						//Embed any images in the excel file
@@ -160,83 +170,6 @@ namespace Bloom.Spreadsheet
 				}
 			}
 		}
-
-		/// <summary>
-		/// Extract the text and any bold, italic, underline, and/or superscript formatting
-		/// Adds newlines after paragraphs, but drops leading and trailing, but not intermediate, white space.
-		/// </summary>
-		public static MarkedUpText ParseXml(string xmlString)
-		{
-			try
-			{
-				XmlDocument doc = new XmlDocument();
-				doc.PreserveWhitespace = true;
-				//wrap xml in another tag to make sure it has only one root
-				var wrappedXmlString = "<wrapper>" + xmlString + "</wrapper>";
-				doc.LoadXml(wrappedXmlString);
-				XmlNode root = (XmlNode)doc.DocumentElement;
-				MarkedUpText markedUpText = parseXmlRecursive(root);
-
-				//remove leading and trailing whitespace. We don't want a trailing newline which
-				//will make excel put a blank line at the end of the cell
-				while (markedUpText.Count > 0 && string.IsNullOrWhiteSpace(markedUpText[0].Text))
-				{
-					markedUpText.RemoveAt(0);
-				}
-				while (markedUpText.Count > 0 && string.IsNullOrWhiteSpace(markedUpText[markedUpText.Count - 1].Text))
-				{
-					markedUpText.RemoveAt(markedUpText.Count - 1);
-				}
-				return markedUpText;
-			}
-			catch (XmlException) 
-			{
-				//String is not XML, return a MarkedupText object with the original string
-				MarkedUpTextRun run = new MarkedUpTextRun(xmlString);
-				MarkedUpText markedUpText = new MarkedUpText();
-				markedUpText.Add(run);
-				return markedUpText;
-			}
-		}
-
-		private static MarkedUpText parseXmlRecursive(XmlNode node)
-		{
-			MarkedUpText markedUpText;
-			if (!node.HasChildNodes)
-			{
-				MarkedUpTextRun run = new MarkedUpTextRun(node.InnerText);
-				markedUpText = new MarkedUpText();
-				markedUpText.Add(run);
-			}
-			else
-			{
-				markedUpText = new MarkedUpText();
-				foreach (XmlNode child in node.ChildNodes)
-				{
-					MarkedUpText markedUpChild = parseXmlRecursive(child);
-					applyFormatting(node.Name, markedUpChild);
-					markedUpText.AddRange(markedUpChild);
-				}
-			}
-			if (node.Name == "p")
-			{
-				// add a newline
-				markedUpText.Add(new MarkedUpTextRun("\r\n"));
-				// Review or Environment.Newline? But I'd rather generate something consistent.
-				// Linux: what line break is best to use when constructing an Excel spreadsheet in Linux?
-			}
-			return markedUpText;
-			
-		}
-
-		private static void applyFormatting(string formatName, MarkedUpText markedUpText)
-		{
-			foreach (MarkedUpTextRun run in markedUpText)
-			{
-				run.setProperty(formatName);
-			}
-		}
-		
 
 		public static void ReadSpreadsheet(InternalSpreadsheet spreadsheet, string path)
 		{
