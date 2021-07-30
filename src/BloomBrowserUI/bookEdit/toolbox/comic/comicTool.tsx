@@ -12,7 +12,7 @@ import { BubbleSpec, TailSpec } from "comicaljs";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
-import { Button, MenuItem } from "@material-ui/core";
+import { Button, MenuItem, Typography } from "@material-ui/core";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { Div, Span } from "../../../react_components/l10nComponents";
 import InputLabel from "@material-ui/core/InputLabel";
@@ -31,27 +31,34 @@ import {
 } from "./comicToolColorHelper";
 import { IColorPickerDialogProps } from "../../../react_components/colorPickerDialog";
 import * as tinycolor from "tinycolor2";
+import { showSignLanguageTool } from "../../js/bloomVideo";
 
 const ComicToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
+    type BubbleType = "text" | "image" | "video" | undefined;
 
     // Declare all the hooks
     const [style, setStyle] = useState("none");
     const [outlineColor, setOutlineColor] = useState<string | undefined>(
         undefined
     );
-    const [bubbleActive, setBubbleActive] = useState(false);
+    const [bubbleType, setBubbleType] = useState<BubbleType>(undefined);
     const [showTailChecked, setShowTailChecked] = useState(false);
     const [isRoundedCornersChecked, setIsRoundedCornersChecked] = useState(
         false
     );
-
     const [isXmatter, setIsXmatter] = useState(true);
     // If the book is locked, we don't want users dragging things onto the page.
     const [isBookLocked, setIsBookLocked] = useState(false);
     // This 'counter' increments on new page ready so we can re-check if the book is locked.
     const [pageRefreshIndicator, setPageRefreshIndicator] = useState(0);
 
+    // Calls to useL10n
+    const deleteTooltip = useL10n("Delete", "Common.Delete");
+    const duplicateTooltip = useL10n(
+        "Duplicate",
+        "EditTab.Toolbox.ComicTool.Options.Duplicate"
+    );
     // Setup for color picker, in case we need it.
     const textColorTitle = useL10n(
         "Text Color",
@@ -74,10 +81,11 @@ const ComicToolControls: React.FunctionComponent = () => {
         defaultBackgroundColors[1]
     );
 
-    // if bubbleActive is true, corresponds to the active bubble's family. Otherwise, corresponds to the most recently active bubble's family.
-    const [currentFamilySpec, setCurrentFamilySpec] = useState(
-        undefined as BubbleSpec | undefined
-    );
+    // If bubbleType is not undefined, corresponds to the active bubble's family.
+    // Otherwise, corresponds to the most recently active bubble's family.
+    const [currentFamilySpec, setCurrentFamilySpec] = useState<
+        BubbleSpec | undefined
+    >(undefined);
 
     // Callback to initialize bubbleEditing and get the initial bubbleSpec
     const bubbleSpecInitialization = () => {
@@ -131,22 +139,32 @@ const ComicToolControls: React.FunctionComponent = () => {
                     currentFamilySpec.cornerRadiusY > 0
             );
             setOutlineColor(currentFamilySpec.outerBorderColor);
-            setBubbleActive(true);
             const backColor = getBackgroundColorValue(currentFamilySpec);
             const newSwatch = getSwatchFromBubbleSpecColor(backColor);
             setBackgroundColorSwatch(newSwatch);
 
-            // Get the current bubble's textColor and set it
             const bubbleMgr = ComicTool.bubbleManager();
+            setBubbleType(getBubbleType(bubbleMgr));
             if (bubbleMgr) {
+                // Get the current bubble's textColor and set it
                 const bubbleTextColor = bubbleMgr.getTextColor();
                 const newSwatch = getSwatchFromBubbleSpecColor(bubbleTextColor);
                 setTextColorSwatch(newSwatch);
             }
         } else {
-            setBubbleActive(false);
+            setBubbleType(undefined);
         }
     }, [currentFamilySpec]);
+
+    const getBubbleType = (mgr: BubbleManager | undefined): BubbleType => {
+        if (!mgr) {
+            return undefined;
+        }
+        if (mgr.isActiveElementPictureOverPicture()) {
+            return "image";
+        }
+        return mgr.isActiveElementVideoOverPicture() ? "video" : "text";
+    };
 
     useEffect(() => {
         // Get the lock/unlock state from C#-land. We have to do this every time the page is refreshed
@@ -427,25 +445,22 @@ const ComicToolControls: React.FunctionComponent = () => {
         return opacityDecimal < 1.0;
     };
 
-    const percentTransparentFromOpacity = (): string => {
-        if (!needToCalculateTransparency()) return "0"; // We shouldn't call this under these circumstances.
-        return (100 - (backgroundColorSwatch.opacity as number) * 100).toFixed(
-            0
-        );
-    };
+    const percentTransparentFromOpacity = !needToCalculateTransparency()
+        ? "0" // We shouldn't call this under these circumstances.
+        : (100 - (backgroundColorSwatch.opacity as number) * 100).toFixed(0);
 
-    // We need to calculate this, even though we may not need to display it to keep from violating React's
-    // rule about not changing the number of hooks rendered.
-    const percentTransparencyString = (): string | undefined => {
-        const percent = percentTransparentFromOpacity();
-        const transparencyString = useL10n(
-            "Percent Transparent",
-            l10nPrefix + "PercentTransparent",
-            "",
-            percent
-        );
-        return percent === "0" ? undefined : transparencyString;
-    };
+    const transparencyString = useL10n(
+        "Percent Transparent",
+        l10nPrefix + "PercentTransparent",
+        "",
+        percentTransparentFromOpacity
+    );
+
+    // We need to calculate this (even though we may not need to display it) to keep from violating
+    // React's rule about not changing the number of hooks rendered.
+    // This is even more important now that we don't show this part of the UI sometimes (BL-9976)!
+    const percentTransparencyString =
+        percentTransparentFromOpacity === "0" ? undefined : transparencyString;
 
     // Note: Make sure bubble spec is the current ITEM's spec, not the current FAMILY's spec.
     const isChild = (bubbleSpec: BubbleSpec | undefined) => {
@@ -456,16 +471,197 @@ const ComicToolControls: React.FunctionComponent = () => {
     const bubbleManager = ComicTool.bubbleManager();
     const currentItemSpec = bubbleManager?.getSelectedItemBubbleSpec();
 
-    const deleteTooltip = useL10n("Delete", "Common.Delete");
-
-    const duplicateTooltip = useL10n(
-        "Duplicate",
-        "EditTab.Toolbox.ComicTool.Options.Duplicate"
-    );
-
     // BL-8537 Because of the black shadow background, partly transparent backgrounds don't work for
     // captions. We'll use this to tell the color chooser not to show the alpha option.
     const isCaption = currentFamilySpec?.style === "caption";
+
+    const getControlOptionsRegion = (): JSX.Element => {
+        switch (bubbleType) {
+            case "image":
+                return (
+                    <Typography id="videoOrImageSubstituteSection">
+                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.ImageSelected">
+                            Image selected
+                        </Div>
+                    </Typography>
+                );
+            case "video":
+                return (
+                    <Button
+                        id="videoOrImageSubstituteSection"
+                        onClick={showSignLanguageTool}
+                        size="small"
+                    >
+                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.ShowSignLanguageTool">
+                            Show Sign Language Tool
+                        </Div>
+                    </Button>
+                );
+            case undefined:
+            case "text":
+                return (
+                    <form autoComplete="off">
+                        <FormControl>
+                            <InputLabel htmlFor="bubble-style-dropdown">
+                                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.Style">
+                                    Style
+                                </Span>
+                            </InputLabel>
+                            <Select
+                                value={style}
+                                onChange={event => {
+                                    handleStyleChanged(event);
+                                }}
+                                className="bubbleOptionDropdown"
+                                inputProps={{
+                                    name: "style",
+                                    id: "bubble-style-dropdown"
+                                }}
+                                MenuProps={{
+                                    className: "bubble-options-dropdown-menu"
+                                }}
+                            >
+                                <MenuItem value="caption">
+                                    <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption">
+                                        Caption
+                                    </Div>
+                                </MenuItem>
+                                <MenuItem value="pointedArcs">
+                                    <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Exclamation">
+                                        Exclamation
+                                    </Div>
+                                </MenuItem>
+                                <MenuItem value="none">
+                                    <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.JustText">
+                                        Just Text
+                                    </Div>
+                                </MenuItem>
+                                <MenuItem value="speech">
+                                    <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Speech">
+                                        Speech
+                                    </Div>
+                                </MenuItem>
+                                <MenuItem value="ellipse">
+                                    <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Ellipse">
+                                        Ellipse
+                                    </Div>
+                                </MenuItem>
+                                <MenuItem value="thought">
+                                    <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Thought">
+                                        Thought
+                                    </Div>
+                                </MenuItem>
+                                <MenuItem value="circle">
+                                    <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Circle">
+                                        Circle
+                                    </Div>
+                                </MenuItem>
+                            </Select>
+                            <div className="comicCheckbox">
+                                <MuiCheckbox
+                                    label="Show Tail"
+                                    l10nKey="EditTab.Toolbox.ComicTool.Options.ShowTail"
+                                    checked={showTailChecked}
+                                    disabled={isChild(currentItemSpec)}
+                                    onCheckChanged={v => {
+                                        handleShowTailChanged(v as boolean);
+                                    }}
+                                />
+                            </div>
+                            <div className="comicCheckbox">
+                                <MuiCheckbox
+                                    label="Rounded Corners"
+                                    l10nKey="EditTab.Toolbox.ComicTool.Options.RoundedCorners"
+                                    checked={isRoundedCornersChecked}
+                                    disabled={
+                                        !styleSupportsRoundedCorners(
+                                            currentFamilySpec
+                                        )
+                                    }
+                                    onCheckChanged={newValue => {
+                                        handleRoundedCornersChanged(newValue);
+                                    }}
+                                />
+                            </div>
+                        </FormControl>
+                        <FormControl>
+                            <InputLabel htmlFor="text-color-bar" shrink={true}>
+                                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.TextColor">
+                                    Text Color
+                                </Span>
+                            </InputLabel>
+                            <ColorBar
+                                id="text-color-bar"
+                                onClick={launchTextColorChooser}
+                                swatch={textColorSwatch}
+                            />
+                        </FormControl>
+                        <FormControl>
+                            <InputLabel
+                                shrink={true}
+                                htmlFor="background-color-bar"
+                            >
+                                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.BackgroundColor">
+                                    Background Color
+                                </Span>
+                            </InputLabel>
+                            <ColorBar
+                                id="background-color-bar"
+                                onClick={() =>
+                                    launchBackgroundColorChooser(isCaption)
+                                }
+                                swatch={backgroundColorSwatch}
+                                text={percentTransparencyString}
+                            />
+                        </FormControl>
+                        <FormControl>
+                            <InputLabel htmlFor="bubble-outlineColor-dropdown">
+                                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor">
+                                    Outer Outline Color
+                                </Span>
+                            </InputLabel>
+                            <Select
+                                value={outlineColor ? outlineColor : "none"}
+                                className="bubbleOptionDropdown"
+                                inputProps={{
+                                    name: "outlineColor",
+                                    id: "bubble-outlineColor-dropdown"
+                                }}
+                                MenuProps={{
+                                    className: "bubble-options-dropdown-menu"
+                                }}
+                                onChange={event => {
+                                    handleOutlineColorChanged(event);
+                                }}
+                            >
+                                <MenuItem value="none">
+                                    <Div l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None">
+                                        None
+                                    </Div>
+                                </MenuItem>
+                                <MenuItem value="yellow">
+                                    <Div l10nKey="Common.Colors.Yellow">
+                                        Yellow
+                                    </Div>
+                                </MenuItem>
+                                <MenuItem value="crimson">
+                                    <Div l10nKey="Common.Colors.Crimson">
+                                        Crimson
+                                    </Div>
+                                </MenuItem>
+                            </Select>
+                        </FormControl>
+                        <Button
+                            onClick={event => handleChildBubbleLinkClick(event)}
+                        >
+                            <Div l10nKey="EditTab.Toolbox.ComicTool.Options.AddChildBubble">
+                                Add Child Bubble
+                            </Div>
+                        </Button>
+                    </form>
+                );
+        }
+    };
 
     return (
         <div id="comicToolControls">
@@ -570,181 +766,25 @@ const ComicToolControls: React.FunctionComponent = () => {
             </div>
             <div
                 id={"comicToolControlOptionsRegion"}
-                className={bubbleActive && !isXmatter ? "" : "disabled"}
+                className={bubbleType && !isXmatter ? "" : "disabled"}
             >
-                <form autoComplete="off">
-                    <FormControl>
-                        <InputLabel htmlFor="bubble-style-dropdown">
-                            <Span l10nKey="EditTab.Toolbox.ComicTool.Options.Style">
-                                Style
-                            </Span>
-                        </InputLabel>
-                        <Select
-                            value={style}
-                            onChange={event => {
-                                handleStyleChanged(event);
-                            }}
-                            className="bubbleOptionDropdown"
-                            inputProps={{
-                                name: "style",
-                                id: "bubble-style-dropdown"
-                            }}
-                            MenuProps={{
-                                className: "bubble-options-dropdown-menu"
-                            }}
-                        >
-                            <MenuItem value="caption">
-                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption">
-                                    Caption
-                                </Div>
-                            </MenuItem>
-                            <MenuItem value="pointedArcs">
-                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Exclamation">
-                                    Exclamation
-                                </Div>
-                            </MenuItem>
-                            <MenuItem value="none">
-                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.JustText">
-                                    Just Text
-                                </Div>
-                            </MenuItem>
-                            <MenuItem value="speech">
-                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Speech">
-                                    Speech
-                                </Div>
-                            </MenuItem>
-                            <MenuItem value="ellipse">
-                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Ellipse">
-                                    Ellipse
-                                </Div>
-                            </MenuItem>
-                            <MenuItem value="thought">
-                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Thought">
-                                    Thought
-                                </Div>
-                            </MenuItem>
-                            <MenuItem value="circle">
-                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Circle">
-                                    Circle
-                                </Div>
-                            </MenuItem>
-                        </Select>
-                        <div className="comicCheckbox">
-                            <MuiCheckbox
-                                label="Show Tail"
-                                l10nKey="EditTab.Toolbox.ComicTool.Options.ShowTail"
-                                checked={showTailChecked}
-                                disabled={isChild(currentItemSpec)}
-                                onCheckChanged={v => {
-                                    handleShowTailChanged(v as boolean);
-                                }}
-                            />
-                        </div>
-                        <div className="comicCheckbox">
-                            <MuiCheckbox
-                                label="Rounded Corners"
-                                l10nKey="EditTab.Toolbox.ComicTool.Options.RoundedCorners"
-                                checked={isRoundedCornersChecked}
-                                disabled={
-                                    !styleSupportsRoundedCorners(
-                                        currentFamilySpec
-                                    )
-                                }
-                                onCheckChanged={newValue => {
-                                    handleRoundedCornersChanged(newValue);
-                                }}
-                            />
-                        </div>
-                    </FormControl>
-                    <FormControl>
-                        <InputLabel htmlFor="text-color-bar" shrink={true}>
-                            <Span l10nKey="EditTab.Toolbox.ComicTool.Options.TextColor">
-                                Text Color
-                            </Span>
-                        </InputLabel>
-                        <ColorBar
-                            id="text-color-bar"
-                            onClick={launchTextColorChooser}
-                            swatch={textColorSwatch}
+                {getControlOptionsRegion()}
+                <div className="option-button-row">
+                    <div title={deleteTooltip}>
+                        <TrashIcon
+                            id="trashIcon"
+                            color="primary"
+                            onClick={() => deleteBubble()}
                         />
-                    </FormControl>
-                    <FormControl>
-                        <InputLabel
-                            shrink={true}
-                            htmlFor="background-color-bar"
-                        >
-                            <Span l10nKey="EditTab.Toolbox.ComicTool.Options.BackgroundColor">
-                                Background Color
-                            </Span>
-                        </InputLabel>
-                        <ColorBar
-                            id="background-color-bar"
-                            onClick={() =>
-                                launchBackgroundColorChooser(isCaption)
-                            }
-                            swatch={backgroundColorSwatch}
-                            text={percentTransparencyString()}
-                        />
-                    </FormControl>
-                    <FormControl>
-                        <InputLabel htmlFor="bubble-outlineColor-dropdown">
-                            <Span l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor">
-                                Outer Outline Color
-                            </Span>
-                        </InputLabel>
-                        <Select
-                            value={outlineColor ? outlineColor : "none"}
-                            className="bubbleOptionDropdown"
-                            inputProps={{
-                                name: "outlineColor",
-                                id: "bubble-outlineColor-dropdown"
-                            }}
-                            MenuProps={{
-                                className: "bubble-options-dropdown-menu"
-                            }}
-                            onChange={event => {
-                                handleOutlineColorChanged(event);
-                            }}
-                        >
-                            <MenuItem value="none">
-                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None">
-                                    None
-                                </Div>
-                            </MenuItem>
-                            <MenuItem value="yellow">
-                                <Div l10nKey="Common.Colors.Yellow">Yellow</Div>
-                            </MenuItem>
-                            <MenuItem value="crimson">
-                                <Div l10nKey="Common.Colors.Crimson">
-                                    Crimson
-                                </Div>
-                            </MenuItem>
-                        </Select>
-                    </FormControl>
-                    <Button
-                        onClick={event => handleChildBubbleLinkClick(event)}
-                    >
-                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.AddChildBubble">
-                            Add Child Bubble
-                        </Div>
-                    </Button>
-                    <div className="option-button-row">
-                        <div title={deleteTooltip}>
-                            <TrashIcon
-                                id="trashIcon"
-                                color="primary"
-                                onClick={() => deleteBubble()}
-                            />
-                        </div>
-                        <div title={duplicateTooltip}>
-                            <img
-                                className="duplicate-bubble-icon"
-                                src="duplicate-bubble.svg"
-                                onClick={() => duplicateBubble()}
-                            />
-                        </div>
                     </div>
-                </form>
+                    <div title={duplicateTooltip}>
+                        <img
+                            className="duplicate-bubble-icon"
+                            src="duplicate-bubble.svg"
+                            onClick={() => duplicateBubble()}
+                        />
+                    </div>
+                </div>
             </div>
             <div id="comicToolControlFillerRegion" />
             <div id={"comicToolControlFooterRegion"}>

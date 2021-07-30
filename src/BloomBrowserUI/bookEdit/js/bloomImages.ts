@@ -439,7 +439,8 @@ export function SetOverlayForImagesWithoutMetadata(container) {
     $(container)
         .find(".bloom-imageContainer")
         .each(function() {
-            var img = $(this).find("img");
+            // BL-9976: now that we can have images on images, only look one level down from the container.
+            var img = $(this).find("> img");
             SetOverlayForImagesWithoutMetadataInner($(img).parent(), img);
         });
 }
