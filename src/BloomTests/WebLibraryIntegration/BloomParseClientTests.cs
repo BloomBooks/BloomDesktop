@@ -155,7 +155,6 @@ namespace BloomTests.WebLibraryIntegration
 				try
 				{
 					_sessionToken = dy.sessionToken; //there's also an "error" in there if it fails, but a null sessionToken tells us all we need to know
-					throw new RuntimeBinderException();
 				}
 				catch (RuntimeBinderException)
 				{
