@@ -57,22 +57,74 @@ namespace Bloom.Spreadsheet
 			XmlDocument doc = new XmlDocument();
 			doc.PreserveWhitespace = true;
 			//wrap xml in another tag to make sure it has only one root
+			//this will fail if there is a < or > not part of a tag...
+			//var xmlStart = xmlString.IndexOf("<");
+			//if (xmlStart == -1)
+			//{
+			//	xmlStart = 0;
+			//}
+			//var xmlEnd = xmlString.LastIndexOf(">");
+			//if (xmlEnd == -1)
+			//{
+			//	xmlEnd = xmlString.Length;
+			//}
+			//var xmlSubString = xmlString.Substring(xmlStart, xmlEnd - xmlStart);
 			var wrappedXmlString = "<wrapper>" + xmlString + "</wrapper>";
+			//TODO maybe instead of wrapping, we could export the outerxml instead of the innerxml in SpreadsheetExporter,
+			//though this would break a lot of the tests
 			doc.LoadXml(wrappedXmlString);
-			XmlNode root = (XmlNode)doc.DocumentElement;
-			MarkedUpText markedUpText = ParseXmlRecursive(root);
+			XmlNode root = doc.DocumentElement;
+
+			MarkedUpText result = new MarkedUpText();
+			MarkedUpText pending = new MarkedUpText();
+			//we need to ignore whitespace between children but not grandchildren?
+			foreach (XmlNode x in root.ChildNodes.Cast<XmlNode>())
+			{
+				if (x.Name == "#whitespace")
+				{
+					continue;
+				}
+				if (string.IsNullOrWhiteSpace(x.InnerText) && x.Name != "p")
+				{
+					if (result.Count > 0)
+						pending._runList.Add(new MarkedUpTextRun(x.InnerText));
+					continue;
+				}
+				//TODO copy contents?
+				result.AddAllFrom(pending);
+				pending = new MarkedUpText();
+				result.AddAllFrom(ParseXmlRecursive(x));
+				if (x.Name == "p")
+				{
+					// We want a line break here, but only if something follows...we don't need a blank line at
+					// the end of the cell, which is what Excel will do with a trailing newline.
+					// Review or Environment.Newline? But I'd rather generate something consistent.
+					// Linux: what line break is best to use when constructing an Excel spreadsheet in Linux?
+					pending = new MarkedUpText();
+					pending._runList.Add(new MarkedUpTextRun("\r\n"));
+				}
+			}
+
+			//MarkedUpText markedUpText = ParseXmlRecursive(root);
 
 			//remove trailing whitespace. We don't want a trailing newline which
 			//will make excel put a blank line at the end of the cell
-			while (markedUpText._runList.Count > 0
-					&& string.IsNullOrWhiteSpace(markedUpText._runList[markedUpText._runList.Count - 1].Text))
-			{
-				markedUpText._runList.RemoveAt(markedUpText._runList.Count - 1);
-			}
-			return markedUpText;
+			//while (markedUpText._runList.Count > 0
+			//		&& string.IsNullOrWhiteSpace(markedUpText._runList[markedUpText._runList.Count - 1].Text))
+			//{
+			//	markedUpText._runList.RemoveAt(markedUpText._runList.Count - 1);
+			//}
+			return result;
 		}
 
-		//TODO somewhere around here we are adding leading whitespace
+		private void AddAllFrom(MarkedUpText m)
+		{
+			foreach (MarkedUpTextRun r in m.Runs)
+			{
+				this._runList.Add(r);
+			}
+		}
+
 		private static MarkedUpText ParseXmlRecursive(XmlNode node)
 		{
 			MarkedUpText markedUpText;
@@ -92,13 +144,13 @@ namespace Bloom.Spreadsheet
 					markedUpText._runList.AddRange(markedUpChild._runList);
 				}
 			}
-			if (node.Name == "p")
-			{
-				// add a newline
-				markedUpText._runList.Add(new MarkedUpTextRun("\r\n"));
-				// Review or Environment.Newline? But I'd rather generate something consistent.
-				// Linux: what line break is best to use when constructing an Excel spreadsheet in Linux?
-			}
+			//if (node.Name == "p")
+			//{
+			//	// add a newline
+			//	markedUpText._runList.Add(new MarkedUpTextRun("\r\n"));
+			//	// Review or Environment.Newline? But I'd rather generate something consistent.
+			//	// Linux: what line break is best to use when constructing an Excel spreadsheet in Linux?
+			//}
 			return markedUpText;
 
 		}
