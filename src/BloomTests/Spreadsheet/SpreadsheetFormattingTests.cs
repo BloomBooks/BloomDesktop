@@ -1,14 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-using Bloom.Book;
-using Bloom.Spreadsheet;
-using Gtk;
+﻿using Bloom.Spreadsheet;
 using NUnit.Framework;
-using SIL.IO;
 
 namespace BloomTests.Spreadsheet
 {

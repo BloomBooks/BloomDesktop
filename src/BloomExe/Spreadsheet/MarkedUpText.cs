@@ -1,12 +1,8 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
-using OfficeOpenXml;
-using OfficeOpenXml.Style;
 
 namespace Bloom.Spreadsheet
 {
@@ -69,7 +65,7 @@ namespace Bloom.Spreadsheet
 			//TODO how to pass this in? right now will be false. Outerxml instead of wrapper?
 			if (root.Name == "textarea")
 			{
-				//TODO test
+				//TODO test the textarea case
 				return ParseXmlRecursive(root);
 			}
 
@@ -136,13 +132,6 @@ namespace Bloom.Spreadsheet
 					markedUpText._runList.AddRange(markedUpChild._runList);
 				}
 			}
-			//if (node.Name == "p")
-			//{
-			//	// add a newline
-			//	markedUpText._runList.Add(new MarkedUpTextRun("\r\n"));
-			//	// Review or Environment.Newline? But I'd rather generate something consistent.
-			//	// Linux: what line break is best to use when constructing an Excel spreadsheet in Linux?
-			//}
 			return markedUpText;
 
 		}

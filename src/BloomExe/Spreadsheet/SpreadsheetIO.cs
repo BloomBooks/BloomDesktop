@@ -11,13 +11,12 @@
 // (also as educational).
 
 using Bloom.ImageProcessing;
-using System;
-using System.Drawing;
-using System.IO;
-using System.Xml;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using SIL.IO;
+using System;
+using System.Drawing;
+using System.IO;
 
 namespace Bloom.Spreadsheet
 {

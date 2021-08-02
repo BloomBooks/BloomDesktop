@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-using Bloom.Book;
+﻿using Bloom.Book;
 using Bloom.Spreadsheet;
-using Gtk;
 using NUnit.Framework;
 using SIL.IO;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace BloomTests.Spreadsheet
 {
@@ -294,12 +289,5 @@ namespace BloomTests.Spreadsheet
 			Assert.That(sheet.Languages, Has.Member("en"));
 			Assert.That(sheet.Languages, Has.Member("es"));
 		}
-
-		//[Test]
-		//public void ztest()
-		//{
-		//	string test = @"<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-audiorecordingmode=""TextBox"" id=""i4b150910-b53d-4779-a1fb-8177982c651c"" recordingmd5=""9134cd4f71cf3d6e148a6c9b4afed8dc"" data-duration=""4.245963"" data-languagetipcontent=""English"" data-audiorecordingendtimes=""2.920 4.160"" lang=""en"" contenteditable=""true""><p><span id=""e4bc05e5-4d65-4016-9bf3-ab44a0df3ea2"" class=""bloom-highlightSegment"" recordingmd5=""undefined"">This elephant is running amok.< <span id=""i2ba966b6-4212-4821-9268-04e820e95f50"" class=""bloom-highlightSegment"" recordingmd5=""undefined"">Causing much damage.</span></p></div>";
-		//	Assert.That(MarkedUpText.ParseXml(test).PlainText(), Is.EqualTo("wrong"));
-		//}
 	}
 }

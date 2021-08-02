@@ -1,14 +1,9 @@
-using System;
-using System.Collections.Generic;
+using Bloom.Book;
+using SIL.Xml;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
-using Bloom;
-using Bloom.Book;
-using SIL.Xml;
 
 namespace Bloom.Spreadsheet
 {
