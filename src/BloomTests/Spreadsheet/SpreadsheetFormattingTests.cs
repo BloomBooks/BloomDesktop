@@ -66,18 +66,6 @@ namespace BloomTests.Spreadsheet
 			Assert.That(textRun.Underlined, Is.EqualTo(underlined));
 		}
 
-		//[TestCase("", "")]
-		//[TestCase("<div><p>1Some text</p></div>", "1Some text")]
-		//[TestCase("<div>\r\n\t\t<p>2Some text</p>\r\n</div>", "2Some text")]
-		//[TestCase("<div>\r\n\t\t<p>3Some text.</p><p>Some more.</p>\r\n</div>", "3Some text.\r\nSome more.")]
-		//[TestCase("<div>\r\n\t\t<p>4Some text.</p><p>Some more.</p>\r\n</div>", "4Some text.\r\nSome more.")]
-		//[TestCase("<div>\r\n\t\t<p>4Some text.</p>\r\n\t\t<p>Some more.</p>\r\n</div>", "4Some text.\r\nSome more.")]
-		//[TestCase("<div>\r\n\t\t<p></p><p></p><p>5Some text</p>\r\n</div>", "\r\n\r\n5Some text")]
-		//[TestCase("<div>\r\n\t\t<p>6Some text</p><p></p></div>", "6Some text\r\n")]
-		//[TestCase(@"<div><p>7Some text.<span class=""bloom-linebreak""></span></p></div>", "7Some text.\r\n")]
-		//[TestCase(@"<div><p>8Some text.<span class=""bloom-linebreak""></span>Some more.</p></div>", "8Some text.\r\nSome more.")]
-		//[TestCase("<div><p>9<br></br>Some text.</p></div>", "\r\n9Some text.")]
-		//[TestCase(@"<div><p>Some text.<span class=""bloom-linebreak""></span>Some more.</p></div>", "8Some text.\r\nSome more.")]
 		[TestCase("", "")]
 		[TestCase("<p>1Some text</p>", "1Some text")]
 		[TestCase("\r\n\t\t<p>2Some text</p>\r\n", "2Some text")]
@@ -90,6 +78,7 @@ namespace BloomTests.Spreadsheet
 		[TestCase(@"<p>8Some text.<span class=""bloom-linebreak""></span>Some more.</p>", "8Some text.\r\nSome more.")]
 		[TestCase("<p><br></br>9Some text.</p>", "\r\n9Some text.")]
 		[TestCase(@"<p>Some text.<span class=""bloom-linebreak""></span>Some more.</p>", "Some text.\r\nSome more.")]
+		[TestCase("\r\n\t\tText without p tags.\r\n\tSome more.\r\n", "\r\n\t\tText without p tags.\r\n\tSome more.\r\n")]
 		public void ParsesFormattedXmlHandlesWhitespace(string input, string expected)
 		{
 			var xmlresult = MarkedUpText.ParseXml(input);
@@ -98,3 +87,4 @@ namespace BloomTests.Spreadsheet
 		}
 	}
 }
+

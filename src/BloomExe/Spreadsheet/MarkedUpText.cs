@@ -62,10 +62,10 @@ namespace Bloom.Spreadsheet
 			MarkedUpText result = new MarkedUpText();
 			MarkedUpText pending = new MarkedUpText();
 
-			//TODO how to pass this in? right now will be false. Outerxml instead of wrapper?
-			if (root.Name == "textarea")
+			//There are no paragraph elements, it is probably an  old bloom book using <textarea> blocks,
+			//so keep all whitespace
+			if (((XmlElement) root).GetElementsByTagName("p").Count == 0)
 			{
-				//TODO test the textarea case
 				return ParseXmlRecursive(root);
 			}
 
