@@ -93,14 +93,13 @@ namespace Bloom.Spreadsheet
 							}
 							else
 							{
-								//TODO test
+								//TODO once we implement importing with formatting, test that unformatted text is not richtext
 								currentCell.Value = markedUpText.PlainText();
 							}
 						}
 						else
 						{
-							//TODO this is convoluted do we need all 3 cases? now that we wrap the xml, is it ok if it is a header or something?
-							// This is not book text, or we are retaining the markup
+							// Either the retainMarkup flag is set, or this is not book text. It could be header or leading column
 							currentCell.Value = content;
 						}
 

@@ -46,9 +46,9 @@ namespace BloomTests.Spreadsheet
 		[Test]
 		public void ParsesFormattedXmlVeryNested()
 		{
-			MarkedUpText parsed = MarkedUpText.ParseXml("<p>a<u><strong><sup>b</sup></strong><em>c</em><strong>d</strong></u>e<u>f</u></p>");
+			MarkedUpText parsed = MarkedUpText.ParseXml("<p>  <u><strong><sup>b</sup></strong><em>c</em><strong>d</strong></u>e<u>f</u></p>");
 			Assert.That(parsed.Count, Is.EqualTo(6));
-			assertHasFormatting(parsed.GetRun(0), "a", bolded: false, italicized: false, superscripted: false, underlined: false);
+			assertHasFormatting(parsed.GetRun(0), "  ", bolded: false, italicized: false, superscripted: false, underlined: false);
 			assertHasFormatting(parsed.GetRun(1), "b", bolded: true, italicized: false, superscripted: true, underlined: true);
 			assertHasFormatting(parsed.GetRun(2), "c", bolded: false, italicized: true, superscripted: false, underlined: true);
 			assertHasFormatting(parsed.GetRun(3), "d", bolded: true, italicized: false, superscripted: false, underlined: true);
