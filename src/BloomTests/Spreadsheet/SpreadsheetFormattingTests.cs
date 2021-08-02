@@ -74,10 +74,21 @@ namespace BloomTests.Spreadsheet
 		[TestCase("\r\n\t\t<p>4Some text.</p>\r\n\t\t<p>Some more.</p>\r\n", "4Some text.\r\nSome more.")]
 		[TestCase("\r\n\t\t<p></p><p></p><p>5Some text</p>\r\n", "\r\n\r\n5Some text")]
 		[TestCase("\r\n\t\t<p>6Some text</p><p></p>", "6Some text\r\n")]
+
+		//handle other types of line breaks:
 		[TestCase(@"<p>7Some text.<span class=""bloom-linebreak""></span></p>", "7Some text.\r\n")]
 		[TestCase(@"<p>8Some text.<span class=""bloom-linebreak""></span>Some more.</p>", "8Some text.\r\nSome more.")]
 		[TestCase("<p><br></br>9Some text.</p>", "\r\n9Some text.")]
 		[TestCase(@"<p>Some text.<span class=""bloom-linebreak""></span>Some more.</p>", "Some text.\r\nSome more.")]
+		[TestCase(@"<p>Some text.<span class=""bloom-linebreak""></span>Some more.</p>", "Some text.\r\nSome more.")]
+
+		//Keep text outside of <p> tags:
+		[TestCase("\r\nfront text\t<p>Some text.</p>middletext<p>Some more.</p>\t end text",
+					"\r\nfront text\tSome text.\r\nmiddletextSome more.\r\n\t end text")]
+		[TestCase("<div>front div text</div><p>Some paragraph text.</p><div>middle div text</div><p>More paragraph text.</p><div>End div text</div>",
+					"front div textSome paragraph text.\r\nmiddle div textMore paragraph text.\r\nEnd div text")]
+
+		//Keep all whitespace if there are no <p> tags:
 		[TestCase("\r\n\t\tText without p tags.\r\n\tSome more.\r\n", "\r\n\t\tText without p tags.\r\n\tSome more.\r\n")]
 		public void ParsesFormattedXmlHandlesWhitespace(string input, string expected)
 		{

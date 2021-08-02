@@ -31,6 +31,51 @@ namespace Bloom.Spreadsheet
 			return stringBuilder.ToString();
 		}
 
+		//TODO test this method
+		//TODO handle newlines/paragraphs
+		public override string ToString()
+		{
+			StringBuilder stringBuilder = new StringBuilder();
+			foreach (var run in _runList)
+			{
+				List<string> endTags = new List<string>();
+				if (run.Bold)
+				{
+					AddTags(stringBuilder, "strong", endTags);
+				}
+				if (run.Italic)
+				{
+					AddTags(stringBuilder, "em", endTags);
+				}
+				if (run.Underlined)
+				{
+					AddTags(stringBuilder, "u", endTags);
+				}
+				//TODO make sure manually adding formatting is caught here
+				if (run.Superscript)
+				{
+					AddTags(stringBuilder, "sup", endTags);
+				}
+
+				stringBuilder.Append(run.Text);
+
+				endTags.Reverse();
+				foreach (var endTag in endTags)
+				{
+					stringBuilder.Append(endTag);
+				}
+			}
+			return stringBuilder.ToString();
+		}
+
+		private void AddTags(StringBuilder stringBuilder, string tagName, List<string> endTag)
+		{
+			//TODO efficiency?
+			stringBuilder.Append("<" + tagName + ">");
+			endTag.Add("</" + tagName + ">");
+
+		}
+
 		public int Count
 		{
 			get
@@ -81,15 +126,15 @@ namespace Bloom.Spreadsheet
 						pending._runList.Add(new MarkedUpTextRun(x.InnerText));
 					continue;
 				}
+				result.AddAllFrom(pending);
+				result.AddAllFrom(ParseXmlRecursive(x));
+				pending = new MarkedUpText();
 				if (x.Name == "p")
 				{
 					// We want a line break here, but only if something follows...we don't need a blank line at
 					// the end of the cell, which is what Excel will do with a trailing newline.
 					// Review or Environment.Newline? But I'd rather generate something consistent.
 					// Linux: what line break is best to use when constructing an Excel spreadsheet in Linux?
-					result.AddAllFrom(pending);
-					result.AddAllFrom(ParseXmlRecursive(x));
-					pending = new MarkedUpText();
 					pending._runList.Add(new MarkedUpTextRun("\r\n"));
 				}
 			}
