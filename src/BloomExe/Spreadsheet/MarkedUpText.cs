@@ -50,34 +50,29 @@ namespace Bloom.Spreadsheet
 
 		/// <summary>
 		/// Extract the text and any bold, italic, underline, and/or superscript formatting
-		/// Adds newlines after paragraphs, but drops trailing, but not intermediate, white space.
+		/// Adds newlines after paragraphs except for the last one
 		/// </summary>
 		public static MarkedUpText ParseXml(string xmlString)
 		{
 			XmlDocument doc = new XmlDocument();
 			doc.PreserveWhitespace = true;
-			//wrap xml in another tag to make sure it has only one root
-			//this will fail if there is a < or > not part of a tag...
-			//var xmlStart = xmlString.IndexOf("<");
-			//if (xmlStart == -1)
-			//{
-			//	xmlStart = 0;
-			//}
-			//var xmlEnd = xmlString.LastIndexOf(">");
-			//if (xmlEnd == -1)
-			//{
-			//	xmlEnd = xmlString.Length;
-			//}
-			//var xmlSubString = xmlString.Substring(xmlStart, xmlEnd - xmlStart);
+
 			var wrappedXmlString = "<wrapper>" + xmlString + "</wrapper>";
 			//TODO maybe instead of wrapping, we could export the outerxml instead of the innerxml in SpreadsheetExporter,
-			//though this would break a lot of the tests
+			//though this would break a lot of the tests, but would let us detect textarea tags
 			doc.LoadXml(wrappedXmlString);
 			XmlNode root = doc.DocumentElement;
 
 			MarkedUpText result = new MarkedUpText();
 			MarkedUpText pending = new MarkedUpText();
-			//we need to ignore whitespace between children but not grandchildren?
+
+			//TODO how to pass this in? right now will be false. Outerxml instead of wrapper?
+			if (root.Name == "textarea")
+			{
+				//TODO test
+				return ParseXmlRecursive(root);
+			}
+
 			foreach (XmlNode x in root.ChildNodes.Cast<XmlNode>())
 			{
 				if (x.Name == "#whitespace")
@@ -90,30 +85,18 @@ namespace Bloom.Spreadsheet
 						pending._runList.Add(new MarkedUpTextRun(x.InnerText));
 					continue;
 				}
-				//TODO copy contents?
-				result.AddAllFrom(pending);
-				pending = new MarkedUpText();
-				result.AddAllFrom(ParseXmlRecursive(x));
 				if (x.Name == "p")
 				{
 					// We want a line break here, but only if something follows...we don't need a blank line at
 					// the end of the cell, which is what Excel will do with a trailing newline.
 					// Review or Environment.Newline? But I'd rather generate something consistent.
 					// Linux: what line break is best to use when constructing an Excel spreadsheet in Linux?
+					result.AddAllFrom(pending);
+					result.AddAllFrom(ParseXmlRecursive(x));
 					pending = new MarkedUpText();
 					pending._runList.Add(new MarkedUpTextRun("\r\n"));
 				}
 			}
-
-			//MarkedUpText markedUpText = ParseXmlRecursive(root);
-
-			//remove trailing whitespace. We don't want a trailing newline which
-			//will make excel put a blank line at the end of the cell
-			//while (markedUpText._runList.Count > 0
-			//		&& string.IsNullOrWhiteSpace(markedUpText._runList[markedUpText._runList.Count - 1].Text))
-			//{
-			//	markedUpText._runList.RemoveAt(markedUpText._runList.Count - 1);
-			//}
 			return result;
 		}
 
@@ -128,7 +111,16 @@ namespace Bloom.Spreadsheet
 		private static MarkedUpText ParseXmlRecursive(XmlNode node)
 		{
 			MarkedUpText markedUpText;
-			if (!node.HasChildNodes)
+			if ((node.Name == "br")
+				|| (node.Name == "span" && node.Attributes.GetNamedItem("class").Value.Equals("bloom-linebreak")))
+			{
+				//TODO Is there a way to roundtrip these distinguishably from new paragraphs?
+				// Will excel render \n or an escape seqence as a detectably different newline?
+				MarkedUpTextRun run = new MarkedUpTextRun("\r\n");
+				markedUpText = new MarkedUpText();
+				markedUpText._runList.Add(run);
+			}
+			else if (!node.HasChildNodes)
 			{
 				MarkedUpTextRun run = new MarkedUpTextRun(node.InnerText);
 				markedUpText = new MarkedUpText();
