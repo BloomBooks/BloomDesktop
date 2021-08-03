@@ -27,6 +27,8 @@ namespace Bloom.Spreadsheet
 		private List<SpreadsheetRow> _rows = new List<SpreadsheetRow>();
 		private HeaderRow _header = new HeaderRow();
 
+		public SpreadsheetExportParams Params = new SpreadsheetExportParams();
+
 		public string[] StandardLeadingColumns = new[]
 		{
 			MetadataKeyLabel, // what kind of data is in the row; might be book-data key or [textgroup] or [image]
@@ -126,7 +128,7 @@ namespace Bloom.Spreadsheet
 
 		public void WriteToFile(string path)
 		{
-			SpreadsheetIO.WriteSpreadsheet(this, path);
+			SpreadsheetIO.WriteSpreadsheet(this, path, Params.RetainMarkup);
 		}
 
 		public static InternalSpreadsheet ReadFromFile(string path)

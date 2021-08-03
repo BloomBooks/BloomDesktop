@@ -24,10 +24,19 @@ namespace Bloom.CLI
 			{
 				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(options.BookPath, false));
 				var exporter = new SpreadsheetExporter();
+				SpreadsheetExportParams spreadsheetParams;
 				if (!string.IsNullOrEmpty(options.ParamsPath))
-					exporter.Params = SpreadsheetExportParams.FromFile(options.ParamsPath);
+				{
+					spreadsheetParams = SpreadsheetExportParams.FromFile(options.ParamsPath);
+				}
+				else
+				{
+					spreadsheetParams = new SpreadsheetExportParams();
+				}
+				exporter.Params = spreadsheetParams;
 				string imagesFolderPath = Path.GetDirectoryName(options.BookPath);
 				var _sheet = exporter.Export(dom, imagesFolderPath);
+				_sheet.Params = spreadsheetParams;
 				_sheet.WriteToFile(options.OutputPath);
 				return 0; // all went well
 			}

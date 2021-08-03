@@ -1,4 +1,4 @@
-﻿/*************************************************************************************************
+/*************************************************************************************************
   Required Notice: Copyright (C) EPPlus Software AB. 
   This software is licensed under PolyForm Noncommercial License 1.0.0 
   and may only be used for noncommercial purposes 
@@ -11,11 +11,12 @@
 // (also as educational).
 
 using Bloom.ImageProcessing;
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
+using SIL.IO;
 using System;
 using System.Drawing;
 using System.IO;
-using OfficeOpenXml;
-using SIL.IO;
 
 namespace Bloom.Spreadsheet
 {
@@ -35,7 +36,7 @@ namespace Bloom.Spreadsheet
 			ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 		}
 
-		public static void WriteSpreadsheet(InternalSpreadsheet spreadsheet, string outputPath)
+		public static void WriteSpreadsheet(InternalSpreadsheet spreadsheet, string outputPath, bool retainMarkup)
 		{
 			using (var package = new ExcelPackage())
 			{
@@ -61,7 +62,45 @@ namespace Bloom.Spreadsheet
 						// that contain simple numbers can be treated accordingly.
 						// It might be helpful for some uses of the group-on-page-index
 						// if Excel knew to treat them as numbers.
-						worksheet.Cells[r, c+1].Value = row.GetCell(c).Content;
+
+						var content = row.GetCell(c).Content;
+						// Parse xml for markdown formatting on language columns,
+						// Display formatting in excel spreadsheet
+						ExcelRange currentCell = worksheet.Cells[r, c + 1];
+						if (!retainMarkup && c >= spreadsheet.StandardLeadingColumns.Length && r > 1)
+                        {
+							//TODO when we implement importing with formatting, make sure this
+							//gets (round-trip) unit tested
+							MarkedUpText markedUpText = MarkedUpText.ParseXml(content);
+							if (markedUpText.HasFormatting)
+							{
+								currentCell.IsRichText = true;
+								foreach (MarkedUpTextRun run in markedUpText.Runs)
+								{
+									if (!run.Text.Equals(""))
+									{
+										ExcelRichText text = currentCell.RichText.Add(run.Text);
+										text.Bold = run.Bold;
+										text.Italic = run.Italic;
+										text.UnderLine = run.Underlined;
+										if (run.Superscript)
+										{
+											text.VerticalAlign = ExcelVerticalAlignmentFont.Superscript;
+										}
+									}
+								}
+							}
+							else
+							{
+								//TODO once we implement importing with formatting, test that unformatted text is not richtext
+								currentCell.Value = markedUpText.PlainText();
+							}
+						}
+						else
+						{
+							// Either the retainMarkup flag is set, or this is not book text. It could be header or leading column
+							currentCell.Value = content;
+						}
 
 						//Embed any images in the excel file
 						if (c == imageSourceColumn)
@@ -80,9 +119,6 @@ namespace Bloom.Spreadsheet
 						}
 					}
 				}
-				// Review: is this helpful? Excel typically makes very small cells, so almost
-				// nothing of a cell's content can be seen, and that only markup. But it also
-				// starts out with very narrow cells, so WrapText makes them almost unmanageably tall.
 				worksheet.Cells[1, 1, r, spreadsheet.ColumnCount].Style.WrapText = true;
 
 
