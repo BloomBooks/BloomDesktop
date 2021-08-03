@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Bloom.Book;
 using Bloom.Collection;
@@ -12,18 +13,21 @@ namespace Bloom.Workspace
 		private readonly string _directoryPath;
 		private TeamCollectionManager _tcManager;
 		private CollectionSettings _collectionSettings;
+		private SourceCollectionsList _sourceCollectionsList;
 
 		public delegate WorkspaceModel Factory(string directoryPath);//autofac uses this
 		public event EventHandler UpdateDisplay;
 
 
-		public WorkspaceModel(BookSelection bookSelection, string directoryPath, TeamCollectionManager tcManager, CollectionSettings collectionSettings)
+		public WorkspaceModel(BookSelection bookSelection, string directoryPath, TeamCollectionManager tcManager, CollectionSettings collectionSettings,
+			SourceCollectionsList sourceCollectionsList)
 		{
 			_bookSelection = bookSelection;
 			_directoryPath = directoryPath;
 			_tcManager = tcManager;
 			_collectionSettings = collectionSettings;
 			_bookSelection.SelectionChanged += OnSelectionChanged;
+			_sourceCollectionsList = sourceCollectionsList;
 		}
 
 		public bool ShowEditTab
@@ -67,7 +71,7 @@ namespace Bloom.Workspace
 			return true;
 		}
 
-		// Must be called before we call GetBookCollections() (or GetBookCollectionsOnce) in LibraryListView (legacy).
+		// Must be called before we call GetBookCollections() (or GetBookCollectionsOnce) in LibraryModel.
 		internal void HandleTeamStuffBeforeGetBookCollections(Action whenDone)
 		{
 			// It would be nice if this was just in the  TCManager constructor. But TCManager has important
@@ -95,6 +99,13 @@ namespace Bloom.Workspace
 			// books copied from another collection, and update checkout status for
 			// an offline TC.
 			_tcManager.CurrentCollectionEvenIfDisconnected?.SynchronizeRepoAndLocal(whenDone);
+		}
+
+		// Alternative for GetBookCollections() that returns folder paths of all source collections.
+		// It is safe to call before HandleTeamStuffBeforeGetBookCollections().
+		internal IEnumerable<string> GetSourceCollectionFolders()
+		{
+			return _sourceCollectionsList.GetCollectionFolders();
 		}
 	}
 

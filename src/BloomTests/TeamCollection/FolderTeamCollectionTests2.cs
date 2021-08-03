@@ -589,6 +589,38 @@ namespace BloomTests.TeamCollection
 		}
 
 		[Test]
+		public void AnyBooksCheckedOutHereByCurrentUser_TrueOnlyForRealCheckouts()
+		{
+			using (var collectionFolder = new TemporaryFolder("AnyBooksCheckedOutHereByCurrentUser_TrueOnlyForRealCheckouts"))
+			{
+				using (var repoFolder = new TemporaryFolder("AnyBooksCheckedOutHereByCurrentUser_TrueOnlyForRealCheckouts"))
+				{
+					TeamCollectionManager.ForceCurrentUserForTests("test@somewhere.org");
+					var bookFolderName1 = "A very nice book book";
+					var localBookFolderPath = SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, bookFolderName1, "Something");
+					var mockTcManager = new Mock<ITeamCollectionManager>();
+					var tcLog = new TeamCollectionMessageLog(TeamCollectionManager.GetTcLogPathFromLcPath(collectionFolder.FolderPath));
+					var tc = new TestFolderTeamCollection(mockTcManager.Object, collectionFolder.FolderPath,
+						repoFolder.FolderPath, tcLog);
+
+					SyncAtStartupTests.MakeFakeBook(collectionFolder.FolderPath, "Another nice book", "Something");
+
+					Assert.That(tc.AnyBooksCheckedOutHereByCurrentUser, Is.False); // both currently local-only
+
+					tc.PutBook(localBookFolderPath);
+					Assert.That(tc.AnyBooksCheckedOutHereByCurrentUser, Is.False); // one local-only, one checked in
+
+					tc.AttemptLock(bookFolderName1, TeamCollectionManager.CurrentUser);
+					Assert.That(tc.AnyBooksCheckedOutHereByCurrentUser, Is.True); // one local-only, one checked out
+
+					tc.PutBook(localBookFolderPath, checkin:true);
+					tc.AttemptLock(bookFolderName1, "someoneElse.somewhere.org");
+					Assert.That(tc.AnyBooksCheckedOutHereByCurrentUser, Is.False); // one local-only, one checked out but to someone else.
+				}
+			}
+		}
+
+		[Test]
 		public void ForgetChanges_HtmlChange_UndoesIt()
 		{
 			using (var collectionFolder =

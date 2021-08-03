@@ -288,9 +288,28 @@ namespace Bloom.CollectionTab
 			get { return 300; }
 		}
 
-		protected override void OnLoad(EventArgs e)
+		// Much of our initialization must only be done after synchronizing team collections,
+		// and also after we are loaded. The loading of Team Collections is currently arranged
+		// in the OnLoad method of WorkspaceView, which currently (I'm not sure exactly why)
+		// happens AFTER the LibraryListView OnLoad(), where we used to do this initialization.
+		// ReadyToShowCollections() is called AFTER any necessary TC sync in the WorkspaceView
+		// OnLoad. So, currently it would be OK to just do the init in ReadyToShowCollections.
+		// But I think it's safer not to count on the sequence of OnLoad events. Here, we maintain
+		// two flags, and only when BOTH ReadyToLoadCollections AND OnLoad have been called
+		// do we do the initialization that requires both a valid state of the collection on disk
+		// and that this control is ready.
+		private bool _readyToShowCollections;
+		private bool _loaded;
+		public void ReadyToShowCollections()
 		{
-			base.OnLoad(e);
+			_readyToShowCollections = true;
+			MainInitializationWhenReady();
+		}
+
+		private void MainInitializationWhenReady()
+		{
+			if (!_loaded || !_readyToShowCollections)
+				return; // will be called again when both are true.
 			// Add the distinct stages of initialization we want to do as StartupScreenManager actions.
 			// This ensures they don't conflict with any dialogs we want to launch at startup,
 			// and don't happen unexpectedly because of idle events while modal dialogs are open.
@@ -325,27 +344,35 @@ namespace Bloom.CollectionTab
 
 			// previously: stage LoadSourceCollections
 			_startupActions.Add(StartupScreenManager.AddStartupAction(() =>
+			{
+				LoadSourceCollectionButtons();
+				if (Program.PathToBookDownloadedAtStartup != null)
 				{
-					LoadSourceCollectionButtons();
-					if (Program.PathToBookDownloadedAtStartup != null)
-					{
-						// We started up with a command to downloaded a book...Select it.
-						SelectBook(new BookInfo(Program.PathToBookDownloadedAtStartup, false));
-					} else if (_bookSelection.CurrentSelection != null)
-					{
-						// This might have happened already...it might also have happened before
-						// the button we want hilighted got created.
-						HighlightBookButtonAndShowContextMenuButton(_bookSelection.CurrentSelection.BookInfo);
-					}
-				}));
+					// We started up with a command to downloaded a book...Select it.
+					SelectBook(new BookInfo(Program.PathToBookDownloadedAtStartup, false));
+				}
+				else if (_bookSelection.CurrentSelection != null)
+				{
+					// This might have happened already...it might also have happened before
+					// the button we want hilighted got created.
+					HighlightBookButtonAndShowContextMenuButton(_bookSelection.CurrentSelection.BookInfo);
+				}
+			}));
 			// previously: stage FinalizeSetup
 			_startupActions.Add(StartupScreenManager.AddStartupAction(() =>
-				{
-					// If we repair duplicates and there is a reason to toast (e.g. locked meta.json file),
-					// The ongoing UI activity focuses Bloom over top of the toast after a brief flash.
-					// For that reason, we add a new stage for tasks that need to happen after the UI is updated.
-					RepairDuplicates();
-				}));
+			{
+				// If we repair duplicates and there is a reason to toast (e.g. locked meta.json file),
+				// The ongoing UI activity focuses Bloom over top of the toast after a brief flash.
+				// For that reason, we add a new stage for tasks that need to happen after the UI is updated.
+				RepairDuplicates();
+			}));
+		}
+
+		protected override void OnLoad(EventArgs e)
+		{
+			base.OnLoad(e);
+			_loaded = true;
+			MainInitializationWhenReady();
 		}
 
 		List<IStartupAction> _startupActions = new List<IStartupAction>();
@@ -1084,7 +1111,7 @@ namespace Bloom.CollectionTab
 		{
 			get
 			{
-				return AllBookButtons().FirstOrDefault(b => GetBookInfoFromButton(b) == SelectedBook.BookInfo);
+				return AllBookButtons().FirstOrDefault(b => GetBookInfoFromButton(b).FolderPath == SelectedBook?.BookInfo.FolderPath);
 			}
 		}
 
@@ -1104,6 +1131,7 @@ namespace Bloom.CollectionTab
 				// Just make a note to re-show it next time we're visible
 				_thumbnailRefreshPending = true;
 			}
+			BringButtonTitleUpToDate(_bookSelection.CurrentSelection);
 		}
 
 		private void OnBackColorChanged(object sender, EventArgs e)
@@ -1119,14 +1147,16 @@ namespace Bloom.CollectionTab
 				Book.Book book = SelectedBook;
 				if (book != null && SelectedButton != null)
 				{
-					var bestTitle = book.TitleBestForUserDisplay;
-					SelectedButton.SetTextSafely(ShortenTitleIfNeeded(bestTitle, SelectedButton));
-					SetBookButtonTooltip(SelectedButton);
+					BringButtonTitleUpToDate(book);
 					if (_thumbnailRefreshPending)
 					{
 						_thumbnailRefreshPending = false;
 						ScheduleRefreshOfOneThumbnail(book);
 					}
+				}
+				else
+				{
+
 				}
 				if (_primaryCollectionReloadPending)
 				{
@@ -1145,6 +1175,15 @@ namespace Bloom.CollectionTab
 				// We don't need to finish these now if we've already switched tabs.
 				PauseStartupActions();
 			}
+		}
+
+		private void BringButtonTitleUpToDate(Book.Book book)
+		{
+			if (SelectedButton == null || _bookSelection.CurrentSelection == null)
+				return;
+			var bestTitle = book.TitleBestForUserDisplay;
+			SelectedButton.SetTextSafely(ShortenTitleIfNeeded(bestTitle, SelectedButton));
+			SetBookButtonTooltip(SelectedButton);
 		}
 
 		private void RefreshOneThumbnail(Book.BookInfo bookInfo, Image image)
@@ -1739,8 +1778,8 @@ namespace Bloom.CollectionTab
 					}
 					outputFilename = dlg.FileName;
 				}
-
-				var _sheet = exporter.Export(dom);
+				string imagesFolderPath = Path.GetDirectoryName(bookPath);
+				var _sheet = exporter.Export(dom, imagesFolderPath);
 				_sheet.WriteToFile(outputFilename);
 				//TODO capture any error output
 			}
@@ -1748,6 +1787,68 @@ namespace Bloom.CollectionTab
 			{
 				var msg = LocalizationManager.GetString("Spreadsheet:ExportFailed", "Export failed: ");
 				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg + ex.Message, exception:ex);
+			}
+		}
+
+		private TextBox _renameOverlay;
+
+		private void renameToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			HandleRenameCommand();
+		}
+
+		public void HandleRenameCommand() {
+			var button = SelectedButton;
+			// F2 can bring us here even when the selected book is not editable.
+			if (!GetBookInfoFromButton(button).IsEditable)
+				return;
+			if (_renameOverlay != null)
+			{
+				RemoveRenameOverlay();
+			}
+			// Put an overlay textbox in which the user can edit over the top of the button.
+			// This is deliberately crude. The Windows.Forms implementation is already in
+			// the process of being replaced with an HTML one.
+			_renameOverlay = new TextBox();
+			_renameOverlay.Text = button.Text;
+			_renameOverlay.Top = button.Top + 73;
+			_renameOverlay.Left = button.Left;
+			_renameOverlay.Width = button.Width;
+			_renameOverlay.Multiline = true;
+			_renameOverlay.BackColor = button.BackColor;
+			_renameOverlay.ForeColor = button.ForeColor;
+			_renameOverlay.Height = 40;
+			Controls.Add(_renameOverlay);
+			_renameOverlay.SelectAll();
+			_renameOverlay.Focus();
+			_renameOverlay.AcceptsReturn = true;
+			_renameOverlay.KeyPress += _renameOverlay_KeyPress;
+			_renameOverlay.LostFocus += (sender, args) => RemoveRenameOverlay();
+			_renameOverlay.BringToFront();
+		}
+
+		private void RemoveRenameOverlay()
+		{
+			if (_renameOverlay != null)
+			{
+				var renameOverlay = _renameOverlay;
+				_renameOverlay = null; // removing it may lead to reentrant call through lost focus
+				Controls.Remove(renameOverlay);
+				renameOverlay.Dispose();
+			}
+		}
+
+		private void _renameOverlay_KeyPress(object sender, KeyPressEventArgs e)
+		{
+			if (e.KeyChar == '\x0d') // enter
+			{
+				var newName = _renameOverlay.Text;
+				RemoveRenameOverlay();
+				var book = SelectedBook;
+				if (book == null) //don't think this can happen, but play safe
+					return;
+				book.SetAndLockBookName(newName);
+				BringButtonTitleUpToDate(book);
 			}
 		}
 	}

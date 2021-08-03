@@ -3,7 +3,7 @@
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "content": "<img class='branding' src='back.svg'/>",
+            "content": "<img class='branding badge' src='covicef-badge-row.svg'/><img class='branding textAndLogos' src='covicef-text-and-logos.svg'/>",
             "condition": "always"
         }
     ]

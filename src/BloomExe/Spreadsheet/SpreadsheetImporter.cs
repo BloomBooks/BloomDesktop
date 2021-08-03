@@ -82,6 +82,15 @@ namespace Bloom.Spreadsheet
 				}
 				var currentRow = _inputRows[_currentRowIndex];
 				var rowLabel = currentRow.PageNumber;
+
+				string rowType = currentRow.GetCell(_sheet.ColumnForTag(InternalSpreadsheet.MetadataKeyLabel)).Content;
+				if (rowType == InternalSpreadsheet.ImageKeyLabel)
+				{
+					//TODO import the pictures
+					_currentRowIndex++;
+					continue;
+				}
+
 				if (rowLabel != pageNumber)
 				{
 					// Do we have a later page that has the right number?

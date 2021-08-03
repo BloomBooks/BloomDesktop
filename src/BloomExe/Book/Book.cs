@@ -53,7 +53,7 @@ namespace Bloom.Book
 		internal const string kIdOfBasicBook = "056B6F11-4A6C-4942-B2BC-8861E62B03B3";
 
 		public event EventHandler ContentsChanged;
-		private readonly BookData _bookData;
+		private BookData _bookData;
 		public const string ReadMeImagesFolderName = "ReadMeImages";
 
 		int _audioFilesCopiedForDuplication;
@@ -172,6 +172,7 @@ namespace Bloom.Book
 		{
 			BookInfo.FolderPath = Storage.FolderPath;
 			UserPrefs.UpdateFileLocation(Storage.FolderPath);
+			ResetPreviewDom();
 		}
 
 		/// <summary>
@@ -199,10 +200,19 @@ namespace Bloom.Book
 		{
 			get
 			{
+				if (BookInfo.NameLocked)
+				{
+					// The user has explicitly chosen a name to use for the book, distinct from its titles.
+					return Path.GetFileName(FolderPath);
+				}
 				return GetBestTitleForDisplay(_bookData.GetMultiTextVariableOrEmpty("bookTitle"), _bookData.GetBasicBookLanguageCodes().ToList(), IsEditable);
 			}
 		}
 
+		/// <summary>
+		/// Get the best title to display for the given multilingual title and list of languages.
+		/// Do NOT use this method for a book if its BookInfo is NameLocked!
+		/// </summary>
 		public static string GetBestTitleForDisplay(MultiTextBase title, List<string> langCodes, bool isEditable)
 		{
 			var display = title.GetExactAlternative(langCodes[0]);
@@ -707,6 +717,8 @@ namespace Bloom.Book
 		// Tests can run without ever setting Storage.  This check is currently enough for them to work.
 		public virtual string FolderPath => Storage?.FolderPath;
 
+		private HtmlDom _previewDom;
+
 		public virtual HtmlDom GetPreviewHtmlFileForWholeBook()
 		{
 			//we may already know we have an error (we might not discover until later)
@@ -718,7 +730,11 @@ namespace Bloom.Book
 			{
 				return GetErrorDom(Storage.GetValidateErrors());
 			}
-
+			if (_previewDom != null)
+			{
+				//Console.WriteLine("DEBUG GetPreviewHtmlFileForWholeBook(): using cached _previewDOM");
+				return _previewDom;
+			}
 			var previewDom= GetBookDomWithStyleSheets("previewMode.css", "origami.css");
 			AddCreationTypeAttribute(previewDom);
 
@@ -727,7 +743,7 @@ namespace Bloom.Book
 			{
 				return GetErrorDom();
 			}
-
+			//Console.WriteLine("DEBUG GetPreviewHtmlFileForWholeBook(): calling BringBookUpToDate() for new previewDOM");
 			BringBookUpToDate(previewDom, new NullProgress());
 
 			// this is normally the vernacular, but when we're previewing a shell, well it won't have anything for the vernacular
@@ -750,7 +766,8 @@ namespace Bloom.Book
 
 			// Not needed for preview mode, so just remove them to reduce memory usage.
 			PreventVideoAutoLoad(previewDom);
-			
+
+			_previewDom = previewDom;
 			return previewDom;
 		}
 
@@ -1074,6 +1091,8 @@ namespace Bloom.Book
 
 		private object _updateLock = new object();
 		private bool _doingBookUpdate = false;
+		private HtmlDom _domBeingUpdated = null;
+		private string _updateStackTrace = null;
 
 		/// <summary>
 		/// As the bloom format evolves, including structure and classes and other attributes, this
@@ -1085,9 +1104,6 @@ namespace Bloom.Book
 		/// and making older Blooms unable to read new books. But because this is run, the xmatter will be
 		/// migrated to the new template.
 		/// </summary>
-		/// <param name="bookDOM"></param>
-		/// <param name="progress"></param>
-		/// <param name="oldMetaData">optional</param>
 		private void BringBookUpToDate(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress, string oldMetaData = "")
 		{
 			RemoveImgTagInDataDiv(bookDOM);
@@ -1101,12 +1117,27 @@ namespace Bloom.Book
 			{
 				// New version that we hope prevents BL_3166
 				if (_doingBookUpdate)
-					MessageBox.Show("Caught Bloom doing two updates at once! Possible BL-3166 is being prevented");
+				{
+					// Nag user if we appear to be updating the same DOM (OurHtmlDom or the previewDom which is always new)
+					if (bookDOM == _domBeingUpdated || (bookDOM != OurHtmlDom && _domBeingUpdated != OurHtmlDom))
+					{
+#if DEBUG
+						MessageBox.Show("Caught Bloom doing two updates at once! Possible BL-3166 is being prevented");
+#endif
+						Console.WriteLine("WARNING: Bloom appears to be updating the same DOM twice at the same time! (BL-3166??)");
+						Console.WriteLine("Current StackTrace: {0}", Environment.StackTrace);
+						Console.WriteLine("Prior StackTrace: {0}", _updateStackTrace);
+					}
+				}
 				lock (_updateLock)
 				{
+					_domBeingUpdated = bookDOM;
+					_updateStackTrace = Environment.StackTrace;
 					_doingBookUpdate = true;
 					BringBookUpToDateUnprotected(bookDOM, progress);
 					_doingBookUpdate = false;
+					_domBeingUpdated = null;
+					_updateStackTrace = null;
 				}
 			}
 			RemoveObsoleteSoundAttributes(bookDOM);
@@ -2617,7 +2648,7 @@ namespace Bloom.Book
 			// and later do the stuff that involves the new page.
 			_pageSelection.PrepareToSelectPage();
 
-			ClearPagesCache();
+			ClearCachedDataFromDom();
 
 			if(templatePage.Book !=null) // will be null in some unit tests that are unconcerned with stylesheets
 				HtmlDom.AddStylesheetFromAnotherBook(templatePage.Book.OurHtmlDom, OurHtmlDom);
@@ -2871,7 +2902,7 @@ namespace Bloom.Book
 
 			var pageToShowNext = GetPageToShowAfterDeletion(page);
 
-			ClearPagesCache();
+			ClearCachedDataFromDom();
 			//_pagesCache.Remove(page);
 			OrderOrNumberOfPagesChanged();
 
@@ -2895,9 +2926,15 @@ namespace Bloom.Book
 				IsPrimaryLanguageRtl);
 		}
 
-		private void ClearPagesCache()
+		private void ClearCachedDataFromDom()
 		{
 			_pagesCache = null;
+			ResetPreviewDom();
+		}
+
+		internal void ResetPreviewDom()
+		{
+			_previewDom = null;
 		}
 
 		/// <summary>
@@ -2995,7 +3032,8 @@ namespace Bloom.Book
 					return;
 				}
 
-				Storage.UpdateBookFileAndFolderName(CollectionSettings);
+				if (!BookInfo.NameLocked)
+					Storage.UpdateBookFileAndFolderName(CollectionSettings);
 				//review used to have   UpdateBookFolderAndFileNames(data);
 
 				//Enhance: if this is only used to re-show the thumbnail, why not limit it to if this is the cover page?
@@ -3074,7 +3112,7 @@ namespace Bloom.Book
 				return false;
 			}
 
-			ClearPagesCache();
+			ClearCachedDataFromDom();
 
 			var pages = GetPageElements();
 			var pageDiv = FindPageDiv(page);
@@ -3095,9 +3133,18 @@ namespace Bloom.Book
 			return true;
 		}
 
-		public void ReloadFromDisk()
+		public void ReloadFromDisk(string renamedTo)
 		{
-			Storage.ReloadFromDisk();
+			if (renamedTo != null)
+				BookInfo.FolderPath = renamedTo;
+			ClearCachedDataFromDom(); // before updating storage, which sends some events that could use the obsolete one
+			Storage.ReloadFromDisk(renamedTo, () => {
+				// This needs to happen after we've created the new DOM, but before
+				// we start broadcasting rename events that may assume the book is
+				// in a consistent state.
+				_bookData = new BookData(OurHtmlDom,
+					CollectionSettings, UpdateImageMetadataAttributes);
+			});
 			InvokeContentsChanged(null);
 		}
 
@@ -3445,7 +3492,7 @@ namespace Bloom.Book
 			Guard.Against(!IsEditable, "Tried to save a non-editable book.");
 			RemoveObsoleteSoundAttributes(OurHtmlDom);
 			_bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo);//will update the title if needed
-			if(!LockDownTheFileAndFolderName)
+			if(!LockDownTheFileAndFolderName && !BookInfo.NameLocked)
 			{
 				Storage.UpdateBookFileAndFolderName(CollectionSettings); //which will update the file name if needed
 			}
@@ -3479,6 +3526,7 @@ namespace Bloom.Book
 
 		private void DoPostSaveTasks()
 		{
+			ResetPreviewDom();
 			// Tell the accessibility checker window (and any future subscriber) to re-compute.
 			// This Task.Delay() helps even with a delay of 0, becuase it means we get to finish with this command.
 			// I'm chooing 1 second at the moment as that feels about the longest I would want to
@@ -3633,6 +3681,8 @@ namespace Bloom.Book
 		/// </remarks>
 		public static string MakeVersionCode(string fileContent, string filePath = null)
 		{
+			//var debugBldr = new StringBuilder();
+			//string debugPath = null;
 			var simplified = fileContent;
 			// In general, whitespace sequences are equivalent to a single space.
 			// If the user types multiple spaces all but one will be removed.
@@ -3641,6 +3691,7 @@ namespace Bloom.Book
 			simplified = new Regex(@">\s+<").Replace(simplified, "><");
 			// A space before (or inside) a <br/> element doesn't matter.
 			simplified = new Regex(@"\s+<br\s*/>").Replace(simplified, "<br/>");
+			simplified = new Regex(@"<br\s+/>").Replace(simplified, "<br/>");
 			// Ignore the generator metadata: precise version of Bloom doesn't matter
 			simplified = new Regex(@"<meta name=""Generator""[^>]*></meta>").Replace(simplified, "");
 			// The order of divs inside the bloomDataDiv is neither important nor deterministic, so we sort it.
@@ -3658,6 +3709,13 @@ namespace Bloom.Book
 				sha.TransformBlock(bytes, 0, bytes.Length, bytes, 0);
 				if (filePath != null)
 				{
+					//debugBldr.AppendLineFormat("Hashing {0}", filePath);
+					//using (var sha2 = SHA256.Create())
+					//{
+					//	sha2.TransformBlock(bytes, 0, bytes.Length, bytes, 0);
+					//	sha2.TransformFinalBlock(new byte[0], 0, 0);
+					//	debugBldr.AppendLineFormat("hashing simplified HTML [{0} bytes] => {1}", bytes.Length, Convert.ToBase64String(sha2.Hash));
+					//}
 					var folder = Path.GetDirectoryName(filePath);
 					// Order must be predictable but does not otherwise matter.
 					foreach (var path in Directory.GetFiles(folder, "*", SearchOption.AllDirectories).OrderBy(x => x))
@@ -3673,10 +3731,12 @@ namespace Bloom.Book
 						// .status files contain the output of this function among other team collection
 						// information; counting them would mean that writing a new status with the
 						// new version code would immediately change the next version code computed.
-						if (ext == ".pdf" || ext == ".status" || ext == ".bak")
+						// .BloomBookOrder files are essentially copies of the meta.json files.
+						if (ext == ".pdf" || ext == ".status" || ext == ".bak" || ext == ".BloomBookOrder")
 							continue;
 						if (path == filePath)
 							continue; // we already included a simplified version of the main HTML file
+						//AppendDebugInfo(debugBldr, path);
 						using (var input = new FileStream(path, FileMode.Open))
 						{
 							byte[] buffer = new byte[4096];
@@ -3692,15 +3752,35 @@ namespace Bloom.Book
 						var name = Path.GetFileName(path);
 						if (name == "customCollectionStyles.css" || name.EndsWith(".bloomCollection", StringComparison.Ordinal))
 						{
+							//AppendDebugInfo(debugBldr, path);
 							byte[] buffer = RobustFile.ReadAllBytes(path);
 							sha.TransformBlock(buffer, 0, buffer.Length, buffer, 0);
 						}
 					}
+					//var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+					//debugPath = Path.Combine(folder, "DebugHashing-" + timestamp + ".bak");	// .bak gets ignored
+					//File.WriteAllText(Path.Combine(folder, "SimplifiedHtml-" + timestamp + ".bak"), simplified);
 				}
 				sha.TransformFinalBlock(new byte[0], 0, 0);
+				//if (debugPath != null)
+				//{
+				//	debugBldr.AppendLineFormat("final hash = {0}", Convert.ToBase64String(sha.Hash));
+				//	File.WriteAllText(debugPath, debugBldr.ToString());
+				//}
 				return Convert.ToBase64String(sha.Hash);
 			}
 		}
+
+		//private static void AppendDebugInfo(StringBuilder debugBldr, string path)
+		//{
+		//	using (var sha2 = SHA256.Create())
+		//	{
+		//		byte[] buffer = RobustFile.ReadAllBytes(path);
+		//		sha2.TransformBlock(buffer, 0, buffer.Length, buffer, 0);
+		//		sha2.TransformFinalBlock(new byte[0], 0, 0);
+		//		debugBldr.AppendLineFormat("hashing {0} [{1} bytes] => {2}", Path.GetFileName(path), buffer.Length, Convert.ToBase64String(sha2.Hash));
+		//	}
+		//}
 
 		private static string SortDataDivElements(string htmlText)
 		{
@@ -3753,7 +3833,8 @@ namespace Bloom.Book
 			var coverImageFileName = coverImageUrl.PathOnly.NotEncoded;
 			if (string.IsNullOrEmpty(coverImageFileName))
 				return null;
-			var coverImagePath = Path.Combine(StoragePageFolder, coverImageFileName);
+			// The fileName might be URL encoded.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3901.
+			var coverImagePath = UrlPathString.GetFullyDecodedPath(StoragePageFolder, ref coverImageFileName);
 			if (!File.Exists(coverImagePath))
 				return null;
 			return coverImagePath;
@@ -4210,6 +4291,33 @@ namespace Bloom.Book
 
 			return languagesWithAudio;
 		}
-}
+
+		/// <summary>
+		/// The book has been given the indicated name by the user, or some other process
+		/// like making a backup that means we permanently want a name not matching the title.
+		/// This is distinct from giving it an automatic name based on editing the Title.
+		/// Typically, the user has explicitly used the Rename command to specify that this
+		/// should be the name. If it is empty, we will go back to using an automatic
+		/// name. Otherwise, this will be its name, and it will not be subject to rename
+		/// by title editing.
+		/// </summary>
+		/// <param name="newName"></param>
+		public void SetAndLockBookName(string newName)
+		{
+			if (!string.IsNullOrWhiteSpace(newName))
+			{
+				Storage.SetBookName(newName);
+				BookInfo.NameLocked = true;
+				BookInfo.Save();
+			}
+			else
+			{
+				// Back to automatic name
+				Storage.UpdateBookFileAndFolderName(CollectionSettings);
+				BookInfo.NameLocked = false;
+				BookInfo.Save();
+			}
+		}
+	}
 }
 

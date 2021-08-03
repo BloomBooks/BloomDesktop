@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using Bloom.WebLibraryIntegration;
@@ -6,6 +8,7 @@ using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
+using SIL.Code;
 
 namespace BloomTests.WebLibraryIntegration
 {
@@ -145,32 +148,38 @@ namespace BloomTests.WebLibraryIntegration
 			request.AddParameter("username", account.ToLowerInvariant());
 			request.AddParameter("password", password);
 
-			var response = Client.Execute(request);
-			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
-			try
-			{
-				_sessionToken = dy.sessionToken; //there's also an "error" in there if it fails, but a null sessionToken tells us all we need to know
-			}
-			catch (RuntimeBinderException)
-			{
-				// We are seeing this sometimes while running unit tests.
-				// This is simply an attempt to diagnose what is happening.
-				Console.WriteLine("Attempt to deserialize response content session token failed while attempting log in to parse (BL-4099).");
-				Console.WriteLine($"response.IsSuccessful: {response.IsSuccessful}");
-				Console.WriteLine($"response.Content: {response.Content}");
-				Console.WriteLine($"response.ContentLength: {response.ContentLength}");
-				Console.WriteLine($"response.ContentType: {response.ContentType}");
-				Console.WriteLine($"response.ResponseStatus: {response.ResponseStatus}");
-				Console.WriteLine($"response.StatusCode: {response.StatusCode}");
-				Console.WriteLine($"response.StatusDescription: {response.StatusDescription}");
-				Console.WriteLine($"response.ErrorMessage: {response.ErrorMessage}");
-				Console.WriteLine($"response.ErrorException: {response.ErrorException}");
-				Console.WriteLine($"deserialized response.Content: {dy}");
-				throw;
-			}
-			_userId = dy.objectId;
-			Account = account;
-			return LoggedIn;
+			bool result = false;
+			RetryUtility.Retry(() => {
+				var response = Client.Execute(request);
+				var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
+				try
+				{
+					_sessionToken = dy.sessionToken; //there's also an "error" in there if it fails, but a null sessionToken tells us all we need to know
+				}
+				catch (RuntimeBinderException)
+				{
+					// We are seeing this sometimes while running unit tests.
+					// This is simply an attempt to diagnose what is happening.
+					Console.WriteLine("Attempt to deserialize response content session token failed while attempting log in to parse (BL-4099).");
+					Console.WriteLine($"username: {request.Parameters.Where(p => p.Name == "username")}");
+					Console.WriteLine($"request.Resource: {request.Resource}");
+					Console.WriteLine($"response.IsSuccessful: {response.IsSuccessful}");
+					Console.WriteLine($"response.Content: {response.Content}");
+					Console.WriteLine($"response.ContentLength: {response.ContentLength}");
+					Console.WriteLine($"response.ContentType: {response.ContentType}");
+					Console.WriteLine($"response.ResponseStatus: {response.ResponseStatus}");
+					Console.WriteLine($"response.StatusCode: {response.StatusCode}");
+					Console.WriteLine($"response.StatusDescription: {response.StatusDescription}");
+					Console.WriteLine($"response.ErrorMessage: {response.ErrorMessage}");
+					Console.WriteLine($"response.ErrorException: {response.ErrorException}");
+					Console.WriteLine($"deserialized response.Content: {dy}");
+					throw;
+				}
+				_userId = dy.objectId;
+				Account = account;
+				result = LoggedIn;
+			}, 3, 2000, new HashSet<Type> { typeof(RuntimeBinderException).Assembly.GetType("Microsoft.CSharp.RuntimeBinder.RuntimeBinderException") });
+			return result;
 		}
 	}
 }

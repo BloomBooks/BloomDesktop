@@ -1,4 +1,4 @@
-﻿/*************************************************************************************************
+/*************************************************************************************************
   Required Notice: Copyright (C) EPPlus Software AB. 
   This software is licensed under PolyForm Noncommercial License 1.0.0 
   and may only be used for noncommercial purposes 
@@ -10,10 +10,13 @@
 // to use this package. We qualify as non-commercial as a charitable organization
 // (also as educational).
 
-using System;
-using System.IO;
+using Bloom.ImageProcessing;
 using OfficeOpenXml;
+using OfficeOpenXml.Style;
 using SIL.IO;
+using System;
+using System.Drawing;
+using System.IO;
 
 namespace Bloom.Spreadsheet
 {
@@ -22,6 +25,10 @@ namespace Bloom.Spreadsheet
 	/// </summary>
 	public class SpreadsheetIO
 	{
+		private const int standardLeadingColumnWidth = 15;
+		private const int languageColumnWidth = 30;
+		private const int defaultImageWidth = 75; //width of images in pixels. Also used for default row height
+
 		static SpreadsheetIO()
 		{
 			// The package requires us to do this as a way of acknowledging that we
@@ -29,11 +36,21 @@ namespace Bloom.Spreadsheet
 			ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 		}
 
-		public static void WriteSpreadsheet(InternalSpreadsheet spreadsheet, string path)
+		public static void WriteSpreadsheet(InternalSpreadsheet spreadsheet, string outputPath, bool retainMarkup)
 		{
 			using (var package = new ExcelPackage())
 			{
 				var worksheet = package.Workbook.Worksheets.Add("BloomBook");
+
+				worksheet.DefaultColWidth = languageColumnWidth;
+				for (int i = 1; i <= spreadsheet.StandardLeadingColumns.Length; i++)
+				{
+					worksheet.Column(i).Width = standardLeadingColumnWidth;
+				}
+
+				var imageSourceColumn = spreadsheet.ColumnForTag(InternalSpreadsheet.ImageSourceLabel);
+				var imageThumbnailColumn = spreadsheet.ColumnForTag(InternalSpreadsheet.ImageThumbnailLabel);
+
 				int r = 0;
 				foreach (var row in spreadsheet.AllRows())
 				{
@@ -45,17 +62,102 @@ namespace Bloom.Spreadsheet
 						// that contain simple numbers can be treated accordingly.
 						// It might be helpful for some uses of the group-on-page-index
 						// if Excel knew to treat them as numbers.
-						worksheet.Cells[r, c+1].Value = row.GetCell(c).Content;
+
+						var content = row.GetCell(c).Content;
+						// Parse xml for markdown formatting on language columns,
+						// Display formatting in excel spreadsheet
+						ExcelRange currentCell = worksheet.Cells[r, c + 1];
+						if (!retainMarkup && c >= spreadsheet.StandardLeadingColumns.Length && r > 1)
+                        {
+							//TODO when we implement importing with formatting, make sure this
+							//gets (round-trip) unit tested
+							MarkedUpText markedUpText = MarkedUpText.ParseXml(content);
+							if (markedUpText.HasFormatting)
+							{
+								currentCell.IsRichText = true;
+								foreach (MarkedUpTextRun run in markedUpText.Runs)
+								{
+									if (!run.Text.Equals(""))
+									{
+										ExcelRichText text = currentCell.RichText.Add(run.Text);
+										text.Bold = run.Bold;
+										text.Italic = run.Italic;
+										text.UnderLine = run.Underlined;
+										if (run.Superscript)
+										{
+											text.VerticalAlign = ExcelVerticalAlignmentFont.Superscript;
+										}
+									}
+								}
+							}
+							else
+							{
+								//TODO once we implement importing with formatting, test that unformatted text is not richtext
+								currentCell.Value = markedUpText.PlainText();
+							}
+						}
+						else
+						{
+							// Either the retainMarkup flag is set, or this is not book text. It could be header or leading column
+							currentCell.Value = content;
+						}
+
+						//Embed any images in the excel file
+						if (c == imageSourceColumn)
+						{
+							var imageSrc = row.GetCell(c).Content;
+
+							// if this row has an image source value that is not a header 
+							if (imageSrc != "" && Array.IndexOf(spreadsheet.StandardLeadingColumns, imageSrc) == -1)
+							{
+								var imagePath = imageSrc;
+								//Images show up in the cell 1 row greater and 1 column greater than assigned
+								//So this will put them in row r, column imageThumbnailColumn+1 like we want
+								embedImage(imagePath, r-1, imageThumbnailColumn);
+								worksheet.Row(r).Height = defaultImageWidth; //so at least most of the image is visible								
+							}
+						}
 					}
 				}
-				// Review: is this helpful? Excel typically makes very small cells, so almost
-				// nothing of a cell's content can be seen, and that only markup. But it also
-				// starts out with very narrow cells, so WrapText makes them almost unmanageably tall.
 				worksheet.Cells[1, 1, r, spreadsheet.ColumnCount].Style.WrapText = true;
+
+
+				void embedImage(string imageSrcPath, int rowNum, int colNum)
+				{
+					try
+					{
+						using (System.Drawing.Image image = System.Drawing.Image.FromFile(imageSrcPath))
+						{
+							string imageName = Path.GetFileNameWithoutExtension(imageSrcPath);
+							var origImageHeight = image.Size.Height;
+							var origImageWidth = image.Size.Width;
+							int finalWidth = defaultImageWidth;
+							int finalHeight = (int)(finalWidth * origImageHeight / origImageWidth);
+							var size = new Size(finalWidth, finalHeight);
+							using (System.Drawing.Image thumbnail = ImageUtils.ResizeImageIfNecessary(size, image, false))
+							{
+								var excelImage = worksheet.Drawings.AddPicture(imageName, thumbnail);
+								excelImage.SetPosition(rowNum, 1, colNum, 1);
+							}
+						}
+					}
+					catch (Exception)
+					{
+						if (!RobustFile.Exists(imageSrcPath))
+						{
+							worksheet.Cells[r, imageThumbnailColumn + 1].Value = "Missing";
+						}
+						else
+						{
+							worksheet.Cells[r, imageThumbnailColumn + 1].Value = "Bad image file";
+						}
+					}
+				}
+
 				try
 				{
-					RobustFile.Delete(path);
-					var xlFile = new FileInfo(path);
+					RobustFile.Delete(outputPath);
+					var xlFile = new FileInfo(outputPath);
 					package.SaveAs(xlFile);
 				}
 				catch (Exception ex)
@@ -80,9 +182,8 @@ namespace Bloom.Spreadsheet
 				ReadRow(worksheet, 0, colCount, spreadsheet.Header);
 				for (var r = 1; r < rowCount; r++)
 				{
-					var row = new ContentRow();
+					var row = new ContentRow(spreadsheet);
 					ReadRow(worksheet, r, colCount, row);
-					spreadsheet.AddRow(row);
 				}
 			}
 		}

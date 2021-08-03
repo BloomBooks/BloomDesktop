@@ -111,6 +111,9 @@ export const DialogTitle: React.FunctionComponent<{
                 css={css`
                     margin-top: auto;
                     margin-bottom: auto;
+                    // This value is the same as that given in bloomMaterialUITheme.
+                    // For some reason, it is not being applied here.  See BL-10208.
+                    font-family: NotoSans, Roboto, sans-serif;
                 `}
             >
                 {props.title}

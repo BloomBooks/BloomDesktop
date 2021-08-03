@@ -47,6 +47,10 @@ const ComicToolControls: React.FunctionComponent = () => {
     );
 
     const [isXmatter, setIsXmatter] = useState(true);
+    // If the book is locked, we don't want users dragging things onto the page.
+    const [isBookLocked, setIsBookLocked] = useState(false);
+    // This 'counter' increments on new page ready so we can re-check if the book is locked.
+    const [pageRefreshIndicator, setPageRefreshIndicator] = useState(0);
 
     // Setup for color picker, in case we need it.
     const textColorTitle = useL10n(
@@ -108,6 +112,8 @@ const ComicToolControls: React.FunctionComponent = () => {
     ComicTool.theOneComicTool!.callOnNewPageReady = () => {
         bubbleSpecInitialization();
         setIsXmatter(ToolboxToolReactAdaptor.isXmatter());
+        const count = pageRefreshIndicator;
+        setPageRefreshIndicator(count + 1);
     };
 
     // Reset UI when current bubble spec changes (e.g. user clicked on a bubble).
@@ -140,6 +146,15 @@ const ComicToolControls: React.FunctionComponent = () => {
             setBubbleActive(false);
         }
     }, [currentFamilySpec]);
+
+    useEffect(() => {
+        // Get the lock/unlock state from C#-land. We have to do this every time the page is refreshed
+        // (see 'callOnNewPageReady') in case the user temporarily unlocks the book.
+        BloomApi.get("edit/pageControls/requestState", result => {
+            const jsonObj = result.data;
+            setIsBookLocked(jsonObj.BookLockedState === "BookLocked");
+        });
+    }, [pageRefreshIndicator]);
 
     // Callback for style changed
     const handleStyleChanged = event => {
@@ -321,7 +336,7 @@ const ComicToolControls: React.FunctionComponent = () => {
         // for the source element with screen coordinates of where the mouse was released.
         // This can be used to simulate the drop event with coordinate transformation.
         // See https://issues.bloomlibrary.org/youtrack/issue/BL-7958.
-        if (isLinux() && bubbleManager) {
+        if (isLinux() && bubbleManager && !isBookLocked) {
             bubbleManager.addOverPictureElementWithScreenCoords(
                 ev.screenX,
                 ev.screenY,
@@ -468,25 +483,49 @@ const ComicToolControls: React.FunctionComponent = () => {
                         id="shapeChooserSpeechBubble"
                         className="comicToolControlDraggableBubble"
                         src="comic-icon.svg"
-                        draggable={true}
-                        onDragStart={ev => ondragstart(ev, "speech")}
-                        onDragEnd={ev => ondragend(ev, "speech")}
+                        draggable={!isBookLocked} // insufficient to prevent dragging!
+                        onDragStart={
+                            !isBookLocked
+                                ? ev => ondragstart(ev, "speech")
+                                : undefined
+                        }
+                        onDragEnd={
+                            !isBookLocked
+                                ? ev => ondragend(ev, "speech")
+                                : undefined
+                        }
                     />
                     <img
                         id="shapeChooserImagePlaceholder"
                         className="comicToolControlDraggableBubble"
                         src="placeHolder.png"
-                        draggable={true}
-                        onDragStart={ev => ondragstart(ev, "image")}
-                        onDragEnd={ev => ondragend(ev, "image")}
+                        draggable={!isBookLocked}
+                        onDragStart={
+                            !isBookLocked
+                                ? ev => ondragstart(ev, "image")
+                                : undefined
+                        }
+                        onDragEnd={
+                            !isBookLocked
+                                ? ev => ondragend(ev, "image")
+                                : undefined
+                        }
                     />
                     <img
                         id="shapeChooserVideoPlaceholder"
                         className="comicToolControlDraggableBubble"
                         src="signLanguageTool.svg"
-                        draggable={true}
-                        onDragStart={ev => ondragstart(ev, "video")}
-                        onDragEnd={ev => ondragend(ev, "video")}
+                        draggable={!isBookLocked}
+                        onDragStart={
+                            !isBookLocked
+                                ? ev => ondragstart(ev, "video")
+                                : undefined
+                        }
+                        onDragEnd={
+                            !isBookLocked
+                                ? ev => ondragend(ev, "video")
+                                : undefined
+                        }
                     />
                 </div>
                 <div className={"shapeChooserRow"} id={"shapeChooserRow2"}>
@@ -494,9 +533,17 @@ const ComicToolControls: React.FunctionComponent = () => {
                         id="shapeChooserTextBlock"
                         l10nKey="EditTab.Toolbox.ComicTool.TextBlock"
                         className="comicToolControlDraggableBubble"
-                        draggable={true}
-                        onDragStart={ev => ondragstart(ev, "none")}
-                        onDragEnd={ev => ondragend(ev, "none")}
+                        draggable={!isBookLocked}
+                        onDragStart={
+                            !isBookLocked
+                                ? ev => ondragstart(ev, "none")
+                                : undefined
+                        }
+                        onDragEnd={
+                            !isBookLocked
+                                ? ev => ondragend(ev, "none")
+                                : undefined
+                        }
                     >
                         Text Block
                     </Span>
@@ -504,9 +551,17 @@ const ComicToolControls: React.FunctionComponent = () => {
                         id="shapeChooserCaption"
                         l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"
                         className="comicToolControlDraggableBubble"
-                        draggable={true}
-                        onDragStart={ev => ondragstart(ev, "caption")}
-                        onDragEnd={ev => ondragend(ev, "caption")}
+                        draggable={!isBookLocked}
+                        onDragStart={
+                            !isBookLocked
+                                ? ev => ondragstart(ev, "caption")
+                                : undefined
+                        }
+                        onDragEnd={
+                            !isBookLocked
+                                ? ev => ondragend(ev, "caption")
+                                : undefined
+                        }
                     >
                         Caption
                     </Span>

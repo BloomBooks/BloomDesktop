@@ -87,7 +87,7 @@ namespace Bloom.Book
 
 		CollectionSettings CollectionSettings { get; }
 
-		void ReloadFromDisk();
+		void ReloadFromDisk(string renamedTo, Action betweenReloadAndEvents);
 	}
 
 	public class BookStorage : IBookStorage
@@ -1321,7 +1321,19 @@ namespace Bloom.Book
 			Guard.Against(FolderPath.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory, StringComparison.Ordinal),
 				"Cannot rename template books!");
 			Logger.WriteEvent("Renaming html from '{0}' to '{1}.htm'", currentFilePath, idealFolderName);
-			RobustFile.Move(currentFilePath, Path.Combine(FolderPath, Path.GetFileName(idealFolderName) + ".htm"));
+			var newFilePath = Path.Combine(FolderPath, Path.GetFileName(idealFolderName) + ".htm");
+			if (RobustFile.Exists(newFilePath))
+			{
+				// The folder already contains two HTML files, one with the name we were going to change to.
+				// Just get rid of it.
+				// (This is a weird state of affairs that should never occur but did once (BL-10200).
+				// Extra HTML files in the book folder are an anomaly. We could recycle it, report it,
+				// etc...but this has only happened once. I don't think it's worth it. Just clean up
+				// and so prevent a crash.)
+				RobustFile.Delete(newFilePath);
+			}
+
+			RobustFile.Move(currentFilePath, newFilePath);
 
 			var fromToPair = new KeyValuePair<string, string>(FolderPath, idealFolderName);
 			try
@@ -1814,9 +1826,21 @@ namespace Bloom.Book
 			}
 		}
 
-		public void ReloadFromDisk()
+		public void ReloadFromDisk(string renamedTo, Action betweenReloadAndEvents)
 		{
+			var fromToPair = new KeyValuePair<string, string>(FolderPath, renamedTo);
+			if (renamedTo!= null)
+				FolderPath = renamedTo;
 			ExpensiveInitialization(true);
+
+			betweenReloadAndEvents();
+
+			if (renamedTo != null)
+			{
+				// The reload has renamed the book. We need to do the usual side effects.
+				_bookRenamedEvent.Raise(fromToPair);
+				OnFolderPathChanged();
+			}
 		}
 
 		public void CleanupUnusedSupportFiles(bool isForPublish, HashSet<string> langsToExcludeAudioFor = null)

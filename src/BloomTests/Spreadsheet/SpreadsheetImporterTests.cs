@@ -26,12 +26,24 @@ namespace BloomTests.Spreadsheet
 			_dom = new HtmlDom(SpreadsheetTests.kSimpleTwoPageBook, true);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en']/p[text()='Riding on elephants can be risky.']", 1); // unchanged
 
+			// The tests in this class all check the results of importing what export produced,
+			// but with some changes. 
 			var exporter = new SpreadsheetExporter();
-			_sheet = exporter.Export(_dom);
+			_sheet = exporter.Export(_dom, "fakeImagesFolderpath");
+			// Changing this header will cause all the data that was originally tagged as German to be imported as Tok Pisin.
 			var indexDe = _sheet.ColumnForLang("de");
 			_sheet.Header.SetCell(indexDe, "[tpi]");
-			_sheet.ContentRows.First().SetCell(_sheet.ColumnForLang("en"), "<p>This elephant is running amok.</p>");
-			_sheet.ContentRows.Skip(2).First().SetCell(_sheet.ColumnForLang("fr"), "<p>Riding on French elephants can be very risky.</p>");
+			// Here we locate the cells produced from two particular
+			// bloom-editable elements in the kSimpleTwoPageBook DOM and replace them with different text.
+			// The import should update those bloom-editables to these changed values.
+			var engColumn = _sheet.ColumnForLang("en");
+			var firstCellToModify = _sheet.ContentRows.FirstOrDefault(row => row.GetCell(engColumn).Content.Contains("This elephant is running amok."));
+			Assert.IsNotNull(firstCellToModify, "Did not find the cell that OneTimeSetup was expecting to modify");
+			firstCellToModify.SetCell(engColumn, "<p>This elephant is running amok.</p>");
+			var frColumn = _sheet.ColumnForLang("fr");
+			var secondCellToModify = _sheet.ContentRows.FirstOrDefault(row => row.GetCell(frColumn).Content.Contains("Riding on French elephants can be more risky."));
+			Assert.IsNotNull(secondCellToModify, "Did not find the cell that OneTimeSetup was expecting to modify");
+			secondCellToModify.SetCell(frColumn, "<p>Riding on French elephants can be very risky.</p>");
 			var importer = new SpreadsheetImporter(this._dom, _sheet);
 			InitializeImporter(importer);
 			importer.Import();
@@ -236,36 +248,36 @@ namespace BloomTests.Spreadsheet
 			_sheet = new InternalSpreadsheet();
 			_sheet.ColumnForLang("en");
 			_sheet.ColumnForLang("fr");
-			_sheet.AddRow(MakeRow("1","New message about tigers", "New message about French tigers"));
+			MakeRow("1","New message about tigers", "New message about French tigers", _sheet);
+
 			// problem 1: input DOM has a second TG on page 1; sheet does not.
-			_sheet.AddRow(MakeRow("2", "More about tigers", "More about French tigers"));
+			MakeRow("2", "More about tigers", "More about French tigers", _sheet);
 			// problem 2: input DOM has no second TG on page 2.
-			_sheet.AddRow(MakeRow("2", "Still more about tigers", "Still more about French tigers"));
-			_sheet.AddRow(MakeRow("2", "More and more about tigers", "More and more about French tigers"));
+			MakeRow("2", "Still more about tigers", "Still more about French tigers", _sheet);
+			MakeRow("2", "More and more about tigers", "More and more about French tigers", _sheet);
 			// problem 3: input DOM has no page 3 at all.
-			_sheet.AddRow(MakeRow("3", "Lost story about tigers", "Lost story about French tigers"));
-			_sheet.AddRow(MakeRow("3", "Another lost story about tigers", "Another lost story about French tigers"));
+			MakeRow("3", "Lost story about tigers", "Lost story about French tigers", _sheet);
+			MakeRow("3", "Another lost story about tigers", "Another lost story about French tigers", _sheet);
 			// problem 4: input DOM has no page 4 at all.
-			_sheet.AddRow(MakeRow("4", "Yet another lost story about tigers", "Yet another lost story about French tigers"));
-			_sheet.AddRow(MakeRow("5", "A good story about tigers", "A good story about French tigers"));
-			_sheet.AddRow(MakeRow("5", "Another good story about tigers", "Another good story about French tigers"));
+			MakeRow("4", "Yet another lost story about tigers", "Yet another lost story about French tigers", _sheet);
+			MakeRow("5", "A good story about tigers", "A good story about French tigers", _sheet);
+			MakeRow("5", "Another good story about tigers", "Another good story about French tigers", _sheet);
 			// problem 5: an extra block on page 5
-			_sheet.AddRow(MakeRow("5", "Page 5 lost story about tigers", "Page 5 lost story about French tigers"));
+			MakeRow("5", "Page 5 lost story about tigers", "Page 5 lost story about French tigers", _sheet);
 			// problem 6: an extra block on after the last page
-			_sheet.AddRow(MakeRow("6", "Page 6 lost story about tigers", "Page 6 lost story about French tigers"));
+			MakeRow("6", "Page 6 lost story about tigers", "Page 6 lost story about French tigers", _sheet);
 			var importer = new SpreadsheetImporter(this._dom, _sheet);
 			_messages=importer.Import();
 		}
 
-		public static ContentRow MakeRow(string pageNum, string langData1, string langData2)
+		public static void MakeRow(string pageNum, string langData1, string langData2, InternalSpreadsheet spreadsheet)
 		{
-			var result = new ContentRow();
-			result.AddCell(InternalSpreadsheet.TextGroupLabel);
-			result.AddCell(pageNum);
-			result.AddCell("1"); // group index placeholder, not exactly right but near enough for this test
-			result.AddCell("<p>" + langData1 + "</p>");
-			result.AddCell("<p>" + langData2 + "</p>");
-			return result;
+			var newRow = new ContentRow(spreadsheet);
+			newRow.SetCell(InternalSpreadsheet.MetadataKeyLabel, InternalSpreadsheet.TextGroupLabel);
+			newRow.SetCell(InternalSpreadsheet.PageNumberLabel, pageNum);
+			newRow.SetCell(InternalSpreadsheet.TextIndexOnPageLabel, "1");// group index placeholder, not exactly right but near enough for this test
+			newRow.SetCell("[en]", "<p>" + langData1 + "</p>");
+			newRow.SetCell("[fr]", "<p>" + langData2 + "</p>");
 		}
 
 		[Test]
@@ -426,8 +438,8 @@ namespace BloomTests.Spreadsheet
 			_sheet = new InternalSpreadsheet();
 			_sheet.ColumnForLang("en");
 			_sheet.ColumnForLang("fr");
-			_sheet.AddRow(SpreadsheetImportSyncWarnings.MakeRow("1", "New message about tigers", "New message about French tigers"));
-			_sheet.AddRow(SpreadsheetImportSyncWarnings.MakeRow("2", "More about tigers", "More about French tigers"));
+			SpreadsheetImportSyncWarnings.MakeRow("1", "New message about tigers", "New message about French tigers", _sheet);
+			SpreadsheetImportSyncWarnings.MakeRow("2", "More about tigers", "More about French tigers", _sheet);
 			// problem: there's no input corresponding to the second block on page 2, nor any of page 4.
 			var importer = new SpreadsheetImporter(this._dom, _sheet);
 			_messages = importer.Import();

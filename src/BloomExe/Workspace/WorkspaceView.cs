@@ -62,7 +62,9 @@ namespace Bloom.Workspace
 		private LibraryView _legacyCollectionView;
 		private EditingView _editingView;
 		private PublishView _publishView;
+#if SHOW_REACT_COLLECTION_TAB
 		private ReactCollectionTabView _reactCollectionTabView;
+#endif
 		private Control _previouslySelectedControl;
 		public event EventHandler CloseCurrentProject;
 		public event EventHandler ReopenCurrentProject;
@@ -83,7 +85,9 @@ namespace Bloom.Workspace
 
 		public WorkspaceView(WorkspaceModel model,
 							Control libraryView,
+#if SHOW_REACT_COLLECTION_TAB
 							ReactCollectionTabView reactCollectionsTabsView,
+#endif
 							EditingView.Factory editingViewFactory,
 							PublishView.Factory pdfViewFactory,
 							CollectionSettingsDialog.Factory settingsDialogFactory,
@@ -167,15 +171,12 @@ namespace Bloom.Workspace
 			this._legacyCollectionView.Dock = DockStyle.Fill;
 			_legacyCollectionTab.Tag = _legacyCollectionView;
 
-			_reactCollectionTabView = reactCollectionsTabsView;
 #if SHOW_REACT_COLLECTION_TAB // we will turn this back on for Bloom 5.2
-			
+			_reactCollectionTabView = reactCollectionsTabsView;
+
 			_reactCollectionTabView.ManageSettings(_settingsLauncherHelper);
 			_reactCollectionTabView.Dock = DockStyle.Fill;
 			_reactCollectionTab.Tag = _reactCollectionTabView;
-#else
-			reactCollectionsTabsView.Visible = false;  
-			_reactCollectionTab.Visible = false;
 #endif
 			//
 			// _editingView
@@ -197,15 +198,15 @@ namespace Bloom.Workspace
 
 #if SHOW_REACT_COLLECTION_TAB
 			this._legacyCollectionTab.Text = "Legacy"; // _legacyCollectionView.CollectionTabLabel;
+			this._reactCollectionTab.Text = _reactCollectionTabView.CollectionTabLabel;
 #else
 			this._legacyCollectionTab.Text =  _legacyCollectionView.CollectionTabLabel;
 #endif
-			this._reactCollectionTab.Text = _reactCollectionTabView.CollectionTabLabel;
 
 			SetTabVisibility(_publishTab, false);
 			SetTabVisibility(_editTab, false);
-#if SHOW_REACT_COLLECTION_TAB
 
+#if SHOW_REACT_COLLECTION_TAB
 			_tabStrip.SelectedTab = _reactCollectionTab;
 			SelectPage(_reactCollectionTabView);
 #else
@@ -233,6 +234,12 @@ namespace Bloom.Workspace
 			SelectPreviouslySelectedBook();
 		}
 
+		public void HandleRenameCommand()
+		{
+			if (CurrentTabView == _legacyCollectionView)
+				_legacyCollectionView.HandleRenameCommand();
+		}
+
 		protected override void OnLoad(EventArgs e)
 		{
 			base.OnLoad(e);
@@ -245,30 +252,44 @@ namespace Bloom.Workspace
 #if SHOW_REACT_COLLECTION_TAB
 				_reactCollectionTabView.ReadyToShowCollections();
 #endif
+				_legacyCollectionView.ReadyToShowCollections();
 			} else
 			{
 				StartupScreenManager.AddStartupAction(() =>
 				{
 					// Don't do anything else after this as part of this idle task.
 					// See the comment near the end of HandleTeamStuffBeforeGetBookCollections.
+					_model.HandleTeamStuffBeforeGetBookCollections(() =>
 #if SHOW_REACT_COLLECTION_TAB
-_model.HandleTeamStuffBeforeGetBookCollections(() => _reactCollectionTabView.ReadyToShowCollections());
+					_reactCollectionTabView.ReadyToShowCollections()
 #else
-					
+					{}
 #endif
+					);
+					_legacyCollectionView.ReadyToShowCollections();
 				}, shouldHideSplashScreen: true);
 			}
 		}
 
+		/// <summary>
+		/// Restore the the selection of the previously selected book, but only if the book is in either
+		/// the same collection (waiting to be edited) or in a source collection (waiting to be created
+		/// in the current collection).
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-10225.
+		/// </remarks>
 		private void SelectPreviouslySelectedBook()
 		{
 			var selBookPath = Settings.Default.CurrentBookPath;
-			if (string.IsNullOrEmpty(selBookPath))
+			if (string.IsNullOrEmpty(selBookPath) || !Directory.Exists(selBookPath))
 				return;
-			var inEditableCollection = selBookPath.StartsWith(_collectionSettings.FolderPath);
-			if (Directory.Exists(selBookPath))
+			var selBookCollectionFolder = Path.GetDirectoryName(selBookPath);
+			var inCurrentCollection = selBookCollectionFolder == _collectionSettings.FolderPath;
+			var inSourceFolder = !inCurrentCollection && _model.GetSourceCollectionFolders().ToList().Exists(folder => selBookCollectionFolder == folder);
+			if (inCurrentCollection || inSourceFolder)
 			{
-				var info = new BookInfo(selBookPath, inEditableCollection);
+				var info = new BookInfo(selBookPath, inCurrentCollection);
 				var book = _bookServer.GetBookFromBookInfo(info);
 				_bookSelection.SelectBook(book);
 			}
@@ -1039,7 +1060,7 @@ _model.HandleTeamStuffBeforeGetBookCollections(() => _reactCollectionTabView.Rea
 
 		private void OnRegistrationMenuItem_Click(object sender, EventArgs e)
 		{
-			using (var dlg = new RegistrationDialog(true))
+			using (var dlg = new RegistrationDialog(true, _tcManager.UserMayChangeEmail))
 			{
 				dlg.ShowDialog();
 			}

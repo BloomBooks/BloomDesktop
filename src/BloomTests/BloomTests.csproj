@@ -271,6 +271,8 @@
     <Compile Include="DataBuilders\BookFolderBuilder.cs" />
     <Compile Include="DataBuilders\TeamCollectionApiBuilder.cs" />
     <Compile Include="ExperimentalFeaturesTests.cs" />
+    <Compile Include="Spreadsheet\SpreadsheetFormattingTests.cs" />
+    <Compile Include="Spreadsheet\SpreadsheetImagesTests.cs" />
     <Compile Include="Spreadsheet\SpreadsheetImporterTests.cs" />
     <Compile Include="Spreadsheet\SpreadsheetTests.cs" />
     <Compile Include="TeamCollection\DisconnectedTeamCollectionTests.cs" />
