@@ -11,6 +11,7 @@ namespace Bloom.Book
 	{
 		private readonly BloomWebSocketServer _webSocketServer;
 		private Book _currentSelection;
+		internal bool HandlingSelectionChanged;
 		public event EventHandler<BookSelectionChangedEventArgs> SelectionChanged;
 
 		// this one is used for short-lived things other than the "global" one
@@ -53,7 +54,15 @@ namespace Bloom.Book
 
 		public void InvokeSelectionChanged(bool aboutToEdit)
 		{
-			SelectionChanged?.Invoke(this, new BookSelectionChangedEventArgs() {AboutToEdit = aboutToEdit});
+			try
+			{
+				HandlingSelectionChanged = true;
+				SelectionChanged?.Invoke(this, new BookSelectionChangedEventArgs() { AboutToEdit = aboutToEdit });
+			}
+			finally
+			{
+				HandlingSelectionChanged = false;
+			}
 		}
 	}
 }
