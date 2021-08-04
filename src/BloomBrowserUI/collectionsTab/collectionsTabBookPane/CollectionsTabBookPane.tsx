@@ -7,8 +7,6 @@ import { TeamCollectionBookStatusPanel } from "../../teamCollection/TeamCollecti
 import { useMonitorBookSelection } from "../../app/selectedBook";
 import BloomButton from "../../react_components/bloomButton";
 import { kDarkestBackground } from "../../bloomMaterialUITheme";
-import { CollectionsTabPane } from "../CollectionsTabPane";
-import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import { useSubscribeToWebSocketForEvent } from "../../utils/WebSocketManager";
 
 export const CollectionsTabBookPane: React.FunctionComponent<{
@@ -36,40 +34,41 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
 
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
-    React.useEffect(
-        () => {
-            BloomApi.getBoolean(
-                "teamCollection/isTeamCollectionEnabled",
-                teamCollection => setIsTeamCollection(teamCollection)
-            );
-            // This code SHOULD suppress mousedown events in the iframe, except in the scroll bar,
-            // thus preventing the user from doing anything much and allowing us to retire the
-            // old code and CSS that we inject into the preview document. But the onload event
-            // never fires, and if I try adding the mousedown handler at once, THAT never fires.
-            // Sticking with the old previewDom for now, but keeping this code as we may try again.
-            // console.log(
-            //     "body is " + iframeRef.current?.contentWindow?.document.body
-            // );
-            // iframeRef.current?.contentWindow?.addEventListener("onload", () => {
-            //     console.log("added mousdown listener");
-            //     iframeRef.current?.contentWindow?.document.body.addEventListener(
-            //         "mousedown",
-            //         event => {
-            //             if (
-            //                 event.clientX <
-            //                 (event.currentTarget as any).clientWidth - 20
-            //             ) {
-            //                 console.log("preventing event");
-            //                 event.preventDefault();
-            //                 event.stopPropagation();
-            //             }
-            //         },
-            //         { capture: true }
-            //     );
-            // });
-        },
-        [] /* means once and never again. Done after DOM created */
-    );
+    React.useEffect(() => {
+        BloomApi.getBoolean(
+            "teamCollection/isTeamCollectionEnabled",
+            teamCollection => setIsTeamCollection(teamCollection)
+        );
+        // This code SHOULD suppress mousedown events in the iframe, except in the scroll bar,
+        // thus preventing the user from doing anything much and allowing us to retire the
+        // old code and CSS that we inject into the preview document. But the onload event
+        // never fires, and if I try adding the mousedown handler at once, THAT never fires.
+        // Sticking with the old previewDom for now, but keeping this code as we may try again.
+        // console.log(
+        //     "body is " + iframeRef.current?.contentWindow?.document.body
+        // );
+        // iframeRef.current?.contentWindow?.addEventListener("onload", () => {
+        //     console.log("added mousdown listener");
+        //     iframeRef.current?.contentWindow?.document.body.addEventListener(
+        //         "mousedown",
+        //         event => {
+        //             if (
+        //                 event.clientX <
+        //                 (event.currentTarget as any).clientWidth - 20
+        //             ) {
+        //                 console.log("preventing event");
+        //                 event.preventDefault();
+        //                 event.stopPropagation();
+        //             }
+        //         },
+        //         { capture: true }
+        //     );
+        // });
+    }, [
+        // This could change if initial (or later) selection is a source book.
+        // But it only triggers the useEffect if the collectionKind actually changes.
+        collectionKind
+    ]);
 
     return (
         <div
@@ -195,7 +194,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                     ref={iframeRef}
                 />
             </div>
-            {// Currently, canMakeBook is a synonym for 'book is not in the  current TC'
+            {// Currently, canMakeBook is a synonym for 'book is not in the current TC'
             // If that stops being true we might need another more specialized status flag.
             isTeamCollection && !canMakeBook ? (
                 <div id="teamCollection">
