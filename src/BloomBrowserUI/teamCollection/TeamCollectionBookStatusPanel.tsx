@@ -71,7 +71,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         currentUser: "",
         currentUserName: ""
     });
-    const [currentUserName, setCurrentUserName] = useState("");
     useSubscribeToWebSocketForEvent("bookStatus", "reload", () =>
         setReload(old => old + 1)
     );
