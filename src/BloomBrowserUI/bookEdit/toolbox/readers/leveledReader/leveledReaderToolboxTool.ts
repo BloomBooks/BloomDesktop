@@ -83,9 +83,7 @@ export class LeveledReaderToolboxTool implements ITool {
     // Some things were impossible to do i18n on via the jade/pug
     // This gives us a hook to finish up the more difficult spots
     public finishToolLocalization(paneDOM: HTMLElement) {
-        // Unneeded for most things in Leveled Reader, since Bloom.web.ExternalLinkController
+        // Unneeded in Leveled Reader, since Bloom.web.ExternalLinkController
         // 'translates' external links to include the current UI language.
-        // One localized string needs converting into an HTML structure with child spans
-        ReaderToolsModel.prepareLevelNofM();
     }
 }

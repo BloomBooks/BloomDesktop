@@ -8,6 +8,8 @@ import ReadersSynphonyWrapper from "./ReadersSynphonyWrapper";
 describe("Bloom Edit Controls tests", () => {
     var classValues;
 
+    let stageNOfMElement = document.createElement("div");
+    let levelNOfMElement = document.createElement("div");
     beforeEach(() => {
         //noinspection JSUndeclaredVariable
         //reviewslog: this is not allowed: theOneLanguageDataInstance = null;
@@ -92,6 +94,21 @@ describe("Bloom Edit Controls tests", () => {
             }
             return "";
         };
+
+        stageNOfMElement = document.createElement("div");
+        stageNOfMElement.id = "stageNofM";
+        stageNOfMElement.innerText = "Stage 0 of 0";
+        document.body.appendChild(stageNOfMElement);
+
+        levelNOfMElement = document.createElement("div");
+        levelNOfMElement.id = "levelNofM";
+        levelNOfMElement.innerText = "Level 0 of 0";
+        document.body.appendChild(levelNOfMElement);
+    });
+
+    afterEach(() => {
+        document.body.removeChild(stageNOfMElement);
+        document.body.removeChild(levelNOfMElement);
     });
 
     /* skipping until we figure out how to make work with localization See BL-3554
@@ -131,21 +148,15 @@ describe("Bloom Edit Controls tests", () => {
 */
     it("increments level to limit on level right button", () => {
         getTheOneReaderToolsModel().incrementLevel();
-        expect(
-            getTheOneReaderToolsModel().updateElementContent
-        ).toHaveBeenCalledWith("levelNumber", "2");
+        expect(levelNOfMElement.innerText).toBe("Level 2 of 3");
 
-        (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
         getTheOneReaderToolsModel().incrementLevel();
-        expect(
-            getTheOneReaderToolsModel().updateElementContent
-        ).toHaveBeenCalledWith("levelNumber", "3");
+        expect(levelNOfMElement.innerText).toBe("Level 3 of 3");
 
-        (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
         getTheOneReaderToolsModel().incrementLevel();
-        expect(
-            getTheOneReaderToolsModel().updateElementContent
-        ).not.toHaveBeenCalled();
+
+        // Expect that it's still unchanged
+        expect(levelNOfMElement.innerText).toBe("Level 3 of 3");
     });
 
     /* skipping until we figure out how to make work with localization See BL-3554
@@ -232,9 +243,7 @@ describe("Bloom Edit Controls tests", () => {
 
     it("updates content of level element when setting level", () => {
         getTheOneReaderToolsModel().setLevelNumber(3);
-        expect(
-            getTheOneReaderToolsModel().updateElementContent
-        ).toHaveBeenCalledWith("levelNumber", "3");
+        expect(levelNOfMElement.innerText).toBe("Level 3 of 3");
     });
 
     /* skipping due to mistery. See BL-3554
@@ -352,9 +361,7 @@ describe("Bloom Edit Controls tests", () => {
 
     it("updates stage count and buttons on init", () => {
         getTheOneReaderToolsModel().updateControlContents();
-        expect(
-            getTheOneReaderToolsModel().updateElementContent
-        ).toHaveBeenCalledWith("numberOfStages", "3");
+        expect(stageNOfMElement.innerText).toBe("Stage 1 of 3");
         expect(
             getTheOneReaderToolsModel().getElementAttribute("decStage", "class")
         ).toBe("something disabledIcon");
@@ -362,9 +369,7 @@ describe("Bloom Edit Controls tests", () => {
 
     it("updates level buttons on init", () => {
         getTheOneReaderToolsModel().updateControlContents();
-        expect(
-            getTheOneReaderToolsModel().updateElementContent
-        ).toHaveBeenCalledWith("numberOfLevels", "3");
+        expect(levelNOfMElement.innerText).toBe("Level 1 of 3");
         expect(
             getTheOneReaderToolsModel().getElementAttribute("decLevel", "class")
         ).toBe("something disabledIcon");
@@ -372,9 +377,7 @@ describe("Bloom Edit Controls tests", () => {
 
     it("updates stage label on init", () => {
         getTheOneReaderToolsModel().updateControlContents();
-        expect(
-            getTheOneReaderToolsModel().updateElementContent
-        ).toHaveBeenCalledWith("stageNumber", "1");
+        expect(stageNOfMElement.innerText).toBe("Stage 1 of 3");
     });
 
     it("sets level max values on init", () => {
