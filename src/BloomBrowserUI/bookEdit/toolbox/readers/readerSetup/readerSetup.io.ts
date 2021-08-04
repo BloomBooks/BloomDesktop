@@ -91,7 +91,7 @@ let previousMoreWords: string;
 window.addEventListener("message", process_IO_Message, false);
 
 export interface ToolboxWindow extends Window {
-    editTabBundle: any;
+    toolboxBundle: any;
 }
 export function toolboxWindow(): ToolboxWindow | undefined {
     if (window.parent) {
@@ -270,7 +270,7 @@ function saveClicked(): void {
     beginSaveChangedSettings(); // don't wait for full refresh
     const win = toolboxWindow();
     if (win) {
-        win.editTabBundle.closeSetupDialog();
+        win.toolboxBundle.closeSetupDialog();
     }
 }
 
@@ -286,7 +286,7 @@ export function beginSaveChangedSettings(): JQueryPromise<void> {
     // and the 'then' clause never got invoked.
     const win = toolboxWindow();
     if (win) {
-        return win.editTabBundle.beginSaveChangedSettings(
+        return win.toolboxBundle.beginSaveChangedSettings(
             settings,
             previousMoreWords
         );
