@@ -10,7 +10,12 @@ describe("Bloom Edit Controls tests", () => {
 
     let stageNOfMElement = document.createElement("div");
     let levelNOfMElement = document.createElement("div");
+
+    let beforeEachDonePromise: Promise<any[]> | undefined = undefined;
+
     beforeEach(() => {
+        beforeEachDonePromise = undefined;
+
         //noinspection JSUndeclaredVariable
         //reviewslog: this is not allowed: theOneLanguageDataInstance = null;
         ResetLanguageDataInstance();
@@ -64,7 +69,7 @@ describe("Bloom Edit Controls tests", () => {
         getTheOneReaderToolsModel().addWordsToSynphony();
         getTheOneReaderToolsModel().updateWordList();
 
-        getTheOneReaderToolsModel().setStageNumber(1);
+        const setStageDone = getTheOneReaderToolsModel().setStageNumber(1);
         getTheOneReaderToolsModel().wordListLoaded = true;
 
         spyOn(getTheOneReaderToolsModel(), "updateElementContent");
@@ -104,6 +109,8 @@ describe("Bloom Edit Controls tests", () => {
         levelNOfMElement.id = "levelNofM";
         levelNOfMElement.innerText = "Level 0 of 0";
         document.body.appendChild(levelNOfMElement);
+
+        beforeEachDonePromise = Promise.all([setStageDone]);
     });
 
     afterEach(() => {
@@ -254,6 +261,26 @@ describe("Bloom Edit Controls tests", () => {
         expect(levelNOfMElement.innerText).toBe("Level 3 of 3");
     });
 
+    it("sorts word list correctly when sort buttons clicked", async () => {
+        // Note: beforeEach calls setStageNumber as well... :(
+        if (beforeEachDonePromise) {
+            await beforeEachDonePromise;
+        }
+
+        console.log("Setting stage number to 2");
+        await getTheOneReaderToolsModel().setStageNumber(2);
+        console.log("await stage 2 finished.");
+        getTheOneReaderToolsModel().ckEditorLoaded = true; // some things only happen once the editor is loaded; pretend it is.
+        (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
+
+        // Default is currently alphabetic
+        console.log("Setting stage number to 1");
+        await getTheOneReaderToolsModel().setStageNumber(1);
+        console.log("Await stage 1 finished");
+        '<div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool "> sat</div>';
+
+        // TODO: Finish implementing me.
+    });
     /* Originally skipping due to mystery (see BL-3554), now skipping due to async misery
         it("sorts word list correctly when sort buttons clicked", () => {
 

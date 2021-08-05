@@ -27,6 +27,102 @@ import axios from "axios";
 import { BloomApi } from "../../../utils/bloomApi";
 import { EditableDivUtils } from "../../js/editableDivUtils";
 
+// const promisify = require("util");
+// const setTimeoutPromise = promisify(setTimeout);
+
+// Given an async callback, awaits the completion of the callback
+// and returns a promise for its completion
+const setTimeoutAsyncPromise = (
+    callback: () => Promise<unknown>,
+    delayInMs
+) => {
+    return new Promise<void>((resolve, reject) => {
+        setTimeout(async () => {
+            try {
+                await callback();
+                resolve();
+            } catch (e) {
+                reject(e);
+            }
+        }, delayInMs);
+    });
+};
+
+// Given a synchronous callback, returns a promise for its completion
+// Note: even though this is similar to setTimeoutAsyncPromise,
+// I don't re-use it because awaiting a synchronous callback still gives up control to its caller,
+// which is a slight deviation that might not matter or might make a huge difference, so I don't want to risk that.
+const setTimeoutPromise = (callback: () => void, delayInMs) => {
+    return new Promise<void>((resolve, reject) => {
+        setTimeout(() => {
+            try {
+                callback();
+                resolve();
+            } catch (e) {
+                reject(e);
+            }
+        }, delayInMs);
+    });
+};
+
+function isIterable(value) {
+    // If no argument is passed or === null
+    if (arguments.length === 0 || value === null) {
+        return false;
+    }
+
+    return typeof value[Symbol.iterator] === "function";
+}
+
+// Our custom all settled function
+// Like Promise.allSettled, but that requires:
+// 1) Upgrading our lib to es2020
+// 2) Upgrading GeckoFx to 71
+function isAllPromiseSettled(promises) {
+    // To store our results
+    var results = Array(promises.length);
+
+    // To keep track of how many promises resolved
+    var counter = 0;
+
+    // If not iterable throw an error
+    if (!isIterable(promises)) {
+        throw new Error(`${typeof promises} is not iterable`);
+    }
+
+    // Wrapping our iteration with Promise object
+    // So that we can resolve and return the results on done.
+    return new Promise(resolve => {
+        // Iterate the inputs
+        promises.forEach((promise, index) => {
+            // Wait for each promise to resolve
+            return Promise.resolve(promise)
+                .then(result => {
+                    counter++; // Increment counter
+
+                    // Store status and result in same order
+                    results[index] = { status: "fulfilled", value: result };
+
+                    // If all inputs are settled, return the results
+                    if (counter === promises.length) {
+                        resolve(results);
+                    }
+                })
+                .catch(err => {
+                    counter++; // Increment counter
+
+                    // Store status and reason for rejection in same order
+                    results[index] = { status: "rejected", reason: err };
+
+                    // If all inputs are settled, return the results
+                    if (counter === promises.length) {
+                        resolve(results);
+                    }
+                });
+        });
+    });
+}
+
 const SortType = {
     alphabetic: "alphabetic",
     byLength: "byLength",
@@ -142,7 +238,10 @@ export class ReaderToolsModel {
         this.setStageNumber(this.stageNumber - 1);
     }
 
-    public setStageNumber(stage: number, skipSave?: boolean): void {
+    public async setStageNumber(
+        stage: number,
+        skipSave?: boolean
+    ): Promise<void> {
         if (!this.synphony) {
             return; // Synphony not loaded yet
         }
@@ -158,7 +257,7 @@ export class ReaderToolsModel {
         this.updateStageNOfMDisplay();
         this.updateStageButtonsAvailability();
 
-        theOneLocalizationManager
+        return theOneLocalizationManager
             .asyncGetText("Common.Loading", "Loading...", "")
             .then(loadingMessage => {
                 // this may result in a need to resize the word list
@@ -168,7 +267,7 @@ export class ReaderToolsModel {
 
                 // OK, now let that changed number and the "loading" messages
                 // make it to the user's screen, then start doing the work.
-                window.setTimeout(() => {
+                return setTimeoutAsyncPromise(async () => {
                     if (this.stageNumber === stage) {
                         this.stageGraphemes = this.getKnownGraphemes(stage);
                     }
@@ -177,15 +276,18 @@ export class ReaderToolsModel {
                     // but they can be done independently of each other.
                     // By separating them, we allow the letters to update while
                     // the words are still being generated.
-                    window.setTimeout(() => {
-                        // make sure this is still the stage they want
-                        // (it won't be if they are rapidly clicking the next/previous stage buttons)
-                        if (this.stageNumber === stage) {
-                            this.updateLetterList();
-                        }
-                    }, 0);
+                    const updateLetterListDonePromise = setTimeoutPromise(
+                        () => {
+                            // make sure this is still the stage they want
+                            // (it won't be if they are rapidly clicking the next/previous stage buttons)
+                            if (this.stageNumber === stage) {
+                                this.updateLetterList();
+                            }
+                        },
+                        0
+                    );
 
-                    window.setTimeout(() => {
+                    const updateWordListDonePromise = setTimeoutPromise(() => {
                         // make sure this is still the stage they want
                         // (it won't be if they are rapidly clicking the next/previous stage buttons)
                         if (this.stageNumber === stage) {
@@ -193,18 +295,38 @@ export class ReaderToolsModel {
                         }
                     }, 0);
 
-                    if (!skipSave) {
-                        this.saveState();
-                        // When we're actually changing the stage number is the only time we want
-                        // to update the default.
-                        BloomApi.post(
-                            "readers/io/defaultStage?stage=" + this.stageNumber
-                        );
-                    }
+                    const defaultStagePostedPromise = new Promise<void>(
+                        (resolve, reject) => {
+                            if (!skipSave) {
+                                this.saveState();
+                                // When we're actually changing the stage number is the only time we want
+                                // to update the default.
+                                BloomApi.post(
+                                    "readers/io/defaultStage?stage=" +
+                                        this.stageNumber,
+                                    () => {
+                                        resolve();
+                                    },
+                                    r => {
+                                        reject(r);
+                                    }
+                                );
+                            } else {
+                                resolve();
+                            }
+                        }
+                    );
 
                     if (this.readyToDoMarkup()) {
                         this.doMarkup();
                     }
+
+                    return isAllPromiseSettled([
+                        updateLetterListDonePromise,
+                        updateWordListDonePromise,
+                        defaultStagePostedPromise
+                    ]);
+
                     // The 1/2 second delay here gives us a chance to click quickly and change the stage before we start working
                     // If that happens, the check that is the first line of this setTimeout function will decide to bail out.
                 }, 500);

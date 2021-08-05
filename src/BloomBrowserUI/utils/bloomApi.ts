@@ -299,6 +299,9 @@ export class BloomApi {
     ) {
         if ((window as any).__karma__) {
             console.log(`skipping post to ${urlSuffix} because in unit tests`);
+            if (successCallback) {
+                (successCallback as any)(); // TODO: No hax
+            }
             return;
         }
 
