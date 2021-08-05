@@ -665,7 +665,7 @@ namespace BloomTests.Book
 			string secondPath = _starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path);
 
 			Assert.IsTrue(File.Exists(firstPath.CombineForPath("Book.htm")));
-			Assert.IsTrue(File.Exists(secondPath.CombineForPath("Book1.htm")));
+			Assert.IsTrue(File.Exists(secondPath.CombineForPath("Book (2).htm")));
 			Assert.IsTrue(Directory.Exists(secondPath),"it clobbered the first one!");
 		}
 
@@ -843,17 +843,17 @@ namespace BloomTests.Book
 		public void CreateBookOnDiskFromTemplate_FromFactoryTemplate_SameNameAlreadyUsed_FindsUsableNumberSuffix()
 		{
 			Directory.CreateDirectory(_projectFolder.Combine("Book"));
-			Directory.CreateDirectory(_projectFolder.Combine("Book1"));
-			Directory.CreateDirectory(_projectFolder.Combine("Book3"));
+			Directory.CreateDirectory(_projectFolder.Combine("Book (2)"));
+			Directory.CreateDirectory(_projectFolder.Combine("Book (4)"));
 
 			var source = BloomFileLocator.GetFactoryBookTemplateDirectory(
 																			"Basic Book");
 
 			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 
-			Assert.AreEqual("Book2", Path.GetFileName(path));
+			Assert.AreEqual("Book (3)", Path.GetFileName(path));
 			Assert.IsTrue(Directory.Exists(path));
-			Assert.IsTrue(File.Exists(Path.Combine(path, "Book2.htm")));
+			Assert.IsTrue(File.Exists(Path.Combine(path, "Book (3).htm")));
 		}
 
 		[Test]
