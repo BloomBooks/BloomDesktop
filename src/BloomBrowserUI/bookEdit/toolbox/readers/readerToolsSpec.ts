@@ -111,41 +111,31 @@ describe("Bloom Edit Controls tests", () => {
         document.body.removeChild(levelNOfMElement);
     });
 
-    /* skipping until we figure out how to make work with localization See BL-3554
-        it("increments stage to limit on stage right button", () => {
-                getTheOneReaderToolsModel().incrementStage();
+    it("increments stage to limit on stage right button", () => {
+        getTheOneReaderToolsModel().incrementStage();
+        expect(stageNOfMElement.innerText).toBe("Stage 2 of 3");
 
-//        setTimeout(function(){
-                        expect(getTheOneReaderToolsModel().updateElementContent).toHaveBeenCalledWith("stageNumber", "2");
+        getTheOneReaderToolsModel().incrementStage();
+        expect(stageNOfMElement.innerText).toBe("Stage 3 of 3");
 
-                        (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
-                        getTheOneReaderToolsModel().incrementStage();
-                        expect(getTheOneReaderToolsModel().updateElementContent).toHaveBeenCalledWith("stageNumber", "3");
+        // Expect that it doesn't change if you try to increment while at the highest value already
+        getTheOneReaderToolsModel().incrementStage();
+        expect(stageNOfMElement.innerText).toBe("Stage 3 of 3");
+    });
 
-                        (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
-                        getTheOneReaderToolsModel().incrementStage();
-                        expect(getTheOneReaderToolsModel().updateElementContent).not.toHaveBeenCalled();
-//            done(); // this done business is needed because incrementStage is async
-//        }, 0);
-        });
-*/
+    it("decrements stage to 1 on stage left button", () => {
+        getTheOneReaderToolsModel().setStageNumber(3);
+        getTheOneReaderToolsModel().decrementStage();
+        expect(stageNOfMElement.innerText).toBe("Stage 2 of 3");
 
-    /* skipping until we figure out how to make work with localization See BL-3554
-         it("decrements stage to 1 on stage left button", () => {
-                getTheOneReaderToolsModel().setStageNumber(3);
-                (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
-                getTheOneReaderToolsModel().decrementStage();
-                expect(getTheOneReaderToolsModel().updateElementContent).toHaveBeenCalledWith("stageNumber", "2");
+        getTheOneReaderToolsModel().decrementStage();
+        expect(stageNOfMElement.innerText).toBe("Stage 1 of 3");
 
-                (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
-                getTheOneReaderToolsModel().decrementStage();
-                expect(getTheOneReaderToolsModel().updateElementContent).toHaveBeenCalledWith("stageNumber", "1");
+        // Expect that it doesn't change if you try to decrement while at the lowest value already
+        getTheOneReaderToolsModel().decrementStage();
+        expect(stageNOfMElement.innerText).toBe("Stage 1 of 3");
+    });
 
-                (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
-                getTheOneReaderToolsModel().decrementStage();
-                expect(getTheOneReaderToolsModel().updateElementContent).not.toHaveBeenCalled();
-        });
-*/
     it("increments level to limit on level right button", () => {
         getTheOneReaderToolsModel().incrementLevel();
         expect(levelNOfMElement.innerText).toBe("Level 2 of 3");
@@ -153,51 +143,69 @@ describe("Bloom Edit Controls tests", () => {
         getTheOneReaderToolsModel().incrementLevel();
         expect(levelNOfMElement.innerText).toBe("Level 3 of 3");
 
+        // Expect that it doesn't change if you try to increment while at the highest value already
         getTheOneReaderToolsModel().incrementLevel();
-
-        // Expect that it's still unchanged
         expect(levelNOfMElement.innerText).toBe("Level 3 of 3");
     });
 
-    /* skipping until we figure out how to make work with localization See BL-3554
-        it("decrements level to 1 on level left button", () => {
-                getTheOneReaderToolsModel().setLevelNumber(3);
-                (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
-                getTheOneReaderToolsModel().decrementLevel();
-                expect(getTheOneReaderToolsModel().updateElementContent).toHaveBeenCalledWith("levelNumber", "2");
+    it("decrements level to 1 on level left button", () => {
+        getTheOneReaderToolsModel().setLevelNumber(3);
+        getTheOneReaderToolsModel().decrementLevel();
+        expect(levelNOfMElement.innerText).toBe("Level 2 of 3");
 
-                (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
-                getTheOneReaderToolsModel().decrementLevel();
-                expect(getTheOneReaderToolsModel().updateElementContent).toHaveBeenCalledWith("levelNumber", "1");
+        getTheOneReaderToolsModel().decrementLevel();
+        expect(levelNOfMElement.innerText).toBe("Level 1 of 3");
 
-                (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
-                getTheOneReaderToolsModel().decrementLevel();
-                expect(getTheOneReaderToolsModel().updateElementContent).not.toHaveBeenCalled();
-        });
-*/
-    /* skipping until we figure out how to make work with localization See BL-3554
-        it("setting stage updates stage button visibility", () => {
-                getTheOneReaderToolsModel().setStageNumber(3);
-                expect(getTheOneReaderToolsModel().getElementAttribute("decStage", "class")).toBe("something");
-                expect(getTheOneReaderToolsModel().getElementAttribute("incStage", "class")).toBe("something disabledIcon");
+        // Expect that it doesn't change if you try to decrement while at the lowest value already
+        getTheOneReaderToolsModel().decrementLevel();
+        expect(levelNOfMElement.innerText).toBe("Level 1 of 3");
+    });
 
-                getTheOneReaderToolsModel().decrementStage();
-                expect(getTheOneReaderToolsModel().getElementAttribute("incStage", "class")).toBe("something");
-                expect(getTheOneReaderToolsModel().getElementAttribute("decStage", "class")).toBe("something");
+    it("setting stage updates stage button visibility", () => {
+        getTheOneReaderToolsModel().setStageNumber(3);
+        expect(
+            getTheOneReaderToolsModel().getElementAttribute("decStage", "class")
+        ).toBe("something");
+        expect(
+            getTheOneReaderToolsModel().getElementAttribute("incStage", "class")
+        ).toBe("something disabledIcon");
 
-                getTheOneReaderToolsModel().decrementStage();
-                expect(getTheOneReaderToolsModel().getElementAttribute("incStage", "class")).toBe("something");
-                expect(getTheOneReaderToolsModel().getElementAttribute("decStage", "class")).toBe("something disabledIcon");
+        // Now at Stage 2 of 3
+        getTheOneReaderToolsModel().decrementStage();
+        expect(
+            getTheOneReaderToolsModel().getElementAttribute("incStage", "class")
+        ).toBe("something");
+        expect(
+            getTheOneReaderToolsModel().getElementAttribute("decStage", "class")
+        ).toBe("something");
 
-                getTheOneReaderToolsModel().incrementStage();
-                expect(getTheOneReaderToolsModel().getElementAttribute("incStage", "class")).toBe("something");
-                expect(getTheOneReaderToolsModel().getElementAttribute("decStage", "class")).toBe("something");
+        // Now at Stage 1 of 3
+        getTheOneReaderToolsModel().decrementStage();
+        expect(
+            getTheOneReaderToolsModel().getElementAttribute("incStage", "class")
+        ).toBe("something");
+        expect(
+            getTheOneReaderToolsModel().getElementAttribute("decStage", "class")
+        ).toBe("something disabledIcon");
 
-                getTheOneReaderToolsModel().incrementStage();
-                expect(getTheOneReaderToolsModel().getElementAttribute("decStage", "class")).toBe("something");
-                expect(getTheOneReaderToolsModel().getElementAttribute("incStage", "class")).toBe("something disabledIcon");
-        });
-*/
+        // Now at Stage 2 of 3
+        getTheOneReaderToolsModel().incrementStage();
+        expect(
+            getTheOneReaderToolsModel().getElementAttribute("incStage", "class")
+        ).toBe("something");
+        expect(
+            getTheOneReaderToolsModel().getElementAttribute("decStage", "class")
+        ).toBe("something");
+
+        // Now at Stage 3 of 3
+        getTheOneReaderToolsModel().incrementStage();
+        expect(
+            getTheOneReaderToolsModel().getElementAttribute("decStage", "class")
+        ).toBe("something");
+        expect(
+            getTheOneReaderToolsModel().getElementAttribute("incStage", "class")
+        ).toBe("something disabledIcon");
+    });
 
     it("updates level button visibility when setting level", () => {
         getTheOneReaderToolsModel().setLevelNumber(3);
@@ -246,7 +254,7 @@ describe("Bloom Edit Controls tests", () => {
         expect(levelNOfMElement.innerText).toBe("Level 3 of 3");
     });
 
-    /* skipping due to mistery. See BL-3554
+    /* Originally skipping due to mystery (see BL-3554), now skipping due to async misery
         it("sorts word list correctly when sort buttons clicked", () => {
 
                 getTheOneReaderToolsModel().setStageNumber(2);
@@ -255,6 +263,8 @@ describe("Bloom Edit Controls tests", () => {
 
                 // Default is currently alphabetic
                 getTheOneReaderToolsModel().setStageNumber(1);
+                // NOTE: updateWordList is within a promise-then -> setTimeout -> setTimeout, a bit nasty to determine when it's done.
+                // NOTE: This will actually pass if you wrap it in a setTimeout
                 expect(getTheOneReaderToolsModel().updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">catty</div><div class="word sight-word">feline</div><div class="word">rate</div><div class="word sight-word">rodent</div><div class="word">sat</div>');
 
                 (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();

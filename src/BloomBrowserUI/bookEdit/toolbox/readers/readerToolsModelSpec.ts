@@ -200,7 +200,7 @@ describe("updateStageNofM tests", () => {
         );
     }
 
-    it("fixes stageNofM with items in order", () => {
+    it("fixes stageNofM with N before M", () => {
         const stageNofM = document.createElement("div");
         stageNofM.innerText = "[fake unlocalized text]";
         const obj = new ReaderToolsModel();
@@ -228,7 +228,7 @@ describe("updateStageNofM tests", () => {
         ];
     });
 
-    it("fixes stageNofM with items  out of order", () => {
+    it("fixes stageNofM with N AFTER M", () => {
         const stageNofM = document.createElement("div");
         stageNofM.innerText = "[fake unlocalized text]";
         const obj = new ReaderToolsModel();
