@@ -2376,6 +2376,30 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// if necessary, insert a number according to template to make the folder path unique 
+		/// </summary>
+		/// <param name="parentFolderPath">The parent directory which the new unique folder path will go in</param>
+		/// <param name="unnumberedName">An unnumbered name to use first if possible, e.g. "Foldername (Copy)"</param>
+		/// <param name="numberedNameTemplate">Template for inserting unique numbers into subsequent names, e.g."Foldername (Copy-{0})" </param>
+		internal static string GetUniqueFolderPath(string parentFolderPath, string unnumberedName, string numberedNameTemplate)
+		{
+			int i = 1;
+			var newName = unnumberedName;
+			while (Directory.Exists(Path.Combine(parentFolderPath, newName)))
+			{
+				++i;
+				string previousName = newName;
+				newName = String.Format(numberedNameTemplate, i);
+				if(String.Equals(previousName, newName))
+				{
+					throw new ArgumentException("numberedNameTemplate does not specify a place to insert a number", numberedNameTemplate);
+				}
+			}
+			return Path.Combine(parentFolderPath, newName);
+		}
+
+
+		/// <summary>
 		/// if necessary, append a number to make the subfolder name unique within the given folder
 		/// </summary>
 		internal static string GetUniqueFolderName(string parentPath, string name)
@@ -2683,6 +2707,35 @@ namespace Bloom.Book
 				RobustFile.Move(extraBookPath,
 					Path.Combine(newPathForExtraBook, Path.ChangeExtension(Path.GetFileName(newPathForExtraBook), "htm")));
 			return newPathForExtraBook;
+		}
+
+		//Will not authomatically cause the new backup book to appear in Bloom until the next time Bloom is re-opened
+		public static void SaveBackup(string folderPath, string bookPath)
+		{
+			string parentPath = Directory.GetParent(folderPath).FullName;
+			string newFolderPath = BookStorage.GetUniqueFolderPath(parentPath,
+														Path.GetFileName(folderPath) + " (before import overwrite)",
+														Path.GetFileName(folderPath) + " (before import overwrite-{0})");
+			try
+			{
+				DirectoryUtils.CopyFolder(folderPath, newFolderPath);
+				BookInfo backupBook = new BookInfo(newFolderPath, true);
+				backupBook.NameLocked = true;
+				backupBook.Save();
+			}
+			catch (Exception ex)
+			{
+				//Delete any part that was already copied before the exception
+				if (Directory.Exists(newFolderPath))
+				{
+					Directory.Delete(newFolderPath, true);
+				}
+				throw ex;
+			}
+
+			string origHtmlFileName = Path.GetFileName(bookPath);
+			string newCopyHtmlFileName = Path.GetFileName(newFolderPath) + ".htm";
+			RobustFile.Move(Path.Combine(newFolderPath, origHtmlFileName), Path.Combine(newFolderPath, newCopyHtmlFileName));
 		}
 	}
 }

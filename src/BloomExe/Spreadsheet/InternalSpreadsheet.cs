@@ -1,8 +1,4 @@
-﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Bloom.Spreadsheet
 {
@@ -116,7 +112,7 @@ namespace Bloom.Spreadsheet
 		public int ColumnForTag(string columnLabel) {
 			for (var i = 0; i < _header.Count; i++)
 			{
-				if (_header.GetCell(i).Content == columnLabel)
+				if (_header.GetCell(i).Content.Equals(columnLabel))
 					return i;
 			}
 

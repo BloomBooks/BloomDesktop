@@ -1781,7 +1781,6 @@ namespace Bloom.CollectionTab
 				string imagesFolderPath = Path.GetDirectoryName(bookPath);
 				var _sheet = exporter.Export(dom, imagesFolderPath);
 				_sheet.WriteToFile(outputFilename);
-				//TODO capture any error output
 			}
 			catch (Exception ex)
 			{
@@ -1851,7 +1850,56 @@ namespace Bloom.CollectionTab
 				BringButtonTitleUpToDate(book);
 			}
 		}
+
+		private void importContentFromSpreadsheetToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			var bookPath = _bookSelection.CurrentSelection.GetPathHtmlFile();
+			try
+			{
+				string inputFilepath;
+				using (var dlg = new DialogAdapters.OpenFileDialogAdapter())
+				{
+					dlg.Filter = "xlsx|*.xlsx";
+					dlg.RestoreDirectory = true;
+					dlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+					if (DialogResult.Cancel == dlg.ShowDialog())
+					{
+						return;
+					}
+					inputFilepath = dlg.FileName;
+				}
+
+				string folderPath = _bookSelection.CurrentSelection.FolderPath;
+				BookStorage.SaveBackup(folderPath, bookPath);
+
+				var sheet = InternalSpreadsheet.ReadFromFile(inputFilepath);
+				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));
+				var importer = new SpreadsheetImporter(dom, sheet);
+
+				var messages = importer.Import();
+				foreach (var message in messages)
+				{
+					var msg = LocalizationManager.GetString("Spreadsheet:ImportFailed", "Import failed: ");
+					NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg + message, showSendReport: false);
+				}
+				// Review: A lot of other stuff happens in Book.Save() and BookStorage.SaveHtml().
+				// I doubt we need any of it for current purposes, but later we might.
+				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, bookPath);
+				_bookSelection.CurrentSelection.ReloadFromDisk(null);
+				_bookSelection.InvokeSelectionChanged(false);
+
+				// reload the collection so the backups show up
+				_model.ReloadCollections();
+				LoadPrimaryCollectionButtons();
+			}
+			catch (Exception ex)
+			{
+				var msg = LocalizationManager.GetString("Spreadsheet:ImportFailed", "Import failed: ");
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg + ex.Message, exception: ex);
+			}
+		}
 	}
+
 
 	internal class BookButtonInfo
 	{
@@ -1873,3 +1921,4 @@ namespace Bloom.CollectionTab
 		}
 	}
 }
+
