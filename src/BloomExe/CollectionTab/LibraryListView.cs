@@ -1752,7 +1752,7 @@ namespace Bloom.CollectionTab
 
 		}
 
-		private void exportToExcelToolStripMenuItem_Click(object sender, EventArgs e)
+		private void exportToSpreadsheetToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			var bookPath = _bookSelection.CurrentSelection.GetPathHtmlFile();
 			try
@@ -1770,8 +1770,9 @@ namespace Bloom.CollectionTab
 					var filename = _bookSelection.CurrentSelection.Storage.FileName;
 					dlg.FileName = Path.ChangeExtension(filename, extension);
 					dlg.Filter = "xlsx|*.xlsx";
+					dlg.InitialDirectory = Settings.Default.ExportImportFileFolder ?? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 					dlg.RestoreDirectory = true;
-					//dlg.OverwritePrompt = true;
+					dlg.OverwritePrompt = true;
 					if (DialogResult.Cancel == dlg.ShowDialog())
 					{
 						return;
@@ -1781,7 +1782,7 @@ namespace Bloom.CollectionTab
 				string imagesFolderPath = Path.GetDirectoryName(bookPath);
 				var _sheet = exporter.Export(dom, imagesFolderPath);
 				_sheet.WriteToFile(outputFilename);
-				//TODO capture any error output
+				PathUtilities.OpenFileInApplication(outputFilename); 
 			}
 			catch (Exception ex)
 			{

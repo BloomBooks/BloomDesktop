@@ -23,7 +23,7 @@ namespace Bloom.CollectionTab
 			this._copyBook = new System.Windows.Forms.ToolStripMenuItem();
 			this._exportToXMLForInDesignToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exportToWordOrLibreOfficeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.exportToExcelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.exportToSpreadsheetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.SaveAsBloomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._makeBloomPackOfBookToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._openFolderOnDisk = new System.Windows.Forms.ToolStripMenuItem();
@@ -89,7 +89,7 @@ namespace Bloom.CollectionTab
             this._copyBook,
             this._exportToXMLForInDesignToolStripMenuItem,
             this.exportToWordOrLibreOfficeToolStripMenuItem,
-            this.exportToExcelToolStripMenuItem,
+            this.exportToSpreadsheetToolStripMenuItem,
             this.SaveAsBloomToolStripMenuItem,
             this._makeBloomPackOfBookToolStripMenuItem,
             this._openFolderOnDisk,
@@ -141,15 +141,15 @@ namespace Bloom.CollectionTab
 			this.exportToWordOrLibreOfficeToolStripMenuItem.Text = "Export to Word or LibreOffice...";
 			this.exportToWordOrLibreOfficeToolStripMenuItem.Click += new System.EventHandler(this.exportToWordOrLibreOfficeToolStripMenuItem_Click);
 			// 
-			// exportToExcelToolStripMenuItem
+			// exportToSpreadsheetToolStripMenuItem
 			// 
-			this._L10NSharpExtender.SetLocalizableToolTip(this.exportToExcelToolStripMenuItem, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.exportToExcelToolStripMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this.exportToExcelToolStripMenuItem, "CollectionTab.BookMenu.ExportToExcel");
-			this.exportToExcelToolStripMenuItem.Name = "exportToExcelToolStripMenuItem";
-			this.exportToExcelToolStripMenuItem.Size = new System.Drawing.Size(242, 26);
-			this.exportToExcelToolStripMenuItem.Text = "Export to Excel...";
-			this.exportToExcelToolStripMenuItem.Click += new System.EventHandler(this.exportToExcelToolStripMenuItem_Click);
+			this._L10NSharpExtender.SetLocalizableToolTip(this.exportToSpreadsheetToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.exportToSpreadsheetToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizingId(this.exportToSpreadsheetToolStripMenuItem, "CollectionTab.BookMenu.ExportToSpreadsheet");
+			this.exportToSpreadsheetToolStripMenuItem.Name = "exportToSpreadsheetToolStripMenuItem";
+			this.exportToSpreadsheetToolStripMenuItem.Size = new System.Drawing.Size(242, 26);
+			this.exportToSpreadsheetToolStripMenuItem.Text = "Export to Spreadsheet...";
+			this.exportToSpreadsheetToolStripMenuItem.Click += new System.EventHandler(this.exportToSpreadsheetToolStripMenuItem_Click);
 			// 
 			// SaveAsBloomToolStripMenuItem
 			// 
@@ -766,7 +766,7 @@ namespace Bloom.CollectionTab
 		private ToolStripMenuItem _leveledReaderMenuItem;
 		private ToolStripMenuItem _decodableReaderMenuItem;
 		private ToolStripMenuItem SaveAsBloomToolStripMenuItem;
-		private ToolStripMenuItem exportToExcelToolStripMenuItem;
+		private ToolStripMenuItem exportToSpreadsheetToolStripMenuItem;
 		private ToolStripMenuItem renameToolStripMenuItem;
 	}
 }
