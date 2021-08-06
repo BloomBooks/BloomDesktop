@@ -11,6 +11,7 @@
 // (also as educational).
 
 using Bloom.ImageProcessing;
+using L10NSharp;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using SIL.IO;
@@ -165,6 +166,8 @@ namespace Bloom.Spreadsheet
 					Console.WriteLine("Writing Spreadsheet failed. Do you have it open in Excel?");
 					Console.WriteLine(ex.Message);
 					Console.WriteLine(ex.StackTrace);
+					var msg = LocalizationManager.GetString("Spreadsheet:ExportFailed", "Export failed: ");
+					NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg + ex.Message, showSendReport: false);
 				}
 			}
 		}
