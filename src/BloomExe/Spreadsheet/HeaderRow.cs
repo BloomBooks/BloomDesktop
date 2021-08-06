@@ -13,5 +13,8 @@ namespace Bloom.Spreadsheet
 	/// </summary>
 	public class HeaderRow: SpreadsheetRow
 	{
+		public HeaderRow(InternalSpreadsheet sheet) : base(sheet)
+		{
+		}
 	}
 }
