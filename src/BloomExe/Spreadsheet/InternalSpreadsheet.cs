@@ -1,8 +1,4 @@
-﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Bloom.Spreadsheet
 {
@@ -25,7 +21,7 @@ namespace Bloom.Spreadsheet
 		public const string PageNumberLabel = "[page]";
 		public const string TextGroupLabel = "[textgroup]";
 		private List<SpreadsheetRow> _rows = new List<SpreadsheetRow>();
-		private HeaderRow _header = new HeaderRow();
+		private HeaderRow _header;
 
 		public SpreadsheetExportParams Params = new SpreadsheetExportParams();
 
@@ -68,10 +64,9 @@ namespace Bloom.Spreadsheet
 
 		private InternalSpreadsheet(bool populateHeader)
 		{
+			_header = new HeaderRow(this);
 			if (populateHeader)
 			{
-				_rows.Add(_header);
-
 				while (_header.Count < StandardLeadingColumns.Length)
 				{
 					var tag = StandardLeadingColumns[_header.Count];
@@ -101,7 +96,7 @@ namespace Bloom.Spreadsheet
 			return _rows;
 		}
 
-		public void AddRow(ContentRow row)
+		public void AddRow(SpreadsheetRow row)
 		{
 			_rows.Add(row);
 			row.Spreadsheet = this;
@@ -116,7 +111,7 @@ namespace Bloom.Spreadsheet
 		public int ColumnForTag(string columnLabel) {
 			for (var i = 0; i < _header.Count; i++)
 			{
-				if (_header.GetCell(i).Content == columnLabel)
+				if (_header.GetCell(i).Content.Equals(columnLabel))
 					return i;
 			}
 

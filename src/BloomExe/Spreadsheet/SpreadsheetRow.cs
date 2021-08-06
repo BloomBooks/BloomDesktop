@@ -14,6 +14,11 @@ namespace Bloom.Spreadsheet
 		private List<string> _cells = new List<string>();
 		public InternalSpreadsheet Spreadsheet;
 
+		public SpreadsheetRow(InternalSpreadsheet spreadsheet)
+		{
+			spreadsheet.AddRow(this);
+		}
+
 		public void AddCell(string content)
 		{
 			_cells.Add(content);

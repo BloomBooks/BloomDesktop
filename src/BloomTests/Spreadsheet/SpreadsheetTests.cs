@@ -1,8 +1,10 @@
 ﻿using Bloom.Book;
 using Bloom.Spreadsheet;
 using NUnit.Framework;
+using OfficeOpenXml;
 using SIL.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace BloomTests.Spreadsheet
@@ -147,6 +149,7 @@ namespace BloomTests.Spreadsheet
 	</body>
 </html>
 ";
+
 		private HtmlDom _dom;
 		private SpreadsheetExporter _exporter;
 		// The tests are all written in terms of _sheet and _rows, the output
@@ -201,10 +204,10 @@ namespace BloomTests.Spreadsheet
 					Assert.That(source, Is.Not.EqualTo(source));
 					break;
 			}
-			(_imageRows, _textRows) = splitRows(_rows);
+			(_imageRows, _textRows) = SplitRows(_rows);
 		}
 
-		public static (List<ContentRow>, List<ContentRow>) splitRows(List<ContentRow> allRows)
+		public static (List<ContentRow>, List<ContentRow>) SplitRows(List<ContentRow> allRows)
 		{
 			var imageRows = new List<ContentRow>();
 			var textRows = new List<ContentRow>();
@@ -288,6 +291,55 @@ namespace BloomTests.Spreadsheet
 			Assert.That(sheet.Languages, Has.Count.EqualTo(2));
 			Assert.That(sheet.Languages, Has.Member("en"));
 			Assert.That(sheet.Languages, Has.Member("es"));
+		}
+
+		[Test]
+		public void RichtextNotUsedWhenNotNeeded()
+		{
+			using (var tempFile = TempFile.WithExtension("xslx"))
+			{
+				_sheetFromExport.WriteToFile(tempFile.Path);
+				var info = new FileInfo(tempFile.Path);
+				using (var package = new ExcelPackage(info))
+				{
+					var worksheet = package.Workbook.Worksheets[0];
+					int c = _sheetFromExport.StandardLeadingColumns.Length;
+					for (int r = 0; r < 4; r++)
+					{
+						ExcelRange currentCell = worksheet.Cells[r + 1, c + 1];
+						Assert.That(!currentCell.IsRichText);
+					}
+				}
+			}
+		}
+
+		[Test]
+		public void RetainMarkupOptionRetainsMarkup()
+		{
+			using (var tempFile = TempFile.WithExtension("xslx"))
+			{
+				SpreadsheetIO.WriteSpreadsheet(_sheetFromExport, tempFile.Path, retainMarkup:true);
+				var info = new FileInfo(tempFile.Path);
+				using (var package = new ExcelPackage(info))
+				{
+					var worksheet = package.Workbook.Worksheets[0];
+					int c = _sheetFromExport.StandardLeadingColumns.Length;
+					var rowCount = worksheet.Dimension.Rows;
+					//The first TextGroup row should contain the marked-up string we are looking for
+					for (int r = 0; true; r++)
+					{
+						Assert.That(r, Is.LessThan(rowCount), "did not find expected TextGroup row");
+						ExcelRange rowTypeCell = worksheet.Cells[r + 1, 1];
+						if (rowTypeCell.Value.ToString().Equals(InternalSpreadsheet.TextGroupLabel))
+						{
+							string markedUp = @"<p><span id=""e4bc05e5-4d65-4016-9bf3-ab44a0df3ea2"" class=""bloom-highlightSegment"" recordingmd5=""undefined"">This elephant is running amok.</span> <span id=""i2ba966b6-4212-4821-9268-04e820e95f50"" class=""bloom-highlightSegment"" recordingmd5=""undefined"">Causing much damage.</span></p>";
+							ExcelRange textCell = worksheet.Cells[r + 1, c + 1];
+							Assert.That(textCell.Value.ToString().Contains(markedUp));
+							break;
+						}
+					}
+				}
+			}
 		}
 	}
 }
