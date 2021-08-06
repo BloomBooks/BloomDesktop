@@ -1851,7 +1851,69 @@ namespace Bloom.CollectionTab
 				BringButtonTitleUpToDate(book);
 			}
 		}
+
+		private void importContentFromSpreadsheetToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			var bookPath = _bookSelection.CurrentSelection.GetPathHtmlFile();
+			try
+			{
+				string inputFilepath;
+				using (var dlg = new DialogAdapters.OpenFileDialogAdapter())
+				{
+					dlg.Filter = "xlsx|*.xlsx";
+					dlg.RestoreDirectory = true;
+					dlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+					if (DialogResult.Cancel == dlg.ShowDialog())
+					{
+						return;
+					}
+					inputFilepath = dlg.FileName;
+				}
+
+				string folderPath = _bookSelection.CurrentSelection.FolderPath;
+				string parentPath = Directory.GetParent(folderPath).FullName;
+				string newFolderPath = BookStorage.GetUniqueFolderPath(parentPath,
+															Path.GetFileName(folderPath) + " (before import overwrite)",
+															Path.GetFileName(folderPath) + " (before import overwrite-{0})");
+				DirectoryUtils.CopyFolder(folderPath, newFolderPath);
+				BookInfo backupBook = new BookInfo(newFolderPath, true);
+				backupBook.NameLocked = true;
+				backupBook.Save();
+
+				//If we want to reename the book htm file in the backup copy.
+				//Remember to also add this to SpreadsheetImportCommand.cs for the CLI version.
+				//string origHtmlFileName = Path.GetFileName(bookPath);
+				//string newCopyHtmlFileName = Path.GetFileName(newFolderPath) + ".htm";
+				//RobustFile.Move(Path.Combine(newFolderPath, origHtmlFileName), Path.Combine(newFolderPath, newCopyHtmlFileName));
+
+				var sheet = InternalSpreadsheet.ReadFromFile(inputFilepath);
+				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));
+				var importer = new SpreadsheetImporter(dom, sheet);
+
+				var messages = importer.Import();
+				foreach (var message in messages)
+				{
+					var msg = LocalizationManager.GetString("Spreadsheet:ImportFailed", "Import failed: ");
+					NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg + message, showSendReport: false);
+				}
+				// Review: A lot of other stuff happens in Book.Save() and BookStorage.SaveHtml().
+				// I doubt we need any of it for current purposes, but later we might.
+				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, bookPath);
+				_bookSelection.CurrentSelection.ReloadFromDisk(null);
+				_bookSelection.InvokeSelectionChanged(false);
+
+				// reload the collection so the backups show up
+				_model.ReloadCollections();
+				LoadPrimaryCollectionButtons();
+			}
+			catch (Exception ex)
+			{
+				var msg = LocalizationManager.GetString("Spreadsheet:ImportFailed", "Import failed: ");
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg + ex.Message, exception: ex);
+			}
+		}
 	}
+
 
 	internal class BookButtonInfo
 	{
@@ -1873,3 +1935,4 @@ namespace Bloom.CollectionTab
 		}
 	}
 }
+

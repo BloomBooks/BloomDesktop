@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Bloom.Book;
+﻿using Bloom.Book;
 using Bloom.Spreadsheet;
+using Bloom.ToPalaso;
 using CommandLine;
+using System;
+using System.Diagnostics;
+using System.IO;
 
 namespace Bloom.CLI
 {
@@ -21,6 +19,15 @@ namespace Bloom.CLI
 		{
 			try
 			{
+				string folderPath = Directory.GetParent(options.BookPath).FullName;
+				string parentPath = Directory.GetParent(folderPath).FullName;
+				string newFolderPath = BookStorage.GetUniqueFolderPath(parentPath,
+											Path.GetFileName(folderPath) + " (before import overwrite)",
+											Path.GetFileName(folderPath) + " (before import overwrite-{0})");
+				DirectoryUtils.CopyFolder(folderPath, newFolderPath);
+				BookInfo backupBook = new BookInfo(newFolderPath, true);
+				backupBook.NameLocked = true;
+				backupBook.Save();
 				var sheet = InternalSpreadsheet.ReadFromFile(options.InputPath);
 				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(options.BookPath, false));
 				var importer = new SpreadsheetImporter(dom,sheet);
