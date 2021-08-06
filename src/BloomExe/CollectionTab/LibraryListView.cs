@@ -1781,7 +1781,6 @@ namespace Bloom.CollectionTab
 				string imagesFolderPath = Path.GetDirectoryName(bookPath);
 				var _sheet = exporter.Export(dom, imagesFolderPath);
 				_sheet.WriteToFile(outputFilename);
-				//TODO capture any error output
 			}
 			catch (Exception ex)
 			{
@@ -1851,7 +1850,60 @@ namespace Bloom.CollectionTab
 				BringButtonTitleUpToDate(book);
 			}
 		}
+
+		private void importContentFromSpreadsheetToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			var bookPath = _bookSelection.CurrentSelection.GetPathHtmlFile();
+			try
+			{
+				string inputFilepath;
+				using (var dlg = new DialogAdapters.OpenFileDialogAdapter())
+				{
+					dlg.Filter = "xlsx|*.xlsx";
+					dlg.RestoreDirectory = true;
+					dlg.InitialDirectory = Settings.Default.ExportImportFileFolder ?? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+					if (DialogResult.Cancel == dlg.ShowDialog())
+					{
+						return;
+					}
+					inputFilepath = dlg.FileName;
+					Settings.Default.ExportImportFileFolder = Path.GetDirectoryName(inputFilepath);
+					Settings.Default.Save();
+				}
+
+				string folderPath = _bookSelection.CurrentSelection.FolderPath;
+				BookStorage.SaveCopyBeforeImportOverwrite(folderPath, bookPath);
+
+				var sheet = InternalSpreadsheet.ReadFromFile(inputFilepath);
+				//var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));
+				var dom = _bookSelection.CurrentSelection.OurHtmlDom;
+				var importer = new SpreadsheetImporter(dom, sheet);
+				var messages = importer.Import();
+				if (messages.Count > 0)
+				{
+					var allMessages = String.Join("\r\n", messages);
+					//TODO how to do this??? if there's no content, the book will be left as it was. 
+					var mainMsg = LocalizationManager.GetString("Spreadsheet:ImportWarning", "Import warning: ");
+					NonFatalProblem.Report(ModalIf.All, PassiveIf.None, mainMsg, moreDetails: allMessages, showSendReport: false);
+				}
+				// Review: A lot of other stuff happens in Book.Save() and BookStorage.SaveHtml().
+				// I doubt we need any of it for current purposes, but later we might.
+				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, bookPath);
+				_bookSelection.CurrentSelection.ReloadFromDisk(null);
+				_bookSelection.InvokeSelectionChanged(false);
+
+				// reload the collection so the backups show up
+				_model.ReloadCollections();
+				LoadPrimaryCollectionButtons();
+			}
+			catch (Exception ex)
+			{
+				var msg = LocalizationManager.GetString("Spreadsheet:ImportFailed", "Import failed: ");
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg + ex.Message, showSendReport: false);
+			}
+		}
 	}
+
 
 	internal class BookButtonInfo
 	{
@@ -1873,3 +1925,4 @@ namespace Bloom.CollectionTab
 		}
 	}
 }
+

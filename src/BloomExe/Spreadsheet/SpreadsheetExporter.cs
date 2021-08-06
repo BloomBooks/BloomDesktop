@@ -14,6 +14,7 @@ namespace Bloom.Spreadsheet
 		public SpreadsheetExportParams Params = new SpreadsheetExportParams();
 		public InternalSpreadsheet Export(HtmlDom dom, string imagesFolderPath)
 		{
+			_spreadsheet.Params = Params;
 			var pages = dom.GetPageElements();
 
 			foreach (var page in pages)

@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-using Bloom.Book;
+﻿using Bloom.Book;
 using Bloom.Spreadsheet;
 using NUnit.Framework;
-using SIL.IO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Xml;
 
 namespace BloomTests.Spreadsheet
 {
@@ -452,38 +448,5 @@ namespace BloomTests.Spreadsheet
 			Assert.That(_messages, Contains.Item("No input found for pages from 4 onwards."));
 		}
 
-	}
-
-	/// <summary>
-	/// Tests the SetContentAsText method
-	/// </summary>
-	public class SetContentAsTextTests
-	{
-		private XmlElement _editable;
-		XmlDocument _dom;
-		[SetUp]
-		public void Setup()
-		{
-			_dom = new XmlDocument();
-			_editable = _dom.CreateElement("div");
-			_dom.AppendChild(_editable);
-		}
-		[Test]
-		public void SimpleStringMakesPara()
-		{
-			SpreadsheetImporter.SetContentAsText(_editable, "This is some text");
-			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//p[text()='This is some text']", 1);
-		}
-		[Test]
-		public void StringWithNewlinesMakesParas()
-		{
-			SpreadsheetImporter.SetContentAsText(_editable, "This is some text\r\n\r\nSome more\r\nand more");
-			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//p", 4);
-			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//p[text()='This is some text']", 1);
-			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//p[text()='']", 1);
-			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//p[text()='Some more']", 1);
-			AssertThatXmlIn.Dom(_dom).HasSpecifiedNumberOfMatchesForXpath("//p[text()='and more']", 1);
-
-		}
 	}
 }

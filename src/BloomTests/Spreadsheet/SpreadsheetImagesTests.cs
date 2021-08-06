@@ -166,7 +166,7 @@ namespace BloomTests.Spreadsheet
 					Assert.That(source, Is.Not.EqualTo(source));
 					break;
 			}
-			(_imageRows, _textRows) = SpreadsheetTests.splitRows(_rows);
+			(_imageRows, _textRows) = SpreadsheetTests.SplitRows(_rows);
 		}
 
 		[TestCase("fromExport")]
