@@ -106,6 +106,10 @@
     <Reference Include="Enchant.Net, Version=1.4.0.0, Culture=neutral, PublicKeyToken=ae135aeb3d479ab9, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Enchant.Net.1.4.2\lib\net461\Enchant.Net.dll</HintPath>
     </Reference>
+    <Reference Include="EPPlus, Version=5.6.4.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\EPPlus.5.6.4\lib\net45\EPPlus.dll</HintPath>
+    </Reference>
     <Reference Include="GdkSharp, Version=3.22.24.37, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
       <HintPath>..\..\packages\GdkSharp-signed.3.22.24.37\lib\netstandard2.0\GdkSharp.dll</HintPath>
     </Reference>
@@ -271,6 +275,7 @@
     <Compile Include="DataBuilders\BookFolderBuilder.cs" />
     <Compile Include="DataBuilders\TeamCollectionApiBuilder.cs" />
     <Compile Include="ExperimentalFeaturesTests.cs" />
+    <Compile Include="Spreadsheet\SpreadsheetRoundTripTests.cs" />
     <Compile Include="Spreadsheet\SpreadsheetFormattingTests.cs" />
     <Compile Include="Spreadsheet\SpreadsheetImagesTests.cs" />
     <Compile Include="Spreadsheet\SpreadsheetImporterTests.cs" />

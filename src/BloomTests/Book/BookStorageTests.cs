@@ -1401,5 +1401,48 @@ namespace BloomTests.Book
 "Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.<br />Access to the path &#39;blah blah&#39; is denied.<br />See <a href='http://community.bloomlibrary.org/t/how-to-fix-file-permissions-problems/78'>http://community.bloomlibrary.org/t/how-to-fix-file-permissions-problems/78</a>.";
 			Assert.That(storage.ErrorMessagesHtml, Is.EqualTo(expectedHtml));
 		}
+
+		[Test]
+		public void GetUniqueFolderPath_templateUsedNoNumberNecessary_returnsUnnumberedPath()
+		{
+			using (var directory = new SIL.TestUtilities.TemporaryFolder("BookStorageTests_getUniqueFolderPath"))
+			{
+				string unnumberedName = "Moon & Cap (before import overwrite)";
+				string template = "Moon & Cap (before import overwrite-{0})";
+				string dir1 = BookStorage.GetUniqueFolderPath(directory.Path, unnumberedName, template);
+				Assert.That(dir1, Is.EqualTo(Path.Combine(directory.Path, "Moon & Cap (before import overwrite)")));
+			}
+		}
+
+		[Test]
+		public void GetUniqueFolderPath_templateUsedNumberNecessary_returnsNumberdPath()
+		{
+			using (var directory = new SIL.TestUtilities.TemporaryFolder("BookStorageTests_getUniqueFolderPath"))
+			{
+				string unnumberedName = "Moon & Cap (before import overwrite)";
+				string template = "Moon & Cap (before import overwrite-{0})";
+				Directory.CreateDirectory(Path.Combine(directory.Path, unnumberedName));
+				string dir2 = BookStorage.GetUniqueFolderPath(directory.Path, unnumberedName, template);
+				Assert.That(dir2, Is.EqualTo(Path.Combine(directory.Path, "Moon & Cap (before import overwrite-2)")));
+			}
+		}
+
+		[Test]
+		public void GetUniqueFolderPath_badTemplateUsed_throwsException()
+		{
+			using (var directory = new SIL.TestUtilities.TemporaryFolder("BookStorageTests_getUniqueFolderPath"))
+			{
+				string unnumberedName = "Moon & Cap (before import overwrite)";
+				string template = "Moon & Cap (before import overwrite-)";
+				Directory.CreateDirectory(Path.Combine(directory.Path, unnumberedName));
+				Directory.CreateDirectory(Path.Combine(directory.Path, template));
+				TestDelegate systemUnderTest = () =>
+				{
+					BookStorage.GetUniqueFolderPath(directory.Path, unnumberedName, template);
+				};
+
+				Assert.Throws(typeof(System.ArgumentException), systemUnderTest);
+			}
+		}
 	}
 }

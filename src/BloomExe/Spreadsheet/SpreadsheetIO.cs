@@ -16,8 +16,11 @@ using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using SIL.IO;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Bloom.Spreadsheet
 {
@@ -69,9 +72,7 @@ namespace Bloom.Spreadsheet
 						// Display formatting in excel spreadsheet
 						ExcelRange currentCell = worksheet.Cells[r, c + 1];
 						if (!retainMarkup && c >= spreadsheet.StandardLeadingColumns.Length && r > 1)
-						{
-							//TODO when we implement importing with formatting, make sure this
-							//gets (round-trip) unit tested
+                        {
 							MarkedUpText markedUpText = MarkedUpText.ParseXml(content);
 							if (markedUpText.HasFormatting)
 							{
@@ -93,7 +94,6 @@ namespace Bloom.Spreadsheet
 							}
 							else
 							{
-								//TODO once we implement importing with formatting, test that unformatted text is not richtext
 								currentCell.Value = markedUpText.PlainText();
 							}
 						}
@@ -102,6 +102,7 @@ namespace Bloom.Spreadsheet
 							// Either the retainMarkup flag is set, or this is not book text. It could be header or leading column
 							currentCell.Value = content;
 						}
+
 
 						//Embed any images in the excel file
 						if (c == imageSourceColumn)
@@ -127,7 +128,7 @@ namespace Bloom.Spreadsheet
 				{
 					try
 					{
-						using (System.Drawing.Image image = System.Drawing.Image.FromFile(imageSrcPath))
+						using (Image image = Image.FromFile(imageSrcPath))
 						{
 							string imageName = Path.GetFileNameWithoutExtension(imageSrcPath);
 							var origImageHeight = image.Size.Height;
@@ -135,7 +136,7 @@ namespace Bloom.Spreadsheet
 							int finalWidth = defaultImageWidth;
 							int finalHeight = (int)(finalWidth * origImageHeight / origImageWidth);
 							var size = new Size(finalWidth, finalHeight);
-							using (System.Drawing.Image thumbnail = ImageUtils.ResizeImageIfNecessary(size, image, false))
+							using (Image thumbnail = ImageUtils.ResizeImageIfNecessary(size, image, false))
 							{
 								var excelImage = worksheet.Drawings.AddPicture(imageName, thumbnail);
 								excelImage.SetPosition(rowNum, 1, colNum, 1);
@@ -160,7 +161,6 @@ namespace Bloom.Spreadsheet
 					RobustFile.Delete(outputPath);
 					var xlFile = new FileInfo(outputPath);
 					package.SaveAs(xlFile);
-					throw new IOException();
 				}
 				catch (IOException ex) when ((ex.HResult & 0x0000FFFF) == 32)//ERROR_SHARING_VIOLATION
 				{
@@ -178,7 +178,7 @@ namespace Bloom.Spreadsheet
 					NonFatalProblem.Report(ModalIf.All, PassiveIf.None, errorMsg + ex.Message, exception: ex);
 				}
 			}
-		}
+		}	
 
 		public static void ReadSpreadsheet(InternalSpreadsheet spreadsheet, string path)
 		{
@@ -190,7 +190,7 @@ namespace Bloom.Spreadsheet
 				var colCount = worksheet.Dimension.Columns;
 				// Enhance: eventually we should detect any rows that are not ContentRows,
 				// and either drop them or make plain SpreadsheetRows.
-				ReadRow(worksheet, 0, colCount, spreadsheet.Header);
+				ReadRow(worksheet, 0, colCount, spreadsheet.Header); 
 				for (var r = 1; r < rowCount; r++)
 				{
 					var row = new ContentRow(spreadsheet);
@@ -203,9 +203,166 @@ namespace Bloom.Spreadsheet
 		{
 			for (var c = 0; c < colCount; c++)
 			{
-				var cellContent = worksheet.Cells[rowIndex + 1, c + 1].Value ?? "";
-				row.AddCell(cellContent.ToString());
+				ExcelRange currentCell = worksheet.Cells[rowIndex + 1, c + 1];
+				if (c >= row.Spreadsheet.StandardLeadingColumns.Length && rowIndex >= 1)
+				{
+					row.AddCell(BuildXmlString(currentCell));
+				}
+				else
+				{
+					var cellContent = worksheet.Cells[rowIndex + 1, c + 1].Value ?? "";
+					row.AddCell(cellContent.ToString());
+				}
 			}
 		}
+
+		public static string ReplaceExcelEscapedChars(string escapedString)
+		{
+			string plainString = escapedString;
+			string pattern = "_x([0-9A-F]{4})_";
+			Regex rgx = new Regex(pattern);
+			Match match = rgx.Match(plainString);
+			while (match.Success)
+			{
+				string x = match.Groups[1].Value;
+				int value = Convert.ToInt32(x, 16);
+				char charValue = (char)value;
+				plainString = plainString.Replace(match.Value, charValue.ToString());
+
+				match = rgx.Match(plainString);
+			}
+			return plainString;
+		}
+
+		public static string BuildXmlString(ExcelRange cell)
+		{
+			if (cell.Value == null)
+			{
+				return "";
+			}
+
+			string rawText = cell.Value.ToString();
+			if (HasMarkup(rawText))
+			{
+				// spreadsheet was exported using the retainMarkup parameter
+				return rawText;
+			}
+
+			StringBuilder markedupStringBuilder = new StringBuilder();
+			var whitespaceSplitters = new string[] { "\n", "\r\n" };
+
+			if (cell.IsRichText)
+			{
+				var content = cell.RichText;
+				var cellLevelFormatting = cell.Style.Font;
+				foreach (var run in content)
+				{
+					if (run.Text.Length > 0)
+					{
+						run.Text = ReplaceExcelEscapedChars(run.Text);
+					}
+					var splits = run.Text.Split(whitespaceSplitters, StringSplitOptions.None);
+					string pending = "";
+					foreach (var split in splits)
+					{
+						markedupStringBuilder.Append(pending);
+						AddRunToXmlString(run, cellLevelFormatting, split, markedupStringBuilder);
+						pending = "\r\n";
+					}
+				}
+			}
+			else
+			{
+				markedupStringBuilder.Append(ReplaceExcelEscapedChars(rawText));
+			}
+
+			StringBuilder paragraphedStringBuilder = new StringBuilder();
+			var markedUpString = markedupStringBuilder.ToString();
+
+
+			string[] paragraphs = markedUpString.Split(whitespaceSplitters, StringSplitOptions.None);
+			if (paragraphs.Length >= 1)
+			{
+				paragraphedStringBuilder.Append("<p>");
+				paragraphedStringBuilder.Append(paragraphs[0]);
+			}
+			for (int i=1; i<paragraphs.Length; i++)
+			{
+				if (paragraphs[i].Length >= 1 && paragraphs[i][0] == '\xfeff')
+				{
+					paragraphedStringBuilder.Append(@"<span class=""bloom-linebreak""></span>");
+				}
+				else
+				{
+					paragraphedStringBuilder.Append("</p><p>");
+				}
+				paragraphedStringBuilder.Append(paragraphs[i]);
+			}
+
+			if (paragraphs.Length >= 1)
+			{
+				paragraphedStringBuilder.Append("</p>");
+			}
+
+			return paragraphedStringBuilder.ToString();
+		}
+
+		// Excel formatting can be at the entire cell level (e.g. the entire cell is marked italic)
+		// or at the text level (e.g. some words in the cell are marked italic).
+		// We detect and import both types, but if the user mixes levels for the same formatting type
+		// e.g.selects the entire cell, bolds it, then selected some text within the cell and unbolds it,
+		// we may get weird results, so we should tell users to use text-level formatting only
+		/// <param name="formattingText">Has any text-level formatting we want this run to have. Text content does not matter.</param>
+		/// <param name="cellFormatting">Has any cell-level formatting we want this run to have.</param>
+		/// <param name="text">The text content of this run</param>
+		/// <param name="stringBuilder">The string builder to which we are adding the xmlstring of this run
+		private static void AddRunToXmlString(ExcelRichText formattingText, ExcelFont cellFormatting, string text, StringBuilder stringBuilder)
+		{
+			if (text.Length==0)
+			{
+				return;
+			}
+
+			List<string> endTags = new List<string>();
+			if (formattingText.Bold || cellFormatting.Bold)
+			{
+				addTags("strong", endTags);
+			}
+			if (formattingText.Italic || cellFormatting.Italic)
+			{
+				addTags("em", endTags);
+			}
+			if (formattingText.UnderLine || cellFormatting.UnderLine)
+			{
+				addTags("u", endTags);
+			}
+			if (formattingText.VerticalAlign == ExcelVerticalAlignmentFont.Superscript
+				|| cellFormatting.VerticalAlign == ExcelVerticalAlignmentFont.Superscript)
+			{
+				addTags("sup", endTags);
+			}
+
+			stringBuilder.Append(text);
+
+			endTags.Reverse();
+			foreach (var endTag in endTags)
+			{
+				stringBuilder.Append(endTag);
+			}
+		
+			void addTags(string tagName, List<string> endTag)
+			{
+				stringBuilder.Append("<" + tagName + ">");
+				endTag.Add("</" + tagName + ">");
+
+			}
+		}
+
+		private static bool HasMarkup(string content)
+		{
+			// Anything that is bloom marked-up content is bound to have angle brackets.
+			return content.IndexOf("<", StringComparison.InvariantCulture) >= 0;
+		}
+
 	}
 }
