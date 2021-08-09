@@ -264,6 +264,24 @@ namespace Bloom.WebLibraryIntegration
 				}
 				_collectionFoldersUploaded.Add(collectionPath);
 
+				// Get the book content as up to date as possible, without any unused files so that
+				// we can compute an accurate hash value.
+				if (context == null || context.SettingsPath != collectionPath)
+				{
+					context?.Dispose();
+					// optimise: creating a context seems to be quite expensive. Probably the only thing we need to change is
+					// the collection. If we could update that in place...despite autofac being told it has lifetime scope...we would save some time.
+					// Note however that it's not good enough to just store it in the project context. The one that is actually in
+					// the autofac object (_scope in the ProjectContext) is used by autofac to create various objects, in particular, books.
+					context = container.CreateProjectContext(collectionPath);
+					Program.SetProjectContext(context);
+				}
+				var server = context.BookServer;
+				var bookInfo = new BookInfo(uploadParams.Folder, true);
+				var book = server.GetBookFromBookInfo(bookInfo);
+				book.BringBookUpToDate(new NullProgress());
+				book.Storage.CleanupUnusedSupportFiles(isForPublish: false); // we are publishing, but this is the real folder not a copy, so play safe.
+
 				// Compute the book hash file and compare it to the existing one for bulk upload.
 				var currentHashes = BookUpload.HashBookFolder(uploadParams.Folder);
 				progress.WriteMessage(currentHashes);
@@ -291,20 +309,6 @@ namespace Bloom.WebLibraryIntegration
 				// save local copy of hashes file: it will be uploaded with the other book files
 				RobustFile.WriteAllText(pathToLocalHashInfoFromLastUpload, currentHashes);
 
-				if (context == null || context.SettingsPath != collectionPath)
-				{
-					context?.Dispose();
-					// optimise: creating a context seems to be quite expensive. Probably the only thing we need to change is
-					// the collection. If we could update that in place...despite autofac being told it has lifetime scope...we would save some time.
-					// Note however that it's not good enough to just store it in the project context. The one that is actually in
-					// the autofac object (_scope in the ProjectContext) is used by autofac to create various objects, in particular, books.
-					context = container.CreateProjectContext(collectionPath);
-					Program.SetProjectContext(context);
-				}
-				var server = context.BookServer;
-				var bookInfo = new BookInfo(uploadParams.Folder, true);
-				var book = server.GetBookFromBookInfo(bookInfo);
-				book.BringBookUpToDate(new NullProgress());
 				bookInfo.Bookshelf = book.CollectionSettings.DefaultBookshelf;
 				var bookshelfName = String.IsNullOrWhiteSpace(book.CollectionSettings.DefaultBookshelf) ? "(none)" : book.CollectionSettings.DefaultBookshelf;
 				progress.WriteMessage($"Bookshelf is '{bookshelfName}'");
