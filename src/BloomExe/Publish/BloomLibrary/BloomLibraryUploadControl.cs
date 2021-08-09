@@ -149,7 +149,8 @@ namespace Bloom.Publish.BloomLibrary
 					_langsLabel.ForeColor = LanguagesOkToUpload ? Color.Black : Color.Red;
 					if (_okToUploadDependsOnLangsChecked)
 					{
-						_okToUpload = LanguagesOkToUpload;
+						// Note: We no longer prevent the user from uploading if there are no text languages. Just provide the red warning text.
+						_okToUpload = true;	// Used to be _okToUpload = LanguagesOkToUpload
 						UpdateDisplay();
 					}
 				};
@@ -186,7 +187,8 @@ namespace Bloom.Publish.BloomLibrary
 			if (!_model.OkToUploadWithNoLanguages)
 			{
 				_langsLabel.ForeColor = Color.Red;
-				_okToUpload = false;
+				// Note: We no longer prevent the user from uploading if there are no text languages. Just provide the red warning text.
+				// _okToUpload = false;
 			}
 		}
 
