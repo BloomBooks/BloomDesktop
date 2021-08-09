@@ -3,32 +3,76 @@
 // Definitions by: Boris Yankov <https://github.com/borisyankov/>, Theodore Brown <https://github.com/theodorejb>, David Pärsson <https://github.com/davidparsson/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
-
 // For ddescribe / iit use : https://github.com/borisyankov/DefinitelyTyped/blob/master/karma-jasmine/karma-jasmine.d.ts
 
-declare function describe(description: string, specDefinitions: () => void): void;
-declare function fdescribe(description: string, specDefinitions: () => void): void;
-declare function xdescribe(description: string, specDefinitions: () => void): void;
+declare function describe(
+    description: string,
+    specDefinitions: () => void
+): void;
+declare function fdescribe(
+    description: string,
+    specDefinitions: () => void
+): void;
+declare function xdescribe(
+    description: string,
+    specDefinitions: () => void
+): void;
 
-declare function it(expectation: string, assertion?: () => void, timeout?: number): void;
-declare function it(expectation: string, assertion?: (done: () => void) => void, timeout?: number): void;
-declare function fit(expectation: string, assertion?: () => void, timeout?: number): void;
-declare function fit(expectation: string, assertion?: (done: () => void) => void, timeout?: number): void;
-declare function xit(expectation: string, assertion?: () => void, timeout?: number): void;
-declare function xit(expectation: string, assertion?: (done: () => void) => void, timeout?: number): void;
+declare function it(
+    expectation: string,
+    assertion?: () => void,
+    timeout?: number
+): void;
+declare function it(
+    expectation: string,
+    assertion?: (done: () => void) => void,
+    timeout?: number
+): void;
+declare function fit(
+    expectation: string,
+    assertion?: () => void,
+    timeout?: number
+): void;
+declare function fit(
+    expectation: string,
+    assertion?: (done: () => void) => void,
+    timeout?: number
+): void;
+declare function xit(
+    expectation: string,
+    assertion?: () => void,
+    timeout?: number
+): void;
+declare function xit(
+    expectation: string,
+    assertion?: (done: () => void) => void,
+    timeout?: number
+): void;
 
 /** If you call the function pending anywhere in the spec body, no matter the expectations, the spec will be marked pending. */
 declare function pending(reason?: string): void;
 
 declare function beforeEach(action: () => void, timeout?: number): void;
-declare function beforeEach(action: (done: () => void) => void, timeout?: number): void;
+declare function beforeEach(
+    action: (done: () => void) => void,
+    timeout?: number
+): void;
 declare function afterEach(action: () => void, timeout?: number): void;
-declare function afterEach(action: (done: () => void) => void, timeout?: number): void;
+declare function afterEach(
+    action: (done: () => void) => void,
+    timeout?: number
+): void;
 
 declare function beforeAll(action: () => void, timeout?: number): void;
-declare function beforeAll(action: (done: () => void) => void, timeout?: number): void;
+declare function beforeAll(
+    action: (done: () => void) => void,
+    timeout?: number
+): void;
 declare function afterAll(action: () => void, timeout?: number): void;
-declare function afterAll(action: (done: () => void) => void, timeout?: number): void;
+declare function afterAll(
+    action: (done: () => void) => void,
+    timeout?: number
+): void;
 
 declare function expect(spy: Function): jasmine.Matchers;
 declare function expect(actual: any): jasmine.Matchers;
@@ -38,11 +82,14 @@ declare function fail(e?: any): void;
 declare function spyOn(object: any, method: string): jasmine.Spy;
 
 declare function runs(asyncMethod: Function): void;
-declare function waitsFor(latchMethod: () => boolean, failureMessage?: string, timeout?: number): void;
+declare function waitsFor(
+    latchMethod: () => boolean,
+    failureMessage?: string,
+    timeout?: number
+): void;
 declare function waits(timeout?: number): void;
 
 declare module jasmine {
-
     var clock: () => Clock;
 
     function any(aclass: any): Any;
@@ -54,13 +101,14 @@ declare module jasmine {
     function createSpyObj<T>(baseName: string, methodNames: any[]): T;
     function pp(value: any): string;
     function getEnv(): Env;
-    function addCustomEqualityTester(equalityTester: CustomEqualityTester): void;
+    function addCustomEqualityTester(
+        equalityTester: CustomEqualityTester
+    ): void;
     function addMatchers(matchers: CustomMatcherFactories): void;
     function stringMatching(str: string): Any;
     function stringMatching(str: RegExp): Any;
 
     interface Any {
-
         new (expectedClass: any): any;
 
         jasmineMatches(other: any): boolean;
@@ -83,12 +131,15 @@ declare module jasmine {
     interface ObjectContaining {
         new (sample: any): any;
 
-        jasmineMatches(other: any, mismatchKeys: any[], mismatchValues: any[]): boolean;
+        jasmineMatches(
+            other: any,
+            mismatchKeys: any[],
+            mismatchValues: any[]
+        ): boolean;
         jasmineToString(): string;
     }
 
     interface Block {
-
         new (env: Env, func: SpecFunction, spec: Spec): any;
 
         execute(onComplete: () => void): void;
@@ -99,7 +150,13 @@ declare module jasmine {
     }
 
     interface WaitsForBlock extends Block {
-        new (env: Env, timeout: number, latchFunction: SpecFunction, message: string, spec: Spec): any;
+        new (
+            env: Env,
+            timeout: number,
+            latchFunction: SpecFunction,
+            message: string,
+            spec: Spec
+        ): any;
     }
 
     interface Clock {
@@ -120,7 +177,10 @@ declare module jasmine {
     }
 
     interface CustomMatcherFactory {
-        (util: MatchersUtil, customEqualityTesters: Array<CustomEqualityTester>): CustomMatcher;
+        (
+            util: MatchersUtil,
+            customEqualityTesters: Array<CustomEqualityTester>
+        ): CustomMatcher;
     }
 
     interface CustomMatcherFactories {
@@ -133,9 +193,22 @@ declare module jasmine {
     }
 
     interface MatchersUtil {
-        equals(a: any, b: any, customTesters?: Array<CustomEqualityTester>): boolean;
-        contains<T>(haystack: ArrayLike<T> | string, needle: any, customTesters?: Array<CustomEqualityTester>): boolean;
-        buildFailureMessage(matcherName: string, isNot: boolean, actual: any, ...expected: Array<any>): string;
+        equals(
+            a: any,
+            b: any,
+            customTesters?: Array<CustomEqualityTester>
+        ): boolean;
+        contains<T>(
+            haystack: ArrayLike<T> | string,
+            needle: any,
+            customTesters?: Array<CustomEqualityTester>
+        ): boolean;
+        buildFailureMessage(
+            matcherName: string,
+            isNot: boolean,
+            actual: any,
+            ...expected: Array<any>
+        ): string;
     }
 
     interface Env {
@@ -165,9 +238,24 @@ declare module jasmine {
         it(description: string, func: () => void): Spec;
         // iit(description: string, func: () => void): Spec; Not a part of jasmine. Angular team adds these
         xit(desc: string, func: () => void): XSpec;
-        compareRegExps_(a: RegExp, b: RegExp, mismatchKeys: string[], mismatchValues: string[]): boolean;
-        compareObjects_(a: any, b: any, mismatchKeys: string[], mismatchValues: string[]): boolean;
-        equals_(a: any, b: any, mismatchKeys: string[], mismatchValues: string[]): boolean;
+        compareRegExps_(
+            a: RegExp,
+            b: RegExp,
+            mismatchKeys: string[],
+            mismatchValues: string[]
+        ): boolean;
+        compareObjects_(
+            a: any,
+            b: any,
+            mismatchKeys: string[],
+            mismatchValues: string[]
+        ): boolean;
+        equals_(
+            a: any,
+            b: any,
+            mismatchKeys: string[],
+            mismatchValues: string[]
+        ): boolean;
         contains_(haystack: any, needle: any): boolean;
         addCustomEqualityTester(equalityTester: CustomEqualityTester): void;
         addMatchers(matchers: CustomMatcherFactories): void;
@@ -175,13 +263,17 @@ declare module jasmine {
     }
 
     interface FakeTimer {
-
         new (): any;
 
         reset(): void;
         tick(millis: number): void;
         runFunctionsWithinRange(oldMillis: number, nowMillis: number): void;
-        scheduleFunction(timeoutKey: any, funcToCall: () => void, millis: number, recurring: boolean): void;
+        scheduleFunction(
+            timeoutKey: any,
+            funcToCall: () => void,
+            millis: number,
+            recurring: boolean
+        ): void;
     }
 
     interface HtmlReporter {
@@ -212,12 +304,12 @@ declare module jasmine {
         passed(): boolean;
     }
 
-    interface MessageResult extends Result  {
+    interface MessageResult extends Result {
         values: any;
         trace: Trace;
     }
 
-    interface ExpectationResult extends Result  {
+    interface ExpectationResult extends Result {
         matcherName: string;
         passed(): boolean;
         expected: any;
@@ -233,11 +325,13 @@ declare module jasmine {
     }
 
     interface PrettyPrinter {
-
         new (): any;
 
         format(value: any): void;
-        iterateObject(obj: any, fn: (property: string, isGetter: boolean) => void): void;
+        iterateObject(
+            obj: any,
+            fn: (property: string, isGetter: boolean) => void
+        ): void;
         emitScalar(value: any): void;
         emitString(value: string): void;
         emitArray(array: any[]): void;
@@ -245,11 +339,9 @@ declare module jasmine {
         append(value: any): void;
     }
 
-    interface StringPrettyPrinter extends PrettyPrinter {
-    }
+    interface StringPrettyPrinter extends PrettyPrinter {}
 
     interface Queue {
-
         new (env: any): any;
 
         env: Env;
@@ -270,7 +362,6 @@ declare module jasmine {
     }
 
     interface Matchers {
-
         new (env: Env, actual: any, spec: Env, isNot?: boolean): any;
 
         env: Env;
@@ -281,7 +372,10 @@ declare module jasmine {
 
         toBe(expected: any, expectationFailOutput?: any): boolean;
         toEqual(expected: any, expectationFailOutput?: any): boolean;
-        toMatch(expected: string | RegExp, expectationFailOutput?: any): boolean;
+        toMatch(
+            expected: string | RegExp,
+            expectationFailOutput?: any
+        ): boolean;
         toBeDefined(expectationFailOutput?: any): boolean;
         toBeUndefined(expectationFailOutput?: any): boolean;
         toBeNull(expectationFailOutput?: any): boolean;
@@ -294,10 +388,19 @@ declare module jasmine {
         toContain(expected: any, expectationFailOutput?: any): boolean;
         toBeLessThan(expected: number, expectationFailOutput?: any): boolean;
         toBeGreaterThan(expected: number, expectationFailOutput?: any): boolean;
-        toBeCloseTo(expected: number, precision: any, expectationFailOutput?: any): boolean;
+        toBeCloseTo(
+            expected: number,
+            precision: any,
+            expectationFailOutput?: any
+        ): boolean;
         toThrow(expected?: any): boolean;
         toThrowError(message?: string | RegExp): boolean;
         toThrowError(expected?: Error, message?: string | RegExp): boolean;
+
+        /////////////////////////////
+        // end custom declarations //
+        /////////////////////////////
+
         not: Matchers;
 
         Any: Any;
@@ -317,7 +420,6 @@ declare module jasmine {
     }
 
     interface Runner {
-
         new (env: Env): any;
 
         execute(): void;
@@ -346,7 +448,6 @@ declare module jasmine {
     }
 
     interface Spec extends SuiteOrSpec {
-
         new (env: Env, suite: Suite, description: string): any;
 
         suite: Suite;
@@ -365,7 +466,11 @@ declare module jasmine {
         addMatcherResult(result: Result): void;
         expect(actual: any): any;
         waits(timeout: number): Spec;
-        waitsFor(latchFunction: SpecFunction, timeoutMessage?: string, timeout?: number): Spec;
+        waitsFor(
+            latchFunction: SpecFunction,
+            timeoutMessage?: string,
+            timeout?: number
+        ): Spec;
         fail(e?: any): void;
         getMatchersClass_(): Matchers;
         addMatchers(matchersPrototype: CustomMatcherFactories): void;
@@ -375,7 +480,11 @@ declare module jasmine {
         execute(onComplete?: () => void): any;
         addBeforesAndAftersToQueue(): void;
         explodes(): void;
-        spyOn(obj: any, methodName: string, ignoreMethodDoesntExist: boolean): Spy;
+        spyOn(
+            obj: any,
+            methodName: string,
+            ignoreMethodDoesntExist: boolean
+        ): Spy;
         removeAllSpies(): void;
     }
 
@@ -385,8 +494,12 @@ declare module jasmine {
     }
 
     interface Suite extends SuiteOrSpec {
-
-        new (env: Env, description: string, specDefinitions: () => void, parentSuite: Suite): any;
+        new (
+            env: Env,
+            description: string,
+            specDefinitions: () => void,
+            parentSuite: Suite
+        ): any;
 
         parentSuite: Suite;
 
@@ -414,7 +527,7 @@ declare module jasmine {
         identity: string;
         and: SpyAnd;
         calls: Calls;
-        mostRecentCall: { args: any[]; };
+        mostRecentCall: { args: any[] };
         argsForCall: any[];
         wasCalled: boolean;
     }
@@ -467,7 +580,6 @@ declare module jasmine {
     }
 
     interface JsApiReporter extends Reporter {
-
         started: boolean;
         finished: boolean;
         result: any;
