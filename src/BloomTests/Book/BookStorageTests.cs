@@ -99,7 +99,7 @@ namespace BloomTests.Book
 
 			var desiredFolder = bookFolder.Replace("e\x0301", "\x00e9");
 			Directory.CreateDirectory(desiredFolder);
-			var expectedFolder = desiredFolder + "1";
+			var expectedFolder = desiredFolder + " (2)";
 
 
 			Assert.That(BookStorage.MoveBookToSafeName(bookFolder), Is.EqualTo(expectedFolder));
@@ -761,8 +761,8 @@ namespace BloomTests.Book
 		{
 			using (var original = new TemporaryFolder(_folder, "original"))
 			using (var x = new TemporaryFolder(_folder, "foo"))
-			using (new TemporaryFolder(_folder, "foo1"))
-			using (var z = new TemporaryFolder(_folder, "foo2"))
+			using (new TemporaryFolder(_folder, "foo (2)"))
+			using (var z = new TemporaryFolder(_folder, "foo (3)"))
 			using (var projectFolder = new TemporaryFolder("BookStorage_ProjectCollection"))
 			{
 				File.WriteAllText(Path.Combine(original.Path, "original.htm"), "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
@@ -772,10 +772,10 @@ namespace BloomTests.Book
 				storage.Save();
 
 				Directory.Delete(z.Path);
-				//so, we ask for "foo", but should get "foo2", because there is already a foo and foo1
+				//so, we ask for "foo", but should get "foo (3)", because there is already a foo and foo (2)
 				var newBookName = Path.GetFileName(x.Path);
 				storage.SetBookName(newBookName);
-				var newPath = z.Combine("foo2.htm");
+				var newPath = z.Combine("foo (3).htm");
 				Assert.IsTrue(Directory.Exists(z.Path), "Expected folder:" + z.Path);
 				Assert.IsTrue(File.Exists(newPath), "Expected file:" + newPath);
 			}
@@ -786,8 +786,8 @@ namespace BloomTests.Book
 		{
 			using (var original = new TemporaryFolder(_folder, "original"))
 			using (new TemporaryFolder(_folder, "foo"))
-			using (new TemporaryFolder(_folder, "foo1"))
-			using (var z = new TemporaryFolder(_folder, "foo2"))
+			using (new TemporaryFolder(_folder, "foo (2)"))
+			using (var z = new TemporaryFolder(_folder, "foo (3)"))
 			using (var projectFolder = new TemporaryFolder("BookStorage_ProjectCollection"))
 			{
 				File.WriteAllText(Path.Combine(original.Path, "original.htm"), "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
@@ -797,11 +797,11 @@ namespace BloomTests.Book
 				storage.Save();
 
 				Directory.Delete(z.Path);
-				//so, we ask for "foo", but should get "foo2", because there is already a foo and foo1
+				//so, we ask for "foo", but should get "foo (3)", because there is already a foo and foo (2)
 				// BL-7816 We added some new characters to the sanitization routine
 				const string newBookName = "foo?:&<>\'\"{}";
 				storage.SetBookName(newBookName);
-				var newPath = z.Combine("foo2.htm");
+				var newPath = z.Combine("foo (3).htm");
 				Assert.IsTrue(Directory.Exists(z.Path), "Expected folder:" + z.Path);
 				Assert.IsTrue(File.Exists(newPath), "Expected file:" + newPath);
 			}

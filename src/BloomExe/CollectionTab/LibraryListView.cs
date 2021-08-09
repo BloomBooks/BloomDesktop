@@ -1823,7 +1823,7 @@ namespace Bloom.CollectionTab
 			_renameOverlay.Focus();
 			_renameOverlay.AcceptsReturn = true;
 			_renameOverlay.KeyPress += _renameOverlay_KeyPress;
-			_renameOverlay.LostFocus += (sender, args) => RemoveRenameOverlay();
+			_renameOverlay.LostFocus += (sender, args) => FinishRename();
 			_renameOverlay.BringToFront();
 		}
 
@@ -1842,14 +1842,19 @@ namespace Bloom.CollectionTab
 		{
 			if (e.KeyChar == '\x0d') // enter
 			{
-				var newName = _renameOverlay.Text;
-				RemoveRenameOverlay();
-				var book = SelectedBook;
-				if (book == null) //don't think this can happen, but play safe
-					return;
-				book.SetAndLockBookName(newName);
-				BringButtonTitleUpToDate(book);
+				FinishRename();
 			}
+		}
+
+		private void FinishRename()
+		{
+			var newName = _renameOverlay.Text;
+			RemoveRenameOverlay();
+			var book = SelectedBook;
+			if (book == null) //don't think this can happen, but play safe
+				return;
+			book.SetAndLockBookName(newName);
+			BringButtonTitleUpToDate(book);
 		}
 	}
 
