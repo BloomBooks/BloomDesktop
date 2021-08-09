@@ -26,6 +26,10 @@ import { DataWord, TextFragment } from "./libSynphony/bloomSynphonyExtensions";
 import axios from "axios";
 import { BloomApi } from "../../../utils/bloomApi";
 import { EditableDivUtils } from "../../js/editableDivUtils";
+import {
+    allPromiseSettled,
+    setTimeoutPromise
+} from "../../../utils/asyncUtils";
 
 const SortType = {
     alphabetic: "alphabetic",
@@ -142,7 +146,10 @@ export class ReaderToolsModel {
         this.setStageNumber(this.stageNumber - 1);
     }
 
-    public setStageNumber(stage: number, skipSave?: boolean): void {
+    public async setStageNumber(
+        stage: number,
+        skipSave?: boolean
+    ): Promise<void> {
         if (!this.synphony) {
             return; // Synphony not loaded yet
         }
@@ -158,7 +165,7 @@ export class ReaderToolsModel {
         this.updateStageNOfMDisplay();
         this.updateStageButtonsAvailability();
 
-        theOneLocalizationManager
+        return theOneLocalizationManager
             .asyncGetText("Common.Loading", "Loading...", "")
             .then(loadingMessage => {
                 // this may result in a need to resize the word list
@@ -168,7 +175,7 @@ export class ReaderToolsModel {
 
                 // OK, now let that changed number and the "loading" messages
                 // make it to the user's screen, then start doing the work.
-                window.setTimeout(() => {
+                return setTimeoutPromise(async () => {
                     if (this.stageNumber === stage) {
                         this.stageGraphemes = this.getKnownGraphemes(stage);
                     }
@@ -177,15 +184,18 @@ export class ReaderToolsModel {
                     // but they can be done independently of each other.
                     // By separating them, we allow the letters to update while
                     // the words are still being generated.
-                    window.setTimeout(() => {
-                        // make sure this is still the stage they want
-                        // (it won't be if they are rapidly clicking the next/previous stage buttons)
-                        if (this.stageNumber === stage) {
-                            this.updateLetterList();
-                        }
-                    }, 0);
+                    const updateLetterListDonePromise = setTimeoutPromise(
+                        () => {
+                            // make sure this is still the stage they want
+                            // (it won't be if they are rapidly clicking the next/previous stage buttons)
+                            if (this.stageNumber === stage) {
+                                this.updateLetterList();
+                            }
+                        },
+                        0
+                    );
 
-                    window.setTimeout(() => {
+                    const updateWordListDonePromise = setTimeoutPromise(() => {
                         // make sure this is still the stage they want
                         // (it won't be if they are rapidly clicking the next/previous stage buttons)
                         if (this.stageNumber === stage) {
@@ -193,18 +203,38 @@ export class ReaderToolsModel {
                         }
                     }, 0);
 
-                    if (!skipSave) {
-                        this.saveState();
-                        // When we're actually changing the stage number is the only time we want
-                        // to update the default.
-                        BloomApi.post(
-                            "readers/io/defaultStage?stage=" + this.stageNumber
-                        );
-                    }
+                    const defaultStagePostedPromise = new Promise<void>(
+                        (resolve, reject) => {
+                            if (!skipSave) {
+                                this.saveState();
+                                // When we're actually changing the stage number is the only time we want
+                                // to update the default.
+                                BloomApi.post(
+                                    "readers/io/defaultStage?stage=" +
+                                        this.stageNumber,
+                                    () => {
+                                        resolve();
+                                    },
+                                    r => {
+                                        reject(r);
+                                    }
+                                );
+                            } else {
+                                resolve();
+                            }
+                        }
+                    );
 
                     if (this.readyToDoMarkup()) {
                         this.doMarkup();
                     }
+
+                    return allPromiseSettled([
+                        updateLetterListDonePromise,
+                        updateWordListDonePromise,
+                        defaultStagePostedPromise
+                    ]);
+
                     // The 1/2 second delay here gives us a chance to click quickly and change the stage before we start working
                     // If that happens, the check that is the first line of this setTimeout function will decide to bail out.
                 }, 500);
@@ -657,6 +687,8 @@ export class ReaderToolsModel {
             //     theOneLanguageDataInstance.LangID
             // }</div>`;
 
+            // NOTE: The generated HTML would look nicer without the space immediately after lang1InATool
+            // NOTE 2: The HTML would also look nicer without the extra space between the end of the open tag and the contents
             result += `<div class="word lang1InATool ${
                 w.isSightWord ? " sight-word" : ""
             }"> ${w.Name}</div>`;

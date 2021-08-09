@@ -397,6 +397,20 @@ declare module jasmine {
         toThrowError(message?: string | RegExp): boolean;
         toThrowError(expected?: Error, message?: string | RegExp): boolean;
 
+        /////////////////
+        // Custom ones //
+        /////////////////
+        // withContext is in jasmine 3, but not jasmine 2. We actually use Jasmine 3, but have type definitions for Jasmine 2
+        // I looked into updating the type definitions, but the typing is a bit stricter and it was proving to be more work
+        // than I wanted to put in at the time. So just appending to this one.
+        // ENHANCE: Use Jasmine 3 type definitions. A @types package is available too.
+        /**
+         * Add some context for an expect.
+         * @param message Additional context to show when the matcher fails
+         * @checkReturnValue see https://tsetse.info/check-return-value
+         */
+        withContext(message: string): jasmine.Matchers;
+
         /////////////////////////////
         // end custom declarations //
         /////////////////////////////

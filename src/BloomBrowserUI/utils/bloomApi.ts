@@ -299,6 +299,9 @@ export class BloomApi {
     ) {
         if ((window as any).__karma__) {
             console.log(`skipping post to ${urlSuffix} because in unit tests`);
+            if (successCallback) {
+                successCallback({} as AxiosResponse); // A dummy AxiosResponse for compiling purposes. Unit tests should avoid using it.
+            }
             return;
         }
 
