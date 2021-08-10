@@ -1848,6 +1848,8 @@ namespace Bloom.CollectionTab
 
 		private void FinishRename()
 		{
+			if (_renameOverlay == null)
+				return; // typically, called again from lost focus after call from keydown.
 			var newName = _renameOverlay.Text;
 			RemoveRenameOverlay();
 			var book = SelectedBook;
