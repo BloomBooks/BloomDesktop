@@ -49,9 +49,9 @@ const theme = createMuiTheme({
     },
     overrides: {
         MuiOutlinedInput: {
-            input: {
-                padding: "7px"
-            }
+            // input: {
+            //     padding: "7px";
+            // }
         },
         MuiDialogTitle: {
             root: {

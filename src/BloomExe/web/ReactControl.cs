@@ -80,7 +80,7 @@ namespace Bloom.web
 				bundleNameWithExtension += ".js";
 			}
 			RobustFile.WriteAllText(tempFile.Path, $@"<!DOCTYPE html>
-				<html>
+				<html style='height:100%'>
 				<head>
 					<meta charset = 'UTF-8' />
 					<script src = '/commonBundle.js' ></script>
@@ -92,8 +92,8 @@ namespace Bloom.web
 						}};
 					</script>					
 				</head>
-				<body style='margin:0'>
-					<div id='reactRoot'>Javascript should have replaced this. Make sure that the javascript bundle '{bundleNameWithExtension}' includes a single call to WireUpForWinforms()</div>
+				<body style='margin:0; height:100%'>
+					<div id='reactRoot' style='height:100%'>Javascript should have replaced this. Make sure that the javascript bundle '{bundleNameWithExtension}' includes a single call to WireUpForWinforms()</div>
 				</body>
 				</html>");
 

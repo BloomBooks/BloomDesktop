@@ -800,7 +800,7 @@ namespace Bloom.TeamCollection
 		{
 			var title = "Setting Up Team Collection"; // todo l10n
 			ShowProgressDialog(title,
-				progress =>
+				(progress,worker) =>
 				{
 					progress.Message("StartingCopy", "",
 						"Starting to set up the Team Collection", ProgressKind.Progress);

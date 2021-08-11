@@ -6,7 +6,9 @@ using System.IO;
 using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.ImageProcessing;
+using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Publish.Android.file;
 using SIL.Windows.Forms.Miscellaneous;
@@ -35,6 +37,7 @@ namespace Bloom.Publish.Android
 #if !__MonoCS__
 		private readonly UsbPublisher _usbPublisher;
 #endif
+		private readonly CollectionSettings _collectionSettings;
 		private readonly BloomWebSocketServer _webSocketServer;
 		private readonly BookServer _bookServer;
 		private readonly BulkBloomPubCreator _bulkBloomPubCreator;
@@ -54,16 +57,23 @@ namespace Bloom.Publish.Android
 
 		public static string PreviewUrl { get; set; }
 
-		public struct IBulkSaveParams
+		// NB: this must match IBulkSaveBloomPubsParams on the typescript side
+		public struct BulkBloomPUBPublishSettings
 		{
 			public bool includeBookshelfFile;
-			public string bookshelfColor;
 			public bool includeBloomBundle;
+			public string bookshelfColor;
+			// distributionTag goes into bloomPUBs created in bulk, and from there to analytics events
 			public string distributionTag;
+			// The server doesn't actually know what the label is, just the urlKey. So when the client has to look it up from contentful,
+			// and when it tells us to go ahead and do the publishing, it includes this so that we can use it to make the bookshelf file.
+			public string bookshelfLabel;
 		}
 
-		public PublishToAndroidApi(BloomWebSocketServer bloomWebSocketServer, BookServer bookServer, RuntimeImageProcessor imageProcessor, BulkBloomPubCreator bulkBloomPubCreator)
+
+		public PublishToAndroidApi(CollectionSettings collectionSettings, BloomWebSocketServer bloomWebSocketServer, BookServer bookServer, BulkBloomPubCreator bulkBloomPubCreator)
 		{
+			_collectionSettings = collectionSettings;
 			_webSocketServer = bloomWebSocketServer;
 			_bookServer = bookServer;
 			_bulkBloomPubCreator = bulkBloomPubCreator;
@@ -258,10 +268,18 @@ namespace Bloom.Publish.Android
 				request.PostSucceeded();
 			}, true);
 
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/bulkSaveBloomPubsParams", request =>
+			{ 
+				request.ReplyWithJson(JsonConvert.SerializeObject(_collectionSettings.BulkPublishBloomPubSettings));
+			}, true);
+
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/bulkSaveBloomPubs", request =>
 			{
-				var bulkSaveParams = request.RequiredObject<IBulkSaveParams>();
-				_bulkBloomPubCreator.PublishAllBooks(bulkSaveParams.distributionTag);
+				// update what's in the collection so that we remember for next time
+				_collectionSettings.BulkPublishBloomPubSettings = request.RequiredObject<BulkBloomPUBPublishSettings>();
+				_collectionSettings.Save();
+
+				_bulkBloomPubCreator.PublishAllBooks(_collectionSettings.BulkPublishBloomPubSettings);
 				SetState("stopped");
 				request.PostSucceeded();
 			}, true);

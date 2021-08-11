@@ -114,12 +114,7 @@ namespace Bloom.Publish.Android
 			// used to report features analytics (with earlier bloomd's, the reader must use its own logic)
 			modifiedBook.Storage.BookInfo.MetaData.BloomdVersion = 1;
 
-			if (!string.IsNullOrEmpty(settings?.DistributionTag))
-			{
-				var list = modifiedBook.Storage.BookInfo.MetaData.Tags.ToList();
-				list.Add("Distribution:" + settings.DistributionTag);
-				modifiedBook.Storage.BookInfo.MetaData.Tags = list.ToArray();
-			}
+			modifiedBook.Storage.BookInfo.UpdateOneSingletonTag("distribution", settings?.DistributionTag);
 
 			if (settings?.LanguagesToInclude != null)
 				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings.LanguagesToInclude, modifiedBook.BookData.MetadataLanguage1IsoCode);
@@ -185,7 +180,7 @@ namespace Bloom.Publish.Android
 				Path.Combine(modifiedBookFolderPath, "readerStyles.css"));
 			ConvertImagesToBackground(modifiedBook.RawDom);
 
-			AddDistributionFile(modifiedBookFolderPath, creator);
+			AddDistributionFile(modifiedBookFolderPath, creator, settings);
 
 			modifiedBook.Save();
 
@@ -196,7 +191,7 @@ namespace Bloom.Publish.Android
 		/// Add a `.distribution` file to the zip which will be reported on for analytics from Bloom Reader.
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-8875.
 		/// </summary>
-		private static void AddDistributionFile(string bookFolder, string creator)
+		private static void AddDistributionFile(string bookFolder, string creator, AndroidPublishSettings settings=null)
 		{
 			string distributionValue;
 			switch (creator)
@@ -206,6 +201,8 @@ namespace Bloom.Publish.Android
 					break;
 				case kCreatorBloom:
 					distributionValue = kDistributionBloomDirect;
+					if(settings!=null && !string.IsNullOrEmpty(settings.DistributionTag))
+						distributionValue = settings.DistributionTag;
 					break;
 				default: throw new ArgumentException("Unknown creator", creator);
 			}

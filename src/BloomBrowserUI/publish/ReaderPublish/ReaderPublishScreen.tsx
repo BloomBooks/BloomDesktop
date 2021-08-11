@@ -32,6 +32,10 @@ import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
 import { PublishLanguagesGroup } from "./PublishLanguagesGroup";
+import {
+    BulkBloomPubDialog,
+    showBulkBloomPubDialog
+} from "./BulkBloomPub/BulkBloomPubDialog";
 
 export const ReaderPublishScreen = () => {
     // When the user changes some features, included languages, etc., we
@@ -127,6 +131,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                 onReadyToReceive={() => {}}
                 setShowDialog={show => (showProgress = show)}
             /> */}
+            <BulkBloomPubDialog />
             <BasePublishScreen className="ReaderPublishScreen">
                 <PreviewPanel>
                     <DeviceAndControls
@@ -167,20 +172,10 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                             //enabled={true} // TODO: enterprise only
                             l10nKey="PublishTab.Android.SaveWholeCollection"
                             onClick={() => {
-                                //showProgress();
-                                BloomApi.postData(
-                                    "publish/android/file/bulkSaveBloomPubs",
-                                    {
-                                        distributionTag:
-                                            "foobar-test-distribution",
-                                        includeBookshelfFile: true,
-                                        bookshelfColor: "red",
-                                        includeBloomBundle: true
-                                    }
-                                );
+                                showBulkBloomPubDialog();
                             }}
                         >
-                            Save All BloomPubs
+                            Save All BloomPUBs
                         </Link>
                     </CommandsGroup>
                     <HelpGroup>

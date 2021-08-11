@@ -7,6 +7,7 @@ using SIL.IO;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -1924,7 +1925,7 @@ namespace Bloom.TeamCollection
 		public TeamCollectionManager TCManager;
 		private FileSystemWatcher _localFolderWatcher;
 
-		protected void ShowProgressDialog(string title, Func<IWebSocketProgress, bool> doWhat, Action<Form> doWhenMainActionFalse = null)
+		protected void ShowProgressDialog(string title, Func<IWebSocketProgress,BackgroundWorker, bool> doWhat, Action<Form> doWhenMainActionFalse = null)
 		{
 			BrowserProgressDialog.DoWorkWithProgressDialog(SocketServer, TeamCollection.kWebSocketContext,
 				() => new ReactDialog("progressDialogBundle",
@@ -1960,7 +1961,7 @@ namespace Bloom.TeamCollection
 
 			var title = "Syncing Team Collection"; // todo l10n
 			ShowProgressDialog(title,
-				progress =>
+				(progress,worker) =>
 				{
 					// Not useful to have the date and time in the progress dialog, but definitely
 					// handy to record at the start of each section in the saved log. Tells us when anything it

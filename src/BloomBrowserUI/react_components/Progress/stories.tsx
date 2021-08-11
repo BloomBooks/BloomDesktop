@@ -229,7 +229,7 @@ storiesOf("Progress Dialog", module)
         return React.createElement(() => {
             return (
                 <ProgressDialog
-                    title="Not wrapped in a dialog"
+                    title="Not wrapped in a material dialog (i.e. as when wrapped by winform dialog)"
                     titleColor="white"
                     titleBackgroundColor="green"
                     webSocketContext={kWebSocketMockContext}
@@ -260,6 +260,21 @@ storiesOf("Progress Dialog", module)
                             }
                         ])
                     }
+                    {...noFrameProps}
+                />
+            );
+        });
+    })
+    .add("Not wrapped in a dialog, long vertically", () => {
+        return React.createElement(() => {
+            return (
+                <ProgressDialog
+                    title="Not wrapped in a material dialog (i.e. as when wrapped by winform dialog)"
+                    titleColor="white"
+                    titleBackgroundColor="green"
+                    webSocketContext={kWebSocketMockContext}
+                    showReportButton={"never"}
+                    onReadyToReceive={() => sendEvents(kLongListOfAllTypes)}
                     {...noFrameProps}
                 />
             );
