@@ -1800,7 +1800,11 @@ namespace Bloom.CollectionTab
 		public void HandleRenameCommand() {
 			var button = SelectedButton;
 			// F2 can bring us here even when the selected book is not editable.
-			if (!GetBookInfoFromButton(button).IsEditable)
+			var bookInfoFromButton = GetBookInfoFromButton(button);
+			if (!bookInfoFromButton.IsEditable)
+				return;
+			// ...or not checked out
+			if (_tcManager.NeedCheckoutToEdit(bookInfoFromButton.FolderPath))
 				return;
 			if (_renameOverlay != null)
 			{
