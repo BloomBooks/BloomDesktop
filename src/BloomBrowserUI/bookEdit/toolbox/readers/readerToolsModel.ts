@@ -26,6 +26,10 @@ import { DataWord, TextFragment } from "./libSynphony/bloomSynphonyExtensions";
 import axios from "axios";
 import { BloomApi } from "../../../utils/bloomApi";
 import { EditableDivUtils } from "../../js/editableDivUtils";
+import {
+    allPromiseSettled,
+    setTimeoutPromise
+} from "../../../utils/asyncUtils";
 
 const SortType = {
     alphabetic: "alphabetic",
@@ -83,6 +87,26 @@ export class ReaderToolsModel {
     public ckEditorLoaded: boolean = false;
     public allowedWordFilesRemaining: number = 0;
 
+    /**
+     * @summary Performs synchronous initialization. Call initAsync() after constructor to do the asynchronous initialization
+     */
+    public constructor() {}
+
+    // Should be called after the constructor.
+    // Performs any initialization that should happen in the constructor, but is asynchronous.
+    // (The constructor must return synchronously)
+    public async initAsync(): Promise<void> {
+        const keys = {
+            "EditTab.Toolbox.DecodableReaderTool.StageNofM": "Stage {0} of {1}",
+            "EditTab.Toolbox.LeveledReaderTool.LevelNofM": "Level {0} of {1}"
+        };
+
+        // Asynchronously pre-load the localizations (in the UI language) of the specified keys
+        // Note: My observation, as of 5.1, is that the strings are loaded prior to when readerToolModels needs them,
+        // so that is a good outcome for us. But, strictly speaking, we can't guarantee that.
+        return theOneLocalizationManager.loadStringsPromise(keys, null);
+    }
+
     public clearForTest() {
         this.stageNumber = 1;
         this.levelNumber = 1;
@@ -122,7 +146,10 @@ export class ReaderToolsModel {
         this.setStageNumber(this.stageNumber - 1);
     }
 
-    public setStageNumber(stage: number, skipSave?: boolean): void {
+    public async setStageNumber(
+        stage: number,
+        skipSave?: boolean
+    ): Promise<void> {
         if (!this.synphony) {
             return; // Synphony not loaded yet
         }
@@ -135,10 +162,10 @@ export class ReaderToolsModel {
         }
 
         this.stageNumber = stage;
-        this.updateStageLabel();
+        this.updateStageNOfMDisplay();
         this.updateStageButtonsAvailability();
 
-        theOneLocalizationManager
+        return theOneLocalizationManager
             .asyncGetText("Common.Loading", "Loading...", "")
             .then(loadingMessage => {
                 // this may result in a need to resize the word list
@@ -148,7 +175,7 @@ export class ReaderToolsModel {
 
                 // OK, now let that changed number and the "loading" messages
                 // make it to the user's screen, then start doing the work.
-                window.setTimeout(() => {
+                return setTimeoutPromise(async () => {
                     if (this.stageNumber === stage) {
                         this.stageGraphemes = this.getKnownGraphemes(stage);
                     }
@@ -157,15 +184,18 @@ export class ReaderToolsModel {
                     // but they can be done independently of each other.
                     // By separating them, we allow the letters to update while
                     // the words are still being generated.
-                    window.setTimeout(() => {
-                        // make sure this is still the stage they want
-                        // (it won't be if they are rapidly clicking the next/previous stage buttons)
-                        if (this.stageNumber === stage) {
-                            this.updateLetterList();
-                        }
-                    }, 0);
+                    const updateLetterListDonePromise = setTimeoutPromise(
+                        () => {
+                            // make sure this is still the stage they want
+                            // (it won't be if they are rapidly clicking the next/previous stage buttons)
+                            if (this.stageNumber === stage) {
+                                this.updateLetterList();
+                            }
+                        },
+                        0
+                    );
 
-                    window.setTimeout(() => {
+                    const updateWordListDonePromise = setTimeoutPromise(() => {
                         // make sure this is still the stage they want
                         // (it won't be if they are rapidly clicking the next/previous stage buttons)
                         if (this.stageNumber === stage) {
@@ -173,40 +203,73 @@ export class ReaderToolsModel {
                         }
                     }, 0);
 
-                    if (!skipSave) {
-                        this.saveState();
-                        // When we're actually changing the stage number is the only time we want
-                        // to update the default.
-                        BloomApi.post(
-                            "readers/io/defaultStage?stage=" + this.stageNumber
-                        );
-                    }
+                    const defaultStagePostedPromise = new Promise<void>(
+                        (resolve, reject) => {
+                            if (!skipSave) {
+                                this.saveState();
+                                // When we're actually changing the stage number is the only time we want
+                                // to update the default.
+                                BloomApi.post(
+                                    "readers/io/defaultStage?stage=" +
+                                        this.stageNumber,
+                                    () => {
+                                        resolve();
+                                    },
+                                    r => {
+                                        reject(r);
+                                    }
+                                );
+                            } else {
+                                resolve();
+                            }
+                        }
+                    );
 
                     if (this.readyToDoMarkup()) {
                         this.doMarkup();
                     }
+
+                    return allPromiseSettled([
+                        updateLetterListDonePromise,
+                        updateWordListDonePromise,
+                        defaultStagePostedPromise
+                    ]);
+
                     // The 1/2 second delay here gives us a chance to click quickly and change the stage before we start working
                     // If that happens, the check that is the first line of this setTimeout function will decide to bail out.
                 }, 500);
             });
     }
 
-    public updateStageLabel(): void {
+    private updateStageNumberIfNeeded(): void {
         if (!this.synphony) {
             return; // Synphony not loaded yet
         }
         const stages = this.synphony.getStages();
         if (stages.length <= 0) {
-            this.updateElementContent("stageNumber", "0");
+            // Note: an existing bug is that if you are on stage 2 of 2, then go to change settings, remove both stages, and accept,
+            // the decrement stage button will still show up.
+            // Nothing triggers updateStageButtonsAvailability to run again in that case, so it still retains the status back when it was on stage 2.
             return;
         }
         if (this.stageNumber > stages.length) {
+            // You can reach this case if you had the last stage selected, then delete the last stage.
             this.stageNumber = stages.length;
         }
-        this.updateElementContent(
-            "stageNumber",
-            stages[this.stageNumber - 1].getName()
-        );
+    }
+
+    // Gets the string representing which stage we're on.
+    // Precondition: the stage number must be properly updated first. Synphony should be loaded too, else will return undefined.
+    private getStageLabel() {
+        if (!this.synphony) {
+            return undefined; // Synphony not loaded yet
+        }
+
+        const stages = this.synphony.getStages();
+        if (stages.length <= 0) {
+            return "0";
+        }
+        return stages[this.stageNumber - 1].getName();
     }
 
     public incrementLevel(): void {
@@ -226,7 +289,7 @@ export class ReaderToolsModel {
             return;
         }
         this.levelNumber = val;
-        this.updateLevelLabel();
+        this.updateLevelNOfMDisplay();
         this.enableLevelButtons();
         this.updateLevelLimits();
         if (!skipSave) {
@@ -238,25 +301,37 @@ export class ReaderToolsModel {
         this.doMarkup();
     }
 
-    public updateLevelLabel(): void {
+    private updateLevelNumberIfNeeded(): void {
         if (!this.synphony) {
             return; // Synphony not loaded yet
         }
         const levels = this.synphony.getLevels();
         if (levels.length <= 0) {
-            this.updateElementContent("levelNumber", "0");
+            // Note: an existing bug is that if you are on level 2 of 2, then go to change settings, remove both levels, and accept,
+            // the decrement level button will still show up.
+            // Nothing triggers enableLevelButtons to run again in that case, so it still retains the status back when it was on level 2.
             return;
         }
 
         if (levels.length < this.levelNumber) {
+            // You can reach this case if you had the last level selected, then delete the last level.
             this.setLevelNumber(levels.length);
-            return;
+        }
+    }
+
+    // Gets the string representing which level we're on.
+    // Precondition: the level number must be properly updated first. Synphony should be loaded too, else will return undefined.
+    private getLevelLabel() {
+        if (!this.synphony) {
+            return undefined; // Synphony not loaded yet
         }
 
-        this.updateElementContent(
-            "levelNumber",
-            levels[this.levelNumber - 1].getName()
-        );
+        const levels = this.synphony.getLevels();
+
+        if (levels.length <= 0) {
+            return "0";
+        }
+        return levels[this.levelNumber - 1].getName();
     }
 
     public sortByLength(): void {
@@ -305,138 +380,77 @@ export class ReaderToolsModel {
      */
     public updateControlContents(): void {
         this.updateLetterList();
-
-        // These may be useless in the case where this function is called upon activating the tool,
-        // because finishUpToolLocalization which calls prepareStageNOfM / prepareLevelNOfM have not run yet.
-        // However, this is useful when we call this function because the configuration changed.
-        // (It's not necessary to run the whole prepareStageNOfM function again... just to update the number of stages etc.)
-        this.updateNumberOfStages();
-        this.updateNumberOfLevels();
-        this.updateStageLabel();
-        this.updateLevelLabel();
-
+        this.updateStageNOfMDisplay();
+        this.updateLevelNOfMDisplay();
         this.updateStageButtonsAvailability();
         this.enableLevelButtons();
         this.updateLevelLimits();
         this.updateWordList();
     }
 
-    // If necessary, convert the element with id "stageNofM" from a string that contains
-    // {0} and {1} to one where {0} is replaced by a span with id "stageNumber" and
-    // {1} is replaced with a span with id "numberOfStages".
-    // It would be easier to just do a "replace" on textContent and then set innerHTML,
-    // but I'm just slightly nervous that something malicious could get injected that way,
-    // since the content of stageParent is potentially a crowd-contributed bit of text
-    // from crowdin.
-    public static prepareStageNofM() {
+    public updateStageNOfMDisplay() {
+        this.updateStageNumberIfNeeded(); // May change the stage number
+
         const stageParent = document.getElementById("stageNofM");
         if (!stageParent) {
             return;
         }
-        ReaderToolsModel.prepareStageNofMInternal(stageParent);
+
+        this.updateStageNOfMInternal(stageParent);
     }
 
-    // guts of the above method, public for testing
-    public static prepareStageNofMInternal(stageParent: HTMLElement) {
-        ReaderToolsModel.replacePlaceHoldersWithSpans(
-            stageParent,
-            "stageNumber",
-            "numberOfStages"
+    public updateStageNOfMInternal(stageParent: HTMLElement) {
+        const stageLabel = this.getStageLabel() ?? "0";
+        const numStages = this.getNumberOfStages() ?? 0;
+
+        // Note: getText is synchronous. If the string's translation has not been loaded yet, it will just return the English synchronously.
+        // I want this function to be synchronous in order so that the callers and all their dependencies
+        // don't have to worry about asynchonously waiting for this function to complete.
+        // The constructor does pre-load the translations at construction time, and it does seem to complete with plenty of time to spare.
+        // So, hopefully we will always have the string in the UI language already ready to go when we reach here.
+        // If not, it's not the end of the world to display it in English at first. (This function gets called several times,
+        // so one would expect that even if the localizations aren't ready the first time, it ought to be ready by the last time)
+        const localizedFormattedText = theOneLocalizationManager.getText(
+            "EditTab.Toolbox.DecodableReaderTool.StageNofM",
+            "Stage {0} of {1}",
+            stageLabel,
+            numStages.toString()
         );
 
-        // Ensure the spans get updated to contain their values
-        // Even though beginRestoreSettings which invokes updateControlContents() is supposed to update them upon activation, it may not do anything
-        // because these spans are not generated until after beginRestoreSettings claims it's done
-        // (Well, beginRestoreSettings may start some delayed async work that calls updateControlContents, and that happens after this prepareStageNOfM function runs,
-        // but that doesn't happen under every control path)
-        // The clearest/safest way to ensure these are indeed updated after replacePlaceholdersWithSpans is called is
-        // to actually call them immediately after calling replacePlaceholdersWithSpans in the same function.
-        // So that's what we do here.
-        // (There is no major harm in calling updateStageLabel multiple times, it already gets invoked multiple times by various callbacks anyway)
-        getTheOneReaderToolsModel().updateStageLabel();
-        getTheOneReaderToolsModel().updateNumberOfStages();
+        stageParent.innerText = localizedFormattedText;
     }
 
-    public static prepareLevelNofM() {
+    public updateLevelNOfMDisplay() {
+        this.updateLevelNumberIfNeeded(); // May change the level number
+
         const levelParent = document.getElementById("levelNofM");
         if (!levelParent) {
             return;
         }
-        ReaderToolsModel.prepareLevelNofMInternal(levelParent);
+
+        this.updateLevelNOfMInternal(levelParent);
     }
 
-    public static prepareLevelNofMInternal(levelParent: HTMLElement) {
-        ReaderToolsModel.replacePlaceHoldersWithSpans(
-            levelParent,
-            "levelNumber",
-            "numberOfLevels"
+    public updateLevelNOfMInternal(levelParent: HTMLElement) {
+        const levelLabel = this.getLevelLabel() ?? "0";
+        const numLevels = this.getNumberOfLevels() ?? 0;
+
+        const localizedFormattedText = theOneLocalizationManager.getText(
+            "EditTab.Toolbox.LeveledReaderTool.LevelNofM",
+            "Level {0} of {1}",
+            levelLabel,
+            numLevels.toString()
         );
 
-        // Ensure the spans get updated to contain their values
-        // Even though beginRestoreSettings which invokes updateControlContents() is supposed to update them upon activation, it may not do anything
-        // because these spans are not generated until after beginRestoreSettings claims it's done
-        // (Well, beginRestoreSettings may start some delayed async work that calls updateControlContents, and that happens after this prepareLevelNOfM function runs,
-        // but that doesn't happen under every control path)
-        // The clearest/safest way to ensure these are indeed updated after replacePlaceholdersWithSpans is called is
-        // to actually call them immediately after calling replacePlaceholdersWithSpans in the same function.
-        // So that's what we do here.
-        // (There is no major harm in calling updateStageLabel multiple times, it already gets invoked multiple times by various callbacks anyway)
-        getTheOneReaderToolsModel().updateLevelLabel();
-        getTheOneReaderToolsModel().updateNumberOfLevels();
+        levelParent.innerText = localizedFormattedText;
     }
 
-    private static appendTextNode(parent: HTMLElement, text: string) {
-        if (!text) {
-            return;
-        }
-        parent.appendChild(document.createTextNode(text));
+    public getNumberOfStages() {
+        return this.synphony?.getStages().length;
     }
 
-    private static replacePlaceHoldersWithSpans(
-        parent: HTMLElement,
-        id0: string,
-        id1: string
-    ) {
-        const index0 = parent.textContent!.indexOf("{0}");
-        const index1 = parent.textContent!.indexOf("{1}");
-        if (index0 < 0 || index1 < 0) {
-            return; // already set up, or localization hopelessly botched
-        }
-        const beforeIndex = Math.min(index0, index1);
-        const afterIndex = Math.max(index0, index1);
-        const before = parent.textContent?.substring(0, beforeIndex) ?? "";
-        const after = parent.textContent?.substring(afterIndex + 3) ?? "";
-        const mid =
-            parent.textContent?.substring(beforeIndex + 3, afterIndex) ?? "";
-        parent.innerText = before;
-        const span0 = document.createElement("span");
-        span0.setAttribute("id", id0);
-        const span1 = document.createElement("span");
-        span1.setAttribute("id", id1);
-        parent.appendChild(index0 < index1 ? span0 : span1);
-        ReaderToolsModel.appendTextNode(parent, mid);
-        parent.appendChild(index0 < index1 ? span1 : span0);
-        ReaderToolsModel.appendTextNode(parent, after);
-    }
-
-    public updateNumberOfStages(): void {
-        if (!this.synphony) {
-            return; // Synphony not loaded yet
-        }
-        this.updateElementContent(
-            "numberOfStages",
-            this.synphony.getStages().length.toString()
-        );
-    }
-
-    public updateNumberOfLevels(): void {
-        if (!this.synphony) {
-            return; // Synphony not loaded yet
-        }
-        this.updateElementContent(
-            "numberOfLevels",
-            this.synphony.getLevels().length.toString()
-        );
+    public getNumberOfLevels() {
+        return this.synphony?.getLevels().length;
     }
 
     public updateStageButtonsAvailability(): void {
@@ -673,6 +687,8 @@ export class ReaderToolsModel {
             //     theOneLanguageDataInstance.LangID
             // }</div>`;
 
+            // NOTE: The generated HTML would look nicer without the space immediately after lang1InATool
+            // NOTE 2: The HTML would also look nicer without the extra space between the end of the open tag and the contents
             result += `<div class="word lang1InATool ${
                 w.isSightWord ? " sight-word" : ""
             }"> ${w.Name}</div>`;
@@ -1948,6 +1964,7 @@ export class ReaderToolsModel {
 // So, we will put it in the top window, and let the first instance which executes this block create it.
 if (!(<any>top).theOneReaderToolsModel) {
     (<any>top).theOneReaderToolsModel = new ReaderToolsModel();
+    (<any>top).theOneReaderToolsModel.initAsync(); // Start the initialization asynchronously, but don't wait for it.
 }
 
 export function getTheOneReaderToolsModel() {

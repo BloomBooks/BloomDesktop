@@ -279,7 +279,7 @@ export class ToolBox {
                                         }
 
                                         // TODO: This only works when the tool is loaded up for the first time.
-                                        // It oesn't work if you open a new tool after the talking book tool is initialized for the first time.
+                                        // It doesn't work if you open a new tool after the talking book tool is initialized for the first time.
                                         // TODO: How to re-translate when UI lang changed.
                                         const i18nId = node.getAttribute(
                                             "data-i18n"

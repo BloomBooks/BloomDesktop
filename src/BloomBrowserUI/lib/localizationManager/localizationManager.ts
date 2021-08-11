@@ -44,6 +44,7 @@ export class LocalizationManager {
     /**
      * Retrieves localized strings from the server
      * Used in Bloom 2.1
+     * The strings are localized in the UI language
      * @param {Object} [keyValuePairs] Optional. Each property name (i.e. keyValuePairs.keys) is a string id, and the
      * property value is the default value/english text. If keyValuePairs is omitted, all dictionary entries will be
      * returned, otherwise only the requested entries will be returned.
@@ -74,6 +75,15 @@ export class LocalizationManager {
                 });
                 if (typeof callbackDone === "function") callbackDone();
             } else if (typeof callbackDone === "function") callbackDone();
+        });
+    }
+
+    public loadStringsPromise(
+        keyValuePairs,
+        elementsToLocalize
+    ): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.loadStrings(keyValuePairs, elementsToLocalize, resolve);
         });
     }
 
@@ -331,6 +341,8 @@ export class LocalizationManager {
         var elem = $(element);
         var text = this.getText(key, elem.html());
 
+        // Hmm... theoretically an XSS vulnerability,
+        // but the translations need to be approved, I would think any XSS injections should be obviously wrong and get rejected.
         if (text) elem.html(text);
     }
 

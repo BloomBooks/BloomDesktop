@@ -31,9 +31,6 @@ export class DecodableReaderToolboxTool implements ITool {
                     // happens when you CHANGE the stage in the toolbox.
                     getTheOneReaderToolsModel().setSort(sort, true);
                     getTheOneReaderToolsModel().setStageNumber(stage, true);
-                    console.log(
-                        "set stage in beginRestoreSettings to " + stage
-                    );
                 } else {
                     // old state
                     getTheOneReaderToolsModel().setStageNumber(
@@ -132,7 +129,6 @@ export class DecodableReaderToolboxTool implements ITool {
                 // there are actually two here, but JQuery nicely just does it
                 this.setTitleOfI(paneDOM, "sortFrequency", result);
             });
-        ReaderToolsModel.prepareStageNofM();
     }
 
     public setTitleOfI(paneDOM: HTMLElement, rootId: string, val: string) {

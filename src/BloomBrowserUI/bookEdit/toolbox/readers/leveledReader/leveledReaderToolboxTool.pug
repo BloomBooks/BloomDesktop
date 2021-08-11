@@ -12,7 +12,12 @@ html
 			.stageLine.clear.noSelect
 				span.scroll-button.ui-icon.ui-icon-triangle-1-w#decLevel
 				span.stageLabel.stageLine.noSelect
-					span#levelNofM(data-i18n='EditTab.Toolbox.LeveledReaderTool.LevelNofM')="Level {0} of {1}"
+					// Corresponds to "EditTab.Toolbox.LeveledReaderTool.LevelNofM"
+					// Just a placeholder that will get updated later.
+					// The reason we localize manually instead of using data-i18n attribute is because this text contains format strings.
+					// If using data-i18n attr, it is localized to the raw format string ("Level {0} of {1}" etc) and briefly rendered before we can replace the placeholders.
+					// Doing it manually allows the raw format string not to be visible to the user.
+					span#levelNofM="Level 0 of 0"
 				span.scroll-button.ui-icon.ui-icon-triangle-1-e#incLevel
 			table.statistics.clear(style='margin-left: 6px')
 				tr

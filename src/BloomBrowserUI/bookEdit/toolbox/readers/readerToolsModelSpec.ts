@@ -1,6 +1,7 @@
 import { ReaderToolsModel } from "./readerToolsModel";
 import { theOneLanguageDataInstance } from "./libSynphony/synphony_lib";
 import { TextFragment } from "./libSynphony/bloomSynphonyExtensions";
+import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 
 describe("getWordLength tests", () => {
     it("counts simple letters", () => {
@@ -9,7 +10,7 @@ describe("getWordLength tests", () => {
     it("skips diacritics", () => {
         expect(ReaderToolsModel.getWordLength("a\u0301\u0302bcde")).toBe(5);
     });
-    it("counts digraphs and trigraphs once, skiping embedded diacritics", () => {
+    it("counts digraphs and trigraphs once, skipping embedded diacritics", () => {
         theOneLanguageDataInstance.addGrapheme("th");
         theOneLanguageDataInstance.addGrapheme("o\u0301");
         theOneLanguageDataInstance.addGrapheme("ough");
@@ -179,38 +180,82 @@ describe("averageSentencesInPage tests", () => {
     });
 });
 
-function checkText(item: ChildNode, content: string) {
-    expect(item instanceof HTMLElement).toBe(false);
-    expect(item.textContent).toBe(content);
-}
-function checkSpan(item: ChildNode, id: string) {
-    expect(item instanceof HTMLElement).toBe(true);
-    expect((item as HTMLElement).tagName).toBe("SPAN");
-    expect((item as HTMLElement).getAttribute("id")).toBe(id);
-}
+describe("updateStageNofM tests", () => {
+    // Sets up various spies needed for updateStageNOfMInternal to run as a true unit test (other dependencies are stubbed out)
+    //
+    // readerToolsModel - the ReaderToolsModel object that will call updateStageNofMInternal
+    // stageLabel - the value returned by getStageLabel()
+    // numberOfStages - the value returned by getNumberOfStages()
+    // localizedFormatString - the value returned by the localization manager
+    function setupSpiesForUpdateStageNOfMInternal(params: {
+        readerToolsModel: ReaderToolsModel;
+        stageLabel: string;
+        numberOfStages: string;
+    }) {
+        spyOn(params.readerToolsModel, "getStageLabel").and.returnValue(
+            params.stageLabel
+        );
+        spyOn(params.readerToolsModel, "getNumberOfStages").and.returnValue(
+            params.numberOfStages
+        );
+    }
 
-describe("prepareStageNofM tests", () => {
-    it("fixes stageNofM with items in order", () => {
+    it("fixes stageNofM with N before M", () => {
         const stageNofM = document.createElement("div");
-        stageNofM.innerText = "stage {0} of {1}";
-        ReaderToolsModel.prepareStageNofMInternal(stageNofM);
-        expect(stageNofM.childNodes.length).toBe(4);
-        checkText(stageNofM.childNodes[0], "stage ");
-        checkSpan(stageNofM.childNodes[1], "stageNumber");
-        checkText(stageNofM.childNodes[2], " of ");
-        checkSpan(stageNofM.childNodes[3], "numberOfStages");
+        stageNofM.innerText = "[fake unlocalized text]";
+        const obj = new ReaderToolsModel();
+
+        // Setup various spies to make this a true unit test
+        setupSpiesForUpdateStageNOfMInternal({
+            readerToolsModel: obj,
+            stageLabel: "2",
+            numberOfStages: "6"
+        });
+
+        theOneLocalizationManager.dictionary[
+            "EditTab.Toolbox.DecodableReaderTool.StageNofM"
+        ] = "Stage {0} of {1} en español";
+
+        // System under test
+        obj.updateStageNOfMInternal(stageNofM);
+
+        // Expect the text to be
+        expect(stageNofM.innerText).toBe("Stage 2 of 6 en español");
+
+        // Cleanup
+        delete theOneLocalizationManager.dictionary[
+            "EditTab.Toolbox.DecodableReaderTool.StageNofM"
+        ];
     });
 
-    it("fixes stageNofM with items out of order", () => {
+    it("fixes stageNofM with N AFTER M", () => {
         const stageNofM = document.createElement("div");
-        stageNofM.innerText = "there are {1} stages; {0} is the current one";
-        ReaderToolsModel.prepareStageNofMInternal(stageNofM);
-        expect(stageNofM.childNodes.length).toBe(5);
-        checkText(stageNofM.childNodes[0], "there are ");
-        checkSpan(stageNofM.childNodes[1], "numberOfStages");
-        checkText(stageNofM.childNodes[2], " stages; ");
-        checkSpan(stageNofM.childNodes[3], "stageNumber");
-        checkText(stageNofM.childNodes[4], " is the current one");
+        stageNofM.innerText = "[fake unlocalized text]";
+        const obj = new ReaderToolsModel();
+
+        // Setup various spies to make this a true unit test
+        setupSpiesForUpdateStageNOfMInternal({
+            readerToolsModel: obj,
+            stageLabel: "3",
+            numberOfStages: "10"
+        });
+
+        theOneLocalizationManager.dictionary[
+            "EditTab.Toolbox.DecodableReaderTool.StageNofM"
+        ] = "there are {1} stages; {0} is the current one";
+
+        // System under test
+        obj.updateStageNOfMInternal(stageNofM);
+
+        // Expect the text to be
+        expect(stageNofM.innerText).toBe(
+            "there are 10 stages; 3 is the current one"
+        );
+
+        // Cleanup
+        delete theOneLocalizationManager.dictionary[
+            "EditTab.Toolbox.DecodableReaderTool.StageNofM"
+        ];
     });
 });
 
