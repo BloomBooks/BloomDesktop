@@ -428,22 +428,31 @@ export function selectLevel(tr: HTMLTableRowElement) {
         document.getElementById("things-to-remember")
     );
     thingsToRemember.innerHTML = '<li contenteditable="true">' + val + "</li>";
+
+    // Add event handlers to do plain text paste to all the children
+    // present at this time (that is, when the level is selected)
+    // If any children are added after this point (e.g. if the user hits carriage return a few times),
+    // it is that code's responsibility to add the event handler too.
     forcePlainTextPaste(thingsToRemember);
 }
 
 // prevent pasting anything but plain text into the contenteditable children of the argument
 export function forcePlainTextPaste(parent: ParentNode): void {
     [].forEach.call(parent.querySelectorAll('[contenteditable="true"]'), el => {
-        el.addEventListener(
-            "paste",
-            e => {
-                e.preventDefault();
-                const text = e.clipboardData.getData("text/plain");
-                document.execCommand("insertHTML", false, text);
-            },
-            false
-        );
+        addForcePlainTextPasteHandler(el);
     });
+}
+
+function addForcePlainTextPasteHandler(element: HTMLElement) {
+    // Note: if you use an anonymous handler, you can easily get duplicate listeners.
+    // We use a named function here instead.
+    element.addEventListener("paste", forcePlainTextPasteHandler, false);
+}
+
+function forcePlainTextPasteHandler(e) {
+    e.preventDefault();
+    const text = e.clipboardData.getData("text/plain");
+    document.execCommand("insertHTML", false, text);
 }
 
 function getCellInnerHTML(tr: HTMLTableRowElement, cellIndex: number): string {
@@ -680,11 +689,12 @@ function tabBeforeActivate(ui): void {
  */
 function handleThingsToRemember(jqueryEvent: JQueryEventObject): void {
     switch (jqueryEvent.which) {
-        case 13: // add new li
+        case 13: // carriage return - add new li
             const x = $('<li contenteditable="true"></li>').insertAfter(
                 jqueryEvent.target
             );
             jqueryEvent.preventDefault();
+            addForcePlainTextPasteHandler(x[0]);
             x.focus();
             break;
 
