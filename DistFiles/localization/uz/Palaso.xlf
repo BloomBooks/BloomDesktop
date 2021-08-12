@@ -521,6 +521,12 @@
         <note>ID: MetadataEditor.PublicDomain</note>
         <target xml:lang="uz" state="needs-translation">The copyright holder waives all rights</target>
       </trans-unit>
+      <trans-unit id="MetadataEditor.PublicDomain_ToolTip_">
+        <source xml:lang="en">The copyright holder waives all rights</source>
+        <note>ID: MetadataEditor.PublicDomain_ToolTip_</note>
+        <note>This tooltip string is identical to the string displayed in the dialog in case there is not enough room in the dialog to display the full string.</note>
+        <target xml:lang="uz" state="needs-translation">The copyright holder waives all rights</target>
+      </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit">
         <source xml:lang="en">Copyright and License</source>
         <note>ID: MetadataEditor.TitleNoCredit</note>
@@ -536,9 +542,21 @@
         <note>ID: MetadataEditor.UnknownLicense</note>
         <target xml:lang="uz" state="needs-translation">Contact the copyright holder for any permissions</target>
       </trans-unit>
+      <trans-unit id="MetadataEditor.UnknownLicense_ToolTip_">
+        <source xml:lang="en">Contact the copyright holder for any permissions</source>
+        <note>ID: MetadataEditor.UnknownLicense_ToolTip_</note>
+        <note>This tooltip string is identical to the string displayed in the dialog in case there is not enough room in the dialog to display the full string.</note>
+        <target xml:lang="uz" state="needs-translation">Contact the copyright holder for any permissions</target>
+      </trans-unit>
       <trans-unit id="MetadataEditor.YesShareAlike">
         <source xml:lang="en">Yes, as long as others share alike</source>
         <note>ID: MetadataEditor.YesShareAlike</note>
+        <target xml:lang="uz" state="needs-translation">Yes, as long as others share alike</target>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.YesShareAlike_ToolTip_">
+        <source xml:lang="en">Yes, as long as others share alike</source>
+        <note>ID: MetadataEditor.YesShareAlike_ToolTip_</note>
+        <note>This tooltip string is identical to the string displayed in the dialog in case there is not enough room in the dialog to display the full string.</note>
         <target xml:lang="uz" state="needs-translation">Yes, as long as others share alike</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.additionalRequestsLabel">
