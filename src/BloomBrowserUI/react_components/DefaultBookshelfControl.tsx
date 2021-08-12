@@ -38,7 +38,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
     // the value when that option is chosen allows us to get around a restricion
     // in our API which does not allow an empty string as the value of a
     // required string value.
-    const [defaultBookshelf, setDefaultBookshelf] = useState("");
+    const [defaultBookshelfUrlKey, setDefaultBookshelfUrlKey] = useState("");
     // The project or branding retrieved from the settings/bookShelfData API.
     const [project, setProject] = useState("");
     // First query: get the values of the two states above.
@@ -46,7 +46,9 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
         BloomApi.get("settings/bookShelfData", data => {
             const pn = data.data.brandingProjectName;
             setProject(pn === "Default" ? "" : pn);
-            setDefaultBookshelf(data.data.defaultBookshelf || "none");
+            setDefaultBookshelfUrlKey(
+                data.data.defaultBookshelfUrlKey || "none"
+            );
         });
     }, []);
 
@@ -84,11 +86,14 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
                 }))
             );
         }
-    } else if (defaultBookshelf) {
+    } else if (defaultBookshelfUrlKey) {
         // This will usually be overwritten soon, but if we can't get to contentful
         // to get the actual list of possibilities we will leave it here.
         // Note that as we don't yet have any better label, we use defaultShelf.
-        bookshelves.push({ value: defaultBookshelf, label: defaultBookshelf });
+        bookshelves.push({
+            value: defaultBookshelfUrlKey,
+            label: defaultBookshelfUrlKey
+        });
     }
     const items = bookshelves.map(x => (
         <MenuItem key={x.value} value={x.value}>
@@ -193,7 +198,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
                             padding: 3px 3px 3px 2px;
                         }
                     `}
-                    value={defaultBookshelf}
+                    value={defaultBookshelfUrlKey}
                     MenuProps={{
                         classes: { paper: classes.select },
                         anchorOrigin: {
@@ -210,7 +215,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
                     disabled={!result || result.length == 0}
                     onChange={event => {
                         const newShelf = event.target.value as string;
-                        setDefaultBookshelf(newShelf);
+                        setDefaultBookshelfUrlKey(newShelf);
                         BloomApi.postString("settings/bookShelfData", newShelf);
                     }}
                 >

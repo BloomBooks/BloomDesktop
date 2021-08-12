@@ -20,7 +20,10 @@ import {
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog
 } from "../BloomDialog/BloomDialog";
-import { DialogCloseButton } from "../BloomDialog/commonDialogComponents";
+import {
+    DialogCancelButton,
+    DialogCloseButton
+} from "../BloomDialog/commonDialogComponents";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
 
 export const ProgressDialog: React.FunctionComponent<{
@@ -30,9 +33,11 @@ export const ProgressDialog: React.FunctionComponent<{
     titleBackgroundColor?: string;
     // defaults to "never"
     showReportButton?: "always" | "if-error" | "never";
+    showCancelButton?: boolean;
 
     webSocketContext: string;
     onReadyToReceive?: () => void;
+    setShowDialog?: (show: () => void) => void;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = props => {
     const {
@@ -40,6 +45,9 @@ export const ProgressDialog: React.FunctionComponent<{
         closeDialog,
         propsForBloomDialog
     } = useSetupBloomDialog(props.dialogEnvironment);
+    if (props.setShowDialog) {
+        props.setShowDialog(showDialog);
+    }
     const [showButtons, setShowButtons] = useState(false);
     const [sawAnError, setSawAnError] = useState(false);
     const [sawAWarning, setSawAWarning] = useState(false);
@@ -117,7 +125,9 @@ export const ProgressDialog: React.FunctionComponent<{
                 css={css`
                     // I don't actually understand why I had do to this, other than than
                     // I'm hopeless at css sizing stuff. See storybook story ProgressDialog: long.
-                    overflow-y: unset;
+                    overflow-y: ${propsForBloomDialog.dialogFrameProvidedExternally
+                        ? "auto"
+                        : "unset"};
                 `}
             >
                 <ProgressBox
@@ -162,8 +172,15 @@ export const ProgressDialog: React.FunctionComponent<{
                         )}
                         <DialogCloseButton onClick={closeDialog} />
                     </React.Fragment>
+                ) : // if we're not done, show the cancel button if that was called for...
+                props.showCancelButton ? (
+                    <DialogCancelButton
+                        onClick={() => {
+                            BloomApi.post("progress/cancel");
+                        }}
+                    />
                 ) : (
-                    // This is an invisible Placeholder used to leave room for buttons when the progress is over
+                    // ...otherwise show a placeholder to leave room for buttons when the progress is over
                     <Button
                         variant="contained"
                         css={css`

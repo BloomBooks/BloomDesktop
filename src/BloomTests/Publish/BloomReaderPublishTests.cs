@@ -67,10 +67,10 @@ namespace BloomTests.Publish
 		{
 			var testBook = CreateBookWithPhysicalFile(kMinimumValidBookHtml, bringBookUpToDate: true);
 
-			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
+			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.BloomPubExtensionWithDot))
 			{
-				BloomPubMaker.CreateBloomPub(bloomdTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
-				Assert.AreEqual(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook,
+				BloomPubMaker.CreateBloomPub(bloomdTempFile.Path, testBook, _bookServer,  new NullWebSocketProgress());
+				Assert.AreEqual(testBook.Title + BookCompressor.BloomPubExtensionWithDot,
 					Path.GetFileName(bloomdTempFile.Path));
 			}
 		}
@@ -1336,9 +1336,9 @@ namespace BloomTests.Publish
 
 			actionsOnFolderBeforeCompressing?.Invoke(testBook.FolderPath);
 
-			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
+			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.BloomPubExtensionWithDot))
 			{
-				BloomPubMaker.CreateBloomPub(bloomdTempFile.Path, testBook.FolderPath, _bookServer, Color.Azure, new NullWebSocketProgress(),
+				BloomPubMaker.CreateBloomPub(bloomdTempFile.Path, testBook.FolderPath, _bookServer,  new NullWebSocketProgress(),
 					isTemplateBook: false, creator: creator, 
 					settings: new AndroidPublishSettings() {LanguagesToInclude = languagesToInclude});
 				var zip = new ZipFile(bloomdTempFile.Path);
@@ -1350,9 +1350,9 @@ namespace BloomTests.Publish
 				{
 					// compress it again! Used for checking important repeatable results
 					using (var extraTempFile =
-						TempFile.WithFilenameInTempFolder(testBook.Title + "2" + BookCompressor.ExtensionForDeviceBloomBook))
+						TempFile.WithFilenameInTempFolder(testBook.Title + "2" + BookCompressor.BloomPubExtensionWithDot))
 					{
-						BloomPubMaker.CreateBloomPub(extraTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
+						BloomPubMaker.CreateBloomPub(extraTempFile.Path, testBook, _bookServer,  new NullWebSocketProgress());
 						zip = new ZipFile(extraTempFile.Path);
 						assertionsOnRepeat(zip);
 					}

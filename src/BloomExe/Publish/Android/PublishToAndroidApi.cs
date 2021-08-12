@@ -6,7 +6,9 @@ using System.IO;
 using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.ImageProcessing;
+using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Publish.Android.file;
 using SIL.Windows.Forms.Miscellaneous;
@@ -35,8 +37,10 @@ namespace Bloom.Publish.Android
 #if !__MonoCS__
 		private readonly UsbPublisher _usbPublisher;
 #endif
+		private readonly CollectionSettings _collectionSettings;
 		private readonly BloomWebSocketServer _webSocketServer;
 		private readonly BookServer _bookServer;
+		private readonly BulkBloomPubCreator _bulkBloomPubCreator;
 		private readonly WebSocketProgress _progress;
 		private const string kWebSocketContext = "publish-android"; // must match what is in AndroidPublishUI.tsx
 		private Color _thumbnailBackgroundColor = Color.Transparent; // can't be actual book cover color <--- why not?
@@ -47,19 +51,32 @@ namespace Bloom.Publish.Android
 		private HashSet<string> _languagesWithAudio = new HashSet<string>();
 		private Bloom.Book.Book _bookForLanguagesToPublish = null;
 
-		private RuntimeImageProcessor _imageProcessor;
-
 		// This constant must match the ID that is used for the listener set up in the React component AndroidPublishUI
 		private const string kWebsocketEventId_Preview = "androidPreview";
 		public const string StagingFolder = "PlaceForStagingBook";
 
 		public static string PreviewUrl { get; set; }
 
-		public PublishToAndroidApi(BloomWebSocketServer bloomWebSocketServer, BookServer bookServer, RuntimeImageProcessor imageProcessor)
+		// NB: this must match IBulkSaveBloomPubsParams on the typescript side
+		public struct BulkBloomPUBPublishSettings
 		{
+			public bool makeBookshelfFile;
+			public bool makeBloomBundle;
+			public string bookshelfColor;
+			// distributionTag goes into bloomPUBs created in bulk, and from there to analytics events
+			public string distributionTag;
+			// The server doesn't actually know what the label is, just the urlKey. So when the client has to look it up from contentful,
+			// and when it tells us to go ahead and do the publishing, it includes this so that we can use it to make the bookshelf file.
+			public string bookshelfLabel;
+		}
+
+
+		public PublishToAndroidApi(CollectionSettings collectionSettings, BloomWebSocketServer bloomWebSocketServer, BookServer bookServer, BulkBloomPubCreator bulkBloomPubCreator)
+		{
+			_collectionSettings = collectionSettings;
 			_webSocketServer = bloomWebSocketServer;
 			_bookServer = bookServer;
-			_imageProcessor = imageProcessor;
+			_bulkBloomPubCreator = bulkBloomPubCreator;
 			_progress = new WebSocketProgress(_webSocketServer, kWebSocketContext);
 			_wifiPublisher = new WiFiPublisher(_progress, _bookServer);
 #if !__MonoCS__
@@ -86,14 +103,9 @@ namespace Bloom.Publish.Android
 
 		private AndroidPublishSettings GetSettings()
 		{
-			return new AndroidPublishSettings()
-			{
-				// Note - we want it such that even if the underlying data changes, this settings object won't.
-				// (Converting the IEnumerable to a HashSet happens to accomplish that)
-				LanguagesToInclude = new HashSet<string>(_bookForLanguagesToPublish.BookInfo.MetaData.TextLangsToPublish.ForBloomPUB.Where(kvp => kvp.Value.IsIncluded()).Select(kvp => kvp.Key)),
-				AudioLanguagesToExclude = new HashSet<string>(_bookForLanguagesToPublish.BookInfo.MetaData.AudioLangsToPublish.ForBloomPUB.Where(kvp => !kvp.Value.IsIncluded()).Select(kvp => kvp.Key))
-			};
+			return AndroidPublishSettings.FromBookInfo(_bookForLanguagesToPublish.BookInfo);
 		}
+
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
@@ -252,6 +264,22 @@ namespace Bloom.Publish.Android
 			{
 				UpdatePreviewIfNeeded(request);
 				FilePublisher.Save(request.CurrentBook, _bookServer, _thumbnailBackgroundColor, _progress, GetSettings());
+				SetState("stopped");
+				request.PostSucceeded();
+			}, true);
+
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/bulkSaveBloomPubsParams", request =>
+			{ 
+				request.ReplyWithJson(JsonConvert.SerializeObject(_collectionSettings.BulkPublishBloomPubSettings));
+			}, true);
+
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/bulkSaveBloomPubs", request =>
+			{
+				// update what's in the collection so that we remember for next time
+				_collectionSettings.BulkPublishBloomPubSettings = request.RequiredObject<BulkBloomPUBPublishSettings>();
+				_collectionSettings.Save();
+
+				_bulkBloomPubCreator.PublishAllBooks(_collectionSettings.BulkPublishBloomPubSettings);
 				SetState("stopped");
 				request.PostSucceeded();
 			}, true);
@@ -542,7 +570,7 @@ namespace Bloom.Publish.Android
 				progress.Message("CompressingAudio", "Compressing audio files");
 				AudioProcessor.TryCompressingAudioAsNeeded(book.FolderPath, book.RawDom);
 			}
-			var publishedFileName = Path.GetFileName(book.FolderPath) + BookCompressor.ExtensionForDeviceBloomBook;
+			var publishedFileName = Path.GetFileName(book.FolderPath) + BookCompressor.BloomPubExtensionWithDot;
 			if (startingMessageFunction != null)
 				progress.MessageWithoutLocalizing(startingMessageFunction(publishedFileName, bookTitle));
 			if (destFileName == null)
@@ -550,7 +578,7 @@ namespace Bloom.Publish.Android
 				// wifi or usb...make the .bloomd in a temp folder.
 				using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
 				{
-					BloomPubMaker.CreateBloomPub(bloomdTempFile.Path, book, bookServer, backColor, progress, settings);
+					BloomPubMaker.CreateBloomPub(bloomdTempFile.Path, book, bookServer,  progress, settings);
 					sendAction(publishedFileName, bloomdTempFile.Path);
 					if (confirmFunction != null && !confirmFunction(publishedFileName))
 						throw new ApplicationException("Book does not exist after write operation.");
@@ -561,7 +589,7 @@ namespace Bloom.Publish.Android
 			{
 				// save file...user has supplied name, there is no further action.
 				Debug.Assert(sendAction == null, "further actions are not supported when passing a path name");
-				BloomPubMaker.CreateBloomPub(destFileName, book, bookServer, backColor, progress, settings);
+				BloomPubMaker.CreateBloomPub(destFileName, book, bookServer,  progress, settings);
 				progress.Message("PublishTab.Epub.Done", "Done", useL10nIdPrefix: false);	// share message string with epub publishing
 			}
 

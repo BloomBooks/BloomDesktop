@@ -1,6 +1,10 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+
 import * as React from "react";
 import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
 import Link from "@material-ui/core/Link";
+import BloomButton from "./bloomButton";
 
 interface IHelpLinkProps extends ILocalizationProps {
     helpId: string;
@@ -37,3 +41,35 @@ export class ToolBottomHelpLink extends React.Component<{ helpId: string }> {
         );
     }
 }
+
+// puts a "What's this?" in the upper right hand corner of the block
+export const WhatsThisBlock: React.FunctionComponent<{
+    // we could add this when we are using this for built-in help:   helpId: string;
+    url: string;
+}> = props => {
+    return (
+        <div
+            css={css`
+                // the absolute positioning of the button with be with respect to this
+                position: relative;
+            `}
+            {...props}
+        >
+            {props.children}
+            <BloomButton
+                variant="text"
+                enabled={true}
+                l10nKey="Common.WhatsThis"
+                onClick={() => {}}
+                css={css`
+                    position: absolute !important;
+                    right: 0;
+                    top: 0;
+                `}
+                href={props.url}
+            >
+                What's This?
+            </BloomButton>
+        </div>
+    );
+};

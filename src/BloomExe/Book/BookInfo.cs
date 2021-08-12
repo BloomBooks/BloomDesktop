@@ -432,6 +432,23 @@ namespace Bloom.Book
 			MetaData.Tags = MetaData.Tags?.Where(t => !tagTest(t)).Union(valuesToSet).ToArray() ?? valuesToSet;
 		}
 
+		/// <summary>
+		/// This starts by removing any existing tags matching the given prefix.
+		/// Then, if the given value has contents, it will trim it and add a tag with the given prefix and value.
+		/// </summary>
+		public void UpdateOneSingletonTag(string tagPrefixWithoutColon, string newValueOrNull)
+		{
+			var list = MetaData.Tags.ToList();
+			list.RemoveAll((t) => t.StartsWith(tagPrefixWithoutColon+":"));
+			var value = newValueOrNull;
+			value = value?.Trim(); // I'm feeling defensive
+			if (!string.IsNullOrEmpty(value))
+			{
+				list.Add(tagPrefixWithoutColon+":" + value);
+			}
+			MetaData.Tags = list.ToArray();
+		}
+
 		public int PageCount
 		{
 			get { return MetaData.PageCount; }

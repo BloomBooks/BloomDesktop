@@ -76,3 +76,52 @@ export function useContentful(
 
 // BloomLibrary2 has a version of this file that contains code for using a
 // localized version of Contentful. We can grab it if we need it.
+
+interface IBookshelf {
+    urlKey: string;
+    label: string;
+}
+
+// currently unused, untested: started writing while trying to factor the querying logic out of the DefaultBookshelfControl
+export function useContentfulBookShelvesForSubscription(
+    subscriptionId: string
+): { loading: boolean; bookshelves: IBookshelf[]; error: boolean } {
+    const { loading, result, error } = useContentful(
+        subscriptionId
+            ? {
+                  content_type: "enterpriseSubscription",
+                  select: "fields.collections",
+                  include: 2, // depth: we want the bookshelf collection objects as part of this query
+                  "fields.id": `${subscriptionId}`
+              }
+            : undefined // no project means we don't want useContentful to do a query
+    );
+
+    if (!subscriptionId) {
+        return { loading: false, bookshelves: [], error: false };
+    }
+    if (loading || error || !result) {
+        return { loading, bookshelves: [], error };
+    }
+    return {
+        loading,
+        error,
+        bookshelves: result.map((c: any) => ({
+            urlKey: c.fields.urlKey,
+            label: c.fields.label as string
+        }))
+    };
+}
+
+export function useGetLabelForCollection(
+    urlKey: string,
+    defaultResult: string
+): string {
+    const { loading, result, error } = useContentful({
+        content_type: "collection",
+        select: "fields.label",
+        include: 2, // depth: we want the bookshelf collection objects as part of this query
+        "fields.urlKey": `${urlKey}`
+    });
+    return result && result.length > 0 ? result[0].fields.label : defaultResult;
+}

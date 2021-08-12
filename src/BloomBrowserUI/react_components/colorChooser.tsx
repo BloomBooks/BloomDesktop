@@ -4,9 +4,9 @@ import ContentEditable from "./ContentEditable";
 import "./colorChooser.less";
 
 interface IColorChooserProps {
-    imagePath: string;
-    colorsVisibleByDefault?: boolean;
-    backColorSetting: string;
+    imagePath?: string;
+    initiallyVisible?: boolean;
+    color: string;
     onColorChanged?: (color: string) => void;
     menuLeft?: boolean;
     disabled?: boolean;
@@ -14,8 +14,8 @@ interface IColorChooserProps {
 
 // A reusable color chooser.
 export const ColorChooser: React.FunctionComponent<IColorChooserProps> = props => {
-    const [colorsVisible, setColorsVisible] = useState(
-        !!props.colorsVisibleByDefault
+    const [chooserVisible, setChooserVisible] = useState(
+        !!props.initiallyVisible
     );
     const colorPalette = [
         "#E48C84",
@@ -40,18 +40,21 @@ export const ColorChooser: React.FunctionComponent<IColorChooserProps> = props =
             tabIndex={0}
             onClick={event => {
                 if (!props.disabled) {
-                    setColorsVisible(!colorsVisible);
+                    setChooserVisible(!chooserVisible);
                 }
             }}
+            {...props} // allow styling from parent
         >
-            <div className="cc-image-wrapper">
-                <img
-                    className="cc-image"
-                    // the api ignores the color parameter, but it
-                    // causes this to re-request the img whenever the backcolor changes
-                    src={props.imagePath + props.backColorSetting}
-                />
-            </div>
+            {props.imagePath && (
+                <div className="cc-image-wrapper">
+                    <img
+                        className="cc-image"
+                        // the api ignores the color parameter, but it
+                        // causes this to re-request the img whenever the backcolor changes
+                        src={props.imagePath + props.color}
+                    />
+                </div>
+            )}
             <div
                 className={
                     "cc-menu-arrow" +
@@ -62,7 +65,7 @@ export const ColorChooser: React.FunctionComponent<IColorChooserProps> = props =
                 <div
                     className="cc-pulldown-wrapper"
                     style={{
-                        visibility: colorsVisible ? "visible" : "hidden"
+                        visibility: chooserVisible ? "visible" : "hidden"
                     }}
                 >
                     {colorPalette.map((color, i) => (
@@ -88,14 +91,14 @@ export const ColorChooser: React.FunctionComponent<IColorChooserProps> = props =
                         <div className="cc-hex-leadin">#</div>
                         <div className="cc-hex-value">
                             <ContentEditable
-                                content={props.backColorSetting.substring(1)}
+                                content={props.color.substring(1)}
                                 onChange={newContent => {
                                     if (props.onColorChanged) {
                                         props.onColorChanged("#" + newContent);
                                     }
                                 }}
                                 onEnterKeyPressed={() =>
-                                    setColorsVisible(false)
+                                    setChooserVisible(false)
                                 }
                             />
                         </div>

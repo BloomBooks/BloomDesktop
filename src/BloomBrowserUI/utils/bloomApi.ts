@@ -204,6 +204,12 @@ export class BloomApi {
         }, []);
         return value;
     }
+    public static useApiString(
+        urlSuffix: string,
+        defaultValue: string
+    ): string {
+        return BloomApi.useApiData<string>(urlSuffix, defaultValue);
+    }
 
     // Like UseApiData, except you also get a function for changing the state on the server.
     public static useApiState<T>(
@@ -222,6 +228,22 @@ export class BloomApi {
             setValue(value);
         };
         return [value, setFunction];
+    }
+
+    // Like useApiState, except it doesn't send the state back to the server when something changes.
+    // This is useful when you're going to wait for the user to click "OK" before sending all the
+    // state back.
+    public static useApiOneWayState<T>(
+        urlSuffix: string,
+        defaultValue: T
+    ): [T, (value: T) => void] {
+        const [value, setValue] = React.useState<T>(defaultValue);
+        React.useEffect(() => {
+            BloomApi.get(urlSuffix, c => {
+                setValue(c.data);
+            });
+        }, []);
+        return [value, setValue];
     }
 
     // A react hook for controlling an API-backed string from a React pure functional component

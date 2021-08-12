@@ -7,7 +7,13 @@ export interface IBloomWebSocketEvent {
     message?: string;
 }
 export interface IBloomWebSocketProgressEvent extends IBloomWebSocketEvent {
-    progressKind?: "Error" | "Warning" | "Progress" | "Note" | "Instruction";
+    progressKind?:
+        | "Error"
+        | "Warning"
+        | "Progress"
+        | "Note"
+        | "Instruction"
+        | "Heading";
 }
 
 export function useWebSocketListener(

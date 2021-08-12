@@ -146,3 +146,5 @@ src/BloomBrowserUI/branding/PNG-COVICEF/branding.css
 src/BloomBrowserUI/collectionTab/BooksOfCollection.css
 
 src/BloomBrowserUI/app/App.css
+
+src/BloomBrowserUI/publish/commonPublish/BasePublishScreen.css

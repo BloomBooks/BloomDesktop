@@ -103,7 +103,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                         return (
                                             <TextField
                                                 defaultValue={f.value}
-                                                margin="normal"
+                                                margin="dense"
                                                 variant="outlined"
                                                 fullWidth={
                                                     f.type == "bigEditableText"

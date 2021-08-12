@@ -15,7 +15,7 @@ export interface IBloomButtonProps extends ILocalizationProps {
     transparent?: boolean;
     variant?: "text" | "outlined" | "contained" | undefined; // see https://material-ui.com/api/button/
     mightNavigate?: boolean; // true if the post of clickEndpoint might navigate to a new page.
-    hasText: boolean; // allows us to define buttons with only images and no text.
+    hasText?: boolean; // default is undefined which we take to mean "yes". This allows us to define buttons with only images and no text.
     // If neither enabled or disabled image file is provided, no image will show.
     // If only one is provided, no image will show in the other state (e.g. if disabled and no disabledImageFile).
     enabledImageFile?: string;
@@ -25,6 +25,7 @@ export interface IBloomButtonProps extends ILocalizationProps {
     iconBeforeText?: React.ReactNode;
     size?: "small" | "medium" | "large" | undefined;
     color?: "primary" | "secondary" | undefined;
+    href?: string;
 }
 
 // A button that takes a Bloom API endpoint to post() when clicked
@@ -67,7 +68,7 @@ export default class BloomButton extends LocalizableElement<
                 ? this.props.className + (hidden ? " " + hidden : "")
                 : hidden
         };
-        const localizedContent = this.props.hasText && (
+        const localizedContent = !(this.props.hasText === false) && (
             <span key={1}>{this.getLocalizedContent()}</span>
         );
         const commonChildren = [image, localizedContent];
@@ -83,6 +84,7 @@ export default class BloomButton extends LocalizableElement<
                 color={this.props.color ? this.props.color : "primary"}
                 startIcon={this.props.iconBeforeText}
                 size={this.props.size}
+                href={this.props.href}
                 {...this.props} // allows defining more css rules from container
             >
                 {commonChildren}

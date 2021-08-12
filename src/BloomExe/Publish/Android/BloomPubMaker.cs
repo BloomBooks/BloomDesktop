@@ -32,20 +32,25 @@ namespace Bloom.Publish.Android
 
 		public static Control ControlForInvoke { get; set; }
 
-		public static void CreateBloomPub(string outputPath, Book.Book book, BookServer bookServer, Color backColor, WebSocketProgress progress, AndroidPublishSettings settings = null)
+		public static void CreateBloomPub(BookInfo bookInfo, AndroidPublishSettings settings, string outputFolder, BookServer bookServer, IWebSocketProgress progress )
 		{
-			CreateBloomPub(outputPath, book.FolderPath, bookServer, backColor, progress, book.IsTemplateBook, settings:settings);
+			var outputPath = Path.Combine(outputFolder, Path.GetFileName(bookInfo.FolderPath) + BookCompressor.BloomPubExtensionWithDot);
+			BloomPubMaker.CreateBloomPub(outputPath, bookInfo.FolderPath, bookServer, progress, bookInfo.IsSuitableForMakingShells, settings: settings);
+		}
+		public static void CreateBloomPub(string outputPath, Book.Book book, BookServer bookServer, IWebSocketProgress progress, AndroidPublishSettings settings = null)
+		{
+			CreateBloomPub(outputPath, book.FolderPath, bookServer, progress, book.IsTemplateBook, settings:settings);
 		}
 
 		// Create a BloomReader book while also creating the temporary folder for it (according to the specified parameter) and disposing of it
 		public static void CreateBloomPub(string outputPath, string bookFolderPath, BookServer bookServer,
-			Color backColor,
-			WebSocketProgress progress, bool isTemplateBook, string tempFolderName = BRExportFolder,
+	
+			IWebSocketProgress progress, bool isTemplateBook, string tempFolderName = BRExportFolder,
 			string creator = kCreatorBloom, AndroidPublishSettings settings = null)
 		{
 			using (var temp = new TemporaryFolder(tempFolderName))
 			{
-				CreateBloomPub(outputPath, bookFolderPath, bookServer, backColor, progress, temp, creator, isTemplateBook, settings);
+				CreateBloomPub(outputPath, bookFolderPath, bookServer, progress, temp, creator, isTemplateBook, settings);
 			}
 		}
 
@@ -63,15 +68,14 @@ namespace Bloom.Publish.Android
 		/// <param name="settings"></param>
 		/// <returns>Path to the unzipped .bloomd</returns>
 		public static string CreateBloomPub(string outputPath, string bookFolderPath, BookServer bookServer,
-			Color backColor,
-			WebSocketProgress progress, TemporaryFolder tempFolder, string creator = kCreatorBloom, bool isTemplateBook=false,
+			IWebSocketProgress progress, TemporaryFolder tempFolder, string creator = kCreatorBloom, bool isTemplateBook=false,
 			AndroidPublishSettings settings = null)
 		{
 			var modifiedBook = PrepareBookForBloomReader(bookFolderPath, bookServer, tempFolder, progress, isTemplateBook, creator, settings);
 			// We want at least 256 for Bloom Reader, because the screens have a high pixel density. And (at the moment) we are asking for
 			// 64dp in Bloom Reader.
 
-			BookCompressor.MakeSizedThumbnail(modifiedBook, backColor, modifiedBook.FolderPath, 256);
+			BookCompressor.MakeSizedThumbnail(modifiedBook, modifiedBook.FolderPath, 256);
 
 			BookCompressor.CompressBookDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false,
 				pathToFileForSha: BookStorage.FindBookHtmlInFolder(bookFolderPath));
@@ -81,7 +85,7 @@ namespace Bloom.Publish.Android
 
 		public static Book.Book PrepareBookForBloomReader(string bookFolderPath, BookServer bookServer,
 			TemporaryFolder temp,
-			WebSocketProgress progress, bool isTemplateBook,
+			IWebSocketProgress progress, bool isTemplateBook,
 			string creator = kCreatorBloom,
 			AndroidPublishSettings settings = null)
 		{
@@ -90,7 +94,8 @@ namespace Bloom.Publish.Android
 			var htmPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
 			var tentativeBookFolderPath = Path.Combine(temp.FolderPath, Path.GetFileNameWithoutExtension(htmPath));
 			Directory.CreateDirectory(tentativeBookFolderPath);
-			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer, tentativeBookFolderPath, isTemplateBook);
+			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer,
+				tentativeBookFolderPath, isTemplateBook);
 
 			// Although usually tentativeBookFolderPath and modifiedBook.FolderPath are the same, there are some exceptions
 			// In the process of bringing a book up-to-date (called by MakeDeviceXmatterTempBook), the folder path may change.
@@ -107,6 +112,8 @@ namespace Bloom.Publish.Android
 			// Version 1 (as opposed to no BloomdVersion field): the bookFeatures property may be
 			// used to report features analytics (with earlier bloomd's, the reader must use its own logic)
 			modifiedBook.Storage.BookInfo.MetaData.BloomdVersion = 1;
+
+			modifiedBook.Storage.BookInfo.UpdateOneSingletonTag("distribution", settings?.DistributionTag);
 
 			if (settings?.LanguagesToInclude != null)
 				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings.LanguagesToInclude, modifiedBook.BookData.MetadataLanguage1IsoCode);
@@ -172,7 +179,7 @@ namespace Bloom.Publish.Android
 				Path.Combine(modifiedBookFolderPath, "readerStyles.css"));
 			ConvertImagesToBackground(modifiedBook.RawDom);
 
-			AddDistributionFile(modifiedBookFolderPath, creator);
+			AddDistributionFile(modifiedBookFolderPath, creator, settings);
 
 			modifiedBook.Save();
 
@@ -183,7 +190,7 @@ namespace Bloom.Publish.Android
 		/// Add a `.distribution` file to the zip which will be reported on for analytics from Bloom Reader.
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-8875.
 		/// </summary>
-		private static void AddDistributionFile(string bookFolder, string creator)
+		private static void AddDistributionFile(string bookFolder, string creator, AndroidPublishSettings settings=null)
 		{
 			string distributionValue;
 			switch (creator)
@@ -193,6 +200,8 @@ namespace Bloom.Publish.Android
 					break;
 				case kCreatorBloom:
 					distributionValue = kDistributionBloomDirect;
+					if(settings!=null && !string.IsNullOrEmpty(settings.DistributionTag))
+						distributionValue = settings.DistributionTag;
 					break;
 				default: throw new ArgumentException("Unknown creator", creator);
 			}
@@ -377,7 +386,7 @@ namespace Bloom.Publish.Android
 		/// <param name="book"></param>
 		/// <param name="progress"></param>
 		/// <param name="fontFileFinder">use new FontFinder() for real, or a stub in testing</param>
-		public static void EmbedFonts(Book.Book book, WebSocketProgress progress, HashSet<string> fontsWanted, IFontFinder fontFileFinder)
+		public static void EmbedFonts(Book.Book book, IWebSocketProgress progress, HashSet<string> fontsWanted, IFontFinder fontFileFinder)
 		{
 			const string defaultFont = "Andika New Basic"; // already in BR, don't need to embed or make rule.
 			fontsWanted.Remove(defaultFont);

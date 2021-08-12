@@ -12,10 +12,12 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.TeamCollection;
 using Bloom.MiscUI;
+using Bloom.Publish.Android;
 using Bloom.ToPalaso;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
+using Newtonsoft.Json;
 using SIL.Reporting;
 using SIL.WritingSystems;
 using SIL.Extensions;
@@ -618,6 +620,15 @@ namespace Bloom.Collection
 		private int _audioRecordingTrimEndMilliseconds = -1;
 
 		public int AudioRecordingTrimEndMilliseconds { get; set; }
+
+		// TODO: save and load these
+		public PublishToAndroidApi.BulkBloomPUBPublishSettings BulkPublishBloomPubSettings = new PublishToAndroidApi.BulkBloomPUBPublishSettings
+		{
+			makeBookshelfFile = true,
+			bookshelfColor = "lightblue",
+			makeBloomBundle = true,
+			distributionTag = ""
+		};
 
 		public bool AllowDeleteBooks
 		{

@@ -194,7 +194,6 @@ namespace Bloom.CLI
 					zippedBloomDOutputPath,
 					bookPath,
 					bookServer,
-					System.Drawing.Color.Azure, // TODO: What should this be?
 					new Bloom.web.NullWebSocketProgress(),
 					folderForUnzipped,
 					creator,

@@ -20,7 +20,7 @@ namespace Bloom.Book
 {
 	public class BookCompressor
 	{
-		public const string ExtensionForDeviceBloomBook = ".bloomd";
+		public const string BloomPubExtensionWithDot = ".bloomd";
 		public static string LastVersionCode { get; private set; }
 
 		// these image files may need to be reduced before being stored in the compressed output file
@@ -29,7 +29,7 @@ namespace Bloom.Book
 		// these files (if encountered) won't be included in the compressed version
 		internal static readonly string[] ExcludedFileExtensionsLowerCase = { ".db", ".pdf", ".bloompack", ".bak", ".userprefs", ".bloombookorder", ".map" };
 
-		internal static void MakeSizedThumbnail(Book book, Color backColor, string destinationFolder, int heightAndWidth)
+		internal static void MakeSizedThumbnail(Book book, string destinationFolder, int heightAndWidth)
 		{
 			// If this fails to create a 'coverImage200.jpg', either the cover image is missing or it's only a placeholder.
 			// If this is a new book, the file may exist already, but we want to make sure it's up-to-date.
@@ -46,7 +46,8 @@ namespace Bloom.Book
 			if(coverImagePath != null)
 			{
 				var thumbPath = Path.Combine(destinationFolder, "thumbnail.png");
-				RuntimeImageProcessor.GenerateEBookThumbnail(coverImagePath, thumbPath, heightAndWidth, heightAndWidth, backColor);
+				
+				RuntimeImageProcessor.GenerateEBookThumbnail(coverImagePath, thumbPath, heightAndWidth, heightAndWidth,System.Drawing.ColorTranslator.FromHtml(book.GetCoverColor()));
 			}
 		}
 

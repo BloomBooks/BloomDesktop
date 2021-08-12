@@ -81,6 +81,7 @@ export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => 
                 key={indexForMessageKey++}
                 css={css`
                     color: ${color};
+                    ${style ? style : ""}
                 `}
             >
                 <StringWithOptionalLink message={message} />
@@ -102,6 +103,9 @@ export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => 
                 switch (e.progressKind) {
                     default:
                         writeLine(msg, "black");
+                        break;
+                    case "Heading":
+                        writeLine(msg, "black", "font-weight:bold");
                         break;
                     case "Error":
                         writeLine(msg, kErrorColor);

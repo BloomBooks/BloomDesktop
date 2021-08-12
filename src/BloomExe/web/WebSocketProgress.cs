@@ -7,7 +7,7 @@ namespace Bloom.web
 {
 	public enum ProgressKind
 	{
-		Error, Warning, Instruction, Note, Progress
+		Error, Warning, Instruction, Note, Progress, Heading
 	};
 
 	// NB: This class is designed to map, via json, to IBloomWebSocketProgressEvent, so the
@@ -128,6 +128,16 @@ namespace Bloom.web
 			messageBundle.message = message;
 			messageBundle.progressKind = kind.ToString();
 			_bloomWebSocketServer.SendBundle(_clientContext, "message", messageBundle);
+		}
+		public virtual void ShowButtons()
+		{
+			_bloomWebSocketServer.SendBundle(_clientContext, "show-buttons", new DynamicJson());
+		}
+
+		// Stop spinners and such
+		public virtual void Finished()
+		{
+			_bloomWebSocketServer.SendBundle(_clientContext, "finished", new DynamicJson());
 		}
 
 		public virtual void Message(string idSuffix, string comment, string message, ProgressKind progressKind = ProgressKind.Progress, bool useL10nIdPrefix =true)

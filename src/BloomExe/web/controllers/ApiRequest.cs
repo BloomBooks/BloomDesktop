@@ -272,6 +272,12 @@ namespace Bloom.Api
 				return Parameters[name];
 			throw new ApplicationException("The query " + _requestInfo.RawUrl + " should have parameter " + name);
 		}
+
+		public T RequiredObject<T>()
+		{
+			return JsonConvert.DeserializeObject<T>(RequiredPostJson());
+		}
+
 		public string RequiredPostJson()
 		{
 			var json = GetPostJson();

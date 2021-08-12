@@ -22,10 +22,10 @@ namespace Bloom.Publish.Android.file
 			var progressWithL10N = progress.WithL10NPrefix("PublishTab.Android.File.Progress.");
 			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
 			{
-				dlg.DefaultExt = BookCompressor.ExtensionForDeviceBloomBook;
+				dlg.DefaultExt = BookCompressor.BloomPubExtensionWithDot;
 				var bloomdFileDescription = LocalizationManager.GetString("PublishTab.Android.bloomdFileFormatLabel", "Bloom Book for Devices", "This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App");
-				dlg.Filter = $"{bloomdFileDescription}|*{BookCompressor.ExtensionForDeviceBloomBook}";
-				dlg.FileName = Path.GetFileName(book.FolderPath) + BookCompressor.ExtensionForDeviceBloomBook;
+				dlg.Filter = $"{bloomdFileDescription}|*{BookCompressor.BloomPubExtensionWithDot}";
+				dlg.FileName = Path.GetFileName(book.FolderPath) + BookCompressor.BloomPubExtensionWithDot;
 				if(!string.IsNullOrWhiteSpace(Settings.Default.BloomDeviceFileExportFolder) &&
 					Directory.Exists(Settings.Default.BloomDeviceFileExportFolder))
 				{

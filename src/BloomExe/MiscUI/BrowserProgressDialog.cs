@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.web;
+using Bloom.web.controllers;
 
 namespace Bloom.MiscUI
 {
@@ -34,10 +35,30 @@ namespace Bloom.MiscUI
 	/// responding to paint events, a click on the buttons, and and so forth.</remarks>
 	public class BrowserProgressDialog
 	{
+		public static void DoWorkWithProgressDialog(BloomWebSocketServer socketServer, string title, Func<IWebSocketProgress, BackgroundWorker,bool> doWhat, Action<Form> doWhenMainActionFalse = null, Action<Form> doWhenCancel = null)
+		{
+			var kProgressContextName = "progress";
+			BrowserProgressDialog.DoWorkWithProgressDialog(socketServer, kProgressContextName,
+				() => new ReactDialog("ProgressDialogBundle",
+						// props to send to the react component
+						new
+						{
+							title,
+							titleColor = "white",
+							titleBackgroundColor = Palette.kBloomBlueHex,
+							webSocketContext = kProgressContextName,
+							showReportButton = "if-error",
+							showCancelButton = true
+						}, title)
+					// winforms dialog properties
+					{Width = 620, Height = 550}, doWhat, doWhenMainActionFalse);
+		}
+
 		public static void DoWorkWithProgressDialog(BloomWebSocketServer socketServer, string socketContext,  Func<Form> makeDialog,
-			Func<IWebSocketProgress, bool> doWhat, Action<Form> doWhenMainActionFalse = null)
+			Func<IWebSocketProgress, BackgroundWorker, bool> doWhat, Action<Form> doWhenMainActionFalse = null)
 		{
 			var progress = new WebSocketProgress(socketServer, socketContext);
+			
 
 			// NOTE: This (specifically ShowDialog) blocks the main thread until the dialog is closed.
 			// Be careful to avoid deadlocks.
@@ -46,15 +67,21 @@ namespace Bloom.MiscUI
 				// For now let's not try to handle letting the user abort.
 				dlg.ControlBox = false;
 				var worker = new BackgroundWorker();
+				worker.WorkerSupportsCancellation = true;
 				worker.DoWork += (sender, args) =>
 				{
+					ProgressDialogApi.SetCancelHandler(() =>
+					{
+						worker.CancelAsync();
+					});
+
 					// A way of waiting until the dialog is ready to receive progress messages
 					while (!socketServer.IsSocketOpen(socketContext))
 						Thread.Sleep(50);
 					bool waitForUserToCloseDialogOrReportProblems;
 					try
 					{
-						waitForUserToCloseDialogOrReportProblems = doWhat(progress);
+						waitForUserToCloseDialogOrReportProblems = doWhat(progress, worker);
 					}
 					catch (Exception ex)
 					{
@@ -90,6 +117,8 @@ namespace Bloom.MiscUI
 
 				worker.RunWorkerAsync();
 				dlg.ShowDialog(); // returns when dialog closed
+
+				ProgressDialogApi.SetCancelHandler(null);
 			}
 		}
 	}

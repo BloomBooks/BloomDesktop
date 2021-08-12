@@ -30,7 +30,7 @@ const ThumbnailControl: React.FunctionComponent<{
             menuLeft={true}
             disabled={!canModifyCurrentBook}
             imagePath="/bloom/api/publish/android/thumbnail?color="
-            backColorSetting={bookCoverColor}
+            color={bookCoverColor}
             onColorChanged={colorChoice => {
                 setBookCoverColor(colorChoice);
                 if (props.onChange) {

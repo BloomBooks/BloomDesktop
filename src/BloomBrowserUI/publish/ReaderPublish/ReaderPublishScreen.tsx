@@ -1,3 +1,5 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { useState, useContext } from "react";
 
@@ -6,7 +8,8 @@ import {
     PreviewPanel,
     PublishPanel,
     HelpGroup,
-    SettingsPanel
+    SettingsPanel,
+    CommandsGroup
 } from "../commonPublish/BasePublishScreen";
 import { MethodChooser } from "./MethodChooser";
 import { PublishFeaturesGroup } from "./PublishFeaturesGroup";
@@ -29,6 +32,10 @@ import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
 import { PublishLanguagesGroup } from "./PublishLanguagesGroup";
+import {
+    BulkBloomPubDialog,
+    showBulkBloomPubDialog
+} from "./BulkBloomPub/BulkBloomPubDialog";
 
 export const ReaderPublishScreen = () => {
     // When the user changes some features, included languages, etc., we
@@ -115,9 +122,9 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
             }
         }
     );
-
     return (
-        <>
+        <React.Fragment>
+            <BulkBloomPubDialog />
             <BasePublishScreen className="ReaderPublishScreen">
                 <PreviewPanel>
                     <DeviceAndControls
@@ -147,6 +154,23 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     <PublishLanguagesGroup
                         onChange={() => setHighlightRefresh(true)}
                     />
+                    {/* push everything to the bottom */}
+                    <div
+                        css={css`
+                            margin-top: auto;
+                        `}
+                    />
+                    <CommandsGroup>
+                        <Link
+                            //enabled={true} // TODO: enterprise only
+                            l10nKey="PublishTab.Android.SaveWholeCollection"
+                            onClick={() => {
+                                showBulkBloomPubDialog();
+                            }}
+                        >
+                            Make All BloomPUBs from Collection
+                        </Link>
+                    </CommandsGroup>
                     <HelpGroup>
                         <HelpLink
                             l10nKey="PublishTab.Android.AboutBookFeatures"
@@ -202,7 +226,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     }}
                 />
             )}
-        </>
+        </React.Fragment>
     );
 };
 
