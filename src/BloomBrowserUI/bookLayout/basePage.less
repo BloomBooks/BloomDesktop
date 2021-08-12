@@ -876,6 +876,15 @@ div[data-book*="branding"] {
     }
 }
 
+// Edit mode adds a 1-pixel gray border to image containers.
+// We need to add a border in non-edit modes, too
+// (which gets overridden by the rule in editMode.less).
+// Otherwise, we can get some very subtle shifts in size/positioning,
+// and publications may not be truly WYSIWYG. See BL-10268.
+div.bloom-imageContainer {
+    border: 1px solid transparent;
+}
+
 //... to be continued. We sandwich most other sheets between this one and the langVisibility.css, which comes last-ish
 
 // now apply any book features
