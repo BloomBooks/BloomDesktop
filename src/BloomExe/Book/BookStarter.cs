@@ -490,6 +490,11 @@ namespace Bloom.Book
 			storage.BookInfo.IsSuitableForMakingShells = storage.BookInfo.IsSuitableForMakingTemplates;
 			// a newly created book is never suitable for making templates, even if its source was.
 			storage.BookInfo.IsSuitableForMakingTemplates = false;
+			// a newly created book never starts with its name locked. Some file name from the
+			// template is unlikely to be useful. (It's arguable whether this belongs in this
+			// method, but it's already manipulating the BookInfo, and this somewhat affects
+			// editing titles.)
+			storage.BookInfo.NameLocked = false;
 		}
 
 
