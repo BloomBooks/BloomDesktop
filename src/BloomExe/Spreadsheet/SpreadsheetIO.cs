@@ -11,6 +11,7 @@
 // (also as educational).
 
 using Bloom.ImageProcessing;
+using L10NSharp;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using SIL.IO;
@@ -68,7 +69,7 @@ namespace Bloom.Spreadsheet
 						// Display formatting in excel spreadsheet
 						ExcelRange currentCell = worksheet.Cells[r, c + 1];
 						if (!retainMarkup && c >= spreadsheet.StandardLeadingColumns.Length && r > 1)
-                        {
+						{
 							//TODO when we implement importing with formatting, make sure this
 							//gets (round-trip) unit tested
 							MarkedUpText markedUpText = MarkedUpText.ParseXml(content);
@@ -113,7 +114,7 @@ namespace Bloom.Spreadsheet
 								var imagePath = imageSrc;
 								//Images show up in the cell 1 row greater and 1 column greater than assigned
 								//So this will put them in row r, column imageThumbnailColumn+1 like we want
-								embedImage(imagePath, r-1, imageThumbnailColumn);
+								embedImage(imagePath, r - 1, imageThumbnailColumn);
 								worksheet.Row(r).Height = defaultImageWidth; //so at least most of the image is visible								
 							}
 						}
@@ -159,12 +160,22 @@ namespace Bloom.Spreadsheet
 					RobustFile.Delete(outputPath);
 					var xlFile = new FileInfo(outputPath);
 					package.SaveAs(xlFile);
+					throw new IOException();
+				}
+				catch (IOException ex) when ((ex.HResult & 0x0000FFFF) == 32)//ERROR_SHARING_VIOLATION
+				{
+					Console.WriteLine("Writing Spreadsheet failed. Do you have it open in another program?");
+					Console.WriteLine(ex.Message);
+					Console.WriteLine(ex.StackTrace);
+
+					var lockedFileErrorMsg = LocalizationManager.GetString("Spreadsheet:SpreadsheetLocked", "Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program ?\r\n");
+					NonFatalProblem.Report(ModalIf.All, PassiveIf.None, lockedFileErrorMsg,
+						moreDetails: ex.Message, exception: ex, showSendReport: false);
 				}
 				catch (Exception ex)
 				{
-					Console.WriteLine("Writing Spreadsheet failed. Do you have it open in Excel?");
-					Console.WriteLine(ex.Message);
-					Console.WriteLine(ex.StackTrace);
+					var errorMsg = LocalizationManager.GetString("Spreadsheet:ExportFailed", "Export failed: ");
+					NonFatalProblem.Report(ModalIf.All, PassiveIf.None, errorMsg + ex.Message, exception: ex);
 				}
 			}
 		}
