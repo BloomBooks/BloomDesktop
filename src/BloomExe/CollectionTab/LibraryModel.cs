@@ -597,18 +597,28 @@ namespace Bloom.CollectionTab
 		/// Zip up the book folder, excluding .pdf, .bloombookorder, .map, .bloompack, .db files.
 		/// The resulting file will have a .bloom extension.
 		/// </summary>
-		/// <param name="srcFolderName"></param>
-		/// <param name="destFileName"></param>
-		internal void SaveAsBloomFile(string srcFolderName, string destFileName)
+		internal bool SaveAsBloomFile(string srcFolderName, string destFileName, out Exception exception)
 		{
-			var excludedExtensions = new[] { ".pdf", ".bloombookorder", ".map", ".bloompack", ".db" };
+			exception = null;
+			try
+			{
+				var excludedExtensions = new[] { ".pdf", ".bloombookorder", ".map", ".bloompack", ".db" };
 
-			Logger.WriteEvent("Zipping up {0} ...", destFileName);
-			var zipFile = new BloomZipFile(destFileName);
-			zipFile.AddDirectoryContents(srcFolderName, excludedExtensions);
-			Logger.WriteEvent("Saving {0} ...", destFileName);
-			zipFile.Save();
-			Logger.WriteEvent("Finished writing .bloom file.");
+				Logger.WriteEvent("Zipping up {0} ...", destFileName);
+				var zipFile = new BloomZipFile(destFileName);
+				zipFile.AddDirectoryContents(srcFolderName, excludedExtensions);
+
+				Logger.WriteEvent("Saving {0} ...", destFileName);
+				zipFile.Save();
+
+				Logger.WriteEvent("Finished writing .bloom file.");
+			}
+			catch (Exception e)
+			{
+				exception = e;
+				return false;
+			}
+			return true;
 		}
 	}
 }
