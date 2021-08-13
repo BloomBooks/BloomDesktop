@@ -69,6 +69,7 @@ namespace Bloom.CollectionTab
 			this._dividerPanel = new System.Windows.Forms.Panel();
 			this._settingsProtectionHelper = new SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper(this.components);
 			this.renameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.importContentFromSpreadsheetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._bookContextMenu.SuspendLayout();
 			this._sourcePaneMenuStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
@@ -90,6 +91,7 @@ namespace Bloom.CollectionTab
             this._exportToXMLForInDesignToolStripMenuItem,
             this.exportToWordOrLibreOfficeToolStripMenuItem,
             this.exportToSpreadsheetToolStripMenuItem,
+            this.importContentFromSpreadsheetToolStripMenuItem,
             this.SaveAsBloomToolStripMenuItem,
             this._makeBloomPackOfBookToolStripMenuItem,
             this._openFolderOnDisk,
@@ -687,6 +689,16 @@ namespace Bloom.CollectionTab
 			this.renameToolStripMenuItem.Text = "Rename";
 			this.renameToolStripMenuItem.Click += new System.EventHandler(this.renameToolStripMenuItem_Click);
 			// 
+            // importContentFromSpreadsheetToolStripMenuItem
+            // 
+            this._L10NSharpExtender.SetLocalizationComment(this.importContentFromSpreadsheetToolStripMenuItem, null);
+            this._L10NSharpExtender.SetLocalizableToolTip(this.importContentFromSpreadsheetToolStripMenuItem, null);
+            this._L10NSharpExtender.SetLocalizingId(this.importContentFromSpreadsheetToolStripMenuItem, "CollectionTab.BookMenu.ImportContentFromSpreadsheet");
+            this.importContentFromSpreadsheetToolStripMenuItem.Name = "importContentFromSpreadsheetToolStripMenuItem";
+            this.importContentFromSpreadsheetToolStripMenuItem.Text = "Import Content from Spreadsheet...";
+            this.importContentFromSpreadsheetToolStripMenuItem.Size = new System.Drawing.Size(287, 26);
+            this.importContentFromSpreadsheetToolStripMenuItem.Click += new System.EventHandler(this.importContentFromSpreadsheetToolStripMenuItem_Click);
+			// 
 			// LibraryListView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -768,5 +780,6 @@ namespace Bloom.CollectionTab
 		private ToolStripMenuItem SaveAsBloomToolStripMenuItem;
 		private ToolStripMenuItem exportToSpreadsheetToolStripMenuItem;
 		private ToolStripMenuItem renameToolStripMenuItem;
+		private ToolStripMenuItem importContentFromSpreadsheetToolStripMenuItem;
 	}
 }

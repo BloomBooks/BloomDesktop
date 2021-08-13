@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Bloom.Book;
+﻿using Bloom.Book;
 using Bloom.Spreadsheet;
 using CommandLine;
+using System;
+using System.Diagnostics;
+using System.IO;
 
 namespace Bloom.CLI
 {
@@ -24,19 +20,12 @@ namespace Bloom.CLI
 			{
 				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(options.BookPath, false));
 				var exporter = new SpreadsheetExporter();
-				SpreadsheetExportParams spreadsheetParams;
 				if (!string.IsNullOrEmpty(options.ParamsPath))
 				{
-					spreadsheetParams = SpreadsheetExportParams.FromFile(options.ParamsPath);
+					exporter.Params = SpreadsheetExportParams.FromFile(options.ParamsPath);
 				}
-				else
-				{
-					spreadsheetParams = new SpreadsheetExportParams();
-				}
-				exporter.Params = spreadsheetParams;
 				string imagesFolderPath = Path.GetDirectoryName(options.BookPath);
 				var _sheet = exporter.Export(dom, imagesFolderPath);
-				_sheet.Params = spreadsheetParams;
 				_sheet.WriteToFile(options.OutputPath);
 				return 0; // all went well
 			}

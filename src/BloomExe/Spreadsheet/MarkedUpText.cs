@@ -31,13 +31,17 @@ namespace Bloom.Spreadsheet
 			return stringBuilder.ToString();
 		}
 
-		//TODO test this method
-		//TODO handle newlines/paragraphs
 		public override string ToString()
 		{
 			StringBuilder stringBuilder = new StringBuilder();
+			stringBuilder.Append("<p>");
 			foreach (var run in _runList)
 			{
+				if (run.Text.Equals("\r\n"))
+				{
+					stringBuilder.Append("</p>\r\n<p>");
+					continue;
+				}
 				List<string> endTags = new List<string>();
 				if (run.Bold)
 				{
@@ -51,7 +55,6 @@ namespace Bloom.Spreadsheet
 				{
 					AddTags(stringBuilder, "u", endTags);
 				}
-				//TODO make sure manually adding formatting is caught here
 				if (run.Superscript)
 				{
 					AddTags(stringBuilder, "sup", endTags);
@@ -65,12 +68,12 @@ namespace Bloom.Spreadsheet
 					stringBuilder.Append(endTag);
 				}
 			}
+			stringBuilder.Append("</p>");
 			return stringBuilder.ToString();
 		}
 
 		private void AddTags(StringBuilder stringBuilder, string tagName, List<string> endTag)
 		{
-			//TODO efficiency?
 			stringBuilder.Append("<" + tagName + ">");
 			endTag.Add("</" + tagName + ">");
 
@@ -99,16 +102,13 @@ namespace Bloom.Spreadsheet
 			doc.PreserveWhitespace = true;
 
 			var wrappedXmlString = "<wrapper>" + xmlString + "</wrapper>";
-			//TODO maybe instead of wrapping, we could export the outerxml instead of the innerxml in SpreadsheetExporter,
-			//though this would break a lot of the tests, but would let us detect textarea tags
 			doc.LoadXml(wrappedXmlString);
 			XmlNode root = doc.DocumentElement;
 
 			MarkedUpText result = new MarkedUpText();
 			MarkedUpText pending = new MarkedUpText();
 
-			//There are no paragraph elements, it is probably an  old bloom book using <textarea> blocks,
-			//so keep all whitespace
+			//There are no paragraph elements, just keep all whitespace
 			if (((XmlElement) root).GetElementsByTagName("p").Count == 0)
 			{
 				return ParseXmlRecursive(root);
@@ -155,8 +155,6 @@ namespace Bloom.Spreadsheet
 			if ((node.Name == "br")
 				|| (node.Name == "span" && node.Attributes.GetNamedItem("class").Value.Equals("bloom-linebreak")))
 			{
-				//TODO Is there a way to roundtrip these distinguishably from new paragraphs?
-				// Will excel render \n or an escape seqence as a detectably different newline?
 				MarkedUpTextRun run = new MarkedUpTextRun("\r\n");
 				markedUpText = new MarkedUpText();
 				markedUpText._runList.Add(run);
@@ -173,7 +171,7 @@ namespace Bloom.Spreadsheet
 				foreach (XmlNode child in node.ChildNodes)
 				{
 					MarkedUpText markedUpChild = ParseXmlRecursive(child);
-					applyFormatting(node.Name, markedUpChild);
+					ApplyFormatting(node.Name, markedUpChild);
 					markedUpText._runList.AddRange(markedUpChild._runList);
 				}
 			}
@@ -181,7 +179,7 @@ namespace Bloom.Spreadsheet
 
 		}
 
-		private static void applyFormatting(string formatName, MarkedUpText markedUpText)
+		private static void ApplyFormatting(string formatName, MarkedUpText markedUpText)
 		{
 			foreach (MarkedUpTextRun run in markedUpText._runList)
 			{

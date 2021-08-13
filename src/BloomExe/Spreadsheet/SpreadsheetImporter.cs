@@ -1,11 +1,7 @@
-﻿using System;
+﻿using Bloom.Book;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
-using Bloom.Book;
-using SIL.Xml;
 
 namespace Bloom.Spreadsheet
 {
@@ -230,52 +226,13 @@ namespace Bloom.Spreadsheet
 					group.AppendChild(editable);
 				}
 
-				if (HasMarkup(content))
-				{
-					try
-					{
-						editable.InnerXml = content;
-					}
-					catch (XmlException)
-					{
-						// It wasn't XML after all? Just somehow had a wedge? Keep the whole lot as text.
-						SetContentAsText(editable, content);
-					}
-				}
-				else
-				{
-					SetContentAsText(editable, content);
-				}
-
+				editable.InnerXml = content;
 			}
 
 			if (RemoveOtherLanguages)
 			{
 				HtmlDom.RemoveOtherLanguages(@group, sheetLanguages);
 			}
-		}
-
-		public static void SetContentAsText(XmlElement editable, string content)
-		{
-			// Enhance: if multiple lines, make multiple paragraphs.
-			// Enhance: handle some formatting.
-			foreach (var node in editable.ChildNodes.Cast<XmlNode>().ToArray())
-			{
-				editable.RemoveChild(node);
-			}
-
-			foreach (var item in content.Split(new[] {"\r\n", "\r", "\n"}, StringSplitOptions.None))
-			{
-				var para = editable.OwnerDocument.CreateElement("p");
-				editable.AppendChild(para);
-				para.InnerText = item;
-			}
-		}
-
-		private bool HasMarkup(string content)
-		{
-			// Anything that is bloom marked-up content is bound to have angle brackets.
-			return content.IndexOf("<", StringComparison.InvariantCulture) >= 0;
 		}
 	}
 }

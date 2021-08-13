@@ -649,6 +649,10 @@
         <source xml:lang="en">Export to XML for InDesign...</source>
         <note>ID: CollectionTab.BookMenu.ExportToXMLForInDesign</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.ImportContentFromExcel">
+        <source xml:lang="en">Import content from Excel...</source>
+        <note>ID: CollectionTab.BookMenu.ImportContentFromExcel</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.MakeBloomPack">
         <source xml:lang="en">Make Bloom Pack...</source>
         <note>ID: CollectionTab.BookMenu.MakeBloomPack</note>
