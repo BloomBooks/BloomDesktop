@@ -1734,7 +1734,14 @@ namespace Bloom.CollectionTab
 			var destFileName = dlg.FileName;
 			_previousTargetSaveAs = Path.GetDirectoryName(destFileName);
 
-			_model.SaveAsBloomFile(srcFolderName, destFileName);
+			if (!_model.SaveAsBloomFile(srcFolderName, destFileName, out var exception))
+			{
+				// Purposefully not adding to the L10N burden...
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.None,
+					shortUserLevelMessage: "The file could not be saved. Make sure it is not open and try again.",
+					moreDetails: null,
+					exception, showSendReport: false);
+			}
 		}
 
 		private void _leveledReaderMenuItem_Click(object sender, EventArgs e)
