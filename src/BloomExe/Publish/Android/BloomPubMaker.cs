@@ -114,6 +114,11 @@ namespace Bloom.Publish.Android
 			modifiedBook.Storage.BookInfo.MetaData.BloomdVersion = 1;
 
 			modifiedBook.Storage.BookInfo.UpdateOneSingletonTag("distribution", settings?.DistributionTag);
+			if (!string.IsNullOrEmpty(settings?.BookshelfTag))
+			{
+				modifiedBook.Storage.BookInfo.UpdateOneSingletonTag("bookshelf", settings.BookshelfTag);
+			}
+
 
 			if (settings?.LanguagesToInclude != null)
 				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings.LanguagesToInclude, modifiedBook.BookData.MetadataLanguage1IsoCode);

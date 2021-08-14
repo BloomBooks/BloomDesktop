@@ -17,6 +17,8 @@ namespace Bloom.Publish.Android
 		// is largely for historical reasons (client had to do this themselves, and creating a text file is easier than editing json).
 		public string DistributionTag;
 
+		public string BookshelfTag;
+
 		// Specifies the languages whose text should be included in the published book.
 		public HashSet<string> LanguagesToInclude;
 

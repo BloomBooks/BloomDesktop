@@ -66,11 +66,14 @@ namespace Bloom.Publish.Android
 							progress.MessageWithoutLocalizing("Cancelled.");
 							return true;
 						}
-
 						progress.MessageWithoutLocalizing($"Making BloomPUB for {bookInfo.QuickTitleUserDisplay}...",
 							ProgressKind.Heading);
 						var settings = AndroidPublishSettings.FromBookInfo(bookInfo);
 						settings.DistributionTag = bulkSaveSettings.distributionTag;
+						if (bulkSaveSettings.makeBookshelfFile)
+						{
+							settings.BookshelfTag = _libraryModel.CollectionSettings.DefaultBookshelf;
+						}
 						BloomPubMaker.CreateBloomPub(bookInfo, settings, dest.FolderPath, _bookServer, progress);
 					}
 
