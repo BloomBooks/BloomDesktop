@@ -2128,18 +2128,23 @@ namespace Bloom.Book
 		public Dictionary<string, bool> AllPublishableLanguages(bool includeLangsOccurringOnlyInXmatter = false)
 		{
 			var result = AllLanguages(includeLangsOccurringOnlyInXmatter);
-			// For comical books, we only publish a single language. It's not currently feasible to
-			// allow the reader to switch language in a Comical book, because typically that requires
-			// adjusting the positions of the bubbles, and we don't yet support having more than one
-			// set of bubble locations in a single book. See BL-7912 for some ideas on how we might
-			// eventually improve this. In the meantime, switching language would have bad effects,
-			// and if you can't switch language, there's no point in the book containing more than one.
-			// Not including other languages neatly prevents switching and automatically saves the space.
-			if (OurHtmlDom.SelectSingleNode(BookStorage.ComicalXpath) != null)
-			{
-				result.Clear();
-				result[_bookData.Language1.Iso639Code] = true;
-			}
+			// If users want to publish multiple languages with comic pages, who are we to stop them from putting
+			// up with the limitations of the tool?  See https://issues.bloomlibrary.org/youtrack/issue/BL-10275.
+			// Note that if we want to keep/reinstate this commented out code, then we need to fix the metadata
+			// to remove any languages other than L1 which have been enabled for either textLangsToPublish.bloomPUB
+			// or textLangsToPublish.bloomLibrary.
+			//// For comical books, we only publish a single language. It's not currently feasible to
+			//// allow the reader to switch language in a Comical book, because typically that requires
+			//// adjusting the positions of the bubbles, and we don't yet support having more than one
+			//// set of bubble locations in a single book. See BL-7912 for some ideas on how we might
+			//// eventually improve this. In the meantime, switching language would have bad effects,
+			//// and if you can't switch language, there's no point in the book containing more than one.
+			//// Not including other languages neatly prevents switching and automatically saves the space.
+			//if (OurHtmlDom.SelectSingleNode(BookStorage.ComicalXpath) != null)
+			//{
+			//	result.Clear();
+			//	result[_bookData.Language1.Iso639Code] = true;
+			//}
 			return result;
 		}
 
