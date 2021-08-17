@@ -46,6 +46,14 @@ namespace Bloom.Spreadsheet
 			}
 		}
 
+		public string MetadataKey
+		{
+			get
+			{
+				return _cells[Spreadsheet.ColumnForTag(InternalSpreadsheet.MetadataKeyLabel)];
+			}
+		}
+
 		public SpreadsheetCell GetCell(int index)
 		{
 			if (index >= _cells.Count)

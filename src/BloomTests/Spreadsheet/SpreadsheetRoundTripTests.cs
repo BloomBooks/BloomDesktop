@@ -32,7 +32,11 @@ namespace BloomTests.Spreadsheet
 </head>
 
 <body data-l1=""es"" data-l2="""" data-l3="""">
-
+	<div id=""bloomDataDiv"">
+		<div data-book=""bookTitle"" lang=""en"">
+			Pineapples
+		</div>
+	</div>
     <div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""1"" lang="""">
         <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
             Basic Text &amp; Picture
@@ -151,6 +155,7 @@ namespace BloomTests.Spreadsheet
 			var origDom = new HtmlDom(roundtripTestBook, true);
 			var roundtrippedDom = new HtmlDom(roundtripTestBook, true); //Will get imported into
 			AssertThatXmlIn.Dom(origDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='simpleFormattingTest']", 1);
+			AssertThatXmlIn.Dom(origDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='nestedFormattingTest']", 1);
 			var exporter = new SpreadsheetExporter();
 			exporter.Params = parameters;
 			var sheetFromExport = exporter.Export(origDom, "fakeImagesFolderpath");
@@ -268,6 +273,13 @@ namespace BloomTests.Spreadsheet
 			Assert.That(children[5].InnerText, Is.EqualTo(""));
 		}
 
+		[TestCase("noRetainMarkup")]
+		[TestCase("retainMarkup")]
+		public void XmatterUnchanged(string source)
+		{
+			SetupFor(source);
+			Assert.That(FormatNodeContainsText("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en']", "Pineapples"));
+		}
 
 		private bool HasTextWithFormatting(string baseXPath, string text, bool bold, bool italic, bool underlined, bool superscript)
 		{

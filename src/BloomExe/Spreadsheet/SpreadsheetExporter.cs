@@ -17,6 +17,13 @@ namespace Bloom.Spreadsheet
 			_spreadsheet.Params = Params;
 			var pages = dom.GetPageElements();
 
+			//Get xmatter
+			var xmatterDataDiv = GetXMatterDataDiv(dom);
+			foreach (var xmatterData in xmatterDataDiv)
+			{
+				AddXmatterDataRow(xmatterData);
+			}
+
 			foreach (var page in pages)
 			{
 				var pageNumber = page.Attributes["data-page-number"]?.Value ?? "";
@@ -46,6 +53,10 @@ namespace Bloom.Spreadsheet
 			return _spreadsheet;
 		}
 
+		private XmlElement[] GetXMatterDataDiv(HtmlDom elementOrDom)
+		{
+			return elementOrDom.SafeSelectNodes(".//div[@id='bloomDataDiv']").Cast<XmlElement>().ToArray();
+		}
 
 		private XmlElement[] GetImageContainers(XmlElement elementOrDom)
 		{
@@ -80,6 +91,30 @@ namespace Bloom.Spreadsheet
 				var index = _spreadsheet.ColumnForLang(lang);
 				var content = editable.InnerXml;
 				row.SetCell(index,content);
+			}
+		}
+
+		private void AddXmatterDataRow(XmlNode node)
+		{
+			var dataBookNodeList = node.SafeSelectNodes("./div[@data-book]").Cast<XmlElement>().ToList();
+			dataBookNodeList.Sort((a, b) => a.GetAttribute("data-book").CompareTo(b.GetAttribute("data-book")));
+			string prevRowTypeLabel = null;
+			SpreadsheetRow row = _spreadsheet.Header;
+			foreach (XmlElement el in dataBookNodeList)
+			{
+				var rowTypeLabel = el.GetAttribute("data-book");
+				if (!rowTypeLabel.Equals(prevRowTypeLabel))
+				{
+					row = new ContentRow(_spreadsheet);
+					row.SetCell(InternalSpreadsheet.MetadataKeyLabel, rowTypeLabel.Trim());
+					if (el.HasAttribute("src"))
+					{
+						row.SetCell(InternalSpreadsheet.ImageSourceLabel, el.GetAttribute("src").Trim());
+					}
+				}
+				var lang = el.GetAttribute("lang");
+				row.SetCell(_spreadsheet.ColumnForLang(lang), el.InnerXml.Trim());
+				prevRowTypeLabel = rowTypeLabel;
 			}
 		}
 	}

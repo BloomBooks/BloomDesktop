@@ -71,7 +71,10 @@ namespace Bloom.Spreadsheet
 						// Parse xml for markdown formatting on language columns,
 						// Display formatting in excel spreadsheet
 						ExcelRange currentCell = worksheet.Cells[r, c + 1];
-						if (!retainMarkup && c >= spreadsheet.StandardLeadingColumns.Length && r > 1)
+						if (!retainMarkup
+							&& c >= spreadsheet.StandardLeadingColumns.Length
+							&& r > 1
+							&& !IsXmatter(row))
                         {
 							MarkedUpText markedUpText = MarkedUpText.ParseXml(content);
 							if (markedUpText.HasFormatting)
@@ -178,7 +181,21 @@ namespace Bloom.Spreadsheet
 					NonFatalProblem.Report(ModalIf.All, PassiveIf.None, errorMsg + ex.Message, exception: ex);
 				}
 			}
-		}	
+		}
+
+		private static bool IsXmatter(SpreadsheetRow row)
+		{
+			return !row.MetadataKey.Equals(InternalSpreadsheet.TextGroupLabel)
+				&& !row.MetadataKey.Equals(InternalSpreadsheet.ImageKeyLabel);
+		}
+
+		private static bool IsXmatter(ExcelWorksheet worksheet, int rowIndex, SpreadsheetRow row)
+		{
+			var metadataCol = row.Spreadsheet.ColumnForTag(InternalSpreadsheet.MetadataKeyLabel);
+			string metadataKey = worksheet.Cells[rowIndex + 1, metadataCol + 1].Value.ToString();
+			return !metadataKey.Equals(InternalSpreadsheet.TextGroupLabel)
+				&& !metadataKey.Equals(InternalSpreadsheet.ImageKeyLabel);
+		}
 
 		public static void ReadSpreadsheet(InternalSpreadsheet spreadsheet, string path)
 		{
@@ -204,7 +221,9 @@ namespace Bloom.Spreadsheet
 			for (var c = 0; c < colCount; c++)
 			{
 				ExcelRange currentCell = worksheet.Cells[rowIndex + 1, c + 1];
-				if (c >= row.Spreadsheet.StandardLeadingColumns.Length && rowIndex >= 1)
+				if (c >= row.Spreadsheet.StandardLeadingColumns.Length
+					&& rowIndex >= 1
+					&& !IsXmatter(worksheet, rowIndex, row))
 				{
 					row.AddCell(BuildXmlString(currentCell));
 				}
