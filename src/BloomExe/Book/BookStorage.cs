@@ -880,6 +880,7 @@ namespace Bloom.Book
 			var element = Dom.RawDom.DocumentElement;
 			var pathsToNotDelete = GetImagePathsRelativeToBook(element);
 			pathsToNotDelete.Add("epub-thumbnail.png");	// this may have been carefully crafted...
+			pathsToNotDelete.Add("custom-thumbnail-256.png");	// this may have been carefully crafted as well...
 
 			if (keepFilesForEditing)
 			{
