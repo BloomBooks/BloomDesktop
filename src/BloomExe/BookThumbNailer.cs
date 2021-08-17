@@ -8,6 +8,7 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
+using SIL.IO;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Xml;
 
@@ -113,6 +114,17 @@ namespace Bloom
 		/// <param name="requestedSize">The maximum size of either dimension</param>
 		public static string GenerateCoverImageOfRequestedMaxSize(Book.Book book, int requestedSize)
 		{
+			if (requestedSize == 256)
+			{
+				// Use the custom thumbnail file if one is provided.
+				var customFile = Path.Combine(book.FolderPath, "custom-thumbnail-256.png");
+				if (RobustFile.Exists(customFile))
+				{
+					var thumbnailFile = Path.Combine(book.FolderPath, "thumbnail-256.png");
+					RobustFile.Copy(customFile, thumbnailFile, true);
+					return thumbnailFile;
+				}
+			}
 			var thumbnailOptions = GetCoverThumbnailOptions(requestedSize, new Guid());
 			CreateThumbnailOfCoverImage(book, thumbnailOptions);
 
