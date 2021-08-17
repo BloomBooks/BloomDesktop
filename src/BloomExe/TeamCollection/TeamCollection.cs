@@ -1007,6 +1007,7 @@ namespace Bloom.TeamCollection
 				else if (args is BookRepoChangeEventArgs changeArgs)
 					HandleModifiedFile(changeArgs);
 				else HandleCollectionSettingsChange(args);
+				_tcManager.BookSelection?.InvokeSelectionChanged(false);
 			}
 		}
 

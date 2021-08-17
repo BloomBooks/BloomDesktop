@@ -152,13 +152,8 @@ namespace Bloom.CollectionTab
 					XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(previewDom.RawDom);
 					var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(previewDom, setAsCurrentPageForDebugging: false, source: BloomServer.SimulatedPageFileSource.Preview);
 					_reactBookPreviewControl.Props = new { initialBookPreviewUrl = fakeTempFile.Key }; // need this for initial selection
-					if (!_bookSelection.HandlingSelectionChanged)
-					{
-						// Not sending this event when the "book-selection/changed" event will be sent saves an unneeded
-						// redisplay of the book preview pane.  It is still needed when the same book is being shown.
-						// See https://issues.bloomlibrary.org/youtrack/issue/BL-10227.
-						_webSocketServer.SendEvent("bookStatus", "changeBook"); // need this for changing selection display
-					}
+					// Another 'bookStatus' event called 'changeBook' was sent here too, but it was never being used and now the
+					// component that it was intended for uses the 'reload' event.
 					_webSocketServer.SendEvent("bookStatus", "reload");	// need this for changing selection's book info display if team collection
 					_reactBookPreviewControl.Visible = true;
 					RecordAndCleanupFakeFiles(fakeTempFile);

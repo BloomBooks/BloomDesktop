@@ -298,8 +298,7 @@ namespace Bloom.Workspace
 		private void HandleBookSelectionChanged(object sender, BookSelectionChangedEventArgs e)
 		{
 			var result = GetCurrentSelectedBookInfo();
-			// important for at least the TeamCollectionBookStatusPanel and the CollectionsTabBookPanel,
-			// as well as eventually the 
+			// Important for at least the TeamCollectionBookStatusPanel and the CollectionsTabBookPanel.
 			_webSocketServer.SendString("book-selection", "changed", result);
 		}
 
