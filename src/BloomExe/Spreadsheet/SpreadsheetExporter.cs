@@ -132,23 +132,24 @@ namespace Bloom.Spreadsheet
 						}
 
 						string imageSource;
-						if (FirstChildIsImageWithSource(dataBookElement))
+						string childSrc = ChildImgElementSrc(dataBookElement);
+						if (childSrc.Length > 0)
 						{
-							if (! dataBookElement.Name.Contains("branding"))
+							if (! dataBookElement.GetAttribute("data-book").Contains("branding"))
 							{
 								var msg = LocalizationManager.GetString("Spreadsheet:XmatterNonBrandingImageElment",
 									"Export warning: Found a non-branding image in an <img> element for " + dataBookLabel
 									+ ". This is not fully handled yet.");
 								NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg, showSendReport: true);
 							}
-							imageSource = dataBookElement.ChildNodes[0].GetStringAttribute("src");
+							imageSource = childSrc;
 						}
 						else
 						{
 							imageSource = dataBookElement.InnerText.Trim();
 						}
 						row.SetCell(InternalSpreadsheet.ImageSourceLabel, ImagePath(imagesFolderPath, imageSource));
-
+						prevDataBookLabel = dataBookLabel;
 						continue; 
 					}
 				}
@@ -170,19 +171,20 @@ namespace Bloom.Spreadsheet
 		{
 			var imageSrc = dataBookElement.GetAttribute("src").Trim();
 			return imageSrc.Length > 0
-					|| FirstChildIsImageWithSource(dataBookElement)
+					|| ChildImgElementSrc(dataBookElement).Length > 0
 					|| _xmatterImagesWithNoSrcAttributes.Contains(dataBookLabel);
 		}
 
-		private bool FirstChildIsImageWithSource(XmlElement node)
+		private string ChildImgElementSrc(XmlElement node)
 		{
-			if (!node.HasChildNodes)
+			foreach (XmlNode childNode in node.ChildNodes)
 			{
-				return false;
+				if (childNode.Name.Equals("img") && ((XmlElement)childNode).HasAttribute("src"))
+				{
+					return ((XmlElement) childNode).GetAttribute("src");
+				}
 			}
-
-			var firstChild = node.ChildNodes[0];
-			return firstChild.Name.Equals("img") && ((XmlElement) firstChild).HasAttribute("src");
+			return "";
 		}
 	}
 }
