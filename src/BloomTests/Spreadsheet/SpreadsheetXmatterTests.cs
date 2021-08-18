@@ -68,7 +68,7 @@ namespace BloomTests.Spreadsheet
             <p>English Microwave</p>
         </div>
 
-        <div data-book=""coverImage"" lang=""*"" src=""microwave1.png"" alt=""This picture, microwave1.png, is missing or was loading too slowly."" data-copyright="""" data-creator="""" data-license="""">
+        <div data-book=""coverImage"" lang=""*"" src=""wrongImage.png"" alt=""This picture, microwave1.png, is missing or was loading too slowly."" data-copyright="""" data-creator="""" data-license="""">
             microwave1.png
         </div>
 
@@ -157,7 +157,7 @@ namespace BloomTests.Spreadsheet
 
 		[TestCase("fromExport")]
 		[TestCase("fromFile")]
-		public void basicXmatterTest(string source)
+		public void BasicXmatterTest(string source)
 		{
 			SetupFor(source);
 			var starLangCol = _sheet.ColumnForLang("*");
@@ -168,7 +168,7 @@ namespace BloomTests.Spreadsheet
 
 		[TestCase("fromExport")]
 		[TestCase("fromFile")]
-		public void multilingualXmatterTest(string source)
+		public void MultilingualXmatterTest(string source)
 		{
 			SetupFor(source);
 			var contentLangRow = _rows.Find(x => x.MetadataKey.Equals("bookTitle"));
@@ -179,14 +179,22 @@ namespace BloomTests.Spreadsheet
 
 		[TestCase("fromExport")]
 		[TestCase("fromFile")]
-		public void imageSourceXmatterTest(string source)
+		public void ImageSourceXmatterTest(string source)
 		{
 			SetupFor(source);
+			var imageSourceCol = _sheet.ColumnForTag(InternalSpreadsheet.ImageSourceLabel);
+
 			var coverImageRow = _rows.Find(x => x.MetadataKey.Equals("coverImage"));
 			Assert.That(coverImageRow, Is.Not.Null);
-			var imageSourceCol = _sheet.ColumnForTag(InternalSpreadsheet.ImageSourceLabel);
-			Assert.That(coverImageRow.GetCell(imageSourceCol).Content, Is.EqualTo("microwave1.png"));
-			Assert.That(coverImageRow.GetCell(_sheet.ColumnForLang("*")).Content, Is.EqualTo("microwave1.png"));
+			Assert.That(coverImageRow.GetCell(imageSourceCol).Content, Is.EqualTo("fakeImagesFolderpath\\microwave1.png"));
+
+			var licenseImageRow = _rows.Find(x => x.MetadataKey.Equals("licenseImage"));
+			Assert.That(licenseImageRow, Is.Not.Null);
+			Assert.That(licenseImageRow.GetCell(imageSourceCol).Content, Is.EqualTo("fakeImagesFolderpath\\license.png"));
+
+			var backImageRow = _rows.Find(x => x.MetadataKey.Equals("outside-back-cover-branding-bottom-html"));
+			Assert.That(backImageRow, Is.Not.Null);
+			Assert.That(backImageRow.GetCell(imageSourceCol).Content, Is.EqualTo("fakeImagesFolderpath\\BloomWithTaglineAgainstLight.svg"));
 		}
 	}
 }

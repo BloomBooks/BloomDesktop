@@ -1917,7 +1917,7 @@ namespace Bloom.CollectionTab
 			catch (Exception ex)
 			{
 				var msg = LocalizationManager.GetString("Spreadsheet:ImportFailed", "Import failed: ");
-				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg + ex.Message, showSendReport: false);
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg + ex.Message, exception: ex, showSendReport: false);
 			}
 		}
 	}

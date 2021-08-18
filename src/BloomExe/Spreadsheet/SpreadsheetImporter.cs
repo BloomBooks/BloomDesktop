@@ -1,5 +1,6 @@
 ﻿using Bloom.Book;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Xml;
 
@@ -21,6 +22,8 @@ namespace Bloom.Spreadsheet
 		private List<XmlElement> _groupsOnPage;
 		private List<string> _warnings;
 		private List<ContentRow> _inputRows;
+
+		private List<string> _imageFieldsWithNoSrcAttribute = new List<string>() { "licenseImage" };
 
 		public SpreadsheetImporter(HtmlDom dest, InternalSpreadsheet sheet)
 		{
@@ -155,45 +158,77 @@ namespace Bloom.Spreadsheet
 
 		private void AddXmatterFromSpreadsheet(ContentRow currentRow, string rowTypeLabel)
 		{
-			//add src attribute if present in spreadsheet
+			var xPath = "//div[@id='bloomDataDiv']/div[@data-book=\"" + rowTypeLabel + "\"]";
+			var matchingNodes = _dest.SafeSelectNodes(xPath).Cast<XmlElement>().ToArray();
+			XmlNode templateNode;
+			if (matchingNodes.Length > 0)
+			{
+				templateNode = matchingNodes[0];
+			}
+			else
+			{
+				templateNode = _dest.RawDom.CreateElement("div");
+			}
+
 			var imageSrcCol = _sheet.ColumnForTag(InternalSpreadsheet.ImageSourceLabel);
-			var imageSrc = currentRow.GetCell(imageSrcCol).Content;
+			//TODO copy in images from their source paths. Will be done with the importing images step
+			var imageSrc = Path.GetFileName(currentRow.GetCell(imageSrcCol).Content);
 			bool specificLanguageContentFound = false;
 			bool asteriskContentFound = false;
 			var newNodes = new List<XmlNode>();
-			foreach (string lang in _sheet.Languages)
+
+			//If this row has an image source, add it as a src attribute unless its in the noSrcAttribute list
+			if (imageSrc.Length > 0)
 			{
-				var langVal = currentRow.GetCell(_sheet.ColumnForLang(lang)).Content;
-				if (langVal.Length >= 1)
+				XmlElement newNode = (XmlElement)templateNode.CloneNode(deep: true);
+				newNode.SetAttribute("lang", "*");
+				newNode.InnerText = imageSrc;
+
+				if (! SpreadsheetExporter._xmatterImagesWithNoSrcAttributes.Contains(rowTypeLabel))
 				{
-					if (lang.Equals("*"))
-					{
-						asteriskContentFound = true;
-					}
-					else
-					{
-						specificLanguageContentFound = true;
-					}
-					XmlElement newNode = _dest.RawDom.CreateElement("div");
-					if (imageSrc.Length >= 1)
-					{
-						newNode.SetAttribute("src", imageSrc);
-					}
-					newNode.SetAttribute("data-book", rowTypeLabel);
-					newNode.SetAttribute("lang", lang);
-					newNode.InnerXml = langVal;
-					newNodes.Add(newNode);
+					newNode.SetAttribute("src", imageSrc);
 				}
-			}
-
-			if (asteriskContentFound && specificLanguageContentFound)
-			{
-				_warnings.Add(rowTypeLabel + " information found in both * language column and other language column(s)");
-			}
-
-			if (asteriskContentFound || specificLanguageContentFound)
-			{
+				newNodes.Add(newNode);
 				AddXMatter(rowTypeLabel, newNodes);
+
+			}
+			else 
+			{
+				if (rowTypeLabel.Equals("coverImage"))
+				{
+					_warnings.Add("No cover image found");
+				}
+
+				foreach (string lang in _sheet.Languages)
+				{
+					var langVal = currentRow.GetCell(_sheet.ColumnForLang(lang)).Content;
+					if (langVal.Length >= 1)
+					{
+						if (lang.Equals("*"))
+						{
+							asteriskContentFound = true;
+						}
+						else
+						{
+							specificLanguageContentFound = true;
+						}
+						XmlElement newNode = (XmlElement)templateNode.CloneNode(deep: true);
+						newNode.SetAttribute("data-book", rowTypeLabel);
+						newNode.SetAttribute("lang", lang);
+						newNode.InnerXml = langVal;
+						newNodes.Add(newNode);
+					}
+				}
+
+				if (asteriskContentFound && specificLanguageContentFound)
+				{
+					_warnings.Add(rowTypeLabel + " information found in both * language column and other language column(s)");
+				}
+
+				if (asteriskContentFound || specificLanguageContentFound) 
+				{
+					AddXMatter(rowTypeLabel, newNodes);
+				}
 			}
 		}
 

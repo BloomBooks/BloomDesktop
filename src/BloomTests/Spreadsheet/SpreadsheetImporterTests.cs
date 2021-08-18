@@ -50,16 +50,21 @@ namespace BloomTests.Spreadsheet
 
 			var secondXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.MetadataKey.Contains("coverImage"));
 			Assert.IsNotNull(secondXmatterRowToModify, "Did not find the second xmatter row that OneTimeSetup was expecting to modify");
-			secondXmatterRowToModify.SetCell(asteriskColumn, "octopus.png");
 			secondXmatterRowToModify.SetCell(imageSrcColumn, "octopus.png");
 
 			var thirdXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.MetadataKey.Contains("bookTitle"));
 			Assert.IsNotNull(thirdXmatterRowToModify, "Did not find the third xmatter row that OneTimeSetup was expecting to modify");
-			thirdXmatterRowToModify.SetCell(_sheet.ColumnForLang("fr"), "<p>This is Not the End of the French World</p>");
+			thirdXmatterRowToModify.SetCell(_sheet.ColumnForLang("fr"), "");
 			thirdXmatterRowToModify.SetCell(_sheet.ColumnForLang("tpi"), "");
 			thirdXmatterRowToModify.SetCell(_sheet.ColumnForLang("en"), "<p>This is Not the End of the English World</p>");
-			thirdXmatterRowToModify.SetCell(asteriskColumn, "<p>This is Not the End of the Asterisk World</p>");
 
+			var fourthXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.MetadataKey.Contains("contentLanguage1"));
+			fourthXmatterRowToModify.SetCell(_sheet.ColumnForTag(InternalSpreadsheet.MetadataKeyLabel), "newDataBookLabel");
+			fourthXmatterRowToModify.SetCell(asteriskColumn, "newContent");
+
+			var fifthXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.MetadataKey.Contains("licenseImage"));
+			Assert.IsNotNull(fifthXmatterRowToModify, "Did not find the fifth xmatter row that OneTimeSetup was expecting to modify");
+			fifthXmatterRowToModify.SetCell(imageSrcColumn, "newLicenseImage.png");
 
 			var importer = new SpreadsheetImporter(this._dom, _sheet);
 			InitializeImporter(importer);
@@ -96,8 +101,8 @@ namespace BloomTests.Spreadsheet
 		public void EnglishAndFrenchKeptOrModified()
 		{
 			var assertDom = AssertThatXmlIn.Dom(_dom.RawDom);
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-editable') and @lang='en']", 6);
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-editable') and @lang='fr']", 3);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-editable') and @lang='en' and not(@data-book='bookTitle')]", 5);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-editable') and @lang='fr' and not(@data-book='bookTitle')]", 3);
 			// Make sure these are in the right places. We put this in the first row, which because of tab index should be imported to the SECOND TG.
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@tabindex='1']/div[@lang='en']/p[text()='This elephant is running amok.']", 1); // modified
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='group3']/div[@lang='fr']/p[text()='Riding on French elephants can be very risky.']", 1); // modified
@@ -112,10 +117,17 @@ namespace BloomTests.Spreadsheet
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='styleNumberSequence' and @lang='*' and text()='7']", 1);
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='styleNumberSequence' and text()='1']", 0);
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImage' and @src='octopus.png' and text()='octopus.png']", 1);
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle']/p[text()= 'This is Not the End of the French World']", 1);
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle']/p[text()='Is it the End of the German World?']", 0);
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle']/p[text()='This is Not the End of the English World']", 1);
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle']/p[text()='This is Not the End of the Asterisk World']", 1);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='fr']", 0);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='tpi']", 0);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='de']", 0);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en']/p[text()='This is Not the End of the English World']", 1);
+
+			//We changed contentLanguage1 to newDataBookLabel. The importer should keep its old contentLanguage1 element, since there is no input for it,
+			//as well as adding a new element for newDataBookLabel
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage1' and @lang='*']", 1);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='newDataBookLabel' and @lang='*' and text()='newContent']", 1);
+
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='licenseImage' and @lang='*' and not(@src) and text()='newLicenseImage.png']", 1);
 		}
 	}
 
@@ -285,7 +297,7 @@ namespace BloomTests.Spreadsheet
 			_sheet.ColumnForLang("en");
 			_sheet.ColumnForLang("fr");
 
-			MakeXmatterRow(_sheet);
+			MakeXmatterRows(_sheet);
 
 			MakeRow("1","New message about tigers", "New message about French tigers", _sheet);
 
@@ -319,12 +331,16 @@ namespace BloomTests.Spreadsheet
 			newRow.SetCell("[fr]", "<p>" + langData2 + "</p>");
 		}
 
-		public static void MakeXmatterRow(InternalSpreadsheet spreadsheet)
+		public static void MakeXmatterRows(InternalSpreadsheet spreadsheet)
 		{
-			var newRow = new ContentRow(spreadsheet);
-			newRow.SetCell(InternalSpreadsheet.MetadataKeyLabel, "topic");
-			newRow.SetCell("[en]", "Agriculture");
-			newRow.SetCell("[*]", "Agricultura");
+			var topicRow = new ContentRow(spreadsheet);
+			topicRow.SetCell(InternalSpreadsheet.MetadataKeyLabel, "topic");
+			topicRow.SetCell("[en]", "Agriculture");
+			topicRow.SetCell("[*]", "Agricultura");
+
+			var coverImageRow = new ContentRow(spreadsheet);
+			coverImageRow.SetCell(InternalSpreadsheet.MetadataKeyLabel, "coverImage");
+			//No content, to check that we get a warning
 		}
 
 		[Test]
@@ -355,6 +371,13 @@ namespace BloomTests.Spreadsheet
 		public void GotAsteriskAndOtherLanguageXmatterWarning()
 		{
 			Assert.That(_messages, Contains.Item("topic information found in both * language column and other language column(s)"));
+		}
+
+
+		[Test]
+		public void GotNoCoverImageWarning()
+		{
+			Assert.That(_messages, Contains.Item("No cover image found"));
 		}
 
 		[Test]
