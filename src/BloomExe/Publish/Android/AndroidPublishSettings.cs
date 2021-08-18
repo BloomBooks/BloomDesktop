@@ -76,7 +76,7 @@ namespace Bloom.Publish.Android
 			return new AndroidPublishSettings()
 			{
 				// Note - we want it such that even if the underlying data changes, this settings object won't.
-				// (Converting the IEnumerable to a HashSet happens to accomplish that)
+				// (Converting the IEnumerable to a HashSet above happens to accomplish that)
 				LanguagesToInclude = languagesToInclude,
 				AudioLanguagesToExclude = audioLanguagesToExclude
 			};

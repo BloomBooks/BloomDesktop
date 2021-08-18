@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.IO;
 using System.Text;
@@ -68,6 +68,16 @@ namespace Bloom.Publish.Android
 						}
 						progress.MessageWithoutLocalizing($"Making BloomPUB for {bookInfo.QuickTitleUserDisplay}...",
 							ProgressKind.Heading);
+
+						// Normally this is setup by the Publish screen, but if you've never visited the Publish screen for this book,
+						// then this will be null. In that case, initialize it here.
+						if (bookInfo.MetaData.TextLangsToPublish == null)
+						{
+							var book = _bookServer.GetBookFromBookInfo(bookInfo);
+							var allLanguages = book.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);							
+							PublishToAndroidApi.InitializeLanguagesInBook(bookInfo, allLanguages, _libraryModel.CollectionSettings);
+						}
+
 						var settings = AndroidPublishSettings.FromBookInfo(bookInfo);
 						settings.DistributionTag = bulkSaveSettings.distributionTag;
 						if (bulkSaveSettings.makeBookshelfFile)
