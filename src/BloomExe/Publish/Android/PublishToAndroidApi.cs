@@ -422,68 +422,74 @@ namespace Bloom.Publish.Android
 				// So, we no longer have any bypass... Instead we recompute the values so that they can be updated
 				_bookForLanguagesToPublish = request.CurrentBook;
 
-				Debug.Assert(_bookForLanguagesToPublish?.BookInfo?.MetaData != null, "Precondition: MetaData must not be null");
-
-				if (_bookForLanguagesToPublish.BookInfo.MetaData.TextLangsToPublish == null)
-				{
-					_bookForLanguagesToPublish.BookInfo.MetaData.TextLangsToPublish = new LangsToPublishSetting();
-				}
-
-				if (_bookForLanguagesToPublish.BookInfo.MetaData.TextLangsToPublish.ForBloomPUB == null)
-				{
-					_bookForLanguagesToPublish.BookInfo.MetaData.TextLangsToPublish.ForBloomPUB = new Dictionary<string, InclusionSetting>();
-				}
-
-				// reinitialize our list of which languages to publish, defaulting to the ones
-				// that are complete.
-				foreach (var kvp in _allLanguages)
-				{
-					var langCode = kvp.Key;
-
-					// First, check if the user has already explicitly set the value. If so, we'll just use that value and be done.
-					if (_bookForLanguagesToPublish.BookInfo.MetaData.TextLangsToPublish.ForBloomPUB.TryGetValue(langCode, out InclusionSetting checkboxValFromSettings))
-					{
-						if (checkboxValFromSettings.IsSpecified())
-						{
-							continue;
-						}
-					}
-
-					// Nope, either no value exists or the value was some kind of default value.
-					// Compute (or recompute) what the value should default to.
-					bool isChecked = kvp.Value ||
-						// We always select L1 by default because we assume the user wants to publish the language he is currently working on.
-						// It may be incomplete if he just wants to preview his work so far.
-						// If he really doesn't want to publish L1, he can deselect it.
-						// See BL-9587.
-						langCode == request.CurrentCollectionSettings?.Language1Iso639Code;
-
-					var newInitialValue = isChecked ? InclusionSetting.IncludeByDefault : InclusionSetting.ExcludeByDefault;
-					_bookForLanguagesToPublish.BookInfo.MetaData.TextLangsToPublish.ForBloomPUB[langCode] = newInitialValue;
-				}
-
 				_languagesWithAudio = request.CurrentBook.GetLanguagesWithAudio();
 
-				// Initialize the Talking Book Languages settings
-				if (_bookForLanguagesToPublish.BookInfo.MetaData.AudioLangsToPublish == null)
-				{
-					_bookForLanguagesToPublish.BookInfo.MetaData.AudioLangsToPublish = new LangsToPublishSetting();
-				}
-
-				if (_bookForLanguagesToPublish.BookInfo.MetaData.AudioLangsToPublish.ForBloomPUB == null)
-				{
-					_bookForLanguagesToPublish.BookInfo.MetaData.AudioLangsToPublish.ForBloomPUB = new Dictionary<string, InclusionSetting>();
-					var allLangCodes = _allLanguages.Select(x => x.Key);
-					foreach (var langCode in allLangCodes)
-					{
-						_bookForLanguagesToPublish.BookInfo.MetaData.AudioLangsToPublish.ForBloomPUB[langCode] = InclusionSetting.IncludeByDefault;
-					}					
-				}
-
-				// The metadata may have been changed, so saved it.
-				// Note - If you want, you could check whether or not it was actually saved, but that might be premature optimization.
-				_bookForLanguagesToPublish.BookInfo.Save();
+				InitializeLanguagesInBook(_bookForLanguagesToPublish.BookInfo, _allLanguages, request.CurrentCollectionSettings);
 			}
+		}
+
+		// Precondition: If any locking is required, the caller should handle it.
+		internal static void InitializeLanguagesInBook(BookInfo bookInfo, Dictionary<string, bool> allLanguages, CollectionSettings collectionSettings)
+		{
+			Debug.Assert(bookInfo?.MetaData != null, "Precondition: MetaData must not be null");
+
+			if (bookInfo.MetaData.TextLangsToPublish == null)
+			{
+				bookInfo.MetaData.TextLangsToPublish = new LangsToPublishSetting();
+			}
+
+			if (bookInfo.MetaData.TextLangsToPublish.ForBloomPUB == null)
+			{
+				bookInfo.MetaData.TextLangsToPublish.ForBloomPUB = new Dictionary<string, InclusionSetting>();
+			}
+
+			// reinitialize our list of which languages to publish, defaulting to the ones
+			// that are complete.
+			foreach (var kvp in allLanguages)
+			{
+				var langCode = kvp.Key;
+
+				// First, check if the user has already explicitly set the value. If so, we'll just use that value and be done.
+				if (bookInfo.MetaData.TextLangsToPublish.ForBloomPUB.TryGetValue(langCode, out InclusionSetting checkboxValFromSettings))
+				{
+					if (checkboxValFromSettings.IsSpecified())
+					{
+						continue;
+					}
+				}
+
+				// Nope, either no value exists or the value was some kind of default value.
+				// Compute (or recompute) what the value should default to.
+				bool isChecked = kvp.Value ||
+					// We always select L1 by default because we assume the user wants to publish the language he is currently working on.
+					// It may be incomplete if he just wants to preview his work so far.
+					// If he really doesn't want to publish L1, he can deselect it.
+					// See BL-9587.
+					langCode == collectionSettings?.Language1Iso639Code;
+
+				var newInitialValue = isChecked ? InclusionSetting.IncludeByDefault : InclusionSetting.ExcludeByDefault;
+				bookInfo.MetaData.TextLangsToPublish.ForBloomPUB[langCode] = newInitialValue;
+			}
+
+			// Initialize the Talking Book Languages settings
+			if (bookInfo.MetaData.AudioLangsToPublish == null)
+			{
+				bookInfo.MetaData.AudioLangsToPublish = new LangsToPublishSetting();
+			}
+
+			if (bookInfo.MetaData.AudioLangsToPublish.ForBloomPUB == null)
+			{
+				bookInfo.MetaData.AudioLangsToPublish.ForBloomPUB = new Dictionary<string, InclusionSetting>();
+				var allLangCodes = allLanguages.Select(x => x.Key);
+				foreach (var langCode in allLangCodes)
+				{
+					bookInfo.MetaData.AudioLangsToPublish.ForBloomPUB[langCode] = InclusionSetting.IncludeByDefault;
+				}					
+			}
+
+			// The metadata may have been changed, so saved it.
+			// Note - If you want, you could check whether or not it was actually changed, but that might be premature optimization.
+			bookInfo.Save();
 		}
 
 		/// <summary>
