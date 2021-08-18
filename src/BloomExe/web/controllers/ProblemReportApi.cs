@@ -475,7 +475,11 @@ namespace Bloom.web.controllers
 						BloomServer._theOneInstance.RegisterThreadBlocking();
 						try
 						{
-							dlg.ShowDialog();
+							// Keep dialog on top of program window if possible.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10292.
+							if (controlForScreenshotting is Bloom.Shell)
+								dlg.ShowDialog(controlForScreenshotting);
+							else
+								dlg.ShowDialog();
 						}
 						finally
 						{
