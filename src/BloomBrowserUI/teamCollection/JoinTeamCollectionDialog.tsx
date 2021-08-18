@@ -221,10 +221,12 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
                     l10nKey="TeamCollection.NotValidTeamCollection"
                     temporarilyDisableI18nWarning={true}
                 >
-                    This does not appear to be a valid Team Collection Folder.
-                    Make sure you have file-syncing set up with the entire Bloom
-                    Collection folder, and that the synchronization has had time
-                    to complete.
+                    The file you opened is part of a set of files, which should
+                    be contained in a folder that ends in “ - TC”. This file is
+                    not useful on its own. Bloom needs the whole folder to be on
+                    your computer, within a Dropbox folder or a local network
+                    folder. You may instead have downloaded this file, or tried
+                    to open it from a web browser -- this will not work.
                 </Div>
             </ErrorBox>
         );
