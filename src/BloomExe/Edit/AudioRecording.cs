@@ -732,12 +732,11 @@ namespace Bloom.Edit
 			if (RobustFile.Exists(oldPath))
 			{
 				RobustFile.Copy(oldPath, newPath);
-				request.PostSucceeded();
 			}
-			else
-			{
-				request.Failed("original file did not exist");
-			}
+			// If the old file doesn't exist, it's probably because one hasn't been recorded before the user decided
+			// to copy and paste some text.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10291.  Setting a
+			// new id in the copied element without having actual audio behind it is perfectly okay.
+			request.PostSucceeded();
 		}
 
 		// Palaso component to do the actual recording.
