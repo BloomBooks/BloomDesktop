@@ -2684,8 +2684,9 @@ namespace BloomTests.Book
 			}
 		}
 
+		// We've relaxed constraining comical books to one language.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10275.
 		[Test]
-		public void AllPublishableLanguages_OnlyFindsOneIfComical()
+		public void AllPublishableLanguages_NotAffectedByComical()
 		{
 			_bookDom = new HtmlDom(
 				@"<html>
@@ -2725,18 +2726,22 @@ namespace BloomTests.Book
 
 			var book = CreateBook();
 			var allLanguages = book.AllPublishableLanguages(true);
-			Assert.That(allLanguages["xyz"], Is.True);
-			Assert.That(allLanguages, Has.Count.EqualTo(1));
+			Assert.That(allLanguages["en"], Is.True);
+			Assert.That(allLanguages["de"], Is.True);
+			Assert.That(allLanguages["xkal"], Is.True);
+			Assert.That(allLanguages["tr"], Is.True);
+			Assert.That(allLanguages, Has.Count.EqualTo(4));
 
 			var comicalItem = book.OurHtmlDom.RawDom.SelectSingleNode("//svg[@id='comicalItem']"); // GetElementById("comicalItem");
 			comicalItem.ParentNode.RemoveChild(comicalItem);
 
 			allLanguages = book.AllPublishableLanguages(true);
-			// Now we should get lots
+			// Now we should get the same list without comical
 			Assert.That(allLanguages["en"], Is.True);
 			Assert.That(allLanguages["de"], Is.True);
 			Assert.That(allLanguages["xkal"], Is.True);
 			Assert.That(allLanguages["tr"], Is.True);
+			Assert.That(allLanguages, Has.Count.EqualTo(4));
 		}
 
 		[Test]
