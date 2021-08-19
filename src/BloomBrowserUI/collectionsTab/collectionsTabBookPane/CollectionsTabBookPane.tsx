@@ -20,16 +20,17 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
 }> = props => {
     const [isTeamCollection, setIsTeamCollection] = useState(false);
     const [reload, setReload] = useState(0);
+    // Force a reload when told the book changed, even if it's the same book [id]
+    useSubscribeToWebSocketForEvent("bookStatus", "reload", () =>
+        setReload(old => old + 1)
+    );
 
     const {
         id: selectedBookId,
         editable,
         collectionKind
     } = useMonitorBookSelection();
-    // Force a reload when told the book changed, even if it's the same book [id]
-    useSubscribeToWebSocketForEvent("bookStatus", "changeBook", () =>
-        setReload(old => old + 1)
-    );
+
     const canMakeBook = collectionKind != "main";
 
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -70,6 +71,41 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
         collectionKind
     ]);
 
+    const editOrMakeButton: JSX.Element = (
+        <BloomButton
+            enabled={canMakeBook || editable}
+            variant={"outlined"}
+            l10nKey={
+                canMakeBook
+                    ? "CollectionTab.MakeBookUsingThisTemplate"
+                    : "CollectionTab.EditBookButton"
+            }
+            clickApiEndpoint={
+                canMakeBook
+                    ? "app/makeFromSelectedBook"
+                    : "app/editSelectedBook"
+            }
+            mightNavigate={true}
+            enabledImageFile={canMakeBook ? "newBook.png" : "EditTab.svg"}
+            disabledImageFile={canMakeBook ? undefined : "EditTab.svg"}
+            hasText={true}
+            color="secondary"
+            css={css`
+                background-color: white !important;
+                color: ${editable
+                    ? "black !important"
+                    : "rgba(0, 0, 0, 0.26);"};
+
+                img {
+                    height: 2em;
+                    margin-right: 10px;
+                }
+            `}
+        >
+            {canMakeBook ? "Make a book using this source" : "Edit this book"}
+        </BloomButton>
+    );
+
     return (
         <div
             css={css`
@@ -88,57 +124,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                     margin-bottom: 10px;
                 `}
             >
-                {canMakeBook || (
-                    <BloomButton
-                        enabled={editable}
-                        variant={"outlined"}
-                        l10nKey="CollectionTab.EditBookButton"
-                        clickApiEndpoint="app/editSelectedBook"
-                        mightNavigate={true}
-                        enabledImageFile="EditTab.svg"
-                        disabledImageFile="EditTab.svg"
-                        hasText={true}
-                        color="secondary"
-                        css={css`
-                            background-color: white !important;
-                            color: ${editable
-                                ? "black !important"
-                                : "rgba(0, 0, 0, 0.26);"};
-
-                            img {
-                                height: 2em;
-                                margin-right: 10px;
-                            }
-                        `}
-                    >
-                        Edit this book
-                    </BloomButton>
-                )}
-                {canMakeBook && (
-                    <BloomButton
-                        enabled={true}
-                        variant={"outlined"}
-                        l10nKey="CollectionTab.MakeBookUsingThisTemplate"
-                        clickApiEndpoint="app/makeFromSelectedBook"
-                        mightNavigate={true}
-                        enabledImageFile="newBook.png"
-                        hasText={true}
-                        color="secondary"
-                        css={css`
-                            background-color: white !important;
-                            color: ${editable
-                                ? "black !important"
-                                : "rgba(0, 0, 0, 0.26);"};
-
-                            img {
-                                height: 2em;
-                                margin-right: 10px;
-                            }
-                        `}
-                    >
-                        Make a book using this source
-                    </BloomButton>
-                )}
+                {editOrMakeButton}
             </div>
             <div
                 css={css`
@@ -198,7 +184,11 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
             // If that stops being true we might need another more specialized status flag.
             isTeamCollection && !canMakeBook ? (
                 <div id="teamCollection">
-                    <TeamCollectionBookStatusPanel />
+                    <TeamCollectionBookStatusPanel
+                        selectedBookId={selectedBookId}
+                        editable={editable}
+                        reload={reload}
+                    />
                 </div>
             ) : null}
         </div>

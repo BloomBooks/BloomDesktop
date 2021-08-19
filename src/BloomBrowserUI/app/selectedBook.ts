@@ -21,6 +21,10 @@ export function useMonitorBookSelection(): ISelectedBookInfo {
         }
     );
 
+    // At this point, even a change of TC status on a book will cause Bloom to fire
+    // BookSelection.InvokeSelectionChanged(), via TeamCollectionApi.UpdateUiForBook().
+    // As a result, the top-level (WorkspaceView) handler for changing selection fires the websocket
+    // event referenced here.
     useSubscribeToWebSocketForObject<ISelectedBookInfo>(
         "book-selection",
         "changed",

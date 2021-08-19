@@ -11,10 +11,8 @@ import "./TeamCollectionBookStatusPanel.less";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import BloomButton from "../react_components/bloomButton";
 import { BloomAvatar } from "../react_components/bloomAvatar";
-import { useMonitorBookSelection } from "../app/selectedBook";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 
-import { Block } from "@material-ui/icons";
 import { StringWithOptionalLink } from "../react_components/stringWithOptionalLink";
 import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
 import { AvatarDialog } from "./AvatarDialog";
@@ -37,101 +35,112 @@ export type StatusPanelState =
     | "error"; // we couldn't get the IBookTeamCollectionStatus; should never happen.
 
 export interface IBookTeamCollectionStatus {
-    changedRemotely: boolean;
     who: string;
     whoFirstName: string;
     whoSurname: string;
-    currentUser: string;
-    where: string;
-    currentMachine: string;
     when: string;
-    disconnected: boolean;
+    where: string;
+    currentUser: string;
+    currentUserName: string;
+    currentMachine: string;
     hasAProblem: boolean;
     hasInvalidRepoData: string; // error message, or empty if repo data is valid
+    changedRemotely: boolean;
+    disconnected: boolean;
+    newLocalBook: boolean;
+    error: string;
 }
 
-export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
-    const { id: selectedBookId, editable } = useMonitorBookSelection();
+const initialBookStatus: IBookTeamCollectionStatus = {
+    who: "",
+    whoFirstName: "",
+    whoSurname: "",
+    when: "",
+    where: "",
+    currentUser: "",
+    currentUserName: "",
+    currentMachine: "",
+    hasAProblem: false,
+    hasInvalidRepoData: "",
+    changedRemotely: false,
+    disconnected: false,
+    newLocalBook: false,
+    error: ""
+};
 
+export const TeamCollectionBookStatusPanel: React.FunctionComponent<{
+    selectedBookId: string | undefined;
+    editable: boolean;
+    reload: number;
+}> = props => {
     const [tcPanelState, setTcPanelState] = useState<StatusPanelState>(
         "initializing"
     );
-    const [lockedBy, setLockedBy] = useState("");
-    const [lockedByDisplay, setLockedByDisplay] = useState("");
-    const [lockedWhen, setLockedWhen] = useState("");
-    const [lockedMachine, setLockedMachine] = useState("");
-    const [reload, setReload] = useState(0);
-    const [error, setError] = useState("");
+    const [bookStatus, setBookStatus] = useState<IBookTeamCollectionStatus>(
+        initialBookStatus
+    );
     const [progress, setProgress] = useState(0);
     const [busy, setBusy] = useState(false);
     const [checkinFailed, setCheckinFailed] = useState(false);
     const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
     const [forgetDialogOpen, setForgetDialogOpen] = useState(false);
-    const [bookStatus, setBookStatus] = useState<any>({
-        currentUser: "",
-        currentUserName: ""
-    });
-    useSubscribeToWebSocketForEvent("bookStatus", "reload", () =>
-        setReload(old => old + 1)
-    );
+
     React.useEffect(() => {
-        let lockedByMe = false;
         BloomApi.get(
             "teamCollection/selectedBookStatus",
             data => {
-                const bookStatus: IBookTeamCollectionStatus = data.data;
-                setBookStatus(bookStatus);
-                if (bookStatus.hasInvalidRepoData) {
-                    setTcPanelState("hasInvalidRepoData");
-                } else if (bookStatus.hasAProblem) {
-                    setTcPanelState("problem");
-                } else if (bookStatus.changedRemotely) {
-                    setTcPanelState("needsReload");
-                } else if (bookStatus.who) {
-                    // locked by someone
-                    setLockedBy(bookStatus.who);
-                    const lockedByFullName = `${bookStatus.whoFirstName} ${bookStatus.whoSurname}`.trim();
-                    setLockedByDisplay(lockedByFullName || lockedBy);
-                    if (
-                        bookStatus.who === bookStatus.currentUser &&
-                        bookStatus.where === bookStatus.currentMachine
-                    ) {
-                        setTcPanelState("lockedByMe");
-                        lockedByMe = true;
-                    } else {
-                        const isCurrentUser =
-                            bookStatus.who === bookStatus.currentUser;
-                        if (isCurrentUser) {
-                            setTcPanelState("lockedByMeElsewhere");
-                        } else {
-                            setTcPanelState("locked");
-                        }
-                        setLockedWhen(bookStatus.when);
-                        setLockedMachine(bookStatus.where);
-                    }
-                } else {
-                    setTcPanelState("unlocked");
-                }
-                if (bookStatus.disconnected) {
-                    if (lockedByMe) {
-                        setTcPanelState("lockedByMeDisconnected");
-                    } else {
-                        setTcPanelState("disconnected");
-                    }
-                }
+                setBookStatus(data.data as IBookTeamCollectionStatus);
             },
             err => {
-                // something went wrong. Maybe not registered. Already reported to Sentry, we don't need another throw
-                // here, with less information. Displaying the message may tell the user something. I don't think it's
-                // worth localizing the fallback message here, which is even less likely to be seen.
-                // Enhance: we could display a message telling them to register and perhaps a link to the registration dialog, if the error is 'not registered'.
-                setError(
+                // Something went wrong. Maybe not registered. Already reported to Sentry, we don't need
+                // another 'throw' here, with less information. Displaying the message may tell the user
+                // something. I don't think it's worth localizing the fallback message here, which is even
+                // less likely to be seen.
+                // Enhance: we could display a message telling them to register and perhaps a link to the
+                // registration dialog.
+                const errorMessage =
                     err?.response?.statusText ??
-                        "Bloom could not determine the status of this book"
-                );
+                    "Bloom could not determine the status of this book";
+                setBookStatus({ ...bookStatus, error: errorMessage });
             }
         );
-    }, [selectedBookId, reload]);
+    }, [props.selectedBookId, props.editable, props.reload]);
+
+    const lockedByMe =
+        bookStatus.who !== "" &&
+        bookStatus.who === bookStatus.currentUser &&
+        bookStatus.where === bookStatus.currentMachine;
+    const lockedByFullName = `${bookStatus.whoFirstName} ${bookStatus.whoSurname}`.trim();
+    const lockedByDisplay =
+        lockedByFullName !== "" ? lockedByFullName : bookStatus.who;
+
+    // Calculate panel state
+    React.useEffect(() => {
+        if (bookStatus.disconnected) {
+            setTcPanelState(
+                lockedByMe ? "lockedByMeDisconnected" : "disconnected"
+            );
+        } else if (bookStatus.hasInvalidRepoData) {
+            setTcPanelState("hasInvalidRepoData");
+        } else if (bookStatus.hasAProblem) {
+            setTcPanelState("problem");
+        } else if (bookStatus.changedRemotely) {
+            setTcPanelState("needsReload");
+        } else if (bookStatus.who) {
+            // locked by someone
+            if (lockedByMe) {
+                setTcPanelState("lockedByMe");
+            } else {
+                setTcPanelState(
+                    bookStatus.who === bookStatus.currentUser
+                        ? "lockedByMeElsewhere"
+                        : "locked"
+                );
+            }
+        } else {
+            setTcPanelState("unlocked");
+        }
+    });
 
     useSubscribeToWebSocketForEvent(
         "checkinProgress",
@@ -144,7 +153,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
     if (tcPanelState.startsWith("locked")) {
         avatar = (
             <BloomAvatar
-                email={lockedBy}
+                email={bookStatus.who ?? ""}
                 name={lockedByDisplay}
                 borderColor={
                     tcPanelState === "lockedByMe" && theme.palette.warning.main
@@ -208,7 +217,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         "TeamCollection.CheckedOutOn",
         "The %0 is a person's name, and the %1 is a date.",
         lockedByDisplay,
-        lockedWhen,
+        bookStatus.when,
         true
     );
     const mainTitleLockedElsewhere = useL10n(
@@ -223,7 +232,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         "You cannot edit the book on this computer, until you check it in on %0.",
         "TeamCollection.CheckedOutToYouElsewhereDescription",
         "The %0 is the name of the computer where the book is checked out.",
-        lockedMachine,
+        bookStatus.where,
         undefined,
         true
     );
@@ -231,7 +240,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
         "You checked out this book on %0.",
         "TeamCollection.YouCheckedOutOn",
         "The %0 is a date.",
-        lockedWhen,
+        bookStatus.when,
         undefined,
         true
     );
@@ -314,7 +323,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
             text: "Forget Changes & Check in Book...",
             l10nKey: "TeamCollection.ForgetChangesMenuItem",
             action: () => setForgetDialogOpen(true),
-            disabled: bookStatus.newLocalBook as boolean
+            disabled: bookStatus.newLocalBook
         });
     }
 
@@ -351,7 +360,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                 return (
                     <StatusPanelCommon
                         lockState={state}
-                        title={error}
+                        title={bookStatus.error}
                         subTitle=""
                         icon={
                             // not sure this is the best image to use, but it might help convey that things are not set up right.

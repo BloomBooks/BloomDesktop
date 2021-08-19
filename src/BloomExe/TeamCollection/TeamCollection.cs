@@ -1007,6 +1007,10 @@ namespace Bloom.TeamCollection
 				else if (args is BookRepoChangeEventArgs changeArgs)
 					HandleModifiedFile(changeArgs);
 				else HandleCollectionSettingsChange(args);
+				// These "HandleX" methods send a C# event, which is helpful for the C# end of things.
+				// Unfortunately, a websocket message is needed to make sure that javascript-land is up-to-date
+				// with any remote changes (See BL-10270).
+				_tcManager.BookSelection?.InvokeSelectionChanged(false);
 			}
 		}
 
@@ -2097,7 +2101,8 @@ namespace Bloom.TeamCollection
 		/// Causes a notification to be sent to the UI to update the checkout status icon for {bookName}
 		/// </summary>
 		/// <param name="bookName">The name of the book</param>
-		/// <param name="shouldNotifyIfNotCheckedOut">If true, will also send an event that a book isn't checked out (This is necessary when books are checked in)</param>
+		/// <param name="shouldNotifyIfNotCheckedOut">If true, will also send an event that a book isn't checked out
+		/// (This is necessary when books are checked in).</param>
 		public void UpdateBookStatus(string bookName, bool shouldNotifyIfNotCheckedOut)
 		{
 			Debug.Assert(!bookName.EndsWith(".bloom"), $"UpdateBookStatus was passed bookName=\"{bookName}\", which has a .bloom suffix. This is probably incorrect. This function wants only the bookBaseName");
