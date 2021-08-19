@@ -534,6 +534,8 @@ namespace Bloom.Api
 			{
 				var fileName = Path.GetFileName(imageFile);
 				var sourceDir = FileLocationUtilities.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
+				if (Path.GetDirectoryName(imageFile) == "book-preview")
+					sourceDir = CurrentBook.FolderPath;
 				imageFile = Directory.EnumerateFiles(sourceDir, fileName, SearchOption.AllDirectories).FirstOrDefault();
 
 				// image file not found
