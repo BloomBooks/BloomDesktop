@@ -185,6 +185,11 @@ namespace Bloom.CLI
 				var metadata = BookMetaData.FromFolder(bookPath);
 				bool isTemplateBook = metadata.IsSuitableForMakingShells;
 
+				// Build artifacts the same way from the harvester as on the user's local machine.
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-10300.
+				var bookInfo = new BookInfo(bookPath, false);
+				var settings = AndroidPublishSettings.FromBookInfo(bookInfo);
+
 				using (var folderForUnzipped = new TemporaryFolder("BloomCreateArtifacts_Unzipped"))
 				{
 					// Ensure directory exists, just in case.
@@ -197,7 +202,8 @@ namespace Bloom.CLI
 					new Bloom.web.NullWebSocketProgress(),
 					folderForUnzipped,
 					creator,
-					isTemplateBook);
+					isTemplateBook,
+					settings);
 
 					// Currently the zipping process does some things we actually need, like making the cover picture
 					// transparent (BL-7437). Eventually we plan to separate the preparation and zipping steps (BL-7445).
