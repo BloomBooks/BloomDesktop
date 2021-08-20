@@ -32,7 +32,9 @@
         display: none;
     }
     .bloom-imageContainer {
-        border: none; // overwrite rule from editMode.less
+        &:after {
+            border: none; // overwrite rule from editMode.less
+        }
     }
 }
 

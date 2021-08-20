@@ -6,7 +6,8 @@
 
 .frontCover {
     background-color: @dark;
-    .bloom-editable {
+    .bloom-editable,
+    div.bloom-imageContainer:after {
         // you can't see the default border with a black background
         border-color: rgba(69, 69, 69, 0.5);
     }
@@ -21,7 +22,8 @@
         color: black;
     }
 
-    div.bloom-editable {
+    div.bloom-editable,
+    div.bloom-imageContainer:after {
         border: thin solid white;
     }
 }
