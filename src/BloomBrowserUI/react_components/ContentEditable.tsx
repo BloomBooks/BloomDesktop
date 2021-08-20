@@ -75,6 +75,15 @@ export default class ContentEditable extends React.Component<
 
     private emitChange(event: React.FormEvent<HTMLDivElement>) {
         const content: string = event.currentTarget.innerText;
+
+        if (!content && event.type !== "keypress") {
+            // If the content is empty, be wary of whether or not we actually want to set it.
+            // Have it ignore event types that don't look relevent. (e.g. "blur", when it loses focus)
+            // (Note: I wonder if we could just ignore ANY event that's not keypress, regardless of the value of content.
+            // But it's more conservative to check content too.)
+            return;
+        }
+
         if (this.props.onChange && content !== this.lastContent) {
             // onChange will re-render, messing up the cursor position. So save it.
             const sel = window.getSelection();

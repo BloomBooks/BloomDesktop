@@ -126,8 +126,7 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                                     This file will cause these book to be
                                     grouped under a single bookshelf in Bloom
                                     Reader. This collection’s bookshelf is set
-                                    to "{params.bookshelfLabel}". Bug: after
-                                    entering a custom color, you must press TAB.
+                                    to "{params.bookshelfLabel}".
                                 </div>
                                 <div
                                     css={css`
@@ -148,8 +147,6 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                                         {params.bookshelfLabel}
                                     </div>
 
-                                    {/* TODO: for some reason, you can't enter custom colors with enter (but tab works).
-                            After hitting Enter in the color chooser, we get "#" as the color, which appears as white. */}
                                     <ColorChooser
                                         menuLeft={true}
                                         disabled={false}
