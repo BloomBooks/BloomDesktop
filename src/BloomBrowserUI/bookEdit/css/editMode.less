@@ -83,7 +83,7 @@ body {
 }
 /*+}*/
 div.bloom-imageContainer {
-    border: 1px solid @MediumGray;
+    .borderOnTopOfElement(@MediumGray);
 }
 
 // The editing buttons are hidden when this class is added (currently by motion and comic tools)
@@ -94,7 +94,7 @@ div.bloom-imageContainer {
     }
 }
 .coverColor div.bloom-imageContainer {
-    border: thin solid rgba(1, 1, 1, 0.2);
+    .borderOnTopOfElement(rgba(1, 1, 1, 0.2));
 }
 
 /*....NB: we have 2 rules because some pageLabels may be within the margin box, some outside*/
