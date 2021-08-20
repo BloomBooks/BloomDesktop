@@ -83,11 +83,12 @@ export const SimpleMenu: React.FunctionComponent<{
         props.temporarilyDisableI18nWarning
     );
 
-    const items = props.items.map(item =>
+    const items = props.items.map((item, index) =>
         item === "-" ? (
             <Divider />
         ) : (
             <SimpleMenuRow
+                key={index}
                 handleClose={handleClose}
                 item={item}
                 temporarilyDisableI18nWarning={

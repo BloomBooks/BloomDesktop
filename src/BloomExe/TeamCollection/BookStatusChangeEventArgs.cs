@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Bloom.TeamCollection
+﻿namespace Bloom.TeamCollection
 {
 	/// <summary>
 	/// Used for reporting changes to a book's status, typically one of the options

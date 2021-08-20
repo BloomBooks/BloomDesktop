@@ -72,6 +72,19 @@ export default class BloomButton extends LocalizableElement<
             <span key={1}>{this.getLocalizedContent()}</span>
         );
         const commonChildren = [image, localizedContent];
+        // This allows us to NOT pass props that we don't need to the (eventual) DOM element.
+        // Avoids big React warnings in the console.
+        const {
+            l10nKey,
+            clickApiEndpoint,
+            mightNavigate,
+            enabledImageFile,
+            disabledImageFile,
+            hasText,
+            iconBeforeText,
+            temporarilyDisableI18nWarning,
+            ...extraCssFromContainer
+        } = this.props;
         return this.props.transparent ? (
             // I don't know how to make a material-ui button transparent at the moment,
             /// so use a plain html one
@@ -85,7 +98,7 @@ export default class BloomButton extends LocalizableElement<
                 startIcon={this.props.iconBeforeText}
                 size={this.props.size}
                 href={this.props.href}
-                {...this.props} // allows defining more css rules from container
+                {...extraCssFromContainer} // allows defining more css rules from container
             >
                 {commonChildren}
             </Button>
