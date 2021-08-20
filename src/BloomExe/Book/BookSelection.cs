@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Dynamic;
 using Bloom.Api;
 using Bloom.Properties;
-using Newtonsoft.Json;
 using SIL.Progress;
 
 namespace Bloom.Book
@@ -11,7 +9,6 @@ namespace Bloom.Book
 	{
 		private readonly BloomWebSocketServer _webSocketServer;
 		private Book _currentSelection;
-		internal bool HandlingSelectionChanged;
 		public event EventHandler<BookSelectionChangedEventArgs> SelectionChanged;
 
 		// this one is used for short-lived things other than the "global" one
@@ -22,6 +19,8 @@ namespace Bloom.Book
 		}
 
 		// This one is created by the ProjectContext and is used for the global current book
+		// In actual fact, this ctor (and the associated instance variable) may not be needed at all.
+		// Perhaps it used to?! 12 Aug 2021 gjm
 		public BookSelection(BloomWebSocketServer webSocketServer)
 		{
 			_webSocketServer = webSocketServer;
@@ -54,15 +53,7 @@ namespace Bloom.Book
 
 		public void InvokeSelectionChanged(bool aboutToEdit)
 		{
-			try
-			{
-				HandlingSelectionChanged = true;
-				SelectionChanged?.Invoke(this, new BookSelectionChangedEventArgs() { AboutToEdit = aboutToEdit });
-			}
-			finally
-			{
-				HandlingSelectionChanged = false;
-			}
+			SelectionChanged?.Invoke(this, new BookSelectionChangedEventArgs() { AboutToEdit = aboutToEdit });
 		}
 	}
 }

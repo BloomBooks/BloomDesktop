@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Bloom.TeamCollection
+﻿namespace Bloom.TeamCollection
 {
 	// General base class for three kinds of repo changes detected in event handlers.
 	// This class doesn't have any interesting properties, but it allows us to declare

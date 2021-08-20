@@ -1,11 +1,9 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
-using Sentry;
 using SIL.IO;
 
 namespace Bloom.TeamCollection

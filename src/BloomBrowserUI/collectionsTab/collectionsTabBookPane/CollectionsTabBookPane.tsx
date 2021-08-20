@@ -3,7 +3,11 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { useRef, useState } from "react";
 import { BloomApi } from "../../utils/bloomApi";
-import { TeamCollectionBookStatusPanel } from "../../teamCollection/TeamCollectionBookStatusPanel";
+import {
+    TeamCollectionBookStatusPanel,
+    IBookTeamCollectionStatus,
+    initialBookStatus
+} from "../../teamCollection/TeamCollectionBookStatusPanel";
 import { useMonitorBookSelection } from "../../app/selectedBook";
 import BloomButton from "../../react_components/bloomButton";
 import { kDarkestBackground } from "../../bloomMaterialUITheme";
@@ -19,17 +23,40 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     disableEventsInIframe: boolean;
 }> = props => {
     const [isTeamCollection, setIsTeamCollection] = useState(false);
+    const [bookStatus, setBookStatus] = useState(initialBookStatus);
     const [reload, setReload] = useState(0);
+    // Force a reload when told the book changed, even if it's the same book [id]
+    useSubscribeToWebSocketForEvent("bookStatus", "reload", () =>
+        setReload(old => old + 1)
+    );
 
     const {
         id: selectedBookId,
         editable,
         collectionKind
     } = useMonitorBookSelection();
-    // Force a reload when told the book changed, even if it's the same book [id]
-    useSubscribeToWebSocketForEvent("bookStatus", "changeBook", () =>
-        setReload(old => old + 1)
-    );
+
+    React.useEffect(() => {
+        BloomApi.get(
+            "teamCollection/selectedBookStatus",
+            data => {
+                setBookStatus(data.data as IBookTeamCollectionStatus);
+            },
+            err => {
+                // Something went wrong. Maybe not registered. Already reported to Sentry, we don't need
+                // another 'throw' here, with less information. Displaying the message may tell the user
+                // something. I don't think it's worth localizing the fallback message here, which is even
+                // less likely to be seen.
+                // Enhance: we could display a message telling them to register and perhaps a link to the
+                // registration dialog.
+                const errorMessage =
+                    err?.response?.statusText ??
+                    "Bloom could not determine the status of this book";
+                setBookStatus({ ...bookStatus, error: errorMessage });
+            }
+        );
+    }, [selectedBookId, editable, reload]);
+
     const canMakeBook = collectionKind != "main";
 
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -70,6 +97,41 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
         collectionKind
     ]);
 
+    const editOrMakeButton: JSX.Element = (
+        <BloomButton
+            enabled={canMakeBook || editable}
+            variant={"outlined"}
+            l10nKey={
+                canMakeBook
+                    ? "CollectionTab.MakeBookUsingThisTemplate"
+                    : "CollectionTab.EditBookButton"
+            }
+            clickApiEndpoint={
+                canMakeBook
+                    ? "app/makeFromSelectedBook"
+                    : "app/editSelectedBook"
+            }
+            mightNavigate={true}
+            enabledImageFile={canMakeBook ? "newBook.png" : "EditTab.svg"}
+            disabledImageFile={canMakeBook ? undefined : "EditTab.svg"}
+            hasText={true}
+            color="secondary"
+            css={css`
+                background-color: white !important;
+                color: ${editable
+                    ? "black !important"
+                    : "rgba(0, 0, 0, 0.26);"};
+
+                img {
+                    height: 2em;
+                    margin-right: 10px;
+                }
+            `}
+        >
+            {canMakeBook ? "Make a book using this source" : "Edit this book"}
+        </BloomButton>
+    );
+
     return (
         <div
             css={css`
@@ -88,57 +150,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                     margin-bottom: 10px;
                 `}
             >
-                {canMakeBook || (
-                    <BloomButton
-                        enabled={editable}
-                        variant={"outlined"}
-                        l10nKey="CollectionTab.EditBookButton"
-                        clickApiEndpoint="app/editSelectedBook"
-                        mightNavigate={true}
-                        enabledImageFile="EditTab.svg"
-                        disabledImageFile="EditTab.svg"
-                        hasText={true}
-                        color="secondary"
-                        css={css`
-                            background-color: white !important;
-                            color: ${editable
-                                ? "black !important"
-                                : "rgba(0, 0, 0, 0.26);"};
-
-                            img {
-                                height: 2em;
-                                margin-right: 10px;
-                            }
-                        `}
-                    >
-                        Edit this book
-                    </BloomButton>
-                )}
-                {canMakeBook && (
-                    <BloomButton
-                        enabled={true}
-                        variant={"outlined"}
-                        l10nKey="CollectionTab.MakeBookUsingThisTemplate"
-                        clickApiEndpoint="app/makeFromSelectedBook"
-                        mightNavigate={true}
-                        enabledImageFile="newBook.png"
-                        hasText={true}
-                        color="secondary"
-                        css={css`
-                            background-color: white !important;
-                            color: ${editable
-                                ? "black !important"
-                                : "rgba(0, 0, 0, 0.26);"};
-
-                            img {
-                                height: 2em;
-                                margin-right: 10px;
-                            }
-                        `}
-                    >
-                        Make a book using this source
-                    </BloomButton>
-                )}
+                {editOrMakeButton}
             </div>
             <div
                 css={css`
@@ -198,7 +210,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
             // If that stops being true we might need another more specialized status flag.
             isTeamCollection && !canMakeBook ? (
                 <div id="teamCollection">
-                    <TeamCollectionBookStatusPanel />
+                    <TeamCollectionBookStatusPanel {...bookStatus} />
                 </div>
             ) : null}
         </div>
