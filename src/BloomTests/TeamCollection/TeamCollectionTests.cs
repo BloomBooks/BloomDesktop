@@ -223,7 +223,7 @@ namespace BloomTests.TeamCollection
 			_collection.HandleRemoteBookChangesOnIdle(null, new EventArgs());
 
 			// Verification
-			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations.Last().Arguments[0];
+			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[2].Arguments[0];
 			Assert.That(eventArgs.CheckedOutByWhom, Is.EqualTo(CheckedOutBy.Other));
 
 			Assert.That(_tcLog.Messages[prevMessages].MessageType, Is.EqualTo(MessageAndMilestoneType.Error));
