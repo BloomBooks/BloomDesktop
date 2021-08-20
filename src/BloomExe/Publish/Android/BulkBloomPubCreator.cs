@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.IO;
 using System.Text;
@@ -44,7 +44,9 @@ namespace Bloom.Publish.Android
 						// see https://docs.google.com/document/d/1UUvwxJ32W2X5CRgq-TS-1HmPj7gCKH9Y9bxZKbmpdAI
 
 						progress.MessageWithoutLocalizing($"Creating bloomshelf file...");
+						System.Diagnostics.Debug.Assert(!bulkSaveSettings.bookshelfColor.Contains("\n") && !bulkSaveSettings.bookshelfColor.Contains("\r"), "(BL-10190 Repro) Invalid bookshelfColor setting (contains newline). Please investigate!");
 						var colorString = getBloomReaderColorString(bulkSaveSettings.bookshelfColor);
+						System.Diagnostics.Debug.Assert(!colorString.Contains("\n") && !colorString.Contains("\r"), "(BL-10190 Repro) Invalid computed colorString value (contains newline). Please investigate!");
 
 						// OK I know this looks lame but trust me, using jsconvert to make that trivial label array is way too verbose.
 						var template =
