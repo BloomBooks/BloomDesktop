@@ -29,6 +29,8 @@ namespace BloomTests.Spreadsheet
 </head>
 
 <body data-l1=""en"" data-l2="""" data-l3="""">
+	<div id=""bloomDataDiv"">
+	</div>
     <div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""bdf2acc2-1ea1-4f70-9e36-6bcee3613752"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398384"" data-page-number=""1"" lang="""">
         <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Picture on Bottom"" lang=""en"">
             Picture on Bottom

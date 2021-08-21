@@ -2806,16 +2806,27 @@ namespace Bloom.Book
 		/// </summary>
 		public static void RemoveOtherLanguages(XmlElement group, List<string> languagesToKeep)
 		{
-			foreach (var editable in @group.ChildNodes.Cast<XmlNode>()
+			var deletableChildren = @group.ChildNodes.Cast<XmlNode>()
 				.Where(x => x is XmlElement e
-				            && (e.Attributes["class"]?.Value ?? "").Contains("bloom-editable"))
-				.Cast<XmlElement>().ToList())
+							&& (e.Attributes["class"]?.Value ?? "").Contains("bloom-editable"))
+				.Cast<XmlElement>().ToList();
+
+			RemoveOtherLanguages(deletableChildren, group, languagesToKeep);
+		}
+
+		/// <summary>
+		/// Remove from the parent any of the listed children which are not in the list
+		/// of languages to keep.
+		/// </summary>
+		public static void RemoveOtherLanguages(List<XmlElement> deletableChildren, XmlElement parent, List<string> languagesToKeep)
+		{
+			foreach (var element in deletableChildren)
 			{
-				var lang = editable.Attributes["lang"]?.Value;
+				var lang = element.Attributes["lang"]?.Value;
 				if (lang == "z")
 					continue;
 				if (!languagesToKeep.Contains(lang))
-					@group.RemoveChild(editable);
+					parent.RemoveChild(element);
 			}
 		}
 
