@@ -29,6 +29,9 @@ namespace BloomTests.Spreadsheet
 </head>
 
 <body data-l1=""en"" data-l2="""" data-l3="""">
+	<div id=""bloomDataDiv"">
+        <div data-book=""outside-back-cover-branding-bottom-html"" lang=""*""><img class=""branding"" src=""BloomWithTaglineAgainstLight.svg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+	</div>
     <div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""bdf2acc2-1ea1-4f70-9e36-6bcee3613752"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398384"" data-page-number=""1"" lang="""">
         <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Picture on Bottom"" lang=""en"">
             Picture on Bottom
@@ -245,6 +248,15 @@ namespace BloomTests.Spreadsheet
 			SetupFor(source);
 			var thumbnailColumn = _sheet.ColumnForTag(InternalSpreadsheet.ImageThumbnailLabel);
 			Assert.That(_imageRows[2].GetCell(thumbnailColumn).Text, Is.EqualTo("Bad image file"));
+		}
+
+		[TestCase("fromFile")]
+		public void displayThumbnail_svg_svgErrorMessage(string source)
+		{
+			SetupFor(source);
+			var thumbnailColumn = _sheet.ColumnForTag(InternalSpreadsheet.ImageThumbnailLabel);
+			var svgRow = _rows.First(x => x.GetCell(InternalSpreadsheet.MetadataKeyLabel).Text.Equals("[outside-back-cover-branding-bottom-html]"));
+			Assert.That(svgRow.GetCell(thumbnailColumn).Text, Is.EqualTo("Can't display SVG"));
 		}
 	}
 }

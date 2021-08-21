@@ -161,7 +161,7 @@ namespace BloomTests.Spreadsheet
 		{
 			SetupFor(source);
 			var starLangCol = _sheet.ColumnForLang("*");
-			var styleNumberSequenceRow = _rows.Find(x => x.MetadataKey.Equals("styleNumberSequence"));
+			var styleNumberSequenceRow = _rows.Find(x => x.MetadataKey.Equals("[styleNumberSequence]"));
 			Assert.That(styleNumberSequenceRow, Is.Not.Null);
 			Assert.That(styleNumberSequenceRow.GetCell(starLangCol).Content, Is.EqualTo("0"));
 		}
@@ -171,7 +171,7 @@ namespace BloomTests.Spreadsheet
 		public void MultilingualXmatterTest(string source)
 		{
 			SetupFor(source);
-			var contentLangRow = _rows.Find(x => x.MetadataKey.Equals("bookTitle"));
+			var contentLangRow = _rows.Find(x => x.MetadataKey.Equals("[bookTitle]"));
 			Assert.That(contentLangRow, Is.Not.Null);
 			Assert.That(contentLangRow.GetCell(_sheet.ColumnForLang("es")).Content, Is.EqualTo("<p>Spanish Microwave</p>"));
 			Assert.That(contentLangRow.GetCell(_sheet.ColumnForLang("en")).Content, Is.EqualTo("<p>English Microwave</p>"));
@@ -184,15 +184,15 @@ namespace BloomTests.Spreadsheet
 			SetupFor(source);
 			var imageSourceCol = _sheet.ColumnForTag(InternalSpreadsheet.ImageSourceLabel);
 
-			var coverImageRow = _rows.Find(x => x.MetadataKey.Equals("coverImage"));
+			var coverImageRow = _rows.Find(x => x.MetadataKey.Equals("[coverImage]"));
 			Assert.That(coverImageRow, Is.Not.Null);
 			Assert.That(coverImageRow.GetCell(imageSourceCol).Content, Is.EqualTo("fakeImagesFolderpath\\microwave1.png"));
 
-			var licenseImageRow = _rows.Find(x => x.MetadataKey.Equals("licenseImage"));
+			var licenseImageRow = _rows.Find(x => x.MetadataKey.Equals("[licenseImage]"));
 			Assert.That(licenseImageRow, Is.Not.Null);
 			Assert.That(licenseImageRow.GetCell(imageSourceCol).Content, Is.EqualTo("fakeImagesFolderpath\\license.png"));
 
-			var backImageRow = _rows.Find(x => x.MetadataKey.Equals("outside-back-cover-branding-bottom-html"));
+			var backImageRow = _rows.Find(x => x.MetadataKey.Equals("[outside-back-cover-branding-bottom-html]"));
 			Assert.That(backImageRow, Is.Not.Null);
 			Assert.That(backImageRow.GetCell(imageSourceCol).Content, Is.EqualTo("fakeImagesFolderpath\\BloomWithTaglineAgainstLight.svg"));
 		}
