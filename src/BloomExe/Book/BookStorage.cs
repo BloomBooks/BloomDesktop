@@ -2714,9 +2714,12 @@ namespace Bloom.Book
 		public static void SaveCopyBeforeImportOverwrite(string folderPath, string bookPath)
 		{
 			string parentPath = Directory.GetParent(folderPath).FullName;
-			string newFolderPath = BookStorage.GetUniqueFolderPath(parentPath,
-														Path.GetFileName(folderPath) + " (before import overwrite)",
-														Path.GetFileName(folderPath) + " (before import overwrite-{0})");
+			string origFileName = Path.GetFileName(folderPath);
+			//If the original file name already ends with "(before import overwrite...", strip it off
+			origFileName = origFileName.Split(new string[]{" (before import overwrite"}, StringSplitOptions.None)[0];
+			string newFolderPath = GetUniqueFolderPath(parentPath,
+														origFileName + " (before import overwrite)",
+														origFileName + " (before import overwrite-{0})");
 			try
 			{
 				// directory for the new book

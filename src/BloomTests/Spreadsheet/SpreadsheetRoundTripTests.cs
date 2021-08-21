@@ -34,7 +34,13 @@ namespace BloomTests.Spreadsheet
 <body data-l1=""es"" data-l2="""" data-l3="""">
 	<div id=""bloomDataDiv"">
 		<div data-book=""bookTitle"" lang=""en"" id=""idShouldGetKept"">
-			Pineapples
+			<p><em>Pineapple</em></p>
+
+            <p>Farm</p>
+
+		</div>
+        <div data-book=""topic"" lang=""en"">
+            Health
 		</div>
 		<div data-book=""coverImage"" lang=""*"" src=""cover.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly."">
 			cover.png
@@ -282,15 +288,18 @@ namespace BloomTests.Spreadsheet
 
 		[TestCase("noRetainMarkup")]
 		[TestCase("retainMarkup")]
-		public void XmatterUnchanged(string source)
+		public void DatDivUnchanged(string source)
 		{
 			SetupFor(source);
-			Assert.That(FormatNodeContainsText("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and @id='idShouldGetKept']", "Pineapples"));
+			Assert.That(HasTextWithFormatting("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and @id='idShouldGetKept']//",
+				"Pineapple", bold: false, italic: true, underlined: false, superscript: false));
+			Assert.That(HasTextWithFormatting("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and @id='idShouldGetKept']//",
+				"Farm", bold: false, italic: false, underlined: false, superscript: false));
 		}
 
 		[TestCase("noRetainMarkup")]
 		[TestCase("retainMarkup")]
-		public void XmatterImagesUnchanged(string source)
+		public void DatDivImagesUnchanged(string source)
 		{
 			SetupFor(source);
 			Assert.That(FormatNodeContainsText("//div[@id='bloomDataDiv']/div[@data-book='coverImage' and @src='cover.png']", "cover.png"));

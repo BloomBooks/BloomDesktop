@@ -22,12 +22,12 @@ namespace Bloom.Spreadsheet
 		private List<XmlElement> _groupsOnPage;
 		private List<string> _warnings;
 		private List<ContentRow> _inputRows;
-
-		private List<string> _imageFieldsWithNoSrcAttribute = new List<string>() { "licenseImage" };
+		private XmlElement _dataDivElement;
 
 		public SpreadsheetImporter(HtmlDom dest, InternalSpreadsheet sheet)
 		{
 			_dest = dest;
+			_dataDivElement = _dest.SafeSelectNodes("//div[@id='bloomDataDiv']").Cast<XmlElement>().First();
 			_sheet = sheet;
 		}
 
@@ -143,58 +143,60 @@ namespace Bloom.Spreadsheet
 					// This is actually the normal case. The next group matches the current row.
 					// Fill it in and advance to the next row and group.
 					PutRowInGroup(currentRow, _currentGroup);
-					_currentRowIndex++;
 					AdvanceToNextGroup();
 				}
-				else //This row is xmatter
+				else if (rowTypeLabel[0]=='[' && rowTypeLabel[rowTypeLabel.Length - 1]==']') //This row is xmatter
 				{
-					AddXmatterFromSpreadsheet(currentRow, rowTypeLabel);
-					_currentRowIndex++;
+					string dataBookLabel = rowTypeLabel.Substring(1, rowTypeLabel.Length - 2); //remove brackets
+					UpdateDataDivFromRow(currentRow, dataBookLabel);
 				}
+				_currentRowIndex++;
 			}
 
 			return _warnings;
 		}
 
-		private void AddXmatterFromSpreadsheet(ContentRow currentRow, string rowTypeLabel)
+		private void UpdateDataDivFromRow(ContentRow currentRow, string dataBookLabel)
 		{
-			var xPath = "//div[@id='bloomDataDiv']/div[@data-book=\"" + rowTypeLabel + "\"]";
-			var matchingNodes = _dest.SafeSelectNodes(xPath).Cast<XmlElement>().ToArray();
-			XmlNode templateNode;
-			if (matchingNodes.Length > 0)
+			var xPath = "div[@data-book=\"" + dataBookLabel + "\"]";
+			var matchingNodes = _dataDivElement.SelectNodes(xPath);
+			XmlElement templateNode;
+			if (matchingNodes.Count > 0)
 			{
-				templateNode = matchingNodes[0];
+				templateNode = (XmlElement) matchingNodes[0];
 			}
 			else
 			{
 				templateNode = _dest.RawDom.CreateElement("div");
+				templateNode.SetAttribute("data-book", dataBookLabel);
 			}
 
 			var imageSrcCol = _sheet.ColumnForTag(InternalSpreadsheet.ImageSourceLabel);
 			//TODO copy in images from their source paths. Will be done with the importing images step
 			var imageSrc = Path.GetFileName(currentRow.GetCell(imageSrcCol).Content);
+
 			bool specificLanguageContentFound = false;
 			bool asteriskContentFound = false;
-			var newNodes = new List<XmlNode>();
 
-			//If this row has an image source, add it as a src attribute unless its in the noSrcAttribute list
+			//Whether or not a data-book div has a src attribute, we found that the innerText is used to set the
+			//src of the image in the actual pages of the document, though we haven't found a case where they differ.
+			//So during export we put the innerText into the image source column, and want to put it into
+			//both src and innertext on import, unless the element is in the noSrcAttribute list
 			if (imageSrc.Length > 0)
 			{
 				XmlElement newNode = (XmlElement)templateNode.CloneNode(deep: true);
 				newNode.SetAttribute("lang", "*");
 				newNode.InnerText = imageSrc;
 
-				if (! SpreadsheetExporter._xmatterImagesWithNoSrcAttributes.Contains(rowTypeLabel))
+				if (! SpreadsheetExporter.DataDivImagesWithNoSrcAttributes.Contains(dataBookLabel))
 				{
 					newNode.SetAttribute("src", imageSrc);
 				}
-				newNodes.Add(newNode);
-				AddXMatter(rowTypeLabel, newNodes);
-
+				AddDataBookNode(newNode);
 			}
-			else 
+			else //This is not an image node
 			{
-				if (rowTypeLabel.Equals("coverImage"))
+				if (dataBookLabel.Equals("coverImage"))
 				{
 					_warnings.Add("No cover image found");
 				}
@@ -202,7 +204,10 @@ namespace Bloom.Spreadsheet
 				foreach (string lang in _sheet.Languages)
 				{
 					var langVal = currentRow.GetCell(_sheet.ColumnForLang(lang)).Content;
-					if (langVal.Length >= 1)
+					var langXPath = "div[@data-book=\"" + dataBookLabel + "\" and @lang=\"" + lang + "\"]";
+					var langMatchingNodes = _dataDivElement.SelectNodes(langXPath).Cast<XmlElement>();
+
+					if (langVal.Length >= 1) //Found content in spreadsheet for this language and row
 					{
 						if (lang.Equals("*"))
 						{
@@ -212,41 +217,49 @@ namespace Bloom.Spreadsheet
 						{
 							specificLanguageContentFound = true;
 						}
-						XmlElement newNode = (XmlElement)templateNode.CloneNode(deep: true);
-						newNode.SetAttribute("data-book", rowTypeLabel);
-						newNode.SetAttribute("lang", lang);
-						newNode.InnerXml = langVal;
-						newNodes.Add(newNode);
+
+						if (langMatchingNodes.Count() > 0) //Found matching node in dom. Update node.
+						{
+							XmlElement matchingNode = langMatchingNodes.First();
+							matchingNode.InnerXml = langVal;
+							if (langMatchingNodes.Count() > 1)
+							{
+								_warnings.Add("Found more than one " + dataBookLabel +" element for language "
+												+ lang + " in the book dom. Only the first will be updated.");
+							}
+						}
+						else //No node for this language and data-book. Create one from template and add.
+						{
+							XmlElement newNode = (XmlElement)templateNode.CloneNode(deep: true);
+							newNode.SetAttribute("lang", lang);
+							newNode.InnerXml = langVal;
+							AddDataBookNode(newNode);
+						}
 					}
+					else  //Spreadsheet cell for this row and language is empty. Remove the corresponding node if present.
+					{
+						foreach (XmlNode n in langMatchingNodes.ToArray())
+						{
+							_dataDivElement.RemoveChild(n);
+						}
+					}
+				}
+
+				if (RemoveOtherLanguages)
+				{
+					HtmlDom.RemoveOtherLanguages(matchingNodes.Cast<XmlElement>().ToList(), _dataDivElement, _sheet.Languages);
 				}
 
 				if (asteriskContentFound && specificLanguageContentFound)
 				{
-					_warnings.Add(rowTypeLabel + " information found in both * language column and other language column(s)");
-				}
-
-				if (asteriskContentFound || specificLanguageContentFound) 
-				{
-					AddXMatter(rowTypeLabel, newNodes);
+					_warnings.Add(dataBookLabel + " information found in both * language column and other language column(s)");
 				}
 			}
 		}
 
-
-		private void AddXMatter(string rowTypeLabel, List<XmlNode> newNodes)
+		private void AddDataBookNode(XmlNode node)
 		{
-			var dataDivNode = _dest.SafeSelectNodes("//div[@id='bloomDataDiv']").Cast<XmlElement>().ToArray()[0];
-
-			var xPath = "//div[@id='bloomDataDiv']/div[@data-book=\"" + rowTypeLabel + "\"]";
-			var matchingNodes = _dest.SafeSelectNodes(xPath).Cast<XmlElement>().ToArray();
-			foreach (var oldNode in matchingNodes)
-			{
-				dataDivNode.RemoveChild(oldNode);
-			}
-			foreach (var newNode in newNodes)
-			{
-				dataDivNode.AppendChild((XmlNode)newNode);
-			}
+			_dataDivElement.AppendChild(node);
 		}
 
 		private int PreviousRowsOnSamePage(string label)
