@@ -67,6 +67,10 @@ namespace BloomTests.Spreadsheet
 			<div data-book=""licenseImage"" lang=""*"">
 				license.png
 			</div>
+
+			<div data-book=""ztest"" lang=""z"">
+				foo
+			</div>
 			<div data-xmatter-page=""insideFrontCover"" data-page=""required singleton"" data-export=""front-matter-inside-front-cover"" data-page-number=""""></div>
 			<div data-xmatter-page=""titlePage"" data-page=""required singleton"" data-export=""front-matter-title-page"" data-page-number=""""></div>
 			<div data-xmatter-page=""credits"" data-page=""required singleton"" data-export=""front-matter-credits"" data-page-number=""""></div>
