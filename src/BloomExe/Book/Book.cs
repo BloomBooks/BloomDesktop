@@ -4158,6 +4158,20 @@ namespace Bloom.Book
 			BookInfo.MetaData.Feature_Motion = MotionMode;
 		}
 
+		/// <summary>
+		/// BloomServer needs a static version of this method to ensure that the collection tab preview pane
+		/// has the necessary placeholder file.
+		/// </summary>
+		public static void EnsureVideoPlaceholderFile(Book book)
+		{
+			book.Storage.Update("video-placeholder.svg");
+		}
+
+		public static void EnsureWidgetPlaceholderFile(Book book)
+		{
+			book.Storage.Update("widget-placeholder.svg");
+		}
+
 		// This is a shorthand for a whole set of features.
 		// Note: we are currently planning to eventually store this primarily in the data-div, with the
 		// body feature attributes present only so that CSS can base things on it. This method would then

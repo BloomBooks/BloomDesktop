@@ -1419,11 +1419,12 @@ namespace Bloom.Edit
 		/// </summary>
 		public void RequestVideoPlaceHolder()
 		{
-			_bookSelection.CurrentSelection.Storage.Update("video-placeholder.svg");
+			Book.Book.EnsureVideoPlaceholderFile(_bookSelection.CurrentSelection);
 		}
+
 		public void RequestWidgetPlaceHolder()
 		{
-			_bookSelection.CurrentSelection.Storage.Update("widget-placeholder.svg");
+			Book.Book.EnsureWidgetPlaceholderFile(_bookSelection.CurrentSelection);
 		}
 
 		public string MakeActivity(string fullWidgetPath)
