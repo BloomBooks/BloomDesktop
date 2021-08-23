@@ -28,6 +28,21 @@
     }
 }
 
+// This mixin simply encapsulates the logic of how we add a border on top
+// of the edge of an image container instead of adding a regular border
+// which modifies the size of the container. See BL-10268.
+.borderOnTopOfElement(@color) {
+    &:after {
+        border: 1px solid @color;
+        content: "";
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        position: absolute;
+    }
+}
+
 @defaultLineHeight: 1.5em; //no units! No em!!!! em makes children inside have a lineheight that matches the font of the overall box, regardless of the thing's font-size. See https://developer.mozilla.org/en-US/docs/Web/CSS/line-height
 
 // N.B. New formats must also work something out in pageThumbnailList.less.

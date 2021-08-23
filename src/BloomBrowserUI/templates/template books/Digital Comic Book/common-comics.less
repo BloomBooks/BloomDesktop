@@ -1,0 +1,38 @@
+/* This holds common comic book rules
+ (currently used by Paper Comic Book and Digital Comic Book) */
+
+/* Note: font colors work in our normal user-modifiable style system, so
+   they are defined in the template .htm files instead of here.
+   That way, users can change them (when we eventually offer controls to change text color).
+*/
+@dark: #222222;
+
+.frontCover {
+    background-color: @dark;
+
+    .bloom-editable,
+    // To understand more about this :after selector, reference
+    // the .borderOnTopOfElement(@color) mixin in common-mixins.less
+    div.bloom-imageContainer:after {
+        // you can't see the default border with a dark background
+        border-color: rgba(69, 69, 69, 0.5);
+    }
+}
+
+.comic {
+    background-color: @dark !important;
+
+    /* make highlighted white text easier to read if it is normally a light color (like white)*/
+    span.ui-audioCurrent:not(.disableHighlight),
+    div.ui-audioCurrent:not(.disableHighlight) p {
+        color: black;
+    }
+
+    div.bloom-editable,
+    // To understand more about this :after selector, reference
+    // the .borderOnTopOfElement(@color) mixin in common-mixins.less
+    div.bloom-imageContainer:after {
+        // you can't see the default border with a dark background
+        border: thin solid white;
+    }
+}
