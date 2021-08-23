@@ -1419,7 +1419,15 @@ namespace Bloom.Edit
 		/// </summary>
 		public void RequestVideoPlaceHolder()
 		{
-			_bookSelection.CurrentSelection.Storage.Update("video-placeholder.svg");
+			EnsureVideoPlaceholder(_bookSelection);
+		}
+		/// <summary>
+		/// BloomServer needs a static version of this method to ensure that the collection tab preview pane
+		/// has the necessary placeholder file.
+		/// </summary>
+		public static void EnsureVideoPlaceholder(BookSelection selection)
+		{
+			selection.CurrentSelection.Storage.Update("video-placeholder.svg");
 		}
 		public void RequestWidgetPlaceHolder()
 		{

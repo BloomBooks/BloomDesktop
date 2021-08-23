@@ -405,6 +405,10 @@ namespace Bloom.Api
 					info.WriteCompleteOutput("");
 					return true;
 				}
+				if (localPath.EndsWith("video-placeholder.svg"))
+				{
+					EditingModel.EnsureVideoPlaceholder(_bookSelection);
+				}
 
 				if (localPath == "book-preview/index.htm")
 				{

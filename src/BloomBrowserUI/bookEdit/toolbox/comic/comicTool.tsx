@@ -1,3 +1,6 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+
 import * as React from "react";
 import { useState, useEffect } from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
@@ -32,6 +35,7 @@ import {
 import { IColorPickerDialogProps } from "../../../react_components/colorPickerDialog";
 import * as tinycolor from "tinycolor2";
 import { showSignLanguageTool } from "../../js/bloomVideo";
+import { kBloomBlue } from "../../../bloomMaterialUITheme";
 
 const ComicToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
@@ -479,23 +483,38 @@ const ComicToolControls: React.FunctionComponent = () => {
         switch (bubbleType) {
             case "image":
                 return (
-                    <Typography id="videoOrImageSubstituteSection">
-                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.ImageSelected">
-                            Image selected
-                        </Div>
-                    </Typography>
+                    <div id="videoOrImageSubstituteSection">
+                        <Typography className="imageNoOptions">
+                            <Span l10nKey="EditTab.Toolbox.ComicTool.Options.ImageSelected">
+                                There are no options for this kind of overlay
+                            </Span>
+                        </Typography>
+                    </div>
                 );
             case "video":
                 return (
-                    <Button
-                        id="videoOrImageSubstituteSection"
-                        onClick={showSignLanguageTool}
-                        size="small"
-                    >
-                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.ShowSignLanguageTool">
-                            Show Sign Language Tool
-                        </Div>
-                    </Button>
+                    <div id="videoOrImageSubstituteSection">
+                        <Button
+                            css={css`
+                                background-color: ${kBloomBlue};
+                                text-align: center;
+                            `}
+                            className="showSignLanguageButton"
+                            onClick={showSignLanguageTool}
+                            size="large"
+                            variant="contained"
+                        >
+                            <Typography
+                                css={css`
+                                    color: white;
+                                `}
+                            >
+                                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.ShowSignLanguageTool">
+                                    Show Sign Language Tool
+                                </Span>
+                            </Typography>
+                        </Button>
+                    </div>
                 );
             case undefined:
             case "text":
@@ -673,7 +692,7 @@ const ComicToolControls: React.FunctionComponent = () => {
                     l10nKey="EditTab.Toolbox.ComicTool.DragInstructions"
                     className="comicToolControlDragInstructions"
                 >
-                    Drag to add to an image
+                    Drag any of these overlays onto the image:
                 </Div>
                 <div className={"shapeChooserRow"} id={"shapeChooserRow1"}>
                     <img
@@ -695,7 +714,7 @@ const ComicToolControls: React.FunctionComponent = () => {
                     <img
                         id="shapeChooserImagePlaceholder"
                         className="comicToolControlDraggableBubble"
-                        src="placeHolder.png"
+                        src="image-overlay.svg"
                         draggable={!isBookLocked}
                         onDragStart={
                             !isBookLocked
@@ -711,7 +730,7 @@ const ComicToolControls: React.FunctionComponent = () => {
                     <img
                         id="shapeChooserVideoPlaceholder"
                         className="comicToolControlDraggableBubble"
-                        src="signLanguageTool.svg"
+                        src="sign-language-overlay.svg"
                         draggable={!isBookLocked}
                         onDragStart={
                             !isBookLocked

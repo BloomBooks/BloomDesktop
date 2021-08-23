@@ -169,7 +169,7 @@ export class BubbleManager {
 
     public turnOnHidingImageButtons() {
         const imageContainers: HTMLElement[] = Array.from(
-            document.getElementsByClassName(kImageContainerClass) as any
+            this.getAllPrimaryImageContainersOnPage() as any
         );
         imageContainers.forEach(container => {
             BubbleManager.hideImageButtonsIfNotPlaceHolder(container);
@@ -200,7 +200,15 @@ export class BubbleManager {
             overPictureContainerElement.getElementsByClassName(
                 "bloom-editable bloom-visibility-code-on"
             )
-        ).filter(el => !el.parentElement!.classList.contains("box-header-off"));
+        ).filter(
+            el =>
+                !(
+                    el.parentElement!.classList.contains("box-header-off") ||
+                    el.parentElement!.classList.contains(
+                        "bloom-imageDescription"
+                    )
+                )
+        );
         if (focusableDivs.length === 0) {
             focusableDivs = Array.from(
                 overPictureContainerElement.getElementsByClassName(
@@ -444,7 +452,9 @@ export class BubbleManager {
     ) {
         const focusables = this.getAllVisibleFocusableDivs(container);
         focusables.forEach(element => {
-            // Don't use an arrow function as an event handler here. These can never be identified as duplicate event listeners, so we'll end up with tons of duplicates
+            // Don't use an arrow function as an event handler here.
+            //These can never be identified as duplicate event listeners, so we'll end up with tons
+            // of duplicates.
             element.addEventListener(
                 "focusin",
                 BubbleManager.onFocusSetActiveElement
@@ -878,7 +888,14 @@ export class BubbleManager {
         // Over a bubble that could be dragged (ignoring the bloom-editable portion).
         // Make the mouse indicate that dragging/resizing is possible
         if (!event.altKey) {
-            container.classList.add("grabbable");
+            // Don't add "grabbable" to video over picture, because click will play the video,
+            // not drag it (unless we're holding the Ctrl key down).
+            if (
+                !this.isVideoOverPictureElement(hoveredBubble.content) ||
+                event.ctrlKey
+            ) {
+                container.classList.add("grabbable");
+            }
         } else {
             const resizeMode = this.getResizeMode(hoveredBubble.content, event);
 

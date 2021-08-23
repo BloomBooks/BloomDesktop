@@ -1893,7 +1893,7 @@
         <note>This tool allows users to insert speech bubbles or callouts, which are pieces of text connected by a line, arrow, or other graphic to a part of a picture. These may be used to give dialogue or to give more information about a specific part of the picture.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true">
-        <source xml:lang="en">Drag to add to an image</source>
+        <source xml:lang="en">Drag any of these overlays onto the image:</source>
         <note>ID: EditTab.Toolbox.ComicTool.DragInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.AddChildBubble" sil:dynamic="true">
@@ -1916,7 +1916,7 @@
         <note>Tooltip for the bubble Duplicate icon</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true">
-        <source xml:lang="en">Image selected</source>
+        <source xml:lang="en">There are no options for this kind of overlay</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ImageSelected</note>
         <note>This notification shows if a picture over picture is selected.</note>
       </trans-unit>
