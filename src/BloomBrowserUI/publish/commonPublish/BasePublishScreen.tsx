@@ -66,7 +66,7 @@ export const HelpGroup: React.FunctionComponent = props => {
     );
 };
 export const CommandsGroup: React.FunctionComponent = props => {
-    return <section className={"helpGroup"}>{props.children}</section>;
+    return <section className={"commandGroup"}>{props.children}</section>;
 };
 function findOne(children: React.ReactNode, classRef: React.ReactNode) {
     return findAny(children, classRef)[0];
