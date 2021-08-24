@@ -6,7 +6,7 @@ import { BloomApi } from "../utils/bloomApi";
 import { P } from "../react_components/l10nComponents";
 import {
     BloomEnterpriseAvailableContext,
-    RequiresBloomEnterpriseWrapper
+    RequiresBloomEnterpriseOverlayWrapper
 } from "../react_components/requiresBloomEnterprise";
 import "./TeamCollectionSettingsPanel.less";
 import theme from "../bloomMaterialUITheme";
@@ -157,18 +157,14 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
     return (
         <ThemeProvider theme={theme}>
             <div id="teamCollection-settings">
-                <RequiresBloomEnterpriseWrapper>
-                    <BloomEnterpriseAvailableContext.Consumer>
-                        {enterpriseAvailable => (
-                            <React.Fragment>
-                                {intro}
-                                {repoFolderPath
-                                    ? isTeamCollection
-                                    : isNotTeamCollection}
-                            </React.Fragment>
-                        )}
-                    </BloomEnterpriseAvailableContext.Consumer>
-                </RequiresBloomEnterpriseWrapper>
+                <RequiresBloomEnterpriseOverlayWrapper>
+                    <React.Fragment>
+                        {intro}
+                        {repoFolderPath
+                            ? isTeamCollection
+                            : isNotTeamCollection}
+                    </React.Fragment>
+                </RequiresBloomEnterpriseOverlayWrapper>
             </div>
         </ThemeProvider>
     );

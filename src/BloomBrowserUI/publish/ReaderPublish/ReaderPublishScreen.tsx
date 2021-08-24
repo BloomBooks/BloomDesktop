@@ -27,7 +27,8 @@ import {
 import { BloomApi } from "../../utils/bloomApi";
 import HelpLink from "../../react_components/helpLink";
 import HtmlHelpLink from "../../react_components/htmlHelpLink";
-import { Link } from "../../react_components/link";
+import { Link, LinkWithDisabledStyles } from "../../react_components/link";
+import { RequiresBloomEnterpriseAdjacentIconWrapper } from "../../react_components/requiresBloomEnterprise";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
@@ -161,15 +162,16 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                         `}
                     />
                     <CommandsGroup>
-                        <Link
-                            //enabled={true} // TODO: enterprise only
-                            l10nKey="PublishTab.Android.SaveWholeCollection"
-                            onClick={() => {
-                                showBulkBloomPubDialog();
-                            }}
-                        >
-                            Make All BloomPUBs from Collection
-                        </Link>
+                        <RequiresBloomEnterpriseAdjacentIconWrapper>
+                            <LinkWithDisabledStyles
+                                l10nKey="PublishTab.Android.SaveWholeCollection"
+                                onClick={() => {
+                                    showBulkBloomPubDialog();
+                                }}
+                            >
+                                Make All BloomPUBs from Collection
+                            </LinkWithDisabledStyles>
+                        </RequiresBloomEnterpriseAdjacentIconWrapper>
                     </CommandsGroup>
                     <HelpGroup>
                         <HelpLink
