@@ -6,6 +6,7 @@ import * as MUI from "@material-ui/core";
 import { LinkBaseProps } from "@material-ui/core/Link";
 
 import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
+import { kBloomGray } from "../utils/colorUtils";
 
 interface ILinkProps extends ILocalizationProps {
     id?: string;
@@ -84,15 +85,18 @@ export class TextWithEmbeddedLink extends LocalizableElement<
     }
 }
 
+/**
+ * The same as Link, but adds some default styling for making the link appear disabled.
+ */
 export const LinkWithDisabledStyles = (props: ILinkProps) => {
     return (
-        // Note: The link text gets passed through props.children through the spread operator
+        // Note: The link text is in props.children which gets passed through the spread operator
         // The disabled status gets passed through props/spread operator too
         <Link
             {...props}
             css={css`
                 &.disabled {
-                    color: #575757;
+                    color: ${kBloomGray};
                     cursor: default;
 
                     &:hover {

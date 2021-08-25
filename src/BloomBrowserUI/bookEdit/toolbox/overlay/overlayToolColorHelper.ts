@@ -1,5 +1,6 @@
 import tinycolor = require("tinycolor2");
 import { ISwatchDefn } from "../../../react_components/colorSwatch";
+import { kBloomGray } from "../../../utils/colorUtils";
 
 export const specialColors: ISwatchDefn[] = [
     // #DFB28B is the color Comical has been using as the default for captions.
@@ -52,7 +53,7 @@ const temp: ISwatchDefn[] = [
     { name: "white", colors: ["white"], opacity: 1 },
     {
         name: "partialTransparent",
-        colors: ["#575757"], // bloom-gray
+        colors: [kBloomGray], // bloom-gray
         opacity: 0.5
     }
 ];
