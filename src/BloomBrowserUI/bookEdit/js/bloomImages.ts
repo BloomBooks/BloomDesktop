@@ -4,10 +4,8 @@ import { BloomApi } from "../../utils/bloomApi";
 // Enhance: this could be turned into a Typescript Module with only two public methods
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
-import { ImageDescriptionAdapter } from "../toolbox/imageDescription/imageDescription";
-import { getToolboxBundleExports } from "../editViewFrame";
 
-declare function ResetRememberedSize(element: HTMLElement);
+import { updateOverlayClass } from "./bubbleManager";
 
 const kPlaybackOrderContainerSelector: string =
     ".bloom-playbackOrderControlsContainer";
@@ -104,9 +102,9 @@ export function GetButtonModifier(container) {
     return buttonModifier;
 }
 
-//Bloom "imageContainer"s are <div>'s with wrap an <img>, and automatically proportionally resize
-//the img to fit the available space
-//Precondition: containerDiv must be just a single HTMLElement
+// Bloom "imageContainer"s are <div>'s which wrap an <img>, and automatically proportionally resize
+// the img to fit the available space.
+// Precondition: containerDiv must be just a single HTMLElement
 function SetupImageContainer(containerDiv: HTMLElement) {
     // Initialize the value of the hoverUp class.
     // the hoverup class should be present whenever the mouse is over the containerDiv.
@@ -119,6 +117,10 @@ function SetupImageContainer(containerDiv: HTMLElement) {
     } else {
         containerDiv.classList.remove("hoverUp");
     }
+
+    // Now that we can overlay things on top of images, we don't want to show the flower placeholder
+    // if the image container contains an overlay.
+    updateOverlayClass(containerDiv);
 
     // This will fix cover image on Kyrgyzstan books that we created before we switched to this
     // new border system. Going forward, say 5.1, we could remove this and just

@@ -31,6 +31,8 @@ const kImageContainerClass = "bloom-imageContainer";
 const kImageContainerSelector = `.${kImageContainerClass}`;
 const kVideoContainerClass = "bloom-videoContainer";
 
+const kOverlayClass = "hasOverlay";
+
 // References to "TOP" in the code refer to the actual TextOverPicture box (what "Bubble"s were
 // originally called) installed in the Bloom page. We are gradually removing these, since now there
 // are multiple types of elements that can be placed over pictures, not just Text.
@@ -493,6 +495,11 @@ export class BubbleManager {
             Comical.activateBubble(bubble);
             this.updateComicalForSelectedElement(newTextOverPictureElement);
             SetupElements(imageContainer);
+
+            // Since we may have just added an element, check if the container has at least one
+            // overlay element and add the 'hasOverlay' class.
+            updateOverlayClass(imageContainer);
+
             // SetupElements (above) will do most of what we need, but when it gets to
             // 'turnOnBubbleEditing()', it's already on, so the method will get skipped.
             // The only piece left from that method that still needs doing is to set the
@@ -522,6 +529,10 @@ export class BubbleManager {
             this.focusLastVisibleFocusable(focusableContainer);
             // When the last visible editable gets focus, onFocusSetActiveElement()
             // will call setActiveElement() to update the toolbox UI.
+
+            // Also, since we just deleted an element, check if the original container no longer
+            // has any overlay elements and remove the 'hasOverlay' class.
+            updateOverlayClass(imageContainer);
         }
     }
 
@@ -2747,6 +2758,17 @@ export class BubbleManager {
             return Bubble.makeDefaultTail(activeElement);
         }
         return undefined;
+    }
+}
+
+// For use by bloomImages.ts, so that newly opened books get this class updated for their images.
+export function updateOverlayClass(imageContainer: HTMLElement) {
+    if (
+        imageContainer.getElementsByClassName(kTextOverPictureClass).length > 0
+    ) {
+        imageContainer.classList.add(kOverlayClass);
+    } else {
+        imageContainer.classList.remove(kOverlayClass);
     }
 }
 
