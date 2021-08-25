@@ -306,13 +306,29 @@ namespace Bloom.ImageProcessing
 		internal static string GetUnusedFilename(string bookFolderPath, string basename, string extension)
 		{
 			// basename may already end in one or more digits. Try to strip off digits, parse and increment.
-			int i;
-			var newBasename = ParseFilename(basename, out i);
-			while (RobustFile.Exists(ConstructFilename(bookFolderPath, newBasename, i, extension)))
+			try
 			{
-				++i;
+				int i;
+				var newBasename = ParseFilename(basename, out i);
+				while (RobustFile.Exists(ConstructFilename(bookFolderPath, newBasename, i, extension)))
+				{
+					++i;
+				}
+				return newBasename + GetCounterString(i) + extension;
 			}
-			return newBasename + GetCounterString(i) + extension;
+			catch (System.OverflowException)
+			{
+				// Image filenames can look like "FB_IMG_1629606288606.jpg", with a huge number at the end.
+				// For these files, try appending a hyphen and a number.
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-10307.
+				var newBasename = basename + "-";
+				int i = 1;
+				while (RobustFile.Exists(ConstructFilename(bookFolderPath, newBasename, i, extension)))
+				{
+					++i;
+				}
+				return newBasename + GetCounterString(i) + extension;
+			}
 		}
 
 		private static string ConstructFilename(string folderPath, string basename, int currentNum, string extension)
