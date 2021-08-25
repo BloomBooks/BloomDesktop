@@ -1896,7 +1896,7 @@ namespace Bloom.CollectionTab
 
 				var sheet = InternalSpreadsheet.ReadFromFile(inputFilepath);
 				var dom = _bookSelection.CurrentSelection.OurHtmlDom;
-				var importer = new SpreadsheetImporter(dom, sheet);
+				var importer = new SpreadsheetImporter(dom, sheet, folderPath);
 				var messages = importer.Import();
 				if (messages.Count > 0)
 				{

@@ -20,7 +20,7 @@ namespace BloomTests.Spreadsheet
 	/// </summary>
 	public class SpreadsheetImagesTests
 	{
-		// re-use the images from another test (added empty file bh.jpg for these tests)
+		// re-use the images from another test (added an svg and an empty file bh.jpg for these tests)
 		private const string _pathToTestImages = "src/BloomTests/ImageProcessing/images";
 		public const string imageBook = @"
 

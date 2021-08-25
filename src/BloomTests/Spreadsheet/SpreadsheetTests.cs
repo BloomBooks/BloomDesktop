@@ -23,7 +23,7 @@ namespace BloomTests.Spreadsheet
 
 	<body data-l1=""en"" data-l2=""en"" data-l3="""">
 		<div id=""bloomDataDiv"">
-			<div data-book=""styleNumberSequence"" lang=""*"">
+			<div data-book=""styleNumberSequence"" lang=""*"" id=""idForTestingAttributeHandling"">
 				0
 			</div>
 			<div data-book=""contentLanguage1"" lang=""*"">
@@ -46,7 +46,7 @@ namespace BloomTests.Spreadsheet
 				<p>Is it the End of the German World?</p>
 			</div>
 
-			<div data-book=""coverImage"" lang=""*"" src=""Cover.jpg"" alt=""This picture,Cover.jpg, is missing or was loading too slowly."" data-copyright="""" data-creator="""" data-license="""">
+			<div data-book=""coverImage"" lang=""*"" src=""Cover.jpg"" alt=""This picture,Cover.jpg, is missing or was loading too slowly."" data-copyright=""oldCopyright"" data-creator=""oldCreator"" data-license=""oldLicense"">
 				Cover.jpg
 			</div>
 
@@ -140,7 +140,7 @@ namespace BloomTests.Spreadsheet
 	            <div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
 	                <div class=""split-pane-component position-top"" style=""bottom: 50%"">
 	                    <div class=""split-pane-component-inner"">
-	                        <div class=""bloom-imageContainer bloom-leadingElement"" title=""Name: aor_CMB424.png Size: 46.88 kb Dots: 1460 x 1176 For the current paper size: • The image container is 406 x 335 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 345 DPI. • An image with 1269 x 1047 dots would fill this container at 300 DPI.""><img src=""aor_CMB424.png"" alt="""" data-copyright=""Copyright SIL International 2009"" data-creator="""" data-license=""cc-by-sa""></img></div>
+	                        <div class=""bloom-imageContainer bloom-leadingElement"" title=""theOldTitle""><img src=""aor_CMB424.png"" alt=""oldAlt"" data-copyright=""Copyright SIL International 2009"" data-creator=""oldDataCreator"" data-license=""cc-by-sa""></img></div>
 	                    </div>
 	                </div>
 	                <div class=""split-pane-divider horizontal-divider"" style=""bottom: 50%""></div>

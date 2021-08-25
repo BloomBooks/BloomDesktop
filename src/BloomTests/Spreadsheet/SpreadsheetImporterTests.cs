@@ -1,9 +1,13 @@
 ﻿using Bloom.Book;
 using Bloom.Spreadsheet;
+using BloomTemp;
 using NUnit.Framework;
+using SIL.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
+using System.IO;
+using BloomTests.Spreadsheet;
 
 namespace BloomTests.Spreadsheet
 {
@@ -15,17 +19,25 @@ namespace BloomTests.Spreadsheet
 	{
 		private InternalSpreadsheet _sheet;
 		protected HtmlDom _dom;
+		private TemporaryFolder _tempFolder;
+		public const string TestImagesDir = "src/BloomTests/ImageProcessing/images";
+		private string _pathToTestImages;
 
 		[OneTimeSetUp]
 		public void OneTimeSetUp()
 		{
+			_pathToTestImages = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(TestImagesDir);
 			_dom = new HtmlDom(SpreadsheetTests.kSimpleTwoPageBook, true);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en']/p[text()='Riding on elephants can be risky.']", 1); // unchanged
+			_tempFolder = new TemporaryFolder("SpreadsheetImportTestImageFolder");
+			string bookFolderPath = _tempFolder.FolderPath;
+
+			RobustFile.Copy(Path.Combine(_pathToTestImages, "man.png"), Path.Combine(_tempFolder.FolderPath, "man.png"));
 
 			// The tests in this class all check the results of importing what export produced,
 			// but with some changes. 
 			var exporter = new SpreadsheetExporter();
-			_sheet = exporter.Export(_dom, "fakeImagesFolderpath");
+			_sheet = exporter.Export(_dom, bookFolderPath); 
 			// Changing this header will cause all the data that was originally tagged as German to be imported as Tok Pisin.
 			var indexDe = _sheet.ColumnForLang("de");
 			_sheet.Header.SetCell(indexDe, "[tpi]");
@@ -44,13 +56,17 @@ namespace BloomTests.Spreadsheet
 			var asteriskColumn = _sheet.ColumnForLang("*");
 			var imageSrcColumn = _sheet.ColumnForTag(InternalSpreadsheet.ImageSourceLabel);
 
+			var firstImageRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.GetCell(imageSrcColumn).Content.Contains("aor_CMB424.png"));
+			Assert.IsNotNull(firstImageRowToModify, "Did not find the first image row that OneTimeSetup was expecting to modify");
+			firstImageRowToModify.SetCell(imageSrcColumn, Path.Combine(_pathToTestImages, "LakePendOreille.jpg"));
+
 			var firstXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.MetadataKey.Contains("styleNumberSequence"));
 			Assert.IsNotNull(firstXmatterRowToModify, "Did not find the first xmatter row that OneTimeSetup was expecting to modify");
 			firstXmatterRowToModify.SetCell(asteriskColumn, "7");
 
 			var secondXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.MetadataKey.Contains("coverImage"));
 			Assert.IsNotNull(secondXmatterRowToModify, "Did not find the second xmatter row that OneTimeSetup was expecting to modify");
-			secondXmatterRowToModify.SetCell(imageSrcColumn, "octopus.png");
+			secondXmatterRowToModify.SetCell(imageSrcColumn, Path.Combine(_pathToTestImages, "bird.png"));
 
 			var thirdXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.MetadataKey.Contains("bookTitle"));
 			Assert.IsNotNull(thirdXmatterRowToModify, "Did not find the third xmatter row that OneTimeSetup was expecting to modify");
@@ -64,11 +80,17 @@ namespace BloomTests.Spreadsheet
 
 			var fifthXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.MetadataKey.Contains("licenseImage"));
 			Assert.IsNotNull(fifthXmatterRowToModify, "Did not find the fifth xmatter row that OneTimeSetup was expecting to modify");
-			fifthXmatterRowToModify.SetCell(imageSrcColumn, "newLicenseImage.png");
+			fifthXmatterRowToModify.SetCell(imageSrcColumn, Path.Combine(_pathToTestImages, "man.png"));
 
-			var importer = new SpreadsheetImporter(this._dom, _sheet);
+			var importer = new SpreadsheetImporter(this._dom, _sheet, bookFolderPath);
 			InitializeImporter(importer);
 			importer.Import();
+		}
+
+		[OneTimeTearDown]
+		public void OneTimeTearDown()
+		{
+			_tempFolder.Dispose();
 		}
 
 		/// <summary>
@@ -117,8 +139,8 @@ namespace BloomTests.Spreadsheet
 			var assertDom = AssertThatXmlIn.Dom(_dom.RawDom);
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='styleNumberSequence' and @lang='*' and text()='7']", 1);
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='styleNumberSequence' and text()='1']", 0);
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImage' and @src='octopus.png' and text()='octopus.png']", 1);
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='fr']", 0); 
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImage' and @src='bird.png' and text()='bird.png']", 1);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='fr']", 0);
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='tpi']", 0);
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en']/p[text()='This is Not the End of the English World']", 1);
 
@@ -126,11 +148,53 @@ namespace BloomTests.Spreadsheet
 			//as well as adding a new element for newDataBookLabel
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage1' and @lang='*']", 1);
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='newDataBookLabel' and @lang='*' and text()='newContent']", 1);
-
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='licenseImage' and @lang='*' and not(@src) and text()='newLicenseImage.png']", 1);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='licenseImage' and @lang='*' and not(@src) and text()='man.png']", 1);
 
 			//make sure z language node is not removed
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='ztest' and @lang='z']", 1);
+		}
+
+		[Test]
+		public void XmatterAttributesModified()
+		{
+			var assertDom = AssertThatXmlIn.Dom(_dom.RawDom);
+			//image-specific attributes are removed
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImage' and alt='oldAlt']", 0);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImage' and data-license='oldLicense']", 0);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImage' and  data-copyright='oldCopyright']", 0);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImage' and  data-license='cc-by-sa']", 0);
+
+			//other attributes are kept
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='styleNumberSequence' and id='idForTestingAttributeHandling']", 1);
+
+		}
+
+		[Test]
+		public void ImageContainerUpdated()
+		{
+			var assertDom = AssertThatXmlIn.Dom(_dom.RawDom);
+			//make sure all attributes get kept
+			//except the old data-copyright, data-creator, and data-license get removed if image is changed
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-imageContainer') and @title='theOldTitle']", 1);
+			assertDom.HasNoMatchForXpath("//div[contains(@class, 'bloom-imageContainer')]/img[@data-copyright='Copyright SIL International 2009']");
+			assertDom.HasNoMatchForXpath("//div[contains(@class, 'bloom-imageContainer')]/img[@data-creator='oldDataCreator']");
+			assertDom.HasNoMatchForXpath("//div[contains(@class, 'bloom-imageContainer')]/img[@data-license='cc-by-sa']");
+			assertDom.HasNoMatchForXpath("//div[contains(@class, 'bloom-imageContainer')]/img[@alt='oldAlt']");
+
+			assertDom.HasNoMatchForXpath("//div[contains(@class, 'bloom-imageContainer')]/img[@src='aor_CMB424.png']");
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-imageContainer')]/img[@src='LakePendOreille.jpg']", 1);
+		}
+
+		//TODO test case sensitivities in file names
+		[Test]
+		public void ImageFilesGotCopiedIn()
+		{
+			Assert.That(RobustFile.Exists(Path.Combine(_tempFolder.FolderPath, "LakePendOreille.jpg")));
+			Assert.That(RobustFile.Exists(Path.Combine(_tempFolder.FolderPath, "man.png")));
+			Assert.That(RobustFile.Exists(Path.Combine(_tempFolder.FolderPath, "bird.png")));
+
+			//branding svg element was not changed, so the file should not have gotten copied in
+			Assert.That(RobustFile.Exists(Path.Combine(_tempFolder.FolderPath, "BloomWithTaglineAgainstLight.svg")), Is.False);
 		}
 	}
 
@@ -142,7 +206,7 @@ namespace BloomTests.Spreadsheet
 		protected override void InitializeImporter(SpreadsheetImporter importer)
 		{
 			base.InitializeImporter(importer);
-			importer.Params = new SpreadsheetImportParams() {RemoveOtherLanguages = true};
+			importer.Params = new SpreadsheetImportParams() { RemoveOtherLanguages = true };
 		}
 
 		// In this test subclass, which runs the import with RemoveOtherLanguages true, German should be removed.
@@ -303,7 +367,7 @@ namespace BloomTests.Spreadsheet
 
 			MakeXmatterRows(_sheet);
 
-			MakeRow("1","New message about tigers", "New message about French tigers", _sheet);
+			MakeRow("1", "New message about tigers", "New message about French tigers", _sheet);
 
 			// problem 1: input DOM has a second TG on page 1; sheet does not.
 			MakeRow("2", "More about tigers", "More about French tigers", _sheet);
@@ -321,16 +385,16 @@ namespace BloomTests.Spreadsheet
 			MakeRow("5", "Page 5 lost story about tigers", "Page 5 lost story about French tigers", _sheet);
 			// problem 6: an extra block on after the last page
 			MakeRow("6", "Page 6 lost story about tigers", "Page 6 lost story about French tigers", _sheet);
-			var importer = new SpreadsheetImporter(this._dom, _sheet);
-			_messages=importer.Import();
+			var importer = new SpreadsheetImporter(this._dom, _sheet, "fakeBookFolderPath");
+			_messages = importer.Import();
 		}
 
-		public static void MakeRow(string pageNum, string langData1, string langData2, InternalSpreadsheet spreadsheet)
+		public static void MakeRow(string pageNum, string langData1, string langData2, InternalSpreadsheet spreadsheet, string indexOnPage = "1")
 		{
 			var newRow = new ContentRow(spreadsheet);
 			newRow.SetCell(InternalSpreadsheet.MetadataKeyLabel, InternalSpreadsheet.TextGroupLabel);
 			newRow.SetCell(InternalSpreadsheet.PageNumberLabel, pageNum);
-			newRow.SetCell(InternalSpreadsheet.TextIndexOnPageLabel, "1");// group index placeholder, not exactly right but near enough for this test
+			newRow.SetCell(InternalSpreadsheet.TextIndexOnPageLabel, indexOnPage);// group index placeholder, not exactly right but near enough for this test
 			newRow.SetCell("[en]", "<p>" + langData1 + "</p>");
 			newRow.SetCell("[fr]", "<p>" + langData2 + "</p>");
 		}
@@ -522,7 +586,7 @@ namespace BloomTests.Spreadsheet
 			SpreadsheetImportSyncWarnings.MakeRow("1", "New message about tigers", "New message about French tigers", _sheet);
 			SpreadsheetImportSyncWarnings.MakeRow("2", "More about tigers", "More about French tigers", _sheet);
 			// problem: there's no input corresponding to the second block on page 2, nor any of page 4.
-			var importer = new SpreadsheetImporter(this._dom, _sheet);
+			var importer = new SpreadsheetImporter(this._dom, _sheet, "fakeBookFolderPath");
 			_messages = importer.Import();
 		}
 
@@ -534,4 +598,333 @@ namespace BloomTests.Spreadsheet
 		}
 
 	}
+
+	/// <summary>
+	/// Test that importing of both text and images work properly and do not interfere with each other.
+	/// This class tests having image rows come before text rows for each page, child classes will test other orderings
+	/// </summary>
+	public class SpreadsheetImportTextAndImages
+	{
+		//Input has four pages. First has 2 translation groups and 2 images, second has 2 images,
+		//third is blank, fourth has 1 translation group
+		const string textImagesBook = @"
+	<html>
+		<head>
+		</head>
+		<body data-l1=""en"" data-l2=""en"" data-l3="""">
+			<div id=""bloomDataDiv"">
+			</div>
+			<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-bilingual"" data-page="""" id=""79a50bfd-6fb9-4aa6-87d1-6c2f114d1df3"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398383"" data-page-number=""1"" lang="""">
+				<div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Picture in Middle"" lang=""en"">
+					Picture in Middle
+				</div>
+
+				<div class=""pageDescription"" lang=""en""></div>
+
+				<div class=""marginBox"">
+					<div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
+						<div class=""split-pane-component position-top"" style=""bottom: 76%"">
+							<div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px"">
+								<div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
+									<div class=""bloom-editable normal-style bloom-content1 bloom-visibility-code-on"" id=""es1"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""español"" lang=""es"" contenteditable=""true"">
+										<p>The Spanish monkey went biking.</p>
+									</div>
+
+									<div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
+										<p></p>
+									</div>
+
+									<div class=""bloom-editable normal-style bloom-content2 bloom-contentNational1 bloom-visibility-code-on"" id=""en1"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"" lang=""en"" contenteditable=""true"">
+										<p>The English monkey went swimming.</p>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class=""split-pane-divider horizontal-divider"" style=""bottom: 76%""></div>
+
+						<div class=""split-pane-component position-bottom"" style=""height: 76%"">
+							<div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
+								<div class=""split-pane-component position-top"">
+									<div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px"">
+										<div class=""bloom-imageContainer bloom-leadingElement"" title=""Name: 1.jpg Size: 2.07 mb Dots: 3500 x 2100 For the current paper size: • The image container is 406 x 254 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 828 DPI. • An image with 1269 x 794 dots would fill this container at 300 DPI.""><img src = ""1.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+									</div>
+								</div>
+
+								<div class=""split-pane-divider horizontal-divider""></div>
+
+								<div class=""split-pane-component position-bottom"">
+									<div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
+										<div class=""split-pane-component position-top"">
+											<div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px"">
+												<div class=""bloom-translationGroup bloom-trailingElement"">
+													<div class=""bloom-editable normal-style bloom-content1 bloom-visibility-code-on"" id=""es2"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""español"" lang=""es"" contenteditable=""true"">
+														<p>The Spanish monkey had a lovely bike ride.</p>
+													</div>
+
+													<div class=""bloom-editable normal-style bloom-content2 bloom-contentNational1 bloom-visibility-code-on"" id=""en2"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"" lang=""en"" contenteditable=""true"">
+														<p>The English monkey had a lovely swim.</p>
+													</div>
+												</div>
+											</div>
+										</div>
+
+										<div class=""split-pane-divider horizontal-divider""></div>
+
+										<div class=""split-pane-component position-bottom"">
+											<div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px"">
+												<div class=""bloom-imageContainer bloom-leadingElement"" title=""Name: 2.jpg Size: 2.73 mb Dots: 3500 x 2100 For the current paper size: • The image container is 406 x 127 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 1587 DPI. • An image with 1269 x 397 dots would fill this container at 300 DPI.""><img src = ""2.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class=""bloom-page numberedPage customPage A5Portrait bloom-bilingual side-left"" data-page="""" id=""a3654885-c360-4723-a1cd-5acf7dab77cf"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398385"" data-page-number=""2"" lang="""">
+				<div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Just a Picture"" lang=""en"">
+					Just a Picture
+				</div>
+
+				<div class=""pageDescription"" lang=""en""></div>
+
+				<div class=""marginBox"">
+					<div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
+						<div class=""split-pane-component position-top"">
+							<div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
+								<div class=""bloom-imageContainer"" title=""Name: brain.jpg Size: 68.62 kb Dots: 1100 x 880 For the current paper size: • The image container is 406 x 335 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 260 DPI. • An image with 1269 x 1047 dots would fill this container at 300 DPI.""><img src = ""brain.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+							</div>
+						</div>
+
+						<div class=""split-pane-divider horizontal-divider""></div>
+
+						<div class=""split-pane-component position-bottom"">
+							<div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
+								<div class=""bloom-imageContainer bloom-leadingElement"" title=""Name: man.jpg Size: 184.65 kb Dots: 2500 x 1406 For the current paper size: • The image container is 406 x 338 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 591 DPI. • An image with 1269 x 1057 dots would fill this container at 300 DPI.""><img src = ""man.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class=""bloom-page numberedPage customPage A5Portrait bloom-bilingual side-right"" data-page="""" id=""95a6d6be-95a9-474b-9899-4d0938419626"" data-pagelineage=""5dcd48df-e9ab-4a07-afd4-6a24d0398386"" data-page-number=""3"" lang="""">
+				<div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Custom"" lang=""en"">
+					Custom
+				</div>
+
+				<div class=""pageDescription"" lang=""en""></div>
+
+				<div class=""marginBox"">
+					<div class=""split-pane-component-inner""></div>
+				</div>
+			</div>
+
+			<div class=""bloom-page numberedPage customPage A5Portrait side-left bloom-bilingual"" data-page="""" id=""5f3ad94c-cf93-4b23-b9e3-c177ea8da1bd"" data-pagelineage=""a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"" data-page-number=""4"" lang="""">
+				<div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Just Text"" lang=""en"">
+					Just Text
+				</div>
+
+				<div class=""pageDescription"" lang=""en""></div>
+
+				<div class=""marginBox"">
+					<div class=""split-pane-component-inner"">
+						<div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
+							<div class=""bloom-editable normal-style bloom-content1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""español"" lang=""es"" contenteditable=""true"">
+								<p>The Spanish monkey was a purple monkey.</p>
+							</div>
+
+							<div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
+								<p></p>
+							</div>
+
+							<div class=""bloom-editable normal-style bloom-content2 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"" lang=""en"" contenteditable=""true"">
+								<p>The English monkey was an orange monkey.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</body>
+	</html>";
+
+		private InternalSpreadsheet _sheet;
+		private HtmlDom _dom;
+		private List<string> _messages;
+		private string _pathToTestImages;
+		private TemporaryFolder _tempFolder;
+		private bool _syncWarningsTesting; //For use making child classes that test extra/missing rows warning messages
+
+		[OneTimeSetUp]
+		public void OneTimeSetUp()
+		{
+			_pathToTestImages = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(SpreadsheetImporterChangeLanguageTests.TestImagesDir);
+			_tempFolder = new TemporaryFolder("SpreadsheetImportTestImageFolder");
+			_dom = new HtmlDom(textImagesBook, true);
+			_sheet = new InternalSpreadsheet();
+			_sheet.ColumnForLang("es");
+			_sheet.ColumnForLang("en");
+			MakeFirstPageRows();
+			if (!_syncWarningsTesting)
+			{
+				MakeImageRow("2", Path.Combine(_pathToTestImages, "bird.png"), _sheet, indexOnPage: "1");
+				MakeImageRow("2", Path.Combine(_pathToTestImages, "man.png"), _sheet, indexOnPage: "2");
+				MakeTextRow("4", "The new Spanish monkey was very purple.", "The new English monkey was very orange.", _sheet);
+			}
+			var importer = new SpreadsheetImporter(this._dom, _sheet, _tempFolder.FolderPath);
+			_messages = importer.Import();
+		}
+
+		[OneTimeTearDown]
+		public void OneTimeTearDown()
+		{
+			_tempFolder.Dispose();
+		}
+
+		//Importing should be robust to the relative ordering of text with respect to image rows for each page
+		//child classes will override this method to test other orderings
+		protected virtual void MakeFirstPageRows() 
+		{
+			MakeFirstPageImageRow1();
+			MakeFirstPageImageRow2();
+			MakeFirstPageTextRow1();
+			MakeFirstPageTextRow2();
+		}
+
+		protected void MakeFirstPageImageRow1()
+		{
+			MakeImageRow("1", Path.Combine(_pathToTestImages, "shirt.png"), _sheet, indexOnPage: "1");
+		}
+		protected void MakeFirstPageImageRow2()
+		{
+			MakeImageRow("1", Path.Combine(_pathToTestImages, "lady24b.png"), _sheet, indexOnPage: "1");
+		}
+		protected void MakeFirstPageTextRow1()
+		{
+			MakeTextRow("1", "The new Spanish monkey went biking.", "The new English monkey went swimming.", _sheet, indexOnPage: "1");
+		}
+		protected void MakeFirstPageTextRow2()
+		{
+			MakeTextRow("1", "The new Spanish monkey had a lovely bike ride.", "The new English monkey had a lovely swim.", _sheet, indexOnPage: "2");
+		}
+
+		public static void MakeTextRow(string pageNum, string langData1, string langData2, InternalSpreadsheet spreadsheet, string indexOnPage = "1")
+		{
+			var newRow = new ContentRow(spreadsheet);
+			newRow.SetCell(InternalSpreadsheet.MetadataKeyLabel, InternalSpreadsheet.TextGroupLabel);
+			newRow.SetCell(InternalSpreadsheet.PageNumberLabel, pageNum);
+			newRow.SetCell(InternalSpreadsheet.TextIndexOnPageLabel, indexOnPage);
+			newRow.SetCell("[es]", "<p>" + langData1 + "</p>");
+			newRow.SetCell("[en]", "<p>" + langData2 + "</p>");
+		}
+
+		public static void MakeImageRow(string pageNum, string imageSource, InternalSpreadsheet spreadsheet, string indexOnPage = "1")
+		{
+			var newRow = new ContentRow(spreadsheet);
+			newRow.SetCell(InternalSpreadsheet.MetadataKeyLabel, InternalSpreadsheet.ImageKeyLabel);
+			newRow.SetCell(InternalSpreadsheet.PageNumberLabel, pageNum);
+			newRow.SetCell(InternalSpreadsheet.TextIndexOnPageLabel, indexOnPage);
+			newRow.SetCell(InternalSpreadsheet.ImageSourceLabel, imageSource);
+		}
+
+		[Test]
+		public void TextAndImagesPageUpdated() 
+		{
+			var assertDom = AssertThatXmlIn.Dom(_dom.RawDom);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class, 'bloom-translationGroup')]/div[contains(@class, 'bloom-editable') and @id='es1']" +
+				"/p[text()='The new Spanish monkey went biking.']", 1);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class, 'bloom-translationGroup')]/div[contains(@class, 'bloom-editable') and @id='en1']" +
+				"/p[text()='The new English monkey went swimming.']", 1);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class, 'bloom-translationGroup')]/div[contains(@class, 'bloom-editable') and @id='es2']" +
+				"/p[text()='The new Spanish monkey had a lovely bike ride.']", 1);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class, 'bloom-translationGroup')]/div[contains(@class, 'bloom-editable') and @id='en2']" +
+				"/p[text()='The new English monkey had a lovely swim.']", 1);
+
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-imageContainer')]/img[@src='shirt.png']", 1);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-imageContainer')]/img[@src='lady24b.png']", 1);
+		}
+
+		[Test]
+		public void BlankPageLeftBlank()
+		{
+			var assertDom = AssertThatXmlIn.Dom(_dom.RawDom);
+			assertDom.HasNoMatchForXpath("//div[contains(@class, 'bloom-page') and @data-page-number='3']" +
+				"//div[contains(@class, 'bloom-translationGroup') or contains(@class, 'bloom-imageContainer')]"); //TODO should fail with page 2 or 4
+		}
+
+		[Test]
+		public void ImageOnlyPageUpdated()
+		{
+			var assertDom = AssertThatXmlIn.Dom(_dom.RawDom);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-imageContainer')]/img[@src='bird.png']", 1);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-imageContainer')]/img[@src='man.png']", 1);
+		}
+
+		[Test]
+		public void TextOnlyPageUpdated()
+		{
+			var assertDom = AssertThatXmlIn.Dom(_dom.RawDom);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class, 'bloom-translationGroup')]/div[contains(@class, 'bloom-editable') and @lang='es']" +
+				"/p[text()='The new Spanish monkey was very purple.']", 1);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath(
+				"//div[contains(@class, 'bloom-translationGroup')]/div[contains(@class, 'bloom-editable') and @lang='en']" +
+				"/p[text()='The new English monkey was very orange.']", 1);
+		}
+
+	}
+
+
+	//Importing should be robust to the relative ordering of text vs image rows for each page
+	// though the text rows need to be in order with respect to each other, and same with the image rows.
+
+	/// <summary>
+	/// Make sure importing still works when rows with text content come before rows with images for the same page
+	/// </summary>
+	public class SpreadsheetImportTextAndImages_TextRowsComeFirst : SpreadsheetImportTextAndImages
+	{
+		protected override void MakeFirstPageRows()
+		{
+			MakeFirstPageTextRow1();
+			MakeFirstPageTextRow2();
+			MakeFirstPageImageRow1();
+			MakeFirstPageImageRow2();
+		}
+	}
+
+	/// <summary>
+	/// Make sure importing still works when rows with text content and rows with images for the same page are interspersed
+	/// </summary>
+	public class SpreadsheetImportTextAndImages_TextAndImageRowsInterspersed : SpreadsheetImportTextAndImages
+	{
+		protected override void MakeFirstPageRows()
+		{
+			MakeFirstPageImageRow1();
+			MakeFirstPageTextRow1();
+			MakeFirstPageImageRow2();
+			MakeFirstPageTextRow2();
+		}
+	}
+
+	//TODO write more child classes that test that _warnings contains the right messages
+	//in error cases such as:
+		//An extraneous image row in spreadsheet before good text rows and vice versa
+		//a missing image row before good text rows and vice versa
+		//spreadsheet is missing all text and/or all images after a certain point
+		//there are extra/missing rows of both types (image and text) on the same page
 }
+
+
+
+//TODO test
+//That an untouched image keeps its attributes and is untouched
+//Importing xmatter images
+//all the error situations with just images
+
+

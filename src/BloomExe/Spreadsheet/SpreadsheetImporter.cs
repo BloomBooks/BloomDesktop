@@ -1,4 +1,6 @@
 ﻿using Bloom.Book;
+using SIL.IO;
+using SIL.Xml;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,19 +18,28 @@ namespace Bloom.Spreadsheet
 		private int _currentRowIndex;
 		private int _currentPageIndex;
 		private int _groupOnPageIndex;
+		private int _imageContainerOnPageIndex;
 		private XmlElement _currentPage;
 		private XmlElement _currentGroup;
+		private XmlElement _currentImageContainer;
 		private List<XmlElement> _pages;
 		private List<XmlElement> _groupsOnPage;
+		private List<XmlElement> _imageContainersOnPage;
 		private List<string> _warnings;
 		private List<ContentRow> _inputRows;
 		private XmlElement _dataDivElement;
+		private string _bookFolderPath;
+		private bool _completedGroupsOnPage; //true iff we have already updated all the translation groups on the current page
+		private bool _completedImagesOnPage; //true iff we have already updated all the translation groups on the current page
+											 //_completedGroupsOnPage and _completedImagesOnPage should only be simultaneously true
+											 // after we have finished iterating through all images and all translation groups of the dom
 
-		public SpreadsheetImporter(HtmlDom dest, InternalSpreadsheet sheet)
+		public SpreadsheetImporter(HtmlDom dest, InternalSpreadsheet sheet, string bookFolderPath)
 		{
 			_dest = dest;
 			_dataDivElement = _dest.SafeSelectNodes("//div[@id='bloomDataDiv']").Cast<XmlElement>().First();
 			_sheet = sheet;
+			_bookFolderPath = bookFolderPath;
 		}
 
 		/// <summary>
@@ -51,15 +62,62 @@ namespace Bloom.Spreadsheet
 			_currentRowIndex = 0;
 			_currentPageIndex = -1;
 			_groupsOnPage = new List<XmlElement>(0);
-			AdvanceToNextGroup();
-			while (_currentGroup != null || _currentRowIndex < _inputRows.Count)
+			_imageContainersOnPage = new List<XmlElement>(0);
+			AdvanceToNextPage();
+			while (_currentGroup != null || _currentImageContainer != null || _currentRowIndex < _inputRows.Count)
 			{
+				var currentRow = _inputRows[_currentRowIndex];
+				string rowTypeLabel = currentRow.MetadataKey;
+
+				bool isTextGroupRow = rowTypeLabel.Equals(InternalSpreadsheet.TextGroupLabel);
+				bool isImageRow = rowTypeLabel.Equals(InternalSpreadsheet.ImageKeyLabel);
+
 				var pageNumber = HtmlDom.NumberOfPage(_currentPage);
+				if (isTextGroupRow && _completedGroupsOnPage)
+				{
+					//TODO IMPORTANT handle the case where there are more rows after the book has ended. Possibly on nonexsitant pagenumbers.
+
+					//TODO improve this warning message. Do we want it to be like the
+					//"Input has {rowsForPage} row(s) for page {rowPageNumberLabel}, but page {rowPageNumberLabel} has only..."
+					//message, or at least say how many extra rows there are?
+					_warnings.Add($"Input has more text than there is room for on page {pageNumber}");
+					//skip through any other extraneous text rows for this page
+					while (_inputRows[_currentRowIndex].MetadataKey.Equals(InternalSpreadsheet.TextGroupLabel)
+						   && _inputRows[_currentRowIndex].PageNumber.Equals(pageNumber)) //TODO this won't work if currentRowIndex > inputRows.Cont
+					{
+						_currentRowIndex++;
+					}
+					continue;
+				}
+				else if (isImageRow && _completedImagesOnPage)
+				{
+					//TODO improve this warning message too
+					_warnings.Add($"Input has more image(s) than there is room for on page {pageNumber}");
+					//skip through any other extraneous image rows for this page
+					while (_inputRows[_currentRowIndex].MetadataKey.Equals(InternalSpreadsheet.ImageKeyLabel)
+						   && _inputRows[_currentRowIndex].PageNumber.Equals(pageNumber))
+					{
+						_currentRowIndex++;
+					}
+					continue;
+				}
+
+
 				if (_currentRowIndex >= _inputRows.Count)
 				{
 					if (_groupOnPageIndex > 0)
 					{
-						_warnings.Add($"No input row found for block {_groupOnPageIndex + 1} of page {pageNumber}");
+						_warnings.Add($"No input row found for text block {_groupOnPageIndex + 1} of page {pageNumber}");
+						//TODO we get warnings about the rest of the groups on this page if they also didn't have rows?
+					}
+
+					if (_imageContainerOnPageIndex > 0)
+					{
+						_warnings.Add($"No input row found for image block {_imageContainerOnPageIndex + 1} of page {pageNumber}");
+					}
+
+					if (_groupOnPageIndex > 0 || _imageContainerOnPageIndex > 0) //TODO is this logic correct? Shoud it be an or?
+					{
 						_currentPageIndex++;
 					}
 
@@ -70,7 +128,7 @@ namespace Bloom.Spreadsheet
 					{
 						var page = _pages[_currentPageIndex];
 						_currentPageIndex++;
-						if (TranslationGroupManager.SortedGroupsOnPage(page).Count == 0)
+						if (TranslationGroupManager.SortedGroupsOnPage(page).Count == 0 && ImageContainersOnPage(page).Count == 0)
 							continue;
 						pageNumber = HtmlDom.NumberOfPage(page);
 
@@ -79,16 +137,20 @@ namespace Bloom.Spreadsheet
 						_warnings.Add($"No input found for pages from {pageNumber} onwards.");
 					break;
 				}
-				var currentRow = _inputRows[_currentRowIndex];
-				string rowTypeLabel = currentRow.MetadataKey;
-				if (rowTypeLabel == InternalSpreadsheet.ImageKeyLabel)
+
+				if (isTextGroupRow || isImageRow)
 				{
-					//TODO import the pictures
-					_currentRowIndex++;
-					continue;
-				}
-				else if (rowTypeLabel == InternalSpreadsheet.TextGroupLabel)
-				{
+					//for use in warning messages
+					string blockType = "";
+					if (isTextGroupRow)
+					{
+						blockType = "text";
+					}
+					else if (isImageRow)
+					{
+						blockType = "image";
+					}
+
 					var rowPageNumberLabel = currentRow.PageNumber;
 					if (rowPageNumberLabel != pageNumber)
 					{
@@ -97,14 +159,38 @@ namespace Bloom.Spreadsheet
 						if (indexOfTargetPage > 0)
 						{
 							// We're missing input for the current group.
-							_warnings.Add($"No input row found for block {_groupOnPageIndex + 1} of page {pageNumber}");
+							int blockNum = -1;
+							if (isTextGroupRow)
+							{
+								blockNum = _groupOnPageIndex + 1;
+							}
+							else if (isImageRow)
+							{
+								blockNum = _imageContainerOnPageIndex + 1;
+							}
+
+							_warnings.Add($"No input row found for" + blockType + "block {blockNum} of page {pageNumber}");
 							// We want to continue the loop, ensuring that GetNextGroup() will return the first group
 							// on the indicated page.
 							// Enhance: possibly we should do another warning if there are also whole pages with no input?
 							// but not if they have no groups.
+
 							_currentPageIndex = indexOfTargetPage - 1;
 							_groupsOnPage = new List<XmlElement>(0); // so we will at once move to next page
-							AdvanceToNextGroup();
+							_imageContainersOnPage = new List<XmlElement>(0);
+
+							if (isTextGroupRow)
+							{
+								AdvanceToNextGroupOnPage();
+							}
+							else if (isImageRow)
+							{
+								AdvanceToNextImageContainerOnPage();
+							}
+							if (_completedGroupsOnPage && _completedImagesOnPage)
+							{
+								AdvanceToNextPage();
+							}
 							continue; // same row, put it on that page.
 						}
 						// No later page matches this row. So we have nowhere to put it (until we implement
@@ -116,7 +202,7 @@ namespace Bloom.Spreadsheet
 							// Or possibly, there IS such a page, but we couldn't put
 							// even one row on it because it has no TGs at all.
 							// Enhance: possibly better to give different messages for these two cases?
-							_warnings.Add($"Input has rows for page {rowPageNumberLabel}, but document has no page {rowPageNumberLabel} that can hold text");
+							_warnings.Add($"Input has rows for page {rowPageNumberLabel}, but document has no page {rowPageNumberLabel} that can hold this content");
 							// advance to input row on another page
 							_currentRowIndex++;
 							while (_currentRowIndex < _inputRows.Count &&
@@ -135,17 +221,30 @@ namespace Bloom.Spreadsheet
 								rowsForPage++;
 							}
 
-							_warnings.Add($"Input has {rowsForPage} row(s) for page {rowPageNumberLabel}, but page {rowPageNumberLabel} has only {previousRowsOnSamePage} place(s) for text");
+							_warnings.Add($"Input has {rowsForPage} row(s) for page {rowPageNumberLabel}, but page {rowPageNumberLabel} has only {previousRowsOnSamePage} place(s) for text/images");
 							continue; // keep same group
 						}
 					}
 
 					// This is actually the normal case. The next group matches the current row.
 					// Fill it in and advance to the next row and group.
-					PutRowInGroup(currentRow, _currentGroup);
-					AdvanceToNextGroup();
+					if (isTextGroupRow)
+					{
+						PutRowInGroup(currentRow, _currentGroup);
+						AdvanceToNextGroupOnPage();
+					}
+					else if (isImageRow)
+					{
+						PutImageInContainer(currentRow, _currentImageContainer);
+						AdvanceToNextImageContainerOnPage();
+					}
+
+					if (_completedGroupsOnPage && _completedImagesOnPage)
+					{
+						AdvanceToNextPage();
+					}
 				}
-				else if (rowTypeLabel[0]=='[' && rowTypeLabel[rowTypeLabel.Length - 1]==']') //This row is xmatter
+				else if (rowTypeLabel[0] == '[' && rowTypeLabel[rowTypeLabel.Length - 1] == ']') //This row is xmatter
 				{
 					string dataBookLabel = rowTypeLabel.Substring(1, rowTypeLabel.Length - 2); //remove brackets
 					UpdateDataDivFromRow(currentRow, dataBookLabel);
@@ -163,7 +262,7 @@ namespace Bloom.Spreadsheet
 			XmlElement templateNode;
 			if (matchingNodes.Count > 0)
 			{
-				templateNode = (XmlElement) matchingNodes[0];
+				templateNode = (XmlElement)matchingNodes[0];
 			}
 			else
 			{
@@ -172,8 +271,12 @@ namespace Bloom.Spreadsheet
 			}
 
 			var imageSrcCol = _sheet.ColumnForTag(InternalSpreadsheet.ImageSourceLabel);
-			//TODO copy in images from their source paths. Will be done with the importing images step
-			var imageSrc = Path.GetFileName(currentRow.GetCell(imageSrcCol).Content);
+			var imageSrcPath = currentRow.GetCell(imageSrcCol).Content;
+			if (imageSrcPath.Length > 0)
+			{
+				//TODO copy in only if not already there...
+				CopyImageIn(imageSrcPath);
+			}
 
 			bool specificLanguageContentFound = false;
 			bool asteriskContentFound = false;
@@ -182,15 +285,16 @@ namespace Bloom.Spreadsheet
 			//src of the image in the actual pages of the document, though we haven't found a case where they differ.
 			//So during export we put the innerText into the image source column, and want to put it into
 			//both src and innertext on import, unless the element is in the noSrcAttribute list
-			if (imageSrc.Length > 0)
+			var imageSrcFileName = Path.GetFileName(imageSrcPath);
+			if (imageSrcFileName.Length > 0)
 			{
 				XmlElement newNode = (XmlElement)templateNode.CloneNode(deep: true);
 				newNode.SetAttribute("lang", "*");
-				newNode.InnerText = imageSrc;
+				newNode.InnerText = imageSrcFileName;
 
-				if (! SpreadsheetExporter.DataDivImagesWithNoSrcAttributes.Contains(dataBookLabel))
+				if (!SpreadsheetExporter.DataDivImagesWithNoSrcAttributes.Contains(dataBookLabel))
 				{
-					newNode.SetAttribute("src", imageSrc);
+					newNode.SetAttribute("src", imageSrcFileName);
 				}
 				AddDataBookNode(newNode);
 			}
@@ -224,7 +328,7 @@ namespace Bloom.Spreadsheet
 							matchingNode.InnerXml = langVal;
 							if (langMatchingNodes.Count() > 1)
 							{
-								_warnings.Add("Found more than one " + dataBookLabel +" element for language "
+								_warnings.Add("Found more than one " + dataBookLabel + " element for language "
 												+ lang + " in the book dom. Only the first will be updated.");
 							}
 						}
@@ -281,29 +385,97 @@ namespace Bloom.Spreadsheet
 			return -1;
 		}
 
-		private void AdvanceToNextGroup()
+		private void AdvanceToNextGroupOnPage()
 		{
 			_groupOnPageIndex++;
 			// We arrange for this to be always true initially
-			while (_groupOnPageIndex >= _groupsOnPage.Count)
+			if (_groupOnPageIndex >= _groupsOnPage.Count)
+			{
+				_completedGroupsOnPage = true;
+				_currentGroup = null;
+			}
+			else
+			{
+				_currentGroup = _groupsOnPage[_groupOnPageIndex];
+			}
+		}
+
+		private void AdvanceToNextImageContainerOnPage()
+		{
+			_imageContainerOnPageIndex++;
+			// We arrange for this to be always true initially
+
+			if (_imageContainerOnPageIndex >= _imageContainersOnPage.Count)
+			{
+				_completedImagesOnPage = true;
+				_currentImageContainer = null;
+			}
+			else
+			{
+				_currentImageContainer = _imageContainersOnPage[_imageContainerOnPageIndex];
+			}
+		}
+
+		//Called whenever we finish both all the translation groups and all the image containers on the page
+		private void AdvanceToNextPage()
+		{
+			while (_groupOnPageIndex >= _groupsOnPage.Count
+				&& _imageContainerOnPageIndex >= _imageContainersOnPage.Count)
 			{
 				_currentPageIndex++;
 				if (_currentPageIndex >= _pages.Count)
 				{
 					_currentGroup = null;
+					_currentImageContainer = null;
 					_currentPage = null;
 					return;
 				}
 
 				_currentPage = _pages[_currentPageIndex];
 				if (HtmlDom.NumberOfPage(_currentPage) == "")
+				{
 					_groupsOnPage = new List<XmlElement>(0); // skip xmatter or similar page
+					_imageContainersOnPage = new List<XmlElement>(0);
+				}
 				else
+				{
 					_groupsOnPage = TranslationGroupManager.SortedGroupsOnPage(_currentPage);
+					_imageContainersOnPage = ImageContainersOnPage(_currentPage);
+				}
 				_groupOnPageIndex = 0;
+				_imageContainerOnPageIndex = 0;
 			}
 
-			_currentGroup = _groupsOnPage[_groupOnPageIndex];
+			//check whether there are translation groups or image containers on page (there will be at least one)
+			//and set variables accordingly
+			_completedGroupsOnPage = false;
+			_completedImagesOnPage = false;
+			if (_groupsOnPage.Count == 0)
+			{
+				_completedGroupsOnPage = true;
+				_currentGroup = null;
+			}
+			else
+			{
+				_currentGroup = _groupsOnPage[_groupOnPageIndex];
+			}
+
+			if (_imageContainersOnPage.Count == 0)
+			{
+				_completedImagesOnPage = true;
+				_currentImageContainer = null;
+			}
+			else
+			{
+				_currentImageContainer = _imageContainersOnPage[_imageContainerOnPageIndex];
+			}
+		}
+
+		private static List<XmlElement> ImageContainersOnPage(XmlElement page)
+		{
+			return page.SafeSelectNodes(".//div[contains(@class, 'bloom-imageContainer')]")
+				.Cast<XmlElement>().ToList();
+
 		}
 
 		/// <summary>
@@ -332,7 +504,7 @@ namespace Bloom.Spreadsheet
 						// Enhance: Eventually we should be able to come up with some sort of default here.
 						// Since this is a rather simple temporary expedient I haven't unit tested it.
 						_warnings.Add(
-							$"Could not import group {_groupOnPageIndex} ({content}) on page {HtmlDom.NumberOfPage(_currentPage)} because it has no bloom-editable children to use as templates.");
+							$"Could not import text group {_groupOnPageIndex} ({content}) on page {HtmlDom.NumberOfPage(_currentPage)} because it has no bloom-editable children to use as templates.");
 						return;
 					}
 
@@ -347,6 +519,49 @@ namespace Bloom.Spreadsheet
 			if (RemoveOtherLanguages)
 			{
 				HtmlDom.RemoveOtherLanguages(@group, sheetLanguages);
+			}
+		}
+
+		private void PutImageInContainer(ContentRow row, XmlElement container)
+		{
+			var imageSrcCol = _sheet.ColumnForTag(InternalSpreadsheet.ImageSourceLabel);
+			var imageSrcPath = row.GetCell(imageSrcCol).Content;
+
+			XmlElement imageElement = container.SafeSelectNodes(".//img").Cast<XmlElement>().First();
+			if (imageElement == null)
+			{
+				_warnings.Add(
+					$"Could not import image {_imageContainerOnPageIndex} on page {HtmlDom.NumberOfPage(_currentPage)}, " +
+					$"img element missing from book html.");
+				return;
+			}
+
+			if (Path.Combine(_bookFolderPath, imageElement.GetAttribute("src")).ToLowerInvariant()
+				.Equals(imageSrcPath))
+			{
+				//image is unchanged
+				return;
+			}
+
+			CopyImageIn(imageSrcPath);
+
+			//Remove all attributes (which may contain old image info such as copyright) except the image container class
+			var classAttribute = container.GetAttribute("class");
+			container.RemoveAllAttributes();
+			container.SetAttribute("class", classAttribute);
+			imageElement.RemoveAllAttributes();
+			var imageFileName = Path.GetFileName(imageSrcPath);
+			imageElement.SetAttribute("src", imageFileName);
+		}
+
+		private void CopyImageIn(string imageSrcPath)
+		{
+			var imageFileName = Path.GetFileName(imageSrcPath);
+			//Image source in spreadsheet is not in the book folder, move it in
+			if (!Path.GetDirectoryName(imageSrcPath).Equals(_bookFolderPath))
+			{
+				var imageDestPath = Path.Combine(_bookFolderPath, imageFileName);
+				RobustFile.Copy(imageSrcPath, imageDestPath, overwrite: true); //TODO overwrite=true?
 			}
 		}
 	}
