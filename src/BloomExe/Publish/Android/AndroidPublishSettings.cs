@@ -81,5 +81,19 @@ namespace Bloom.Publish.Android
 				AudioLanguagesToExclude = audioLanguagesToExclude
 			};
 		}
+
+		public static AndroidPublishSettings GetPublishSettingsForBook(BookServer bookServer, BookInfo bookInfo)
+		{
+			// Normally this is setup by the Publish screen, but if you've never visited the Publish screen for this book,
+			// then this will be null. In that case, initialize it here.
+			if (bookInfo.MetaData.TextLangsToPublish == null)
+			{
+				var book = bookServer.GetBookFromBookInfo(bookInfo);
+				var allLanguages = book.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);
+				PublishToAndroidApi.InitializeLanguagesInBook(bookInfo, allLanguages, book.CollectionSettings);
+			}
+			return FromBookInfo(bookInfo);
+		}
+
 	}
 }

@@ -186,9 +186,10 @@ namespace Bloom.CLI
 				bool isTemplateBook = metadata.IsSuitableForMakingShells;
 
 				// Build artifacts the same way from the harvester as on the user's local machine.
+				// (similarly to a bulk publish operation)
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-10300.
 				var bookInfo = new BookInfo(bookPath, false);
-				var settings = AndroidPublishSettings.FromBookInfo(bookInfo);
+				var settings = AndroidPublishSettings.GetPublishSettingsForBook(bookServer, bookInfo);
 
 				using (var folderForUnzipped = new TemporaryFolder("BloomCreateArtifacts_Unzipped"))
 				{
