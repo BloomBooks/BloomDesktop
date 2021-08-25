@@ -21,7 +21,6 @@ import {
     DialogBottomLeftButtons,
     DialogMiddle
 } from "../react_components/BloomDialog/BloomDialog";
-import { kBloomRed } from "../problemDialog/theme";
 
 // Dialog shown (when props.open is true) in response to the "Forget changes & Check in Book..." menu item
 // in the TeamCollectionBookStatusPanel.
