@@ -120,10 +120,10 @@ namespace BloomTests.ImageProcessing
 		[TestCase("9", "10")]
 		[TestCase("b", "b1")]
 		[TestCase("box99", "box100")]
-		[TestCase("IMG_20210825_141322.jpg", "IMG_20210825_141323.jpg")] // Several trailing digits already
-		[TestCase("IMG_20210825141322.jpg", "IMG_20210825141322-1.jpg")] // Too many trailing digits
-		[TestCase("IMG_20210825141322-1.jpg", "IMG_20210825141322-2.jpg")] // Digits all over the place...
-		[TestCase("IMG_1629606288606.jpg", "IMG_1629606288606-1.jpg")] // Too many trailing digits
+		[TestCase("IMG_20210825_141322", "IMG_20210825_141323")] // Several trailing digits already
+		[TestCase("IMG_20210825141322", "IMG_20210825141322-1")] // Too many trailing digits
+		[TestCase("IMG_20210825141322-1", "IMG_20210825141322-2")] // Digits all over the place...
+		[TestCase("IMG_1629606288606", "IMG_1629606288606-1")] // Too many trailing digits
 		public static void GetUnusedFilenameTests(string basename, string expectedResult)
 		{
 			const string extension = ".txt";
