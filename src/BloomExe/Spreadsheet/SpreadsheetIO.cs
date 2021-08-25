@@ -33,6 +33,9 @@ namespace Bloom.Spreadsheet
 		private const int languageColumnWidth = 30;
 		private const int defaultImageWidth = 75; //width of images in pixels. Also used for default row height
 
+		public static HashSet<string> WysiwygFormattedRowKeys = new HashSet<string>()
+			{ InternalSpreadsheet.TextGroupLabel, InternalSpreadsheet.ImageKeyLabel, "[bookTitle]"};
+
 		static SpreadsheetIO()
 		{
 			// The package requires us to do this as a way of acknowledging that we
@@ -71,7 +74,9 @@ namespace Bloom.Spreadsheet
 						// Parse xml for markdown formatting on language columns,
 						// Display formatting in excel spreadsheet
 						ExcelRange currentCell = worksheet.Cells[r, c + 1];
-						if (!retainMarkup && c >= spreadsheet.StandardLeadingColumns.Length && r > 1)
+						if (!retainMarkup
+							&& c >= spreadsheet.StandardLeadingColumns.Length
+							&& IsWysiwygFormattedRow(row))
                         {
 							MarkedUpText markedUpText = MarkedUpText.ParseXml(content);
 							if (markedUpText.HasFormatting)
@@ -145,14 +150,20 @@ namespace Bloom.Spreadsheet
 					}
 					catch (Exception)
 					{
+						string errorText;
 						if (!RobustFile.Exists(imageSrcPath))
 						{
-							worksheet.Cells[r, imageThumbnailColumn + 1].Value = "Missing";
+							errorText = "Missing";
+						}
+						else if (Path.GetExtension(imageSrcPath).ToLowerInvariant().Equals(".svg"))
+						{
+							errorText = "Can't display SVG";
 						}
 						else
 						{
-							worksheet.Cells[r, imageThumbnailColumn + 1].Value = "Bad image file";
+							errorText = "Bad image file";
 						}
+						worksheet.Cells[r, imageThumbnailColumn + 1].Value = errorText;
 					}
 				}
 
@@ -178,7 +189,19 @@ namespace Bloom.Spreadsheet
 					NonFatalProblem.Report(ModalIf.All, PassiveIf.None, errorMsg + ex.Message, exception: ex);
 				}
 			}
-		}	
+		}
+
+		private static bool IsWysiwygFormattedRow(SpreadsheetRow row)
+		{
+			return WysiwygFormattedRowKeys.Contains(row.MetadataKey);
+		}
+
+		private static bool IsWysiwygFormattedRow(ExcelWorksheet worksheet, int rowIndex, SpreadsheetRow row)
+		{
+			var metadataCol = row.Spreadsheet.ColumnForTag(InternalSpreadsheet.MetadataKeyLabel);
+			string metadataKey = worksheet.Cells[rowIndex + 1, metadataCol + 1].Value.ToString();
+			return WysiwygFormattedRowKeys.Contains(metadataKey);
+		}
 
 		public static void ReadSpreadsheet(InternalSpreadsheet spreadsheet, string path)
 		{
@@ -204,7 +227,8 @@ namespace Bloom.Spreadsheet
 			for (var c = 0; c < colCount; c++)
 			{
 				ExcelRange currentCell = worksheet.Cells[rowIndex + 1, c + 1];
-				if (c >= row.Spreadsheet.StandardLeadingColumns.Length && rowIndex >= 1)
+				if (c >= row.Spreadsheet.StandardLeadingColumns.Length
+					&& IsWysiwygFormattedRow(worksheet, rowIndex, row))
 				{
 					row.AddCell(BuildXmlString(currentCell));
 				}

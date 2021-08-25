@@ -1,4 +1,4 @@
-﻿using Bloom.Book;
+using Bloom.Book;
 using Bloom.Spreadsheet;
 using NUnit.Framework;
 using OfficeOpenXml;
@@ -15,12 +15,69 @@ namespace BloomTests.Spreadsheet
 	/// </summary>
 	public class SpreadsheetTests
 	{
+		//Note the BloomDataDiv here is for testing and doesn't completely match the rest of the book
 		public const string kSimpleTwoPageBook = @"
 <html>
 	<head>
 	</head>
 
 	<body data-l1=""en"" data-l2=""en"" data-l3="""">
+		<div id=""bloomDataDiv"">
+			<div data-book=""styleNumberSequence"" lang=""*"">
+				0
+			</div>
+			<div data-book=""contentLanguage1"" lang=""*"">
+				en
+			</div>
+
+			<div data-book=""contentLanguage1Rtl"" lang=""*"">
+				False
+			</div>
+
+			<div data-book=""languagesOfBook"" lang=""*"">
+				English, French, German
+			</div>
+
+			<div data-book=""bookTitle"" lang=""fr"" class="" bloom-editable bloom-nodefaultstylerule bloom-padForOverflow"" style=""padding-bottom: 0px;"" contenteditable=""true"">
+				<p>Is it the End of the French World?</p>
+			</div>
+
+			<div data-book=""bookTitle"" lang=""de"" class="" bloom-editable bloom-nodefaultstylerule bloom-padForOverflow"" style=""padding-bottom: 0px;"" contenteditable=""true"">
+				<p>Is it the End of the German World?</p>
+			</div>
+
+			<div data-book=""coverImage"" lang=""*"" src=""Cover.jpg"" alt=""This picture,Cover.jpg, is missing or was loading too slowly."" data-copyright="""" data-creator="""" data-license="""">
+				Cover.jpg
+			</div>
+
+			<div data-book=""originalTitle"" lang=""*"">
+				Is it the End of the World?
+			</div>
+
+			<div data-book=""outside-back-cover-branding-bottom-html"" lang=""*""><img class=""branding"" src=""BloomWithTaglineAgainstLight.svg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+
+			<div data-book=""licenseUrl"" lang=""*"">
+				http://creativecommons.org/licenses/by/4.0/
+			</div>
+
+			<div data-book=""licenseDescription"" lang=""fr"">
+				http://creativecommons.org/licenses/by/4.0/<br />Se puede hacer uso comercial de esta obra. Se puede adaptar y añadir a esta obra. Se debe mantener el derecho de autor así como los créditos de los autores, ilustradores, etc.
+			</div>
+
+			<div data-book=""licenseImage"" lang=""*"">
+				license.png
+			</div>
+
+			<div data-book=""ztest"" lang=""z"">
+				foo
+			</div>
+			<div data-xmatter-page=""insideFrontCover"" data-page=""required singleton"" data-export=""front-matter-inside-front-cover"" data-page-number=""""></div>
+			<div data-xmatter-page=""titlePage"" data-page=""required singleton"" data-export=""front-matter-title-page"" data-page-number=""""></div>
+			<div data-xmatter-page=""credits"" data-page=""required singleton"" data-export=""front-matter-credits"" data-page-number=""""></div>
+			<div data-xmatter-page=""insideBackCover"" data-page=""required singleton"" data-export=""back-matter-inside-back-cover"" data-page-number=""""></div>
+			<div data-xmatter-page=""outsideBackCover"" data-page=""required singleton"" data-export=""back-matter-back-cover"" data-page-number=""""></div>
+			<div data-xmatter-page=""frontCover"" data-page=""required singleton"" data-export=""front-matter-cover"" data-page-number=""""></div>
+		</div>
 		<div class=""bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover side-right Device16x9Landscape"" data-page=""required singleton"" data-export=""front-matter-cover"" data-xmatter-page=""frontCover"" id=""106c3efd-c64d-4d41-87ad-bf92dbc9fdb1"" lang=""en"" data-page-number="""">
 	        <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Front Cover"">
 	            Front Cover
@@ -214,11 +271,11 @@ namespace BloomTests.Spreadsheet
 			foreach (ContentRow row in allRows)
 			{
 				// Does not copy any header present
-				if (row.GetCell(InternalSpreadsheet.MetadataKeyLabel).Content.Equals(InternalSpreadsheet.ImageKeyLabel))
+				if (row.MetadataKey.Equals(InternalSpreadsheet.ImageKeyLabel))
 				{
 					imageRows.Add(row);
 				}
-				else if (row.GetCell(InternalSpreadsheet.MetadataKeyLabel).Content.Equals(InternalSpreadsheet.TextGroupLabel))
+				else if (row.MetadataKey.Equals(InternalSpreadsheet.TextGroupLabel))
 				{
 					textRows.Add(row);
 				}
@@ -231,18 +288,20 @@ namespace BloomTests.Spreadsheet
 		public void SavesTextFromBlocks(string source)
 		{
 			SetupFor(source);
-			var offset = _sheet.StandardLeadingColumns.Length;
+			var enCol = _sheet.ColumnForLang("en");
+			var frCol = _sheet.ColumnForLang("fr");
+			var deCol = _sheet.ColumnForLang("de");
 			// The first row has data from the second element in the document, because of tabindex.
-			Assert.That(_textRows[0].GetCell(offset).Text, Is.EqualTo("This elephant is running amok. Causing much damage."));
-			Assert.That(_textRows[0].GetCell(offset + 1).Text, Is.EqualTo("This French elephant is running amok. Causing much damage."));
-			Assert.That(_textRows[1].GetCell(offset).Text, Is.EqualTo("Elephants should be handled with much care."));
-			// French is third in its group, but French is the second language encountered, so it should be in the second cell of its row.
-			Assert.That(_textRows[1].GetCell(offset + 1).Text, Is.EqualTo("French elephants should be handled with special care."));
-			Assert.That(_textRows[1].GetCell(offset + 2).Text, Is.EqualTo("German elephants are quite orderly."));
+			Assert.That(_textRows[0].GetCell(enCol).Text, Is.EqualTo("This elephant is running amok. Causing much damage."));
+			Assert.That(_textRows[0].GetCell(frCol).Text, Is.EqualTo("This French elephant is running amok. Causing much damage."));
+			Assert.That(_textRows[1].GetCell(enCol).Text, Is.EqualTo("Elephants should be handled with much care."));
 
-			Assert.That(_textRows[2].GetCell(offset).Text, Is.EqualTo("Riding on elephants can be risky."));
-			Assert.That(_textRows[2].GetCell(offset + 1).Text, Is.EqualTo("Riding on French elephants can be more risky."));
-			Assert.That(_textRows[2].GetCell(offset + 2).Text, Is.EqualTo("Riding on German elephants can be less risky."));
+			Assert.That(_textRows[1].GetCell(frCol).Text, Is.EqualTo("French elephants should be handled with special care."));
+			Assert.That(_textRows[1].GetCell(deCol).Text, Is.EqualTo("German elephants are quite orderly."));
+
+			Assert.That(_textRows[2].GetCell(enCol).Text, Is.EqualTo("Riding on elephants can be risky."));
+			Assert.That(_textRows[2].GetCell(frCol).Text, Is.EqualTo("Riding on French elephants can be more risky."));
+			Assert.That(_textRows[2].GetCell(deCol).Text, Is.EqualTo("Riding on German elephants can be less risky."));
 
 		}
 
@@ -263,7 +322,7 @@ namespace BloomTests.Spreadsheet
 		public void SavesLangData(string source)
 		{
 			SetupFor(source);
-			Assert.That(_sheet.LangCount, Is.EqualTo(3));
+			Assert.That(_sheet.LangCount, Is.EqualTo(4)); //en, fr, de, and *
 		}
 
 		[TestCase("fromExport")]
@@ -323,7 +382,7 @@ namespace BloomTests.Spreadsheet
 				using (var package = new ExcelPackage(info))
 				{
 					var worksheet = package.Workbook.Worksheets[0];
-					int c = _sheetFromExport.StandardLeadingColumns.Length;
+					int c = _sheetFromExport.ColumnForLang("en");
 					var rowCount = worksheet.Dimension.Rows;
 					//The first TextGroup row should contain the marked-up string we are looking for
 					for (int r = 0; true; r++)

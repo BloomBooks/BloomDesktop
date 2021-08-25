@@ -280,6 +280,7 @@
     <Compile Include="Spreadsheet\SpreadsheetImagesTests.cs" />
     <Compile Include="Spreadsheet\SpreadsheetImporterTests.cs" />
     <Compile Include="Spreadsheet\SpreadsheetTests.cs" />
+    <Compile Include="Spreadsheet\SpreadsheetXmatterTests.cs" />
     <Compile Include="TeamCollection\DisconnectedTeamCollectionTests.cs" />
     <Compile Include="TeamCollection\FolderTeamCollectionTests.cs" />
     <Compile Include="TeamCollection\FolderTeamCollectionTests2.cs" />

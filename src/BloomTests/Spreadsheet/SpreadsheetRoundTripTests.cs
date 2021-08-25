@@ -32,7 +32,24 @@ namespace BloomTests.Spreadsheet
 </head>
 
 <body data-l1=""es"" data-l2="""" data-l3="""">
+	<div id=""bloomDataDiv"">
+		<div data-book=""bookTitle"" lang=""en"" id=""idShouldGetKept"">
+			<p><em>Pineapple</em></p>
 
+            <p>Farm</p>
+
+		</div>
+        <div data-book=""topic"" lang=""en"">
+            Health
+		</div>
+		<div data-book=""coverImage"" lang=""*"" src=""cover.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly."">
+			cover.png
+		</div>
+		<div data-book=""licenseImage"" lang= ""*"" >
+			license.png
+		</div>
+		<div data-book=""outside-back-cover-branding-bottom-html"" lang=""*""><img class=""branding"" src=""BloomWithTaglineAgainstLight.svg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+	</div>
     <div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""1"" lang="""">
         <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
             Basic Text &amp; Picture
@@ -151,6 +168,7 @@ namespace BloomTests.Spreadsheet
 			var origDom = new HtmlDom(roundtripTestBook, true);
 			var roundtrippedDom = new HtmlDom(roundtripTestBook, true); //Will get imported into
 			AssertThatXmlIn.Dom(origDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='simpleFormattingTest']", 1);
+			AssertThatXmlIn.Dom(origDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='nestedFormattingTest']", 1);
 			var exporter = new SpreadsheetExporter();
 			exporter.Params = parameters;
 			var sheetFromExport = exporter.Export(origDom, "fakeImagesFolderpath");
@@ -268,6 +286,25 @@ namespace BloomTests.Spreadsheet
 			Assert.That(children[5].InnerText, Is.EqualTo(""));
 		}
 
+		[TestCase("noRetainMarkup")]
+		[TestCase("retainMarkup")]
+		public void DatDivUnchanged(string source)
+		{
+			SetupFor(source);
+			Assert.That(HasTextWithFormatting("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and @id='idShouldGetKept']//",
+				"Pineapple", bold: false, italic: true, underlined: false, superscript: false));
+			Assert.That(HasTextWithFormatting("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and @id='idShouldGetKept']//",
+				"Farm", bold: false, italic: false, underlined: false, superscript: false));
+		}
+
+		[TestCase("noRetainMarkup")]
+		[TestCase("retainMarkup")]
+		public void DatDivImagesUnchanged(string source)
+		{
+			SetupFor(source);
+			Assert.That(FormatNodeContainsText("//div[@id='bloomDataDiv']/div[@data-book='coverImage' and @src='cover.png']", "cover.png"));
+			Assert.That(FormatNodeContainsText("//div[@id='bloomDataDiv']/div[@data-book='licenseImage' and not(@src)]", "license.png"));
+		}
 
 		private bool HasTextWithFormatting(string baseXPath, string text, bool bold, bool italic, bool underlined, bool superscript)
 		{
