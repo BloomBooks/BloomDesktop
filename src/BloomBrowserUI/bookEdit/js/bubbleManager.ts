@@ -483,6 +483,11 @@ export class BubbleManager {
             Comical.activateBubble(bubble);
             this.updateComicalForSelectedElement(newTextOverPictureElement);
             SetupElements(imageContainer);
+
+            // Since we may have just added an element, check if the container has at least one
+            // overlay element and add the 'hasOverlay' class.
+            this.addOverlayClassIfNecessary(imageContainer);
+
             // SetupElements (above) will do most of what we need, but when it gets to
             // 'turnOnBubbleEditing()', it's already on, so the method will get skipped.
             // The only piece left from that method that still needs doing is to set the
@@ -512,6 +517,28 @@ export class BubbleManager {
             this.focusLastVisibleFocusable(focusableContainer);
             // When the last visible editable gets focus, onFocusSetActiveElement()
             // will call setActiveElement() to update the toolbox UI.
+
+            // Also, since we just deleted an element, check if the original container no longer
+            // has any overlay elements and remove the 'hasOverlay' class.
+            this.removeOverlayClassIfNecessary(imageContainer);
+        }
+    }
+
+    private addOverlayClassIfNecessary(imageContainer: HTMLElement) {
+        if (
+            imageContainer.getElementsByClassName(kTextOverPictureClass)
+                .length > 0
+        ) {
+            imageContainer.classList.add("hasOverlay");
+        }
+    }
+
+    private removeOverlayClassIfNecessary(imageContainer: HTMLElement) {
+        if (
+            imageContainer.getElementsByClassName(kTextOverPictureClass)
+                .length === 0
+        ) {
+            imageContainer.classList.remove("hasOverlay");
         }
     }
 

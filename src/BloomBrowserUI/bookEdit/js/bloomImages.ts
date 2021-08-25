@@ -12,6 +12,8 @@ declare function ResetRememberedSize(element: HTMLElement);
 const kPlaybackOrderContainerSelector: string =
     ".bloom-playbackOrderControlsContainer";
 
+const kOverlayElementClass: string = "bloom-textOverPicture";
+
 // This appears to be constant even on higher dpi screens.
 // (See http://www.w3.org/TR/css3-values/#absolute-lengths)
 const kBrowserDpi = 96;
@@ -104,9 +106,9 @@ export function GetButtonModifier(container) {
     return buttonModifier;
 }
 
-//Bloom "imageContainer"s are <div>'s with wrap an <img>, and automatically proportionally resize
-//the img to fit the available space
-//Precondition: containerDiv must be just a single HTMLElement
+// Bloom "imageContainer"s are <div>'s which wrap an <img>, and automatically proportionally resize
+// the img to fit the available space.
+// Precondition: containerDiv must be just a single HTMLElement
 function SetupImageContainer(containerDiv: HTMLElement) {
     // Initialize the value of the hoverUp class.
     // the hoverup class should be present whenever the mouse is over the containerDiv.
@@ -118,6 +120,14 @@ function SetupImageContainer(containerDiv: HTMLElement) {
         containerDiv.classList.add("hoverUp");
     } else {
         containerDiv.classList.remove("hoverUp");
+    }
+
+    // Now that we can overlay things on top of images, we don't want to show the flower placeholder
+    // if the image container contains an overlay.
+    if (containerDiv.getElementsByClassName(kOverlayElementClass).length > 0) {
+        containerDiv.classList.add("hasOverlay");
+    } else {
+        containerDiv.classList.remove("hasOverlay");
     }
 
     // This will fix cover image on Kyrgyzstan books that we created before we switched to this
