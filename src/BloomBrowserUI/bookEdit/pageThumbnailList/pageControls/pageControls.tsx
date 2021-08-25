@@ -5,8 +5,6 @@ import BloomButton from "../../../react_components/bloomButton";
 import WebSocketManager from "../../../utils/WebSocketManager";
 import "./pageControls.less";
 import "errorHandler";
-import theme from "../../../bloomMaterialUITheme";
-import { ThemeProvider } from "@material-ui/styles";
 
 // This is one of the root files for our webpack build, the root from which
 // pageControlsBundle.js is built. Currently, contrary to our usual practice,

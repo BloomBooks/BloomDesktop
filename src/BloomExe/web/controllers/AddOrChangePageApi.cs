@@ -65,7 +65,7 @@ namespace Bloom.web.controllers
 			// by the CSS which interprets bloom-noVideoSelected.
 			var div = templatePage.GetDivNodeForThisPage();
 			if (div.SelectSingleNode(".//div[contains(@class, 'bloom-noVideoSelected')]") != null)
-				_pageSelection.CurrentSelection.Book.Storage.Update("video-placeholder.svg");
+				Book.Book.EnsureVideoPlaceholderFile(_pageSelection.CurrentSelection.Book);
 		}
 
 		private void HandleChangeLayout(ApiRequest request)
