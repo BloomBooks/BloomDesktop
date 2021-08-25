@@ -38,6 +38,11 @@ textarea,
     }
 }
 
+// Now that we have overlay elements, we don't want to show the placeholder flower underneath them.
+.bloom-imageContainer.hasOverlay > img[src="placeHolder.png"] {
+    display: none;
+}
+
 // overridden if it is also nested in bloom-showImageDescriptions, but this can't be shared,
 // because we can't use display:flex in epubs.
 .bloom-imageContainer .bloom-imageDescription {
