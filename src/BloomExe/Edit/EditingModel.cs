@@ -1176,6 +1176,7 @@ namespace Bloom.Edit
 			catch (Exception e)
 			{
 				var msg = LocalizationManager.GetString("Errors.ProblemImportingPicture","Bloom had a problem importing this picture.");
+				e.Data["ProblemImagePath"] = imageInfo.OriginalFilePath;
 				ErrorReport.NotifyUserOfProblem(e, msg+Environment.NewLine+e.Message);
 			}
 		}

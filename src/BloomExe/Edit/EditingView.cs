@@ -1166,6 +1166,8 @@ namespace Bloom.Edit
 				{
 					using (PerformanceMeasurement.Global?.Measure("Processing Image"))
 					{
+						try
+						{
 						var sameAsOriginalImage = (imageInfo == dlg.ImageInfo &&
 							oldImage == dlg.ImageInfo.Image &&
 							oldSize == dlg.ImageInfo.Image.Size &&
@@ -1204,8 +1206,6 @@ namespace Bloom.Edit
 						}
 
 						var exceptionMsg = "Bloom had a problem including that image";
-						try
-						{
 							if (copyOriginalImage || sameAsOriginalImage)
 							{
 								// Try to copy the file only if we actually need to copy it.  (BL-9737)
