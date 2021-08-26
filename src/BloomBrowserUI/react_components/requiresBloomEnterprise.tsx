@@ -106,8 +106,17 @@ export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent = pr
         <RequiresBloomEnterpriseProvider>
             <BloomEnterpriseAvailableContext.Consumer>
                 {enterpriseAvailable => (
-                    <div style={{ height: "100%" }}>
-                        <div style={{ display: "block", height: "100%" }}>
+                    <div
+                        css={css`
+                            height: 100%;
+                        `}
+                    >
+                        <div
+                            css={css`
+                                display: block;
+                                height: 100%;
+                            `}
+                        >
                             {props.children}
                         </div>
                         {enterpriseAvailable || (
