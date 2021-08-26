@@ -18,7 +18,14 @@ const mouseOverFunction = e => {
         return; // can this happen?
     }
     if (target.tagName.toLowerCase() === "video") {
-        target.setAttribute("controls", ""); // attribute just has to exist to work
+        if (
+            (e.altKey || e.ctrlKey) &&
+            target.closest(".bloom-textOverPicture")
+        ) {
+            target.removeAttribute("controls"); // trying to move/resize video container
+        } else {
+            target.setAttribute("controls", ""); // attribute just has to exist to work
+        }
     }
 };
 
