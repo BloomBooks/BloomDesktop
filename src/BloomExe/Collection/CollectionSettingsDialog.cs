@@ -421,7 +421,7 @@ namespace Bloom.Collection
 
 		bool IsSubscriptionCodeKnown()
 		{
-			return BrandingProject.HaveFilesForBranding(_brand);
+			return BrandingProject.HaveFilesForBranding(_brand) || CollectionSettingsApi.GetExpirationDate(_subscriptionCode) != DateTime.MinValue;
 		}
 
 		/// <summary>
@@ -655,14 +655,13 @@ namespace Bloom.Collection
 		/// <returns></returns>
 		public bool ChangeBranding(string fullBrandingName, string subscriptionCode)
 		{
-			if (BrandingProject.HaveFilesForBranding(fullBrandingName))
+			if (_brand != fullBrandingName || DifferentSubscriptionCodes(subscriptionCode, _subscriptionCode))
 			{
-				if (_brand != fullBrandingName || DifferentSubscriptionCodes(subscriptionCode, _subscriptionCode))
+				Invoke((Action) ChangeThatRequiresRestart);
+				_brand = fullBrandingName;
+				_subscriptionCode = subscriptionCode;
+				if (BrandingProject.HaveFilesForBranding(fullBrandingName))
 				{
-					Invoke((Action) ChangeThatRequiresRestart);
-					_brand = fullBrandingName;
-					_subscriptionCode = subscriptionCode;
-
 					// if the branding.json specifies an xmatter, set the default for this collection to that.
 					var correspondingXMatterPack = BrandingSettings.GetSettings(fullBrandingName).GetXmatterToUse();
 					if (!string.IsNullOrEmpty(correspondingXMatterPack))
@@ -670,7 +669,6 @@ namespace Bloom.Collection
 						_collectionSettings.XMatterPackName = correspondingXMatterPack;
 					}
 				}
-
 				return true;
 			}
 			return false;

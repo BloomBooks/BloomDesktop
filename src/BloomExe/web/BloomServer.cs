@@ -30,6 +30,7 @@ using Bloom.Publish.Android;
 using Bloom.web;
 using SIL.PlatformUtilities;
 using ThreadState = System.Threading.ThreadState;
+using Bloom.web.controllers;
 
 namespace Bloom.Api
 {
@@ -900,10 +901,13 @@ namespace Bloom.Api
 			{
 				// When developing brandings, it's convenient to just use the very-latest build
 				// which will be sitting in the output/browser/branding/<branding name>/ folder,
-				// rather than the one that is already in the book.
+				// rather than the one that is already in the book.  It's also possible that the
+				// branding hasn't even been developed beyond assigning a license key.
 				if (fileName == "branding.css")
 				{
-					path = _fileLocator.GetBrandingFile(false, "branding.css");
+					path = _fileLocator.GetBrandingFile(true, "branding.css");
+					if (String.IsNullOrEmpty(path))
+						return UsePlaceHolderBrandingCss(info);
 				}
 				else
 				{
@@ -937,6 +941,39 @@ namespace Bloom.Api
 			info.ResponseContentType = "text/css";
 			info.ReplyWithFileContent(path);
 			return true;
+		}
+
+		private bool UsePlaceHolderBrandingCss(IRequestInfo info)
+		{
+			var subscriptionCode = CurrentCollectionSettings.SubscriptionCode;
+			var brandingName = CollectionSettingsApi.GetBrandingFromCode(subscriptionCode);
+			if (String.IsNullOrEmpty(brandingName))
+				return false;
+			// We don't yet have this branding apparently.  Answer with a fake file we create here and now.
+			info.ResponseContentType = "text/css";
+			using (var tempFile = TempFile.WithFilename("branding.css"))
+			{
+				var msgFmt = LocalizationManager.GetString("", "A future update of Bloom will contain the branding assets for this project, “{0}”.  Thank you for your patience.");
+				var msg = String.Format(msgFmt, brandingName);
+				RobustFile.WriteAllText(tempFile.Path, @"/* place-holder */
+[data-book*=""branding""] {
+    display: flex;
+    flex-direction: column;
+}
+[data-book=""outside-back-cover-branding-bottom-html""] {
+    width: 100%;
+    visibility: hidden;  /* hide the default Bloom logo image */
+}
+[data-book=""outside-back-cover-branding-bottom-html""]::before {
+    font-size: 20pt;
+    text-align: center;
+    content: """ + msg + @""";
+    visibility: visible;
+}
+");
+				info.ReplyWithFileContent(tempFile.Path);
+				return true;
+			}
 		}
 
 		#region Startup

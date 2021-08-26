@@ -435,9 +435,9 @@ namespace Bloom.Collection
 
 				if (BrandingProjectKey != "Default" && BrandingProjectKey != "Local-Community" && !Program.RunningHarvesterMode)
 				{
-					// Validate branding, so things can't be circumvented by just typing something into settings
+					// Validate branding, so things can't be circumvented by just typing something random into settings
 					var expirationDate = CollectionSettingsApi.GetExpirationDate(SubscriptionCode);
-					if (expirationDate < DateTime.Now || !BrandingProject.HaveFilesForBranding(BrandingProjectKey))
+					if (expirationDate < DateTime.Now)	// no longer require branding files to exist yet
 					{
 						InvalidBranding = BrandingProjectKey;
 						BrandingProjectKey = "Default"; // keep the code, but don't use it as active branding.
