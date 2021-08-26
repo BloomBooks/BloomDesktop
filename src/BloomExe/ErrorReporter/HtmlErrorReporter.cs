@@ -7,6 +7,7 @@ using Bloom.Api;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.web.controllers;
+using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.Reporting;
 
@@ -318,7 +319,13 @@ namespace Bloom.ErrorReporter
 		public void ReportNonFatalExceptionWithMessage(Exception error, string messageFormat, params object[] args)
 		{
 			var message = String.Format(messageFormat, args);
-			ProblemReportApi.ShowProblemDialog(GetControlToUse(), error, message , ProblemLevel.kNonFatal);
+			var imageFilepath = error.Data["ProblemImagePath"] as string;
+			string[] extraFiles = null;
+			if (!String.IsNullOrEmpty(imageFilepath) && RobustFile.Exists(imageFilepath))
+			{
+				extraFiles = new string[] { imageFilepath };
+			}
+			ProblemReportApi.ShowProblemDialog(GetControlToUse(), error, message , ProblemLevel.kNonFatal, additionalFilesToInclude: extraFiles);
 		}
 
 		public void ReportNonFatalMessageWithStackTrace(string messageFormat, params object[] args)
