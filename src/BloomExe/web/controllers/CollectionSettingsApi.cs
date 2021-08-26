@@ -149,6 +149,14 @@ namespace Bloom.web.controllers
 					request.ReplyWithText("unknown");
 				}
 			}, false);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "hasSubscriptionFiles", request =>
+			{
+				var haveFiles = BrandingProject.HaveFilesForBranding(GetBrandingFromCode(SubscriptionCode));
+				if (haveFiles)
+					request.ReplyWithText("true");
+				else
+					request.ReplyWithText("false");
+			}, false);
 
 			// Enhance: The get here has one signature {brandingProjectName, defaultBookshelf} while the post has another (defaultBookshelfId:string).
 			// It's 

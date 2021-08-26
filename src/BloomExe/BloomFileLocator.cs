@@ -190,6 +190,11 @@ namespace Bloom
 			parts[0] = Path.Combine(BrowserRoot, parts[0]);
 			return FileLocationUtilities.GetDirectoryDistributedWithApplication(false, parts);
 		}
+		public static string GetOptionalBrowserDirectory(params string[] parts)
+		{
+			parts[0] = Path.Combine(BrowserRoot, parts[0]);
+			return FileLocationUtilities.GetDirectoryDistributedWithApplication(true, parts);
+		}
 		public static string GetInstalledXMatterDirectory()
 		{
 			return BloomFileLocator.GetBrowserDirectory("templates","xMatter");
@@ -320,7 +325,7 @@ namespace Bloom
 		public static string GetBrandingFolder(string fullBrandingName)
 		{
 			BrandingSettings.ParseBrandingKey(fullBrandingName, out var brandingFolderName, out var flavor);
-			return BloomFileLocator.GetBrowserDirectory("branding", brandingFolderName);
+			return BloomFileLocator.GetOptionalBrowserDirectory("branding", brandingFolderName);
 		}
 		public string GetBrandingFile(Boolean optional, string fileName)
 		{
