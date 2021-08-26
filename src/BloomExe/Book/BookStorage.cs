@@ -2041,6 +2041,8 @@ namespace Bloom.Book
 				if (!String.IsNullOrEmpty(_collectionSettings.BrandingProjectKey))
 				{
 					var brandingFolder = BloomFileLocator.GetBrandingFolder(_collectionSettings.BrandingProjectKey);
+					if (String.IsNullOrEmpty(brandingFolder))
+						return;
 
 					var filesToCopy = Directory
 						.EnumerateFiles(brandingFolder) //<--- .NET 4.5
