@@ -5,9 +5,6 @@ html
 		#toolbox-settings
 			//- Add new tools in alphabetical order
 			.checkbox-and-label
-				.checkbox.clear#comicCheck(data-tool='comicTool', onclick='FrameExports.showOrHideTool_click(this);')
-				.checkbox-label(data-i18n='EditTab.Toolbox.ComicTool') Comic Tool
-			.checkbox-and-label
 				.checkbox.clear#decodableReaderCheck(data-tool='decodableReaderTool', onclick='FrameExports.showOrHideTool_click(this);')
 				.checkbox-label(data-i18n='EditTab.Toolbox.DecodableReaderTool') Decodable Reader Tool
 			.checkbox-and-label
@@ -25,6 +22,9 @@ html
 			.checkbox-and-label
 				.checkbox.clear#musicCheck(data-tool='musicTool', onclick='FrameExports.showOrHideTool_click(this);')
 				.checkbox-label(data-i18n='EditTab.Toolbox.MusicTool') Music Tool
+			.checkbox-and-label
+				.checkbox.clear#overlayCheck(data-tool='overlayTool', onclick='FrameExports.showOrHideTool_click(this);')
+				.checkbox-label(data-i18n='EditTab.Toolbox.OverlayTool') Overlay Tool
 			.checkbox-and-label
 				.checkbox.clear#signLanguageCheck(data-tool='signLanguageTool', onclick='FrameExports.showOrHideTool_click(this);')
 				.checkbox-label(data-i18n='EditTab.Toolbox.SignLanguageTool') Sign Language Tool
