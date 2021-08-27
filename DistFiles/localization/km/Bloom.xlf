@@ -1238,6 +1238,12 @@
         <note>A heading shown above some messages.</note>
         <target xml:lang="km" state="needs-translation">Info</target>
       </trans-unit>
+      <trans-unit id="Common.WhatsThis" sil:dynamic="true">
+        <source xml:lang="en">What's this?</source>
+        <note>ID: Common.WhatsThis</note>
+        <note>minimal question indicating a link to information</note>
+        <target xml:lang="km" state="needs-translation">What's this?</target>
+      </trans-unit>
       <trans-unit id="Download.Completed">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
         <note>ID: Download.Completed</note>

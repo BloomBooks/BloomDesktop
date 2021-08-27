@@ -1027,10 +1027,10 @@
         <note>ID: Common.Warning</note>
         <note>A heading shown above some messages.</note>
       </trans-unit>
-	  <trans-unit id="Common.WhatsThis" sil:dynamic="true">
-        <source xml:lang="en">What's This?</source>
+      <trans-unit id="Common.WhatsThis" sil:dynamic="true">
+        <source xml:lang="en">What's this?</source>
         <note>ID: Common.WhatsThis</note>
-		<note>minimal question indicating a link to information</note>
+        <note>minimal question indicating a link to information</note>
       </trans-unit>
       <trans-unit id="Download.Completed">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>

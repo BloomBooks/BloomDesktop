@@ -73,7 +73,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                         cellInfo.original.helpurl.length > 0 ? (
                                             <Link
                                                 className="whatsthis"
-                                                l10nKey="BookMetadata.WhatsThis"
+                                                l10nKey="Common.WhatsThis"
                                                 href={cellInfo.original.helpurl}
                                             >
                                                 What's this?

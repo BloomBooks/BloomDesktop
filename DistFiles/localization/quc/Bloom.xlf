@@ -1241,6 +1241,12 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
         <note>A heading shown above some messages.</note>
         <target xml:lang="quc" state="final">Uya’ik ub’ixik</target>
       </trans-unit>
+      <trans-unit id="Common.WhatsThis" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">What's this?</source>
+        <note>ID: Common.WhatsThis</note>
+        <note>minimal question indicating a link to information</note>
+        <target xml:lang="quc" state="final">¿Su wa'?</target>
+      </trans-unit>
       <trans-unit id="Download.Completed" approved="yes">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
         <note>ID: Download.Completed</note>
