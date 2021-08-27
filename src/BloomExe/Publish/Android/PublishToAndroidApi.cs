@@ -529,8 +529,8 @@ namespace Bloom.Publish.Android
 		{
 			var layout = book.GetLayout();
 			var desiredLayoutSize = "Device16x9";
-			// Comic books don't get their layout switched, because it would mess them up too badly
-			// So this warning is not appropriate for comics. We might one day consider a
+			// Books with overlays don't get their layout switched, because it would mess them up too badly
+			// So this warning is not appropriate for comics or other overlays. We might one day consider a
 			// milder warning along the lines that legibility might suffer, especially if there is
 			// a large difference in page size.
 			if (layout.SizeAndOrientation.PageSizeName != desiredLayoutSize && !book.HasComicPages)

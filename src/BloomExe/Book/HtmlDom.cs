@@ -2199,6 +2199,9 @@ namespace Bloom.Book
 			return nodes1?.Count >= 1 || nodes2?.Count >= 1;
 		}
 
+		/// <summary>
+		/// The Comic Tool is renamed Overlay, but we retain the old Feature name for backward compatibility.
+		/// </summary>
 		public static bool HasComicFeature(XmlElement element)
 		{
 			return element.SelectSingleNode(BookStorage.ComicalXpath) != null;
