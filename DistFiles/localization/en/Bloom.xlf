@@ -978,6 +978,10 @@
         <source xml:lang="en">optional</source>
         <note>ID: Common.Optional</note>
       </trans-unit>
+      <trans-unit id="Common.Pause" sil:dynamic="true">
+        <source xml:lang="en">Pause</source>
+        <note>ID: Common.Pause</note>
+      </trans-unit>
       <trans-unit id="Common.Preview">
         <source xml:lang="en">Preview</source>
         <note>ID: Common.Preview</note>
