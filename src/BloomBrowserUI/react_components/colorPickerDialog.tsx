@@ -21,7 +21,7 @@ import { ISwatchDefn } from "./colorSwatch";
 import {
     getSpecialColorName,
     getSwatchFromBubbleSpecColor
-} from "../bookEdit/toolbox/comic/comicToolColorHelper";
+} from "../bookEdit/toolbox/overlay/overlayToolColorHelper";
 import Draggable from "react-draggable";
 import "./colorPickerDialog.less";
 
