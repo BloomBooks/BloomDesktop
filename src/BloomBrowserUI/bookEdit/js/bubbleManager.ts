@@ -811,12 +811,14 @@ export class BubbleManager {
                 this.bubbleToDrag = bubble;
                 this.activeContainer = container;
 
-                // Remember the offset between the top-left of the content box and the initial location of the mouse pointer
+                // Remember the offset between the top-left of the content box and the initial
+                // location of the mouse pointer.
                 const deltaX = event.pageX - positionInfo.left;
                 const deltaY = event.pageY - positionInfo.top;
                 this.bubbleDragGrabOffset = { x: deltaX, y: deltaY };
 
-                // Even though Alt+Drag resize is not in effect, we still check using isResizing() to make sure JQuery Resizing is not in effect before proceeding
+                // Even though Alt+Drag resize is not in effect, we still check using isResizing() to
+                // make sure JQuery Resizing is not in effect before proceeding.
                 if (!this.isResizing(container)) {
                     container.classList.add("grabbing");
                 }
@@ -896,18 +898,31 @@ export class BubbleManager {
             return;
         }
 
-        // Over a bubble that could be dragged (ignoring the bloom-editable portion).
-        // Make the mouse indicate that dragging/resizing is possible
+        const isVideo = this.isVideoOverPictureElement(hoveredBubble.content);
+        const targetElement = event.target as HTMLElement;
+        // Over a bubble that could be dragged (ignoring the bloom-editable portion),
+        // make the mouse indicate that dragging/resizing is possible.
         if (!event.altKey) {
-            // Don't add "grabbable" to video over picture, because click will play the video,
-            // not drag it (unless we're holding the Ctrl key down).
-            if (
-                !this.isVideoOverPictureElement(hoveredBubble.content) ||
-                event.ctrlKey
-            ) {
+            if (isVideo) {
+                // Don't add "grabbable" to video over picture, because click will play the video,
+                // not drag it (unless we're holding the Ctrl key down).
+                if (event.ctrlKey) {
+                    // In this case, we want to drag the container.
+                    container.classList.add("grabbable");
+                    targetElement.removeAttribute("controls");
+                } else {
+                    // In this case, we want to play the video, if we click on it.
+                    container.classList.remove("grabbable");
+                    targetElement.setAttribute("controls", "");
+                }
+            } else {
                 container.classList.add("grabbable");
             }
         } else {
+            // Resizing case
+            if (isVideo) {
+                targetElement.removeAttribute("controls");
+            }
             const resizeMode = this.getResizeMode(hoveredBubble.content, event);
 
             this.cleanupMouseMoveHover(container); // Need to clear both grabbable and *-resizables
