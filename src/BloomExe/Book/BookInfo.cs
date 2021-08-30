@@ -436,9 +436,12 @@ namespace Bloom.Book
 		/// This starts by removing any existing tags matching the given prefix.
 		/// Then, if the given value has contents, it will trim it and add a tag with the given prefix and value.
 		/// </summary>
+		/// <param name="tagPrefixWithoutColon">The "key" of the tag. That is, the part before the colon. The colon should not be included.</param>
+		/// <param name="newValueOrNull">The "value" of the tag. That is, the part after the colon. If null, empty, or all whitespace is passed in, the tag will be removed.</param>
+		/// <remarks>Precondition: MetaData must be initialized already</remarks>
 		public void UpdateOneSingletonTag(string tagPrefixWithoutColon, string newValueOrNull)
 		{
-			var list = MetaData.Tags.ToList();
+			var list = MetaData.Tags?.ToList() ?? new List<string>();
 			list.RemoveAll((t) => t.StartsWith(tagPrefixWithoutColon+":"));
 			var value = newValueOrNull;
 			value = value?.Trim(); // I'm feeling defensive

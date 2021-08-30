@@ -41,6 +41,61 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void UpdateOneSingletonTag_GivenNoTags_AddsWithoutException()
+		{
+			BookInfo bi = new BookInfo(_folder.Path, true);
+
+			// SUT
+			bi.UpdateOneSingletonTag("bookshelf", "value1");
+
+			// Verification
+			CollectionAssert.AreEquivalent(new string[] {"bookshelf:value1" }, bi.MetaData.Tags);
+		}
+
+		[TestCase(new object[] { "bookshelf:oldValue" })]
+		[TestCase(new object[] { "bookshelf:oldValue1", "bookshelf:oldValue2" })]	// Not quite sure how you get in this state, but the function is supposed to remove all of the previous ones
+		public void UpdateOneSingletonTag_GivenATag_WhenNewTagAdded_OldValueReplaced(object[] existingContents)
+		{
+			BookInfo bi = new BookInfo(_folder.Path, true);
+			// Converts from object[] to string[], because TestCase attribute doesn't support string[] directly
+			bi.MetaData.Tags = existingContents.Select(x => x.ToString()).ToArray();	
+
+			// SUT
+			bi.UpdateOneSingletonTag("bookshelf", "newValue");
+
+			// Verification
+			CollectionAssert.AreEquivalent(new string[] {"bookshelf:newValue" }, bi.MetaData.Tags);
+		}
+
+		[Test]
+		public void UpdateOneSingletonTag_GivenATag_WhenUnrelatedKeyAdded_OldKeyUntouched()
+		{
+			BookInfo bi = new BookInfo(_folder.Path, true);
+			bi.MetaData.Tags = new string[] { "key1:value1" } ;
+
+			// SUT
+			bi.UpdateOneSingletonTag("key2", "value2");
+
+			// Verification
+			CollectionAssert.AreEquivalent(new string[] {"key1:value1", "key2:value2" }, bi.MetaData.Tags);
+		}
+
+		[TestCase("")]
+		[TestCase(null)]
+		[TestCase("   ")]	// all whitespace should be removed too
+		public void UpdateOneSingletonTag_GivenATag_WhenValueUpdatedToNullOrWhiteSpace_TagIsRemoved(string input)
+		{
+			BookInfo bi = new BookInfo(_folder.Path, true);
+			bi.MetaData.Tags = new string[] { "bookshelf:value" } ;
+
+			// SUT
+			bi.UpdateOneSingletonTag("bookshelf", input);
+
+			// Verification
+			CollectionAssert.AreEquivalent(new string[] { }, bi.MetaData.Tags);
+		}
+
+		[Test]
 		public void InstallFreshGuid_works()
 		{
 			var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);
