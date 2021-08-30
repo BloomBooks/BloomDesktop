@@ -850,12 +850,6 @@ div[data-book*="branding"] {
     z-index: @bubbleCanvasZIndex;
     position: absolute;
 }
-//BL-7929 Sometimes text in bubbles gets cut off. In lieu of understanding exactly
-// what causes the discrepancy and how to compensate for it, we are just turning
-// off the cutoff when it's displayed by BloomPlayer. (Problem does not occur in PDF)
-.bloomPlayer-page .bloom-textOverPicture[data-bubble] {
-    height: auto !important;
-}
 
 // Custom Widget template page and Digital Comic Book both use this to make the page have no margins.
 // The .comic keeps pre-existing Digital Comic Books working.
