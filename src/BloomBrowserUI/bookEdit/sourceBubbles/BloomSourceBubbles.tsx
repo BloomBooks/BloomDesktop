@@ -418,6 +418,27 @@ export default class BloomSourceBubbles {
         }
     }
 
+    // Arrange a mutation observer to recompute position of tooltips when something changes in
+    // any of the translation groups.
+    // I don't think we need worry about disposing of this. It's useful until the page is reloaded.
+    // This could be better done with resizeObserver...FixGecko60.
+    // Note, in that case we'd want to observer each .bloom-editable, not the whole page.
+    // (The page typically will NOT change size when a text block does.)
+    public static setupSizeChangedHandling(groups: HTMLElement[]) {
+        const observer = new MutationObserver(mutations => {
+            $(groups).qtip("reposition");
+        });
+        const config = {
+            childList: true,
+            characterData: true,
+            subtree: true
+        };
+        observer.observe(
+            document.getElementsByClassName("bloom-page")[0],
+            config
+        );
+    }
+
     // Turns the tabbed and linked div bundle into a qtip bubble attached to the bloom-translationGroup (group).
     // Also makes sure the tooltips are setup correctly.
     private static CreateAndShowQtipBubbleFromDiv(

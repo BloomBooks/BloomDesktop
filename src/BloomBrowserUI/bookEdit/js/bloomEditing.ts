@@ -770,6 +770,7 @@ export function SetupElements(container: HTMLElement) {
                 bubbleDivs[i]
             );
         }
+        BloomSourceBubbles.setupSizeChangedHandling(divsThatHaveSourceBubbles);
         // Ensure focus exists as best we can (BL-7994)
         if (
             document.hasFocus() &&
