@@ -1,3 +1,6 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+
 import * as React from "react";
 import { createContext, useState, useEffect } from "react";
 import "./requiresBloomEnterprise.less";
@@ -6,6 +9,113 @@ import Button from "@material-ui/core/Button";
 import theme from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { Div } from "./l10nComponents";
+import { useL10n } from "./l10nHooks";
+
+/**
+ * This function sets up the hooks to get the status of whether Bloom Enterprise is available or not
+ * @returns A boolean, which is true if Bloom Enterprise is enabled and false otherwise
+ */
+function useEnterpriseAvailable() {
+    const [enterpriseAvailable, setEnterpriseAvailable] = useState(true);
+
+    useEffect(() => {
+        BloomApi.get("settings/enterpriseEnabled", response => {
+            setEnterpriseAvailable(response.data);
+        });
+    }, []);
+
+    return enterpriseAvailable;
+}
+
+/**
+ * A component's props that include a "disabled" property
+ */
+interface IDisableable {
+    disabled: boolean;
+}
+
+/**
+ * Checks the Bloom Enterprise settings and appends a Bloom Enterprise icon after the children if enterprise is off.
+ * The children will also have disabled set to true in that case.
+ * The children and the icon (if applicable) will be displayed as a flex row.
+ * @param props.iconStyles: Optional. If specified, provides additional CSS styles for the Bloom Enterprise icon. Omit to use just the default styles.
+ * Note that you can override a style in the default styles by specifying it in iconStyles (because the last one wins)
+ * @param props.children: The ReactElements that should be wrapped. The children must all support the "disabled" property
+ */
+export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
+    iconStyles?: string;
+    children:
+        | React.ReactElement<IDisableable>
+        | Array<React.ReactElement<IDisableable>>;
+}) => {
+    const enterpriseAvailable = useEnterpriseAvailable();
+
+    // Note: currently the tooltip only appears over the icon itself. But it might be nice if it could go over the children too?
+    const tooltip = useL10n(
+        "To use this feature, you'll need to enable Bloom Enterprise.",
+        "EditTab.RequiresEnterprise"
+    );
+
+    // Set the disabled property on all the children
+    const children = React.Children.map(props.children, child =>
+        React.cloneElement(child, {
+            disabled: !enterpriseAvailable
+        })
+    );
+
+    const icon = enterpriseAvailable || (
+        <img
+            css={css`
+                ${"height: 16px; margin-left: 6px; cursor: pointer; " +
+                    (props.iconStyles ?? "")}
+            `}
+            src="../../../images/bloom-enterprise-badge.svg"
+            title={tooltip}
+            onClick={openBloomEnterpriseSettings}
+        />
+    );
+
+    // The align-items is so that the img is aligned properly with the text
+    return (
+        <div
+            css={css`
+                display: flex;
+                align-items: center;
+            `}
+        >
+            {children}
+            {icon}
+        </div>
+    );
+};
+
+/**
+ * Checks the Bloom Enterprise settings and overlays a RequiresBloomEnterprise notice over the children if enterprise is off.
+ */
+export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent = props => {
+    const enterpriseAvailable = useEnterpriseAvailable();
+    return (
+        <div
+            css={css`
+                height: 100%;
+            `}
+        >
+            <div
+                css={css`
+                    display: block;
+                    height: 100%;
+                `}
+            >
+                {props.children}
+            </div>
+            {enterpriseAvailable || (
+                <div className="requiresEnterpriseOverlay">
+                    <RequiresBloomEnterpriseNotice darkTheme={true} />
+                </div>
+            )}
+        </div>
+    );
+};
 
 export interface IThemeProps {
     darkTheme?: boolean;
@@ -19,7 +129,7 @@ export interface IThemeProps {
 // on the content page body.
 // Often it will be convenient to use this by embedding the controls to be hidden in a
 // RequiresBloomEnterpriseWrapper, also defined in this file.
-export const RequiresBloomEnterprise: React.FunctionComponent<IThemeProps> = ({
+export const RequiresBloomEnterpriseNotice: React.FunctionComponent<IThemeProps> = ({
     darkTheme
 }) => {
     const [visible, setVisible] = useState(false);
@@ -48,11 +158,7 @@ export const RequiresBloomEnterprise: React.FunctionComponent<IThemeProps> = ({
                         <Button
                             className="requiresEnterpriseButton"
                             variant="contained"
-                            onClick={() =>
-                                BloomApi.post(
-                                    "common/showSettingsDialog?tab=enterprise"
-                                )
-                            }
+                            onClick={openBloomEnterpriseSettings}
                         >
                             <img src="../images/bloom-enterprise-badge.svg" />
                             <Div l10nKey="EditTab.EnterpriseSettingsButton">
@@ -66,36 +172,9 @@ export const RequiresBloomEnterprise: React.FunctionComponent<IThemeProps> = ({
     );
 };
 
-// A note about the default value (false): this would only be used if a component had a context-consumer but no parent had created a context-provider.
-export const BloomEnterpriseAvailableContext = createContext(false);
-
-// The children of this component will be enabled and displayed if an enterprise project has been
-// selected; otherwise, the RequiresBloomEnterprise message will be displayed and the children
-// will be disabled and partially obscured.
-export const RequiresBloomEnterpriseWrapper: React.FunctionComponent = props => {
-    const [enterpriseAvailable, setEnterpriseAvailable] = useState(true);
-
-    useEffect(() => {
-        BloomApi.get("settings/enterpriseEnabled", response => {
-            setEnterpriseAvailable(response.data);
-        });
-    }, []);
-
-    return (
-        <BloomEnterpriseAvailableContext.Provider value={enterpriseAvailable}>
-            <div style={{ height: "100%" }}>
-                <div style={{ display: "block", height: "100%" }}>
-                    {props.children}
-                </div>
-                {enterpriseAvailable || (
-                    <div className="requiresEnterpriseOverlay">
-                        <RequiresBloomEnterprise darkTheme={true} />
-                    </div>
-                )}
-            </div>
-        </BloomEnterpriseAvailableContext.Provider>
-    );
-};
+function openBloomEnterpriseSettings() {
+    BloomApi.post("common/showSettingsDialog?tab=enterprise");
+}
 
 // Still used in imageDescription.tsx and talkingBook.ts
 export function checkIfEnterpriseAvailable(): EnterpriseEnabledPromise {

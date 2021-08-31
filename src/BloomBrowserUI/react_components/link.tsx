@@ -1,3 +1,6 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+
 import * as React from "react";
 import * as MUI from "@material-ui/core";
 import { LinkBaseProps } from "@material-ui/core/Link";
@@ -17,6 +20,7 @@ interface ILinkProps extends ILocalizationProps {
         | "textPrimary"
         | "textSecondary"
         | "error";
+    children: React.ReactNode; // The link text
 }
 
 // A link element that is localizable.
@@ -79,3 +83,23 @@ export class TextWithEmbeddedLink extends LocalizableElement<
         );
     }
 }
+
+export const LinkWithDisabledStyles = (props: ILinkProps) => {
+    return (
+        // Note: The link text gets passed through props.children through the spread operator
+        // The disabled status gets passed through props/spread operator too
+        <Link
+            {...props}
+            css={css`
+                &.disabled {
+                    color: #575757;
+                    cursor: default;
+
+                    &:hover {
+                        text-decoration: none;
+                    }
+                }
+            `}
+        ></Link>
+    );
+};
