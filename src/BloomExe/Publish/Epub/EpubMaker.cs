@@ -1121,6 +1121,15 @@ namespace Bloom.Publish.Epub
 
 			pageDom.SortStyleSheetLinks();
 			pageDom.AddPublishClassToBody("epub");
+
+			// add things like data-bookshelfurlkey="Kyrgyzstan-grade3", which can be used by stylesheets to vary appearance
+			foreach (var attr in _book.OurHtmlDom.GetBodyAttributesThatMayAffectDisplay())
+			{
+				pageDom.Body.SetAttribute(attr.Name, attr.Value);
+			}
+
+			
+
 			if (RemoveFontSizes)
 			{
 				DoRemoveFontSizes(pageDom);

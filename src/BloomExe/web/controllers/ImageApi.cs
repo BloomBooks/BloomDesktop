@@ -327,6 +327,13 @@ namespace Bloom.web.controllers
 					result.height = -1;
 					result.bitDepth = "unknown";
 				}
+				else if (path.ToLowerInvariant().EndsWith("svg"))
+				{
+					result.bytes = -1;
+					result.width = -1;
+					result.height = -1;
+					result.bitDepth = "unknown";
+				}
 				else
 				{
 					var fileInfo = new FileInfo(path);

@@ -138,7 +138,7 @@ namespace BloomTests.Book
 				BookletMakingIsAppropriate = false, PageCount=7,
 				LanguageTableReferences = new [] {new ParseServerObjectPointer { ClassName = "Language", ObjectId = "23456" }},
 				Uploader = new ParseServerObjectPointer { ClassName="User", ObjectId = "12345"},
-				Tools = new List<ToolboxToolState>(new [] {ToolboxToolState.CreateFromToolId("decodableReader")}),
+				ToolStates = new List<ToolboxToolState>(new [] {ToolboxToolState.CreateFromToolId("decodableReader")}),
 				AllowUploadingToBloomLibrary = false,
 				CountryName = "InTheBush",
 				ProvinceName = "Provence",
@@ -174,7 +174,7 @@ namespace BloomTests.Book
 			Assert.That(meta2.AllowUploadingToBloomLibrary, Is.True, "AllowUploadingtoBloomLibrary was unexpectedly serialized");
 			Assert.That(meta2.DownloadSource, Is.Null);
 			Assert.That(meta2.CurrentTool, Is.Null);
-			Assert.That(meta2.Tools, Is.Null);
+			Assert.That(meta2.ToolStates, Is.Null);
 			Assert.That(meta2.CountryName, Is.EqualTo("InTheBush"));
 			Assert.That(meta2.ProvinceName, Is.EqualTo("Provence"));
 			Assert.That(meta2.DistrictName, Is.EqualTo("Ocean"));

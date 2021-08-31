@@ -19,6 +19,12 @@
             "condition": "always"
         },
         {
+            "data-book": "level-image-html",
+            "lang": "*",
+            "content": "<img class='branding' src='{bookshelfUrlKey}.svg'/>",
+            "condition": "always"
+        },
+        {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
             "content": "<div/>",

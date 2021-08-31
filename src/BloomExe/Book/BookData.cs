@@ -1713,6 +1713,7 @@ namespace Bloom.Book
 					}
 
 					var content = item.Content.Replace("{flavor}", CollectionSettings.GetBrandingFlavor());
+					content = content.Replace("{bookshelfUrlKey}", CollectionSettings.DefaultBookshelf);
 					Set(item.DataBook, XmlString.FromXml(content), item.Lang);
 				}
 			}

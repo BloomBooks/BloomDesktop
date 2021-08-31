@@ -40,7 +40,15 @@ namespace Bloom.web
 			apiHandler.RegisterEndpointHandler("pageList/pageContent", HandlePageContentRequest, false);
 			apiHandler.RegisterEndpointHandler("pageList/pageMoved", HandlePageMovedRequest, true).Measureable();
 			apiHandler.RegisterEndpointHandler("pageList/pageClicked", HandlePageClickedRequest, true);
-			apiHandler.RegisterEndpointHandler("pageList/menuClicked", HandleShowMenuRequest, true).Measureable(); 
+			apiHandler.RegisterEndpointHandler("pageList/menuClicked", HandleShowMenuRequest, true).Measureable();
+
+			apiHandler.RegisterEndpointHandler("pageList/bookAttributesThatMayAffectDisplay", (request) =>
+			{
+				var attrs = _bookSelection.CurrentSelection.OurHtmlDom.GetBodyAttributesThatMayAffectDisplay();
+				// Surely there's a way to do this more safely with JSON.net but I haven't found it yet
+				var props=string.Join(",", attrs.Select(a => ("\"" + a.Name + "\": \"" + a.Value.Replace("\"","\\\"") + "\"")));
+				request.ReplyWithJson("{"+props+"}");
+			}, true);
 		}
 
 		private void HandlePageClickedRequest(ApiRequest request)
@@ -178,6 +186,7 @@ namespace Bloom.web
 			else
 			{
 				var pageElement = page.GetDivNodeForThisPage().CloneNode(true) as XmlElement;
+				
 				MarkImageNodesForThumbnail(pageElement);
 				answer.content = XmlHtmlConverter.ConvertElementToHtml5(pageElement);
 			}

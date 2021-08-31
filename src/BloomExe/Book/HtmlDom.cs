@@ -2749,5 +2749,12 @@ namespace Bloom.Book
 				mediaBoxDiv.SetAttribute("class", $"bloom-mediaBox {pageSizeClass}");
 			}
 		}
+
+		public IEnumerable<XmlAttribute> GetBodyAttributesThatMayAffectDisplay()
+		{
+			//example: [(data-bookshelfurlkey, "kyrgyzstan2020-grade2")]
+			return this.Body.Attributes.Cast<XmlAttribute>()
+				.Where(a => a.Name.StartsWith("data-"));
+		}
 	}
 }

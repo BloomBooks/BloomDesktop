@@ -45,7 +45,7 @@
     }
 }
 
-.outsideBackCover [data-book="level-image"] img {
+.outsideBackCover [data-book="level-image-html"] img {
     // This unset was used to allow left-align, but we were subsequently asked to (re-)center it.
     // Leaving this for if/when they change their mind.
     //width: unset; // allow it to left-align
@@ -75,7 +75,7 @@
                 grid-row: 1;
                 grid-column: 1 / span 1;
             }
-            [data-book="level-image"] {
+            [data-book="level-image-html"] {
                 grid-row: 1;
                 grid-column: 2 / span 1;
                 margin-left: auto;
@@ -146,7 +146,7 @@
         display: grid;
         grid-template-columns: auto;
         grid-template-rows: 290px 30px auto;
-        [data-book="level-image"] {
+        [data-book="level-image-html"] {
             grid-row: 2;
             grid-column: 1;
         }
@@ -154,7 +154,7 @@
         .bloom-translationGroup {
             grid-row: 1;
         }
-        [data-book="level-image"] {
+        [data-book="level-image-html"] {
             //padding-top: 20px;
             grid-row: 3;
             margin-left: auto;
@@ -216,12 +216,18 @@
     margin-top: 10mm;
 }
 
-[data-book="level-image"] {
+[data-book="level-image-html"] {
     margin-top: auto;
     margin-right: auto;
     height: 7cm;
     width: 100%;
     border: none !important;
+    img {
+        // fit within the container
+        height: 100%;
+        // centers it
+        width: 100%;
+    }
 }
 
 .bloom-mediaBox {
@@ -265,7 +271,7 @@
         .bottomHalfGrid {
             display: grid;
             grid-template-columns: auto;
-            [data-book="level-image"] {
+            [data-book="level-image-html"] {
                 padding-top: 20px;
                 margin: 0;
                 height: 200px !important;
@@ -289,7 +295,7 @@
             .bloom-translationGroup {
                 grid-row: 1;
             }
-            [data-book="level-image"] {
+            [data-book="level-image-html"] {
                 grid-row: 2;
             }
         }
@@ -305,7 +311,7 @@
             .bloom-translationGroup {
                 grid-column: 1;
             }
-            [data-book="level-image"] {
+            [data-book="level-image-html"] {
                 grid-column: 2;
             }
         }
@@ -317,7 +323,7 @@
         height: 3em; // I don't know why this is necessary. Without it, even overflow-x:hidden cuts off the diamonds.
         letter-spacing: -7px;
     }
-    [data-book="level-image"] {
+    [data-book="level-image-html"] {
         padding-top: 20px;
         img {
             height: 17cm;

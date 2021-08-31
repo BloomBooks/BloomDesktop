@@ -2,7 +2,7 @@
 @import (reference) "../../../bookLayout/basePage.less";
 
 // These rule are common to regular Kyrgyztan2020-Xmatter and the epub version.
-// Some of these rules, expecially for the front cover, may not work on all readers,
+// Some of these rules, especially for the front cover, may not work on all readers,
 // but by experiment they seem to produce reasonable results. They were originally
 // part of the main Kyrgyztan2020-Xmatter, developed to produce exactly the result
 // we want in Bloom Player.
@@ -10,8 +10,35 @@
 // we need a lot of classes here to overcome the unfortunately "!important" class put in by Bloom at runtime
 div.bloom-page.outsideFrontCover.coverColor,
 div.bloom-page.outsideBackCover.coverColor {
-    background-color: #193970 !important;
     color: white;
+    // this will get overwritten if they choose a background color
+    background-color: gray !important;
+}
+
+//NB: these can't be only on <body> because they are also used in page thumbnails and in epubs
+*[data-bookshelfurlkey*="grade1"] {
+    div.bloom-page.outsideFrontCover.coverColor,
+    div.bloom-page.outsideBackCover.coverColor {
+        background-color: #ba0c2f !important;
+    }
+}
+*[data-bookshelfurlkey*="grade2"] {
+    div.bloom-page.outsideFrontCover.coverColor,
+    div.bloom-page.outsideBackCover.coverColor {
+        background-color: #002f6c !important;
+    }
+}
+*[data-bookshelfurlkey*="grade3"] {
+    div.bloom-page.outsideFrontCover.coverColor,
+    div.bloom-page.outsideBackCover.coverColor {
+        background-color: #35851f !important;
+    }
+}
+*[data-bookshelfurlkey*="grade4"] {
+    div.bloom-page.outsideFrontCover.coverColor,
+    div.bloom-page.outsideBackCover.coverColor {
+        background-color: #6f2c91 !important;
+    }
 }
 
 .outsideFrontCover .marginBox {
