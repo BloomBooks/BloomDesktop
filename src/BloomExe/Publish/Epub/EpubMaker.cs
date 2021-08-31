@@ -315,7 +315,7 @@ namespace Bloom.Publish.Epub
 				if (comicalMatches.Count > 0)
 				{
 					progress.Message("Common.Error", "Error", ProgressKind.Error, false);
-					progress.MessageWithParams("PublishTab.Epub.NoComicSupport", "Error shown if book contains comic bubbles.", "Sorry, Bloom cannot produce ePUBs if there are any comic bubbles. The first comic bubble is on page {0}.", ProgressKind.Error, pageLabelEnglish);
+					progress.MessageWithParams("PublishTab.Epub.NoOverlaySupport", "Error shown if book contains overlays.", "Sorry, Bloom cannot produce ePUBs if there are any overlays. The first overlay is on page {0}.", ProgressKind.Error, pageLabelEnglish);
 					AbortRequested = true;
 				}
 

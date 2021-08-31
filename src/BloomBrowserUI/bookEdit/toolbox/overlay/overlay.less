@@ -4,18 +4,18 @@
 @ControlVerticalSpacing: 10px;
 @NecessaryZIndex: 30000;
 
-.ui-accordion h3[data-toolId="comicTool"] {
+.ui-accordion h3[data-toolId="overlayTool"] {
     span.ui-accordion-header-icon {
         background-image: url("comic-icon.svg") !important;
     }
 }
 
-#ui-accordion-toolbox-panel-0.ComicBody {
+#ui-accordion-toolbox-panel-0.OverlayBody {
     padding-top: 1px; // The design for this has a very small boundary between the header and the start of the tool
     padding-left: 1px !important; // Don't want a big border of highly contrasting colors
 }
 
-#comicToolControls {
+#overlayToolControls {
     display: flex;
     flex-direction: column;
     // fill available toolbox space, part of pushing help to the bottom.
@@ -25,12 +25,12 @@
     color: @bloom-toolboxWhite;
 }
 
-#comicToolControlShapeChooserRegion {
+#overlayToolControlShapeChooserRegion {
     background-color: @bloom-gray;
     padding: @SideMargin;
     display: flex;
     flex-wrap: wrap;
-    .comicToolControlDraggableBubble {
+    .overlayToolControlDraggableBubble {
         cursor: grab;
     }
 
@@ -100,7 +100,7 @@
     }
 }
 
-#comicToolControlOptionsRegion {
+#overlayToolControlOptionsRegion {
     padding: @SideMargin @SideMargin 0 @SideMargin;
 
     // This corresponds to the wrapper div generated for each control within the form
@@ -232,14 +232,14 @@
 }
 
 // Empty region that does all the growing and shrinking.
-// makes the comicToolControlFooterRegion go to the bottom,
+// makes the overlayToolControlFooterRegion go to the bottom,
 // but unlike making it position: absolute and bottom:3,
 // it can get pushed out of view if the view gets too small.
-#comicToolControlFillerRegion {
+#overlayToolControlFillerRegion {
     flex: 1 1 0;
 }
 
-#comicToolControlFooterRegion {
+#overlayToolControlFooterRegion {
     padding-left: 3px;
     margin-bottom: 3px;
     margin-top: 10px;

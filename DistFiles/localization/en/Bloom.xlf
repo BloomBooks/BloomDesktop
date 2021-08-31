@@ -1891,9 +1891,10 @@
         <source xml:lang="en">Picture Intellectual Property Information</source>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool" sil:dynamic="true">
-        <source xml:lang="en">Comic Tool</source>
-        <note>ID: EditTab.Toolbox.ComicTool</note>
+      <trans-unit id="EditTab.Toolbox.OverlayTool" sil:dynamic="true">
+        <source xml:lang="en">Overlay Tool</source>
+        <note>ID: EditTab.Toolbox.OverlayTool</note>
+        <note>If "Overlay Tool" is hard to translate, "Floating Object Tool" is an alternate.</note>
         <note>This tool allows users to insert speech bubbles or callouts, which are pieces of text connected by a line, arrow, or other graphic to a part of a picture. These may be used to give dialogue or to give more information about a specific part of the picture.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true">
@@ -3598,11 +3599,17 @@
         <source xml:lang="en">Sorry, Bloom cannot produce ePUBs if there are any comic bubbles. The first comic bubble is on page {0}.</source>
         <note>ID: PublishTab.Epub.NoComicSupport</note>
         <note>The {0} will be replaced with the page number (or name of page). For example, it might be replaced by "1" or "Front Cover"</note>
+        <note>Obsolete as of Bloom 5.0</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.OmittedPages">
         <source xml:lang="en">The following pages were removed because they are not supported in ePUBs:</source>
         <note>ID: PublishTab.Epub.OmittedPages</note>
         <note>Shown in a progress box when Bloom finds interactive pages in an EPUB. Followed by a list of page labels.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.NoOverlaySupport">
+        <source xml:lang="en">Sorry, Bloom cannot produce ePUBs if there are any overlays. The first overlay is on page {0}.</source>
+        <note>ID: PublishTab.Epub.NoOverlaySupport</note>
+        <note>The {0} will be replaced with the page number (or name of page). For example, it might be replaced by "1" or "Front Cover"</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.PageLabel.Content">
         <source xml:lang="en">Content</source>
