@@ -5,7 +5,7 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import * as ReactDOM from "react-dom";
-import "./comic.less";
+import "./overlay.less";
 import {
     getEditablePageBundleExports,
     getEditTabBundleExports
@@ -31,13 +31,13 @@ import {
     defaultTextColors,
     getSwatchFromBubbleSpecColor,
     getSpecialColorName
-} from "./comicToolColorHelper";
+} from "./overlayToolColorHelper";
 import { IColorPickerDialogProps } from "../../../react_components/colorPickerDialog";
 import * as tinycolor from "tinycolor2";
 import { showSignLanguageTool } from "../../js/bloomVideo";
 import { kBloomBlue } from "../../../bloomMaterialUITheme";
 
-const ComicToolControls: React.FunctionComponent = () => {
+const OverlayToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
     type BubbleType = "text" | "image" | "video" | undefined;
 
@@ -63,6 +63,10 @@ const ComicToolControls: React.FunctionComponent = () => {
         "Duplicate",
         "EditTab.Toolbox.ComicTool.Options.Duplicate"
     );
+
+    // While renaming Comic -> Overlay, I (gjm) intentionally left several (21) "keys" with
+    // the old "ComicTool" to avoid the whole deprecate/invalidate/retranslate issue.
+
     // Setup for color picker, in case we need it.
     const textColorTitle = useL10n(
         "Text Color",
@@ -93,7 +97,7 @@ const ComicToolControls: React.FunctionComponent = () => {
 
     // Callback to initialize bubbleEditing and get the initial bubbleSpec
     const bubbleSpecInitialization = () => {
-        const bubbleManager = ComicTool.bubbleManager();
+        const bubbleManager = OverlayTool.bubbleManager();
         if (!bubbleManager) {
             console.assert(
                 false,
@@ -120,9 +124,9 @@ const ComicToolControls: React.FunctionComponent = () => {
     };
 
     // Enhance: if we don't want to have a static, or don't want
-    // this function to know about ComicTool, we could just pass
+    // this function to know about OverlayTool, we could just pass
     // a setter for this as a property.
-    ComicTool.theOneComicTool!.callOnNewPageReady = () => {
+    OverlayTool.theOneOverlayTool!.callOnNewPageReady = () => {
         bubbleSpecInitialization();
         setIsXmatter(ToolboxToolReactAdaptor.isXmatter());
         const count = pageRefreshIndicator;
@@ -147,7 +151,7 @@ const ComicToolControls: React.FunctionComponent = () => {
             const newSwatch = getSwatchFromBubbleSpecColor(backColor);
             setBackgroundColorSwatch(newSwatch);
 
-            const bubbleMgr = ComicTool.bubbleManager();
+            const bubbleMgr = OverlayTool.bubbleManager();
             setBubbleType(getBubbleType(bubbleMgr));
             if (bubbleMgr) {
                 // Get the current bubble's textColor and set it
@@ -187,7 +191,7 @@ const ComicToolControls: React.FunctionComponent = () => {
         setStyle(newStyle);
 
         // Update the Comical canvas on the page frame
-        const bubbleMgr = ComicTool.bubbleManager();
+        const bubbleMgr = OverlayTool.bubbleManager();
         if (bubbleMgr) {
             const newBubbleProps = {
                 style: newStyle
@@ -224,7 +228,7 @@ const ComicToolControls: React.FunctionComponent = () => {
         setShowTailChecked(value);
 
         // Update the Comical canvas on the page frame
-        const bubbleMgr = ComicTool.bubbleManager();
+        const bubbleMgr = OverlayTool.bubbleManager();
         if (bubbleMgr) {
             bubbleMgr.updateSelectedFamilyBubbleSpec({
                 tails: value ? [bubbleMgr.getDefaultTailSpec() as TailSpec] : []
@@ -237,7 +241,7 @@ const ComicToolControls: React.FunctionComponent = () => {
         setIsRoundedCornersChecked(newValue || false);
 
         // Update the Comical canvas on the page frame
-        const bubbleMgr = ComicTool.bubbleManager();
+        const bubbleMgr = OverlayTool.bubbleManager();
         if (bubbleMgr) {
             const radius = newValue ? 8 : undefined; // 8 is semi-arbitrary for now. We may add a control in the future to set it.
             bubbleMgr.updateSelectedFamilyBubbleSpec({
@@ -248,7 +252,7 @@ const ComicToolControls: React.FunctionComponent = () => {
     };
 
     const getBackgroundColorValue = (familySpec: BubbleSpec): string => {
-        const bubbleMgr = ComicTool.bubbleManager();
+        const bubbleMgr = OverlayTool.bubbleManager();
         if (bubbleMgr) {
             const backgroundColorArray = bubbleMgr.getBackgroundColorArray(
                 familySpec
@@ -266,7 +270,7 @@ const ComicToolControls: React.FunctionComponent = () => {
     // We come into this from chooser change
     const updateTextColor = (newColorSwatch: ISwatchDefn) => {
         const color = newColorSwatch.colors[0]; // text color is always monochrome
-        const bubbleMgr = ComicTool.bubbleManager();
+        const bubbleMgr = OverlayTool.bubbleManager();
         if (bubbleMgr) {
             // Update the toolbox controls
             setTextColorSwatch(newColorSwatch);
@@ -277,7 +281,7 @@ const ComicToolControls: React.FunctionComponent = () => {
 
     // We come into this from chooser change
     const updateBackgroundColor = (newColorSwatch: ISwatchDefn) => {
-        const bubbleMgr = ComicTool.bubbleManager();
+        const bubbleMgr = OverlayTool.bubbleManager();
         if (bubbleMgr) {
             // Update the toolbox controls
             setBackgroundColorSwatch(newColorSwatch);
@@ -299,7 +303,7 @@ const ComicToolControls: React.FunctionComponent = () => {
             newValue = undefined;
         }
 
-        const bubbleMgr = ComicTool.bubbleManager();
+        const bubbleMgr = OverlayTool.bubbleManager();
         if (bubbleMgr) {
             // Update the toolbox controls
             setOutlineColor(newValue);
@@ -312,7 +316,7 @@ const ComicToolControls: React.FunctionComponent = () => {
     };
 
     const handleChildBubbleLinkClick = event => {
-        const bubbleManager = ComicTool.bubbleManager();
+        const bubbleManager = OverlayTool.bubbleManager();
 
         if (bubbleManager) {
             const parentElement = bubbleManager.getActiveElement();
@@ -331,7 +335,7 @@ const ComicToolControls: React.FunctionComponent = () => {
             const [
                 offsetX,
                 offsetY
-            ] = ComicTool.GetChildPositionFromParentBubble(
+            ] = OverlayTool.GetChildPositionFromParentBubble(
                 parentElement,
                 bubbleSpec
             );
@@ -353,7 +357,7 @@ const ComicToolControls: React.FunctionComponent = () => {
     };
 
     const ondragend = (ev: React.DragEvent<HTMLElement>, style: string) => {
-        const bubbleManager = ComicTool.bubbleManager();
+        const bubbleManager = OverlayTool.bubbleManager();
         // The Linux/Mono/Geckofx environment does not produce the dragenter, dragover,
         // and drop events for the targeted element.  It does produce the dragend event
         // for the source element with screen coordinates of where the mouse was released.
@@ -369,7 +373,7 @@ const ComicToolControls: React.FunctionComponent = () => {
     };
 
     const deleteBubble = () => {
-        const bubbleManager = ComicTool.bubbleManager();
+        const bubbleManager = OverlayTool.bubbleManager();
         if (bubbleManager) {
             const active = bubbleManager.getActiveElement();
             if (active) {
@@ -379,7 +383,7 @@ const ComicToolControls: React.FunctionComponent = () => {
     };
 
     const duplicateBubble = () => {
-        const bubbleManager = ComicTool.bubbleManager();
+        const bubbleManager = OverlayTool.bubbleManager();
         if (bubbleManager) {
             const active = bubbleManager.getActiveElement();
             if (active) {
@@ -472,7 +476,7 @@ const ComicToolControls: React.FunctionComponent = () => {
         return order > 1;
     };
 
-    const bubbleManager = ComicTool.bubbleManager();
+    const bubbleManager = OverlayTool.bubbleManager();
     const currentItemSpec = bubbleManager?.getSelectedItemBubbleSpec();
 
     // BL-8537 Because of the black shadow background, partly transparent backgrounds don't work for
@@ -689,21 +693,21 @@ const ComicToolControls: React.FunctionComponent = () => {
     };
 
     return (
-        <div id="comicToolControls">
+        <div id="overlayToolControls">
             <div
-                id={"comicToolControlShapeChooserRegion"}
+                id={"overlayToolControlShapeChooserRegion"}
                 className={!isXmatter ? "" : "disabled"}
             >
                 <Div
                     l10nKey="EditTab.Toolbox.ComicTool.DragInstructions"
-                    className="comicToolControlDragInstructions"
+                    className="overlayToolControlDragInstructions"
                 >
                     Drag any of these overlays onto the image:
                 </Div>
                 <div className={"shapeChooserRow"} id={"shapeChooserRow1"}>
                     <img
                         id="shapeChooserSpeechBubble"
-                        className="comicToolControlDraggableBubble"
+                        className="overlayToolControlDraggableBubble"
                         src="comic-icon.svg"
                         draggable={!isBookLocked} // insufficient to prevent dragging!
                         onDragStart={
@@ -754,7 +758,7 @@ const ComicToolControls: React.FunctionComponent = () => {
                     <Span
                         id="shapeChooserTextBlock"
                         l10nKey="EditTab.Toolbox.ComicTool.TextBlock"
-                        className="comicToolControlDraggableBubble"
+                        className="overlayToolControlDraggableBubble"
                         draggable={!isBookLocked}
                         onDragStart={
                             !isBookLocked
@@ -772,7 +776,7 @@ const ComicToolControls: React.FunctionComponent = () => {
                     <Span
                         id="shapeChooserCaption"
                         l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"
-                        className="comicToolControlDraggableBubble"
+                        className="overlayToolControlDraggableBubble"
                         draggable={!isBookLocked}
                         onDragStart={
                             !isBookLocked
@@ -790,7 +794,7 @@ const ComicToolControls: React.FunctionComponent = () => {
                 </div>
             </div>
             <div
-                id={"comicToolControlOptionsRegion"}
+                id={"overlayToolControlOptionsRegion"}
                 className={bubbleType && !isXmatter ? "" : "disabled"}
             >
                 {getControlOptionsRegion()}
@@ -811,36 +815,36 @@ const ComicToolControls: React.FunctionComponent = () => {
                     </div>
                 </div>
             </div>
-            <div id="comicToolControlFillerRegion" />
-            <div id={"comicToolControlFooterRegion"}>
-                <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Comic_Tool/Comic_Tool_overview.htm" />
+            <div id="overlayToolControlFillerRegion" />
+            <div id={"overlayToolControlFooterRegion"}>
+                <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Overlay_Tool/Overlay_Tool_overview.htm" />
             </div>
         </div>
     );
 };
-export default ComicToolControls;
+export default OverlayToolControls;
 
-export class ComicTool extends ToolboxToolReactAdaptor {
-    public static theOneComicTool: ComicTool | undefined;
+export class OverlayTool extends ToolboxToolReactAdaptor {
+    public static theOneOverlayTool: OverlayTool | undefined;
 
     public callOnNewPageReady: () => void | undefined;
 
     public constructor() {
         super();
 
-        ComicTool.theOneComicTool = this;
+        OverlayTool.theOneOverlayTool = this;
     }
 
     public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
-        root.setAttribute("class", "ComicBody");
+        root.setAttribute("class", "OverlayBody");
 
-        ReactDOM.render(<ComicToolControls />, root);
+        ReactDOM.render(<OverlayToolControls />, root);
         return root as HTMLDivElement;
     }
 
     public id(): string {
-        return "comic";
+        return "overlay";
     }
 
     public isExperimental(): boolean {
@@ -859,7 +863,7 @@ export class ComicTool extends ToolboxToolReactAdaptor {
     }
 
     public newPageReady() {
-        const bubbleManager = ComicTool.bubbleManager();
+        const bubbleManager = OverlayTool.bubbleManager();
         if (!bubbleManager) {
             // probably the toolbox just finished loading before the page.
             // No clean way to fix this
@@ -878,7 +882,7 @@ export class ComicTool extends ToolboxToolReactAdaptor {
     }
 
     public detachFromPage() {
-        const bubbleManager = ComicTool.bubbleManager();
+        const bubbleManager = OverlayTool.bubbleManager();
         if (bubbleManager) {
             // For now we are leaving bubble editing on, because even with the toolbox hidden,
             // the user might edit text, delete bubbles, move handles, etc.

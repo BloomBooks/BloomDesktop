@@ -19,7 +19,7 @@ import { handleBookSettingCheckboxClick } from "./bookSettings/bookSettings";
 import { SignLanguageTool } from "./signLanguage/signLanguageTool";
 import { ImageDescriptionAdapter } from "./imageDescription/imageDescription";
 import "errorHandler";
-import { ComicTool } from "./comic/comicTool";
+import { OverlayTool } from "./overlay/overlayTool";
 
 export interface IToolboxFrameExports {
     addWordListChangedListener(
@@ -100,4 +100,4 @@ ToolBox.registerTool(new MotionTool());
 ToolBox.registerTool(new TalkingBookTool());
 ToolBox.registerTool(new SignLanguageTool());
 ToolBox.registerTool(new ImageDescriptionAdapter());
-ToolBox.registerTool(new ComicTool());
+ToolBox.registerTool(new OverlayTool());

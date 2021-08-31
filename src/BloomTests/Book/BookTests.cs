@@ -3448,7 +3448,7 @@ namespace BloomTests.Book
 			var book = CreateBook();
 
 			// System under test
-			bool propertyResult = book.HasComicPages;
+			bool propertyResult = book.HasOverlayPages;
 			book.UpdateMetadataFeatures(false, false, false, null);
 
 			// Verification
@@ -3477,7 +3477,7 @@ namespace BloomTests.Book
 			var book = CreateBook();
 
 			// System under test
-			bool propertyResult = book.HasComicPages;
+			bool propertyResult = book.HasOverlayPages;
 			book.UpdateMetadataFeatures(false, false, false, null);
 
 			// Verification
