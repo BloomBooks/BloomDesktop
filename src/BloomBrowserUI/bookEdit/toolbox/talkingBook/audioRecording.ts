@@ -122,6 +122,7 @@ interface ISetHighlightParams {
     shouldScrollToElement: boolean;
     disableHighlightIfNoAudio?: boolean;
     oldElement?: Element | null | undefined; // Optional. Provides some minor optimization if set.
+    forceRedisplay?: boolean; // optional. If true, reset higlight even if selected element unchanged.
 }
 
 // Terminology //
@@ -140,7 +141,12 @@ export default class AudioRecording {
     private recording: boolean;
     private levelCanvas: HTMLCanvasElement;
     private currentAudioId: string;
-    private elementsToPlayConsecutivelyStack: Element[] = []; // When we are playing audio, this holds the segments we haven't yet finished playing, including the one currently playing. Thus, when it's empty we are not playing audio at all
+    // When we are playing audio, this holds the segments we haven't yet finished playing, including the one currently playing.
+    // Thus, when it's empty we are not playing audio at all
+    // The elements are in reverse order (so the one playing currently or to play next is at the end and can be efficiently popped)
+    private elementsToPlayConsecutivelyStack: Element[] = [];
+    // When playing a whole-text-box recording, this is a list of the sentence elements to highlight and the time when each starts,
+    // again in reverse order (current/next to play is last).
     private subElementsWithTimings: [Element, number][] = [];
     private currentAudioSessionNum: number = 0;
     private awaitingNewRecording: boolean;
@@ -703,11 +709,21 @@ export default class AudioRecording {
         );
     }
 
+    // In case play is currently paused, end that state, typically because we are doing another command.
+    private resetAudioIfPaused(): void {
+        this.getMediaPlayer().currentTime = 0;
+        this.elementsToPlayConsecutivelyStack = [];
+        this.subElementsWithTimings = [];
+        this.currentAudioSessionNum++;
+    }
+
     private async moveToNextAudioElement(): Promise<void> {
         toastr.clear();
 
         const next = this.getNextAudioElement();
         if (!next) return;
+
+        this.resetAudioIfPaused();
 
         await this.setSoundAndHighlightAsync({
             newElement: next,
@@ -720,6 +736,8 @@ export default class AudioRecording {
         toastr.clear();
         const prev = this.getPreviousAudioElement();
         if (prev == null) return;
+
+        this.resetAudioIfPaused();
 
         await this.setSoundAndHighlightAsync({
             newElement: prev,
@@ -917,7 +935,8 @@ export default class AudioRecording {
         // 2) in Record by Sentence mode, it's easily possible for the current highlight to be the 1st span while the user is typing into the last span.
         shouldScrollToElement,
         disableHighlightIfNoAudio,
-        oldElement // Optional. Provides some minor optimization if set.
+        oldElement, // Optional. Provides some minor optimization if set.
+        forceRedisplay
     }: ISetHighlightParams): Promise<void> {
         if (!oldElement) {
             oldElement = this.getCurrentHighlight();
@@ -930,7 +949,7 @@ export default class AudioRecording {
             this.scrollElementIntoView(newElement);
         }
 
-        if (oldElement === newElement) {
+        if (oldElement === newElement && !forceRedisplay) {
             // No need to do much, and better not to so we can avoid any temporary flashes as the highlight is removed and re-applied
             return;
         }
@@ -972,6 +991,9 @@ export default class AudioRecording {
         // In Bloom Player, scrollIntoView can interfere with page swipes,
         // so Bloom Player needs some smarts about when to call it...
         // But here, there shouldn't be any interference. So no smarts needed.
+        if (element == null) {
+            return;
+        }
 
         element.scrollIntoView({
             // Animated instead of sudden
@@ -1073,6 +1095,16 @@ export default class AudioRecording {
         if (!this.isEnabledOrExpected("record")) {
             return;
         }
+
+        this.resetAudioIfPaused();
+        // If we were paused highlighting one sentence but are recording in text box mode,
+        // things could get confusing. At least make sure the selection reflects what we
+        // actually want to record.
+        await this.setHighlightToAsync({
+            newElement: this.getCurrentAudioSentence()!,
+            shouldScrollToElement: true,
+            forceRedisplay: true
+        });
 
         toastr.clear();
 
@@ -1196,13 +1228,22 @@ export default class AudioRecording {
 
         while (
             currToExamine &&
-            !currToExamine.classList.contains(kAudioSentence)
+            !currToExamine.classList.contains(kAudioSentence) &&
+            // Review: another option is to say that if we don't find an audio-sentence parent, return the
+            // currentHighlight thing we started with.
+            !currToExamine.classList.contains(kBloomEditableTextBoxClass)
         ) {
             // Recursively go up the tree to find the enclosing div, if necessary
             currToExamine = currToExamine.parentElement; // Will return null if no parent
         }
 
-        return currToExamine;
+        // Returning currentHighlight is a special case. Usually we expect to find audio-sentence on
+        // the element that has audio-current or on one of its parents. But when we have switched back
+        // from sentence recording to text box recording, but not yet made a new recording,
+        // the audio-sentence elements are still sentences, but the current highlight is the bloom-editable,
+        // so that's where currToExamine starts out, and we never find an audio-sentence. In that case,
+        // the audio-current element is the one we want.
+        return currToExamine ?? currentHighlight;
     }
 
     public getCurrentPlaybackMode(): AudioRecordingMode {
@@ -1259,16 +1300,18 @@ export default class AudioRecording {
         if (this.getStatus("play") === Status.Active) {
             const mediaPlayer = this.getMediaPlayer();
             mediaPlayer.pause();
-            // We want to call playEndedAsync to clean up in various ways,
-            // but we don't want to play anything that is queued up to play next.
-            this.elementsToPlayConsecutivelyStack = [];
-            this.subElementsWithTimings = [];
-            this.playEndedAsync();
+            // We don't want to mess with the highlights like playEnded would do, let alone
+            // move to the next segment, but we do want to switch status. "next" is automatically
+            // substituted for "split" if we're in a mode where "split" does not apply.
+            return this.changeStateAndSetExpectedAsync("split");
         }
 
         if (!this.isEnabledOrExpected("play")) {
             return;
         }
+
+        const oldElementsToPlay = this.elementsToPlayConsecutivelyStack;
+        const oldTimings = this.subElementsWithTimings;
 
         this.elementsToPlayConsecutivelyStack = [];
 
@@ -1298,16 +1341,82 @@ export default class AudioRecording {
             }
         }
 
-        await this.setSoundAndHighlightAsync({
-            newElement: this.elementsToPlayConsecutivelyStack[
-                this.elementsToPlayConsecutivelyStack.length - 1
-            ],
-            shouldScrollToElement: true,
-            disableHighlightIfNoAudio: true
-        });
-        this.removeExpectedStatusFromAll();
-        this.setStatus("play", Status.Active);
-        return this.playCurrentInternalAsync();
+        // more complicated but similar to return this.playCurrentInternalAsync();
+        const mediaPlayer = this.getMediaPlayer();
+        if (mediaPlayer.error) {
+            // We can no longer rely on the error event occurring after play() is called.
+            // If we pre-load audio, the error event occurs on load (which will be before play).
+            // So, we check the .error property to see if an error already occurred and if so, skip past the play straight to the playEnded() which is supposed to be called on error.
+            return this.playEndedAsync(); // Will also start playing the next audio to play.
+        } else {
+            const currentTextBox = this.getCurrentTextBox();
+            if (!currentTextBox) {
+                return;
+            }
+
+            this.setupTimings(currentTextBox);
+
+            // can we resume a paused playback? Only if playback is in progress and the things
+            // still to be played are the tail end of what we would currently play. Because the
+            // two arrays are stored in reverse order, that is true if they START with the same things.
+            if (
+                oldElementsToPlay &&
+                oldElementsToPlay.length > 0 &&
+                this.arrayStartsWith(
+                    this.elementsToPlayConsecutivelyStack,
+                    oldElementsToPlay
+                ) &&
+                this.arrayStartsWith(this.subElementsWithTimings, oldTimings)
+            ) {
+                // We can resume. The steps here are a subset of what we normally do,
+                // leaving out initializing the media player and setting up highlights.
+                // Note: the setTimeout loop that advances subElementTimings has never stopped,
+                // so it will continue to advance things as the mediaPlayer resumes.
+                this.elementsToPlayConsecutivelyStack = oldElementsToPlay;
+                this.subElementsWithTimings = oldTimings;
+                this.removeExpectedStatusFromAll();
+                this.setStatus("play", Status.Active);
+
+                mediaPlayer.play();
+                return;
+            }
+
+            await this.setSoundAndHighlightAsync({
+                newElement: this.elementsToPlayConsecutivelyStack[
+                    this.elementsToPlayConsecutivelyStack.length - 1
+                ],
+                shouldScrollToElement: true,
+                disableHighlightIfNoAudio: true
+            });
+            this.removeExpectedStatusFromAll();
+            this.setStatus("play", Status.Active);
+            // Start playing the audio first.
+            mediaPlayer.play();
+            ++this.currentAudioSessionNum;
+
+            // Now set in motion what is needed to advance the highlighting (if applicable)
+            this.highlightNextSubElement(this.currentAudioSessionNum);
+        }
+    }
+
+    private arrayStartsWith(long: Array<any>, short: Array<any>): boolean {
+        if (long.length < short.length) {
+            return false;
+        }
+        for (var i = 0; i < short.length; i++) {
+            if (long[i] !== short[i] && !this.arrayEquals(long[i], short[i]))
+                return false;
+        }
+        return true;
+    }
+
+    private arrayEquals(a, b) {
+        return (
+            Array.isArray(a) &&
+            Array.isArray(b) &&
+            a.length === b.length &&
+            a.every((val, index) => val === b[index])
+        );
     }
 
     private async playCurrentInternalAsync(): Promise<void> {
@@ -1323,35 +1432,7 @@ export default class AudioRecording {
                 return;
             }
 
-            // Regardless of whether we end up using timingsStr or not,
-            // we should reset this now in case the previous page used it and was still playing
-            // when the user flipped to the next page.
-            this.subElementsWithTimings = [];
-
-            const timingsStr = currentTextBox.getAttribute(
-                kEndTimeAttributeName
-            );
-            if (timingsStr) {
-                const childSpanElements = currentTextBox.querySelectorAll(
-                    `span.${kSegmentClass}`
-                );
-                const fields = timingsStr.split(" ");
-                const subElementCount = Math.min(
-                    fields.length,
-                    childSpanElements.length
-                );
-
-                for (let i = subElementCount - 1; i >= 0; --i) {
-                    const durationSecs: number = Number(fields[i]);
-                    if (isNaN(durationSecs)) {
-                        continue;
-                    }
-                    this.subElementsWithTimings.push([
-                        childSpanElements.item(i),
-                        durationSecs
-                    ]);
-                }
-            }
+            this.setupTimings(currentTextBox);
 
             // Start playing the audio first.
             mediaPlayer.play();
@@ -1359,6 +1440,36 @@ export default class AudioRecording {
 
             // Now set in motion what is needed to advance the highlighting (if applicable)
             this.highlightNextSubElement(this.currentAudioSessionNum);
+        }
+    }
+
+    private setupTimings(currentTextBox: HTMLElement): void {
+        // Regardless of whether we end up using timingsStr or not,
+        // we should reset this now in case the previous page used it and was still playing
+        // when the user flipped to the next page.
+        this.subElementsWithTimings = [];
+
+        const timingsStr = currentTextBox.getAttribute(kEndTimeAttributeName);
+        if (timingsStr) {
+            const childSpanElements = currentTextBox.querySelectorAll(
+                `span.${kSegmentClass}`
+            );
+            const fields = timingsStr.split(" ");
+            const subElementCount = Math.min(
+                fields.length,
+                childSpanElements.length
+            );
+
+            for (let i = subElementCount - 1; i >= 0; --i) {
+                const durationSecs: number = Number(fields[i]);
+                if (isNaN(durationSecs)) {
+                    continue;
+                }
+                this.subElementsWithTimings.push([
+                    childSpanElements.item(i),
+                    durationSecs
+                ]);
+            }
         }
     }
 
@@ -1459,6 +1570,7 @@ export default class AudioRecording {
     // 'Listen' is shorthand for playing all the sentences on the page in sequence.
     // Returns a promise that is fulfilled when the play has been STARTED (not completed).
     public async listenAsync(): Promise<void> {
+        this.resetAudioIfPaused();
         this.elementsToPlayConsecutivelyStack = jQuery
             .makeArray(this.sortByTabindex(this.getAudioElements()))
             .reverse();
@@ -1661,6 +1773,7 @@ export default class AudioRecording {
     // Clear the recording for this sentence
     public async clearRecordingAsync(): Promise<void> {
         toastr.clear();
+        this.resetAudioIfPaused();
 
         if (!this.isEnabledOrExpected("clear")) {
             return;
@@ -3590,9 +3703,9 @@ export default class AudioRecording {
                 }
                 label.classList.add("hide-counter-still-count");
                 theOneLocalizationManager
-                    .asyncGetText("Common.Stop", "Stop", "")
-                    .done(stop => {
-                        label.innerText = stop;
+                    .asyncGetText("Common.Pause", "Pause", "")
+                    .done(pause => {
+                        label.innerText = pause;
                     });
             }
         } else {
@@ -3603,7 +3716,7 @@ export default class AudioRecording {
                 // happening in this class. The very first time we hit play, we can be entirely
                 // confident of capturing the original (localized) label. If we start clearing
                 // the variable, I'm concerned that there may be some small chance that at some
-                // point we will capture "Stop" and then we will be stuck there.
+                // point we will capture "Pause" and then we will be stuck there.
                 var label = document.getElementById("audio-play-label")!;
                 label.innerText = this.originalPlayLabel;
                 label.classList.remove("hide-counter-still-count");
@@ -3646,8 +3759,14 @@ export default class AudioRecording {
         return false;
     }
 
-    private split(): void {
+    private async split(): Promise<void> {
         this.setStatus("split", Status.Disabled); // Disable it immediately (not asynchronously!) so that the button stops registering clicks
+        this.resetAudioIfPaused();
+        await this.setHighlightToAsync({
+            newElement: this.getCurrentAudioSentence()!,
+            shouldScrollToElement: true,
+            forceRedisplay: true
+        });
         this.showBusy();
         BloomApi.get(
             "audioSegmentation/checkAutoSegmentDependencies",
