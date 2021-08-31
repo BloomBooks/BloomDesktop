@@ -1149,6 +1149,7 @@ namespace Bloom.Book
 
 				if (Feature_Video) features.Add("video");
 				if (Feature_Motion) features.Add("motion");
+				// Feature code is unchanged despite the toolbox tool rename to Overlay Tool.
 				if (Feature_Comic) features.Add("comic");
 				if (Feature_Activity) features.Add("activity");
 				if (Feature_Quiz) features.Add("quiz");
@@ -1260,8 +1261,12 @@ namespace Bloom.Book
 		public bool Feature_Motion { get; set; }
 		[JsonIgnore]
 		public bool Feature_Quiz { get; set; }
+		// Feature name is unchanged despite the toolbox tool rename to Overlay Tool, because they are stored
+		// in the parse database and used from there by Bloom Library, and because older versions of Bloom would not
+		// recognize a 'Feature_Overlay'.
 		[JsonIgnore]
 		public bool Feature_Comic { get; set; }
+
 		[JsonIgnore]
 		public bool Feature_Widget { get; set; }
 		

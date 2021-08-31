@@ -15,7 +15,7 @@ import {
 import { Point, PointScaling } from "./point";
 import { isLinux } from "../../utils/isLinux";
 import { reportError } from "../../lib/errorHandler";
-import { getRgbaColorStringFromColorAndOpacity } from "../toolbox/comic/comicToolColorHelper";
+import { getRgbaColorStringFromColorAndOpacity } from "../toolbox/overlay/overlayToolColorHelper";
 
 const kComicalGeneratedClass: string = "comical-generated";
 const kTextOverPictureClass = "bloom-textOverPicture";

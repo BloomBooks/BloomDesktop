@@ -2095,8 +2095,8 @@ namespace Bloom.Book
 		public Dictionary<string, bool> AllPublishableLanguages(bool includeLangsOccurringOnlyInXmatter = false)
 		{
 			var result = AllLanguages(includeLangsOccurringOnlyInXmatter);
-			// For comical books, we only publish a single language. It's not currently feasible to
-			// allow the reader to switch language in a Comical book, because typically that requires
+			// For books with overlays, we only publish a single language. It's not currently feasible to
+			// allow the reader to switch language in an Overlay(Comic) book, because typically that requires
 			// adjusting the positions of the bubbles, and we don't yet support having more than one
 			// set of bubble locations in a single book. See BL-7912 for some ideas on how we might
 			// eventually improve this. In the meantime, switching language would have bad effects,
@@ -3841,7 +3841,7 @@ namespace Bloom.Book
 
 		public bool HasQuizPages => HtmlDom.HasQuizFeature(OurHtmlDom.Body);
 
-		public bool HasComicPages => HtmlDom.HasComicFeature(OurHtmlDom.Body);
+		public bool HasOverlayPages => HtmlDom.HasOverlayFeature(OurHtmlDom.Body);
 
 		public bool HasOnlyPictureOnlyPages()
 		{
@@ -3982,11 +3982,12 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Updates the feature in bookInfo.metadata to indicate whether the book contains comic pages
+		/// Updates the feature in bookInfo.metadata to indicate whether the book contains comic pages.
+		/// These are now created with the Overlay Tool, but the feature retains the old name.
 		/// </summary>
 		private void UpdateComicFeature()
 		{
-			BookInfo.MetaData.Feature_Comic = HasComicPages;
+			BookInfo.MetaData.Feature_Comic = HasOverlayPages;
 		}
 
 		/// <summary>
