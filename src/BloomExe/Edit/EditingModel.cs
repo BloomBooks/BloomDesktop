@@ -230,20 +230,40 @@ namespace Bloom.Edit
 			DuplicatePage(_pageSelection.CurrentSelection);
 		}
 
+		internal void DuplicateManyPages(IPage page)
+		{
+			var promptString = LocalizationManager.GetString(
+				"EditTab.DuplicatePageMultiple.Prompt",
+				"How many more of this page? (1-999):",
+				"Used in the window that asks how many times to duplicate the selected page.");
+			var result = _view.Browser.RunJavaScript("window.prompt('" + promptString + "', 5)");
+			if (!int.TryParse(result, out var timesToDuplicate))
+				return;
+			if (timesToDuplicate < 1 || timesToDuplicate > 999)
+				return;
+			DuplicatePageInternal(page, timesToDuplicate);
+		}
+
 		internal void DuplicatePage(IPage page)
 		{
-			// nb though there is an api call to do this, it isn't currently used, so we have to measure here
+			DuplicatePageInternal(page);
+		}
+
+		private void DuplicatePageInternal(IPage page, int numberOfTimesToDuplicate = 1)
+		{
+			// NB: though there is an api call to do this, it isn't currently used, so we have to measure here.
+			var countString = numberOfTimesToDuplicate.ToString();
 			using (PerformanceMeasurement.Global.Measure("Duplicate page"))
 			{
 				try
 				{
 					SaveNow(); //ensure current page is saved first
 					_domForCurrentPage = null; //prevent us trying to save it later, as the page selection changes
-					_currentlyDisplayedBook.DuplicatePage(page);
+					_currentlyDisplayedBook.DuplicatePage(page, numberOfTimesToDuplicate);
 					// Book.DuplicatePage() updates the page list so we don't need to do it here.
 					// (See http://issues.bloomlibrary.org/youtrack/issue/BL-3715.)
 					//_view.UpdatePageList(false);
-					Logger.WriteEvent("Duplicate Page");
+					Logger.WriteEvent("Duplicate Page" + (numberOfTimesToDuplicate > 0 ? " " + countString + " times" : ""));
 					Analytics.Track("Duplicate Page");
 				}
 				catch (Exception error)

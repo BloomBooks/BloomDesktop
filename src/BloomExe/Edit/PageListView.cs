@@ -46,6 +46,13 @@ namespace Bloom.Edit
 			menuItems.Add(
 				new WebThumbNailList.MenuItemSpec()
 				{
+					Label = LocalizationManager.GetString("EditTab.DuplicatePageMultiple", "Duplicate Page Many Times..."),
+					EnableFunction = (page) => page != null && _model.CanDuplicatePage,
+					ExecuteCommand = (page) => _model.DuplicateManyPages(page)
+				});
+			menuItems.Add(
+				new WebThumbNailList.MenuItemSpec()
+				{
 					Label = LocalizationManager.GetString("EditTab.CopyPage", "Copy Page"),
 					EnableFunction = (page) => page != null && _model.CanCopyPage,
 					ExecuteCommand = (page) => _model.CopyPage(page)
