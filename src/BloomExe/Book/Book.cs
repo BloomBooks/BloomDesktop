@@ -2823,7 +2823,7 @@ namespace Bloom.Book
 			}
 		}
 
-		public void DuplicatePage(IPage page)
+		public void DuplicatePage(IPage page, int numberToAdd=1)
 		{
 			// Can be achieved by just using the current page as both the place to insert after
 			// and the template to copy.
@@ -2831,7 +2831,7 @@ namespace Bloom.Book
 			// take advantage of our knowledge that the code is shared so that between them they cover
 			// the important code paths. If the code stops being shared, we should extend test
 			// coverage appropriately.
-			InsertPageAfter(page, page);
+			InsertPageAfter(page, page, numberToAdd);
 		}
 
 		private void CopyAndRenameAudioFiles(XmlElement newpageDiv, string sourceBookFolder)

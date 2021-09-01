@@ -347,8 +347,11 @@ namespace Bloom.Publish
 		{
 			var id = elt.Attributes["id"].Value;
 			var fontFamily = _browser.RunJavaScript($"document.getElementById('{id}') ? getComputedStyle(document.getElementById('{id}'), null).getPropertyValue('font-family') : 'not found'");
-			if (fontFamily == "not found")
-				return;	// shouldn't happen, but ignore if it does.
+			// 'fontFamily' could come back null if the user closed Bloom while a save was ongoing.
+			// The save will finish successfully after the Bloom screen goes away, but it may not have all the font information.
+			// We need a progress indicator, so that users will know when their file save completed.
+			if (fontFamily == null || fontFamily == "not found")
+				return;	// Shouldn't happen, but ignore if it does.
 			// we actually can get a comma-separated list with fallback font options: split into an array so we can use just the first one
 			var fonts = fontFamily.Split(new[]{','}, StringSplitOptions.RemoveEmptyEntries);
 			// Fonts whose names contain spaces are quoted: remove the quotes.
