@@ -1,8 +1,12 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+
 import * as React from "react";
 import * as MUI from "@material-ui/core";
 import { LinkBaseProps } from "@material-ui/core/Link";
 
 import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
+import { kBloomGray } from "../utils/colorUtils";
 
 interface ILinkProps extends ILocalizationProps {
     id?: string;
@@ -17,6 +21,7 @@ interface ILinkProps extends ILocalizationProps {
         | "textPrimary"
         | "textSecondary"
         | "error";
+    children: React.ReactNode; // The link text
 }
 
 // A link element that is localizable.
@@ -79,3 +84,26 @@ export class TextWithEmbeddedLink extends LocalizableElement<
         );
     }
 }
+
+/**
+ * The same as Link, but adds some default styling for making the link appear disabled.
+ */
+export const LinkWithDisabledStyles = (props: ILinkProps) => {
+    return (
+        // Note: The link text is in props.children which gets passed through the spread operator
+        // The disabled status gets passed through props/spread operator too
+        <Link
+            {...props}
+            css={css`
+                &.disabled {
+                    color: ${kBloomGray};
+                    cursor: default;
+
+                    &:hover {
+                        text-decoration: none;
+                    }
+                }
+            `}
+        ></Link>
+    );
+};
