@@ -502,6 +502,20 @@ describe("Check Story", function() {
         expect(results.remaining_words.length).toBe(2); // o'o cob
     });
 
+    it("Check hyphen in digraph, but not as single character", function() {
+        var inputText = "o-o b-ob bob- ob-o do-b";
+        var knownGPCs = ["b", "o", "-o", "d"];
+        var results = theOneLibSynphony.checkStory(
+            [],
+            [],
+            knownGPCs,
+            inputText,
+            ""
+        );
+        expect(results.possible_words.length).toBe(3); // o-o b-ob ob-o
+        expect(results.remaining_words.length).toBe(2); // bob- do-b
+    });
+
     // Enhance: This test passes, but only because I don't check the actual values returned
     // in possible_words. The exterior hyphens are stripped off of '-obo' and 'bodo-'.
     // Not sure why or how much trouble it'd be to fix. Also not sure it's a problem, since
