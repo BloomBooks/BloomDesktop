@@ -27,7 +27,7 @@ void Main()
 	
 	
 	var directories = Directory.GetDirectories(localizationFolderPath);
-	var langNameDirs = directories.Where(dir => Path.GetFileName(dir).Length <= 3);
+	var langNameDirs = directories.Where(dir => Path.GetFileName(dir).Length <= 3 || Path.GetFileName(dir).StartsWith("zh-"));
 	
 	foreach (var langNameDir in langNameDirs)
 	{
@@ -79,4 +79,3 @@ string GetTransUnitXmlWithId(string fileContents, string id)
 	
 	return fileContents.Substring(startIndex, endIndex - startIndex);
 }
-
