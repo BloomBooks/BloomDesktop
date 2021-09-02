@@ -269,7 +269,7 @@ namespace BloomTests.Book
 			_collectionSettings = CreateDefaultCollectionsSettings();
 			var xmatterFinder = new XMatterPackFinder(new[] { BloomFileLocator.GetInstalledXMatterDirectory() });
 			var fileLocator = new BloomFileLocator(_collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(), ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
-			var starter = new BookStarter(fileLocator, (dir, forSelectedBook) => new BookStorage(dir, fileLocator, new BookRenamedEvent(), _collectionSettings), _collectionSettings);
+			var starter = new BookStarter(fileLocator, (dir, fullyUpdateBookFiles) => new BookStorage(dir, fileLocator, new BookRenamedEvent(), _collectionSettings), _collectionSettings);
 
 			return new BookServer(
 				//book factory
@@ -281,7 +281,7 @@ namespace BloomTests.Book
 				},
 
 				// storage factory
-				(path, forSelectedBook) =>
+				(path, fullyUpdateBookFiles) =>
 				{
 					var storage = new BookStorage(path, fileLocator, new BookRenamedEvent(), _collectionSettings);
 					storage.BookInfo = new BookInfo(path, true);

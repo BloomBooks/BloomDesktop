@@ -53,7 +53,7 @@ namespace BloomTests.Edit
 			var projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
 			var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
 
-			_starter = new BookStarter(_fileLocator, (dir, forSelectedBook) => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings), library);
+			_starter = new BookStarter(_fileLocator, (dir, fullyUpdateBookFiles) => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings), library);
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 			_libraryFolder = new TemporaryFolder("BookStarterTests_LibraryCollection");
 		}
