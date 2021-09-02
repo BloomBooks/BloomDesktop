@@ -1027,6 +1027,11 @@
         <note>ID: Common.Warning</note>
         <note>A heading shown above some messages.</note>
       </trans-unit>
+      <trans-unit id="Common.WhatsThis" sil:dynamic="true">
+        <source xml:lang="en">What's this?</source>
+        <note>ID: Common.WhatsThis</note>
+        <note>minimal question indicating a link to information</note>
+      </trans-unit>
       <trans-unit id="Download.Completed">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
         <note>ID: Download.Completed</note>
@@ -3525,6 +3530,31 @@
         <source xml:lang="en">Book Metadata</source>
         <note>ID: PublishTab.BookMetadata</note>
         <note>This link opens a dialog box that lets you put in information someone (often a librarian) might use to search for a book with particular characteristics.</note>
+      </trans-unit>
+	  <trans-unit id="PublishTab.BulkBloomPub.Explanation" sil:dynamic="true">
+        <source xml:lang="en">This file will cause these books to be grouped under a single bookshelf in Bloom Reader. This collection's bookshelf is set to "{0}".</source>
+        <note>ID: Publish.BulkBloomPub.Explanation</note>
+		<note>{0} will be replaced with the name of the bookshelf. Make sure to place the {0} at the appropriate place in the translation. The double quotes ("") around it can be replaced with whatever kind of quotation marks are appropriate in the language you are translating to.</note>
+      </trans-unit>
+	  <trans-unit id="PublishTab.BulkBloomPub.Make" sil:dynamic="true">
+        <source xml:lang="en">Make</source>
+        <note>ID: Publish.BulkBloomPub.Make</note>
+		<note>"Make" is the label of a button that will make the selected file</note>
+      </trans-unit>
+	  <trans-unit id="PublishTab.BulkBloomPub.MakeAllBloomPubs" sil:dynamic="true">
+        <source xml:lang="en">Make All BloomPUBs from Collection</source>
+        <note>ID: PublishTab.BulkBloomPub.MakeAllBloomPubs</note>
+        <note>A BloomPUB is a type of file format that can be used to read books on the Bloom Reader app</note>
+      </trans-unit>
+	  <trans-unit id="PublishTab.BulkBloomPub.MakeBloomBundle" sil:dynamic="true">
+        <source xml:lang="en">Zip up into a single .bloomBundle file</source>
+        <note>ID: Publish.BulkBloomPub.MakeBloomBundle</note>
+		<note>"Zip up" means to take multiple things and turn them into a single combined .zip file. (The .bloomBundle file is similar to a .zip file).</note>
+		<note>"Zip up" also takes meaning from "to zip up a jacket zipper".</note>
+      </trans-unit>
+	  <trans-unit id="PublishTab.BulkBloomPub.ProduceBloomShelf" sil:dynamic="true">
+        <source xml:lang="en">Produce a .bloomshelf file</source>
+        <note>ID: Publish.BulkBloomPub.ProduceBloomShelf</note>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm">
         <source xml:lang="en">Share on the Web</source>

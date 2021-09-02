@@ -1,5 +1,15 @@
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 
+/**
+ * Gets and formats the localized string asynchronously using a callback
+ * @param english - The English text
+ * @param l10nKey - The key to look up in the XLF files
+ * @param l10nComment - Optional. The comment or note
+ * @param l10nParam0 - If it is a format string, the argument to pass to the format string to replace {0} or %0
+ * @param l10nParam1 - If it is a format string, the argument to pass to the format string to replace {1} or %1
+ * @param temporarilyDisableI18nWarning - If true, doesn't warn if the key is missing
+ * @param callback - A callback that runs after the translation is retrieved and format string substitutions are performed.
+ */
 export function getLocalization({
     english,
     l10nKey,

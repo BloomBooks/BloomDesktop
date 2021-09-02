@@ -1,7 +1,16 @@
 import React = require("react");
 import { getLocalization } from "./l10n";
 
-// React hook to lookup localization
+/**
+ * React hook to lookup localization
+ * Gets and formats the localized string asynchronously using a callback
+ * @param english - The English text
+ * @param l10nKey - The key to look up in the XLF files. Can be null (not undefined!) if you want us to return the "english" as the translation (useful because hooks cannot be called conditionally).
+ * @param l10nComment - Optional. The comment or note
+ * @param l10nParam0 - If it is a format string, the argument to pass to the format string to replace {0} or %0
+ * @param l10nParam1 - If it is a format string, the argument to pass to the format string to replace {1} or %1
+ * @param temporarilyDisableI18nWarning - If true, doesn't warn if the key is missing
+ */
 export function useL10n(
     english: string,
     // Can be null (not undefined!) if you want us to return the "english" as the translation

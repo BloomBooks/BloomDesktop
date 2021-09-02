@@ -20,6 +20,7 @@ import { ColorChooser } from "../../../react_components/colorChooser";
 import { ConditionallyEnabledBlock } from "../../../react_components/ConditionallyEnabledBlock";
 import { BloomApi } from "../../../utils/bloomApi";
 import { useGetLabelForCollection } from "../../../contentful/UseContentful";
+import { Div } from "../../../react_components/l10nComponents";
 
 export let showBulkBloomPubDialog: () => void = () => {
     window.alert("showBulkBloomPubDialog is not set up yet.");
@@ -78,9 +79,14 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
 
     const kBlockSeparation = "30px";
 
+    const dialogTitle = useL10n(
+        "Make All BloomPUBs from Collection",
+        "PublishTab.BulkBloomPub.MakeAllBloomPubs"
+    );
+
     return (
         <React.Fragment>
-            <DialogTitle title={"Make All BloomPUBs from Collection"}>
+            <DialogTitle title={dialogTitle}>
                 <img
                     css={css`
                         height: 16px;
@@ -98,7 +104,7 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                                 bookshelfUrlKey && params.makeBookshelfFile
                             }
                             disabled={!bookshelfUrlKey}
-                            l10nKey="Publish.BulkBloomPub.ProduceBloomShelf"
+                            l10nKey="PublishTab.BulkBloomPub.ProduceBloomShelf"
                             onCheckChanged={() =>
                                 setParams({
                                     ...params,
@@ -116,18 +122,22 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                                     margin-left: 28px;
                                 `}
                             >
-                                <div
+                                <Div
+                                    l10nKey={
+                                        "PublishTab.BulkBloomPub.Explanation"
+                                    }
+                                    l10nParam0={params.bookshelfLabel ?? ""}
                                     css={css`
                                         font-size: 10px;
                                         color: gray;
                                         margin-top: -9px;
                                     `}
                                 >
-                                    This file will cause these book to be
+                                    {`This file will cause these books to be
                                     grouped under a single bookshelf in Bloom
-                                    Reader. This collection’s bookshelf is set
-                                    to "{params.bookshelfLabel}".
-                                </div>
+                                    Reader. This collection's bookshelf is set
+                                    to "${params.bookshelfLabel ?? ""}"`}
+                                </Div>
                                 <div
                                     css={css`
                                         margin-top: 10px;
@@ -204,7 +214,7 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                             disabled={true} // not implemented yet
                             label="Zip up into a single .bloomBundle file"
                             checked={params.makeBloomBundle}
-                            l10nKey="Publish.BulkBloomPub.MakeBloomBundle"
+                            l10nKey="PublishTab.BulkBloomPub.MakeBloomBundle"
                             onCheckChanged={checked => {
                                 setParams({
                                     ...params,
@@ -217,7 +227,7 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
             )}
             <DialogBottomButtons>
                 <BloomButton
-                    l10nKey="Publish.BulkBloomPub.Make"
+                    l10nKey="PublishTab.BulkBloomPub.Make"
                     hasText={true}
                     enabled={true}
                     variant={"contained"}

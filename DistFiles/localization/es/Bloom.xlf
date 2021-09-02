@@ -1239,6 +1239,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>A heading shown above some messages.</note>
         <target xml:lang="es-ES" state="final">Información</target>
       </trans-unit>
+      <trans-unit id="Common.WhatsThis" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">What's this?</source>
+        <note>ID: Common.WhatsThis</note>
+        <note>minimal question indicating a link to information</note>
+        <target xml:lang="es-ES" state="final">¿Qué es esto?</target>
+      </trans-unit>
       <trans-unit id="Download.Completed" approved="yes">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
         <note>ID: Download.Completed</note>

@@ -164,7 +164,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     <CommandsGroup>
                         <RequiresBloomEnterpriseAdjacentIconWrapper>
                             <LinkWithDisabledStyles
-                                l10nKey="PublishTab.Android.SaveWholeCollection"
+                                l10nKey="PublishTab.BulkBloomPub.MakeAllBloomPubs"
                                 onClick={() => {
                                     showBulkBloomPubDialog();
                                 }}
