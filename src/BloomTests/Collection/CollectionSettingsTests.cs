@@ -229,5 +229,67 @@ namespace BloomTests.Collection
 			settings.PageNumberStyle = numberStyleName;
 			Assert.AreEqual(digitForNumber2, settings.CharactersForDigitsForPageNumbers.Substring(2,1));
 		}
+
+		[Test]
+		public void BulkPublishBloomPubSettings_GivenBulkPublishSettings_SavesToXmlProperly()
+		{
+			var settings = CreateCollectionSettings(_folder.Path, "test");
+			settings.BulkPublishBloomPubSettings = new Bloom.Publish.Android.BulkBloomPubPublishSettings()
+			{
+				makeBookshelfFile = false,
+				makeBloomBundle = false,
+				bookshelfColor = "#FF0000",
+				distributionTag = "distTag",
+				bookshelfLabel = "bookshelfLabel"
+			};
+
+			// System under test
+			settings.Save();
+
+			// Verification
+			var text = RobustFile.ReadAllText(settings.SettingsFilePath);
+			string expected = @"<BulkPublishBloomPubSettings>
+    <MakeBookshelfFile>False</MakeBookshelfFile>
+    <MakeBloomBundle>False</MakeBloomBundle>
+    <BookshelfColor>#FF0000</BookshelfColor>
+    <DistributionTag>distTag</DistributionTag>
+    <BookshelfLabel>bookshelfLabel</BookshelfLabel>
+  </BulkPublishBloomPubSettings>";
+			StringAssert.Contains(expected, text);
+		}
+
+		[Test]
+		public void BulkPublishBloomPubSettings_GivenBulkPublishSettingsInXml_LoadsProperly()
+		{
+			var collectionName = "loadBulkPublishSettingsTest";
+			var collectionSettingsPath = Path.Combine(_folder.Path, $"{collectionName}.bloomCollection");
+			if (RobustFile.Exists(collectionSettingsPath))
+			{
+				RobustFile.Delete(collectionSettingsPath);
+            }
+
+			string fileContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+  <BulkPublishBloomPubSettings>
+    <MakeBookshelfFile>False</MakeBookshelfFile>
+    <MakeBloomBundle>False</MakeBloomBundle>
+    <BookshelfColor>#FF0000</BookshelfColor>
+    <DistributionTag>distTag</DistributionTag>
+    <BookshelfLabel>bookshelfLabel</BookshelfLabel>
+  </BulkPublishBloomPubSettings>
+</Collection>";
+			RobustFile.WriteAllText(collectionSettingsPath, fileContents);
+
+			// System under test
+			var collectionSettings = new CollectionSettings(collectionSettingsPath);
+
+			// Verification
+			var bulkPublishSettings = collectionSettings.BulkPublishBloomPubSettings;
+			Assert.That(bulkPublishSettings.makeBookshelfFile, Is.EqualTo(false), "makeBookshelfFile");
+			Assert.That(bulkPublishSettings.makeBloomBundle, Is.EqualTo(false), "makeBloomBundle");
+			Assert.That(bulkPublishSettings.bookshelfColor, Is.EqualTo("#FF0000"));
+			Assert.That(bulkPublishSettings.distributionTag, Is.EqualTo("distTag"));
+			Assert.That(bulkPublishSettings.bookshelfLabel, Is.EqualTo("bookshelfLabel"));
+		}
 	}
 }

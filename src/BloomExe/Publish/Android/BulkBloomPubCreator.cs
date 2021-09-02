@@ -32,7 +32,7 @@ namespace Bloom.Publish.Android
 			_webSocketServer = webSocketServer;
 		}
 
-		public void PublishAllBooks(PublishToAndroidApi.BulkBloomPUBPublishSettings bulkSaveSettings)
+		public void PublishAllBooks(BulkBloomPubPublishSettings bulkSaveSettings)
 		{
 			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, "Bulk Save BloomPubs",
 				(progress, worker) =>
