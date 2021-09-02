@@ -100,6 +100,7 @@ namespace BloomTests.Book
 					File.WriteAllText(Path.Combine(audioDir, "musicfile3.wav"), "dummy wav content");
 					File.WriteAllText(Path.Combine(audioDir, "narration.mp3"), "more dummy mp3 content");	// file should be included (even though not referenced)
 					File.WriteAllText(Path.Combine(audioDir, "narration.wav"), "more dummy wav content");	// file should not be included
+					File.WriteAllText(Path.Combine(folderPath, "temp.tmp"), "dummy temporary file data");	// file should not be included
 				});
 
 			// System Under Test //
