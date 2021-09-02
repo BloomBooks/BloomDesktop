@@ -22,14 +22,14 @@ namespace Bloom.Book
 			_configuratorFactory = configuratorFactory;
 		}
 
-		public virtual Book GetBookFromBookInfo(BookInfo bookInfo, bool forSelectedBook = false)
+		public virtual Book GetBookFromBookInfo(BookInfo bookInfo, bool fullyUpdateBookFiles = false)
 		{
 			//Review: Note that this isn't doing any caching yet... worried that caching will just eat up memory, but if anybody is holding onto these, then the memory won't be freed anyhow
 			if(bookInfo is ErrorBookInfo)
 			{
 				return new ErrorBook(((ErrorBookInfo)bookInfo).Exception, bookInfo.FolderPath, true );
 			}
-			var book = _bookFactory(bookInfo, _storageFactory(bookInfo.FolderPath, forSelectedBook));
+			var book = _bookFactory(bookInfo, _storageFactory(bookInfo.FolderPath, fullyUpdateBookFiles));
 			return book;
 		}
 

@@ -278,7 +278,7 @@ namespace Bloom.WebLibraryIntegration
 				}
 				var server = context.BookServer;
 				var bookInfo = new BookInfo(uploadParams.Folder, true);
-				var book = server.GetBookFromBookInfo(bookInfo);
+				var book = server.GetBookFromBookInfo(bookInfo, fullyUpdateBookFiles: true);
 				book.BringBookUpToDate(new NullProgress());
 				book.Storage.CleanupUnusedSupportFiles(isForPublish: false); // we are publishing, but this is the real folder not a copy, so play safe.
 

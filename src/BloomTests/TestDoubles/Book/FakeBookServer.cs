@@ -18,7 +18,7 @@ namespace BloomTests.TestDoubles.Book
 		/// A dumbed down implementation that is able to return a book with the BookInfo and set the book's FolderPath.
 		/// </summary>
 		/// <returns></returns>
-		public override Bloom.Book.Book GetBookFromBookInfo(BookInfo bookInfo, bool forSelectedBook = false)
+		public override Bloom.Book.Book GetBookFromBookInfo(BookInfo bookInfo, bool fullyUpdateBookFiles = false)
 		{
 			var collectionSettings = new Bloom.Collection.CollectionSettings();
 			var fileLocator = new Bloom.BloomFileLocator(collectionSettings, new XMatterPackFinder(Enumerable.Empty<string>()), Enumerable.Empty<string>(), Enumerable.Empty<string>(),

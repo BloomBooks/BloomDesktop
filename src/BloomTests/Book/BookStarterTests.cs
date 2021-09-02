@@ -49,7 +49,7 @@ namespace BloomTests.Book
 			_fileLocator = new BloomFileLocator(collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(), ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
 
 
-			_starter = new BookStarter(_fileLocator, (dir, forSelectedBook) => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings), _defaultCollectionSettings);
+			_starter = new BookStarter(_fileLocator, (dir, fullyUpdateBookFiles) => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings), _defaultCollectionSettings);
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 
 			// These settings are used in some tests, especially of static BookStarter methods.
@@ -152,7 +152,7 @@ namespace BloomTests.Book
 				return new Bloom.Book.Book(bookInfo, storage, null, collectionSettings,
 					new PageSelection(),
 					new PageListChangedEvent(), new BookRefreshEvent());
-			}, (path, forSelectedBook) => new BookStorage(path, _fileLocator, null, collectionSettings), () => _starter, null);
+			}, (path, fullyUpdateBookFiles) => new BookStorage(path, _fileLocator, null, collectionSettings), () => _starter, null);
 			return server;
 		}
 
