@@ -190,15 +190,15 @@ namespace BloomTests.Spreadsheet
 
 			var coverImageRow = _rows.Find(x => x.MetadataKey.Equals("[coverImage]"));
 			Assert.That(coverImageRow, Is.Not.Null);
-			Assert.That(coverImageRow.GetCell(imageSourceCol).Content, Is.EqualTo("fakeImagesFolderpath\\microwave1.png"));
+			Assert.That(coverImageRow.GetCell(imageSourceCol).Content, Is.EqualTo(Path.Combine("fakeImagesFolderpath","microwave1.png")));
 
 			var licenseImageRow = _rows.Find(x => x.MetadataKey.Equals("[licenseImage]"));
 			Assert.That(licenseImageRow, Is.Not.Null);
-			Assert.That(licenseImageRow.GetCell(imageSourceCol).Content, Is.EqualTo("fakeImagesFolderpath\\license.png"));
+			Assert.That(licenseImageRow.GetCell(imageSourceCol).Content, Is.EqualTo(Path.Combine("fakeImagesFolderpath","license.png")));
 
 			var backImageRow = _rows.Find(x => x.MetadataKey.Equals("[outside-back-cover-branding-bottom-html]"));
 			Assert.That(backImageRow, Is.Not.Null);
-			Assert.That(backImageRow.GetCell(imageSourceCol).Content, Is.EqualTo("fakeImagesFolderpath\\BloomWithTaglineAgainstLight.svg"));
+			Assert.That(backImageRow.GetCell(imageSourceCol).Content, Is.EqualTo(Path.Combine("fakeImagesFolderpath","BloomWithTaglineAgainstLight.svg")));
 		}
 
 		[TestCase("fromExport")]
