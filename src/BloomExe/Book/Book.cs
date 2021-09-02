@@ -421,9 +421,9 @@ namespace Bloom.Book
 			 foreach (XmlAttribute attr in originalBody.Attributes)
 			 {
 				 newBody.SetAttribute(attr.Name, attr.Value);
-			 }
+			}
 
-			var pageDom = dom.RawDom.ImportNode(divNodeForThisPage, true);
+			 var pageDom = dom.RawDom.ImportNode(divNodeForThisPage, true);
 			newBody.AppendChild(pageDom);
 
 //                BookStorage.HideAllTextAreasThatShouldNotShow(dom, iso639CodeToLeaveVisible, Page.GetPageSelectorXPath(dom));
@@ -1144,8 +1144,9 @@ namespace Bloom.Book
 			RemoveObsoleteImageAttributes(bookDOM);
 			BringBookInfoUpToDate(oldMetaData);
 			FixErrorsEncounteredByUsers(bookDOM);
-			AddReaderBodyClass(bookDOM);
+			AddReaderBodyAttributes(bookDOM);
 			AddLanguageAttributesToBody(bookDOM);
+			bookDOM.Body.SetAttribute("data-bookshelfUrlKey", this.CollectionSettings.DefaultBookshelf);
 
 			if (IsTemplateBook)
 			{
@@ -1168,7 +1169,7 @@ namespace Bloom.Book
 			bookDom.Body.SetAttribute("data-L3", this._bookData.Language3IsoCode );
 		}
 
-		private void AddReaderBodyClass(HtmlDom bookDom){
+		private void AddReaderBodyAttributes(HtmlDom bookDom){
 			// Bloom prior to late 4.7beta had decodable and leveled reader templates without body classes, which
 			// became necessary for an SIL LEAD "ABC+" xmatter. Here we add that if we can tell the book descended
 			// from those templates, then add the required classes if they are missing.
@@ -1182,6 +1183,17 @@ namespace Bloom.Book
 			{
 				HtmlDom.AddClassIfMissing(bookDom.Body,"leveled-reader");
 			}
+
+			// (Semi-Implemented)
+			// Note, this doesn't get set very often. Indeed you probably have to go to a different book and come
+			// back. So if we were using this to, say, set the cover color, we'd wish that the change was immediately
+			// visible. At the moment, we aren't actually using these (they are for the future so that we don't have
+			// a big delay if a client ever needs them). But when we need them, we're probably going to want a way
+			// to make the changes as soon as the user changes the level.
+			// Also, when saving, note that EditingModel.NeedToDoFullSave might want to know about
+			// these values.
+			bookDom.Body.SetAttribute("data-decodablestage", this.BookInfo.MetaData.DecodableReaderStage.ToString());
+			bookDom.Body.SetAttribute("data-leveledreaderlevel", this.BookInfo.MetaData.LeveledReaderLevel.ToString());
 		}
 
 		// Some books got corrupted with CKE temp data, possibly before we prevented this happening when

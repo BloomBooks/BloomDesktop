@@ -10,15 +10,21 @@ Most SIL projects can freely use the SIL internal Enterprise License. Questions?
 
 We made hovering over a book thumbnail show the folder name of the book. This is helpful to see what's-what when you have multiple copies of a book.
 
+### Bookshelf selector
+
+In collection settings, Bloom Enterprise projects that have bookshelves on Bloom Library can now choose the bookshelf that corresponds to the collection. Then when books are uploaded to BloomLibrary.org, they automatically go to the correct bookshelf. This setting also can now be used to automatically choose a back-cover image to show where the book fits in the overall curriculum and choose a cover color based on the grade (this is used for a large MOE project in Kyrgyzstan). ![screenshot-online-only](https://i.imgur.com/0TNZEo8.png)
+
 ## Edit Tab
 
-### Comic Tool
+### Comic Tool ---> Overlay Tool
 
-You can now control the transparency of comic element and make corners round. You can also show a line that you can use to point to something in a diagram:
+The Comic Tool is now the "Overlay Tool". We made this change because this tool is now useful for more than comics and people who were not interested in comics were not finding it.
+
+You can now control the transparency of overlayed text elements and make corners round. You can also show a line that you can use to point to something in a diagram:
 
 ![screenshot-online-only](https://i.imgur.com/HqlfqxN.png)
 
-You can now make circle comic elements.
+You can now make circle text elements.
 
 ### Widgets
 

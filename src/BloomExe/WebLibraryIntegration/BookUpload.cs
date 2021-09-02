@@ -492,63 +492,82 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		internal string FullUpload(Book.Book book, IProgress progress , PublishView publishView, BookUploadParameters bookParams, out string parseId)
 		{
-			book.Storage.CleanupUnusedSupportFiles(isForPublish:false); // we are publishing, but this is the real folder not a copy, so play safe.
-			var bookFolder = book.FolderPath;
-			parseId = ""; // in case of early return
-			// Set this in the metadata so it gets uploaded. Do this in the background task as it can take some time.
-			// These bits of data can't easily be set while saving the book because we save one page at a time
-			// and they apply to the book as a whole.
-			book.BookInfo.LanguageTableReferences = ParseClient.GetLanguagePointers(book.BookData.MakeLanguageUploadData(bookParams.LanguagesToUpload));
-			book.BookInfo.PageCount = book.GetPages().Count();
-			book.BookInfo.Save();
-			// If the caller wants to preserve existing thumbnails, recreate them only if one or more of them do not exist.
-			var thumbnailsExist = File.Exists(Path.Combine(bookFolder, "thumbnail-70.png")) &&
-				File.Exists(Path.Combine(bookFolder, "thumbnail-256.png")) &&
-				File.Exists(Path.Combine(bookFolder, "thumbnail.png"));
-			if (!bookParams.PreserveThumbnails || !thumbnailsExist)
+			// this (isForPublish:true) is dangerous and the product of much discussion.
+			// See "finally" block later to see that we put branding files back
+			book.Storage.CleanupUnusedSupportFiles(isForPublish: true);
+			try
 			{
-				var thumbnailMsg = LocalizationManager.GetString("PublishTab.Upload.MakingThumbnail", "Making thumbnail image...");
-				progress.WriteStatus(thumbnailMsg);
-				//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
-				_thumbnailer.MakeThumbnailOfCover(book, 70); // this is a sacrificial one to prime the pump, to fix BL-2673
-				_thumbnailer.MakeThumbnailOfCover(book, 70);
-				if (progress.CancelRequested)
-					return "";
-				_thumbnailer.MakeThumbnailOfCover(book, 256);
+				var bookFolder = book.FolderPath;
+				parseId = ""; // in case of early return
+				// Set this in the metadata so it gets uploaded. Do this in the background task as it can take some time.
+				// These bits of data can't easily be set while saving the book because we save one page at a time
+				// and they apply to the book as a whole.
+				book.BookInfo.LanguageTableReferences =
+					ParseClient.GetLanguagePointers(book.BookData.MakeLanguageUploadData(bookParams.LanguagesToUpload));
+				book.BookInfo.PageCount = book.GetPages().Count();
+				book.BookInfo.Save();
+				// If the caller wants to preserve existing thumbnails, recreate them only if one or more of them do not exist.
+				var thumbnailsExist = File.Exists(Path.Combine(bookFolder, "thumbnail-70.png")) &&
+				                      File.Exists(Path.Combine(bookFolder, "thumbnail-256.png")) &&
+				                      File.Exists(Path.Combine(bookFolder, "thumbnail.png"));
+				if (!bookParams.PreserveThumbnails || !thumbnailsExist)
+				{
+					var thumbnailMsg = LocalizationManager.GetString("PublishTab.Upload.MakingThumbnail",
+						"Making thumbnail image...");
+					progress.WriteStatus(thumbnailMsg);
+					//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
+					_thumbnailer.MakeThumbnailOfCover(book,
+						70); // this is a sacrificial one to prime the pump, to fix BL-2673
+					_thumbnailer.MakeThumbnailOfCover(book, 70);
+					if (progress.CancelRequested)
+						return "";
+					_thumbnailer.MakeThumbnailOfCover(book, 256);
+					if (progress.CancelRequested)
+						return "";
+
+					// It is possible the user never went back to the Collection tab after creating/updating the book, in which case
+					// the 'normal' thumbnail never got created/updating. See http://issues.bloomlibrary.org/youtrack/issue/BL-3469.
+					_thumbnailer.MakeThumbnailOfCover(book);
+					if (progress.CancelRequested)
+						return "";
+				}
+
+				var uploadPdfPath = UploadPdfPath(bookFolder);
+				// If there is not already a locked preview in the book folder
+				// (which we take to mean the user has created a customized one that he prefers),
+				// make sure we have a current correct preview and then copy it to the book folder so it gets uploaded.
+				if (!FileHelper.IsLocked(uploadPdfPath))
+				{
+					var pdfMsg = LocalizationManager.GetString("PublishTab.Upload.MakingPdf", "Making PDF Preview...");
+					progress.WriteStatus(pdfMsg);
+
+					publishView.MakePDFForUpload(progress);
+					if (RobustFile.Exists(publishView.PdfPreviewPath))
+					{
+						RobustFile.Copy(publishView.PdfPreviewPath, uploadPdfPath, true);
+					}
+					else
+					{
+						return ""; // no PDF, no upload (See BL-6719)
+					}
+				}
+
 				if (progress.CancelRequested)
 					return "";
 
-				// It is possible the user never went back to the Collection tab after creating/updating the book, in which case
-				// the 'normal' thumbnail never got created/updating. See http://issues.bloomlibrary.org/youtrack/issue/BL-3469.
-				_thumbnailer.MakeThumbnailOfCover(book);
-				if (progress.CancelRequested)
-					return "";
+				return UploadBook(bookFolder, progress, out parseId, Path.GetFileName(uploadPdfPath),
+					GetAudioFilesToInclude(book, bookParams.ExcludeNarrationAudio, bookParams.ExcludeMusic),
+					GetVideoFilesToInclude(book),
+					bookParams.LanguagesToUpload, book.CollectionSettings);
 			}
-			var uploadPdfPath = UploadPdfPath(bookFolder);
-			// If there is not already a locked preview in the book folder
-			// (which we take to mean the user has created a customized one that he prefers),
-			// make sure we have a current correct preview and then copy it to the book folder so it gets uploaded.
-			if (!FileHelper.IsLocked(uploadPdfPath))
+			finally
 			{
-				var pdfMsg = LocalizationManager.GetString("PublishTab.Upload.MakingPdf", "Making PDF Preview...");
-				progress.WriteStatus(pdfMsg);
-				
-				publishView.MakePDFForUpload(progress);
-				if (RobustFile.Exists(publishView.PdfPreviewPath))
-				{
-					RobustFile.Copy(publishView.PdfPreviewPath, uploadPdfPath, true);
-				}
-				else
-				{
-					return "";		// no PDF, no upload (See BL-6719)
-				}
-			}
-			if (progress.CancelRequested)
-				return "";
+				// Put back all the branding files which we removed above in the call to CleanupUnusedSupportFiles()
+				book.Storage.UpdateSupportFiles();
 
-			return UploadBook(bookFolder, progress, out parseId, Path.GetFileName(uploadPdfPath),
-				GetAudioFilesToInclude(book, bookParams.ExcludeNarrationAudio, bookParams.ExcludeMusic), GetVideoFilesToInclude(book),
-				bookParams.LanguagesToUpload, book.CollectionSettings);
+				// NB: alternatively, we considered refactoring CleanupUnusedSupportFiles() to give us a list of files
+				// to not upload.
+			}
 		}
 
 		/// <summary>

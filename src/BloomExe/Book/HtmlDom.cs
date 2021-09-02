@@ -2886,5 +2886,12 @@ namespace Bloom.Book
 			//CAN'T DO THIS: settings.OutputMethod = XmlOutputMethod.Html; // JohnT: someone please explain why not?
 			return settings;
 		}
+
+		public IEnumerable<XmlAttribute> GetBodyAttributesThatMayAffectDisplay()
+		{
+			//example: [(data-bookshelfurlkey, "kyrgyzstan2020-grade2")]
+			return this.Body.Attributes.Cast<XmlAttribute>()
+				.Where(a => a.Name.StartsWith("data-"));
+		}
 	}
 }

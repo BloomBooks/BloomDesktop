@@ -74,6 +74,11 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
     const [twoColumns, setTwoColumns] = useState(true);
 
     const [selectedPageId, setSelectedPageId] = useState("");
+    const bookAttributesThatMayAffectDisplay = BloomApi.useApiData<any>(
+        "pageList/bookAttributesThatMayAffectDisplay",
+        {}
+    );
+
     // All the code in this useEffect is one-time initialization.
     useEffect(() => {
         let localizedNotification = "";
@@ -333,29 +338,34 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
     };
 
     return (
-        <Responsive
-            width={180}
-            layouts={layouts}
-            // lg (two-column) if it's more than 90px wide. That's barely enough for one column,
-            // so may want to increase it if we really go responsive; but currently, single column
-            // looks strange if there's any extra white space, with the thumbnails staggered
-            // left and right. So for now we've fixed the width of the thumbnail pane, making
-            // it big enough for two full columns always.
-            breakpoints={{
-                lg: 90,
-                sm: 0
-            }}
-            rowHeight={rowHeight}
-            compactType="wrap"
-            cols={{
-                lg: 2,
-                sm: 1
-            }}
-            onLayoutChange={onLayoutChange}
-            onDragStop={onDragStop}
+        <div
+            id="wrapperForBodyAttributes"
+            {...bookAttributesThatMayAffectDisplay}
         >
-            {pages}
-        </Responsive>
+            <Responsive
+                width={180}
+                layouts={layouts}
+                // lg (two-column) if it's more than 90px wide. That's barely enough for one column,
+                // so may want to increase it if we really go responsive; but currently, single column
+                // looks strange if there's any extra white space, with the thumbnails staggered
+                // left and right. So for now we've fixed the width of the thumbnail pane, making
+                // it big enough for two full columns always.
+                breakpoints={{
+                    lg: 90,
+                    sm: 0
+                }}
+                rowHeight={rowHeight}
+                compactType="wrap"
+                cols={{
+                    lg: 2,
+                    sm: 1
+                }}
+                onLayoutChange={onLayoutChange}
+                onDragStop={onDragStop}
+            >
+                {pages}
+            </Responsive>
+        </div>
     );
 };
 

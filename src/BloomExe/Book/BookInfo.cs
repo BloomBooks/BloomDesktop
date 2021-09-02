@@ -489,11 +489,11 @@ namespace Bloom.Book
 		{
 			get
 			{
-				if (MetaData.Tools == null)
-					MetaData.Tools = new List<ToolboxToolState>();
-				return MetaData.Tools;
+				if (MetaData.ToolStates == null)
+					MetaData.ToolStates = new List<ToolboxToolState>();
+				return MetaData.ToolStates;
 			}
-			set { MetaData.Tools = value; }
+			set { MetaData.ToolStates = value; }
 		}
 
 		public string CurrentTool
@@ -1090,21 +1090,82 @@ namespace Bloom.Book
 		[JsonProperty("audioLangsToPublish")]
 		public LangsToPublishSetting AudioLangsToPublish { get; set; }
 
-		public ToolboxToolState LeveledReaderTool => Tools?.SingleOrDefault(t => t.ToolId == "leveledReader");
-
+		// About this ignore: this actually would be perfectly fine as a top-level bit of true metadata.
+		// However, it is currently also in the toolstate, so we're leaving it out of the meta.json so as not to
+		// duplicate that. We could reasonably decide in the future to instead make *this* the source of truth and
+		// have the tool use this value.  Note too that there is code that takes the toolbox state for level and
+		// sends that to the PARSE database, so that is treating it as a top level property.
+		[JsonIgnore]
 		public int LeveledReaderLevel
 		{
 			get
 			{
-				var leveledReaderTool = LeveledReaderTool;
-				if (leveledReaderTool == null || !leveledReaderTool.Enabled)
+				// There is also some code that looks at the ancestry to decide if something is a leveled reader.
+				// There is *also* (bear with me) another flag, currently accessed via menu on the book thumbnail,
+				// for saying this is a leveled reader. That value is just a class, "leveled-reader", that is set in
+				// the class attribute of the body of the document.
+
+				// JT & JH talking on 8/31/2021: we agree that data-leveledReaderLevel should become the source of truth
+				// for the book, because these are really statements about the book. *real* metadata (not just tool state).
+				// Then the tool state, the property in meta.json, and the "leveled-reader" class on body
+				// should just be reflections of that.
+				// We would need a migration in order to get the level the old way and put it onto these body attributes.
+				// It's not clear to JH at the moment what the best way would be for the user to say "this is a leveled reader";
+				// currently we kind of have 3 competing ways: the thumbnail menu item, if the tool itself has a check mark, and
+				// the ancestry of the book.
+
+				var leveledReaderTool = ToolStates?.SingleOrDefault(t => t.ToolId == "leveledReader");
+				if (leveledReaderTool == null || leveledReaderTool.State==null  || !leveledReaderTool.Enabled)
 					return 0;
 
-				int level;
-				if (Int32.TryParse(leveledReaderTool.State, out level))
+				if (int.TryParse(leveledReaderTool.State, out int level))
+				{
 					return level;
+				}
 				return 0;
 			}
+		}
+
+		// About this ignore: See note on LeveledReaderLevel
+		[JsonIgnore]
+		public int DecodableReaderStage
+		{
+			get
+			{
+				var decodableReaderTool = ToolStates?.SingleOrDefault(t => t.ToolId == "decodableReader");
+				if (decodableReaderTool == null )
+					return 0;
+
+				/* sadly, these tool states are not actual json. They don't have quotes around string values.
+				 So this won't work. Maybe someday?
+					var definition = new { stage = 0 };
+					var x = JsonConvert.DeserializeAnonymousType("{" + decodableReaderTool.State + "}", definition);
+					return x.stage;
+				*/
+
+				if (ParsePseudoJsonToolboxState(decodableReaderTool.State).TryGetValue("stage", out string stage))
+				{
+					if (int.TryParse(stage, out var stageNumber))
+					{
+						return stageNumber;
+					}
+				}
+				return 0;
+			}
+		}
+
+		// Sadly, these tool states are not actual json objects.They don't have {, } nor quotes around string values.
+		// I don't know which tools use this format for states, but decodable reader does (at least through 5.1).
+		private Dictionary<string, string> ParsePseudoJsonToolboxState(string stateString)
+		{
+			var x = new Dictionary<string, string>();
+			var pairs = stateString.Split(new[] { ';' });
+			foreach (var pair in pairs)
+			{
+				var parts = pair.Split(new[] { ':' });
+				x.Add(parts[0], parts[1]);
+			}
+			return x;
 		}
 
 		[JsonProperty("country")]
@@ -1135,7 +1196,7 @@ namespace Bloom.Book
 		/// <summary>These panels are being displayed in the toolbox for this book</summary>
 		/// <example>["decodableReader", "leveledReader", "pageElements"]</example>
 		[JsonProperty("tools",ItemConverterType = typeof(ToolboxToolConverter))]
-		public List<ToolboxToolState> Tools { get; set; }
+		public List<ToolboxToolState> ToolStates { get; set; }
 
 		[JsonProperty("currentTool", NullValueHandling = NullValueHandling.Ignore)]
 		public string CurrentTool { get; set; }
