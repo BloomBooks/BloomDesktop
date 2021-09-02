@@ -56,21 +56,7 @@ namespace Bloom.Publish.Android
 		public const string StagingFolder = "PlaceForStagingBook";
 
 		public static string PreviewUrl { get; set; }
-
-		// NB: this must match IBulkSaveBloomPubsParams on the typescript side
-		public struct BulkBloomPUBPublishSettings
-		{
-			public bool makeBookshelfFile;
-			public bool makeBloomBundle;
-			public string bookshelfColor;
-			// distributionTag goes into bloomPUBs created in bulk, and from there to analytics events
-			public string distributionTag;
-			// The server doesn't actually know what the label is, just the urlKey. So when the client has to look it up from contentful,
-			// and when it tells us to go ahead and do the publishing, it includes this so that we can use it to make the bookshelf file.
-			public string bookshelfLabel;
-		}
-
-
+		
 		public PublishToAndroidApi(CollectionSettings collectionSettings, BloomWebSocketServer bloomWebSocketServer, BookServer bookServer, BulkBloomPubCreator bulkBloomPubCreator)
 		{
 			_collectionSettings = collectionSettings;
@@ -276,7 +262,7 @@ namespace Bloom.Publish.Android
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/bulkSaveBloomPubs", request =>
 			{
 				// update what's in the collection so that we remember for next time
-				_collectionSettings.BulkPublishBloomPubSettings = request.RequiredObject<BulkBloomPUBPublishSettings>();
+				_collectionSettings.BulkPublishBloomPubSettings = request.RequiredObject<BulkBloomPubPublishSettings>();
 				_collectionSettings.Save();
 
 				_bulkBloomPubCreator.PublishAllBooks(_collectionSettings.BulkPublishBloomPubSettings);

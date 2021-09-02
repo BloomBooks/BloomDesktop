@@ -325,6 +325,7 @@ namespace Bloom.Collection
 			{
 				xml.Add(new XElement("DefaultBookTags", "bookshelf:" + DefaultBookshelf));
 			}
+			xml.Add(BulkPublishBloomPubSettings.ToXElement());
 			SIL.IO.RobustIO.SaveXElement(xml, SettingsFilePath);
 		}
 
@@ -465,6 +466,8 @@ namespace Bloom.Collection
 				DefaultBookshelf = defaultBookshelfTag == null
 					? ""
 					: defaultBookshelfTag.Substring("bookshelf:".Length);
+
+				BulkPublishBloomPubSettings = new BulkBloomPubPublishSettings(xml);
 			}
 			catch (Exception)
 			{
@@ -518,7 +521,7 @@ namespace Bloom.Collection
 			Save(); // save updated settings
 		}
 
-		private bool ReadBoolean(XElement xml, string id, bool defaultValue)
+		internal static bool ReadBoolean(XElement xml, string id, bool defaultValue)
 		{
 			string s = ReadString(xml, id, defaultValue.ToString());
 			bool b;
@@ -535,7 +538,7 @@ namespace Bloom.Collection
 		}
 
 
-		private static string ReadString(XElement document, string id, string defaultValue)
+		internal static string ReadString(XElement document, string id, string defaultValue)
 		{
 			var nodes = document.Descendants(id);
 			if (nodes != null && nodes.Count() > 0)
@@ -621,8 +624,7 @@ namespace Bloom.Collection
 
 		public int AudioRecordingTrimEndMilliseconds { get; set; }
 
-		// TODO: save and load these
-		public PublishToAndroidApi.BulkBloomPUBPublishSettings BulkPublishBloomPubSettings = new PublishToAndroidApi.BulkBloomPUBPublishSettings
+		public BulkBloomPubPublishSettings BulkPublishBloomPubSettings = new BulkBloomPubPublishSettings
 		{
 			makeBookshelfFile = true,
 			bookshelfColor = "lightblue",
