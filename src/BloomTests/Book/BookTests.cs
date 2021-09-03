@@ -623,6 +623,28 @@ namespace BloomTests.Book
 			var existingPage=book.GetPages().First();
 			TestTemplateInsertion(book, existingPage, "<div class='bloom-page somekind'>hello</div>");
 		}
+
+		[Test]
+		public void InsertPageAfter_FirstPage_DuplicatedTwice()
+		{
+			var book = CreateBook();
+			var expectedPageCount = 3;
+			AssertPageCount(book, expectedPageCount);
+			var existingPage = book.GetPages().First();
+			var id = existingPage.Id;
+
+			// SUT
+			book.InsertPageAfter(existingPage, existingPage, 2);
+			expectedPageCount += 2;
+
+			AssertPageCount(book, expectedPageCount);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='" + id + "']", 1);
+			var id1 = book.GetPageByIndex(2).Id; // first new page
+			var id2 = book.GetPageByIndex(3).Id; // second new page
+			Assert.AreNotEqual(id1, id2, "IDs for different pages should not be the same");
+			Assert.AreNotEqual(id, id1, "IDs of duplicated pages should not be the same as the source page");
+		}
+
 		[Test]
 		public void InsertPageAfter_OnLastPage_NewPageInsertedAtEnd()
 		{

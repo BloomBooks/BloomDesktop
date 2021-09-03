@@ -1276,6 +1276,16 @@
         <note>ID: EditTab.DuplicatePageButton.ToolTipWhenDisabled</note>
         <note>Button that tells Bloom to duplicate the currently selected page.</note>
       </trans-unit>
+      <trans-unit id="EditTab.DuplicatePageMultiple">
+        <source xml:lang="en">Duplicate Page Many Times...</source>
+        <note>ID: EditTab.DuplicatePageMultiple</note>
+        <note>Menu item that tells Bloom to duplicate the currently selected page several times.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.DuplicatePageMultiple.Prompt">
+        <source xml:lang="en">How many more of this page? (1-999):</source>
+        <note>ID: EditTab.DuplicatePageMultiple.Prompt</note>
+        <note>Used in the window that asks how many times to duplicate the selected page.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Edit">
         <source xml:lang="en">Edit</source>
         <note>ID: EditTab.Edit</note>
