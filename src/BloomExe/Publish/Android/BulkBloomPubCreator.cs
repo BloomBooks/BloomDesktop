@@ -32,6 +32,7 @@ namespace Bloom.Publish.Android
 			_webSocketServer = webSocketServer;
 		}
 
+		// Precondition: bulkSaveSettings must be non-null
 		public void PublishAllBooks(BulkBloomPubPublishSettings bulkSaveSettings)
 		{
 			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, "Bulk Save BloomPubs",
@@ -39,6 +40,9 @@ namespace Bloom.Publish.Android
 				{
 					var dest = new TemporaryFolder("BloomPubs");
 					progress.MessageWithoutLocalizing($"Creating files in {dest.FolderPath}...");
+
+					var filenameWithoutExtension = _libraryModel.CollectionSettings.DefaultBookshelf.SanitizeFilename(' ', true);
+;
 					if (bulkSaveSettings.makeBookshelfFile)
 					{
 						// see https://docs.google.com/document/d/1UUvwxJ32W2X5CRgq-TS-1HmPj7gCKH9Y9bxZKbmpdAI
@@ -55,8 +59,7 @@ namespace Bloom.Publish.Android
 							.Replace("bookshelf-name", bulkSaveSettings.bookshelfLabel.Replace('"', '\''))
 							.Replace("id-of-the-bookshelf", _libraryModel.CollectionSettings.DefaultBookshelf)
 							.Replace("hex-color-value", colorString);
-						var filename = _libraryModel.CollectionSettings.DefaultBookshelf + ".bloomshelf";
-						filename = filename.SanitizeFilename(' ', true);
+						var filename = $"{filenameWithoutExtension}.bloomshelf";
 						var bloomShelfPath = Path.Combine(dest.FolderPath, filename);
 						RobustFile.WriteAllText(bloomShelfPath, json, Encoding.UTF8);
 					}
@@ -78,6 +81,15 @@ namespace Bloom.Publish.Android
 							settings.BookshelfTag = _libraryModel.CollectionSettings.DefaultBookshelf;
 						}
 						BloomPubMaker.CreateBloomPub(bookInfo, settings, dest.FolderPath, _bookServer, progress);
+					}
+
+					if (bulkSaveSettings.makeBloomBundle)
+					{
+						var bloomBundlePath = Path.Combine(dest.FolderPath, $"{filenameWithoutExtension}.bloomBundle");
+
+						var zipFile = new BloomZipFile(bloomBundlePath);
+						zipFile.AddDirectoryContents(dest.FolderPath, new string[] { ".bloomBundle" });
+						zipFile.Save();
 					}
 
 					progress.MessageWithoutLocalizing("Done.", ProgressKind.Heading);
