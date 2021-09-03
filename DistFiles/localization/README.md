@@ -131,8 +131,8 @@ entries for real programming work.  This means that a manual process is needed t
 in translations from Crowdin.  (If there were a separate repository just for localizations, then
 a normal merge with all that history would probably be okay.)
 
-1. Before anything else, go to [Crowdin Integration
-   Settings](https://crowdin.com/project/SIL-Bloom/settings#integration) for github and click on
+1. Before anything else, go to [SIL-Bloom Github
+   Settings](https://crowdin.com/project/sil-bloom/apps/system/github) and click on
    the "Pause Sync" button.  This prevents a flood of translation work continuing to be added to
    the pull request branch while you are trying to merge the pull request.
 
@@ -141,7 +141,7 @@ a normal merge with all that history would probably be okay.)
 
     <pre>
         cd ~/tmp
-        git clone https://github.com/BloomBooks/BloomDesktop.git
+        git clone git@github.com:BloomBooks/BloomDesktop.git
         cd BloomDesktop
         git checkout l10n_master
     </pre>
@@ -159,7 +159,7 @@ a normal merge with all that history would probably be okay.)
    except the first should be marked as *fixup*.  The first line should be marked *reword*.  The
    "git log" command is just to reassure yourself that everything looks okay after squashing
    down all the history.  [NB: the count is too high by 3.  Three individual commits have snuck
-   through somehow.]
+   through somehow.  So you need to subtract 3 from the number returned by the git log command.]
 
     <pre>
         git rebase -i HEAD~432
@@ -246,8 +246,8 @@ a normal merge with all that history would probably be okay.)
         rm -rf BloomDesktop
     </pre>
 
-9. Go back to [Crowdin Integration
-   Settings](https://crowdin.com/project/SIL-Bloom/settings#integration) for github and click on
+9. Go back to [SIL-Bloom Github
+   Settings](https://crowdin.com/project/sil-bloom/apps/system/github) and click on
    the "Resume" button to allow translation changes to be committed to the l10n_master branch
    once again.  The l10n_master branch (and a new pull request) will be automatically created by
    Crowdin when it is first needed.
