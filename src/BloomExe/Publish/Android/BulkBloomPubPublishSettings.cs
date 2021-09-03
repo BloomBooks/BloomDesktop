@@ -23,28 +23,28 @@ namespace Bloom.Publish.Android
 
 		private const string kXmlAttrName = "BulkPublishBloomPubSettings";
 
-		public BulkBloomPubPublishSettings()
-		{
-		}
-
 		/// <summary>
-        /// Constructs an object based on an XElement parsed from XML
+        /// Instantiates an instance based on an XElement parsed from XML
         /// </summary>
-        /// <param name="xml">The XElement corresponding to the Collection. One of its elements should be named "BulkPublishBloomPubSettings" or else an exception will be thrown </param>
-        /// <returns></returns>
-		public BulkBloomPubPublishSettings(XElement xml)
+        /// <param name="xml">The XElement corresponding to the Collection. One of its elements should be named "BulkPublishBloomPubSettings" in order for it to be loaded</param>
+        /// <returns>Parses the XML elements and returns an instantiated BulkBloomPubPublishSettings object.
+		/// Returns null if element not found.
+		/// </returns>
+		public static BulkBloomPubPublishSettings LoadFromXElement(XElement xml)
 		{
 			var settingsElement = xml.Elements().Where(e => e.Name == kXmlAttrName).FirstOrDefault();
 			if (settingsElement == null)
 			{
-				throw new KeyNotFoundException($"Key \"{kXmlAttrName}\" was not found");
+				return null;
 			}
 
-			this.makeBookshelfFile = CollectionSettings.ReadBoolean(settingsElement, "MakeBookshelfFile", true);
-			this.makeBloomBundle = CollectionSettings.ReadBoolean(settingsElement, "MakeBloomBundle", true);
-			this.bookshelfColor = CollectionSettings.ReadString(settingsElement, "BookshelfColor", "lightblue");
-			this.distributionTag = CollectionSettings.ReadString(settingsElement, "DistributionTag", "");
-			this.bookshelfLabel = CollectionSettings.ReadString(settingsElement, "BookshelfLabel", "");
+			var publishSettings = new BulkBloomPubPublishSettings();
+			publishSettings.makeBookshelfFile = CollectionSettings.ReadBoolean(settingsElement, "MakeBookshelfFile", true);
+			publishSettings.makeBloomBundle = CollectionSettings.ReadBoolean(settingsElement, "MakeBloomBundle", true);
+			publishSettings.bookshelfColor = CollectionSettings.ReadString(settingsElement, "BookshelfColor", "lightblue");
+			publishSettings.distributionTag = CollectionSettings.ReadString(settingsElement, "DistributionTag", "");
+			publishSettings.bookshelfLabel = CollectionSettings.ReadString(settingsElement, "BookshelfLabel", "");
+			return publishSettings;
 		}
 
 		/// <summary>

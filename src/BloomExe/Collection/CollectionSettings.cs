@@ -467,7 +467,11 @@ namespace Bloom.Collection
 					? ""
 					: defaultBookshelfTag.Substring("bookshelf:".Length);
 
-				BulkPublishBloomPubSettings = new BulkBloomPubPublishSettings(xml);
+				var bulkPublishSettingsFromXml = BulkBloomPubPublishSettings.LoadFromXElement(xml);
+				if (bulkPublishSettingsFromXml != null)
+				{
+					BulkPublishBloomPubSettings = bulkPublishSettingsFromXml;
+				}
 			}
 			catch (Exception)
 			{
