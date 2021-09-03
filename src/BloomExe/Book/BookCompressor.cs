@@ -27,7 +27,7 @@ namespace Bloom.Book
 		internal static readonly string[] ImageFileExtensions = { ".tif", ".tiff", ".png", ".bmp", ".jpg", ".jpeg" };
 
 		// these files (if encountered) won't be included in the compressed version
-		internal static readonly string[] ExcludedFileExtensionsLowerCase = { ".db", ".pdf", ".bloompack", ".bak", ".userprefs", ".bloombookorder", ".map" };
+		internal static readonly string[] ExcludedFileExtensionsLowerCase = { ".db", ".pdf", ".bloompack", ".bak", ".userprefs", ".bloombookorder", ".map", ".tmp", ".temp" };
 
 		internal static void MakeSizedThumbnail(Book book, string destinationFolder, int heightAndWidth)
 		{
