@@ -991,22 +991,89 @@ namespace Bloom.TeamCollection
 					_repoFolderPath);
 			}
 
+			if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
+			{
+				return new TeamCollectionMessage(MessageAndMilestoneType.Error, "TeamCollection.NoNetwork",
+					"No network is available on this computer.");
+			}
+
+			var isOnLocalNetwork = IsFolderOnLocalNetwork(_repoFolderPath);
 			if (DropboxUtils.IsPathInDropboxFolder(_repoFolderPath))
 			{
 				if (!DropboxUtils.IsDropboxProcessRunning)
 				{
-					return new TeamCollectionMessage(MessageAndMilestoneType.Error, "TeamCollection.NeedDropboxRunning",
-						"Dropbox does not appear to be running.");
+					if (isOnLocalNetwork)
+						_tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.History, "TeamCollection.NeedDropboxRunningButLANOK",
+							"Dropbox does not appear to be running, but the folder has also been shared locally which appears to be okay.");
+					else
+						return new TeamCollectionMessage(MessageAndMilestoneType.Error, "TeamCollection.NeedDropboxRunning",
+							"Dropbox does not appear to be running.");
 				}
 
 				if (!DropboxUtils.CanAccessDropbox())
 				{
-					return new TeamCollectionMessage(MessageAndMilestoneType.Error, "TeamCollection.NeedDropboxAccess",
-						"Bloom cannot reach Dropbox.com.");
+					if (isOnLocalNetwork)
+						_tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.History, "TeamCollection.NeedDropboxAccessButLANOK",
+							"Bloom cannot reach Dropbox.com, but the folder has also been shared locally which appears to be okay.");
+					else
+						return new TeamCollectionMessage(MessageAndMilestoneType.Error, "TeamCollection.NeedDropboxAccess",
+							"Bloom cannot reach Dropbox.com.");
 				}
 			}
 
 			return null;
+		}
+
+		private bool IsFolderOnLocalNetwork(string repoFolderPath)
+		{
+			try
+			{
+#if __MonoCS__
+				// This will require more research and work...
+				// Not sure how to tell if a folder has been shared to the network.  May have to be samba / NFS / ... specific.
+				// Possibly call "/bin/df -T" and parse output for file system type for folders shared from network?
+#else
+				// Check whether the repo folder exists inside a *local* folder we've shared to the local network.
+				var repoFolderLower = repoFolderPath.ToLowerInvariant();
+				var searcher = new System.Management.ManagementObjectSearcher("select * from win32_share");
+				foreach (var share in searcher.Get())
+				{
+					string type = share["Type"].ToString();
+					if (type == "0") // 0 = DiskDrive (1 = Print Queue, 2 = Device, 3 = IPH)
+					{
+						var name = share["Name"].ToString(); //getting share name
+						var path = share["Path"].ToString(); //getting share path
+						if (name.EndsWith("$"))
+							continue;	// skip system shares like print$ or C$
+						if (Directory.Exists(path))
+						{
+							if (repoFolderLower.StartsWith(path.ToLowerInvariant()+"\\"))
+								return true;
+						}
+					}
+				}
+				// Check whether the repo folder is actually one that has been shared *from elsewhere* on the local network.
+				// The RE matches paths like "\\this\is\a\test of a\network path" or "\\computer\C$"
+				// The alternation is needed to allow for single-character elements in the path as
+				// well as path elements that can contain, but not begin or end with, spaces. (The original RE was from
+				// https://social.msdn.microsoft.com/Forums/vstudio/en-US/31d2bc84-c948-4914-8a9d-97b9e788b341/validate-a-network-folder-path?forum=csharpgeneral.)
+				if (Regex.Match(repoFolderPath, @"^\\{2}[\w-]+(\\{1}(([\w-][\w\-\s]*[\w-]+[$$]?)|([\w-][$$]?)))+").Success)
+					return true;
+				// Network folders can also be mapped to a drive letter.  Check for this situation.
+				if (Regex.Match(repoFolderPath, "^[A-Za-z]:").Success)
+				{
+					var di = new DriveInfo(repoFolderPath);
+					if (di.DriveType == DriveType.Network)
+						return true;
+				}
+#endif
+			}
+			catch (Exception e)
+			{
+				Debug.WriteLine($"Caught exception in IsFolderOnLocalNetwork(\"{repoFolderPath}\"): {e}");
+				NonFatalProblem.ReportSentryOnly(e, $"Caught exception in IsFolderOnLocalNetwork(\"{repoFolderPath}\")");
+			}
+			return false;
 		}
 
 		public override string GetBackendType()
