@@ -400,21 +400,24 @@ LibSynphony.prototype.fullGPC2Regular = function(aGPCs) {
  * (Also converts to all lower case.)
  *
  * @param {String} textHTML
- * @param {String} [letters]
+ * @param {String} [lettersRange] set of letters prepared for use in a regex range by escaping special characters (\-])
  * @returns {Array} An array of strings
  */
-LibSynphony.prototype.getWordsFromHtmlString = function(textHTML, letters) {
+LibSynphony.prototype.getWordsFromHtmlString = function(
+    textHTML,
+    lettersRange
+) {
     // replace html break with space
     let regex = /<br><\/br>|<br>|<br \/>|<br\/>|\r?\n/g;
     let s = textHTML.replace(regex, " ").toLowerCase();
 
     let punct = "\\p{P}";
 
-    if (letters) {
+    if (lettersRange) {
         // BL-1216 Use negative look-ahead to keep letters from being counted as punctuation
         // even if Unicode says something is a punctuation character when the user
         // has specified it as a letter (like single quote).
-        punct = "(?![" + letters + "])" + punct;
+        punct = "(?![" + lettersRange + "])" + punct;
     }
     /**************************************************************************
      * Replace punctuation in a sentence with a space.
@@ -503,14 +506,24 @@ LibSynphony.prototype.checkStory = function(
     sightWords
 ) {
     var letters;
+    var lettersRange;
     var story_vocab;
 
     if (aGPCsKnown.length > 0) {
         letters = this.fullGPC2Regular(aGPCsKnown).join("|");
+        // When placed in a regex range, the letters don't need to be separated by |,
+        // but \ ] and - do need to be quoted as they have special meaning in that context.
+        // See https://issues.bloomlibrary.org/youtrack/issue/BL-10324.
+        lettersRange = this.fullGPC2Regular(aGPCsKnown)
+            .join("")
+            .replace(/\\/g, "\\\\")
+            .replace(/]/g, "\\]")
+            .replace(/-/g, "\\-");
         // break the text into words
-        story_vocab = this.getWordsFromHtmlString(storyHTML, letters);
+        story_vocab = this.getWordsFromHtmlString(storyHTML, lettersRange);
     } else {
         letters = "";
+        lettersRange = "";
         // break the text into words
         story_vocab = this.getWordsFromHtmlString(storyHTML);
     }
@@ -584,7 +597,7 @@ LibSynphony.prototype.checkStory = function(
             "^((" +
                 letters +
                 ")+((?![" +
-                letters +
+                lettersRange +
                 "])[\\p{P}]*(" +
                 letters +
                 ")*)*)$",
