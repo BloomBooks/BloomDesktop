@@ -61,7 +61,7 @@ namespace Bloom
 		/// Adds a directory's contents (all files and subdirectories), but not the directory itself.
 		/// </summary>
 		/// <param name="directoryPath">The directory to add recursively</param>
-		/// <param name="extensionsToExclude">An array of extensions to exlude from the zip file, null excludes nothing.</param>
+		/// <param name="extensionsToExclude">An array of extensions to exlude from the zip file, null excludes nothing. Casing doesn't matter</param>
 		public void AddDirectoryContents(string directoryPath, string[] extensionsToExclude = null)
 		{
 			AddDirectory(directoryPath, directoryPath.Length + 1, extensionsToExclude, null);
@@ -71,7 +71,7 @@ namespace Bloom
 		/// Adds a directory, along with all files and subdirectories
 		/// </summary>
 		/// <param name="directoryPath">The directory to add recursively</param>
-		/// <param name="extensionsToExclude">An array of extensions to exlude from the zip file, null excludes nothing.</param>
+		/// <param name="extensionsToExclude">An array of extensions to exlude from the zip file, null excludes nothing. Casing doesn't matter</param>
 		public void AddDirectory(string directoryPath, string[] extensionsToExclude = null)
 		{
 			var rootName = Path.GetFileName(directoryPath);
@@ -116,7 +116,7 @@ namespace Bloom
 				perFileCallback = (path) => progressCallback((float)(++done) / count);
 			}
 
-			AddDirectory(directoryPath, dirNameOffest, null, false, perFileCallback);
+			AddDirectory(directoryPath, dirNameOffest, extensionsToExclude, false, perFileCallback);
 		}
 
 		// These file types are already highly compressed; further compression wastes time
@@ -130,13 +130,16 @@ namespace Bloom
 		/// of the full path to the file. See the other overload for a fuller explanation.
 		/// Files with the specified extensions will be excluded.
 		/// <returns>The number of files added (or that would be added, if justCount were false)</returns>
+		/// <param name="extensionsToExclude">An array of extensions to exlude from the zip file, null excludes nothing. Casing doesn't matter</param>
 		/// <param name="justCount">If true, returns the count without actually adding them. This is usually
 		/// to prepare for a second call with the next param a function that will report progress</param>
 		/// <param name="perFileCallback">A callback that will be invoked with the full path of each file added,
 		/// once the addition has been done</param>
 		/// </summary>
-		public int AddDirectory(string directoryPath, int dirNameOffest, string[] extensionsToExclude, bool justCount = false, Action<string> perFileCallback = null)
+		public int AddDirectory(string directoryPath, int dirNameOffest, IList<string> extensionsToExclude, bool justCount = false, Action<string> perFileCallback = null)
 		{
+			extensionsToExclude = extensionsToExclude?.Select(x => x.ToLowerInvariant()).ToList();
+
 			var count = 0;
 			var files = Directory.GetFiles(directoryPath);
 			foreach (var path in files)

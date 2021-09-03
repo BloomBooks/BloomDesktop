@@ -211,7 +211,6 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                         `}
                     >
                         <MuiCheckbox
-                            disabled={true} // not implemented yet
                             label="Zip up into a single .bloomBundle file"
                             checked={params.makeBloomBundle}
                             l10nKey="PublishTab.BulkBloomPub.MakeBloomBundle"
