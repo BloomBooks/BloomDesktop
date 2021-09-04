@@ -363,15 +363,15 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <note>minimal question indicating a link to information</note>
         <target xml:lang="sw" state="final">Hii ni nini?</target>
       </trans-unit>
-      <trans-unit id="BookStorage.CorruptBook" approved="yes">
-        <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
+      <trans-unit id="BookStorage.CorruptBook">
+        <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please report the problem to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
-        <target xml:lang="sw" state="final">Bloom ilikuwa na tatizo la kusoma kitabu hiki na ilirekebishwa kwa kurejesha nakala rudufu ya hivi kmajuzi. Tafadhali angalia mabadiliko ya hivi karibuni kwenye kitabu hiki. Ikiwa hili limetokea bila sababu dhahiri, tafadhali bonyeza Maelezo hapa chini na uripoti kwetu.</target>
+        <target xml:lang="sw" state="translated">Bloom ilikuwa na shida kusoma kitabu hiki na ilirekibisha kwa kurejesha nakala rudufu ya hivi majuzi. Tafadhali angalia mabadiliko ya hivi karibuni kwenye kitabu hiki. Ikiwa hii itatokea bila sababu dhahiri, tafadhali bonyeza Maelezo hapa chini na uturipoti.</target>
       </trans-unit>
-      <trans-unit id="BookStorage.FolderMoved" approved="yes">
-        <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</source>
+      <trans-unit id="BookStorage.FolderMoved">
+        <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please report the problem to us.</source>
         <note>ID: BookStorage.FolderMoved</note>
-        <target xml:lang="sw" state="final">Inaonekana kwamba baadhi ya sehemu za njia ya folda kufikia kitabu hiki zimetolewa au kupewa jina upya. Hivyo, Bloom haiwezi kuhifadhi mabadiliko yako ya ukurasa huu, na itahitaji kujifunga sasa. Iwapo hujakuwa ukivipa vitu majina upya au kuvisongesha, tafadhali bofya Maelezo yaliyo hapa chini na uripoti tatizo hili kwa wataalamu husika.</target>
+        <target xml:lang="sw" state="translated">Inaonekana kwamba baadhi ya sehemu za njia ya folda kufikia kitabu hiki zimetolewa au kupewa jina upya. Hivyo, Bloom haiwezi kuhifadhi mabadiliko yako ya ukurasa huu, na itahitaji kujifunga sasa. Iwapo hujakuwa ukivipa vitu majina upya au kuvisongesha, tafadhali bofya Maelezo yaliyo hapa chini na uripoti tatizo hili kwa wataalamu husika.</target>
       </trans-unit>
       <trans-unit id="Browser.CopyTroubleshootingInfo" approved="yes">
         <source xml:lang="en">Copy Troubleshooting Information</source>
@@ -787,10 +787,10 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <note>ID: CollectionTab.BookMenu.ExportDocMessage</note>
         <target xml:lang="sw" state="final">Bloom sasa itafungua nyaraka hii HTML kwenye programu yako ya kutengeneza maneno(kwa kawaida neno au Ofisi ya Libre). Utaweza kufanya kazi kwa maandishi na picha za kitabu hiki. Programu hizi kwa kawaida sio nzuri kwa kuhifadhi mtindo, hivyo usitarajie mengi.</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.ExportToExcel">
-        <source xml:lang="en">Export to Excel...</source>
-        <note>ID: CollectionTab.BookMenu.ExportToExcel</note>
-        <target xml:lang="sw" state="needs-translation">Export to Excel...</target>
+      <trans-unit id="CollectionTab.BookMenu.ExportToSpreadsheet">
+        <source xml:lang="en">Export to Spreadsheet...</source>
+        <note>ID: CollectionTab.BookMenu.ExportToSpreadsheet</note>
+        <target xml:lang="sw" state="needs-translation">Export to Spreadsheet...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.ExportToWordOrLibreOffice" approved="yes">
         <source xml:lang="en">Export to Word or LibreOffice...</source>
@@ -802,10 +802,10 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <note>ID: CollectionTab.BookMenu.ExportToXMLForInDesign</note>
         <target xml:lang="sw" state="final">Peleka kwa XML kwa mtindo wa ndani...</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.ImportContentFromExcel">
-        <source xml:lang="en">Import content from Excel...</source>
-        <note>ID: CollectionTab.BookMenu.ImportContentFromExcel</note>
-        <target xml:lang="sw" state="needs-translation">Import content from Excel...</target>
+      <trans-unit id="CollectionTab.BookMenu.ImportContentFromSpreadsheet">
+        <source xml:lang="en">Import content from Spreadsheet...</source>
+        <note>ID: CollectionTab.BookMenu.ImportContentFromSpreadsheet</note>
+        <target xml:lang="sw" state="needs-translation">Import content from Spreadsheet...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.MakeBloomPack" approved="yes">
         <source xml:lang="en">Make Bloom Pack...</source>
@@ -1132,6 +1132,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <note>Shown in a list of messages when Bloom has completed a task.</note>
         <target xml:lang="sw" state="final">Imekamilika</target>
       </trans-unit>
+      <trans-unit id="Common.EnterpriseRequired">
+        <source xml:lang="en">Enterprise Required</source>
+        <note>ID: Common.EnterpriseRequired</note>
+        <target xml:lang="sw" state="needs-translation">Enterprise Required</target>
+      </trans-unit>
       <trans-unit id="Common.Error" approved="yes">
         <source xml:lang="en">Error</source>
         <note>ID: Common.Error</note>
@@ -1282,11 +1287,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <note>ID: Download.CompletedCaption</note>
         <target xml:lang="sw" state="final">Upakuaji mtandaoni umekamilika</target>
       </trans-unit>
-      <trans-unit id="Download.CopyFailed" approved="yes">
-        <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers</source>
+      <trans-unit id="Download.CopyFailed">
+        <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please report the problem to the us.</source>
         <note>ID: Download.CopyFailed</note>
         <note xml:lang="en">OLD TEXT (before 3.9, period at end): Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers.</note>
-        <target xml:lang="sw" state="final">Bloom ilitoa kitabu lakini ilipata matatizo katika kukifanya kuonekana kwenye Bloom. Tafadhali fungua kompyuta yako upya na ujaribu tena. Iwapo utapata ujumbe huu tena, tafadhali bofya kwenye kitufe cha 'Maelezo' na uripoti tatizo hili kwa wataalamu husika wa Bloom.</target>
+        <target xml:lang="sw" state="translated">Bloom ilitoa kitabu lakini ilipata matatizo katika kukifanya kuonekana kwenye Bloom. Tafadhali fungua kompyuta yako upya na ujaribu tena. Iwapo utapata ujumbe huu tena, tafadhali bofya kwenye kitufe cha 'Maelezo' na uripoti tatizo hili kwa wataalamu husika wa Bloom.</target>
       </trans-unit>
       <trans-unit id="Download.DownloadingDialogTitle" approved="yes">
         <source xml:lang="en">Downloading book</source>
@@ -2022,6 +2027,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <source xml:lang="en">To unlock this shellbook, click the lock icon in the lower left corner.</source>
         <note>ID: EditTab.HowToUnlockBook</note>
         <target xml:lang="sw" state="final">Ili kufungua kitabu hiki cha sheli, nenda kwenye kijisanduku cha vifaa katika upande wa kulia, tafuta ikoni ya gia, na ukliki 'Kubali mabadiliko kwa kitabu hiki cha sheli'.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.HowToUseHyperlink">
+        <source xml:lang="en">To use this hyperlink, go to the page where you are making a Table of Contents. Next, select some text and then click on the image of chain link. This will turn the selected text into a hyperlink to this page.</source>
+        <note>ID: EditTab.HowToUseHyperlink</note>
+        <target xml:lang="sw" state="needs-translation">To use this hyperlink, go to the page where you are making a Table of Contents. Next, select some text and then click on the image of chain link. This will turn the selected text into a hyperlink to this page.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.AltMsg" approved="yes">
         <source xml:lang="en">This picture, {0}, is missing or was loading too slowly.</source>
@@ -3246,6 +3256,12 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <note>Button that tells Bloom to temporarily unlock a shell book for editing other than translation.</note>
         <target xml:lang="sw" state="final">Kitabu hiki kiko katika hali ya kutafsiri tu. Ikiwa unataka kufanya mabadiliko mengine, bonyeza hii ili kufungua kitabu kwa muda.</target>
       </trans-unit>
+      <trans-unit id="EditTab.UsingHyperlink">
+        <source xml:lang="en">Using a hyperlink</source>
+        <note>ID: EditTab.UsingHyperlink</note>
+        <note>Title for dialog box showing the message for EditTab.HowToUseHyperlink</note>
+        <target xml:lang="sw" state="needs-translation">Using a hyperlink</target>
+      </trans-unit>
       <trans-unit id="EditTab.Widget.ChooseWidget" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose Widget</source>
         <note>ID: EditTab.Widget.ChooseWidget</note>
@@ -3282,10 +3298,10 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <note xml:lang="en">OLD TEXT (before 3.9, shorter wording): Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, ask someone to investigate if you have an aggressive firewall product installed. The agressive firewall product may need to be uninstalled before you can use Bloom.</note>
         <target xml:lang="sw" state="final">Bloom ilishindwa kuanzisha kifaa cha HTTP cha kusikiza ambacho huwa inatumia kuwasiliana na kifaa chake kilichotiwa ndani cha mtandao wa intaneti. Iwapo hii itatendeka hata ingawa ulikuwa tu umefungua upya kompyuta yako, ambia mtu achunguze iwapo una kifaa kinachotumika kwa nguvu ambacho kimewekwa kwenye mtandao. Kifaa hiki kinachotumika kwa nguvu kilicho kwenye mtandao kinaweza kuhitajika kutolewa kabla ya wewe kuweza kutumia Bloom.</target>
       </trans-unit>
-      <trans-unit id="Errors.CouldNotSavePage" approved="yes">
-        <source xml:lang="en">Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</source>
+      <trans-unit id="Errors.CouldNotSavePage">
+        <source xml:lang="en">Bloom had trouble saving a page. Please report the problem to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</source>
         <note>ID: Errors.CouldNotSavePage</note>
-        <target xml:lang="sw" state="final">Bloom ilipata shida kuhifadhi ukurasa. Tafadhali bonyeza Maelezo hapa chini na uturipotie hii. Kisha toka kwenye Bloom, urudi tena, na angalia ikiwa ukurasa ambao umeubadilisha umekosa chochote. Samahani!</target>
+        <target xml:lang="sw" state="translated">Bloom ilipata shida kuhifadhi ukurasa. Tafadhali bonyeza Maelezo hapa chini na uturipotie hii. Kisha toka kwenye Bloom, urudi tena, na angalia ikiwa ukurasa ambao umeubadilisha umekosa chochote. Samahani!</target>
       </trans-unit>
       <trans-unit id="Errors.CurrentRunningVersion" approved="yes">
         <source xml:lang="en">You are running Bloom {0}</source>
@@ -3316,17 +3332,17 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <note>This is a link that will take them to the Downloads (Installers) web page</note>
         <target xml:lang="sw" state="final">Boresha kwa Bloom ya hivi karibuni (inahitaji muunganisho wa mtandao)</target>
       </trans-unit>
-      <trans-unit id="Errors.ErrorSelecting" approved="yes">
-        <source xml:lang="en">There was a problem selecting the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.</source>
+      <trans-unit id="Errors.ErrorSelecting">
+        <source xml:lang="en">There was a problem selecting the book.  Restarting Bloom may fix the problem.  If not, please report the problem to us.</source>
         <note>ID: Errors.ErrorSelecting</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added spaces): There was a problem selecting the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</note>
-        <target xml:lang="sw" state="final">Kulikuwa na tatizo katika kuchagua kitabu. Kufungua upya Bloom kunaweza kusuluhisha tatizo hili. Iwapo haitawezekana, tafadhali kliki kifute cha 'Maelezo' na uripoti tatizo kwa Wataalamu husika wa Bloom.</target>
+        <target xml:lang="sw" state="translated">Kulikuwa na tatizo katika kuchagua kitabu. Kufungua upya Bloom kunaweza kusuluhisha tatizo hili. Iwapo haitawezekana, tafadhali kliki kifute cha 'Maelezo' na uripoti tatizo kwa Wataalamu husika wa Bloom.</target>
       </trans-unit>
-      <trans-unit id="Errors.ErrorUpdating" approved="yes">
-        <source xml:lang="en">There was a problem updating the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.</source>
+      <trans-unit id="Errors.ErrorUpdating">
+        <source xml:lang="en">There was a problem updating the book.  Restarting Bloom may fix the problem.  If not, please report the problem to us.</source>
         <note>ID: Errors.ErrorUpdating</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added spaces): There was a problem updating the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</note>
-        <target xml:lang="sw" state="final">Kulikuwa na tatizo katika kutengeneza upya kitabu. Kufungua upya Bloom kunaweza kusuluhisha tatizo hili. Iwapo haitawezekana, tafadhali kliki kifute cha 'Maelezo' na uripoti tatizo kwa Wataalamu husika wa Bloom.</target>
+        <target xml:lang="sw" state="translated">Kulikuwa na tatizo katika kutengeneza upya kitabu. Kufungua upya Bloom kunaweza kusuluhisha tatizo hili. Iwapo haitawezekana, tafadhali kliki kifute cha 'Maelezo' na uripoti tatizo kwa Wataalamu husika wa Bloom.</target>
       </trans-unit>
       <trans-unit id="Errors.FeatureRequiresNewerVersionPlural" approved="yes">
         <source xml:lang="en">This book requires Bloom {0} or greater because it uses the following features:</source>
@@ -3706,6 +3722,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
         <target xml:lang="sw" state="final">Chagua lugha kuu ya Mkusanyiko huu</target>
       </trans-unit>
+      <trans-unit id="NewCollectionWizard.CollectionName">
+        <source xml:lang="en">Collection Name</source>
+        <note>ID: NewCollectionWizard.CollectionName</note>
+        <target xml:lang="sw" state="needs-translation">Collection Name</target>
+      </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionNamePage.ExampleText" approved="yes">
         <source xml:lang="en">Examples: "Health Books", "PNG Animal Stories"</source>
         <note>ID: NewCollectionWizard.CollectionNamePage.ExampleText</note>
@@ -3811,6 +3832,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       <trans-unit id="NewCollectionWizard.ProjectName" approved="yes">
         <source xml:lang="en">Project Name</source>
         <note>ID: NewCollectionWizard.ProjectName</note>
+        <note>Obsolete as of Bloom 5.0</note>
         <target xml:lang="sw" state="final">Jina la Mradi</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName" approved="yes">
@@ -4367,11 +4389,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="needs-translation">Make All BloomPUBs from Collection</target>
       </trans-unit>
       <trans-unit id="PublishTab.BulkBloomPub.MakeBloomBundle" sil:dynamic="true">
-        <source xml:lang="en">Zip up into a single .bloomBundle file</source>
+        <source xml:lang="en">Compress into a single .bloombundle file</source>
         <note>ID: Publish.BulkBloomPub.MakeBloomBundle</note>
-        <note>"Zip up" means to take multiple things and turn them into a single combined .zip file. (The .bloomBundle file is similar to a .zip file).</note>
-        <note>"Zip up" also takes meaning from "to zip up a jacket zipper".</note>
-        <target xml:lang="sw" state="needs-translation">Zip up into a single .bloomBundle file</target>
+        <note>"Compress" means to take multiple things and turn them into a single combined file. (The result is smaller than the sum of the parts.)</note>
+        <note>.bloombundle is the file extension. It is in lowercase. It will be the same extension regardless of the user's language settings.</note>
+        <target xml:lang="sw" state="needs-translation">Compress into a single .bloombundle file</target>
       </trans-unit>
       <trans-unit id="PublishTab.BulkBloomPub.ProduceBloomShelf" sil:dynamic="true">
         <source xml:lang="en">Produce a .bloomshelf file</source>
@@ -4452,6 +4474,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <note>ID: PublishTab.Epub.ImageDescriptionLinkLabel</note>
         <note>Used in Epubs as the text of a link that leads to the description of an image</note>
         <target xml:lang="sw" state="final">Maelezo ya picha</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.LocalLinksProblem">
+        <source xml:lang="en">Links to other pages do not work in ePUBs. They will be changed to plain text that does not look like a link.</source>
+        <note>ID: PublishTab.Epub.LocalLinksProblem</note>
+        <target xml:lang="sw" state="needs-translation">Links to other pages do not work in ePUBs. They will be changed to plain text that does not look like a link.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.IncludeOnPage" approved="yes">
         <source xml:lang="en">Include image descriptions on page</source>
@@ -4768,6 +4795,23 @@ kisomaji cha ePUB</target>
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Publish</note>
         <target xml:lang="sw" state="final">Chapisha</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PublishRequiresEnterprise.FirstOverlayPage">
+        <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
+        <note>ID: PublishTab.PublishRequiresEnterprise.FirstOverlayPage</note>
+        <note>The {0} will be replaced by a page number.</note>
+        <target xml:lang="sw" state="needs-translation">Page {0} is the first page that uses Overlay elements.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PublishRequiresEnterprise.Options">
+        <source xml:lang="en">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</source>
+        <note>ID: PublishTab.PublishRequiresEnterprise.Options</note>
+        <target xml:lang="sw" state="needs-translation">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PublishRequiresEnterprise.ProblemExplanation">
+        <source xml:lang="en">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Enterprise feature.</source>
+        <note>ID: PublishTab.PublishRequiresEnterprise.ProblemExplanation</note>
+        <note>{0} will be replaced with the book's title.</note>
+        <target xml:lang="sw" state="needs-translation">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Enterprise feature.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Save" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Save...</source>
@@ -5307,22 +5351,16 @@ Do you want to go ahead?</note>
         <target xml:lang="sw" state="final">Wastani kwa kila **Sentensi** katika **Kitabu**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageWordsPerPage" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">
-          Average per **Page**</source>
+        <source xml:lang="en">Average per **Page**</source>
         <note>ID: ReaderSetup.MaxAverageWordsPerPage</note>
         <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum average words per page" (in book is implied). Surround text that should be bold in double asterisks.</note>
-        <target xml:lang="sw" state="final">
-          Wastani kwa kila **Ukurasa**</target>
+        <target xml:lang="sw" state="final">Wastani kwa kila **Ukurasa**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageSentencesPerPage" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">
-          Average per **Page**
-        </source>
+        <source xml:lang="en">Average per **Page**</source>
         <note>ID: ReaderSetup.MaxAverageSentencesPerPage</note>
         <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". Surround text that should be bold in double asterisks.</note>
-        <target xml:lang="sw" state="final">
-          Wastani kwa kila **Ukurasa**
-        </target>
+        <target xml:lang="sw" state="final">Wastani kwa kila **Ukurasa**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxGlyphsPerWord" sil:dynamic="true" approved="yes">
         <source xml:lang="en">In any **Word**</source>
@@ -5331,14 +5369,10 @@ Do you want to go ahead?</note>
         <target xml:lang="sw" state="final">Kwa kila **Neno** lolote</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxSentencesPerPage" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">
-          Per **Page**
-        </source>
+        <source xml:lang="en">Per **Page**</source>
         <note>ID: ReaderSetup.MaxSentencesPerPage</note>
         <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". Surround text that should be bold in double asterisks.</note>
-        <target xml:lang="sw" state="final">
-          Kwa kila **Ukurasa**
-        </target>
+        <target xml:lang="sw" state="final">Kwa kila **Ukurasa**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxUniqueWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Maximum Unique Words in Book</source>
@@ -5455,7 +5489,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.SentenceMaxWords2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Per **Sentence**</source>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
-        <note>follows headings "maximum" and "words" to convey "maximum words per sentence. Surround text that should be bold in double asterisks.</note>
+        <note>follows headings "maximum" and "words" to convey "maximum words per sentence". Surround text that should be bold in double asterisks.</note>
         <target xml:lang="sw" state="final">Kwa kila ** Sentensi**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true" approved="yes">
