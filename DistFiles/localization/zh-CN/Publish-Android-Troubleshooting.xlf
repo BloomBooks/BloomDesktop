@@ -54,9 +54,9 @@
         <target xml:lang="zh-CN" state="translated"><g id="genid-1" ctype="x-html-p">我们发现这种方法在许多设备上都会出问题, 所以即使您只用一个设备, 也最好选用通过WiFi 发送的方法。</g></target>
         <note>ID: android.publish.usb.consider.wifi</note>
       </trans-unit>
-      <trans-unit id="android.publish.usb.automatic" approved="yes">
-        <source xml:lang="en">When using this method, you do not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</source>
-        <target xml:lang="zh-CN" state="final">使用这种方法时，不用打开任何接收书本的模式。只要运行Bloom阅读器就可以了，书本传输完成后会自动出现在设备上。</target>
+      <trans-unit id="android.publish.usb.automatic">
+        <source xml:lang="en">When using this method the first time, you may need to go to the Bloom Reader menu, do "Receive from USB" and give the app permission to use the Bloom folder. After that, you should not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</source>
+        <target xml:lang="zh-CN" state="translated">使用这种方法时，不用打开任何接收书本的模式。只要运行Bloom阅读器就可以了，书本传输完成后会自动出现在设备上。</target>
         <note>ID: android.publish.usb.automatic</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.uses.mtp" approved="yes">

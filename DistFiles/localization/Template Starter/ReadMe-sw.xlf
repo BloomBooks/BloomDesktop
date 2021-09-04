@@ -93,12 +93,12 @@ Kuna njia mbili ambazo watu wanaweza kutumia kiolezo chako. Njia ya kwanza ni ku
       </trans-unit>
       <trans-unit id="template.starter.nametonotaddpage" approved="yes">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
-        <target xml:lang="sw" state="final"><g id="genid-12" ctype="x-html-a" html:id="note2"></g>Ikiwa hutaki kurasa zilizo kwenye kiolezo chako zionekane kwenye sanduku la mazungumzo ya Ongeza Ukurasa, unaweza kuonyesha hili kwa Bloom kwa kuunda faili kwenye folda ya kiolezo cha kitabu iitwayo NotForAddPage.txt.</target>
+        <target xml:lang="sw" state="final"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: Ikiwa hutaki kurasa zilizo kwenye kiolezo chako zionekane kwenye sanduku la mazungumzo ya Ongeza Ukurasa, unaweza kuonyesha hili kwa Bloom kwa kuunda faili kwenye folda ya kiolezo cha kitabu iitwayo NotForAddPage.txt.</target>
         <note>ID: template.starter.nametonotaddpage</note>
       </trans-unit>
       <trans-unit id="template.starter.labelsnottranslatable" approved="yes">
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
-        <target xml:lang="sw" state="final"><g id="genid-13" ctype="x-html-a" html:id="note3">3 </g>: Watu hawataweza kutafsiri lebo na maelezo yako katika lugha zingine za kitaifa. Ikiwa hili ni tatizo, tafadhali wasiliana na timu ya Bloom.</target>
+        <target xml:lang="sw" state="final"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: Watu hawataweza kutafsiri lebo na maelezo yako katika lugha zingine za kitaifa. Ikiwa hili ni tatizo, tafadhali wasiliana na timu ya Bloom.</target>
         <note>ID: template.starter.labelsnottranslatable</note>
       </trans-unit>
       <trans-unit id="template.starter.editrawhtml" approved="yes">
