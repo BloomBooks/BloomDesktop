@@ -698,7 +698,7 @@ export class OverlayTool extends ToolboxToolReactAdaptor {
     }
 
     public toolRequiresEnterprise(): boolean {
-        return false; // review
+        return true;
     }
 
     public beginRestoreSettings(settings: string): JQueryPromise<void> {
