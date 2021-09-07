@@ -31,6 +31,10 @@ import {
 } from "./overlayToolColorHelper";
 import { IColorPickerDialogProps } from "../../../react_components/colorPickerDialog";
 import * as tinycolor from "tinycolor2";
+import {
+    RequiresBloomEnterpriseWrapper,
+    BloomEnterpriseAvailableContext
+} from "../../../react_components/requiresBloomEnterprise";
 
 const OverlayToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
@@ -59,6 +63,17 @@ const OverlayToolControls: React.FunctionComponent = () => {
     const backgroundColorTitle = useL10n(
         "Background Color",
         "EditTab.Toolbox.ComicTool.Options.BackgroundColor"
+    );
+
+    // This hook also needs to be run at the top level of this component to avoid problems with
+    // rules of hooks and order/number of hooks. For that reason, dynamic parameters in useL10n()
+    // don't work well. So we pass a dummy value 'xxx' that we replace with the correct string on
+    // final render.
+    const transparencyString = useL10n(
+        "Percent Transparent",
+        l10nPrefix + "PercentTransparent",
+        "",
+        "xxx"
     );
 
     // Text color swatch
@@ -415,17 +430,13 @@ const OverlayToolControls: React.FunctionComponent = () => {
         );
     };
 
-    // We need to calculate this, even though we may not need to display it to keep from violating React's
-    // rule about not changing the number of hooks rendered.
     const percentTransparencyString = (): string | undefined => {
         const percent = percentTransparentFromOpacity();
-        const transparencyString = useL10n(
-            "Percent Transparent",
-            l10nPrefix + "PercentTransparent",
-            "",
+        const finalTransparencyString = transparencyString.replace(
+            "xxx",
             percent
         );
-        return percent === "0" ? undefined : transparencyString;
+        return percent === "0" ? undefined : finalTransparencyString;
     };
 
     const deleteTooltip = useL10n("Delete", "Common.Delete");
@@ -440,232 +451,267 @@ const OverlayToolControls: React.FunctionComponent = () => {
     const isCaption = currentBubbleSpec?.style === "caption";
 
     return (
-        <div id="overlayToolControls">
-            <div
-                id={"overlayToolControlShapeChooserRegion"}
-                className={!isXmatter ? "" : "disabled"}
-            >
-                <Div
-                    l10nKey="EditTab.Toolbox.ComicTool.DragInstructions"
-                    className="overlayToolControlDragInstructions"
-                >
-                    Drag to add to an image
-                </Div>
-                <div className={"shapeChooserRow"} id={"shapeChooserRow1"}>
-                    <img
-                        id="shapeChooserSpeechBubble"
-                        className="overlayToolControlDraggableBubble"
-                        src="comic-icon.svg"
-                        draggable={true}
-                        onDragStart={ev => ondragstart(ev, "speech")}
-                        onDragEnd={ev => ondragend(ev, "speech")}
-                    />
-                    <Span
-                        id="shapeChooserTextBlock"
-                        l10nKey="EditTab.Toolbox.ComicTool.TextBlock"
-                        className="overlayToolControlDraggableBubble"
-                        draggable={true}
-                        onDragStart={ev => ondragstart(ev, "none")}
-                        onDragEnd={ev => ondragend(ev, "none")}
-                    >
-                        Text Block
-                    </Span>
-                </div>
-                <div className={"shapeChooserRow"} id={"shapeChooserRow2"}>
-                    <Span
-                        id="shapeChooserCaption"
-                        l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"
-                        className="overlayToolControlDraggableBubble"
-                        draggable={true}
-                        onDragStart={ev => ondragstart(ev, "caption")}
-                        onDragEnd={ev => ondragend(ev, "caption")}
-                    >
-                        Caption
-                    </Span>
-                </div>
-            </div>
-            <div
-                id={"overlayToolControlOptionsRegion"}
-                className={bubbleActive && !isXmatter ? "" : "disabled"}
-            >
-                <form autoComplete="off">
-                    <FormControl>
-                        <InputLabel htmlFor="bubble-style-dropdown">
-                            <Span l10nKey="EditTab.Toolbox.ComicTool.Options.Style">
-                                Style
-                            </Span>
-                        </InputLabel>
-                        <Select
-                            value={style}
-                            onChange={event => {
-                                handleStyleChanged(event);
-                            }}
-                            className="bubbleOptionDropdown"
-                            inputProps={{
-                                name: "style",
-                                id: "bubble-style-dropdown"
-                            }}
-                            MenuProps={{
-                                className: "bubble-options-dropdown-menu"
-                            }}
+        <RequiresBloomEnterpriseWrapper>
+            <BloomEnterpriseAvailableContext.Consumer>
+                {() => (
+                    <div id="overlayToolControls">
+                        <div
+                            id={"overlayToolControlShapeChooserRegion"}
+                            className={!isXmatter ? "" : "disabled"}
                         >
-                            <MenuItem value="caption">
-                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption">
+                            <Div
+                                l10nKey="EditTab.Toolbox.ComicTool.DragInstructions"
+                                className="overlayToolControlDragInstructions"
+                            >
+                                Drag to add to an image
+                            </Div>
+                            <div
+                                className={"shapeChooserRow"}
+                                id={"shapeChooserRow1"}
+                            >
+                                <img
+                                    id="shapeChooserSpeechBubble"
+                                    className="overlayToolControlDraggableBubble"
+                                    src="comic-icon.svg"
+                                    draggable={true}
+                                    onDragStart={ev =>
+                                        ondragstart(ev, "speech")
+                                    }
+                                    onDragEnd={ev => ondragend(ev, "speech")}
+                                />
+                                <Span
+                                    id="shapeChooserTextBlock"
+                                    l10nKey="EditTab.Toolbox.ComicTool.TextBlock"
+                                    className="overlayToolControlDraggableBubble"
+                                    draggable={true}
+                                    onDragStart={ev => ondragstart(ev, "none")}
+                                    onDragEnd={ev => ondragend(ev, "none")}
+                                >
+                                    Text Block
+                                </Span>
+                            </div>
+                            <div
+                                className={"shapeChooserRow"}
+                                id={"shapeChooserRow2"}
+                            >
+                                <Span
+                                    id="shapeChooserCaption"
+                                    l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"
+                                    className="overlayToolControlDraggableBubble"
+                                    draggable={true}
+                                    onDragStart={ev =>
+                                        ondragstart(ev, "caption")
+                                    }
+                                    onDragEnd={ev => ondragend(ev, "caption")}
+                                >
                                     Caption
-                                </Div>
-                            </MenuItem>
-                            <MenuItem value="pointedArcs">
-                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Exclamation">
-                                    Exclamation
-                                </Div>
-                            </MenuItem>
-                            <MenuItem value="none">
-                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.JustText">
-                                    Just Text
-                                </Div>
-                            </MenuItem>
-                            <MenuItem value="speech">
-                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Speech">
-                                    Speech
-                                </Div>
-                            </MenuItem>
-                            <MenuItem value="ellipse">
-                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Ellipse">
-                                    Ellipse
-                                </Div>
-                            </MenuItem>
-                            <MenuItem value="thought">
-                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Thought">
-                                    Thought
-                                </Div>
-                            </MenuItem>
-                            <MenuItem value="circle">
-                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Circle">
-                                    Circle
-                                </Div>
-                            </MenuItem>
-                        </Select>
-                        <div className="comicCheckbox">
-                            <MuiCheckbox
-                                label="Show Tail"
-                                l10nKey="EditTab.Toolbox.ComicTool.Options.ShowTail"
-                                checked={showTailChecked}
-                                onCheckChanged={v => {
-                                    handleShowTailChanged(v as boolean);
-                                }}
-                            />
+                                </Span>
+                            </div>
                         </div>
-                        <div className="comicCheckbox">
-                            <MuiCheckbox
-                                label="Rounded Corners"
-                                l10nKey="EditTab.Toolbox.ComicTool.Options.RoundedCorners"
-                                checked={isRoundedCornersChecked}
-                                disabled={
-                                    !styleSupportsRoundedCorners(
-                                        currentBubbleSpec
-                                    )
-                                }
-                                onCheckChanged={newValue => {
-                                    handleRoundedCornersChanged(newValue);
-                                }}
-                            />
-                        </div>
-                    </FormControl>
-                    <FormControl>
-                        <InputLabel htmlFor="text-color-bar" shrink={true}>
-                            <Span l10nKey="EditTab.Toolbox.ComicTool.Options.TextColor">
-                                Text Color
-                            </Span>
-                        </InputLabel>
-                        <ColorBar
-                            id="text-color-bar"
-                            onClick={launchTextColorChooser}
-                            swatch={textColorSwatch}
-                        />
-                    </FormControl>
-                    <FormControl>
-                        <InputLabel
-                            shrink={true}
-                            htmlFor="background-color-bar"
-                        >
-                            <Span l10nKey="EditTab.Toolbox.ComicTool.Options.BackgroundColor">
-                                Background Color
-                            </Span>
-                        </InputLabel>
-                        <ColorBar
-                            id="background-color-bar"
-                            onClick={() =>
-                                launchBackgroundColorChooser(isCaption)
+                        <div
+                            id={"overlayToolControlOptionsRegion"}
+                            className={
+                                bubbleActive && !isXmatter ? "" : "disabled"
                             }
-                            swatch={backgroundColorSwatch}
-                            text={percentTransparencyString()}
-                        />
-                    </FormControl>
-                    <FormControl>
-                        <InputLabel htmlFor="bubble-outlineColor-dropdown">
-                            <Span l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor">
-                                Outer Outline Color
-                            </Span>
-                        </InputLabel>
-                        <Select
-                            value={outlineColor ? outlineColor : "none"}
-                            className="bubbleOptionDropdown"
-                            inputProps={{
-                                name: "outlineColor",
-                                id: "bubble-outlineColor-dropdown"
-                            }}
-                            MenuProps={{
-                                className: "bubble-options-dropdown-menu"
-                            }}
-                            onChange={event => {
-                                handleOutlineColorChanged(event);
-                            }}
                         >
-                            <MenuItem value="none">
-                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None">
-                                    None
-                                </Div>
-                            </MenuItem>
-                            <MenuItem value="yellow">
-                                <Div l10nKey="Common.Colors.Yellow">Yellow</Div>
-                            </MenuItem>
-                            <MenuItem value="crimson">
-                                <Div l10nKey="Common.Colors.Crimson">
-                                    Crimson
-                                </Div>
-                            </MenuItem>
-                        </Select>
-                    </FormControl>
-                    <Button
-                        onClick={event => handleChildBubbleLinkClick(event)}
-                    >
-                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.AddChildBubble">
-                            Add Child Bubble
-                        </Div>
-                    </Button>
-                    <div className="option-button-row">
-                        <div title={deleteTooltip}>
-                            <TrashIcon
-                                id="trashIcon"
-                                color="primary"
-                                onClick={() => deleteBubble()}
-                            />
+                            <form autoComplete="off">
+                                <FormControl>
+                                    <InputLabel htmlFor="bubble-style-dropdown">
+                                        <Span l10nKey="EditTab.Toolbox.ComicTool.Options.Style">
+                                            Style
+                                        </Span>
+                                    </InputLabel>
+                                    <Select
+                                        value={style}
+                                        onChange={event => {
+                                            handleStyleChanged(event);
+                                        }}
+                                        className="bubbleOptionDropdown"
+                                        inputProps={{
+                                            name: "style",
+                                            id: "bubble-style-dropdown"
+                                        }}
+                                        MenuProps={{
+                                            className:
+                                                "bubble-options-dropdown-menu"
+                                        }}
+                                    >
+                                        <MenuItem value="caption">
+                                            <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption">
+                                                Caption
+                                            </Div>
+                                        </MenuItem>
+                                        <MenuItem value="pointedArcs">
+                                            <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Exclamation">
+                                                Exclamation
+                                            </Div>
+                                        </MenuItem>
+                                        <MenuItem value="none">
+                                            <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.JustText">
+                                                Just Text
+                                            </Div>
+                                        </MenuItem>
+                                        <MenuItem value="speech">
+                                            <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Speech">
+                                                Speech
+                                            </Div>
+                                        </MenuItem>
+                                        <MenuItem value="ellipse">
+                                            <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Ellipse">
+                                                Ellipse
+                                            </Div>
+                                        </MenuItem>
+                                        <MenuItem value="thought">
+                                            <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Thought">
+                                                Thought
+                                            </Div>
+                                        </MenuItem>
+                                        <MenuItem value="circle">
+                                            <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Circle">
+                                                Circle
+                                            </Div>
+                                        </MenuItem>
+                                    </Select>
+                                    <div className="comicCheckbox">
+                                        <MuiCheckbox
+                                            label="Show Tail"
+                                            l10nKey="EditTab.Toolbox.ComicTool.Options.ShowTail"
+                                            checked={showTailChecked}
+                                            onCheckChanged={v => {
+                                                handleShowTailChanged(
+                                                    v as boolean
+                                                );
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="comicCheckbox">
+                                        <MuiCheckbox
+                                            label="Rounded Corners"
+                                            l10nKey="EditTab.Toolbox.ComicTool.Options.RoundedCorners"
+                                            checked={isRoundedCornersChecked}
+                                            disabled={
+                                                !styleSupportsRoundedCorners(
+                                                    currentBubbleSpec
+                                                )
+                                            }
+                                            onCheckChanged={newValue => {
+                                                handleRoundedCornersChanged(
+                                                    newValue
+                                                );
+                                            }}
+                                        />
+                                    </div>
+                                </FormControl>
+                                <FormControl>
+                                    <InputLabel
+                                        htmlFor="text-color-bar"
+                                        shrink={true}
+                                    >
+                                        <Span l10nKey="EditTab.Toolbox.ComicTool.Options.TextColor">
+                                            Text Color
+                                        </Span>
+                                    </InputLabel>
+                                    <ColorBar
+                                        id="text-color-bar"
+                                        onClick={launchTextColorChooser}
+                                        swatch={textColorSwatch}
+                                    />
+                                </FormControl>
+                                <FormControl>
+                                    <InputLabel
+                                        shrink={true}
+                                        htmlFor="background-color-bar"
+                                    >
+                                        <Span l10nKey="EditTab.Toolbox.ComicTool.Options.BackgroundColor">
+                                            Background Color
+                                        </Span>
+                                    </InputLabel>
+                                    <ColorBar
+                                        id="background-color-bar"
+                                        onClick={() =>
+                                            launchBackgroundColorChooser(
+                                                isCaption
+                                            )
+                                        }
+                                        swatch={backgroundColorSwatch}
+                                        text={percentTransparencyString()}
+                                    />
+                                </FormControl>
+                                <FormControl>
+                                    <InputLabel htmlFor="bubble-outlineColor-dropdown">
+                                        <Span l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor">
+                                            Outer Outline Color
+                                        </Span>
+                                    </InputLabel>
+                                    <Select
+                                        value={
+                                            outlineColor ? outlineColor : "none"
+                                        }
+                                        className="bubbleOptionDropdown"
+                                        inputProps={{
+                                            name: "outlineColor",
+                                            id: "bubble-outlineColor-dropdown"
+                                        }}
+                                        MenuProps={{
+                                            className:
+                                                "bubble-options-dropdown-menu"
+                                        }}
+                                        onChange={event => {
+                                            handleOutlineColorChanged(event);
+                                        }}
+                                    >
+                                        <MenuItem value="none">
+                                            <Div l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None">
+                                                None
+                                            </Div>
+                                        </MenuItem>
+                                        <MenuItem value="yellow">
+                                            <Div l10nKey="Common.Colors.Yellow">
+                                                Yellow
+                                            </Div>
+                                        </MenuItem>
+                                        <MenuItem value="crimson">
+                                            <Div l10nKey="Common.Colors.Crimson">
+                                                Crimson
+                                            </Div>
+                                        </MenuItem>
+                                    </Select>
+                                </FormControl>
+                                <Button
+                                    onClick={event =>
+                                        handleChildBubbleLinkClick(event)
+                                    }
+                                >
+                                    <Div l10nKey="EditTab.Toolbox.ComicTool.Options.AddChildBubble">
+                                        Add Child Bubble
+                                    </Div>
+                                </Button>
+                                <div className="option-button-row">
+                                    <div title={deleteTooltip}>
+                                        <TrashIcon
+                                            id="trashIcon"
+                                            color="primary"
+                                            onClick={() => deleteBubble()}
+                                        />
+                                    </div>
+                                    <div title={duplicateTooltip}>
+                                        <img
+                                            className="duplicate-bubble-icon"
+                                            src="duplicate-bubble.svg"
+                                            onClick={() => duplicateBubble()}
+                                        />
+                                    </div>
+                                </div>
+                            </form>
                         </div>
-                        <div title={duplicateTooltip}>
-                            <img
-                                className="duplicate-bubble-icon"
-                                src="duplicate-bubble.svg"
-                                onClick={() => duplicateBubble()}
-                            />
+                        <div id="overlayToolControlFillerRegion" />
+                        <div id={"overlayToolControlFooterRegion"}>
+                            <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Overlay_Tool/Overlay_Tool_overview.htm" />
                         </div>
                     </div>
-                </form>
-            </div>
-            <div id="overlayToolControlFillerRegion" />
-            <div id={"overlayToolControlFooterRegion"}>
-                <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Overlay_Tool/Overlay_Tool_overview.htm" />
-            </div>
-        </div>
+                )}
+            </BloomEnterpriseAvailableContext.Consumer>
+        </RequiresBloomEnterpriseWrapper>
     );
 };
 export default OverlayToolControls;
