@@ -1761,6 +1761,13 @@ namespace Bloom.CollectionTab
 
 		private void exportToSpreadsheetToolStripMenuItem_Click(object sender, EventArgs e)
 		{
+			// Throw up a Requires Bloom Enterprise dialog if it's not turned on
+			if (!_model.CollectionSettings.HaveEnterpriseFeatures)
+			{
+				ShowRequiresEnterpriseNotice("Export to Spreadsheet");
+				return;
+			}
+			
 			var bookPath = _bookSelection.CurrentSelection.GetPathHtmlFile();
 			try
 			{
@@ -1795,6 +1802,19 @@ namespace Bloom.CollectionTab
 			{
 				var msg = LocalizationManager.GetString("Spreadsheet:ExportFailed", "Export failed: ");
 				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg + ex.Message, exception:ex);
+			}
+		}
+
+		/// <summary>Brings up a dialog that says it requires Bloom Enterprise and provides a button to the settings</summary>
+		/// <param name="title">The title of the new window. Optional - the title isn't very discoverable at all</param>
+		private void ShowRequiresEnterpriseNotice(string title = null)
+		{
+			using (var dlg = new ReactDialog("requiresBloomEnterpriseBundle", null, title))
+			{
+				dlg.Width = 280;
+				dlg.Height = 235;	// Enough for twice as many lines as needed for the English version of the dialog
+
+				dlg.ShowDialog(this);
 			}
 		}
 
@@ -1873,6 +1893,12 @@ namespace Bloom.CollectionTab
 
 		private void importContentFromSpreadsheetToolStripMenuItem_Click(object sender, EventArgs e)
 		{
+			if (!_model.CollectionSettings.HaveEnterpriseFeatures)
+			{
+				ShowRequiresEnterpriseNotice("Import to Spreadsheet");
+				return;
+			}
+
 			var bookPath = _bookSelection.CurrentSelection.GetPathHtmlFile();
 			try
 			{

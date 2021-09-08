@@ -4,10 +4,15 @@ import { IBloomDialogEnvironmentParams } from "../react_components/BloomDialog/B
 import theme from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 
-//Each react component that is referenced from winforms (using ReactControl or ReactDialog) must
-// call this:
-
-export function WireUpForWinforms(component: React.FunctionComponent) {
+/**
+ * Each react component that is referenced from winforms (using ReactControl or ReactDialog) must
+ * call this:
+ * @param component: A React function component. Most likely should be VoidFunctionComponent (no children),
+ * but probably theoretically possible (although difficult) to pass children from WinForms, so allow FunctionComponent (implicit children) too
+ */
+export function WireUpForWinforms(
+    component: React.VoidFunctionComponent | React.FunctionComponent
+) {
     // The c# ReactControl creates an html page that will call this function.
     (window as any).wireUpRootComponentFromWinforms = (
         root: HTMLElement,

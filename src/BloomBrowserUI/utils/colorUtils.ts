@@ -14,3 +14,5 @@ export const kBloomBuff = "#d2d2d2"; // See @bloom-buff
 export const kBloomToolboxWhite = kBloomBuff; //See @bloom-toolboxWhite
 export const kBloomPurple = "#96668f"; // See @bloom-purple
 export const kBloomWarning = "#f3aa18"; // See @bloom-warning
+
+export const kFormBackground = "#f0f0f0"; // See @form-background;

@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
-import { createContext, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import "./requiresBloomEnterprise.less";
 import { BloomApi } from "../utils/bloomApi";
 import Button from "@material-ui/core/Button";
@@ -10,6 +10,10 @@ import theme from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { Div } from "./l10nComponents";
 import { useL10n } from "./l10nHooks";
+import { WireUpForWinforms } from "../utils/WireUpWinform";
+import { Dialog, DialogActions, DialogContent } from "@material-ui/core";
+import BloomButton from "./bloomButton";
+import { kFormBackground } from "../utils/colorUtils";
 
 /**
  * This function sets up the hooks to get the status of whether Bloom Enterprise is available or not
@@ -129,7 +133,7 @@ export interface IThemeProps {
 // on the content page body.
 // Often it will be convenient to use this by embedding the controls to be hidden in a
 // RequiresBloomEnterpriseWrapper, also defined in this file.
-export const RequiresBloomEnterpriseNotice: React.FunctionComponent<IThemeProps> = ({
+export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IThemeProps> = ({
     darkTheme
 }) => {
     const [visible, setVisible] = useState(false);
@@ -172,6 +176,40 @@ export const RequiresBloomEnterpriseNotice: React.FunctionComponent<IThemeProps>
     );
 };
 
+/**
+ * Brings up the Requires Bloom Enterprise notice as a MaterialUI dialog
+ */
+export const RequiresBloomEnterpriseNoticeDialog: React.VoidFunctionComponent = () => {
+    // Designed to be invoked from WinForms land.
+    return (
+        <Dialog
+            className=""
+            open={true}
+            // the behavior of fullWidth/maxWidth is very strange
+            //fullWidth={true}
+            maxWidth={"md"}
+            fullScreen={true}
+            onClose={() => BloomApi.post("common/closeReactDialog")} // from pressing Escape key
+        >
+            <DialogContent
+                css={css`
+                    background-color: ${kFormBackground};
+                `}
+            >
+                <RequiresBloomEnterpriseNotice darkTheme={false} />
+            </DialogContent>
+            <DialogActions>
+                <BloomButton
+                    enabled={true}
+                    l10nKey="Common.Close"
+                    variant="text"
+                    onClick={() => BloomApi.post("common/closeReactDialog")} // from pressing Close button
+                />
+            </DialogActions>
+        </Dialog>
+    );
+};
+
 function openBloomEnterpriseSettings() {
     BloomApi.post("common/showSettingsDialog?tab=enterprise");
 }
@@ -190,3 +228,5 @@ class EnterpriseEnabledPromise {
         });
     }
 }
+
+WireUpForWinforms(RequiresBloomEnterpriseNoticeDialog);
