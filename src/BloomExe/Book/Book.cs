@@ -766,6 +766,7 @@ namespace Bloom.Book
 
 			// Not needed for preview mode, so just remove them to reduce memory usage.
 			PreventVideoAutoLoad(previewDom);
+			RemoveImageResolutionMessage(previewDom);
 
 			_previewDom = previewDom;
 			return previewDom;
@@ -2533,7 +2534,7 @@ namespace Bloom.Book
 		/// just clicking on a book, only if we really look through them.
 		/// </summary>
 		/// <param name="dom">The dom containing the video elements.</param>
-		private void PreventVideoAutoLoad(HtmlDom dom)
+		private static void PreventVideoAutoLoad(HtmlDom dom)
 		{
 
 			var videos = dom.SelectVideoSources();
@@ -2545,6 +2546,21 @@ namespace Bloom.Book
 				videoTag?.SetAttribute("preload", "none");
 			}
 
+		}
+
+		/// <summary>
+		/// It's annoying to put your mouse in the preview pane in Collections tab and get a long image resolution
+		/// message popping up. So here we delete the title attribute from any image-container divs. (BL-10341)
+		/// This is only used in the preview.
+		/// Review: This works, but I'm not really "up" on the preview process. Should this go in bookPreview.ts?
+		/// </summary>
+		private static void RemoveImageResolutionMessage(HtmlDom dom)
+		{
+			var imageContainerList = dom.Body.SafeSelectNodes("//div[contains(@class,'bloom-imageContainer')]");
+			foreach (XmlElement imageContainer in imageContainerList)
+			{
+				imageContainer.RemoveAttribute("title");
+			}
 		}
 
 		public IEnumerable<IPage> GetPages()
