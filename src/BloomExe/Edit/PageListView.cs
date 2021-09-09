@@ -60,6 +60,13 @@ namespace Bloom.Edit
 			menuItems.Add(
 				new WebThumbNailList.MenuItemSpec()
 				{
+					Label = LocalizationManager.GetString("EditTab.CopyHyperlink", "Copy Hyperlink"),
+					EnableFunction = (page) => page != null,
+					ExecuteCommand = (page) => _model.CopyHyperlink(page)
+				});
+			menuItems.Add(
+				new WebThumbNailList.MenuItemSpec()
+				{
 					Label = LocalizationManager.GetString("EditTab.PastePage", "Paste Page"),
 					EnableFunction = (page) => page != null && _model.CanAddPages && _model.GetClipboardHasPage(),
 					ExecuteCommand = (page) => _model.PastePage(page)
