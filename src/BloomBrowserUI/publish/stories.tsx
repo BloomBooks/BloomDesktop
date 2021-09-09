@@ -12,11 +12,12 @@ import {
 } from "./commonPublish/PublishProgressDialogInner";
 import { loremIpsum } from "lorem-ipsum";
 import { withA11y } from "@storybook/addon-a11y";
-import { LibraryPreview } from "./LibraryPublish/LibraryPreview";
 import { EPUBPublishScreen } from "./ePUBPublish/ePUBPublishScreen";
 import BookMetadataDialog from "./metadata/BookMetadataDialog";
 import "./storiesApiMocks";
 import { AccessibilityCheckScreen } from "./accessibilityCheck/accessibilityCheckScreen";
+import { NotPublishableDialog } from "./notPublishableDialog";
+import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialog";
 
 addDecorator(withA11y as any);
 
@@ -74,18 +75,6 @@ storiesOf("Publish/ProgressDialog", module)
         </div>
     ));
 
-// storiesOf("Publish/Library", module)
-//     .add("preview", () => (
-//         <div
-//             style={{
-//                 padding: "40px"
-//             }}
-//         >
-//             <LibraryPreview />
-//         </div>
-//     ))
-//     .add("UploadScreen", () => <LibraryPublishScreen />);
-
 storiesOf("Publish/DeviceFrame", module)
     .add("DeviceFrame Default Portrait, rotate-able", () => (
         <DeviceAndControls defaultLandscape={false} canRotate={true} url="">
@@ -127,3 +116,14 @@ storiesOf("Publish/ePUB", module)
     .add("EPUBPublishScreen", () => <EPUBPublishScreen />)
     .add("Book Metadata Dialog", () => <BookMetadataDialog startOpen={true} />)
     .add("AccessibilityCheckScreen", () => <AccessibilityCheckScreen />);
+
+storiesOf("Publish/NotPublishableDialog", module).add(
+    "NotPublishableDialog",
+    () => (
+        <NotPublishableDialog
+            firstOverlayPage={"2"}
+            bookTitle={"Some Random Book Title"}
+            dialogEnvironment={normalDialogEnvironmentForStorybook}
+        />
+    )
+);

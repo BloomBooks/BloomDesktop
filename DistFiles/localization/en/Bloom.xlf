@@ -3712,6 +3712,25 @@
         <source xml:lang="en">This PDF viewer can be improved by installing the free Adobe Reader on this computer.</source>
         <note>ID: PublishTab.Notifications.AdobeReaderRecommendation</note>
       </trans-unit>
+      <trans-unit id="PublishTab.NotPublishableDialog.FirstOverlayPage">
+        <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
+        <note>ID: PublishTab.NotPublishableDialog.FirstOverlayPage</note>
+        <note>"{0}" will be replaced by a page number.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.NotPublishableDialog.NotPublishableTitle">
+        <source xml:lang="en">Not Publishable</source>
+        <note>ID: PublishTab.NotPublishableDialog.NotPublishableTitle</note>
+        <note>If a book contains overlay elements, but the collection doesn't use Bloom Enterprise, this message will show.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.NotPublishableDialog.OpenSettings">
+        <source xml:lang="en">Open Settings</source>
+        <note>ID: PublishTab.NotPublishableDialog.OpenSettings</note>
+        <note>Text of the button that opens Bloom's Settings dialog</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.NotPublishableDialog.Options">
+        <source xml:lang="en">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</source>
+        <note>ID: PublishTab.NotPublishableDialog.Options</note>
+      </trans-unit>
       <trans-unit id="PublishTab.OnePagePerPaperRadio">
         <source xml:lang="en">Simple</source>
         <note>ID: PublishTab.OnePagePerPaperRadio</note>

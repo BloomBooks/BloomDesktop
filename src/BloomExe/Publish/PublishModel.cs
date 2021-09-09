@@ -17,9 +17,7 @@ using Bloom.Publish.PDF;
 using BloomTemp;
 using DesktopAnalytics;
 using SIL.IO;
-using SIL.Progress;
 using SIL.Xml;
-using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
 
 namespace Bloom.Publish
@@ -88,7 +86,10 @@ namespace Bloom.Publish
 			_thumbNailer = thumbNailer;
 			bookSelection.SelectionChanged += OnBookSelectionChanged;
 			//we don't want to default anymore: BookletPortion = BookletPortions.BookletPages;
+			CanPublish = DeterminePublishability();
 		}
+
+		public bool CanPublish { get; set; }
 
 		public PublishView View { get; set; }
 
@@ -106,7 +107,22 @@ namespace Bloom.Publish
 			if (BookSelection != null && View != null && BookSelection.CurrentSelection!=null && _currentlyLoadedBook != BookSelection.CurrentSelection && View.Visible)
 			{
 				PageLayout = BookSelection.CurrentSelection.GetLayout();
+				CanPublish = DeterminePublishability();
 			}
+		}
+
+		private bool DeterminePublishability()
+		{
+			// At this point (5.1), this should only be false iff:
+			// - User is not in Enterprise mode AND
+			// - Book contains overlay elements AND
+			// - Book is not a translated shell
+
+			var overlayElementNodes = BookSelection?.CurrentSelection?.RawDom.SelectNodes("//div[contains(@class, 'bloom-textOverPicture')]");
+			var bookContainsOverlayElements = (overlayElementNodes?.Count ?? 0) > 0;
+
+			var bookIsTranslatedFromShell = BookSelection?.CurrentSelection?.RecordedAsLockedDown??false;
+			return _collectionSettings.HaveEnterpriseFeatures || !bookContainsOverlayElements || bookIsTranslatedFromShell;
 		}
 
 		internal static string GetPreparingImageFilter()
@@ -325,9 +341,13 @@ namespace Bloom.Publish
 			set { _pdfMaker.ShowCropMarks = value; }
 		}
 
-		public bool AllowUpload => BookSelection.CurrentSelection.BookInfo.AllowUploading;
+		public bool AllowEPUB => CanPublish;
 
-		public bool AllowPdf => true;
+		public bool AllowAndroid => CanPublish;
+
+		public bool AllowUpload => BookSelection.CurrentSelection.BookInfo.AllowUploading && CanPublish;
+
+		public bool AllowPdf => CanPublish;
 
 		public bool AllowPdfBooklet
 		{

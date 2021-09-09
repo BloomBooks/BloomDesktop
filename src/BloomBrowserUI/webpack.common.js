@@ -75,6 +75,7 @@ module.exports = merge(core, {
             "./teamCollection/JoinTeamCollectionDialog.tsx",
         autoUpdateSoftwareDlgBundle:
             "./react_components/AutoUpdateSoftwareDialog.tsx",
+        notPublishableDlgBundle: "./publish/NotPublishableDialog.tsx",
 
         collectionsTabPaneBundle: "./collectionsTab/CollectionsTabPane.tsx",
 

@@ -15,12 +15,15 @@ using L10NSharp;
 using SIL.Reporting;
 using SIL.IO;
 using System.Drawing;
+using System.Xml;
 using Bloom.Api;
+using Bloom.MiscUI;
 using Bloom.Publish.Android;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.Epub;
 using Bloom.Publish.PDF;
 using SIL.Progress;
+using SIL.Xml;
 
 namespace Bloom.Publish
 {
@@ -242,7 +245,51 @@ namespace Bloom.Publish
 
 			UpdateDisplay();
 
+			if (!_model.CanPublish)
+			{
+				ShowCantPublishMessage();
+			}
+
 			_activated = true;
+		}
+
+		private void ShowCantPublishMessage()
+		{
+			using (var dlg = new ReactDialog("notPublishableDlgBundle", new
+			{
+				firstOverlayPage = GetNumberOfFirstPageWithOverlay(),
+				bookTitle = _model.BookSelection.CurrentSelection.TitleBestForUserDisplay
+			}))
+			{
+				dlg.Height = 350;
+				dlg.FormBorderStyle = FormBorderStyle.FixedDialog;
+				dlg.ControlBox = false;
+				dlg.Text = ""; // Don't show a title on the dialog
+				dlg.ShowDialog(this);
+			}
+		}
+
+		private string GetNumberOfFirstPageWithOverlay()
+		{
+			// If we're displaying the Not Publishable dialog, we must have a valid current book.
+			var dom = _model.BookSelection.CurrentSelection.RawDom;
+			var pageNodes = dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]");
+			if (pageNodes.Count == 0) // Unexpected!
+				return "";
+			foreach (XmlNode pageNode in pageNodes)
+			{
+				var resultNode = pageNode.SelectSingleNode(".//div[contains(@class,'bloom-textOverPicture')]");
+				if (resultNode == null)
+					continue;
+				var pageNumberAttribute = pageNode.Attributes?["data-page-number"];
+				if (pageNumberAttribute != null)
+				{
+					return pageNumberAttribute.Value;
+				}
+				// If at some point we allow overlay elements on xmatter,
+				// we will need to find and return the 'data-xmatter-page' attribute.
+			}
+			return ""; // Also unexpected!
 		}
 
 		private void ClearRadioButtons()
@@ -374,6 +421,8 @@ namespace Bloom.Publish
 			_bookletBodyRadio.Enabled = _model.AllowPdfBooklet;
 			_bookletCoverRadio.Enabled = _model.AllowPdfCover;
 			_openinBrowserMenuItem.Enabled = _openPDF.Enabled = _model.PdfGenerationSucceeded;
+			_androidRadio.Enabled = _model.AllowAndroid;
+			_epubRadio.Enabled = _model.AllowEPUB;
 
 
 			// When PDF is allowed but booklets are not, allow the noBookletsMessage to grow
