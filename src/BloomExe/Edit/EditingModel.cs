@@ -1404,6 +1404,13 @@ namespace Bloom.Edit
 			_bookPathFromCopyPage = page.Book.GetPathHtmlFile();
 		}
 
+		public void CopyHyperlink(IPage page)
+		{
+			var id = page.GetDivNodeForThisPage().GetAttribute("id");
+			var hyperlink = "#" + id;
+			Clipboard.SetText(hyperlink);
+		}
+
 		/// <summary>
 		/// Paste the previously saved _pageDivFromCopyPage as a new page.
 		/// </summary>
