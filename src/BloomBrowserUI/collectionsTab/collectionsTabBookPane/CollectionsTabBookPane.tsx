@@ -118,9 +118,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
             color="secondary"
             css={css`
                 background-color: white !important;
-                color: ${editable
-                    ? "black !important"
-                    : "rgba(0, 0, 0, 0.26);"};
+                color: black !important;
 
                 img {
                     height: 2em;
