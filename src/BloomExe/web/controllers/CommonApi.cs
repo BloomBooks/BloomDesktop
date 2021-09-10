@@ -58,6 +58,10 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("common/showSettingsDialog", HandleShowSettingsDialog, false); // Common
 			// Used when something in JS land wants to copy text to or from the clipboard. For POST, the text to be put on the
 			// clipboard is passed as the 'text' property of a JSON requestData.
+			// Somehow the get version of this fires while initializing a page (probably hooking up CkEditor, an unwanted
+			// invocation of the code that decides whether to enable the paste hyperlink button). This causes a deadlock
+			// unless we make this endpoint requiresSync:false. I think this is safe as it doesn't interact with any other
+			// Bloom objects.
 			apiHandler.RegisterEndpointHandler("common/clipboardText",
 				request =>
 				{
@@ -104,7 +108,7 @@ namespace Bloom.web.controllers
 						}
 						request.PostSucceeded();
 					}
-				}, false);
+				}, false, false);
 			apiHandler.RegisterEndpointHandler("common/checkForUpdates",
 				request =>
 				{

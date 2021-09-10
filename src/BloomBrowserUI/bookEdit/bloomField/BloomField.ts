@@ -180,6 +180,31 @@ export default class BloomField {
             $(".removeMe").remove();
         });
 
+        ckeditor.addCommand("pasteHyperlink", {
+            exec: function(edt) {
+                BloomApi.get("common/clipboardText", result => {
+                    if (!result.data) {
+                        return; // More sanity checks are in bloomEditing.updateCkEditorButtonStatus
+                    }
+                    const anchor = document.createElement("a");
+                    anchor.href = result.data;
+                    const selText = document
+                        .getSelection()
+                        ?.getRangeAt(0)
+                        ?.surroundContents(anchor);
+                });
+                return true; // probaby means success, but I'm not sure. Typescript says this function has to return a boolean.
+            }
+        });
+
+        ckeditor.ui.addButton("PasteLink", {
+            // add new button and bind our command
+            label: "Paste Hyperlink",
+            command: "pasteHyperlink",
+            toolbar: "insert",
+            icon: "images/link.png"
+        });
+
         // This makes it easy to find the right editor instance. There may be some ckeditor built-in way, but
         // I wasn't able to find one.
         (<any>bloomEditableDiv).bloomCkEditor = ckeditor;
