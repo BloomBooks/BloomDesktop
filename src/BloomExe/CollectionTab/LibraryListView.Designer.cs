@@ -152,6 +152,7 @@ namespace Bloom.CollectionTab
 			this.exportToSpreadsheetToolStripMenuItem.Size = new System.Drawing.Size(242, 26);
 			this.exportToSpreadsheetToolStripMenuItem.Text = "Export to Spreadsheet...";
 			this.exportToSpreadsheetToolStripMenuItem.Click += new System.EventHandler(this.exportToSpreadsheetToolStripMenuItem_Click);
+	        this.exportToSpreadsheetToolStripMenuItem.Visible = false;
 			// 
 			// SaveAsBloomToolStripMenuItem
 			// 
@@ -689,15 +690,16 @@ namespace Bloom.CollectionTab
 			this.renameToolStripMenuItem.Text = "Rename";
 			this.renameToolStripMenuItem.Click += new System.EventHandler(this.renameToolStripMenuItem_Click);
 			// 
-            // importContentFromSpreadsheetToolStripMenuItem
-            // 
-            this._L10NSharpExtender.SetLocalizationComment(this.importContentFromSpreadsheetToolStripMenuItem, null);
-            this._L10NSharpExtender.SetLocalizableToolTip(this.importContentFromSpreadsheetToolStripMenuItem, null);
-            this._L10NSharpExtender.SetLocalizingId(this.importContentFromSpreadsheetToolStripMenuItem, "CollectionTab.BookMenu.ImportContentFromSpreadsheet");
-            this.importContentFromSpreadsheetToolStripMenuItem.Name = "importContentFromSpreadsheetToolStripMenuItem";
-            this.importContentFromSpreadsheetToolStripMenuItem.Text = "Import Content from Spreadsheet...";
-            this.importContentFromSpreadsheetToolStripMenuItem.Size = new System.Drawing.Size(287, 26);
-            this.importContentFromSpreadsheetToolStripMenuItem.Click += new System.EventHandler(this.importContentFromSpreadsheetToolStripMenuItem_Click);
+			// importContentFromSpreadsheetToolStripMenuItem
+			// 
+			this._L10NSharpExtender.SetLocalizationComment(this.importContentFromSpreadsheetToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizableToolTip(this.importContentFromSpreadsheetToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizingId(this.importContentFromSpreadsheetToolStripMenuItem, "CollectionTab.BookMenu.ImportContentFromSpreadsheet");
+			this.importContentFromSpreadsheetToolStripMenuItem.Name = "importContentFromSpreadsheetToolStripMenuItem";
+			this.importContentFromSpreadsheetToolStripMenuItem.Text = "Import Content from Spreadsheet...";
+			this.importContentFromSpreadsheetToolStripMenuItem.Size = new System.Drawing.Size(287, 26);
+			this.importContentFromSpreadsheetToolStripMenuItem.Click += new System.EventHandler(this.importContentFromSpreadsheetToolStripMenuItem_Click);
+	        this.importContentFromSpreadsheetToolStripMenuItem.Visible = false;
 			// 
 			// LibraryListView
 			// 
