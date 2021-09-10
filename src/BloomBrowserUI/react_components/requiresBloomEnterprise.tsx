@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
-import { createContext, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import "./requiresBloomEnterprise.less";
 import { BloomApi } from "../utils/bloomApi";
 import Button from "@material-ui/core/Button";
@@ -69,7 +69,7 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
                 ${"height: 16px; margin-left: 6px; cursor: pointer; " +
                     (props.iconStyles ?? "")}
             `}
-            src="../../../images/bloom-enterprise-badge.svg"
+            src="../images/bloom-enterprise-badge.svg"
             title={tooltip}
             onClick={openBloomEnterpriseSettings}
         />

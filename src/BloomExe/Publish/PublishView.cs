@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition.Primitives;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -242,7 +243,31 @@ namespace Bloom.Publish
 
 			UpdateDisplay();
 
+			if (!_model.CanPublish)
+			{
+				ShowCantPublishMessage();
+			}
+
 			_activated = true;
+		}
+
+		private void ShowCantPublishMessage()
+		{
+			// Turn off usually visible things.
+			_pdfViewer.Visible = false;
+			_workingIndicator.Visible = false;
+			tableLayoutPanel1.Visible = false;
+
+			// If we're showing this panel, we must have a current selection.
+			Debug.Assert(_model.BookSelection?.CurrentSelection != null,
+				"We tried to show a message without a CurrentSelection");
+			var book = _model.BookSelection.CurrentSelection;
+			var firstOverlayPageNum = book.GetNumberOfFirstPageWithOverlay();
+			_publishReqEntOverlayPage.Text = _publishReqEntOverlayPage.Text.Replace("{0}", firstOverlayPageNum);
+			_publishReqEntProblem.Text = _publishReqEntProblem.Text.Replace("{0}", book.TitleBestForUserDisplay);
+
+			// Turn on the hidden panel
+			_publishRequiresEnterprisePanel.Visible = true;
 		}
 
 		private void ClearRadioButtons()
@@ -374,6 +399,8 @@ namespace Bloom.Publish
 			_bookletBodyRadio.Enabled = _model.AllowPdfBooklet;
 			_bookletCoverRadio.Enabled = _model.AllowPdfCover;
 			_openinBrowserMenuItem.Enabled = _openPDF.Enabled = _model.PdfGenerationSucceeded;
+			_androidRadio.Enabled = _model.AllowAndroid;
+			_epubRadio.Enabled = _model.AllowEPUB;
 
 
 			// When PDF is allowed but booklets are not, allow the noBookletsMessage to grow
