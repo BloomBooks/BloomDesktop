@@ -6,7 +6,7 @@
 @bloom-enterprise-notice-width: 250px;
 @bloom-enterprise-notice-height: 120px;
 @bloom-enterprise-button-width: 150px;
-@bloom-enterprise-button-height: 60px;
+// @bloom-enterprise-button-height: 60px;
 
 .requiresBloomEnterprise {
     padding: 5px;
@@ -31,7 +31,10 @@
         }
         .requiresEnterpriseButton {
             max-width: @bloom-enterprise-button-width;
-            max-height: @bloom-enterprise-button-height;
+            // We used to limit it to 60px, but then it can't grow if the translated text takes more room than that.
+            // So let's remove this max-height limitation.
+            // ENHANCE: On the team collection page, there's only room for about 95px of this.
+            // max-height: @bloom-enterprise-button-height;
             align-self: center;
             background-color: white;
             line-height: 1.1;

@@ -1761,6 +1761,13 @@ namespace Bloom.CollectionTab
 
 		private void exportToSpreadsheetToolStripMenuItem_Click(object sender, EventArgs e)
 		{
+			// Throw up a Requires Bloom Enterprise dialog if it's not turned on
+			if (!_model.CollectionSettings.HaveEnterpriseFeatures)
+			{
+				Enterprise.ShowRequiresEnterpriseNotice(this, "Export to Spreadsheet");
+				return;
+			}
+			
 			var bookPath = _bookSelection.CurrentSelection.GetPathHtmlFile();
 			try
 			{
@@ -1797,7 +1804,7 @@ namespace Bloom.CollectionTab
 				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg + ex.Message, exception:ex);
 			}
 		}
-
+				
 		private TextBox _renameOverlay;
 
 		private void renameToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1873,6 +1880,12 @@ namespace Bloom.CollectionTab
 
 		private void importContentFromSpreadsheetToolStripMenuItem_Click(object sender, EventArgs e)
 		{
+			if (!_model.CollectionSettings.HaveEnterpriseFeatures)
+			{
+				Enterprise.ShowRequiresEnterpriseNotice(this, "Import to Spreadsheet");
+				return;
+			}
+
 			var bookPath = _bookSelection.CurrentSelection.GetPathHtmlFile();
 			try
 			{

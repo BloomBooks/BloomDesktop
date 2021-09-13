@@ -65,7 +65,8 @@ module.exports = merge(core, {
         defaultBookshelfControlBundle:
             "./react_components/DefaultBookshelfControl.tsx",
         progressDialogBundle: "./react_components/Progress/ProgressDialog.tsx",
-        problemReportBundle: "./problemDialog/ProblemDialog.tsx",
+        requiresBloomEnterpriseBundle:
+            "./react_components/requiresBloomEnterprise.tsx",
         createTeamCollectionDialogBundle:
             "./teamCollection/CreateTeamCollection.tsx",
         teamCollectionDialogBundle: "./teamCollection/TeamCollectionDialog.tsx",
