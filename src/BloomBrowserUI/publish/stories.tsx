@@ -12,7 +12,6 @@ import {
 } from "./commonPublish/PublishProgressDialogInner";
 import { loremIpsum } from "lorem-ipsum";
 import { withA11y } from "@storybook/addon-a11y";
-import { LibraryPreview } from "./LibraryPublish/LibraryPreview";
 import { EPUBPublishScreen } from "./ePUBPublish/ePUBPublishScreen";
 import BookMetadataDialog from "./metadata/BookMetadataDialog";
 import "./storiesApiMocks";
@@ -73,18 +72,6 @@ storiesOf("Publish/ProgressDialog", module)
             />
         </div>
     ));
-
-// storiesOf("Publish/Library", module)
-//     .add("preview", () => (
-//         <div
-//             style={{
-//                 padding: "40px"
-//             }}
-//         >
-//             <LibraryPreview />
-//         </div>
-//     ))
-//     .add("UploadScreen", () => <LibraryPublishScreen />);
 
 storiesOf("Publish/DeviceFrame", module)
     .add("DeviceFrame Default Portrait, rotate-able", () => (

@@ -4265,8 +4265,35 @@ namespace Bloom.Book
 			return classAttrib.Contains("enterprise-only") ||
 				// legacy quiz pages don't have 'enterprise-only'
 			    classAttrib.Contains("questions") ||
+			    page.SafeSelectNodes(".//div[contains(@class,'bloom-textOverPicture')]").Count > 0 ||
 				page.SafeSelectNodes(".//div[contains(@class,'bloom-widgetContainer')]").Count > 0;
 		}
+
+		/// <summary>
+		/// Used by PublishView to tell the user they can't publish a book with Overlay elements w/o Enterprise.
+		/// </summary>
+		/// <returns></returns>
+		public string GetNumberOfFirstPageWithOverlay()
+		{
+			var pageNodes = RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]");
+			if (pageNodes.Count == 0) // Unexpected!
+				return "";
+			foreach (XmlNode pageNode in pageNodes)
+			{
+				var resultNode = pageNode.SelectSingleNode(".//div[contains(@class,'bloom-textOverPicture')]");
+				if (resultNode == null)
+					continue;
+				var pageNumberAttribute = pageNode.Attributes?["data-page-number"];
+				if (pageNumberAttribute != null)
+				{
+					return pageNumberAttribute.Value;
+				}
+				// If at some point we allow overlay elements on xmatter,
+				// we will need to find and return the 'data-xmatter-page' attribute.
+			}
+			return ""; // Also unexpected!
+		}
+
 
 		public WritingSystem GetLanguage(LanguageSlot slot)
 		{

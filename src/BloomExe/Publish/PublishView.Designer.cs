@@ -67,6 +67,7 @@ namespace Bloom.Publish
 			this._contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this._openinBrowserMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._openPDF = new System.Windows.Forms.ToolStripMenuItem();
+			this.exportAudioFiles1PerPageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._androidRadio = new System.Windows.Forms.RadioButton();
 			this._uploadRadio = new System.Windows.Forms.RadioButton();
 			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
@@ -78,15 +79,20 @@ namespace Bloom.Publish
 			this._epubRadio = new System.Windows.Forms.RadioButton();
 			this._noBookletsMessage = new System.Windows.Forms.Label();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+			this._publishReqEntTitle = new System.Windows.Forms.Label();
+			this._publishReqEntProblem = new System.Windows.Forms.Label();
+			this._publishReqEntOptions = new System.Windows.Forms.Label();
 			this._superToolTip = new SIL.Windows.Forms.SuperToolTip.SuperToolTip(this.components);
+			this._publishRequiresEnterprisePanel = new System.Windows.Forms.Panel();
+			this._publishReqEntOverlayPage = new System.Windows.Forms.Label();
 			this._pdfViewer = new Bloom.Publish.PDF.PdfViewer();
-			this.exportAudioFiles1PerPageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._workingIndicator.SuspendLayout();
 			this._topBarPanel.SuspendLayout();
 			this.tableLayoutPanel1.SuspendLayout();
 			this._contextMenuStrip.SuspendLayout();
 			this._menusToolStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
+			this._publishRequiresEnterprisePanel.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// _makePdfBackgroundWorker
@@ -206,7 +212,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizationPriority(this._contextMenuStrip, L10NSharp.LocalizationPriority.InternalUseOnly);
 			this._L10NSharpExtender.SetLocalizingId(this._contextMenuStrip, "_contextMenuStrip._contextMenuStrip");
 			this._contextMenuStrip.Name = "_contextMenuStrip";
-			this._contextMenuStrip.Size = new System.Drawing.Size(432, 92);
+			this._contextMenuStrip.Size = new System.Drawing.Size(432, 70);
 			// 
 			// _openinBrowserMenuItem
 			// 
@@ -228,6 +234,16 @@ namespace Bloom.Publish
 			this._openPDF.Size = new System.Drawing.Size(431, 22);
 			this._openPDF.Text = "Open the PDF in the default system PDF viewer";
 			this._openPDF.Click += new System.EventHandler(this._openPDF_Click);
+			// 
+			// exportAudioFiles1PerPageToolStripMenuItem
+			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this.exportAudioFiles1PerPageToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.exportAudioFiles1PerPageToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizingId(this.exportAudioFiles1PerPageToolStripMenuItem, ".exportAudioFiles1PerPageToolStripMenuItem");
+			this.exportAudioFiles1PerPageToolStripMenuItem.Name = "exportAudioFiles1PerPageToolStripMenuItem";
+			this.exportAudioFiles1PerPageToolStripMenuItem.Size = new System.Drawing.Size(431, 22);
+			this.exportAudioFiles1PerPageToolStripMenuItem.Text = "Export audio files, 1 per page";
+			this.exportAudioFiles1PerPageToolStripMenuItem.Click += new System.EventHandler(this.ExportAudioFiles1PerPageToolStripMenuItem_Click);
 			// 
 			// _androidRadio
 			// 
@@ -269,7 +285,8 @@ namespace Bloom.Publish
 			superToolTipInfo2.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			superToolTipInfo2.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
 			superToolTipInfo2.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo2.BodyText = "Upload your book to BloomLibrary.org so that other people can read it, download it to their devices and share it with other people.";
+			superToolTipInfo2.BodyText = "Upload your book to BloomLibrary.org so that other people can read it, download i" +
+    "t to their devices and share it with other people.";
 			superToolTipInfo2.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
 			superToolTipInfo2.ShowHeader = false;
 			superToolTipInfoWrapper2.SuperToolTipInfo = superToolTipInfo2;
@@ -312,7 +329,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizationPriority(this._pdfOptions, L10NSharp.LocalizationPriority.Low);
 			this._L10NSharpExtender.SetLocalizingId(this._pdfOptions, "PublishTab.Options");
 			this._pdfOptions.Name = "_pdfOptions";
-			this._pdfOptions.Size = new System.Drawing.Size(62, 19);
+			this._pdfOptions.Size = new System.Drawing.Size(86, 19);
 			this._pdfOptions.Text = "PDF Options";
 			this._pdfOptions.ToolTipText = "Choose print shop setup";
 			// 
@@ -459,9 +476,74 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = null;
 			// 
+			// _publishReqEntTitle
+			// 
+			this._publishReqEntTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this._publishReqEntTitle, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._publishReqEntTitle, null);
+			this._L10NSharpExtender.SetLocalizingId(this._publishReqEntTitle, "Common.EnterpriseRequired");
+			this._publishReqEntTitle.Location = new System.Drawing.Point(9, 13);
+			this._publishReqEntTitle.Name = "_publishReqEntTitle";
+			this._publishReqEntTitle.Size = new System.Drawing.Size(600, 40);
+			this._publishReqEntTitle.TabIndex = 0;
+			this._publishReqEntTitle.Text = "Enterprise Required";
+			// 
+			// _publishReqEntProblem
+			// 
+			this._publishReqEntProblem.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this._publishReqEntProblem, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._publishReqEntProblem, "{0} will be replaced with the book\'s title.");
+			this._L10NSharpExtender.SetLocalizingId(this._publishReqEntProblem, "PublishTab.PublishRequiresEnterprise.ProblemExplanation");
+			this._publishReqEntProblem.Location = new System.Drawing.Point(10, 49);
+			this._publishReqEntProblem.Name = "_publishReqEntProblem";
+			this._publishReqEntProblem.Size = new System.Drawing.Size(600, 35);
+			this._publishReqEntProblem.TabIndex = 1;
+			this._publishReqEntProblem.Text = "The book titled \'{0}\' adds new Overlay elements. Overlay elements are a Bloom Ent" +
+    "erprise feature.";
+			// 
+			// _publishReqEntOptions
+			// 
+			this._publishReqEntOptions.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this._publishReqEntOptions, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._publishReqEntOptions, null);
+			this._L10NSharpExtender.SetLocalizingId(this._publishReqEntOptions, "PublishTab.PublishRequiresEnterprise.Options");
+			this._publishReqEntOptions.Location = new System.Drawing.Point(13, 109);
+			this._publishReqEntOptions.Name = "_publishReqEntOptions";
+			this._publishReqEntOptions.Size = new System.Drawing.Size(600, 35);
+			this._publishReqEntOptions.TabIndex = 2;
+			this._publishReqEntOptions.Text = "In order to publish your book, you need to either activate Bloom Enterprise, or r" +
+    "emove the Overlay elements from your book.";
+			// 
 			// _superToolTip
 			// 
 			this._superToolTip.FadingInterval = 10;
+			// 
+			// _publishRequiresEnterprisePanel
+			// 
+			this._publishRequiresEnterprisePanel.AutoSize = true;
+			this._publishRequiresEnterprisePanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this._publishRequiresEnterprisePanel.BackColor = System.Drawing.Color.White;
+			this._publishRequiresEnterprisePanel.Controls.Add(this._publishReqEntOverlayPage);
+			this._publishRequiresEnterprisePanel.Controls.Add(this._publishReqEntOptions);
+			this._publishRequiresEnterprisePanel.Controls.Add(this._publishReqEntProblem);
+			this._publishRequiresEnterprisePanel.Controls.Add(this._publishReqEntTitle);
+			this._publishRequiresEnterprisePanel.Location = new System.Drawing.Point(30, 30);
+			this._publishRequiresEnterprisePanel.Name = "_publishRequiresEnterprisePanel";
+			this._publishRequiresEnterprisePanel.Size = new System.Drawing.Size(616, 204);
+			this._publishRequiresEnterprisePanel.TabIndex = 17;
+			this._publishRequiresEnterprisePanel.Visible = false;
+			// 
+			// _publishReqEntOverlayPage
+			// 
+			this._publishReqEntOverlayPage.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this._publishReqEntOverlayPage, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._publishReqEntOverlayPage, "The {0} will be replaced by a page number.");
+			this._L10NSharpExtender.SetLocalizingId(this._publishReqEntOverlayPage, "PublishTab.PublishRequiresEnterprise.FirstOverlayPage");
+			this._publishReqEntOverlayPage.Location = new System.Drawing.Point(13, 169);
+			this._publishReqEntOverlayPage.Name = "_publishReqEntOverlayPage";
+			this._publishReqEntOverlayPage.Size = new System.Drawing.Size(600, 35);
+			this._publishReqEntOverlayPage.TabIndex = 3;
+			this._publishReqEntOverlayPage.Text = "Page {0} is the first page that uses Overlay elements.";
 			// 
 			// _pdfViewer
 			// 
@@ -475,21 +557,12 @@ namespace Bloom.Publish
 			this._pdfViewer.Size = new System.Drawing.Size(719, 677);
 			this._pdfViewer.TabIndex = 16;
 			// 
-			// exportAudioFiles1PerPageToolStripMenuItem
-			// 
-			this._L10NSharpExtender.SetLocalizableToolTip(this.exportAudioFiles1PerPageToolStripMenuItem, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.exportAudioFiles1PerPageToolStripMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this.exportAudioFiles1PerPageToolStripMenuItem, ".exportAudioFiles1PerPageToolStripMenuItem");
-			this.exportAudioFiles1PerPageToolStripMenuItem.Name = "exportAudioFiles1PerPageToolStripMenuItem";
-			this.exportAudioFiles1PerPageToolStripMenuItem.Size = new System.Drawing.Size(431, 22);
-			this.exportAudioFiles1PerPageToolStripMenuItem.Text = "Export audio files, 1 per page";
-			this.exportAudioFiles1PerPageToolStripMenuItem.Click += new System.EventHandler(this.ExportAudioFiles1PerPageToolStripMenuItem_Click);
-			// 
 			// PublishView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this.Controls.Add(this._publishRequiresEnterprisePanel);
 			this.Controls.Add(this._pdfViewer);
 			this.Controls.Add(this.tableLayoutPanel1);
 			this.Controls.Add(this._workingIndicator);
@@ -508,7 +581,9 @@ namespace Bloom.Publish
 			this._menusToolStrip.ResumeLayout(false);
 			this._menusToolStrip.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
+			this._publishRequiresEnterprisePanel.ResumeLayout(false);
 			this.ResumeLayout(false);
+			this.PerformLayout();
 
         }
 
@@ -539,5 +614,10 @@ namespace Bloom.Publish
 		private System.Windows.Forms.RadioButton _epubRadio;
 		private System.Windows.Forms.Label _noBookletsMessage;
 		private System.Windows.Forms.ToolStripMenuItem exportAudioFiles1PerPageToolStripMenuItem;
+		private System.Windows.Forms.Panel _publishRequiresEnterprisePanel;
+		private System.Windows.Forms.Label _publishReqEntTitle;
+		private System.Windows.Forms.Label _publishReqEntOptions;
+		private System.Windows.Forms.Label _publishReqEntProblem;
+		private System.Windows.Forms.Label _publishReqEntOverlayPage;
 	}
 }

@@ -91,13 +91,11 @@ namespace Bloom.MiscUI
 					dlg.Width = width;
 					dlg.Height = height;
 
-					if (initialize != null)
-						initialize();
+					initialize?.Invoke();
 
 					var result = dlg.ShowDialog();
 
-					if (handleResult != null)
-						handleResult(result);
+					handleResult?.Invoke(result);
 				}
 			});
 		}

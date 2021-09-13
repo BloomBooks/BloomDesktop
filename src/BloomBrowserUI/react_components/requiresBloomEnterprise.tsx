@@ -74,7 +74,7 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
                 ${"height: 16px; margin-left: 6px; cursor: pointer; " +
                     (props.iconStyles ?? "")}
             `}
-            src="../../../images/bloom-enterprise-badge.svg"
+            src="../images/bloom-enterprise-badge.svg"
             title={tooltip}
             onClick={openBloomEnterpriseSettings}
         />

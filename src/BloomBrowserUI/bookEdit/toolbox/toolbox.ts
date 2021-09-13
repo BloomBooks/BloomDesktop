@@ -877,6 +877,11 @@ function handleKeyboardInput(): void {
             return; // don't even try to adjust markup while there is some complex selection
         }
 
+        // This is improbable, but it prevents Typescript from complaining about the next conditional.
+        if (!window || !window.top) {
+            return;
+        }
+
         // If longpress is currently engaged trying to determine what, if anything, it needs
         // to do, we postpone the markup. Inexplicably, longpress and handleKeyboardInput (formerly handleKeydown)
         // started interfering again even after the fix for BL-3900 (see comments for

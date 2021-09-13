@@ -917,6 +917,10 @@
         <note>ID: Common.Done</note>
         <note>Shown in a list of messages when Bloom has completed a task.</note>
       </trans-unit>
+      <trans-unit id="Common.EnterpriseRequired">
+        <source xml:lang="en">Enterprise Required</source>
+        <note>ID: Common.EnterpriseRequired</note>
+      </trans-unit>
       <trans-unit id="Common.Error">
         <source xml:lang="en">Error</source>
         <note>ID: Common.Error</note>
@@ -3885,6 +3889,20 @@
       <trans-unit id="PublishTab.Publish">
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Publish</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PublishRequiresEnterprise.FirstOverlayPage">
+        <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
+        <note>ID: PublishTab.PublishRequiresEnterprise.FirstOverlayPage</note>
+        <note>The {0} will be replaced by a page number.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PublishRequiresEnterprise.Options">
+        <source xml:lang="en">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</source>
+        <note>ID: PublishTab.PublishRequiresEnterprise.Options</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PublishRequiresEnterprise.ProblemExplanation">
+        <source xml:lang="en">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Enterprise feature.</source>
+        <note>ID: PublishTab.PublishRequiresEnterprise.ProblemExplanation</note>
+        <note>{0} will be replaced with the book's title.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Save" sil:dynamic="true">
         <source xml:lang="en">Save...</source>
