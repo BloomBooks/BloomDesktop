@@ -396,6 +396,12 @@ namespace Bloom.Edit
 			get { return _pageSelection != null && _pageSelection.CurrentSelection != null && !_pageSelection.CurrentSelection.IsXMatter; }
 		}
 
+		// For now, the same rules govern copying hyperlinks. Working hyperlinks to xmatter pages are difficult,
+		// since each bring-book-up-to-date recreates the xmatter pages and gives them different IDs, so we'd need
+		// a different strategy for identifying them. And then, choosing a different xmatter pack might cause a page
+		// to cease to exist altogether.
+		public bool CanCopyHyperlink => CanCopyPage;
+
 		public bool CanDeletePage
 		{
 			get
