@@ -881,6 +881,8 @@
         <source xml:lang="en">&amp;Cancel</source>
         <note>This is identical to Common.Cancel. The duplication was introduced by a mistake.</note>
         <note>This is shown at the bottom of a dialog box. It is paired with an action button like "OK" and it means "do not do the action".</note>
+        <!-- The ampersand is used to indicate a mnemonic in C# WinForms. Ugh, I'm not happy that we expose it to the translators -->
+        <note>Please make sure to start your translation with an &amp; character, but pretend it doesn't have any meaning in the source text.</note>
         <note>ID: Common.CancelButton</note>
       </trans-unit>
       <trans-unit id="Common.Close">
