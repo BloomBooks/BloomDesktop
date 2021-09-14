@@ -11,12 +11,8 @@ import "./TeamCollectionBookStatusPanel.less";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import BloomButton from "../react_components/bloomButton";
 import { BloomAvatar } from "../react_components/bloomAvatar";
-import {
-    useSubscribeToWebSocketForEvent,
-    useSubscribeToWebSocketForObject
-} from "../utils/WebSocketManager";
-import { Block } from "@material-ui/icons";
-import { StringWithOptionalLink } from "../react_components/stringWithOptionalLink";
+import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
+import { BookProblem } from "../react_components/bookProblem";
 
 // The panel that shows the book preview and settings in the collection tab in a Team Collection.
 
@@ -45,6 +41,7 @@ export interface IBookTeamCollectionStatus {
     disconnected: boolean;
     problem: boolean; // hasAProblem in master
     hasInvalidRepoData: string; // error message, or empty if repo data is valid
+    clickHereArg: string; // argument (currently, repo file name) needed to construct "Click here for help" message for corrupt zip
 }
 
 export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
@@ -451,17 +448,13 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent = props => {
                 );
             case "hasInvalidRepoData":
                 return (
-                    <p
+                    <BookProblem
                         css={css`
-                            a {
-                                color: cyan;
-                            }
-                        `}
-                    >
-                        <StringWithOptionalLink
-                            message={bookStatus.hasInvalidRepoData}
-                        />
-                    </p>
+                            max-width: 560px;
+                        `} // to match StatusPanelCommon
+                        errorMessage={bookStatus.hasInvalidRepoData}
+                        clickHereArg={bookStatus.clickHereArg}
+                    />
                 );
             case "needsReload":
                 return (
