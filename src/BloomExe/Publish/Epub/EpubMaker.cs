@@ -12,6 +12,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Bloom.Book;
 using Bloom.ToPalaso;
+using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 using BloomTemp;

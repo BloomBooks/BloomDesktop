@@ -1,12 +1,12 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using Bloom;
+using Bloom.Utils;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.IO;
 
-namespace BloomTests
+namespace BloomTests.Utils
 {
 	[TestFixture]
 	public class BloomZipFileTests
@@ -21,7 +21,7 @@ namespace BloomTests
 
 			using (var tempFile = TempFile.WithFilenameInTempFolder(fileName))
 			{
-				File.WriteAllText(tempFile.Path, fileContents);
+				RobustFile.WriteAllText(tempFile.Path, fileContents);
 
 				using (var bookZip = TempFile.WithExtension(".zip"))
 				{
