@@ -50,6 +50,14 @@ namespace Bloom.TeamCollection
 
 		private const int kDebouncePeriodInMs = 100;
 		private Dictionary<string, FileSystemEventRecord> _lastCreateEventByFile = new Dictionary<string, FileSystemEventRecord>();
+
+		/// <summary>
+		/// This empty constructor allows the class to be mocked.
+		/// </summary>
+		public FolderTeamCollection()
+		{
+			Debug.Assert(Program.RunningUnitTests);
+		}
 		 
 		public FolderTeamCollection(ITeamCollectionManager manager, string localCollectionFolder,
 			string repoFolderPath, TeamCollectionMessageLog tcLog=null) : base(manager, localCollectionFolder, tcLog)
@@ -199,7 +207,8 @@ namespace Bloom.TeamCollection
 
 		private static string GetPathToBookFolder(string repoFolderPath) => Path.Combine(repoFolderPath, "Books");
 
-		internal string GetPathToBookFileInRepo(string bookFolderName)
+		// public and virtual only to support mocking
+		public virtual string GetPathToBookFileInRepo(string bookFolderName)
 		{
 			// Don't use ChangeExtension here, it will fail if the folderName contains
 			// some arbitrary period.
@@ -259,7 +268,7 @@ namespace Bloom.TeamCollection
 			return part1 + " " + part2;
 		}
 
-		public string GetCouldNotOpenCorruptZipMessage()
+		public virtual string GetCouldNotOpenCorruptZipMessage()
 		{
 			return LocalizationManager.GetString("TeamCollection.BadZipFile",
 				"Bloom was not able to open the zip file, which may be corrupted.");

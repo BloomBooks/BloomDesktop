@@ -235,8 +235,7 @@ namespace BloomTests.TeamCollection
 				var api = apiBuilder.Build();
 				api.RegisterWithApiHandler(_server.ApiHandler);
 
-				var mockTeamCollection = new Mock<Bloom.TeamCollection.TeamCollection>();
-				apiBuilder.MockTeamCollectionManager.SetupGet(x => x.CurrentCollectionEvenIfDisconnected).Returns(mockTeamCollection.Object);
+				var mockTeamCollection = SetupMockTcForBookStatus(apiBuilder);
 				mockTeamCollection.Setup(x => x.WhoHasBookLocked(It.IsAny<string>())).Returns("other@example.com");
 				mockTeamCollection.Setup(x => x.WhatComputerHasBookLocked(It.IsAny<string>())).Returns("Other's Computer");
 
@@ -253,6 +252,19 @@ namespace BloomTests.TeamCollection
 			}
 		}
 
+		private static Mock<FolderTeamCollection> SetupMockTcForBookStatus(TeamCollectionApiBuilder apiBuilder)
+		{
+			var mockTeamCollection = new Mock<Bloom.TeamCollection.FolderTeamCollection>();
+			apiBuilder.MockTeamCollectionManager.SetupGet(x => x.CurrentCollectionEvenIfDisconnected)
+				.Returns(mockTeamCollection.Object);
+			apiBuilder.MockTeamCollectionManager.SetupGet(x => x.CurrentCollection).Returns(mockTeamCollection.Object);
+			mockTeamCollection.Setup(x => x.GetPathToBookFileInRepo(It.IsAny<string>())).Returns("some fake path");
+			mockTeamCollection.Setup(x => x.HasLocalChangesThatMustBeClobbered(It.IsAny<string>())).Returns(false);
+			mockTeamCollection.Setup(x => x.HasBeenChangedRemotely(It.IsAny<string>())).Returns(false);
+			mockTeamCollection.Setup(x => x.GetCouldNotOpenCorruptZipMessage()).Returns("some fake message");
+			return mockTeamCollection;
+		}
+
 		[Test]
 		public void HandleCurrentBookStatus_LockedByFakeUser_FakeUserConvertedToCurrentUser()
 		{
@@ -266,8 +278,7 @@ namespace BloomTests.TeamCollection
 				var api = apiBuilder.Build();
 				api.RegisterWithApiHandler(_server.ApiHandler);
 
-				var mockTeamCollection = new Mock<Bloom.TeamCollection.TeamCollection>();
-				apiBuilder.MockTeamCollectionManager.SetupGet(x => x.CurrentCollectionEvenIfDisconnected).Returns(mockTeamCollection.Object);
+				var mockTeamCollection = SetupMockTcForBookStatus(apiBuilder);
 				mockTeamCollection.Setup(x => x.WhoHasBookLocked(It.IsAny<string>())).Returns("this user");
 				mockTeamCollection.Setup(x => x.WhatComputerHasBookLocked(It.IsAny<string>())).Returns("My Computer");
 

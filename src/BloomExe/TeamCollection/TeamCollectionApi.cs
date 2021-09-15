@@ -202,10 +202,16 @@ namespace Bloom.TeamCollection
 				// (though if we implement another backend, we'll have to generalize the notion somehow).
 				// For the Javascript, it's just an argument to pass to
 				// CommonMessages.GetPleaseClickHereForHelpMessage(). It's only used if hasInvalidRepoData is non-empty.
-				string clickHereArg =
-					UrlPathString.CreateFromUnencodedString((_tcManager.CurrentCollection as FolderTeamCollection)?.GetPathToBookFileInRepo(BookFolderName)).UrlEncoded;
+				string clickHereArg = "";
+				var folderTC = _tcManager.CurrentCollection as FolderTeamCollection;
+				if (folderTC != null)
+				{
+					clickHereArg = UrlPathString.CreateFromUnencodedString(folderTC.GetPathToBookFileInRepo(BookFolderName))
+						.UrlEncoded;
+				}
+
 				string hasInvalidRepoData = (status?.hasInvalidRepoData ?? false) ?
-					(_tcManager.CurrentCollection as FolderTeamCollection)?.GetCouldNotOpenCorruptZipMessage()
+					(folderTC)?.GetCouldNotOpenCorruptZipMessage()
 					: "";
 				try
 				{
