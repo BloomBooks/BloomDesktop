@@ -12,8 +12,7 @@ import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import BloomButton from "../react_components/bloomButton";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
-
-import { StringWithOptionalLink } from "../react_components/stringWithOptionalLink";
+import { BookProblem } from "../react_components/bookProblem";
 import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
 import { AvatarDialog } from "./AvatarDialog";
 import { ForgetChangesDialog } from "./ForgetChangesDialog";
@@ -45,6 +44,7 @@ export interface IBookTeamCollectionStatus {
     currentMachine: string;
     hasAProblem: boolean;
     hasInvalidRepoData: string; // error message, or empty if repo data is valid
+    clickHereArg: string; // argument (currently, repo file name) needed to construct "Click here for help" message for corrupt zip
     changedRemotely: boolean;
     disconnected: boolean;
     newLocalBook: boolean;
@@ -62,6 +62,7 @@ export const initialBookStatus: IBookTeamCollectionStatus = {
     currentMachine: "",
     hasAProblem: false,
     hasInvalidRepoData: "",
+    clickHereArg: "",
     changedRemotely: false,
     disconnected: false,
     newLocalBook: false,
@@ -491,17 +492,13 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                 );
             case "hasInvalidRepoData":
                 return (
-                    <p
+                    <BookProblem
                         css={css`
-                            a {
-                                color: cyan;
-                            }
-                        `}
-                    >
-                        <StringWithOptionalLink
-                            message={props.hasInvalidRepoData}
-                        />
-                    </p>
+                            max-width: 560px;
+                        `} // to match StatusPanelCommon
+                        errorMessage={props.hasInvalidRepoData}
+                        clickHereArg={props.clickHereArg}
+                    />
                 );
             case "needsReload":
                 return (

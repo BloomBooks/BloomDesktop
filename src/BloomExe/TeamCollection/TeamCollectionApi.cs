@@ -72,7 +72,9 @@ namespace Bloom.TeamCollection
 		{
 			var fileEncoded = request.Parameters["file"];
 			var file = UrlPathString.CreateFromUrlEncodedString(fileEncoded).NotEncoded;
-			NonFatalProblem.Report(ModalIf.All, PassiveIf.All, (_tcManager.CurrentCollection as FolderTeamCollection).GetSimpleBadZipFileMessage(file),additionalFilesToInclude: new[] { file });
+			NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
+				(_tcManager.CurrentCollection as FolderTeamCollection)
+					.GetSimpleBadZipFileMessage(Path.GetFileNameWithoutExtension(file)),additionalFilesToInclude: new[] { file });
 			request.PostSucceeded();
 		}
 
@@ -221,8 +223,20 @@ namespace Bloom.TeamCollection
 			DateTime whenLocked = DateTime.MaxValue;
 			bool problem = false;
 			var status = _tcManager.CurrentCollection?.GetStatus(BookFolderName);
+				// At this level, we know this is the path to the .bloom file in the repo
+				// (though if we implement another backend, we'll have to generalize the notion somehow).
+				// For the Javascript, it's just an argument to pass to
+				// CommonMessages.GetPleaseClickHereForHelpMessage(). It's only used if hasInvalidRepoData is non-empty.
+				string clickHereArg = "";
+				var folderTC = _tcManager.CurrentCollection as FolderTeamCollection;
+				if (folderTC != null)
+				{
+					clickHereArg = UrlPathString.CreateFromUnencodedString(folderTC.GetPathToBookFileInRepo(BookFolderName))
+						.UrlEncoded;
+				}
+
 			string hasInvalidRepoData = (status?.hasInvalidRepoData ?? false) ?
-				(_tcManager.CurrentCollection as FolderTeamCollection)?.GetBadZipFileMessage(BookFolderName)
+					(folderTC)?.GetCouldNotOpenCorruptZipMessage()
 				: "";
 
 			bool newLocalBook = false;
@@ -241,7 +255,7 @@ namespace Bloom.TeamCollection
 			}
 			catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
 			{
-				hasInvalidRepoData = (_tcManager.CurrentCollection as FolderTeamCollection)?.GetBadZipFileMessage(BookFolderName);
+					hasInvalidRepoData = (_tcManager.CurrentCollection as FolderTeamCollection)?.GetCouldNotOpenCorruptZipMessage();
 			}
 			return JsonConvert.SerializeObject(
 				new
@@ -256,6 +270,7 @@ namespace Bloom.TeamCollection
 					currentMachine = TeamCollectionManager.CurrentMachine,
 					problem,
 					hasInvalidRepoData,
+						clickHereArg,
 					changedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(BookFolderName),
 					disconnected = _tcManager.CurrentCollectionEvenIfDisconnected?.IsDisconnected,
 					newLocalBook

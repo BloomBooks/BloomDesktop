@@ -56,6 +56,15 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("common/showInFolder", HandleShowInFolderRequest, true); // Common
 			apiHandler.RegisterEndpointHandler("common/canModifyCurrentBook", HandleCanModifyCurrentBook, true);
 			apiHandler.RegisterEndpointHandler("common/showSettingsDialog", HandleShowSettingsDialog, false); // Common
+			apiHandler.RegisterEndpointHandler("common/problemWithBookMessage", request =>
+			{
+				request.ReplyWithText(CommonMessages.GetProblemWithBookMessage(Path.GetFileName(_bookSelection.CurrentSelection?.FolderPath)));
+			}, false);
+			apiHandler.RegisterEndpointHandler("common/clickHereForHelp", request =>
+			{
+				var problemFilePath = UrlPathString.CreateFromUrlEncodedString(request.RequiredParam("problem")).NotEncoded;
+				request.ReplyWithText(CommonMessages.GetPleaseClickHereForHelpMessage(problemFilePath));
+			}, false);
 			// Used when something in JS land wants to copy text to or from the clipboard. For POST, the text to be put on the
 			// clipboard is passed as the 'text' property of a JSON requestData.
 			// Somehow the get version of this fires while initializing a page (probably hooking up CkEditor, an unwanted
