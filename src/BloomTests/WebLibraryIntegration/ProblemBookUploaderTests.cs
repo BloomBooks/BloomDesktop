@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using Bloom;
+using Bloom.Utils;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using NUnit.Framework;

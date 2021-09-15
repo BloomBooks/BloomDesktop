@@ -358,6 +358,8 @@
     <Compile Include="AboutMemory.Designer.cs">
       <DependentUpon>AboutMemory.cs</DependentUpon>
     </Compile>
+    <Compile Include="Utils\BloomArchiveFile.cs" />
+    <Compile Include="Utils\BloomTarArchive.cs" />
     <Compile Include="BloomWebClient.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -559,7 +561,7 @@
       <DependentUpon>MakeReaderTemplateBloomPackDlg.cs</DependentUpon>
     </Compile>
     <Compile Include="Collection\NaturalSortComparer.cs" />
-    <Compile Include="BloomZipFile.cs" />
+    <Compile Include="Utils\BloomZipFile.cs" />
     <Compile Include="Collection\ScriptSettingsDialog.cs">
       <SubType>Form</SubType>
     </Compile>

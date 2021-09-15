@@ -2,59 +2,40 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using ICSharpCode.SharpZipLib.Core;
-using ICSharpCode.SharpZipLib.Zip;
-using SIL.IO;
+using System.Text;
 
-namespace Bloom
+namespace Bloom.Utils
 {
 	/// <summary>
-	/// This just provides a convenient wrapper over a zipping library. It's not really specific to Bloom.
-	/// To Use, create a BloomZipFile, add files and directories, then call Save().
+	/// Abstract class providing some implementation and obligations for Bloom's wrappers around the SharpZipLib archives such as zip, tar, etc.
 	/// </summary>
-	public class BloomZipFile
+	public abstract class BloomArchiveFile
 	{
-		private ZipOutputStream _zipStream;
+		#region Abstract Method obligations
+		/// <summary>
+		/// Saves / finalizes the archive after everything has been written to it.
+		/// </summary>
+		public abstract void Save();
 
-		public BloomZipFile(string path)
-		{
-			var fsOut = RobustFile.Create(path);
-			_zipStream = new ZipOutputStream(fsOut);
-			_zipStream.SetLevel(9); //REVIEW: what does this mean?
-		}
+		/// <summary>
+		/// Adds a file to the archive
+		/// </summary>
+		/// <param name="path">The path to the file contents</param>
+		/// <param name="entryName">The name to use in the archive</param>
+		/// <param name="compressIfAble">True to compress the file, if compression is supported by the archive format.</param>
+		protected abstract void AddFile(string path, string entryName, bool compressIfAble=true);
 
-		public void Save()
-		{
-			_zipStream.IsStreamOwner = true; // makes the Close() also close the underlying stream
-			_zipStream.Close();
-		}
+		/// <summary>
+		/// Cleans a name making it conform to the file conventions of the archive format.
+		/// </summary>
+		protected abstract string CleanName(string entryName);
 
-		public void SetComment(string comment)
-		{
-			_zipStream.SetComment(comment);
-		}
+		protected abstract bool ShouldCompress(string fileFullPath);
+		#endregion
 
 		public void AddTopLevelFile(string path, bool compress=true)
 		{
 			AddFile(path, Path.GetFileName(path), compress);
-		}
-
-		private void AddFile(string path, string entryName, bool compress=true)
-		{
-			var fi = new FileInfo(path);
-			var newEntry = new ZipEntry(entryName) {DateTime = fi.LastWriteTime, Size = fi.Length, IsUnicodeText = true,
-				CompressionMethod=compress?CompressionMethod.Deflated:CompressionMethod.Stored};
-
-			_zipStream.PutNextEntry(newEntry);
-
-			// Zip the file in buffered chunks
-			var buffer = new byte[4096];
-			using (var streamReader = RobustFile.OpenRead(path))
-			{
-				StreamUtils.Copy(streamReader, _zipStream, buffer);
-			}
-
-			_zipStream.CloseEntry();
 		}
 
 		/// <summary>
@@ -110,7 +91,7 @@ namespace Bloom
 			Action<string> perFileCallback = null;
 			if (progressCallback != null)
 			{
-				count = AddDirectory(directoryPath, dirNameOffest, null, true);
+				count = AddDirectory(directoryPath, dirNameOffest, extensionsToExclude, true);
 				// if count is zero, perFileCallback will never be called, so we don't need to fear
 				// divide by zero.
 				perFileCallback = (path) => progressCallback((float)(++done) / count);
@@ -118,12 +99,7 @@ namespace Bloom
 
 			AddDirectory(directoryPath, dirNameOffest, extensionsToExclude, false, perFileCallback);
 		}
-
-		// These file types are already highly compressed; further compression wastes time
-		// and is unlikely to save space. It might also increase the likelihood of spurious
-		// differences between file versions making Dropbox's sync less efficient.
-		private HashSet<string> extensionsNotToCompress = new HashSet<string>(new[] {".png", ".jpg", ".mp3", ".mp4"});
-
+				
 		/// <summary>
 		/// Add everything in directoryPath, including subfolders recursively, to the zip.
 		/// The names of the zip entries are made by removing dirNameOffset chars from the start
@@ -145,7 +121,8 @@ namespace Bloom
 			foreach (var path in files)
 			{
 				var entryName = path.Substring(dirNameOffest);
-				entryName = ZipEntry.CleanName(entryName); // Removes drive from name and fixes slash direction
+				string zipEntryName = ICSharpCode.SharpZipLib.Zip.ZipEntry.CleanName(entryName);
+				entryName = CleanName(entryName);
 				var fileExtension = Path.GetExtension(entryName).ToLowerInvariant();
 				if (extensionsToExclude != null)
 				{
@@ -153,7 +130,7 @@ namespace Bloom
 						continue;
 				}
 				if (!justCount)
-					AddFile(path, entryName, !extensionsNotToCompress.Contains(fileExtension));
+					AddFile(path, entryName, ShouldCompress(path));
 				perFileCallback?.Invoke(path);
 				count++;
 			}
