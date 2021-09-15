@@ -1107,6 +1107,8 @@ namespace Bloom.Book
 		private Dictionary<string, string> ParsePseudoJsonToolboxState(string stateString)
 		{
 			var x = new Dictionary<string, string>();
+			if (stateString == null)
+				return x;
 			var pairs = stateString.Split(new[] { ';' });
 			foreach (var pair in pairs)
 			{
