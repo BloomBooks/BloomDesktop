@@ -3561,10 +3561,11 @@
         <note>A BloomPUB is a type of file format that can be used to read books on the Bloom Reader app</note>
       </trans-unit>
 	  <trans-unit id="PublishTab.BulkBloomPub.MakeBloomBundle" sil:dynamic="true">
-        <source xml:lang="en">Zip up into a single .bloomBundle file</source>
+        <source xml:lang="en">Zip up into a single .bloombundle file</source>
         <note>ID: Publish.BulkBloomPub.MakeBloomBundle</note>
-		<note>"Zip up" means to take multiple things and turn them into a single combined .zip file. (The .bloomBundle file is similar to a .zip file).</note>
+		<note>"Zip up" means to take multiple things and turn them into a single combined .zip file. (The .bloombundle file is similar to a .zip file).</note>
 		<note>"Zip up" also takes meaning from "to zip up a jacket zipper".</note>
+		<note>.bloombundle is the file extension. It is in lowercase. It will be the same extension regardless of the user's language settings.</note>
       </trans-unit>
 	  <trans-unit id="PublishTab.BulkBloomPub.ProduceBloomShelf" sil:dynamic="true">
         <source xml:lang="en">Produce a .bloomshelf file</source>
