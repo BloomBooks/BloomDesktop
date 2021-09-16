@@ -1112,7 +1112,7 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		/// <param name="bookName"></param>
 		/// <returns></returns>
-		public bool HasLocalChangesThatMustBeClobbered(string bookName)
+		public virtual bool HasLocalChangesThatMustBeClobbered(string bookName)
 		{
 			var localStatus = GetLocalStatus(bookName);
 			// We don't bother to check for this sort of problem unless we think the book is checked out locally
@@ -1135,7 +1135,7 @@ namespace Bloom.TeamCollection
 			return IsCheckedOutHereBy(GetLocalStatus(bookName)) && !IsCheckedOutHereBy(GetStatus(bookName));
 		}
 
-		public bool HasBeenChangedRemotely(string bookName)
+		public virtual bool HasBeenChangedRemotely(string bookName)
 		{
 			return GetLocalStatus(bookName).checksum != GetStatus(bookName).checksum;
 		}

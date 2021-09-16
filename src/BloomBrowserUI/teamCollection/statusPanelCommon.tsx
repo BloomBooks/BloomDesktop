@@ -10,6 +10,8 @@ import {
 } from "@material-ui/core/styles";
 import "./statusPanelCommon.less";
 import { StatusPanelState } from "./TeamCollectionBookStatusPanel";
+import { StringWithOptionalLink } from "../react_components/stringWithOptionalLink";
+import { IconHeadingBodyMenuPanel } from "../react_components/iconHeadingBodyMenuPanel";
 
 export interface IStatusPanelProps {
     lockState: StatusPanelState;
@@ -53,28 +55,12 @@ export const StatusPanelCommon: React.FunctionComponent<IStatusPanelProps> = (
                 "status-panel" + (props.className ? " " + props.className : "")
             }
         >
-            <div className="panel-top">
-                {props.icon && (
-                    <div className="icon-or-avatar">{props.icon}</div>
-                )}
-                <div className="panel-titles">
-                    <Typography
-                        className="main-title"
-                        align="left"
-                        variant="h6"
-                    >
-                        {props.title}
-                    </Typography>
-                    <Typography
-                        className="sub-title"
-                        align="left"
-                        variant="subtitle2"
-                    >
-                        {props.subTitle}
-                    </Typography>
-                </div>
-                <div className="status-panel-menu">{props.menu}</div>
-            </div>
+            <IconHeadingBodyMenuPanel
+                heading={props.title}
+                body={props.subTitle}
+                icon={props.icon}
+                menu={props.menu}
+            />
             {props.children && (
                 <div className="panel-children">{props.children}</div>
             )}

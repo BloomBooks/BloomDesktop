@@ -338,3 +338,62 @@
     // padding here instead of margin so that it's still white in these areas instead of blue
     padding-top: @bleed; // center it calculating the height below the bleed
 }
+
+// Andrew created these rules in order to do this: https://i.imgur.com/dFWj0CK.png
+.position-bottom > .split-pane-component-inner,
+.position-bottom
+    > :not(.split-pane-component-inner)
+    > .split-pane-component-inner,
+.position-bottom
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > .split-pane-component-inner,
+.position-bottom
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > .split-pane-component-inner,
+.position-bottom
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > .split-pane-component-inner,
+.position-bottom
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > .split-pane-component-inner {
+    padding-top: 5mm;
+}
+
+.position-right > .split-pane-component-inner,
+.position-right
+    > :not(.split-pane-component-inner)
+    > .split-pane-component-inner,
+.position-right
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > .split-pane-component-inner,
+.position-right
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > .split-pane-component-inner,
+.position-right
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > .split-pane-component-inner,
+.position-right
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > .split-pane-component-inner {
+    padding-left: 5mm;
+}

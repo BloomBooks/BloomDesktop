@@ -370,6 +370,7 @@
     <Compile Include="CollectionTab\ReactCollectionTabView.Designer.cs">
       <DependentUpon>ReactCollectionTabView.cs</DependentUpon>
     </Compile>
+    <Compile Include="CommonMessages.cs" />
     <Compile Include="ErrorReporter\CompositeErrorReporter.cs" />
     <Compile Include="ErrorReporter\ErrorReportUtils.cs" />
     <Compile Include="ErrorReporter\ProblemLevel.cs" />

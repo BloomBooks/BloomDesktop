@@ -50,6 +50,14 @@ namespace Bloom.TeamCollection
 
 		private const int kDebouncePeriodInMs = 100;
 		private Dictionary<string, FileSystemEventRecord> _lastCreateEventByFile = new Dictionary<string, FileSystemEventRecord>();
+
+		/// <summary>
+		/// This empty constructor allows the class to be mocked.
+		/// </summary>
+		public FolderTeamCollection()
+		{
+			Debug.Assert(Program.RunningUnitTests);
+		}
 		 
 		public FolderTeamCollection(ITeamCollectionManager manager, string localCollectionFolder,
 			string repoFolderPath, TeamCollectionMessageLog tcLog=null) : base(manager, localCollectionFolder, tcLog)
@@ -199,7 +207,8 @@ namespace Bloom.TeamCollection
 
 		private static string GetPathToBookFolder(string repoFolderPath) => Path.Combine(repoFolderPath, "Books");
 
-		internal string GetPathToBookFileInRepo(string bookFolderName)
+		// public and virtual only to support mocking
+		public virtual string GetPathToBookFileInRepo(string bookFolderName)
 		{
 			// Don't use ChangeExtension here, it will fail if the folderName contains
 			// some arbitrary period.
@@ -254,27 +263,20 @@ namespace Bloom.TeamCollection
 		public string GetBadZipFileMessage(string zipName)
 		{
 			var zipPath = GetPathToBookFileInRepo(zipName);
-			var part1 = GetSimpleBadZipFileMessage(zipPath);
-			var template2 = LocalizationManager.GetString("Common.ClickHereForHelp", "Please click [here] to get help from the Bloom support team.",
-				"[here] will become a link. Keep the brackets to mark the translated text that should form the link.");
-
-			var pattern = new Regex(@"\[(.*)\]");
-			if (!pattern.IsMatch(template2))
-			{
-				// If the translator messed up and didn't mark the bit that should be the hot link, we'll make the whole sentence hot.
-				// So it will be something like "Please click here to get help from the Bloom support team", and you can click anywhere
-				// on the sentence.
-				template2 = "[" + template2 + "]";
-			}
-			var part2 = pattern.Replace(template2, $"<a href='/bloom/api/teamCollection/reportBadZip?file={ UrlPathString.CreateFromUnencodedString(zipPath).UrlEncoded}'>$1</a>");
+			var part1 = GetSimpleBadZipFileMessage(zipName);
+			var part2 = CommonMessages.GetPleaseClickHereForHelpMessage(zipPath);
 			return part1 + " " + part2;
 		}
 
-		public string GetSimpleBadZipFileMessage(string zipPath)
+		public virtual string GetCouldNotOpenCorruptZipMessage()
 		{
-			var template = LocalizationManager.GetString("TeamCollection.BadZipFile",
-				"There is a problem with the book \"{0}\" in the Team Collection system. Bloom was not able to open the zip file, which may be corrupted.");
-			return string.Format(template, Path.GetFileNameWithoutExtension(zipPath));
+			return LocalizationManager.GetString("TeamCollection.BadZipFile",
+				"Bloom was not able to open the zip file, which may be corrupted.");
+		}
+
+		public string GetSimpleBadZipFileMessage(string bookName)
+		{
+			return CommonMessages.GetProblemWithBookMessage(bookName) + " " + GetCouldNotOpenCorruptZipMessage();
 		}
 
 		public override void PutCollectionFiles(string[] names)

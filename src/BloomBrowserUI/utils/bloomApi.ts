@@ -204,6 +204,7 @@ export class BloomApi {
         }, []);
         return value;
     }
+
     public static useApiString(
         urlSuffix: string,
         defaultValue: string
