@@ -113,7 +113,14 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         } else {
             setTcPanelState("unlocked");
         }
-    });
+    }, [
+        props.disconnected,
+        props.hasAProblem,
+        props.changedRemotely,
+        props.who,
+        lockedByMe,
+        props.currentUser
+    ]);
 
     useSubscribeToWebSocketForEvent(
         "checkinProgress",

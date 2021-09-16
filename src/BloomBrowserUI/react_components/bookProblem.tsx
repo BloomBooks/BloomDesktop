@@ -20,12 +20,12 @@ export const BookProblem: React.FunctionComponent<{
     clickHereArg: string;
     className?: string; // also supports Emotion
 }> = props => {
-    const [bookProblemMessage] = BloomApi.useApiString(
+    const bookProblemMessage = BloomApi.useApiString(
         "common/problemWithBookMessage",
         "There was a problem with the current book in the Team Collection System"
     );
 
-    const [clickHereForHelpMessage] = BloomApi.useApiString(
+    const clickHereForHelpMessage = BloomApi.useApiString(
         "common/clickHereForHelp?problem=" + props.clickHereArg,
         "Please click here to get help from the Bloom support team."
     );
