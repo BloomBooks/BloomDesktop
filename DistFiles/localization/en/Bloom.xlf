@@ -637,9 +637,9 @@
         <source xml:lang="en">Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book. These programs normally don't do well with preserving the layout, so don't expect much.</source>
         <note>ID: CollectionTab.BookMenu.ExportDocMessage</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.ExportToExcel">
-        <source xml:lang="en">Export to Excel...</source>
-        <note>ID: CollectionTab.BookMenu.ExportToExcel</note>
+      <trans-unit id="CollectionTab.BookMenu.ExportToSpreadsheet">
+        <source xml:lang="en">Export to Spreadsheet...</source>
+        <note>ID: CollectionTab.BookMenu.ExportToSpreadsheet</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.ExportToWordOrLibreOffice">
         <source xml:lang="en">Export to Word or LibreOffice...</source>
@@ -649,9 +649,9 @@
         <source xml:lang="en">Export to XML for InDesign...</source>
         <note>ID: CollectionTab.BookMenu.ExportToXMLForInDesign</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.ImportContentFromExcel">
-        <source xml:lang="en">Import content from Excel...</source>
-        <note>ID: CollectionTab.BookMenu.ImportContentFromExcel</note>
+      <trans-unit id="CollectionTab.BookMenu.ImportContentFromSpreadsheet">
+        <source xml:lang="en">Import content from Spreadsheet...</source>
+        <note>ID: CollectionTab.BookMenu.ImportContentFromSpreadsheet</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.MakeBloomPack">
         <source xml:lang="en">Make Bloom Pack...</source>

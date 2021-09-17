@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Xml;
-using Bloom.Spreadsheet;
 using Bloom.ToPalaso;
 using L10NSharp;
 using SIL.Reporting;
