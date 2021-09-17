@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
@@ -127,6 +126,10 @@ namespace Bloom.CollectionTab
 		{
 			_leveledReaderMenuItem.Checked = _model.IsBookLeveled;
 			_decodableReaderMenuItem.Checked = _model.IsBookDecodable;
+			// BL-10381 These keep getting turned on somewhere unknown.
+			// Turn them off until we get around to activating them.
+			importContentFromSpreadsheetToolStripMenuItem.Visible = false;
+			exportToSpreadsheetToolStripMenuItem.Visible = false;
 
 			var btn = (sender as ContextMenuStrip).SourceControl as Button;
 			if (btn == null)
@@ -1740,7 +1743,7 @@ namespace Bloom.CollectionTab
 				NonFatalProblem.Report(ModalIf.All, PassiveIf.None,
 					shortUserLevelMessage: "The file could not be saved. Make sure it is not open and try again.",
 					moreDetails: null,
-					exception, showSendReport: false);
+					exception: exception, showSendReport: false);
 			}
 		}
 
@@ -1752,11 +1755,6 @@ namespace Bloom.CollectionTab
 		private void _decodableReaderMenuItem_Click(object sender, EventArgs e)
 		{
 			_model.SetIsBookDecodable(!_model.IsBookDecodable);
-		}
-
-		private void _bookContextMenu_Opening_1(object sender, CancelEventArgs e)
-		{
-
 		}
 
 		private void exportToSpreadsheetToolStripMenuItem_Click(object sender, EventArgs e)
