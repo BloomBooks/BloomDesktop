@@ -110,7 +110,6 @@ namespace Bloom.CollectionTab
 			this._L10NSharpExtender.SetLocalizingId(this._bookContextMenu, "CollectionTab.BookMenu.strip");
 			this._bookContextMenu.Name = "contextMenuStrip1";
 			this._bookContextMenu.Size = new System.Drawing.Size(243, 382);
-			this._bookContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this._bookContextMenu_Opening_1);
 			// 
 			// _copyBook
 			// 
