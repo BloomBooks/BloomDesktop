@@ -588,9 +588,9 @@ namespace Bloom.CollectionTab
 
 		}
 
-		public Book.Book GetBookFromBookInfo(BookInfo bookInfo, bool forSelectedBook = false)
+		public Book.Book GetBookFromBookInfo(BookInfo bookInfo, bool fullyUpdateBookFiles = false)
 		{
-			return _bookServer.GetBookFromBookInfo(bookInfo, forSelectedBook);
+			return _bookServer.GetBookFromBookInfo(bookInfo, fullyUpdateBookFiles);
 		}
 
 		/// <summary>

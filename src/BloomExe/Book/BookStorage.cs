@@ -92,7 +92,7 @@ namespace Bloom.Book
 
 	public class BookStorage : IBookStorage
 	{
-		public delegate BookStorage Factory(string folderPath, bool forSelectedBook = false);//autofac uses this
+		public delegate BookStorage Factory(string folderPath, bool fullyUpdateBookFiles = false);//autofac uses this
 
 		/// <summary>
 		/// History of these numbers:
@@ -156,7 +156,7 @@ namespace Bloom.Book
 			:this(folderPath, true, baseFileLocator, bookRenamedEvent, collectionSettings)
 		{ }
 
-		public BookStorage(string folderPath, bool forSelectedBook, IChangeableFileLocator baseFileLocator,
+		public BookStorage(string folderPath, bool fullyUpdateBookFiles, IChangeableFileLocator baseFileLocator,
 						   BookRenamedEvent bookRenamedEvent, CollectionSettings collectionSettings)
 		{
 			FolderPath = folderPath;
@@ -168,7 +168,7 @@ namespace Bloom.Book
 
 			ErrorAllowsReporting = true;
 
-			ExpensiveInitialization(forSelectedBook);
+			ExpensiveInitialization(fullyUpdateBookFiles);
 		}
 
 		private string _cachedFolderPath;
@@ -1611,7 +1611,17 @@ namespace Bloom.Book
 		/// <summary>
 		/// Do whatever is needed to do more than just show a title and thumbnail
 		/// </summary>
-		private void ExpensiveInitialization(bool forSelectedBook = false)
+		/// <param name="fullyUpdateBookFiles">
+		/// flag whether to do everything possible in preparation for editing or uploading.
+		/// If false, then a backup file is not tried if there is not a valid HTML file and
+		/// support files are not updated.
+		/// </param>
+		/// <review>
+		/// I think this method may be called only with fullyUpdateBookFiles set to true.  If
+		/// this is the case, it can be simplified in some places.  (This simplification should
+		/// be done on the master branch.)  But this would need to be verified first.
+		/// </review>
+		private void ExpensiveInitialization(bool fullyUpdateBookFiles = false)
 		{
 			Debug.WriteLine($"ExpensiveInitialization({FolderPath})");
 			Dom = new HtmlDom();
@@ -1631,11 +1641,11 @@ namespace Bloom.Book
 			var backupPath = GetBackupFilePath();
 
 			// If we have a single html file, or an html file whose name matches the folder, then we can proceed.
-			// ALternatively, if this is the selected book and we have a backup file, then we'll use that to proceed.
+			// ALternatively, if we want to fully update the book and we have a backup file, then we'll use that to proceed.
 			// If neither of these cases apply, then we'll need to complain to the user and hope that he or she can
 			// figure out how to recover since it's beyond what a program can handle.  (probably multiple html files
 			// that don't match the folder name and no backup file in the folder)
-			if (!RobustFile.Exists(pathToExistingHtml) && (!forSelectedBook || !RobustFile.Exists(backupPath)))
+			if (!RobustFile.Exists(pathToExistingHtml) && (!fullyUpdateBookFiles || !RobustFile.Exists(backupPath)))
 			{
 				ErrorAllowsReporting = false;
 				// Error out
@@ -1710,11 +1720,11 @@ namespace Bloom.Book
 				catch (Exception error)
 				{
 					InitialLoadErrors = error.Message;
-					// If the user is actually trying to look at this book and it's broken, we will try to restore a backup.
+					// If the user is actually trying to use this book and it's broken, we will try to restore a backup.
 					// The main reason not to do this otherwise is that we think we should notify the user that we
 					// are restoring a backup, and we don't want to bother him with such notifications about books
-					// he isn't looking at currently.
-					if (forSelectedBook && TryGetValidXmlDomFromHtmlFile(backupPath, out xmlDomFromHtmlFile))
+					// he isn't looking at (or uploading) currently.
+					if (fullyUpdateBookFiles && TryGetValidXmlDomFromHtmlFile(backupPath, out xmlDomFromHtmlFile))
 					{
 						RestoreBackup(pathToExistingHtml, error);
 					}
@@ -1745,7 +1755,7 @@ namespace Bloom.Book
 							GetHelpLinkForFilePermissions());
 						ErrorMessagesHtml = msg;
 						ErrorAllowsReporting = false;	// we can't really help them remotely with odd permission failures.
-						Logger.WriteEvent("*** ERROR cannot delete old branding.css file in ExpensiveInitialization(" + forSelectedBook + ")");
+						Logger.WriteEvent("*** ERROR cannot delete old branding.css file in ExpensiveInitialization(" + fullyUpdateBookFiles + ")");
 						Logger.WriteEvent("*** ERROR: " + error.Message.Replace("{", "{{").Replace("}", "}}"));
 						return;
 					}
@@ -1762,7 +1772,7 @@ namespace Bloom.Book
 				// "We did in fact change things so that storage isn't used until we've shown all the thumbnails we can
 				// (then we go back and update in background)."
 				InitialLoadErrors = ValidateBook(Dom, pathToExistingHtml);
-				if (forSelectedBook && !string.IsNullOrEmpty(InitialLoadErrors))
+				if (fullyUpdateBookFiles && !string.IsNullOrEmpty(InitialLoadErrors))
 				{
 					XmlDocument possibleBackupDom;
 					if (TryGetValidXmlDomFromHtmlFile(backupPath, out possibleBackupDom))
@@ -1813,17 +1823,17 @@ namespace Bloom.Book
 					Logger.WriteEvent("BookStorage Loading Dom from {0}", PathToExistingHtml);
 				}
 
-				// probably not needed at runtime if !forSelectedBook, but one unit test relies on it having been done, and is very fast, so ok.
+				// probably not needed at runtime if !fullyUpdateBookFiles, but one unit test relies on it having been done, and is very fast, so ok.
 				Dom.UpdatePageDivs();
 
-				// If the book isn't selected, then we're just here to do minimal things, hopefully quick things, to
+				// If the book isn't selected for editing or uploading, then we're just here to do minimal things, hopefully quick things, to
 				// show the title and thumbnail. Of course anything we *don't* do could effect the thumbnail. But
 				// let's wait and deal with that if it seems like a real problem. At the moment it seems to me that
 				// having to select the book to gets its thumbnail updated is a small price to pay.
 				// In particular, things can go wrong when doing UpdateSupportFiles() because the book may call for
 				// xmatter that this user doesn't have installed; when we're just showing all the thumbnails as quickly
 				// as we can, that's really the wrong time to be putting up errors about the xmatter of particular books.
-				if (forSelectedBook)
+				if (fullyUpdateBookFiles)
 				{
 					UpdateSupportFiles();
 					CleanupUnusedSupportFiles(false);

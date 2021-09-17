@@ -744,7 +744,7 @@ namespace Bloom.Book
 				return GetErrorDom();
 			}
 			//Console.WriteLine("DEBUG GetPreviewHtmlFileForWholeBook(): calling BringBookUpToDate() for new previewDOM");
-			BringBookUpToDate(previewDom, new NullProgress());
+			BringBookUpToDateInternal(previewDom, new NullProgress());
 
 			// this is normally the vernacular, but when we're previewing a shell, well it won't have anything for the vernacular
 			var primaryLanguage = Language1IsoCode;
@@ -785,7 +785,7 @@ namespace Bloom.Book
 			{
 				oldMetaData = RobustFile.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
 			}
-			BringBookUpToDate(OurHtmlDom, progress, oldMetaData);
+			BringBookUpToDateInternal(OurHtmlDom, progress, oldMetaData);
 			progress.WriteStatus("Updating pages...");
 			foreach (XmlElement pageDiv in OurHtmlDom.SafeSelectNodes("//body/div[contains(@class, 'bloom-page')]"))
 			{
@@ -1105,7 +1105,7 @@ namespace Bloom.Book
 		/// and making older Blooms unable to read new books. But because this is run, the xmatter will be
 		/// migrated to the new template.
 		/// </summary>
-		private void BringBookUpToDate(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress, string oldMetaData = "")
+		private void BringBookUpToDateInternal(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress, string oldMetaData = "")
 		{
 			RemoveImgTagInDataDiv(bookDOM);
 			RemoveCkeEditorResidue(bookDOM);
@@ -1605,7 +1605,7 @@ namespace Bloom.Book
 
 		public void UpdateBrandingForCurrentOrientation(HtmlDom bookDOM)
 		{
-			BringBookUpToDate(bookDOM, new NullProgress());
+			BringBookUpToDateInternal(bookDOM, new NullProgress());
 			// We need this to reinstate the classes that control visibility, otherwise no bloom-editable
 			// text is shown
 			UpdateMultilingualSettings(bookDOM);
@@ -3402,7 +3402,7 @@ namespace Bloom.Book
 		{
 			if (!_haveDoneUpdate)
 			{
-				BringBookUpToDate(OurHtmlDom, new NullProgress());
+				BringBookUpToDateInternal(OurHtmlDom, new NullProgress());
 				_haveDoneUpdate = true;
 			}
 			//We could re-enable RebuildXMatter() here later, so that we get this nice refresh each time.
