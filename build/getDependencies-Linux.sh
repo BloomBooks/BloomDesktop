@@ -69,7 +69,7 @@ cd -
 # build: Bloom-Default-Linux64-Continuous (bt403)
 # project: Bloom
 # URL: https://build.palaso.org/viewType.html?buildTypeId=bt403
-# VCS: git://github.com/BloomBooks/BloomDesktop.git [Version5.0]
+# VCS: git://github.com/BloomBooks/BloomDesktop.git [Version5.1]
 # dependencies:
 # [0] build: bloom-win32-static-dependencies (bt396)
 #     project: Bloom
@@ -77,9 +77,9 @@ cd -
 #     clean: false
 #     revision: bloom-5.1.tcbuildtag
 #     paths: {"connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build/", "MSBuild.Community.Tasks.Targets"=>"build/"}
-# [1] build: Bloom Help 5.0 (Bloom_Help_BloomHelp50)
+# [1] build: Bloom Help 5.1 (Bloom_Help_BloomHelp51)
 #     project: Help
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp50
+#     URL: https://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp51
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.chm"=>"DistFiles"}
@@ -130,7 +130,7 @@ mkdir -p ../lib/dotnet
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-5.1.tcbuildtag/connections.dll ../DistFiles/connections.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-5.1.tcbuildtag/MSBuild.Community.Tasks.dll ../build/MSBuild.Community.Tasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-5.1.tcbuildtag/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
-copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp50/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
+copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp51/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/bloom-5.1.tcbuildtag/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/bloom-5.1.tcbuildtag/Args.dll ../lib/dotnet/Args.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/bloom-5.1.tcbuildtag/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
