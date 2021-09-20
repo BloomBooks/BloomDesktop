@@ -1358,7 +1358,7 @@ namespace Bloom.Api
 				return false;
 
 			var localPath = GetLocalPathWithoutQuery(info);
-			// We don't need even a toast for missing images in the book folder. That's the user's problem and should be adequately
+			// We don't need even a toast for missing files in the book folder. That's the user's problem and should be adequately
 			// documented by the browser message saying the file is missing.
 			if (currentBookFolderPath != null && localPath.StartsWith(currentBookFolderPath.Replace("\\", "/")))
 				return false;
@@ -1393,6 +1393,9 @@ namespace Bloom.Api
 				"missingpagetemplate",
 				// Branding image files are expected to be missing in the normal case.  Only organizations that care about branding would have these images.
 				"/branding/image",
+				// Files missing in the book-preview folder are really missing from the book folder.  See the comment above for checking localPath
+				// against the currentBookFolderPath.
+				"book-preview/",
 				// This is readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation
 				// of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
 				EpubMaker.kEPUBExportFolder.ToLowerInvariant(),

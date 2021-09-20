@@ -766,7 +766,7 @@ namespace Bloom.Book
 
 			// Not needed for preview mode, so just remove them to reduce memory usage.
 			PreventVideoAutoLoad(previewDom);
-			RemoveImageResolutionMessage(previewDom);
+			RemoveImageResolutionMessageAndAddMissingImageMessage(previewDom);
 
 			_previewDom = previewDom;
 			return previewDom;
@@ -2554,12 +2554,23 @@ namespace Bloom.Book
 		/// This is only used in the preview.
 		/// Review: This works, but I'm not really "up" on the preview process. Should this go in bookPreview.ts?
 		/// </summary>
-		private static void RemoveImageResolutionMessage(HtmlDom dom)
+		private static void RemoveImageResolutionMessageAndAddMissingImageMessage(HtmlDom dom)
 		{
 			var imageContainerList = dom.Body.SafeSelectNodes("//div[contains(@class,'bloom-imageContainer')]");
 			foreach (XmlElement imageContainer in imageContainerList)
 			{
 				imageContainer.RemoveAttribute("title");
+				foreach (XmlElement img in imageContainer.SafeSelectNodes("img"))
+				{
+					var src = img.GetAttribute("src");
+					var alt = img.GetAttribute("alt");
+					if (!String.IsNullOrEmpty(src) && String.IsNullOrEmpty(alt))
+					{
+						var localizedFormatString = LocalizationManager.GetString("EditTab.Image.AltMsg", "This picture, {0}, is missing or was loading too slowly.");
+						var altValue = String.Format(localizedFormatString, src);
+						img.SetAttribute("alt", altValue);
+					}
+				}
 			}
 		}
 
