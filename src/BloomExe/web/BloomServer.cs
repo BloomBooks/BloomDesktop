@@ -417,6 +417,21 @@ namespace Bloom.Api
 					info.WriteCompleteOutput(html);
 					return true;
 				}
+				else if (localPath == "book-preview/full-bloom-logo-grey.svg" &&
+					CurrentBook.FolderPath.Contains(Path.Combine("browser", "templates", "template books")))
+				{
+					// This file is requested in most (all?) xMatter packs, but provided by only a
+					// few different brandings.  Looking at a template book doesn't allow us to copy
+					// the file into the book folder even if it is appropriate for the current branding.
+					// So, we fake it here by substituting a default image.
+					localPath = localPath.Replace("book-preview", CurrentBook.FolderPath);
+					if (!RobustFile.Exists(localPath))
+					{
+						var substitute = BloomFileLocator.GetBrowserFile(true, new[] { "branding", "Default", "BloomWithTaglineAgainstLight.svg" });
+						if (RobustFile.Exists(substitute))
+							localPath = substitute;
+					}
+				}
 				else
 				{
 					localPath = localPath.Replace("book-preview", CurrentBook.FolderPath);

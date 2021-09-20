@@ -1623,7 +1623,7 @@ namespace Bloom.Book
 		/// </review>
 		private void ExpensiveInitialization(bool fullyUpdateBookFiles = false)
 		{
-			Debug.WriteLine($"ExpensiveInitialization({FolderPath})");
+			Debug.WriteLine($"ExpensiveInitialization({fullyUpdateBookFiles}) for {FolderPath}");
 			Dom = new HtmlDom();
 			//the fileLocator we get doesn't know anything about this particular book.
 			_fileLocator.AddPath(FolderPath);

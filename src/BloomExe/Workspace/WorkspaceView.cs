@@ -290,7 +290,9 @@ namespace Bloom.Workspace
 			if (inCurrentCollection || inSourceFolder)
 			{
 				var info = new BookInfo(selBookPath, inCurrentCollection);
-				var book = _bookServer.GetBookFromBookInfo(info);
+				// Fully updating book files ensures that the proper branding files are found for
+				// previewing when the collection settings change but the book selection does not.
+				var book = _bookServer.GetBookFromBookInfo(info, fullyUpdateBookFiles: true);
 				_bookSelection.SelectBook(book);
 			}
 		}
