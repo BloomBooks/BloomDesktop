@@ -9,6 +9,7 @@ using Bloom.web;
 using Fleck;
 using L10NSharp;
 using SIL.Reporting;
+using SIL.Windows.Forms.Reporting;
 
 namespace Bloom.Edit
 {
@@ -18,6 +19,7 @@ namespace Bloom.Edit
 		private readonly EditingModel _model;
 		private bool _dontForwardSelectionEvent;
 		private IPage _pageWeThinkShouldBeSelected;
+		private bool _hyperlinkMessageShown = false;
 
 		public PageListView(PageSelection pageSelection, RelocatePageEvent relocatePageEvent, EditingModel model,
 			HtmlThumbNailer thumbnailProvider, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent, PageListApi pageListApi, BloomWebSocketServer webSocketServer)
@@ -62,7 +64,22 @@ namespace Bloom.Edit
 				{
 					Label = LocalizationManager.GetString("EditTab.CopyHyperlink", "Copy Hyperlink"),
 					EnableFunction = (page) => page != null && _model.CanCopyHyperlink,
-					ExecuteCommand = (page) => _model.CopyHyperlink(page)
+					ExecuteCommand = (page) =>
+					{
+						_model.CopyHyperlink(page);
+						if (!_hyperlinkMessageShown)
+						{
+							_hyperlinkMessageShown = true;
+							var msg = LocalizationManager.GetString("EditTab.HowToUseHyperlink",
+								"To use this hyperlink, go to the page where you are making a Table of Contents. Next, select some text and then click on the image of chain link. This will turn the selected text into a hyperlink to this page.");
+							var title = LocalizationManager.GetString("EditTab.UsingHyperlink", "Using a hyperlink");
+							var dlg = new ProblemNotificationDialog(
+								msg, title);
+							dlg.Icon = SystemIcons.Information.ToBitmap();
+							dlg.ReoccurenceMessage = null;
+							dlg.Show();
+						}
+					}
 				});
 			menuItems.Add(
 				new WebThumbNailList.MenuItemSpec()
