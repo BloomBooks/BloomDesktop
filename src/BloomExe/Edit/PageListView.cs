@@ -61,7 +61,7 @@ namespace Bloom.Edit
 				new WebThumbNailList.MenuItemSpec()
 				{
 					Label = LocalizationManager.GetString("EditTab.CopyHyperlink", "Copy Hyperlink"),
-					EnableFunction = (page) => page != null,
+					EnableFunction = (page) => page != null && _model.CanCopyHyperlink,
 					ExecuteCommand = (page) => _model.CopyHyperlink(page)
 				});
 			menuItems.Add(
