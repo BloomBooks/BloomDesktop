@@ -491,7 +491,8 @@ const OverlayToolControls: React.FunctionComponent = () => {
                     <div id="videoOrImageSubstituteSection">
                         <Typography
                             css={css`
-                                margin: 15px 15px 0 15px;
+                                // "!important" is needed to keep .MuiTypography-root from overriding
+                                margin: 15px 15px 0 15px !important;
                                 text-align: center;
                             `}
                         >
@@ -506,10 +507,11 @@ const OverlayToolControls: React.FunctionComponent = () => {
                     <div id="videoOrImageSubstituteSection">
                         <Button
                             css={css`
-                                background-color: ${kBloomBlue};
+                                // Had to add "!important"s because .MuiButton-contained overrode them!
+                                background-color: ${kBloomBlue} !important;
                                 text-align: center;
-                                margin: 20px 10px 5px 10px;
-                                padding: 5px 0; // defeat huge 'contained' style padding-right
+                                margin: 20px 10px 5px 10px !important;
+                                padding: 5px 0 !important; // defeat huge 'contained' style padding-right
                             `}
                             onClick={showSignLanguageTool}
                             size="large"
