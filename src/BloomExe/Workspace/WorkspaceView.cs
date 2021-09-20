@@ -260,13 +260,13 @@ namespace Bloom.Workspace
 					// Don't do anything else after this as part of this idle task.
 					// See the comment near the end of HandleTeamStuffBeforeGetBookCollections.
 					_model.HandleTeamStuffBeforeGetBookCollections(() =>
+						{
 #if SHOW_REACT_COLLECTION_TAB
-					_reactCollectionTabView.ReadyToShowCollections()
-#else
-					{}
+							_reactCollectionTabView.ReadyToShowCollections();
 #endif
+							_legacyCollectionView.ReadyToShowCollections();
+						}
 					);
-					_legacyCollectionView.ReadyToShowCollections();
 				}, shouldHideSplashScreen: true);
 			}
 		}
