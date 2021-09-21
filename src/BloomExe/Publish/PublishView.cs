@@ -38,6 +38,8 @@ namespace Bloom.Publish
 		private PublishToAndroidApi _publishApi;
 		private PublishEpubApi _publishEpubApi;
 		private BloomWebSocketServer _webSocketServer;
+		private readonly string _cantPublishPageWithPlaceholder;
+		private readonly string _cantPublishProblemWithPlaceholder;
 
 
 		public delegate PublishView Factory();//autofac uses this
@@ -60,6 +62,8 @@ namespace Bloom.Publish
 			_model = model;
 			_model.View = this;
 
+			_cantPublishPageWithPlaceholder = _publishReqEntOverlayPage.Text;
+			_cantPublishProblemWithPlaceholder = _publishReqEntProblem.Text;
 			_makePdfBackgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(_makePdfBackgroundWorker_RunWorkerCompleted);
 			_pdfViewer.PrintProgress += new System.EventHandler<PdfPrintProgressEventArgs>(OnPrintProgress);
 
@@ -239,35 +243,11 @@ namespace Bloom.Publish
 			// SetModelFromButtons takes care of both of these things for the model
 			ClearRadioButtons();
 			SetModelFromButtons();
-			_model.DisplayMode = PublishModel.DisplayModes.WaitForUserToChooseSomething;
+			_model.DisplayMode = _model.CanPublish ? PublishModel.DisplayModes.WaitForUserToChooseSomething : PublishModel.DisplayModes.NotPublishable;
 
 			UpdateDisplay();
 
-			if (!_model.CanPublish)
-			{
-				ShowCantPublishMessage();
-			}
-
 			_activated = true;
-		}
-
-		private void ShowCantPublishMessage()
-		{
-			// Turn off usually visible things.
-			_pdfViewer.Visible = false;
-			_workingIndicator.Visible = false;
-			tableLayoutPanel1.Visible = false;
-
-			// If we're showing this panel, we must have a current selection.
-			Debug.Assert(_model.BookSelection?.CurrentSelection != null,
-				"We tried to show a message without a CurrentSelection");
-			var book = _model.BookSelection.CurrentSelection;
-			var firstOverlayPageNum = book.GetNumberOfFirstPageWithOverlay();
-			_publishReqEntOverlayPage.Text = _publishReqEntOverlayPage.Text.Replace("{0}", firstOverlayPageNum);
-			_publishReqEntProblem.Text = _publishReqEntProblem.Text.Replace("{0}", book.TitleBestForUserDisplay);
-
-			// Turn on the hidden panel
-			_publishRequiresEnterprisePanel.Visible = true;
 		}
 
 		private void ClearRadioButtons()
@@ -539,7 +519,9 @@ namespace Bloom.Publish
 					_htmlControl = null;
 				}
 			}
-				
+
+			ResetCantPublishMessage();
+
 			switch (displayMode)
 			{
 				case PublishModel.DisplayModes.WaitForUserToChooseSomething:
@@ -615,9 +597,37 @@ namespace Bloom.Publish
 					PublishEpubApi.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "ePUBPublish", "loader.html"));
 					break;
+				case PublishModel.DisplayModes.NotPublishable:
+					ShowCantPublishMessage();
+					break;
 			}
 			ResumeLayout(true);
 			UpdateSaveButton();
+		}
+
+		private void ShowCantPublishMessage()
+		{
+			// Turn off usually visible things.
+			_pdfViewer.Visible = false;
+			_workingIndicator.Visible = false;
+			tableLayoutPanel1.Visible = false;
+
+			// If we're showing this panel, we must have a current selection.
+			Debug.Assert(_model.BookSelection?.CurrentSelection != null,
+				"We tried to show a message without a CurrentSelection");
+			var book = _model.BookSelection.CurrentSelection;
+			var firstOverlayPageNum = book.GetNumberOfFirstPageWithOverlay();
+			_publishReqEntOverlayPage.Text = _cantPublishPageWithPlaceholder.Replace("{0}", firstOverlayPageNum);
+			_publishReqEntProblem.Text = _cantPublishProblemWithPlaceholder.Replace("{0}", book.TitleBestForUserDisplay);
+
+			// Turn on the hidden panel
+			_publishRequiresEnterprisePanel.Visible = true;
+		}
+
+		private void ResetCantPublishMessage()
+		{
+			_publishRequiresEnterprisePanel.Visible = false;
+			tableLayoutPanel1.Visible = true;
 		}
 
 		private void ShowHtmlPanel(string pathToHtml)
