@@ -6,6 +6,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.MiscUI;
+using Bloom.Utils;
 using Bloom.web;
 using BloomTemp;
 using Newtonsoft.Json;
@@ -85,11 +86,11 @@ namespace Bloom.Publish.Android
 
 					if (bulkSaveSettings.makeBloomBundle)
 					{
-						var bloomBundlePath = Path.Combine(dest.FolderPath, $"{filenameWithoutExtension}.bloomBundle");
+						var bloomBundlePath = Path.Combine(dest.FolderPath, $"{filenameWithoutExtension}.bloombundle");
 
-						var zipFile = new BloomZipFile(bloomBundlePath);
-						zipFile.AddDirectoryContents(dest.FolderPath, new string[] { ".bloomBundle" });
-						zipFile.Save();
+						var bloomBundleFile = new BloomTarArchive(bloomBundlePath);
+						bloomBundleFile.AddDirectoryContents(dest.FolderPath, new string[] { ".bloombundle" });
+						bloomBundleFile.Save();
 					}
 
 					progress.MessageWithoutLocalizing("Done.", ProgressKind.Heading);
