@@ -1288,10 +1288,10 @@ namespace Bloom.Edit
 
 		void ReportFailureToLoadImage(string path, Exception ex)
 		{
-			var caption = LocalizationManager.GetString("EditTab.Image.ImageFailed", "Failed to load image");
-			var form = Form.ActiveForm;
-			var oom = ex as OutOfMemoryException;
-			if (oom != null)
+			ex.Data["ProblemImagePath"] = path;
+			ex.Data["ProblemReportShortMessage"] = LocalizationManager.GetString("EditTab.Image.ImageFailed", "Failed to load image");
+			String msg;
+			if (ex is OutOfMemoryException)
 			{
 				// It should be very unusual not to get imageSize...LibPalaso is not supposed to send OOM
 				// exceptions for this function without providing the information. Conceivably Bloom
@@ -1300,29 +1300,19 @@ namespace Bloom.Edit
 				Tuple<int, int> imageSize = ex.Data["imageSize"] as Tuple<int, int>;
 				var width = imageSize == null ? "unknown" : imageSize.Item1.ToString();
 				var height = imageSize == null ? "unknown" : imageSize.Item2.ToString(); ;
-				try
-				{
-					if (form != null)
-						form.HelpRequested += FormOnHelpRequested;
-					var msgFmt = LocalizationManager.GetString("EditTab.Image.TooLarge",
-						"Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.");
-					var msg = String.Format(msgFmt, path, width, height);
-					MessageBox.Show(msg, caption, MessageBoxButtons.OK, MessageBoxIcon.Information,
-						MessageBoxDefaultButton.Button1, 0, form != null);
-				}
-				finally
-				{
-					if (form != null)
-						form.HelpRequested -= FormOnHelpRequested;
-				}
+				var msgFmt = LocalizationManager.GetString("EditTab.Image.TooLarge",
+					"Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.");
+				msg = String.Format(msgFmt, path, width, height);
+				var help = LocalizationManager.GetString("Common.Help", "Help");
+				msg = msg + "<br/></br><a href='https://community.bloomlibrary.org/t/running-out-of-memory-loading-images/3956'>" + help + "</a>";
 			}
 			else
 			{
 				var msgFmt = LocalizationManager.GetString("EditTab.Image.Corrupt",
 					"Bloom was not able to load {0}. The file may be corrupted. Please try another image. Here are some technical details: ");
-				var msg = String.Format(msgFmt, path) + Environment.NewLine + Environment.NewLine + ex.Message;
-				MessageBox.Show(msg, caption, MessageBoxButtons.OK, MessageBoxIcon.Information);
+				msg = String.Format(msgFmt, path) + "<br/><br/>" + ex.Message;
 			}
+			ErrorReport.NotifyUserOfProblem(ex, msg);
 		}
 
 		private void FormOnHelpRequested(object sender, HelpEventArgs hlpevent)
@@ -1340,14 +1330,17 @@ namespace Bloom.Edit
 			}
 			catch(System.IO.IOException error)
 			{
+				error.Data["ProblemImagePath"] = imageInfo.OriginalFilePath;
 				ErrorReport.NotifyUserOfProblem(error, error.Message);
 			}
 			catch(ApplicationException error)
 			{
+				error.Data["ProblemImagePath"] = imageInfo.OriginalFilePath;
 				ErrorReport.NotifyUserOfProblem(error, error.Message);
 			}
 			catch(Exception error)
 			{
+				error.Data["ProblemImagePath"] = imageInfo.OriginalFilePath;
 				ErrorReport.NotifyUserOfProblem(error, exceptionMsg);
 			}
 		}
