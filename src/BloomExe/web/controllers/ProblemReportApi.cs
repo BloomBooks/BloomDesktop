@@ -15,6 +15,7 @@ using Bloom.Collection;
 using Bloom.ErrorReporter;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
+using Bloom.Utils;
 using Bloom.WebLibraryIntegration;
 using SIL.Extensions;
 using SIL.IO;
@@ -873,6 +874,8 @@ namespace Bloom.web.controllers
 			}
 			var listOfCollectionFiles = GetCollectionFilePaths(collectionFolder);
 			ListFiles(listOfCollectionFiles, bldr);
+			if (_additionalPathsToInclude != null && _additionalPathsToInclude.Any())
+				ListFiles(_additionalPathsToInclude, bldr);
 		}
 
 		private static IEnumerable<string> GetReaderFilePaths(string collectionFolder)

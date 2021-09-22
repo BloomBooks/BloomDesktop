@@ -1288,33 +1288,14 @@ export function IsPageXMatter($target: JQuery): boolean {
 }
 
 function updateCkEditorButtonStatus(editor: CKEDITOR.editor) {
-    BloomApi.get("common/clipboardText", result => {
+    BloomApi.get("editView/isClipboardBookHyperlink", result => {
         const pasteHyperlinkCommand = editor.getCommand("pasteHyperlink");
-        if (isValidURL(result.data)) {
+        if (result.data) {
             pasteHyperlinkCommand.enable();
         } else {
             pasteHyperlinkCommand.disable();
         }
     });
-}
-
-function isValidURL(strIn: string): boolean {
-    // Tried this but unexpected things translate into a link to an imaginary file in the book folder.
-    // var a = document.createElement("a") as HTMLAnchorElement;
-    // a.href = str;
-    // return a.protocol !== ":"; // protocol is required to answer a single colon if the HREF did not parse as a URL
-
-    // This is simplisitic but enough to prevent most nonsensical URLs being put in links.
-    if (!strIn) {
-        return false;
-    }
-    const str = strIn.toLowerCase();
-    return (
-        str.startsWith("http:") ||
-        str.startsWith("https:") ||
-        str.startsWith("mailto:") ||
-        str.startsWith("#")
-    );
 }
 
 export function attachToCkEditor(element) {
