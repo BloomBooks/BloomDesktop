@@ -321,13 +321,13 @@ namespace Bloom.ErrorReporter
 			var message = String.Format(messageFormat, args);
 			var shortMsg = error.Data["ProblemReportShortMessage"] as string;
 			var imageFilepath = error.Data["ProblemImagePath"] as string;
-			string[] extraFiles = null;
+			string[] extraFilepaths = null;
 			if (!String.IsNullOrEmpty(imageFilepath) && RobustFile.Exists(imageFilepath))
 			{
-				extraFiles = new string[] { imageFilepath };
+				extraFilepaths = new string[] { imageFilepath };
 			}
 			ProblemReportApi.ShowProblemDialog(GetControlToUse(), error, message , ProblemLevel.kNonFatal,
-				shortMsg, additionalFilesToInclude: extraFiles);
+				shortMsg, additionalPathsToInclude: extraFilepaths);
 		}
 
 		public void ReportNonFatalMessageWithStackTrace(string messageFormat, params object[] args)
