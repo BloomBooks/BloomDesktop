@@ -110,7 +110,7 @@ namespace Bloom.web.controllers
 			request.PostSucceeded();
 		}
 
-		private static IEnumerable<string> _additionalPathsToInclude;
+		private static IEnumerable<string> _additionalFilesToInclude;	// typically a problem image file
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
@@ -177,7 +177,7 @@ namespace Bloom.web.controllers
 				{
 					var report = DynamicJson.Parse(request.RequiredPostJson());
 
-					string issueLink = SubmitToYouTrack(report.kind, report.userInput, report.email, report.includeBook, report.includeScreenshot, _additionalPathsToInclude);
+					string issueLink = SubmitToYouTrack(report.kind, report.userInput, report.email, report.includeBook, report.includeScreenshot, null);
 
 					object linkToNewIssue = new { issueLink };
 					request.ReplyWithJson(linkToNewIssue);
@@ -280,6 +280,7 @@ namespace Bloom.web.controllers
 					AddReaderInfo();
 				}
 				AddCollectionSettings();
+				AddOtherTopLevelFiles();
 				_bookZipFile.Save();
 				return _bookZipFileTemp.Path;
 			}
@@ -319,6 +320,15 @@ namespace Bloom.web.controllers
 			foreach (var filePath in filePaths)
 			{
 				_bookZipFile.AddTopLevelFile(filePath);
+			}
+		}
+
+		private void AddOtherTopLevelFiles()
+		{
+			if (_additionalFilesToInclude != null)
+			{
+				foreach (var path in _additionalFilesToInclude)
+					_bookZipFile.AddTopLevelFile(path);
 			}
 		}
 
@@ -464,7 +474,7 @@ namespace Bloom.web.controllers
 					// Precondition: we must be on the UI thread for Gecko to work.
 					using (var dlg = new ReactDialog( "problemReportBundle", new { level = levelOfProblem}, "Problem Report"))
 					{
-						_additionalPathsToInclude = additionalFilesToInclude;
+						_additionalFilesToInclude = additionalFilesToInclude;
 						dlg.FormBorderStyle = FormBorderStyle.FixedToolWindow; // Allows the window to be dragged around
 						dlg.ControlBox = true; // Add controls like the X button back to the top bar
 						dlg.Text = ""; // Remove the title from the WinForms top bar
@@ -485,7 +495,7 @@ namespace Bloom.web.controllers
 						finally
 						{
 							BloomServer._theOneInstance.RegisterThreadUnblocked();
-							_additionalPathsToInclude = null;
+							_additionalFilesToInclude = null;
 						}
 					}
 				}
@@ -874,8 +884,8 @@ namespace Bloom.web.controllers
 			}
 			var listOfCollectionFiles = GetCollectionFilePaths(collectionFolder);
 			ListFiles(listOfCollectionFiles, bldr);
-			if (_additionalPathsToInclude != null && _additionalPathsToInclude.Any())
-				ListFiles(_additionalPathsToInclude, bldr);
+			if (_additionalFilesToInclude != null && _additionalFilesToInclude.Any())
+				ListFiles(_additionalFilesToInclude, bldr);
 		}
 
 		private static IEnumerable<string> GetReaderFilePaths(string collectionFolder)
