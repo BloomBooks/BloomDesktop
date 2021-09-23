@@ -33,6 +33,7 @@ interface IState {
     subscriptionCode: string; // The content of the code box
     subscriptionExpiry: Date | null; // displayed if all is well
     subscriptionSummary: string; // markdown of the summary of the branding when identified
+    hasSubscriptionFiles: boolean; // whether branding files exist or not
     controlState: string; // controls which parts of the dialog are visible (see above)
     // Set to the branding stored in the bloomCollection, in the special case
     // where the dialog is brought up (when the bloom collection is opened) because
@@ -48,6 +49,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
         subscriptionCode: "",
         subscriptionExpiry: null,
         subscriptionSummary: "",
+        hasSubscriptionFiles: false,
         controlState: "None",
         legacyBrandingName: ""
     };
@@ -229,7 +231,10 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                                 </Label>
                             )}
                             {this.state.controlState ===
-                                "SubscriptionUnknown" && (
+                                "SubscriptionUnknown" /* ||
+                                (this.state.controlState ===
+                                    "SubscriptionGood" &&
+                                    !this.state.hasSubscriptionFiles)*/ && (
                                 <div>
                                     <Label
                                         l10nKey="Settings.Enterprise.UnknownCode"
@@ -439,8 +444,14 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                 BloomApi.get("settings/enterpriseSummary", result => {
                     this.setSummary(result.data);
                 });
+                BloomApi.get("settings/hasSubscriptionFiles", result => {
+                    this.setState({
+                        hasSubscriptionFiles: result.data === "true"
+                    });
+                });
             } else {
                 this.setSummary("");
+                this.setState({ hasSubscriptionFiles: false });
             }
         });
     }
