@@ -110,7 +110,7 @@ namespace Bloom.web.controllers
 			request.PostSucceeded();
 		}
 
-		private static IEnumerable<string> _additionalPathsToInclude;
+		private static IEnumerable<string> _additionalPathsToInclude;	// typically a problem image file
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
@@ -177,7 +177,7 @@ namespace Bloom.web.controllers
 				{
 					var report = DynamicJson.Parse(request.RequiredPostJson());
 
-					string issueLink = SubmitToYouTrack(report.kind, report.userInput, report.email, report.includeBook, report.includeScreenshot, _additionalPathsToInclude);
+					string issueLink = SubmitToYouTrack(report.kind, report.userInput, report.email, report.includeBook, report.includeScreenshot, null);
 
 					object linkToNewIssue = new { issueLink };
 					request.ReplyWithJson(linkToNewIssue);
@@ -280,6 +280,7 @@ namespace Bloom.web.controllers
 					AddReaderInfo();
 				}
 				AddCollectionSettings();
+				AddOtherTopLevelFiles();
 				_bookZipFile.Save();
 				return _bookZipFileTemp.Path;
 			}
@@ -319,6 +320,15 @@ namespace Bloom.web.controllers
 			foreach (var filePath in filePaths)
 			{
 				_bookZipFile.AddTopLevelFile(filePath);
+			}
+		}
+
+		private void AddOtherTopLevelFiles()
+		{
+			if (_additionalPathsToInclude != null)
+			{
+				foreach (var path in _additionalPathsToInclude)
+					_bookZipFile.AddTopLevelFile(path);
 			}
 		}
 
@@ -393,10 +403,10 @@ namespace Bloom.web.controllers
 		/// <param name="exception"></param>
 		/// <param name="detailedMessage"></param>
 		/// <param name="levelOfProblem">"user", "nonfatal", or "fatal"</param>
-		/// <param name="additionalFilesToInclude"></param>
+		/// <param name="additionalPathsToInclude"></param>
 		public static void ShowProblemDialog(Control controlForScreenshotting, Exception exception,
 			string detailedMessage = "", string levelOfProblem = "user", string shortUserLevelMessage = "", bool isShortMessagePreEncoded = false,
-			string[] additionalFilesToInclude = null)
+			string[] additionalPathsToInclude = null)
 		{
 			// Before we do anything that might be "risky", put the problem in the log.
 			LogProblem(exception, detailedMessage, levelOfProblem);
@@ -464,7 +474,7 @@ namespace Bloom.web.controllers
 					// Precondition: we must be on the UI thread for Gecko to work.
 					using (var dlg = new ReactDialog( "problemReportBundle", new { level = levelOfProblem}, "Problem Report"))
 					{
-						_additionalPathsToInclude = additionalFilesToInclude;
+						_additionalPathsToInclude = additionalPathsToInclude;
 						dlg.FormBorderStyle = FormBorderStyle.FixedToolWindow; // Allows the window to be dragged around
 						dlg.ControlBox = true; // Add controls like the X button back to the top bar
 						dlg.Text = ""; // Remove the title from the WinForms top bar
