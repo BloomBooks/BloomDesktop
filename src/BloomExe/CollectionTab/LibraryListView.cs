@@ -744,6 +744,7 @@ namespace Bloom.CollectionTab
 
 		private Timer _newDownloadTimer;
 		private HashSet<string> _changingFolders = new HashSet<string>();
+
 		private bool _loadedPrimaryCollectionButtons;
 
 		/// <summary>
@@ -1220,40 +1221,18 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-		private bool IsPrimaryCollectionAddingButtons()
-		{
-			return !_loadedPrimaryCollectionButtons;
-		}
-
 		internal void OnTeamCollectionBookStatusChange(BookStatusChangeEventArgs eventArgs)
 		{
 			if (_disposed || !IsHandleCreated)
 				return;
 
 			// Need to wait for the button objects to be loaded.
-			// (The button text doesn't need to be finalized, but the button controls need to exist)
-			if (IsPrimaryCollectionAddingButtons())
-			{
-				// NOTE: I guess it's possible for events to be finally processed out of order.
-				// Suppose event 1 for a book comes in while the buttons are still being added. We delay for 100 ms.
-				// After 25 ms, the buttons are done being added.
-				// Then event 2 for the same book comes in 50 ms later. It is now able to process it, so it goes ahead and does so.
-				// Then at the 100ms mark, the 1st event is processed.
-				// Now we have the incorrect state :(
-				// However, I think this scenario is not likely enough to be worth fixing. I think it would require a book being changed in the repo
-				// as Bloom is starting up.
-				Task.Delay(100).ContinueWith(unused =>
-					{
-						// We may have been on the UI thread, but that doesn't guarantee that the continueWith task is.
-						// It's even just possible we got disposed in the last 100ms.
-						if(_disposed)
-							return;
-						SafeInvoke.InvokeIfPossible("LibraryListView update checkout status icons", this, true, () =>
-							_tcBookStatusChangeEvent.Raise(eventArgs));
-					}
-				);
+			// (The button text doesn't need to be finalized, but the button controls need to exist).
+			// We do a pass over all books updating status after loading the buttons, so any changes
+			// that occur before that can safely be ignored.
+			if (!_loadedPrimaryCollectionButtons)
 				return;
-			}
+
 
 			// Note: This needs to happen on the thread that owns this control.
 			SafeInvoke.InvokeIfPossible("LibraryListView update checkout status icons",this,true, () =>

@@ -260,13 +260,13 @@ namespace Bloom.Workspace
 					// Don't do anything else after this as part of this idle task.
 					// See the comment near the end of HandleTeamStuffBeforeGetBookCollections.
 					_model.HandleTeamStuffBeforeGetBookCollections(() =>
+						{
 #if SHOW_REACT_COLLECTION_TAB
-					_reactCollectionTabView.ReadyToShowCollections()
-#else
-					{}
+							_reactCollectionTabView.ReadyToShowCollections();
 #endif
+							_legacyCollectionView.ReadyToShowCollections();
+						}
 					);
-					_legacyCollectionView.ReadyToShowCollections();
 				}, shouldHideSplashScreen: true);
 			}
 		}
@@ -290,7 +290,9 @@ namespace Bloom.Workspace
 			if (inCurrentCollection || inSourceFolder)
 			{
 				var info = new BookInfo(selBookPath, inCurrentCollection);
-				var book = _bookServer.GetBookFromBookInfo(info);
+				// Fully updating book files ensures that the proper branding files are found for
+				// previewing when the collection settings change but the book selection does not.
+				var book = _bookServer.GetBookFromBookInfo(info, fullyUpdateBookFiles: true);
 				_bookSelection.SelectBook(book);
 			}
 		}

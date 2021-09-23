@@ -1991,16 +1991,18 @@ namespace Bloom.TeamCollection
 
 					progress.Message("Done", "Done");
 
+					// Tasks that are waiting for the sync may be done now, whether or not it had errors.
+					whenDone?.Invoke();
+					// The dialog may continue to show for a bit, but other idle-time startup tasks
+					// (possibly queued during whenDone()) may continue.
+					StartupScreenManager.ConsiderCurrentTaskDone();
+
 					// Review: are any of the cases we don't treat as warnings or errors important enough to wait
 					// for the user to read them and close the dialog manually?
 					// Currently it stays open only if we detected problems.
 					return waitForUserToCloseDialogOrReportProblems;
 				}, (dlg) =>
 				{
-					whenDone?.Invoke();
-					// The dialog may continue to show for a bit, but other idle-time startup tasks
-					// may continue.
-					StartupScreenManager.ConsiderCurrentTaskDone();
 					// When we would normally close the splash screen, close the progress dialog.
 					StartupScreenManager.DoWhenSplashScreenShouldClose(() =>
 					{
