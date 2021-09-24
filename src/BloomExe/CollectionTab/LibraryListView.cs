@@ -126,10 +126,9 @@ namespace Bloom.CollectionTab
 		{
 			_leveledReaderMenuItem.Checked = _model.IsBookLeveled;
 			_decodableReaderMenuItem.Checked = _model.IsBookDecodable;
-			// BL-10381 These keep getting turned on somewhere unknown.
-			// Turn them off until we get around to activating them.
-			importContentFromSpreadsheetToolStripMenuItem.Visible = false;
-			exportToSpreadsheetToolStripMenuItem.Visible = false;
+			// Turn these off in any channels where we don't want them yet.
+			//importContentFromSpreadsheetToolStripMenuItem.Visible = false;
+			//exportToSpreadsheetToolStripMenuItem.Visible = false;
 
 			var btn = (sender as ContextMenuStrip).SourceControl as Button;
 			if (btn == null)
