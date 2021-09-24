@@ -151,7 +151,6 @@ namespace Bloom.CollectionTab
 			this.exportToSpreadsheetToolStripMenuItem.Size = new System.Drawing.Size(242, 26);
 			this.exportToSpreadsheetToolStripMenuItem.Text = "Export to Spreadsheet...";
 			this.exportToSpreadsheetToolStripMenuItem.Click += new System.EventHandler(this.exportToSpreadsheetToolStripMenuItem_Click);
-	        this.exportToSpreadsheetToolStripMenuItem.Visible = false;
 			// 
 			// SaveAsBloomToolStripMenuItem
 			// 
@@ -698,7 +697,6 @@ namespace Bloom.CollectionTab
 			this.importContentFromSpreadsheetToolStripMenuItem.Text = "Import Content from Spreadsheet...";
 			this.importContentFromSpreadsheetToolStripMenuItem.Size = new System.Drawing.Size(287, 26);
 			this.importContentFromSpreadsheetToolStripMenuItem.Click += new System.EventHandler(this.importContentFromSpreadsheetToolStripMenuItem_Click);
-	        this.importContentFromSpreadsheetToolStripMenuItem.Visible = false;
 			// 
 			// LibraryListView
 			// 
