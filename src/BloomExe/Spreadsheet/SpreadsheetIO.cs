@@ -31,7 +31,7 @@ namespace Bloom.Spreadsheet
 	{
 		private const int standardLeadingColumnWidth = 15;
 		private const int languageColumnWidth = 30;
-		private const int defaultImageWidth = 75; //width of images in pixels. Also used for default row height
+		private const int defaultImageWidth = 150; //width of images in pixels.
 
 		public static HashSet<string> WysiwygFormattedRowKeys = new HashSet<string>()
 			{ InternalSpreadsheet.TextGroupLabel, InternalSpreadsheet.ImageKeyLabel, "[bookTitle]"};
@@ -57,6 +57,9 @@ namespace Bloom.Spreadsheet
 
 				var imageSourceColumn = spreadsheet.ColumnForTag(InternalSpreadsheet.ImageSourceLabel);
 				var imageThumbnailColumn = spreadsheet.ColumnForTag(InternalSpreadsheet.ImageThumbnailLabel);
+				// Apparently the width is in some approximation of 'characters'. This empirically determined
+				// conversion factor seems to do a pretty good job.
+				worksheet.Column(imageThumbnailColumn + 1).Width = defaultImageWidth /6.88;
 
 				int r = 0;
 				foreach (var row in spreadsheet.AllRows())
@@ -120,8 +123,8 @@ namespace Bloom.Spreadsheet
 								var imagePath = imageSrc;
 								//Images show up in the cell 1 row greater and 1 column greater than assigned
 								//So this will put them in row r, column imageThumbnailColumn+1 like we want
-								embedImage(imagePath, r - 1, imageThumbnailColumn);
-								worksheet.Row(r).Height = defaultImageWidth; //so at least most of the image is visible								
+								var rowHeight = embedImage(imagePath, r - 1, imageThumbnailColumn);
+								worksheet.Row(r).Height = rowHeight * 72/96 + 3; //so the image is visible; height seems to be points						
 							}
 						}
 					}
@@ -129,8 +132,9 @@ namespace Bloom.Spreadsheet
 				worksheet.Cells[1, 1, r, spreadsheet.ColumnCount].Style.WrapText = true;
 
 
-				void embedImage(string imageSrcPath, int rowNum, int colNum)
+				int embedImage(string imageSrcPath, int rowNum, int colNum)
 				{
+					int finalHeight = 30; //  a reasonable default if we don't manage to embed an image.
 					try
 					{
 						using (Image image = Image.FromFile(imageSrcPath))
@@ -139,12 +143,12 @@ namespace Bloom.Spreadsheet
 							var origImageHeight = image.Size.Height;
 							var origImageWidth = image.Size.Width;
 							int finalWidth = defaultImageWidth;
-							int finalHeight = (int)(finalWidth * origImageHeight / origImageWidth);
+							finalHeight = (int)(finalWidth * origImageHeight / origImageWidth);
 							var size = new Size(finalWidth, finalHeight);
 							using (Image thumbnail = ImageUtils.ResizeImageIfNecessary(size, image, false))
 							{
 								var excelImage = worksheet.Drawings.AddPicture(imageName, thumbnail);
-								excelImage.SetPosition(rowNum, 1, colNum, 1);
+								excelImage.SetPosition(rowNum, 2, colNum, 2);
 							}
 						}
 					}
@@ -165,6 +169,7 @@ namespace Bloom.Spreadsheet
 						}
 						worksheet.Cells[r, imageThumbnailColumn + 1].Value = errorText;
 					}
+					return Math.Max(finalHeight, 30);
 				}
 
 				try
