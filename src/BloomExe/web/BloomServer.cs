@@ -953,10 +953,18 @@ namespace Bloom.Api
 			info.ResponseContentType = "text/css";
 			using (var tempFile = TempFile.WithFilename("branding.css"))
 			{
+				// Collect the book's language codes in use, adding a fallback to English if necessary.
+				var langsInPriorityOrder = new List<string>(3);
+				if (!String.IsNullOrEmpty(CurrentBook?.Language2IsoCode))
+					langsInPriorityOrder.Add(CurrentBook.Language2IsoCode);
+				if (!String.IsNullOrEmpty(CurrentBook?.Language1IsoCode) && !langsInPriorityOrder.Contains(CurrentBook.Language1IsoCode))
+					langsInPriorityOrder.Add(CurrentBook.Language1IsoCode);
+				if (!langsInPriorityOrder.Contains("en"))
+					langsInPriorityOrder.Add("en");
 				var msgFmt = LocalizationManager.GetString("BackCover.NewBrandingNotice",
 					"A future update of Bloom will contain the branding assets for this project, “{0}”.  Thank you for your patience.",
 					"The {0} is replaced at runtime with the name of the new branding project.",
-					new[] { CurrentBook.Language2IsoCode, CurrentBook.Language1IsoCode, "en" },
+					langsInPriorityOrder,
 					out string idUsed);
 				var msg = String.Format(msgFmt, brandingName);
 				RobustFile.WriteAllText(tempFile.Path, @"/* place-holder */
