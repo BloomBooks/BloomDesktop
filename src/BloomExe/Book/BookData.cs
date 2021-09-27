@@ -1902,7 +1902,14 @@ namespace Bloom.Book
 					}
 
 					var content = item.Content.Replace("{flavor}", CollectionSettings.GetBrandingFlavor());
-					content = content.Replace("{bookshelfUrlKey}", CollectionSettings.DefaultBookshelf);
+					if (content.Contains("{bookshelfUrlKey}"))
+					{
+						// If the bookshelf isn't set, then don't incorporate the branding image display for it.  See BL-10451.
+						if (String.IsNullOrEmpty(CollectionSettings.DefaultBookshelf) && content.Contains("src='{bookshelfUrlKey}.svg'"))
+							content = "";
+						else
+							content = content.Replace("{bookshelfUrlKey}", CollectionSettings.DefaultBookshelf);
+					}
 					Set(item.DataBook, XmlString.FromXml(content), item.Lang);
 				}
 			}

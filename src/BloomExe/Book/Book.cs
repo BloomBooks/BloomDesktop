@@ -1272,6 +1272,7 @@ namespace Bloom.Book
 			else //used for making a preview dom
 			{
 				var bd = new BookData(bookDOM, CollectionSettings, UpdateImageMetadataAttributes);
+				bd.MergeBrandingSettings(CollectionSettings.BrandingProjectKey);
 				bd.SynchronizeDataItemsThroughoutDOM();
 			}
 			// get any license info into the json and restored in the replaced front matter.
