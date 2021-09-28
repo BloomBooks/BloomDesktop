@@ -37,7 +37,20 @@ namespace Bloom.Collection
 		private ReactControl _defaultBookshelfControl;
 
 		// Pending values edited through the CollectionSettingsApi
-		public string PendingDefaultBookshelf;
+		private string _pendingBookshelf;
+		public string PendingDefaultBookshelf
+		{
+			set
+			{
+				if (value != _collectionSettings.DefaultBookshelf)
+					Invoke((Action) ChangeThatRequiresRestart);
+				_pendingBookshelf = value;
+			}
+			get
+			{
+				return _pendingBookshelf;
+			}
+		}
 
 		public CollectionSettingsDialog(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder, QueueRenameOfCollection queueRenameOfCollection, PageRefreshEvent pageRefreshEvent, TeamCollectionManager tcManager)
 		{
