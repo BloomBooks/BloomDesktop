@@ -22,7 +22,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
     var cssWordNotFound = "word-not-found";
     var cssPossibleWord = "possible-word";
     var cssDesiredGrapheme = "desired-grapheme";
-    var cssTooManyWordsOnPage = "page-too-many-words";
+    var cssTooMuchStuffOnPage = "page-too-many-words-or-sentences";
     const cssWordTooLong = "word-too-long";
 
     /**
@@ -38,6 +38,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
             {
                 maxWordsPerSentence: Infinity,
                 maxWordsPerPage: Infinity,
+                maxSentencesPerPage: Infinity,
                 maxGlyphsPerWord: Infinity
             },
             options
@@ -50,12 +51,17 @@ import { ReaderToolsModel } from "../readerToolsModel";
         if (opts.maxWordsPerPage <= 0) {
             opts.maxWordsPerPage = Infinity;
         }
+        if (opts.maxSentencesPerPage <= 0) {
+            opts.maxSentencesPerPage = Infinity;
+        }
 
         // remove previous synphony markup
         this.removeSynphonyMarkup();
 
         // initialize words per page
         var totalWordCount = 0;
+        // initialize sentences per page
+        let totalSentenceCount = 0;
 
         var checkLeaf = leaf => {
             stashNonTextUIElementsInEditBox(leaf);
@@ -106,6 +112,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
                     var sentenceWordCount = words.length;
                     totalWordCount += sentenceWordCount;
                     allWords += cleanText;
+                    if (sentenceWordCount) ++totalSentenceCount;
 
                     // check sentence length
                     if (sentenceWordCount > opts.maxWordsPerSentence) {
@@ -171,20 +178,26 @@ import { ReaderToolsModel } from "../readerToolsModel";
         this.each(function() {
             checkRoot($(this));
         });
-
-        // check words per page
-        if (totalWordCount > opts.maxWordsPerPage) {
-            var page = parent.window.document.getElementById(
-                "page"
-            ) as HTMLIFrameElement;
-            if (!page || !page.contentWindow)
-                $("body")
-                    .find("div.bloom-page")
-                    .addClass(cssTooManyWordsOnPage);
-            else
-                $("body", page.contentWindow.document)
-                    .find("div.bloom-page")
-                    .addClass(cssTooManyWordsOnPage);
+        // highlight the page for too many words or sentences found
+        // (or remove any previous highlighting if it's all okay now)
+        let pageDiv: JQuery;
+        const page = parent.window.document.getElementById(
+            "page"
+        ) as HTMLIFrameElement;
+        if (!page || !page.contentWindow) {
+            pageDiv = $("body").find("div.bloom-page");
+        } else {
+            pageDiv = $("body", page.contentWindow.document).find(
+                "div.bloom-page"
+            );
+        }
+        if (
+            totalWordCount > opts.maxWordsPerPage ||
+            totalSentenceCount > opts.maxSentencesPerPage
+        ) {
+            pageDiv.addClass(cssTooMuchStuffOnPage);
+        } else {
+            pageDiv.removeClass(cssTooMuchStuffOnPage);
         }
 
         this["allWords"] = allWords;
@@ -363,12 +376,12 @@ import { ReaderToolsModel } from "../readerToolsModel";
         ) as HTMLIFrameElement;
         if (!page || !page.contentWindow)
             $("body")
-                .find("div." + cssTooManyWordsOnPage)
-                .removeClass(cssTooManyWordsOnPage);
+                .find("div." + cssTooMuchStuffOnPage)
+                .removeClass(cssTooMuchStuffOnPage);
         else
             $("body", page.contentWindow.document)
-                .find("div." + cssTooManyWordsOnPage)
-                .removeClass(cssTooManyWordsOnPage);
+                .find("div." + cssTooMuchStuffOnPage)
+                .removeClass(cssTooMuchStuffOnPage);
     };
 
     $.extend({
