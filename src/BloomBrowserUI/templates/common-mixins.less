@@ -40,6 +40,10 @@
         top: 0;
         bottom: 0;
         position: absolute;
+        // this ":after" is actually on top of the whole image, including its description
+        // if that is turned on. But we're only interested in putting a border around
+        // the image; we don't want to intercept clicks on the image (or its description).
+        pointer-events: none;
     }
 }
 
