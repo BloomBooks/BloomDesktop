@@ -510,7 +510,20 @@ LibSynphony.prototype.checkStory = function(
     var story_vocab;
 
     if (aGPCsKnown.length > 0) {
-        letters = this.fullGPC2Regular(aGPCsKnown).join("|");
+        letters = this.fullGPC2Regular(aGPCsKnown)
+            // Just in case users want ? for glottal or similar nonsense with other special
+            // RE characters.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7075.
+            .map(val =>
+                val
+                    .replace(/\\/g, "\\\\")
+                    .replace(/\?/g, "\\?")
+                    .replace(/\+/g, "\\+")
+                    .replace(/\*/g, "\\*")
+                    .replace(/\(/g, "\\(")
+                    .replace(/\)/g, "\\)")
+                    .replace(/\|/g, "\\|")
+            )
+            .join("|");
         // When placed in a regex range, the letters don't need to be separated by |,
         // but \ ] and - do need to be quoted as they have special meaning in that context.
         // See https://issues.bloomlibrary.org/youtrack/issue/BL-10324.
@@ -527,12 +540,6 @@ LibSynphony.prototype.checkStory = function(
         // break the text into words
         story_vocab = this.getWordsFromHtmlString(storyHTML);
     }
-    // Just in case users want ? for glottal or similar nonsense with other special
-    // RE characters.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7075.
-    if (letters.includes("\\")) letters = letters.replace("\\", "\\\\");
-    if (letters.includes("?")) letters = letters.replace("?", "\\?");
-    if (letters.includes("+")) letters = letters.replace("+", "\\+");
-    if (letters.includes("*")) letters = letters.replace("*", "\\*");
 
     // get unique word list
     var story_vocab_compacted = _.uniq(story_vocab);
@@ -619,9 +626,23 @@ LibSynphony.prototype.checkStory = function(
                 unknownGPCs = _.filter(unknownGPCs, function(gpc) {
                     return letters.indexOf(gpc) === -1;
                 });
-
                 if (unknownGPCs.length > 0) {
-                    re = new XRegExp("(" + unknownGPCs.join("|") + ")+", "gi");
+                    // Just in case users want ? for glottal or similar nonsense with other special
+                    // RE characters.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7075.
+                    // (and https://issues.bloomlibrary.org/youtrack/issue/BL-10446)
+                    let unknownChars = unknownGPCs
+                        .map(val =>
+                            val
+                                .replace(/\\/g, "\\\\")
+                                .replace(/\?/g, "\\?")
+                                .replace(/\+/g, "\\+")
+                                .replace(/\*/g, "\\*")
+                                .replace(/\(/g, "\\(")
+                                .replace(/\)/g, "\\)")
+                                .replace(/\|/g, "\\|")
+                        )
+                        .join("|");
+                    re = new XRegExp("(" + unknownChars + ")+", "gi");
                     possible_words = _.filter(possible_words, function(word) {
                         return !word.match(re);
                     });
