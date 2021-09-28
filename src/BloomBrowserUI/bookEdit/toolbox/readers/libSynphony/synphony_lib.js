@@ -490,6 +490,29 @@ LibSynphony.prototype.getUniqueWordsFromHtmlString = function(textHTML) {
 };
 
 /**
+ * Prepare a "letter" (possibly multigraph) for inclusion in a regular expression
+ * as part of an alternative expression such as (a|b|c)
+ * Some users may want ? for glottal or similar nonsense with other special RE characters.
+ * See https://issues.bloomlibrary.org/youtrack/issue/BL-7075 and
+ * https://issues.bloomlibrary.org/youtrack/issue/BL-10446)
+ *
+ * @param {String} letter One or more characters treated as a decodable unit
+ * @returns {String} input string possibly with \ quoted characters
+ */
+LibSynphony.prototype.protectRegExpLetters = function(letter) {
+    return letter
+        .replace(/\\/g, "\\\\")
+        .replace(/\?/g, "\\?")
+        .replace(/\+/g, "\\+")
+        .replace(/\*/g, "\\*")
+        .replace(/\[/g, "\\[")
+        .replace(/\]/g, "\\]")
+        .replace(/\(/g, "\\(")
+        .replace(/\)/g, "\\)")
+        .replace(/\|/g, "\\|");
+};
+
+/**
  *
  * @param {Array} aFocusWordList An array of all the predefined words (aka plainWordList)
  * @param {Array} aWordCumulativeList An array of the accumulated words (aka cumulativeWordList)
@@ -510,7 +533,9 @@ LibSynphony.prototype.checkStory = function(
     var story_vocab;
 
     if (aGPCsKnown.length > 0) {
-        letters = this.fullGPC2Regular(aGPCsKnown).join("|");
+        letters = this.fullGPC2Regular(aGPCsKnown)
+            .map(val => this.protectRegExpLetters(val))
+            .join("|");
         // When placed in a regex range, the letters don't need to be separated by |,
         // but \ ] and - do need to be quoted as they have special meaning in that context.
         // See https://issues.bloomlibrary.org/youtrack/issue/BL-10324.
@@ -527,12 +552,6 @@ LibSynphony.prototype.checkStory = function(
         // break the text into words
         story_vocab = this.getWordsFromHtmlString(storyHTML);
     }
-    // Just in case users want ? for glottal or similar nonsense with other special
-    // RE characters.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7075.
-    if (letters.includes("\\")) letters = letters.replace("\\", "\\\\");
-    if (letters.includes("?")) letters = letters.replace("?", "\\?");
-    if (letters.includes("+")) letters = letters.replace("+", "\\+");
-    if (letters.includes("*")) letters = letters.replace("*", "\\*");
 
     // get unique word list
     var story_vocab_compacted = _.uniq(story_vocab);
@@ -619,9 +638,11 @@ LibSynphony.prototype.checkStory = function(
                 unknownGPCs = _.filter(unknownGPCs, function(gpc) {
                     return letters.indexOf(gpc) === -1;
                 });
-
                 if (unknownGPCs.length > 0) {
-                    re = new XRegExp("(" + unknownGPCs.join("|") + ")+", "gi");
+                    let unknownChars = unknownGPCs
+                        .map(val => this.protectRegExpLetters(val))
+                        .join("|");
+                    re = new XRegExp("(" + unknownChars + ")+", "gi");
                     possible_words = _.filter(possible_words, function(word) {
                         return !word.match(re);
                     });
