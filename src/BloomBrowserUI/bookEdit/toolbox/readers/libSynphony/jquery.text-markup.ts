@@ -38,6 +38,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
             {
                 maxWordsPerSentence: Infinity,
                 maxWordsPerPage: Infinity,
+                maxSentencesPerPage: Infinity,
                 maxGlyphsPerWord: Infinity
             },
             options
@@ -50,12 +51,17 @@ import { ReaderToolsModel } from "../readerToolsModel";
         if (opts.maxWordsPerPage <= 0) {
             opts.maxWordsPerPage = Infinity;
         }
+        if (opts.maxSentencesPerPage <= 0) {
+            opts.maxSentencesPerPage = Infinity;
+        }
 
         // remove previous synphony markup
         this.removeSynphonyMarkup();
 
         // initialize words per page
         var totalWordCount = 0;
+        // initialize sentences per page
+        let totalSentenceCount = 0;
 
         var checkLeaf = leaf => {
             stashNonTextUIElementsInEditBox(leaf);
@@ -106,6 +112,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
                     var sentenceWordCount = words.length;
                     totalWordCount += sentenceWordCount;
                     allWords += cleanText;
+                    if (sentenceWordCount) ++totalSentenceCount;
 
                     // check sentence length
                     if (sentenceWordCount > opts.maxWordsPerSentence) {
@@ -171,9 +178,11 @@ import { ReaderToolsModel } from "../readerToolsModel";
         this.each(function() {
             checkRoot($(this));
         });
-
-        // check words per page
-        if (totalWordCount > opts.maxWordsPerPage) {
+        // check words per page and sentences per page
+        if (
+            totalWordCount > opts.maxWordsPerPage ||
+            totalSentenceCount > opts.maxSentencesPerPage
+        ) {
             var page = parent.window.document.getElementById(
                 "page"
             ) as HTMLIFrameElement;
@@ -185,6 +194,18 @@ import { ReaderToolsModel } from "../readerToolsModel";
                 $("body", page.contentWindow.document)
                     .find("div.bloom-page")
                     .addClass(cssTooManyWordsOnPage);
+        } else {
+            var page = parent.window.document.getElementById(
+                "page"
+            ) as HTMLIFrameElement;
+            if (!page || !page.contentWindow)
+                $("body")
+                    .find("div.bloom-page")
+                    .removeClass(cssTooManyWordsOnPage);
+            else
+                $("body", page.contentWindow.document)
+                    .find("div.bloom-page")
+                    .removeClass(cssTooManyWordsOnPage);
         }
 
         this["allWords"] = allWords;
