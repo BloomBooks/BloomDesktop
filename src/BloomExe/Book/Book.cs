@@ -1147,7 +1147,7 @@ namespace Bloom.Book
 			FixErrorsEncounteredByUsers(bookDOM);
 			AddReaderBodyAttributes(bookDOM);
 			AddLanguageAttributesToBody(bookDOM);
-			bookDOM.Body.SetAttribute("data-bookshelfUrlKey", this.CollectionSettings.DefaultBookshelf);
+			bookDOM.Body.SetAttribute("data-bookshelfurlkey", this.CollectionSettings.DefaultBookshelf);
 
 			if (IsTemplateBook)
 			{
