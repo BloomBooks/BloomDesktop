@@ -1052,7 +1052,8 @@ export class ReaderToolsModel {
                     const options = {
                         maxWordsPerSentence: this.maxWordsPerSentenceOnThisPage(),
                         maxWordsPerPage: this.maxWordsPerPage(),
-                        maxGlyphsPerWord: this.maxGlyphsPerWord()
+                        maxGlyphsPerWord: this.maxGlyphsPerWord(),
+                        maxSentencesPerPage: this.maxSentencesPerPage()
                     };
                     editableElements.checkLeveledReader(options);
 
