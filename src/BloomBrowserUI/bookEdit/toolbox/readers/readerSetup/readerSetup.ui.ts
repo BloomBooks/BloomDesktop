@@ -77,7 +77,7 @@ function process_UI_Message(event: MessageEvent): void {
             )).innerHTML = fileList.replace(/\r/g, "<br>");
             return;
 
-        case "Words":
+        case "UpdateWordsDisplay":
             const useSampleWords =
                 $('input[name="words-or-letters"]:checked').val() === "1";
             if (useSampleWords) displayAllowedWordsForSelectedStage(params[1]);
@@ -289,6 +289,7 @@ function requestWordsForSelectedStage(): void {
     const win = toolboxWindow();
     if (!win) return;
 
+    // FYI: This is supposed to invoke the Words handler in readerTools.ts
     if (useSampleWords)
         win.postMessage(
             "Words\n" + (<HTMLTableCellElement>tr.cells[0]).innerHTML,

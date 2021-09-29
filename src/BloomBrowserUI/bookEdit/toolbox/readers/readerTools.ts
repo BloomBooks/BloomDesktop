@@ -82,8 +82,14 @@ function processDLRMessage(event: MessageEvent): void {
             }
 
             if (setupDialogWindow) {
+                // Post a message to the handler in readerSetup.ui.ts.
+                // Best for this to post a message to a handler with a different name than this (Words) though.
+                // Although at one point, only one set of handlers is attached to the window,
+                // at a later point both handlers are attached due to jquery.text-markup.ts importing a file which imports this file (readerTools)
+                // That causes an infinite recursion where this handler calls itself (with the wrong parameters) over and over.
+                // It's more future proof to resolve this by making sure the handlers have unique names.
                 setupDialogWindow.postMessage(
-                    "Words\n" + JSON.stringify(words),
+                    "UpdateWordsDisplay\n" + JSON.stringify(words),
                     "*"
                 );
             }
