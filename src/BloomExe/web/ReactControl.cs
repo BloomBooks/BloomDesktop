@@ -52,6 +52,7 @@ namespace Bloom.web
 		}
 
 		public bool UseEditContextMenu;
+		private Browser _browser;
 
 		private void ReactControl_Load(object sender, System.EventArgs e)
 		{
@@ -64,14 +65,76 @@ namespace Bloom.web
 
 			_settingsDisplay.Visible = false;
 
+			var tempFile = MakeTempFile();
+
+
+			// The Size setting is needed on Linux to keep the browser from coming up as a small
+			// rectangle in the upper left corner...
+			_browser = new Browser
+			{
+				Dock = DockStyle.Fill,
+				Location = new Point(3, 3),
+				Size = new Size(Width - 6, Height - 6),
+				BackColor = Color.White
+				
+			};
+			// This is mainly so that the mailTo: link in the Team Collection settings panel
+			// works with the user's default mail program rather than whatever GeckoFx60 does,
+			// which seems to be very buggy (BL-10050). However, I'm pretty sure there are
+			// no external links or mailTos in any of our ReactControls that we want the
+			// browser to handle itself, so for now, I'm making them all use the more reliable
+			// code in Bloom. This means, for example, that the "See how it works here" link
+			// will open the URL in the user's default browser.
+			_browser.OnBrowserClick += Browser.HandleExternalLinkClick;
+			if (UseEditContextMenu)
+				_browser.ContextMenuProvider = args => {
+					args.ContextMenu.MenuItems.Add(new MenuItem(L10NSharp.LocalizationManager.GetString("Common.Copy", "Copy"),
+							(s1, e1) => { _browser.WebBrowser.CopySelection(); }));
+					args.ContextMenu.MenuItems.Add(new MenuItem(L10NSharp.LocalizationManager.GetString("Common.SelectAll", "Select all"),
+							(s1, e1) => { _browser.WebBrowser.SelectAll(); }));
+					return true;
+				};
+
+			var dummy = _browser.Handle; // gets the WebBrowser created
+
+			// If the control gets added before it has navigated somewhere,
+			// it shows as solid black, despite setting the BackColor to white.
+			// So just don't show it at all until it contains what we want to see.
+			_browser.WebBrowser.DocumentCompleted += (unused, args) =>
+			{
+				Controls.Add(_browser);
+			};
+			_browser.NavigateToTempFileThenRemoveIt(tempFile.Path);
+		}
+
+		// If given the localization changed event, the control will automatically reload
+		// when the event is raised.
+		public void SetLocalizationChangedEvent(LocalizationChangedEvent localizationChangedEvent)
+		{
+			localizationChangedEvent.Subscribe(unused =>
+			{
+				Reload();
+			});
+		}
+
+		public void Reload()
+		{
+			if (_browser == null)
+				return;
+			var tempFile = MakeTempFile();
+			_browser.NavigateToTempFileThenRemoveIt(tempFile.Path);
+		}
+
+		private TempFile MakeTempFile()
+		{
 			var tempFile = TempFile.WithExtension("htm");
 			tempFile.Detach(); // the browser control will clean it up
 
-			var props = Props==null ? "{}":JsonConvert.SerializeObject(Props);
+			var props = Props == null ? "{}" : JsonConvert.SerializeObject(Props);
 
 			if (_javascriptBundleName == null)
 			{
-				throw new ArgumentNullException("React Control needs a _javascriptBundleName" );
+				throw new ArgumentNullException("React Control needs a _javascriptBundleName");
 			}
 
 			var bundleNameWithExtension = _javascriptBundleName;
@@ -79,6 +142,7 @@ namespace Bloom.web
 			{
 				bundleNameWithExtension += ".js";
 			}
+
 			RobustFile.WriteAllText(tempFile.Path, $@"<!DOCTYPE html>
 				<html style='height:100%'>
 				<head>
@@ -96,45 +160,7 @@ namespace Bloom.web
 					<div id='reactRoot' style='height:100%'>Javascript should have replaced this. Make sure that the javascript bundle '{bundleNameWithExtension}' includes a single call to WireUpForWinforms()</div>
 				</body>
 				</html>");
-
-
-			// The Size setting is needed on Linux to keep the browser from coming up as a small
-			// rectangle in the upper left corner...
-			var browser = new Browser
-			{
-				Dock = DockStyle.Fill,
-				Location = new Point(3, 3),
-				Size = new Size(Width - 6, Height - 6),
-				BackColor = Color.White
-				
-			};
-			// This is mainly so that the mailTo: link in the Team Collection settings panel
-			// works with the user's default mail program rather than whatever GeckoFx60 does,
-			// which seems to be very buggy (BL-10050). However, I'm pretty sure there are
-			// no external links or mailTos in any of our ReactControls that we want the
-			// browser to handle itself, so for now, I'm making them all use the more reliable
-			// code in Bloom. This means, for example, that the "See how it works here" link
-			// will open the URL in the user's default browser.
-			browser.OnBrowserClick += Browser.HandleExternalLinkClick;
-			if (UseEditContextMenu)
-				browser.ContextMenuProvider = args => {
-					args.ContextMenu.MenuItems.Add(new MenuItem(L10NSharp.LocalizationManager.GetString("Common.Copy", "Copy"),
-							(s1, e1) => { browser.WebBrowser.CopySelection(); }));
-					args.ContextMenu.MenuItems.Add(new MenuItem(L10NSharp.LocalizationManager.GetString("Common.SelectAll", "Select all"),
-							(s1, e1) => { browser.WebBrowser.SelectAll(); }));
-					return true;
-				};
-
-			var dummy = browser.Handle; // gets the WebBrowser created
-
-			// If the control gets added before it has navigated somewhere,
-			// it shows as solid black, despite setting the BackColor to white.
-			// So just don't show it at all until it contains what we want to see.
-			browser.WebBrowser.DocumentCompleted += (unused, args) =>
-			{
-				Controls.Add(browser);
-			};
-			browser.NavigateToTempFileThenRemoveIt(tempFile.Path);
+			return tempFile;
 		}
 	}
 }
