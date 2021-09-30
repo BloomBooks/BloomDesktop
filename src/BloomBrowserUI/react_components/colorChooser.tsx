@@ -94,7 +94,12 @@ export const ColorChooser: React.FunctionComponent<IColorChooserProps> = props =
                                 content={props.color.substring(1)}
                                 onChange={newContent => {
                                     if (props.onColorChanged) {
-                                        props.onColorChanged("#" + newContent);
+                                        if (!newContent)
+                                            props.onColorChanged("#FFFFFF");
+                                        else
+                                            props.onColorChanged(
+                                                "#" + newContent.trim()
+                                            );
                                     }
                                 }}
                                 onEnterKeyPressed={() =>

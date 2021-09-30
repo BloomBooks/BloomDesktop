@@ -44,7 +44,8 @@ namespace Bloom.CollectionTab
 			EditBookCommand editBookCommand,
 			SelectedTabChangedEvent selectedTabChangedEvent,
 			SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
-			BloomWebSocketServer webSocketServer)
+			BloomWebSocketServer webSocketServer,
+			LocalizationChangedEvent localizationChangedEvent)
 		{
 			InitializeComponent();
 			_bookSelection = bookSelection;
@@ -75,6 +76,7 @@ namespace Bloom.CollectionTab
 					ShowBook();
 				}
 			});
+			_reactBookPreviewControl.SetLocalizationChangedEvent(localizationChangedEvent);
 		}
 
 		protected override void OnLoad(EventArgs e)

@@ -5,11 +5,11 @@
     "suitableForMakingShells": "true",
     "tools": [
         {
-            "name": "comic",
+            "name": "overlay",
             "enabled": true,
             "state": null
         }
     ],
-    "currentTool": "comicTool",
+    "currentTool": "overlayTool",
     "toolboxIsOpen": true
 }
