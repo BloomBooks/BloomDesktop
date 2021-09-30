@@ -156,7 +156,7 @@ namespace Bloom.CollectionCreating
 			this._collectionNamePage.NextPage = this._finishPage;
 			this._collectionNamePage.Size = new System.Drawing.Size(637, 310);
 			this._collectionNamePage.TabIndex = 2;
-			this._collectionNamePage.Text = "Project Name";
+			this._collectionNamePage.Text = "Collection Name";
 			//
 			// _collectionNameProblemPage
 			//
