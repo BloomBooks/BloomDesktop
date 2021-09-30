@@ -2951,6 +2951,10 @@
         <source xml:lang="en">Choose the main language for this collection.</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
       </trans-unit>
+      <trans-unit id="NewCollectionWizard.CollectionName">
+        <source xml:lang="en">Collection Name</source>
+        <note>ID: NewCollectionWizard.CollectionName</note>
+      </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionNamePage.ExampleText">
         <source xml:lang="en">Examples: "Health Books", "PNG Animal Stories"</source>
         <note>ID: NewCollectionWizard.CollectionNamePage.ExampleText</note>
@@ -3036,6 +3040,7 @@
       <trans-unit id="NewCollectionWizard.ProjectName">
         <source xml:lang="en">Project Name</source>
         <note>ID: NewCollectionWizard.ProjectName</note>
+        <note>Obsolete as of Bloom 5.0</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName">
         <source xml:lang="en">Unable to create a new collection using that name.</source>
