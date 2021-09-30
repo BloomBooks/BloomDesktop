@@ -1185,19 +1185,16 @@ namespace Bloom.Edit
 						{
 							var originalImagePath = dlg.ImageInfo.OriginalFilePath;
 							var basename = Path.GetFileNameWithoutExtension(originalImagePath);
-							var extension = Path.GetExtension(originalImagePath).ToLowerInvariant();
-							if (!copyOriginalImage)
-							{
-								// ImageInfo.Save throws an exception for .bmp files because they can't store metadata.
-								// ImageInfo.Save doesn't save .tif file properly, creating a blank image file.  So always
-								// save images in PNG format if they aren't originally JPEG format.
-								// (Bloom always saves images in either PNG or JPEG format anyway.  If the image is
-								// actually BMP or TIFF, it will get either get converted to PNG when resized later or
-								// it will be saved in PNG form later if it's not resized.  ImageInfo.Save is slow for
-								// PNG images, so we avoid it if at all possible.)
-								if (extension != ".jpg" && extension != ".jpeg")
-									extension = ".png";
-							}
+							// ImageInfo.Save throws an exception for .bmp files because they can't store metadata.
+							// ImageInfo.Save doesn't save .tif file properly, creating a blank image file.  So always
+							// save images in PNG format if they aren't originally JPEG format.
+							// It's important to get this right: ImageInfo.Save() throws if the actual file format
+							// doens't match the extension.
+							// (Bloom always saves images in either PNG or JPEG format anyway.  If the image is
+							// actually BMP or TIFF, it will get either get converted to PNG when resized later or
+							// it will be saved in PNG form later if it's not resized.  ImageInfo.Save is slow for
+							// PNG images, so we avoid it if at all possible.)
+							var extension = ImageUtils.AppearsToBeJpeg(dlg.ImageInfo) ? ".jpg" : ".png";
 
 							var newFilename = ImageUtils.GetUnusedFilename(Path.GetTempPath(), basename, extension);
 							newImagePath = Path.Combine(Path.GetTempPath(), newFilename);
