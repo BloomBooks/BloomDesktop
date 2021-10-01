@@ -79,7 +79,12 @@ export class ImageDescriptionToolControls extends React.Component<
                         </ul>
                     </div>
                     <div className="imgDescLabelBlock">
-                        <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.CheckThisBox">
+                        <Label
+                            l10nKey="EditTab.Toolbox.ImageDescriptionTool.CheckThisBox"
+                            className={
+                                ToolBox.isXmatterPage() ? "disabled " : ""
+                            }
+                        >
                             Otherwise, check this box:
                         </Label>
                         <Checkbox
@@ -89,6 +94,7 @@ export class ImageDescriptionToolControls extends React.Component<
                             }
                             className="imageDescriptionCheck"
                             name=""
+                            disabled={ToolBox.isXmatterPage()}
                             checked={this.state.descriptionNotNeeded}
                             onCheckChanged={checked =>
                                 this.onCheckChanged(checked)
