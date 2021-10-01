@@ -424,10 +424,10 @@ namespace Bloom.web.controllers
 			if (rawTimings.StartsWith("t="))
 				rawTimings = rawTimings.Substring(2);
 			var timingArray = rawTimings.Split(',');
-			timings[0] = Convert.ToDecimal(timingArray[0]);
+			timings[0] = Convert.ToDecimal(timingArray[0], CultureInfo.InvariantCulture);
 			if (timingArray.Length > 1)
 			{
-				timings[1] = Convert.ToDecimal(timingArray[1]);
+				timings[1] = Convert.ToDecimal(timingArray[1], CultureInfo.InvariantCulture);
 			}
 		}
 
@@ -678,14 +678,14 @@ namespace Bloom.web.controllers
 
 		private static string ConvertSecondsToHhMmSsString(string seconds)
 		{
-			var time = TimeSpan.FromSeconds(double.Parse(seconds));
+			var time = TimeSpan.FromSeconds(double.Parse(seconds, CultureInfo.InvariantCulture));
 			return time.ToString(@"hh\:mm\:ss\.f");
 		}
 
 		private static decimal ConvertHhMmSsStringToSeconds(string hhmmss)
 		{
 			var formatString = hhmmss.Length > 7 ? "HH:mm:ss.f" : "mm:ss.f";
-			var dt = DateTime.ParseExact(hhmmss, formatString, CultureInfo.CurrentUICulture);
+			var dt = DateTime.ParseExact(hhmmss, formatString, CultureInfo.InvariantCulture);
 			return dt.Hour * 3600m + dt.Minute * 60m + dt.Second + dt.Millisecond / 1000m;
 		}
 	}

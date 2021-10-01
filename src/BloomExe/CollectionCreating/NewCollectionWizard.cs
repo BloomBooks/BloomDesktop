@@ -87,7 +87,7 @@ namespace Bloom.CollectionCreating
 			Text = LocalizationManager.GetString("NewCollectionWizard.NewCollectionWindowTitle", "Create New Bloom Collection");
 			_welcomePage.Text = LocalizationManager.GetString("NewCollectionWizard.WelcomePage", "Welcome To Bloom!");
 			_kindOfCollectionPage.Text = LocalizationManager.GetString("NewCollectionWizard.KindOfCollectionPage", "Choose the collection type.");
-			_collectionNamePage.Text = LocalizationManager.GetString("NewCollectionWizard.ProjectName", "Project Name");
+			_collectionNamePage.Text = LocalizationManager.GetString("NewCollectionWizard.CollectionName", "Collection Name");
 			_collectionNameProblemPage.Text = LocalizationManager.GetString("NewCollectionWizard.CollectionNameProblem", "Collection Name Problem");
 			_languageLocationPage.Text = LocalizationManager.GetString("NewCollectionWizard.LocationPage", "Give Language Location");
 			_languageFontPage.Text = LocalizationManager.GetString("NewCollectionWizard.FontAndScriptPage", "Font and Script");

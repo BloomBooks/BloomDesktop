@@ -1170,6 +1170,19 @@ namespace Bloom.Workspace
 		{
 			Application.Idle -= StartProblemReport;
 
+			// Try to ensure latest changes in book are included in report.  (BL-10480)
+			try
+			{
+				if (_editTab.IsSelected)
+				{
+					_editingView.Model.SaveNow();
+				}
+			}
+			catch
+			{
+				// Ignore errors saving.
+			}
+
 			// To test the Problem Dialog with a fatal error, uncomment this next line.
 			// throw new ApplicationException("I just felt like an error!");
 
