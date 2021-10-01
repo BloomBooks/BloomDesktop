@@ -79,7 +79,14 @@ export class ImageDescriptionToolControls extends React.Component<
                         </ul>
                     </div>
                     <div className="imgDescLabelBlock">
-                        <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.CheckThisBox">
+                        <Label
+                            l10nKey="EditTab.Toolbox.ImageDescriptionTool.CheckThisBox"
+                            className={
+                                CurrentPageIsXMatter(this.activeEditable)
+                                    ? "disabled "
+                                    : ""
+                            }
+                        >
                             Otherwise, check this box:
                         </Label>
                         <Checkbox
@@ -89,6 +96,7 @@ export class ImageDescriptionToolControls extends React.Component<
                             }
                             className="imageDescriptionCheck"
                             name=""
+                            disabled={CurrentPageIsXMatter(this.activeEditable)}
                             checked={this.state.descriptionNotNeeded}
                             onCheckChanged={checked =>
                                 this.onCheckChanged(checked)
@@ -370,4 +378,12 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                 getPageFrameExports()!.attachToCkEditor(newEditable);
             });
     }
+}
+
+function CurrentPageIsXMatter(element: Element | null): boolean {
+    if (!element) return false;
+    let parent = element.parentElement;
+    while (parent && !parent.classList.contains("bloom-page"))
+        parent = parent.parentElement;
+    return !!parent && !!parent.getAttribute("data-xmatter-page");
 }
