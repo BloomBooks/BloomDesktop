@@ -1,10 +1,59 @@
 If you run Bloom on _beta_ channel, you are a crucial part of the Bloom team. Your help ensures that folks who don't have easy access to technical help get a solid product when the beta becomes the _release_ version. **Thank you!**
 
-# 5.0 (Beta)
+# 5.1 (Beta)
 
 ## Reminder for SILers
 
 Most SIL projects can freely use the SIL internal Enterprise License. Questions? Shoot us an email at **enterprise (preposition) bloomlibrary.org**.
+
+## Collection Tab
+
+### Enterprise Subscriptions
+
+Projects that are assigned a new enterprise subscription code can immediately start using it even before the branding setup has been implemented.  A place holder message on the back cover gives the subscription name to show that the book is in a collection with a new subscription.  When an update to Bloom contains the branding files for the subscription, they will be applied automatically the next time the books in the collection are edited.
+
+## Edit Tab
+
+### Leveled Reader
+
+Pages with too many sentences are highlighted the same as those with too many words.
+
+Words in complex pages such as arithmetic pages are counted better.
+
+### Images
+
+Images whose names end in very large numbers can be loaded into Bloom.  (Some phones create JPEGs whose names end in one long number encoding both the date and the time such as 20211001115132.)
+
+If Bloom has trouble loading an image, the offending image file is one of the book files optionally included in an error report.  Having the image available should help the Bloom team in solving why the image file cannot be loaded.
+
+### Overlay Tool
+
+Sign language videos can be added with the Overlay Tool.
+
+## Team Collections
+
+Renaming books that are checked out works better.
+
+The Team Collection status dialog has both a Status tab and a History tab.
+
+### Book details menu
+
+In addition to the Check in / Check out button (and checkout status), the book details pane provides a menu with other operations.
+
+#### About my Avatar
+
+This command pops up a dialog that provides information about the name and "avatar" (picture) associated with books you check out.  The dialog also provides links for changing (or setting) the avatar and name.
+
+#### Forget Changes & Check in Book
+
+This command reverts any changes made to the book and checks it in.  This essentially undoes the checkout and any changes made since the book was checked out.
+
+## BloomLibrary.org
+
+Collections in Bloom Library now provide statistics on a "stats" page that summarizes the analytics data for all books in the collection, including any subcollections.
+
+
+# 5.0
 
 ## Collection Tab
 
