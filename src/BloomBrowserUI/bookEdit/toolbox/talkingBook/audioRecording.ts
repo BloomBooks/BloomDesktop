@@ -46,6 +46,7 @@ import { getEditViewFrameExports } from "../../js/bloomFrames";
 import PlaybackOrderControls from "../../../react_components/playbackOrderControls";
 import Recordable from "./recordable";
 import { getMd5 } from "./md5Util";
+import { instanceOf } from "prop-types";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -326,7 +327,11 @@ export default class AudioRecording {
     //
     // Precondition: Assumes that all initialization of collection-dependent settings has already been done.
     public initializeAudioRecordingMode() {
-        const currentTextBox = this.getCurrentTextBox();
+        let currentTextBox: Element | null = this.getCurrentTextBox(true);
+        if (currentTextBox == null) {
+            const [, firstAudioElement] = this.getFirstAudioElement();
+            currentTextBox = this.getTextBoxOfElement(firstAudioElement);
+        }
 
         this.audioRecordingMode = this.getRecordingModeOfTextBox(
             currentTextBox
@@ -905,6 +910,55 @@ export default class AudioRecording {
         this.setSoundFrom(setHighlightParams.newElement);
     }
 
+    private findAncestor(el, cls) {
+        while ((el = el.parentElement) && !el.classList.contains(cls));
+        return el;
+    }
+
+    // reportMods(mods: MutationRecord[]): void {
+    //     if (
+    //         mods.some(
+    //             mod =>
+    //                 Array.from(mod.addedNodes).some(
+    //                     x =>
+    //                         x instanceof HTMLElement &&
+    //                         (<HTMLElement>x).getAttribute("id") ===
+    //                             "formatButton"
+    //                 ) ||
+    //                 Array.from(mod.removedNodes).some(
+    //                     x =>
+    //                         x instanceof HTMLElement &&
+    //                         (<HTMLElement>x).getAttribute("id") ===
+    //                             "formatButton"
+    //                 )
+    //         )
+    //     ) {
+    //         return;
+    //     }
+    //     let result = "";
+    //     mods.forEach(mod => {
+    //         result += "\n added: ";
+    //         Array.from(mod.addedNodes).forEach(
+    //             n =>
+    //                 (result +=
+    //                     n instanceof HTMLElement
+    //                         ? (<HTMLElement>n).outerHTML
+    //                         : "node")
+    //         );
+    //         result += "\n removed: ";
+    //         Array.from(mod.removedNodes).forEach(
+    //             n =>
+    //                 (result +=
+    //                     n instanceof HTMLElement
+    //                         ? (<HTMLElement>n).outerHTML
+    //                         : "node")
+    //         );
+    //     });
+    //     alert(result);
+    // }
+
+    private initializing = true;
+
     // Changes the visually highlighted element (i.e, the element corresponding to .ui-audioCurrent) to the specified element.
     private async setHighlightToAsync({
         newElement,
@@ -919,6 +973,22 @@ export default class AudioRecording {
         disableHighlightIfNoAudio,
         oldElement // Optional. Provides some minor optimization if set.
     }: ISetHighlightParams): Promise<void> {
+        // attempt to reduce flashing: don't set selection until we're done updating markup.
+        if (this.initializing) {
+            return;
+        }
+        const page = this.findAncestor(newElement, "bloom-page");
+        if (!page) {
+            // We can get calls to getCurrentTextBox which find no audio element and try to make one.
+            // Most of the cases where this is a problem should be caught by the 'initializing' test
+            // above. Not sure whether this additional safeguard is useful. But during initialization,
+            // we rebuild the sentence structure of a paragraph, and the element we wanted to
+            // highlight may get replaced. And there is async code involved, and it seems there are
+            // cases where we end up trying to highlight something deleted. One guard against that is that we
+            // will ignore any attempt to highlight an element that is no longer part of the page.
+            return;
+        }
+
         if (!oldElement) {
             oldElement = this.getCurrentHighlight();
         }
@@ -944,6 +1014,15 @@ export default class AudioRecording {
             // This allows us to generally represent the correct current element immediately.
             newElement.classList.add(kAudioCurrent);
         }
+
+        // Doesn't help much: stack has nothing useful (just points here).
+        // And I never caught a definitely problematic modification.
+        // But knowing what was removed or added could be some help.
+        // Keeping this in case we try again on BL-10471
+        // var observer = new MutationObserver(mods => {
+        //     this.reportMods(mods);
+        // });
+        // observer.observe(page, { subtree: true, childList: true });
 
         if (disableHighlightIfNoAudio) {
             // prevents highlight showing at once
@@ -2207,8 +2286,11 @@ export default class AudioRecording {
 
     // Returns the Text Box div with the Current Highlight on it (that is, the one with .ui-audioCurrent class applied)
     // One difference between this function and getCurrentHighlight is that if the currently-highlighted element is not a div, then getCurrentTextBox() walks up the tree to find its most recent ancestor div. (whereas getCurrentHighlight can return non-div elements)
-    // This function will also attempt to set it in case no such Current Highlight exists (which is often an erroneous state arrived at by race condition)
-    public getCurrentTextBox(): HTMLElement | null {
+    // This function will also attempt to set it in case no such Current Highlight exists (which is often an erroneous state arrived at by race condition),
+    // unless dontMakeIfNotPresent is true.
+    public getCurrentTextBox(
+        dontMakeIfNotPresent?: boolean
+    ): HTMLElement | null {
         const pageBody = this.getPageDocBody();
         if (
             !pageBody ||
@@ -2223,6 +2305,9 @@ export default class AudioRecording {
         );
 
         if (audioCurrentElements.length === 0) {
+            if (dontMakeIfNotPresent) {
+                return null;
+            }
             // Oops, ui-audioCurrent not set on anything. Just going to have to stick it onto the first element.
 
             // ENHANCE: Theoretically, we should await this. (Or at least, the end of the function should await this promise
@@ -2321,6 +2406,7 @@ export default class AudioRecording {
     }
 
     public async newPageReady(imageDescToolActive: boolean): Promise<void> {
+        this.initializing = true;
         // Changing the page causes the previous page's audio to stop playing (be "emptied").
         ++this.currentAudioSessionNum;
 
@@ -2342,9 +2428,44 @@ export default class AudioRecording {
         const editable = this.getRecordableDivs(true, false);
         if (editable.length === 0) {
             // no editable text on this page.
+            alert("nothing recordable");
             return this.changeStateAndSetExpectedAsync("");
         } else {
-            return this.setupAndUpdateMarkupAsync();
+            await this.setupAndUpdateMarkupAsync();
+            this.initializing = false;
+            // Until we've done all the markup, initializing true prevents setting the highlight,
+            // even if calls to getCurrentTextBox() attempt to set it.
+            // Now we're ready to do it.
+            await this.setCurrentAudioElementToFirstAudioElementAsync();
+
+            this.ensureHighlight(5);
+
+            return this.changeStateAndSetExpectedAsync("record");
+        }
+    }
+
+    // This is a monumentally ugly workaround for BL-10471, a problem where a page has an image description
+    // recorded in sentence mode that comes before a main body recorded in text mode. Somehow, things happen
+    // out of order, such that although the call to setCurrentAudioElementToFirstAudioElementAsync
+    // puts the highlight on the first sentence of the image description, later on that element is replaced
+    // by another that does not have the highlight. I've confirmed this with debug code that sets an extra
+    // attribute on the span when adding the highlight class: nothing else touches the new attribute, yet
+    // it is missing from the page along with the highlight.
+    // On the other hand, a mutation observer added at to the page at the same time as the highlight detects
+    // no unexpected changes after setting the highlight.
+    // The problem rarely happens in Firefox 92, perhaps once in 20 times, so I have had no luck using the
+    // debugger to break when the object is modified.
+    // The problem happens more often, though not always, when debugging in Firefox 60. However, Firefox 60
+    // does not have the break-on-modification capability.
+    // I added alerts everywhere that I could think of that might be modifying the DOM; parts of
+    // makeAudioSentenceElements seemed most likely. None triggered when the problem happened.
+    // After spending two days without useful progress, and considering that this only happens in a very rare
+    // special case, I decided to just do this: at half second intervals five times after initializing
+    // the page, if we don't have a highlight we'll try again to make one.
+    private ensureHighlight(repeats: number) {
+        this.getCurrentTextBox();
+        if (repeats > 0) {
+            setTimeout(() => this.ensureHighlight(repeats - 1), 500);
         }
     }
 
@@ -2366,13 +2487,6 @@ export default class AudioRecording {
             return this.tryUpdateMarkupForTextBoxAsync(elem);
         });
         await Promise.all(asyncTasks);
-
-        // seting the current audio element right now is optional - we could also just wait around
-        // for the first thing that calls getCurrentTextbox.
-        // But let's just do it explicitly instead.
-        await this.resetCurrentAudioElementAsync();
-
-        return this.changeStateAndSetExpectedAsync("record");
     }
 
     // Entry point for TalkingBookTool's updateMarkup() function. Does similar but less work than setupAndUpdateMarkupAsync.
@@ -2491,7 +2605,7 @@ export default class AudioRecording {
         currentTextBox?: HTMLElement | null
     ): Promise<void> {
         if (currentTextBox === undefined) {
-            currentTextBox = this.getCurrentTextBox();
+            currentTextBox = this.getCurrentTextBox(true);
         }
 
         if (!currentTextBox) {
@@ -2643,10 +2757,16 @@ export default class AudioRecording {
         }
     }
 
-    public async setCurrentAudioElementToFirstAudioElementAsync(): Promise<HTMLElement | null> {
+    // Return a pair. The second element is the first element on the page with class kAudioSentence
+    // (that is in a translation group).
+    // It might therefore be a span or (bloom-editable) div.
+    // The first element is usually the same, but may be a parent that we should highlight
+    // instead. (This happens in case the second value is a sentence (span) in a text box that
+    // is supposed to be recorded by whole-text-box)
+    private getFirstAudioElement(): [Element | null, HTMLElement | null] {
         const pageDocBody = this.getPageDocBody();
         if (!pageDocBody) {
-            return null;
+            return [null, null];
         }
 
         // Find the relevant audioSentences
@@ -2667,7 +2787,7 @@ export default class AudioRecording {
         );
         if (firstSentenceArray.length === 0) {
             // no recordable sentence found.
-            return null;
+            return [null, null];
         }
 
         const firstSentence = firstSentenceArray[0];
@@ -2683,6 +2803,15 @@ export default class AudioRecording {
                 nextHighlight = textBoxOfFirst;
             }
         }
+        return [nextHighlight, firstSentence];
+    }
+
+    public async setCurrentAudioElementToFirstAudioElementAsync(): Promise<HTMLElement | null> {
+        const [nextHighlight, firstSentence] = this.getFirstAudioElement();
+        if (nextHighlight === null) {
+            return null;
+        }
+
         await this.setSoundAndHighlightAsync({
             newElement: nextHighlight,
             // Don't automatically scroll because tool is possibly being initialized (we only want it to scroll on explicit user interaction like Next/Prev)
@@ -3197,7 +3326,7 @@ export default class AudioRecording {
                     this.audioRecordingMode == AudioRecordingMode.TextBox
                 );
 
-                const currentTextBox = this.getCurrentTextBox();
+                const currentTextBox = this.getCurrentTextBox(true);
                 if (currentTextBox) {
                     idsToCheck = currentTextBox.id;
                 } else {
