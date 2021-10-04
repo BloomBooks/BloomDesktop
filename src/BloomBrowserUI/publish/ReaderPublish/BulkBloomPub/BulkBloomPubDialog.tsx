@@ -211,7 +211,7 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                         `}
                     >
                         <MuiCheckbox
-                            label="Zip up into a single .bloombundle file"
+                            label="Compress into a single .bloombundle file"
                             checked={params.makeBloomBundle}
                             l10nKey="PublishTab.BulkBloomPub.MakeBloomBundle"
                             onCheckChanged={checked => {
