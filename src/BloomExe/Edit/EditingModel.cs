@@ -29,6 +29,7 @@ using SIL.Windows.Forms.ImageToolbox;
 using SIL.Xml;
 using Bloom.ErrorReporter;
 using Bloom.WebLibraryIntegration;
+using SIL.Windows.Forms.Miscellaneous;
 
 namespace Bloom.Edit
 {
@@ -1414,7 +1415,7 @@ namespace Bloom.Edit
 		{
 			var id = page.GetDivNodeForThisPage().GetAttribute("id");
 			var hyperlink = "#" + id;
-			Clipboard.SetText(hyperlink);
+			PortableClipboard.SetText(hyperlink);
 		}
 
 		/// <summary>
