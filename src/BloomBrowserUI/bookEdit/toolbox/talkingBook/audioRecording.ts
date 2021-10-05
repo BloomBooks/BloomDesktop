@@ -2468,7 +2468,46 @@ export default class AudioRecording {
             // no editable text on this page.
             return this.changeStateAndSetExpectedAsync("");
         } else {
-            return this.setupAndUpdateMarkupAsync();
+            await this.setupAndUpdateMarkupAsync();
+
+            // See comment on this method.
+            this.ensureHighlight(20);
+        }
+    }
+
+    private ensureHighlightToken;
+
+    // This is a monumentally ugly workaround for BL-10471, a problem where a page has an image description
+    // recorded in sentence mode that comes before a main body recorded in text mode. Somehow, things happen
+    // out of order, such that although various things (including early calls to getCurrentTextBox)
+    // put the highlight on the first sentence of the image description, later on that element is replaced
+    // by another that does not have the highlight. I've confirmed this with debug code that sets an extra
+    // attribute on the span when adding the highlight class: nothing else touches the new attribute, yet
+    // it is missing from the page along with the highlight.
+    // On the other hand, a mutation observer added at to the page at the same time as the highlight detects
+    // no unexpected changes after setting the highlight.
+    // The problem rarely happens in Firefox 92, perhaps once in 20 times, so I have had no luck using the
+    // debugger to break when the object is modified.
+    // The problem happens more often, though not always, when debugging in Firefox 60. However, Firefox 60
+    // does not have the break-on-modification capability.
+    // I added alerts everywhere that I could think of that might be modifying the DOM; parts of
+    // makeAudioSentenceElements seemed most likely. None triggered when the problem happened.
+    // After spending two days without useful progress, and considering that this only happens in a very rare
+    // special case, I decided to just do this: at short intervals for a few seconds after initializing
+    // the page, if we don't have a highlight we'll try again to make one.
+    // Note that we don't stop this loop when we detect that there is a highlight, or after making one;
+    // the problem we're trying to fix is that even though we have one it may unexpectedly go away.
+    // We could go on doing this forever...there should always be something highlighted while this tool is
+    // active, if there's any recordable text...but the problem seems to be transient so we may as well stop
+    // and not go on using up cpu cycles forever. On my computer, 4 seconds is very generous...a half second
+    // would do it...but other computers are slower.
+    private ensureHighlight(repeats: number) {
+        this.getCurrentTextBox();
+        if (repeats > 0) {
+            this.ensureHighlightToken = setTimeout(
+                () => this.ensureHighlight(repeats - 1),
+                200
+            );
         }
     }
 
@@ -2476,6 +2515,8 @@ export default class AudioRecording {
     public hideTool() {
         this.isShowing = false;
         this.stopListeningForLevels();
+        // In case this initialize loop is still going, stop it. Passing an invalid value won't hurt.
+        clearTimeout(this.ensureHighlightToken);
 
         // Need to clear out any state. The next time this tool gets reopened, there is no guarantee that it will be reopened in the same context.
         this.audioRecordingMode = AudioRecordingMode.Unknown;
