@@ -92,7 +92,12 @@ export class ImageDescriptionToolControls extends React.Component<
                             l10nKey={
                                 "EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe"
                             }
-                            className="imageDescriptionCheck"
+                            className={
+                                "imageDescriptionCheck" +
+                                ToolBox.isXmatterPage()
+                                    ? " disabled"
+                                    : ""
+                            }
                             name=""
                             disabled={ToolBox.isXmatterPage()}
                             checked={this.state.descriptionNotNeeded}
