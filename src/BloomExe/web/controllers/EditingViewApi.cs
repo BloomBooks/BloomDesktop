@@ -7,6 +7,7 @@ using Bloom.Api;
 using Bloom.Edit;
 using L10NSharp;
 using SIL.IO;
+using SIL.Windows.Forms.Miscellaneous;
 
 namespace Bloom.web.controllers
 {
@@ -41,7 +42,7 @@ namespace Bloom.web.controllers
 			{
 				try
 				{
-					clipContent = Clipboard.GetText();
+					clipContent = PortableClipboard.GetText();
 				}
 				catch (Exception e)
 				{

@@ -97,7 +97,7 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
             </DialogTitle>
             {!!params && (
                 <DialogMiddle>
-                    <WhatsThisBlock url="https://docs.bloomlibrary.org/todo-something-about-bloom-bookshelves">
+                    <WhatsThisBlock url="https://docs.bloomlibrary.org/bloom-reader-shelves">
                         <MuiCheckbox
                             label="Produce a .bloomshelf file"
                             checked={
@@ -183,7 +183,7 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                         </ConditionallyEnabledBlock>
                     </WhatsThisBlock>
                     <WhatsThisBlock
-                        url="https://docs.bloomlibrary.org/todo-something-about-distrubution-tags"
+                        url="https://docs.bloomlibrary.org/bloom-reader-distribution-tags"
                         css={css`
                             margin-top: ${kBlockSeparation};
                         `}
@@ -205,13 +205,13 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                         ></TextField>
                     </WhatsThisBlock>
                     <WhatsThisBlock
-                        url="https://docs.bloomlibrary.org/todo-something-about-bloom-bundles"
+                        url="https://docs.bloomlibrary.org/bloomPUB-bundles"
                         css={css`
                             margin-top: ${kBlockSeparation};
                         `}
                     >
                         <MuiCheckbox
-                            label="Zip up into a single .bloombundle file"
+                            label="Compress into a single .bloombundle file"
                             checked={params.makeBloomBundle}
                             l10nKey="PublishTab.BulkBloomPub.MakeBloomBundle"
                             onCheckChanged={checked => {
