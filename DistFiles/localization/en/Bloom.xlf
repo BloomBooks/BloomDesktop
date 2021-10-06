@@ -3645,6 +3645,10 @@
         <note>ID: PublishTab.Epub.ImageDescriptionLinkLabel</note>
         <note>Used in Epubs as the text of a link that leads to the description of an image</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.LocalLinksProblem">
+        <source xml:lang="en">Links to other pages do not work in epubs. They will be changed to plain text that does not look like a link.</source>
+        <note>ID: PublishTab.Epub.LocalLinksProblem</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Epub.IncludeOnPage">
         <source xml:lang="en">Include image descriptions on page</source>
         <note>ID: PublishTab.Epub.IncludeOnPage</note>
@@ -4353,15 +4357,12 @@ Do you want to go ahead?</note>
         <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum averate sentence length in book". Surround text that should be bold in double asterisks.</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageWordsPerPage" sil:dynamic="true">
-        <source xml:lang="en">
-          Average per **Page**</source>
+        <source xml:lang="en">Average per **Page**</source>
         <note>ID: ReaderSetup.MaxAverageWordsPerPage</note>
         <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum average words per page" (in book is implied). Surround text that should be bold in double asterisks.</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageSentencesPerPage" sil:dynamic="true">
-        <source xml:lang="en">
-          Average per **Page**
-        </source>
+        <source xml:lang="en">Average per **Page**</source>
         <note>ID: ReaderSetup.MaxAverageSentencesPerPage</note>
         <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". Surround text that should be bold in double asterisks.</note>
       </trans-unit>
@@ -4371,9 +4372,7 @@ Do you want to go ahead?</note>
         <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". Surround text that should be bold in double asterisks.</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxSentencesPerPage" sil:dynamic="true">
-        <source xml:lang="en">
-          Per **Page**
-        </source>
+        <source xml:lang="en">Per **Page**</source>
         <note>ID: ReaderSetup.MaxSentencesPerPage</note>
         <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". Surround text that should be bold in double asterisks.</note>
       </trans-unit>
@@ -4471,7 +4470,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.SentenceMaxWords2" sil:dynamic="true">
         <source xml:lang="en">Per **Sentence**</source>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
-        <note>follows headings "maximum" and "words" to convey "maximum words per sentence. Surround text that should be bold in double asterisks.</note>
+        <note>follows headings "maximum" and "words" to convey "maximum words per sentence". Surround text that should be bold in double asterisks.</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>

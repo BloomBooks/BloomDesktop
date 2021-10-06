@@ -16,6 +16,7 @@ import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 interface IImageDescriptionState {
     enabled: boolean;
     descriptionNotNeeded: boolean;
+    isXmatterPage: boolean;
 }
 interface IProps {}
 // This react class implements the UI for image description toolbox.
@@ -31,7 +32,8 @@ export class ImageDescriptionToolControls extends React.Component<
 > {
     public readonly state: IImageDescriptionState = {
         enabled: true,
-        descriptionNotNeeded: false
+        descriptionNotNeeded: false,
+        isXmatterPage: false
     };
 
     private activeEditable: Element | null;
@@ -78,13 +80,13 @@ export class ImageDescriptionToolControls extends React.Component<
                             </li>
                         </ul>
                     </div>
-                    <div className="imgDescLabelBlock">
-                        <Label
-                            l10nKey="EditTab.Toolbox.ImageDescriptionTool.CheckThisBox"
-                            className={
-                                ToolBox.isXmatterPage() ? "disabled " : ""
-                            }
-                        >
+                    <div
+                        className={
+                            "imgDescLabelBlock" +
+                            (this.state.isXmatterPage ? " disabled" : "")
+                        }
+                    >
+                        <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.CheckThisBox">
                             Otherwise, check this box:
                         </Label>
                         <Checkbox
@@ -94,7 +96,6 @@ export class ImageDescriptionToolControls extends React.Component<
                             }
                             className="imageDescriptionCheck"
                             name=""
-                            disabled={ToolBox.isXmatterPage()}
                             checked={this.state.descriptionNotNeeded}
                             onCheckChanged={checked =>
                                 this.onCheckChanged(checked)
@@ -169,8 +170,7 @@ export class ImageDescriptionToolControls extends React.Component<
     public selectImageDescription(imageContainer: Element | null): void {
         if (imageContainer == null) {
             // pathological
-            this.activeEditable = null;
-            this.setState({ enabled: false, descriptionNotNeeded: false });
+            this.setDisabledState();
             return;
         }
         this.activeEditable = imageContainer;
@@ -179,7 +179,8 @@ export class ImageDescriptionToolControls extends React.Component<
         );
         this.setState({
             enabled: true,
-            descriptionNotNeeded: noDescriptionNeeded == "true"
+            descriptionNotNeeded: noDescriptionNeeded == "true",
+            isXmatterPage: ToolBox.isXmatterPage()
         });
     }
 
@@ -204,7 +205,11 @@ export class ImageDescriptionToolControls extends React.Component<
 
     private setDisabledState() {
         this.activeEditable = null;
-        this.setState({ enabled: false, descriptionNotNeeded: false });
+        this.setState({
+            enabled: false,
+            descriptionNotNeeded: false,
+            isXmatterPage: false
+        });
     }
 }
 

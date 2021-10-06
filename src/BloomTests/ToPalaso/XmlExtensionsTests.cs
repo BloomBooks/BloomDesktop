@@ -7,6 +7,7 @@ using System.Xml;
 using Bloom.ToPalaso;
 using Gecko.WebIDL;
 using NUnit.Framework;
+using SIL.Xml;
 
 namespace BloomTests.ToPalaso
 {
@@ -63,6 +64,24 @@ namespace BloomTests.ToPalaso
 			var child = doc.CreateElement("child");
 			intermediate.AppendChild(child);
 			Assert.That(child.ParentWithClass("target"), Is.EqualTo(parent));
+		}
+
+		[Test]
+		public void UnwrapElement_AnchorInDiv_Unwraps()
+		{
+			var doc = new XmlDocument();
+			doc.LoadXml(@"<html><body><div>This is <a href='somewhere'>a <i>nice</i> link</a> that goes nowhere</div></body></html>");
+
+			var anchor =doc.SafeSelectNodes("//a")[0] as XmlElement;
+			var div = anchor.ParentNode as XmlElement;
+
+			anchor.UnwrapElement();
+
+			Assert.That(div.InnerText, Is.EqualTo("This is a nice link that goes nowhere"));
+			Assert.That(doc.SafeSelectNodes("//a"), Has.Count.EqualTo(0));
+
+			var italics = doc.SafeSelectNodes("//i")[0] as XmlElement;
+			Assert.That(italics.InnerText, Is.EqualTo("nice"));
 		}
 	}
 }

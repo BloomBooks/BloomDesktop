@@ -213,6 +213,10 @@ namespace Bloom.Edit
 
 		private void OnBookSelectionChanged(object sender, BookSelectionChangedEventArgs bookSelectionChangedEventArgs)
 		{
+			// Sometimes we raise this event just to update various status things in the collections tab.
+			// This edit tab can ignore changes that don't actually involve selecting a different book.
+			if (_bookSelection.CurrentSelection == _currentlyDisplayedBook)
+				return;
 			//prevent trying to save this page in whatever comes next
 			var wasNull = _domForCurrentPage == null;
 			_domForCurrentPage = null;
