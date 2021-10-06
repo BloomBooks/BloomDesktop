@@ -497,7 +497,7 @@ namespace Bloom.TeamCollection
 		/// We return TRUE (but status null) if there is no repo file at all.
 		/// (That's a valid repo status...null indicates the book is not in the repo.)
 		/// </summary>
-		protected abstract bool TryGetBookStatusJsonFromRepo(string bookFolderName, out string status);
+		protected abstract bool TryGetBookStatusJsonFromRepo(string bookFolderName, out string status, bool reportFailure = true);
 
 		/// <summary>
 		/// Return true if the book exists in the repo.
@@ -1007,9 +1007,10 @@ namespace Bloom.TeamCollection
 				else if (args is BookRepoChangeEventArgs changeArgs)
 					HandleModifiedFile(changeArgs);
 				else HandleCollectionSettingsChange(args);
-				// These "HandleX" methods send a C# event, which is helpful for the C# end of things.
+				// These "HandleX" methods above send a C# event, which is helpful for the C# end of things.
 				// Unfortunately, a websocket message is needed to make sure that javascript-land is up-to-date
-				// with any remote changes (See BL-10270).
+				// with any remote changes, for example, that the TeamCollection button updates (See BL-10270).
+				// One of the selection changed handlers sends such a message.
 				_tcManager.BookSelection?.InvokeSelectionChanged(false);
 			}
 		}
@@ -1260,32 +1261,44 @@ namespace Bloom.TeamCollection
 				return;
 			if (args.BookFileName.EndsWith(".bloom"))
 			{
-				var statusFilePath = GetStatusFilePath(bookBaseName, _localCollectionFolder);
-				// sometimes we get a new book notification when all that happened is it got checked in or out remotely.
-				// If the book already exists and has status locally, then a new book notification is spurious,
-				// so we don't want a message about it.
-				if (!File.Exists(statusFilePath))
-				{
-					var oldName = NewBookRenamedFrom(bookBaseName);
-					if (oldName == null)
-					{
-
-						_tcLog.WriteMessage(MessageAndMilestoneType.NewStuff, "TeamCollection.NewBookArrived",
-							"A new book called '{0}' was added by a teammate.", bookBaseName, null);
-					}
-					else
-					{
-
-						_tcLog.WriteMessage(MessageAndMilestoneType.NewStuff, "TeamCollection.RenameFromRemote",
-							"The book \"{0}\" has been renamed to \"{1}\" by a teammate.",
-							oldName, bookBaseName);
-					}
-				}
-				// This needs to be AFTER we update the message log, data which it may use.
-				// In case by any chance this is the only notification we get when checkout status changed
-				// remotely, we do this even if we think the notiication is spurious.
-				UpdateBookStatus(bookBaseName, true);
+				HandleNewBook(bookBaseName);
 			}
+		}
+
+		private void HandleNewBook(string bookBaseName)
+		{
+			// It's quite likely in the case of a shared LAN folder that a new file has appeared, but the
+			// other Bloom instance hasn't finished writing it yet. If we can't get its status,
+			// it's probably locked, and anything else we might try will fail. Try again in 2 seconds.
+			if (!TryGetBookStatusJsonFromRepo(bookBaseName, out var status, false))
+			{
+				MiscUtils.SetTimeout(() => HandleNewBook(bookBaseName), 2000);
+				return;
+			}
+			var statusFilePath = GetStatusFilePath(bookBaseName, _localCollectionFolder);
+			// sometimes we get a new book notification when all that happened is it got checked in or out remotely.
+			// If the book already exists and has status locally, then a new book notification is spurious,
+			// so we don't want a message about it.
+			if (!File.Exists(statusFilePath))
+			{
+				var oldName = NewBookRenamedFrom(bookBaseName);
+				if (oldName == null)
+				{
+					_tcLog.WriteMessage(MessageAndMilestoneType.NewStuff, "TeamCollection.NewBookArrived",
+						"A new book called '{0}' was added by a teammate.", bookBaseName, null);
+				}
+				else
+				{
+					_tcLog.WriteMessage(MessageAndMilestoneType.NewStuff, "TeamCollection.RenameFromRemote",
+						"The book \"{0}\" has been renamed to \"{1}\" by a teammate.",
+						oldName, bookBaseName);
+				}
+			}
+
+			// This needs to be AFTER we update the message log, data which it may use.
+			// In case by any chance this is the only notification we get when checkout status changed
+			// remotely, we do this even if we think the notiication is spurious.
+			UpdateBookStatus(bookBaseName, true);
 		}
 
 		public void HandleBookRename(string oldName, string newName)
