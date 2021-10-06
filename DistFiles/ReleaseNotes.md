@@ -12,6 +12,10 @@ Most SIL projects can freely use the SIL internal Enterprise License. Questions?
 
 Projects that are assigned a new enterprise subscription code can immediately start using it even before the branding setup has been implemented.  A place holder message on the back cover gives the subscription name to show that the book is in a collection with a new subscription.  When an update to Bloom contains the branding files for the subscription, they will be applied automatically the next time the books in the collection are edited.
 
+### Easy Book Rename
+
+Sometimes you may need to give a book a different name than appears on the title page. Now you can easily change a book's name in the Collection tab ([see animation](https://imgur.com/dcMz5tu)).
+
 ## Edit Tab
 
 ### Leveled Reader
@@ -26,15 +30,19 @@ Images whose names end in very large numbers can be loaded into Bloom.  (Some ph
 
 If Bloom has trouble loading an image, the offending image file is one of the book files optionally included in an error report.  Having the image available should help the Bloom team in solving why the image file cannot be loaded.
 
-### Overlay Tool
+### Renamed Overlay Tool
 
-Sign language videos can be added with the Overlay Tool.
+The previous Comic Tool has been renamed as the Overlay Tool. You can now also overlay pictures and sign language videos on top of a picture ([see animation](https://imgur.com/E83qLj6)).
+
+### Duplicate Page Many Times
+
+Now you can duplicate a page many times by entering a number ([see animation](https://imgur.com/uVJOckU)).
 
 ## Team Collections
 
 Renaming books that are checked out works better.
 
-The Team Collection status dialog has both a Status tab and a History tab.
+The Team Collection status dialog has both a Status tab and a History tab ([see animation](https://imgur.com/zVXe05X)).
 
 ### Book details menu
 
