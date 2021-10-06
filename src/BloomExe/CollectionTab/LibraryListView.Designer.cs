@@ -21,13 +21,14 @@ namespace Bloom.CollectionTab
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LibraryListView));
 			this._bookContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this._copyBook = new System.Windows.Forms.ToolStripMenuItem();
+			this._makeBloomPackOfBookToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this._openFolderOnDisk = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
 			this._exportToXMLForInDesignToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exportToWordOrLibreOfficeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exportToSpreadsheetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.SaveAsBloomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this._makeBloomPackOfBookToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this._openFolderOnDisk = new System.Windows.Forms.ToolStripMenuItem();
-			this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+			this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();			
 			this._leveledReaderMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._decodableReaderMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -88,14 +89,15 @@ namespace Bloom.CollectionTab
 			this._bookContextMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
 			this._bookContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._copyBook,
-            this._exportToXMLForInDesignToolStripMenuItem,
+            this._makeBloomPackOfBookToolStripMenuItem,
+            this._openFolderOnDisk,
+            this.toolStripSeparator3,
+			this._exportToXMLForInDesignToolStripMenuItem,
             this.exportToWordOrLibreOfficeToolStripMenuItem,
             this.exportToSpreadsheetToolStripMenuItem,
             this.importContentFromSpreadsheetToolStripMenuItem,
             this.SaveAsBloomToolStripMenuItem,
-            this._makeBloomPackOfBookToolStripMenuItem,
-            this._openFolderOnDisk,
-            this.toolStripSeparator3,
+            this.toolStripSeparator4,
             this._leveledReaderMenuItem,
             this._decodableReaderMenuItem,
             this.toolStripSeparator1,
@@ -120,6 +122,31 @@ namespace Bloom.CollectionTab
 			this._copyBook.Size = new System.Drawing.Size(242, 26);
 			this._copyBook.Text = "Duplicate Book";
 			this._copyBook.Click += new System.EventHandler(this._copyBook_Click);
+			// 
+			// _makeBloomPackOfBookToolStripMenuItem
+			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this._makeBloomPackOfBookToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._makeBloomPackOfBookToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizingId(this._makeBloomPackOfBookToolStripMenuItem, "CollectionTab.BookMenu.MakeBloomPack");
+			this._makeBloomPackOfBookToolStripMenuItem.Name = "_makeBloomPackOfBookToolStripMenuItem";
+			this._makeBloomPackOfBookToolStripMenuItem.Size = new System.Drawing.Size(242, 26);
+			this._makeBloomPackOfBookToolStripMenuItem.Text = "Make Bloom Pack...";
+			this._makeBloomPackOfBookToolStripMenuItem.Click += new System.EventHandler(this.OnMakeBloomPackOfBook);
+			// 
+			// _openFolderOnDisk
+			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this._openFolderOnDisk, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._openFolderOnDisk, null);
+			this._L10NSharpExtender.SetLocalizingId(this._openFolderOnDisk, "CollectionTab.ContextMenu.OpenFolderOnDisk");
+			this._openFolderOnDisk.Name = "_openFolderOnDisk";
+			this._openFolderOnDisk.Size = new System.Drawing.Size(242, 26);
+			this._openFolderOnDisk.Text = "Open Folder on Disk";
+			this._openFolderOnDisk.Click += new System.EventHandler(this._openFolderOnDisk_Click);
+			// 
+			// toolStripSeparator3
+			// 
+			this.toolStripSeparator3.Name = "toolStripSeparator3";
+			this.toolStripSeparator3.Size = new System.Drawing.Size(239, 6);
 			// 
 			// _exportToXMLForInDesignToolStripMenuItem
 			// 
@@ -162,30 +189,10 @@ namespace Bloom.CollectionTab
 			this.SaveAsBloomToolStripMenuItem.Text = "Save as single file (.bloom)...";
 			this.SaveAsBloomToolStripMenuItem.Click += new System.EventHandler(this.SaveAsBloomToolStripMenuItem_Click);
 			// 
-			// _makeBloomPackOfBookToolStripMenuItem
+			// toolStripSeparator4
 			// 
-			this._L10NSharpExtender.SetLocalizableToolTip(this._makeBloomPackOfBookToolStripMenuItem, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._makeBloomPackOfBookToolStripMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this._makeBloomPackOfBookToolStripMenuItem, "CollectionTab.BookMenu.MakeBloomPack");
-			this._makeBloomPackOfBookToolStripMenuItem.Name = "_makeBloomPackOfBookToolStripMenuItem";
-			this._makeBloomPackOfBookToolStripMenuItem.Size = new System.Drawing.Size(242, 26);
-			this._makeBloomPackOfBookToolStripMenuItem.Text = "Make Bloom Pack...";
-			this._makeBloomPackOfBookToolStripMenuItem.Click += new System.EventHandler(this.OnMakeBloomPackOfBook);
-			// 
-			// _openFolderOnDisk
-			// 
-			this._L10NSharpExtender.SetLocalizableToolTip(this._openFolderOnDisk, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._openFolderOnDisk, null);
-			this._L10NSharpExtender.SetLocalizingId(this._openFolderOnDisk, "CollectionTab.ContextMenu.OpenFolderOnDisk");
-			this._openFolderOnDisk.Name = "_openFolderOnDisk";
-			this._openFolderOnDisk.Size = new System.Drawing.Size(242, 26);
-			this._openFolderOnDisk.Text = "Open Folder on Disk";
-			this._openFolderOnDisk.Click += new System.EventHandler(this._openFolderOnDisk_Click);
-			// 
-			// toolStripSeparator3
-			// 
-			this.toolStripSeparator3.Name = "toolStripSeparator3";
-			this.toolStripSeparator3.Size = new System.Drawing.Size(239, 6);
+			this.toolStripSeparator4.Name = "toolStripSeparator4";
+			this.toolStripSeparator4.Size = new System.Drawing.Size(239, 6);
 			// 
 			// _leveledReaderMenuItem
 			// 
@@ -774,6 +781,7 @@ namespace Bloom.CollectionTab
 		private ToolStripMenuItem _copyBook;
 		private ToolStripSeparator toolStripSeparator1;
 		private ToolStripSeparator toolStripSeparator3;
+		private ToolStripSeparator toolStripSeparator4;
 		private ToolStripMenuItem _leveledReaderMenuItem;
 		private ToolStripMenuItem _decodableReaderMenuItem;
 		private ToolStripMenuItem SaveAsBloomToolStripMenuItem;
