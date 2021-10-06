@@ -1,57 +1,88 @@
-# 5.0
-
-# 5.1 (Beta)
+If you run Bloom on _beta_ channel, you are a crucial part of the Bloom team. Your help ensures that folks who don't have easy access to technical help get a solid product when the beta becomes the _release_ version. **Thank you!**
 
 ## Reminder for SILers
 
 Most SIL projects can freely use the SIL internal Enterprise License. Questions? Shoot us an email at **enterprise (preposition) bloomlibrary.org**.
 
+# 5.1 (beta)
+
 ## Collection Tab
 
-### Enterprise Subscriptions
-
-Projects that are assigned a new enterprise subscription code can immediately start using it even before the branding setup has been implemented.  A place holder message on the back cover gives the subscription name to show that the book is in a collection with a new subscription.  When an update to Bloom contains the branding files for the subscription, they will be applied automatically the next time the books in the collection are edited.
+⭐You can now rename a book. Previously, Bloom always used the name of a book's title. The new name appears under the thumbnail of the book and also the name of the folder on disk  ([see animation](https://imgur.com/dcMz5tu)).
+ [Feature Request](https://community.software.sil.org/t/allow-changing-book-filenames/489/14)
 
 ## Edit Tab
 
+⭐You can create **hyperlinks** that point to other pages in the same book. This can be used for creating your own simple Table of Contents. When creating ePUBs, these links will be turned into normal text because the feature does not work in ePUBs. [Feature Request](https://community.software.sil.org/t/hyperlink-to-other-pages/1784)
+
+⭐**Duplicate Page Many Times**. You can now enter a number to make many duplicates of a page all at once ([see animation](https://imgur.com/uVJOckU)).
+
+We made several fixes to the checks in Decodable and Leveled Readers.
+
 ### Leveled Reader
 
-Pages with too many sentences are highlighted the same as those with too many words.
+We added a visual notification when pages have too many sentences.
 
-Words in complex pages such as arithmetic pages are counted better.
+We improved how we count words in complex pages  (such as arithmetic pages).
+
+
+### Overlay Tool (Bloom Enterprise)
+
+⭐The Overlay Tool can now add videos [Feature Request](https://community.software.sil.org/t/video-block-that-can-be-place-anywhere-on-top-of-a-comic-page/4763)
+
+⭐The Overlay Tool can now add images on top of the image [Feature Request](https://community.software.sil.org/t/ability-to-place-images-on-images/2982)
+
+(See animation of these [new overlay features](https://imgur.com/E83qLj6))
+
+
+## Team Collections (Bloom Enterprise)
+
+⭐We added a basic History tab to the Team Collection dialog. I currently only tells you the history of checkins (who edited the book, when). We will be adding more history in future versions. 
+
+![screenshot](https://i.imgur.com/nwzLmHAl.png)
+
+We added a little informational menu option that provides information about the name and "avatar" (picture) associated with books you check out.  The dialog also provides links for changing (or setting) the avatar and name.
+
+![screenshot](https://i.imgur.com/T8nne2sl.png)
+
+![screenshot](https://i.imgur.com/CoJmjqs.png)
+
+⭐You can now "Forget Changes & Check in Book" if you decide to abandon the changes you've made to a book since you checked it out.
+
+![screenshot](https://i.imgur.com/Ns8mbZ7.png)
 
 ### Images
 
-Images whose names end in very large numbers can be loaded into Bloom.  (Some phones create JPEGs whose names end in one long number encoding both the date and the time such as 20211001115132.)
+We have removed, from the lower left corner of images, the button that opened the "Image Description Tool". We did this because of reports that users were clicking on it, not understanding what was happening, and then entering their story text into the image description box. Authors making books for the blind can still use this tool, of course. You just won't have this convenient short-cut anymore. [Feature Request](https://community.software.sil.org/t/allow-for-image-description-button-to-show-hide/4700)
 
-If Bloom has trouble loading an image, the offending image file is one of the book files optionally included in an error report.  Having the image available should help the Bloom team in solving why the image file cannot be loaded.
+When Bloom has trouble loading an image and you send us an error report, we now will receive the offending image file. That will help us figure out what the problem is.
 
-### Overlay Tool
+## Publish Tab
 
-Sign language videos can be added with the Overlay Tool.
 
-## Team Collections
+We added a new tool for making it easy to create a BloomPUB of every book in a collection, with a single command. (Bloom Enterprise)
 
-Renaming books that are checked out works better.
+![screenshot](https://i.imgur.com/1AQgPJb.png)
 
-The Team Collection status dialog has both a Status tab and a History tab.
+You can now also upload an entire collection or even multiple collections to the Bloom Library. (Bloom Enterprise)
 
-### Book details menu
+![screenshot](https://i.imgur.com/fvIDD63.png)
 
-In addition to the Check in / Check out button (and checkout status), the book details pane provides a menu with other operations.
+## Bloom Library
 
-#### About my Avatar
+We improved counts and stats on Bloom Library. For example, a collection that contains child collections can now display the total count ([example](https://bloomlibrary.org/kyrgyzstan-OkuuKeremet)).
 
-This command pops up a dialog that provides information about the name and "avatar" (picture) associated with books you check out.  The dialog also provides links for changing (or setting) the avatar and name.
+We added the ability for a project to list its sponsors at the bottom of the page ([example](https://bloomlibrary.org/Begin-with-Books-Mali)).
 
-#### Forget Changes & Check in Book
+We added a new page selector for Bloom Player, the engine that powers book reading in Bloom Reader, BloomLibrary.org, and embedded Reading App Builder books. ![screenshot](https://i.imgur.com/9xV4GrR.png)
 
-This command reverts any changes made to the book and checks it in.  This essentially undoes the checkout and any changes made since the book was checked out.
+## Other Good Stuff
 
-## BloomLibrary.org
+**Faster Enterprise Subscription Delivery**  When projects get a new Enterprise subscription, their is a delay while we build their branding pack (logos, boilerplate text, etc). Start with Bloom 5.1, customers don't have to wait... their Enterprise code will work immediately. Bloom will show a place holder message on the back cover that shows subscription name.  When an update to Bloom contains the branding files for the subscription, this message will be automatically replaced with the branding images, the next time the books in the the collection are edited.
 
-Collections in Bloom Library now provide statistics on a "stats" page that summarizes the analytics data for all books in the collection, including any subcollections.
+### Work towards a more cross-platform Bloom
 
+As with most versions, we did a bunch of behind-the-scenes work towards rewriting making Bloom to be more portable to other operating systems. For the most part, you won't be able to tell the difference.
 
 # 5.0
 
@@ -61,7 +92,8 @@ We made hovering over a book thumbnail show the folder name of the book. This is
 
 ### Bookshelf selector
 
-In collection settings, Bloom Enterprise projects that have bookshelves on Bloom Library can now choose the bookshelf that corresponds to the collection. Then when books are uploaded to BloomLibrary.org, they automatically go to the correct bookshelf. This setting also can now be used to automatically choose a back-cover image to show where the book fits in the overall curriculum and choose a cover color based on the grade (this is used for a large MOE project in Kyrgyzstan). ![screenshot-online-only](https://i.imgur.com/0TNZEo8.png)
+In collection settings, Bloom Enterprise projects that have bookshelves on Bloom Library can now choose the bookshelf that corresponds to the collection. Then when books are uploaded to BloomLibrary.org, they 
+automatically go to the correct bookshelf. This setting also can now be used to automatically choose a back-cover image to show where the book fits in the overall curriculum and choose a cover color based on the grade (this is used for a large MOE project in Kyrgyzstan). ![screenshot-online-only](https://i.imgur.com/0TNZEo8.png)
 
 ## Edit Tab
 
@@ -74,6 +106,10 @@ You can now control the transparency of overlayed text elements and make corners
 ![screenshot-online-only](https://i.imgur.com/HqlfqxN.png)
 
 You can now make circle text elements. [Feature Request](https://community.software.sil.org/t/circular-comic-captions/3121)
+
+### Talking Book Tool
+
+You can now pause playback in the Talking Book Tool.
 
 ### Widgets
 
