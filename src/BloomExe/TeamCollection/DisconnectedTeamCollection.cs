@@ -115,7 +115,7 @@ namespace Bloom.TeamCollection
 			return localStatus.WithOldName(null).ToJson();
 		}
 
-		protected override bool TryGetBookStatusJsonFromRepo(string bookFolderName, out string status)
+		protected override bool TryGetBookStatusJsonFromRepo(string bookFolderName, out string status, bool reportFailure = true)
 		{
 			status = GetBookStatusJsonFromRepo(bookFolderName);
 			return true;

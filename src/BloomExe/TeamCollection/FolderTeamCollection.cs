@@ -644,7 +644,7 @@ namespace Bloom.TeamCollection
 			return RobustZip.GetComment(bookPath);
 		}
 
-		protected override bool TryGetBookStatusJsonFromRepo(string bookFolderName, out string status)
+		protected override bool TryGetBookStatusJsonFromRepo(string bookFolderName, out string status, bool reportFailure = true)
 		{
 			try
 			{
@@ -652,7 +652,8 @@ namespace Bloom.TeamCollection
 				return true;
 			} catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
 			{
-				MessageLog.WriteMessage(MessageAndMilestoneType.ErrorNoReload, "", GetBadZipFileMessage(bookFolderName));
+				if (reportFailure)
+					MessageLog.WriteMessage(MessageAndMilestoneType.ErrorNoReload, "", GetBadZipFileMessage(bookFolderName));
 				status = null;
 				return false;
 			}
