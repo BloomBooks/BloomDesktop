@@ -1,4 +1,4 @@
-If you run Bloom on _beta_ channel, you are a crucial part of the Bloom team. Your help ensures that folks who don't have easy access to technical help get a solid product when the beta becomes the _release_ version. **Thank you!**
+# 5.0
 
 # 5.1 (Beta)
 
@@ -73,7 +73,7 @@ You can now control the transparency of overlayed text elements and make corners
 
 ![screenshot-online-only](https://i.imgur.com/HqlfqxN.png)
 
-You can now make circle text elements.
+You can now make circle text elements. [Feature Request](https://community.software.sil.org/t/circular-comic-captions/3121)
 
 ### Widgets
 
@@ -85,7 +85,9 @@ There is now a "Widget Page" that gives you a full-screen page to host your html
 
 ### Leveled Reader
 
-We added some new measures.
+You can now specify two new limits: Sentences per page and Average count of sentences per page.
+
+We added some new measures: total sentences in book, longest sentence in book, and longest word in the book.
 
 We added a button to copy all the leveled reader measures of a book to the clipboard, in a form that can be pasted into spreadsheets.
 
