@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using System.Linq;
+using System.Xml;
 
 namespace Bloom.ToPalaso
 {
@@ -35,6 +36,22 @@ namespace Bloom.ToPalaso
 			while (current != null && current.Attributes[targetAttr]?.Value != targetVal)
 				current = current.ParentNode as XmlElement;
 			return current;
+		}
+
+		/// <summary>
+		/// Replace the element with its children.
+		/// </summary>
+		/// <param name="unwrapMe"></param>
+		public static void UnwrapElement(this XmlElement unwrapMe)
+		{
+			var content = unwrapMe.ChildNodes.Cast<XmlNode>().Reverse().ToArray();
+			var parent = unwrapMe.ParentNode as XmlElement;
+			foreach (var child in content)
+			{
+				parent.InsertAfter(child, unwrapMe);
+			}
+
+			parent.RemoveChild(unwrapMe);
 		}
 	}
 }
