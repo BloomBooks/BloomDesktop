@@ -1758,7 +1758,7 @@ namespace Bloom.CollectionTab
 					var filename = _bookSelection.CurrentSelection.Storage.FileName;
 					dlg.FileName = Path.ChangeExtension(filename, extension);
 					dlg.Filter = "xlsx|*.xlsx";
-					dlg.InitialDirectory = Settings.Default.ExportImportFileFolder ?? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+					dlg.InitialDirectory = !String.IsNullOrWhiteSpace(Settings.Default.ExportImportFileFolder) ? Settings.Default.ExportImportFileFolder : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 					dlg.RestoreDirectory = true;
 					dlg.OverwritePrompt = true;
 					if (DialogResult.Cancel == dlg.ShowDialog())
