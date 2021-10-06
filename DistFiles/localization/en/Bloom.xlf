@@ -3645,6 +3645,10 @@
         <note>ID: PublishTab.Epub.ImageDescriptionLinkLabel</note>
         <note>Used in Epubs as the text of a link that leads to the description of an image</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.LocalLinksProblem">
+        <source xml:lang="en">Links to other pages do not work in epubs. They will be changed to plain text that does not look like a link.</source>
+        <note>ID: PublishTab.Epub.LocalLinksProblem</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Epub.IncludeOnPage">
         <source xml:lang="en">Include image descriptions on page</source>
         <note>ID: PublishTab.Epub.IncludeOnPage</note>

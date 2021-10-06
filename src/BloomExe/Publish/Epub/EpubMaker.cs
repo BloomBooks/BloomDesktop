@@ -304,6 +304,8 @@ namespace Bloom.Publish.Epub
 				Logger.WriteEvent("Cannot find ffmpeg program while preparing videos for publishing.");
 			}
 
+			FixInternalHyperlinks(progress);
+
 			var nsManager = new XmlNamespaceManager(Book.RawDom.NameTable);
 			nsManager.AddNamespace("svg", "http://www.w3.org/2000/svg");
 
@@ -412,6 +414,29 @@ namespace Bloom.Publish.Epub
 			{
 				if (Path.GetExtension(filename).ToLowerInvariant() == ".svg")
 					PruneSvgFileOfCruft(filename);
+			}
+		}
+
+		/// <summary>
+		/// Internal hyperlinks, typically from one page to another, cannot be made to work in Epubs
+		/// (at least not in any obvious way), since each page is a separate document. Certainly the
+		/// hrefs we use in the main document, starting with a # that is understood to refer to the element
+		/// with specified ID in the SAME document, will not work. For now, we just issue a warning
+		/// and remove the hyperlink wrapper from whatever is inside it.
+		/// </summary>
+		/// <param name="progress"></param>
+		private void FixInternalHyperlinks(WebSocketProgress progress)
+		{
+			var internalHyperlinks = Book.OurHtmlDom.SafeSelectNodes("//a[starts-with(@href, '#')]");
+			if (internalHyperlinks.Count > 0)
+			{
+				var msg = LocalizationManager.GetString("PublishTab.Epub.LocalLinksProblem",
+					"Links to other pages do not work in epubs. They will be changed to plain text that does not look like a link.");
+				progress.MessageWithoutLocalizing(msg, ProgressKind.Warning);
+				foreach (var link in internalHyperlinks.Cast<XmlElement>().ToArray())
+				{
+					link.UnwrapElement();
+				}
 			}
 		}
 
