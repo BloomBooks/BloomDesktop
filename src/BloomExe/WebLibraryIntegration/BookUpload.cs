@@ -616,9 +616,10 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		/// <remarks>Internal for testing.</remarks>
 		/// <param name="rootFolderPath"></param>
-		internal static void BulkRepairInstanceIds(string rootFolderPath)
+		/// <param name="okToChangeId">If this function returns true for a folder path, that book's ID may be changed.</param>
+		internal static void BulkRepairInstanceIds(string rootFolderPath, Func<string, bool> okToChangeId)
 		{
-			BookInfo.RepairDuplicateInstanceIds(rootFolderPath);
+			BookInfo.RepairDuplicateInstanceIds(rootFolderPath, okToChangeId);
 		}
 
 		/// <summary>

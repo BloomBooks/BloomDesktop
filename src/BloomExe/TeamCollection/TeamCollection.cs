@@ -503,7 +503,7 @@ namespace Bloom.TeamCollection
 		/// Return true if the book exists in the repo.
 		/// </summary>
 		/// <returns></returns>
-		protected abstract bool IsBookPresentInRepo(string bookFolderName);
+		public abstract bool IsBookPresentInRepo(string bookFolderName);
 
 		/// <summary>
 		/// Set the raw status data to however the repo implementation stores it.

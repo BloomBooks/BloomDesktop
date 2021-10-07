@@ -623,7 +623,7 @@ namespace Bloom.Book
 		/// This method recurses through the folders under 'pathToDirectory' and keeps track of all the unique bookInstanceId
 		/// guids. When a duplicate is found, we will call InstallFreshInstanceGuid().
 		/// </summary>
-		public static void RepairDuplicateInstanceIds(string pathToDirectory)
+		public static void RepairDuplicateInstanceIds(string pathToDirectory, Func<string, bool> okToChangeId)
 		{
 			// Key is instanceId guid, Value is a SortedList of entries where the key is the LastEdited datetime of the
 			// meta.json file and the value is the filepath.
@@ -641,9 +641,32 @@ namespace Bloom.Book
 				if (sortedFilepaths.Count < 2) // no problem here!
 					continue;
 
-				var filepathsExceptFirst = sortedFilepaths.Values.Skip(1);
-				Logger.WriteEvent($"***Fixing {filepathsExceptFirst.Count()} duplicate ids for: {id}");
-				foreach (var filepath in filepathsExceptFirst)
+				// okToChange may be quite expensive, possibly involving spinning up a ProjectContext.
+				// We only want to test it for books actually in a conflict set.
+				// Make sure we do this evaluation only once.
+				var filePathsToChange = sortedFilepaths.Values.Where(p => okToChangeId(p)).ToList();
+				if (filePathsToChange.Count() == sortedFilepaths.Count)
+				{
+					// just skip the first and change the others
+					filePathsToChange = sortedFilepaths.Values.Skip(1).ToList();
+				}
+
+				if (filePathsToChange.Count() < sortedFilepaths.Count - 1)
+				{
+					// Review: strong alternative candidates:
+					// - do nothing; we'll hope duplicate IDs don't cause catastrophic problems.
+					// - change all the ones we can, hope the remaining duplicates don't cause catastrophic problems
+					// - fix duplicates anyway, except for one of the TC ones; hope changed TC ID doesn't cause catastrophic problems
+					// The last is most similar to the way things were before adding this code to prevent changing
+					// IDs of books checked in to TC.
+					// My inclination is to let it crash for now. I expect duplicate IDs are fairly rare, and for more
+					// than one member of a duplicate set to be in a TC is hopefully vanishingly rare. If it happens,
+					// I think it's worth hearing about.
+					throw new ApplicationException("Bloom found two or more books that are already shared in your Team Collection and have the same ID. You will need help from the Bloom Team to sort this out.");
+				}
+
+				Logger.WriteEvent($"***Fixing {filePathsToChange.Count()} duplicate ids for: {id}");
+				foreach (var filepath in filePathsToChange)
 				{
 					InstallFreshInstanceGuid(filepath);
 				}
