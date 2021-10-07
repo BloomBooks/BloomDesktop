@@ -14,7 +14,14 @@ import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { Dialog, DialogActions, DialogContent } from "@material-ui/core";
 import BloomButton from "./bloomButton";
 import { kFormBackground } from "../utils/colorUtils";
-import { BloomDialog, useSetupBloomDialog } from "./BloomDialog/BloomDialog";
+import {
+    BloomDialog,
+    DialogTitle,
+    DialogMiddle,
+    DialogBottomButtons,
+    IBloomDialogEnvironmentParams,
+    useSetupBloomDialog
+} from "./BloomDialog/BloomDialog";
 
 /**
  * This function sets up the hooks to get the status of whether Bloom Enterprise is available or not
@@ -68,7 +75,7 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
         })
     );
 
-    const icon = enterpriseAvailable || (
+    const icon = (
         <img
             css={css`
                 ${"height: 16px; margin-left: 6px; cursor: pointer; " +
@@ -76,7 +83,11 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
             `}
             src="../images/bloom-enterprise-badge.svg"
             title={tooltip}
-            onClick={openBloomEnterpriseSettings}
+            onClick={() => {
+                if (!enterpriseAvailable) {
+                    showRequiresBloomEnterpriseDialog();
+                }
+            }}
         />
     );
 
@@ -122,8 +133,9 @@ export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent = pr
     );
 };
 
-export interface IThemeProps {
+export interface IRequiresEnterpriseNoticeProps {
     darkTheme?: boolean;
+    buttonVariant?: "text" | "outlined" | "contained";
 }
 
 // This element displays a notice saying that a certain feature requires a Bloom Enterprise subscription,
@@ -134,8 +146,9 @@ export interface IThemeProps {
 // on the content page body.
 // Often it will be convenient to use this by embedding the controls to be hidden in a
 // RequiresBloomEnterpriseWrapper, also defined in this file.
-export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IThemeProps> = ({
-    darkTheme
+export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequiresEnterpriseNoticeProps> = ({
+    darkTheme,
+    buttonVariant
 }) => {
     const [visible, setVisible] = useState(false);
 
@@ -162,7 +175,7 @@ export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IThemePr
                         />
                         <Button
                             className="requiresEnterpriseButton"
-                            variant="contained"
+                            variant={buttonVariant ?? "contained"}
                             onClick={openBloomEnterpriseSettings}
                         >
                             <img src="../images/bloom-enterprise-badge.svg" />
@@ -215,6 +228,55 @@ export const RequiresBloomEnterpriseNoticeDialog: React.VoidFunctionComponent = 
                 </DialogActions>
             </Dialog>
         </BloomDialog>
+    );
+};
+
+export let showRequiresBloomEnterpriseDialog: () => void = () => {
+    window.alert("showRequiresBloomEnterpriseDialog is not set up yet.");
+};
+
+export const RequiresBloomEnterpriseDialog: React.FunctionComponent<{
+    dialogEnvironment?: IBloomDialogEnvironmentParams;
+}> = props => {
+    // Designed to be invoked natively from TypeScript land.
+    const {
+        showDialog,
+        closeDialog,
+        propsForBloomDialog
+    } = useSetupBloomDialog(props.dialogEnvironment);
+    showRequiresBloomEnterpriseDialog = showDialog;
+    const kBlockSeparation = "30px";
+
+    const dialogTitle = useL10n(
+        "Bloom Enterprise Feature",
+        "PublishTab.BulkBloomPub.BloomEnterpriseFeature"
+    );
+
+    return (
+        <ThemeProvider theme={theme}>
+            <BloomDialog {...propsForBloomDialog}>
+                <div className="requiresBloomEnterpriseDialog">
+                    <DialogTitle
+                        title={dialogTitle}
+                        css={css`
+                            margin-left: 0;
+                            margin-right: 0;
+                        `}
+                    />
+                    <DialogMiddle>
+                        <RequiresBloomEnterpriseNotice darkTheme={false} />
+                    </DialogMiddle>
+                    <DialogBottomButtons>
+                        <BloomButton
+                            enabled={true}
+                            l10nKey="Common.Close"
+                            variant="contained"
+                            onClick={() => closeDialog()} // from pressing Close button
+                        />
+                    </DialogBottomButtons>
+                </div>
+            </BloomDialog>
+        </ThemeProvider>
     );
 };
 
