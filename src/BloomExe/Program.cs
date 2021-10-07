@@ -19,6 +19,7 @@ using Gecko;
 using L10NSharp;
 using SIL.IO;
 using SIL.Reporting;
+using SIL.Windows.Forms.Miscellaneous;
 using SIL.Windows.Forms.Registration;
 using SIL.Windows.Forms.Reporting;
 using SIL.Windows.Forms.UniqueToken;
@@ -113,6 +114,9 @@ namespace Bloom
 			// We want only good localizations in Bloom.
 			// REVIEW: should the setting be used only for alpha and beta?
 			LocalizationManager.ReturnOnlyApprovedStrings = !Settings.Default.ShowUnapprovedLocalizations;
+
+			// Firefox60 uses Gtk3, so we need to as well.  (BL-10469)
+			GraphicsManager.GtkVersionInUse = GraphicsManager.GtkVersion.Gtk3;
 
 #if DEBUG
 			//MessageBox.Show("Attach debugger now");
