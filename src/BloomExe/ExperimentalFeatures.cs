@@ -8,8 +8,9 @@ namespace Bloom
 	/// </summary>
 	public static class ExperimentalFeatures
 	{
-		public const string kTeamCollections = "team-collections";
 		public const string kExperimentalSourceBooks = "experimental-source-books";
+		public const string kTeamCollections = "team-collections";
+		public const string kSpreadsheetImportExport = "spreadsheet-import-export";
 
 		public static string TokensOfEnabledFeatures => Settings.Default.EnabledExperimentalFeatures;
 

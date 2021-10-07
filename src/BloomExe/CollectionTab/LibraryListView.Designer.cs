@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 
 namespace Bloom.CollectionTab
@@ -87,25 +88,37 @@ namespace Bloom.CollectionTab
 			// _bookContextMenu
 			// 
 			this._bookContextMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
-			this._bookContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._copyBook,
-            this._makeBloomPackOfBookToolStripMenuItem,
-            this._openFolderOnDisk,
-            this.toolStripSeparator3,
-			this._exportToXMLForInDesignToolStripMenuItem,
-            this.exportToWordOrLibreOfficeToolStripMenuItem,
-            this.exportToSpreadsheetToolStripMenuItem,
-            this.importContentFromSpreadsheetToolStripMenuItem,
-            this.SaveAsBloomToolStripMenuItem,
-            this.toolStripSeparator4,
-            this._leveledReaderMenuItem,
-            this._decodableReaderMenuItem,
-            this.toolStripSeparator1,
-            this._updateThumbnailMenu,
-            this._updateFrontMatterToolStripMenu,
-            this.renameToolStripMenuItem,
-            this.toolStripSeparator2,
-            this.deleteMenuItem});
+
+			var toolStripItems = new List<System.Windows.Forms.ToolStripItem>();
+			toolStripItems.AddRange(new ToolStripItem[] {
+				this._copyBook,
+				this._makeBloomPackOfBookToolStripMenuItem,
+				this._openFolderOnDisk,
+				this.toolStripSeparator3,
+				this._exportToXMLForInDesignToolStripMenuItem,
+				this.exportToWordOrLibreOfficeToolStripMenuItem,
+            });
+
+			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kSpreadsheetImportExport))
+			{
+				toolStripItems.Add(this.exportToSpreadsheetToolStripMenuItem);
+				toolStripItems.Add(this.importContentFromSpreadsheetToolStripMenuItem);
+            }
+
+			toolStripItems.AddRange(new ToolStripItem[] {
+				this.SaveAsBloomToolStripMenuItem,
+				this.toolStripSeparator4,
+				this._leveledReaderMenuItem,
+				this._decodableReaderMenuItem,
+				this.toolStripSeparator1,
+				this._updateThumbnailMenu,
+				this._updateFrontMatterToolStripMenu,
+				this.renameToolStripMenuItem,
+				this.toolStripSeparator2,
+				this.deleteMenuItem	
+            });
+			this._bookContextMenu.Items.AddRange(toolStripItems.ToArray());
+            
 			this._L10NSharpExtender.SetLocalizableToolTip(this._bookContextMenu, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._bookContextMenu, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._bookContextMenu, L10NSharp.LocalizationPriority.NotLocalizable);

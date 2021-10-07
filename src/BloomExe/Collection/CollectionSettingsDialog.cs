@@ -79,6 +79,8 @@ namespace Bloom.Collection
 
 			_showExperimentalBookSources.Checked = ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kExperimentalSourceBooks);
 			_allowTeamCollection.Checked = ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections);
+			_allowSpreadsheetImportExport.Checked = ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kSpreadsheetImportExport);
+
 			if (!ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections) && tcManager.CurrentCollectionEvenIfDisconnected == null)
 			{
 				this._tab.Controls.Remove(this._teamCollectionTab);
@@ -708,6 +710,12 @@ namespace Bloom.Collection
 		private void _allowTeamCollection_CheckedChanged(object sender, EventArgs e)
 		{
 			ExperimentalFeatures.SetValue(ExperimentalFeatures.kTeamCollections, _allowTeamCollection.Checked);
+			ChangeThatRequiresRestart();
+		}
+
+		private void _allowSpreadsheetImportExport_CheckedChanged(object sender, EventArgs e)
+		{
+			ExperimentalFeatures.SetValue(ExperimentalFeatures.kSpreadsheetImportExport, _allowSpreadsheetImportExport.Checked);
 			ChangeThatRequiresRestart();
 		}
 	}
