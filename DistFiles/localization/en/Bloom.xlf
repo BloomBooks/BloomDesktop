@@ -4814,6 +4814,11 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Team Collection</source>
         <note>ID: TeamCollection.TeamCollection</note>
       </trans-unit>
+	  <trans-unit id="TeamCollection.TeamCollections">
+        <source xml:lang="en">Team Collections</source>
+        <note>ID: TeamCollection.TeamCollections</note>
+		<note>Should be translated similarly as TeamCollection.TeamCollection, but plural instead of singular</note>
+      </trans-unit>
       <trans-unit id="TeamCollection.Available" sil:dynamic="true">
         <source xml:lang="en">This book is available for editing</source>
         <note>ID: TeamCollection.Available</note>

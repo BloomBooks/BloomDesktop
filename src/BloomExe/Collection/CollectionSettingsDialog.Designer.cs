@@ -743,12 +743,12 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._allowTeamCollection, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._allowTeamCollection, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._allowTeamCollection, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this._allowTeamCollection, "TeamCollection.TeamCollection");
+			this._L10NSharpExtender.SetLocalizingId(this._allowTeamCollection, "TeamCollection.TeamCollections");
 			this._allowTeamCollection.Location = new System.Drawing.Point(27, 129);
 			this._allowTeamCollection.Name = "_allowTeamCollection";
 			this._allowTeamCollection.Size = new System.Drawing.Size(124, 23);
 			this._allowTeamCollection.TabIndex = 8;
-			this._allowTeamCollection.Text = "Team Collection";
+			this._allowTeamCollection.Text = "Team Collections";
 			this._allowTeamCollection.UseVisualStyleBackColor = true;
 			this._allowTeamCollection.CheckedChanged += new System.EventHandler(this._allowTeamCollection_CheckedChanged);
 			// 
