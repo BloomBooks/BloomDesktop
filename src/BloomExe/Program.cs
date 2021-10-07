@@ -1317,7 +1317,7 @@ namespace Bloom
 			{
 				try
 				{
-					_sentry = SentrySdk.Init("https://bba22972ad6b4c2ab03a056f549cc23d@sentry.keyman.com/23");
+					_sentry = SentrySdk.Init("https://bba22972ad6b4c2ab03a056f549cc23d@o1009031.ingest.sentry.io/5983534");
 					SentrySdk.ConfigureScope(scope =>
 					{
 						scope.SetExtra("channel", ApplicationUpdateSupport.ChannelName);
