@@ -1870,7 +1870,7 @@ namespace Bloom.CollectionTab
 				{
 					dlg.Filter = "xlsx|*.xlsx";
 					dlg.RestoreDirectory = true;
-					dlg.InitialDirectory = Settings.Default.ExportImportFileFolder ?? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+					dlg.InitialDirectory = !String.IsNullOrWhiteSpace(Settings.Default.ExportImportFileFolder) ? Settings.Default.ExportImportFileFolder : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 					if (DialogResult.Cancel == dlg.ShowDialog())
 					{
 						return;
