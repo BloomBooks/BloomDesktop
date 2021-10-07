@@ -147,7 +147,7 @@ Recently we spent weeks improving Bloom's ability to deal with large books and l
 
 When you download books from BloomLibrary.org that have audio, Bloom will now download the audio as part of the shell book.
 
-We've improved what you see when you look at a [template books on BloomLibrary.org](https://bloomlibrary.org/create/create-templates). It is now easier to understand what the template pages are for:
+We've improved what you see when you look at [template books on BloomLibrary.org](https://bloomlibrary.org/create/create-templates). It is now easier to understand what the template pages are for:
 
 ![screenshot-online-only](https://i.imgur.com/JU0m0SD.png)
 
