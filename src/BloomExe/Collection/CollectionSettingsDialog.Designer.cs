@@ -80,7 +80,10 @@ namespace Bloom.Collection
 			this._automaticallyUpdate = new System.Windows.Forms.CheckBox();
 			this.label2 = new System.Windows.Forms.Label();
 			this._showExperimentalBookSources = new System.Windows.Forms.CheckBox();
+			this._enterpriseRequiredForTeamCollection = new System.Windows.Forms.Label();
 			this._allowTeamCollection = new System.Windows.Forms.CheckBox();
+			this._enterpriseRequiredForSpreadsheetImportExport = new System.Windows.Forms.Label();
+			this._allowSpreadsheetImportExport = new System.Windows.Forms.CheckBox();
 			this._okButton = new System.Windows.Forms.Button();
 			this._restartReminder = new System.Windows.Forms.Label();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
@@ -725,7 +728,10 @@ namespace Bloom.Collection
 			this.tabPage4.Controls.Add(this._automaticallyUpdate);
 			this.tabPage4.Controls.Add(this.label2);
 			this.tabPage4.Controls.Add(this._showExperimentalBookSources);
+			this.tabPage4.Controls.Add(this._enterpriseRequiredForTeamCollection);
 			this.tabPage4.Controls.Add(this._allowTeamCollection);
+			this.tabPage4.Controls.Add(this._enterpriseRequiredForSpreadsheetImportExport);
+			this.tabPage4.Controls.Add(this._allowSpreadsheetImportExport);
 			this._L10NSharpExtender.SetLocalizableToolTip(this.tabPage4, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.tabPage4, null);
 			this._L10NSharpExtender.SetLocalizingId(this.tabPage4, "CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel");
@@ -782,6 +788,17 @@ namespace Bloom.Collection
 			this._showExperimentalBookSources.UseVisualStyleBackColor = true;
 			this._showExperimentalBookSources.CheckedChanged += new System.EventHandler(this._showExperimentalBookSources_CheckedChanged);
 			// 
+			// _enterpriseRequiredForTeamCollection
+			//
+			this._enterpriseRequiredForTeamCollection.Name = "_enterpriseRequiredForTeamCollection";
+			this._enterpriseRequiredForTeamCollection.Location = new System.Drawing.Point(0, 129);
+			this._enterpriseRequiredForTeamCollection.Size = new System.Drawing.Size(23, 23);
+			this._enterpriseRequiredForTeamCollection.TabIndex = 8;
+			this._enterpriseRequiredForTeamCollection.TabStop = false;	// Just in case. (Normally its constructor sets it to false already)
+			this._enterpriseRequiredForTeamCollection.Image = Properties.Resources.enterpriseBadge;	// Easiest is if the image is already the same size as the button. I had trouble figuring out how to shrink it.
+			this._L10NSharpExtender.SetLocalizableToolTip(this._enterpriseRequiredForTeamCollection, "To use this feature, you'll need to enable Bloom Enterprise.");	// Appends _ToolTip__ to the LocalizingId
+			this._L10NSharpExtender.SetLocalizingId(this._enterpriseRequiredForTeamCollection, "CollectionSettingsDialog.RequiresEnterprise");
+			// 
 			// _allowTeamCollection
 			// 
 			this._allowTeamCollection.AutoSize = true;
@@ -792,10 +809,36 @@ namespace Bloom.Collection
 			this._allowTeamCollection.Location = new System.Drawing.Point(27, 129);
 			this._allowTeamCollection.Name = "_allowTeamCollection";
 			this._allowTeamCollection.Size = new System.Drawing.Size(124, 23);
-			this._allowTeamCollection.TabIndex = 8;
+			this._allowTeamCollection.TabIndex = 9;
 			this._allowTeamCollection.Text = "Team Collections";
 			this._allowTeamCollection.UseVisualStyleBackColor = true;
 			this._allowTeamCollection.CheckedChanged += new System.EventHandler(this._allowTeamCollection_CheckedChanged);
+			// 
+			// _enterpriseRequiredForSpreadsheetImportExport
+			//
+			this._enterpriseRequiredForSpreadsheetImportExport.Name = "_enterpriseRequiredForTeamCollection";
+			this._enterpriseRequiredForSpreadsheetImportExport.Location = new System.Drawing.Point(0, 158);
+			this._enterpriseRequiredForSpreadsheetImportExport.Size = new System.Drawing.Size(23, 23);
+			this._enterpriseRequiredForSpreadsheetImportExport.TabIndex = 10;
+			this._enterpriseRequiredForSpreadsheetImportExport.TabStop = false;	// Just in case. (Normally its constructor sets it to false already)
+			this._enterpriseRequiredForSpreadsheetImportExport.Image = Properties.Resources.enterpriseBadge;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._enterpriseRequiredForSpreadsheetImportExport, "To use this feature, you'll need to enable Bloom Enterprise.");	// Appends _ToolTip__ to the LocalizingId
+			this._L10NSharpExtender.SetLocalizingId(this._enterpriseRequiredForSpreadsheetImportExport, "CollectionSettingsDialog.RequiresEnterprise");
+			// 
+			// _allowSpreadsheetImportExport
+			// 
+			this._allowSpreadsheetImportExport.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._allowSpreadsheetImportExport, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._allowSpreadsheetImportExport, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._allowSpreadsheetImportExport, L10NSharp.LocalizationPriority.Low);
+			this._L10NSharpExtender.SetLocalizingId(this._allowSpreadsheetImportExport, "CollectionSettingsDialog.AdvancedTab.Experimental.SpreadsheetImportExport");
+			this._allowSpreadsheetImportExport.Location = new System.Drawing.Point(27, 158);
+			this._allowSpreadsheetImportExport.Name = "_allowSpreadsheetImportExport";
+			this._allowSpreadsheetImportExport.Size = new System.Drawing.Size(124, 23);
+			this._allowSpreadsheetImportExport.TabIndex = 11;
+			this._allowSpreadsheetImportExport.Text = "Spreadsheet Import/Export";
+			this._allowSpreadsheetImportExport.UseVisualStyleBackColor = true;
+			this._allowSpreadsheetImportExport.CheckedChanged += new System.EventHandler(this._allowSpreadsheetImportExport_CheckedChanged);
 			// 
 			// _okButton
 			// 
@@ -954,7 +997,10 @@ namespace Bloom.Collection
 		private CheckBox _automaticallyUpdate;
 		private Label label2;
 		private System.Windows.Forms.CheckBox _showExperimentalBookSources;
+		private Label _enterpriseRequiredForTeamCollection;
 		private CheckBox _allowTeamCollection;
+		private Label _enterpriseRequiredForSpreadsheetImportExport;
+		private CheckBox _allowSpreadsheetImportExport;
 		private Button _helpButton;
 		private TextBox _xmatterDescription;
 		private ListView _xmatterList;
