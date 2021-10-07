@@ -57,3 +57,51 @@
     display: flex;
     flex-direction: column;
 }
+
+.requiresBloomEnterpriseDialog {
+    [class*="DialogTitle"] {
+        h1 {
+            font-size: large;
+        }
+    }
+    .requiresBloomEnterprise {
+        padding: 10px 0px 0px 0px;
+        .requiresEnterpriseNotice {
+            text-align: left;
+            padding: 0;
+            color: black;
+            background-color: white;
+            height: @bloom-enterprise-notice-height;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            max-width: 2 * @bloom-enterprise-notice-width;
+            &.darkTheme {
+                color: white;
+                background-color: @bloom-gray;
+            }
+            .requiresEnterpriseEnablingLabel {
+                margin: 0;
+                font-size: medium;
+            }
+            .requiresEnterpriseButton {
+                max-width: @bloom-enterprise-button-width;
+                // We used to limit it to 60px, but then it can't grow if the translated text takes more room than that.
+                // So let's remove this max-height limitation.
+                // ENHANCE: On the team collection page, there's only room for about 95px of this.
+                // max-height: @bloom-enterprise-button-height;
+                align-self: normal;
+                background-color: white;
+                line-height: 1.1;
+                font-size: small;
+                border-radius: @buttonRadius;
+                border-width: thin;
+                border-color: @bloom-blue;
+                border-style: solid;
+            }
+        }
+    }
+    [class*="DialogBottomButtons"] {
+        padding: 10px 0px 10px 0px;
+    }
+}
