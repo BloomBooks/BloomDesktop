@@ -662,7 +662,7 @@ namespace Bloom.TeamCollection
 		/// <summary>
 		/// Return true if the book exists in the repo.
 		/// </summary>
-		protected override bool IsBookPresentInRepo(string bookFolderName)
+		public override bool IsBookPresentInRepo(string bookFolderName)
 		{
 			var bookPath = GetPathToBookFileInRepo(bookFolderName);
 			return RobustFile.Exists(bookPath);

@@ -392,7 +392,17 @@ namespace Bloom.CollectionTab
 		private void RepairDuplicates()
 		{
 			var collectionPath = _model.TheOneEditableCollection.PathToDirectory;
-			BookInfo.RepairDuplicateInstanceIds(collectionPath);
+			// A book's ID may not be changed if we have a TC and the book is actually in the shared folder.
+			// Eventually we may allow it if the book is checked out.
+			BookInfo.RepairDuplicateInstanceIds(collectionPath, (bookPath) =>
+			{
+				if (_tcManager?.CurrentCollection == null)
+				{
+					return true; // OK to change, not a TC.
+				}
+				// Only OK if not present in the TC repo.
+				return !_tcManager.CurrentCollection.IsBookPresentInRepo(Path.GetFileName(bookPath));
+			});
 		}
 
 		/// <summary>

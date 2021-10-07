@@ -121,7 +121,7 @@ namespace Bloom.TeamCollection
 			return true;
 		}
 
-		protected override bool IsBookPresentInRepo(string bookFolderName)
+		public override bool IsBookPresentInRepo(string bookFolderName)
 		{
 			throw new NotImplementedException();
 		}
