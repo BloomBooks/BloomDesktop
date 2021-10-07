@@ -763,7 +763,8 @@ namespace Bloom.Collection
 			this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(146, 19);
-			this.label2.TabIndex = 7;
+			this.label2.TabIndex = 6;
+			this.label2.TabStop = false;	// Just in case. (Normally its constructor sets it to false already)
 			this.label2.Text = "Experimental Features";
 			// 
 			// _showExperimentalBookSources
@@ -776,7 +777,7 @@ namespace Bloom.Collection
 			this._showExperimentalBookSources.Location = new System.Drawing.Point(27, 100);
 			this._showExperimentalBookSources.Name = "_showExperimentalBookSources";
 			this._showExperimentalBookSources.Size = new System.Drawing.Size(229, 23);
-			this._showExperimentalBookSources.TabIndex = 4;
+			this._showExperimentalBookSources.TabIndex = 7;
 			this._showExperimentalBookSources.Text = "Show Experimental Book Sources";
 			this._showExperimentalBookSources.UseVisualStyleBackColor = true;
 			this._showExperimentalBookSources.CheckedChanged += new System.EventHandler(this._showExperimentalBookSources_CheckedChanged);
