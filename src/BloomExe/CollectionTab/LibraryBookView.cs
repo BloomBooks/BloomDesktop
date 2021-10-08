@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -111,7 +111,7 @@ namespace Bloom.CollectionTab
 			catch (Exception error)
 			{
 				var msg = L10NSharp.LocalizationManager.GetString("Errors.ErrorSelecting",
-					"There was a problem selecting the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.");
+					"There was a problem selecting the book.  Restarting Bloom may fix the problem.  If not, please report the problem to us.");
 				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, msg);
 			}
 		}
