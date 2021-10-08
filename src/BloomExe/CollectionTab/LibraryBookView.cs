@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Diagnostics;
-using System.IO;
 using System.Windows.Forms;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.TeamCollection;
 using Bloom.MiscUI;
-using Bloom.Properties;
-using Bloom.ToPalaso;
 using Bloom.web.controllers;
-using Bloom.Workspace;
 using Gecko;
-using L10NSharp;
 using MarkdownDeep;
 using SIL.IO;
 
@@ -209,7 +202,8 @@ namespace Bloom.CollectionTab
 			var ge = e as DomEventArgs;
 			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
 			var anchor = target as Gecko.DOM.GeckoAnchorElement;
-			if (GetAnchorHref(e) != "" && GetAnchorHref(e) != "#")
+			var href = GetAnchorHref(e);
+			if (href != "" && href != "#")
 			{
 				_readmeBrowser.HandleLinkClick(anchor, ge, _bookSelection.CurrentSelection.FolderPath);
 			}

@@ -1293,13 +1293,14 @@ namespace Bloom
 		public void HandleLinkClick(GeckoAnchorElement anchor, DomEventArgs eventArgs, string workingDirectoryForFileLinks)
 		{
 			Debug.Assert(!InvokeRequired);
-			if (anchor.Href.ToLowerInvariant().StartsWith("http")) //will cover https also
+			var hrefLower = anchor.Href.ToLowerInvariant();
+			if (hrefLower.StartsWith("http")) //will cover https also
 			{
 				SIL.Program.Process.SafeStart(anchor.Href);
 				eventArgs.Handled = true;
 				return;
 			}
-			if (anchor.Href.ToLowerInvariant().StartsWith("file"))
+			if (hrefLower.StartsWith("file"))
 			//links to files are handled externally if we can tell they aren't html/javascript related
 			{
 				// TODO: at this point spaces in the file name will cause the link to fail.
@@ -1318,10 +1319,20 @@ namespace Bloom
 					});
 					return;
 				}
+
+				if (path.StartsWith("bloom/api/"))
+				{
+					// If we don't use 'fetch' here, we end up with the browser showing a blank screen and "OK".
+					// Using 'fetch' doesn't navigate the browser, so the readme stays intact.
+					path = BloomServer.ServerUrlEndingInSlash + path;
+					RunJavaScript("fetch('" + path + "', {method:'POST'})");
+					eventArgs.Handled = true;
+					return;
+				}
 				eventArgs.Handled = false; //let gecko handle it
 				return;
 			}
-			else if (anchor.Href.ToLowerInvariant().StartsWith("mailto"))
+			else if (hrefLower.StartsWith("mailto"))
 			{
 				eventArgs.Handled = true;
 				Process.Start(anchor.Href); //let the system open the email program
