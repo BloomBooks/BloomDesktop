@@ -210,10 +210,18 @@ namespace Bloom.TeamCollection
 			}
 		}
 
+		/// <summary>
+		/// Use this as a last resort. Objects created by AutoFac should just add a TCM to their argument
+		/// list if they need it. But there are objects like Book where this is not a logical member variable,
+		/// but for a very few special cases they need to be able to get it.
+		/// </summary>
+		public static TeamCollectionManager TheOneInstance { get; private set; }
+
 		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer,
 			BookRenamedEvent bookRenamedEvent, BookStatusChangeEvent bookStatusChangeEvent,
 			BookSelection bookSelection, LibraryClosing libraryClosingEvent)
 		{
+			TheOneInstance = this;
 			_webSocketServer = webSocketServer;
 			_bookStatusChangeEvent = bookStatusChangeEvent;
 			_localCollectionFolder = Path.GetDirectoryName(localCollectionPath);

@@ -52,6 +52,11 @@ namespace Bloom.TeamCollection
 
 		protected bool _updatingCollectionFiles;
 
+		/// <summary>
+		/// Books that have been remotely renamed but not yet reloaded and renamed locally.
+		/// </summary>
+		private HashSet<string> _remotelyRenamedBooks = new HashSet<string>();
+
 		public TeamCollection(ITeamCollectionManager manager, string localCollectionFolder,
 			TeamCollectionMessageLog tcLog = null)
 		{
@@ -1138,6 +1143,8 @@ namespace Bloom.TeamCollection
 
 		public virtual bool HasBeenChangedRemotely(string bookName)
 		{
+			if (_remotelyRenamedBooks.Contains(bookName))
+				return true;
 			return GetLocalStatus(bookName).checksum != GetStatus(bookName).checksum;
 		}
 
@@ -1289,6 +1296,7 @@ namespace Bloom.TeamCollection
 				}
 				else
 				{
+					_remotelyRenamedBooks.Add(oldName);
 					_tcLog.WriteMessage(MessageAndMilestoneType.NewStuff, "TeamCollection.RenameFromRemote",
 						"The book \"{0}\" has been renamed to \"{1}\" by a teammate.",
 						oldName, bookBaseName);
@@ -1522,6 +1530,10 @@ namespace Bloom.TeamCollection
 
 			var newBooks = GetNewRepoBookMap();
 
+			// The list of these that we maintain to track changes while we are running
+			// is distinct from the list that is a local variable here and tracks ones
+			// we actually are in the process of fixing.
+			_remotelyRenamedBooks.Clear();
 			var remotelyRenamedBooks = new HashSet<string>(); // Books actually found to be renamed (by new name)
 
 			// Delete books that we think have been deleted remotely from the repo.

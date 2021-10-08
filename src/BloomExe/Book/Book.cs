@@ -16,6 +16,7 @@ using System.Xml;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Publish;
+using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web.controllers;
@@ -3523,6 +3524,22 @@ namespace Bloom.Book
 			XmlHtmlConverter.GetXmlDomFromHtmlFile(Storage.PathToExistingHtml,true).Save(path);
 		}
 
+		bool OkToChangeFileAndFolderName
+		{
+			get
+			{
+				if (LockDownTheFileAndFolderName || BookInfo.NameLocked)
+					return false;
+				// I really wish Book didn't need to know about TeamCollection. But Save is used
+				// in BringBookUpToDate, and it is disastrous to change the folder name of a book
+				// that is not checked out.
+				var tcm = TeamCollectionManager.TheOneInstance;
+				if (tcm != null && tcm.NeedCheckoutToEdit(FolderPath))
+					return false;
+				return true;
+			}
+		}
+
 		public void Save()
 		{
 			// If you add something here, consider whether it is needed in SaveForPageChanged().
@@ -3537,7 +3554,7 @@ namespace Bloom.Book
 			Guard.Against(!IsEditable, "Tried to save a non-editable book.");
 			RemoveObsoleteSoundAttributes(OurHtmlDom);
 			_bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo);//will update the title if needed
-			if(!LockDownTheFileAndFolderName && !BookInfo.NameLocked)
+			if(OkToChangeFileAndFolderName)
 			{
 				Storage.UpdateBookFileAndFolderName(CollectionSettings); //which will update the file name if needed
 			}

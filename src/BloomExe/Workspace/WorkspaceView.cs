@@ -231,7 +231,6 @@ namespace Bloom.Workspace
 
 			bookSelection.SelectionChanged += HandleBookSelectionChanged;
 			bookStatusChangeEvent.Subscribe(args => { HandleBookStatusChange(args); });
-			SelectPreviouslySelectedBook();
 		}
 
 		public void HandleRenameCommand()
@@ -269,6 +268,12 @@ namespace Bloom.Workspace
 					);
 				}, shouldHideSplashScreen: true);
 			}
+
+			// Must not do this until we've done TC sync. Among various potential confusions,
+			// if the book has been renamed remotely but not yet here, we may not be able to tell that it
+			// needs to be checked out before BringBookUpToDate renames it here.
+			StartupScreenManager.AddStartupAction(() =>
+				SelectPreviouslySelectedBook());
 		}
 
 		/// <summary>
