@@ -3095,7 +3095,7 @@ namespace Bloom.Book
 			catch (Exception error)
 			{
 				var msg = LocalizationManager.GetString("Errors.CouldNotSavePage",
-					"Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!");
+					"Bloom had trouble saving a page. Please report the problem to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!");
 				ErrorReport.NotifyUserOfProblem(error, msg);
 			}
 		}

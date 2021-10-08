@@ -430,7 +430,7 @@ namespace Bloom.Book
 
 				// ENHANCE: If it's going to kill the process right afterward, seems like we could call the FatalMessage version instead...
 				ErrorReport.NotifyUserOfProblem(ex,
-					"Before saving, Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " +
+					"Before saving, Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please report the problem to us.  Bloom has saved the bad version of this book as " +
 					badFilePath +
 					".  Bloom will now exit, and your book will probably not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
 
@@ -1301,7 +1301,7 @@ namespace Bloom.Book
 			if (!Directory.Exists(FolderPath)) //bl-290 (user had 4 month-old version, so the bug may well be long gone)
 			{
 				var msg = LocalizationManager.GetString("BookStorage.FolderMoved",
-					"It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.");
+					"It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please report the problem to us.");
 				ErrorReport.NotifyUserOfProblem(
 					new ApplicationException(
 						$"In SetBookName('{name}'), BookStorage thinks the existing folder is '{FolderPath}', but that does not exist. (ref bl-290)"),
@@ -1894,7 +1894,7 @@ namespace Bloom.Book
 				RobustFile.Move(backupPath, pathToExistingHtml);
 			}
 			var msg = LocalizationManager.GetString("BookStorage.CorruptBook",
-				"Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.");
+				"Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please report it to us.");
 			ErrorReport.NotifyUserOfProblem(error, msg);
 			// We've restored a validated backup, so as far as the caller is concerned we have a good book.
 			InitialLoadErrors = "";
