@@ -621,14 +621,7 @@ namespace Bloom.CollectionTab
 			// We changed the tooltip to show the folder name to help when you have duplicates of the book, e.g. when
 			// something goes amiss when using Dropbox and it creates copies.
 			var info = GetBookInfoFromButton(button);
-			if (info == null)
-			{
-				toolTip1.SetToolTip(button,"error");
-			}
-			else
-			{
-				toolTip1.SetToolTip(button, Path.GetFileName(info.FolderPath));
-			}
+			toolTip1.SetToolTip(button, info == null ? "error" : info.FolderPath);
 		}
 		private Book.Book LoadBookAndBringItUpToDate(BookInfo bookInfo, out bool badBook)
 		{
