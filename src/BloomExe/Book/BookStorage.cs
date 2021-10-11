@@ -1360,9 +1360,22 @@ namespace Bloom.Book
 				Debug.Fail("(debug mode only): could not rename the folder");
 			}
 
-			_bookRenamedEvent.Raise(fromToPair);
+			RaiseBookRenamedEvent(fromToPair);
 
 			OnFolderPathChanged();
+		}
+
+		private void RaiseBookRenamedEvent(KeyValuePair<string, string> fromToPair)
+		{
+			// It's possible for books to get renamed in temp folders, for example,
+			// a book which in the collection has a duplicate suffix in its folder path
+			// may get that removed when a temp copy for publishing is brought up to date.
+			// We only want to raise the event when a book actually in the collection
+			// is updated. (In particular we don't want to rename the real book for
+			// remote users of a TeamCollection when we were just renaming the copy
+			// we were publishing.)
+			if (FolderPath.StartsWith(_collectionSettings.FolderPath))
+				_bookRenamedEvent.Raise(fromToPair);
 		}
 
 		protected virtual void OnFolderPathChanged()
@@ -1853,7 +1866,7 @@ namespace Bloom.Book
 			if (renamedTo != null)
 			{
 				// The reload has renamed the book. We need to do the usual side effects.
-				_bookRenamedEvent.Raise(fromToPair);
+				RaiseBookRenamedEvent(fromToPair);
 				OnFolderPathChanged();
 			}
 		}
@@ -2758,7 +2771,8 @@ namespace Bloom.Book
 					RobustFile.WriteAllText(metaPath, meta.ToString());
 				}
 
-				BookInfo backupBook = new BookInfo(newFolderPath, true);
+				// This bookInfo is not going to hang around, so it's harmless to say it can always save.
+				BookInfo backupBook = new BookInfo(newFolderPath, true, new AlwaysEditSaveContext());
 				backupBook.NameLocked = true;
 				backupBook.Save();
 			}

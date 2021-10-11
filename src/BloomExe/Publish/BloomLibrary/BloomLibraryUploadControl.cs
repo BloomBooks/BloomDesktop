@@ -109,7 +109,7 @@ namespace Bloom.Publish.BloomLibrary
 			_copyrightLabel.Text = _model.Copyright;
 			_creditsLabel.Text = _model.Credits;
 			_summaryBox.Text = _model.Summary;
-			if (!TeamCollectionApi.TheOneInstance.CanEditBook())
+			if (!_model.Book.IsSaveable)
 			{
 				_summaryBox.Enabled = false;
 				_summaryOptionalLabel.Text = LocalizationManager.GetString("TeamCollection.OptionalCheckOutEdit",

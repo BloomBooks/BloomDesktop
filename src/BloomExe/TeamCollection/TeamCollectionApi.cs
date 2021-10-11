@@ -698,12 +698,5 @@ namespace Bloom.TeamCollection
 				_bookSelection.InvokeSelectionChanged(false);
 			}));
 		}
-
-		// Some pre-existing logic for whether the user can edit the book, combined with checking
-		// that it is checked-out to this user 
-		public bool CanEditBook()
-		{
-			return _tcManager.CanEditBook();
-		}
 	}
 }

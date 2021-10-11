@@ -31,7 +31,7 @@ namespace Bloom.TeamCollection
 	/// The idea is to leave open the possibility of other implementations, for example, based on
 	/// a DVCS.
 	/// </summary>
-	public abstract class TeamCollection: IDisposable
+	public abstract class TeamCollection: IDisposable, ISaveContext
 	{
 		// special value for BookStatus.lockedBy when the book is newly created and not in the repo at all.
 		public const string FakeUserIndicatingNewBook = "this user";
@@ -2075,6 +2075,11 @@ namespace Bloom.TeamCollection
 		~TeamCollection()
 		{
 			Dispose(false);
+		}
+
+		public bool CanSaveChanges(BookInfo info)
+		{
+			return !NeedCheckoutToEdit(info.FolderPath);
 		}
 
 		/// <summary>

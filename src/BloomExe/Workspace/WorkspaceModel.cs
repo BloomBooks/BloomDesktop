@@ -35,7 +35,7 @@ namespace Bloom.Workspace
 			get { return _bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.IsEditable && !_bookSelection.CurrentSelection.HasFatalError; }
 		}
 
-		public bool EditTabLocked => !TeamCollectionApi.TheOneInstance.CanEditBook();
+		public bool EditTabLocked => !_bookSelection.CurrentSelection.IsSaveable;
 
 		public bool ShowPublishTab
 		{

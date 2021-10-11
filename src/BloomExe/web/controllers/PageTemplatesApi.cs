@@ -302,7 +302,9 @@ namespace Bloom.web.controllers
 		private static bool IsTemplateInvisible(string templatePath)
 		{
 			var folderPath = Path.GetDirectoryName(templatePath);
-			var info = new BookInfo(folderPath, true);
+			// This book info should never be asked about savability, so it doesn't matter much,
+			// but it feels safer to say it can't be saved.
+			var info = new BookInfo(folderPath, true, new NoEditSaveContext());
 			return !info.ShowThisBookAsSource();
 		}
 

@@ -152,7 +152,7 @@ namespace Bloom.CollectionTab
 				// It's in a location where editing makes sense, so all the menu options are
 				// relevant. I don't think we want to hide any of them. But, we need to disable
 				// the ones that require checkout if we don't have it.
-				bool needsCheckout = _tcManager.NeedCheckoutToEdit(btnInfo.BookInfo.FolderPath);
+				bool needsCheckout = btnInfo.BookInfo.IsSaveable;
 				foreach (ToolStripItem menuItem in (sender as ContextMenuStrip).Items)
 				{
 					if (needsCheckout)
@@ -1796,7 +1796,7 @@ namespace Bloom.CollectionTab
 			if (!bookInfoFromButton.IsEditable)
 				return;
 			// ...or not checked out
-			if (_tcManager.NeedCheckoutToEdit(bookInfoFromButton.FolderPath))
+			if (!bookInfoFromButton.IsSaveable)
 				return;
 			if (_renameOverlay != null)
 			{

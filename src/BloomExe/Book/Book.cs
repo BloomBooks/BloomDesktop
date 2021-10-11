@@ -78,7 +78,7 @@ namespace Bloom.Book
 			PageSelection pageSelection,
 			PageListChangedEvent pageListChangedEvent,
 			BookRefreshEvent bookRefreshEvent,
-			BookSavedEvent bookSavedEvent=null)
+			BookSavedEvent bookSavedEvent=null, ISaveContext context = null)
 		{
 			BookInfo = info;
 			if (bookSavedEvent == null) // unit testing
@@ -648,6 +648,12 @@ namespace Bloom.Book
 				return !HasFatalError;
 			}
 		}
+
+		/// <summary>
+		/// True if changes to the book may currently be saved. This includes the book being checked out
+		/// if it is in a team collection, and by intent should include any future requirements.
+		/// </summary>
+		public bool IsSaveable => IsEditable && BookInfo.IsSaveable;
 
 
 		/// <summary>
@@ -3530,13 +3536,7 @@ namespace Bloom.Book
 			{
 				if (LockDownTheFileAndFolderName || BookInfo.NameLocked)
 					return false;
-				// I really wish Book didn't need to know about TeamCollection. But Save is used
-				// in BringBookUpToDate, and it is disastrous to change the folder name of a book
-				// that is not checked out.
-				var tcm = TeamCollectionManager.TheOneInstance;
-				if (tcm != null && tcm.NeedCheckoutToEdit(FolderPath))
-					return false;
-				return true;
+				return IsSaveable;
 			}
 		}
 

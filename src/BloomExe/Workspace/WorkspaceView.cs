@@ -294,7 +294,7 @@ namespace Bloom.Workspace
 			var inSourceFolder = !inCurrentCollection && _model.GetSourceCollectionFolders().ToList().Exists(folder => selBookCollectionFolder == folder);
 			if (inCurrentCollection || inSourceFolder)
 			{
-				var info = new BookInfo(selBookPath, inCurrentCollection);
+				var info = new BookInfo(selBookPath, inCurrentCollection, _tcManager.CurrentCollectionEvenIfDisconnected);
 				// Fully updating book files ensures that the proper branding files are found for
 				// previewing when the collection settings change but the book selection does not.
 				var book = _bookServer.GetBookFromBookInfo(info, fullyUpdateBookFiles: true);
@@ -329,7 +329,7 @@ namespace Bloom.Workspace
 			var result = JsonConvert.SerializeObject(new
 			{
 				id = book?.ID,
-				editable = _tcManager.CanEditBook(),
+				editable = _bookSelection.CurrentSelection?.IsSaveable ?? false,
 				collectionKind
 			});
 			return result;
