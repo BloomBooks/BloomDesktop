@@ -3,6 +3,9 @@
  * For licensing, see LICENSE.md or http://ckeditor.com/license
  */
 
+// Warning: this file is NOT processed by yarn watchCode or webpack -w. Takes a full build or manual copy
+// (or possibly something like yarn gulp copyFiles) to get changes to take effect during debugging.
+
 CKEDITOR.editorConfig = function(config) {
     // Define changes to default configuration here.
     // For complete reference see:
@@ -62,12 +65,11 @@ CKEDITOR.editorConfig = function(config) {
     //      config.pasteFilter = 'h1 h2 h3 p blockquote table tr th td caption b bdi bdo br em i q strong sub sup u; a[!href]';
     // but by letting people paste things that cannot be duplicated by a user doing a translation, are
     // we leading people to expect formatting in Bloom that translators will not actually be able to replicate?
-    // JohnT Oct 8 2021: added 'a' to allow pasting at least some hyperlinks (text containing hyperlinks copied from
-    // a browser still comes in plain for some reason). Not sure why the comment above indicates that we only thought
-    // anchors without hrefs were safe. For copying internal links (e.g., re-arranging TOC) we need to be able to
-    // paste hyperlinks with hrefs. I don't know any reason it would be dangerous.
+    // JohnT Oct 8 2021: added 'a[!href]' to allow pasting hyperlinks. Counter-intuitively, the [!href] annotation
+    // indicates that an href is required, not that it is forbidden. (Without annotations, listing a tag
+    // means it may be pasted, but any attributes in the original will be removed.)
     // Therefore for now we're limiting pasting to things that a translator could also do:
-    config.pasteFilter = "p b br em i strong sup u a;";
+    config.pasteFilter = "p b br em i strong sup u a[!href];";
 
     //BL-3009: don't remove empty spans, since we use <span class="bloom-linebreak"></span> when you press shift-enter.
     //http://stackoverflow.com/a/23983357/723299
