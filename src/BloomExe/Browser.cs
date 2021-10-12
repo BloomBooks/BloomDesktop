@@ -14,7 +14,6 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.Api;
 using Bloom.Edit;
-using Bloom.web.controllers;
 using Gecko;
 using Gecko.DOM;
 using Gecko.Events;
@@ -1284,13 +1283,21 @@ namespace Bloom
 		public void HandleLinkClick(GeckoAnchorElement anchor, DomEventArgs eventArgs, string workingDirectoryForFileLinks)
 		{
 			Debug.Assert(!InvokeRequired);
-			if (anchor.Href.ToLowerInvariant().StartsWith("http")) //will cover https also
+			var hrefLower = anchor.Href.ToLowerInvariant();
+			if (hrefLower.StartsWith("http")) //will cover https also
 			{
+				// Now that template readme urls are all localhost, we detect if a link we clicked on is within
+				// the same document we started in. If so, we'll just let gecko handle it.
+				if (IsLocalLink(anchor.Href))
+				{
+					eventArgs.Handled = false;
+					return;
+				}
 				SIL.Program.Process.SafeStart(anchor.Href);
 				eventArgs.Handled = true;
 				return;
 			}
-			if (anchor.Href.ToLowerInvariant().StartsWith("file"))
+			if (hrefLower.StartsWith("file"))
 			//links to files are handled externally if we can tell they aren't html/javascript related
 			{
 				// TODO: at this point spaces in the file name will cause the link to fail.
@@ -1312,7 +1319,7 @@ namespace Bloom
 				eventArgs.Handled = false; //let gecko handle it
 				return;
 			}
-			else if (anchor.Href.ToLowerInvariant().StartsWith("mailto"))
+			else if (hrefLower.StartsWith("mailto"))
 			{
 				eventArgs.Handled = true;
 				Process.Start(anchor.Href); //let the system open the email program
@@ -1323,6 +1330,12 @@ namespace Bloom
 				ErrorReport.NotifyUserOfProblem("Bloom did not understand this link: " + anchor.Href);
 				eventArgs.Handled = true;
 			}
+		}
+
+		private bool IsLocalLink(string anchorHref)
+		{
+			var originalUrlUpToOptionalHash = _browser.Url.OriginalString.Split(new []{'#'}, StringSplitOptions.None)[0];
+			return anchorHref.StartsWith(originalUrlUpToOptionalHash + "#");
 		}
 
 		/*
