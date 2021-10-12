@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Diagnostics;
-using System.IO;
 using System.Windows.Forms;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.TeamCollection;
 using Bloom.MiscUI;
-using Bloom.Properties;
-using Bloom.ToPalaso;
 using Bloom.web.controllers;
-using Bloom.Workspace;
 using Gecko;
-using L10NSharp;
 using MarkdownDeep;
 using SIL.IO;
 
@@ -165,7 +158,7 @@ namespace Bloom.CollectionTab
 					if (RobustFile.Exists(_bookSelection.CurrentSelection.AboutBookHtmlPath))
 					{
 						_splitContainerForPreviewAndAboutBrowsers.Panel2Collapsed = false;
-						_readmeBrowser.Navigate(_bookSelection.CurrentSelection.AboutBookHtmlPath, false);
+						_readmeBrowser.Navigate(_bookSelection.CurrentSelection.AboutBookHtmlPath.ToLocalhost(), false);
 						_readmeBrowser.Visible = true;
 					}
 					else if (RobustFile.Exists(_bookSelection.CurrentSelection.AboutBookMdPath))
@@ -209,9 +202,17 @@ namespace Bloom.CollectionTab
 			var ge = e as DomEventArgs;
 			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
 			var anchor = target as Gecko.DOM.GeckoAnchorElement;
-			if (GetAnchorHref(e) != "" && GetAnchorHref(e) != "#")
+			var href = GetAnchorHref(e);
+			if (href != "" && href != "#")
 			{
 				_readmeBrowser.HandleLinkClick(anchor, ge, _bookSelection.CurrentSelection.FolderPath);
+			}
+			else
+			{
+				// If there's no href, then we are probably doing a 'fetch' to a bloom/api link to produce
+				// some side effect. If we don't mark the event as handled here, geckofx will continue trying
+				// to handle it and possibly produce a Network Error.
+				ge.Handled = true;
 			}
 		}
 

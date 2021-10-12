@@ -1,3 +1,5 @@
+Note: The Overlay Tool requires that you have <a href="" onclick="fetch('/bloom/api/common/showSettingsDialog?tab=enterprise', {method:'POST'})">Bloom Enterprise</a> enabled. However, you can localize a shellbook that contain overlay elements into your own language without enabling Bloom Enterprise.
+
 Use this template as a starting point for comics designed for print. The size will be set to "US Comic, which is 6.625″ x 10.25″ (16.826 cm X 26.04 cm).
 
 ## About Full Bleed
