@@ -108,19 +108,23 @@ namespace BloomTests.WebLibraryIntegration
 		[Test]
 		public void DuplicateIdTest()
 		{
+			var book2 = _foldersToDispose[4];
+			// Although book3 is set up to be older than book1 and book2,
+			// we are simulating a situation where book2 is in a TC and its ID
+			// cannot be changed.
+			Func<string, bool> okToChangeId = (string folderName) => folderName != book2.FolderPath;
 			// SUT (use workFolder as the root directory)
-			BookUpload.BulkRepairInstanceIds(_workFolderPath);
+			BookUpload.BulkRepairInstanceIds(_workFolderPath, okToChangeId);
 
 			// Verification
 			var book1 = _foldersToDispose[3];
-			var book2 = _foldersToDispose[4];
 			var book3 = _foldersToDispose[5];
 			var book4 = _foldersToDispose[6];
 			var book5 = _foldersToDispose[7];
 			Assert.That(GetInstanceIdFromMetadataFile(book1), Is.Not.EqualTo(_guid1), "book1 should have changed guid1");
-			Assert.That(GetInstanceIdFromMetadataFile(book2), Is.Not.EqualTo(_guid1), "book2 should have changed guid1");
-			Assert.That(GetInstanceIdFromMetadataFile(book1), Is.Not.EqualTo(GetInstanceIdFromMetadataFile(book2)), "book1 should have different guid than book2");
-			Assert.That(GetInstanceIdFromMetadataFile(book3), Is.EqualTo(_guid1), "book3 should have guid1");
+			Assert.That(GetInstanceIdFromMetadataFile(book2), Is.EqualTo(_guid1), "book2 should not have changed guid1");
+			Assert.That(GetInstanceIdFromMetadataFile(book3), Is.Not.EqualTo(_guid1), "book3 should have changed guid1");
+			Assert.That(GetInstanceIdFromMetadataFile(book1), Is.Not.EqualTo(GetInstanceIdFromMetadataFile(book3)), "the two changed IDs for guid1 should be different from each other");
 			Assert.That(GetInstanceIdFromMetadataFile(book4), Is.EqualTo(_guid2), "book4 should have guid2");
 			Assert.That(GetInstanceIdFromMetadataFile(book4), Is.Not.EqualTo(GetInstanceIdFromMetadataFile(book5)), "book4 should have different guid than book5");
 		}
