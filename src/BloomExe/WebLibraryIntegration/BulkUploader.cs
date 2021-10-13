@@ -294,7 +294,7 @@ namespace Bloom.WebLibraryIntegration
 					Program.SetProjectContext(context);
 				}
 				var server = context.BookServer;
-				var bookInfo = new BookInfo(uploadParams.Folder, true);
+				var bookInfo = new BookInfo(uploadParams.Folder, true, context.TeamCollectionManager.CurrentCollectionEvenIfDisconnected);
 				var book = server.GetBookFromBookInfo(bookInfo, fullyUpdateBookFiles: true);
 				book.BringBookUpToDate(new NullProgress());
 				book.Storage.CleanupUnusedSupportFiles(isForPublish: false); // we are publishing, but this is the real folder not a copy, so play safe.
@@ -336,7 +336,7 @@ namespace Bloom.WebLibraryIntegration
 				bookSelection.SelectBook(book);
 				var currentEditableCollectionSelection = new CurrentEditableCollectionSelection();
 
-				var collection = new BookCollection(collectionPath, BookCollection.CollectionType.SourceCollection, bookSelection);
+				var collection = new BookCollection(collectionPath, BookCollection.CollectionType.SourceCollection, bookSelection, context.TeamCollectionManager);
 				currentEditableCollectionSelection.SelectCollection(collection);
 
 				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, context.Settings, server, _thumbnailer);

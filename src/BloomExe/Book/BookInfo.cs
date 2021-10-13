@@ -20,6 +20,7 @@ using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Text;
 using Bloom.Utils;
+using SIL.Code;
 
 namespace Bloom.Book
 {
@@ -32,6 +33,7 @@ namespace Bloom.Book
 		private const string kTopicPrefix = "topic:";
 		private const string kBookshelfPrefix = "bookshelf:";
 		public const string BookOrderExtension = ".BloomBookOrder";
+		private ISaveContext _saveContext;
 
 		private BookMetaData _metadata;
 
@@ -46,10 +48,23 @@ namespace Bloom.Book
 
 		}
 
-		public BookInfo(string folderPath, bool isEditable)
+		internal BookInfo(string folderPath, bool isEditable)
+			// By default (especially for many test cases), BookInfo's should assume savability
+			// unless not editable
+			: this(folderPath, isEditable, isEditable ? new AlwaysEditSaveContext() : new NoEditSaveContext() as ISaveContext)
 		{
-			FolderPath = folderPath;
+			// For real code, please explicitly provide a correct saveContext unless isEditable is false
+			if (isEditable)
+				Guard.Against(!Program.RunningUnitTests, "Only use this ctor for tests and non-editable collections");
+		}
 
+		public BookInfo(string folderPath, bool isEditable, ISaveContext saveContext)
+		{
+			Guard.AgainstNull(saveContext, "Please supply an actual saveContext");
+			
+			_saveContext = saveContext ?? (isEditable ? new AlwaysEditSaveContext() : new NoEditSaveContext() as ISaveContext);
+
+			FolderPath = folderPath;
 			//NB: This was coded in an unfortunate way such that touching almost any property causes a new metadata to be quietly created.
 			//So It's vital that we not touch properties that could create a blank metadata, before attempting to load the existing one.
 
@@ -263,7 +278,18 @@ namespace Bloom.Book
 			set { MetaData.Copyright = value; }
 		}
 
+		/// <summary>
+		/// Determined at construction time, and really means whether it is part of the editable collection.
+		/// May not really be OK to edit, for example, if it isn't checked out.
+		/// Wants a better name; consider whether IsSaveable should be used instead.
+		/// </summary>
 		public bool IsEditable { get; private set; }
+
+		/// <summary>
+		/// Determined by the SaveContext, which if relevant will consider team collection status.
+		/// This determines whether changes to this book can currently be saved.
+		/// </summary>
+		public bool IsSaveable => IsEditable && _saveContext.CanSaveChanges(this);
 
 		/// <summary>
 		/// If true, use a device-specific xmatter pack.
@@ -594,7 +620,10 @@ namespace Bloom.Book
 		/// <remarks>internal for testing</remarks>
 		internal static void InstallFreshInstanceGuid(string bookFolder)
 		{
-			var bookInfo = new BookInfo(bookFolder, true);
+			// This is a temporary BookInfo that shouldn't get asked about saveability of the book.
+			// But, this method should not have been called unless we already verified that we can save
+			// changes legitimately.
+			var bookInfo = new BookInfo(bookFolder, true, new AlwaysEditSaveContext());
 			bookInfo.InstallFreshGuidInternal();
 		}
 

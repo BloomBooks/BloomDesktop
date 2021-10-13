@@ -2,6 +2,7 @@
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Edit;
+using Bloom.TeamCollection;
 using SIL.Reporting;
 
 namespace Bloom.Book
@@ -12,14 +13,17 @@ namespace Bloom.Book
 		private readonly BookStorage.Factory _storageFactory;
 		private readonly BookStarter.Factory _bookStarterFactory;
 		private readonly Configurator.Factory _configuratorFactory;
+		private TeamCollectionManager _tcManager;
 
 		public BookServer(Book.Factory bookFactory, BookStorage.Factory storageFactory,
-						  BookStarter.Factory bookStarterFactory, Configurator.Factory configuratorFactory)
+						  BookStarter.Factory bookStarterFactory, Configurator.Factory configuratorFactory,
+						  TeamCollectionManager tcManager = null)
 		{
 			_bookFactory = bookFactory;
 			_storageFactory = storageFactory;
 			_bookStarterFactory = bookStarterFactory;
 			_configuratorFactory = configuratorFactory;
+			_tcManager = tcManager;
 		}
 
 		public virtual Book GetBookFromBookInfo(BookInfo bookInfo, bool fullyUpdateBookFiles = false)
@@ -29,6 +33,7 @@ namespace Bloom.Book
 			{
 				return new ErrorBook(((ErrorBookInfo)bookInfo).Exception, bookInfo.FolderPath, true );
 			}
+
 			var book = _bookFactory(bookInfo, _storageFactory(bookInfo.FolderPath, fullyUpdateBookFiles));
 			return book;
 		}
@@ -58,7 +63,10 @@ namespace Bloom.Book
 					c.ConfigureBook(BookStorage.FindBookHtmlInFolder(pathToFolderOfNewBook));
 				}
 
-				var newBookInfo = new BookInfo(pathToFolderOfNewBook,true); // _bookInfos.Find(b => b.FolderPath == pathToFolderOfNewBook);
+				// We're creating a new book, so for now, it can certainly be saved. However, this bookInfo might
+				// survive past where it gets checked in, so hook up the proper SaveContext.
+				var sc = _tcManager?.CurrentCollectionEvenIfDisconnected ?? new AlwaysEditSaveContext() as ISaveContext;
+				var newBookInfo = new BookInfo(pathToFolderOfNewBook,true, sc); // _bookInfos.Find(b => b.FolderPath == pathToFolderOfNewBook);
 				if (newBookInfo is ErrorBookInfo)
 				{
 					throw ((ErrorBookInfo) newBookInfo).Exception;

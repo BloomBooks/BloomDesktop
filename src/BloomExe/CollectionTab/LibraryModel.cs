@@ -177,7 +177,7 @@ namespace Bloom.CollectionTab
 			{
 				if (IsCurrentBookInCollection())
 				{
-					if (!_tcManager.CanEditBook())
+					if (!_bookSelection.CurrentSelection.IsSaveable)
 					{
 						var msg = LocalizationManager.GetString("TeamCollection.CheckOutForDelete",
 							"Please check out the book before deleting it.");
@@ -227,7 +227,7 @@ namespace Bloom.CollectionTab
 		{
 			// If we need the book to be checked out for editing, make sure it is. Do not allow double click
 			// to check it out. 
-			if (_tcManager.CanEditBook())
+			if (_bookSelection.CurrentSelection?.IsSaveable ?? false)
 			{
 				_editBookCommand.Raise(_bookSelection.CurrentSelection);
 			}

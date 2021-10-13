@@ -424,7 +424,8 @@ namespace Bloom.WebLibraryIntegration
 			{
 				if (!IsBookOnServer(bookFolder))
 					return false;
-				var bkInfo = new BookInfo(bookFolder, true);
+				// This instance of BookInfo is temporary, always Saveable is fine.
+				var bkInfo = new BookInfo(bookFolder, true, new AlwaysEditSaveContext());
 				var s3id = S3BookId(bkInfo.MetaData);
 				var key = s3id + BloomS3Client.kDirectoryDelimeterForS3 + Path.GetFileName(bookFolder) + BloomS3Client.kDirectoryDelimeterForS3 + UploadHashesFilename;
 				hashInfoOnS3 = _s3Client.DownloadFile(UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName, key);
@@ -471,7 +472,8 @@ namespace Bloom.WebLibraryIntegration
 
 			Directory.CreateDirectory(tempFolderPath);
 			BookStorage.CopyDirectory(book.FolderPath, tempFolderPath);
-			var bookInfo = new BookInfo(tempFolderPath, true);
+			// In the temp folder it's safe to assume we can save changes.
+			var bookInfo = new BookInfo(tempFolderPath, true, new AlwaysEditSaveContext());
 			var copiedBook = bookServer.GetBookFromBookInfo(bookInfo);
 			copiedBook.BringBookUpToDate(new NullProgress(), true);
 			var pages = new List<XmlElement>();

@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
+using Bloom.TeamCollection;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.FileSystem;
@@ -24,6 +25,7 @@ namespace Bloom.Collection
 		private readonly string _path;
 		private List<BookInfo> _bookInfos;
 		private string _factoryDir;
+		private TeamCollectionManager _tcManager;
 
 		private readonly BookSelection _bookSelection;
 
@@ -39,10 +41,11 @@ namespace Bloom.Collection
 		}
 
 		public BookCollection(string path, CollectionType collectionType,
-			BookSelection bookSelection)
+			BookSelection bookSelection, TeamCollectionManager tcm = null)
 		{
 			_path = path;
 			_bookSelection = bookSelection;
+			_tcManager = tcm;
 
 			Type = collectionType;
 
@@ -188,7 +191,9 @@ namespace Bloom.Collection
 					// BL-6099: don't hide the book if we at least have a valid backup file
 					!BackupFileExists(folderPath))
 						return;
-				var bookInfo = new BookInfo(folderPath, Type == CollectionType.TheOneEditableCollection);
+				var editable = Type == CollectionType.TheOneEditableCollection;
+				ISaveContext sc = editable ? _tcManager?.CurrentCollectionEvenIfDisconnected : null;
+				var bookInfo = new BookInfo(folderPath, editable, sc);
 
 				_bookInfos.Add(bookInfo);
 			}

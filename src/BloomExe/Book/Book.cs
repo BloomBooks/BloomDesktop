@@ -16,6 +16,7 @@ using System.Xml;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Publish;
+using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web.controllers;
@@ -77,7 +78,7 @@ namespace Bloom.Book
 			PageSelection pageSelection,
 			PageListChangedEvent pageListChangedEvent,
 			BookRefreshEvent bookRefreshEvent,
-			BookSavedEvent bookSavedEvent=null)
+			BookSavedEvent bookSavedEvent=null, ISaveContext context = null)
 		{
 			BookInfo = info;
 			if (bookSavedEvent == null) // unit testing
@@ -647,6 +648,12 @@ namespace Bloom.Book
 				return !HasFatalError;
 			}
 		}
+
+		/// <summary>
+		/// True if changes to the book may currently be saved. This includes the book being checked out
+		/// if it is in a team collection, and by intent should include any future requirements.
+		/// </summary>
+		public bool IsSaveable => IsEditable && BookInfo.IsSaveable;
 
 
 		/// <summary>
@@ -3523,6 +3530,16 @@ namespace Bloom.Book
 			XmlHtmlConverter.GetXmlDomFromHtmlFile(Storage.PathToExistingHtml,true).Save(path);
 		}
 
+		bool OkToChangeFileAndFolderName
+		{
+			get
+			{
+				if (LockDownTheFileAndFolderName || BookInfo.NameLocked)
+					return false;
+				return IsSaveable;
+			}
+		}
+
 		public void Save()
 		{
 			// If you add something here, consider whether it is needed in SaveForPageChanged().
@@ -3537,7 +3554,7 @@ namespace Bloom.Book
 			Guard.Against(!IsEditable, "Tried to save a non-editable book.");
 			RemoveObsoleteSoundAttributes(OurHtmlDom);
 			_bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo);//will update the title if needed
-			if(!LockDownTheFileAndFolderName && !BookInfo.NameLocked)
+			if(OkToChangeFileAndFolderName)
 			{
 				Storage.UpdateBookFileAndFolderName(CollectionSettings); //which will update the file name if needed
 			}

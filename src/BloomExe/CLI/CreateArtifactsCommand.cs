@@ -159,7 +159,7 @@ namespace Bloom.CLI
 
 		private static void LoadBook(string bookPath)
 		{
-			_book = _projectContext.BookServer.GetBookFromBookInfo(new BookInfo(bookPath, true));
+			_book = _projectContext.BookServer.GetBookFromBookInfo(new BookInfo(bookPath, true, _projectContext.TeamCollectionManager.CurrentCollectionEvenIfDisconnected));
 		}
 
 		/// <summary>
