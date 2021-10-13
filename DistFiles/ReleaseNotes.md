@@ -18,11 +18,13 @@ In collection settings, Bloom Enterprise projects that have bookshelves on Bloom
 
 The Comic Tool is now the "Overlay Tool". We made this change because this tool is now useful for more than comics and people who were not interested in comics were not finding it.
 
-You can now control the transparency of overlayed text elements and make corners round. You can also show a line that you can use to point to something in a diagram:
+❗ The Overlay Tool requires a Bloom Enterprise subscription. However, books that contain overlays can be translated into other languages without a Bloom Enterprise subscription. If this change causes you any problems, remember that you can always enable Bloom Enterprise freely if you do not have external funding. If that option does not work for you, please reach out to us at issues@bloomlibrary.org so that we can help you finish your book in some other way.
+
+⭐You can now control the transparency of overlayed text elements and make corners round. You can also show a line that you can use to point to something in a diagram:
 
 ![screenshot-online-only](https://i.imgur.com/HqlfqxN.png)
 
-You can now make circle text elements. [Feature Request](https://community.software.sil.org/t/circular-comic-captions/3121)
+⭐You can now make circle text elements. [Feature Request](https://community.software.sil.org/t/circular-comic-captions/3121)
 
 ### Widgets
 
@@ -44,9 +46,7 @@ Text on Simple Quiz pages is no longer counted when computing whole-book statist
 
 ## Team Collections
 
-The new Team Collection _enterprise_ feature debuts in this release. With a Team Collection, you can safely share a collection within your team, across the internet, without full-time internet access. For this release, we're going to keep this feature behind the "Experimental" checkbox. For now, we are only supporting Dropbox & LAN environments. Please contact us if you are considering using this. We need your help to fully understand how this will be used, and how the experience goes.
-
-![screenshot-online-only](https://i.imgur.com/VCqWEft.png)
+❗ _NOTE: Team Collections debuted in Bloom 5.0 beta, but did not "graduate" out of beta successfully because of a bug found by a beta tester (yay beta testers!). We did not have time to properly test the fix before it was time to release Bloom 5.0. Therefore, you need to run Bloom 5.1 beta in order to use this feature._
 
 ## Performance
 
