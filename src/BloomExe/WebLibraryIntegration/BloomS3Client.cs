@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -681,7 +681,7 @@ namespace Bloom.WebLibraryIntegration
 					if(!done)
 					{
 						var msg = LocalizationManager.GetString("Download.CopyFailed",
-							"Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers");
+							"Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please report the problem to us.");
 						// The exception doesn't add much useful information but it triggers a version of the dialog with a Details button
 						// that leads to the yellow box and an easy way to send the report.
 						ErrorReport.NotifyUserOfProblem(new ApplicationException("File Copy problem"), msg);
