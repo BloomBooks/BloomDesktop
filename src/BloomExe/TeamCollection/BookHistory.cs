@@ -25,6 +25,7 @@ namespace Bloom.TeamCollection
 
 		// todo: books have many names... could stick them all in here, or make a new table for names, or?
 		[Column("name")] public string Name { get; set; }
+		[Column("pendingCheckinMessage")] public string PendingCheckinMessage { get; set; }
 
 	}
 	public enum BookHistoryEventType
@@ -98,25 +99,55 @@ public class BookHistory
 		}
 	}
 
+	public static void SetPendingCheckinMessage(Book book, string message)
+	{
+		try
+		{
+			using (var db = GetConnection(book.FolderPath))
+			{
+				var bookRecord = GetOrMakeBookRecord(book, db);
+				bookRecord.PendingCheckinMessage = message;
+				db.Update(bookRecord);
+				db.Close();
+			}
+		}
+		catch (Exception e)
+		{
+
+			NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Problem writing book history", $"folder={book.FolderPath}",
+				e);
+			// swallow... we don't want to prevent whatever was about to happen.
+		}
+	}
+
+	public static string GetPendingCheckinMessage(Book book)
+	{
+		try
+		{
+			using (var db = GetConnection(book.FolderPath))
+			{
+				var bookRecord = GetBookRecord(book, db);
+				return bookRecord?.PendingCheckinMessage ?? "";
+			}
+		}
+		catch (Exception e)
+		{
+
+			NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Problem reading book history", $"folder={book.FolderPath}",
+				e);
+			// swallow... we don't want to prevent whatever was about to happen.
+		}
+
+		return "";
+	}
+
 	public static void AddEvent(Book book,  BookHistoryEventType eventType, string message="")
 	{
 		try
 		{
 			using (var db = GetConnection(book.FolderPath))
 			{
-						
-
-				var bookRecord = db.Table<BookHistoryBook>().FirstOrDefault(b => b.Id == book.ID);
-				if (bookRecord == null)
-				{
-					bookRecord = new BookHistoryBook
-					{
-						Id = book.ID,
-						// TODO: update Name every time because it can change? Add an event if we notice that it changed?
-						Name = book.TitleBestForUserDisplay
-					};
-					db.Insert(bookRecord);
-				}
+				GetOrMakeBookRecord(book, db);
 
 				var evt = new BookHistoryEvent()
 				{
@@ -139,6 +170,28 @@ public class BookHistory
 				 e);
 			// swallow... we don't want to prevent whatever was about to happen.
 		}
+	}
+
+	private static BookHistoryBook GetOrMakeBookRecord(Book book, SQLiteConnection db)
+	{
+		var bookRecord = GetBookRecord(book, db);
+		if (bookRecord == null)
+		{
+			bookRecord = new BookHistoryBook
+			{
+				Id = book.ID,
+				// TODO: update Name every time because it can change? Add an event if we notice that it changed?
+				Name = book.TitleBestForUserDisplay
+			};
+			db.Insert(bookRecord);
+		}
+
+		return bookRecord;
+	}
+
+	private static BookHistoryBook GetBookRecord(Book book, SQLiteConnection db)
+	{
+		return db.Table<BookHistoryBook>().FirstOrDefault(b => b.Id == book.ID);
 	}
 
 	private static SQLiteConnection GetConnection(string folderPath)

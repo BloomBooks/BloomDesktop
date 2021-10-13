@@ -29,6 +29,8 @@ export const CollectionHistoryTable: React.FunctionComponent = props => {
         []
     );
 
+    const textBoxFormat = "vertical-align:top; padding-top:6px;";
+
     return (
         // The grand plan: https://www.figma.com/file/IlNPkoMn4Y8nlHMTCZrXfQSZ/Bloom-Collection-Tab?node-id=2707%3A6882
         // TODO: switch to use the same grid as blorg
@@ -84,14 +86,27 @@ export const CollectionHistoryTable: React.FunctionComponent = props => {
                             src={e.ThumbnailPath}
                         />
                     </td>
-                    <td>{e.Title}</td>
+                    <td
+                        css={css`
+                            ${textBoxFormat}
+                        `}
+                    >
+                        {e.Title}
+                    </td>
 
                     {/* Review: can we get away with this? I do want the 2021-11-01 format, and this gives that */}
-                    <td>{e.When.substring(0, 10)}</td>
+                    <td
+                        css={css`
+                            ${textBoxFormat}
+                        `}
+                    >
+                        {e.When.substring(0, 10)}
+                    </td>
                     <td
                         css={css`
                             padding-right: 2px !important;
-                            padding-bottom: 8px; // this is to help separate rows
+                            padding-top: 0px; // this is to help separate rows
+                            padding-bottom: 8px; // likewise
                         `}
                     >
                         <BloomAvatar
@@ -100,18 +115,35 @@ export const CollectionHistoryTable: React.FunctionComponent = props => {
                             avatarSizeInt={30}
                         />
                     </td>
-                    <td>
+                    <td
+                        css={css`
+                            ${textBoxFormat}
+                        `}
+                    >
                         <div
                             css={css`
                                 overflow-wrap: break-word;
-                                max-width: 7em;
+                                max-width: 5em;
                             `}
                         >
                             {e.UserName || e.UserId}
                         </div>
                     </td>
-                    <td>{kEventTypes[e.Type]}</td>
-                    <td>{e.Message}</td>
+                    <td
+                        css={css`
+                            min-width: 4em;
+                            ${textBoxFormat}
+                        `}
+                    >
+                        {kEventTypes[e.Type]}
+                    </td>
+                    <td
+                        css={css`
+                            ${textBoxFormat}
+                        `}
+                    >
+                        {e.Message}
+                    </td>
                 </tr>
             ))}
         </table>
