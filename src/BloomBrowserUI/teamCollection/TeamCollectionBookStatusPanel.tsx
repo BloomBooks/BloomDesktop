@@ -4,7 +4,7 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import theme, { kBloomYellow } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { BloomApi } from "../utils/bloomApi";
 import { useL10n } from "../react_components/l10nHooks";
 import "./TeamCollectionBookStatusPanel.less";
@@ -49,6 +49,7 @@ export interface IBookTeamCollectionStatus {
     disconnected: boolean;
     newLocalBook: boolean;
     error: string;
+    checkinMessage: string;
 }
 
 export const initialBookStatus: IBookTeamCollectionStatus = {
@@ -66,7 +67,8 @@ export const initialBookStatus: IBookTeamCollectionStatus = {
     changedRemotely: false,
     disconnected: false,
     newLocalBook: false,
-    error: ""
+    error: "",
+    checkinMessage: ""
 };
 
 export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCollectionStatus> = props => {
@@ -78,6 +80,8 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
     const [checkinFailed, setCheckinFailed] = useState(false);
     const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
     const [forgetDialogOpen, setForgetDialogOpen] = useState(false);
+    const [message, setMessage] = useState(props.checkinMessage);
+    const messageInput = useRef<HTMLInputElement>(null);
 
     const lockedByMe =
         props.who !== "" &&
@@ -121,6 +125,19 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         lockedByMe,
         props.currentUser
     ]);
+
+    React.useEffect(() => {
+        setMessage(props.checkinMessage);
+        // This typically happens when a button in the collection tab is clicked.
+        // The button gets focus, and we think that's right...a user might want to
+        // manipulate it or switch buttons by keyboard. But, probably because for now
+        // it's in a separate browser control, the input's caret may continue to flash
+        // even though it's not focused. Then the user may wonder why typing does
+        // nothing. Blurring it gets rid of the caret until it is clicked.
+        messageInput?.current?.blur();
+        // I'm not clear why we need tcPanelState here, but without it, the old
+        // message came back after a forget-changes and fresh checkout.
+    }, [props.checkinMessage, tcPanelState]);
 
     useSubscribeToWebSocketForEvent(
         "checkinProgress",
@@ -171,6 +188,22 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
     const subTitleLockedByMe = useL10n(
         "Are you done for now? Click this button to send your changes to your team.",
         "TeamCollection.CheckedOutToYouDescription",
+        undefined,
+        undefined,
+        undefined,
+        true
+    );
+    const checkingIn = useL10n(
+        "Checking in...",
+        "TeamCollection.CheckingIn",
+        undefined,
+        undefined,
+        undefined,
+        true
+    );
+    const whatChanges = useL10n(
+        "What changes did you make?",
+        "TeamCollection.WhatChanges",
         undefined,
         undefined,
         undefined,
@@ -414,11 +447,15 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                                 "cursor: progress; .checkin-button{cursor:progress;}"};
                         `}
                         lockState={state}
-                        title={mainTitleLockedByMe}
+                        title={
+                            progress === 0 ? mainTitleLockedByMe : checkingIn
+                        }
                         subTitle={
                             checkinFailed
                                 ? subTitleCheckinFailed
-                                : subTitleLockedByMe
+                                : progress === 0
+                                ? subTitleLockedByMe
+                                : ""
                         }
                         icon={avatar}
                         //menu={} // eventually the "About my Avatar..." and "Forget Changes" menu gets passed in here.
@@ -437,24 +474,62 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         }
                         menu={menu}
                     >
-                        <div
-                            css={css`
-                                display: ${progress === 0 ? "none" : "block"};
-                                height: 10px;
-                                background-color: transparent;
-                                width: 100%;
-                                border: 1px solid ${kBloomYellow};
-                                margin-bottom: 8px;
-                            `}
-                        >
+                        {progress === 0 ? (
+                            <div
+                                css={css`
+                                    position: absolute;
+                                    bottom: 14px;
+                                    width: 320px;
+                                `}
+                            >
+                                <div
+                                    css={css`
+                                        font-size: 11px;
+                                    `}
+                                >
+                                    {whatChanges}
+                                </div>
+                                <input
+                                    ref={messageInput}
+                                    css={css`
+                                        background-color: transparent;
+                                        color: ${kBloomYellow};
+                                        width: 100%;
+                                        border: 1px solid #80808050;
+                                        height: 37px;
+                                    `}
+                                    type="text"
+                                    value={message}
+                                    autoFocus={true}
+                                    key="message"
+                                    onChange={e => {
+                                        setMessage(e.target.value);
+                                        BloomApi.postString(
+                                            "teamCollection/checkinMessage",
+                                            e.target.value
+                                        );
+                                    }}
+                                />
+                            </div>
+                        ) : (
                             <div
                                 css={css`
                                     height: 10px;
-                                    background-color: ${kBloomYellow};
-                                    width: ${progress * 100}%;
+                                    background-color: transparent;
+                                    width: 100%;
+                                    border: 1px solid ${kBloomYellow};
+                                    margin-bottom: 8px;
                                 `}
-                            ></div>
-                        </div>
+                            >
+                                <div
+                                    css={css`
+                                        height: 10px;
+                                        background-color: ${kBloomYellow};
+                                        width: ${progress * 100}%;
+                                    `}
+                                ></div>
+                            </div>
+                        )}
                     </StatusPanelCommon>
                 );
             case "lockedByMeElsewhere":

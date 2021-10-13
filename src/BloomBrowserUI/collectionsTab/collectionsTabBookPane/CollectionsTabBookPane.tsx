@@ -150,6 +150,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
             <div
                 css={css`
                     margin-bottom: 10px;
+                    flex-grow: 0;
                 `}
             >
                 {editOrMakeButton}

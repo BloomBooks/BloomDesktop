@@ -21,6 +21,24 @@ interface IBookHistoryEvent {
     UserName: string;
 }
 
+const TextCell: React.FunctionComponent<{
+    className?: string;
+    colSpan?: number;
+}> = props => {
+    return (
+        <td
+            className={props.className}
+            colSpan={props.colSpan}
+            css={css`
+                vertical-align: top;
+                padding-top: 6px;
+            `}
+        >
+            {props.children}
+        </td>
+    );
+};
+
 const kEventTypes = ["Check In"]; // REVIEW maybe better to do this in c# and just send it over?
 
 export const CollectionHistoryTable: React.FunctionComponent = props => {
@@ -84,14 +102,21 @@ export const CollectionHistoryTable: React.FunctionComponent = props => {
                             src={e.ThumbnailPath}
                         />
                     </td>
-                    <td>{e.Title}</td>
+                    <TextCell>{e.Title}</TextCell>
 
-                    {/* Review: can we get away with this? I do want the 2021-11-01 format, and this gives that */}
-                    <td>{e.When.substring(0, 10)}</td>
+                    <TextCell>
+                        {/* Review: can we get away with this? I do want the 2021-11-01 format, and this gives that */}
+                        {e.When.substring(0, 10)}
+                    </TextCell>
                     <td
                         css={css`
                             padding-right: 2px !important;
-                            padding-bottom: 8px; // this is to help separate rows
+                            // This is usually the highest element on the row. So it's a good place to put some
+                            // padding to separate the rows. Fine tuning the padding above in TextCell and the
+                            // padding here (currently all below) controls the alignment; we aim to have single-line
+                            // text centered on the avatar.
+                            padding-top: 0px;
+                            padding-bottom: 8px;
                         `}
                     >
                         <BloomAvatar
@@ -100,18 +125,24 @@ export const CollectionHistoryTable: React.FunctionComponent = props => {
                             avatarSizeInt={30}
                         />
                     </td>
-                    <td>
+                    <TextCell>
                         <div
                             css={css`
                                 overflow-wrap: break-word;
-                                max-width: 7em;
+                                max-width: 5em;
                             `}
                         >
                             {e.UserName || e.UserId}
                         </div>
-                    </td>
-                    <td>{kEventTypes[e.Type]}</td>
-                    <td>{e.Message}</td>
+                    </TextCell>
+                    <TextCell
+                        css={css`
+                            min-width: 4em;
+                        `}
+                    >
+                        {kEventTypes[e.Type]}
+                    </TextCell>
+                    <TextCell>{e.Message}</TextCell>
                 </tr>
             ))}
         </table>
