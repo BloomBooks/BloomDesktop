@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
@@ -1432,6 +1433,16 @@ namespace Bloom.TeamCollection
 			_tcLog.WriteMilestone(MessageAndMilestoneType.Reloaded);
 
 			var hasProblems = false; //set true if we get any problems
+
+			// Don't merge this block beyond 5.0!
+			// Since we don't need this message permanently, not giving it a real l10nId.
+			var version = Assembly.GetExecutingAssembly().GetName().Version;
+			if (!Program.RunningUnitTests && version < new Version(5,1))
+			{
+				ReportProgressAndLog(progress, ProgressKind.Error, "",
+					"Because this is a Team Collection, you need to upgrade to Bloom 5.1");
+				hasProblems = true;
+			}
 
 			var newBooks = GetNewRepoBookMap();
 

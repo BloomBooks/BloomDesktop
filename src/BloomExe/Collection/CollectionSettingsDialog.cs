@@ -10,6 +10,7 @@ using SIL.Windows.Forms.WritingSystems;
 using SIL.Extensions;
 using SIL.WritingSystems;
 using System.Collections.Generic;
+using System.Reflection;
 using Bloom.Api;
 using Bloom.TeamCollection;
 using Bloom.MiscUI;
@@ -59,6 +60,12 @@ namespace Bloom.Collection
 			_queueRenameOfCollection = queueRenameOfCollection;
 			_pageRefreshEvent = pageRefreshEvent;
 			InitializeComponent();
+
+			// Don't merge this block beyond 5.0!
+			var version = Assembly.GetExecutingAssembly().GetName().Version;
+			if (version < new Version(5, 1))
+				_allowTeamCollection.Visible = false;
+
 			// moved from the Designer where it was deleted if the Designer was touched
 			_xmatterList.Columns.AddRange(new[] { new ColumnHeader() { Width = 250 } });
 
