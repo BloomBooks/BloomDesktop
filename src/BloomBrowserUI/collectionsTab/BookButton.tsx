@@ -6,7 +6,10 @@ import React = require("react");
 import { BloomApi } from "../utils/bloomApi";
 import { Button } from "@material-ui/core";
 import TruncateMarkup from "react-truncate-markup";
-import { IBookTeamCollectionStatus } from "../teamCollection/TeamCollectionBookStatusPanel";
+import {
+    IBookTeamCollectionStatus,
+    useBookStatus
+} from "../teamCollection/teamCollectionUtils";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import { kBloomBlue, kBloomGold } from "../bloomMaterialUITheme.js";
 
@@ -17,12 +20,7 @@ export const BookButton: React.FunctionComponent<{
 }> = props => {
     // TODO: the c# had Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont,
 
-    const teamCollectionStatus = BloomApi.useApiData<
-        IBookTeamCollectionStatus | undefined
-    >(
-        `teamCollection/bookStatus?folderName=${props.book.folderName}`,
-        undefined
-    );
+    const teamCollectionStatus = useBookStatus(props.book.folderName);
 
     const label =
         props.book.title.length > 20 ? (

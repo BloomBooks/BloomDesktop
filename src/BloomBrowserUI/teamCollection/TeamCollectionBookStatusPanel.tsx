@@ -17,6 +17,10 @@ import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
 import { AvatarDialog } from "./AvatarDialog";
 import { ForgetChangesDialog } from "./ForgetChangesDialog";
 import { createMuiTheme } from "@material-ui/core";
+import {
+    IBookTeamCollectionStatus,
+    initialBookStatus
+} from "./teamCollectionUtils";
 
 // The panel that shows the book preview and settings in the collection tab in a Team Collection.
 
@@ -32,44 +36,6 @@ export type StatusPanelState =
     | "disconnected" // Can't tell what's going on, because we don't have a good connection to the repo
     | "lockedByMeDisconnected" // We're disconnected, but before that happened the book was checked out to me, here
     | "error"; // we couldn't get the IBookTeamCollectionStatus; should never happen.
-
-export interface IBookTeamCollectionStatus {
-    who: string;
-    whoFirstName: string;
-    whoSurname: string;
-    when: string;
-    where: string;
-    currentUser: string;
-    currentUserName: string;
-    currentMachine: string;
-    hasAProblem: boolean;
-    hasInvalidRepoData: string; // error message, or empty if repo data is valid
-    clickHereArg: string; // argument (currently, repo file name) needed to construct "Click here for help" message for corrupt zip
-    changedRemotely: boolean;
-    disconnected: boolean;
-    newLocalBook: boolean;
-    error: string;
-    checkinMessage: string;
-}
-
-export const initialBookStatus: IBookTeamCollectionStatus = {
-    who: "",
-    whoFirstName: "",
-    whoSurname: "",
-    when: "",
-    where: "",
-    currentUser: "",
-    currentUserName: "",
-    currentMachine: "",
-    hasAProblem: false,
-    hasInvalidRepoData: "",
-    clickHereArg: "",
-    changedRemotely: false,
-    disconnected: false,
-    newLocalBook: false,
-    error: "",
-    checkinMessage: ""
-};
 
 export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCollectionStatus> = props => {
     const [tcPanelState, setTcPanelState] = useState<StatusPanelState>(

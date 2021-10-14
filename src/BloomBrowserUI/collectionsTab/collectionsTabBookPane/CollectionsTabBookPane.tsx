@@ -3,11 +3,11 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { useRef, useState } from "react";
 import { BloomApi } from "../../utils/bloomApi";
+import { TeamCollectionBookStatusPanel } from "../../teamCollection/TeamCollectionBookStatusPanel";
 import {
-    TeamCollectionBookStatusPanel,
     IBookTeamCollectionStatus,
     initialBookStatus
-} from "../../teamCollection/TeamCollectionBookStatusPanel";
+} from "../../teamCollection/teamCollectionUtils";
 import { useMonitorBookSelection } from "../../app/selectedBook";
 import BloomButton from "../../react_components/bloomButton";
 import { kDarkestBackground } from "../../bloomMaterialUITheme";

@@ -217,7 +217,8 @@ namespace Bloom.TeamCollection
 					return;
 				}
 
-				request.ReplyWithJson(GetBookStatusJson(request));
+				var bookFolderName = request.RequiredParam("folderName");
+				request.ReplyWithJson(GetBookStatusJson(bookFolderName, null));
 			}
 			catch (Exception e)
 			{
@@ -228,12 +229,12 @@ namespace Bloom.TeamCollection
 			}
 		}
 
-		private string GetBookStatusJson(ApiRequest request)
+		private string GetBookStatusJson(string bookFolderName, Book.Book book)
 		{
 			string whoHasBookLocked = null;
 			DateTime whenLocked = DateTime.MaxValue;
 			bool problem = false;
-			var status = _tcManager.CurrentCollection?.GetStatus(BookFolderName);
+			var status = _tcManager.CurrentCollection?.GetStatus(bookFolderName);
 				// At this level, we know this is the path to the .bloom file in the repo
 				// (though if we implement another backend, we'll have to generalize the notion somehow).
 				// For the Javascript, it's just an argument to pass to
@@ -242,7 +243,7 @@ namespace Bloom.TeamCollection
 				var folderTC = _tcManager.CurrentCollection as FolderTeamCollection;
 				if (folderTC != null)
 				{
-					clickHereArg = UrlPathString.CreateFromUnencodedString(folderTC.GetPathToBookFileInRepo(BookFolderName))
+					clickHereArg = UrlPathString.CreateFromUnencodedString(folderTC.GetPathToBookFileInRepo(bookFolderName))
 						.UrlEncoded;
 				}
 
@@ -254,38 +255,39 @@ namespace Bloom.TeamCollection
 			try
 			{
 				whoHasBookLocked =
-					_tcManager.CurrentCollectionEvenIfDisconnected?.WhoHasBookLocked(BookFolderName);
+					_tcManager.CurrentCollectionEvenIfDisconnected?.WhoHasBookLocked(bookFolderName);
 				// It's debatable whether to use CurrentCollectionEvenIfDisconnected everywhere. For now, I've only changed
 				// it for the two bits of information actually needed by the status panel when disconnected.
-				whenLocked = _tcManager.CurrentCollection?.WhenWasBookLocked(BookFolderName) ??
+				whenLocked = _tcManager.CurrentCollection?.WhenWasBookLocked(bookFolderName) ??
 				             DateTime.MaxValue;
 				newLocalBook = whoHasBookLocked == TeamCollection.FakeUserIndicatingNewBook;
 				if (newLocalBook)
 					whoHasBookLocked = CurrentUser;
-				problem = _tcManager.CurrentCollection?.HasLocalChangesThatMustBeClobbered(BookFolderName) ?? false;
+				problem = _tcManager.CurrentCollection?.HasLocalChangesThatMustBeClobbered(bookFolderName) ?? false;
 			}
 			catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
 			{
 					hasInvalidRepoData = (_tcManager.CurrentCollection as FolderTeamCollection)?.GetCouldNotOpenCorruptZipMessage();
 			}
 
-			// Only null during unit tests.
-			var checkinMessage = request.CurrentBook == null ? "" : BookHistory.GetPendingCheckinMessage(request.CurrentBook);
+			// If the request asked for the book by name, we don't have an actual Book object.
+			// However, it happens that those requests don't need the checkinMessage.
+			var checkinMessage = book == null ? "" : BookHistory.GetPendingCheckinMessage(book);
 			return JsonConvert.SerializeObject(
 				new
 				{
 					who = whoHasBookLocked,
-					whoFirstName = _tcManager.CurrentCollection?.WhoHasBookLockedFirstName(BookFolderName),
-					whoSurname = _tcManager.CurrentCollection?.WhoHasBookLockedSurname(BookFolderName),
+					whoFirstName = _tcManager.CurrentCollection?.WhoHasBookLockedFirstName(bookFolderName),
+					whoSurname = _tcManager.CurrentCollection?.WhoHasBookLockedSurname(bookFolderName),
 					when = whenLocked.ToLocalTime().ToShortDateString(),
-					where = _tcManager.CurrentCollectionEvenIfDisconnected?.WhatComputerHasBookLocked(BookFolderName),
+					where = _tcManager.CurrentCollectionEvenIfDisconnected?.WhatComputerHasBookLocked(bookFolderName),
 					currentUser = CurrentUser,
 					currentUserName = TeamCollectionManager.CurrentUserFirstName,
 					currentMachine = TeamCollectionManager.CurrentMachine,
 					problem,
 					hasInvalidRepoData,
 						clickHereArg,
-					changedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(BookFolderName),
+					changedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(bookFolderName),
 					disconnected = _tcManager.CurrentCollectionEvenIfDisconnected?.IsDisconnected,
 					newLocalBook,
 					checkinMessage
@@ -300,7 +302,7 @@ namespace Bloom.TeamCollection
 					request.Failed("not registered");
 					return;
 				}
-				request.ReplyWithJson(GetBookStatusJson(request));
+				request.ReplyWithJson(GetBookStatusJson(BookFolderName, request.CurrentBook));
 			}
 			catch (Exception e)
 			{
