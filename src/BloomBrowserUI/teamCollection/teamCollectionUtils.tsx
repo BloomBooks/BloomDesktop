@@ -41,7 +41,10 @@ export const initialBookStatus: IBookTeamCollectionStatus = {
     checkinMessage: ""
 };
 
-export function useBookStatus(folderName: string): IBookTeamCollectionStatus {
+export function useBookStatus(
+    folderName: string,
+    inEditableCollection: boolean
+): IBookTeamCollectionStatus {
     const [bookStatus, setBookStatus] = useState(initialBookStatus);
     const [reload, setReload] = useState(0);
     // Force a reload when told some book's status changed
@@ -49,24 +52,30 @@ export function useBookStatus(folderName: string): IBookTeamCollectionStatus {
         setReload(old => old + 1)
     );
     React.useEffect(() => {
-        BloomApi.get(
-            `teamCollection/bookStatus?folderName=${folderName}`,
-            data => {
-                setBookStatus(data.data as IBookTeamCollectionStatus);
-            },
-            err => {
-                // Something went wrong. Maybe not registered. Already reported to Sentry, we don't need
-                // another 'throw' here, with less information. Displaying the message may tell the user
-                // something. I don't think it's worth localizing the fallback message here, which is even
-                // less likely to be seen.
-                // Enhance: we could display a message telling them to register and perhaps a link to the
-                // registration dialog.
-                const errorMessage =
-                    err?.response?.statusText ??
-                    "Bloom could not determine the status of this book";
-                setBookStatus({ ...bookStatus, error: errorMessage });
-            }
-        );
+        // if it's not in the editable collection, economize and don't call; the initialBookStatus will do.
+        if (inEditableCollection) {
+            BloomApi.get(
+                `teamCollection/bookStatus?folderName=${folderName}`,
+                data => {
+                    setBookStatus(data.data as IBookTeamCollectionStatus);
+                },
+                err => {
+                    // Something went wrong. Maybe not registered. Already reported to Sentry, we don't need
+                    // another 'throw' here, with less information. Displaying the message may tell the user
+                    // something. I don't think it's worth localizing the fallback message here, which is even
+                    // less likely to be seen.
+                    // Enhance: we could display a message telling them to register and perhaps a link to the
+                    // registration dialog.
+                    const errorMessage =
+                        err?.response?.statusText ??
+                        "Bloom could not determine the status of this book";
+                    setBookStatus({
+                        ...bookStatus,
+                        error: errorMessage
+                    });
+                }
+            );
+        }
     }, [reload]);
     return bookStatus;
 }

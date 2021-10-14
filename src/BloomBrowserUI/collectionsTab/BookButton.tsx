@@ -15,12 +15,16 @@ import { kBloomBlue, kBloomGold } from "../bloomMaterialUITheme.js";
 
 export const BookButton: React.FunctionComponent<{
     book: any;
+    isInEditableCollection: boolean;
     selected: boolean;
     onClick: (bookId: string) => void;
 }> = props => {
     // TODO: the c# had Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont,
 
-    const teamCollectionStatus = useBookStatus(props.book.folderName);
+    const teamCollectionStatus = useBookStatus(
+        props.book.folderName,
+        props.isInEditableCollection
+    );
 
     const label =
         props.book.title.length > 20 ? (

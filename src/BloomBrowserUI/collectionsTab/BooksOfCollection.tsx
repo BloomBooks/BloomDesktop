@@ -15,6 +15,7 @@ interface IBookInfo {
 }
 export const BooksOfCollection: React.FunctionComponent<{
     collectionId: string;
+    isEditableCollection: boolean;
 }> = props => {
     if (!props.collectionId) {
         window.alert("null collectionId");
@@ -85,6 +86,7 @@ export const BooksOfCollection: React.FunctionComponent<{
                         <BookButton
                             key={book.id}
                             book={book}
+                            isInEditableCollection={props.isEditableCollection}
                             selected={selectedBookInfo.id === book.id}
                             onClick={bookId => {
                                 setSelectedBookIdWithApi(bookId);

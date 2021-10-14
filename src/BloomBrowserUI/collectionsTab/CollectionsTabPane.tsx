@@ -30,7 +30,10 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
             return (
                 <div key={"frag:" + c.id}>
                     <h2>{c.name}</h2>
-                    <BooksOfCollection collectionId={c.id} />
+                    <BooksOfCollection
+                        collectionId={c.id}
+                        isEditableCollection={false}
+                    />
                 </div>
             );
         });
@@ -115,6 +118,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
 
                             <BooksOfCollection
                                 collectionId={collections[0].id}
+                                isEditableCollection={true}
                             />
                         </div>
 
