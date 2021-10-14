@@ -1,6 +1,8 @@
-﻿namespace Bloom.Workspace
+﻿#define SHOW_REACT_COLLECTION_TAB
+namespace Bloom.Workspace
 {
-    partial class WorkspaceView
+
+	partial class WorkspaceView
     {
         /// <summary>
         /// Required designer variable.

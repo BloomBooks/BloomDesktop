@@ -1,3 +1,4 @@
+#define SHOW_REACT_COLLECTION_TAB
 using System;
 using System.Diagnostics;
 using System.Drawing;

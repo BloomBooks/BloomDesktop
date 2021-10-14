@@ -96,7 +96,7 @@ namespace Bloom.CollectionTab
 
 		public void ReadyToShowCollections()
 		{
-			Controls.Add(_reactControl);
+			Invoke((Action) (()=> Controls.Add(_reactControl)));
 		}
 
 		internal void ManageSettings(SettingsProtectionHelper settingsLauncherHelper)

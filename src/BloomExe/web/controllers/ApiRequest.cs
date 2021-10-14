@@ -179,8 +179,11 @@ namespace Bloom.Api
 					}
 					using (endpointRegistration.DoMeasure ? PerformanceMeasurement.Global?.Measure(label) : null)
 					{
-						// Note: If the user is still interacting with the application, openForms could change and become empty
-						var formForSynchronizing = Application.OpenForms.Cast<Form>().LastOrDefault();
+						// Note: If the user is still interacting with the application, openForms could change and become empty.
+						// We'd prefer the Bloom shell, if it's open, so we concat that list onto the list of any others and take
+						// the last.
+						var formForSynchronizing = Application.OpenForms.Cast<Form>().Concat(Application.OpenForms.Cast<Form>()
+							.Where(x => x is Bloom.Shell)).LastOrDefault();
 						if (endpointRegistration.HandleOnUIThread && formForSynchronizing != null &&
 						    formForSynchronizing.InvokeRequired)
 						{
