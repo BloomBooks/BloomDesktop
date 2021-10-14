@@ -192,7 +192,7 @@ namespace Bloom.Collection
 					!BackupFileExists(folderPath))
 						return;
 				var editable = Type == CollectionType.TheOneEditableCollection;
-				ISaveContext sc = editable ? _tcManager?.CurrentCollectionEvenIfDisconnected : null;
+				ISaveContext sc = editable ? _tcManager?.CurrentCollectionEvenIfDisconnected : new NoEditSaveContext() as ISaveContext;
 				var bookInfo = new BookInfo(folderPath, editable, sc);
 
 				_bookInfos.Add(bookInfo);
