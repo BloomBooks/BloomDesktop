@@ -35,7 +35,11 @@ namespace Bloom.Workspace
 			get { return _bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.IsEditable && !_bookSelection.CurrentSelection.HasFatalError; }
 		}
 
-		public bool EditTabLocked => !_bookSelection.CurrentSelection.IsSaveable;
+		/// <summary>
+		/// True if we can't currently edit, either because nothing is selected
+		/// or because the current book is not one we can save.
+		/// </summary>
+		public bool EditTabLocked => _bookSelection.CurrentSelection == null || !_bookSelection.CurrentSelection.IsSaveable;
 
 		public bool ShowPublishTab
 		{
