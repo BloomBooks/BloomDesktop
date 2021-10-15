@@ -1,3 +1,5 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { useState } from "react";
 import { Div } from "../react_components/l10nComponents";
@@ -160,12 +162,21 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
                             {buttonEnglishText}
                         </BloomButton>
                         {!props.forChangeLayout && (
-                            <SmallNumberPicker
-                                minLimit={minimumPagesToAdd}
-                                maxLimit={maximumPagesToAdd}
-                                handleChange={setNumberToAdd}
-                                tooltip={numberOfPagesTooltip}
-                            />
+                            <div
+                                css={css`
+                                    max-width: 30px;
+                                    position: absolute;
+                                    margin-left: -30px;
+                                    margin-top: 15px;
+                                `}
+                            >
+                                <SmallNumberPicker
+                                    minLimit={minimumPagesToAdd}
+                                    maxLimit={maximumPagesToAdd}
+                                    handleChange={setNumberToAdd}
+                                    tooltip={numberOfPagesTooltip}
+                                />
+                            </div>
                         )}
                     </div>
                 </div>

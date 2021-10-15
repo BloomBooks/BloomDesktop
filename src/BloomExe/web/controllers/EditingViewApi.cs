@@ -30,6 +30,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("editView/getBookLangs", HandleGetBookLangs, false);
 			apiHandler.RegisterEndpointHandler("editView/isClipboardBookHyperlink", HandleIsClipboardBookHyperlink, false);
 			apiHandler.RegisterEndpointHandler("editView/requestTranslationGroupContent", RequestDefaultTranslationGroupContent, true);
+			apiHandler.RegisterEndpointHandler("editView/duplicatePageMany", HandleDuplicatePageMany, true);
 		}
 
 		// Answer true if the current clipboard contents are something that makes sense to paste into the href
@@ -93,6 +94,14 @@ namespace Bloom.web.controllers
 		{
 			EditingModel.IsTextSelected = request.RequiredPostBooleanAsJson();
 			request.PostSucceeded();
+		}
+
+		private void HandleDuplicatePageMany(ApiRequest request)
+		{
+			var model = View.Model;
+			var requestData = DynamicJson.Parse(request.RequiredPostJson());
+			request.PostSucceeded();
+			model.DuplicatePageManyTimes((int)requestData.numberOfTimes);
 		}
 
 		public void HandleSetModalState(ApiRequest request)
