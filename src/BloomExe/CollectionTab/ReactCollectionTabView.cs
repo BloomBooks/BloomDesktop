@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.Eventing.Reader;
 using System.Windows.Forms;
 using Bloom.Properties;
 //using Bloom.SendReceive;
@@ -10,6 +11,7 @@ using Bloom.MiscUI;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.web;
+using Gecko;
 using SIL.Windows.Forms.SettingProtection;
 
 namespace Bloom.CollectionTab
@@ -92,6 +94,8 @@ namespace Bloom.CollectionTab
 			// the TC to the local collection, and as part of that, the collection tab doesn't expect
 			// the local collection to change because of TC stuff once it starts loading.
 			Controls.Remove(_reactControl);
+			// Disable our standard menu to let JS bring up the one it wants, if we're on an element that wants this behavior.
+			_reactControl.LetContentHandleContextMenu = e => ElementProxy.ProxyForSelfOrParentElement(e.TargetNode).SelfOrAncestorHasClass("bloom-no-default-menu");
 		}
 
 		public void ReadyToShowCollections()

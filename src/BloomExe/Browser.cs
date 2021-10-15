@@ -523,8 +523,14 @@ namespace Bloom
 		/// </summary>
 		public Func<GeckoContextMenuEventArgs, bool> ContextMenuProvider { get; set; }
 
+		// If the func returns true, we don't show our context menu at all.
+		// Any reaction to a right click will be up to the HTML/Javascript in the page content.
+		public Func<GeckoContextMenuEventArgs, bool> LetContentHandleContextMenu = (e) => false;
+
 		void OnShowContextMenu(object sender, GeckoContextMenuEventArgs e)
 		{
+			if (LetContentHandleContextMenu(e))
+				return;
 			MenuItem FFMenuItem = null;
 			Debug.Assert(!InvokeRequired);
 #if DEBUG

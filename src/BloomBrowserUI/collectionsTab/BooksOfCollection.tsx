@@ -6,6 +6,7 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import { BookButton } from "./BookButton";
 import { useMonitorBookSelection } from "../app/selectedBook";
+import { element } from "prop-types";
 
 interface IBookInfo {
     id: string;
@@ -46,7 +47,17 @@ export const BooksOfCollection: React.FunctionComponent<{
     >();
 
     const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+        if (!(event.target instanceof Element)) {
+            return; // huh?
+        }
+        const target = event.target as Element;
+        if (target.closest(".bloom-no-default-menu") == null) {
+            // We're not responsible for the menu here...let the usual Bloom C# context menu appear
+            return;
+        }
+
         event.preventDefault();
+        event.stopPropagation();
         setContextMousePoint({
             mouseX: event.clientX - 2,
             mouseY: event.clientY - 4

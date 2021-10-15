@@ -36,7 +36,10 @@ export const BookButton: React.FunctionComponent<{
         );
 
     return (
-        <Grid item={true}>
+        <Grid
+            item={true}
+            className={props.selected ? "bloom-no-default-menu" : ""}
+        >
             <div>
                 {teamCollectionStatus?.who && (
                     <BloomAvatar
