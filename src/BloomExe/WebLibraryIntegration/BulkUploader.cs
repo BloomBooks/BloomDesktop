@@ -294,7 +294,7 @@ namespace Bloom.WebLibraryIntegration
 					Program.SetProjectContext(context);
 				}
 				var server = context.BookServer;
-				var bookInfo = new BookInfo(uploadParams.Folder, true, context.TeamCollectionManager.CurrentCollectionEvenIfDisconnected);
+				var bookInfo = new BookInfo(uploadParams.Folder, true, context.TeamCollectionManager.CurrentCollectionEvenIfDisconnected ?? new AlwaysEditSaveContext() as ISaveContext);
 				var book = server.GetBookFromBookInfo(bookInfo, fullyUpdateBookFiles: true);
 				book.BringBookUpToDate(new NullProgress());
 				book.Storage.CleanupUnusedSupportFiles(isForPublish: false); // we are publishing, but this is the real folder not a copy, so play safe.
