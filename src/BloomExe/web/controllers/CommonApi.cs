@@ -17,6 +17,7 @@ using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.PlatformUtilities;
+using SIL.Windows.Forms.Miscellaneous;
 using ApplicationException = System.ApplicationException;
 using Timer = System.Windows.Forms.Timer;
 
@@ -78,7 +79,7 @@ namespace Bloom.web.controllers
 						{
 							try
 							{
-								result = Clipboard.GetText();
+								result = PortableClipboard.GetText();
 							}
 							catch (Exception e)
 							{
@@ -101,7 +102,7 @@ namespace Bloom.web.controllers
 							{
 								try
 								{
-									Clipboard.SetText(content);
+									PortableClipboard.SetText(content);
 								}
 								catch (Exception e)
 								{
