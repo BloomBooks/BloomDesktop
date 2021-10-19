@@ -1,0 +1,16 @@
+{
+    "presets": [
+        {
+            "data-book": "outside-back-cover-branding-top-html",
+            "lang": "*",
+            "content": "<img class='branding bloom-badge-top-right' src='made-with-bloom-row.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "CALVARY MINISTRIES (CAPRO)",
+            "condition": "always"
+        }
+    ]
+}

@@ -151,7 +151,7 @@ namespace Bloom.CollectionTab
 				// It's in a location where editing makes sense, so all the menu options are
 				// relevant. I don't think we want to hide any of them. But, we need to disable
 				// the ones that require checkout if we don't have it.
-				bool needsCheckout = _tcManager.NeedCheckoutToEdit(btnInfo.BookInfo.FolderPath);
+				bool needsCheckout = !btnInfo.BookInfo.IsSaveable;
 				foreach (ToolStripItem menuItem in (sender as ContextMenuStrip).Items)
 				{
 					if (needsCheckout)
@@ -391,7 +391,17 @@ namespace Bloom.CollectionTab
 		private void RepairDuplicates()
 		{
 			var collectionPath = _model.TheOneEditableCollection.PathToDirectory;
-			BookInfo.RepairDuplicateInstanceIds(collectionPath);
+			// A book's ID may not be changed if we have a TC and the book is actually in the shared folder.
+			// Eventually we may allow it if the book is checked out.
+			BookInfo.RepairDuplicateInstanceIds(collectionPath, (bookPath) =>
+			{
+				if (_tcManager?.CurrentCollection == null)
+				{
+					return true; // OK to change, not a TC.
+				}
+				// Only OK if not present in the TC repo.
+				return !_tcManager.CurrentCollection.IsBookPresentInRepo(Path.GetFileName(bookPath));
+			});
 		}
 
 		/// <summary>
@@ -620,14 +630,7 @@ namespace Bloom.CollectionTab
 			// We changed the tooltip to show the folder name to help when you have duplicates of the book, e.g. when
 			// something goes amiss when using Dropbox and it creates copies.
 			var info = GetBookInfoFromButton(button);
-			if (info == null)
-			{
-				toolTip1.SetToolTip(button,"error");
-			}
-			else
-			{
-				toolTip1.SetToolTip(button, Path.GetFileName(info.FolderPath));
-			}
+			toolTip1.SetToolTip(button, info == null ? "error" : info.FolderPath);
 		}
 		private Book.Book LoadBookAndBringItUpToDate(BookInfo bookInfo, out bool badBook)
 		{
@@ -1471,7 +1474,7 @@ namespace Bloom.CollectionTab
 			catch (Exception error)
 			{
 				var msg = LocalizationManager.GetString("Errors.ErrorUpdating",
-					"There was a problem updating the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.");
+					"There was a problem updating the book.  Restarting Bloom may fix the problem.  If not, please report the problem to us.");
 				ErrorReport.NotifyUserOfProblem(error, msg);
 			}
 		}
@@ -1795,7 +1798,7 @@ namespace Bloom.CollectionTab
 			if (!bookInfoFromButton.IsEditable)
 				return;
 			// ...or not checked out
-			if (_tcManager.NeedCheckoutToEdit(bookInfoFromButton.FolderPath))
+			if (!bookInfoFromButton.IsSaveable)
 				return;
 			if (_renameOverlay != null)
 			{
