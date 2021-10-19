@@ -412,7 +412,8 @@ namespace Bloom.Publish
 			HashSet<string> omittedPageLabels = null)
 		{
 			BookStorage.CopyDirectory(bookFolderPath, tempFolderPath);
-			var bookInfo = new BookInfo(tempFolderPath, true) {UseDeviceXMatter = !isTemplateBook};
+			// We can always save in a temp book
+			var bookInfo = new BookInfo(tempFolderPath, true, new AlwaysEditSaveContext()) {UseDeviceXMatter = !isTemplateBook};
 			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
 			modifiedBook.BringBookUpToDate(new NullProgress(), true);
 			modifiedBook.RemoveNonPublishablePages(omittedPageLabels);

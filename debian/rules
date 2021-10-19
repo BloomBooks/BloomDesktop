@@ -122,7 +122,13 @@ override_dh_shlibdeps:
 # Neither --exclude-moduleref nor --exclude work for excluding an existing file from being checked.
 # msvcr120.dll is a true Windows binary shared library, not a .Net assembly.
 # NAudio.dll is a Windows-specific assembly that SIL.Media now requires to be present even on Linux.
-# Newtonsoft.Json.dll and Autofac.dll crash the mono5-sil version of ikdasm (called by dh_clideps).
+# The following assemblies crash the mono5-sil version of ikdasm (called by dh_clideps):
+#     Autofac.dll
+#     Newtonsoft.Json.dll
+#     Sentry.dll
+#     System.Collections.Immutable.dll
+#     System.Runtime.CompilerServices.Unsafe.dll
+#     System.Text.Json.dll
 # Renaming these files temporarily seems to be the only "fix" that works to get the package built.
 override_dh_clideps:
 	mv DistFiles/connections.dll DistFiles/connections.delel && \
@@ -131,6 +137,10 @@ override_dh_clideps:
 	mv $(DESTDIR)/$(LIB)/NAudio.dll $(DESTDIR)/$(LIB)/NAudio.delel && \
 	mv $(DESTDIR)/$(LIB)/Autofac.dll $(DESTDIR)/$(LIB)/Autofac.delel && \
 	mv $(DESTDIR)/$(LIB)/Newtonsoft.Json.dll $(DESTDIR)/$(LIB)/Newtonsoft.Json.delel && \
+	mv $(DESTDIR)/$(LIB)/Sentry.dll $(DESTDIR)/$(LIB)/Sentry.delel && \
+	mv $(DESTDIR)/$(LIB)/System.Collections.Immutable.dll $(DESTDIR)/$(LIB)/System.Collections.Immutable.delel && \
+	mv $(DESTDIR)/$(LIB)/System.Runtime.CompilerServices.Unsafe.dll $(DESTDIR)/$(LIB)/System.Runtime.CompilerServices.Unsafe.delel && \
+	mv $(DESTDIR)/$(LIB)/System.Text.Json.dll $(DESTDIR)/$(LIB)/System.Text.Json.delel && \
 	mkdir -p debian/tmp/usr && ln -s $(MONO_PREFIX)/* debian/tmp/usr/ && \
 	PATH=$(MONO_PREFIX)/bin:$(PATH) \
 	dh_clideps internal-mono -l$(MONO_PREFIX)/lib \
@@ -152,6 +162,10 @@ override_dh_clideps:
 		--exclude-moduleref=dl --exclude-moduleref=propsys.dll --exclude-moduleref=powrprof.dll \
 		--exclude-moduleref=i:ole32.dll --exclude-moduleref=version.dll && \
 	rm -rf debian/tmp/usr && \
+	mv $(DESTDIR)/$(LIB)/System.Runtime.CompilerServices.Unsafe.delel $(DESTDIR)/$(LIB)/System.Runtime.CompilerServices.Unsafe.dll && \
+	mv $(DESTDIR)/$(LIB)/System.Collections.Immutable.delel $(DESTDIR)/$(LIB)/System.Collections.Immutable.dll && \
+	mv $(DESTDIR)/$(LIB)/System.Text.Json.delel $(DESTDIR)/$(LIB)/System.Text.Json.dll && \
+	mv $(DESTDIR)/$(LIB)/Sentry.delel $(DESTDIR)/$(LIB)/Sentry.dll && \
 	mv $(DESTDIR)/$(LIB)/Newtonsoft.Json.delel $(DESTDIR)/$(LIB)/Newtonsoft.Json.dll && \
 	mv $(DESTDIR)/$(LIB)/Autofac.delel $(DESTDIR)/$(LIB)/Autofac.dll && \
 	mv $(DESTDIR)/$(LIB)/NAudio.delel $(DESTDIR)/$(LIB)/NAudio.dll && \

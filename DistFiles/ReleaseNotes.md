@@ -37,7 +37,20 @@ We improved how we count words in complex pages  (such as arithmetic pages).
 
 ## Team Collections (Bloom Enterprise)
 
-⭐We added a basic History tab to the Team Collection dialog. I currently only tells you the history of checkins (who edited the book, when). We will be adding more history in future versions. 
+Team Collections are new feature that helps you safely share a collection within your team, across the internet, without full-time internet access. For this release, we're going to keep this feature behind the "Experimental" checkbox. For now, we are only supporting Dropbox & LAN environments. Please contact us if you are considering using this. We need your help to fully understand how this will be used, and how the experience goes.
+
+#### About Bloom's use of Dropbox
+
+People will be naturally resistent to installing Dropbox. There are two things that may help them. First, once Dropbox is set up, you will not have to actually learn to use Dropbox, as it just sits in the background for Bloom to use, invisibly. Second, we are starting with Dropbox support because it is far superior to Google Drive in one crucial way: when you make a small change to a book, Dropbox will send just a small amount of data over the internet to your teammates. In contrast, Google Drive will send the entire book: all the text, images, recordings, videos, activities, etc. Because we want this feature to work well in environments with slow or expensive internet, we therefore decided to put our initial efforts into supporting Dropbox. In the near future, we will attempt to make Google Drive an option for teams with great internet.
+<br/>
+
+![screenshot-online-only](https://i.imgur.com/VCqWEft.png)
+
+Team Collections debuted in Bloom 5.0 beta. For 5.1, we have added a few small features:
+
+⭐We added a basic History tab to the Team Collection dialog. It currently only tells you the history of checkins (who edited the book, when). We will be adding more history in future versions. 
+
+<br/>
 
 ![screenshot](https://i.imgur.com/nwzLmHAl.png)
 
@@ -78,7 +91,7 @@ We added a new page selector for Bloom Player, the engine that powers book readi
 
 ## Other Good Stuff
 
-**Faster Enterprise Subscription Delivery**  When projects get a new Enterprise subscription, their is a delay while we build their branding pack (logos, boilerplate text, etc). Start with Bloom 5.1, customers don't have to wait... their Enterprise code will work immediately. Bloom will show a place holder message on the back cover that shows subscription name.  When an update to Bloom contains the branding files for the subscription, this message will be automatically replaced with the branding images, the next time the books in the the collection are edited.
+**Faster Enterprise Subscription Delivery**  When projects get a new Enterprise subscription, there is a delay while we build their branding pack (logos, boilerplate text, etc). Starting with Bloom 5.1, customers don't have to wait... their Enterprise code will work immediately. Bloom will show a place holder message on the back cover that shows subscription name.  When an update to Bloom contains the branding files for the subscription, this message will be automatically replaced with the branding images, the next time the books in the the collection are edited.
 
 ### Work towards a more cross-platform Bloom
 
@@ -101,11 +114,13 @@ automatically go to the correct bookshelf. This setting also can now be used to 
 
 The Comic Tool is now the "Overlay Tool". We made this change because this tool is now useful for more than comics and people who were not interested in comics were not finding it.
 
-You can now control the transparency of overlayed text elements and make corners round. You can also show a line that you can use to point to something in a diagram:
+❗ The Overlay Tool requires a Bloom Enterprise subscription. However, books that contain overlays can be translated into other languages without a Bloom Enterprise subscription. If this change causes you any problems, remember that you can always enable Bloom Enterprise freely if you do not have external funding. If that option does not work for you, please reach out to us at issues@bloomlibrary.org so that we can help you finish your book in some other way.
+
+⭐You can now control the transparency of overlayed text elements and make corners round. You can also show a line that you can use to point to something in a diagram:
 
 ![screenshot-online-only](https://i.imgur.com/HqlfqxN.png)
 
-You can now make circle text elements. [Feature Request](https://community.software.sil.org/t/circular-comic-captions/3121)
+⭐You can now make circle text elements. [Feature Request](https://community.software.sil.org/t/circular-comic-captions/3121)
 
 ### Talking Book Tool
 
@@ -131,9 +146,7 @@ Text on Simple Quiz pages is no longer counted when computing whole-book statist
 
 ## Team Collections
 
-The new Team Collection _enterprise_ feature debuts in this release. With a Team Collection, you can safely share a collection within your team, across the internet, without full-time internet access. For this release, we're going to keep this feature behind the "Experimental" checkbox. For now, we are only supporting Dropbox & LAN environments. Please contact us if you are considering using this. We need your help to fully understand how this will be used, and how the experience goes.
-
-![screenshot-online-only](https://i.imgur.com/VCqWEft.png)
+❗ _NOTE: Team Collections debuted in Bloom 5.0 beta, but did not "graduate" out of beta successfully because of a bug found by a beta tester (yay beta testers!). We did not have time to properly test the fix before it was time to release Bloom 5.0. Therefore, you need to run Bloom 5.1 beta in order to use this feature._
 
 ## Performance
 

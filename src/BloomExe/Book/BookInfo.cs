@@ -20,6 +20,7 @@ using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Text;
 using Bloom.Utils;
+using SIL.Code;
 
 namespace Bloom.Book
 {
@@ -32,6 +33,7 @@ namespace Bloom.Book
 		private const string kTopicPrefix = "topic:";
 		private const string kBookshelfPrefix = "bookshelf:";
 		public const string BookOrderExtension = ".BloomBookOrder";
+		private ISaveContext _saveContext;
 
 		private BookMetaData _metadata;
 
@@ -46,10 +48,23 @@ namespace Bloom.Book
 
 		}
 
-		public BookInfo(string folderPath, bool isEditable)
+		internal BookInfo(string folderPath, bool isEditable)
+			// By default (especially for many test cases), BookInfo's should assume savability
+			// unless not editable
+			: this(folderPath, isEditable, isEditable ? new AlwaysEditSaveContext() : new NoEditSaveContext() as ISaveContext)
 		{
-			FolderPath = folderPath;
+			// For real code, please explicitly provide a correct saveContext unless isEditable is false
+			if (isEditable)
+				Guard.Against(!Program.RunningUnitTests, "Only use this ctor for tests and non-editable collections");
+		}
 
+		public BookInfo(string folderPath, bool isEditable, ISaveContext saveContext)
+		{
+			Guard.AgainstNull(saveContext, "Please supply an actual saveContext");
+			
+			_saveContext = saveContext ?? (isEditable ? new AlwaysEditSaveContext() : new NoEditSaveContext() as ISaveContext);
+
+			FolderPath = folderPath;
 			//NB: This was coded in an unfortunate way such that touching almost any property causes a new metadata to be quietly created.
 			//So It's vital that we not touch properties that could create a blank metadata, before attempting to load the existing one.
 
@@ -263,7 +278,18 @@ namespace Bloom.Book
 			set { MetaData.Copyright = value; }
 		}
 
+		/// <summary>
+		/// Determined at construction time, and really means whether it is part of the editable collection.
+		/// May not really be OK to edit, for example, if it isn't checked out.
+		/// Wants a better name; consider whether IsSaveable should be used instead.
+		/// </summary>
 		public bool IsEditable { get; private set; }
+
+		/// <summary>
+		/// Determined by the SaveContext, which if relevant will consider team collection status.
+		/// This determines whether changes to this book can currently be saved.
+		/// </summary>
+		public bool IsSaveable => IsEditable && _saveContext.CanSaveChanges(this);
 
 		/// <summary>
 		/// If true, use a device-specific xmatter pack.
@@ -594,7 +620,10 @@ namespace Bloom.Book
 		/// <remarks>internal for testing</remarks>
 		internal static void InstallFreshInstanceGuid(string bookFolder)
 		{
-			var bookInfo = new BookInfo(bookFolder, true);
+			// This is a temporary BookInfo that shouldn't get asked about saveability of the book.
+			// But, this method should not have been called unless we already verified that we can save
+			// changes legitimately.
+			var bookInfo = new BookInfo(bookFolder, true, new AlwaysEditSaveContext());
 			bookInfo.InstallFreshGuidInternal();
 		}
 
@@ -623,7 +652,7 @@ namespace Bloom.Book
 		/// This method recurses through the folders under 'pathToDirectory' and keeps track of all the unique bookInstanceId
 		/// guids. When a duplicate is found, we will call InstallFreshInstanceGuid().
 		/// </summary>
-		public static void RepairDuplicateInstanceIds(string pathToDirectory)
+		public static void RepairDuplicateInstanceIds(string pathToDirectory, Func<string, bool> okToChangeId)
 		{
 			// Key is instanceId guid, Value is a SortedList of entries where the key is the LastEdited datetime of the
 			// meta.json file and the value is the filepath.
@@ -641,9 +670,32 @@ namespace Bloom.Book
 				if (sortedFilepaths.Count < 2) // no problem here!
 					continue;
 
-				var filepathsExceptFirst = sortedFilepaths.Values.Skip(1);
-				Logger.WriteEvent($"***Fixing {filepathsExceptFirst.Count()} duplicate ids for: {id}");
-				foreach (var filepath in filepathsExceptFirst)
+				// okToChange may be quite expensive, possibly involving spinning up a ProjectContext.
+				// We only want to test it for books actually in a conflict set.
+				// Make sure we do this evaluation only once.
+				var filePathsToChange = sortedFilepaths.Values.Where(p => okToChangeId(p)).ToList();
+				if (filePathsToChange.Count() == sortedFilepaths.Count)
+				{
+					// just skip the first and change the others
+					filePathsToChange = sortedFilepaths.Values.Skip(1).ToList();
+				}
+
+				if (filePathsToChange.Count() < sortedFilepaths.Count - 1)
+				{
+					// Review: strong alternative candidates:
+					// - do nothing; we'll hope duplicate IDs don't cause catastrophic problems.
+					// - change all the ones we can, hope the remaining duplicates don't cause catastrophic problems
+					// - fix duplicates anyway, except for one of the TC ones; hope changed TC ID doesn't cause catastrophic problems
+					// The last is most similar to the way things were before adding this code to prevent changing
+					// IDs of books checked in to TC.
+					// My inclination is to let it crash for now. I expect duplicate IDs are fairly rare, and for more
+					// than one member of a duplicate set to be in a TC is hopefully vanishingly rare. If it happens,
+					// I think it's worth hearing about.
+					throw new ApplicationException("Bloom found two or more books that are already shared in your Team Collection and have the same ID. You will need help from the Bloom Team to sort this out.");
+				}
+
+				Logger.WriteEvent($"***Fixing {filePathsToChange.Count()} duplicate ids for: {id}");
+				foreach (var filepath in filePathsToChange)
 				{
 					InstallFreshInstanceGuid(filepath);
 				}

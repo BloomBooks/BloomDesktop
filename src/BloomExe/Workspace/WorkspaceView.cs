@@ -231,7 +231,6 @@ namespace Bloom.Workspace
 
 			bookSelection.SelectionChanged += HandleBookSelectionChanged;
 			bookStatusChangeEvent.Subscribe(args => { HandleBookStatusChange(args); });
-			SelectPreviouslySelectedBook();
 		}
 
 		public void HandleRenameCommand()
@@ -269,6 +268,12 @@ namespace Bloom.Workspace
 					);
 				}, shouldHideSplashScreen: true);
 			}
+
+			// Must not do this until we've done TC sync. Among various potential confusions,
+			// if the book has been renamed remotely but not yet here, we may not be able to tell that it
+			// needs to be checked out before BringBookUpToDate renames it here.
+			StartupScreenManager.AddStartupAction(() =>
+				SelectPreviouslySelectedBook());
 		}
 
 		/// <summary>
@@ -289,7 +294,7 @@ namespace Bloom.Workspace
 			var inSourceFolder = !inCurrentCollection && _model.GetSourceCollectionFolders().ToList().Exists(folder => selBookCollectionFolder == folder);
 			if (inCurrentCollection || inSourceFolder)
 			{
-				var info = new BookInfo(selBookPath, inCurrentCollection);
+				var info = new BookInfo(selBookPath, inCurrentCollection, _tcManager.CurrentCollectionEvenIfDisconnected ?? new AlwaysEditSaveContext() as ISaveContext);
 				// Fully updating book files ensures that the proper branding files are found for
 				// previewing when the collection settings change but the book selection does not.
 				var book = _bookServer.GetBookFromBookInfo(info, fullyUpdateBookFiles: true);
@@ -324,7 +329,7 @@ namespace Bloom.Workspace
 			var result = JsonConvert.SerializeObject(new
 			{
 				id = book?.ID,
-				editable = _tcManager.CanEditBook(),
+				editable = _bookSelection.CurrentSelection?.IsSaveable ?? false,
 				collectionKind
 			});
 			return result;

@@ -448,6 +448,7 @@ namespace Bloom.CollectionTab
 			this._primaryCollectionFlow.Name = "_primaryCollectionFlow";
 			this._primaryCollectionFlow.Size = new System.Drawing.Size(350, 302);
 			this._primaryCollectionFlow.TabIndex = 0;
+			this._primaryCollectionFlow.Click += _primaryCollectionFlow_Click;
 			// 
 			// label1
 			// 
@@ -734,7 +735,13 @@ namespace Bloom.CollectionTab
 
         }
 
-        #endregion
+		private void _primaryCollectionFlow_Click(object sender, EventArgs e)
+		{
+			// allow people to finish a book rename by clicking in empty space in this pane.
+			FinishRename();
+		}
+
+		#endregion
 
 		private System.Windows.Forms.ImageList _bookThumbnails;
         private System.Windows.Forms.ContextMenuStrip _bookContextMenu;

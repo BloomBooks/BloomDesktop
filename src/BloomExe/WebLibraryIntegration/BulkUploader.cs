@@ -82,7 +82,24 @@ namespace Bloom.WebLibraryIntegration
 				
 				var bookParams = new BookUploadParameters(options);
 
-				BulkRepairInstanceIds(options.Path); 
+				BulkRepairInstanceIds(options.Path, path =>
+				{
+					// If we find duplicate IDs, we need to evaluate whether the books involved can have their IDs changed safely.
+					var parent = Path.GetDirectoryName(path);
+					var collectionPath = Directory.GetFiles(parent, "*.bloomCollection").FirstOrDefault();
+					if (collectionPath == null || !RobustFile.Exists(collectionPath))
+					{
+						return true; // weird situation, but it's not in a TC so we can update the ID if we want.
+					}
+
+					using (ProjectContext testContext = container.CreateProjectContext(collectionPath))
+					{
+						var tc = testContext.TeamCollectionManager?.CurrentCollection;
+						if (tc == null)
+							return true; // not in a TC, we can fix ID
+						return !tc.IsBookPresentInRepo(Path.GetFileName(path));
+					}
+				}); 
 				ProjectContext
 					context = null; // Expensive to create; hold each one we make until we find a book that needs a different one.
 				try
@@ -277,7 +294,7 @@ namespace Bloom.WebLibraryIntegration
 					Program.SetProjectContext(context);
 				}
 				var server = context.BookServer;
-				var bookInfo = new BookInfo(uploadParams.Folder, true);
+				var bookInfo = new BookInfo(uploadParams.Folder, true, context.TeamCollectionManager.CurrentCollectionEvenIfDisconnected ?? new AlwaysEditSaveContext() as ISaveContext);
 				var book = server.GetBookFromBookInfo(bookInfo, fullyUpdateBookFiles: true);
 				book.BringBookUpToDate(new NullProgress());
 				book.Storage.CleanupUnusedSupportFiles(isForPublish: false); // we are publishing, but this is the real folder not a copy, so play safe.
@@ -319,7 +336,7 @@ namespace Bloom.WebLibraryIntegration
 				bookSelection.SelectBook(book);
 				var currentEditableCollectionSelection = new CurrentEditableCollectionSelection();
 
-				var collection = new BookCollection(collectionPath, BookCollection.CollectionType.SourceCollection, bookSelection);
+				var collection = new BookCollection(collectionPath, BookCollection.CollectionType.SourceCollection, bookSelection, context.TeamCollectionManager);
 				currentEditableCollectionSelection.SelectCollection(collection);
 
 				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, context.Settings, server, _thumbnailer);
@@ -374,9 +391,9 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		/// <remarks>Internal for testing.</remarks>
 		/// <param name="rootFolderPath"></param>
-		internal static void BulkRepairInstanceIds(string rootFolderPath)
+		internal static void BulkRepairInstanceIds(string rootFolderPath, Func<string, bool> okToChangeId)
 		{
-			BookInfo.RepairDuplicateInstanceIds(rootFolderPath);
+			BookInfo.RepairDuplicateInstanceIds(rootFolderPath, okToChangeId);
 		}
 	}
 }

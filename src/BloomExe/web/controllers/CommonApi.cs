@@ -181,7 +181,7 @@ namespace Bloom.web.controllers
 		/// <param name="request"></param>
 		private void HandleCanModifyCurrentBook(ApiRequest request)
 		{
-			request.ReplyWithBoolean(TeamCollectionApi.TheOneInstance.CanEditBook());
+			request.ReplyWithBoolean(request.CurrentBook?.IsSaveable ?? false);
 		}
 
 

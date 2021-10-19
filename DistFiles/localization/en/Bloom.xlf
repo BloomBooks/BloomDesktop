@@ -294,11 +294,11 @@
         <note>minimal question indicating a link to information</note>
       </trans-unit>
       <trans-unit id="BookStorage.CorruptBook">
-        <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
+        <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please report the problem to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
       </trans-unit>
       <trans-unit id="BookStorage.FolderMoved">
-        <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</source>
+        <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please report the problem to us.</source>
         <note>ID: BookStorage.FolderMoved</note>
       </trans-unit>
       <trans-unit id="Browser.CopyTroubleshootingInfo">
@@ -1045,7 +1045,7 @@
         <note>ID: Download.CompletedCaption</note>
       </trans-unit>
       <trans-unit id="Download.CopyFailed">
-        <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers</source>
+        <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please report the problem to the us.</source>
         <note>ID: Download.CopyFailed</note>
         <note xml:lang="en">OLD TEXT (before 3.9, period at end): Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers.</note>
       </trans-unit>
@@ -2685,7 +2685,7 @@
         <note xml:lang="en">OLD TEXT (before 3.9, shorter wording): Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, ask someone to investigate if you have an aggressive firewall product installed. The agressive firewall product may need to be uninstalled before you can use Bloom.</note>
       </trans-unit>
       <trans-unit id="Errors.CouldNotSavePage">
-        <source xml:lang="en">Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</source>
+        <source xml:lang="en">Bloom had trouble saving a page. Please report the problem to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</source>
         <note>ID: Errors.CouldNotSavePage</note>
       </trans-unit>
       <trans-unit id="Errors.CurrentRunningVersion">
@@ -2713,12 +2713,12 @@
         <note>This is a link that will take them to the Downloads (Installers) web page</note>
       </trans-unit>
       <trans-unit id="Errors.ErrorSelecting">
-        <source xml:lang="en">There was a problem selecting the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.</source>
+        <source xml:lang="en">There was a problem selecting the book.  Restarting Bloom may fix the problem.  If not, please report the problem to us.</source>
         <note>ID: Errors.ErrorSelecting</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added spaces): There was a problem selecting the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</note>
       </trans-unit>
       <trans-unit id="Errors.ErrorUpdating">
-        <source xml:lang="en">There was a problem updating the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.</source>
+        <source xml:lang="en">There was a problem updating the book.  Restarting Bloom may fix the problem.  If not, please report the problem to us.</source>
         <note>ID: Errors.ErrorUpdating</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added spaces): There was a problem updating the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</note>
       </trans-unit>
@@ -3387,10 +3387,10 @@
         <source xml:lang="en">Settings</source>
         <note>ID: PublishTab.Android.Settings</note>
       </trans-unit>
-	  <trans-unit id="PublishTab.Android.TalkingBookLanguages" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.TalkingBookLanguages" sil:dynamic="true">
         <source xml:lang="en">Talking Book Languages</source>
         <note>ID: PublishTab.Android.TalkingBookLanguages</note>
-		<note>Which languages will have the "Talking Book" (books with both text and narrated audio) feature enabled</note>
+        <note>Which languages will have the "Talking Book" (books with both text and narrated audio) feature enabled</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.TextLanguages" sil:dynamic="true">
         <source xml:lang="en">Text Languages</source>
@@ -3559,28 +3559,28 @@
         <note>ID: PublishTab.BookMetadata</note>
         <note>This link opens a dialog box that lets you put in information someone (often a librarian) might use to search for a book with particular characteristics.</note>
       </trans-unit>
-	  <trans-unit id="PublishTab.BulkBloomPub.Explanation" sil:dynamic="true">
+      <trans-unit id="PublishTab.BulkBloomPub.Explanation" sil:dynamic="true">
         <source xml:lang="en">This file will cause these books to be grouped under a single bookshelf in Bloom Reader. This collection's bookshelf is set to "{0}".</source>
         <note>ID: Publish.BulkBloomPub.Explanation</note>
-		<note>{0} will be replaced with the name of the bookshelf. Make sure to place the {0} at the appropriate place in the translation. The double quotes ("") around it can be replaced with whatever kind of quotation marks are appropriate in the language you are translating to.</note>
+        <note>{0} will be replaced with the name of the bookshelf. Make sure to place the {0} at the appropriate place in the translation. The double quotes ("") around it can be replaced with whatever kind of quotation marks are appropriate in the language you are translating to.</note>
       </trans-unit>
-	  <trans-unit id="PublishTab.BulkBloomPub.Make" sil:dynamic="true">
+      <trans-unit id="PublishTab.BulkBloomPub.Make" sil:dynamic="true">
         <source xml:lang="en">Make</source>
         <note>ID: Publish.BulkBloomPub.Make</note>
-		<note>"Make" is the label of a button that will make the selected file</note>
+        <note>"Make" is the label of a button that will make the selected file</note>
       </trans-unit>
-	  <trans-unit id="PublishTab.BulkBloomPub.MakeAllBloomPubs" sil:dynamic="true">
+      <trans-unit id="PublishTab.BulkBloomPub.MakeAllBloomPubs" sil:dynamic="true">
         <source xml:lang="en">Make All BloomPUBs from Collection</source>
         <note>ID: PublishTab.BulkBloomPub.MakeAllBloomPubs</note>
         <note>A BloomPUB is a type of file format that can be used to read books on the Bloom Reader app</note>
       </trans-unit>
-	  <trans-unit id="PublishTab.BulkBloomPub.MakeBloomBundle" sil:dynamic="true">
+      <trans-unit id="PublishTab.BulkBloomPub.MakeBloomBundle" sil:dynamic="true">
         <source xml:lang="en">Compress into a single .bloombundle file</source>
         <note>ID: Publish.BulkBloomPub.MakeBloomBundle</note>
-		<note>"Compress" means to take multiple things and turn them into a single combined file. (The result is smaller than the sum of the parts.)</note>
-		<note>.bloombundle is the file extension. It is in lowercase. It will be the same extension regardless of the user's language settings.</note>
+        <note>"Compress" means to take multiple things and turn them into a single combined file. (The result is smaller than the sum of the parts.)</note>
+        <note>.bloombundle is the file extension. It is in lowercase. It will be the same extension regardless of the user's language settings.</note>
       </trans-unit>
-	  <trans-unit id="PublishTab.BulkBloomPub.ProduceBloomShelf" sil:dynamic="true">
+      <trans-unit id="PublishTab.BulkBloomPub.ProduceBloomShelf" sil:dynamic="true">
         <source xml:lang="en">Produce a .bloomshelf file</source>
         <note>ID: Publish.BulkBloomPub.ProduceBloomShelf</note>
       </trans-unit>

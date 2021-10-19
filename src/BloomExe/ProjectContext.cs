@@ -170,7 +170,9 @@ namespace Bloom
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
 						.InstancePerLifetimeScope()
-						.Where(commandTypes.Contains).As<ICommand>();
+						// Mono 5's compiler requires this to be a lambda expression, not a method group.
+						// Otherwise compiling fails with "error CS0122: 'PolyfillExtensions.Contains(string, char)' is inaccessible due to its protection level".
+						.Where((arg) => commandTypes.Contains(arg)).As<ICommand>();
 
 					var bookRenameEvent = new BookRenamedEvent();
 					builder.Register(c => bookRenameEvent).AsSelf().InstancePerLifetimeScope();
