@@ -1,10 +1,12 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.TeamCollection;
 using Bloom.MiscUI;
+using Bloom.ToPalaso;
 using Bloom.web.controllers;
 using Gecko;
 using MarkdownDeep;
