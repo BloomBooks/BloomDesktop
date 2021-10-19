@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.ErrorReporter;
 using Bloom.TeamCollection;
 using Bloom.web;
 using Bloom.web.controllers;
@@ -305,10 +306,7 @@ namespace Bloom.Publish.BloomLibrary
 			_progressBox.Clear();
 			_uploadSource.Enabled = _uploadButton.Enabled;
 
-			_uploadSource.Visible = _model.Book.CollectionSettings.HaveEnterpriseFeatures
-			                        // for now, we're limiting this to projects that have set up a default bookshelf
-			                        // so that all their books go to the correct place.
-			                        && !String.IsNullOrEmpty(_model.Book.CollectionSettings.DefaultBookshelf);
+			_uploadSource.Visible = _model.Book.CollectionSettings.HaveEnterpriseFeatures;
 
 
 			if (_uploadSource.SelectedIndex != 0)
@@ -395,6 +393,15 @@ namespace Bloom.Publish.BloomLibrary
 
 		private void _uploadButton_Click(object sender, EventArgs e)
 		{
+			// for now, we're limiting this to projects that have set up a default bookshelf
+			// so that all their books go to the correct place.
+			var missingDefaultBookshelf = string.IsNullOrEmpty(_model.Book.CollectionSettings.DefaultBookshelf);
+			if ( _uploadSource.SelectedIndex > 0 && missingDefaultBookshelf)
+			{
+				// Intentionally not localized ( because it's complicated, rare, and generally advanced )
+				ErrorReportUtils.NotifyUserOfProblem("Before sending all of your books to BloomLibrary.org, you probably want to tell Bloom which bookshelf this collection belongs in. Please go to Collection Tab : Settings: Book Making and set the \"Bloom Library Bookshelf\".");
+				return;
+			}
 			if (_uploadSource.SelectedIndex == 1)
 			{
 				BulkUploadThisCollection();
