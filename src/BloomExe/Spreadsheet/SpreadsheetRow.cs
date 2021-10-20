@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Drawing;
 
 namespace Bloom.Spreadsheet
 {
@@ -13,6 +10,8 @@ namespace Bloom.Spreadsheet
 	{
 		private List<string> _cells = new List<string>();
 		public InternalSpreadsheet Spreadsheet;
+		public Color BackgroundColor;
+		public bool Hidden;
 
 		public SpreadsheetRow(InternalSpreadsheet spreadsheet)
 		{
@@ -50,7 +49,7 @@ namespace Bloom.Spreadsheet
 		{
 			get
 			{
-				return _cells[Spreadsheet.ColumnForTag(InternalSpreadsheet.MetadataKeyLabel)];
+				return _cells[Spreadsheet.ColumnForTag(InternalSpreadsheet.MetadataKeyColumnLabel)];
 			}
 		}
 

@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
 
 namespace Bloom.Spreadsheet
 {
@@ -12,14 +14,19 @@ namespace Bloom.Spreadsheet
 	/// </summary>
 	public class InternalSpreadsheet
 	{
-		public const string ImageIndexOnPageLabel = "(image index on page)";
-		public const string ImageThumbnailLabel = "[image thumbnail]";
-		public const string ImageSourceLabel = "[image source]";
-		public const string ImageKeyLabel = "[image]";
-		public const string TextIndexOnPageLabel = "(text index on page)";
-		public const string MetadataKeyLabel = "[metadata key]";
-		public const string PageNumberLabel = "[page]";
-		public const string TextGroupLabel = "[textgroup]";
+		public static Color AlternatingRowsColor1 = Color.FromArgb(215, 239, 242); // lighter version of Color.PowderBlue
+		public static Color AlternatingRowsColor2 = Color.FromArgb(237, 249, 250); // even lighter version of Color.PowderBlue
+		public static Color HiddenColor = Color.FromArgb(210, 210, 210); // light gray
+
+		public const string MetadataKeyColumnLabel = "[metadata key]";
+		public const string PageNumberColumnLabel = "[page]";
+		public const string ImageThumbnailColumnLabel = "[image thumbnail]";
+		public const string ImageSourceColumnLabel = "[image source]";
+
+		public const string ImageRowLabel = "[image]";
+		public const string TextGroupRowLabel = "[textgroup]";
+		public const string BookTitleRowLabel = "[bookTitle]";
+
 		private List<SpreadsheetRow> _rows = new List<SpreadsheetRow>();
 		private HeaderRow _header;
 
@@ -27,13 +34,11 @@ namespace Bloom.Spreadsheet
 
 		public string[] StandardLeadingColumns = new[]
 		{
-			MetadataKeyLabel, // what kind of data is in the row; might be book-data key or [textgroup] or [image]
-			PageNumberLabel, // value from data-page-number of bloom-page
+			MetadataKeyColumnLabel, // what kind of data is in the row; might be book-data key or [textgroup] or [image]
+			PageNumberColumnLabel, // value from data-page-number of bloom-page
 			// Todo: [page layout], // something that indicates the template for the page
-			ImageIndexOnPageLabel, // for images, its index in document order
-			ImageSourceLabel, // the full path of where the image comes from
-			ImageThumbnailLabel, // a small version of the image embedded and displayed in the excel sheet
-			TextIndexOnPageLabel, // for textgroups, its index in reading order
+			ImageSourceColumnLabel, // the full path of where the image comes from
+			ImageThumbnailColumnLabel, // a small version of the image embedded and displayed in the excel sheet
 			// Todo: (lang slot) // L1, L2, L3, auto etc...which languages should be visible here?
 		};
 
@@ -119,7 +124,15 @@ namespace Bloom.Spreadsheet
 			return _header.Count - 1;
 		}
 
-		public int ColumnForPageNumber => ColumnForTag(PageNumberLabel); // or just answer 2? or cache?
+		public int ColumnForPageNumber => ColumnForTag(PageNumberColumnLabel); // or just answer 2? or cache?
+
+		public List<int> HiddenColumns => new List<int>{ColumnForTag(PageNumberColumnLabel), ColumnForTag(ImageSourceColumnLabel)};
+
+		public void SortHiddenRowsToTheBottom()
+		{
+			// Needs to be a stable sort, so can't use .Sort().
+			_rows = _rows.OrderBy(r => r.Hidden).ToList();
+		}
 
 		public void WriteToFile(string path)
 		{
