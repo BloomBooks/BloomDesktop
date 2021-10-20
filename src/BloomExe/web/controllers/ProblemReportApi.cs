@@ -308,9 +308,26 @@ namespace Bloom.web.controllers
 		private void AddReaderInfo()
 		{
 			var filePaths = GetReaderFilePaths(CollectionFolder);
+			// If we have any files in the "Allowed Words" or "Sample Texts" folders, store those
+			// directories preserving the directory structure rather than individual files at the
+			// top level.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10483.
+			var subFolderPathsHandled = new List<string>();
 			foreach (var filePath in filePaths)
 			{
-				_bookZipFile.AddTopLevelFile(filePath);
+				var subFolderPath = Path.GetDirectoryName(filePath);
+				var subFolderName = Path.GetFileName(subFolderPath);
+				if (subFolderName == "Allowed Words" || subFolderName == "Sample Texts")
+				{
+					if (!subFolderPathsHandled.Contains(subFolderPath))
+					{
+						subFolderPathsHandled.Add(subFolderPath);
+						_bookZipFile.AddDirectory(subFolderPath);
+					}
+				}
+				else
+				{
+					_bookZipFile.AddTopLevelFile(filePath);
+				}
 			}
 		}
 
