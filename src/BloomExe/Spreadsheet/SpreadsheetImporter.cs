@@ -81,13 +81,13 @@ namespace Bloom.Spreadsheet
 				}
 				var currentRow = _inputRows[_currentRowIndex];
 				string rowTypeLabel = currentRow.MetadataKey;
-				if (rowTypeLabel == InternalSpreadsheet.ImageKeyLabel)
+				if (rowTypeLabel == InternalSpreadsheet.ImageRowLabel)
 				{
 					//TODO import the pictures
 					_currentRowIndex++;
 					continue;
 				}
-				else if (rowTypeLabel == InternalSpreadsheet.TextGroupLabel)
+				else if (rowTypeLabel == InternalSpreadsheet.TextGroupRowLabel)
 				{
 					var rowPageNumberLabel = currentRow.PageNumber;
 					if (rowPageNumberLabel != pageNumber)
@@ -171,7 +171,7 @@ namespace Bloom.Spreadsheet
 				templateNode.SetAttribute("data-book", dataBookLabel);
 			}
 
-			var imageSrcCol = _sheet.ColumnForTag(InternalSpreadsheet.ImageSourceLabel);
+			var imageSrcCol = _sheet.ColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
 			//TODO copy in images from their source paths. Will be done with the importing images step
 			var imageSrc = Path.GetFileName(currentRow.GetCell(imageSrcCol).Content);
 
