@@ -445,6 +445,11 @@ namespace Bloom
 						if (!InstallerSupport.SharedByAllUsers() && FontInstaller.InstallFont("AndikaNewBasic"))
 							return 1;
 
+						// Kick off getting all the font metadata for fonts currently installed in the system.
+						// This can take several seconds on slow machines with lots of fonts installed, so we
+						// run it in the background once at startup.  (The results are cached automatically.)
+						System.Threading.Tasks.Task.Run(() => FontProcessing.FontsApi.GetAllFontMetadata());
+
 						// This has served its purpose on Linux, and with Geckofx60 it interferes with CommandLineRunner.
 						_originalPreload = Environment.GetEnvironmentVariable("LD_PRELOAD");
 						Environment.SetEnvironmentVariable("LD_PRELOAD", null);
