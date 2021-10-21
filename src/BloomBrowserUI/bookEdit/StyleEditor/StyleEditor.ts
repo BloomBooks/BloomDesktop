@@ -1000,7 +1000,7 @@ export default class StyleEditor {
             BloomApi.wrapAxios(
                 axios
                     .all([
-                        axios.get("/bloom/availableFontNames"),
+                        axios.get("/bloom/api/fonts/names"),
                         axios.get(
                             "/bloom/bookEdit/StyleEditor/StyleEditor.html"
                         )

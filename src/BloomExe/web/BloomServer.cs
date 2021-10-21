@@ -634,12 +634,6 @@ namespace Bloom.Api
 					info.ResponseContentType = "text/html";
 					info.WriteCompleteOutput(ToolboxContent ?? "");
 					return true;
-				case "availableFontNames":
-					info.ResponseContentType = "application/json";
-					var list = new List<string>(Browser.NamesOfFontsThatBrowserCanRender());
-					list.Sort();
-					info.WriteCompleteOutput(JsonConvert.SerializeObject(new{fonts = list}));
-					return true;
 			}
 			return ProcessAnyFileContent(info, localPath);
 		}

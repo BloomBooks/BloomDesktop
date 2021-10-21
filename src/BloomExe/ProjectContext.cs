@@ -10,6 +10,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
+using Bloom.FontProcessing;
 using Bloom.ImageProcessing;
 //using Bloom.SendReceive;
 using Bloom.WebLibraryIntegration;
@@ -165,6 +166,7 @@ namespace Bloom
 							typeof(EditingViewApi),
 							typeof(BrowserDialogApi),
 							typeof(ProblemReportApi),
+							typeof(FontsApi),
 							typeof(BulkBloomPubCreator),
 							typeof(LibraryPublishApi)
 						}.Contains(t));
@@ -378,6 +380,7 @@ namespace Bloom
 			_scope.Resolve<EditingViewApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<LibraryPublishApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<PerformanceMeasurement>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<FontsApi>().RegisterWithApiHandler(server.ApiHandler);
 		}
 
 		// Get the collection settings. Passed the expected path, but if not found,

@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
 using Bloom.Book;
+using Bloom.FontProcessing;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;

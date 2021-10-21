@@ -7,6 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
+using Bloom.FontProcessing;
 using Bloom.Publish.Epub;
 using Bloom.web;
 using BloomTemp;
