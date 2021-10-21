@@ -9,7 +9,7 @@ using SharpFont;				// Linux only (interface to libfreetype.so.6)
 using System.Windows.Media;		// not implemented in Mono
 #endif
 
-namespace Bloom.Publish.Epub
+namespace Bloom.FontProcessing
 {
 	/// <summary>
 	/// This class handles the problem of finding what files contain the definition of the various faces of a particular font.
@@ -133,6 +133,7 @@ namespace Bloom.Publish.Epub
 				{
 					continue; // file is somehow corrupt or not really a font file? Just ignore it.
 				}
+
 				switch (gtf.EmbeddingRights)
 				{
 					case FontEmbeddingRight.Editable:
