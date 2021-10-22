@@ -111,13 +111,13 @@
         <source xml:lang="en">RFC5646 code:</source>
         <note>ID: CustomIdentifierView.betterLabel1</note>
         <note>label describes the code for a custom identifier. Translate only 'code'</note>
-        <target xml:lang="az" state="needs-translation">RFC5646 code:</target>
+        <target xml:lang="az" state="translated">RFC5646 kodu:</target>
       </trans-unit>
       <trans-unit id="CustomIdentifierView.linkLabel1">
         <source xml:lang="en">Read about language identifiers on the web</source>
         <note>ID: CustomIdentifierView.linkLabel1</note>
         <note>text used in the link to a webpage that describes the language identifiers</note>
-        <target xml:lang="az" state="needs-translation">Read about language identifiers on the web</target>
+        <target xml:lang="az" state="translated">İnternetdə dil müəyyənləşdirici haqqında oxuyun</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
@@ -308,13 +308,13 @@
         <source xml:lang="en">Purpose:</source>
         <note>ID: IpaIdentifierView.betterLabel1</note>
         <note>In writing system setup when IPA special option is selected: Label for the purpose combo box</note>
-        <target xml:lang="az" state="needs-translation">Purpose:</target>
+        <target xml:lang="az" state="translated">Məqsəd:</target>
       </trans-unit>
       <trans-unit id="IpaIdentifierView.linkLabel1">
         <source xml:lang="en">Read about IPA transcription on the web</source>
         <note>ID: IpaIdentifierView.linkLabel1</note>
         <note>In writing system setup when IPA special option is selected: text used in link to a webpage describing IPA transcription</note>
-        <target xml:lang="az" state="needs-translation">Read about IPA transcription on the web</target>
+        <target xml:lang="az" state="translated">İnternetdə Bəynalxalq Fonetik Əlifbası transkripsiya haqqında oxuyun</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
@@ -391,7 +391,7 @@
       <trans-unit id="LanguageLookup._scriptsAndVariantsLabel">
         <source xml:lang="en">my script variant label</source>
         <note>ID: LanguageLookup._scriptsAndVariantsLabel</note>
-        <target xml:lang="az" state="needs-translation">my script variant label</target>
+        <target xml:lang="az" state="translated">mənim yazı növü etiketi</target>
       </trans-unit>
       <trans-unit id="LanguageLookup._scriptsAndVariantsLink">
         <source xml:lang="en">Script and Variant</source>

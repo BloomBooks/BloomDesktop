@@ -418,6 +418,12 @@
         <note>OLD TEXT (before 5.0/3.9): Show Experimental Templates (e.g. Picture Dictionary)</note>
         <target xml:lang="tl" state="needs-translation">Show Experimental Book Sources</target>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.SpreadsheetImportExport">
+        <source xml:lang="en">Spreadsheet Import/Export</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.SpreadsheetImportExport</note>
+        <note>This is the label of a checkbox which, if enabled, allows a menu command to be used that can import Bloom books from an Excel spreadsheet or to an Excel spreadsheet.</note>
+        <target xml:lang="tl" state="needs-translation">Spreadsheet Import/Export</target>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate1</note>
@@ -715,6 +721,12 @@
         <source xml:lang="en">Province</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Province</note>
         <target xml:lang="tl" state="needs-translation">Province</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.RequiresEnterprise_ToolTip_" sil:dynamic="true">
+        <source xml:lang="en">To use this feature, you'll need to enable Bloom Enterprise.</source>
+        <note>ID: CollectionSettingsDialog.RequiresEnterprise_ToolTip_</note>
+        <note>Same as the text for "EditTab.RequiresEnterprise"</note>
+        <target xml:lang="tl" state="needs-translation">To use this feature, you'll need to enable Bloom Enterprise.</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Restart">
         <source xml:lang="en">Restart</source>
@@ -1070,6 +1082,12 @@
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
         <target xml:lang="tl" state="translated">Advanced</target>
       </trans-unit>
+      <trans-unit id="Common.AskForHelp">
+        <source xml:lang="en">Ask for help</source>
+        <note>ID: Common.AskForHelp</note>
+        <note>Used in various places where someone might need to open a Problem Report dialog.</note>
+        <target xml:lang="tl" state="needs-translation">Ask for help</target>
+      </trans-unit>
       <trans-unit id="Common.BackButton">
         <source xml:lang="en">Back</source>
         <note>ID: Common.BackButton</note>
@@ -1264,6 +1282,16 @@
         <note>ID: Common.Stop</note>
         <target xml:lang="tl" state="needs-translation">Stop</target>
       </trans-unit>
+      <trans-unit id="Common.Upload">
+        <source xml:lang="en">Upload</source>
+        <note>ID: Common.Upload</note>
+        <target xml:lang="tl" state="needs-translation">Upload</target>
+      </trans-unit>
+      <trans-unit id="Common.Uploading">
+        <source xml:lang="en">Uploading</source>
+        <note>ID: Common.Uploading</note>
+        <target xml:lang="tl" state="needs-translation">Uploading</target>
+      </trans-unit>
       <trans-unit id="Common.Warning">
         <source xml:lang="en">Info</source>
         <note>ID: Common.Warning</note>
@@ -1275,6 +1303,12 @@
         <note>ID: Common.WhatsThis</note>
         <note>minimal question indicating a link to information</note>
         <target xml:lang="tl" state="needs-translation">What's this?</target>
+      </trans-unit>
+      <trans-unit id="Common.WhatCausedThisProblem">
+        <source xml:lang="en">What caused this problem?</source>
+        <note>ID: Common.WhatCausedThisProblem</note>
+        <note>This is usually a link to an explanatory document.</note>
+        <target xml:lang="tl" state="needs-translation">What caused this problem?</target>
       </trans-unit>
       <trans-unit id="Download.Completed">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
@@ -1582,10 +1616,16 @@
         <target xml:lang="tl" state="needs-translation">Duplicate Page Many Times...</target>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageMultiple.Prompt">
-        <source xml:lang="en">How many more of this page? (1-999):</source>
+        <source xml:lang="en">How many more of this page? (2-999)</source>
         <note>ID: EditTab.DuplicatePageMultiple.Prompt</note>
         <note>Used in the window that asks how many times to duplicate the selected page.</note>
-        <target xml:lang="tl" state="needs-translation">How many more of this page? (1-999):</target>
+        <target xml:lang="tl" state="needs-translation">How many more of this page? (2-999)</target>
+      </trans-unit>
+      <trans-unit id="EditTab.DuplicatePageMultiple.Title">
+        <source xml:lang="en">Duplicate Page Many Times</source>
+        <note>ID: EditTab.DuplicatePageMultiple.Title</note>
+        <note>Title of dialog that Bloom uses to ask the user how many times to duplicate the currently selected page.</note>
+        <target xml:lang="tl" state="needs-translation">Duplicate Page Many Times</target>
       </trans-unit>
       <trans-unit id="EditTab.Edit">
         <source xml:lang="en">Edit</source>
@@ -4623,11 +4663,13 @@
       <trans-unit id="PublishTab.OverwriteWarning.ReplaceExistingButton">
         <source xml:lang="en">Replace Existing</source>
         <note>ID: PublishTab.OverwriteWarning.ReplaceExistingButton</note>
+        <note>Obsolete for Bloom 5.2 and later</note>
         <target xml:lang="tl" state="needs-translation">Replace Existing</target>
       </trans-unit>
       <trans-unit id="PublishTab.OverwriteWarning.WindowTitle">
         <source xml:lang="en">Notice</source>
         <note>ID: PublishTab.OverwriteWarning.WindowTitle</note>
+        <note>Obsolete for Bloom 5.2 and later</note>
         <target xml:lang="tl" state="needs-translation">Notice</target>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Error.Failed">
@@ -5098,6 +5140,11 @@
         <note>ID: PublishTab.Upload.SignUpLogin</note>
         <target xml:lang="tl" state="needs-translation">Sign In / Sign Up to BloomLibrary.org</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.SkipMakingPdf">
+        <source xml:lang="en">Skipping PDF because this book has video</source>
+        <note>ID: PublishTab.Upload.SkipMakingPdf</note>
+        <target xml:lang="tl" state="needs-translation">Skipping PDF because this book has video</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.SomethingWrong">
         <source xml:lang="en">Oops, something went wrong when trying to sign you into our database.</source>
         <note>ID: PublishTab.Upload.SomethingWrong</note>
@@ -5192,6 +5239,48 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Uploading {0}</source>
         <note>ID: PublishTab.Upload.UploadingStatus</note>
         <target xml:lang="tl" state="needs-translation">Uploading {0}</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.AlreadyIn">
+        <source xml:lang="en">Already in Bloom Library</source>
+        <note>ID: PublishTab.UploadCollisionDialog.AlreadyIn</note>
+        <note>This is the header for the book that is in bloomlibrary.org already.</note>
+        <target xml:lang="tl" state="needs-translation">Already in Bloom Library</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.HaveOne">
+        <source xml:lang="en">BloomLibrary.org already has a book with this ID from you ({0}).</source>
+        <note>ID: PublishTab.UploadCollisionDialog.HaveOne</note>
+        <note>This is the dialog subtitle. The {0} will be replaced with the uploader's email address.</note>
+        <target xml:lang="tl" state="needs-translation">BloomLibrary.org already has a book with this ID from you ({0}).</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks">
+        <source xml:lang="en">These are different books</source>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks</note>
+        <note>This is the label on a radio button.</note>
+        <target xml:lang="tl" state="needs-translation">These are different books</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary">
+        <source xml:lang="en">Add a new book. Bloom will fix the ID of your book and upload it. The old book on Bloom Library will stay the same.</source>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary</note>
+        <note>This is explanatory commentary on a radio button.</note>
+        <target xml:lang="tl" state="needs-translation">Add a new book. Bloom will fix the ID of your book and upload it. The old book on Bloom Library will stay the same.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook">
+        <source xml:lang="en">These are the same book</source>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook</note>
+        <note>This is the label on a radio button.</note>
+        <target xml:lang="tl" state="needs-translation">These are the same book</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary">
+        <source xml:lang="en">Update the book. Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</source>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary</note>
+        <note>This is explanatory commentary on a radio button. Don't translate the website reference in brackets ([bloomlibrary.org]). It will be replaced by a link to bloomlibrary.org.</note>
+        <target xml:lang="tl" state="needs-translation">Update the book. Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.SameBook">
+        <source xml:lang="en">Are these the same book?</source>
+        <note>ID: PublishTab.UploadCollisionDialog.SameBook</note>
+        <note>This is the dialog title</note>
+        <target xml:lang="tl" state="needs-translation">Are these the same book?</target>
       </trans-unit>
       <trans-unit id="Quiz.CheckYourUnderstanding" sil:dynamic="true">
         <source xml:lang="en">Check Your Understanding</source>
@@ -5913,6 +6002,12 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Team Collection</source>
         <note>ID: TeamCollection.TeamCollection</note>
         <target xml:lang="tl" state="needs-translation">Team Collection</target>
+      </trans-unit>
+      <trans-unit id="TeamCollection.TeamCollections">
+        <source xml:lang="en">Team Collections</source>
+        <note>ID: TeamCollection.TeamCollections</note>
+        <note>Should be translated similarly as TeamCollection.TeamCollection, but plural instead of singular</note>
+        <target xml:lang="tl" state="needs-translation">Team Collections</target>
       </trans-unit>
       <trans-unit id="TeamCollection.Available" sil:dynamic="true">
         <source xml:lang="en">This book is available for editing</source>
