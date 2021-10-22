@@ -363,15 +363,15 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
         <note>minimal question indicating a link to information</note>
         <target xml:lang="quc" state="final">¿Su wa'?</target>
       </trans-unit>
-      <trans-unit id="BookStorage.CorruptBook" approved="yes">
-        <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
+      <trans-unit id="BookStorage.CorruptBook">
+        <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please report the problem to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
-        <target xml:lang="quc" state="final">Bloom man xkowintaj xusik’ij uwach we no’jwuj ri' xuquje’ xriqitaj jun uwachib'al ri k'ate xb'anik. Kqoqxa’nij unik’ojixik ri k’exnik xb’an naqaj chech we no’jwuj ri'. We kak’ulmataj chi jumul chi man k'o ta ub’ixik, chab’ana jun toq’ob’ chab’ana pitz’ pa Ub'antajikil xuquje’ kab'ij uloq chi qech ri k’axk’olil.</target>
+        <target xml:lang="quc" state="translated">Bloom man xkowintaj xusik’ij uwach we no’jwuj ri' xuquje’ xriqitaj jun uwachib'al ri k'ate xb'anik. Kqoqxa’nij unik’ojixik ri k’exnik xb’an naqaj chech we no’jwuj ri'. We kak’ulmataj chi jumul chi man k'o ta ub’ixik, chab’ana jun toq’ob’ chab’ana pitz’ pa Ub'antajikil xuquje’ kab'ij uloq chi qech ri k’axk’olil.</target>
       </trans-unit>
-      <trans-unit id="BookStorage.FolderMoved" approved="yes">
-        <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</source>
+      <trans-unit id="BookStorage.FolderMoved">
+        <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please report the problem to us.</source>
         <note>ID: BookStorage.FolderMoved</note>
-        <target xml:lang="quc" state="final">Jexa jun uq'ab' le ub'e'al le k’olyakb’al chak rech we no’jwuj ri’ xsilob’isaxik te'qne xk’extaj ub’i’. Rumal wa’, Bloom man kakowin taj kuk’ol ri k’exenik xb’an chi upam we uxaq wuj ri' rumal ri' rajawaxik kb'an elem na. We man ak’exom ta le ub’i’ te'qne man ak'exom ta uk'olib'al le jastaq, chab’ana jun toq’ob’ chab’ana pitz’ pa Ub'antajikil, chi uxe’, xuquje’ kab’ij uloq le k’axk’olil chi kech ri ajkemchakunelab’.</target>
+        <target xml:lang="quc" state="translated">Jexa jun uq'ab' le ub'e'al le k’olyakb’al chak rech we no’jwuj ri’ xsilob’isaxik te'qne xk’extaj ub’i’. Rumal wa’, Bloom man kakowin taj kuk’ol ri k’exenik xb’an chi upam we uxaq wuj ri' rumal ri' rajawaxik kb'an elem na. We man ak’exom ta le ub’i’ te'qne man ak'exom ta uk'olib'al le jastaq, chab’ana jun toq’ob’ chab’ana pitz’ pa Ub'antajikil, chi uxe’, xuquje’ kab’ij uloq le k’axk’olil chi kech ri ajkemchakunelab’.</target>
       </trans-unit>
       <trans-unit id="Browser.CopyTroubleshootingInfo" approved="yes">
         <source xml:lang="en">Copy Troubleshooting Information</source>
@@ -787,10 +787,10 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
         <note>ID: CollectionTab.BookMenu.ExportDocMessage</note>
         <target xml:lang="quc" state="final">Bloom kutor na we uwujil HTML pa ri kematal chak rech ri chakunel rech woktzij (amag'el are Word o LibreOffice). Katkowin na kab'an unik’ojisaxik ri woktzij xuquje’ ri wachib’al rech we no’jwuj ri'. Wa' we kematal chak k’o karaj man kuk’ol ta ri uwokob’axik uxaq wuj, man kakub’i’ ta ak’u’x chi rij.</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.ExportToExcel">
-        <source xml:lang="en">Export to Excel...</source>
-        <note>ID: CollectionTab.BookMenu.ExportToExcel</note>
-        <target xml:lang="quc" state="translated">Utaqik pa Excel...</target>
+      <trans-unit id="CollectionTab.BookMenu.ExportToSpreadsheet">
+        <source xml:lang="en">Export to Spreadsheet...</source>
+        <note>ID: CollectionTab.BookMenu.ExportToSpreadsheet</note>
+        <target xml:lang="quc" state="needs-translation">Export to Spreadsheet...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.ExportToWordOrLibreOffice" approved="yes">
         <source xml:lang="en">Export to Word or LibreOffice...</source>
@@ -802,10 +802,10 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
         <note>ID: CollectionTab.BookMenu.ExportToXMLForInDesign</note>
         <target xml:lang="quc" state="final">Utaqik pa XML chech InDesign...</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.ImportContentFromExcel">
-        <source xml:lang="en">Import content from Excel...</source>
-        <note>ID: CollectionTab.BookMenu.ImportContentFromExcel</note>
-        <target xml:lang="quc" state="needs-translation">Import content from Excel...</target>
+      <trans-unit id="CollectionTab.BookMenu.ImportContentFromSpreadsheet">
+        <source xml:lang="en">Import content from Spreadsheet...</source>
+        <note>ID: CollectionTab.BookMenu.ImportContentFromSpreadsheet</note>
+        <target xml:lang="quc" state="needs-translation">Import content from Spreadsheet...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.MakeBloomPack" approved="yes">
         <source xml:lang="en">Make Bloom Pack...</source>
@@ -1132,6 +1132,11 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
         <note>Shown in a list of messages when Bloom has completed a task.</note>
         <target xml:lang="quc" state="final">Xk’isik</target>
       </trans-unit>
+      <trans-unit id="Common.EnterpriseRequired">
+        <source xml:lang="en">Enterprise Required</source>
+        <note>ID: Common.EnterpriseRequired</note>
+        <target xml:lang="quc" state="needs-translation">Enterprise Required</target>
+      </trans-unit>
       <trans-unit id="Common.Error">
         <source xml:lang="en">Error</source>
         <note>ID: Common.Error</note>
@@ -1276,11 +1281,11 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
         <note>ID: Download.CompletedCaption</note>
         <target xml:lang="quc" state="final">Xtz’aqat uqajisaxik</target>
       </trans-unit>
-      <trans-unit id="Download.CopyFailed" approved="yes">
-        <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers</source>
+      <trans-unit id="Download.CopyFailed">
+        <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please report the problem to the us.</source>
         <note>ID: Download.CopyFailed</note>
         <note xml:lang="en">OLD TEXT (before 3.9, period at end): Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers.</note>
-        <target xml:lang="quc" state="final">Bloom xuqajisaj ri wuj, xa k’ut man xkowin ta chech uya’ik jamalik uwach pa Bloom. Chb’ana toqob’, chatzija chi jumul chik ri akematz’ib’ xuquje’ chab’ana jumul chik. We kwil chi jumul we jun oqxa’n ri', chb’ana toq’ob’ chb’ana pitz' pa uwi’ ri “Detalles” xuquje’ chya ub’ixik ri k’axk'olil chi kech ri ajkemal taq chak rech Bloom</target>
+        <target xml:lang="quc" state="translated">Bloom xuqajisaj ri wuj, xa k’ut man xkowin ta chech uya’ik jamalik uwach pa Bloom. Chb’ana toqob’, chatzija chi jumul chik ri akematz’ib’ xuquje’ chab’ana jumul chik. We kwil chi jumul we jun oqxa’n ri', chb’ana toq’ob’ chb’ana pitz' pa uwi’ ri “Detalles” xuquje’ chya ub’ixik ri k’axk'olil chi kech ri ajkemal taq chak rech Bloom</target>
       </trans-unit>
       <trans-unit id="Download.DownloadingDialogTitle" approved="yes">
         <source xml:lang="en">Downloading book</source>
@@ -2017,6 +2022,11 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <source xml:lang="en">To unlock this shellbook, click the lock icon in the lower left corner.</source>
         <note>ID: EditTab.HowToUnlockBook</note>
         <target xml:lang="quc" state="final">Chech utorik q'atum rij rech we no'jwuj wokotal chik uloq, chb'ana pitz' pa uwi' le alaj wachib'al rech tz'apib'al k'o pa jutz' ikim moxq'ab'.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.HowToUseHyperlink">
+        <source xml:lang="en">To use this hyperlink, go to the page where you are making a Table of Contents. Next, select some text and then click on the image of chain link. This will turn the selected text into a hyperlink to this page.</source>
+        <note>ID: EditTab.HowToUseHyperlink</note>
+        <target xml:lang="quc" state="needs-translation">To use this hyperlink, go to the page where you are making a Table of Contents. Next, select some text and then click on the image of chain link. This will turn the selected text into a hyperlink to this page.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.AltMsg" approved="yes">
         <source xml:lang="en">This picture, {0}, is missing or was loading too slowly.</source>
@@ -3241,6 +3251,12 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <note>Button that tells Bloom to temporarily unlock a shell book for editing other than translation.</note>
         <target xml:lang="quc" state="final">We no'jwuj ri' chajitalik,  xuwi ya'talik kqaxax pa jun tzijob'al chik. We karayij k'o kak'ex chech, chab'ana' pitz' chi ri' rech utorik le q'atum rij chi keb' oxib' q'ij.</target>
       </trans-unit>
+      <trans-unit id="EditTab.UsingHyperlink">
+        <source xml:lang="en">Using a hyperlink</source>
+        <note>ID: EditTab.UsingHyperlink</note>
+        <note>Title for dialog box showing the message for EditTab.HowToUseHyperlink</note>
+        <target xml:lang="quc" state="needs-translation">Using a hyperlink</target>
+      </trans-unit>
       <trans-unit id="EditTab.Widget.ChooseWidget" sil:dynamic="true">
         <source xml:lang="en">Choose Widget</source>
         <note>ID: EditTab.Widget.ChooseWidget</note>
@@ -3277,10 +3293,10 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <note xml:lang="en">OLD TEXT (before 3.9, shorter wording): Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, ask someone to investigate if you have an aggressive firewall product installed. The agressive firewall product may need to be uninstalled before you can use Bloom.</note>
         <target xml:lang="quc" state="final">Bloom man xkowin ta chech umajik ri HTTP Listener, kojom chech ri ch'awem ruk' ri tzukunel uk'amom rib rech Firefox. We jeri' kak'ulmatajik man xa ta ne rumal k'ate xk'aka'risax jumul chik le kematz'ib', rajawaxik kata chech jun chik  kunik'oj we jeqeb'am jun k'ayij ub'i' ch'u'j ramq'aq' (Cortafuegos agresivo). Karaj ne rajawaxik resaxik ri ramq'aq' rech kb'an kowinem chech ukojik Bloom.</target>
       </trans-unit>
-      <trans-unit id="Errors.CouldNotSavePage" approved="yes">
-        <source xml:lang="en">Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</source>
+      <trans-unit id="Errors.CouldNotSavePage">
+        <source xml:lang="en">Bloom had trouble saving a page. Please report the problem to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</source>
         <note>ID: Errors.CouldNotSavePage</note>
-        <target xml:lang="quc" state="final">Bloom xuriq k'axk'olil are taq katajin kuk'ol ri uxaq. Chab'ana jun toq'ob', chab'ana pitz' pa "Detalles" k'o chi uxe' xuquje' chab'ij uloq chi qech. K'ate k'u ri' chatz'apij Bloom, chak'ak'arisaj jumul chik xuquje' chanik'oj uwach wene le uxaq le k'ate' xa kolomisaj k'o kraj na chech. ¡Chakuyu qamak!</target>
+        <target xml:lang="quc" state="translated">Bloom xuriq k'axk'olil are taq katajin kuk'ol ri uxaq. Chab'ana jun toq'ob', chab'ana pitz' pa "Detalles" k'o chi uxe' xuquje' chab'ij uloq chi qech. K'ate k'u ri' chatz'apij Bloom, chak'ak'arisaj jumul chik xuquje' chanik'oj uwach wene le uxaq le k'ate' xa kolomisaj k'o kraj na chech. ¡Chakuyu qamak!</target>
       </trans-unit>
       <trans-unit id="Errors.CurrentRunningVersion" approved="yes">
         <source xml:lang="en">You are running Bloom {0}</source>
@@ -3311,17 +3327,17 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <note>This is a link that will take them to the Downloads (Installers) web page</note>
         <target xml:lang="quc" state="final">Chak'ak'arisaj pa k'isb'al rech le q'atchak rech Bloom (rawajasik tikiqtal ruk' nimk’atz)</target>
       </trans-unit>
-      <trans-unit id="Errors.ErrorSelecting" approved="yes">
-        <source xml:lang="en">There was a problem selecting the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.</source>
+      <trans-unit id="Errors.ErrorSelecting">
+        <source xml:lang="en">There was a problem selecting the book.  Restarting Bloom may fix the problem.  If not, please report the problem to us.</source>
         <note>ID: Errors.ErrorSelecting</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added spaces): There was a problem selecting the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</note>
-        <target xml:lang="quc" state="final">Man xb'anta kowinem chech ucha'ik ri no'jwuj. Uk'ak'arisaxik Bloom kkowinik kusol ri k'axk'olil. We man kusol taj, chb'ana jun toq'ob' chb'ana pitz' pa ri "Detalles" xuquje' kaya ub'ixik uloq chi qech ri k'axk'olil.</target>
+        <target xml:lang="quc" state="translated">Man xb'anta kowinem chech ucha'ik ri no'jwuj. Uk'ak'arisaxik Bloom kkowinik kusol ri k'axk'olil. We man kusol taj, chb'ana jun toq'ob' chb'ana pitz' pa ri "Detalles" xuquje' kaya ub'ixik uloq chi qech ri k'axk'olil.</target>
       </trans-unit>
-      <trans-unit id="Errors.ErrorUpdating" approved="yes">
-        <source xml:lang="en">There was a problem updating the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.</source>
+      <trans-unit id="Errors.ErrorUpdating">
+        <source xml:lang="en">There was a problem updating the book.  Restarting Bloom may fix the problem.  If not, please report the problem to us.</source>
         <note>ID: Errors.ErrorUpdating</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added spaces): There was a problem updating the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</note>
-        <target xml:lang="quc" state="final">Man xb'antaj ta kowinem chech uk'ak'arisaxik le no'jwuj. Chak'ak'arisij Bloom rech kusol rij ri k'axk'olil. We man kusol taj, chb'ana jun toq'ob' chb'ana pitz' pa ri "Detalles" xuquje' kaya ub'ixik uloq chi qech ri k'axk'olil.</target>
+        <target xml:lang="quc" state="translated">Man xb'antaj ta kowinem chech uk'ak'arisaxik le no'jwuj. Chak'ak'arisij Bloom rech kusol rij ri k'axk'olil. We man kusol taj, chb'ana jun toq'ob' chb'ana pitz' pa ri "Detalles" xuquje' kaya ub'ixik uloq chi qech ri k'axk'olil.</target>
       </trans-unit>
       <trans-unit id="Errors.FeatureRequiresNewerVersionPlural" approved="yes">
         <source xml:lang="en">This book requires Bloom {0} or greater because it uses the following features:</source>
@@ -3701,6 +3717,11 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
         <target xml:lang="quc" state="final">Chacha' le qas nab'e tzijob'al chech we Wokcha'talik ri'.</target>
       </trans-unit>
+      <trans-unit id="NewCollectionWizard.CollectionName">
+        <source xml:lang="en">Collection Name</source>
+        <note>ID: NewCollectionWizard.CollectionName</note>
+        <target xml:lang="quc" state="needs-translation">Collection Name</target>
+      </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionNamePage.ExampleText" approved="yes">
         <source xml:lang="en">Examples: "Health Books", "PNG Animal Stories"</source>
         <note>ID: NewCollectionWizard.CollectionNamePage.ExampleText</note>
@@ -3806,6 +3827,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
       <trans-unit id="NewCollectionWizard.ProjectName" approved="yes">
         <source xml:lang="en">Project Name</source>
         <note>ID: NewCollectionWizard.ProjectName</note>
+        <note>Obsolete as of Bloom 5.0</note>
         <target xml:lang="quc" state="final">Ub'i' le wokcholom chak</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName" approved="yes">
@@ -4363,11 +4385,11 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="needs-translation">Make All BloomPUBs from Collection</target>
       </trans-unit>
       <trans-unit id="PublishTab.BulkBloomPub.MakeBloomBundle" sil:dynamic="true">
-        <source xml:lang="en">Zip up into a single .bloomBundle file</source>
+        <source xml:lang="en">Compress into a single .bloombundle file</source>
         <note>ID: Publish.BulkBloomPub.MakeBloomBundle</note>
-        <note>"Zip up" means to take multiple things and turn them into a single combined .zip file. (The .bloomBundle file is similar to a .zip file).</note>
-        <note>"Zip up" also takes meaning from "to zip up a jacket zipper".</note>
-        <target xml:lang="quc" state="needs-translation">Zip up into a single .bloomBundle file</target>
+        <note>"Compress" means to take multiple things and turn them into a single combined file. (The result is smaller than the sum of the parts.)</note>
+        <note>.bloombundle is the file extension. It is in lowercase. It will be the same extension regardless of the user's language settings.</note>
+        <target xml:lang="quc" state="needs-translation">Compress into a single .bloombundle file</target>
       </trans-unit>
       <trans-unit id="PublishTab.BulkBloomPub.ProduceBloomShelf" sil:dynamic="true">
         <source xml:lang="en">Produce a .bloomshelf file</source>
@@ -4448,6 +4470,11 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <note>ID: PublishTab.Epub.ImageDescriptionLinkLabel</note>
         <note>Used in Epubs as the text of a link that leads to the description of an image</note>
         <target xml:lang="quc" state="final">Ub'ixik ub'antajik le wachib'al</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.LocalLinksProblem">
+        <source xml:lang="en">Links to other pages do not work in ePUBs. They will be changed to plain text that does not look like a link.</source>
+        <note>ID: PublishTab.Epub.LocalLinksProblem</note>
+        <target xml:lang="quc" state="needs-translation">Links to other pages do not work in ePUBs. They will be changed to plain text that does not look like a link.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.IncludeOnPage" approved="yes">
         <source xml:lang="en">Include image descriptions on page</source>
@@ -4763,6 +4790,23 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Publish</note>
         <target xml:lang="quc" state="final">Kemtzijob'exik</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PublishRequiresEnterprise.FirstOverlayPage">
+        <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
+        <note>ID: PublishTab.PublishRequiresEnterprise.FirstOverlayPage</note>
+        <note>The {0} will be replaced by a page number.</note>
+        <target xml:lang="quc" state="needs-translation">Page {0} is the first page that uses Overlay elements.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PublishRequiresEnterprise.Options">
+        <source xml:lang="en">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</source>
+        <note>ID: PublishTab.PublishRequiresEnterprise.Options</note>
+        <target xml:lang="quc" state="needs-translation">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PublishRequiresEnterprise.ProblemExplanation">
+        <source xml:lang="en">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Enterprise feature.</source>
+        <note>ID: PublishTab.PublishRequiresEnterprise.ProblemExplanation</note>
+        <note>{0} will be replaced with the book's title.</note>
+        <target xml:lang="quc" state="needs-translation">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Enterprise feature.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Save" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Save...</source>
@@ -5302,22 +5346,16 @@ Do you want to go ahead?</note>
         <target xml:lang="quc" state="translated">K'utupanik'ajil rech unimal raqanil taq tz'aqat chomanik pa le no'jwuj</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageWordsPerPage" sil:dynamic="true">
-        <source xml:lang="en">
-          Average per **Page**</source>
+        <source xml:lang="en">Average per **Page**</source>
         <note>ID: ReaderSetup.MaxAverageWordsPerPage</note>
         <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum average words per page" (in book is implied). Surround text that should be bold in double asterisks.</note>
-        <target xml:lang="quc" state="needs-translation">
-          Average per **Page**</target>
+        <target xml:lang="quc" state="needs-translation">Average per **Page**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageSentencesPerPage" sil:dynamic="true">
-        <source xml:lang="en">
-          Average per **Page**
-        </source>
+        <source xml:lang="en">Average per **Page**</source>
         <note>ID: ReaderSetup.MaxAverageSentencesPerPage</note>
         <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". Surround text that should be bold in double asterisks.</note>
-        <target xml:lang="quc" state="needs-translation">
-          Average per **Page**
-        </target>
+        <target xml:lang="quc" state="needs-translation">Average per **Page**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxGlyphsPerWord" sil:dynamic="true">
         <source xml:lang="en">In any **Word**</source>
@@ -5326,14 +5364,10 @@ Do you want to go ahead?</note>
         <target xml:lang="quc" state="needs-translation">In any **Word**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxSentencesPerPage" sil:dynamic="true">
-        <source xml:lang="en">
-          Per **Page**
-        </source>
+        <source xml:lang="en">Per **Page**</source>
         <note>ID: ReaderSetup.MaxSentencesPerPage</note>
         <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". Surround text that should be bold in double asterisks.</note>
-        <target xml:lang="quc" state="needs-translation">
-          Per **Page**
-        </target>
+        <target xml:lang="quc" state="needs-translation">Per **Page**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxUniqueWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Maximum Unique Words in Book</source>
@@ -5450,7 +5484,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.SentenceMaxWords2" sil:dynamic="true">
         <source xml:lang="en">Per **Sentence**</source>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
-        <note>follows headings "maximum" and "words" to convey "maximum words per sentence. Surround text that should be bold in double asterisks.</note>
+        <note>follows headings "maximum" and "words" to convey "maximum words per sentence". Surround text that should be bold in double asterisks.</note>
         <target xml:lang="quc" state="needs-translation">Per **Sentence**</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true" approved="yes">

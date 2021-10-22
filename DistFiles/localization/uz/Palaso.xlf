@@ -422,37 +422,37 @@
         <source xml:lang="en">You must keep the copyright and credits for authors, illustrators, etc.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.AttributionRequired</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="uz" state="final">Сиз муалифлар, рассомлар ва бошкаларнинг муалифлик хукукларини саклаб колишингиз керак.</target>
+        <target xml:lang="uz" state="final">Сиз муаллифлар, рассомлар ва бошқаларнинг муаллифлик ҳуқуқларини сақлаб қолишингиз зарур.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You are free to make commercial use of this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="uz" state="final">Сиз ушбу иш урнини тижорат максатида ишлатишингшиз мумкин.</target>
+        <target xml:lang="uz" state="final">Сиз ушбу иш урнини тижорат мақсадида фойдаланишингиз мумкин.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.Derivatives" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may adapt and add to this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.Derivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="uz" state="final">Сиз ушбу иш урнини мослаштириб ва унга узгаришлар кирита оласиз.</target>
+        <target xml:lang="uz" state="final">Ўзингиз мослаштириб олишингиз ва ўзгаришлар киритишингиз мумкин.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="uz" state="final">Сиз бу иш урнини мослаштириб ва унга узгаришлар кирита оласиз, лекин натижани таркатиш учун сиз шу билан бир хил йоки шунга ухшаш лицензия остида фойдаланишингиз керак.</target>
+        <target xml:lang="uz" state="final">Ўзингиз мослаштириб олишингиз ва ўзгаришлар киритишингиз мумкин. Бироқ натижани ёйишингиз учун айнан шу ёки шунга ўхшаш лицензиядан фойдаланишингиз зарур.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may not make changes or build upon this work without permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NoDerivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="uz" state="final">Сиз бу иш урнини узгартира олмайсиз ва уни рузсатсиз ишингиз учун асос сифатида ишлата олмайсиз.</target>
+        <target xml:lang="uz" state="final">Сиз бу ишга ўзгаришлар кирита олмайсиз ва рухсат олмасдан туриб ўз ишларингизга асос сифатида фойдалана олмайсиз.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NonCommercial" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may not use this work for commercial purposes.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NonCommercial</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="uz" state="final">Сиз ушбу иш урнини тижорат максатида ишлата олмайсиз.</target>
+        <target xml:lang="uz" state="final">Сиз ушбу иш урнини тижорат мақсадида фойдалана олмайсиз.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.PublicDomain" sil:dynamic="true">
         <source xml:lang="en">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</source>
