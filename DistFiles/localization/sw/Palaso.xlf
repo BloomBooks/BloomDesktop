@@ -521,11 +521,11 @@
         <note>ID: MetadataEditor.PublicDomain</note>
         <target xml:lang="sw" state="final">Mmiliki wa hakimiliki anaondoa haki zote</target>
       </trans-unit>
-      <trans-unit id="MetadataEditor.PublicDomain_ToolTip_" approved="yes">
+      <trans-unit id="MetadataEditor.PublicDomain_ToolTip_">
         <source xml:lang="en">The copyright holder waives all rights</source>
         <note>ID: MetadataEditor.PublicDomain_ToolTip_</note>
         <note>This tooltip string is identical to the string displayed in the dialog in case there is not enough room in the dialog to display the full string.</note>
-        <target xml:lang="sw" state="final">Mmiliki wa hakimiliki anaondoa haki zote</target>
+        <target xml:lang="sw" state="translated">Mmiliki wa hakimiliki anaondoa haki zote</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>

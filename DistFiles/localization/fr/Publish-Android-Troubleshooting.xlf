@@ -54,9 +54,9 @@
         <target xml:lang="fr" state="final"><g id="genid-1" ctype="x-html-p">Nous avons constaté que cette méthode pose problème pour de nombreux appareils. Par conséquent, pensez à utiliser la méthode WiFi, même si vous ne travaillez que sur un seul appareil.</g></target>
         <note>ID: android.publish.usb.consider.wifi</note>
       </trans-unit>
-      <trans-unit id="android.publish.usb.automatic" approved="yes">
-        <source xml:lang="en">When using this method, you do not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</source>
-        <target xml:lang="fr" state="final">Quand vous utilisez cette méthode, vous n'avez pas besoin d'aller dans un mode spécial pour recevoir des livres. Il vous suffit de lancer Bloom Reader. Les livres apparaissent automatiquement dès leur transfert.</target>
+      <trans-unit id="android.publish.usb.automatic">
+        <source xml:lang="en">When using this method the first time, you may need to go to the Bloom Reader menu, do "Receive from USB" and give the app permission to use the Bloom folder. After that, you should not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</source>
+        <target xml:lang="fr" state="translated">Quand vous utilisez cette méthode, vous n'avez pas besoin d'aller dans un mode spécial pour recevoir des livres. Il vous suffit de lancer Bloom Reader. Les livres apparaissent automatiquement dès leur transfert.</target>
         <note>ID: android.publish.usb.automatic</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.uses.mtp" approved="yes">
