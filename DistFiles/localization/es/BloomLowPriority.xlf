@@ -2,11 +2,11 @@
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="BloomLowPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="es-ES">
     <body>
-      <trans-unit id="BackCover.NewBrandingNotice">
+      <trans-unit id="BackCover.NewBrandingNotice" approved="yes">
         <source xml:lang="en">A future update of Bloom will contain the branding assets for this project, “{0}”.  Thank you for your patience.</source>
         <note>ID: BackCover.NewBrandingNotice</note>
         <note>The {0} is replaced at runtime with the name of the new branding project.</note>
-        <target xml:lang="es-ES" state="translated">Una futura actualización de Bloom contendrá los logotipos y otra información de branding (información de marca) para este proyecto, "{0}".  Gracias por su paciencia.</target>
+        <target xml:lang="es-ES" state="final">Una futura actualización de Bloom contendrá los logotipos y otra información de branding (información de marca) para este proyecto, "{0}".  Gracias por su paciencia.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed" approved="yes">
         <source xml:lang="en">Conversion file used:</source>
