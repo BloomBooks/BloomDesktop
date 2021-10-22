@@ -328,7 +328,7 @@ namespace BloomTests.Spreadsheet
 		public static void MakeRow(string pageNum, string langData1, string langData2, InternalSpreadsheet spreadsheet)
 		{
 			var newRow = new ContentRow(spreadsheet);
-			newRow.SetCell(InternalSpreadsheet.MetadataKeyColumnLabel, InternalSpreadsheet.TextGroupRowLabel);
+			newRow.SetCell(InternalSpreadsheet.MetadataKeyColumnLabel, InternalSpreadsheet.PageContentRowLabel);
 			newRow.SetCell(InternalSpreadsheet.PageNumberColumnLabel, pageNum);
 			newRow.SetCell("[en]", "<p>" + langData1 + "</p>");
 			newRow.SetCell("[fr]", "<p>" + langData2 + "</p>");

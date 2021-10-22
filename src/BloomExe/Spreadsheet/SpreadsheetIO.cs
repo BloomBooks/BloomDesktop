@@ -34,7 +34,7 @@ namespace Bloom.Spreadsheet
 		private const int defaultImageWidth = 150; //width of images in pixels.
 
 		public static HashSet<string> WysiwygFormattedRowKeys = new HashSet<string>()
-			{ InternalSpreadsheet.TextGroupRowLabel, InternalSpreadsheet.ImageRowLabel, InternalSpreadsheet.BookTitleRowLabel};
+			{ InternalSpreadsheet.PageContentRowLabel, InternalSpreadsheet.BookTitleRowLabel};
 
 		static SpreadsheetIO()
 		{
@@ -107,8 +107,15 @@ namespace Bloom.Spreadsheet
 						}
 						else
 						{
-							// Either the retainMarkup flag is set, or this is not book text. It could be header or leading column
-							currentCell.Value = content;
+							// Either the retainMarkup flag is set, or this is not book text. It could be header or leading column.
+							if (currentCell.Value == null)
+							{
+								currentCell.Value = content;
+							}
+							else
+							{
+								// Could be an error message in an image thumbnail cell which was added when processing the image path.
+							}
 						}
 
 
