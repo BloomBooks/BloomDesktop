@@ -54,9 +54,9 @@
         <target xml:lang="mam" state="final"><g id="genid-1" ctype="x-html-p">Ma tz'el qniky'e qa aju tumel aq'untl lu' in tq'o'n mya' b'a'n kye nimaq makb'il te xk'utz'ib'. Tu'ntzan tlaj ximinxe qa aju tumel aq'untl WiFi b'a'n ex qa in aq'unane o'kx tuk'il jun makb'il te xk'utz'ib'.</g></target>
         <note>ID: android.publish.usb.consider.wifi</note>
       </trans-unit>
-      <trans-unit id="android.publish.usb.automatic" approved="yes">
-        <source xml:lang="en">When using this method, you do not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</source>
-        <target xml:lang="mam" state="final">In ajb'enpin aju tumel aq'untl lu', nti'x tu'n tokxa tuj juntl tenb'il k'amol qe' u'jb'il. O'kx nb'aj taq'unan Bloom Reader. Qe' u'jb'il ilti'j tu'n ttzaj tyek'an junx kyeqe o'kx ky'elix tuj juntl tenb'il.</target>
+      <trans-unit id="android.publish.usb.automatic">
+        <source xml:lang="en">When using this method the first time, you may need to go to the Bloom Reader menu, do "Receive from USB" and give the app permission to use the Bloom folder. After that, you should not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</source>
+        <target xml:lang="mam" state="translated">In ajb'enpin aju tumel aq'untl lu', nti'x tu'n tokxa tuj juntl tenb'il k'amol qe' u'jb'il. O'kx nb'aj taq'unan Bloom Reader. Qe' u'jb'il ilti'j tu'n ttzaj tyek'an junx kyeqe o'kx ky'elix tuj juntl tenb'il.</target>
         <note>ID: android.publish.usb.automatic</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.uses.mtp" approved="yes">
