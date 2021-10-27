@@ -434,7 +434,7 @@
         <source xml:lang="en">You may adapt and add to this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.Derivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="uz" state="final">Ўзингиз мослаштириб олишингиз ва ўзгаришлар киритишингиз мумкин.</target>
+        <target xml:lang="uz" state="final">Сиз ушбу иш урнини мослаштириб ва унга ўзгаришлар киритишингиз мумкин.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
