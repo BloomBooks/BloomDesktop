@@ -189,9 +189,8 @@ namespace Bloom.Publish.BloomLibrary
 		private void UpdateFeaturesCheckBoxesDisplay()
 		{
 			var bookInfoMetaData = _model.Book.BookInfo.MetaData;
-			var hasEnterpriseFeatures = _model.Book.CollectionSettings.HaveEnterpriseFeatures;
 			_blindCheckBox.Checked = bookInfoMetaData.Feature_Blind;
-			_signLanguageCheckBox.Enabled = hasEnterpriseFeatures && _model.Book.HasSignLanguageVideos();
+			_signLanguageCheckBox.Enabled = _model.Book.HasSignLanguageVideos();
 			_signLanguageCheckBox.Checked = _signLanguageCheckBox.Enabled
 				  //the previous setting of the check box (would be nice if we had a 3-way value here
 				  // so that we could default to checked if we knew they had not previously unchecked it
@@ -200,7 +199,7 @@ namespace Bloom.Publish.BloomLibrary
 
 			// Set Sign Language link
 			_changeSignLanguageLinkLabel.Visible = _signLanguageCheckBox.Checked;
-			if (hasEnterpriseFeatures && !string.IsNullOrEmpty(CurrentSignLanguageName))
+			if (!string.IsNullOrEmpty(CurrentSignLanguageName))
 			{
 				_changeSignLanguageLinkLabel.Text = CurrentSignLanguageName;
 			}
