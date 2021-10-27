@@ -28,7 +28,6 @@ using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Xml;
 using Bloom.ErrorReporter;
-using Bloom.WebLibraryIntegration;
 using SIL.Windows.Forms.Miscellaneous;
 
 namespace Bloom.Edit
@@ -237,21 +236,36 @@ namespace Bloom.Edit
 
 		internal void DuplicateManyPages(IPage page)
 		{
-			var promptString = LocalizationManager.GetString(
-				"EditTab.DuplicatePageMultiple.Prompt",
-				"How many more of this page? (1-999):",
-				"Used in the window that asks how many times to duplicate the selected page.");
-			var result = _view.Browser.RunJavaScript("window.prompt('" + promptString + "', 5)");
-			if (!int.TryParse(result, out var timesToDuplicate))
-				return;
-			if (timesToDuplicate < 1 || timesToDuplicate > 999)
-				return;
-			DuplicatePageInternal(page, timesToDuplicate);
+			using (var dlg = new ReactDialog("duplicateManyDlgBundle"))
+			{
+				dlg.Width = 400;
+				dlg.Height = 200;
+				// This dialog is neater without a task bar. We don't need to be able to
+				// drag it around. There's nothing left to give it one if we don't set a title
+				// and remove the control box.
+				dlg.ControlBox = false;
+				dlg.ShowDialog();
+			}
 		}
 
 		internal void DuplicatePage(IPage page)
 		{
 			DuplicatePageInternal(page);
+		}
+
+		/// <summary>
+		/// Used by EditingViewApi when the user clicks OK in the ReactDialog that asks how many times to duplicate.
+		/// </summary>
+		/// <param name="numberOfTimes"></param>
+		public void DuplicatePageManyTimes(int numberOfTimes)
+		{
+			var currentPage = _pageSelection?.CurrentSelection;
+			if (currentPage == null || numberOfTimes > 999 || numberOfTimes < 1)
+			{
+				return; // Probably can't happen, but...
+			}
+
+			DuplicatePageInternal(_pageSelection.CurrentSelection, numberOfTimes);
 		}
 
 		private void DuplicatePageInternal(IPage page, int numberOfTimesToDuplicate = 1)
