@@ -1296,9 +1296,14 @@
         <note>Menu item that tells Bloom to duplicate the currently selected page several times.</note>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageMultiple.Prompt">
-        <source xml:lang="en">How many more of this page? (1-999):</source>
+        <source xml:lang="en">How many more of this page? (2-999)</source>
         <note>ID: EditTab.DuplicatePageMultiple.Prompt</note>
         <note>Used in the window that asks how many times to duplicate the selected page.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.DuplicatePageMultiple.Title">
+        <source xml:lang="en">Duplicate Page Many Times</source>
+        <note>ID: EditTab.DuplicatePageMultiple.Title</note>
+        <note>Title of dialog that Bloom uses to ask the user how many times to duplicate the currently selected page.</note>
       </trans-unit>
       <trans-unit id="EditTab.Edit">
         <source xml:lang="en">Edit</source>

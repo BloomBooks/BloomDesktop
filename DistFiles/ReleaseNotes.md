@@ -8,14 +8,14 @@ Most SIL projects can freely use the SIL internal Enterprise License. Questions?
 
 ## Collection Tab
 
-⭐You can now rename a book. Previously, Bloom always used the name of a book's title. The new name appears under the thumbnail of the book and also the name of the folder on disk  ([see animation](https://imgur.com/dcMz5tu)).
- [Feature Request](https://community.software.sil.org/t/allow-changing-book-filenames/489/14)
+⭐You can now rename a book. Previously, Bloom always used the name of a book's title. The new name appears under the thumbnail of the book and also the name of the folder on disk ([see animation](https://imgur.com/dcMz5tu)).
+[Feature Request](https://community.software.sil.org/t/allow-changing-book-filenames/489/14)
 
 ## Edit Tab
 
 ⭐You can create **hyperlinks** that point to other pages in the same book. This can be used for creating your own simple Table of Contents. When creating ePUBs, these links will be turned into normal text because the feature does not work in ePUBs. [Feature Request](https://community.software.sil.org/t/hyperlink-to-other-pages/1784)
 
-⭐**Duplicate Page Many Times**. You can now enter a number to make many duplicates of a page all at once ([see animation](https://imgur.com/uVJOckU)).
+⭐**Duplicate Page Many Times**. You can now enter a number to make many duplicates of a page all at once ([see animation](https://imgur.com/gcrxl5k)).
 
 We made several fixes to the checks in Decodable and Leveled Readers.
 
@@ -23,8 +23,7 @@ We made several fixes to the checks in Decodable and Leveled Readers.
 
 We added a visual notification when pages have too many sentences.
 
-We improved how we count words in complex pages  (such as arithmetic pages).
-
+We improved how we count words in complex pages (such as arithmetic pages).
 
 ### Overlay Tool (Bloom Enterprise)
 
@@ -33,7 +32,6 @@ We improved how we count words in complex pages  (such as arithmetic pages).
 ⭐The Overlay Tool can now add images on top of the image [Feature Request](https://community.software.sil.org/t/ability-to-place-images-on-images/2982)
 
 (See animation of these [new overlay features](https://imgur.com/E83qLj6))
-
 
 ## Team Collections (Bloom Enterprise)
 
@@ -48,13 +46,13 @@ People will be naturally resistent to installing Dropbox. There are two things t
 
 Team Collections debuted in Bloom 5.0 beta. For 5.1, we have added a few small features:
 
-⭐We added a basic History tab to the Team Collection dialog. It currently only tells you the history of checkins (who edited the book, when). We will be adding more history in future versions. 
+⭐We added a basic History tab to the Team Collection dialog. It currently only tells you the history of checkins (who edited the book, when). We will be adding more history in future versions.
 
 <br/>
 
 ![screenshot](https://i.imgur.com/nwzLmHAl.png)
 
-We added a little informational menu option that provides information about the name and "avatar" (picture) associated with books you check out.  The dialog also provides links for changing (or setting) the avatar and name.
+We added a little informational menu option that provides information about the name and "avatar" (picture) associated with books you check out. The dialog also provides links for changing (or setting) the avatar and name.
 
 ![screenshot](https://i.imgur.com/T8nne2sl.png)
 
@@ -71,7 +69,6 @@ We have removed, from the lower left corner of images, the button that opened th
 When Bloom has trouble loading an image and you send us an error report, we now will receive the offending image file. That will help us figure out what the problem is.
 
 ## Publish Tab
-
 
 We added a new tool for making it easy to create a BloomPUB of every book in a collection, with a single command. (Bloom Enterprise)
 
@@ -91,7 +88,7 @@ We added a new page selector for Bloom Player, the engine that powers book readi
 
 ## Other Good Stuff
 
-**Faster Enterprise Subscription Delivery**  When projects get a new Enterprise subscription, there is a delay while we build their branding pack (logos, boilerplate text, etc). Starting with Bloom 5.1, customers don't have to wait... their Enterprise code will work immediately. Bloom will show a place holder message on the back cover that shows subscription name.  When an update to Bloom contains the branding files for the subscription, this message will be automatically replaced with the branding images, the next time the books in the the collection are edited.
+**Faster Enterprise Subscription Delivery** When projects get a new Enterprise subscription, there is a delay while we build their branding pack (logos, boilerplate text, etc). Starting with Bloom 5.1, customers don't have to wait... their Enterprise code will work immediately. Bloom will show a place holder message on the back cover that shows subscription name. When an update to Bloom contains the branding files for the subscription, this message will be automatically replaced with the branding images, the next time the books in the the collection are edited.
 
 ### Work towards a more cross-platform Bloom
 
@@ -105,7 +102,7 @@ We made hovering over a book thumbnail show the folder name of the book. This is
 
 ### Bookshelf selector
 
-In collection settings, Bloom Enterprise projects that have bookshelves on Bloom Library can now choose the bookshelf that corresponds to the collection. Then when books are uploaded to BloomLibrary.org, they 
+In collection settings, Bloom Enterprise projects that have bookshelves on Bloom Library can now choose the bookshelf that corresponds to the collection. Then when books are uploaded to BloomLibrary.org, they
 automatically go to the correct bookshelf. This setting also can now be used to automatically choose a back-cover image to show where the book fits in the overall curriculum and choose a cover color based on the grade (this is used for a large MOE project in Kyrgyzstan). ![screenshot-online-only](https://i.imgur.com/0TNZEo8.png)
 
 ## Edit Tab

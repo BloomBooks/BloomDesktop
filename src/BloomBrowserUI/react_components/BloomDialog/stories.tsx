@@ -20,6 +20,11 @@ import {
     ErrorBox,
     NoteBox
 } from "./commonDialogComponents";
+import {
+    INumberChooserDialogProps,
+    NumberChooserDialog
+} from "../numberChooserDialog";
+import { closeDialog } from "../../bookEdit/editViewFrame";
 
 storiesOf("Bloom Dialog", module)
     .add("Simple Dialog", () => {
@@ -157,5 +162,20 @@ storiesOf("Bloom Dialog", module)
                     </DialogBottomButtons>
                 </BloomDialog>
             );
+        });
+    })
+    .add("Number Chooser Dialog", () => {
+        const props: INumberChooserDialogProps = {
+            min: 2,
+            max: 777,
+            title: "My Random Chooser Title",
+            prompt: "Enter some number from 2 to 777",
+            onClick: num => {
+                console.log(`We chose ${num}.`);
+            },
+            dialogEnvironment: normalDialogEnvironmentForStorybook
+        };
+        return React.createElement(() => {
+            return <NumberChooserDialog {...props}></NumberChooserDialog>;
         });
     });
