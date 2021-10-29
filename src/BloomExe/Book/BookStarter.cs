@@ -169,6 +169,8 @@ namespace Bloom.Book
 			{
 				// When making a translation of an original move the 'publisher' (if there is one) to 'originalPublisher'.
 				storage.BookInfo.MovePublisherToOriginalPublisher();
+
+				StripBloomEnterpriseClassFromComicPages(storage);
 			}
 
 			XMatterHelper.RemoveExistingXMatter(storage.Dom);
@@ -245,6 +247,17 @@ namespace Bloom.Book
 			//REVIEW this actually undoes the setting of the initial files name:
 			//      storage.UpdateBookFileAndFolderName(_librarySettings);
 			return storage.FolderPath;
+		}
+
+		// At publish time, we strip out pages with the bloom-enterprise class.
+		// But we don't want to do that for comic pages in derivatives. See BL-10586.
+		private void StripBloomEnterpriseClassFromComicPages(BookStorage storage)
+		{
+			foreach (XmlElement pageDiv in storage.Dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
+			{
+				if (HtmlDom.HasClass(pageDiv, "comic"))
+					HtmlDom.RemoveClass(pageDiv, "enterprise-only");
+			}
 		}
 
 		/// <summary>
