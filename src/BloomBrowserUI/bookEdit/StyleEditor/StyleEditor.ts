@@ -360,9 +360,19 @@ export default class StyleEditor {
     // Will return null if the style has no definition, OR if it already has a user-defined version
     public getPredefinedStyle(target: string): CSSRule | null {
         let result: CSSRule | null = null;
-        for (let i = 0; i < document.styleSheets.length; i++) {
-            const sheet = <StyleSheet>(<any>document.styleSheets[i]);
-            const rules: CSSRuleList = (<any>sheet).cssRules;
+
+        // Get the book's non-inlined stylesheets (notably, excluding the stylesheets for the Bloom UI)
+        // along with the book's userModifiedStyles (which is inlined)
+        // Note: we exclude some of the book HTM's inlined stylesheets, but they're kinda complicated to identify and not needed, so we ignore them
+        const styleSheets = this.getBookNonInlineStyleSheets();
+        const userModifiedStyles = this.FindExistingUserModifiedStyleSheet();
+        if (userModifiedStyles) {
+            styleSheets.push(userModifiedStyles);
+        }
+
+        for (let i = 0; i < styleSheets.length; i++) {
+            const sheet = styleSheets[i];
+            const rules = sheet.cssRules;
             if (rules) {
                 for (let j = 0; j < rules.length; j++) {
                     const index = rules[j].cssText.indexOf("{");
@@ -370,14 +380,11 @@ export default class StyleEditor {
                         continue;
                     }
                     const label = rules[j].cssText.substring(0, index).trim();
+                    // Partial match is here to support comma-separated rules (multiple selector syntax)
                     if (label.indexOf(target) >= 0) {
                         // We have a rule for our target!
                         // Is this the user-defined stylesheet?
-                        if (
-                            (<StyleSheet>(
-                                (<any>document.styleSheets[i]).ownerNode
-                            )).title === "userModifiedStyles"
-                        ) {
+                        if (sheet === userModifiedStyles) {
                             return null; // style already has a user definition
                         } else {
                             // return the last one we find.
@@ -390,6 +397,54 @@ export default class StyleEditor {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the book's stylesheets which are non-inline a.k.a. external (external from the HTML document's perspective, not from the book's perspective)
+     * Notably, by "book", we mean it excludes any stylesheets that are for the Bloom program's UI, rather than for the book.
+     * By "non-inline", we mean that it excludes the stylesheets in the book's .htm file
+     */
+    private getBookNonInlineStyleSheets(): CSSStyleSheet[] {
+        const styleSheets: CSSStyleSheet[] = [];
+        for (let i = 0; i < document.styleSheets.length; ++i) {
+            styleSheets.push(document.styleSheets[i]);
+        }
+
+        // We expect the document path to look like this:
+        // http://localhost:8089/bloom/[pathToBook]/currentPage-memsim-Normal.html'
+        const lowercaseHref = document.location.href.toLowerCase();
+        const expectedLowercaseEnding = "/currentpage-memsim-normal.html"; // Note: the actual page name has a couple capital letters; this is the lowercased version
+        const isExpectedForm = lowercaseHref.endsWith(expectedLowercaseEnding);
+        console.assert(
+            isExpectedForm,
+            `document.location.href expected to end with "currentPage-memsim-Normal.html", but actually was "${document.location.href}"`
+        );
+
+        if (!isExpectedForm) {
+            // Just return empty array, nothing is going to match anyway
+            return [];
+        }
+
+        const endingStartIndex = lowercaseHref.indexOf(expectedLowercaseEnding);
+
+        // Our searching / validation was case-insensitive (by converting to lowercase),
+        // but now we want to resume with the properly-cased version.
+        const urlToBookDirectory = document.location.href.substring(
+            0,
+            endingStartIndex
+        );
+
+        // Note: Several style elements can have href=null. This indicates inline style elements that are directly added to head.
+        // (This includes both inline style elements directly from the book's HTM file, as well as other style elements added to head later)
+        const filteredArray = styleSheets.filter(
+            sheet =>
+                sheet.href != null && sheet.href.startsWith(urlToBookDirectory)
+        );
+        console.assert(
+            filteredArray.length > 0,
+            "Error? Array length is 0! (No stylesheets left after calling getBookStyleSheets). Please investigate if this is expected"
+        );
+        return filteredArray;
     }
 
     private FindExistingUserModifiedStyleSheet(): CSSStyleSheet | null {
