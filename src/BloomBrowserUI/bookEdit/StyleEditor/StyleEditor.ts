@@ -360,8 +360,9 @@ export default class StyleEditor {
     // Will return null if the style has no definition, OR if it already has a user-defined version
     public getPredefinedStyle(target: string): CSSRule | null {
         let result: CSSRule | null = null;
-        for (let i = 0; i < document.styleSheets.length; i++) {
-            const sheet = <StyleSheet>(<any>document.styleSheets[i]);
+        const bookStyleSheets = this.getBookStyleSheets();
+        for (let i = 0; i < bookStyleSheets.length; i++) {
+            const sheet = bookStyleSheets[i];
             const rules: CSSRuleList = (<any>sheet).cssRules;
             if (rules) {
                 for (let j = 0; j < rules.length; j++) {
@@ -370,13 +371,13 @@ export default class StyleEditor {
                         continue;
                     }
                     const label = rules[j].cssText.substring(0, index).trim();
+                    // Partial match is here to support comma-separated rules (multiple selector syntax)
                     if (label.indexOf(target) >= 0) {
                         // We have a rule for our target!
                         // Is this the user-defined stylesheet?
                         if (
-                            (<StyleSheet>(
-                                (<any>document.styleSheets[i]).ownerNode
-                            )).title === "userModifiedStyles"
+                            (<HTMLElement>sheet.ownerNode).title ===
+                            "userModifiedStyles"
                         ) {
                             return null; // style already has a user definition
                         } else {
@@ -390,6 +391,49 @@ export default class StyleEditor {
             }
         }
         return result;
+    }
+
+    private getBookStyleSheets(): StyleSheet[] {
+        const styleSheets: StyleSheet[] = [];
+        for (let i = 0; i < document.styleSheets.length; ++i) {
+            styleSheets.push(document.styleSheets[i]);
+        }
+
+        // We expect the document path to look like this:
+        // http://localhost:8089/bloom/[pathToBook]/currentPage-memsim-Normal.html'
+        const lowercaseHref = document.location.href.toLowerCase();
+        const expectedLowercaseEnding = "/currentpage-memsim-normal.html";
+        const isExpectedForm = lowercaseHref.endsWith(expectedLowercaseEnding);
+        console.assert(
+            isExpectedForm,
+            `document.location.href expected to end with "currentPage-memsim-Normal.html", but actually was "${document.location.href}"`
+        );
+
+        if (!isExpectedForm) {
+            // Just return the stylesheet array unchanged
+            return styleSheets;
+        }
+
+        const endingStartIndex = lowercaseHref.indexOf(expectedLowercaseEnding);
+
+        // Our searching / validation was case-insensitive (by converting to lowercase),
+        // but now we want to resume with the properly-cased version.
+        const urlToBookDirectory = document.location.href.substring(
+            0,
+            endingStartIndex
+        );
+
+        // I think the style elements that are inlined in the book HTM will show up as sheet.href = null.
+        // These are useful to keep, especially the one with title=userModifiedStyles
+        const filteredArray = styleSheets.filter(
+            sheet =>
+                sheet.href === null || sheet.href.startsWith(urlToBookDirectory)
+        );
+        console.assert(
+            filteredArray.length > 0,
+            "Error? Array length is 0! (No stylesheets left after calling getBookStyleSheets). Please investigate if this is expected"
+        );
+        return filteredArray;
     }
 
     private FindExistingUserModifiedStyleSheet(): CSSStyleSheet | null {
