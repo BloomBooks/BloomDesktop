@@ -1905,11 +1905,11 @@
         <note>ID: EditTab.FrontMatter.EditOriginalTitlePlaceholder</note>
         <target xml:lang="ru" state="translated">нажмите, чтобы изменить оригинальное название</target>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.FullOriginalCopyrightLicenseSentence" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.FullOriginalCopyrightLicenseSentence" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Adapted from original, {0}, {1}. Licensed under {2}.</source>
         <note>ID: EditTab.FrontMatter.FullOriginalCopyrightLicenseSentence</note>
         <note>On the Credits page of a book being translated, Bloom shows the original copyright. {0} is original title, {1} is original copyright, and {2} is license information.</note>
-        <target xml:lang="ru" state="needs-translation">Adapted from original, {0}, {1}. Licensed under {2}.</target>
+        <target xml:lang="ru" state="final">Адаптировано с оригинального произведения {0}, {1}. Под лицензией {2}.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
