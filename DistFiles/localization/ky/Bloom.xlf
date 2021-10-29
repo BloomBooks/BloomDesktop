@@ -1903,7 +1903,7 @@
         <source xml:lang="en">Adapted from original, {0}, {1}. Licensed under {2}.</source>
         <note>ID: EditTab.FrontMatter.FullOriginalCopyrightLicenseSentence</note>
         <note>On the Credits page of a book being translated, Bloom shows the original copyright. {0} is original title, {1} is original copyright, and {2} is license information.</note>
-        <target xml:lang="ky" state="final">{0} түп нусканын негизинде, {1}. {2} лицензиясы боюнча басылып чыккан.</target>
+        <target xml:lang="ky" state="final">{0}, {1} түп нускасынан ылайыкташтырылган. {2} лицензиясы негизинде лицензияланган.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true">
         <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
