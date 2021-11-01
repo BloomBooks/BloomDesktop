@@ -3,7 +3,6 @@ import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
 import { useState, useEffect } from "react";
-import "./requiresBloomEnterprise.less";
 import { BloomApi } from "../utils/bloomApi";
 import Button from "@material-ui/core/Button";
 import theme from "../bloomMaterialUITheme";
@@ -13,8 +12,15 @@ import { useL10n } from "./l10nHooks";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { Dialog, DialogActions, DialogContent } from "@material-ui/core";
 import BloomButton from "./bloomButton";
-import { kFormBackground } from "../utils/colorUtils";
-import { BloomDialog, useSetupBloomDialog } from "./BloomDialog/BloomDialog";
+import { kFormBackground, kBloomGray, kBloomBlue } from "../utils/colorUtils";
+import {
+    BloomDialog,
+    DialogTitle,
+    DialogMiddle,
+    DialogBottomButtons,
+    IBloomDialogEnvironmentParams,
+    useSetupBloomDialog
+} from "./BloomDialog/BloomDialog";
 
 /**
  * This function sets up the hooks to get the status of whether Bloom Enterprise is available or not
@@ -68,7 +74,7 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
         })
     );
 
-    const icon = enterpriseAvailable || (
+    const icon = (
         <img
             css={css`
                 ${"height: 16px; margin-left: 6px; cursor: pointer; " +
@@ -76,7 +82,11 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
             `}
             src="../images/bloom-enterprise-badge.svg"
             title={tooltip}
-            onClick={openBloomEnterpriseSettings}
+            onClick={() => {
+                if (!enterpriseAvailable) {
+                    showRequiresBloomEnterpriseDialog();
+                }
+            }}
         />
     );
 
@@ -114,7 +124,19 @@ export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent = pr
                 {props.children}
             </div>
             {enterpriseAvailable || (
-                <div className="requiresEnterpriseOverlay">
+                <div
+                    css={css`
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background-color: ${kBloomBlue + "80"}; // alpha = 0.5
+                        z-index: 2; // Specify a stack order in case you're using a different order for other elements
+                        display: flex;
+                        flex-direction: column;
+                    `}
+                >
                     <RequiresBloomEnterpriseNotice darkTheme={true} />
                 </div>
             )}
@@ -122,8 +144,9 @@ export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent = pr
     );
 };
 
-export interface IThemeProps {
+export interface IRequiresEnterpriseNoticeProps {
     darkTheme?: boolean;
+    inSeparateDialog?: boolean;
 }
 
 // This element displays a notice saying that a certain feature requires a Bloom Enterprise subscription,
@@ -134,8 +157,9 @@ export interface IThemeProps {
 // on the content page body.
 // Often it will be convenient to use this by embedding the controls to be hidden in a
 // RequiresBloomEnterpriseWrapper, also defined in this file.
-export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IThemeProps> = ({
-    darkTheme
+export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequiresEnterpriseNoticeProps> = ({
+    darkTheme,
+    inSeparateDialog
 }) => {
     const [visible, setVisible] = useState(false);
 
@@ -145,25 +169,116 @@ export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IThemePr
         });
     }, []);
 
-    const noticeClasses =
-        "requiresEnterpriseNotice" + (darkTheme ? " darkTheme" : "");
+    const kBloomEnterpriseNoticePadding = "15px;";
+    const kButtonRadius = "4px;";
+    const kBloomEnterpriseNoticeWidth = "250px;";
+    const kBloomEnterpriseNoticeHeight = "120px;";
+    const kBloomEnterpriseButtonWidth = "150px;";
+
+    const noticeCommonCss = css`
+        color: black;
+        height: ${kBloomEnterpriseNoticeHeight};
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    `;
+    const noticeDarkCss = css`
+        color: white;
+        background-color: ${kBloomGray};
+    `;
+    const buttonCommonCss = css`
+        background-color: white;
+        line-height: 1.1;
+        font-size: small;
+    `;
 
     return (
         <ThemeProvider theme={theme}>
             <div
-                className="requiresBloomEnterprise"
-                style={visible ? {} : { display: "none" }}
+                css={
+                    !visible
+                        ? css`
+                              display: none;
+                          `
+                        : inSeparateDialog
+                        ? css`
+                              padding: 10px 0px 0px 0px;
+                          `
+                        : css`
+                              padding: 5px;
+                          `
+                }
             >
                 <div className="messageSettingsDialogWrapper">
-                    <div className={noticeClasses}>
+                    <div
+                        css={
+                            inSeparateDialog
+                                ? css`
+                                      text-align: left;
+                                      padding: 0;
+                                      max-width: 500px;
+                                      ${noticeCommonCss}
+                                      ${darkTheme
+                                          ? noticeDarkCss
+                                          : css`
+                                                color: black;
+                                                background-color: white;
+                                            `}
+                                  `
+                                : css`
+                                      text-align: center;
+                                      padding: ${kBloomEnterpriseNoticePadding};
+                                      padding-bottom: 20px;
+                                      max-width: ${kBloomEnterpriseNoticeWidth};
+                                      ${noticeCommonCss}
+                                      ${darkTheme
+                                          ? noticeDarkCss
+                                          : css`
+                                                color: black;
+                                                background-color: ${kFormBackground};
+                                            `}
+                                      // this is needed to overcome having MuiButton override the settings
+                                      .requiresEnterpriseButton {
+                                          ${buttonCommonCss}
+                                      }
+                                  `
+                        }
+                    >
                         <Div
-                            className="requiresEnterpriseEnablingLabel"
                             l10nKey="EditTab.RequiresEnterprise"
+                            css={
+                                inSeparateDialog
+                                    ? css`
+                                          margin: 0;
+                                          font-size: medium;
+                                      `
+                                    : css`
+                                          margin: 0 5px;
+                                          font-size: small;
+                                      `
+                            }
                         />
                         <Button
                             className="requiresEnterpriseButton"
-                            variant="contained"
+                            variant={"contained"}
                             onClick={openBloomEnterpriseSettings}
+                            css={
+                                inSeparateDialog
+                                    ? css`
+                                          max-width: ${kBloomEnterpriseButtonWidth};
+                                          align-self: normal;
+                                          ${buttonCommonCss}
+                                          border-radius: ${kButtonRadius};
+                                          border-width: thin;
+                                          border-color: ${kBloomBlue};
+                                          border-style: solid;
+                                      `
+                                    : css`
+                                          max-width: ${kBloomEnterpriseButtonWidth};
+                                          align-self: center;
+                                          ${buttonCommonCss}
+                                      `
+                            }
                         >
                             <img src="../images/bloom-enterprise-badge.svg" />
                             <Div l10nKey="EditTab.EnterpriseSettingsButton">
@@ -214,6 +329,63 @@ export const RequiresBloomEnterpriseNoticeDialog: React.VoidFunctionComponent = 
                     />
                 </DialogActions>
             </Dialog>
+        </BloomDialog>
+    );
+};
+
+export let showRequiresBloomEnterpriseDialog: () => void = () => {
+    window.alert("showRequiresBloomEnterpriseDialog is not set up yet.");
+};
+
+export const RequiresBloomEnterpriseDialog: React.FunctionComponent<{
+    dialogEnvironment?: IBloomDialogEnvironmentParams;
+}> = props => {
+    // Designed to be invoked natively from TypeScript land.
+    const {
+        showDialog,
+        closeDialog,
+        propsForBloomDialog
+    } = useSetupBloomDialog(props.dialogEnvironment);
+    showRequiresBloomEnterpriseDialog = showDialog;
+    const kBlockSeparation = "30px";
+
+    const dialogTitle = useL10n(
+        "Bloom Enterprise Feature",
+        "PublishTab.BulkBloomPub.BloomEnterpriseFeature"
+    );
+
+    return (
+        <BloomDialog {...propsForBloomDialog}>
+            <div>
+                <DialogTitle
+                    title={dialogTitle}
+                    css={css`
+                        margin-left: 0;
+                        margin-right: 0;
+                        h1 {
+                            font-size: large;
+                        }
+                    `}
+                />
+                <DialogMiddle>
+                    <RequiresBloomEnterpriseNotice
+                        darkTheme={false}
+                        inSeparateDialog={true}
+                    />
+                </DialogMiddle>
+                <DialogBottomButtons
+                    css={css`
+                        padding: 10px 0px 10px 0px;
+                    `}
+                >
+                    <BloomButton
+                        enabled={true}
+                        l10nKey="Common.Close"
+                        variant="contained"
+                        onClick={() => closeDialog()} // from pressing Close button
+                    />
+                </DialogBottomButtons>
+            </div>
         </BloomDialog>
     );
 };
