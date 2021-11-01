@@ -28,7 +28,10 @@ import { BloomApi } from "../../utils/bloomApi";
 import HelpLink from "../../react_components/helpLink";
 import HtmlHelpLink from "../../react_components/htmlHelpLink";
 import { Link, LinkWithDisabledStyles } from "../../react_components/link";
-import { RequiresBloomEnterpriseAdjacentIconWrapper } from "../../react_components/requiresBloomEnterprise";
+import {
+    RequiresBloomEnterpriseAdjacentIconWrapper,
+    RequiresBloomEnterpriseDialog
+} from "../../react_components/requiresBloomEnterprise";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
@@ -126,6 +129,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     return (
         <React.Fragment>
             <BulkBloomPubDialog />
+            <RequiresBloomEnterpriseDialog />
             <BasePublishScreen className="ReaderPublishScreen">
                 <PreviewPanel>
                     <DeviceAndControls
