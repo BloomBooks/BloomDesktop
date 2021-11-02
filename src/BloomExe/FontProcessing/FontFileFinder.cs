@@ -90,7 +90,7 @@ namespace Bloom.FontProcessing
 #if __MonoCS__
 				using (var lib = new SharpFont.Library())
 				{
-					// Find all the font files in the standard system location (/usr/share/font) and $HOME/.font (if it exists)
+					// Find all the font files in the standard system location (/usr/share/font) and $HOME/.local/share/fonts (if it exists)
 					foreach (var fontFile in FindLinuxFonts())
 					{
 						try
