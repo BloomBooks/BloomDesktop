@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Bloom.FontProcessing;
 using Newtonsoft.Json;
 using NUnit.Framework;
@@ -19,15 +17,11 @@ namespace BloomTests
 		[OneTimeSetUp]
 		public void FontProcessingSetup()
 		{
-			//var starting = DateTime.Now;
 			var fontMetadata = FontsApi.GetAllFontMetadata();	// loads everything in before returning.
 			_fontCount = fontMetadata.Count();
 			_fontMetadata = FontsApi.AvailableFontMetadataDictionary;
-
-			//var finished = DateTime.Now;
-			//Console.WriteLine("DEBUG Font metadata setup took {0}", finished - starting);
 			//var json = JsonConvert.SerializeObject(fontMetadata);
-			//Console.WriteLine("DEBUG generated json = {0}", json);
+			//Console.WriteLine("DEBUG font metadata json = {0}", json);
 		}
 
 		[Test]
@@ -45,6 +39,18 @@ namespace BloomTests
 				Assert.That(arialMeta.fsType, Is.EqualTo("Editable"));
 				Assert.That(arialMeta.determinedSuitability, Is.EqualTo("ok"));
 				Assert.That(arialMeta.determinedSuitabilityNotes, Is.EqualTo("fsType from reliable source"));
+			}
+			else
+			{
+				Assert.That(_fontMetadata.Keys, Does.Contain("DejaVu Sans"));
+				var dejavuMeta = _fontMetadata["DejaVu Sans"];
+				Assert.That(dejavuMeta.manufacturer, Is.EqualTo("DejaVu fonts team"));
+				Assert.That(dejavuMeta.license, Does.Contain("public domain"));
+				Assert.That(dejavuMeta.licenseURL, Is.EqualTo("http://dejavu.sourceforge.net/wiki/index.php/License"));
+				Assert.That(dejavuMeta.copyright, Does.Contain("Bitstream"));
+				Assert.That(dejavuMeta.fsType, Is.EqualTo("Installable"));
+				Assert.That(dejavuMeta.determinedSuitability, Is.EqualTo("ok"));
+				Assert.That(dejavuMeta.determinedSuitabilityNotes, Is.EqualTo("Bitstream free license"));
 			}
 		}
 	}
