@@ -85,41 +85,6 @@ generic*/
             bottom: 0;
         }
     }
-
-    &.layout-style-SplitAcrossPages {
-        .bloom-imageContainer {
-            width: 100%;
-            height: 100%;
-            top: 0;
-        }
-        &.bloom-bilingual .bloom-editable {
-            .SetHeightWithPercentMinusConstant(
-                50%,
-                @StandardMultilingualEditBoxSeparation
-            );
-        }
-        &.bloom-trilingual .bloom-editable {
-            .SetHeightWithPercentMinusConstant(
-                33%,
-                @StandardMultilingualEditBoxSeparation
-            );
-        }
-        .bloom-translationGroup {
-            height: 100%;
-            width: 100%;
-            /*Note, this is supposed to respond to bloom-centerVertically, but it doesn't. The jscript for CenterVerticallyInParent() always things the block is as big as the marginbox, so it doesn't center it*/
-            /*[disabled]position:relative;*/
-            /*So instead, we're settling for starting the text part of the way down*/
-            //position: relative !important;
-            display: block !important;
-            position: relative;
-            left: 0;
-            top: 0;
-            .bloom-editable {
-                font-size: 300%;
-            }
-        }
-    }
 }
 
 .nospecidalmovement_imageOnTop {
@@ -195,65 +160,6 @@ generic*/
         .bloom-editable {
             margin-top: @SpaceBetweenMultilingualAlternatives;
         }
-    }
-
-    &.layout-style-SplitAcrossPages {
-        .bloom-imageContainer {
-            width: 100%;
-            height: 100%;
-            top: 0;
-        }
-        .bloom-translationGroup {
-            .SetHeightWithPercentMinusConstant(
-                50%,
-                @StandardMultilingualEditBoxSeparation
-            );
-        }
-        &.bloom-bilingual .bloom-translationGroup .bloom-editable {
-            .SetHeightWithPercentMinusConstant(
-                50%,
-                @StandardMultilingualEditBoxSeparation
-            );
-        }
-        &.bloom-trilingual .bloom-translationGroup .bloom-editable {
-            .SetHeightWithPercentMinusConstant(
-                33%,
-                @StandardMultilingualEditBoxSeparation
-            );
-        }
-        .bloom-translationGroup {
-            width: 100%;
-            /*Note, this is supposed to respond to bloom-centerVertically, but it doesn't. The jscript for CenterVerticallyInParent() always things the block is as big as the marginbox, so it doesn't center it*/
-            /*[disabled]position:relative;*/
-            /*So instead, we're settling for starting the text part of the way down*/
-            //position: relative !important;
-            display: block !important;
-            position: relative;
-            left: 0;
-            top: 0;
-            .bloom-editable {
-                font-size: 300%;
-            }
-        }
-    }
-    // ----- Text Boxes ------
-    .bloom-editable {
-        width: 100%;
-    }
-    &.bloom-monolingual .bloom-editable {
-        height: calc(
-            ~"100% - @{SpaceBetweenMultilingualAlternatives}"
-        ) !important;
-    }
-    &.bloom-bilingual .bloom-editable {
-        height: calc(
-            ~"50% - @{SpaceBetweenMultilingualAlternatives} - 1px"
-        ) !important;
-    }
-    &.bloom-trilingual .bloom-editable {
-        height: calc(
-            ~"33% - @{SpaceBetweenMultilingualAlternatives} - 1px"
-        ) !important;
     }
 }
 
