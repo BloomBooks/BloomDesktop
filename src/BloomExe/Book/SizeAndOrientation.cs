@@ -139,8 +139,6 @@ namespace Bloom.Book
 			yield return new Layout { SizeAndOrientation = FromString("A6Landscape") };
 			yield return new Layout { SizeAndOrientation = FromString("A4Portrait") };
 			yield return new Layout { SizeAndOrientation = FromString("A4Landscape") };
-			yield return new Layout { SizeAndOrientation = FromString("A4Landscape"), Style = "SideBySide" };
-			yield return new Layout { SizeAndOrientation = FromString("A4Landscape"), Style = "SplitAcrossPages" }; // does this work anywhere?
 			yield return new Layout { SizeAndOrientation = FromString("A3Portrait") };
 			yield return new Layout { SizeAndOrientation = FromString("A3Landscape") };
 			yield return new Layout { SizeAndOrientation = FromString("B5Portrait") };

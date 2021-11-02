@@ -2924,14 +2924,6 @@
         <source xml:lang="en">A4 Landscape</source>
         <note>ID: LayoutChoices.A4Landscape</note>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A4Landscape SideBySide" sil:dynamic="true">
-        <source xml:lang="en">A4 Landscape (Side By Side)</source>
-        <note>ID: LayoutChoices.A4Landscape SideBySide</note>
-      </trans-unit>
-      <trans-unit id="LayoutChoices.A4Landscape SplitAcrossPages" sil:dynamic="true">
-        <source xml:lang="en">A4 Landscape (Split Across Pages)</source>
-        <note>ID: LayoutChoices.A4Landscape SplitAcrossPages</note>
-      </trans-unit>
       <trans-unit id="LayoutChoices.A4Portrait" sil:dynamic="true">
         <source xml:lang="en">A4 Portrait</source>
         <note>ID: LayoutChoices.A4Portrait</note>
