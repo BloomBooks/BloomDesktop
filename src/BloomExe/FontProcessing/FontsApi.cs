@@ -52,6 +52,7 @@ namespace Bloom.FontProcessing
 				if (_finder != null)
 					return GetFontMetadataSortedByName();
 
+				var starting = DateTime.Now;
 				_finder = FontFileFinder.GetInstance(isReuseAllowed: true);
 				foreach (var name in SortedListOfFontNames())
 				{
@@ -61,7 +62,10 @@ namespace Bloom.FontProcessing
 					var meta = new FontMetadata(name, group);
 					_fontNameToMetadata[name] = meta;
 				}
-				return GetFontMetadataSortedByName();
+				var list = GetFontMetadataSortedByName();
+				var ending = DateTime.Now;
+				System.Diagnostics.Debug.WriteLine($"DEBUG: Collecting font metadata took {ending - starting}");
+				return list;
 			}
 		}
 
@@ -73,7 +77,10 @@ namespace Bloom.FontProcessing
 		}
 
 		/// <summary>
-		/// Return a list of FontMetadata objects for all fonts that we currently know about.
+		/// Return a list of FontMetadata objects for all fonts that were available when GetAllFontMetadata() was run.
+		/// If it hasn't been run yet, this will be an empty list.  GetAllFontMetadata() is presumably run at the
+		/// beginning of the program.  If the user adds fonts while running Bloom, well, restarting Bloom isn't the
+		/// most unexpected thing to do.
 		/// </summary>
 		public static IEnumerable<FontMetadata> AvailableFontMetadata => GetFontMetadataSortedByName();
 
