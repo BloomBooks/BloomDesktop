@@ -270,11 +270,28 @@ LibSynphony.prototype.stringToSentences = function(textHTML) {
             // check to avoid blank segments at the end
             if (j < fragments.length - 1 || fragment.length > 0) {
                 // is this space between sentences?
-                if (fragment.substring(0, 1) === nonSentence)
+                if (fragment.substring(0, 1) === nonSentence) {
                     returnVal.push(
                         new TextFragment(fragment.substring(1), true)
                     );
-                else returnVal.push(new TextFragment(fragment, false));
+                } else if (
+                    j > 0 &&
+                    fragments[j - 1].endsWith("|") &&
+                    fragment.match(/^\s/)
+                ) {
+                    // Check for phrase marker followed by whitespace to maintain "interphrase" spacing.
+                    // See https://issues.bloomlibrary.org/youtrack/issue/BL-10569.
+                    const leading = fragment.search(/\S|$/);
+                    returnVal.push(
+                        new TextFragment(fragment.substring(0, leading), true)
+                    );
+                    if (leading < fragment.length)
+                        returnVal.push(
+                            new TextFragment(fragment.substring(leading), false)
+                        );
+                } else {
+                    returnVal.push(new TextFragment(fragment, false));
+                }
             }
         }
     }
