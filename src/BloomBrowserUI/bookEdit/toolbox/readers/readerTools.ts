@@ -359,7 +359,8 @@ function getAlreadyResolvedPromise(): JQueryDeferred<void> {
 
 export function beginSaveChangedSettings(
     settings: ReaderSettings,
-    previousMoreWords: string
+    previousMoreWords: string,
+    previousLetters: string
 ): Promise<void> {
     // Using axios directly because our api at this point calls for returning the promise.
     return <any>(
@@ -372,6 +373,7 @@ export function beginSaveChangedSettings(
                 // in the basic mechanism by which they define stages.
                 if (
                     settings.moreWords !== previousMoreWords ||
+                    settings.letters !== previousLetters ||
                     settings.useAllowedWords
                 ) {
                     return beginRefreshEverything(settings); // caller will resolve when everything is refreshed
