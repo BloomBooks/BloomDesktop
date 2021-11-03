@@ -87,6 +87,7 @@ export const levelSettings: ILevelSetting[] = [
 ];
 
 let previousMoreWords: string;
+let previousLetters: string;
 
 window.addEventListener("message", process_IO_Message, false);
 
@@ -184,8 +185,10 @@ function loadReaderSetupData(jsonData: string): void {
     if (!data.sentencePunct) data.sentencePunct = "";
 
     // language tab
-    (<HTMLInputElement>document.getElementById("dls_letters")).value =
-        data.letters;
+    previousLetters = data.letters;
+    (<HTMLInputElement>(
+        document.getElementById("dls_letters")
+    )).value = previousLetters;
     (<HTMLInputElement>document.getElementById("dls_sentence_punct")).value =
         data.sentencePunct;
     setPreviousMoreWords(data.moreWords.replace(/ /g, "\n"));
@@ -288,7 +291,8 @@ export function beginSaveChangedSettings(): JQueryPromise<void> {
     if (win) {
         return win.toolboxBundle.beginSaveChangedSettings(
             settings,
-            previousMoreWords
+            previousMoreWords,
+            previousLetters
         );
     }
     // paranoia section
