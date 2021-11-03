@@ -34,7 +34,7 @@ namespace Bloom.Spreadsheet
 		private const int defaultImageWidth = 150; //width of images in pixels.
 
 		public static HashSet<string> WysiwygFormattedRowKeys = new HashSet<string>()
-			{ InternalSpreadsheet.TextGroupLabel, InternalSpreadsheet.ImageKeyLabel, "[bookTitle]"};
+			{ InternalSpreadsheet.TextGroupRowLabel, InternalSpreadsheet.ImageRowLabel, InternalSpreadsheet.BookTitleRowLabel};
 
 		static SpreadsheetIO()
 		{
@@ -55,8 +55,8 @@ namespace Bloom.Spreadsheet
 					worksheet.Column(i).Width = standardLeadingColumnWidth;
 				}
 
-				var imageSourceColumn = spreadsheet.ColumnForTag(InternalSpreadsheet.ImageSourceLabel);
-				var imageThumbnailColumn = spreadsheet.ColumnForTag(InternalSpreadsheet.ImageThumbnailLabel);
+				var imageSourceColumn = spreadsheet.ColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
+				var imageThumbnailColumn = spreadsheet.ColumnForTag(InternalSpreadsheet.ImageThumbnailColumnLabel);
 				// Apparently the width is in some approximation of 'characters'. This empirically determined
 				// conversion factor seems to do a pretty good job.
 				worksheet.Column(imageThumbnailColumn + 1).Width = defaultImageWidth /6.88;
@@ -128,6 +128,22 @@ namespace Bloom.Spreadsheet
 							}
 						}
 					}
+
+					if (row is HeaderRow)
+					{
+						using (ExcelRange rng = GetRangeForRow(worksheet, r))
+							rng.Style.Font.Bold = true;
+					}
+
+					if (row.Hidden)
+					{
+						worksheet.Row(r).Hidden = true;
+						SetBackgroundColorOfRow(worksheet, r, InternalSpreadsheet.HiddenColor);
+					}
+					else if (row.BackgroundColor != default(Color))
+					{
+						SetBackgroundColorOfRow(worksheet, r, row.BackgroundColor);
+					}
 				}
 				worksheet.Cells[1, 1, r, spreadsheet.ColumnCount].Style.WrapText = true;
 
@@ -172,6 +188,15 @@ namespace Bloom.Spreadsheet
 					return Math.Max(finalHeight, 30);
 				}
 
+				foreach (var iColumn in spreadsheet.HiddenColumns)
+				{
+					// This is pretty yucky... our internal spreadsheet is all 0-based, but the EPPlus library is all 1-based...
+					var iColumn1Based = iColumn + 1;
+
+					worksheet.Column(iColumn1Based).Hidden = true;
+					SetBackgroundColorOfColumn(worksheet, iColumn1Based, InternalSpreadsheet.HiddenColor);
+				}
+
 				try
 				{
 					RobustFile.Delete(outputPath);
@@ -203,7 +228,7 @@ namespace Bloom.Spreadsheet
 
 		private static bool IsWysiwygFormattedRow(ExcelWorksheet worksheet, int rowIndex, SpreadsheetRow row)
 		{
-			var metadataCol = row.Spreadsheet.ColumnForTag(InternalSpreadsheet.MetadataKeyLabel);
+			var metadataCol = row.Spreadsheet.ColumnForTag(InternalSpreadsheet.MetadataKeyColumnLabel);
 			string metadataKey = worksheet.Cells[rowIndex + 1, metadataCol + 1].Value.ToString();
 			return WysiwygFormattedRowKeys.Contains(metadataKey);
 		}
@@ -393,5 +418,32 @@ namespace Bloom.Spreadsheet
 			return content.IndexOf("<", StringComparison.InvariantCulture) >= 0;
 		}
 
+		private static void SetBackgroundColorOfRow(ExcelWorksheet worksheet, int iRow, Color color)
+		{
+			using (ExcelRange range = GetRangeForRow(worksheet, iRow))
+				SetBackgroundColorOfRange(range, color);
+		}
+
+		private static void SetBackgroundColorOfColumn(ExcelWorksheet worksheet, int iColumn, Color color)
+		{
+			using (ExcelRange range = GetRangeForColumn(worksheet, iColumn))
+				SetBackgroundColorOfRange(range, color);
+		}
+
+		private static void SetBackgroundColorOfRange(ExcelRange range, Color color)
+		{ 
+			range.Style.Fill.PatternType = ExcelFillStyle.Solid;
+			range.Style.Fill.BackgroundColor.SetColor(color);
+		}
+
+		private static ExcelRange GetRangeForRow(ExcelWorksheet worksheet, int iRow)
+		{
+			return worksheet.Cells[iRow, 1, iRow, worksheet.Dimension.End.Column];
+		}
+
+		private static ExcelRange GetRangeForColumn(ExcelWorksheet worksheet, int iColumn)
+		{
+			return worksheet.Cells[1, iColumn, worksheet.Dimension.End.Row, iColumn];
+		}
 	}
 }

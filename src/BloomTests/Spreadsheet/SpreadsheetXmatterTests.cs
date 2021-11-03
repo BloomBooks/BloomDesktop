@@ -4,7 +4,6 @@ using NUnit.Framework;
 using SIL.IO;
 using System.Collections.Generic;
 using System.Linq;
-using OfficeOpenXml;
 using System.IO;
 
 namespace BloomTests.Spreadsheet
@@ -186,7 +185,7 @@ namespace BloomTests.Spreadsheet
 		public void ImageSourceXmatterTest(string source)
 		{
 			SetupFor(source);
-			var imageSourceCol = _sheet.ColumnForTag(InternalSpreadsheet.ImageSourceLabel);
+			var imageSourceCol = _sheet.ColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
 
 			var coverImageRow = _rows.Find(x => x.MetadataKey.Equals("[coverImage]"));
 			Assert.That(coverImageRow, Is.Not.Null);
@@ -208,6 +207,20 @@ namespace BloomTests.Spreadsheet
 			SetupFor(source);
 			Assert.That(_sheet.Languages.Contains("z"), Is.False);
 			Assert.That(_rows.FirstOrDefault(x => x.MetadataKey.Equals("[ztest]")), Is.Null);
+		}
+
+		[Test]
+		public void MetadataRowsAreHiddenExceptTitle()
+		{
+			SetupFor("fromExport");
+			foreach(var row in _rows)
+			{
+				if (row.MetadataKey == InternalSpreadsheet.BookTitleRowLabel)
+					Assert.That(row.Hidden, Is.False);
+				else
+					Assert.That(row.Hidden, Is.True);
+			}
+				
 		}
 	}
 }

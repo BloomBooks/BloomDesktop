@@ -174,24 +174,10 @@ namespace BloomTests.Spreadsheet
 
 		[TestCase("fromExport")]
 		[TestCase("fromFile")]
-		public void AddsImageIndices(string source)
-		{
-			SetupFor(source);
-			var imageIndex = _sheet.ColumnForTag(InternalSpreadsheet.ImageIndexOnPageLabel);
-			Assert.That(_imageRows[0].GetCell(imageIndex).Content, Is.EqualTo("1"));
-			Assert.That(_imageRows[1].GetCell(imageIndex).Content, Is.EqualTo("2"));
-			Assert.That(_imageRows[2].GetCell(imageIndex).Content, Is.EqualTo("1"));
-
-			Assert.That(_textRows[0].GetCell(imageIndex).Content, Is.EqualTo(""));
-
-		}
-
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
 		public void AddsImagePageNumbers(string source)
 		{
 			SetupFor(source);
-			var pageNumberIndex = _sheet.ColumnForTag(InternalSpreadsheet.PageNumberLabel);
+			var pageNumberIndex = _sheet.ColumnForTag(InternalSpreadsheet.PageNumberColumnLabel);
 			Assert.That(_imageRows[0].GetCell(pageNumberIndex).Content, Is.EqualTo("1"));
 			Assert.That(_imageRows[1].GetCell(pageNumberIndex).Content, Is.EqualTo("1"));
 			Assert.That(_imageRows[2].GetCell(pageNumberIndex).Content, Is.EqualTo("2"));
@@ -202,11 +188,11 @@ namespace BloomTests.Spreadsheet
 		public void AddsImageRowLabels(string source)
 		{
 			SetupFor(source);
-			Assert.That(_imageRows[0].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.ImageKeyLabel));
-			Assert.That(_imageRows[1].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.ImageKeyLabel));
-			Assert.That(_imageRows[2].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.ImageKeyLabel));
+			Assert.That(_imageRows[0].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.ImageRowLabel));
+			Assert.That(_imageRows[1].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.ImageRowLabel));
+			Assert.That(_imageRows[2].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.ImageRowLabel));
 
-			Assert.That(_textRows[0].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.TextGroupLabel));
+			Assert.That(_textRows[0].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.TextGroupRowLabel));
 		}
 
 		[TestCase("fromExport")]
@@ -214,7 +200,7 @@ namespace BloomTests.Spreadsheet
 		public void SavesImageSources(string source)
 		{
 			SetupFor(source);
-			var imageSourceColumn = _sheet.ColumnForTag(InternalSpreadsheet.ImageSourceLabel);
+			var imageSourceColumn = _sheet.ColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
 			var path = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(_pathToTestImages);
 			var manImagePath = Path.Combine(path, "man.jpg");
 			Assert.That(_imageRows[0].GetCell(imageSourceColumn).Text, Is.EqualTo(manImagePath));
@@ -230,7 +216,7 @@ namespace BloomTests.Spreadsheet
 		public void displayThumbnail_imageFilePresent_noErrorMessage(string source)
 		{
 			SetupFor(source);
-			var thumbnailColumn = _sheet.ColumnForTag(InternalSpreadsheet.ImageThumbnailLabel);
+			var thumbnailColumn = _sheet.ColumnForTag(InternalSpreadsheet.ImageThumbnailColumnLabel);
 			Assert.That(_imageRows[0].GetCell(thumbnailColumn).Text, Is.EqualTo(""));
 		}
 
@@ -238,7 +224,7 @@ namespace BloomTests.Spreadsheet
 		public void displayThumbnail_imageMissing_ErrorMessageForMissingFile(string source)
 		{
 			SetupFor(source);
-			var thumbnailColumn = _sheet.ColumnForTag(InternalSpreadsheet.ImageThumbnailLabel);
+			var thumbnailColumn = _sheet.ColumnForTag(InternalSpreadsheet.ImageThumbnailColumnLabel);
 			Assert.That(_imageRows[1].GetCell(thumbnailColumn).Text, Is.EqualTo("Missing"));
 		}
 
@@ -246,7 +232,7 @@ namespace BloomTests.Spreadsheet
 		public void displayThumbnail_imageEmpty_ErrorMessage(string source)
 		{
 			SetupFor(source);
-			var thumbnailColumn = _sheet.ColumnForTag(InternalSpreadsheet.ImageThumbnailLabel);
+			var thumbnailColumn = _sheet.ColumnForTag(InternalSpreadsheet.ImageThumbnailColumnLabel);
 			Assert.That(_imageRows[2].GetCell(thumbnailColumn).Text, Is.EqualTo("Bad image file"));
 		}
 
@@ -254,8 +240,8 @@ namespace BloomTests.Spreadsheet
 		public void displayThumbnail_svg_svgErrorMessage(string source)
 		{
 			SetupFor(source);
-			var thumbnailColumn = _sheet.ColumnForTag(InternalSpreadsheet.ImageThumbnailLabel);
-			var svgRow = _rows.First(x => x.GetCell(InternalSpreadsheet.MetadataKeyLabel).Text.Equals("[outside-back-cover-branding-bottom-html]"));
+			var thumbnailColumn = _sheet.ColumnForTag(InternalSpreadsheet.ImageThumbnailColumnLabel);
+			var svgRow = _rows.First(x => x.GetCell(InternalSpreadsheet.MetadataKeyColumnLabel).Text.Equals("[outside-back-cover-branding-bottom-html]"));
 			Assert.That(svgRow.GetCell(thumbnailColumn).Text, Is.EqualTo("Can't display SVG"));
 		}
 	}

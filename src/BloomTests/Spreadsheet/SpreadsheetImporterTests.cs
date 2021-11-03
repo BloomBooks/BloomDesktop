@@ -42,7 +42,7 @@ namespace BloomTests.Spreadsheet
 			secondRowToModify.SetCell(frColumn, "<p>Riding on French elephants can be very risky.</p>");
 
 			var asteriskColumn = _sheet.ColumnForLang("*");
-			var imageSrcColumn = _sheet.ColumnForTag(InternalSpreadsheet.ImageSourceLabel);
+			var imageSrcColumn = _sheet.ColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
 
 			var firstXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.MetadataKey.Contains("styleNumberSequence"));
 			Assert.IsNotNull(firstXmatterRowToModify, "Did not find the first xmatter row that OneTimeSetup was expecting to modify");
@@ -59,7 +59,7 @@ namespace BloomTests.Spreadsheet
 			thirdXmatterRowToModify.SetCell(_sheet.ColumnForLang("en"), "<p>This is Not the End of the English World</p>");
 
 			var fourthXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.MetadataKey.Contains("contentLanguage1"));
-			fourthXmatterRowToModify.SetCell(_sheet.ColumnForTag(InternalSpreadsheet.MetadataKeyLabel), "[newDataBookLabel]");
+			fourthXmatterRowToModify.SetCell(_sheet.ColumnForTag(InternalSpreadsheet.MetadataKeyColumnLabel), "[newDataBookLabel]");
 			fourthXmatterRowToModify.SetCell(asteriskColumn, "newContent");
 
 			var fifthXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.MetadataKey.Contains("licenseImage"));
@@ -328,9 +328,8 @@ namespace BloomTests.Spreadsheet
 		public static void MakeRow(string pageNum, string langData1, string langData2, InternalSpreadsheet spreadsheet)
 		{
 			var newRow = new ContentRow(spreadsheet);
-			newRow.SetCell(InternalSpreadsheet.MetadataKeyLabel, InternalSpreadsheet.TextGroupLabel);
-			newRow.SetCell(InternalSpreadsheet.PageNumberLabel, pageNum);
-			newRow.SetCell(InternalSpreadsheet.TextIndexOnPageLabel, "1");// group index placeholder, not exactly right but near enough for this test
+			newRow.SetCell(InternalSpreadsheet.MetadataKeyColumnLabel, InternalSpreadsheet.TextGroupRowLabel);
+			newRow.SetCell(InternalSpreadsheet.PageNumberColumnLabel, pageNum);
 			newRow.SetCell("[en]", "<p>" + langData1 + "</p>");
 			newRow.SetCell("[fr]", "<p>" + langData2 + "</p>");
 		}
@@ -338,12 +337,12 @@ namespace BloomTests.Spreadsheet
 		public static void MakeXmatterRows(InternalSpreadsheet spreadsheet)
 		{
 			var topicRow = new ContentRow(spreadsheet);
-			topicRow.SetCell(InternalSpreadsheet.MetadataKeyLabel, "[topic]");
+			topicRow.SetCell(InternalSpreadsheet.MetadataKeyColumnLabel, "[topic]");
 			topicRow.SetCell("[en]", "Agriculture");
 			topicRow.SetCell("[*]", "Agricultura");
 
 			var coverImageRow = new ContentRow(spreadsheet);
-			coverImageRow.SetCell(InternalSpreadsheet.MetadataKeyLabel, "[coverImage]");
+			coverImageRow.SetCell(InternalSpreadsheet.MetadataKeyColumnLabel, "[coverImage]");
 			//No content, to check that we get a warning
 		}
 

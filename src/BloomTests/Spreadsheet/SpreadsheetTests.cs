@@ -271,11 +271,11 @@ namespace BloomTests.Spreadsheet
 			foreach (ContentRow row in allRows)
 			{
 				// Does not copy any header present
-				if (row.MetadataKey.Equals(InternalSpreadsheet.ImageKeyLabel))
+				if (row.MetadataKey.Equals(InternalSpreadsheet.ImageRowLabel))
 				{
 					imageRows.Add(row);
 				}
-				else if (row.MetadataKey.Equals(InternalSpreadsheet.TextGroupLabel))
+				else if (row.MetadataKey.Equals(InternalSpreadsheet.TextGroupRowLabel))
 				{
 					textRows.Add(row);
 				}
@@ -307,18 +307,6 @@ namespace BloomTests.Spreadsheet
 
 		[TestCase("fromExport")]
 		[TestCase("fromFile")]
-		public void InsertsGroupNumbers(string source)
-		{
-			SetupFor(source);
-			var groupIndex = _sheet.ColumnForTag(InternalSpreadsheet.TextIndexOnPageLabel);
-			Assert.That(_textRows[0].GetCell(groupIndex).Content, Is.EqualTo("1"));
-			Assert.That(_textRows[1].GetCell(groupIndex).Content, Is.EqualTo("2"));
-			Assert.That(_textRows[2].GetCell(groupIndex).Content, Is.EqualTo("1"));
-
-		}
-
-		[TestCase("fromExport")]
-		[TestCase("fromFile")]
 		public void SavesLangData(string source)
 		{
 			SetupFor(source);
@@ -330,14 +318,14 @@ namespace BloomTests.Spreadsheet
 		public void AddsRowLabels(string source)
 		{
 			SetupFor(source);
-			var pageNumIndex = _sheet.ColumnForTag(InternalSpreadsheet.PageNumberLabel);
+			var pageNumIndex = _sheet.ColumnForTag(InternalSpreadsheet.PageNumberColumnLabel);
 
 			Assert.That(_textRows[0].GetCell(pageNumIndex).Content, Is.EqualTo("1"));
 			Assert.That(_textRows[1].GetCell(pageNumIndex).Content, Is.EqualTo("1"));
 			Assert.That(_textRows[2].GetCell(pageNumIndex).Content, Is.EqualTo("2"));
-			Assert.That(_textRows[0].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.TextGroupLabel));
-			Assert.That(_textRows[1].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.TextGroupLabel));
-			Assert.That(_textRows[2].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.TextGroupLabel));
+			Assert.That(_textRows[0].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.TextGroupRowLabel));
+			Assert.That(_textRows[1].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.TextGroupRowLabel));
+			Assert.That(_textRows[2].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.TextGroupRowLabel));
 		}
 
 		[Test]
@@ -389,7 +377,7 @@ namespace BloomTests.Spreadsheet
 					{
 						Assert.That(r, Is.LessThan(rowCount), "did not find expected TextGroup row");
 						ExcelRange rowTypeCell = worksheet.Cells[r + 1, 1];
-						if (rowTypeCell.Value.ToString().Equals(InternalSpreadsheet.TextGroupLabel))
+						if (rowTypeCell.Value.ToString().Equals(InternalSpreadsheet.TextGroupRowLabel))
 						{
 							string markedUp = @"<p><span id=""e4bc05e5-4d65-4016-9bf3-ab44a0df3ea2"" class=""bloom-highlightSegment"" recordingmd5=""undefined"">This elephant is running amok.</span> <span id=""i2ba966b6-4212-4821-9268-04e820e95f50"" class=""bloom-highlightSegment"" recordingmd5=""undefined"">Causing much damage.</span></p>";
 							ExcelRange textCell = worksheet.Cells[r + 1, c + 1];
