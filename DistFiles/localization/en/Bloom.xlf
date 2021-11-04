@@ -877,6 +877,11 @@
         <note>ID: Common.Advanced</note>
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
       </trans-unit>
+      <trans-unit id="Common.AskForHelp">
+        <source xml:lang="en">Ask for help</source>
+        <note>ID: Common.AskForHelp</note>
+        <note>Used in various places where someone might need to open a Problem Report dialog.</note>
+      </trans-unit>
       <trans-unit id="Common.BackButton">
         <source xml:lang="en">Back</source>
         <note>ID: Common.BackButton</note>
@@ -1036,6 +1041,14 @@
         <source xml:lang="en">Stop</source>
         <note>ID: Common.Stop</note>
       </trans-unit>
+      <trans-unit id="Common.Upload">
+        <source xml:lang="en">Upload</source>
+        <note>ID: Common.Upload</note>
+      </trans-unit>
+      <trans-unit id="Common.Uploading">
+        <source xml:lang="en">Uploading</source>
+        <note>ID: Common.Uploading</note>
+      </trans-unit>
       <trans-unit id="Common.Warning">
         <source xml:lang="en">Info</source>
         <note>ID: Common.Warning</note>
@@ -1045,6 +1058,11 @@
         <source xml:lang="en">What's this?</source>
         <note>ID: Common.WhatsThis</note>
         <note>minimal question indicating a link to information</note>
+      </trans-unit>
+      <trans-unit id="Common.WhatCausedThisProblem">
+        <source xml:lang="en">What caused this problem?</source>
+        <note>ID: Common.WhatCausedThisProblem</note>
+        <note>This is usually a link to an explanatory document.</note>
       </trans-unit>
       <trans-unit id="Download.Completed">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
@@ -3781,10 +3799,12 @@
       <trans-unit id="PublishTab.OverwriteWarning.ReplaceExistingButton">
         <source xml:lang="en">Replace Existing</source>
         <note>ID: PublishTab.OverwriteWarning.ReplaceExistingButton</note>
+        <note>Obsolete for Bloom 5.2 and later</note>
       </trans-unit>
       <trans-unit id="PublishTab.OverwriteWarning.WindowTitle">
         <source xml:lang="en">Notice</source>
         <note>ID: PublishTab.OverwriteWarning.WindowTitle</note>
+        <note>Obsolete for Bloom 5.2 and later</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Error.Failed">
         <source xml:lang="en">Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.</source>
@@ -4247,6 +4267,41 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.UploadingStatus">
         <source xml:lang="en">Uploading {0}</source>
         <note>ID: PublishTab.Upload.UploadingStatus</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.AlreadyIn">
+        <source xml:lang="en">Already in Bloom Library</source>
+        <note>ID: PublishTab.UploadCollisionDialog.AlreadyIn</note>
+        <note>This is the header for the book that is in bloomlibrary.org already.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.HaveOne">
+        <source xml:lang="en">BloomLibrary.org already has a book with this ID from you ({0}).</source>
+        <note>ID: PublishTab.UploadCollisionDialog.HaveOne</note>
+        <note>This is the dialog subtitle. The {0} will be replaced with the uploader's email address.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks">
+        <source xml:lang="en">These are different books</source>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks</note>
+        <note>This is the label on a radio button.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary">
+        <source xml:lang="en">Add a new book. Bloom will fix the ID of your book and upload it. The old book on Bloom Library will stay the same.</source>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary</note>
+        <note>This is explanatory commentary on a radio button.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook">
+        <source xml:lang="en">These are the same book</source>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook</note>
+        <note>This is the label on a radio button.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary">
+        <source xml:lang="en">Update the book. Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</source>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary</note>
+        <note>This is explanatory commentary on a radio button. Don't translate the website reference in brackets ([bloomlibrary.org]). It will be replaced by a link to bloomlibrary.org.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.SameBook">
+        <source xml:lang="en">Are these the same book?</source>
+        <note>ID: PublishTab.UploadCollisionDialog.SameBook</note>
+        <note>This is the dialog title</note>
       </trans-unit>
       <trans-unit id="Quiz.CheckYourUnderstanding" sil:dynamic="true">
         <source xml:lang="en">Check Your Understanding</source>

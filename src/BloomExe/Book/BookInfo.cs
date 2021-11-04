@@ -617,17 +617,16 @@ namespace Bloom.Book
 		/// - Delete bookName.bloombookorder (if present)
 		/// - Delete meta.bak (if present)
 		/// </summary>
-		/// <remarks>internal for testing</remarks>
-		internal static void InstallFreshInstanceGuid(string bookFolder)
+		public static string InstallFreshInstanceGuid(string bookFolder)
 		{
 			// This is a temporary BookInfo that shouldn't get asked about saveability of the book.
 			// But, this method should not have been called unless we already verified that we can save
 			// changes legitimately.
 			var bookInfo = new BookInfo(bookFolder, true, new AlwaysEditSaveContext());
-			bookInfo.InstallFreshGuidInternal();
+			return bookInfo.InstallFreshGuidInternal();
 		}
 
-		private void InstallFreshGuidInternal()
+		private string InstallFreshGuidInternal()
 		{
 			var freshGuidString = Guid.NewGuid().ToString();
 			Id = freshGuidString;
@@ -643,6 +642,8 @@ namespace Bloom.Book
 				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Failed to repair duplicate id",
 					"BookInfo.InstallFreshInstanceGuid() failed to repair duplicate id in locked meta.json file at " + FolderPath, e);
 			}
+
+			return Id;
 		}
 
 		/// <summary>

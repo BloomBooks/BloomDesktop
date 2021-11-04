@@ -1,7 +1,4 @@
-using System;
-using System.IO;
 using NUnit.Framework;
-using SIL.IO;
 using Bloom.Book;
 using Bloom.Publish;
 

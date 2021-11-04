@@ -239,7 +239,7 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(File.Exists(newBookFolder.CombineForPath("one.css")), Is.False, "We should have deleted the obsolete file");
 
 			// Verify that metadata was overwritten, new record not created.
-			var records = _parseClient.GetBookRecords("myId" + _thisTestId);
+			var records = _parseClient.GetBookRecords("myId" + _thisTestId, false);
 			Assert.That(records.Count, Is.EqualTo(1), "Should have overwritten parse server record, not added or deleted");
 			var bookRecord = records[0];
 			Assert.That(bookRecord.bookLineage.Value, Is.EqualTo("other"));

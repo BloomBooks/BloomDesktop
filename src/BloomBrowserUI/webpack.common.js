@@ -77,6 +77,8 @@ module.exports = merge(core, {
         autoUpdateSoftwareDlgBundle:
             "./react_components/AutoUpdateSoftwareDialog.tsx",
         duplicateManyDlgBundle: "./bookEdit/duplicateManyDialog.tsx",
+        uploadIDCollisionDlgBundle:
+            "./publish/LibraryPublish/uploadCollisionDlg.tsx",
 
         collectionsTabPaneBundle: "./collectionsTab/CollectionsTabPane.tsx",
 

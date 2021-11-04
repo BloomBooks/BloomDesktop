@@ -504,6 +504,7 @@
     <Compile Include="WebLibraryIntegration\S3Extensions.cs" />
     <Compile Include="web\controllers\CollectionApi.cs" />
     <Compile Include="web\controllers\ProgressDialogApi.cs" />
+    <Compile Include="web\controllers\LibraryPublishApi.cs" />
     <Compile Include="web\ReactControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -834,12 +835,6 @@
     <Compile Include="WebLibraryIntegration\BookDownloadedEventArgs.cs" />
     <Compile Include="WebLibraryIntegration\BookUpload.cs" />
     <Compile Include="WebLibraryIntegration\AccessKeys.cs" />
-    <Compile Include="WebLibraryIntegration\OverwriteWarningDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="WebLibraryIntegration\OverwriteWarningDialog.Designer.cs">
-      <DependentUpon>OverwriteWarningDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="web\WebLibraryView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -1083,9 +1078,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionCreating\NewCollectionWizard.resx">
       <DependentUpon>NewCollectionWizard.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="WebLibraryIntegration\OverwriteWarningDialog.resx">
-      <DependentUpon>OverwriteWarningDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="web\ReactControl.resx">
       <DependentUpon>ReactControl.cs</DependentUpon>
