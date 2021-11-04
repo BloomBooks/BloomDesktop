@@ -3778,6 +3778,10 @@
         <note>ID: PublishTab.Options_ToolTip_</note>
         <note>tooltip for the menu header in the Publish tab</note>
       </trans-unit>
+      <trans-unit id="PublishTab.OverwriteWarning.AskForHelpButton">
+        <source xml:lang="en">Ask for help</source>
+        <note>ID: PublishTab.OverwriteWarning.AskForHelpButton</note>
+      </trans-unit>
       <trans-unit id="PublishTab.OverwriteWarning.ReplaceExistingButton">
         <source xml:lang="en">Replace Existing</source>
         <note>ID: PublishTab.OverwriteWarning.ReplaceExistingButton</note>
@@ -4247,6 +4251,59 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.UploadingStatus">
         <source xml:lang="en">Uploading {0}</source>
         <note>ID: PublishTab.Upload.UploadingStatus</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.AlreadyIn">
+        <source xml:lang="en">Already in Bloom Library</source>
+        <note>ID: PublishTab.UploadCollisionDialog.AlreadyIn</note>
+        <note>This is the header for the book that is in bloomlibrary.org already.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.AskForHelpButton">
+        <source xml:lang="en">Ask for help</source>
+        <note>ID: PublishTab.UploadCollisionDialog.AskForHelpButton</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.HaveOne">
+        <source xml:lang="en">BloomLibrary.org already has a book with this ID from you ({0}).</source>
+        <note>ID: PublishTab.UploadCollisionDialog.HaveOne</note>
+        <note>This is the dialog subtitle. The {0} will be replaced with an email address.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks">
+        <source xml:lang="en">These are different books</source>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks</note>
+        <note>This is the label on a radio button.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary">
+        <source xml:lang="en">Add a new book. Bloom will fix the ID of your book and upload it. The old book on Bloom Library will stay the same.</source>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary</note>
+        <note>This is explanatory commentary on a radio button.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks.WhatCausedLink">
+        <source xml:lang="en">What caused this problem?</source>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks.WhatCausedLink</note>
+        <note>This is a link in the label on a radio button.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook">
+        <source xml:lang="en">These are the same book</source>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook</note>
+        <note>This is the label on a radio button.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary">
+        <source xml:lang="en">Update the book. Bloom will remove the version on BloomLibrary.org and replace it with your upload.</source>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary</note>
+        <note>This is explanatory commentary on a radio button.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.SameBook">
+        <source xml:lang="en">Are these the same book?</source>
+        <note>ID: PublishTab.UploadCollisionDialog.SameBook</note>
+        <note>This is the dialog title</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.UploadButton">
+        <source xml:lang="en">Upload</source>
+        <note>ID: PublishTab.UploadCollisionDialog.UploadButton</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Uploading">
+        <source xml:lang="en">Uploading</source>
+        <note>ID: PublishTab.UploadCollisionDialog.Uploading</note>
+        <note>This is the header for the book that is about to be uploaded.</note>
       </trans-unit>
       <trans-unit id="Quiz.CheckYourUnderstanding" sil:dynamic="true">
         <source xml:lang="en">Check Your Understanding</source>

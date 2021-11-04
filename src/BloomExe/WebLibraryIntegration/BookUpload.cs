@@ -396,6 +396,18 @@ namespace Bloom.WebLibraryIntegration
 			return ParseClient.GetSingleBookRecord(metadata.Id) != null;
 		}
 
+		/// <summary>
+		/// This method assumes we just did IsBookOnServer() and got a positive response.
+		/// </summary>
+		/// <param name="bookPath"></param>
+		/// <returns></returns>
+		public dynamic GetConflictingServerBookInfo(string bookPath)
+		{
+			var metadata = BookMetaData.FromString(RobustFile.ReadAllText(bookPath.CombineForPath(BookInfo.MetaDataFileName)));
+			// 'true' parameter tells the query to include language information so we can get the names.
+			return ParseClient.GetSingleBookRecord(metadata.Id, true);
+		}
+
 		// Wait (up to three seconds) for data uploaded to become available.
 		// Currently only used in unit testing.
 		// I have no idea whether 3s is an adequate time to wait for 'eventual consistency'. So far it seems to work.
