@@ -53,6 +53,7 @@
             margin-right: -10px; // to avoid 10px apparent extra margin from left:-10px.
             border-radius: 50%;
             width: 40px;
+            min-width: 40px; // don't let large answer text squeeze this in the flex display.  (BL-10581)
             height: 40px;
             opacity: 0; // We can click on this but can't see it...gets rid of default appearance.
         }
