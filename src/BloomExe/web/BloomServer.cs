@@ -563,6 +563,12 @@ namespace Bloom.Api
 
 				if (String.IsNullOrEmpty(imageFile)) return false;
 			}
+			else if (info.RawUrl.StartsWith("/book-preview/", StringComparison.Ordinal))
+			{
+				// BL-10625: Cover images still need to be processed to be transparent for book previewing.
+				if (true == CurrentBook?.ImageFileShouldBeRenderedWithTransparency(imageFile))
+					imageFile = _cache.GetPathToResizedImage(imageFile, getThumbnail: false, makeTransparent: true);
+			}
 
 			info.ReplyWithImage(imageFile, originalImageFile);
 			return true;
