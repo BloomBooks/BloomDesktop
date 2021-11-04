@@ -267,14 +267,44 @@ LibSynphony.prototype.stringToSentences = function(textHTML) {
             // put nbsp back in
             fragment = fragment.replace(/\u0008/g, "&nbsp;");
 
-            // check to avoid blank segments at the end
+            // check to avoid empty segments at the end
             if (j < fragments.length - 1 || fragment.length > 0) {
                 // is this space between sentences?
-                if (fragment.substring(0, 1) === nonSentence)
+                if (fragment.substring(0, 1) === nonSentence) {
                     returnVal.push(
                         new TextFragment(fragment.substring(1), true)
                     );
-                else returnVal.push(new TextFragment(fragment, false));
+                } else if (
+                    j > 0 &&
+                    fragments[j - 1].endsWith("|") && // previous fragment ends with "|""
+                    fragment.match(/^\s/) // current fragment starts with whitespace
+                ) {
+                    // Check for a phrase marker at the end of the previous fragment followed by
+                    // whitespace at the beginning of this fragment to maintain "interphrase" spacing.
+                    // Users can place the phrase marker (|) before or after inter-word spacing (or
+                    // even in the middle of a word I suppose).  The regex for splitting on a phrase
+                    // marker is intentionally kept simple, but we need to make up for its simplicity
+                    // here with this special check and fix.
+                    // See https://issues.bloomlibrary.org/youtrack/issue/BL-10569.
+                    const leadingSpaceCount = fragment.search(/\S|$/); // get location of first non-whitespace character or end of string
+                    // Add the leading whitespace as a space TextFragment
+                    returnVal.push(
+                        new TextFragment(
+                            fragment.substring(0, leadingSpaceCount),
+                            true
+                        )
+                    );
+                    // If there's anything left over, add the rest of the fragment as a regular sentence TextFragment
+                    if (leadingSpaceCount < fragment.length)
+                        returnVal.push(
+                            new TextFragment(
+                                fragment.substring(leadingSpaceCount),
+                                false
+                            )
+                        );
+                } else {
+                    returnVal.push(new TextFragment(fragment, false));
+                }
             }
         }
     }
