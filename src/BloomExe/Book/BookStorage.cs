@@ -28,7 +28,6 @@ using SIL.Progress;
 using SIL.Reporting;
 using SIL.Xml;
 using Bloom.Utils;
-using Bloom.ErrorReporter;
 
 namespace Bloom.Book
 {
@@ -2523,21 +2522,26 @@ namespace Bloom.Book
 			CopyDirectory(FolderPath, newBookDir, new[]{".bak", ".bloombookorder", ".pdf", ".map"});
 			var metaPath = Path.Combine(newBookDir, "meta.json");
 
-			// Update the InstanceId. This was not done prior to Bloom 4.2.104
-			// If the meta.json file is missing, ok that's weird but that means we
-			// don't have a duplicate bookInstanceId to worry about.
-			if (RobustFile.Exists(metaPath))
-			{
-				var meta = DynamicJson.Parse(File.ReadAllText(metaPath));
-				meta.bookInstanceId = Guid.NewGuid().ToString();
-				RobustFile.WriteAllText(metaPath, meta.ToString());
-			}
+			ChangeInstanceId(metaPath);
 
 			// rename the book htm file
 			var oldName = Path.Combine(newBookDir, Path.GetFileName(PathToExistingHtml));
 			var newName = Path.Combine(newBookDir, newBookName + ".htm");
 			RobustFile.Move(oldName, newName);
 			return newBookDir;
+		}
+
+		private void ChangeInstanceId(string metaDataPath)
+		{
+			// Update the InstanceId. This was not done prior to Bloom 4.2.104
+			// If the meta.json file is missing, ok that's weird but that means we
+			// don't have a duplicate bookInstanceId to worry about.
+			if (RobustFile.Exists(metaDataPath))
+			{
+				var meta = DynamicJson.Parse(File.ReadAllText(metaDataPath));
+				meta.bookInstanceId = Guid.NewGuid().ToString();
+				RobustFile.WriteAllText(metaDataPath, meta.ToString());
+			}
 		}
 
 		/// <summary>
