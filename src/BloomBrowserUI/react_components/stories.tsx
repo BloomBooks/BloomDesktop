@@ -18,6 +18,12 @@ import {
 } from "./colorPickerDialog";
 import SmallNumberPicker from "./smallNumberPicker";
 import { BloomAvatar } from "./bloomAvatar";
+import { BookInfoCard } from "./bookInfoCard";
+import {
+    UploadCollisionDlg,
+    IUploadCollisionDlgProps
+} from "../publish/LibraryPublish/uploadCollisionDlg";
+import { normalDialogEnvironmentForStorybook } from "./BloomDialog/BloomDialog";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -547,4 +553,36 @@ storiesOf("Custom Color Chooser", module)
                 </div>
             );
         })
+    );
+
+const languages1: string[] = ["Kanuri", "Swahili"];
+const languages2: string[] = ["French", "Swahili"];
+const languages3: string[] = [
+    "French",
+    "Swahili",
+    "Tanzanian Sign Language",
+    "English"
+];
+const uploadDate = "7/28/2020";
+const updateDate = "10/26/2020";
+storiesOf("BookInformationCards", module)
+    .add("Previously Uploaded", () =>
+        React.createElement(() => (
+            <BookInfoCard
+                title="02. Bigǝ Dinaro Gaana"
+                languages={languages1}
+                originalUpload={uploadDate}
+                lastUpdated={updateDate}
+            />
+        ))
+    )
+    .add("New Upload", () =>
+        React.createElement(() => (
+            <BookInfoCard title="02. Foo Bar" languages={languages2} />
+        ))
+    )
+    .add("Several languages", () =>
+        React.createElement(() => (
+            <BookInfoCard title="Foo Bar Extended" languages={languages3} />
+        ))
     );

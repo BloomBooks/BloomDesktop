@@ -107,6 +107,8 @@ namespace Bloom.Publish.BloomLibrary
 
 		internal bool BookIsAlreadyOnServer => LoggedIn && _uploader.IsBookOnServer(Book.FolderPath);
 
+		internal dynamic ConflictingBookInfo => _uploader.GetConflictingServerBookInfo(Book.FolderPath);
+
 		private string Uploader => _uploader.UserId;
 
 		/// <summary>

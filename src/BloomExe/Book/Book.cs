@@ -3525,6 +3525,11 @@ namespace Bloom.Book
 			OurHtmlDom.Title = name;
 		}
 
+		public void SetNewInstanceId()
+		{
+			Storage.ChangeInstanceId(Path.Combine(FolderPath, "meta.json"));
+		}
+
 		public void ExportXHtml(string path)
 		{
 			XmlHtmlConverter.GetXmlDomFromHtmlFile(Storage.PathToExistingHtml,true).Save(path);

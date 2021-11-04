@@ -151,16 +151,20 @@ namespace Bloom.WebLibraryIntegration
 			return dy.count;
 		}
 
-		public IRestResponse GetBookRecordsByQuery(string query)
+		public IRestResponse GetBookRecordsByQuery(string query, bool includeLanguageInfo)
 		{
 			var request = MakeGetRequest("classes/books");
-			request.AddParameter("where",query, ParameterType.QueryString);
+			request.AddParameter("where", query, ParameterType.QueryString);
+			if (includeLanguageInfo)
+			{
+				request.AddParameter("include", "langPointers", ParameterType.QueryString);
+			}
 			return Client.Execute(request);
 		}
 
-		public dynamic GetSingleBookRecord(string id)
+		public dynamic GetSingleBookRecord(string id, bool includeLanguageInfo = false)
 		{
-			var json = GetBookRecords(id);
+			var json = GetBookRecords(id, includeLanguageInfo);
 			if (json == null || json.Count < 1)
 				return null;
 
@@ -179,9 +183,9 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		internal dynamic GetBookRecords(string id)
+		internal dynamic GetBookRecords(string id, bool includeLanguageInfo)
 		{
-			var response = GetBookRecordsByQuery("{\"bookInstanceId\":\"" + id + "\"," + UploaderJsonString + "}");
+			var response = GetBookRecordsByQuery("{\"bookInstanceId\":\"" + id + "\"," + UploaderJsonString + "}", includeLanguageInfo);
 			if (response.StatusCode != HttpStatusCode.OK)
 				return null;
 			dynamic json = JObject.Parse(response.Content);
