@@ -4157,6 +4157,10 @@
         <source xml:lang="en">Sign In / Sign Up to BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.SignUpLogin</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.SkipMakingPdf">
+        <source xml:lang="en">Skipping PDF because this book has video</source>
+        <note>ID: PublishTab.Upload.SkipMakingPdf</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.SomethingWrong">
         <source xml:lang="en">Oops, something went wrong when trying to sign you into our database.</source>
         <note>ID: PublishTab.Upload.SomethingWrong</note>

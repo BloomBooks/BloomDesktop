@@ -535,31 +535,41 @@ namespace Bloom.WebLibraryIntegration
 				}
 
 				var uploadPdfPath = UploadPdfPath(bookFolder);
-				// If there is not already a locked preview in the book folder
-				// (which we take to mean the user has created a customized one that he prefers),
-				// make sure we have a current correct preview and then copy it to the book folder so it gets uploaded.
-				if (!FileHelper.IsLocked(uploadPdfPath))
+				var videoFiles = GetVideoFilesToInclude(book);
+				bool hasVideo = videoFiles.Any();
+				if (hasVideo)
 				{
-					var pdfMsg = LocalizationManager.GetString("PublishTab.Upload.MakingPdf", "Making PDF Preview...");
-					progress.WriteStatus(pdfMsg);
+					var skipPdfMsg = LocalizationManager.GetString("PublishTab.Upload.SkipMakingPdf", "Skipping PDF because this book has video");
+					progress.WriteStatus(skipPdfMsg);
+				}
+				else
+				{
+					// If there is not already a locked preview in the book folder
+					// (which we take to mean the user has created a customized one that he prefers),
+					// make sure we have a current correct preview and then copy it to the book folder so it gets uploaded.
+					if (!FileHelper.IsLocked(uploadPdfPath))
+					{
+						var pdfMsg = LocalizationManager.GetString("PublishTab.Upload.MakingPdf", "Making PDF Preview...");
+						progress.WriteStatus(pdfMsg);
 
-					publishView.MakePDFForUpload(progress);
-					if (RobustFile.Exists(publishView.PdfPreviewPath))
-					{
-						RobustFile.Copy(publishView.PdfPreviewPath, uploadPdfPath, true);
-					}
-					else
-					{
-						return ""; // no PDF, no upload (See BL-6719)
+						publishView.MakePDFForUpload(progress);
+						if (RobustFile.Exists(publishView.PdfPreviewPath))
+						{
+							RobustFile.Copy(publishView.PdfPreviewPath, uploadPdfPath, true);
+						}
+						else
+						{
+							return ""; // no PDF, no upload (See BL-6719)
+						}
 					}
 				}
 
 				if (progress.CancelRequested)
 					return "";
 
-				return UploadBook(bookFolder, progress, out parseId, Path.GetFileName(uploadPdfPath),
+				return UploadBook(bookFolder, progress, out parseId, hasVideo ? null : Path.GetFileName(uploadPdfPath),
 					GetAudioFilesToInclude(book, bookParams.ExcludeNarrationAudio, bookParams.ExcludeMusic),
-					GetVideoFilesToInclude(book),
+					videoFiles,
 					bookParams.LanguagesToUpload, book.CollectionSettings);
 			}
 			finally
