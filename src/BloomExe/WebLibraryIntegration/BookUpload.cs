@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using Amazon.Runtime;
@@ -394,6 +393,16 @@ namespace Bloom.WebLibraryIntegration
 		{
 			var metadata = BookMetaData.FromString(RobustFile.ReadAllText(bookPath.CombineForPath(BookInfo.MetaDataFileName)));
 			return ParseClient.GetSingleBookRecord(metadata.Id) != null;
+		}
+
+		/// <summary>
+		/// This method assumes we just did IsBookOnServer() and got a positive response.
+		/// </summary>
+		public dynamic GetBookOnServer(string bookPath)
+		{
+			var metadata = BookMetaData.FromString(RobustFile.ReadAllText(bookPath.CombineForPath(BookInfo.MetaDataFileName)));
+			// 'true' parameter tells the query to include language information so we can get the names.
+			return ParseClient.GetSingleBookRecord(metadata.Id, true);
 		}
 
 		// Wait (up to three seconds) for data uploaded to become available.

@@ -16,6 +16,11 @@ import { EPUBPublishScreen } from "./ePUBPublish/ePUBPublishScreen";
 import BookMetadataDialog from "./metadata/BookMetadataDialog";
 import "./storiesApiMocks";
 import { AccessibilityCheckScreen } from "./accessibilityCheck/accessibilityCheckScreen";
+import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialog";
+import {
+    IUploadCollisionDlgProps,
+    UploadCollisionDlg
+} from "./LibraryPublish/uploadCollisionDlg";
 
 addDecorator(withA11y as any);
 
@@ -114,3 +119,21 @@ storiesOf("Publish/ePUB", module)
     .add("EPUBPublishScreen", () => <EPUBPublishScreen />)
     .add("Book Metadata Dialog", () => <BookMetadataDialog startOpen={true} />)
     .add("AccessibilityCheckScreen", () => <AccessibilityCheckScreen />);
+
+const propsObject: IUploadCollisionDlgProps = {
+    userEmail: "testEmail@sil.org",
+    //newThumbUrl: "somebadurl",
+    newTitle: "Title of New Upload",
+    newLanguages: ["Sokoro", "English"],
+    existingTitle: "Title on BL Server",
+    existingLanguages: ["English", "French"],
+    existingCreatedDate: "10/21/2021",
+    existingUpdatedDate: "10/29/2021",
+    // preexistingThumbUrl: "somebadurl",
+    dialogEnvironment: normalDialogEnvironmentForStorybook
+};
+
+storiesOf("Publish/Share on the web", module).add(
+    "Upload Collision Dialog",
+    () => React.createElement(() => <UploadCollisionDlg {...propsObject} />)
+);
