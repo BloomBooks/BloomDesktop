@@ -1672,6 +1672,7 @@ namespace Bloom.CollectionTab
 			if (SelectedBook == null) return;
 
 			var newBookDir = SelectedBook.Storage.Duplicate();
+
 			// Get rid of any TC status we copied from the original, so Bloom treats it correctly as a new book.
 			BookStorage.RemoveLocalOnlyFiles(newBookDir);
 
@@ -1683,8 +1684,10 @@ namespace Bloom.CollectionTab
 			var bookInfo = AllBookButtons().Select(GetBookInfoFromButton).FirstOrDefault(info => info.FolderPath == newBookDir);
 			if (bookInfo != null)
 			{
+				var existingTitle = SelectedBook.TitleBestForUserDisplay;
 				SelectBook(bookInfo);
 				HighlightBookButtonAndShowContextMenuButton(bookInfo);
+				BookHistory.AddEvent(SelectedBook, BookHistoryEventType.Created, $"Duplicated from existing book \"{existingTitle}\"");
 			}
 		}
 
@@ -1855,6 +1858,7 @@ namespace Bloom.CollectionTab
 				return;
 			book.SetAndLockBookName(newName);
 			BringButtonTitleUpToDate(book);
+			BookHistory.AddEvent(book, BookHistoryEventType.Renamed, $"Book renamed to \"{newName}\"");
 		}
 
 		private void importContentFromSpreadsheetToolStripMenuItem_Click(object sender, EventArgs e)

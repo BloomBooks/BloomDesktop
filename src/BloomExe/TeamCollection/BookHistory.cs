@@ -30,7 +30,10 @@ namespace Bloom.TeamCollection
 	}
 	public enum BookHistoryEventType
 	{
-		CheckIn
+		CheckIn,
+		Created,
+		Renamed,
+		Uploaded
 	}
 	[Table("events")]
 	public class BookHistoryEvent
