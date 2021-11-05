@@ -1,0 +1,20 @@
+include ../Afghan-Children-Read-Common/Afghan-Children-Read-XMatter-mixins.pug
+
+- const kPashtoLanguageCode = 'ps';
+
+mixin pashto-outsideFrontCover
+	+afg-outsideFrontCover(kPashtoLanguageCode)
+
+mixin pashto-titlePage
+	+afg-titlePage(kPashtoLanguageCode)
+
+mixin pashto-credits
+	+afg-credits(kPashtoLanguageCode)&attributes(attributes)
+
+mixin pashto-text
+	//- Ideally, we would set the language code here so this text can pick up things like font settings, etc.
+	//- But if we do so, the text and thus the page gets stripped out if the language settings for the book
+	//- don't include language "ps". So for now, I'm taking the branding text approach and setting lang="*".
+	//-.text(lang=kPashtoLanguageCode, dir="rtl")&attributes(attributes)
+	.text(lang="*", dir="rtl")&attributes(attributes)
+		block

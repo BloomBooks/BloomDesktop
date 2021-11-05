@@ -6,6 +6,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Newtonsoft.Json;
 using SIL.IO;
+using SIL.Linq;
 
 namespace Bloom.Api
 {
@@ -21,16 +22,9 @@ namespace Bloom.Api
 	/// and (b) as a safety net, in case there's some way an api/branding url still gets presented
 	/// to the image server.
 	/// </summary>
-	class BrandingSettings
+	public class BrandingSettings
 	{
 		public const string kBrandingImageUrlPart = "branding/image";
-		private readonly CollectionSettings _collectionSettings;
-
-		public BrandingSettings(CollectionSettings collectionSettings)
-		{
-			_collectionSettings = collectionSettings;
-		}
-
 
 
 		/// <summary>
@@ -120,7 +114,7 @@ namespace Bloom.Api
 		/// <param name="brandingNameOrFolderPath"> Normally, the branding is just a name, which we look up in the official branding folder
 		//but unit tests can instead provide a path to the folder.
 		/// </param>
-		public static Settings GetSettings(string brandingNameOrFolderPath)
+		public static Settings GetSettingsOrNull(string brandingNameOrFolderPath)
 		{
 			try
 			{
@@ -156,6 +150,15 @@ namespace Bloom.Api
 							"branding.json of the branding " + brandingNameOrFolderPath + " may be corrupt. It had: " + content);
 						return null;
 					}
+					
+					settings.Presets.ForEach(p=>
+					{
+						if (string.IsNullOrEmpty(flavor) && p.Content.Contains("{flavor"))
+						{
+							throw new ApplicationException("The branding had variable {flavor} but the branding key did not specify one: "+brandingFolderName);
+						}
+						p.Content = p.Content.Replace("{flavor}", flavor);
+					});
 					return settings;
 				}
 			}
@@ -163,7 +166,7 @@ namespace Bloom.Api
 			{
 				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Trouble reading branding settings", exception: e);
 			}
-			return null;
+			return null; // it is normal not to find the brandings. We hand out license keys before the brandings have been fully developed and shipped.
 		}
 	}
 }

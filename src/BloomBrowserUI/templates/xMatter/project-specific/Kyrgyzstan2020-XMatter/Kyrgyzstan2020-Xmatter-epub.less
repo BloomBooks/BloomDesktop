@@ -1,0 +1,144 @@
+@import (reference) "../../bloom-xmatter-common.less";
+@import (reference) "../../../../bookLayout/basePage.less";
+@import "./Kyrgyzstan2020-Xmatter-common.less";
+
+// These rules are used solely in epubs using Kyrgyztan2020-Xmatter. The idea is to produce
+// some approximation of the usual appearance, although we cannot guarantee getting exactly
+// what we want as many epub readers do not handle all the CSS styles. I am risking using
+// display:Flex to try to put the two logos side by side. Some readers ignore this, but
+// they then seem to make a reasonable column out of the two. If you mess with these rules,
+// try to make sure that as well as producing your desired improvement using a well-behaved
+// reader (June 2021: Ekitab, Lithium), you don't make things too ugly on poorer ones
+// (June 2021: Simply Reading by Daisy, Adobe Digital Editions on Windows, Cool Reader).
+
+// No hope of positioning this where it will help.
+.divider {
+    display: none;
+}
+
+// Trying to set a fixed height for the title in a screen of unknown size is dubious.
+// Just put a bit of white space above and below the title.
+.frontCover .bloom-translationGroup.bookTitle {
+    padding-top: 3mm;
+    padding-bottom: 3mm;
+    p {
+        // The result of several hours of research. The margin of a p element disappears
+        // UNLESS the parent has padding or a border. If the parent has padding (as below),
+        // we can get extra white space, whatever the browser sets as the default margin
+        // of a paragraph.
+        margin: 0;
+    }
+}
+
+// Most modern smartphones have dppx settings of 2.1+, this is only for lower res phones.
+@media (max-resolution: 2dppx) {
+    .frontCover .bottomBlock {
+        margin: unset; // eliminate some extra spacing that messes up smaller epubs.
+    }
+}
+
+// Some space above the white border we are sticking on the picture.
+.frontCover div.bloom-imageContainer > img {
+    margin-top: 20px;
+}
+
+// Keep some space between the text and the outside of the red background.
+.frontCover .marginBox {
+    .bottomBlock {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
+
+// We would like to use 100%, but we can't use vertical percentages unless some container has
+// a fixed height or all containers, including body and html, use a percentage. If we leave the
+// size completely determined by the content, the red which is supposed to be the color of
+// most of the cover only extends as far as the content. 93vh is enough to look like more-or-less
+// the whole page. It is fine tuned for the readers we currently care most about (Ekitabu and
+// Lithium); 94% or more causes Lithium to make another page with a tiny strip of red.
+// Of course, there may be other readers where even 93vh is a problem, and there are
+// certainly ones that ignore this. Using min-height rather than height because, on small
+// screens, the back cover image may get pushed to its own page. Then the 'page' element may
+// want to be MORE than 100vh...it's split over two device pages. And we really want the
+// cover color to extend all the way to the bottom of the level image.
+.outsideBackCover,
+.outsideFrontCover {
+    min-height: 93vh;
+}
+
+.outsideBackCover .marginBox {
+    width: 100%; // Override non-epub rule to ensure width will handle both government logos.
+    // we'd like height:100% also. But to make that work it has to be set on
+    // all parents up to body, which means it can't be just on the outsideBackCover.
+    .outside-back-cover-branding-top-block {
+        margin: 0;
+        padding: 3px;
+        display: flex; // we'd prefer a row if the user agent can do it
+        width: 100%;
+        background-color: white;
+    }
+
+    // So far, these rules have worked exactly when the display:flex works,
+    // to make the left one left-aligned and the right one right-aligned.
+    [data-book="outside-back-cover-branding-top-left-html"] {
+        img {
+            margin-right: auto;
+            margin-left: 0 !important;
+        }
+    }
+
+    [data-book="outside-back-cover-branding-top-right-html"] {
+        img {
+            margin-left: auto;
+            margin-right: 0 !important;
+        }
+    }
+
+    [data-book="outside-back-cover-branding-top-right-html"],
+    [data-book="outside-back-cover-branding-top-left-html"] {
+        width: 50%;
+        img {
+            height: 10mm;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+    }
+
+    .bottomHalfGrid {
+        padding: 20px;
+        // Our theory is that because epubs are always portrait, we are better off just letting
+        // the level-image flow below the text. So override the display:grid for other publications.
+        // With display:grid, you can have the text and the image overlapping.
+        // (But with display:block, you can get the image partially off the page, or moved to
+        // another page, or...)
+        display: block;
+        [data-book="level-image-html"] {
+            margin-bottom: 10px; //separate from preceding text
+            img {
+                width: 50%; // typically looks good in portrait
+                display: block; // allows auto-margins to center
+                margin-left: auto;
+                margin-right: auto;
+                max-height: 250px; // may salvage things if reader allows landscape
+            }
+        }
+        .bloom-translationGroup {
+            margin: 0 10px; // Otherwise, text gets no margin to the edge of the colored background
+            color: white;
+            text-align: center;
+
+            .bloom-editable p {
+                // Some day, we probably want to move this rule (and others?) from basePage.less
+                // to basePage-sharedRules.less to get better WYSIWYG in epubs. But for 5.0, at least,
+                // we are just doing this in this one specific case.
+                margin: 0;
+
+                // Actually, pages normally get 1.5em as the default, but
+                // since the purpose of it here is just to give us something rather than nothing for empty paragraphs and
+                // since epubs are usually more space-limited,
+                // we reduce it a bit.
+                min-height: 0.7em;
+            }
+        }
+    }
+}

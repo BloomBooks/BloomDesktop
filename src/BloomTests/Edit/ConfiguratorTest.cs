@@ -47,7 +47,7 @@ namespace BloomTests.Edit
 												FileLocationUtilities.GetDirectoryDistributedWithApplication( BloomFileLocator.BrowserRoot),
 												BloomFileLocator.GetBrowserDirectory("bookLayout"),
 												BloomFileLocator.GetBrowserDirectory("bookEdit","css"),
-												BloomFileLocator.GetInstalledXMatterDirectory()
+												BloomFileLocator.GetFactoryXMatterDirectory()
 											});
 
 			var projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");

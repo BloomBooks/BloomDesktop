@@ -60,7 +60,7 @@ namespace Bloom.CLI
 				Language3Iso639Code = options.NationalLanguage2IsoCode
 			};
 
-			XMatterPackFinder xmatterFinder = new XMatterPackFinder(new[] { BloomFileLocator.GetInstalledXMatterDirectory() });
+			XMatterPackFinder xmatterFinder = new XMatterPackFinder(new[] { BloomFileLocator.GetFactoryXMatterDirectory(), BloomFileLocator.GetProjectSpecificInstalledXMatterDirectory() });
 			var locator = new BloomFileLocator(collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(),
 				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
 

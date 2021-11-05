@@ -1,0 +1,88 @@
+@import "../../bloom-xmatter-common.less";
+
+@XMatterPackName: "Afghan-Children-Read";
+
+@marginBetweenBoxes: 0.7em;
+
+.titlePage {
+    #titlePageTitleBlock {
+        margin-top: 10%;
+    }
+    #titlePageLevelBlock {
+        margin-top: 5%;
+    }
+    .Title-On-Title-Page-style {
+        // Override 14pt default
+        font-size: 40pt;
+    }
+}
+
+.titlePage .marginBox,
+.credits .marginBox {
+    display: flex; // so we can move #titlePagePrintInfo as low as possible easily
+    flex-direction: column;
+}
+
+.credits {
+    .licenseAndCopyrightBlock {
+        // Ironically, using the min-height (of 60px) from bloom-xmatter-sharedRules.less
+        // causes this block to overlap the block(s) below it if there is not enough room on the page.
+        // So we override it to the default.
+        min-height: unset;
+    }
+    .bloom-translationGroup,
+    .licenseAndCopyrightBlock .licenseBlock {
+        margin-bottom: @marginBetweenBoxes;
+    }
+    .ISBNContainer,
+    .originalAcknowledgments .bloom-editable,
+    .versionAcknowledgments .bloom-editable {
+        // Override
+        margin-bottom: 0;
+    }
+    .licenseAndCopyrightBlock .copyright {
+        // Override
+        margin-bottom: 1em;
+    }
+    .ISBNContainer[dir="rtl"] .bloom-editable {
+        text-align: right !important;
+    }
+}
+
+.logo-and-text {
+    margin-right: 10px;
+    [data-book="cover-branding-top-left-html"] img,
+    [data-book="title-page-branding-top-left-html"] img {
+        margin-left: 10px;
+        margin-right: 10px;
+        width: 65px;
+    }
+}
+
+.titlePage .logo-and-text {
+    margin-top: 10px;
+}
+
+.logo-text {
+    text-align: center;
+    margin-top: 2px;
+}
+
+.Logo-Text-On-Cover-style {
+    font-size: 6pt;
+}
+
+.Logo-Text-On-Title-Page-style {
+    font-size: 6pt;
+}
+
+.Message-Page-style {
+    font-size: 18pt;
+}
+
+.bishmallah {
+    height: 50mm;
+    .bloom-imageContainer {
+        height: 100%;
+    }
+}

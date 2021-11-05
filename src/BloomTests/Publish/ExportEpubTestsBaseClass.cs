@@ -84,7 +84,7 @@ namespace BloomTests.Publish
 
 		private static BloomFileLocator GetTestFileLocator()
 		{
-			return new BloomFileLocator(s_collectionSettings, new XMatterPackFinder(new[] { BloomFileLocator.GetInstalledXMatterDirectory() }), ProjectContext.GetFactoryFileLocations(),
+			return new BloomFileLocator(s_collectionSettings, new XMatterPackFinder(new[] { BloomFileLocator.GetFactoryXMatterDirectory() }), ProjectContext.GetFactoryFileLocations(),
 				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
 		}
 

@@ -13,7 +13,7 @@ In order to release a new Custom XMatter pack:
 5. Add the new BloomPack to the Bloom Team's GoogleDrive "Custom xMatter" folder
     (if you didn't already in steps 3 or 4).
 
-However, note the following for the Afghan xmatters (Dari and Pashti):
+However, note the following for the Afghan xmatters (Dari and Pashto):
 I (AP) tried to give SIL LEAD updated packs following the above in May 2020.
 They said they ended up with two packs installed because the previous version had been
 given to them with the customXMatter subfolder included at the top level.

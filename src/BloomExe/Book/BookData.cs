@@ -1842,7 +1842,7 @@ namespace Bloom.Book
 				}
 			}
 
-			var settings = BrandingSettings.GetSettings(brandingNameOrPath);
+			var settings = BrandingSettings.GetSettingsOrNull(brandingNameOrPath);
 
 			if (settings != null && settings.Presets != null)
 			{
@@ -1901,6 +1901,9 @@ namespace Bloom.Book
 						}
 					}
 
+					// I'm not clear if this ever is needed anymore, since we now
+					// do the flavor replacement when reading the json. I can't
+					// rule out that there aren't other values that also have {flavor}
 					var content = item.Content.Replace("{flavor}", CollectionSettings.GetBrandingFlavor());
 					if (content.Contains("{bookshelfUrlKey}"))
 					{

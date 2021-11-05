@@ -21,7 +21,7 @@ namespace BloomTests.Book
 		[OneTimeSetUp]
 		public void OneTimeSetup()
 		{
-			_factoryXMatter = BloomFileLocator.GetInstalledXMatterDirectory();
+			_factoryXMatter = BloomFileLocator.GetFactoryXMatterDirectory();
 			var codeBaseDir = BloomFileLocator.GetCodeBaseFolder();
 			_testXmatter = $"{codeBaseDir}/../../src/BloomTests/xMatter";
 		}

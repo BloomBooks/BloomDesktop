@@ -453,7 +453,7 @@ namespace Bloom.Collection
 			var packsToSkip = new string[] {"null", "bigbook", "SHRP", "SHARP", "ForUnitTest", "TemplateStarter"};
 			_xmatterList.Items.Clear();
 			ListViewItem itemForFactoryDefault = null;
-			foreach(var pack in _xmatterPackFinder.All)
+			foreach(var pack in _xmatterPackFinder.ToOfferInSettings)
 			{
 				if (packsToSkip.Any(s => pack.Key.ToLowerInvariant().Contains(s.ToLower())))
 					continue;
@@ -681,15 +681,15 @@ namespace Bloom.Collection
 				Invoke((Action) ChangeThatRequiresRestart);
 				_brand = fullBrandingName;
 				_subscriptionCode = subscriptionCode;
-				if (BrandingProject.HaveFilesForBranding(fullBrandingName))
-				{
-					// if the branding.json specifies an xmatter, set the default for this collection to that.
-					var correspondingXMatterPack = BrandingSettings.GetSettings(fullBrandingName).GetXmatterToUse();
-					if (!string.IsNullOrEmpty(correspondingXMatterPack))
-					{
-						_collectionSettings.XMatterPackName = correspondingXMatterPack;
-					}
-				}
+				//if (BrandingProject.HaveFilesForBranding(fullBrandingName))
+				//{
+				//	// if the branding.json specifies an xmatter, set the default for this collection to that.
+				//	var correspondingXMatterPack = BrandingSettings.GetSettingsOrNull(fullBrandingName).GetXmatterToUse();
+				//	if (!string.IsNullOrEmpty(correspondingXMatterPack))
+				//	{
+				//		_collectionSettings.XMatterPackName = correspondingXMatterPack;
+				//	}
+				//}
 				return true;
 			}
 			return false;

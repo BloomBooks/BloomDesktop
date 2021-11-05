@@ -32,7 +32,7 @@ namespace Bloom.Collection
 		public string PathToSettingsFile;
 	}
 
-		
+
 
 	/// <summary>
 	/// A Collection corresponds to a single folder (with subfolders) on the disk.
@@ -112,9 +112,9 @@ namespace Bloom.Collection
 		{
 			//Note: I'm not convinced we actually ever rely on dynamic name lookups anymore?
 			//See: https://issues.bloomlibrary.org/youtrack/issue/BL-7832
-			Func<string> getCodeOfDefaultLanguageForNaming = ()=> Language2.Iso639Code;
+			Func<string> getCodeOfDefaultLanguageForNaming = () => Language2.Iso639Code;
 			Language1 = new WritingSystem(1, getCodeOfDefaultLanguageForNaming);
-			Language2 = new WritingSystem(2,getCodeOfDefaultLanguageForNaming);
+			Language2 = new WritingSystem(2, getCodeOfDefaultLanguageForNaming);
 			Language3 = new WritingSystem(3, getCodeOfDefaultLanguageForNaming);
 			LanguagesZeroBased = new WritingSystem[3];
 			this.LanguagesZeroBased[0] = Language1;
@@ -138,7 +138,7 @@ namespace Bloom.Collection
 		}
 
 		public CollectionSettings(NewCollectionSettings collectionInfo)
-			:this(collectionInfo.PathToSettingsFile)
+			: this(collectionInfo.PathToSettingsFile)
 		{
 			AllowNewBooks = collectionInfo.AllowNewBooks;
 			Language1.FontName = collectionInfo.Language1.FontName;
@@ -148,7 +148,7 @@ namespace Bloom.Collection
 
 			Language2.FontName = Language3.FontName = WritingSystem.GetDefaultFontName();
 
-			
+
 			Country = collectionInfo.Country;
 			Province = collectionInfo.Province;
 			District = collectionInfo.District;
@@ -173,7 +173,7 @@ namespace Bloom.Collection
 		/// can be used whether the Collection exists already, or not
 		/// </summary>
 		public CollectionSettings(string desiredOrExistingSettingsFilePath)
-			:this()
+			: this()
 		{
 			SettingsFilePath = desiredOrExistingSettingsFilePath;
 			CollectionName = Path.GetFileNameWithoutExtension(desiredOrExistingSettingsFilePath);
@@ -217,7 +217,7 @@ namespace Bloom.Collection
 
 		private string DefaultLanguageForNamingLanguages()
 		{
-			return Language2.Iso639Code?? "en";
+			return Language2.Iso639Code ?? "en";
 		}
 		#region Persisted properties
 
@@ -344,7 +344,7 @@ namespace Bloom.Collection
 				Language3Iso639Code != Language2Iso639Code)
 			{
 				Language3.AddSelectorCssRule(sb, omitDirection);
-			
+
 			}
 			return sb.ToString();
 		}
@@ -371,7 +371,7 @@ namespace Bloom.Collection
 						return "";
 					}
 				}
-					
+
 				var settingsContent = RobustFile.ReadAllText(settingsFilePath, Encoding.UTF8);
 				var xml = XElement.Parse(settingsContent);
 				return ReadString(xml, "CollectionId", "");
@@ -382,14 +382,14 @@ namespace Bloom.Collection
 			}
 		}
 
-		
+
 		/// ------------------------------------------------------------------------------------
 		public void Load()
 		{
 			try
 			{
 				// Previously was SIL.IO.RobustIO.LoadXElement(SettingsFilePath). However, we had problems with this
-				// using some non-roman collection names...specifically, one involving the Northern Pashti
+				// using some non-roman collection names...specifically, one involving the Northern Pashto
 				// localization of 'books' (کتابونه)...see BL-5416. It seems that somewhere in the
 				// implementation of Linq.XElement.Load() the path is converted to a URL and then back
 				// to a path and something changes in that process so that a valid path passed to Load()
@@ -417,8 +417,8 @@ namespace Bloom.Collection
 				CollectionId = ReadString(xml, "CollectionId", CollectionId);
 
 				Language1.ReadFromXml(xml, true, "en");
-				Language2.ReadFromXml(xml, true,"self");
-				Language3.ReadFromXml(xml, true,  Language2.Iso639Code);
+				Language2.ReadFromXml(xml, true, "self");
+				Language3.ReadFromXml(xml, true, Language2.Iso639Code);
 
 				SignLanguageIso639Code = ReadString(xml, "SignLanguageIso639Code",  /* old name */
 				ReadString(xml, "SignLanguageIso639Code", ""));
@@ -437,7 +437,7 @@ namespace Bloom.Collection
 				{
 					// Validate branding, so things can't be circumvented by just typing something random into settings
 					var expirationDate = CollectionSettingsApi.GetExpirationDate(SubscriptionCode);
-					if (expirationDate < DateTime.Now)	// no longer require branding files to exist yet
+					if (expirationDate < DateTime.Now)  // no longer require branding files to exist yet
 					{
 						InvalidBranding = BrandingProjectKey;
 						BrandingProjectKey = "Default"; // keep the code, but don't use it as active branding.
@@ -459,8 +459,8 @@ namespace Bloom.Collection
 				AudioRecordingMode = parsedAudioRecordingMode;
 				AudioRecordingTrimEndMilliseconds = ReadInteger(xml, "AudioRecordingTrimEndMilliseconds",
 					kDefaultAudioRecordingTrimEndMilliseconds);
-				Administrators=ReadString(xml, "Administrators", "")
-					.Split(new[] {","}, StringSplitOptions.RemoveEmptyEntries);
+				Administrators = ReadString(xml, "Administrators", "")
+					.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
 				var defaultTags = ReadString(xml, "DefaultBookTags", "").Split(',');
 				var defaultBookshelfTag = defaultTags.Where(t => t.StartsWith("bookshelf:")).FirstOrDefault();
 				DefaultBookshelf = defaultBookshelfTag == null
@@ -495,7 +495,7 @@ namespace Bloom.Collection
 			try
 			{
 				string oldcustomCollectionStylesPath = FolderPath.CombineForPath("collection.css");
-				if(RobustFile.Exists(oldcustomCollectionStylesPath))
+				if (RobustFile.Exists(oldcustomCollectionStylesPath))
 				{
 					string newcustomCollectionStylesPath = FolderPath.CombineForPath("customCollectionStyles.css");
 
@@ -565,10 +565,28 @@ namespace Bloom.Collection
 		[XmlIgnore]
 		public string SettingsFilePath { get; set; }
 
+		private string _xmatterNameInCollectionSettingsFile;
 		/// <summary>
 		/// for the "Factory-XMatter.htm", this would be named "Factory"
 		/// </summary>
-		virtual public string XMatterPackName { get; set; }
+		public virtual string XMatterPackName
+		{
+			// xmatter specified by the branding always wins
+			// enhance: maybe we should store this.. but I don't think this is called often
+			get
+			{
+				if (!string.IsNullOrEmpty(BrandingProjectKey))
+				{
+					var xmatterToUse = BrandingSettings.GetSettingsOrNull(this.BrandingProjectKey)?.GetXmatterToUse();
+					if (xmatterToUse != null)
+					{
+						return xmatterToUse;
+					}
+				}
+				return this._xmatterNameInCollectionSettingsFile;
+			}
+			set => this._xmatterNameInCollectionSettingsFile = value;
+		}
 
 		virtual public string Country { get; set; }
 		virtual public string Province { get; set; }
@@ -584,7 +602,7 @@ namespace Bloom.Collection
 				//bar of the window (and the on-disk name). People wanted to change to a language name they want to see. (We'll probably have to do something
 				//to enable that anyhow because it shows up elsewhere, but this is a step).
 				//if(IsSourceCollection)
-					return CollectionName;
+				return CollectionName;
 				//var fmt = L10NSharp.LocalizationManager.GetString("CollectionTab.Vernacular Collection Heading", "{0} Books", "The {0} is where we fill in the name of the Vernacular");
 				//return string.Format(fmt, Language1Name);
 			}
@@ -604,7 +622,7 @@ namespace Bloom.Collection
 		}
 
 		// e.g. "ABC2020" or "Kyrgyzstan2020[English]"
-		public string BrandingProjectKey { get;  set; }
+		public string BrandingProjectKey { get; set; }
 		public string GetBrandingFlavor()
 		{
 			BrandingSettings.ParseBrandingKey(BrandingProjectKey, out var baseKey, out var flavor);
@@ -615,6 +633,7 @@ namespace Bloom.Collection
 			BrandingSettings.ParseBrandingKey(BrandingProjectKey, out var folderName, out var flavor);
 			return folderName;
 		}
+
 
 		public string SubscriptionCode { get; set; }
 
@@ -663,9 +682,9 @@ namespace Bloom.Collection
 			//this is just a sanity check, it will throw if the existing directory doesn't have a collection
 			FindSettingsFileInFolder(fromDirectory);
 
-//first rename the directory, as that is the part more likely to fail (because *any* locked file in there will cause a failure)
+			//first rename the directory, as that is the part more likely to fail (because *any* locked file in there will cause a failure)
 			SIL.IO.RobustIO.MoveDirectory(fromDirectory, toDirectory);
-			string  collectionSettingsPath;
+			string collectionSettingsPath;
 			try
 			{
 				collectionSettingsPath = FindSettingsFileInFolder(toDirectory);
@@ -678,7 +697,7 @@ namespace Bloom.Collection
 			try
 			{
 				//we now make a default name based on the name of the directory
-				string destinationPath = Path.Combine(toDirectory, Path.GetFileName(toDirectory)+".bloomCollection");
+				string destinationPath = Path.Combine(toDirectory, Path.GetFileName(toDirectory) + ".bloomCollection");
 				if (!RobustFile.Exists(destinationPath))
 					RobustFile.Move(collectionSettingsPath, destinationPath);
 
@@ -688,7 +707,7 @@ namespace Bloom.Collection
 			{
 				//change the directory name back, so the rename isn't half-done.
 				SIL.IO.RobustIO.MoveDirectory(toDirectory, fromDirectory);
-				throw new ApplicationException(string.Format("Could change the folder name, but not the collection file name",fromDirectory,toDirectory),error);
+				throw new ApplicationException(string.Format("Could change the folder name, but not the collection file name", fromDirectory, toDirectory), error);
 			}
 		}
 
@@ -712,7 +731,7 @@ namespace Bloom.Collection
 			get
 			{
 				string info;
-				if(CssNumberStylesToCultureOrDigits.TryGetValue(PageNumberStyle, out info))
+				if (CssNumberStylesToCultureOrDigits.TryGetValue(PageNumberStyle, out info))
 				{
 					// normal info.length gives 20 for chakma's 10 characters... I gather because it is converted to utf 16  and then
 					// those bytes are counted? Here's all the info:
@@ -722,7 +741,7 @@ namespace Bloom.Collection
 					if (infoOnDigitsCharacters.LengthInTextElements == 10) // string of digits
 						return info; //we've just listed the digits out, no need to look up a culture
 
-					if(infoOnDigitsCharacters.LengthInTextElements == 5) // Microsoft culture code
+					if (infoOnDigitsCharacters.LengthInTextElements == 5) // Microsoft culture code
 					{
 						try
 						{
@@ -732,11 +751,11 @@ namespace Bloom.Collection
 							Debug.Assert(joined.Length == 10);
 							return joined;
 						}
-						catch(CultureNotFoundException)
+						catch (CultureNotFoundException)
 						{
 							// fall through to default return value
 						}
-						catch(Exception)
+						catch (Exception)
 						{
 							//there's no scenario
 							//where this is worth stopping people in their tracks. I just want a
@@ -750,7 +769,7 @@ namespace Bloom.Collection
 		}
 
 		public bool HaveEnterpriseFeatures => this.BrandingProjectKey != "Default";
-		
+
 		/// <summary>
 		/// The collection settings point to object which might not exist. For example, the xmatter pack might not exist.
 		/// So this should be called as soon as it is OK to show some UI. It will find any dependencies it can't meet,
@@ -762,7 +781,7 @@ namespace Bloom.Collection
 					"This Collection called for Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The collection has been changed to use the default Front/Back Matter pages.");
 			var errorMessage = String.Format(errorTemplate, XMatterPackName);
 			XMatterPackName = XMatterHelper.MigrateXMatterName(XMatterPackName);
-			if(string.IsNullOrEmpty(XMatterHelper.GetXMatterDirectory(XMatterPackName, bloomFileLocator, errorMessage, false)))
+			if (string.IsNullOrEmpty(XMatterHelper.GetXMatterDirectory(XMatterPackName, bloomFileLocator, errorMessage, false)))
 			{
 				this.XMatterPackName = kDefaultXmatterName;
 				Save();

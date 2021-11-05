@@ -1,6 +1,12 @@
 {
     "presets": [
         {
+            "data-book": "xmatter",
+            "lang": "*",
+            "content": "ABC-Reader",
+            "condition": "always"
+        },
+        {
             "data-book": "licenseUrl",
             "lang": "*",
             "content": "http://creativecommons.org/licenses/by-nc/4.0/",
