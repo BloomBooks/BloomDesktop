@@ -1387,6 +1387,7 @@ namespace Bloom.TeamCollection
 			AddIfExists(paths, Path.Combine(folderPath, TeamCollectionManager.TeamCollectionLinkFileName));
 			AddIfExists(paths, Path.Combine(folderPath, "log.txt"));
 			AddIfExists(paths, Path.Combine(folderPath, "impersonate.txt"));
+			AddIfExists(paths, Path.Combine(folderPath, "history.db"));
 		}
 
 		static void AddIfExists(List<string> paths, string path)
