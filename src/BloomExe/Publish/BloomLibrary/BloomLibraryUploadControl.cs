@@ -520,6 +520,7 @@ namespace Bloom.Publish.BloomLibrary
 							"Congratulations, \"{0}\" is now available on BloomLibrary.org ({1})",
 							"{0} is the book title; {1} is a clickable url which will display the book on the website");
 						_progressBox.WriteMessageWithColor(Color.Blue, congratsMessage, _model.Title, url);
+						BookHistory.AddEvent(_model.Book, BookHistoryEventType.Uploaded, "Book uploaded to Bloom Library");
 					}
 				}
 				_uploadWorker = null;
