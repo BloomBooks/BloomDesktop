@@ -42,7 +42,7 @@ namespace BloomTests.web
 			ErrorReport.IsOkToInteractWithUser = false;
 			_collectionPath = Path.Combine(_folder.Path, "TestCollection");
 			var cs = new CollectionSettings(Path.Combine(_folder.Path, "TestCollection.bloomCollection"));
-			_fileLocator = new BloomFileLocator(cs, new XMatterPackFinder(new string[] { BloomFileLocator.GetInstalledXMatterDirectory() }), ProjectContext.GetFactoryFileLocations(),
+			_fileLocator = new BloomFileLocator(cs, new XMatterPackFinder(new string[] { BloomFileLocator.GetFactoryXMatterDirectory() }), ProjectContext.GetFactoryFileLocations(),
 				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
 		}
 
@@ -551,6 +551,20 @@ namespace BloomTests.web
 				server.MakeReply(transaction);
 
 				Assert.AreEqual(transaction.ReplyContents.Trim(), "This is the one in DistFiles");
+			}
+		}
+		[Test]
+		public void RequestXMatterFiles_IsAProjectSpecificXMatter_FindsFiles()
+		{
+			using (var server = CreateBloomServer())
+			{
+				var transaction = new PretendRequestInfo("unit-test-project-specific-xmatter.css".ToLocalhost());
+				server.MakeReply(transaction);
+				Assert.Greater(transaction.ReplyContents.Length, 100);
+
+				transaction = new PretendRequestInfo("unit-test-project-specific-xmatter.html".ToLocalhost());
+				server.MakeReply(transaction);
+				Assert.Greater(transaction.ReplyContents.Length, 100);
 			}
 		}
 		[Test]

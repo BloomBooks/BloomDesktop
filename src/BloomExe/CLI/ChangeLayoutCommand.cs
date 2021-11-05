@@ -82,7 +82,10 @@ namespace Bloom.CLI
 			var problems = new StringBuilder();
 			var collection = new BookCollection(collectionFolder, BookCollection.CollectionType.TheOneEditableCollection, new BookSelection(), null);
 			var collectionSettings = new CollectionSettings(collectionPath);
-			XMatterPackFinder xmatterFinder = new XMatterPackFinder(new[] { BloomFileLocator.GetInstalledXMatterDirectory() });
+			XMatterPackFinder xmatterFinder = new XMatterPackFinder(new[]
+			{
+				BloomFileLocator.GetFactoryXMatterDirectory(), BloomFileLocator.GetProjectSpecificInstalledXMatterDirectory()
+			});
 			var locator = new BloomFileLocator(collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(),
 				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
 

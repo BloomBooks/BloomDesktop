@@ -44,7 +44,7 @@ namespace BloomTests.Book
 			_projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
 			var collectionSettings = new CollectionSettings(Path.Combine(_projectFolder.Path, "test.bloomCollection"));
 
-			var xmatterFinder = new XMatterPackFinder(new []{ BloomFileLocator.GetInstalledXMatterDirectory()});
+			var xmatterFinder = new XMatterPackFinder(new []{ BloomFileLocator.GetFactoryXMatterDirectory()});
 
 			_fileLocator = new BloomFileLocator(collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(), ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
 

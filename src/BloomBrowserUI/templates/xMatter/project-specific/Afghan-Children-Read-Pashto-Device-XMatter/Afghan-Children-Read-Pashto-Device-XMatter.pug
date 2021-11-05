@@ -1,0 +1,19 @@
+include ../Afghan-Children-Read-Pashto-XMatter/Pashto-xmatter-mixins.pug
+
+doctype html
+html
+	head
+		+metadata-standard
+		title Pashto Device Front &amp; Back Matter
+		//- NB: this has no effect on books using this stylesheet; it only does anything if you're viewing the xmatter html by itself
+		+stylesheets('Afghan-Children-Read-Pashto-Device-XMatter.css')
+	body
+		+pashto-outsideFrontCover
+		+pashto-titlePage
+		+afg-messagePage
+		+pashto-credits.bloom-backMatter
+		+afg-nationalAnthem-device
+		+standard-endExtra1PageForDevice
+		+standard-endExtra2PageForDevice
+		+standard-endExtra3PageForDevice
+		+standard-theEndPageForDevice

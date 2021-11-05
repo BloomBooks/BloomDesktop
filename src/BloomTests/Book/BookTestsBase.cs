@@ -78,7 +78,7 @@ namespace BloomTests.Book
 			_templateFinder = new Moq.Mock<ITemplateFinder>();
 			_fileLocator = new Moq.Mock<IFileLocator>();
 			string root = FileLocationUtilities.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
-			string xMatter = BloomFileLocator.GetInstalledXMatterDirectory();
+			string xMatter = BloomFileLocator.GetFactoryXMatterDirectory();
 			_fileLocator.Setup(x => x.LocateFileWithThrow("langVisibility.css")).Returns("../notareallocation/langVisibility.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("previewMode.css")).Returns("../notareallocation/previewMode.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("origami.css")).Returns("../notareallocation/origami.css");
@@ -267,7 +267,7 @@ namespace BloomTests.Book
 		public BookServer CreateBookServer()
 		{
 			_collectionSettings = CreateDefaultCollectionsSettings();
-			var xmatterFinder = new XMatterPackFinder(new[] { BloomFileLocator.GetInstalledXMatterDirectory() });
+			var xmatterFinder = new XMatterPackFinder(new[] { BloomFileLocator.GetFactoryXMatterDirectory() });
 			var fileLocator = new BloomFileLocator(_collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(), ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
 			var starter = new BookStarter(fileLocator, (dir, fullyUpdateBookFiles) => new BookStorage(dir, fileLocator, new BookRenamedEvent(), _collectionSettings), _collectionSettings);
 

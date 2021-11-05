@@ -1,0 +1,399 @@
+@import "../../bloom-xmatter-common.less";
+@import (reference) "../../../../bookLayout/basePage.less";
+@import "./Kyrgyzstan2020-Xmatter-common.less";
+
+@XMatterPackName: "Kyrgyz";
+@bleed: 3mm;
+// :root {
+//   Normally, we would put the defaults in a :root psuedo-element like this.
+//   But something about the way scoped styles work in bloom-player causes this not to work.
+//   So instead, we set the defaults on the .bloom-page class and override on the specific
+//   layouts as necessary.
+// }
+.bloom-page {
+    --HeaderHeight: 3.5cm;
+    --OutsideBackCoverLogoHeight: 15mm;
+    --OutsideBackCoverCreditsFontSize: 9pt;
+    --DividerDiamondsFontSize: 16px;
+
+    &.A3Portrait {
+        --HeaderHeight: 6cm;
+        --OutsideBackCoverLogoHeight: 30mm;
+        --DividerDiamondsFontSize: 20pt;
+        --OutsideBackCoverCreditsFontSize: 14pt;
+    }
+    &.A5Landscape {
+        --OutsideBackCoverLogoHeight: 14mm;
+    }
+    &.Device16x9Portrait {
+        --HeaderHeight: 3cm; // enough for two lines
+        --OutsideBackCoverLogoHeight: 10mm;
+    }
+    &.Device16x9Landscape {
+        --HeaderHeight: 2.5cm;
+        --OutsideBackCoverLogoHeight: 10mm;
+    }
+}
+
+.outsideBackCover .marginBox {
+    top: 0;
+    height: calc(100% - 15mm) !important;
+    // width: calc(100% - 15mm) !important;
+
+    [data-book="outside-back-cover-branding-bottom-html"] {
+        display: none;
+    }
+}
+
+.outsideBackCover [data-book="level-image-html"] img {
+    // This unset was used to allow left-align, but we were subsequently asked to (re-)center it.
+    // Leaving this for if/when they change their mind.
+    //width: unset; // allow it to left-align
+}
+
+@A5Landscape-column2-left: 11.5mm;
+// Landscape has a VERY different layout. We use CSS Grid display to move the items around.
+.A5Landscape,
+.A4Landscape,
+.A3Landscape {
+    [data-book="outside-back-cover-branding-top-right-html"] img {
+        //     position: absolute;
+        //     left: @A5Landscape-column2-left;
+        //     top: 4mm;
+        margin-left: 75px; // Note: this must cause the left edge of the logo to align with the text below
+    }
+
+    &.outsideBackCover {
+        .bottomHalfGrid {
+            height: 100%;
+            display: grid;
+            grid-template-columns: 310px auto;
+            grid-template-rows: auto 3em;
+            margin-top: 1cm;
+            .bloom-translationGroup {
+                margin-top: unset;
+                grid-row: 1;
+                grid-column: 1 / span 1;
+            }
+            [data-book="level-image-html"] {
+                grid-row: 1;
+                grid-column: 2 / span 1;
+                margin-left: auto;
+                margin-right: auto;
+                margin-top: auto;
+                margin-bottom: auto;
+            }
+        }
+    }
+}
+
+.A5Landscape,
+.A4Landscape,
+.A3Landscape,
+.Device16x9Landscape {
+    &.outsideBackCover {
+        .bottomHalfGrid {
+            .bloom-translationGroup {
+                // These rules vertically align the text for landscape only.
+                // Presently, it is unclear whether portrait should be vertically aligned.
+                // If all layouts should be vertically aligned, it would be possible to
+                // simply add the bloom-vertical-align-center class to the translation group.
+                // But since the user can't get to the control for that in xmatter anyway,
+                // this seems just as good for now (and allows the difference for orientation).
+                justify-content: center;
+                .bloom-editable.bloom-visibility-code-on,
+                .bloom-editable.bloom-visibility-user-on {
+                    justify-content: center;
+                    display: flex;
+                }
+            }
+        }
+    }
+}
+
+.frontCover,
+.outsideBackCover {
+    .divider {
+        position: absolute;
+
+        // If you change this, make sure it is far enough for front and back covers;
+        // back needs more because it is relative to the margin box, and the front
+        // cover's margin box has no margin but the back cover's does.
+        left: -100px;
+
+        color: white;
+        font-size: var(--DividerDiamondsFontSize);
+        //   height: 3em; // I don't know why this is necessary. Without it, even overflow-x:hidden cuts off the diamonds.
+        letter-spacing: -4px;
+        overflow: hidden;
+    }
+}
+// the lines are supposed to be at the same distance from the bottom. They have
+// different contexts that determine what "bottom 0" means, though, so we have
+// different values
+.frontCover .divider {
+    bottom: 25px;
+}
+.outsideBackCover .divider {
+    bottom: -31px !important;
+}
+
+.A5Portrait,
+.A4Portrait,
+.A3Portrait {
+    .bottomHalfGrid {
+        height: 600px;
+        display: grid;
+        grid-template-columns: auto;
+        grid-template-rows: 290px 30px auto;
+        [data-book="level-image-html"] {
+            grid-row: 2;
+            grid-column: 1;
+        }
+
+        .bloom-translationGroup {
+            grid-row: 1;
+        }
+        [data-book="level-image-html"] {
+            //padding-top: 20px;
+            grid-row: 3;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 10px; //separate from preceding text
+            img {
+                height: 250px;
+            }
+        }
+    }
+}
+.A3Portrait {
+    // The font is larger, so we need it to be taller to support the same amount of
+    // text.
+    .bottomHalfGrid {
+        grid-template-rows: 435px 30px auto;
+    }
+}
+
+.A5Portrait,
+.A5Landscape,
+.A4Portrait,
+.A4Landscape,
+.A3Portrait,
+.A3Landscape,
+.Device16x9Portrait,
+.Device16x9Landscape {
+    .outside-back-cover-branding-top-block {
+        justify-content: space-between;
+    }
+}
+
+// the subtraction here makes up for the padding-top
+@headerHeightMinusBleed: calc(var(--HeaderHeight) - @bleed);
+
+.outside-back-cover-branding-top-block {
+    display: flex;
+    flex-direction: row;
+    background-color: white;
+    margin-left: -18mm; // margin + 3mm of bleed
+    margin-right: -18mm; // margin + 3mm of bleed
+    padding-left: 18mm;
+    padding-right: 18mm;
+    padding-top: @bleed; // nudge down because of 3mm bleed
+    height: @headerHeightMinusBleed;
+    // Setting min and max because otherwise the layout wants to
+    // flex with the size of the text box in landscape. BL-9351
+    min-height: @headerHeightMinusBleed;
+    max-height: @headerHeightMinusBleed;
+
+    img {
+        // height is per page size, below
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+}
+
+[data-book="outside-back-cover"] {
+    margin-top: 10mm;
+}
+
+[data-book="level-image-html"] {
+    margin-top: auto;
+    margin-right: auto;
+    height: 7cm;
+    width: 100%;
+    border: none !important;
+    img {
+        // fit within the container
+        height: 100%;
+        // centers it
+        width: 100%;
+    }
+}
+
+.bloom-mediaBox {
+    :not(.Device16x9Portrait):not(.Device16x9Landscape)&::before {
+        // we're not expecting an edge-to-edge images, so no need to show the transparent bleed area. Just make it black.
+        border-color: black !important;
+    }
+    &::after {
+        // don't show the trim area at all.
+        border: none !important;
+    }
+}
+
+.outside-back-cover-branding-top-block {
+    img {
+        height: var(--OutsideBackCoverLogoHeight);
+    }
+}
+
+.A5Landscape {
+    .Outside-Back-Cover-style {
+        margin-top: unset; // In portrait, there is a margin mode, we remove this
+    }
+}
+// NOTE. The existence of this selector tells XMatterHelper that we can handle device layout, so don't revert to a specialized one.
+.Device16x9Portrait,
+.Device16x9Landscape {
+    &.outsideBackCover {
+        .marginBox {
+            left: 19px !important;
+            height: calc(100% - 8mm) !important;
+            .outside-back-cover-branding-top-block {
+                height: var(--HeaderHeight);
+                padding-top: unset;
+            }
+            [data-book="outside-back-cover-branding-top-right-html"] img {
+                margin-left: 75px;
+            }
+        }
+
+        .bottomHalfGrid {
+            display: grid;
+            grid-template-columns: auto;
+            [data-book="level-image-html"] {
+                padding-top: 20px;
+                margin: 0;
+                height: 200px !important;
+            }
+        }
+        .divider {
+            bottom: 0px !important;
+        }
+    }
+}
+.Device16x9Portrait {
+    &.outsideBackCover {
+        .marginBox {
+            width: 89mm;
+        }
+
+        .bottomHalfGrid {
+            height: 600px;
+            grid-template-rows: 250px 30px auto;
+
+            .bloom-translationGroup {
+                grid-row: 1;
+            }
+            [data-book="level-image-html"] {
+                grid-row: 2;
+            }
+        }
+    }
+}
+.Device16x9Landscape {
+    &.outsideBackCover {
+        .marginBox {
+            width: calc(100% - 11mm);
+        }
+        .bottomHalfGrid {
+            grid-template-columns: 310px auto;
+            .bloom-translationGroup {
+                grid-column: 1;
+            }
+            [data-book="level-image-html"] {
+                grid-column: 2;
+            }
+        }
+    }
+}
+
+.A3Portrait {
+    .divider {
+        height: 3em; // I don't know why this is necessary. Without it, even overflow-x:hidden cuts off the diamonds.
+        letter-spacing: -7px;
+    }
+    [data-book="level-image-html"] {
+        padding-top: 20px;
+        img {
+            height: 17cm;
+        }
+    }
+}
+
+.frontCover .bloom-translationGroup.bookTitle {
+    // if you touch this make sure the header is the same height on front and back covers!;
+    height: var(--HeaderHeight);
+
+    // padding here instead of margin so that it's still white in these areas instead of blue
+    padding-top: @bleed; // center it calculating the height below the bleed
+}
+
+// Andrew created these rules in order to do this: https://i.imgur.com/dFWj0CK.png
+.position-bottom > .split-pane-component-inner,
+.position-bottom
+    > :not(.split-pane-component-inner)
+    > .split-pane-component-inner,
+.position-bottom
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > .split-pane-component-inner,
+.position-bottom
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > .split-pane-component-inner,
+.position-bottom
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > .split-pane-component-inner,
+.position-bottom
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > .split-pane-component-inner {
+    padding-top: 5mm;
+}
+
+.position-right > .split-pane-component-inner,
+.position-right
+    > :not(.split-pane-component-inner)
+    > .split-pane-component-inner,
+.position-right
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > .split-pane-component-inner,
+.position-right
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > .split-pane-component-inner,
+.position-right
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > .split-pane-component-inner,
+.position-right
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > :not(.split-pane-component-inner)
+    > .split-pane-component-inner {
+    padding-left: 5mm;
+}

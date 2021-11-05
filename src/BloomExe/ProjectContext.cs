@@ -258,7 +258,8 @@ namespace Bloom
 					builder.Register<XMatterPackFinder>(c =>
 					{
 						var locations = new List<string>();
-						locations.Add(BloomFileLocator.GetInstalledXMatterDirectory());
+						locations.Add(BloomFileLocator.GetFactoryXMatterDirectory());
+						locations.Add(BloomFileLocator.GetProjectSpecificInstalledXMatterDirectory());
 						locations.Add(XMatterAppDataFolder);
 						locations.Add(XMatterCommonDataFolder);
 						return new XMatterPackFinder(locations);
@@ -442,10 +443,9 @@ namespace Bloom
 			yield return FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"lib/split-pane"));
 			yield return FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"lib/ckeditor/skins/icy_orange"));
 			yield return FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/toolbox/talkingBook"));
-
-			yield return BloomFileLocator.GetInstalledXMatterDirectory();
+			yield return BloomFileLocator.GetFactoryXMatterDirectory();
+			yield return BloomFileLocator.GetProjectSpecificInstalledXMatterDirectory();
 			yield return FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "publish/ePUBPublish"));
-
 		}
 
 		/// <summary>

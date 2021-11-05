@@ -1,0 +1,17 @@
+include Pashto-XMatter-mixins.pug
+
+doctype html
+html
+	head
+		+metadata-standard
+		title Pashto Front &amp; Back Matter
+		//- NB: this has no effect on books using this stylesheet; it only does anything if you're viewing the xmatter html by itself
+		+stylesheets('Afghan-Children-Read-Pashto-XMatter.css')
+	body
+		+pashto-outsideFrontCover
+		+afg-nationalAnthem
+		+pashto-titlePage
+		+pashto-credits.bloom-frontMatter
+		+afg-messagePage
+		+factoryStandard-insideBackCover
+		+factoryStandard-outsideBackCover

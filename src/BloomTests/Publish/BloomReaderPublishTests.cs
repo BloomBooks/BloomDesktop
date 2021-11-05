@@ -39,7 +39,7 @@ namespace BloomTests.Publish
 		public virtual void OneTimeSetup()
 		{
 			var settings = new CollectionSettings();
-			var locator = new BloomFileLocator(settings, new XMatterPackFinder(new[] { BloomFileLocator.GetInstalledXMatterDirectory() }), ProjectContext.GetFactoryFileLocations(),
+			var locator = new BloomFileLocator(settings, new XMatterPackFinder(new[] { BloomFileLocator.GetFactoryXMatterDirectory() }), ProjectContext.GetFactoryFileLocations(),
 				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
 			s_bloomServer = new BloomServer(new RuntimeImageProcessor(new BookRenamedEvent()), new BookSelection(), settings, locator);
 			s_bloomServer.StartListening();

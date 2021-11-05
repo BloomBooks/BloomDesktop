@@ -1,0 +1,348 @@
+body.leveled-reader .numberLabel::before,
+div.bloomPlayer-page.leveled-reader .numberLabel::before {
+    content: "Level";
+}
+body.leveled-reader .numberCircle,
+div.bloomPlayer-page.leveled-reader .numberCircle {
+    background-color: #ba0c2f;
+}
+body.decodable-reader .numberLabel::before,
+div.bloomPlayer-page.decodable-reader .numberLabel::before {
+    content: "Level";
+}
+body.decodable-reader .numberCircle,
+div.bloomPlayer-page.decodable-reader .numberCircle {
+    background-color: #002f6c;
+}
+body:not(.decodable-reader) .decodableStageLettersRow,
+div.bloomPlayer-page:not(.decodable-reader) .decodableStageLettersRow {
+    display: none !important;
+}
+body:not(.decodable-reader):not(.leveled-reader) .numberCircle,
+div.bloomPlayer-page:not(.decodable-reader):not(.leveled-reader) .numberCircle {
+    display: none !important;
+}
+body .marginBox .spacer,
+div.bloomPlayer-page .marginBox .spacer {
+    flex: 3;
+}
+body .outsideBackCover .marginBox img,
+div.bloomPlayer-page .outsideBackCover .marginBox img {
+    max-width: 100% !important;
+}
+body .outsideBackCover .marginBox .abcTopic2,
+div.bloomPlayer-page .outsideBackCover .marginBox .abcTopic2,
+body .outsideBackCover .marginBox .curricularTheme,
+div.bloomPlayer-page .outsideBackCover .marginBox .curricularTheme,
+body .outsideBackCover .marginBox .decodableStageLettersRow,
+div.bloomPlayer-page .outsideBackCover .marginBox .decodableStageLettersRow,
+body .outsideBackCover .marginBox .levelOrStageAndNumberRow,
+div.bloomPlayer-page .outsideBackCover .marginBox .levelOrStageAndNumberRow {
+    margin-top: 10px;
+    flex-direction: row;
+    display: flex;
+}
+body .outsideBackCover .marginBox .abcTopic2 .label,
+div.bloomPlayer-page .outsideBackCover .marginBox .abcTopic2 .label,
+body .outsideBackCover .marginBox .curricularTheme .label,
+div.bloomPlayer-page .outsideBackCover .marginBox .curricularTheme .label,
+body .outsideBackCover .marginBox .decodableStageLettersRow .label,
+div.bloomPlayer-page
+    .outsideBackCover
+    .marginBox
+    .decodableStageLettersRow
+    .label,
+body .outsideBackCover .marginBox .levelOrStageAndNumberRow .label,
+div.bloomPlayer-page
+    .outsideBackCover
+    .marginBox
+    .levelOrStageAndNumberRow
+    .label {
+    flex: 1;
+}
+body .outsideBackCover .marginBox .abcTopic2 .label.numberLabel::before,
+div.bloomPlayer-page
+    .outsideBackCover
+    .marginBox
+    .abcTopic2
+    .label.numberLabel::before,
+body .outsideBackCover .marginBox .curricularTheme .label.numberLabel::before,
+div.bloomPlayer-page
+    .outsideBackCover
+    .marginBox
+    .curricularTheme
+    .label.numberLabel::before,
+body
+    .outsideBackCover
+    .marginBox
+    .decodableStageLettersRow
+    .label.numberLabel::before,
+div.bloomPlayer-page
+    .outsideBackCover
+    .marginBox
+    .decodableStageLettersRow
+    .label.numberLabel::before,
+body
+    .outsideBackCover
+    .marginBox
+    .levelOrStageAndNumberRow
+    .label.numberLabel::before,
+div.bloomPlayer-page
+    .outsideBackCover
+    .marginBox
+    .levelOrStageAndNumberRow
+    .label.numberLabel::before {
+    content: "Level:";
+}
+body .outsideBackCover .marginBox .abcTopic2 .bloom-translationGroup,
+div.bloomPlayer-page
+    .outsideBackCover
+    .marginBox
+    .abcTopic2
+    .bloom-translationGroup,
+body .outsideBackCover .marginBox .curricularTheme .bloom-translationGroup,
+div.bloomPlayer-page
+    .outsideBackCover
+    .marginBox
+    .curricularTheme
+    .bloom-translationGroup,
+body
+    .outsideBackCover
+    .marginBox
+    .decodableStageLettersRow
+    .bloom-translationGroup,
+div.bloomPlayer-page
+    .outsideBackCover
+    .marginBox
+    .decodableStageLettersRow
+    .bloom-translationGroup,
+body
+    .outsideBackCover
+    .marginBox
+    .levelOrStageAndNumberRow
+    .bloom-translationGroup,
+div.bloomPlayer-page
+    .outsideBackCover
+    .marginBox
+    .levelOrStageAndNumberRow
+    .bloom-translationGroup {
+    min-height: unset;
+    flex: 2.5;
+}
+body
+    .outsideBackCover
+    .marginBox
+    .abcTopic2
+    .bloom-translationGroup
+    .bloom-editable,
+div.bloomPlayer-page
+    .outsideBackCover
+    .marginBox
+    .abcTopic2
+    .bloom-translationGroup
+    .bloom-editable,
+body
+    .outsideBackCover
+    .marginBox
+    .curricularTheme
+    .bloom-translationGroup
+    .bloom-editable,
+div.bloomPlayer-page
+    .outsideBackCover
+    .marginBox
+    .curricularTheme
+    .bloom-translationGroup
+    .bloom-editable,
+body
+    .outsideBackCover
+    .marginBox
+    .decodableStageLettersRow
+    .bloom-translationGroup
+    .bloom-editable,
+div.bloomPlayer-page
+    .outsideBackCover
+    .marginBox
+    .decodableStageLettersRow
+    .bloom-translationGroup
+    .bloom-editable,
+body
+    .outsideBackCover
+    .marginBox
+    .levelOrStageAndNumberRow
+    .bloom-translationGroup
+    .bloom-editable,
+div.bloomPlayer-page
+    .outsideBackCover
+    .marginBox
+    .levelOrStageAndNumberRow
+    .bloom-translationGroup
+    .bloom-editable {
+    text-align: start;
+}
+body .outsideBackCover .marginBox .abcTopic2 [data-book],
+div.bloomPlayer-page .outsideBackCover .marginBox .abcTopic2 [data-book],
+body .outsideBackCover .marginBox .curricularTheme [data-book],
+div.bloomPlayer-page .outsideBackCover .marginBox .curricularTheme [data-book],
+body .outsideBackCover .marginBox .decodableStageLettersRow [data-book],
+div.bloomPlayer-page
+    .outsideBackCover
+    .marginBox
+    .decodableStageLettersRow
+    [data-book],
+body .outsideBackCover .marginBox .levelOrStageAndNumberRow [data-book],
+div.bloomPlayer-page
+    .outsideBackCover
+    .marginBox
+    .levelOrStageAndNumberRow
+    [data-book] {
+    flex: 2.5;
+}
+body .HalfLetterPortrait .marginBox {
+    top: 0.5in !important;
+    left: 0.5in !important;
+    width: 4.5in !important;
+    height: 7.6in !important;
+}
+body .HalfLetterPortrait .marginBox img {
+    max-width: unset;
+}
+body .HalfLetterPortrait.frontCover .marginBox {
+    top: 0.4in !important;
+}
+.cover .titleAndNumberCircle {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+.cover .titleAndNumberCircle .bookTitle {
+    flex: unset;
+    min-width: 75%;
+    min-height: 1.3em;
+}
+.cover .titleAndNumberCircle .bookTitle .bloom-editable {
+    text-align: start;
+}
+.cover
+    .titleAndNumberCircle
+    .bookTitle
+    .Title-On-Cover-style[data-book="bookTitle"] {
+    font-size: 26pt;
+}
+.cover .numberCircle {
+    margin-top: 0.08in;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    color: white;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+}
+.cover .numberCircle span {
+    font-weight: bold;
+}
+.cover .numberCircle [data-book="levelOrStageNumber"] {
+    width: 60px;
+    font-size: 22pt;
+    font-weight: bold;
+    min-height: 1em;
+    line-height: 30px;
+}
+.cover .numberCircle p {
+    margin-bottom: 0;
+}
+.cover .descriptionAndTopicRow {
+    font-weight: bold;
+}
+.cover [data-book="cover-branding-bottom-html"] {
+    margin-top: 1em;
+}
+.cover [data-book="cover-branding-bottom-html"] img {
+    margin-right: 0;
+}
+.originalAcknowledgments .bloom-editable p {
+    text-align: center;
+    font-weight: bold;
+    font-size: 14pt;
+}
+.levelOrStageAndNumberRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    margin-top: 10px;
+}
+.outsideBackCover .levelOrStageAndNumberRow div[data-book]:empty:after {
+    content: "Kindergarten";
+}
+.titlePage [data-book="bookTitle"] {
+    font-size: 26pt;
+}
+.titlePage .levelOrStageAndNumberRow {
+    justify-content: center;
+}
+.titlePage .descriptionAndTopicRow {
+    margin-top: auto;
+    margin-bottom: 1em;
+}
+.readerDescription {
+    text-align: center;
+}
+.descriptionAndTopicRow {
+    display: flex;
+    flex-direction: row;
+    flex: 0 0 auto;
+    justify-content: space-between;
+}
+.descriptionAndTopicRow .readerDescription {
+    min-width: 50%;
+    text-align: start;
+    font-size: 14pt;
+}
+.abcTopic {
+    position: absolute;
+    right: 0;
+    top: 70px;
+    width: 25%;
+    text-align: end;
+    font-size: 10pt;
+    z-index: 10;
+}
+.credits .marginBox {
+    display: flex;
+    flex-direction: column;
+}
+.credits .marginBox [data-book="bookTitle"] {
+    font-size: 12pt;
+    font-weight: bold;
+}
+.credits .marginBox .levelOrStageAndNumberRow {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 14px;
+}
+.credits .marginBox .bloom-translationGroup {
+    margin-bottom: 14px;
+}
+.credits .marginBox [data-book="credits-branding-approval-and-copyright-html"] {
+    margin-bottom: 14px;
+}
+.credits .marginBox .bottomCredits {
+    margin-top: auto;
+}
+.credits .marginBox .originalAcknowledgments .bloom-editable {
+    margin-bottom: 0;
+}
+.credits .marginBox .originalAcknowledgments .bloom-editable p {
+    text-align: start;
+    font-size: 12pt;
+}
+.licenseDetails {
+    font-size: 8pt;
+}
+.licenseImage {
+    width: 80px;
+    margin-bottom: 14px;
+}

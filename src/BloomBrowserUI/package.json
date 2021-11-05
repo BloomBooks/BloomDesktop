@@ -41,13 +41,13 @@
         "// use output/browser as the root of the storybook-provided server": "",
         "storybook": "start-storybook -s ../../output/browser --static-dir ./,./react_components,./teamCollection",
         "// xmatter development": "",
-        "// I haven't figured out how to generalize this to all pug, but it's a helpful template for future xmatter work": "",
-        "abcpug": "pug templates/xMatter/ABC-Reader-XMatter/ABC-Reader-Xmatter.pug --pretty --watch -o ../../output/browser/templates/xMatter/ABC-Reader-XMatter --pretty",
-        "abcdevicepug": "pug templates/xMatter/ABC-Reader-Device-XMatter/ABC-Reader-Device-Xmatter.pug --pretty --watch -o ../../output/browser/templates/xMatter/ABC-Reader-Device-XMatter --pretty",
+        "pug": "gulp pug",
+        "abcpug": "pug templates/xMatter/project-specific/ABC-Reader-XMatter/ABC-Reader-Xmatter.pug --pretty --watch -o ../../output/browser/templates/xMatter/ABC-Reader-XMatter --pretty",
+        "abcdevicepug": "pug templates/xMatter/project-specific/ABC-Reader-Device-XMatter/ABC-Reader-Device-Xmatter.pug --pretty --watch -o ../../output/browser/templates/xMatter/ABC-Reader-Device-XMatter --pretty",
         "watch-abc": "npm-run-all --parallel abcpug abcdevicepug watchTemplatesLess",
         "//Note: this does not *watch* the pug": "",
         "watch-kyrgyzstan": "npm-run-all --parallel watchBrandingFiles watchBrandingLess  watchTemplatesLess kyrgyzstanpug",
-        "kyrgyzstanpug": "pug templates/xMatter/Kyrgyzstan2020-XMatter/Kyrgyzstan2020-Xmatter.pug --pretty --watch -o ../../output/browser/templates/xMatter/Kyrgyzstan2020-XMatter --pretty"
+        "kyrgyzstanpug": "pug templates/xMatter/project-specific/Kyrgyzstan2020-XMatter/Kyrgyzstan2020-Xmatter.pug --pretty --watch -o ../../output/browser/templates/xMatter/Kyrgyzstan2020-XMatter --pretty"
     },
     "repository": {
         "type": "git",

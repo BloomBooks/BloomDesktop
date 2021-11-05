@@ -38,7 +38,7 @@ namespace BloomTests.Book
 											{
 												//FileLocationUtilities.GetDirectoryDistributedWithApplication( "factoryCollections"),
 												BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book"),
-												BloomFileLocator.GetInstalledXMatterDirectory()
+												BloomFileLocator.GetFactoryXMatterDirectory()
 											});
 			_fixtureFolder = new TemporaryFolder("BloomBookStorageTest");
 			_folder = new TemporaryFolder(_fixtureFolder, "theBook");

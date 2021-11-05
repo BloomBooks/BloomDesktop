@@ -119,7 +119,7 @@ namespace Bloom
 				yield return searchPath;
 			}
 
-			foreach (var xMatterInfo in _xMatterPackFinder.NonFactory)
+			foreach (var xMatterInfo in _xMatterPackFinder.CustomInstalled)
 			{
 				//this is a bit weird... we include the parent, in case they're looking for the xmatter *folder*, and the folder
 				//itself, in case they're looking for something inside it
@@ -195,9 +195,13 @@ namespace Bloom
 			parts[0] = Path.Combine(BrowserRoot, parts[0]);
 			return FileLocationUtilities.GetDirectoryDistributedWithApplication(true, parts);
 		}
-		public static string GetInstalledXMatterDirectory()
+		public static string GetFactoryXMatterDirectory()
 		{
 			return BloomFileLocator.GetBrowserDirectory("templates","xMatter");
+		}
+		public static string GetProjectSpecificInstalledXMatterDirectory()
+		{
+			return BloomFileLocator.GetBrowserDirectory("templates","xMatter","project-specific");
 		}
 
 		public static string GetCustomXMatterDirectory()

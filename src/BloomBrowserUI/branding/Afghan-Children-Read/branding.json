@@ -1,57 +1,63 @@
 {
     "presets": [
         {
+            "data-book": "xmatter",
+            "lang": "*",
+            "content": "Afghan-Children-Read-{flavor}",
+            "condition": "always"
+        },
+        {
             "data-book": "copyright",
             "lang": "en",
-            "content": "The Ministry of Education of the Islamic Republic of Afghanistan",
+            "content": "Copyright 2020 Afghan Children Read",
             "condition": "always"
         },
         {
             "data-book": "copyright",
             "lang": "ps",
-            "content": "د لوست دا مرستندوی  کتاب په پوهنې وزارت پورې اړه لري.",
+            "content": "Copyright 2020 Afghan Children Read",
             "condition": "always"
         },
         {
             "data-book": "copyright",
             "lang": "pbt",
-            "content": "د لوست دا مرستندوی  کتاب په پوهنې وزارت پورې اړه لري.",
+            "content": "Copyright 2020 Afghan Children Read",
             "condition": "always"
         },
         {
             "data-book": "copyright",
             "lang": "prs",
-            "content": "این کتاب کمکی خوانش متعلق به وزارت معارف است.",
+            "content": "Copyright 2020 Afghan Children Read",
             "condition": "always"
         },
         {
             "data-book": "licenseUrl",
             "lang": "*",
-            "content": "",
+            "content": "https://creativecommons.org/publicdomain/zero/1.0/",
             "condition": "always"
         },
         {
             "data-book": "licenseNotes",
             "lang": "en",
-            "content": "All rights reserved",
+            "content": "USAID has placed this in the public domain.",
             "condition": "always"
         },
         {
             "data-book": "licenseNotes",
             "lang": "ps",
-            "content": "درسي کتابونه په پوهنې وزارت پورې اړه لري. پٻرودل او پلورل يې په کلکه منع دي. له سرغړوونکو سره به قانوني چلند وشي.",
+            "content": "عامه ډومین",
             "condition": "always"
         },
         {
             "data-book": "licenseNotes",
             "lang": "pbt",
-            "content": "درسي کتابونه په پوهنې وزارت پورې اړه لري. پٻرودل او پلورل يې په کلکه منع دي. له سرغړوونکو سره به قانوني چلند وشي.",
+            "content": "عامه ډومین",
             "condition": "always"
         },
         {
             "data-book": "licenseNotes",
             "lang": "prs",
-            "content": "كتاب هاى درسى متعلق به وزارت معارف بوده خريد و فروش آن جدا ممنوع است. با متخلفين برخورد قانونى صورت مى گيرد.",
+            "content": "دومین عامه",
             "condition": "always"
         },
         {

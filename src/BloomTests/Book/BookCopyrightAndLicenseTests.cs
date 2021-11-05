@@ -32,8 +32,8 @@ namespace BloomTests.Book
 			LocalizationManager.UseLanguageCodeFolders = true;
 			var localizationDirectory = FileLocationUtilities.GetDirectoryDistributedWithApplication("localization");
 			_localizationManager = LocalizationManager.Create(TranslationMemory.XLiff, "fr", "Bloom", "Bloom", "1.0.0", localizationDirectory, "SIL/Bloom",
-				null, "", new string[] {});
-			_palasoLocalizationManager = LocalizationManager.Create(TranslationMemory.XLiff, "fr", "Palaso","Palaso", "1.0.0", localizationDirectory, "SIL/Bloom",
+				null, "", new string[] { });
+			_palasoLocalizationManager = LocalizationManager.Create(TranslationMemory.XLiff, "fr", "Palaso", "Palaso", "1.0.0", localizationDirectory, "SIL/Bloom",
 				null, "", new string[] { });
 		}
 
@@ -55,7 +55,7 @@ namespace BloomTests.Book
 		[Test]
 		public void GetLicenseMetadata_HasCustomLicense_RightsStatementContainsCustom()
 		{
-			string dataDivContent= @"<div lang='en' data-book='licenseNotes'>my custom</div>
+			string dataDivContent = @"<div lang='en' data-book='licenseNotes'>my custom</div>
 					<div data-book='copyright' class='bloom-content1'>Copyright © 2012, test</div>";
 			Assert.AreEqual("my custom", GetMetadata(dataDivContent).License.RightsStatement);
 		}
@@ -73,10 +73,10 @@ namespace BloomTests.Book
 		{
 			//nb: the real testing is done on the palaso class that does the reading, this is just a quick sanity check
 			string dataDivContent = @"<div lang='en' data-book='licenseUrl'>http://creativecommons.org/licenses/by-nc-sa/3.0/</div>";
-			var creativeCommonsLicense = (CreativeCommonsLicense) (GetMetadata(dataDivContent).License);
+			var creativeCommonsLicense = (CreativeCommonsLicense)(GetMetadata(dataDivContent).License);
 			Assert.IsTrue(creativeCommonsLicense.AttributionRequired);
 			Assert.IsFalse(creativeCommonsLicense.CommercialUseAllowed);
-			Assert.IsTrue(creativeCommonsLicense.DerivativeRule== CreativeCommonsLicense.DerivativeRules.DerivativesWithShareAndShareAlike);
+			Assert.IsTrue(creativeCommonsLicense.DerivativeRule == CreativeCommonsLicense.DerivativeRules.DerivativesWithShareAndShareAlike);
 		}
 		[Test]
 		public void GetLicenseMetadata_HasCCLicenseURLWithIGOQualifier_ConvertedToFulCCLicenseObject()
@@ -125,11 +125,11 @@ namespace BloomTests.Book
 
 		// Previously, it was assumed there would only be one value for each of copyright and license,
 		// so the code simply got the "first" one. With branding, we can have a single branding pack
-		// supply copyright and license for multiple languages (see Afghanistan branding).
+		// supply copyright and license for multiple languages (see Afghan-Children-Read branding).
 		[Test]
 		public void GetMetadata_DataProvidedByBranding_GetsCorrectValuesForLanguage1()
 		{
-			CollectionSettings collectionSettings = new CollectionSettings {Language1Iso639Code = "yyy"};
+			CollectionSettings collectionSettings = new CollectionSettings { Language1Iso639Code = "yyy" };
 			string dataDivContent = @"
 <div lang='aaa' data-book='licenseNotes'>My aaa license notes</div>
 <div lang='en' data-book='licenseNotes'>My en license notes</div>
@@ -157,7 +157,7 @@ namespace BloomTests.Book
 			var newLicense = new CustomLicense();
 			var newMetaData = new Metadata();
 			newMetaData.License = newLicense;
-			BookCopyrightAndLicense.SetMetadata(newMetaData, dom,  null, bookData, false);
+			BookCopyrightAndLicense.SetMetadata(newMetaData, dom, null, bookData, false);
 			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@data-book='licenseUrl']");
 		}
 
@@ -168,10 +168,10 @@ namespace BloomTests.Book
 			_collectionSettings.Language2Iso639Code = "en";
 
 			TestSetLicenseMetdataEffectOnDataDiv(new Metadata()
-				{
-					CopyrightNotice = "foo",
-					License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives)
-				},
+			{
+				CopyrightNotice = "foo",
+				License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives)
+			},
 				startingDataDivContent: "",
 				xpath: "//*[@data-book='licenseDescription' and @lang='fr' and contains(text(),'Vous')]", expectedCount: 1);
 		}
@@ -182,7 +182,7 @@ namespace BloomTests.Book
 			TestSetLicenseMetdataEffectOnDataDiv(new Metadata()
 			{
 				CopyrightNotice = "foo",
-				License = new CreativeCommonsLicense(true,true, CreativeCommonsLicense.DerivativeRules.Derivatives)
+				License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives)
 			},
 			startingDataDivContent: "",
 			xpath: "//*[@data-book='licenseImage' and text()='license.png']",
@@ -221,13 +221,13 @@ namespace BloomTests.Book
 			var dom = TestSetLicenseMetdataEffectOnDataDiv(new Metadata()
 			{
 				CopyrightNotice = "foo",
-				License = new CustomLicense() { RightsStatement = "custom rights"}
+				License = new CustomLicense() { RightsStatement = "custom rights" }
 			},
 			startingDataDivContent: "<div data-book='licenseDescription' lang='fr'>Some old French</div>",
 			xpath: "//*[@data-book='licenseDescription']",
 			expectedCount: 1);
 
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//*[@data-book='licenseDescription' and @lang='fr']",0);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//*[@data-book='licenseDescription' and @lang='fr']", 0);
 		}
 		[Test]
 		public void SetMetadata_CustomLicense_LicenseImageSrcAndAltAreEmpty()
@@ -241,7 +241,7 @@ namespace BloomTests.Book
 			xpath: "//img[@data-derived='licenseImage' and (not(@alt) or @alt='') and @src='']",
 			expectedCount: 1);
 		}
-		private  HtmlDom TestSetLicenseMetdataEffectOnDataDiv(Metadata metadata = null, string startingDataDivContent = "", string startingPageContent = "", string xpath = "", int expectedCount = 1)
+		private HtmlDom TestSetLicenseMetdataEffectOnDataDiv(Metadata metadata = null, string startingDataDivContent = "", string startingPageContent = "", string xpath = "", int expectedCount = 1)
 		{
 			var dom = new HtmlDom(@"<html><head><div id='bloomDataDiv'>" + startingDataDivContent + "</div><div id='credits'>" + startingPageContent + "</div></head><body></body></html>");
 			var bookData = new BookData(dom, _collectionSettings, null);
@@ -265,14 +265,14 @@ namespace BloomTests.Book
 		[Test]
 		public void CheckDataDivToPagePropagation_Copyright()
 		{
-			CheckUpdateDomFromDataDiv("copyright", null,description:"if copyright is not in datadiv, on page the corresponding element should be empty");
+			CheckUpdateDomFromDataDiv("copyright", null, description: "if copyright is not in datadiv, on page the corresponding element should be empty");
 			CheckUpdateDomFromDataDiv("copyright", "", description: "if copyright is empty datadiv, on page the corresponding element should be empty");
 			CheckUpdateDomFromDataDiv("copyright", "copyright correct, 1996", description: "if copyright is in datadiv, on page the corresponding element should be a copy");
 		}
 		[Test]
 		public void CheckDataDivToPagePropagation_LicenseUrl()
 		{
-			CheckUpdateDomFromDataDiv("licenseUrl", null,description: "if licenseUrl is not in datadiv, on page the corresponding element should be empty");
+			CheckUpdateDomFromDataDiv("licenseUrl", null, description: "if licenseUrl is not in datadiv, on page the corresponding element should be empty");
 			CheckUpdateDomFromDataDiv("licenseUrl", "", description: "if licenseUrl is empty datadiv, on page the corresponding element should be empty");
 			CheckUpdateDomFromDataDiv("licenseUrl", "example.com", description: "if licenseUrl is in datadiv, on page the corresponding element should be a copy");
 		}
@@ -282,7 +282,7 @@ namespace BloomTests.Book
 			CheckUpdateDomFromDataDiv("licenseNotes", null, description: "if licenseNotes is not in datadiv, on page the corresponding element should be empty");
 			CheckUpdateDomFromDataDiv("licenseNotes", "", description: "if licenseNotes is empty datadiv, on page the corresponding element should be empty");
 			CheckUpdateDomFromDataDiv("licenseNotes", "some notes", description: "if licenseNotes is in datadiv, on page the corresponding element should be a copy");
-			CheckUpdateDomFromDataDiv("licenseNotes", "line 1<br />line 2", description: "can include br in license notes", customXPath:"//div[@id='test']/div/br");
+			CheckUpdateDomFromDataDiv("licenseNotes", "line 1<br />line 2", description: "can include br in license notes", customXPath: "//div[@id='test']/div/br");
 		}
 		[Test]
 		public void CheckDataDivToPagePropagation_LicenseDescription()
@@ -429,7 +429,7 @@ namespace BloomTests.Book
 		/// <param name="lang2"></param>
 		/// <param name="lang3"></param>
 		/// <param name="description"></param>
-		private void CheckUpdateDomFromDataDiv(string key, string dataDivValue,  string lang1="en", string lang2="", string lang3="", string description=null, string customXPath=null)
+		private void CheckUpdateDomFromDataDiv(string key, string dataDivValue, string lang1 = "en", string lang2 = "", string lang3 = "", string description = null, string customXPath = null)
 		{
 			if (description == null)
 				description = string.Format("{0} should be '{1}'", key, dataDivValue);
@@ -446,10 +446,10 @@ namespace BloomTests.Book
 						<div data-derived='licenseNotes' lang='en'>BoilerPlateNotes</div>
 					</div>";
 
-			string html= "<html><body><div id='bloomDataDiv'>";
+			string html = "<html><body><div id='bloomDataDiv'>";
 			if (dataDivValue != null) //we want this even if it is empty, just not null
 			{
-					html += string.Format("<{0} data-book='{1}' lang='en'>{2}</{0}>","div",key,dataDivValue);
+				html += string.Format("<{0} data-book='{1}' lang='en'>{2}</{0}>", "div", key, dataDivValue);
 			}
 			html += "</div>";//end of datadiv
 			html += existingLicenseBlockOnPage;
@@ -457,7 +457,7 @@ namespace BloomTests.Book
 			var bookDom = new HtmlDom(html);
 			var bookData = new BookData(bookDom, _collectionSettings, null);
 
-			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom,"", bookData, false);
+			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, false);
 			string valuePredicate;
 			if (key == "licenseImage")
 			{
@@ -468,7 +468,7 @@ namespace BloomTests.Book
 				valuePredicate = string.IsNullOrEmpty(dataDivValue) ? "(text()='' or not(text()))" : "text()='" + dataDivValue + "'";
 			}
 			var xpath = "//div[@id='test']/*[@data-derived='" + key + "' and " + valuePredicate + "]";
-			if(!string.IsNullOrEmpty(customXPath))
+			if (!string.IsNullOrEmpty(customXPath))
 			{
 				xpath = customXPath;
 			}
