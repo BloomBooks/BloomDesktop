@@ -151,13 +151,18 @@ namespace Bloom.Api
 						return null;
 					}
 					
-					settings.Presets.ForEach(p=>
+					settings.Presets.ForEach(p =>
 					{
-						if (string.IsNullOrEmpty(flavor) && p.Content.Contains("{flavor"))
+						if (p.Content != null)
 						{
-							throw new ApplicationException("The branding had variable {flavor} but the branding key did not specify one: "+brandingFolderName);
+							if (string.IsNullOrEmpty(flavor) && p.Content.Contains("{flavor"))
+							{
+								throw new ApplicationException(
+									"The branding had variable {flavor} but the branding key did not specify one: " +
+									brandingFolderName);
+							}
+							p.Content = p.Content.Replace("{flavor}", flavor);
 						}
-						p.Content = p.Content.Replace("{flavor}", flavor);
 					});
 					return settings;
 				}

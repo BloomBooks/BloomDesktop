@@ -265,7 +265,7 @@ namespace BloomTests.Book
 		// BRANDING-RELATED TESTS
 
 		[Test]
-		public void MergeSettings_NoSettings_DoesNothing()
+		public void MergeBrandingSettings_NoSettings_DoesNothing()
 		{
 			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
 				<div id='bloomDataDiv'>
@@ -280,14 +280,14 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void MergeSettings_SettingsExistsButIsEmpty_DoesNothing()
+		public void MergeBrandingSettings_SettingsExistsButIsEmpty_DoesNothing()
 		{
 			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
 				<div id='bloomDataDiv'>
 						<div data-book='bookTitle' lang='xyz'>original</div>
 				</div>
 			 </body></html>");
-			using (var tempFolder = new TemporaryFolder("MergeSettings_SettingsExistsButIsEmpty_DoesNothing"))
+			using (var tempFolder = new TemporaryFolder("MergeBrandingSettings_SettingsExistsButIsEmpty_DoesNothing"))
 			{
 				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"), @"{}");
 
@@ -299,14 +299,14 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void MergeSettings_SettingsExistsButHasBogusJson_DoesNothing()
+		public void MergeBrandingSettings_SettingsExistsButHasBogusJson_DoesNothing()
 		{
 			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
 				<div id='bloomDataDiv'>
 						<div data-book='bookTitle' lang='xyz'>original</div>
 				</div>
 			 </body></html>");
-			using (var tempFolder = new TemporaryFolder("MergeSettings_SettingsExistsButIsEmpty_DoesNothing"))
+			using (var tempFolder = new TemporaryFolder("MergeBrandingSettings_SettingsExistsButHasBogusJson_DoesNothing"))
 			{
 				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"), "");
 
@@ -318,14 +318,14 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void MergeSettings_SettingsExistsButLacksCondition_DoesNothing()
+		public void MergeBrandingSettings_SettingsExistsButLacksCondition_DoesNothing()
 		{
 			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
 				<div id='bloomDataDiv'>
 						<div data-book='bookTitle' lang='xyz'>original</div>
 				</div>
 			 </body></html>");
-			using (var tempFolder = new TemporaryFolder("MergeSettings_SettingsExistsButLacksCondition_DoesNothing"))
+			using (var tempFolder = new TemporaryFolder("MergeBrandingSettings_SettingsExistsButLacksCondition_DoesNothing"))
 			{
 				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"), @"{
 	""presets"": [{
@@ -353,7 +353,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void MergeSettings_UpdatesEmptyField()
+		public void MergeBrandingSettings_UpdatesEmptyField()
 		{
 			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
 				<div id='bloomDataDiv'>
@@ -362,7 +362,7 @@ namespace BloomTests.Book
 				</div>
 			 </body></html>");
 
-			using (var tempFolder = new TemporaryFolder("MergeSettings_UpdatesEmptyField"))
+			using (var tempFolder = new TemporaryFolder("MergeBrandingSettings_UpdatesEmptyField"))
 			{
 				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"),
 					// First item tests successful setting;
@@ -421,7 +421,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void MergeSettings_OverridesIfSpecified()
+		public void MergeBrandingSettings_OverridesIfSpecified()
 		{
 			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
 				<div id='bloomDataDiv'>
@@ -430,7 +430,7 @@ namespace BloomTests.Book
 				</div>
 			 </body></html>");
 
-			using (var tempFolder = new TemporaryFolder("MergeSettings_UpdatesEmptyField"))
+			using (var tempFolder = new TemporaryFolder("MergeBrandingSettings_UpdatesEmptyField"))
 			{
 				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"),
 					// First item tests successful setting;
@@ -457,7 +457,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void MergeSettings_BrandingHasLicenseAndNotesButNotCopyright_MetadataMatches()
+		public void MergeBrandingSettings_BrandingHasLicenseAndNotesButNotCopyright_MetadataMatches()
 		{
 			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
 				<div id='bloomDataDiv'>
@@ -465,7 +465,7 @@ namespace BloomTests.Book
 						<div data-book='insideBackCover' lang='xyz'>original back cover</div>
 				</div>
 			 </body></html>");
-			using (var tempFolder = new TemporaryFolder("MergeSettings_UpdatesEmptyField"))
+			using (var tempFolder = new TemporaryFolder("MergeBrandingSettings_BrandingHasLicenseAndNotesButNotCopyright_MetadataMatches"))
 			{
 				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"),
 					// First item tests successful setting;
@@ -493,7 +493,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void MergeSettings_HasCopyrightAndLicenseAndLicenseNotes_MetadataMatches()
+		public void MergeBrandingSettings_HasCopyrightAndLicenseAndLicenseNotes_MetadataMatches()
 		{
 			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
 				<div id='bloomDataDiv'>
@@ -501,7 +501,7 @@ namespace BloomTests.Book
 						<div data-book='insideBackCover' lang='xyz'>original back cover</div>
 				</div>
 			 </body></html>");
-			using (var tempFolder = new TemporaryFolder("MergeSettings_UpdatesEmptyField"))
+			using (var tempFolder = new TemporaryFolder("MergeBrandingSettings_HasCopyrightAndLicenseAndLicenseNotes_MetadataMatches"))
 			{
 				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"),
 					// First item tests successful setting;
@@ -539,7 +539,7 @@ namespace BloomTests.Book
 		// even say the org, and would incorrectly insert 2016 regardless of the actual year of the book.
 		// The following tests a real use.
 		[Test]
-		public void MergeSettings_HasJustCopyrightOrg_GetsFullCopyrightForCurrentYear()
+		public void MergeBrandingSettings_HasJustCopyrightOrg_GetsFullCopyrightForCurrentYear()
 		{
 			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
 				<div id='bloomDataDiv'>
@@ -547,7 +547,7 @@ namespace BloomTests.Book
 						<div data-book='insideBackCover' lang='xyz'>original back cover</div>
 				</div>
 			 </body></html>");
-			using (var tempFolder = new TemporaryFolder("MergeSettings_UpdatesEmptyField"))
+			using (var tempFolder = new TemporaryFolder("MergeBrandingSettings_HasJustCopyrightOrg_GetsFullCopyrightForCurrentYear"))
 			{
 				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"),
 					// First item tests successful setting;
@@ -573,7 +573,7 @@ namespace BloomTests.Book
 		[TestCase("copyright", "Copyright © 2012, test")]
 		[TestCase("licenseNotes", "Some extra notes")]
 		[TestCase("licenseUrl", "http://creativecommons.org/licenses/by-nd/3.0/bynd/")]
-		public void MergeSettings_HasCopyrightAlready_CustomBrandingStuffIgnored(string dataDivName,
+		public void MergeBrandingSettings_HasCopyrightAlready_CustomBrandingStuffIgnored(string dataDivName,
 			string dataDivContent)
 		{
 			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
@@ -581,7 +581,7 @@ namespace BloomTests.Book
 						<div data-book='" + dataDivName + "' lang='*'>" + dataDivContent + @"</div>
 				</div>
 			 </body></html>");
-			using (var tempFolder = new TemporaryFolder("MergeSettings_HasCopyrightAlready_CustomBrandingStuffIgnored"))
+			using (var tempFolder = new TemporaryFolder("MergeBrandingSettings_HasCopyrightAlready_CustomBrandingStuffIgnored"))
 			{
 				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"),
 					@"{
@@ -632,14 +632,14 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void MergeSettings_CustomLicense_LicenseUrlRemoved()
+		public void MergeBrandingSettings_CustomLicense_LicenseUrlRemoved()
 		{
 			HtmlDom bookDom = new HtmlDom(@"<html><head></head><body>
 				<div id='bloomDataDiv'>
 						<div data-book='licenseUrl' lang='*'>http://creativecommons.org/licenses/by/4.0/</div>
 				</div>
 			 </body></html>");
-			using (var tempFolder = new TemporaryFolder("MergeSettings_CustomLicense_LicenseUrlRemoved"))
+			using (var tempFolder = new TemporaryFolder("MergeBrandingSettings_CustomLicense_LicenseUrlRemoved"))
 			{
 				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"),
 					@"{
