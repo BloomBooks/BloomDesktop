@@ -84,7 +84,7 @@ namespace Bloom.CLI
 			var collectionSettings = new CollectionSettings(collectionPath);
 			XMatterPackFinder xmatterFinder = new XMatterPackFinder(new[]
 			{
-				BloomFileLocator.GetFactoryXMatterDirectory(), BloomFileLocator.GetProjectSpecificInstalledXMatterDirectory()
+				BloomFileLocator.GetFactoryXMatterDirectory()
 			});
 			var locator = new BloomFileLocator(collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(),
 				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());

@@ -259,7 +259,6 @@ namespace Bloom
 					{
 						var locations = new List<string>();
 						locations.Add(BloomFileLocator.GetFactoryXMatterDirectory());
-						locations.Add(BloomFileLocator.GetProjectSpecificInstalledXMatterDirectory());
 						locations.Add(XMatterAppDataFolder);
 						locations.Add(XMatterCommonDataFolder);
 						return new XMatterPackFinder(locations);

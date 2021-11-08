@@ -32,14 +32,20 @@ namespace Bloom.Book
 				return _all;
 			}
 		}
-		public   IEnumerable<XMatterInfo> ToOfferInSettings
+		public   IEnumerable<XMatterInfo> GetXMattersToOfferInSettings(string selectKey)
 		{
-			get
-			{
+		
 				if (_factoryXMatters == null || _customInstalledXMatters == null)
 					FindAll();
-				return _factoryXMatters.Where(p=>!p.PathToFolder.Contains("project-specific")).Concat(_customInstalledXMatters);
-			}
+				if (string.IsNullOrEmpty(selectKey))
+				{
+					return _factoryXMatters.Where(p => !p.PathToFolder.Contains("project-specific"))
+						.Concat(_customInstalledXMatters);
+				}
+				else // this is a Bloom Enterprise Project with a Branding that selects the xmatter 
+				{
+					return _factoryXMatters.Where(p => p.Key == selectKey);
+				}
 		}
 
 		/// <summary>
@@ -82,6 +88,7 @@ namespace Bloom.Book
 			_customInstalledXMatters = new List<XMatterInfo>();
 
 			bool factory = true; // We consider the first path to be the factory ones for now.
+
 			foreach (var path in _foldersPotentiallyHoldingPack)
 			{
 				if (!Directory.Exists(path))
@@ -89,27 +96,30 @@ namespace Bloom.Book
 
 				foreach (var directory in Directory.GetDirectories(path, "*-XMatter", SearchOption.AllDirectories))
 				{
-					_factoryXMatters.Add(AddXMatterDir(directory));
+					AddXMatterDir(directory, factory);
 				}
 
 				foreach (var shortcut in Directory.GetFiles(path, "*.lnk", SearchOption.TopDirectoryOnly))
 				{
 					var p = ResolveShortcut.Resolve(shortcut);
 					if (Directory.Exists(p))
-						_customInstalledXMatters.Add(AddXMatterDir(p));
+						AddXMatterDir(p, factory);
 				}
-				
-
 				factory = false;
 			}
 		}
 
-		private XMatterInfo AddXMatterDir(string directory)
+
+		private void AddXMatterDir(string directory, bool factory)
 		{
 			var xMatterInfo = new XMatterInfo(directory);
 			_all.Add(xMatterInfo);
-			return xMatterInfo;
+			if (factory)
+				_factoryXMatters.Add(xMatterInfo);
+			else
+				_customInstalledXMatters.Add(xMatterInfo);
 		}
+
 
 		/// <summary>
 		/// E.g. in "Factory-XMatter", the key is "Factory".

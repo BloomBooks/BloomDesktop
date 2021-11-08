@@ -573,20 +573,22 @@ namespace Bloom.Collection
 		{
 			// xmatter specified by the branding always wins
 			// enhance: maybe we should store this.. but I don't think this is called often
-			get
-			{
-				if (!string.IsNullOrEmpty(BrandingProjectKey))
-				{
-					var xmatterToUse = BrandingSettings.GetSettingsOrNull(this.BrandingProjectKey)?.GetXmatterToUse();
-					if (xmatterToUse != null)
-					{
-						return xmatterToUse;
-					}
-				}
-				return this._xmatterNameInCollectionSettingsFile;
-			}
+			get => GetXMatterPackNameSpecifiedByBrandingOrNull() ?? this._xmatterNameInCollectionSettingsFile;
 			set => this._xmatterNameInCollectionSettingsFile = value;
 		}
+		public string GetXMatterPackNameSpecifiedByBrandingOrNull()
+		{
+			if (!string.IsNullOrEmpty(BrandingProjectKey))
+			{
+				var xmatterToUse = BrandingSettings.GetSettingsOrNull(this.BrandingProjectKey)?.GetXmatterToUse();
+				if (xmatterToUse != null)
+				{
+					return xmatterToUse;
+				}
+			}
+			return null;
+		}
+
 
 		virtual public string Country { get; set; }
 		virtual public string Province { get; set; }

@@ -453,7 +453,17 @@ namespace Bloom.Collection
 			var packsToSkip = new string[] {"null", "bigbook", "SHRP", "SHARP", "ForUnitTest", "TemplateStarter"};
 			_xmatterList.Items.Clear();
 			ListViewItem itemForFactoryDefault = null;
-			foreach(var pack in _xmatterPackFinder.ToOfferInSettings)
+
+			string lockedDownXMatterKey = null;
+			var xmatterFromBranding = _collectionSettings.GetXMatterPackNameSpecifiedByBrandingOrNull();
+			if (null != xmatterFromBranding)
+			{
+				_xmatterList.Enabled = false;
+				lockedDownXMatterKey = xmatterFromBranding;
+			}
+			var offerings = _xmatterPackFinder.GetXMattersToOfferInSettings(lockedDownXMatterKey);
+			
+			foreach (var pack in offerings)
 			{
 				if (packsToSkip.Any(s => pack.Key.ToLowerInvariant().Contains(s.ToLower())))
 					continue;
