@@ -127,7 +127,7 @@ export class ImageDescriptionToolControls extends React.Component<
                                 poet.diagramcenter.org
                             </Link>
                         </div>
-                        <div className="wrapPlayVideo disabled invisible">
+                        {/* <div className="wrapPlayVideo disabled invisible">
                             <img id="playBloomTrainingVideo" src="play.svg" />
                             <Link
                                 id="bloomImageDescriptionTraining"
@@ -138,7 +138,7 @@ export class ImageDescriptionToolControls extends React.Component<
                             >
                                 Bloom training video
                             </Link>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
                 {/* the flex box will then push this to the bottom */}
