@@ -7,5 +7,6 @@
     background-color: @bloom-panelBackground;
     display: flex;
     flex-direction: column;
-    flex: 1; // less than the 4 of the preview panel, so it will limit itself to what it needs.
+    flex: 0; // Let the preview panel do all the growing, this just takes what it needs
+    position: relative; // allows absolute positioning of children relative to this
 }

@@ -64,6 +64,18 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/reportBadZip", HandleReportBadZip, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/showRegistrationDialog", HandleShowRegistrationDialog, true, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/getHistory", HandleGetHistory, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/checkinMessage", HandleCheckinMessage, false);
+		}
+
+		/// <summary>
+		/// When the user edits the pending checkin message, save it away in the book history database.
+		/// </summary>
+		/// <param name="request"></param>
+		private void HandleCheckinMessage(ApiRequest request)
+		{
+			var message = request.GetPostStringOrNull() ?? "";
+			BookHistory.SetPendingCheckinMessage(request.CurrentBook, message);
+			request.PostSucceeded();
 		}
 
 		public static string BadZipPath;
@@ -205,8 +217,7 @@ namespace Bloom.TeamCollection
 					return;
 				}
 
-				var bookFolderName = request.RequiredParam("folderName");
-				request.ReplyWithJson(GetBookStatusJson(bookFolderName));
+				request.ReplyWithJson(GetBookStatusJson(request));
 			}
 			catch (Exception e)
 			{
@@ -217,7 +228,7 @@ namespace Bloom.TeamCollection
 			}
 		}
 
-		private string GetBookStatusJson(string bookFolderName)
+		private string GetBookStatusJson(ApiRequest request)
 		{
 			string whoHasBookLocked = null;
 			DateTime whenLocked = DateTime.MaxValue;
@@ -257,6 +268,8 @@ namespace Bloom.TeamCollection
 			{
 					hasInvalidRepoData = (_tcManager.CurrentCollection as FolderTeamCollection)?.GetCouldNotOpenCorruptZipMessage();
 			}
+
+			var checkinMessage = BookHistory.GetPendingCheckinMessage(request.CurrentBook);
 			return JsonConvert.SerializeObject(
 				new
 				{
@@ -273,7 +286,8 @@ namespace Bloom.TeamCollection
 						clickHereArg,
 					changedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(BookFolderName),
 					disconnected = _tcManager.CurrentCollectionEvenIfDisconnected?.IsDisconnected,
-					newLocalBook
+					newLocalBook,
+					checkinMessage
 				});
 		}
 		public void HandleSelectedBookStatus(ApiRequest request)
@@ -285,7 +299,7 @@ namespace Bloom.TeamCollection
 					request.Failed("not registered");
 					return;
 				}
-				request.ReplyWithJson(GetBookStatusJson(BookFolderName));
+				request.ReplyWithJson(GetBookStatusJson(request));
 			}
 			catch (Exception e)
 			{
@@ -411,6 +425,7 @@ namespace Bloom.TeamCollection
 					updatedBookFolder = modifiedBookFolders[0];
 					finalBookName = Path.GetFileName(updatedBookFolder);
 				}
+				BookHistory.SetPendingCheckinMessage(_bookSelection.CurrentSelection, "");
 				UpdateUiForBook(reloadFromDisk:true, renamedTo: updatedBookFolder);
 				// We need to do this after updating the rest of the UI, so the button we're
 				// looking for has been adjusted.
@@ -466,7 +481,9 @@ namespace Bloom.TeamCollection
 					reportCheckinProgress(0); // cleans up panel for next time
 					// review: not super happy about this being here in the api. Was stymied by
 					// PutBook not knowing about the actual book object, but maybe that could be passed in.
-					BookHistory.AddEvent(_bookSelection.CurrentSelection, BookHistoryEventType.CheckIn);
+					var message = BookHistory.GetPendingCheckinMessage(_bookSelection.CurrentSelection);
+					BookHistory.AddEvent(_bookSelection.CurrentSelection, BookHistoryEventType.CheckIn, message);
+					BookHistory.SetPendingCheckinMessage(_bookSelection.CurrentSelection, "");
 
 					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, checkin:true);
 

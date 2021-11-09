@@ -25,8 +25,9 @@ export const IconHeadingBodyMenuPanel: React.FunctionComponent<{
             css={css`
                 display: flex;
                 flex-direction: row;
-                flex: 1;
+                flex: 0 0;
                 padding-top: 12px;
+                padding-bottom: 12px;
             `}
             className={props.className}
         >
@@ -34,10 +35,11 @@ export const IconHeadingBodyMenuPanel: React.FunctionComponent<{
                 <div
                     css={css`
                         width: 60px;
-                        padding-top: 6px;
+                        //padding-top: 6px;
                         padding-left: 8px;
                         padding-right: 8px;
                         display: flex;
+                        flex-direction: column;
                         justify-content: center;
                         align-items: flex-start;
                         img {
@@ -53,6 +55,7 @@ export const IconHeadingBodyMenuPanel: React.FunctionComponent<{
                     display: flex;
                     flex-direction: column;
                     margin-left: ${props.icon ? "0;" : "20px;"};
+                    justify-content: center;
                 `}
             >
                 <Typography
@@ -60,9 +63,6 @@ export const IconHeadingBodyMenuPanel: React.FunctionComponent<{
                         max-height: ${mainTitleHeight}px;
                         // If the main title runs to more than two lines, we allow a scroll bar.
                         overflow-y: auto;
-                        // We don't need much here, but without this the spacing between the title lines
-                        // is more than the space between the main and sub titles.
-                        margin-bottom: 6px !important;
                     `}
                     align="left"
                     variant="h6"
@@ -74,6 +74,10 @@ export const IconHeadingBodyMenuPanel: React.FunctionComponent<{
                         max-height: ${panelHeight - mainTitleHeight}px;
                         // If absolutely necessary, we allow a scroll bar in the subtitle.
                         overflow-y: auto;
+                        // The MUI default here makes the lines more widely spaced than the gap between the
+                        // main heading and the subheading. Previously we added extra margin-bottom on the
+                        // header to compensate, but it looks better tighter.
+                        line-height: unset !important;
                     `}
                     align="left"
                     variant="subtitle2"
@@ -84,7 +88,7 @@ export const IconHeadingBodyMenuPanel: React.FunctionComponent<{
             <div
                 css={css`
                     display: flex;
-                    flex: 1;
+                    flex: 0 0;
                     flex-direction: column;
                     align-items: flex-end;
                     padding-right: 15px; // match right alignment of button below
