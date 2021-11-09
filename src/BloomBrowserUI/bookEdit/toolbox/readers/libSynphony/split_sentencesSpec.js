@@ -290,4 +290,17 @@ describe("Splitting text into sentences", function() {
         expect(sentences[0].text).toBe("« Et toi\u202F?\u202F»\u202F'");
         expect(sentences[1].text).toBe("What next?");
     });
+
+    it('Split into "sentences" with phrase markers interspersed', function() {
+        var inputText =
+            "This is a test| of splitting with phrase markers.  Another sentence, |another test!";
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
+        expect(fragments.length).toBe(6);
+        expect(fragments[0].text).toBe("This is a test|");
+        expect(fragments[1].text).toBe(" ");
+        expect(fragments[2].text).toBe("of splitting with phrase markers.");
+        expect(fragments[3].text).toBe("  ");
+        expect(fragments[4].text).toBe("Another sentence, |");
+        expect(fragments[5].text).toBe("another test!");
+    });
 });
