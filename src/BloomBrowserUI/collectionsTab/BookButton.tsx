@@ -12,6 +12,9 @@ import {
 } from "../teamCollection/teamCollectionUtils";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import { kBloomBlue, kBloomGold } from "../bloomMaterialUITheme.js";
+import { useState } from "react";
+import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
+import { Book } from "@material-ui/icons";
 
 export const BookButton: React.FunctionComponent<{
     book: any;
@@ -25,6 +28,14 @@ export const BookButton: React.FunctionComponent<{
         props.book.folderName,
         props.isInEditableCollection
     );
+
+    const [reload, setReload] = useState(0);
+    // Force a reload when told some book's status changed
+    useSubscribeToWebSocketForEvent("bookImage", "reload", args => {
+        if (args.message === props.book.id) {
+            setReload(old => old + 1);
+        }
+    });
 
     const label =
         props.book.title.length > 20 ? (
@@ -70,7 +81,7 @@ export const BookButton: React.FunctionComponent<{
                                     props.book.id
                                 }&collection-id=${encodeURIComponent(
                                     props.book.collectionId
-                                )}`}
+                                )}&reload=${reload}`}
                             />
                         </div>
                     }

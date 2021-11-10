@@ -79,18 +79,10 @@ export const BooksOfCollection: React.FunctionComponent<{
         setContextMousePoint(undefined);
     };
 
-    const handleDuplicateBook = () => {
+    const handleBookCommand = (command: string) => {
         handleClose();
         BloomApi.postString(
-            "collections/duplicateBook?collection-id=" + props.collectionId,
-            selectedBookId
-        );
-    };
-
-    const handleDeleteBook = () => {
-        handleClose();
-        BloomApi.postString(
-            "collections/deleteBook?collection-id=" + props.collectionId,
+            `collections/bookCommand?command=${command}&collection-id=${props.collectionId}`,
             selectedBookId
         );
     };
@@ -99,7 +91,45 @@ export const BooksOfCollection: React.FunctionComponent<{
         "Duplicate Book",
         "CollectionTab.BookMenu.DuplicateBook"
     );
-    const delBook = useL10n("Delete Book", "CollectionTab.BookMenu.DeleteBook");
+    const makeBloompack = useL10n(
+        "Make Bloom Pack",
+        "CollectionTab.MakeBloomPackButton"
+    );
+    const openFolderOnDisk = useL10n(
+        "Open Folder on Disk",
+        "CollectionTab.ContextMenu.OpenFolderOnDisk"
+    );
+    const exportToWord = useL10n(
+        "Export to Word or LibreOffice...",
+        "CollectionTab.BookMenu.ExportToWordOrLibreOffice"
+    );
+    const exportToSpreadsheet = useL10n(
+        "Export to Spreadsheet...",
+        "CollectionTab.BookMenu.ExportToSpreadsheet"
+    );
+    const importSpreadsheetContent = useL10n(
+        "Import content from Spreadsheet...",
+        "CollectionTab.BookMenu.ImportContentFromSpreadsheet"
+    );
+    const saveAsDotBloom = useL10n(
+        "Save as single file (.bloom)...",
+        "CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem"
+    );
+
+    const updateThumbnail = useL10n(
+        "Update Thumbnail",
+        "CollectionTab.BookMenu.UpdateThumbnail"
+    );
+    const updateBook = useL10n(
+        "Update Book",
+        "CollectionTab.BookMenu.UpdateFrontMatterToolStrip"
+    );
+    const rename = useL10n("Rename", "CollectionTab.BookMenu.Rename");
+
+    const deleteBook = useL10n(
+        "Delete Book",
+        "CollectionTab.BookMenu.DeleteBook"
+    );
 
     const anchor = !!contextMousePoint
         ? contextMousePoint!.mouseY !== null &&
@@ -146,8 +176,51 @@ export const BooksOfCollection: React.FunctionComponent<{
                 anchorReference="anchorPosition"
                 anchorPosition={anchor}
             >
-                <MenuItem onClick={handleDuplicateBook}>{dupBook}</MenuItem>
-                <MenuItem onClick={handleDeleteBook}>{delBook}</MenuItem>
+                <MenuItem onClick={() => handleBookCommand("duplicateBook")}>
+                    {dupBook}
+                </MenuItem>
+                <MenuItem onClick={() => handleBookCommand("makeBloompack")}>
+                    {makeBloompack}
+                </MenuItem>
+                <MenuItem onClick={() => handleBookCommand("openFolderOnDisk")}>
+                    {openFolderOnDisk}
+                </MenuItem>
+                <MenuItem onClick={() => handleBookCommand("exportToWord")}>
+                    {exportToWord}
+                </MenuItem>
+                <MenuItem
+                    onClick={() => handleBookCommand("exportToSpreadsheet")}
+                >
+                    {exportToSpreadsheet}
+                </MenuItem>
+                <MenuItem
+                    onClick={() =>
+                        handleBookCommand("importSpreadsheetContent")
+                    }
+                >
+                    {importSpreadsheetContent}
+                </MenuItem>
+                <MenuItem onClick={() => handleBookCommand("saveAsDotBloom")}>
+                    {saveAsDotBloom}
+                </MenuItem>
+                <MenuItem onClick={() => handleBookCommand("updateThumbnail")}>
+                    {updateThumbnail}
+                </MenuItem>
+                <MenuItem onClick={() => handleBookCommand("updateBook")}>
+                    {updateBook}
+                </MenuItem>
+
+                <MenuItem
+                    onClick={() =>
+                        // No. Need to put up an overlay, let user do it, send result to backend.
+                        handleBookCommand("rename")
+                    }
+                >
+                    {rename}
+                </MenuItem>
+                <MenuItem onClick={() => handleBookCommand("deleteBook")}>
+                    {deleteBook}
+                </MenuItem>
             </Menu>
         </div>
     );
