@@ -7,6 +7,9 @@ import MenuItem from "@material-ui/core/MenuItem";
 import { BookButton } from "./BookButton";
 import { useMonitorBookSelection } from "../app/selectedBook";
 import { element } from "prop-types";
+import { useL10n } from "../react_components/l10nHooks";
+import { useState } from "react";
+import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 
 interface IBookInfo {
     id: string;
@@ -18,6 +21,13 @@ export const BooksOfCollection: React.FunctionComponent<{
     collectionId: string;
     isEditableCollection: boolean;
 }> = props => {
+    const [reload, setReload] = useState(0);
+    // Force a reload when told the collection needs it.
+    useSubscribeToWebSocketForEvent(
+        "editableCollectionList",
+        "reload:" + props.collectionId,
+        () => setReload(old => old + 1)
+    );
     if (!props.collectionId) {
         window.alert("null collectionId");
     }
@@ -27,7 +37,8 @@ export const BooksOfCollection: React.FunctionComponent<{
 
     const books = BloomApi.useApiData<Array<IBookInfo>>(
         `collections/books?${collectionQuery}`,
-        []
+        [],
+        reload
     );
     const [
         selectedBookId,
@@ -67,6 +78,28 @@ export const BooksOfCollection: React.FunctionComponent<{
     const handleClose = () => {
         setContextMousePoint(undefined);
     };
+
+    const handleDuplicateBook = () => {
+        handleClose();
+        BloomApi.postString(
+            "collections/duplicateBook?collection-id=" + props.collectionId,
+            selectedBookId
+        );
+    };
+
+    const handleDeleteBook = () => {
+        handleClose();
+        BloomApi.postString(
+            "collections/deleteBook?collection-id=" + props.collectionId,
+            selectedBookId
+        );
+    };
+
+    const dupBook = useL10n(
+        "Duplicate Book",
+        "CollectionTab.BookMenu.DuplicateBook"
+    );
+    const delBook = useL10n("Delete Book", "CollectionTab.BookMenu.DeleteBook");
 
     const anchor = !!contextMousePoint
         ? contextMousePoint!.mouseY !== null &&
@@ -113,12 +146,8 @@ export const BooksOfCollection: React.FunctionComponent<{
                 anchorReference="anchorPosition"
                 anchorPosition={anchor}
             >
-                <MenuItem onClick={handleClose}>
-                    Do something with book
-                </MenuItem>
-                <MenuItem onClick={handleClose}>
-                    Do something else with book
-                </MenuItem>
+                <MenuItem onClick={handleDuplicateBook}>{dupBook}</MenuItem>
+                <MenuItem onClick={handleDeleteBook}>{delBook}</MenuItem>
             </Menu>
         </div>
     );

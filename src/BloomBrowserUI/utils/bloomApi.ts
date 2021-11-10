@@ -210,13 +210,17 @@ export class BloomApi {
         return [value, fn];
     }
 
-    public static useApiData<T>(urlSuffix: string, defaultValue: T): T {
+    public static useApiData<T>(
+        urlSuffix: string,
+        defaultValue: T,
+        reload?: number
+    ): T {
         const [value, setValue] = React.useState<T>(defaultValue);
         React.useEffect(() => {
             BloomApi.get(urlSuffix, c => {
                 setValue(c.data);
             });
-        }, []);
+        }, [reload]);
         return value;
     }
 

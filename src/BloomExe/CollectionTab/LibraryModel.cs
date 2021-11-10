@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Xml;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.TeamCollection;
@@ -38,6 +39,7 @@ namespace Bloom.CollectionTab
 		private List<BookCollection> _bookCollections;
 		private readonly BookThumbNailer _thumbNailer;
 		private TeamCollectionManager _tcManager;
+		private readonly BloomWebSocketServer _webSocketServer;
 
 		public LibraryModel(string pathToLibrary, CollectionSettings collectionSettings,
 			//SendReceiver sendReceiver,
@@ -49,7 +51,8 @@ namespace Bloom.CollectionTab
 			BookServer bookServer,
 			CurrentEditableCollectionSelection currentEditableCollectionSelection,
 			BookThumbNailer thumbNailer,
-			TeamCollectionManager tcManager)
+			TeamCollectionManager tcManager,
+			BloomWebSocketServer webSocketServer)
 		{
 			_bookSelection = bookSelection;
 			_pathToLibrary = pathToLibrary;
@@ -62,6 +65,7 @@ namespace Bloom.CollectionTab
 			_currentEditableCollectionSelection = currentEditableCollectionSelection;
 			_thumbNailer = thumbNailer;
 			_tcManager = tcManager;
+			_webSocketServer = webSocketServer;
 
 			createFromSourceBookCommand.Subscribe(CreateFromSourceBook);
 		}
@@ -144,6 +148,14 @@ namespace Bloom.CollectionTab
 
 		}
 
+		private void SetupChangeNotifications(BookCollection collection)
+		{
+			collection.CollectionChanged += (sender, args) =>
+			{
+				_webSocketServer.SendEvent("editableCollectionList", "reload:" + collection.PathToDirectory);
+			};
+		}
+
 		private IEnumerable<BookCollection> GetBookCollectionsOnce()
 		{
 			BookCollection editableCollection;
@@ -151,13 +163,20 @@ namespace Bloom.CollectionTab
 			{
 				editableCollection = _bookCollectionFactory(_pathToLibrary,
 					BookCollection.CollectionType.TheOneEditableCollection);
+				SetupChangeNotifications(editableCollection);
 			}
 
 			_currentEditableCollectionSelection.SelectCollection(editableCollection);
 			yield return editableCollection;
 
 			foreach (var bookCollection in _sourceCollectionsList.GetSourceCollectionsFolders())
-				yield return _bookCollectionFactory(bookCollection, BookCollection.CollectionType.SourceCollection);
+			{
+				var collection = _bookCollectionFactory(bookCollection, BookCollection.CollectionType.SourceCollection);
+				// Apart from the editable collection, I think only the downloaded books needs this (because books
+				// can be deleted from it and possibly added by new downloads); but it seems safest to set up for all.
+				SetupChangeNotifications(collection);
+				yield return collection;
+			}
 		}
 
 
@@ -171,7 +190,7 @@ namespace Bloom.CollectionTab
 		}
 		public bool DeleteBook(Book.Book book)//, BookCollection collection)
 		{
-			Debug.Assert(book == _bookSelection.CurrentSelection);
+			Debug.Assert(book.FolderPath == _bookSelection.CurrentSelection?.FolderPath);
 
 			if (_bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanDelete)
 			{

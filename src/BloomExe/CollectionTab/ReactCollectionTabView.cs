@@ -7,6 +7,7 @@ using Bloom.Workspace;
 using L10NSharp;
 using SIL.Reporting;
 using System.Drawing;
+using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;

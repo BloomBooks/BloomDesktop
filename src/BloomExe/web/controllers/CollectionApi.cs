@@ -9,6 +9,8 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
+using Bloom.TeamCollection;
+using Bloom.ToPalaso;
 using Gecko.WebIDL;
 using Newtonsoft.Json;
 using SIL.IO;
@@ -24,10 +26,12 @@ namespace Bloom.web.controllers
 		private readonly CollectionSettings _settings;
 		private readonly LibraryModel _libraryModel;
 		public const string kApiUrlPart = "collections/";
-		public 	 CollectionApi(CollectionSettings settings, LibraryModel libraryModel)
+		private readonly BloomWebSocketServer _webSocketServer;
+		public 	 CollectionApi(CollectionSettings settings, LibraryModel libraryModel, BloomWebSocketServer webSocketServer)
 		{
 			_settings = settings;
 			_libraryModel = libraryModel;
+			_webSocketServer = webSocketServer;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -57,6 +61,45 @@ namespace Bloom.web.controllers
 						break;
 				}
 			}, true);
+
+			apiHandler.RegisterEndpointHandler(kApiUrlPart+"duplicateBook", HandleDuplicateBook, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "deleteBook", HandleDeleteBook, true);
+		}
+
+		private void HandleDuplicateBook(ApiRequest request)
+		{
+			var book = GetBookObjectFromPost(request);
+			var collection = GetCollectionOfRequest(request);
+			var newBookDir = book.Storage.Duplicate();
+
+			// Get rid of any TC status we copied from the original, so Bloom treats it correctly as a new book.
+			BookStorage.RemoveLocalOnlyFiles(newBookDir);
+
+			// reload the collection
+			// I hope we can get rid of this when we retire the old LibraryListView, but for now we need to keep both views up to date.
+			// optimize: we only need to reload the first (editable) collection; better yet, we only need to add the one new book to it.
+			_libraryModel.ReloadCollections();
+
+			_webSocketServer.SendEvent("editableCollectionList", "reload:" + collection.PathToDirectory);
+
+			var dupInfo = _libraryModel.TheOneEditableCollection.GetBookInfos()
+				.FirstOrDefault(info => info.FolderPath == newBookDir);
+			if (dupInfo != null)
+			{
+				var newBook = _libraryModel.GetBookFromBookInfo(dupInfo);
+				// Select the new book
+				_libraryModel.SelectBook(newBook);
+				BookHistory.AddEvent(newBook, BookHistoryEventType.Created, $"Duplicated from existing book \"{book.Title}\"");
+			}
+
+			request.PostSucceeded();
+		}
+
+		private void HandleDeleteBook(ApiRequest request)
+		{
+			var book = GetBookObjectFromPost(request);
+			_libraryModel.DeleteBook(book);
+			request.PostSucceeded();
 		}
 
 		// List out all the collections we have loaded
