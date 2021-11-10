@@ -269,7 +269,8 @@ namespace Bloom.TeamCollection
 					hasInvalidRepoData = (_tcManager.CurrentCollection as FolderTeamCollection)?.GetCouldNotOpenCorruptZipMessage();
 			}
 
-			var checkinMessage = BookHistory.GetPendingCheckinMessage(request.CurrentBook);
+			// Only null during unit tests.
+			var checkinMessage = request.CurrentBook == null ? "" : BookHistory.GetPendingCheckinMessage(request.CurrentBook);
 			return JsonConvert.SerializeObject(
 				new
 				{
