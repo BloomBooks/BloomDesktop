@@ -21,6 +21,23 @@ interface IBookHistoryEvent {
     UserName: string;
 }
 
+const HeaderCell: React.FunctionComponent<{
+    colSpan?: number;
+}> = props => {
+    return (
+        <td
+            colSpan={props.colSpan}
+            // This would be more natural on the row, but padding <tr> has no effect.
+            css={css`
+                padding-top: 10px;
+                padding-bottom: 5px;
+            `}
+        >
+            {props.children}
+        </td>
+    );
+};
+
 const TextCell: React.FunctionComponent<{
     className?: string;
     colSpan?: number;
@@ -50,9 +67,6 @@ export const CollectionHistoryTable: React.FunctionComponent = props => {
     return (
         // The grand plan: https://www.figma.com/file/IlNPkoMn4Y8nlHMTCZrXfQSZ/Bloom-Collection-Tab?node-id=2707%3A6882
         // TODO: switch to use the same grid as blorg
-        // TODO: get thumbnail in there
-        // TODO: get user name
-        // TODO: get user avatar
 
         <table
             css={css`
@@ -68,20 +82,11 @@ export const CollectionHistoryTable: React.FunctionComponent = props => {
                     margin-bottom: 5px;
                 `}
             >
-                <td
-                    colSpan={2}
-                    // This would be more natural on the row, but padding <tr> has no effect.
-                    css={css`
-                        padding-top: 10px;
-                        padding-bottom: 5px;
-                    `}
-                >
-                    Title
-                </td>{" "}
-                <td>When</td>
-                <td colSpan={2}>Who</td>
-                <td>What</td>
-                <td>Comment</td>
+                <HeaderCell colSpan={2}>Title</HeaderCell>{" "}
+                <HeaderCell>When</HeaderCell>
+                <HeaderCell colSpan={2}>Who</HeaderCell>
+                <HeaderCell>What</HeaderCell>
+                <HeaderCell>Comment</HeaderCell>
             </tr>
             {events.map((e, index) => (
                 <tr
