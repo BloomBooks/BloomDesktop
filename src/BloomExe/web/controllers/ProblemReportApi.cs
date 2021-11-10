@@ -85,8 +85,8 @@ namespace Bloom.web.controllers
 
 		private static BookSelection _bookSelection;
 
-		private BloomZipFile _bookZipFile;
-		private TempFile _bookZipFileTemp;
+		private BloomZipFile _reportZipFile;
+		private TempFile _reportZipFileTemp;
 		protected string YouTrackProjectKey = "BL";
 		const string kFailureResult = "failed";
 
@@ -227,11 +227,11 @@ namespace Bloom.web.controllers
 			else
 			{
 				issueLink = "https://issues.bloomlibrary.org/youtrack/issue/" + issueId;
-				if (includeBook)
+				if (includeBook || _additionalPathsToInclude?.Any() == true)
 				{
 					try
 					{
-						string zipPath = CreateBookZipFile(issueId, userDesc);
+						string zipPath = CreateReportZipFile(issueId, userDesc, includeBook);
 						if (zipPath != null)
 						{
 							// This could be used provided the file is not too large (about 10M as of July 2020),
@@ -258,31 +258,35 @@ namespace Bloom.web.controllers
 					}
 					finally
 					{
-						_bookZipFileTemp.Detach();
+						_reportZipFileTemp.Detach();
 					}
 				}
 			}
 			return issueLink;
 		}
-		
-		
-		private string CreateBookZipFile(string basename, string userDesc)
+
+		private string CreateReportZipFile(string basename, string userDesc, bool includeBook = true)
 		{
 			try
 			{
-				if (_bookZipFileTemp != null)
-					_bookZipFileTemp.Dispose();	// delete any previous report's temp file
-				_bookZipFileTemp = TempFile.WithFilenameInTempFolder(basename + ".zip");
-				_bookZipFile = new BloomZipFile(_bookZipFileTemp.Path);
-				_bookZipFile.AddDirectory(_bookSelection.CurrentSelection.StoragePageFolder);
-				if (WantReaderInfo(true))
+				if (_reportZipFileTemp != null)
+					_reportZipFileTemp.Dispose();	// delete any previous report's temp file
+				_reportZipFileTemp = TempFile.WithFilenameInTempFolder(basename + ".zip");
+				_reportZipFile = new BloomZipFile(_reportZipFileTemp.Path);
+
+				if (includeBook)
 				{
-					AddReaderInfo();
+					_reportZipFile.AddDirectory(_bookSelection.CurrentSelection.StoragePageFolder);
+					if (WantReaderInfo(true))
+					{
+						AddReaderInfo();
+					}
+					AddCollectionSettings();
 				}
-				AddCollectionSettings();
+
 				AddOtherTopLevelFiles();
-				_bookZipFile.Save();
-				return _bookZipFileTemp.Path;
+				_reportZipFile.Save();
+				return _reportZipFileTemp.Path;
 			}
 			catch (Exception error)
 			{
@@ -299,10 +303,10 @@ namespace Bloom.web.controllers
 			// if an error happens in the zipper, the zip file stays locked, so we just leak it
 			if (includeBook)
 			{
-				_bookZipFileTemp.Detach();
+				_reportZipFileTemp.Detach();
 			}
 
-			_bookZipFile = null;
+			_reportZipFile = null;
 		}
 
 		private void AddReaderInfo()
@@ -321,12 +325,12 @@ namespace Bloom.web.controllers
 					if (!subFolderPathsHandled.Contains(subFolderPath))
 					{
 						subFolderPathsHandled.Add(subFolderPath);
-						_bookZipFile.AddDirectory(subFolderPath);
+						_reportZipFile.AddDirectory(subFolderPath);
 					}
 				}
 				else
 				{
-					_bookZipFile.AddTopLevelFile(filePath);
+					_reportZipFile.AddTopLevelFile(filePath);
 				}
 			}
 		}
@@ -336,7 +340,7 @@ namespace Bloom.web.controllers
 			var filePaths = GetCollectionFilePaths(CollectionFolder);
 			foreach (var filePath in filePaths)
 			{
-				_bookZipFile.AddTopLevelFile(filePath);
+				_reportZipFile.AddTopLevelFile(filePath);
 			}
 		}
 
@@ -345,7 +349,7 @@ namespace Bloom.web.controllers
 			if (_additionalPathsToInclude != null)
 			{
 				foreach (var path in _additionalPathsToInclude)
-					_bookZipFile.AddTopLevelFile(path);
+					_reportZipFile.AddTopLevelFile(path);
 			}
 		}
 
@@ -371,9 +375,9 @@ namespace Bloom.web.controllers
 					}
 					emailZipper.AddTopLevelFile(file.Path);
 				}
-				if (includeBook)
+				if (includeBook || _additionalPathsToInclude?.Any() == true)
 				{
-					var bookZipPath = CreateBookZipFile("ProblemBook", userDesc);
+					string bookZipPath = CreateReportZipFile(includeBook ? "ProblemBook" : "ProblemFiles", userDesc, includeBook);
 					if (bookZipPath != null)
 						emailZipper.AddTopLevelFile(bookZipPath);
 				}
@@ -887,21 +891,25 @@ namespace Bloom.web.controllers
 		private void GetAdditionalFileInfo(StringBuilder bldr, bool includeBook)
 		{
 			var book = _reportInfo.Book;
-			if (string.IsNullOrEmpty(book?.FolderPath))
+			if (string.IsNullOrEmpty(book?.FolderPath) && _additionalPathsToInclude?.Any() != true)
 				return;
 			bldr.AppendLine();
 			bldr.AppendLine("#### Additional Files Bundled With Book");
-			var collectionFolder = Path.GetDirectoryName(book.FolderPath);
-			if (collectionFolder == null)
-				return; // mostly to avoid blue squiggles in VS
-			if (WantReaderInfo(includeBook))
+			if (!string.IsNullOrEmpty(book?.FolderPath))
 			{
-				var listOfReaderFiles = GetReaderFilePaths(collectionFolder);
-				ListFiles(listOfReaderFiles, bldr);
+				var collectionFolder = Path.GetDirectoryName(book.FolderPath);
+				if (collectionFolder != null)
+				{
+					if (WantReaderInfo(includeBook))
+					{
+						var listOfReaderFiles = GetReaderFilePaths(collectionFolder);
+						ListFiles(listOfReaderFiles, bldr);
+					}
+					var listOfCollectionFiles = GetCollectionFilePaths(collectionFolder);
+					ListFiles(listOfCollectionFiles, bldr);
+				}
 			}
-			var listOfCollectionFiles = GetCollectionFilePaths(collectionFolder);
-			ListFiles(listOfCollectionFiles, bldr);
-			if (_additionalPathsToInclude != null && _additionalPathsToInclude.Any())
+			if (_additionalPathsToInclude?.Any() == true)
 				ListFiles(_additionalPathsToInclude, bldr);
 		}
 
@@ -954,8 +962,8 @@ namespace Bloom.web.controllers
 		public void Dispose()
 		{
 			_reportInfo.ScreenshotTempFile?.Dispose();
-			_bookZipFile = null;
-			_bookZipFileTemp?.Dispose();
+			_reportZipFile = null;
+			_reportZipFileTemp?.Dispose();
 		}
 	}
 }

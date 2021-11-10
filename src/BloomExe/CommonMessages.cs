@@ -13,7 +13,7 @@ namespace Bloom
 	/// </summary>
 	public class CommonMessages
 	{
-		public static string GetPleaseClickHereForHelpMessage(string pathtoProblemFile)
+		public static string GetPleaseClickHereForHelpMessage(string pathToProblemFile)
 		{
 			var template2 = LocalizationManager.GetString("Common.ClickHereForHelp",
 				"Please click [here] to get help from the Bloom support team.",
@@ -28,8 +28,10 @@ namespace Bloom
 				template2 = "[" + template2 + "]";
 			}
 
+			// If we leave backslashes in here, json will fail to parse it later. It works fine with forward slashes, even on Windows.
+			pathToProblemFile = pathToProblemFile.Replace("\\", "/");
 			var part2 = pattern.Replace(template2,
-				$"<a href='/bloom/api/teamCollection/reportBadZip?file={UrlPathString.CreateFromUnencodedString(pathtoProblemFile).UrlEncoded}'>$1</a>");
+				$"<a href='/bloom/api/teamCollection/reportBadZip?file={UrlPathString.CreateFromUnencodedString(pathToProblemFile).UrlEncoded}'>$1</a>");
 			return part2;
 		}
 
