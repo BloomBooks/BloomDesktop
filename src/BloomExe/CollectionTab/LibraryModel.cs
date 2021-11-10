@@ -578,6 +578,7 @@ namespace Bloom.CollectionTab
 							{ "Country", _collectionSettings.Country}
 						});
 				}
+				BookHistory.AddEvent(newBook, BookHistoryEventType.Created, "New book created");
 				_editBookCommand.Raise(newBook);
 			}
 			catch (Exception e)
