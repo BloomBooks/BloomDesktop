@@ -26,8 +26,8 @@ namespace Bloom.Book
 		// these image files may need to be reduced before being stored in the compressed output file
 		internal static readonly string[] ImageFileExtensions = { ".tif", ".tiff", ".png", ".bmp", ".jpg", ".jpeg" };
 
-		// these files (if encountered) won't be included in the compressed version
-		internal static readonly string[] ExcludedFileExtensionsLowerCase = { ".db", ".pdf", ".bloompack", ".bak", ".userprefs", ".bloombookorder", ".map", ".tmp", ".temp" };
+		// these files are the only ones that will be included in the compressed version (plus anything in subfolders, if present)
+		internal static readonly string[] IncludedFileExtensionsLowerCase = { ".svg", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".otf", ".ttf", ".woff", ".htm", ".css", ".json", ".txt", ".mp3", ".ogg", ".wav", ".mp4" };
 
 		internal static void MakeSizedThumbnail(Book book, string destinationFolder, int heightAndWidth)
 		{
@@ -135,7 +135,8 @@ namespace Bloom.Book
 		private static void CompressDirectory(string directoryToCompress, ZipOutputStream zipStream, int dirNameOffset, string dirNamePrefix,
 			int depthFromCollection, bool forReaderTools, bool excludeAudio, bool reduceImages, bool omitMetaJson = false, string pathToFileForSha = null)
 		{
-			if (excludeAudio && Path.GetFileName(directoryToCompress).ToLowerInvariant() == "audio")
+			var folderName = Path.GetFileName(directoryToCompress).ToLowerInvariant();
+			if (!IsValidBookFolder(folderName, excludeAudio, depthFromCollection))
 				return;
 			var files = Directory.GetFiles(directoryToCompress);
 
@@ -174,13 +175,16 @@ namespace Bloom.Book
 				imagesToPreserveResolution = new List<string>();
 			}
 
-			// Some of the knowledge about ExcludedFileExtensions might one day move into this method.
+			// Some of the knowledge about IncludedFileExtensions might one day move into this method.
 			// But we'd have to check carefully the other places it is used.
 			var localOnlyFiles = BookStorage.LocalOnlyFiles(directoryToCompress);
 			foreach (var filePath in files)
 			{
-				if (ExcludedFileExtensionsLowerCase.Contains(Path.GetExtension(filePath.ToLowerInvariant())))
-					continue; // BL-2246: skip putting this one into the BloomPack
+				// We let files through as long as they are in the 'activities' folder (widgets) or they have
+				// one of the whitelisted extensions (BL-8956).
+				if (!IncludedFileExtensionsLowerCase.Contains(Path.GetExtension(filePath).ToLowerInvariant()) &&
+						!IsInActivitiesFolder(filePath, depthFromCollection))
+					continue; // BL-2246: skip putting this one into the BloomPack or .bloomd
 				if (IsUnneededWaveFile(filePath, depthFromCollection))
 					continue;
 				if (localOnlyFiles.Contains(filePath))
@@ -296,6 +300,40 @@ namespace Bloom.Book
 
 				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection + 1, forReaderTools, excludeAudio, reduceImages);
 			}
+		}
+
+		private readonly static string[] validSubFolders = { "audio", "video", "activities" };
+
+		private static bool IsValidBookFolder(string folderName, bool excludeAudio, int depthFromCollection)
+		{
+			// 'depthFromCollection' of 2 corresponds to the level where we want to see only the valid subfolders.
+			// We only check depth 2. We don't check depth 1, because it is not a subfolder. We don't check
+			// farther down, because we limit the subfolders at depth 2 and if we get deeper, we are probably
+			// inside of 'activities' where we want everything.
+			// Review: Do we want to allow the 'audio' and 'video' subfolders to have sub-subfolders? Currently
+			// this code allows that.
+			if (depthFromCollection != 2)
+				return true;
+
+			if (excludeAudio && folderName == "audio")
+				return false;
+			// BL-8956 If we have users who store other folders of (to us) junk in their book folder or
+			// if the user somehow (as we've seen) gets a book folder embedded in another book folder,
+			// we don't want to include those folders in our output.
+			return validSubFolders.Contains(folderName);
+		}
+
+		private static bool IsInActivitiesFolder(string filePath, int depthFromCollection)
+		{
+			const string activityFolderName = "activities";
+			var pathToCheck = Path.GetDirectoryName(filePath);
+			for(int i = depthFromCollection; i > 0 ; i--)
+			{
+				if (pathToCheck.EndsWith(Path.DirectorySeparatorChar + activityFolderName))
+					return true;
+				pathToCheck = Path.GetDirectoryName(pathToCheck);
+			}
+			return false;
 		}
 
 		private static HashSet<string> _backgroundAudioFiles = new HashSet<string>();
