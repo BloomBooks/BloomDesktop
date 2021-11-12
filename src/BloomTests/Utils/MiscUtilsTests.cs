@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Bloom.Utils;
+﻿using Bloom.Utils;
 using NUnit.Framework;
 
 namespace BloomTests.Utils

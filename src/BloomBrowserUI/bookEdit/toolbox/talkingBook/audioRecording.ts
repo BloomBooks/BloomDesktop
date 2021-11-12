@@ -4273,6 +4273,8 @@ export default class AudioRecording {
             return;
         }
 
+        // If we ever import audio file types other than .mp3, we will need to update
+        // BookCompressor.AudioFileExtensions.
         const targetPath =
             resultAudioDir.data + "/" + this.getCurrentAudioId() + ".mp3";
         await BloomApi.postData(
