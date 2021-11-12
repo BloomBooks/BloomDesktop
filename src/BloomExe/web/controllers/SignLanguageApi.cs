@@ -189,6 +189,7 @@ namespace Bloom.web.controllers
 				{
 					Multiselect = false,
 					CheckFileExists = true,
+					// If this filter ever changes, make sure we update BookCompressor.VideoFileExtensions.
 					Filter = $"{videoFiles} (*.mp4)|*.mp4"
 				};
 				var result = dlg.ShowDialog();
