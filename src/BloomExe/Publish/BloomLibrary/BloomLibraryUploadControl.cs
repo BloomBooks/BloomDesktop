@@ -1,13 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ErrorReporter;
+using Bloom.MiscUI;
 using Bloom.TeamCollection;
 using Bloom.web;
 using Bloom.web.controllers;
@@ -175,6 +178,8 @@ namespace Bloom.Publish.BloomLibrary
 				var neededWidth = TextRenderer.MeasureText(_uploadButton.Text, _uploadButton.Font).Width;
 				_uploadButton.Width += neededWidth - oldTextWidth;
 			}
+
+			LibraryPublishApi.SetUploadControl = this; // Needed to get the Upload Id Collision dialog working.
 
 			// After considering all the factors except whether any languages are selected,
 			// if we can upload at this point, whether we can from here on depends on whether one is checked.
@@ -461,24 +466,147 @@ namespace Bloom.Publish.BloomLibrary
 				// Todo: try to make sure it has a thumbnail.
 
 				_progressBox.WriteMessage("Checking for existing copy on server...");
-				if (_model.BookIsAlreadyOnServer)
+				// If we don't need to trigger our upload ID Collision dialog, go ahead and upload the book.
+				if (!_model.BookIsAlreadyOnServer)
 				{
-					using (var dlg = new OverwriteWarningDialog())
-					{
-						if (dlg.ShowDialog() == DialogResult.Cancel)
-						{
-							_progressBox.WriteMessage("Canceled.");
-							return;
-						}
-					}
+					UploadBook();
+					return;
 				}
+				// OK, so we do need our uploadIDCollision dialog.
+				ShowIdCollisionDialog();
 			}
 			catch (Exception)
 			{
 				ReportTryAgainDuringUpload();
 				_uploadButton.Enabled = true;
-				return;
 			}
+		}
+
+		private void ShowIdCollisionDialog()
+		{
+			var newThumbPath = _model.Book.ThumbnailPath.ToLocalhost();
+			var newTitle = _model.Book.TitleBestForUserDisplay;
+			var newLanguages = ConvertActiveLanguageCodesToNames(_model.Book.ActiveLanguages, _model.Book.BookData);
+			var existingBookInfo = _model.ConflictingBookInfo;
+			var updatedDateTime = (DateTime) existingBookInfo.updatedAt;
+			var createdDateTime = (DateTime) existingBookInfo.createdAt;
+			var originalTitle = existingBookInfo.originalTitle.Value;
+			var existingId = existingBookInfo.objectId.ToString();
+			var existingBookUrl = BloomLibraryUrlPrefix + "/book/" + existingId;
+
+			var existingLanguages = ConvertLanguagePointerObjectsToNames(existingBookInfo.langPointers);
+			var createdDate = createdDateTime.ToString("d", CultureInfo.CurrentCulture);
+			var updatedDate = updatedDateTime.ToString("d", CultureInfo.CurrentCulture);
+			var existingThumbUrl = GetBloomLibraryThumbnailUrl(existingBookInfo);
+			using (var dlg = new ReactDialog("uploadIDCollisionDlgBundle",
+				// Props for dialog; must be the same as IUploadCollisionDlgProps in js-land.
+				new
+				{
+					userEmail = _model.LoggedIn ? _userId.Text : "",
+					newThumbUrl = newThumbPath,
+					newTitle,
+					newLanguages,
+					existingTitle = originalTitle,
+					existingLanguages,
+					existingCreatedDate = createdDate,
+					existingUpdatedDate = updatedDate,
+					existingBookUrl,
+					existingThumbUrl
+				}
+			))
+			{
+				dlg.Width = 770;
+				dlg.Height = 570;
+				dlg.ControlBox = false;
+				dlg.ShowDialog();
+			}
+		}
+
+		public void CancelUpload()
+		{
+			_progressBox.WriteMessage("Canceled.");
+
+		}
+
+		private static string GetBloomLibraryThumbnailUrl(dynamic existingBookInfo)
+		{
+			// Code basically copied from bloomlibrary2 Book.ts
+			var baseUrl = existingBookInfo.baseUrl.ToString();
+			var harvestState = existingBookInfo.harvestState.ToString();
+			var updatedTime = existingBookInfo.updatedAt.ToString();
+			var harvesterThumbnailUrl = GetHarvesterThumbnailUrl(baseUrl, harvestState, updatedTime);
+			if (harvesterThumbnailUrl != null)
+			{
+				return harvesterThumbnailUrl;
+			}
+			// Try "legacy" version (the one uploaded with the book)
+			return CreateThumbnailUrlFromBase(baseUrl, updatedTime);
+		}
+
+		// Code modified from bloomlibrary2 Book.ts.
+		// Bloomlibrary2 code still (as of 11/11/2021) checks the harvest date to see if the thumbnail is useful,
+		// But now there are no books in circulation on bloomlibrary that haven't been harvested since that date.
+		// So now we can consider any harvester thumbnail as valid, as long as the harvestState is "Done".
+		private static string GetHarvesterThumbnailUrl(string baseUrl, string harvestState, string lastUpdate)
+		{
+			if (harvestState != "Done")
+				return null;
+
+			var harvesterBaseUrl = GetHarvesterBaseUrl(baseUrl);
+			return CreateThumbnailUrlFromBase(harvesterBaseUrl, lastUpdate);
+		}
+
+		private static string CreateThumbnailUrlFromBase(string baseUrl, string lastUpdate)
+		{
+			// The bloomlibrary2 code calls Book.getCloudFlareUrl(), but it just passes the parameter through
+			// at this point with a bunch of comments on why we don't do anything there.
+			return baseUrl + "thumbnails/thumbnail-256.png?version=" + lastUpdate;
+		}
+
+		// Code basically copied from bloomlibrary2 Book.ts
+		private static string GetHarvesterBaseUrl(string baseUrl)
+		{
+			const string slash = "%2f";
+			var folderWithoutLastSlash = baseUrl;
+			if (baseUrl.EndsWith(slash))
+			{
+				folderWithoutLastSlash = baseUrl.Substring(0, baseUrl.Length - 3);
+			}
+
+			var index = folderWithoutLastSlash.LastIndexOf(slash, StringComparison.InvariantCulture);
+			var pathWithoutBookName = folderWithoutLastSlash.Substring(0, index);
+			return pathWithoutBookName.Replace("BloomLibraryBooks-Sandbox", "bloomharvest-sandbox")
+				       .Replace("BloomLibraryBooks", "bloomharvest") + "/";
+		}
+
+		private IEnumerable<string> ConvertActiveLanguageCodesToNames(IEnumerable<string> activeCodes, BookData bookData)
+		{
+			foreach (var langCode in activeCodes)
+			{
+				yield return bookData.GetDisplayNameForLanguage(langCode);
+			}
+		}
+
+		private IEnumerable<string> ConvertLanguagePointerObjectsToNames(IEnumerable<dynamic> langPointers)
+		{
+			foreach (var languageObject in langPointers)
+			{
+				yield return languageObject.name;
+			}
+		}
+
+		public void UploadBookAfterChangingId()
+		{
+			_progressBox.WriteMessage("Setting new instance ID...");
+			var newGuid = BookInfo.InstallFreshInstanceGuid(_model.Book.FolderPath);
+			_model.Book.BookInfo.Id = newGuid;
+			_progressBox.WriteMessage("ID is now " + _model.Book.BookInfo.Id);
+			UploadBook();
+
+		}
+
+		public void UploadBook()
+		{
 			_progressBox.WriteMessage("Starting...");
 			_uploadWorker = new BackgroundWorker();
 			_uploadWorker.DoWork += BackgroundUpload;
@@ -492,9 +620,11 @@ namespace Bloom.Publish.BloomLibrary
 				// Don't call UpdateDisplay, it will wipe out the progress messages.
 				if (_progressBox.CancelRequested)
 				{
-					_progressBox.WriteMessageWithColor(Color.Red, LocalizationManager.GetString("PublishTab.Upload.Cancelled", "Upload was cancelled"));
+					_progressBox.WriteMessageWithColor(Color.Red,
+						LocalizationManager.GetString("PublishTab.Upload.Cancelled", "Upload was cancelled"));
 				}
-				else {
+				else
+				{
 					if (completedEvent.Error != null)
 					{
 						string errorMessage = GetBasicErrorUploadingMessage();
@@ -505,7 +635,7 @@ namespace Bloom.Publish.BloomLibrary
 					{
 						// no more reporting, sufficient message already given.
 					}
-						else if (string.IsNullOrEmpty((string) completedEvent.Result))
+					else if (string.IsNullOrEmpty((string) completedEvent.Result))
 					{
 						// Something went wrong, possibly already reported.
 						if (!_model.PdfGenerationSucceeded)
@@ -523,6 +653,7 @@ namespace Bloom.Publish.BloomLibrary
 						BookHistory.AddEvent(_model.Book, BookHistoryEventType.Uploaded, "Book uploaded to Bloom Library");
 					}
 				}
+
 				_uploadWorker = null;
 			};
 			SetStateOfNonUploadControls(false); // Last thing we do before launching the worker, so we can't get stuck in this state.
