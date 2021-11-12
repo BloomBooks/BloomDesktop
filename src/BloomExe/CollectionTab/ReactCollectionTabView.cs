@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Eventing.Reader;
 using System.Windows.Forms;
 using Bloom.Properties;
 //using Bloom.SendReceive;
@@ -7,12 +6,10 @@ using Bloom.Workspace;
 using L10NSharp;
 using SIL.Reporting;
 using System.Drawing;
-using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.web;
-using Gecko;
 using SIL.Windows.Forms.SettingProtection;
 
 namespace Bloom.CollectionTab
@@ -83,7 +80,7 @@ namespace Bloom.CollectionTab
 				// Instead, in the short term we may add a button to show the file.
 				// Later we may implement some efficient way to scroll through them.
 				// tcManager.CurrentCollection?.MessageLog?.LoadSavedMessages();
-				using (var dlg = new ReactDialog("teamCollectionDialog", new { showReloadButton }))
+				using (var dlg = new ReactDialog("teamCollectionDialogBundle", new { showReloadButton }))
 				{
 					dlg.ShowDialog(this);
 					tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
@@ -95,8 +92,6 @@ namespace Bloom.CollectionTab
 			// the TC to the local collection, and as part of that, the collection tab doesn't expect
 			// the local collection to change because of TC stuff once it starts loading.
 			Controls.Remove(_reactControl);
-			// Disable our standard menu to let JS bring up the one it wants, if we're on an element that wants this behavior.
-			_reactControl.LetContentHandleContextMenu = e => ElementProxy.ProxyForSelfOrParentElement(e.TargetNode).SelfOrAncestorHasClass("bloom-no-default-menu");
 		}
 
 		public void ReadyToShowCollections()

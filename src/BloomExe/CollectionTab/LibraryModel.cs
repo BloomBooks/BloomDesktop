@@ -116,6 +116,38 @@ namespace Bloom.CollectionTab
 		{
 			_bookCollections = null;
 			GetBookCollections();
+			_webSocketServer.SendEvent("editableCollectionList", "reload:" + _bookCollections[0].PathToDirectory);
+		}
+
+		public void DuplicateBook(Book.Book book)
+		{
+			var newBookDir = book.Storage.Duplicate();
+
+			// Get rid of any TC status we copied from the original, so Bloom treats it correctly as a new book.
+			BookStorage.RemoveLocalOnlyFiles(newBookDir);
+
+			ReloadEditableCollection();
+
+			var dupInfo = TheOneEditableCollection.GetBookInfos()
+				.FirstOrDefault(info => info.FolderPath == newBookDir);
+			if (dupInfo != null)
+			{
+				var newBook = GetBookFromBookInfo(dupInfo);
+				SelectBook(newBook);
+				BookHistory.AddEvent(newBook, BookHistoryEventType.Created, $"Duplicated from existing book \"{book.Title}\"");
+			}
+		}
+
+		/// <summary>
+		/// Eventually this might entirely replace ReloadCollections, since we probably never need to reload anything ut the first.
+		/// For now it actually reloads them all, but at least allows clients that definitely only need the first reloaded to do so.
+		/// </summary>
+		/// <param name="collection"></param>
+		public void ReloadEditableCollection()
+		{
+			// I hope we can get rid of this when we retire the old LibraryListView, but for now we need to keep both views up to date.
+			// optimize: we only need to reload the first (editable) collection; better yet, we only need to add the one new book to it.
+			ReloadCollections();
 		}
 
 		/// <summary>

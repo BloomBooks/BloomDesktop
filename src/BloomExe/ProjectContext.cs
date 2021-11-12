@@ -354,6 +354,7 @@ namespace Bloom
 			_scope.Resolve<AccessibilityCheckApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<CollectionSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<CollectionApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<BookCommandsApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<PageControlsApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<KeyboardingConfigApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<BookSettingsApi>().RegisterWithApiHandler(server.ApiHandler);

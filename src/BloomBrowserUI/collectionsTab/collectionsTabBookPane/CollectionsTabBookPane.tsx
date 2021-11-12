@@ -7,7 +7,7 @@ import { TeamCollectionBookStatusPanel } from "../../teamCollection/TeamCollecti
 import {
     IBookTeamCollectionStatus,
     initialBookStatus
-} from "../../teamCollection/teamCollectionUtils";
+} from "../../teamCollection/teamCollectionApi";
 import { useMonitorBookSelection } from "../../app/selectedBook";
 import BloomButton from "../../react_components/bloomButton";
 import { kDarkestBackground } from "../../bloomMaterialUITheme";

@@ -4,7 +4,6 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
-using Gecko;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Windows.Forms.Extensions;
@@ -55,8 +54,6 @@ namespace Bloom.web
 		public bool UseEditContextMenu;
 		private Browser _browser;
 
-		public Func<GeckoContextMenuEventArgs, bool> LetContentHandleContextMenu = (e) => false;
-
 		private void ReactControl_Load(object sender, System.EventArgs e)
 		{
 			if (this.DesignModeAtAll())
@@ -78,8 +75,8 @@ namespace Bloom.web
 				Dock = DockStyle.Fill,
 				Location = new Point(3, 3),
 				Size = new Size(Width - 6, Height - 6),
-				BackColor = Color.White,
-				LetContentHandleContextMenu = LetContentHandleContextMenu
+				BackColor = Color.White
+				
 			};
 			// This is mainly so that the mailTo: link in the Team Collection settings panel
 			// works with the user's default mail program rather than whatever GeckoFx60 does,

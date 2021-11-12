@@ -3,6 +3,10 @@ import { useState } from "react";
 import { BloomApi } from "../utils/bloomApi";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 
+// The TS end of various interactions with the TeamCollectionApi class in C#
+
+// Defines the data expected from a query to `teamCollection/bookStatus?folderName=${folderName}`
+// Keep in sync with the value returned by TeamCollectionApi.GetBookStatusJson.
 export interface IBookTeamCollectionStatus {
     who: string;
     whoFirstName: string;
@@ -41,7 +45,7 @@ export const initialBookStatus: IBookTeamCollectionStatus = {
     checkinMessage: ""
 };
 
-export function useBookStatus(
+export function useTColBookStatus(
     folderName: string,
     inEditableCollection: boolean
 ): IBookTeamCollectionStatus {

@@ -8,8 +8,8 @@ import { Button } from "@material-ui/core";
 import TruncateMarkup from "react-truncate-markup";
 import {
     IBookTeamCollectionStatus,
-    useBookStatus
-} from "../teamCollection/teamCollectionUtils";
+    useTColBookStatus
+} from "../teamCollection/teamCollectionApi";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import { kBloomBlue, kBloomGold } from "../bloomMaterialUITheme.js";
 import { useState } from "react";
@@ -24,13 +24,13 @@ export const BookButton: React.FunctionComponent<{
 }> = props => {
     // TODO: the c# had Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont,
 
-    const teamCollectionStatus = useBookStatus(
+    const teamCollectionStatus = useTColBookStatus(
         props.book.folderName,
         props.isInEditableCollection
     );
 
     const [reload, setReload] = useState(0);
-    // Force a reload when told some book's status changed
+    // Force a reload when our book's thumbnail image changed
     useSubscribeToWebSocketForEvent("bookImage", "reload", args => {
         if (args.message === props.book.id) {
             setReload(old => old + 1);
@@ -49,7 +49,7 @@ export const BookButton: React.FunctionComponent<{
     return (
         <Grid
             item={true}
-            className={props.selected ? "bloom-no-default-menu" : ""}
+            className={props.selected ? "selected-book-wrapper" : ""}
         >
             <div>
                 {teamCollectionStatus?.who && (

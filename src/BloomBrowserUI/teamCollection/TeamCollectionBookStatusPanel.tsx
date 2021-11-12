@@ -20,7 +20,7 @@ import { createMuiTheme } from "@material-ui/core";
 import {
     IBookTeamCollectionStatus,
     initialBookStatus
-} from "./teamCollectionUtils";
+} from "./teamCollectionApi";
 
 // The panel that shows the book preview and settings in the collection tab in a Team Collection.
 

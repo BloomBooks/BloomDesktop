@@ -29,16 +29,6 @@ namespace Bloom
 			_xmlElement = element;
 		}
 
-		public static ElementProxy ProxyForSelfOrParentElement(GeckoNode n)
-		{
-			var n1 = n;
-			while (n1 != null && !(n1 is GeckoHtmlElement))
-				n1 = n1.ParentElement;
-			if (n1 == null)
-				return null;
-			return new ElementProxy(n1 as GeckoHtmlElement);
-		}
-
 		/// <summary>
 		/// Sets the named attribute to {value}, which should be a simple string (i.e. not, encoded.)
 		/// </summary>

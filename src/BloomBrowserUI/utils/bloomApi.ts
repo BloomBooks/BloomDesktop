@@ -7,6 +7,8 @@ import axios, {
 import * as StackTrace from "stacktrace-js";
 import { reportError, reportPreliminaryError } from "../lib/errorHandler";
 import React = require("react");
+import { useState } from "react";
+import { useSubscribeToWebSocketForEvent } from "./WebSocketManager";
 
 // You can modify mockReplies in order to work on UI components without the Bloom backed... namely, storybook.
 // It's surely too fragile for use in unit tests.
@@ -210,18 +212,46 @@ export class BloomApi {
         return [value, fn];
     }
 
-    public static useApiData<T>(
+    public static useApiData<T>(urlSuffix: string, defaultValue: T): T {
+        return this.useApiDataInternal(urlSuffix, defaultValue);
+    }
+
+    // Shared code for useApiData and useWatchApiData. If you are tempted to use it directly,
+    // you should probably be using useWatchApiData.
+    // The generation argument is a value that can be incremented to force redoing the main
+    // query, typically because an event we were watching for was sent from the server.
+    private static useApiDataInternal<T>(
         urlSuffix: string,
         defaultValue: T,
-        reload?: number
+        generation?: number
     ): T {
         const [value, setValue] = React.useState<T>(defaultValue);
         React.useEffect(() => {
             BloomApi.get(urlSuffix, c => {
                 setValue(c.data);
             });
-        }, [reload]);
+        }, [generation]);
         return value;
+    }
+
+    // Conceptually returns the result of BloomApi.get(urlSuffix).
+    // When initially called, returns defaultValue, but a new render will be forced
+    // when the query returns the data.
+    // Also monitors our web socket for the specified event occurring in the specified
+    // context, and forces another render from a fresh call to BloomApi.get when the
+    // event occurs.
+    public static useWatchApiData<T>(
+        urlSuffix: string,
+        defaultValue: T,
+        clientContext: string,
+        eventId: string
+    ): T {
+        const [generation, setGeneration] = useState(0);
+        // Force a reload when the specified event happens.
+        useSubscribeToWebSocketForEvent(clientContext, eventId, () =>
+            setGeneration(old => old + 1)
+        );
+        return this.useApiDataInternal(urlSuffix, defaultValue, generation);
     }
 
     public static useApiString(

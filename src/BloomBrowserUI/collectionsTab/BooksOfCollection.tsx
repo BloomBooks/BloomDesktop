@@ -21,13 +21,6 @@ export const BooksOfCollection: React.FunctionComponent<{
     collectionId: string;
     isEditableCollection: boolean;
 }> = props => {
-    const [reload, setReload] = useState(0);
-    // Force a reload when told the collection needs it.
-    useSubscribeToWebSocketForEvent(
-        "editableCollectionList",
-        "reload:" + props.collectionId,
-        () => setReload(old => old + 1)
-    );
     if (!props.collectionId) {
         window.alert("null collectionId");
     }
@@ -35,10 +28,11 @@ export const BooksOfCollection: React.FunctionComponent<{
         props.collectionId
     )}`;
 
-    const books = BloomApi.useApiData<Array<IBookInfo>>(
+    const books = BloomApi.useWatchApiData<Array<IBookInfo>>(
         `collections/books?${collectionQuery}`,
         [],
-        reload
+        "editableCollectionList",
+        "reload:" + props.collectionId
     );
     const [
         selectedBookId,
@@ -62,8 +56,8 @@ export const BooksOfCollection: React.FunctionComponent<{
             return; // huh?
         }
         const target = event.target as Element;
-        if (target.closest(".bloom-no-default-menu") == null) {
-            // We're not responsible for the menu here...let the usual Bloom C# context menu appear
+        if (target.closest(".selected-book-wrapper") == null) {
+            // We're not going to do our own right-click menu; let whatever default happens go ahead.
             return;
         }
 
@@ -82,54 +76,91 @@ export const BooksOfCollection: React.FunctionComponent<{
     const handleBookCommand = (command: string) => {
         handleClose();
         BloomApi.postString(
-            `collections/bookCommand?command=${command}&collection-id=${props.collectionId}`,
+            `${command}?collection-id=${props.collectionId}`,
             selectedBookId
         );
     };
 
-    const dupBook = useL10n(
-        "Duplicate Book",
-        "CollectionTab.BookMenu.DuplicateBook"
-    );
-    const makeBloompack = useL10n(
-        "Make Bloom Pack",
-        "CollectionTab.MakeBloomPackButton"
-    );
-    const openFolderOnDisk = useL10n(
-        "Open Folder on Disk",
-        "CollectionTab.ContextMenu.OpenFolderOnDisk"
-    );
-    const exportToWord = useL10n(
-        "Export to Word or LibreOffice...",
-        "CollectionTab.BookMenu.ExportToWordOrLibreOffice"
-    );
-    const exportToSpreadsheet = useL10n(
-        "Export to Spreadsheet...",
-        "CollectionTab.BookMenu.ExportToSpreadsheet"
-    );
-    const importSpreadsheetContent = useL10n(
-        "Import content from Spreadsheet...",
-        "CollectionTab.BookMenu.ImportContentFromSpreadsheet"
-    );
-    const saveAsDotBloom = useL10n(
-        "Save as single file (.bloom)...",
-        "CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem"
-    );
+    interface MenuItemSpec {
+        label: string;
+        l10nId: string;
+        // One of these two must be provided. If both are, onClick is used and command is ignored.
+        command?: string;
+        onClick?: React.MouseEventHandler<HTMLElement>;
+        // todo: handling of bloom enterprise requirement, handle checkout requirement, maybe primary collection requirement...
+    }
 
-    const updateThumbnail = useL10n(
-        "Update Thumbnail",
-        "CollectionTab.BookMenu.UpdateThumbnail"
-    );
-    const updateBook = useL10n(
-        "Update Book",
-        "CollectionTab.BookMenu.UpdateFrontMatterToolStrip"
-    );
-    const rename = useL10n("Rename", "CollectionTab.BookMenu.Rename");
+    const menuItemsSpecs: MenuItemSpec[] = [
+        {
+            label: "Duplicate Book",
+            l10nId: "CollectionTab.BookMenu.DuplicateBook",
+            command: "collections/bookCommand/duplicateBook"
+        },
+        {
+            label: "Make Bloom Pack",
+            l10nId: "CollectionTab.MakeBloomPackButton",
+            command: "bookCommand/makeBloompack"
+        },
+        {
+            label: "Open Folder on Disk",
+            l10nId: "CollectionTab.ContextMenu.OpenFolderOnDisk",
+            command: "bookCommand/openFolderOnDisk"
+        },
+        {
+            label: "Export to Word or LibreOffice...",
+            l10nId: "CollectionTab.BookMenu.ExportToWordOrLibreOffice",
+            command: "bookCommand/exportToWord"
+        },
+        {
+            label: "Export to Spreadsheet...",
+            l10nId: "CollectionTab.BookMenu.ExportToSpreadsheet",
+            command: "bookCommand/exportToSpreadsheet"
+        },
+        {
+            label: "Import content from Spreadsheet...",
+            l10nId: "CollectionTab.BookMenu.ImportContentFromSpreadsheet",
+            command: "bookCommand/importSpreadsheetContent"
+        },
+        {
+            label: "Save as single file (.bloom)...",
+            l10nId: "CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem",
+            command: "bookCommand/saveAsDotBloom"
+        },
+        {
+            label: "Update Thumbnail",
+            l10nId: "CollectionTab.BookMenu.UpdateThumbnail",
+            command: "bookCommand/updateThumbnail"
+        },
+        {
+            label: "Update Book",
+            l10nId: "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
+            command: "bookCommand/updateBook"
+        },
+        // {
+        //     label: "Rename",
+        //     l10nId: "CollectionTab.BookMenu.Rename",
+        //     onClick=()=>handeRename()
+        // },
+        {
+            label: "Delete Book",
+            l10nId: "CollectionTab.BookMenu.DeleteBook",
+            command: "collections/bookCommand/deleteBook"
+        }
+    ];
 
-    const deleteBook = useL10n(
-        "Delete Book",
-        "CollectionTab.BookMenu.DeleteBook"
-    );
+    const menuItems = menuItemsSpecs.map((spec: MenuItemSpec) => (
+        <LocalizableMenuItem
+            english={spec.label}
+            l10nId={spec.l10nId}
+            onClick={
+                spec.onClick
+                    ? spec.onClick
+                    : () => handleBookCommand(spec.command!)
+            }
+        ></LocalizableMenuItem>
+    ));
+
+    // Todo: use it; fill out menuItemsSpecs; get rid of junk
 
     const anchor = !!contextMousePoint
         ? contextMousePoint!.mouseY !== null &&
@@ -176,52 +207,17 @@ export const BooksOfCollection: React.FunctionComponent<{
                 anchorReference="anchorPosition"
                 anchorPosition={anchor}
             >
-                <MenuItem onClick={() => handleBookCommand("duplicateBook")}>
-                    {dupBook}
-                </MenuItem>
-                <MenuItem onClick={() => handleBookCommand("makeBloompack")}>
-                    {makeBloompack}
-                </MenuItem>
-                <MenuItem onClick={() => handleBookCommand("openFolderOnDisk")}>
-                    {openFolderOnDisk}
-                </MenuItem>
-                <MenuItem onClick={() => handleBookCommand("exportToWord")}>
-                    {exportToWord}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => handleBookCommand("exportToSpreadsheet")}
-                >
-                    {exportToSpreadsheet}
-                </MenuItem>
-                <MenuItem
-                    onClick={() =>
-                        handleBookCommand("importSpreadsheetContent")
-                    }
-                >
-                    {importSpreadsheetContent}
-                </MenuItem>
-                <MenuItem onClick={() => handleBookCommand("saveAsDotBloom")}>
-                    {saveAsDotBloom}
-                </MenuItem>
-                <MenuItem onClick={() => handleBookCommand("updateThumbnail")}>
-                    {updateThumbnail}
-                </MenuItem>
-                <MenuItem onClick={() => handleBookCommand("updateBook")}>
-                    {updateBook}
-                </MenuItem>
-
-                <MenuItem
-                    onClick={() =>
-                        // No. Need to put up an overlay, let user do it, send result to backend.
-                        handleBookCommand("rename")
-                    }
-                >
-                    {rename}
-                </MenuItem>
-                <MenuItem onClick={() => handleBookCommand("deleteBook")}>
-                    {deleteBook}
-                </MenuItem>
+                {menuItems}
             </Menu>
         </div>
     );
+};
+
+const LocalizableMenuItem: React.FunctionComponent<{
+    english: string;
+    l10nId: string;
+    onClick: React.MouseEventHandler<HTMLElement>;
+}> = props => {
+    const label = useL10n(props.english, props.l10nId);
+    return <MenuItem onClick={props.onClick}>{label}</MenuItem>;
 };

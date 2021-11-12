@@ -276,6 +276,7 @@ namespace Bloom.TeamCollection
 			return JsonConvert.SerializeObject(
 				new
 				{
+					// Keep this in sync with IBookTeamCollectionStatus defined in TeamCollectionApi.tsx
 					who = whoHasBookLocked,
 					whoFirstName = _tcManager.CurrentCollection?.WhoHasBookLockedFirstName(bookFolderName),
 					whoSurname = _tcManager.CurrentCollection?.WhoHasBookLockedSurname(bookFolderName),

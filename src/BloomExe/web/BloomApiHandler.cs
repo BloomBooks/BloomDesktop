@@ -145,6 +145,8 @@ namespace Bloom.Api
 			return localPath.IndexOf("api/branding", StringComparison.InvariantCulture) > 20;
 		}
 
+		public const string ApiPrefix = "api/";
+
 		// Every path should return false or send a response.
 		// Otherwise we can get a timeout error as the browser waits for a response.
 		//
@@ -152,7 +154,7 @@ namespace Bloom.Api
 		public bool ProcessRequest(IRequestInfo info, string localPath)
 		{
 			var localPathLc = localPath.ToLowerInvariant();
-			if (localPathLc.StartsWith("api/", StringComparison.InvariantCulture))
+			if (localPathLc.StartsWith(ApiPrefix, StringComparison.InvariantCulture))
 			{
 				var endpointPath = localPath.Substring(3).ToLowerInvariant().Trim(new char[] {'/'});
 				foreach (var pair in _endpointRegistrations.Where(pair =>
