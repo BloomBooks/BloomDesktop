@@ -142,7 +142,7 @@
 			this._legacyCollectionTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
 			this._legacyCollectionTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
 			this._legacyCollectionTab.Size = new System.Drawing.Size(81, 71);
-			this._legacyCollectionTab.Text = "Legacy";
+			this._legacyCollectionTab.Text = "Collections";
 			this._legacyCollectionTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._legacyCollectionTab.TextChanged += new System.EventHandler(this.HandleTabTextChanged);
 			// 
