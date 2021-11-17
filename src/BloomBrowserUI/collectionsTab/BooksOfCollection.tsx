@@ -38,6 +38,7 @@ export const BooksOfCollection: React.FunctionComponent<{
         "editableCollectionList",
         "reload:" + props.collectionId
     );
+    const [clickedBookId, setClickedBookId] = useState("");
     const [
         selectedBookId,
         setSelectedBookIdWithApi
@@ -67,10 +68,19 @@ export const BooksOfCollection: React.FunctionComponent<{
             return; // huh?
         }
         const target = event.target as Element;
-        if (target.closest(".selected-book-wrapper") == null) {
-            // We're not going to do our own right-click menu; let whatever default happens go ahead.
-            return;
+        let bookTarget = target.closest(".selected-book-wrapper");
+        if (bookTarget == null) {
+            bookTarget = target.closest(".book-wrapper");
+            if (bookTarget == null) {
+                // We're not going to do our own right-click menu; let whatever default happens go ahead.
+                return;
+            }
+            // BookButton puts this attribute on the {selected-}book-wrapper element so this code
+            // can use it to determine which book was selected.
+            const bookId = bookTarget.getAttribute("data-book-id")!;
+            setSelectedBookIdWithApi(bookId);
         }
+        setClickedBookId(bookTarget.getAttribute("data-book-id")!);
 
         event.preventDefault();
         event.stopPropagation();
@@ -293,7 +303,16 @@ export const BooksOfCollection: React.FunctionComponent<{
             {collection.isFactoryInstalled || (
                 <Menu
                     keepMounted={true}
-                    open={!!contextMousePoint}
+                    // When we right-click on a book that's not selected, we invoke a BloomApi to select it,
+                    // and eventually that produces a render where it is selected. But before that, we go ahead
+                    // and set contextMousePoint. So there tends to be a brief flash of the context menu that should be
+                    // rendered for the (previously) selected book. To prevent this, the click action sets clickedBookId
+                    // to the book we want the menu for, and this check stops the menu appearing until the render
+                    // with the right book selected.
+                    open={
+                        !!contextMousePoint &&
+                        clickedBookId === selectedBookInfo.id
+                    }
                     onClose={handleClose}
                     anchorReference="anchorPosition"
                     anchorPosition={anchor}

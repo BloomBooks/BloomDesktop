@@ -80,7 +80,12 @@ export const BookButton: React.FunctionComponent<{
     return (
         <Grid
             item={true}
-            className={props.selected ? "selected-book-wrapper" : ""}
+            // These classes and data-book-id attribute help the BooksOfCollection class figure out
+            // what book (if any) is being right-clicked.
+            className={
+                props.selected ? "selected-book-wrapper" : "book-wrapper"
+            }
+            data-book-id={props.book.id}
         >
             <div
                 // relative so the absolutely positioned rename div will be relative to this.
