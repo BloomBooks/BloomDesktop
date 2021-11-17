@@ -10,6 +10,8 @@ import { element } from "prop-types";
 import { useL10n } from "../react_components/l10nHooks";
 import { useState } from "react";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
+import { Divider } from "@material-ui/core";
+import { Book } from "@material-ui/icons";
 
 interface IBookInfo {
     id: string;
@@ -44,6 +46,13 @@ export const BooksOfCollection: React.FunctionComponent<{
         ""
     );
     const selectedBookInfo = useMonitorBookSelection();
+    const collection = BloomApi.useApiData(
+        `collections/collectionProps?collection-id=${props.collectionId}`,
+        {
+            isFactoryInstalled: true,
+            containsDownloadedBooks: false
+        }
+    );
 
     const [contextMousePoint, setContextMousePoint] = React.useState<
         | {
@@ -85,10 +94,19 @@ export const BooksOfCollection: React.FunctionComponent<{
 
     interface MenuItemSpec {
         label: string;
-        l10nId: string;
+        l10nId?: string;
         // One of these two must be provided. If both are, onClick is used and command is ignored.
         command?: string;
         onClick?: React.MouseEventHandler<HTMLElement>;
+        // Involves making changes to the book; therefore, can only be done in the one editable collection
+        // (unless shouldInclude returns true), and if we're in a Team Collection, the book must be checked out.
+        requiresEditPermission?: boolean;
+        // by default, a menu item is shown if we're in the editable collection and
+        // editability requirements are satisfied, and not otherwise.
+        // A menu item which should be shown in other collections may define this
+        // function and have it return true for those cases where it should be shown.
+        // The function is not currently used for the editable collection.
+        shouldInclude?: () => boolean;
         // todo: handling of bloom enterprise requirement, handle checkout requirement, maybe primary collection requirement...
     }
     const handleRename = () => {
@@ -117,8 +135,10 @@ export const BooksOfCollection: React.FunctionComponent<{
         {
             label: "Open Folder on Disk",
             l10nId: "CollectionTab.ContextMenu.OpenFolderOnDisk",
-            command: "bookCommand/openFolderOnDisk"
+            command: "bookCommand/openFolderOnDisk",
+            shouldInclude: () => true // show for all collections (except factory)
         },
+        { label: "-" },
         {
             label: "Export to Word or LibreOffice...",
             l10nId: "CollectionTab.BookMenu.ExportToWordOrLibreOffice",
@@ -132,48 +152,93 @@ export const BooksOfCollection: React.FunctionComponent<{
         {
             label: "Import content from Spreadsheet...",
             l10nId: "CollectionTab.BookMenu.ImportContentFromSpreadsheet",
-            command: "bookCommand/importSpreadsheetContent"
+            command: "bookCommand/importSpreadsheetContent",
+            requiresEditPermission: true
         },
         {
             label: "Save as single file (.bloom)...",
             l10nId: "CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem",
             command: "bookCommand/saveAsDotBloom"
         },
+        { label: "-" },
         {
             label: "Update Thumbnail",
             l10nId: "CollectionTab.BookMenu.UpdateThumbnail",
-            command: "bookCommand/updateThumbnail"
+            command: "bookCommand/updateThumbnail",
+            requiresEditPermission: true // marginal, but it does change the content of the book folder
         },
         {
             label: "Update Book",
             l10nId: "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
-            command: "bookCommand/updateBook"
+            command: "bookCommand/updateBook",
+            requiresEditPermission: true // marginal, but it does change the content of the book folder
         },
         {
             label: "Rename",
             l10nId: "CollectionTab.BookMenu.Rename",
-            onClick: () => handleRename()
+            onClick: () => handleRename(),
+            requiresEditPermission: true
         },
+        { label: "-" },
         {
             label: "Delete Book",
             l10nId: "CollectionTab.BookMenu.DeleteBook",
-            command: "collections/bookCommand/deleteBook"
+            command: "collections/bookCommand/deleteBook",
+            requiresEditPermission: true,
+            // also shown if it's the editable collection and we have edit permission.
+            // This just covers the one other case where it is shown.
+            shouldInclude: () => collection.containsDownloadedBooks
         }
     ];
 
-    const menuItems = menuItemsSpecs.map((spec: MenuItemSpec) => (
-        <LocalizableMenuItem
-            english={spec.label}
-            l10nId={spec.l10nId}
-            onClick={
-                spec.onClick
-                    ? spec.onClick
-                    : () => handleBookCommand(spec.command!)
+    const menuItemsT = menuItemsSpecs
+        .map((spec: MenuItemSpec) => {
+            if (spec.label === "-") {
+                return <Divider />;
             }
-        ></LocalizableMenuItem>
-    ));
+            if (props.isEditableCollection) {
+                // eliminate commands that require permission to change the book, if we don't have it
+                if (spec.requiresEditPermission && !selectedBookInfo.editable) {
+                    return undefined;
+                }
+            } else {
+                // remove all commands except those that have a shouldInclude() function that returns true
+                if (!spec.shouldInclude || !spec.shouldInclude()) {
+                    return undefined;
+                }
+            }
 
-    // Todo: use it; fill out menuItemsSpecs; get rid of junk
+            // It should be possible to use spec.onClick || () => handleBookCommand(spec.command!) inline,
+            // but I can't make Typescript accept it.
+            let clickAction: React.MouseEventHandler = () =>
+                handleBookCommand(spec.command!);
+            if (spec.onClick) {
+                clickAction = spec.onClick;
+            }
+            return (
+                <LocalizableMenuItem
+                    english={spec.label}
+                    l10nId={spec.l10nId!}
+                    onClick={clickAction}
+                ></LocalizableMenuItem>
+            );
+        })
+        .filter(x => x); // that is, remove ones where the map function returned undefined
+
+    // Can't find a really good way to tell that an element is a Divider.
+    // But we only have Dividers and LocalizableMenuItems in this list,
+    // so it's a Dividier if it doesn't have one of the required props of LocalizableMenuItem.
+    const isDivider = (element: JSX.Element): boolean => {
+        return !element.props.english;
+    };
+    // filter out dividers if (a) followed by another divider, or (b) at the start or end of the list
+    const menuItems = menuItemsT.filter(
+        (elt, index) =>
+            !isDivider(elt!) ||
+            (index > 0 &&
+                index < menuItemsT.length - 1 &&
+                !isDivider(menuItemsT[index + 1]!))
+    );
 
     const anchor = !!contextMousePoint
         ? contextMousePoint!.mouseY !== null &&
@@ -225,15 +290,17 @@ export const BooksOfCollection: React.FunctionComponent<{
                     );
                 })}
             </Grid>
-            <Menu
-                keepMounted={true}
-                open={!!contextMousePoint}
-                onClose={handleClose}
-                anchorReference="anchorPosition"
-                anchorPosition={anchor}
-            >
-                {menuItems}
-            </Menu>
+            {collection.isFactoryInstalled || (
+                <Menu
+                    keepMounted={true}
+                    open={!!contextMousePoint}
+                    onClose={handleClose}
+                    anchorReference="anchorPosition"
+                    anchorPosition={anchor}
+                >
+                    {menuItems}
+                </Menu>
+            )}
         </div>
     );
 };

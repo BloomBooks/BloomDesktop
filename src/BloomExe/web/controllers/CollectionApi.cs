@@ -75,7 +75,18 @@ namespace Bloom.web.controllers
 			}, true);
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "bookCommand/", HandleBookCommand, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "collectionProps/", HandleCollectionProps, true);
 		}
+
+		private void HandleCollectionProps(ApiRequest request)
+		{
+			var collection = GetCollectionOfRequest(request);
+			dynamic props = new ExpandoObject();
+			props.isFactoryInstalled = collection.IsFactoryInstalled;
+			props.containsDownloadedBooks = collection.ContainsDownloadedBooks;
+			request.ReplyWithJson(JsonConvert.SerializeObject(props));
+		}
+
 		/// <summary>
 		/// This function handles collection-level book commands, that is, those that don't just operate on a book but
 		/// change the collection of books by adding or deleting one. See BookCommandsApi for commands that operate on a
@@ -92,7 +103,8 @@ namespace Bloom.web.controllers
 					_libraryModel.DuplicateBook(book);
 					break;
 				case "deleteBook":
-					_libraryModel.DeleteBook(book);
+					var collection = GetCollectionOfRequest(request);
+					_libraryModel.DeleteBook(book, collection);
 					break;
 			}
 			request.PostSucceeded();

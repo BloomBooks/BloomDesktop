@@ -220,8 +220,10 @@ namespace Bloom.CollectionTab
 		{
 			return _bookSelection.CurrentSelection;
 		}
-		public bool DeleteBook(Book.Book book)//, BookCollection collection)
+		public bool DeleteBook(Book.Book book, BookCollection collection = null)
 		{
+			if (collection == null)
+				collection = TheOneEditableCollection;
 			Debug.Assert(book.FolderPath == _bookSelection.CurrentSelection?.FolderPath);
 
 			if (_bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanDelete)
@@ -257,8 +259,9 @@ namespace Bloom.CollectionTab
 					// been achieved and the local result won't be a surprise later. So it seems marginally
 					// better to do them in this order.
 					_bookSelection.SelectBook(null);
-					_tcManager.CurrentCollection?.DeleteBookFromRepo(book.FolderPath);
-					TheOneEditableCollection.DeleteBook(book.BookInfo);
+					if (collection == TheOneEditableCollection)
+						_tcManager.CurrentCollection?.DeleteBookFromRepo(book.FolderPath);
+					collection.DeleteBook(book.BookInfo);
 					#if Chorus
 					_sendReceiver.CheckInNow(string.Format("Deleted '{0}'", title));
 					#endif
