@@ -31,13 +31,6 @@
         z-index: 1000;
     }
     .bookButton {
-        //margin-top: 16px;
-        height: 120px;
-        width: 90px;
-        border: none;
-        overflow: hidden;
-        padding: 0;
-
         // &.checkedOut {
         //     background-color: yellow !important;
         // }
@@ -51,6 +44,13 @@
         &.selected {
             border: solid 2px #1e94a4;
             border-radius: 3px;
+
+            // This disables an overlay that is useful, if at all, only when the button is not
+            // already selected, and which interferes with events inside like clicking on the
+            // book title during rename.
+            .MuiTouchRipple-root {
+                display: none;
+            }
         }
         .thumbnail-wrapper {
             height: 70px;

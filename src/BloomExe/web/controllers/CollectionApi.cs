@@ -34,10 +34,12 @@ namespace Bloom.web.controllers
 		private readonly LibraryModel _libraryModel;
 		public const string kApiUrlPart = "collections/";
 		private string _previousTargetSaveAs;
-		public 	 CollectionApi(CollectionSettings settings, LibraryModel libraryModel)
+		private readonly BookSelection _bookSelection;
+		public 	 CollectionApi(CollectionSettings settings, LibraryModel libraryModel, BookSelection bookSelection)
 		{
 			_settings = settings;
 			_libraryModel = libraryModel;
+			_bookSelection = bookSelection;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -62,7 +64,11 @@ namespace Bloom.web.controllers
 						break;
 					case HttpMethods.Post:
 						var book = GetBookObjectFromPost(request);
-						_libraryModel.SelectBook(book);
+						if (book.FolderPath != _bookSelection?.CurrentSelection?.FolderPath)
+						{
+							_libraryModel.SelectBook(book);
+						}
+
 						request.PostSucceeded();
 						break;
 				}

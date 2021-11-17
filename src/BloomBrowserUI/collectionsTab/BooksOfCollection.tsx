@@ -21,6 +21,8 @@ export const BooksOfCollection: React.FunctionComponent<{
     collectionId: string;
     isEditableCollection: boolean;
 }> = props => {
+    const [renaming, setRenaming] = useState(false);
+
     if (!props.collectionId) {
         window.alert("null collectionId");
     }
@@ -89,6 +91,17 @@ export const BooksOfCollection: React.FunctionComponent<{
         onClick?: React.MouseEventHandler<HTMLElement>;
         // todo: handling of bloom enterprise requirement, handle checkout requirement, maybe primary collection requirement...
     }
+    const handleRename = () => {
+        handleClose();
+        setRenaming(true);
+    };
+
+    const finishRename = (name: string) => {
+        BloomApi.postString(
+            `bookCommand/rename?collection-id=${props.collectionId}&name=${name}`,
+            selectedBookId
+        );
+    };
 
     const menuItemsSpecs: MenuItemSpec[] = [
         {
@@ -136,11 +149,11 @@ export const BooksOfCollection: React.FunctionComponent<{
             l10nId: "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
             command: "bookCommand/updateBook"
         },
-        // {
-        //     label: "Rename",
-        //     l10nId: "CollectionTab.BookMenu.Rename",
-        //     onClick=()=>handeRename()
-        // },
+        {
+            label: "Rename",
+            l10nId: "CollectionTab.BookMenu.Rename",
+            onClick: () => handleRename()
+        },
         {
             label: "Delete Book",
             l10nId: "CollectionTab.BookMenu.DeleteBook",
@@ -187,14 +200,26 @@ export const BooksOfCollection: React.FunctionComponent<{
                 alignItems="flex-start"
             >
                 {books?.map(book => {
+                    const selected = selectedBookInfo.id === book.id;
                     return (
                         <BookButton
                             key={book.id}
                             book={book}
                             isInEditableCollection={props.isEditableCollection}
-                            selected={selectedBookInfo.id === book.id}
+                            selected={selected}
+                            renaming={selected && renaming}
                             onClick={bookId => {
-                                setSelectedBookIdWithApi(bookId);
+                                if (!selected) {
+                                    // Not only is it useless to select the book that is already selected,
+                                    // it might have side effects. This might have been a contributing factor
+                                    // to the rename box getting blurred when clicked in.
+                                    setSelectedBookIdWithApi(bookId);
+                                }
+                            }}
+                            onRenameComplete={newName => {
+                                // Todo: update button with new name.
+                                finishRename(newName);
+                                setRenaming(false);
                             }}
                         />
                     );

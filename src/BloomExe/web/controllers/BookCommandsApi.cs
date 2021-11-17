@@ -14,6 +14,7 @@ using Bloom.CollectionTab;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Spreadsheet;
+using Bloom.TeamCollection;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.IO;
@@ -79,8 +80,23 @@ namespace Bloom.web.controllers
 				case "updateBook":
 					HandleBringBookUpToDate(book);
 					break;
+				case "rename":
+					HandleRename(book, request);
+					break;
 			}
 			request.PostSucceeded();
+		}
+
+		private void HandleRename(Book.Book book, ApiRequest request)
+		{
+			var newName = request.RequiredParam("name");
+			book.SetAndLockBookName(newName);
+
+			// This is an unfortunately expensive way to get the name to update in the button.
+			// However, manual renaming is not a high-frequency thing that needs to be optimal.
+			_libraryModel.ReloadEditableCollection();
+
+			BookHistory.AddEvent(book, BookHistoryEventType.Renamed, $"Book renamed to \"{newName}\"");
 		}
 
 
