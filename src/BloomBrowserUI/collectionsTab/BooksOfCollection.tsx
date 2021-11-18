@@ -63,6 +63,13 @@ export const BooksOfCollection: React.FunctionComponent<{
         | undefined
     >();
 
+    const setAdjustedContextMenuPoint = (x: number, y: number) => {
+        setContextMousePoint({
+            mouseX: x - 2,
+            mouseY: y - 4
+        });
+    };
+
     const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
         if (!(event.target instanceof Element)) {
             return; // huh?
@@ -84,10 +91,7 @@ export const BooksOfCollection: React.FunctionComponent<{
 
         event.preventDefault();
         event.stopPropagation();
-        setContextMousePoint({
-            mouseX: event.clientX - 2,
-            mouseY: event.clientY - 4
-        });
+        setAdjustedContextMenuPoint(event.clientX - 2, event.clientY - 4);
     };
 
     const handleClose = () => {
@@ -295,6 +299,14 @@ export const BooksOfCollection: React.FunctionComponent<{
                                 // Todo: update button with new name.
                                 finishRename(newName);
                                 setRenaming(false);
+                            }}
+                            onContextMenuArrowClicked={(
+                                mouseX,
+                                mouseY,
+                                bookId
+                            ) => {
+                                setAdjustedContextMenuPoint(mouseX, mouseY);
+                                setClickedBookId(bookId);
                             }}
                         />
                     );

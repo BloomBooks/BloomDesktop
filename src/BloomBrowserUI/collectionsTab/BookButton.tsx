@@ -26,6 +26,11 @@ export const BookButton: React.FunctionComponent<{
     renaming: boolean;
     onClick: (bookId: string) => void;
     onRenameComplete: (newName: string) => void;
+    onContextMenuArrowClicked: (
+        mouseX: number,
+        mouseY: number,
+        bookId: string
+    ) => void;
 }> = props => {
     // TODO: the c# had Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont,
 
@@ -76,6 +81,7 @@ export const BookButton: React.FunctionComponent<{
 
     const buttonHeight = 120;
     const renameHeight = 40;
+    const downSize = 14; // size of down-arrow icon
 
     return (
         <Grid
@@ -136,6 +142,29 @@ export const BookButton: React.FunctionComponent<{
                 >
                     {props.renaming || label}
                 </Button>
+                {// I tried putting this div inside the button but then...in FF 60 but not 68 or later...
+                // the button gets the click even if its inside this div.
+                props.selected && (
+                    <div
+                        css={css`
+                            position: absolute;
+                            box-sizing: border-box;
+                            bottom: -${downSize / 2 - 4}px;
+                            right: 3px;
+                            height: ${downSize}px;
+                            width: ${downSize}px;
+                            border: solid transparent ${downSize / 2}px;
+                            border-top-color: white;
+                        `}
+                        onClick={e =>
+                            props.onContextMenuArrowClicked?.(
+                                e.clientX,
+                                e.clientY,
+                                props.book.id
+                            )
+                        }
+                    ></div>
+                )}
                 {// I tried putting this div inside the button as an alternate to label.
                 // Somehow, this causes the blur to happen when the user clicks in the label
                 // to position the IP during editing. I suspect default events are being
