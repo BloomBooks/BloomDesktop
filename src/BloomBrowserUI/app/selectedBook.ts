@@ -4,8 +4,8 @@ import { useSubscribeToWebSocketForObject } from "../utils/WebSocketManager";
 
 export interface ISelectedBookInfo {
     id: string | undefined;
-    editable: boolean; // truly editable, including considering whether checked out if necessary
-    collectionKind: "main" | "factory" | "other"; // true if we can make a book from this source. Should never be true if editable is.
+    saveable: boolean; // changes can safely be saved, including considering whether checked out if necessary
+    collectionKind: "main" | "factory" | "other"; // true if we can make a book from this source. Should never be true if saveable is.
 }
 
 // Anything that uses this will always have the current book info. The first render will see the default
@@ -16,7 +16,7 @@ export function useMonitorBookSelection(): ISelectedBookInfo {
     const [selectedBookInfo, setSelectedBookInfo] = useState<ISelectedBookInfo>(
         {
             id: undefined,
-            editable: false,
+            saveable: false,
             collectionKind: "main" // better to see the 'edit' button until we know which it is
         }
     );

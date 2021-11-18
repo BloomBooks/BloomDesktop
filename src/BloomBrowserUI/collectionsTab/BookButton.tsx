@@ -25,7 +25,7 @@ export const BookButton: React.FunctionComponent<{
     selected: boolean;
     renaming: boolean;
     onClick: (bookId: string) => void;
-    onRenameComplete: (newName: string) => void;
+    onRenameComplete: (newName: string | undefined) => void;
     onContextMenuArrowClicked: (
         mouseX: number,
         mouseY: number,
@@ -64,6 +64,13 @@ export const BookButton: React.FunctionComponent<{
                 // but it gets activated immediately, and I cannot figure out why.
                 renameDiv.current?.addEventListener("blur", () => {
                     props.onRenameComplete(renameDiv.current!.innerText);
+                });
+                renameDiv.current?.addEventListener("keypress", e => {
+                    if (e.key === "Enter") {
+                        props.onRenameComplete(renameDiv.current!.innerText);
+                    } else if (e.key === "Escape") {
+                        props.onRenameComplete(undefined);
+                    }
                 });
                 p.focus();
             }, 10);
@@ -174,7 +181,8 @@ export const BookButton: React.FunctionComponent<{
                 props.renaming && (
                     <div
                         // For some unknown reason, the selection background color was coming out white.
-                        // I reset it to what I think is Windows standard.
+                        // I reset it to what I think is Windows standard. Need -moz- for Gecko60
+                        // (until FF62).
                         // Enhance: ideally we'd either figure out why we don't get the usual default
                         // selection background (maybe because the window has a dark background?)
                         // or make it use the user's configured system highlight background (but that
@@ -200,6 +208,9 @@ export const BookButton: React.FunctionComponent<{
                             line-height: 18px;
                             text-align: center;
                             &::selection {
+                                background: rgb(0, 120, 215);
+                            }
+                            &::-moz-selection {
                                 background: rgb(0, 120, 215);
                             }
                         `}

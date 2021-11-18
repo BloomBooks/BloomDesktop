@@ -330,7 +330,7 @@ namespace Bloom.Workspace
 			var result = JsonConvert.SerializeObject(new
 			{
 				id = book?.ID,
-				editable = _bookSelection.CurrentSelection?.IsSaveable ?? false,
+				saveable = _bookSelection.CurrentSelection?.IsSaveable ?? false,
 				collectionKind
 			});
 			return result;

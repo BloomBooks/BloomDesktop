@@ -110,18 +110,18 @@ export const BooksOfCollection: React.FunctionComponent<{
         label: string;
         l10nId?: string;
         // One of these two must be provided. If both are, onClick is used and command is ignored.
+        // If only command is provided, the click action is to call handleBookCommand with that argument,
+        // which invokes the corresponding API call to C# code.
         command?: string;
         onClick?: React.MouseEventHandler<HTMLElement>;
+        // If this is defined (rare), it determines whether the menu item should be shown
+        // (except in factory collections, where we never show any).
+        // If it's not defined, a menu item is shown if we're in the editable collection and
+        // other requirements are satisfied, and not otherwise.
+        shouldShow?: () => boolean;
         // Involves making changes to the book; therefore, can only be done in the one editable collection
         // (unless shouldInclude returns true), and if we're in a Team Collection, the book must be checked out.
-        requiresEditPermission?: boolean;
-        // by default, a menu item is shown if we're in the editable collection and
-        // editability requirements are satisfied, and not otherwise.
-        // A menu item which should be shown in other collections may define this
-        // function and have it return true for those cases where it should be shown.
-        // The function is not currently used for the editable collection.
-        shouldInclude?: () => boolean;
-        // todo: handling of bloom enterprise requirement, handle checkout requirement, maybe primary collection requirement...
+        requiresSavePermission?: boolean;
     }
     const handleRename = () => {
         handleClose();
@@ -139,7 +139,7 @@ export const BooksOfCollection: React.FunctionComponent<{
         {
             label: "Duplicate Book",
             l10nId: "CollectionTab.BookMenu.DuplicateBook",
-            command: "collections/bookCommand/duplicateBook"
+            command: "collections/duplicateBook"
         },
         {
             label: "Make Bloom Pack",
@@ -150,7 +150,7 @@ export const BooksOfCollection: React.FunctionComponent<{
             label: "Open Folder on Disk",
             l10nId: "CollectionTab.ContextMenu.OpenFolderOnDisk",
             command: "bookCommand/openFolderOnDisk",
-            shouldInclude: () => true // show for all collections (except factory)
+            shouldShow: () => true // show for all collections (except factory)
         },
         { label: "-" },
         {
@@ -167,7 +167,7 @@ export const BooksOfCollection: React.FunctionComponent<{
             label: "Import content from Spreadsheet...",
             l10nId: "CollectionTab.BookMenu.ImportContentFromSpreadsheet",
             command: "bookCommand/importSpreadsheetContent",
-            requiresEditPermission: true
+            requiresSavePermission: true
         },
         {
             label: "Save as single file (.bloom)...",
@@ -179,29 +179,30 @@ export const BooksOfCollection: React.FunctionComponent<{
             label: "Update Thumbnail",
             l10nId: "CollectionTab.BookMenu.UpdateThumbnail",
             command: "bookCommand/updateThumbnail",
-            requiresEditPermission: true // marginal, but it does change the content of the book folder
+            requiresSavePermission: true // marginal, but it does change the content of the book folder
         },
         {
             label: "Update Book",
             l10nId: "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
             command: "bookCommand/updateBook",
-            requiresEditPermission: true // marginal, but it does change the content of the book folder
+            requiresSavePermission: true // marginal, but it does change the content of the book folder
         },
         {
             label: "Rename",
             l10nId: "CollectionTab.BookMenu.Rename",
             onClick: () => handleRename(),
-            requiresEditPermission: true
+            requiresSavePermission: true
         },
         { label: "-" },
         {
             label: "Delete Book",
             l10nId: "CollectionTab.BookMenu.DeleteBook",
-            command: "collections/bookCommand/deleteBook",
-            requiresEditPermission: true,
-            // also shown if it's the editable collection and we have edit permission.
-            // This just covers the one other case where it is shown.
-            shouldInclude: () => collection.containsDownloadedBooks
+            command: "collections/deleteBook",
+            requiresSavePermission: true, // for consistency, but not used since shouldShow is defined
+            // Allowed for the downloaded books collection and the editable collection (provided the book is checked out, if applicable)
+            shouldShow: () =>
+                collection.containsDownloadedBooks ||
+                (props.isEditableCollection && selectedBookInfo.saveable)
         }
     ];
 
@@ -210,14 +211,22 @@ export const BooksOfCollection: React.FunctionComponent<{
             if (spec.label === "-") {
                 return <Divider />;
             }
-            if (props.isEditableCollection) {
-                // eliminate commands that require permission to change the book, if we don't have it
-                if (spec.requiresEditPermission && !selectedBookInfo.editable) {
+            if (spec.shouldShow) {
+                if (!spec.shouldShow()) {
                     return undefined;
                 }
             } else {
-                // remove all commands except those that have a shouldInclude() function that returns true
-                if (!spec.shouldInclude || !spec.shouldInclude()) {
+                // default logic for whether to show the command
+                if (props.isEditableCollection) {
+                    // eliminate commands that require permission to change the book, if we don't have it
+                    if (
+                        spec.requiresSavePermission &&
+                        !selectedBookInfo.saveable
+                    ) {
+                        return undefined;
+                    }
+                } else {
+                    // outside that collection, commands can only be shown if they have a shouldShow function.
                     return undefined;
                 }
             }
@@ -296,8 +305,11 @@ export const BooksOfCollection: React.FunctionComponent<{
                                 }
                             }}
                             onRenameComplete={newName => {
-                                // Todo: update button with new name.
-                                finishRename(newName);
+                                // Note, only undefined (from pressing escape) avoids calling newName.
+                                // Empty string is a valid rename value, and ends automatic naming.
+                                if (newName != undefined) {
+                                    finishRename(newName);
+                                }
                                 setRenaming(false);
                             }}
                             onContextMenuArrowClicked={(

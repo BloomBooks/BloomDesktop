@@ -74,7 +74,17 @@ namespace Bloom.web.controllers
 				}
 			}, true);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "bookCommand/", HandleBookCommand, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "duplicateBook/", (request) =>
+			{
+				_libraryModel.DuplicateBook(GetBookObjectFromPost(request));
+				request.PostSucceeded();
+			}, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "deleteBook/", (request) =>
+			{
+				var collection = GetCollectionOfRequest(request);
+				_libraryModel.DeleteBook(GetBookObjectFromPost(request), collection);
+				request.PostSucceeded();
+			}, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "collectionProps/", HandleCollectionProps, true);
 		}
 
@@ -86,30 +96,6 @@ namespace Bloom.web.controllers
 			props.containsDownloadedBooks = collection.ContainsDownloadedBooks;
 			request.ReplyWithJson(JsonConvert.SerializeObject(props));
 		}
-
-		/// <summary>
-		/// This function handles collection-level book commands, that is, those that don't just operate on a book but
-		/// change the collection of books by adding or deleting one. See BookCommandsApi for commands that operate on a
-		/// single book without changing the collection.
-		/// </summary>
-		/// <param name="request"></param>
-		private void HandleBookCommand(ApiRequest request)
-		{
-			var book = GetBookObjectFromPost(request);
-			var command = request.LocalPath().Substring((BloomApiHandler.ApiPrefix + kApiUrlPart + "bookCommand/").Length);
-			switch (command)
-			{
-				case "duplicateBook":
-					_libraryModel.DuplicateBook(book);
-					break;
-				case "deleteBook":
-					var collection = GetCollectionOfRequest(request);
-					_libraryModel.DeleteBook(book, collection);
-					break;
-			}
-			request.PostSucceeded();
-		}
-
 
 		// List out all the collections we have loaded
 		public void HandleListRequest(ApiRequest request)
