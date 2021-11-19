@@ -1,6 +1,7 @@
 /// <reference path="../misc-types.d.ts" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
 import axios from "axios";
+import { getBloomApiPrefix } from "../../utils/bloomApi";
 
 /**
  * L10NSharp LocalizationManager for javascript.
@@ -274,10 +275,12 @@ export class LocalizationManager {
         //to the caller. So, we do that by making our *own* deferred object, and "resolve" it with the massaged value.
         const deferred = $.Deferred();
 
+        const bloomApiPrefix: string = getBloomApiPrefix();
+
         //when the async call comes back, we massage the text
         // Using axios directly because we have specific catch behavior
         axios
-            .get("/bloom/api/i18n/translate", {
+            .get(`${bloomApiPrefix}/i18n/translate`, {
                 params: {
                     key: id,
                     englishText: englishText,

@@ -816,7 +816,7 @@ namespace Bloom.Collection
 			// 
 			// _enterpriseRequiredForSpreadsheetImportExport
 			//
-			this._enterpriseRequiredForSpreadsheetImportExport.Name = "_enterpriseRequiredForTeamCollection";
+			this._enterpriseRequiredForSpreadsheetImportExport.Name = "_enterpriseRequiredForSpreadsheetImportExport";
 			this._enterpriseRequiredForSpreadsheetImportExport.Location = new System.Drawing.Point(0, 158);
 			this._enterpriseRequiredForSpreadsheetImportExport.Size = new System.Drawing.Size(23, 23);
 			this._enterpriseRequiredForSpreadsheetImportExport.TabIndex = 10;

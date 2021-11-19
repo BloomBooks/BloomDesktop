@@ -18,6 +18,9 @@ export const kBloomYellow = "#FEBF00";
 export const kPanelBackground = "#2e2e2e";
 export const kDarkestBackground = "#1a1a1a";
 
+// Should match @UIFontStack in bloomWebFonts.less
+export const kUiFontStack = "NotoSans, Roboto, sans-serif";
+
 // the value that gets us to the 4.5 AA ratio depends on the background.
 // So the "aside"/features right-panel color effects this.
 //const AACompliantBloomBlue = "#177c8a";
@@ -35,7 +38,7 @@ const theme = createMuiTheme({
     },
     typography: {
         fontSize: 12,
-        fontFamily: ["NotoSans", "Roboto", "sans-serif"]
+        fontFamily: kUiFontStack
     },
     props: {
         MuiLink: {

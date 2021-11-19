@@ -8,6 +8,7 @@ import CloseOnEscape from "react-close-on-escape";
 import { kDialogPadding } from "../../bloomMaterialUITheme";
 import { BloomApi } from "../../utils/bloomApi";
 import { useState } from "react";
+import { kUiFontStack } from "../../bloomMaterialUITheme.js";
 
 // The <BloomDialog> component and its children provides consistent layout across Bloom Dialogs.
 // It can be used either inside of a winforms dialog, or as a MaterialUI Dialog.
@@ -42,7 +43,7 @@ export const BloomDialog: React.FunctionComponent<{
                 * {
                     // This value is the same as that given in bloomMaterialUITheme.  For some
                     // reason, it is not being applied here.  See BL-10208 and BL-10228.
-                    font-family: NotoSans, Roboto, sans-serif;
+                    font-family: ${kUiFontStack};
                 }
             `}
         >
