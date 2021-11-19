@@ -39,10 +39,9 @@ export const BooksOfCollection: React.FunctionComponent<{
         "reload:" + props.collectionId
     );
     const [clickedBookId, setClickedBookId] = useState("");
-    const [
-        selectedBookId,
-        setSelectedBookIdWithApi
-    ] = BloomApi.useApiStringState(
+    // Don't use the 'get' value here because we're not monitoring anything to get it
+    // updated when the selection changes some other way than calling the set method.
+    const [unused, setSelectedBookIdWithApi] = BloomApi.useApiStringState(
         `collections/selected-book-id?${collectionQuery}`,
         ""
     );
@@ -75,16 +74,16 @@ export const BooksOfCollection: React.FunctionComponent<{
             return; // huh?
         }
         const target = event.target as Element;
-        let bookTarget = target.closest(".selected-book-wrapper");
+        let bookTarget = target.closest(".book-wrapper");
         if (bookTarget == null) {
-            bookTarget = target.closest(".book-wrapper");
-            if (bookTarget == null) {
-                // We're not going to do our own right-click menu; let whatever default happens go ahead.
-                return;
-            }
-            // BookButton puts this attribute on the {selected-}book-wrapper element so this code
-            // can use it to determine which book was selected.
-            const bookId = bookTarget.getAttribute("data-book-id")!;
+            // We're not going to do our own right-click menu; let whatever default happens go ahead.
+            return;
+        }
+
+        // BookButton puts this attribute on the {selected-}book-wrapper element so this code
+        // can use it to determine which book was selected.
+        const bookId = bookTarget.getAttribute("data-book-id")!;
+        if (bookId !== selectedBookInfo.id) {
             setSelectedBookIdWithApi(bookId);
         }
         setClickedBookId(bookTarget.getAttribute("data-book-id")!);
@@ -102,7 +101,7 @@ export const BooksOfCollection: React.FunctionComponent<{
         handleClose();
         BloomApi.postString(
             `${command}?collection-id=${props.collectionId}`,
-            selectedBookId
+            selectedBookInfo.id!
         );
     };
 
@@ -131,7 +130,7 @@ export const BooksOfCollection: React.FunctionComponent<{
     const finishRename = (name: string) => {
         BloomApi.postString(
             `bookCommand/rename?collection-id=${props.collectionId}&name=${name}`,
-            selectedBookId
+            selectedBookInfo.id!
         );
     };
 

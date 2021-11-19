@@ -63,7 +63,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                         position: relative !important; // we may find this messes things up... but the "absolute" positioning default is ridiculous.
 
                         .Pane.horizontal {
-                            overflow-y: scroll;
+                            overflow-y: auto;
                             // TODO: this should only be applied to the bottom pane. As is, it pushes the top one away from the top of the screen.
                             margin-top: ${kResizerSize}px; // have to push down to make room for the resizer! Ughh.
                         }
@@ -74,6 +74,9 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
             >
                 <SplitPane
                     split="vertical"
+                    // This gives the two panes about the same ratio as in the Legacy view.
+                    // Enhance: we'd like to save the user's chosen width.
+                    initialSizes={[31, 50]}
                     resizerOptions={{
                         css: {
                             width: `${kResizerSize}px`,

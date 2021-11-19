@@ -92,9 +92,7 @@ namespace Bloom.web.controllers
 			var newName = request.RequiredParam("name");
 			book.SetAndLockBookName(newName);
 
-			// This is an unfortunately expensive way to get the name to update in the button.
-			// However, manual renaming is not a high-frequency thing that needs to be optimal.
-			_libraryModel.ReloadEditableCollection();
+			_libraryModel.UpdateLabelOfBookInEditableCollection(book);
 
 			BookHistory.AddEvent(book, BookHistoryEventType.Renamed, $"Book renamed to \"{newName}\"");
 		}
@@ -247,32 +245,8 @@ namespace Bloom.web.controllers
 
 		private void ScheduleRefreshOfOneThumbnail(Book.Book book)
 		{
-			_libraryModel.UpdateThumbnailAsync(book, new HtmlThumbNailer.ThumbnailOptions(), RefreshOneThumbnail, HandleThumbnailerErrror);
+			_libraryModel.UpdateThumbnailAsync(book);
 		}
-
-		private void RefreshOneThumbnail(Book.BookInfo bookInfo, Image image)
-		{
-			// The arguments here are not currently used (method signature is legacy),
-			// but may be useful if we optimize.
-			// optimize: I think this will reload all of them
-			_webSocketServer.SendString("bookImage", "reload", bookInfo.Id);
-		}
-
-		private void HandleThumbnailerErrror(Book.BookInfo bookInfo, Exception error)
-		{
-			string path = Path.Combine(bookInfo.FolderPath, "thumbnail.png");
-			try
-			{
-				Resources.Error70x70.Save(@path, ImageFormat.Png);
-			}
-			catch (Exception e)
-			{
-				Logger.WriteError("Could not save error icon for book", e);
-			}
-
-			RefreshOneThumbnail(bookInfo, Resources.Error70x70);
-		}
-
 
 		private void HandleSaveAsDotBloom(Book.Book book)
 		{

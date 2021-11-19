@@ -93,11 +93,9 @@ export const BookButton: React.FunctionComponent<{
     return (
         <Grid
             item={true}
-            // These classes and data-book-id attribute help the BooksOfCollection class figure out
+            // This class and data-book-id attribute help the BooksOfCollection class figure out
             // what book (if any) is being right-clicked.
-            className={
-                props.selected ? "selected-book-wrapper" : "book-wrapper"
-            }
+            className="book-wrapper"
             data-book-id={props.book.id}
         >
             <div

@@ -145,6 +145,25 @@ namespace Bloom.Collection
 			}
 		}
 
+		public void UpdateBookInfo(BookInfo info)
+		{
+			var oldIndex = _bookInfos.FindIndex(i => i.Id == info.Id);
+			IComparer<string> comp = new NaturalSortComparer<string>();
+			var newKey = Path.GetFileName(info.FolderPath);
+			if (oldIndex >= 0)
+			{
+				// optimize: very often the new one will belong at the same index,
+				// if that's the case we could just replace.
+				_bookInfos.RemoveAt(oldIndex);
+			}
+
+			int newIndex = _bookInfos.FindIndex(x => comp.Compare(newKey, Path.GetFileName(x.FolderPath)) <= 0);
+			if (newIndex < 0)
+				newIndex = _bookInfos.Count;
+			_bookInfos.Insert(newIndex, info);
+			NotifyCollectionChanged();
+		}
+
 		public void AddBookInfo(BookInfo bookInfo)
 		{
 			_bookInfos.Add(bookInfo);

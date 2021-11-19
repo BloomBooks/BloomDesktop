@@ -248,9 +248,9 @@ export class BloomApi {
     ): T {
         const [generation, setGeneration] = useState(0);
         // Force a reload when the specified event happens.
-        useSubscribeToWebSocketForEvent(clientContext, eventId, () =>
-            setGeneration(old => old + 1)
-        );
+        useSubscribeToWebSocketForEvent(clientContext, eventId, () => {
+            setGeneration(old => old + 1);
+        });
         return this.useApiDataInternal(urlSuffix, defaultValue, generation);
     }
 

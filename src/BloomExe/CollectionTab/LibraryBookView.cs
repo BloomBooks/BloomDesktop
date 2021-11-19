@@ -64,7 +64,7 @@ namespace Bloom.CollectionTab
 			selectedTabChangedEvent.Subscribe(c =>
 			{
 				var wasVisible = _visible;
-				_visible = c.To is LibraryView || c is ReactCollectionTabView;
+				_visible = c.To is LibraryView || c.To is ReactCollectionTabView;
 				if (_reshowPending || wasVisible != _visible)
 				{
 					ShowBook();

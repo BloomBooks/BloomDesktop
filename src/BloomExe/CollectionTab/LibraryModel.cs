@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -9,6 +10,7 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Properties;
 using Bloom.TeamCollection;
 //using Bloom.SendReceive;
 using Bloom.ToPalaso;
@@ -148,6 +150,16 @@ namespace Bloom.CollectionTab
 			// I hope we can get rid of this when we retire the old LibraryListView, but for now we need to keep both views up to date.
 			// optimize: we only need to reload the first (editable) collection; better yet, we only need to add the one new book to it.
 			ReloadCollections();
+		}
+
+		public void UpdateLabelOfBookInEditableCollection(Book.Book book)
+		{
+			// We can find a more efficient way to do this if necessary.
+			//ReloadEditableCollection();
+			TheOneEditableCollection.UpdateBookInfo(book.BookInfo);
+
+			// happens as a side effect
+			//_webSocketServer.SendEvent("editableCollectionList", "reload:" + _bookCollections[0].PathToDirectory);
 		}
 
 		/// <summary>
@@ -421,6 +433,34 @@ namespace Bloom.CollectionTab
 
 		}
 
+		public void UpdateThumbnailAsync(Book.Book book)
+		{
+			UpdateThumbnailAsync(book, new HtmlThumbNailer.ThumbnailOptions(), RefreshOneThumbnail, HandleThumbnailerErrror);
+		}
+
+		private void RefreshOneThumbnail(Book.BookInfo bookInfo, Image image)
+		{
+			// The arguments here are not currently used (method signature is legacy),
+			// but may be useful if we optimize.
+			// optimize: I think this will reload all of them
+			_webSocketServer.SendString("bookImage", "reload", bookInfo.Id);
+		}
+
+		private void HandleThumbnailerErrror(Book.BookInfo bookInfo, Exception error)
+		{
+			string path = Path.Combine(bookInfo.FolderPath, "thumbnail.png");
+			try
+			{
+				Resources.Error70x70.Save(@path, ImageFormat.Png);
+			}
+			catch (Exception e)
+			{
+				Logger.WriteError("Could not save error icon for book", e);
+			}
+
+			RefreshOneThumbnail(bookInfo, Resources.Error70x70);
+		}
+
 		internal (string dirName, string dirPrefix) GetDirNameAndPrefixForCollectionBloomPack()
 		{
 			var dir = TheOneEditableCollection.PathToDirectory;
@@ -645,6 +685,11 @@ namespace Bloom.CollectionTab
 
 		public Book.Book GetBookFromBookInfo(BookInfo bookInfo, bool fullyUpdateBookFiles = false)
 		{
+			// If we're looking for the current book it's important to return the actual book object,
+			// because it could end up modified in ways that make our one out-of-date if we modify another
+			// instance based on the same folder. For example, Rename could make our FolderPath wrong.
+			if (bookInfo.FolderPath == _bookSelection.CurrentSelection?.FolderPath)
+				return _bookSelection.CurrentSelection;
 			return _bookServer.GetBookFromBookInfo(bookInfo, fullyUpdateBookFiles);
 		}
 

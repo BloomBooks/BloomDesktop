@@ -6,6 +6,7 @@ using Bloom.Workspace;
 using L10NSharp;
 using SIL.Reporting;
 using System.Drawing;
+using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
@@ -22,7 +23,7 @@ namespace Bloom.CollectionTab
 			LibraryBookView.Factory templateBookViewFactory,
 			SelectedTabChangedEvent selectedTabChangedEvent,
 			SendReceiveCommand sendReceiveCommand,
-			TeamCollectionManager tcManager)
+			TeamCollectionManager tcManager, BookSelection bookSelection)
 		{
 			_model = model;
 			InitializeComponent();
@@ -92,6 +93,20 @@ namespace Bloom.CollectionTab
 			// the TC to the local collection, and as part of that, the collection tab doesn't expect
 			// the local collection to change because of TC stuff once it starts loading.
 			Controls.Remove(_reactControl);
+			bookSelection.SelectionChanged += (sender, e) => BookSelectionChanged(bookSelection.CurrentSelection);
+		}
+
+		private void BookSelectionChanged(Book.Book book)
+		{
+			if (book == null)
+				return;
+			if (book.IsEditable)
+				_model.UpdateThumbnailAsync(book);
+			book.ContentsChanged += (sender, args) =>
+			{
+				_model.UpdateThumbnailAsync(book);
+				_model.UpdateLabelOfBookInEditableCollection(book);
+			};
 		}
 
 		public void ReadyToShowCollections()
