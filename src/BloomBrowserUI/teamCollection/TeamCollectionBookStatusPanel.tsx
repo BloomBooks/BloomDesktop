@@ -461,7 +461,8 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                                         background-color: transparent;
                                         color: ${kBloomYellow};
                                         width: 100%;
-                                        border: 1px solid #80808050;
+                                        border: 1px solid #ffffffcc;
+                                        border-radius: 4px;
                                         height: 37px;
                                     `}
                                     type="text"
