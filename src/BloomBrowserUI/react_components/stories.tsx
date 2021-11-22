@@ -19,6 +19,13 @@ import {
 import SmallNumberPicker from "./smallNumberPicker";
 import { BloomAvatar } from "./bloomAvatar";
 import { BookInfoCard } from "./bookInfoCard";
+import {
+    RequiresBloomEnterpriseDialog,
+    RequiresBloomEnterpriseNotice,
+    RequiresBloomEnterpriseNoticeDialog,
+    RequiresBloomEnterpriseOverlayWrapper
+} from "./requiresBloomEnterprise";
+import { normalDialogEnvironmentForStorybook } from "./BloomDialog/BloomDialog";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -580,4 +587,25 @@ storiesOf("BookInformationCards", module)
         React.createElement(() => (
             <BookInfoCard title="Foo Bar Extended" languages={languages3} />
         ))
+    );
+
+// These components perform api calls. You'll need Bloom running
+// with a collection which doesn't have enterprise enabled if you
+// want things to show up as expected.
+storiesOf("RequiresBloomEnterprise", module)
+    .add("RequiresBloomEnterpriseNoticeDialog", () =>
+        React.createElement(() => <RequiresBloomEnterpriseNoticeDialog />)
+    )
+    .add("RequiresBloomEnterpriseDialog", () =>
+        React.createElement(() => (
+            <RequiresBloomEnterpriseDialog
+                dialogEnvironment={normalDialogEnvironmentForStorybook}
+            />
+        ))
+    )
+    .add("RequiresBloomEnterpriseNotice", () =>
+        React.createElement(() => <RequiresBloomEnterpriseNotice />)
+    )
+    .add("RequiresBloomEnterpriseOverlayWrapper", () =>
+        React.createElement(() => <RequiresBloomEnterpriseOverlayWrapper />)
     );

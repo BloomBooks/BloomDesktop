@@ -2,12 +2,18 @@ import React = require("react");
 import * as ReactDOM from "react-dom";
 import { useState } from "react";
 import Dialog from "@material-ui/core/Dialog";
-import { DialogTitle, DialogActions, DialogContent } from "@material-ui/core";
+import {
+    DialogTitle,
+    DialogActions,
+    DialogContent,
+    ThemeProvider
+} from "@material-ui/core";
 import CloseOnEscape from "react-close-on-escape";
 import { useL10n } from "./l10nHooks";
 import BloomButton from "./bloomButton";
 import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";
 import { BloomApi } from "../utils/bloomApi";
+import theme from "../bloomMaterialUITheme";
 
 // All strings are assumed localized by the caller
 export interface IConfirmDialogProps {
@@ -36,37 +42,39 @@ const ConfirmDialog: React.FC<IConfirmDialogProps> = props => {
     };
 
     return (
-        <CloseOnEscape onEscape={() => onClose(DialogResult.Cancel)}>
-            <Dialog className="bloomModalDialog confirmDialog" open={open}>
-                <DialogTitle>
-                    {useL10n(props.title, props.titleL10nKey)}
-                </DialogTitle>
-                <DialogContent>
-                    {useL10n(props.message, props.messageL10nKey)}
-                </DialogContent>
-                <DialogActions>
-                    <BloomButton
-                        key="Confirm"
-                        l10nKey={props.confirmButtonLabelL10nKey}
-                        enabled={true}
-                        onClick={() => onClose(DialogResult.Confirm)}
-                        hasText={true}
-                    >
-                        {props.confirmButtonLabel}
-                    </BloomButton>
-                    <BloomButton
-                        key="Cancel"
-                        l10nKey="Common.Cancel"
-                        enabled={true}
-                        onClick={() => onClose(DialogResult.Cancel)}
-                        hasText={true}
-                        variant="outlined"
-                    >
-                        Cancel
-                    </BloomButton>
-                </DialogActions>
-            </Dialog>
-        </CloseOnEscape>
+        <ThemeProvider theme={theme}>
+            <CloseOnEscape onEscape={() => onClose(DialogResult.Cancel)}>
+                <Dialog className="bloomModalDialog confirmDialog" open={open}>
+                    <DialogTitle>
+                        {useL10n(props.title, props.titleL10nKey)}
+                    </DialogTitle>
+                    <DialogContent>
+                        {useL10n(props.message, props.messageL10nKey)}
+                    </DialogContent>
+                    <DialogActions>
+                        <BloomButton
+                            key="Confirm"
+                            l10nKey={props.confirmButtonLabelL10nKey}
+                            enabled={true}
+                            onClick={() => onClose(DialogResult.Confirm)}
+                            hasText={true}
+                        >
+                            {props.confirmButtonLabel}
+                        </BloomButton>
+                        <BloomButton
+                            key="Cancel"
+                            l10nKey="Common.Cancel"
+                            enabled={true}
+                            onClick={() => onClose(DialogResult.Cancel)}
+                            hasText={true}
+                            variant="outlined"
+                        >
+                            Cancel
+                        </BloomButton>
+                    </DialogActions>
+                </Dialog>
+            </CloseOnEscape>
+        </ThemeProvider>
     );
 };
 

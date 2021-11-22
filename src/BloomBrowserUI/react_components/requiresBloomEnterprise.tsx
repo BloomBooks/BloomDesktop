@@ -21,6 +21,7 @@ import {
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog
 } from "./BloomDialog/BloomDialog";
+import { kUiFontStack } from "../bloomMaterialUITheme.js";
 
 /**
  * This function sets up the hooks to get the status of whether Bloom Enterprise is available or not
@@ -312,6 +313,17 @@ export const RequiresBloomEnterpriseNoticeDialog: React.VoidFunctionComponent = 
                 open={propsForBloomDialog.open}
                 maxWidth={"md"}
                 fullScreen={true}
+                css={css`
+                    // We aren't getting the font family from the theme for an unknown reason.
+                    // (See comment in BloomDialog where we had to add the font family explicitly for the same reason.)
+                    // We aren't getting the font family from BloomDialog because somehow in this context,
+                    // we are not actually a child of BloomDialog by the time we render. My only guess
+                    // is that it has something to do with the way the modal stuff is happening.
+                    // But we are in a MuiDialog with is a sibling to a react root which has the BloomDialog.
+                    // Anyway, with Material 5 ready now to switch to, and having already spent a couple hours trying to nail
+                    // down what, exactly, is going on, I settled for this unfortunate band-aid. BL-10688
+                    font-family: ${kUiFontStack};
+                `}
             >
                 <DialogContent
                     css={css`

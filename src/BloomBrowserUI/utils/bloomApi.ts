@@ -17,12 +17,27 @@ import React = require("react");
 //         metadata: {
 //             author: { ...
 
+function isRunningStorybook(): boolean {
+    try {
+        if (window.location.href.startsWith("http://localhost:61180"))
+            return true;
+    } catch (e) {
+        //ignore
+    }
+    return false;
+}
+
+export function getBloomApiPrefix(): string {
+    if (isRunningStorybook()) return "http://localhost:8089/bloom/api/";
+
+    return "/bloom/api/";
+}
+
 export let mockReplies = {};
 
 export class BloomApi {
-    private static kBloomApiPrefix = "/bloom/api/";
     private static pageIsClosing: boolean = false;
-    // This function is designed to be used lilke this:
+    // This function is designed to be used like this:
     // BloomApi.wrapAxios(axios.{get, post, etc}().then(...));
     // That is, the argument should be an AxiosPromise;
     // typically the promise returned by a .then() clause.
@@ -143,7 +158,7 @@ export class BloomApi {
     public static getWithPromise(
         urlSuffix: string
     ): Promise<void | AxiosResponse<any>> {
-        return BloomApi.wrapAxios(axios.get(this.kBloomApiPrefix + urlSuffix));
+        return BloomApi.wrapAxios(axios.get(getBloomApiPrefix() + urlSuffix));
     }
 
     // This method is used to get a result from Bloom.
@@ -160,7 +175,7 @@ export class BloomApi {
         }
         BloomApi.wrapAxios(
             axios
-                .get(this.kBloomApiPrefix + urlSuffix)
+                .get(getBloomApiPrefix() + urlSuffix)
                 .then(successCallback)
                 .catch(r => {
                     if (errorCallback) {
@@ -303,7 +318,7 @@ export class BloomApi {
     ) {
         BloomApi.wrapAxios(
             axios
-                .get(this.kBloomApiPrefix + urlSuffix, config)
+                .get(getBloomApiPrefix() + urlSuffix, config)
                 .then(successCallback)
         );
     }
@@ -315,7 +330,7 @@ export class BloomApi {
     ) {
         BloomApi.wrapAxios(
             axios
-                .post(this.kBloomApiPrefix + urlSuffix, value, {
+                .post(getBloomApiPrefix() + urlSuffix, value, {
                     headers: {
                         "Content-Type": "text/plain"
                     }
@@ -327,7 +342,7 @@ export class BloomApi {
     public static postBoolean(urlSuffix: string, value: boolean) {
         const data = this.adjustFalsyData(value);
         BloomApi.wrapAxios(
-            axios.post(this.kBloomApiPrefix + urlSuffix, data, {
+            axios.post(getBloomApiPrefix() + urlSuffix, data, {
                 headers: {
                     "Content-Type": "application/json"
                 }
@@ -351,7 +366,7 @@ export class BloomApi {
 
         BloomApi.wrapAxios(
             axios
-                .post(this.kBloomApiPrefix + urlSuffix)
+                .post(getBloomApiPrefix() + urlSuffix)
                 .then(successCallback ? successCallback : () => {}) // do nothing on success if no callback
                 .catch(
                     failureCallback
@@ -376,7 +391,7 @@ export class BloomApi {
         // The internal catch should suppress any errors. In case that fails (which it has), passing
         // false to wrapAxios further suppresses any error reporting.
         BloomApi.wrapAxios(
-            axios.post(this.kBloomApiPrefix + urlSuffix).catch(),
+            axios.post(getBloomApiPrefix() + urlSuffix).catch(),
             false
         );
     }
@@ -392,7 +407,7 @@ export class BloomApi {
 
         return BloomApi.wrapAxios(
             axios
-                .post(this.kBloomApiPrefix + urlSuffix, data)
+                .post(getBloomApiPrefix() + urlSuffix, data)
                 .then(successCallback ? successCallback : () => {})
                 .catch(r => {
                     if (errorCallback) {
@@ -417,7 +432,7 @@ export class BloomApi {
         data = this.adjustFalsyData(data);
         return BloomApi.wrapAxios(
             axios
-                .post(this.kBloomApiPrefix + urlSuffix, data, config)
+                .post(getBloomApiPrefix() + urlSuffix, data, config)
                 .then(
                     successCallback
                         ? successCallback
