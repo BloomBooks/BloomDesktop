@@ -1,4 +1,4 @@
-﻿#define SHOW_REACT_COLLECTION_TAB
+﻿//#define SHOW_REACT_COLLECTION_TAB
 namespace Bloom.Workspace
 {
 

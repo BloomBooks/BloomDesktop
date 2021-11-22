@@ -1,4 +1,7 @@
-#define SHOW_REACT_COLLECTION_TAB
+// Current plan is that instead of just defining this and so getting both tabs,
+// we will make the new collection tab an experimental feature, and so only ever
+// have one in use.
+//#define SHOW_REACT_COLLECTION_TAB
 using System;
 using System.Diagnostics;
 using System.Drawing;
