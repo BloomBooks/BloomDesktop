@@ -1175,9 +1175,14 @@ namespace Bloom.TeamCollection
 			{
 				var bookBaseName = GetBookNameWithoutSuffix(args.BookFileName);
 
-				if (!TryGetBookStatusJsonFromRepo(bookBaseName, out string status))
-					return; // new file is corrupt somehow, already reported to log.
-				
+				// It's quite likely in the case of a shared LAN folder that a file has been modified, but the
+				// other Bloom instance hasn't finished writing it yet. If we can't get its status,
+				// it's probably locked, and anything else we might try will fail. Try again in 2 seconds.
+				if (!TryGetBookStatusJsonFromRepo(bookBaseName, out var status, false))
+				{
+					MiscUtils.SetTimeout(() => HandleModifiedFile(args), 2000);
+					return;
+				}
 
 				// The most serious concern is that there are local changes to the book that must be clobbered.
 				if (HasLocalChangesThatMustBeClobbered(bookBaseName))
