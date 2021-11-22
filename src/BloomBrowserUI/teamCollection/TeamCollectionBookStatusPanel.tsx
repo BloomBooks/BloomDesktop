@@ -464,6 +464,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                                         border: 1px solid #ffffffcc;
                                         border-radius: 4px;
                                         height: 37px;
+                                        padding: 5px;
                                     `}
                                     type="text"
                                     value={message}
