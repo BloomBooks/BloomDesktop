@@ -526,8 +526,9 @@ namespace Bloom
 		void OnShowContextMenu(object sender, GeckoContextMenuEventArgs e)
 		{
 			// To allow Typescript code to implement right-click, we'll do our special developer menu
-			// only if the control key is down.
-			if ((Control.ModifierKeys & Keys.Control) != Keys.Control)
+			// only if the control key is down. Though, if ContextMenuProvider is non-null, we'll assume
+			// C# is supposed to handle the context menu here.
+			if ((Control.ModifierKeys & Keys.Control) != Keys.Control && ContextMenuProvider == null)
 				return;
 			MenuItem FFMenuItem = null;
 			Debug.Assert(!InvokeRequired);
