@@ -41,7 +41,12 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
     const [tcPanelState, setTcPanelState] = useState<StatusPanelState>(
         "initializing"
     );
-    const [progress, setProgress] = useState(0);
+    // Indicates how far along the checkin bar should be (0-100).
+    // Non-zero value, when in lockedByMe state, also indicates that we should
+    // show the bar and make other alterations in the panel layout.
+    // Only applicable in the lockedByMe state.
+    const [checkinProgress, setCheckinProgress] = useState(0);
+
     const [busy, setBusy] = useState(false);
     const [checkinFailed, setCheckinFailed] = useState(false);
     const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
@@ -105,10 +110,21 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         // message came back after a forget-changes and fresh checkout.
     }, [props.checkinMessage, tcPanelState]);
 
+    React.useEffect(() => {
+        // When we start a checkin, progress becomes non-zero, which makes the "checking in "
+        // message and bar show up. We want to keep it showing until checkin is complete,
+        // at which point we switch to some other main state, typically unlocked. Then, it
+        // needs to go back to zero so that we won't be in the "checking in" mode the next
+        // time the lockedByMe state happens.
+        if (tcPanelState != "lockedByMe" && checkinProgress != 0) {
+            setCheckinProgress(0);
+        }
+    }, [tcPanelState]);
+
     useSubscribeToWebSocketForEvent(
         "checkinProgress",
         "progress",
-        e => setProgress((e as any).fraction),
+        e => setCheckinProgress((e as any).fraction),
         false
     );
 
@@ -389,7 +405,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
             case "lockedByMe":
                 const checkinHandler = () => {
                     setBusy(true);
-                    setProgress(0.0001); // just enough to show the bar at once
+                    setCheckinProgress(0.0001); // just enough to show the bar at once
                     BloomApi.post(
                         "teamCollection/checkInCurrentBook",
                         () => {
@@ -401,7 +417,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         () => {
                             setBusy(false);
                             setCheckinFailed(true);
-                            setProgress(0); // Should be redundant, but makes sure.
+                            setCheckinProgress(0); // Should be redundant, but makes sure.
                         }
                     );
                 };
@@ -414,12 +430,14 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         `}
                         lockState={state}
                         title={
-                            progress === 0 ? mainTitleLockedByMe : checkingIn
+                            checkinProgress === 0
+                                ? mainTitleLockedByMe
+                                : checkingIn
                         }
                         subTitle={
                             checkinFailed
                                 ? subTitleCheckinFailed
-                                : progress === 0
+                                : checkinProgress === 0
                                 ? subTitleLockedByMe
                                 : ""
                         }
@@ -433,14 +451,14 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                                     "checkin-button",
                                     "Check In.svg",
                                     checkinHandler,
-                                    progress > 0,
+                                    checkinProgress > 0,
                                     "primary"
                                 )}
                             </ThemeProvider>
                         }
                         menu={menu}
                     >
-                        {progress === 0 ? (
+                        {checkinProgress === 0 ? (
                             <div
                                 css={css`
                                     position: absolute;
@@ -492,7 +510,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                                     css={css`
                                         height: 10px;
                                         background-color: ${kBloomYellow};
-                                        width: ${progress * 100}%;
+                                        width: ${checkinProgress * 100}%;
                                     `}
                                 ></div>
                             </div>
