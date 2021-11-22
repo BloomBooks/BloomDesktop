@@ -482,7 +482,6 @@ namespace Bloom.TeamCollection
 				if (_tcManager.CurrentCollection.OkToCheckIn(bookName))
 				{
 					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, true, false, reportCheckinProgress);
-					reportCheckinProgress(0); // cleans up panel for next time
 					// review: not super happy about this being here in the api. Was stymied by
 					// PutBook not knowing about the actual book object, but maybe that could be passed in.
 					var message = BookHistory.GetPendingCheckinMessage(_bookSelection.CurrentSelection);
