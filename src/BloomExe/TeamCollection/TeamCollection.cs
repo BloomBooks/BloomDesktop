@@ -1175,9 +1175,35 @@ namespace Bloom.TeamCollection
 			{
 				var bookBaseName = GetBookNameWithoutSuffix(args.BookFileName);
 
-				if (!TryGetBookStatusJsonFromRepo(bookBaseName, out string status))
-					return; // new file is corrupt somehow, already reported to log.
-				
+				// It's quite likely in the case of a shared LAN folder that a file has been modified, but the
+				// other Bloom instance hasn't finished writing it yet. If we can't get its status,
+				// it's probably locked, and anything else we might try will fail. Try again in 2 seconds.
+				// It's also possible that, due to some disaster like a power failure on the remote Bloom
+				// or the LAN server, the .bloom file gets permanently locked or corrupted so that the comment
+				// cannot be extracted from the zip file even though we can read the content. We thought about
+				// trying to handle those cases. But
+				// (a) we expect them to be rare, and this modified-file-handling is only about keeping
+				// up-to-date status information on books that are not selected. It's not a very big problem
+				// if it doesn't get updated in a rare case. When the user re-loads the collection or selects
+				// the book he will find out that there's a problem with it.
+				// (b) Continuing to check the book every couple of seconds, even for as long as Bloom is running,
+				// does not seem like a dreadfully costly problem
+				// (c) Reporting that a book is in one of these states (stuck locked, or zip file corrupted)
+				// as a result of remote changes seems difficult to do in a way we're confident won't confuse
+				// users. It would need to somehow be clear that an unexpectedly-occurring error was not due
+				// to anything this user did...and no knowing what this user just did that he might think caused it.
+				// (d) It would be somewhat complicated to track how long a book had been locked, considering
+				// that multiple books could be remotely modified.
+				// (e) It's not obvious what is a reasonable maximum time for a book to be locked, considering
+				// that possibly a large book is being written by a Bloom running on a slow computer over a slow
+				// network (or slow internet, if Dropbox is involved).
+				// Considering these factors, we decided for now not to try to handle remotely-modified
+				// books for which we can't get a status except by continuing to try to get it.
+				if (!TryGetBookStatusJsonFromRepo(bookBaseName, out var status, false))
+				{
+					MiscUtils.SetTimeout(() => HandleModifiedFile(args), 2000);
+					return;
+				}
 
 				// The most serious concern is that there are local changes to the book that must be clobbered.
 				if (HasLocalChangesThatMustBeClobbered(bookBaseName))
@@ -1277,6 +1303,8 @@ namespace Bloom.TeamCollection
 			// It's quite likely in the case of a shared LAN folder that a new file has appeared, but the
 			// other Bloom instance hasn't finished writing it yet. If we can't get its status,
 			// it's probably locked, and anything else we might try will fail. Try again in 2 seconds.
+			// There are cases in which we might keep retrying for a long time. See the longer explanation
+			// in HandleModifiedFile() for why we decided not to try to do anything about this.
 			if (!TryGetBookStatusJsonFromRepo(bookBaseName, out var status, false))
 			{
 				MiscUtils.SetTimeout(() => HandleNewBook(bookBaseName), 2000);
