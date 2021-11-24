@@ -34,7 +34,8 @@ namespace Bloom.Spreadsheet
 		private const int defaultImageWidth = 150; //width of images in pixels.
 
 		public static HashSet<string> WysiwygFormattedRowKeys = new HashSet<string>()
-			{ InternalSpreadsheet.TextGroupRowLabel, InternalSpreadsheet.ImageRowLabel, InternalSpreadsheet.BookTitleRowLabel};
+			{ InternalSpreadsheet.TextGroupRowLabel, InternalSpreadsheet.ImageRowLabel, InternalSpreadsheet.BookTitleRowLabel,
+				"[licenseDescription]", "[originalContributions]", "[versionAcknowledgments]", "[originalAcknowledgments]"};
 
 		static SpreadsheetIO()
 		{
@@ -342,6 +343,12 @@ namespace Bloom.Spreadsheet
 			}
 			for (int i=1; i<paragraphs.Length; i++)
 			{
+				// The \xfeff is not inserted by our export. Rather, it is inserted by the code in
+				// BloomField.InsertLineBreak which handles shift-enter in Bloom. It is therefore
+				// normal that a span with class bloom-linebreak will be exported with this invisible
+				// (zero-width no-break space) character following it. We use that here to determine
+				// that the Excel line-break should be imported as a bloom-linebreak rather than as
+				// a transition between <p> elements.
 				if (paragraphs[i].Length >= 1 && paragraphs[i][0] == '\xfeff')
 				{
 					paragraphedStringBuilder.Append(@"<span class=""bloom-linebreak""></span>");
