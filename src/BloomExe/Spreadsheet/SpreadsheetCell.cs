@@ -30,5 +30,8 @@ namespace Bloom.Spreadsheet
 				}
 			}
 		}
+
+		// Currently we only write comments, and the author is always 'Bloom'
+		public string Comment;
 	}
 }

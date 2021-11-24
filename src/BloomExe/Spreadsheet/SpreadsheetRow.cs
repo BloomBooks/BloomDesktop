@@ -8,7 +8,7 @@ namespace Bloom.Spreadsheet
 	/// </summary>
 	public class SpreadsheetRow
 	{
-		private List<string> _cells = new List<string>();
+		private List<SpreadsheetCell> _cells = new List<SpreadsheetCell>();
 		public InternalSpreadsheet Spreadsheet;
 		public Color BackgroundColor;
 		public bool Hidden;
@@ -18,16 +18,18 @@ namespace Bloom.Spreadsheet
 			spreadsheet.AddRow(this);
 		}
 
-		public void AddCell(string content)
+		public SpreadsheetCell AddCell(string content)
 		{
-			_cells.Add(content);
+			var cell = new SpreadsheetCell() { Content = content };
+			_cells.Add(cell);
+			return cell;
 		}
 
 		public void SetCell(int index, string content)
 		{
 			while (_cells.Count <= index)
 				AddCell("");
-			_cells[index] = content;
+			_cells[index].Content = content;
 		}
 
 		public void SetCell(string columnName, string content)
@@ -41,7 +43,7 @@ namespace Bloom.Spreadsheet
 			get
 			{
 				var label = _cells[Spreadsheet.ColumnForPageNumber];
-				return label.Trim();
+				return label.Content.Trim();
 			}
 		}
 
@@ -49,7 +51,7 @@ namespace Bloom.Spreadsheet
 		{
 			get
 			{
-				return _cells[Spreadsheet.ColumnForTag(InternalSpreadsheet.MetadataKeyColumnLabel)];
+				return _cells[Spreadsheet.ColumnForTag(InternalSpreadsheet.MetadataKeyColumnLabel)].Content;
 			}
 		}
 
@@ -57,7 +59,7 @@ namespace Bloom.Spreadsheet
 		{
 			if (index >= _cells.Count)
 				return new SpreadsheetCell() {Content = ""};
-			return new SpreadsheetCell() {Content = _cells[index]};
+			return _cells[index];
 		}
 
 		public SpreadsheetCell GetCell(string columnName)
