@@ -368,6 +368,7 @@
       <DependentUpon>AboutMemory.cs</DependentUpon>
     </Compile>
     <Compile Include="Book\SaveContext.cs" />
+    <Compile Include="Spreadsheet\Header.cs" />
     <Compile Include="Utils\BloomArchiveFile.cs" />
     <Compile Include="Utils\BloomTarArchive.cs" />
     <Compile Include="BloomWebClient.cs">

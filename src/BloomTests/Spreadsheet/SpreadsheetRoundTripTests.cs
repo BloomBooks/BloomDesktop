@@ -1,5 +1,6 @@
 using Bloom.Book;
 using Bloom.Spreadsheet;
+using Moq;
 using NUnit.Framework;
 using OfficeOpenXml;
 using SIL.IO;
@@ -169,7 +170,9 @@ namespace BloomTests.Spreadsheet
 			var roundtrippedDom = new HtmlDom(roundtripTestBook, true); //Will get imported into
 			AssertThatXmlIn.Dom(origDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='simpleFormattingTest']", 1);
 			AssertThatXmlIn.Dom(origDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='nestedFormattingTest']", 1);
-			var exporter = new SpreadsheetExporter();
+			var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
+			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("en")).Returns("English");
+			var exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
 			exporter.Params = parameters;
 			var sheetFromExport = exporter.Export(origDom, "fakeImagesFolderpath");
 			using (var tempFile = TempFile.WithExtension("xslx"))

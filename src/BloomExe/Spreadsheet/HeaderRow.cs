@@ -16,5 +16,7 @@ namespace Bloom.Spreadsheet
 		public HeaderRow(InternalSpreadsheet sheet) : base(sheet)
 		{
 		}
+
+		public override bool IsHeader => true;
 	}
 }

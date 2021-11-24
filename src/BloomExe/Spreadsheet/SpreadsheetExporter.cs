@@ -15,12 +15,33 @@ namespace Bloom.Spreadsheet
 	{
 		InternalSpreadsheet _spreadsheet = new InternalSpreadsheet();
 
+		private ILanguageDisplayNameResolver LangDisplayNameResolver { get; set; }
+
 		//a list of values which, if they occur in the data-book attribute of an element in the bloomDataDiv,
 		//indicate that the element content should be treated as an image, even though the element doesn't
 		//have a src attribute nor actually contain an img element
 		public static List<string> DataDivImagesWithNoSrcAttributes = new List<string>() { "licenseImage" };
 
 		public SpreadsheetExportParams Params = new SpreadsheetExportParams();
+
+		/// <summary>
+		/// Constructs a new Spreadsheet Exporter
+		/// </summary>
+		/// <param name="langDisplayNameResolver">The object that will be used to  retrieve the language display names</param>
+		public SpreadsheetExporter(ILanguageDisplayNameResolver langDisplayNameResolver)
+		{
+			this.LangDisplayNameResolver = langDisplayNameResolver;
+		}
+
+		/// <summary>
+		/// Constructs a new Spreadsheet Exporter
+		/// </summary>
+		/// <param name="bookData">The BookData of the book that will be exported. This is used to retrieve the language display names</param>
+		public SpreadsheetExporter(BookData bookData)
+			:this(new BookDataLanguageDisplayNameResolver(bookData))
+		{
+		}
+
 		public InternalSpreadsheet Export(HtmlDom dom, string imagesFolderPath)
 		{
 			_spreadsheet.Params = Params;
@@ -60,7 +81,7 @@ namespace Bloom.Spreadsheet
 				foreach (var row in rowsForPage)
 					row.BackgroundColor = colorForPage;
 			}
-			_spreadsheet.SortHiddenRowsToTheBottom();
+			_spreadsheet.SortHiddenContentRowsToTheBottom();
 			return _spreadsheet;
 		}
 
@@ -101,10 +122,11 @@ namespace Bloom.Spreadsheet
 			row.SetCell(InternalSpreadsheet.PageNumberColumnLabel, pageNumber);
 			foreach (var editable in group.SafeSelectNodes("./*[contains(@class, 'bloom-editable')]").Cast<XmlElement>())
 			{
-				var lang = editable.Attributes["lang"]?.Value ?? "";
-				if (lang == "z" || lang == "")
+				var langCode = editable.Attributes["lang"]?.Value ?? "";
+				if (langCode == "z" || langCode == "")
 					continue;
-				var index = _spreadsheet.ColumnForLang(lang);
+				var langFriendlyName = LangDisplayNameResolver.GetLanguageDisplayName(langCode);
+				var index = _spreadsheet.SetColumnForLang(langCode, langFriendlyName);
 				var content = editable.InnerXml;
 				row.SetCell(index,content);
 			}
@@ -120,8 +142,8 @@ namespace Bloom.Spreadsheet
 			SpreadsheetRow row = null;
 			foreach (XmlElement dataBookElement in dataBookNodeList)
 			{
-				var lang = dataBookElement.GetAttribute("lang");
-				if (lang == "z")
+				var langCode = dataBookElement.GetAttribute("lang");
+				if (langCode == "z")
 				{
 					continue;
 				}
@@ -200,7 +222,8 @@ namespace Bloom.Spreadsheet
 					NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg, showSendReport: true);
 					continue;
 				}
-				row.SetCell(_spreadsheet.ColumnForLang(lang), dataBookElement.InnerXml.Trim());
+				var langFriendlyName = LangDisplayNameResolver.GetLanguageDisplayName(langCode);
+				row.SetCell(_spreadsheet.SetColumnForLang(langCode, langFriendlyName), dataBookElement.InnerXml.Trim());
 				prevDataBookLabel = dataBookLabel;
 			}
 		}
@@ -228,4 +251,38 @@ namespace Bloom.Spreadsheet
 			return "";
 		}
 	}
+
+	/// <summary>
+	/// An interface for SpreadsheetExporter to be able to convert language ISO codes to their display names.
+	/// This allows unit tests to use mocks to handle this functionality instead of constructing a Book/BookData object.
+	/// </summary>
+	public interface ILanguageDisplayNameResolver
+	{
+		/// <summary>
+		/// Given a language code, returns the friendly name of that language (according to the dictionary passed into the constructor)
+		/// </summary>
+		/// <param name="langCode"></param>
+		/// <returns>Returns the friendly name if available. If not, returns the language code unchanged.</returns>
+		string GetLanguageDisplayName(string langCode);
+	}
+
+	/// <summary>
+	/// Resolves language codes to language display names based on the book's BookData object
+	/// </summary>
+	class BookDataLanguageDisplayNameResolver : ILanguageDisplayNameResolver
+	{
+		private BookData BookData;
+		public BookDataLanguageDisplayNameResolver(BookData bookData)
+		{
+			this.BookData = bookData;
+		}
+
+		public string GetLanguageDisplayName(string langCode)
+		{
+			return this.BookData.GetDisplayNameForLanguage(langCode);
+		}
+	}
+
+	// Note: You can also resolve these from the book.BookInfo.MetaData.DisplayNames dictionary, but
+	// that seems to have fewer entries than the BookData
 }

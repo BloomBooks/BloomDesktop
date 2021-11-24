@@ -1,4 +1,5 @@
 ﻿using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Spreadsheet;
 using CommandLine;
 using System;
@@ -18,13 +19,29 @@ namespace Bloom.CLI
 		{
 			try
 			{
-				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(options.BookPath, false));
-				var exporter = new SpreadsheetExporter();
+				string bookFolder = Path.GetDirectoryName(options.BookPath);
+				string collectionFolder = Directory.GetParent(bookFolder).FullName;
+				string collectionName = Path.GetDirectoryName(collectionFolder);
+				string collectionSettingsFile = Path.Combine(collectionFolder, Path.ChangeExtension(collectionName, ".bloomCollection")); 
+				var collectionSettings = new CollectionSettings(collectionSettingsFile);
+				XMatterPackFinder xmatterFinder = new XMatterPackFinder(new[]
+				{
+					BloomFileLocator.GetFactoryXMatterDirectory()
+				});
+				var locator = new BloomFileLocator(collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(),
+				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
+
+				var bookInfo = new BookInfo(bookFolder, false);
+				var book= new Book.Book(bookInfo, new BookStorage(bookInfo.FolderPath, locator, new BookRenamedEvent(), collectionSettings),
+				null, collectionSettings, null, null, new BookRefreshEvent(), new BookSavedEvent(), new NoEditSaveContext());
+
+				var exporter = new SpreadsheetExporter(book.BookData);
 				if (!string.IsNullOrEmpty(options.ParamsPath))
 				{
 					exporter.Params = SpreadsheetExportParams.FromFile(options.ParamsPath);
 				}
 				string imagesFolderPath = Path.GetDirectoryName(options.BookPath);
+				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(options.BookPath, false));
 				var _sheet = exporter.Export(dom, imagesFolderPath);
 				_sheet.WriteToFile(options.OutputPath);
 				return 0; // all went well
