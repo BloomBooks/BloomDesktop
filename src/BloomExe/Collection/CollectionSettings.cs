@@ -23,6 +23,7 @@ using SIL.WritingSystems;
 using SIL.Extensions;
 using SIL.IO;
 using Directory = System.IO.Directory;
+using SIL.Code;
 
 namespace Bloom.Collection
 {
@@ -826,6 +827,51 @@ namespace Bloom.Collection
 			return css;
 			*/
 			return $".lang1InATool{{font-size: {(Language1.BaseUIFontSizeInPoints == 0 ? 10 : Language1.BaseUIFontSizeInPoints)}pt;}}";
+		}
+
+		/// <summary>
+		/// Give the string the user expects to see as the name of a specified language.
+		/// This routine uses the user-specified name for the main project language.
+		/// For the other two project languages, it explicitly uses the appropriate collection settings
+		/// name for that language, which the user also set.
+		/// If the user hasn't set a name for the given language, this will find a fairly readable name
+		/// for the languages Palaso knows about (probably the autonym) and fall back to the code itself
+		/// if it can't find a name.
+		/// BL-8174 But in case the code includes Script/Region/Variant codes, we should show them somewhere too.
+		/// </summary>
+		public string GetDisplayNameForLanguage(string code, string metadataLanguageIsoCode = null)
+		{
+			if (metadataLanguageIsoCode == null)
+				metadataLanguageIsoCode = this.Language2Iso639Code;
+
+			if (code == this.Language1Iso639Code && !string.IsNullOrWhiteSpace(this.Language1.Name))
+				return GetLanguageNameWithScriptVariants(code, this.Language1.Name, this.Language1.IsCustomName, metadataLanguageIsoCode);
+			if (code == this.Language2Iso639Code)
+				return GetLanguageNameWithScriptVariants(code, this.Language2.Name, this.Language2.IsCustomName, metadataLanguageIsoCode);
+			if (code == this.Language3Iso639Code)
+				return GetLanguageNameWithScriptVariants(code, this.Language3.Name, this.Language3.IsCustomName, metadataLanguageIsoCode);
+			return this.GetLanguageName(code, metadataLanguageIsoCode);
+		}
+
+		// We always want to use a name the user deliberately gave (hence the use of 'nameIsCustom').
+		// We also want to include Script/Region/Variant codes if those will be helpful.
+		// OTOH, the custom name, if present may well include the sense of any srv codes, so (e.g.) if we
+		// have a custom name 'Naskapi Roman', it seems like overkill to also include 'Naskapi-Latn'.
+		private string GetLanguageNameWithScriptVariants(string completeIsoCode, string collectionSettingsLanguageName, bool nameIsCustom, string metadataLanguageIsoCode)
+		{
+			Guard.AgainstNull(metadataLanguageIsoCode, "metadataLanguageIsoCode is null.");
+			var hyphenIndex = completeIsoCode.IndexOf('-');
+			var srvCodes = hyphenIndex > -1 && completeIsoCode.Length > hyphenIndex + 1 ?
+				completeIsoCode.Substring(hyphenIndex + 1) : string.Empty;
+			// Special case for 'zh-CN': this one needs to be treated as if it had no srv codes
+			if (completeIsoCode == "zh-CN")
+				srvCodes = string.Empty;
+			if (string.IsNullOrEmpty(srvCodes))
+				return collectionSettingsLanguageName;
+			var baseIsoCode = completeIsoCode.Substring(0, hyphenIndex);
+			return nameIsCustom ?
+				collectionSettingsLanguageName + " (" + GetLanguageName(baseIsoCode, metadataLanguageIsoCode) + ")"
+				: collectionSettingsLanguageName + "-" + srvCodes + " (" + collectionSettingsLanguageName + ")";
 		}
 	}
 }
