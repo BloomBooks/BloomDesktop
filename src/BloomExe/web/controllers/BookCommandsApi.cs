@@ -153,7 +153,7 @@ namespace Bloom.web.controllers
 			try
 			{
 				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));
-				var exporter = new SpreadsheetExporter();
+				var exporter = new SpreadsheetExporter(book.BookData);
 
 				string outputFilename;
 
