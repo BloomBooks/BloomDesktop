@@ -1,3 +1,4 @@
+using System;
 using Bloom.Book;
 using L10NSharp;
 using SIL.Xml;
@@ -157,11 +158,24 @@ namespace Bloom.Spreadsheet
 						string childSrc = ChildImgElementSrc(dataBookElement);
 						if (childSrc.Length > 0)
 						{
-							if (! dataBookElement.GetAttribute("data-book").Contains("branding"))
+							// We've lost track of what was 'incomplete' about our handling of data-book elements
+							// that have an image child and don't have branding in their key. But the message
+							// was a nuisance. Keeping the code in case it reminds us of a problem at some point.
+							//if (! dataBookElement.GetAttribute("data-book").Contains("branding"))
+							//{
+							//	var msg = LocalizationManager.GetString("Spreadsheet:DataDivNonBrandingImageElment",
+							//		"Export warning: Found a non-branding image in an <img> element for " + dataBookLabel
+							//		+ ". This is not fully handled yet.");
+							//	NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg, showSendReport: true);
+							//}
+							// Don't think we ever have data-book elements with more than one image. But if we encounter one,
+							// I think it's worth warning the user that we don't handle it.
+							if (dataBookElement.ChildNodes
+								    .Cast<XmlNode>().Count(n => n.Name == "img" && string.IsNullOrEmpty(((XmlElement)n).GetAttribute("src"))) > 1)
 							{
-								var msg = LocalizationManager.GetString("Spreadsheet:DataDivNonBrandingImageElment",
-									"Export warning: Found a non-branding image in an <img> element for " + dataBookLabel
-									+ ". This is not fully handled yet.");
+								var msgPattern = LocalizationManager.GetString("Spreadsheet.MultipleImageChildren",
+									"Export warning: Found multiple images in data-book element {0}. Only the first will be exported.");
+								var msg = String.Format(msgPattern, dataBookLabel);
 								NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg, showSendReport: true);
 							}
 							imageSource = childSrc;
