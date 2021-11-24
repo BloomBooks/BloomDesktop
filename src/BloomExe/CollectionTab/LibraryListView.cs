@@ -1754,7 +1754,7 @@ namespace Bloom.CollectionTab
 			try
 			{
 				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));
-				var exporter = new SpreadsheetExporter();
+				var exporter = new SpreadsheetExporter(_bookSelection.CurrentSelection.CollectionSettings);
 
 				string outputFilename;
 

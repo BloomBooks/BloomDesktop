@@ -1,4 +1,5 @@
 ﻿using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Spreadsheet;
 using CommandLine;
 using System;
@@ -18,13 +19,14 @@ namespace Bloom.CLI
 		{
 			try
 			{
-				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(options.BookPath, false));
-				var exporter = new SpreadsheetExporter();
+				var collectionSettings = GetCollectionSettings(options.BookPath);
+				var exporter = new SpreadsheetExporter(collectionSettings);
 				if (!string.IsNullOrEmpty(options.ParamsPath))
 				{
 					exporter.Params = SpreadsheetExportParams.FromFile(options.ParamsPath);
 				}
 				string imagesFolderPath = Path.GetDirectoryName(options.BookPath);
+				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(options.BookPath, false));
 				var _sheet = exporter.Export(dom, imagesFolderPath);
 				_sheet.WriteToFile(options.OutputPath);
 				return 0; // all went well
@@ -36,6 +38,15 @@ namespace Bloom.CLI
 				Console.WriteLine(ex.StackTrace);
 				return 1;
 			}
+		}
+
+		private static CollectionSettings GetCollectionSettings(string bookPath)
+		{
+			string bookFolder = Path.GetDirectoryName(bookPath);
+			string collectionFolder = Directory.GetParent(bookFolder).FullName;
+			string collectionName = Path.GetDirectoryName(collectionFolder);
+			string collectionSettingsFile = Path.Combine(collectionFolder, Path.ChangeExtension(collectionName, ".bloomCollection"));
+			return new CollectionSettings(collectionSettingsFile);
 		}
 	}
 

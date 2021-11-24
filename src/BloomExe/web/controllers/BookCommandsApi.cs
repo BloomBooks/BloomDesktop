@@ -152,8 +152,8 @@ namespace Bloom.web.controllers
 			var bookPath = book.GetPathHtmlFile();
 			try
 			{
-				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));
-				var exporter = new SpreadsheetExporter();
+				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));				
+				var exporter = new SpreadsheetExporter(book.CollectionSettings);
 
 				string outputFilename;
 

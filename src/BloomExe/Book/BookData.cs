@@ -1030,34 +1030,10 @@ namespace Bloom.Book
 			// among the collection languages, so it means three things to check instead of four. And if by any chance
 			// we're wanting a name of a language that is not currently in use in the book, but is known to the collection,
 			// it's desirable to find it.
-			if (code == CollectionSettings.Language1Iso639Code && !string.IsNullOrWhiteSpace(CollectionSettings.Language1.Name))
-				return GetLanguageNameWithScriptVariants(code, CollectionSettings.Language1.Name, CollectionSettings.Language1.IsCustomName);
-			if (code == CollectionSettings.Language2Iso639Code)
-				return GetLanguageNameWithScriptVariants(code, CollectionSettings.Language2.Name, CollectionSettings.Language2.IsCustomName);
-			if (code == CollectionSettings.Language3Iso639Code)
-				return GetLanguageNameWithScriptVariants(code, CollectionSettings.Language3.Name, CollectionSettings.Language3.IsCustomName);
-			return CollectionSettings.GetLanguageName(code, MetadataLanguage1IsoCode);
+
+			return CollectionSettings.GetDisplayNameForLanguage(code, MetadataLanguage1IsoCode);
 		}
 
-		// We always want to use a name the user deliberately gave (hence the use of 'nameIsCustom').
-		// We also want to include Script/Region/Variant codes if those will be helpful.
-		// OTOH, the custom name, if present may well include the sense of any srv codes, so (e.g.) if we
-		// have a custom name 'Naskapi Roman', it seems like overkill to also include 'Naskapi-Latn'.
-		private string GetLanguageNameWithScriptVariants(string completeIsoCode, string collectionSettingsLanguageName, bool nameIsCustom)
-		{
-			var hyphenIndex = completeIsoCode.IndexOf('-');
-			var srvCodes = hyphenIndex > -1 && completeIsoCode.Length > hyphenIndex + 1 ?
-				completeIsoCode.Substring(hyphenIndex + 1) : string.Empty;
-			// Special case for 'zh-CN': this one needs to be treated as if it had no srv codes
-			if (completeIsoCode == "zh-CN")
-				srvCodes = string.Empty;
-			if (string.IsNullOrEmpty(srvCodes))
-				return collectionSettingsLanguageName;
-			var baseIsoCode = completeIsoCode.Substring(0, hyphenIndex);
-			return nameIsCustom ?
-				collectionSettingsLanguageName + " (" + CollectionSettings.GetLanguageName(baseIsoCode, MetadataLanguage1IsoCode) + ")"
-				: collectionSettingsLanguageName + "-" + srvCodes + " (" + collectionSettingsLanguageName + ")";
-		}
 
 		/// <summary>
 		/// walk through the sourceDom, collecting up values from elements that have data-book or data-collection or data-xmatter-page attributes.
