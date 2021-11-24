@@ -1,4 +1,5 @@
 ﻿using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Spreadsheet;
 using CommandLine;
 using System;
@@ -19,12 +20,13 @@ namespace Bloom.CLI
 		{
 			try
 			{
-				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(options.BookPath, false));
-				var exporter = new SpreadsheetExporter();
+				var collectionSettings = GetCollectionSettings(options.BookPath);
+				var exporter = new SpreadsheetExporter(null, collectionSettings);
 				if (!string.IsNullOrEmpty(options.ParamsPath))
 				{
 					exporter.Params = SpreadsheetExportParams.FromFile(options.ParamsPath);
 				}
+				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(options.BookPath, false));				
 				string imagesFolderPath = Path.GetDirectoryName(options.BookPath);
 				// It's too dangerous to use the output path they gave us, since we're going to wipe out any existing
 				// content of the directory we pass to ExportToFolder. If they give us a parent folder by mistake, that
@@ -41,6 +43,15 @@ namespace Bloom.CLI
 				Console.WriteLine(ex.StackTrace);
 				return 1;
 			}
+		}
+
+		private static CollectionSettings GetCollectionSettings(string bookPath)
+		{
+			string bookFolder = Path.GetDirectoryName(bookPath);
+			string collectionFolder = Directory.GetParent(bookFolder).FullName;
+			string collectionName = Path.GetDirectoryName(collectionFolder);
+			string collectionSettingsFile = Path.Combine(collectionFolder, Path.ChangeExtension(collectionName, ".bloomCollection"));
+			return new CollectionSettings(collectionSettingsFile);
 		}
 	}
 

@@ -369,6 +369,7 @@
     </Compile>
     <Compile Include="Book\SaveContext.cs" />
     <Compile Include="MiscUI\BloomMessageBox.cs" />
+    <Compile Include="Spreadsheet\Header.cs" />
     <Compile Include="Utils\BloomArchiveFile.cs" />
     <Compile Include="Utils\BloomTarArchive.cs" />
     <Compile Include="BloomWebClient.cs">

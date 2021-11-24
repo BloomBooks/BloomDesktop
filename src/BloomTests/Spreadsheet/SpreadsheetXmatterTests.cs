@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using BloomTemp;
+using Moq;
 
 namespace BloomTests.Spreadsheet
 {
@@ -125,10 +126,16 @@ namespace BloomTests.Spreadsheet
 		public void OneTimeSetUp()
 		{
 			var dom = new HtmlDom(dataDivBook, true);
+
 			_spreadsheetFolder = new TemporaryFolder("SpreadsheetXmatterTests");
-			_exporter = new SpreadsheetExporter();
+			var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
+			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("en")).Returns("English");
+			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("es")).Returns("Español");
+
+			_exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
 			_sheetFromExport = _exporter.ExportToFolder(dom, "fakeImagesFolderpath", _spreadsheetFolder.FolderPath,
 				out string outputPath, null, OverwriteOptions.Overwrite);
+
 			_rowsFromExport = _sheetFromExport.ContentRows.ToList();
 			_sheetFromFile = InternalSpreadsheet.ReadFromFile(outputPath);
 			_rowsFromFile = _sheetFromFile.ContentRows.ToList();
@@ -164,7 +171,7 @@ namespace BloomTests.Spreadsheet
 		public void BasicXmatterTest(string source)
 		{
 			SetupFor(source);
-			var starLangCol = _sheet.ColumnForLang("*");
+			var starLangCol = _sheet.GetRequiredColumnForLang("*");
 			var styleNumberSequenceRow = _rows.Find(x => x.MetadataKey.Equals("[styleNumberSequence]"));
 			Assert.That(styleNumberSequenceRow, Is.Not.Null);
 			Assert.That(styleNumberSequenceRow.GetCell(starLangCol).Content, Is.EqualTo("0"));
@@ -177,8 +184,8 @@ namespace BloomTests.Spreadsheet
 			SetupFor(source);
 			var contentLangRow = _rows.Find(x => x.MetadataKey.Equals("[bookTitle]"));
 			Assert.That(contentLangRow, Is.Not.Null);
-			Assert.That(contentLangRow.GetCell(_sheet.ColumnForLang("es")).Content, Is.EqualTo("<p>Spanish Microwave</p>"));
-			Assert.That(contentLangRow.GetCell(_sheet.ColumnForLang("en")).Content, Is.EqualTo("<p>English Microwave</p>"));
+			Assert.That(contentLangRow.GetCell(_sheet.GetRequiredColumnForLang("es")).Content, Is.EqualTo("<p>Spanish Microwave</p>"));
+			Assert.That(contentLangRow.GetCell(_sheet.GetRequiredColumnForLang("en")).Content, Is.EqualTo("<p>English Microwave</p>"));
 		}
 
 		[TestCase("fromExport")]
@@ -186,7 +193,7 @@ namespace BloomTests.Spreadsheet
 		public void ImageSourceXmatterTest(string source)
 		{
 			SetupFor(source);
-			var imageSourceCol = _sheet.ColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
+			var imageSourceCol = _sheet.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
 
 			var coverImageRow = _rows.Find(x => x.MetadataKey.Equals("[coverImage]"));
 			Assert.That(coverImageRow, Is.Not.Null);

@@ -1,5 +1,6 @@
 ﻿using Bloom.Book;
 using Bloom.Spreadsheet;
+using Moq;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,26 +24,32 @@ namespace BloomTests.Spreadsheet
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en']/p[text()='Riding on elephants can be risky.']", 1); // unchanged
 
 			// The tests in this class all check the results of importing what export produced,
-			// but with some changes. 
-			var exporter = new SpreadsheetExporter();
+			// but with some changes.
+
+			var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
+			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("en")).Returns("English");
+			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("de")).Returns("German");
+			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("fr")).Returns("French");
+			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("tpi")).Returns("Tok Pisin");
+			var exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
 			_sheet = exporter.Export(_dom, "fakeImagesFolderpath");
 			// Changing this header will cause all the data that was originally tagged as German to be imported as Tok Pisin.
-			var indexDe = _sheet.ColumnForLang("de");
-			_sheet.Header.SetCell(indexDe, "[tpi]");
+			var indexDe = _sheet.GetRequiredColumnForLang("de");
+			_sheet.Header.SetColumn(indexDe, "[tpi]", "Tok Pisin");
 			// Here we locate the cells produced from two particular
 			// bloom-editable elements in the kSimpleTwoPageBook DOM and replace them with different text.
 			// The import should update those bloom-editables to these changed values.
-			var engColumn = _sheet.ColumnForLang("en");
+			var engColumn = _sheet.GetRequiredColumnForLang("en");
 			var firstRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.GetCell(engColumn).Content.Contains("This elephant is running amok."));
 			Assert.IsNotNull(firstRowToModify, "Did not find the first text row that OneTimeSetup was expecting to modify");
 			firstRowToModify.SetCell(engColumn, "<p>This elephant is running amok.</p>");
-			var frColumn = _sheet.ColumnForLang("fr");
+			var frColumn = _sheet.GetRequiredColumnForLang("fr");
 			var secondRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.GetCell(frColumn).Content.Contains("Riding on French elephants can be more risky."));
 			Assert.IsNotNull(secondRowToModify, "Did not find the second text row that OneTimeSetup was expecting to modify");
 			secondRowToModify.SetCell(frColumn, "<p>Riding on French elephants can be very risky.</p>");
 
-			var asteriskColumn = _sheet.ColumnForLang("*");
-			var imageSrcColumn = _sheet.ColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
+			var asteriskColumn = _sheet.GetRequiredColumnForLang("*");
+			var imageSrcColumn = _sheet.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
 
 			var firstXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.MetadataKey.Contains("styleNumberSequence"));
 			Assert.IsNotNull(firstXmatterRowToModify, "Did not find the first xmatter row that OneTimeSetup was expecting to modify");
@@ -54,12 +61,12 @@ namespace BloomTests.Spreadsheet
 
 			var thirdXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.MetadataKey.Contains("bookTitle"));
 			Assert.IsNotNull(thirdXmatterRowToModify, "Did not find the third xmatter row that OneTimeSetup was expecting to modify");
-			thirdXmatterRowToModify.SetCell(_sheet.ColumnForLang("fr"), "");
-			thirdXmatterRowToModify.SetCell(_sheet.ColumnForLang("tpi"), "");
-			thirdXmatterRowToModify.SetCell(_sheet.ColumnForLang("en"), "<p>This is Not the End of the English World</p>");
+			thirdXmatterRowToModify.SetCell(_sheet.GetRequiredColumnForLang("fr"), "");
+			thirdXmatterRowToModify.SetCell(_sheet.GetRequiredColumnForLang("tpi"), "");
+			thirdXmatterRowToModify.SetCell(_sheet.GetRequiredColumnForLang("en"), "<p>This is Not the End of the English World</p>");
 
 			var fourthXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.MetadataKey.Contains("contentLanguage1"));
-			fourthXmatterRowToModify.SetCell(_sheet.ColumnForTag(InternalSpreadsheet.MetadataKeyColumnLabel), "[newDataBookLabel]");
+			fourthXmatterRowToModify.SetCell(_sheet.GetColumnForTag(InternalSpreadsheet.MetadataKeyColumnLabel), "[newDataBookLabel]");
 			fourthXmatterRowToModify.SetCell(asteriskColumn, "newContent");
 
 			var fifthXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.MetadataKey.Contains("licenseImage"));
@@ -299,8 +306,9 @@ namespace BloomTests.Spreadsheet
 			// Another class tests that.
 			_dom = new HtmlDom(inputBook, true);
 			_sheet = new InternalSpreadsheet();
-			_sheet.ColumnForLang("en");
-			_sheet.ColumnForLang("fr");
+			_sheet.AddColumnForLang("en", "English");
+			_sheet.AddColumnForLang("fr", "French");
+			_sheet.AddColumnForLang("*", "*");
 
 			MakeXmatterRows(_sheet);
 
@@ -517,8 +525,8 @@ namespace BloomTests.Spreadsheet
 			// In this test suite, lines run out before the blocks.
 			_dom = new HtmlDom(inputBook, true);
 			_sheet = new InternalSpreadsheet();
-			_sheet.ColumnForLang("en");
-			_sheet.ColumnForLang("fr");
+			_sheet.AddColumnForLang("en", "English");
+			_sheet.AddColumnForLang("fr", "French");
 			SpreadsheetImportSyncWarnings.MakeRow("1", "New message about tigers", "New message about French tigers", _sheet);
 			SpreadsheetImportSyncWarnings.MakeRow("2", "More about tigers", "More about French tigers", _sheet);
 			// problem: there's no input corresponding to the second block on page 2, nor any of page 4.
