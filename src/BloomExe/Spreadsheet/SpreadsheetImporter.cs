@@ -161,12 +161,14 @@ namespace Bloom.Spreadsheet
 			var xPath = "div[@data-book=\"" + dataBookLabel + "\"]";
 			var matchingNodes = _dataDivElement.SelectNodes(xPath);
 			XmlElement templateNode;
+			bool templateNodeIsNew = false;
 			if (matchingNodes.Count > 0)
 			{
 				templateNode = (XmlElement) matchingNodes[0];
 			}
 			else
 			{
+				templateNodeIsNew = true;
 				templateNode = _dest.RawDom.CreateElement("div");
 				templateNode.SetAttribute("data-book", dataBookLabel);
 			}
@@ -184,15 +186,15 @@ namespace Bloom.Spreadsheet
 			//both src and innertext on import, unless the element is in the noSrcAttribute list
 			if (imageSrc.Length > 0)
 			{
-				XmlElement newNode = (XmlElement)templateNode.CloneNode(deep: true);
-				newNode.SetAttribute("lang", "*");
-				newNode.InnerText = imageSrc;
+				templateNode.SetAttribute("lang", "*");
+				templateNode.InnerText = imageSrc;
 
 				if (! SpreadsheetExporter.DataDivImagesWithNoSrcAttributes.Contains(dataBookLabel))
 				{
-					newNode.SetAttribute("src", imageSrc);
+					templateNode.SetAttribute("src", imageSrc);
 				}
-				AddDataBookNode(newNode);
+				if (templateNodeIsNew)
+					AddDataBookNode(templateNode);
 			}
 			else //This is not an image node
 			{

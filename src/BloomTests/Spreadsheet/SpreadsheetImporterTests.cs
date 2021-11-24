@@ -118,6 +118,7 @@ namespace BloomTests.Spreadsheet
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='styleNumberSequence' and @lang='*' and text()='7']", 1);
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='styleNumberSequence' and text()='1']", 0);
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImage' and @src='octopus.png' and text()='octopus.png']", 1);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImage']", 1); // should have got rid of or updated the old one
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='fr']", 0); 
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='tpi']", 0);
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en']/p[text()='This is Not the End of the English World']", 1);
