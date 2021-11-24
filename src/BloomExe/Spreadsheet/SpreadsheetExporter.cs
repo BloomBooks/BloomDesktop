@@ -8,21 +8,50 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using Bloom.Api;
+using Bloom.MiscUI;
+using Bloom.web;
 
 namespace Bloom.Spreadsheet
 {
 	public class SpreadsheetExporter
 	{
 		InternalSpreadsheet _spreadsheet = new InternalSpreadsheet();
+		private IWebSocketProgress _progress;
+		private bool _shouldKeepDialogOpen = false;
 
 		//a list of values which, if they occur in the data-book attribute of an element in the bloomDataDiv,
 		//indicate that the element content should be treated as an image, even though the element doesn't
 		//have a src attribute nor actually contain an img element
 		public static List<string> DataDivImagesWithNoSrcAttributes = new List<string>() { "licenseImage" };
 
-		public SpreadsheetExportParams Params = new SpreadsheetExportParams();
-		public InternalSpreadsheet Export(HtmlDom dom, string imagesFolderPath)
+		public void ExportWithProgress(HtmlDom dom, string imagesFolderPath, BloomWebSocketServer socketServer, Action<InternalSpreadsheet> resultCallback)
 		{
+			BrowserProgressDialog.DoWorkWithProgressDialog(socketServer, "spreadsheet-export", () =>
+				new ReactDialog("progressDialogBundle",
+						// props to send to the react component
+						new
+						{
+							title = "Exporting Spreadsheet",
+							titleIcon = "", // todo:
+							titleColor = "white",
+							titleBackgroundColor = Palette.kBloomBlueHex,
+							webSocketContext = "spreadsheet-export",
+							showReportButton = "if-error"
+						}, "Sync Team Collection")
+					// winforms dialog properties
+					{ Width = 620, Height = 550 }, (progress, worker) =>
+			{
+				var spreadsheet = Export(dom, imagesFolderPath, progress);
+				resultCallback(spreadsheet);
+				return _shouldKeepDialogOpen;
+			});
+		}
+
+		public SpreadsheetExportParams Params = new SpreadsheetExportParams();
+		public InternalSpreadsheet Export(HtmlDom dom, string imagesFolderPath, IWebSocketProgress progress = null)
+		{
+			_progress = progress ?? new NullWebSocketProgress();
 			_spreadsheet.Params = Params;
 			var pages = dom.GetPageElements();
 
@@ -148,10 +177,10 @@ namespace Bloom.Spreadsheet
 							//src attribute. We haven't yet found any case in which they are different, so are only storing one in the
 							//spreadsheet. This test is to make sure that we notice if we come across a case where it might be necessary
 							//to save both.
-							var msg = LocalizationManager.GetString("Spreadsheet:DataDivConflictWarning",
-								"Export warning: Found differing 'src' attribute and element text for xmatter element " + dataBookLabel
-								+ ". The 'src' attribute will be ignored.");
-							NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg, showSendReport: true);
+							_shouldKeepDialogOpen = true;
+							_progress.MessageWithParams("Spreadsheet.DataDivConflictWarning","",
+								"Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.",
+								ProgressKind.Warning, dataBookLabel) ;
 						}
 
 						string imageSource;
@@ -173,10 +202,9 @@ namespace Bloom.Spreadsheet
 							if (dataBookElement.ChildNodes
 								    .Cast<XmlNode>().Count(n => n.Name == "img" && string.IsNullOrEmpty(((XmlElement)n).GetAttribute("src"))) > 1)
 							{
-								var msgPattern = LocalizationManager.GetString("Spreadsheet.MultipleImageChildren",
-									"Export warning: Found multiple images in data-book element {0}. Only the first will be exported.");
-								var msg = String.Format(msgPattern, dataBookLabel);
-								NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg, showSendReport: true);
+								_shouldKeepDialogOpen = true;
+								_progress.MessageWithParams("Spreadsheet.MultipleImageChildren", "",
+									"Export warning: Found multiple images in data-book element {0}. Only the first will be exported.", ProgressKind.Warning, dataBookLabel);
 							}
 							imageSource = childSrc;
 						}
@@ -195,9 +223,9 @@ namespace Bloom.Spreadsheet
 
 				if (IsDataDivImageElement(dataBookElement, dataBookLabel))
 				{
-					var msg = LocalizationManager.GetString("Spreadsheet:DataDivImageMultiple",
-						"Export warning: Found multiple elements for image element " + dataBookLabel + ". Only the first will be exported.");
-					NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg, showSendReport: true);
+					_shouldKeepDialogOpen = true;
+					_progress.MessageWithParams("Spreadsheet.DataDivImageMultiple", "",
+						"Export warning: Found multiple elements for image element {0}. Only the first will be exported.", ProgressKind.Warning, dataBookLabel);
 					continue;
 				}
 				row.SetCell(_spreadsheet.ColumnForLang(lang), dataBookElement.InnerXml.Trim());

@@ -175,9 +175,11 @@ namespace Bloom.web.controllers
 					Settings.Default.Save();
 				}
 				string imagesFolderPath = Path.GetDirectoryName(bookPath);
-				var _sheet = exporter.Export(dom, imagesFolderPath);
-				_sheet.WriteToFile(outputFilename);
-				PathUtilities.OpenFileInApplication(outputFilename);
+				exporter.ExportWithProgress(dom, imagesFolderPath, _webSocketServer, sheet =>
+				{
+					sheet.WriteToFile(outputFilename);
+					PathUtilities.OpenFileInApplication(outputFilename);
+				});
 			}
 			catch (Exception ex)
 			{
