@@ -1951,6 +1951,8 @@ namespace Bloom.Book
 
 		public string ThumbnailPath => Path.Combine(FolderPath, "thumbnail.png");
 
+		public string NonPaddedThumbnailPath => Path.Combine(FolderPath, "nonPaddedThumbnail.png");
+
 		public virtual bool CanUpdate => IsEditable && !HasFatalError;
 
 		public virtual bool CanExport => IsEditable && !HasFatalError;

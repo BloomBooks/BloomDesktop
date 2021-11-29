@@ -14,7 +14,7 @@ using SIL.Windows.Forms.ImageToolbox;
 namespace Bloom.ImageProcessing
 {
 	/// <summary>
-	/// Currently the only processing we're doing it to make PNGs with lots of whitespace look good against our colored background pages
+	/// Currently the only processing we're doing is to make PNGs with lots of whitespace look good against our colored background pages
 	/// Previously, we also shrunk images to improve performance when we were handing out file paths. Now that we are giving images
 	/// over http, gecko may do well enough without the shrinking.
 	/// </summary>
@@ -148,7 +148,7 @@ namespace Bloom.ImageProcessing
 				if (getThumbnail)
 				{
 					// The HTML div that contains the thumbnails is 80 pixels wide, so make the thumbnails 80 pixels wide
-					success = GenerateThumbnail(originalPath, pathToProcessedImage, 80);
+					success = GenerateThumbnail(originalPath, pathToProcessedImage, 80, Color.Empty);
 				}
 				else if (makeTransparent)
 				{
@@ -170,8 +170,9 @@ namespace Bloom.ImageProcessing
 		}
 
 		// Make a thumbnail of the input image. newWidth and newHeight are both limits; the image will not be larger than original,
-		// but if necessary will be shrunk to fit within the indicated rectangle.
-		public static bool GenerateThumbnail(string originalPath, string pathToProcessedImage, int newWidth)
+		// but if necessary will be shrunk to fit within the indicated rectangle. We would like to set a default backColor,
+		// since one caller uses it and the other doesn't. But it doesn't work. There are no compile-time constants to use.
+		public static bool GenerateThumbnail(string originalPath, string pathToProcessedImage, int newWidth, Color backColor)
 		{
 			using (var originalImage = PalasoImage.FromFileRobustly(originalPath))
 			{
@@ -186,7 +187,13 @@ namespace Bloom.ImageProcessing
 				var thumbnail = new Bitmap(newW, newH);
 
 				var g = Graphics.FromImage(thumbnail);
-
+				if (backColor != Color.Empty)
+				{
+					using (var brush = new SolidBrush(backColor))
+					{
+						g.FillRectangle(brush, new Rectangle(0, 0, newW, newH));
+					}
+				}
 				Image imageToDraw = originalImage.Image;
 				bool useOriginalImage = ImageUtils.AppearsToBeJpeg(originalImage);
 				if (!useOriginalImage)
