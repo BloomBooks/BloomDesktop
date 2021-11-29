@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ErrorReporter;
+using Bloom.ImageProcessing;
 using Bloom.MiscUI;
 using Bloom.TeamCollection;
 using Bloom.Utils;
@@ -485,7 +486,7 @@ namespace Bloom.Publish.BloomLibrary
 
 		private void ShowIdCollisionDialog()
 		{
-			var newThumbPath = _model.Book.ThumbnailPath.ToLocalhost();
+			var newThumbPath = ChooseBestUploadingThumbnailPath(_model.Book).ToLocalhost();
 			var newTitle = _model.Book.TitleBestForUserDisplay;
 			var newLanguages = ConvertActiveLanguageCodesToNames(_model.Book.ActiveLanguages, _model.Book.BookData);
 			var existingBookInfo = _model.ConflictingBookInfo;
@@ -519,7 +520,31 @@ namespace Bloom.Publish.BloomLibrary
 				dlg.Width = 770;
 				dlg.Height = 570;
 				dlg.ControlBox = false;
+				// Without this line, especially when debugging, the dialog can end up hidden by Bloom!
+				dlg.TopMost = true;
 				dlg.ShowDialog();
+			}
+		}
+
+		// We are trying our best to end up with a thumbnail whose height/width ratio
+		// is the same as the original image. This allows the Uploading and Already in Bloom Library
+		// thumbs to top-align.
+		private string ChooseBestUploadingThumbnailPath(Book.Book book)
+		{
+			// If this exists, it will have the original image's ratio of height to width.
+			var thumb70Path = Path.Combine(book.FolderPath, "thumbnail-70.png");
+			if (RobustFile.Exists(thumb70Path))
+				return thumb70Path;
+			var coverImagePath = book.GetCoverImagePath();
+			if (coverImagePath == null)
+			{
+				return book.ThumbnailPath;
+			} else
+			{
+				RuntimeImageProcessor.GenerateThumbnail(book.GetCoverImagePath(),
+					book.NonPaddedThumbnailPath, 70, ColorTranslator.FromHtml(book.GetCoverColor()));
+				return book.NonPaddedThumbnailPath;
+
 			}
 		}
 
