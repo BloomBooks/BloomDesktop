@@ -4279,7 +4279,7 @@ Do you want to go ahead?</note>
         <note>This is the dialog subtitle. The {0} will be replaced with the uploader's email address.</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks">
-        <source xml:lang="en">These are different books</source>
+        <source xml:lang="en">No, these are different books</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks</note>
         <note>This is the label on a radio button.</note>
       </trans-unit>
@@ -4289,7 +4289,7 @@ Do you want to go ahead?</note>
         <note>This is explanatory commentary on a radio button.</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook">
-        <source xml:lang="en">These are the same book</source>
+        <source xml:lang="en">Yes, this is an update of my book</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook</note>
         <note>This is the label on a radio button.</note>
       </trans-unit>
@@ -4299,7 +4299,7 @@ Do you want to go ahead?</note>
         <note>This is explanatory commentary on a radio button. Don't translate the website reference in brackets ([bloomlibrary.org]). It will be replaced by a link to bloomlibrary.org.</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.SameBook">
-        <source xml:lang="en">Are these the same book?</source>
+        <source xml:lang="en">Is this an update of your existing book?</source>
         <note>ID: PublishTab.UploadCollisionDialog.SameBook</note>
         <note>This is the dialog title</note>
       </trans-unit>

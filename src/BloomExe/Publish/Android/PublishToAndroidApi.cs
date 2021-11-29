@@ -206,7 +206,7 @@ namespace Bloom.Publish.Android
 							ImageUtils.TryCssColorFromString(request.CurrentBook?.GetCoverColor(), out _thumbnailBackgroundColor);
 						}
 						RuntimeImageProcessor.GenerateEBookThumbnail(coverImage, thumbnail.Path, 256, 256, _thumbnailBackgroundColor);
-						request.ReplyWithImage( thumbnail.Path);
+						request.ReplyWithImage(thumbnail.Path);
 					}
 				}
 			}, true);

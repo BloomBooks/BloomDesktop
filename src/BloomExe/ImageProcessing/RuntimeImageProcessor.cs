@@ -14,7 +14,7 @@ using SIL.Windows.Forms.ImageToolbox;
 namespace Bloom.ImageProcessing
 {
 	/// <summary>
-	/// Currently the only processing we're doing it to make PNGs with lots of whitespace look good against our colored background pages
+	/// Currently the only processing we're doing is to make PNGs with lots of whitespace look good against our colored background pages
 	/// Previously, we also shrunk images to improve performance when we were handing out file paths. Now that we are giving images
 	/// over http, gecko may do well enough without the shrinking.
 	/// </summary>
@@ -169,9 +169,16 @@ namespace Bloom.ImageProcessing
 			}
 		}
 
-		// Make a thumbnail of the input image. newWidth and newHeight are both limits; the image will not be larger than original,
-		// but if necessary will be shrunk to fit within the indicated rectangle.
+		// Overload of the below method that defaults to NOT changing the background color of the thumb.
 		public static bool GenerateThumbnail(string originalPath, string pathToProcessedImage, int newWidth)
+		{
+			return GenerateThumbnail(originalPath, pathToProcessedImage, newWidth, Color.Empty);
+		}
+
+		// Make a thumbnail of the input image. newWidth and newHeight are both limits; the image will not
+		// be larger than original, but if necessary will be shrunk to fit within the indicated rectangle.
+		// If parameter 'backColor' is not Empty, we fill the background of the thumbnail with that color.
+		public static bool GenerateThumbnail(string originalPath, string pathToProcessedImage, int newWidth, Color backColor)
 		{
 			using (var originalImage = PalasoImage.FromFileRobustly(originalPath))
 			{
@@ -186,7 +193,13 @@ namespace Bloom.ImageProcessing
 				var thumbnail = new Bitmap(newW, newH);
 
 				var g = Graphics.FromImage(thumbnail);
-
+				if (backColor != Color.Empty)
+				{
+					using (var brush = new SolidBrush(backColor))
+					{
+						g.FillRectangle(brush, new Rectangle(0, 0, newW, newH));
+					}
+				}
 				Image imageToDraw = originalImage.Image;
 				bool useOriginalImage = ImageUtils.AppearsToBeJpeg(originalImage);
 				if (!useOriginalImage)
