@@ -355,6 +355,7 @@
     <Compile Include="ToPalaso\ProgresDialogTests.cs" />
     <Compile Include="UpdateVersionTableTests.cs" />
     <Compile Include="Utilities.cs" />
+    <Compile Include="Utils\MiscUtilsTests.cs" />
     <Compile Include="Utils\TextUtilsTests.cs" />
     <Compile Include="Utils\ZipUtils.cs" />
     <Compile Include="WebLibraryIntegration\BloomLinkArgsTests.cs" />

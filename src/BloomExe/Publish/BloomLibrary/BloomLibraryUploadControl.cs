@@ -12,6 +12,7 @@ using Bloom.Collection;
 using Bloom.ErrorReporter;
 using Bloom.MiscUI;
 using Bloom.TeamCollection;
+using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
@@ -786,7 +787,7 @@ namespace Bloom.Publish.BloomLibrary
 			var bloom = Application.ExecutablePath;
 			if (SIL.PlatformUtilities.Platform.IsLinux)
 				bloom = $"/opt/mono5-sil/bin/mono {bloom}";
-			var command = $"{bloom} upload \"{rootFolderPath}\" -u {_userId.Text} -d {target}";
+			var command = $"\"{bloom}\" upload \"{rootFolderPath}\" -u {_userId.Text} -d {target}";
 
 			ProcessStartInfo startInfo;
 			if (SIL.PlatformUtilities.Platform.IsWindows)
@@ -794,7 +795,7 @@ namespace Bloom.Publish.BloomLibrary
 				startInfo = new ProcessStartInfo()
 				{
 					FileName = "cmd.exe",
-					Arguments = "/k " + command,
+					Arguments = $"/k {MiscUtils.EscapeForCmd(command)}",
 					
 					WorkingDirectory = Path.GetDirectoryName(Application.ExecutablePath)
 				};
