@@ -159,5 +159,32 @@ namespace Bloom.Utils
 			bldr.Append(InstalledAntivirusPrograms());
 			return bldr.ToString();
 		}
+
+		/// <summary>
+		/// Escapes the argument to "cmd /k"
+		/// </summary>
+		/// <remarks>Right now, this method is only designed to handle double quotes within {argument}.
+		/// It is unknown whether there any other special characters that need special handling.</remarks>
+		/// <param name="argument">The string to pass as the argument to the /k switch for "cmd".
+		/// The argument (which is the command to run) should be properly quoted so as to work if you were to run it manually in a terminal.</param>
+		/// <returns>A string in the proper format to pass directly to /k</returns>
+		internal static string EscapeForCmd(string argument)
+		{
+			if (string.IsNullOrEmpty(argument))
+				return argument;
+
+			// Escaping special characters for Windows Batch seems to be a big ad-hoc, unintuitive mess.
+			// (Lots of things in Batch are a mess...)
+			// There are many different ways to encode special characters, and different scenarios require certain types of escaping.
+			// For dealing with double quotes in an argument passed to "cmd /k", all you need to do is wrap the entire thing in double quotes,
+			// leaving the double quotes in the string untouched.
+			// Even though in C# this would be invalid syntax and a compiler error, this is the desired and required syntax for cmd.
+			// Strange but true.
+			// https://ss64.com/nt/syntax-esc.html
+
+			// NOTE: Currently, we always wrap argument in double quotes, regardless of if it's strictly needed or not.
+			// If desired, you could omit the double quotes if they're not strictly necessary.
+			return $"\"{argument}\"";
+		}
 	}
 }
