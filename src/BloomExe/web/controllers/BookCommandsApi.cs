@@ -106,8 +106,8 @@ namespace Bloom.web.controllers
 			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
 			{
 				var extension = Path.GetExtension(_libraryModel.GetSuggestedBloomPackPath());
-				var filename = book.Storage.FileName;
-				dlg.FileName = Path.ChangeExtension(filename, extension);
+				var filename = book.Storage.FolderName;
+				dlg.FileName = $"{book.Storage.FolderName}{extension}";
 				dlg.Filter = "BloomPack|*.BloomPack";
 				dlg.RestoreDirectory = true;
 				dlg.OverwritePrompt = true;
@@ -115,7 +115,6 @@ namespace Bloom.web.controllers
 				{
 					return;
 				}
-				var folder = book.Storage.FolderPath;
 				_libraryModel.MakeSingleBookBloomPack(dlg.FileName, book.Storage.FolderPath);
 			}
 		}

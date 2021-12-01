@@ -249,7 +249,6 @@ namespace BloomTests.web
 
 			storage.SetupGet(x => x.Dom).Returns(htmlDom);
 			storage.SetupGet(x => x.Key).Returns("testkey");
-			storage.SetupGet(x => x.FileName).Returns("testTitle");
 			storage.Setup(x => x.GetRelocatableCopyOfDom()).Returns(() => storage.Object.Dom.Clone());// review: the real thing does more than just clone
 			storage.Setup(x => x.MakeDomRelocatable(It.IsAny<HtmlDom>())).Returns(
 				(HtmlDom x) => { return x.Clone(); });// review: the real thing does more than just clone
