@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
@@ -52,6 +53,7 @@ namespace Bloom.CollectionTab
 		private Image _dropdownImage;
 		private string _previousTargetSaveAs = null;
 		private TeamCollectionManager _tcManager;
+		private SpreadsheetExporter.Factory _exporterFactory;
 
 		/// <summary>
 		/// we go through these at idle time, doing slow things like actually instantiating the book to get the title in preferred language
@@ -62,7 +64,9 @@ namespace Bloom.CollectionTab
 
 		private bool _alreadyReportedErrorDuringImproveAndRefreshBookButtons;
 
-		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookStatusChangeEvent tcStatusChangeEvent, TeamCollectionManager tcManager)
+		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent,
+				LocalizationChangedEvent localizationChangedEvent, BookStatusChangeEvent tcStatusChangeEvent, TeamCollectionManager tcManager,
+				SpreadsheetExporter.Factory exporterFactory)
 			//HistoryAndNotesDialog.Factory historyAndNotesDialogFactory)
 		{
 			_model = model;
@@ -76,6 +80,7 @@ namespace Bloom.CollectionTab
 			selectedTabChangedEvent.Subscribe(OnSelectedTabChanged);
 			InitializeComponent();
 			_primaryCollectionFlow.HorizontalScroll.Visible = false;
+			_exporterFactory = exporterFactory;
 
 			_primaryCollectionFlow.Controls.Clear();
 			_primaryCollectionFlow.HorizontalScroll.Visible = false;
@@ -1754,7 +1759,7 @@ namespace Bloom.CollectionTab
 			try
 			{
 				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));
-				var exporter = new SpreadsheetExporter();
+				var exporter = _exporterFactory();
 
 				string outputFilename;
 
@@ -1776,9 +1781,12 @@ namespace Bloom.CollectionTab
 					Settings.Default.Save();
 				}
 				string imagesFolderPath = Path.GetDirectoryName(bookPath);
-				var _sheet = exporter.Export(dom, imagesFolderPath);
-				_sheet.WriteToFile(outputFilename);
-				PathUtilities.OpenFileInApplication(outputFilename); 
+				exporter.ExportWithProgress(dom, imagesFolderPath,sheet =>
+				{
+					sheet.WriteToFile(outputFilename);
+					PathUtilities.OpenFileInApplication(outputFilename);
+				});
+				
 			}
 			catch (Exception ex)
 			{
