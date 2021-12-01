@@ -38,7 +38,7 @@ namespace Bloom.Book
 	{
 		//TODO Convert most of this section to something like IBookDescriptor, which has enough to display in a catalog, do some basic filtering, etc.
 		string Key { get; }
-		string FileName { get; }
+		string FolderName { get; }
 		string FolderPath { get; }
 		string PathToExistingHtml { get; }
 		bool TryGetPremadeThumbnail(string fileName, out Image image);
@@ -215,7 +215,24 @@ namespace Bloom.Book
 			}
 		}
 
-		public string FileName => Path.GetFileNameWithoutExtension(FolderPath);
+		/// <summary>
+		/// Returns the Folder Name, meaning just the name of the folder without the full path.
+		/// </summary>
+		public string FolderName
+		{
+			get
+			{
+				// Path.GetFileName will return empty string if the FolderPath ends with "/"
+				Debug.Assert(!FolderPath.EndsWith(Path.DirectorySeparatorChar.ToString()), "FolderPath is expected not to include a trailing slash, otherwise the folder's name will be determined incorrectly.");
+
+				// You want GetFileName, not GetFileNameWithoutExtension, because folders don't have extensions
+				// so GetFileNameWithoutExtension will return the wrong result if the folder name contains a period
+				//
+				// If the FolderPath does NOT end with "/", GetDirectoryName will get the full path to the book's PARENT directory, not the BOOK directory,
+				// but GetFileName(GetDirectoryName()) would return the desired result if the FolderPath DOES end with "/"
+				return Path.GetFileName(FolderPath);
+			}
+		}
 
 		public string FolderPath { get; private set; }
 

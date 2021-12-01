@@ -106,8 +106,8 @@ namespace Bloom.web.controllers
 			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
 			{
 				var extension = Path.GetExtension(_libraryModel.GetSuggestedBloomPackPath());
-				var filename = book.Storage.FileName;
-				dlg.FileName = Path.ChangeExtension(filename, extension);
+				var filename = book.Storage.FolderName;
+				dlg.FileName = $"{book.Storage.FolderName}{extension}";
 				dlg.Filter = "BloomPack|*.BloomPack";
 				dlg.RestoreDirectory = true;
 				dlg.OverwritePrompt = true;
@@ -115,7 +115,6 @@ namespace Bloom.web.controllers
 				{
 					return;
 				}
-				var folder = book.Storage.FolderPath;
 				_libraryModel.MakeSingleBookBloomPack(dlg.FileName, book.Storage.FolderPath);
 			}
 		}
@@ -166,9 +165,7 @@ namespace Bloom.web.controllers
 
 				using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
 				{
-					var extension = "xlsx";
-					var filename = book.Storage.FileName;
-					dlg.FileName = Path.ChangeExtension(filename, extension);
+					dlg.FileName = $"{book.Storage.FolderName}.xlsx";
 					dlg.Filter = "xlsx|*.xlsx";
 					dlg.InitialDirectory = !String.IsNullOrWhiteSpace(Settings.Default.ExportImportFileFolder) ? Settings.Default.ExportImportFileFolder : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 					dlg.RestoreDirectory = true;

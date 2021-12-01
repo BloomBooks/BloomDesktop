@@ -44,7 +44,7 @@ namespace BloomTests.CollectionTab
 			BloomTests.Book.BookCollectionTests.AddBook(collectionFolder, "book1");
 
 			BookSelection bookSelection = new BookSelection();
-			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), bookSelection, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent(), null);
+			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), bookSelection, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent(), null, null);
 
 			Bloom.Properties.Settings.Default.CurrentBookPath = Path.Combine(collectionFolder.Path, "book1");
 
@@ -65,7 +65,7 @@ namespace BloomTests.CollectionTab
 			BloomTests.Book.BookCollectionTests.AddBook(collectionFolder, "book1");
 
 			BookSelection bookSelection = new BookSelection();
-			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), bookSelection, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent(), null);
+			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), bookSelection, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent(), null, null);
 
 			Bloom.Properties.Settings.Default.CurrentBookPath = Path.Combine(collectionFolder.Path, "book1");
 			var expectedBookPath = Bloom.Properties.Settings.Default.CurrentBookPath;
@@ -86,7 +86,7 @@ namespace BloomTests.CollectionTab
 			var collectionFolder = new TemporaryFolder("LibraryListViewTests");
 			Book.BookCollectionTests.AddBook(collectionFolder, "book1");
 
-			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), new BookSelection(), new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent(), null);
+			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), new BookSelection(), new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent(), null, null);
 
 			var primaryCollectionFlow = new FlowLayoutPanel();
 			var obj = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateObject(_view);
@@ -109,7 +109,7 @@ namespace BloomTests.CollectionTab
 			var collectionFolder = new TemporaryFolder("LibraryListViewTests");
 			Book.BookCollectionTests.AddBook(collectionFolder, "book1");
 
-			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), new BookSelection(), new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent(), null);
+			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), new BookSelection(), new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent(), null, null);
 
 			var primaryCollectionFlow = new FlowLayoutPanel();
 			var obj = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateObject(_view);
@@ -132,7 +132,7 @@ namespace BloomTests.CollectionTab
 			var collectionFolder = new TemporaryFolder("LibraryListViewTests");
 			Book.BookCollectionTests.AddBook(collectionFolder, "book1");
 
-			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), new BookSelection(), new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent(), null);
+			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), new BookSelection(), new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent(), null, null);
 
 			var primaryCollectionFlow = new FlowLayoutPanel();
 			var obj = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateObject(_view);
@@ -159,7 +159,7 @@ namespace BloomTests.CollectionTab
 			var privateCollectionSettings = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateObject(collectionSettings);
 			privateCollectionSettings.SetFieldOrProperty("CollectionName", "A&B");
 
-			_view = new LibraryListView(new FakeLibraryModel(collectionFolder, collectionSettings), new BookSelection(), new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent(), null);
+			_view = new LibraryListView(new FakeLibraryModel(collectionFolder, collectionSettings), new BookSelection(), new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent(), null, null);
 
 			// System Under Test //
 			_view.LoadPrimaryCollectionButtons();
@@ -178,7 +178,7 @@ namespace BloomTests.CollectionTab
 			var collectionFolder = new TemporaryFolder("LibraryListViewTests");
 			Book.BookCollectionTests.AddBook(collectionFolder, "A&B Book");
 
-			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), new BookSelection(), new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent(), null);
+			_view = new LibraryListView(new FakeLibraryModel(collectionFolder), new BookSelection(), new SelectedTabChangedEvent(), new LocalizationChangedEvent(), new BookStatusChangeEvent(), null, null);
 
 			// System Under Test //
 			_view.LoadPrimaryCollectionButtons();
