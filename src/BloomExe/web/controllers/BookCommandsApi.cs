@@ -153,7 +153,7 @@ namespace Bloom.web.controllers
 			try
 			{
 				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));
-				var exporter = new SpreadsheetExporter();
+				var exporter = new SpreadsheetExporter(_webSocketServer);
 
 				string outputFilename;
 
@@ -175,7 +175,7 @@ namespace Bloom.web.controllers
 					Settings.Default.Save();
 				}
 				string imagesFolderPath = Path.GetDirectoryName(bookPath);
-				exporter.ExportWithProgress(dom, imagesFolderPath, _webSocketServer, sheet =>
+				exporter.ExportWithProgress(dom, imagesFolderPath, sheet =>
 				{
 					sheet.WriteToFile(outputFilename);
 					PathUtilities.OpenFileInApplication(outputFilename);

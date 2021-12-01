@@ -53,7 +53,7 @@ namespace Bloom.CollectionTab
 		private Image _dropdownImage;
 		private string _previousTargetSaveAs = null;
 		private TeamCollectionManager _tcManager;
-		private BloomWebSocketServer _socketServer;
+		private SpreadsheetExporter.Factory _exporterFactory;
 
 		/// <summary>
 		/// we go through these at idle time, doing slow things like actually instantiating the book to get the title in preferred language
@@ -66,7 +66,7 @@ namespace Bloom.CollectionTab
 
 		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent,
 				LocalizationChangedEvent localizationChangedEvent, BookStatusChangeEvent tcStatusChangeEvent, TeamCollectionManager tcManager,
-				BloomWebSocketServer socketServer)
+				SpreadsheetExporter.Factory exporterFactory)
 			//HistoryAndNotesDialog.Factory historyAndNotesDialogFactory)
 		{
 			_model = model;
@@ -80,6 +80,7 @@ namespace Bloom.CollectionTab
 			selectedTabChangedEvent.Subscribe(OnSelectedTabChanged);
 			InitializeComponent();
 			_primaryCollectionFlow.HorizontalScroll.Visible = false;
+			_exporterFactory = exporterFactory;
 
 			_primaryCollectionFlow.Controls.Clear();
 			_primaryCollectionFlow.HorizontalScroll.Visible = false;
@@ -87,7 +88,6 @@ namespace Bloom.CollectionTab
 			_sourceBooksFlow.HorizontalScroll.Visible = false;
 			_sourceBooksFlow.SizeChanged += _sourceBooksFlow_SizeChanged;
 			_sourceBooksFlow.BackColor = Palette.GeneralBackground;
-			_socketServer = socketServer;
 			splitContainer1.BackColor =  Palette.BookListSplitterColor;
 			if (!_model.ShowSourceCollections)
 			{
@@ -1759,7 +1759,7 @@ namespace Bloom.CollectionTab
 			try
 			{
 				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));
-				var exporter = new SpreadsheetExporter();
+				var exporter = _exporterFactory();
 
 				string outputFilename;
 
@@ -1781,7 +1781,7 @@ namespace Bloom.CollectionTab
 					Settings.Default.Save();
 				}
 				string imagesFolderPath = Path.GetDirectoryName(bookPath);
-				exporter.ExportWithProgress(dom, imagesFolderPath, _socketServer,sheet =>
+				exporter.ExportWithProgress(dom, imagesFolderPath,sheet =>
 				{
 					sheet.WriteToFile(outputFilename);
 					PathUtilities.OpenFileInApplication(outputFilename);

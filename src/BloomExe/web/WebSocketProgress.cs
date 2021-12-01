@@ -57,6 +57,8 @@ namespace Bloom.web
 		void Message(string idSuffix, string comment, string message, ProgressKind progressKind = ProgressKind.Progress, bool useL10nIdPrefix =true);
 		void Message(string idSuffix, string message, ProgressKind kind=ProgressKind.Progress, bool useL10nIdPrefix = true);
 		void MessageWithParams(string idSuffix, string comment, string message, ProgressKind kind, params object[] parameters);
+
+		bool HaveProblemsBeenReported { get; }
 	}
 
 	/// <summary>
@@ -128,6 +130,13 @@ namespace Bloom.web
 			messageBundle.message = message;
 			messageBundle.progressKind = kind.ToString();
 			_bloomWebSocketServer.SendBundle(_clientContext, "message", messageBundle);
+			switch (kind)
+			{
+				case ProgressKind.Error:
+				case ProgressKind.Warning:
+					HaveProblemsBeenReported = true;
+					break;
+			}
 		}
 		public virtual void ShowButtons()
 		{
@@ -155,6 +164,8 @@ namespace Bloom.web
 			var formatted = GetMessageWithParams(idSuffix, comment, message, parameters);
 			MessageWithoutLocalizing(formatted, progressKind);
 		}
+
+		public bool HaveProblemsBeenReported { get; private set; }
 
 		// Use with care: if the first parameter is a string, you can leave out one of the earlier arguments with no compiler warning.
 		public string GetMessageWithParams(string idSuffix, string comment, string message, params object[] parameters)

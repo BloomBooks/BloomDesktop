@@ -3,6 +3,7 @@ using Bloom.Book;
 using L10NSharp;
 using SIL.Xml;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -18,16 +19,28 @@ namespace Bloom.Spreadsheet
 	{
 		InternalSpreadsheet _spreadsheet = new InternalSpreadsheet();
 		private IWebSocketProgress _progress;
-		private bool _shouldKeepDialogOpen = false;
+		private BloomWebSocketServer _webSocketServer;
+
+		public delegate SpreadsheetExporter Factory();
+
+		public SpreadsheetExporter(BloomWebSocketServer webSocketServer)
+		{
+			_webSocketServer = webSocketServer;
+		}
+
+		public SpreadsheetExporter()
+		{
+			Debug.Assert(Bloom.Program.RunningUnitTests, "SpreadsheetExporter should be passed a webSocketProgress unless running unit tests that don't need it");
+		}
 
 		//a list of values which, if they occur in the data-book attribute of an element in the bloomDataDiv,
 		//indicate that the element content should be treated as an image, even though the element doesn't
 		//have a src attribute nor actually contain an img element
 		public static List<string> DataDivImagesWithNoSrcAttributes = new List<string>() { "licenseImage" };
 
-		public void ExportWithProgress(HtmlDom dom, string imagesFolderPath, BloomWebSocketServer socketServer, Action<InternalSpreadsheet> resultCallback)
+		public void ExportWithProgress(HtmlDom dom, string imagesFolderPath, Action<InternalSpreadsheet> resultCallback)
 		{
-			BrowserProgressDialog.DoWorkWithProgressDialog(socketServer, "spreadsheet-export", () =>
+			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer,"spreadsheet-export", () =>
 				new ReactDialog("progressDialogBundle",
 						// props to send to the react component
 						new
@@ -44,7 +57,7 @@ namespace Bloom.Spreadsheet
 			{
 				var spreadsheet = Export(dom, imagesFolderPath, progress);
 				resultCallback(spreadsheet);
-				return _shouldKeepDialogOpen;
+				return progress.HaveProblemsBeenReported;
 			});
 		}
 
@@ -177,7 +190,6 @@ namespace Bloom.Spreadsheet
 							//src attribute. We haven't yet found any case in which they are different, so are only storing one in the
 							//spreadsheet. This test is to make sure that we notice if we come across a case where it might be necessary
 							//to save both.
-							_shouldKeepDialogOpen = true;
 							_progress.MessageWithParams("Spreadsheet.DataDivConflictWarning","",
 								"Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.",
 								ProgressKind.Warning, dataBookLabel) ;
@@ -202,7 +214,6 @@ namespace Bloom.Spreadsheet
 							if (dataBookElement.ChildNodes
 								    .Cast<XmlNode>().Count(n => n.Name == "img" && string.IsNullOrEmpty(((XmlElement)n).GetAttribute("src"))) > 1)
 							{
-								_shouldKeepDialogOpen = true;
 								_progress.MessageWithParams("Spreadsheet.MultipleImageChildren", "",
 									"Export warning: Found multiple images in data-book element {0}. Only the first will be exported.", ProgressKind.Warning, dataBookLabel);
 							}
@@ -223,7 +234,6 @@ namespace Bloom.Spreadsheet
 
 				if (IsDataDivImageElement(dataBookElement, dataBookLabel))
 				{
-					_shouldKeepDialogOpen = true;
 					_progress.MessageWithParams("Spreadsheet.DataDivImageMultiple", "",
 						"Export warning: Found multiple elements for image element {0}. Only the first will be exported.", ProgressKind.Warning, dataBookLabel);
 					continue;
