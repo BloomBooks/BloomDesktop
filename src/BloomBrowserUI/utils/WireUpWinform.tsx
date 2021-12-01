@@ -18,6 +18,17 @@ export function WireUpForWinforms(
         root: HTMLElement,
         props?: Object
     ) => {
+        // Simulating a click on the root element shouldn't have any effects through
+        // any click handlers that our React code might add since we haven't rendered
+        // react into the element yet. But it has one effect I haven't found any other
+        // way to bring about: it puts focus into the root document of this component.
+        // Since the component is about to become the root of a control, often the root
+        // of a whole window, this is nearly always a good thing. For one thing, it
+        // allows using Escape to close a BloomDialog, and makes it work when we use
+        // focus() to put the focus on some particular control after rendering.
+        // If we find some case where it isn't desired, we can figure out some way to
+        // make it optional.
+        root.click();
         props = AddDialogPropsWhenWrappedByWinforms(props);
         const c = React.createElement(component, props, null);
         ReactDOM.render(<ThemedRoot>{c}</ThemedRoot>, root);

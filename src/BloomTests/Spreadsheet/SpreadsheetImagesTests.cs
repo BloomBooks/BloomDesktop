@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Spreadsheet;
+using BloomTemp;
 using BloomTests.Book;
 using Gtk;
 using NUnit.Framework;
@@ -71,7 +72,8 @@ namespace BloomTests.Spreadsheet
 
                 <div class=""split-pane-component position-bottom"" style=""height: 30.1471%;"">
                     <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px"">
-                        <div class=""bloom-imageContainer"" title=""Name: mars 2.jpg Size: 130.10 kb Dots: 1041 x 447 For the current paper size: • The image container is 406 x 203 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 246 DPI. • An image with 1269 x 635 dots would fill this container at 300 DPI.""><img src=""mars%202.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""cc-by""></img></div>
+                        <div class=""bloom-imageContainer"" title=""Name: mars 2.png Size: 130.10 kb Dots: 1041 x 447 For the current paper size: • The image container is 406 x 203 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 246 DPI. • An image with 1269 x 635 dots would fill this container at 300 DPI.""><img src=""mars%202.png"" alt="""" data-copyright="""" data-creator="""" data-license=""cc-by""></img></div>
+<div class=""bloom-imageContainer"" title=""Name: mars 2.jpg Size: 130.10 kb Dots: 1041 x 447 For the current paper size: • The image container is 406 x 203 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 246 DPI. • An image with 1269 x 635 dots would fill this container at 300 DPI.""><img src=""mars%202.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""cc-by""></img></div>
                     </div>
                 </div>
             </div>
@@ -129,27 +131,27 @@ namespace BloomTests.Spreadsheet
 		private List<ContentRow> _rowsFromExport;
 		private InternalSpreadsheet _sheetFromFile;
 		private List<ContentRow> _rowsFromFile;
+		private TemporaryFolder _spreadsheetFolder;
 
 		[OneTimeSetUp]
 		public void OneTimeSetUp()
 		{
 			var dom = new HtmlDom(imageBook, true);
+
+			_spreadsheetFolder = new TemporaryFolder("SpreadsheetImagesTests");
 			_exporter = new SpreadsheetExporter();
 			var path = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(_pathToTestImages);
-			_sheetFromExport = _exporter.Export(dom, path);
+			_sheetFromExport =
+				_exporter.ExportToFolder(dom, path, _spreadsheetFolder.FolderPath, out string outputPath, null, OverwriteOptions.Overwrite);
 			_rowsFromExport = _sheetFromExport.ContentRows.ToList();
-			using (var tempFile = TempFile.WithExtension("xslx"))
-			{
-				_sheetFromExport.WriteToFile(tempFile.Path);
-				_sheetFromFile = InternalSpreadsheet.ReadFromFile(tempFile.Path);
-				_rowsFromFile = _sheetFromFile.ContentRows.ToList();
-			}
+			_sheetFromFile = InternalSpreadsheet.ReadFromFile(outputPath);
+			_rowsFromFile = _sheetFromFile.ContentRows.ToList();
 		}
 
 		[OneTimeTearDown]
 		public void OneTimeTearDown()
 		{
-
+			_spreadsheetFolder?.Dispose();
 		}
 
 		void SetupFor(string source)
@@ -180,7 +182,8 @@ namespace BloomTests.Spreadsheet
 			var pageNumberIndex = _sheet.ColumnForTag(InternalSpreadsheet.PageNumberColumnLabel);
 			Assert.That(_imageRows[0].GetCell(pageNumberIndex).Content, Is.EqualTo("1"));
 			Assert.That(_imageRows[1].GetCell(pageNumberIndex).Content, Is.EqualTo("1"));
-			Assert.That(_imageRows[2].GetCell(pageNumberIndex).Content, Is.EqualTo("2"));
+			Assert.That(_imageRows[2].GetCell(pageNumberIndex).Content, Is.EqualTo("1"));
+			Assert.That(_imageRows[3].GetCell(pageNumberIndex).Content, Is.EqualTo("2"));
 		}
 
 		[TestCase("fromExport")]
@@ -195,6 +198,16 @@ namespace BloomTests.Spreadsheet
 			Assert.That(_textRows[0].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.TextGroupRowLabel));
 		}
 
+		[Test]
+		public void CopiesImagesToDestFolder()
+		{
+			var destImageFolder = Path.Combine(_spreadsheetFolder.FolderPath, "images");
+			Assert.That(Directory.Exists(destImageFolder));
+			Assert.That(File.Exists(Path.Combine(destImageFolder, "BloomWithTaglineAgainstLight.svg")));
+			Assert.That(File.Exists(Path.Combine(destImageFolder, "man.jpg")));
+			Assert.That(File.Exists(Path.Combine(destImageFolder, "mars 2.png")));
+		}
+
 		[TestCase("fromExport")]
 		[TestCase("fromFile")]
 		public void SavesImageSources(string source)
@@ -202,12 +215,14 @@ namespace BloomTests.Spreadsheet
 			SetupFor(source);
 			var imageSourceColumn = _sheet.ColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
 			var path = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(_pathToTestImages);
-			var manImagePath = Path.Combine(path, "man.jpg");
+			var manImagePath = Path.Combine("images", "man.jpg");
 			Assert.That(_imageRows[0].GetCell(imageSourceColumn).Text, Is.EqualTo(manImagePath));
-			var marsImagePath = Path.Combine(path, "mars 2.jpg");
+			var marsImagePath = Path.Combine("images", "mars 2.png");
 			Assert.That(_imageRows[1].GetCell(imageSourceColumn).Text, Is.EqualTo(marsImagePath));
-			var bhImagePath = Path.Combine(path, "bh.jpg");
-			Assert.That(_imageRows[2].GetCell(imageSourceColumn).Text, Is.EqualTo(bhImagePath));
+			var marsJpgImagePath = Path.Combine("images", "mars 2.jpg");
+			Assert.That(_imageRows[2].GetCell(imageSourceColumn).Text, Is.EqualTo(marsJpgImagePath));
+			var bhImagePath = Path.Combine("images", "bh.jpg");
+			Assert.That(_imageRows[3].GetCell(imageSourceColumn).Text, Is.EqualTo(bhImagePath));
 
 			Assert.That(_textRows[0].GetCell(imageSourceColumn).Text, Is.EqualTo(""));
 		}
@@ -225,7 +240,7 @@ namespace BloomTests.Spreadsheet
 		{
 			SetupFor(source);
 			var thumbnailColumn = _sheet.ColumnForTag(InternalSpreadsheet.ImageThumbnailColumnLabel);
-			Assert.That(_imageRows[1].GetCell(thumbnailColumn).Text, Is.EqualTo("Missing"));
+			Assert.That(_imageRows[2].GetCell(thumbnailColumn).Text, Is.EqualTo("Missing"));
 		}
 
 		[TestCase("fromFile")]
@@ -233,7 +248,7 @@ namespace BloomTests.Spreadsheet
 		{
 			SetupFor(source);
 			var thumbnailColumn = _sheet.ColumnForTag(InternalSpreadsheet.ImageThumbnailColumnLabel);
-			Assert.That(_imageRows[2].GetCell(thumbnailColumn).Text, Is.EqualTo("Bad image file"));
+			Assert.That(_imageRows[3].GetCell(thumbnailColumn).Text, Is.EqualTo("Bad image file"));
 		}
 
 		[TestCase("fromFile")]

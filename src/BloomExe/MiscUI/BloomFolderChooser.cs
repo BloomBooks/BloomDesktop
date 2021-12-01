@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿using System.Linq;
+using System.Windows.Forms;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace Bloom.MiscUI
@@ -31,13 +32,17 @@ namespace Bloom.MiscUI
 
 		private static string SelectFolderOnWindows(string initialFolderPath)
 		{
+			
 			// Note, this is Windows only.
 			CommonOpenFileDialog dialog = new CommonOpenFileDialog
 			{
 				InitialDirectory = initialFolderPath,
 				IsFolderPicker = true
 			};
-			if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+			// If we can find Bloom's main window, bring the dialog up on that screen.
+			var rootForm = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+			var result = rootForm == null ? dialog.ShowDialog() : dialog.ShowDialog(rootForm.Handle);
+			if (result == CommonFileDialogResult.Ok)
 				return dialog.FileName;
 			return null;
 		}

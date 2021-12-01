@@ -121,7 +121,8 @@ namespace Bloom.Spreadsheet
 							// if this row has an image source value that is not a header 
 							if (imageSrc != "" && Array.IndexOf(spreadsheet.StandardLeadingColumns, imageSrc) == -1)
 							{
-								var imagePath = imageSrc;
+								var sheetFolder = Path.GetDirectoryName(outputPath);
+								var imagePath = Path.Combine(sheetFolder, imageSrc);
 								//Images show up in the cell 1 row greater and 1 column greater than assigned
 								//So this will put them in row r, column imageThumbnailColumn+1 like we want
 								var rowHeight = embedImage(imagePath, r - 1, imageThumbnailColumn);
