@@ -170,11 +170,14 @@ a normal merge with all that history would probably be okay.)
    This is done with the CheckOrFixXliff tool that is part of L10NSharp.  This is available as a
    nuget package named L10NSharp.CheckOrFixXliff and can be installed by a "nuget install"
    command, followed optionally by moving the CheckOrFixXliff.exe and L10NSharp.dll files to a
-   convenient location.
+   convenient location.  Note that if nuget is not obviously available on your machine, it can
+   be downloaded from https://docs.microsoft.com/en-us/nuget/install-nuget-client-tools and
+   installed somewhere in your PATH.
 
    <pre>
-       nuget install L10NSharp.CheckOrFixXliff
-       cp L10NSharp.CheckOrFixXliff.4.1.0/tools/* /c/bin
+       # Ensure needed program is somewhere in your PATH ... This needs to be done only once.
+       nuget install L10NSharp.CheckOrFixXliff -Version 4.2.0-beta0006
+       cp L10NSharp.CheckOrFixXliff.4.2.0-beta0006/tools/* /c/bin
 
        for f in DistFiles/localization/*/*.xlf; do
            echo ==== $f ====
@@ -185,8 +188,9 @@ a normal merge with all that history would probably be okay.)
    On Linux, the bash shell commands are almost the same:
 
    <pre>
-       nuget install L10NSharp.CheckOrFixXliff
-       cp L10NSharp.CheckOrFixXliff.4.1.0/tools/* /home/steve/bin
+       # Ensure needed program is somewhere in your PATH ... This needs to be done only once.
+       nuget install L10NSharp.CheckOrFixXliff -Version 4.2.0-beta0006
+       cp L10NSharp.CheckOrFixXliff.4.2.0-beta0006/tools/* /home/steve/bin
 
        for f in DistFiles/localization/*/*.xlf; do
            echo ==== $f ====
