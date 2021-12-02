@@ -2,6 +2,7 @@ using System;
 using Bloom.Book;
 using L10NSharp;
 using SIL.Xml;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -86,39 +87,55 @@ namespace Bloom.Spreadsheet
 			var iContentPage = 0;
 			foreach (var page in pages)
 			{
-				var rowsForPage = new List<SpreadsheetRow>();
-
 				var pageNumber = page.Attributes["data-page-number"]?.Value ?? "";
 				// For now we will ignore all un-numbered pages, particularly xmatter,
 				// which was handled above by exporting data div data.
 				if (pageNumber == "")
 					continue;
 
-				//Get images
-				var imageContainers = GetImageContainers(page);
-				foreach (var imageContainer in imageContainers)
-				{
-					rowsForPage.AddRange(CreateImageRows(imageContainer, pageNumber, imagesFolderPath));
-				}
-
-				//Get translation groups
-				var groups =
-					TranslationGroupManager.SortTranslationGroups(TranslationGroupManager.GetTranslationGroups(page));
-				foreach (var group in groups)
-				{
-					rowsForPage.Add(CreateTranslationGroupRow(group, pageNumber));
-				}
-
 				//Each page alternates colors
-				var colorForPage = iContentPage++ % 2 == 0
-					? InternalSpreadsheet.AlternatingRowsColor1
-					: InternalSpreadsheet.AlternatingRowsColor2;
-				foreach (var row in rowsForPage)
-					row.BackgroundColor = colorForPage;
+				var colorForPage = iContentPage++ % 2 == 0 ? InternalSpreadsheet.AlternatingRowsColor1 : InternalSpreadsheet.AlternatingRowsColor2;
+				AddContentRows(page, pageNumber, imagesFolderPath, colorForPage);
 			}
-
 			_spreadsheet.SortHiddenRowsToTheBottom();
 			return _spreadsheet;
+		}
+
+		private void AddContentRows(XmlElement page, string pageNumber, string imagesFolderPath, Color colorForPage)
+		{
+			var imageContainers = GetImageContainers(page);
+			var groups = TranslationGroupManager.SortTranslationGroups(TranslationGroupManager.GetTranslationGroups(page));
+						
+			var pageContentTuples = imageContainers.MapUnevenPairs(groups, (imageContainer, group) => (imageContainer, group));
+			foreach(var pageContent in pageContentTuples)
+			{
+				var row = new ContentRow(_spreadsheet);
+				row.SetCell(InternalSpreadsheet.MetadataKeyColumnLabel, InternalSpreadsheet.PageContentRowLabel);
+				row.SetCell(InternalSpreadsheet.PageNumberColumnLabel, pageNumber);
+
+				if (pageContent.imageContainer != null)
+				{
+					var image = (XmlElement)pageContent.imageContainer.SafeSelectNodes(".//img").Item(0);
+					var imagePath = ImagePath(imagesFolderPath, image.GetAttribute("src"));
+					row.SetCell(InternalSpreadsheet.ImageSourceColumnLabel, Path.Combine("images", Path.GetFileName(imagePath)));
+					CopyImageFileToSpreadsheetFolder(imagePath);
+				}
+
+				if (pageContent.group != null)
+				{
+					foreach (var editable in pageContent.group.SafeSelectNodes("./*[contains(@class, 'bloom-editable')]").Cast<XmlElement>())
+					{
+						var lang = editable.Attributes["lang"]?.Value ?? "";
+						if (lang == "z" || lang == "")
+							continue;
+						var index = _spreadsheet.ColumnForLang(lang);
+						var content = editable.InnerXml;
+						row.SetCell(index, content);
+					}
+				}
+
+				row.BackgroundColor = colorForPage;
+			}
 		}
 
 		private XmlElement GetDataDiv(HtmlDom elementOrDom)
@@ -132,47 +149,9 @@ namespace Bloom.Spreadsheet
 				.ToArray();
 		}
 
-		private List<SpreadsheetRow> CreateImageRows(XmlElement imageContainer, string pageNumber,
-			string imagesFolderPath)
-		{
-			var rowsCreated = new List<SpreadsheetRow>();
-			foreach (XmlElement image in imageContainer.SafeSelectNodes(".//img"))
-			{
-				var row = new ContentRow(_spreadsheet);
-				row.SetCell(InternalSpreadsheet.MetadataKeyColumnLabel, InternalSpreadsheet.ImageRowLabel);
-				row.SetCell(InternalSpreadsheet.PageNumberColumnLabel, pageNumber);
-				var imagePath = ImagePath(imagesFolderPath, image.GetAttribute("src"));
-				row.SetCell(InternalSpreadsheet.ImageSourceColumnLabel,
-					Path.Combine("images", Path.GetFileName(imagePath)));
-				CopyImageFileToSpreadsheetFolder(imagePath);
-				rowsCreated.Add(row);
-			}
-
-			return rowsCreated;
-		}
-
 		private string ImagePath(string imagesFolderPath, string imageSrc)
 		{
 			return Path.Combine(imagesFolderPath, UrlPathString.CreateFromUrlEncodedString(imageSrc).NotEncoded);
-		}
-
-		private SpreadsheetRow CreateTranslationGroupRow(XmlNode group, string pageNumber)
-		{
-			var row = new ContentRow(_spreadsheet);
-			row.SetCell(InternalSpreadsheet.MetadataKeyColumnLabel, InternalSpreadsheet.TextGroupRowLabel);
-			row.SetCell(InternalSpreadsheet.PageNumberColumnLabel, pageNumber);
-			foreach (var editable in group.SafeSelectNodes("./*[contains(@class, 'bloom-editable')]")
-				         .Cast<XmlElement>())
-			{
-				var lang = editable.Attributes["lang"]?.Value ?? "";
-				if (lang == "z" || lang == "")
-					continue;
-				var index = _spreadsheet.ColumnForLang(lang);
-				var content = editable.InnerXml;
-				row.SetCell(index, content);
-			}
-
-			return row;
 		}
 
 		private void AddDataDivData(XmlNode node, string imagesFolderPath)

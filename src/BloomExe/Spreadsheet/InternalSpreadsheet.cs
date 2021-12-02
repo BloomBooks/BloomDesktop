@@ -20,13 +20,12 @@ namespace Bloom.Spreadsheet
 		public static Color HiddenColor = Color.FromArgb(210, 210, 210); // light gray
 
 		public const string MetadataKeyColumnLabel = "[metadata key]";
-		public const string PageNumberColumnLabel = "[page]";
+		public const string PageNumberColumnLabel = "(exported page)";
 		public const string ImageThumbnailColumnLabel = "[image thumbnail]";
 		public const string ImageSourceColumnLabel = "[image source]";
 
-		public const string ImageRowLabel = "[image]";
-		public const string TextGroupRowLabel = "[textgroup]";
 		public const string BookTitleRowLabel = "[bookTitle]";
+		public const string PageContentRowLabel = "[page content]";
 
 		private List<SpreadsheetRow> _rows = new List<SpreadsheetRow>();
 		private HeaderRow _header;
