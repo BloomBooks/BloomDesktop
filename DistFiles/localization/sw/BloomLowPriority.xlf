@@ -6,7 +6,7 @@
         <source xml:lang="en">A future update of Bloom will contain the branding assets for this project, “{0}”.  Thank you for your patience.</source>
         <note>ID: BackCover.NewBrandingNotice</note>
         <note>The {0} is replaced at runtime with the name of the new branding project.</note>
-        <target xml:lang="sw" state="needs-translation">A future update of Bloom will contain the branding assets for this project, “{0}”.  Thank you for your patience.</target>
+        <target xml:lang="sw" state="translated">Sasisho la baadaye la Bloom litakuwa na vipengee vya chapa vya mradi huu, "{0}". Asante kwa uvumilivu wako.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed" approved="yes">
         <source xml:lang="en">Conversion file used:</source>
@@ -117,6 +117,55 @@
         <note>ID: Settings.Enterprise.WhatsThis</note>
         <note>A link offering more information about the Funded Local Community Only option</note>
         <target xml:lang="sw" state="final">Hii ni nini?</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.DataDivConflictWarning">
+        <source xml:lang="en">Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.</source>
+        <note>ID: Spreadsheet.DataDivConflictWarning</note>
+        <target xml:lang="sw" state="translated">Onyo la kuhamisha: Imepata kiumbi cha 'src' tofauti na maandishi ya kipengele cha kipengele cha data-div {0}. Kiumbi cha 'src' kitapuuzwa.</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.DataDivImageMultiple">
+        <source xml:lang="en">Export warning: Found multiple elements for image element {0}. Only the first will be exported.</source>
+        <note>ID: Spreadsheet.DataDivImageMultiple</note>
+        <target xml:lang="sw" state="translated">Onyo la kuhamisha: Imepata vipengele vingi vya kipengele cha picha {0}. Ya kwanza pekee ndiyo itasafirishwa.</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportFailed">
+        <source xml:lang="en">Export failed: </source>
+        <note>ID: Spreadsheet.ExportFailed</note>
+        <target xml:lang="sw" state="translated">Kuhamisha kulifeli: </target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.SpreadsheetLocked">
+        <source xml:lang="en">Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?</source>
+        <note>ID: Spreadsheet.SpreadsheetLocked</note>
+        <target xml:lang="sw" state="translated">Bloom haikuweza kuandika kwa lahajedwali kwa sababu programu nyingine imeifunga. Je, umeifungua katika programu nyingine?</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.MissingImage">
+        <source xml:lang="en">Export warning: did not find the image {0}. It will be missing from the export folder.</source>
+        <note>ID: Spreadsheet.MissingImage</note>
+        <target xml:lang="sw" state="translated">Onyo la kuhamisha: haikupata picha {0}. Itakosekana kwenye folda ya kuhamisha.</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.MultipleImageChildren">
+        <source xml:lang="en">Export warning: Found multiple images in data-book element {0}. Only the first will be exported.</source>
+        <note>ID: Spreadsheet.MultipleImageChildren</note>
+        <target xml:lang="sw" state="translated">Onyo la kuhamisha: Imepata picha nyingi katika kipengele cha kitabu cha data {0}. Ya kwanza pekee ndiyo itasafirishwa.</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.Overwrite">
+        <source xml:lang="en">You are about to replace the existing folder named {0}</source>
+        <note>ID: Spreadsheet.Overwrite</note>
+        <target xml:lang="sw" state="translated">Unakaribia kubadilisha folda iliyopo iitwayo {0}</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.OverwriteBook">
+        <source xml:lang="en">The folder named {0} already exists and looks like it might be a Bloom book folder!</source>
+        <note>ID: Spreadsheet.OverwriteBook</note>
+        <target xml:lang="sw" state="translated">Folda inayoitwa {0} tayari ipo na inaonekana kwamba inaweza kuwa folda ya kitabu cha Bloom!</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.WriteFailed">
+        <source xml:lang="en">Bloom had problems writing files to that location ({0}). Check that you have permission to write there.</source>
+        <note>ID: Spreadsheet.WriteFailed</note>
+        <target xml:lang="sw" state="translated">Bloom ilikuwa na matatizo ya kuandika faili kwa eneo hilo ({0}). Hakikisha una ruhusa ya kuandika hapo.</target>
+      </trans-unit>
+      <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer">
+        <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
+        <target xml:lang="sw" state="translated">Weka jibu sahihi kwenye kitufe hiki. Bloom itageuza mpangilio baadaye.</target>
       </trans-unit>
     </body>
   </file>

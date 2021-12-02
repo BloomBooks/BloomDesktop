@@ -22,7 +22,7 @@
       <trans-unit id="AboutDialog._checkForUpdates" approved="yes">
         <source xml:lang="en">Check For Updates</source>
         <note>ID: AboutDialog._checkForUpdates</note>
-        <target xml:lang="pt-PT" state="final">Verificar se há atualizações</target>
+        <target xml:lang="pt-PT" state="final">Procurar atualizações</target>
       </trans-unit>
       <trans-unit id="AboutDialog._releaseNotesLabel" approved="yes">
         <source xml:lang="en">Release Notes</source>
@@ -43,7 +43,7 @@
       <trans-unit id="Application.ProblemStarting.General">
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.General</note>
-        <target xml:lang="pt-PT" state="translated">Houve um problema ao iniciar o aplicação, que pode exigir que você reinicie seu computador.</target>
+        <target xml:lang="pt-PT" state="translated">Houve um problema ao iniciar o aplicativo que pode exigir que você reinicie o seu computador.</target>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.Specific">
         <source xml:lang="en">There was a problem starting {0} which might require that you restart your computer.</source>
@@ -54,7 +54,7 @@
       <trans-unit id="Application.WaitingFinish.General">
         <source xml:lang="en">Waiting for other application to finish...</source>
         <note>ID: Application.WaitingFinish.General</note>
-        <target xml:lang="pt-PT" state="translated">Aguardando para que termina outra aplicação...</target>
+        <target xml:lang="pt-PT" state="translated">Aguardando a conclusão de outro aplicativo...</target>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.Specific">
         <source xml:lang="en">Waiting for other {0} to finish...</source>
@@ -95,7 +95,7 @@
       <trans-unit id="Common.RetryButton">
         <source xml:lang="en">&amp;Retry</source>
         <note>ID: Common.RetryButton</note>
-        <target xml:lang="pt-PT" state="translated">&amp;Repetir</target>
+        <target xml:lang="pt-PT" state="translated">&amp;Tentar novamente</target>
       </trans-unit>
       <trans-unit id="Common.Yes" approved="yes">
         <source xml:lang="en">Yes</source>
@@ -123,7 +123,7 @@
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
         <note>Param {0} is a description of the things being deleted (e.g., "The selected files")</note>
-        <target xml:lang="pt-PT" state="translated">{0} será movido para reciclagem.</target>
+        <target xml:lang="pt-PT" state="translated">{0} será colocado na lixeira.</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
@@ -187,7 +187,7 @@
         <source xml:lang="en">In the box above, type what you are searching for, then press ENTER.</source>
         <note>ID: ImageToolbox.EnterSearchTerms</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</note>
-        <target xml:lang="pt-PT" state="translated">Esta é a Galeria 'Arte da Leitura'. Na caixa acima, digite o que você está procurando e, em seguida, pressione APLICAR/ENTER. Você pode digitar palavras em inglês e indonésio.</target>
+        <target xml:lang="pt-PT" state="translated">Na caixa acima, digite o que você está procurando, e então pressione ENTER.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileButton" approved="yes">
         <source xml:lang="en">File</source>
