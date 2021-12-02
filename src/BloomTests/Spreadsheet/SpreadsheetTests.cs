@@ -217,8 +217,7 @@ namespace BloomTests.Spreadsheet
 		// or (_sheetFromFile, _rowsFromFile) to set as _sheet and _rows.
 		private InternalSpreadsheet _sheet;
 		private List<ContentRow> _rows;
-		private List<ContentRow> _imageRows;
-		private List<ContentRow> _textRows;
+		private List<ContentRow> _pageContentRows;
 		private InternalSpreadsheet _sheetFromExport;
 		private List<ContentRow> _rowsFromExport;
 		private InternalSpreadsheet _sheetFromFile;
@@ -261,26 +260,8 @@ namespace BloomTests.Spreadsheet
 					Assert.That(source, Is.Not.EqualTo(source));
 					break;
 			}
-			(_imageRows, _textRows) = SplitRows(_rows);
-		}
 
-		public static (List<ContentRow>, List<ContentRow>) SplitRows(List<ContentRow> allRows)
-		{
-			var imageRows = new List<ContentRow>();
-			var textRows = new List<ContentRow>();
-			foreach (ContentRow row in allRows)
-			{
-				// Does not copy any header present
-				if (row.MetadataKey.Equals(InternalSpreadsheet.ImageRowLabel))
-				{
-					imageRows.Add(row);
-				}
-				else if (row.MetadataKey.Equals(InternalSpreadsheet.TextGroupRowLabel))
-				{
-					textRows.Add(row);
-				}
-			}
-			return (imageRows, textRows);
+			_pageContentRows = _rows.Where(r => r.MetadataKey == InternalSpreadsheet.PageContentRowLabel).ToList();
 		}
 
 		[TestCase("fromExport")]
@@ -292,16 +273,16 @@ namespace BloomTests.Spreadsheet
 			var frCol = _sheet.ColumnForLang("fr");
 			var deCol = _sheet.ColumnForLang("de");
 			// The first row has data from the second element in the document, because of tabindex.
-			Assert.That(_textRows[0].GetCell(enCol).Text, Is.EqualTo("This elephant is running amok. Causing much damage."));
-			Assert.That(_textRows[0].GetCell(frCol).Text, Is.EqualTo("This French elephant is running amok. Causing much damage."));
-			Assert.That(_textRows[1].GetCell(enCol).Text, Is.EqualTo("Elephants should be handled with much care."));
+			Assert.That(_pageContentRows[0].GetCell(enCol).Text, Is.EqualTo("This elephant is running amok. Causing much damage."));
+			Assert.That(_pageContentRows[0].GetCell(frCol).Text, Is.EqualTo("This French elephant is running amok. Causing much damage."));
+			Assert.That(_pageContentRows[1].GetCell(enCol).Text, Is.EqualTo("Elephants should be handled with much care."));
 
-			Assert.That(_textRows[1].GetCell(frCol).Text, Is.EqualTo("French elephants should be handled with special care."));
-			Assert.That(_textRows[1].GetCell(deCol).Text, Is.EqualTo("German elephants are quite orderly."));
+			Assert.That(_pageContentRows[1].GetCell(frCol).Text, Is.EqualTo("French elephants should be handled with special care."));
+			Assert.That(_pageContentRows[1].GetCell(deCol).Text, Is.EqualTo("German elephants are quite orderly."));
 
-			Assert.That(_textRows[2].GetCell(enCol).Text, Is.EqualTo("Riding on elephants can be risky."));
-			Assert.That(_textRows[2].GetCell(frCol).Text, Is.EqualTo("Riding on French elephants can be more risky."));
-			Assert.That(_textRows[2].GetCell(deCol).Text, Is.EqualTo("Riding on German elephants can be less risky."));
+			Assert.That(_pageContentRows[2].GetCell(enCol).Text, Is.EqualTo("Riding on elephants can be risky."));
+			Assert.That(_pageContentRows[2].GetCell(frCol).Text, Is.EqualTo("Riding on French elephants can be more risky."));
+			Assert.That(_pageContentRows[2].GetCell(deCol).Text, Is.EqualTo("Riding on German elephants can be less risky."));
 
 		}
 
@@ -320,12 +301,12 @@ namespace BloomTests.Spreadsheet
 			SetupFor(source);
 			var pageNumIndex = _sheet.ColumnForTag(InternalSpreadsheet.PageNumberColumnLabel);
 
-			Assert.That(_textRows[0].GetCell(pageNumIndex).Content, Is.EqualTo("1"));
-			Assert.That(_textRows[1].GetCell(pageNumIndex).Content, Is.EqualTo("1"));
-			Assert.That(_textRows[2].GetCell(pageNumIndex).Content, Is.EqualTo("2"));
-			Assert.That(_textRows[0].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.TextGroupRowLabel));
-			Assert.That(_textRows[1].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.TextGroupRowLabel));
-			Assert.That(_textRows[2].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.TextGroupRowLabel));
+			Assert.That(_pageContentRows[0].GetCell(pageNumIndex).Content, Is.EqualTo("1"));
+			Assert.That(_pageContentRows[1].GetCell(pageNumIndex).Content, Is.EqualTo("1"));
+			Assert.That(_pageContentRows[2].GetCell(pageNumIndex).Content, Is.EqualTo("2"));
+			Assert.That(_pageContentRows[0].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.PageContentRowLabel));
+			Assert.That(_pageContentRows[1].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.PageContentRowLabel));
+			Assert.That(_pageContentRows[2].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.PageContentRowLabel));
 		}
 
 		[Test]
@@ -377,7 +358,7 @@ namespace BloomTests.Spreadsheet
 					{
 						Assert.That(r, Is.LessThan(rowCount), "did not find expected TextGroup row");
 						ExcelRange rowTypeCell = worksheet.Cells[r + 1, 1];
-						if (rowTypeCell.Value.ToString().Equals(InternalSpreadsheet.TextGroupRowLabel))
+						if (rowTypeCell.Value.ToString().Equals(InternalSpreadsheet.PageContentRowLabel))
 						{
 							string markedUp = @"<p><span id=""e4bc05e5-4d65-4016-9bf3-ab44a0df3ea2"" class=""bloom-highlightSegment"" recordingmd5=""undefined"">This elephant is running amok.</span> <span id=""i2ba966b6-4212-4821-9268-04e820e95f50"" class=""bloom-highlightSegment"" recordingmd5=""undefined"">Causing much damage.</span></p>";
 							ExcelRange textCell = worksheet.Cells[r + 1, c + 1];

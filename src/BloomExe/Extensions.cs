@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -140,6 +141,34 @@ namespace Bloom
 		public static void SetTextSafely(this Button button, string text)
 		{
 			button.Text = TextUtils.EscapeForWinForms(text, button.UseMnemonic);
+		}
+
+		/// <summary>
+		/// Returns the result of combining one item from each iteration using the given function.
+		/// If either sequence is too short, the function is passed the appropriate default value,
+		/// so that the output length equals the longer input length.
+		/// </summary>
+		public static IEnumerable<T> MapUnevenPairs<T1, T2, T>(this IEnumerable<T1> first, IEnumerable<T2> second, Func<T1, T2, T> operation)
+		{
+			using (var iter1 = first.GetEnumerator())
+			using (var iter2 = second.GetEnumerator())
+			{
+				while (iter1.MoveNext())
+				{
+					if (iter2.MoveNext())
+					{
+						yield return operation(iter1.Current, iter2.Current);
+					}
+					else
+					{
+						yield return operation(iter1.Current, default(T2));
+					}
+				}
+				while (iter2.MoveNext())
+				{
+					yield return operation(default(T1), iter2.Current);
+				}
+			}
 		}
 	}
 }

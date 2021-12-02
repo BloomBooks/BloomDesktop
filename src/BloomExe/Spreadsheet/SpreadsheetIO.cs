@@ -35,7 +35,7 @@ namespace Bloom.Spreadsheet
 		private const int defaultImageWidth = 150; //width of images in pixels.
 
 		public static HashSet<string> WysiwygFormattedRowKeys = new HashSet<string>()
-			{ InternalSpreadsheet.TextGroupRowLabel, InternalSpreadsheet.ImageRowLabel, InternalSpreadsheet.BookTitleRowLabel,
+			{ InternalSpreadsheet.PageContentRowLabel, InternalSpreadsheet.BookTitleRowLabel,
 				"[licenseDescription]", "[originalContributions]", "[versionAcknowledgments]", "[originalAcknowledgments]"};
 
 		static SpreadsheetIO()
@@ -109,8 +109,15 @@ namespace Bloom.Spreadsheet
 						}
 						else
 						{
-							// Either the retainMarkup flag is set, or this is not book text. It could be header or leading column
-							currentCell.Value = content;
+							// Either the retainMarkup flag is set, or this is not book text. It could be header or leading column.
+							// Generally, we just want to blast our cell content into the spreadsheet cell.
+							// However, there are cases where we put an error message in an image thumbnail cell when processing the image path.
+							// We don't want to overwrite these. An easy way to prevent it is to not overwrite any cell that already has content.
+							// Since export is creating a new spreadsheet, cells we want to write will always be empty initiall.
+							if (currentCell.Value == null)
+							{
+								currentCell.Value = content;
+							}
 						}
 
 

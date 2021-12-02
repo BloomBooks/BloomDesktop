@@ -81,69 +81,72 @@ namespace Bloom.Spreadsheet
 				}
 				var currentRow = _inputRows[_currentRowIndex];
 				string rowTypeLabel = currentRow.MetadataKey;
-				if (rowTypeLabel == InternalSpreadsheet.ImageRowLabel)
+
+				if (rowTypeLabel == InternalSpreadsheet.PageContentRowLabel)
 				{
-					//TODO import the pictures
-					_currentRowIndex++;
-					continue;
-				}
-				else if (rowTypeLabel == InternalSpreadsheet.TextGroupRowLabel)
-				{
-					var rowPageNumberLabel = currentRow.PageNumber;
-					if (rowPageNumberLabel != pageNumber)
+					bool rowHasImage = !string.IsNullOrWhiteSpace(currentRow.GetCell(InternalSpreadsheet.ImageSourceColumnLabel).Text);
+					bool rowHasText = RowHasText(currentRow);
+					if (rowHasImage)
 					{
-						// Do we have a later page that has the right number?
-						var indexOfTargetPage = IndexOfNextPageWithNumber(rowPageNumberLabel);
-						if (indexOfTargetPage > 0)
-						{
-							// We're missing input for the current group.
-							_warnings.Add($"No input row found for block {_groupOnPageIndex + 1} of page {pageNumber}");
-							// We want to continue the loop, ensuring that GetNextGroup() will return the first group
-							// on the indicated page.
-							// Enhance: possibly we should do another warning if there are also whole pages with no input?
-							// but not if they have no groups.
-							_currentPageIndex = indexOfTargetPage - 1;
-							_groupsOnPage = new List<XmlElement>(0); // so we will at once move to next page
-							AdvanceToNextGroup();
-							continue; // same row, put it on that page.
-						}
-						// No later page matches this row. So we have nowhere to put it (until we implement
-						// adding pages). Warn the user.
-						var previousRowsOnSamePage = PreviousRowsOnSamePage(rowPageNumberLabel);
-						if (previousRowsOnSamePage == 0)
-						{
-							// entire page is missing.
-							// Or possibly, there IS such a page, but we couldn't put
-							// even one row on it because it has no TGs at all.
-							// Enhance: possibly better to give different messages for these two cases?
-							_warnings.Add($"Input has rows for page {rowPageNumberLabel}, but document has no page {rowPageNumberLabel} that can hold text");
-							// advance to input row on another page
-							_currentRowIndex++;
-							while (_currentRowIndex < _inputRows.Count &&
-								   _inputRows[_currentRowIndex].PageNumber == rowPageNumberLabel)
-								_currentRowIndex++;
-							continue; // keep same group
-						}
-						else
-						{
-							// We've put some rows on this page, but it doesn't have room for enough.
-							var rowsForPage = previousRowsOnSamePage;
-							while (_currentRowIndex < _inputRows.Count &&
-								   _inputRows[_currentRowIndex].PageNumber == rowPageNumberLabel)
-							{
-								_currentRowIndex++;
-								rowsForPage++;
-							}
-
-							_warnings.Add($"Input has {rowsForPage} row(s) for page {rowPageNumberLabel}, but page {rowPageNumberLabel} has only {previousRowsOnSamePage} place(s) for text");
-							continue; // keep same group
-						}
+						// TODO import the picture
 					}
+					if (rowHasText) {
+						var rowPageNumberLabel = currentRow.PageNumber;
+						if (rowPageNumberLabel != pageNumber)
+						{
+							// Do we have a later page that has the right number?
+							var indexOfTargetPage = IndexOfNextPageWithNumber(rowPageNumberLabel);
+							if (indexOfTargetPage > 0)
+							{
+								// We're missing input for the current group.
+								_warnings.Add($"No input row found for block {_groupOnPageIndex + 1} of page {pageNumber}");
+								// We want to continue the loop, ensuring that GetNextGroup() will return the first group
+								// on the indicated page.
+								// Enhance: possibly we should do another warning if there are also whole pages with no input?
+								// but not if they have no groups.
+								_currentPageIndex = indexOfTargetPage - 1;
+								_groupsOnPage = new List<XmlElement>(0); // so we will at once move to next page
+								AdvanceToNextGroup();
+								continue; // same row, put it on that page.
+							}
+							// No later page matches this row. So we have nowhere to put it (until we implement
+							// adding pages). Warn the user.
+							var previousRowsOnSamePage = PreviousRowsOnSamePage(rowPageNumberLabel);
+							if (previousRowsOnSamePage == 0)
+							{
+								// entire page is missing.
+								// Or possibly, there IS such a page, but we couldn't put
+								// even one row on it because it has no TGs at all.
+								// Enhance: possibly better to give different messages for these two cases?
+								_warnings.Add($"Input has rows for page {rowPageNumberLabel}, but document has no page {rowPageNumberLabel} that can hold text");
+								// advance to input row on another page
+								_currentRowIndex++;
+								while (_currentRowIndex < _inputRows.Count &&
+									   _inputRows[_currentRowIndex].PageNumber == rowPageNumberLabel)
+									_currentRowIndex++;
+								continue; // keep same group
+							}
+							else
+							{
+								// We've put some rows on this page, but it doesn't have room for enough.
+								var rowsForPage = previousRowsOnSamePage;
+								while (_currentRowIndex < _inputRows.Count &&
+									   _inputRows[_currentRowIndex].PageNumber == rowPageNumberLabel)
+								{
+									_currentRowIndex++;
+									rowsForPage++;
+								}
 
-					// This is actually the normal case. The next group matches the current row.
-					// Fill it in and advance to the next row and group.
-					PutRowInGroup(currentRow, _currentGroup);
-					AdvanceToNextGroup();
+								_warnings.Add($"Input has {rowsForPage} row(s) for page {rowPageNumberLabel}, but page {rowPageNumberLabel} has only {previousRowsOnSamePage} place(s) for text");
+								continue; // keep same group
+							}
+						}
+
+						// This is actually the normal case. The next group matches the current row.
+						// Fill it in and advance to the next row and group.
+						PutRowInGroup(currentRow, _currentGroup);
+						AdvanceToNextGroup();
+					}
 				}
 				else if (rowTypeLabel[0]=='[' && rowTypeLabel[rowTypeLabel.Length - 1]==']') //This row is xmatter
 				{
@@ -306,6 +309,19 @@ namespace Bloom.Spreadsheet
 			}
 
 			_currentGroup = _groupsOnPage[_groupOnPageIndex];
+		}
+
+		private bool RowHasText(ContentRow row)
+		{
+			var sheetLanguages = _sheet.Languages;
+			foreach (var lang in sheetLanguages)
+			{
+				var colIndex = _sheet.ColumnForLang(lang);
+				var content = row.GetCell(colIndex).Content;
+				if (!string.IsNullOrEmpty(content))
+					return true;
+			}
+			return false;
 		}
 
 		/// <summary>
