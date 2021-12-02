@@ -6,7 +6,7 @@
         <source xml:lang="en">A future update of Bloom will contain the branding assets for this project, “{0}”.  Thank you for your patience.</source>
         <note>ID: BackCover.NewBrandingNotice</note>
         <note>The {0} is replaced at runtime with the name of the new branding project.</note>
-        <target xml:lang="pt-PT" state="needs-translation">A future update of Bloom will contain the branding assets for this project, “{0}”.  Thank you for your patience.</target>
+        <target xml:lang="pt-PT" state="translated">Uma futura atualização do Bloom terá os recursos de marca para este projeto, “{0}. Obrigado por sua paciência.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed">
         <source xml:lang="en">Conversion file used:</source>
@@ -117,6 +117,55 @@
         <note>ID: Settings.Enterprise.WhatsThis</note>
         <note>A link offering more information about the Funded Local Community Only option</note>
         <target xml:lang="pt-PT" state="translated">O que é Isto?</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.DataDivConflictWarning">
+        <source xml:lang="en">Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.</source>
+        <note>ID: Spreadsheet.DataDivConflictWarning</note>
+        <target xml:lang="pt-PT" state="translated">Aviso de exportação: Encontrado atributo 'src' diferente e o texto do elemento para data-div {0}. O atributo 'src' será ignorado.</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.DataDivImageMultiple">
+        <source xml:lang="en">Export warning: Found multiple elements for image element {0}. Only the first will be exported.</source>
+        <note>ID: Spreadsheet.DataDivImageMultiple</note>
+        <target xml:lang="pt-PT" state="translated">Aviso de exportação: Encontrado várias imagens {0}. Apenas a primeiro será exportada.</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportFailed">
+        <source xml:lang="en">Export failed: </source>
+        <note>ID: Spreadsheet.ExportFailed</note>
+        <target xml:lang="pt-PT" state="translated">Falha na exportação: </target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.SpreadsheetLocked">
+        <source xml:lang="en">Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?</source>
+        <note>ID: Spreadsheet.SpreadsheetLocked</note>
+        <target xml:lang="pt-PT" state="translated">Bloom não pode escrever na planilha porque um outro programa está a impedir fazer isso. Você tem aberto a planilha num outro programa?</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.MissingImage">
+        <source xml:lang="en">Export warning: did not find the image {0}. It will be missing from the export folder.</source>
+        <note>ID: Spreadsheet.MissingImage</note>
+        <target xml:lang="pt-PT" state="translated">Aviso de exportação: não encontrou a imagem {0}. Ela esta faltando na pasta de exportação.</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.MultipleImageChildren">
+        <source xml:lang="en">Export warning: Found multiple images in data-book element {0}. Only the first will be exported.</source>
+        <note>ID: Spreadsheet.MultipleImageChildren</note>
+        <target xml:lang="pt-PT" state="translated">Aviso de exportação: Encontrado várias imagens {0}. Apenas a primeiro será exportada.</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.Overwrite">
+        <source xml:lang="en">You are about to replace the existing folder named {0}</source>
+        <note>ID: Spreadsheet.Overwrite</note>
+        <target xml:lang="pt-PT" state="translated">Você está prestes a substituir a pasta existente chamada {0}</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.OverwriteBook">
+        <source xml:lang="en">The folder named {0} already exists and looks like it might be a Bloom book folder!</source>
+        <note>ID: Spreadsheet.OverwriteBook</note>
+        <target xml:lang="pt-PT" state="translated">A pasta {0} já existe e parece que pode ser uma pasta de livros Bloom!</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.WriteFailed">
+        <source xml:lang="en">Bloom had problems writing files to that location ({0}). Check that you have permission to write there.</source>
+        <note>ID: Spreadsheet.WriteFailed</note>
+        <target xml:lang="pt-PT" state="translated">Bloom teve problemas ao escrever arquivos nessa localização ({0}). Verifique se você tem permissão para escrever lá.</target>
+      </trans-unit>
+      <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer">
+        <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
+        <target xml:lang="pt-PT" state="translated">Coloque a resposta correta neste botão. Bloom irá randomizar a ordem mais tarde.</target>
       </trans-unit>
     </body>
   </file>
