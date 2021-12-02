@@ -55,7 +55,7 @@ namespace Bloom.MiscUI
 		}
 
 		public static void DoWorkWithProgressDialog(BloomWebSocketServer socketServer, string socketContext,  Func<Form> makeDialog,
-			Func<IWebSocketProgress, BackgroundWorker, bool> doWhat, Action<Form> doWhenMainActionFalse = null)
+			Func<IWebSocketProgress, BackgroundWorker, bool> doWhat, Action<Form> doWhenMainActionFalse = null, IWin32Window owner = null)
 		{
 			var progress = new WebSocketProgress(socketServer, socketContext);
 			
@@ -116,7 +116,7 @@ namespace Bloom.MiscUI
 				};
 
 				worker.RunWorkerAsync();
-				dlg.ShowDialog(); // returns when dialog closed
+				dlg.ShowDialog(owner); // returns when dialog closed
 
 				ProgressDialogApi.SetCancelHandler(null);
 			}

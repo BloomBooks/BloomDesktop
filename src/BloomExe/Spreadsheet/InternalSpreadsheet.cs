@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Bloom.web;
 
 namespace Bloom.Spreadsheet
 {
@@ -134,9 +135,9 @@ namespace Bloom.Spreadsheet
 			_rows = _rows.OrderBy(r => r.Hidden).ToList();
 		}
 
-		public void WriteToFile(string path)
+		public void WriteToFile(string path, IWebSocketProgress progress = null)
 		{
-			SpreadsheetIO.WriteSpreadsheet(this, path, Params.RetainMarkup);
+			SpreadsheetIO.WriteSpreadsheet(this, path, Params.RetainMarkup, progress);
 		}
 
 		public static InternalSpreadsheet ReadFromFile(string path)

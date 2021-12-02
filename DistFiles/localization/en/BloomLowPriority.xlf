@@ -95,6 +95,42 @@
         <note>ID: Settings.Enterprise.WhatsThis</note>
         <note>A link offering more information about the Funded Local Community Only option</note>
       </trans-unit>
+      <trans-unit id="Spreadsheet.DataDivConflictWarning">
+        <source xml:lang="en">Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.</source>
+        <note>ID: Spreadsheet.DataDivConflictWarning</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.DataDivImageMultiple">
+        <source xml:lang="en">Export warning: Found multiple elements for image element {0}. Only the first will be exported.</source>
+        <note>ID: Spreadsheet.DataDivImageMultiple</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportFailed">
+        <source xml:lang="en">Export failed: </source>
+        <note>ID: Spreadsheet.ExportFailed</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.SpreadsheetLocked">
+        <source xml:lang="en">Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?</source>
+        <note>ID: Spreadsheet.SpreadsheetLocked</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.MissingImage">
+        <source xml:lang="en">Export warning: did not find the image {0}. It will be missing from the export folder.</source>
+        <note>ID: Spreadsheet.MissingImage</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.MultipleImageChildren">
+        <source xml:lang="en">Export warning: Found multiple images in data-book element {0}. Only the first will be exported.</source>
+        <note>ID: Spreadsheet.MultipleImageChildren</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.Overwrite">
+        <source xml:lang="en">You are about to replace the existing folder named {0}</source>
+        <note>ID: Spreadsheet.Overwrite</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.OverwriteBook">
+        <source xml:lang="en">YThe folder named {0} already exists and looks like it might be a Bloom book folder!</source>
+        <note>ID: Spreadsheet.OverwriteBook</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.WriteFailed">
+        <source xml:lang="en">Bloom had problems writing files to that location ({0}). Check that you have permission to write there.</source>
+        <note>ID: Spreadsheet.WriteFailed</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

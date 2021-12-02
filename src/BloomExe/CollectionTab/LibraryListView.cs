@@ -1761,30 +1761,14 @@ namespace Bloom.CollectionTab
 				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));
 				var exporter = _exporterFactory();
 
-				string outputFilename;
-
-				using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
-				{
-					var extension = "xlsx";
-					var filename = _bookSelection.CurrentSelection.Storage.FileName;
-					dlg.FileName = Path.ChangeExtension(filename, extension);
-					dlg.Filter = "xlsx|*.xlsx";
-					dlg.InitialDirectory = !String.IsNullOrWhiteSpace(Settings.Default.ExportImportFileFolder) ? Settings.Default.ExportImportFileFolder : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-					dlg.RestoreDirectory = true;
-					dlg.OverwritePrompt = true;
-					if (DialogResult.Cancel == dlg.ShowDialog())
-					{
-						return;
-					}
-					outputFilename = dlg.FileName;
-					Settings.Default.ExportImportFileFolder = Path.GetDirectoryName(outputFilename);
-					Settings.Default.Save();
-				}
+				var initialFolder = !String.IsNullOrWhiteSpace(Settings.Default.ExportImportFileFolder) ? Settings.Default.ExportImportFileFolder : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+				string outputParentFolder = BloomFolderChooser.ChooseFolder(initialFolder);
+				string outputFolder = Path.Combine(outputParentFolder, Path.GetFileNameWithoutExtension(bookPath));
 				string imagesFolderPath = Path.GetDirectoryName(bookPath);
-				exporter.ExportWithProgress(dom, imagesFolderPath,sheet =>
+				exporter.ExportToFolderWithProgress(dom, imagesFolderPath, outputFolder, outputFilePath =>
 				{
-					sheet.WriteToFile(outputFilename);
-					PathUtilities.OpenFileInApplication(outputFilename);
+					if (outputFilePath != null)
+						PathUtilities.OpenFileInApplication(outputFilePath);
 				});
 				
 			}

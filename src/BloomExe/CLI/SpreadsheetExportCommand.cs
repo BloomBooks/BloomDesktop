@@ -10,7 +10,8 @@ namespace Bloom.CLI
 	/// <summary>
 	/// Exports a book to an xslx spreadsheet
 	/// usage:
-	///		spreadsheetExport [--params {path}] -o {path to put xlsx} {path to book file}
+	///		spreadsheetExport [--params {path}] -o {path to put book folder} {path to book file}
+	/// The actual output folder will be the specified output folder combined with the book name.
 	/// </summary>
 	class SpreadsheetExportCommand
 	{
@@ -25,8 +26,12 @@ namespace Bloom.CLI
 					exporter.Params = SpreadsheetExportParams.FromFile(options.ParamsPath);
 				}
 				string imagesFolderPath = Path.GetDirectoryName(options.BookPath);
-				var _sheet = exporter.Export(dom, imagesFolderPath);
-				_sheet.WriteToFile(options.OutputPath);
+				// It's too dangerous to use the output path they gave us, since we're going to wipe out any existing
+				// content of the directory we pass to ExportToFolder. If they give us a parent folder by mistake, that
+				// could be something huge, like "my documents". So assume it IS a parent folder, and make one within it.
+				string outputFolderPath = Path.Combine(options.OutputPath, Path.GetFileNameWithoutExtension(imagesFolderPath));
+				var _sheet = exporter.ExportToFolder(dom, imagesFolderPath, outputFolderPath, out string unused,
+					null, options.Overwrite ? OverwriteOptions.Overwrite: OverwriteOptions.Quit);
 				return 0; // all went well
 			}
 			catch (Exception ex)
@@ -49,10 +54,13 @@ namespace Bloom.CLI
 		[Value(0, MetaName = "path", HelpText = "Path to the book (htm file) to export.", Required = true)]
 		public string BookPath { get; set; }
 
-		[Option('o', "output", HelpText = "The (xlsx) file where the output will be written", Required = true)]
+		[Option('o', "output", HelpText = "The folder where the output folder will be created", Required = true)]
 		public string OutputPath { get; set; }
 
 		[Option('p', "params", HelpText = "Path to a file containing parameters for the export", Required = false)]
 		public string ParamsPath { get; set; }
+
+		[Option('y', "overwrite", HelpText = "True to overwrite an existing output folder", Required = false)]
+		public bool Overwrite { get; set; }
 	}
 }

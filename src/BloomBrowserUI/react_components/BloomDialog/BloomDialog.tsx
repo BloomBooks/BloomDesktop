@@ -7,12 +7,14 @@ import { Dialog } from "@material-ui/core";
 import CloseOnEscape from "react-close-on-escape";
 import { kDialogPadding } from "../../bloomMaterialUITheme";
 import { BloomApi } from "../../utils/bloomApi";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { kUiFontStack } from "../../bloomMaterialUITheme.js";
 
 // The <BloomDialog> component and its children provides consistent layout across Bloom Dialogs.
 // It can be used either inside of a winforms dialog, or as a MaterialUI Dialog.
 // See the accompanying storybook story for usage.
+// If the dialog content contains something with class initialFocus, it will be automatically
+// focused initially. This should usually be the default button.
 
 const kDialogTopPadding = "24px";
 const kDialogSidePadding = "24px";
@@ -50,6 +52,30 @@ export const BloomDialog: React.FunctionComponent<{
             {props.children}
         </div>
     );
+
+    // If the dialog content contains something with class initialFocus, this will give it
+    // initial focus.
+    useEffect(() => {
+        // Focusing the default button allows operating that button by pressing Enter.
+        // I think this is better than creating a high-level handler for keypress because
+        // it allows the user to tab to some other button and activate THAT by pressing
+        // Enter.
+        // UseEffect allows this to happen just once (so the user can later move focus)
+        // but AFTER react has created the actual DOM so we can find the element we want
+        // to focus.
+        var initialFocus = document.getElementsByClassName(
+            "initialFocus"
+        )[0] as HTMLButtonElement;
+        if (!initialFocus) {
+            return; // Enter won't do anything, unless the user tabs to focus a button.
+        }
+        if (!initialFocus.tabIndex) {
+            // not sure if we need this, but in some browser versions I think focus() won't
+            // do anything to some kinds of element if they don't have a tab index.
+            initialFocus.tabIndex = -1;
+        }
+        initialFocus?.focus();
+    }, []);
 
     return (
         <CloseOnEscape

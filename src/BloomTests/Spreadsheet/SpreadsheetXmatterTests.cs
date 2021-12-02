@@ -5,6 +5,7 @@ using SIL.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using BloomTemp;
 
 namespace BloomTests.Spreadsheet
 {
@@ -118,25 +119,25 @@ namespace BloomTests.Spreadsheet
 		private List<ContentRow> _rowsFromExport;
 		private InternalSpreadsheet _sheetFromFile;
 		private List<ContentRow> _rowsFromFile;
+		private TemporaryFolder _spreadsheetFolder;
+
 		[OneTimeSetUp]
 		public void OneTimeSetUp()
 		{
 			var dom = new HtmlDom(dataDivBook, true);
+			_spreadsheetFolder = new TemporaryFolder("SpreadsheetXmatterTests");
 			_exporter = new SpreadsheetExporter();
-			_sheetFromExport = _exporter.Export(dom, "fakeImagesFolderpath");
+			_sheetFromExport = _exporter.ExportToFolder(dom, "fakeImagesFolderpath", _spreadsheetFolder.FolderPath,
+				out string outputPath, null, OverwriteOptions.Overwrite);
 			_rowsFromExport = _sheetFromExport.ContentRows.ToList();
-			using (var tempFile = TempFile.WithExtension("xslx"))
-			{
-				_sheetFromExport.WriteToFile(tempFile.Path);
-				_sheetFromFile = InternalSpreadsheet.ReadFromFile(tempFile.Path);
-				_rowsFromFile = _sheetFromFile.ContentRows.ToList();
-			}
+			_sheetFromFile = InternalSpreadsheet.ReadFromFile(outputPath);
+			_rowsFromFile = _sheetFromFile.ContentRows.ToList();
 		}
 
 		[OneTimeTearDown]
 		public void OneTimeTearDown()
 		{
-
+			_spreadsheetFolder?.Dispose();
 		}
 
 		void SetupFor(string source)
@@ -189,15 +190,15 @@ namespace BloomTests.Spreadsheet
 
 			var coverImageRow = _rows.Find(x => x.MetadataKey.Equals("[coverImage]"));
 			Assert.That(coverImageRow, Is.Not.Null);
-			Assert.That(coverImageRow.GetCell(imageSourceCol).Content, Is.EqualTo(Path.Combine("fakeImagesFolderpath","microwave1.png")));
+			Assert.That(coverImageRow.GetCell(imageSourceCol).Content, Is.EqualTo(Path.Combine("images","microwave1.png")));
 
 			var licenseImageRow = _rows.Find(x => x.MetadataKey.Equals("[licenseImage]"));
 			Assert.That(licenseImageRow, Is.Not.Null);
-			Assert.That(licenseImageRow.GetCell(imageSourceCol).Content, Is.EqualTo(Path.Combine("fakeImagesFolderpath","license.png")));
+			Assert.That(licenseImageRow.GetCell(imageSourceCol).Content, Is.EqualTo(Path.Combine("images", "license.png")));
 
 			var backImageRow = _rows.Find(x => x.MetadataKey.Equals("[outside-back-cover-branding-bottom-html]"));
 			Assert.That(backImageRow, Is.Not.Null);
-			Assert.That(backImageRow.GetCell(imageSourceCol).Content, Is.EqualTo(Path.Combine("fakeImagesFolderpath","BloomWithTaglineAgainstLight.svg")));
+			Assert.That(backImageRow.GetCell(imageSourceCol).Content, Is.EqualTo(Path.Combine("images", "BloomWithTaglineAgainstLight.svg")));
 		}
 
 		[TestCase("fromExport")]
