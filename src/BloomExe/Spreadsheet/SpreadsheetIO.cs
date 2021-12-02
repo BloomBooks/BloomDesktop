@@ -21,6 +21,7 @@ using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using Bloom.web;
 
 namespace Bloom.Spreadsheet
 {
@@ -44,7 +45,7 @@ namespace Bloom.Spreadsheet
 			ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 		}
 
-		public static void WriteSpreadsheet(InternalSpreadsheet spreadsheet, string outputPath, bool retainMarkup)
+		public static void WriteSpreadsheet(InternalSpreadsheet spreadsheet, string outputPath, bool retainMarkup, IWebSocketProgress progress = null)
 		{
 			using (var package = new ExcelPackage())
 			{
@@ -185,6 +186,7 @@ namespace Bloom.Spreadsheet
 						{
 							errorText = "Bad image file";
 						}
+						progress?.MessageWithoutLocalizing(errorText + ": " + imageSrcPath);
 						worksheet.Cells[r, imageThumbnailColumn + 1].Value = errorText;
 					}
 					return Math.Max(finalHeight, 30);
@@ -211,14 +213,15 @@ namespace Bloom.Spreadsheet
 					Console.WriteLine(ex.Message);
 					Console.WriteLine(ex.StackTrace);
 
-					var lockedFileErrorMsg = LocalizationManager.GetString("Spreadsheet:SpreadsheetLocked", "Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program ?\r\n");
-					NonFatalProblem.Report(ModalIf.All, PassiveIf.None, lockedFileErrorMsg,
-						moreDetails: ex.Message, exception: ex, showSendReport: false);
+					progress?.Message("Spreadsheet.SpreadsheetLocked", "",
+						"Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?",
+						ProgressKind.Error);
 				}
 				catch (Exception ex)
 				{
-					var errorMsg = LocalizationManager.GetString("Spreadsheet:ExportFailed", "Export failed: ");
-					NonFatalProblem.Report(ModalIf.All, PassiveIf.None, errorMsg + ex.Message, exception: ex);
+					progress?.Message("Spreadsheet.ExportFailed", "",
+						"Export failed: " + ex.Message,
+						ProgressKind.Error);
 				}
 			}
 		}

@@ -24,7 +24,7 @@ export interface MessageBoxButton {
 // Designed to be a partial replacement for a WinForms messageBox, both from C# and Typescript (eventually...needs work).
 // More flexible in that buttons can be fully configured, and uses our MaterialUI dialog look and feel.
 export const BloomMessageBox: React.FunctionComponent<{
-    message: string; // The localized message to notify the user about.
+    messageHtml: string; // The localized message to notify the user about. Can contain HTML.
     rightButtons: MessageBoxButton[];
     icon?: "warning" | undefined; // Effectively an enumeration, which we will add to as needed
     dialogEnvironment?: IBloomDialogEnvironmentParams;
@@ -39,47 +39,25 @@ export const BloomMessageBox: React.FunctionComponent<{
         propsForBloomDialog
     } = useSetupBloomDialog(props.dialogEnvironment);
 
-    const handleClick = id => {
+    const closeDialogForButton = buttonId => {
         // Enhance: do something else if called from Typescript. Close the dialog and somehow
         // report what was clicked.
-        BloomApi.postString("common/closeReactDialog", id);
+        BloomApi.postString("common/closeReactDialog", buttonId);
     };
     const rightButtons = props.rightButtons.map(button => (
         <BloomButton
-            className={button.default ? "focusButton" : ""}
+            className={button.default ? "initialFocus" : ""}
             key={button.id}
             enabled={true}
             l10nKey=""
             alreadyLocalized={true}
             hasText={true}
             variant={button.default ? "contained" : "outlined"}
-            onClick={() => handleClick(button.id)}
+            onClick={() => closeDialogForButton(button.id)}
         >
             {button.text}
         </BloomButton>
     ));
-
-    useEffect(() => {
-        // Focusing the default button allows operating that button by pressing Enter.
-        // I think this is better than creating a high-level handler for keypress because
-        // it allows the user to tab to some other button and activate THAT by pressing
-        // Enter.
-        // UseEffect allows this to happen just once (so the user can later move focus)
-        // but AFTER react has created the actual DOM so we can find the element we want
-        // to focus.
-        var focusButton = document.getElementsByClassName(
-            "focusButton"
-        )[0] as HTMLButtonElement;
-        if (!focusButton) {
-            return; // Enter won't do anything, unless the user tabs to focus a button.
-        }
-        if (!focusButton.tabIndex) {
-            // not sure if we need this, but in some browser versions I think focus() won't
-            // do anything to some kinds of element if they don't have a tab index.
-            focusButton.tabIndex = -1;
-        }
-        focusButton?.focus();
-    }, []);
 
     return (
         <BloomDialog {...propsForBloomDialog}>
@@ -103,7 +81,7 @@ export const BloomMessageBox: React.FunctionComponent<{
                     <DialogContentText
                         className="allowSelect"
                         dangerouslySetInnerHTML={{
-                            __html: props.message || ""
+                            __html: props.messageHtml || ""
                         }}
                     />
                 </div>

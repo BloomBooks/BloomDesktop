@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
@@ -35,7 +36,8 @@ namespace Bloom.Spreadsheet
 
 		public SpreadsheetExporter()
 		{
-			Debug.Assert(Bloom.Program.RunningUnitTests, "SpreadsheetExporter should be passed a webSocketProgress unless running unit tests that don't need it");
+			Debug.Assert(Bloom.Program.RunningUnitTests,
+				"SpreadsheetExporter should be passed a webSocketProgress unless running unit tests that don't need it");
 		}
 
 		//a list of values which, if they occur in the data-book attribute of an element in the bloomDataDiv,
@@ -43,7 +45,8 @@ namespace Bloom.Spreadsheet
 		//have a src attribute nor actually contain an img element
 		public static List<string> DataDivImagesWithNoSrcAttributes = new List<string>() { "licenseImage" };
 
-		public void ExportToFolderWithProgress(HtmlDom dom, string imagesFolderPath, string outputFolder, Action<string> resultCallback)
+		public void ExportToFolderWithProgress(HtmlDom dom, string imagesFolderPath, string outputFolder,
+			Action<string> resultCallback)
 		{
 			var mainShell = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
 			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, "spreadsheet-export", () =>
@@ -61,13 +64,15 @@ namespace Bloom.Spreadsheet
 					// winforms dialog properties
 					{ Width = 620, Height = 550 }, (progress, worker) =>
 			{
-				var spreadsheet = ExportToFolder(dom, imagesFolderPath, outputFolder, out string outputFilePath, progress);
+				var spreadsheet = ExportToFolder(dom, imagesFolderPath, outputFolder, out string outputFilePath,
+					progress);
 				resultCallback(outputFilePath);
 				return progress.HaveProblemsBeenReported;
-			},null, mainShell);
+			}, null, mainShell);
 		}
 
 		public SpreadsheetExportParams Params = new SpreadsheetExportParams();
+
 		public InternalSpreadsheet Export(HtmlDom dom, string imagesFolderPath, IWebSocketProgress progress = null)
 		{
 			_progress = progress ?? new NullWebSocketProgress();
@@ -97,17 +102,21 @@ namespace Bloom.Spreadsheet
 				}
 
 				//Get translation groups
-				var groups = TranslationGroupManager.SortTranslationGroups(TranslationGroupManager.GetTranslationGroups(page));
+				var groups =
+					TranslationGroupManager.SortTranslationGroups(TranslationGroupManager.GetTranslationGroups(page));
 				foreach (var group in groups)
 				{
 					rowsForPage.Add(CreateTranslationGroupRow(group, pageNumber));
 				}
 
 				//Each page alternates colors
-				var colorForPage = iContentPage++ % 2 == 0 ? InternalSpreadsheet.AlternatingRowsColor1 : InternalSpreadsheet.AlternatingRowsColor2;
+				var colorForPage = iContentPage++ % 2 == 0
+					? InternalSpreadsheet.AlternatingRowsColor1
+					: InternalSpreadsheet.AlternatingRowsColor2;
 				foreach (var row in rowsForPage)
 					row.BackgroundColor = colorForPage;
 			}
+
 			_spreadsheet.SortHiddenRowsToTheBottom();
 			return _spreadsheet;
 		}
@@ -119,10 +128,12 @@ namespace Bloom.Spreadsheet
 
 		private XmlElement[] GetImageContainers(XmlElement elementOrDom)
 		{
-			return elementOrDom.SafeSelectNodes(".//*[contains(@class,'bloom-imageContainer')]").Cast<XmlElement>().ToArray();
+			return elementOrDom.SafeSelectNodes(".//*[contains(@class,'bloom-imageContainer')]").Cast<XmlElement>()
+				.ToArray();
 		}
 
-		private List<SpreadsheetRow> CreateImageRows(XmlElement imageContainer, string pageNumber, string imagesFolderPath)
+		private List<SpreadsheetRow> CreateImageRows(XmlElement imageContainer, string pageNumber,
+			string imagesFolderPath)
 		{
 			var rowsCreated = new List<SpreadsheetRow>();
 			foreach (XmlElement image in imageContainer.SafeSelectNodes(".//img"))
@@ -131,10 +142,12 @@ namespace Bloom.Spreadsheet
 				row.SetCell(InternalSpreadsheet.MetadataKeyColumnLabel, InternalSpreadsheet.ImageRowLabel);
 				row.SetCell(InternalSpreadsheet.PageNumberColumnLabel, pageNumber);
 				var imagePath = ImagePath(imagesFolderPath, image.GetAttribute("src"));
-				row.SetCell(InternalSpreadsheet.ImageSourceColumnLabel, Path.Combine("images", Path.GetFileName(imagePath)));
+				row.SetCell(InternalSpreadsheet.ImageSourceColumnLabel,
+					Path.Combine("images", Path.GetFileName(imagePath)));
 				CopyImageFileToSpreadsheetFolder(imagePath);
 				rowsCreated.Add(row);
 			}
+
 			return rowsCreated;
 		}
 
@@ -148,15 +161,17 @@ namespace Bloom.Spreadsheet
 			var row = new ContentRow(_spreadsheet);
 			row.SetCell(InternalSpreadsheet.MetadataKeyColumnLabel, InternalSpreadsheet.TextGroupRowLabel);
 			row.SetCell(InternalSpreadsheet.PageNumberColumnLabel, pageNumber);
-			foreach (var editable in group.SafeSelectNodes("./*[contains(@class, 'bloom-editable')]").Cast<XmlElement>())
+			foreach (var editable in group.SafeSelectNodes("./*[contains(@class, 'bloom-editable')]")
+				         .Cast<XmlElement>())
 			{
 				var lang = editable.Attributes["lang"]?.Value ?? "";
 				if (lang == "z" || lang == "")
 					continue;
 				var index = _spreadsheet.ColumnForLang(lang);
 				var content = editable.InnerXml;
-				row.SetCell(index,content);
+				row.SetCell(index, content);
 			}
+
 			return row;
 		}
 
@@ -174,6 +189,7 @@ namespace Bloom.Spreadsheet
 				{
 					continue;
 				}
+
 				var dataBookLabel = dataBookElement.GetAttribute("data-book");
 
 				//The first time we see this tag:
@@ -190,16 +206,16 @@ namespace Bloom.Spreadsheet
 					if (IsDataDivImageElement(dataBookElement, dataBookLabel))
 					{
 						if (imageSrcAttribute.Length > 0
-							&& dataBookElement.InnerText.Trim().Length > 0
-							&& !imageSrcAttribute.Equals(dataBookElement.InnerText.Trim()))
+						    && dataBookElement.InnerText.Trim().Length > 0
+						    && !imageSrcAttribute.Equals(dataBookElement.InnerText.Trim()))
 						{
 							//Some data-book items redundantly store the src of the image which they capture in both their content and
 							//src attribute. We haven't yet found any case in which they are different, so are only storing one in the
 							//spreadsheet. This test is to make sure that we notice if we come across a case where it might be necessary
 							//to save both.
-							_progress.MessageWithParams("Spreadsheet.DataDivConflictWarning","",
+							_progress.MessageWithParams("Spreadsheet.DataDivConflictWarning", "",
 								"Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.",
-								ProgressKind.Warning, dataBookLabel) ;
+								ProgressKind.Warning, dataBookLabel);
 						}
 
 						string imageSource;
@@ -219,11 +235,15 @@ namespace Bloom.Spreadsheet
 							// Don't think we ever have data-book elements with more than one image. But if we encounter one,
 							// I think it's worth warning the user that we don't handle it.
 							if (dataBookElement.ChildNodes
-								    .Cast<XmlNode>().Count(n => n.Name == "img" && string.IsNullOrEmpty(((XmlElement)n).GetAttribute("src"))) > 1)
+								    .Cast<XmlNode>().Count(n =>
+									    n.Name == "img" && string.IsNullOrEmpty(((XmlElement)n).GetAttribute("src"))) >
+							    1)
 							{
 								_progress.MessageWithParams("Spreadsheet.MultipleImageChildren", "",
-									"Export warning: Found multiple images in data-book element {0}. Only the first will be exported.", ProgressKind.Warning, dataBookLabel);
+									"Export warning: Found multiple images in data-book element {0}. Only the first will be exported.",
+									ProgressKind.Warning, dataBookLabel);
 							}
+
 							imageSource = childSrc;
 						}
 						else
@@ -233,19 +253,22 @@ namespace Bloom.Spreadsheet
 							//So that's what we want to capture in the spreadsheet.
 							imageSource = dataBookElement.InnerText.Trim();
 						}
+
 						row.SetCell(InternalSpreadsheet.ImageSourceColumnLabel, Path.Combine("images", imageSource));
 						CopyImageFileToSpreadsheetFolder(ImagePath(imagesFolderPath, imageSource));
 						prevDataBookLabel = dataBookLabel;
-						continue; 
+						continue;
 					}
 				}
 
 				if (IsDataDivImageElement(dataBookElement, dataBookLabel))
 				{
 					_progress.MessageWithParams("Spreadsheet.DataDivImageMultiple", "",
-						"Export warning: Found multiple elements for image element {0}. Only the first will be exported.", ProgressKind.Warning, dataBookLabel);
+						"Export warning: Found multiple elements for image element {0}. Only the first will be exported.",
+						ProgressKind.Warning, dataBookLabel);
 					continue;
 				}
+
 				row.SetCell(_spreadsheet.ColumnForLang(lang), dataBookElement.InnerXml.Trim());
 				prevDataBookLabel = dataBookLabel;
 			}
@@ -275,8 +298,8 @@ namespace Bloom.Spreadsheet
 			//images in the main document.Some can be identified by having a src attribute on the data-book element itself. Some actually contain
 			//an img element. And some don't have any identifying mark at all, so to recognize them we just have to hard-code a list.
 			return imageSrc.Length > 0
-					|| ChildImgElementSrc(dataBookElement).Length > 0
-					|| DataDivImagesWithNoSrcAttributes.Contains(dataBookLabel);
+			       || ChildImgElementSrc(dataBookElement).Length > 0
+			       || DataDivImagesWithNoSrcAttributes.Contains(dataBookLabel);
 		}
 
 		private string ChildImgElementSrc(XmlElement node)
@@ -285,9 +308,10 @@ namespace Bloom.Spreadsheet
 			{
 				if (childNode.Name.Equals("img") && ((XmlElement)childNode).HasAttribute("src"))
 				{
-					return ((XmlElement) childNode).GetAttribute("src");
+					return ((XmlElement)childNode).GetAttribute("src");
 				}
 			}
+
 			return "";
 		}
 
@@ -301,70 +325,87 @@ namespace Bloom.Spreadsheet
 		/// the input book folder.
 		/// <returns>the internal spreadsheet, or null if not permitted to overwrite.</returns>
 		/// </summary>
-		public InternalSpreadsheet ExportToFolder(HtmlDom dom, string imagesFolderPath, string outputFolder, out string outputPath,
+		public InternalSpreadsheet ExportToFolder(HtmlDom dom, string imagesFolderPath, string outputFolder,
+			out string outputPath,
 			IWebSocketProgress progress = null, OverwriteOptions overwrite = OverwriteOptions.Ask)
 		{
-			outputPath = Path.Combine(outputFolder, Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(outputFolder) +".xlsx"));
+			outputPath = Path.Combine(outputFolder,
+				Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(outputFolder) + ".xlsx"));
 			_outputFolder = outputFolder;
 			_outputImageFolder = Path.Combine(_outputFolder, "images");
-			if (Directory.Exists(outputFolder))
+			try
 			{
-				if (overwrite == OverwriteOptions.Quit)
+				if (Directory.Exists(outputFolder))
 				{
-					// I'm assuming someone working with a command-line can cope with English.
-					// Don't think it's worth cluttering the XLF with this.
-					Console.WriteLine($"Output folder ({_outputFolder}) exists. Use --overwrite to overwrite.");
-					outputPath = null;
-					return null;
-				}
-				var appearsToBeBloomBookFolder = Directory.EnumerateFiles(outputFolder, "*.htm").Any();
-				var msgTemplate = LocalizationManager.GetString("Spreadsheet.Overwrite",
-					"You are about to replace the existing folder named {0}");
-				var msg = string.Format(msgTemplate, outputFolder);
-				var messageBoxButtons = new[]
-				{
-					new MessageBoxButton() { Text = "Overwrite", Id = "overwrite" },
-					new MessageBoxButton() { Text = "Cancel", Id = "cancel", Default = true }
-				};
-				if (appearsToBeBloomBookFolder)
-				{
-					if (overwrite == OverwriteOptions.Overwrite)
+					if (overwrite == OverwriteOptions.Quit)
 					{
-						// Assume we can't UI in this mode. But we absolutely must not overwrite the book folder!
-						// So quit anyway.
-						Console.WriteLine($"Output folder ({_outputFolder}) exists and appears to be a Bloom book, not a previous export. If you really mean to export there, you'll have to delete the folder first.");
+						// I'm assuming someone working with a command-line can cope with English.
+						// Don't think it's worth cluttering the XLF with this.
+						Console.WriteLine($"Output folder ({_outputFolder}) exists. Use --overwrite to overwrite.");
 						outputPath = null;
 						return null;
 					}
-					msgTemplate = LocalizationManager.GetString("Spreadsheet.OverwriteBook",
-						"The folder named {0} already exists and looks like it might be a Bloom book folder!");
-					msg = string.Format(msgTemplate, outputFolder);
-					messageBoxButtons = new[] { messageBoxButtons[1] }; // only cancel
+
+					var appearsToBeBloomBookFolder = Directory.EnumerateFiles(outputFolder, "*.htm").Any();
+					var msgTemplate = LocalizationManager.GetString("Spreadsheet.Overwrite",
+						"You are about to replace the existing folder named {0}");
+					var msg = string.Format(msgTemplate, outputFolder);
+					var messageBoxButtons = new[]
+					{
+						new MessageBoxButton() { Text = "Overwrite", Id = "overwrite" },
+						new MessageBoxButton() { Text = "Cancel", Id = "cancel", Default = true }
+					};
+					if (appearsToBeBloomBookFolder)
+					{
+						if (overwrite == OverwriteOptions.Overwrite)
+						{
+							// Assume we can't UI in this mode. But we absolutely must not overwrite the book folder!
+							// So quit anyway.
+							Console.WriteLine(
+								$"Output folder ({_outputFolder}) exists and appears to be a Bloom book, not a previous export. If you really mean to export there, you'll have to delete the folder first.");
+							outputPath = null;
+							return null;
+						}
+
+						msgTemplate = LocalizationManager.GetString("Spreadsheet.OverwriteBook",
+							"The folder named {0} already exists and looks like it might be a Bloom book folder!");
+						msg = string.Format(msgTemplate, outputFolder);
+						messageBoxButtons = new[] { messageBoxButtons[1] }; // only cancel
+					}
+
+					if (overwrite == OverwriteOptions.Ask)
+					{
+						var formToInvokeOn = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+						string result = null;
+						formToInvokeOn.Invoke((Action)(() =>
+						{
+							result = BloomMessageBox.Show(formToInvokeOn, msg, messageBoxButtons,
+								MessageBoxIcon.Warning);
+						}));
+						if (result != "overwrite")
+						{
+							outputPath = null;
+							return null;
+						}
+					} // if it's not Ask, at this point it must be Overwrite, so go ahead.
 				}
 
-				if (overwrite == OverwriteOptions.Ask)
-				{
-					var formToInvokeOn = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
-					string result = null;
-					formToInvokeOn.Invoke((Action)(() =>
-					{
-						result = BloomMessageBox.Show(formToInvokeOn, msg, messageBoxButtons,
-							MessageBoxIcon.Warning);
-					}));
-					if (result != "overwrite")
-					{
-						outputPath = null;
-						return null;
-					}
-				} // if it's not Ask, at this point it must be Overwrite, so go ahead.
+				// In case there's a previous export, get rid of it.
+				SIL.IO.RobustIO.DeleteDirectoryAndContents(_outputFolder);
+				Directory.CreateDirectory(_outputImageFolder); // also (re-)creates its parent, outputFolder
+				var spreadsheet = Export(dom, imagesFolderPath, progress);
+				spreadsheet.WriteToFile(outputPath, progress);
+				return spreadsheet;
 			}
-			
-			// In case there's a previous export, get rid of it.
-			SIL.IO.RobustIO.DeleteDirectoryAndContents(_outputFolder);
-			Directory.CreateDirectory(_outputImageFolder); // also (re-)creates its parent, outputFolder
-			var spreadsheet = Export(dom, imagesFolderPath, progress);
-			spreadsheet.WriteToFile(outputPath);
-			return spreadsheet;
+			catch (Exception e) when (e is IOException || e is SecurityException || e is UnauthorizedAccessException)
+			{
+				progress.MessageWithParams("Spreadsheet.WriteFailed", "",
+					"Bloom had problems writing files to that location ({0}). Check that you have permission to write there.",
+					ProgressKind.Error, _outputFolder);
+			}
+
+			outputPath = null;
+			return null; // some error occurred and was caught
 		}
 	}
 

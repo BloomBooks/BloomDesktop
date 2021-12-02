@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using Gecko.WebIDL;
+﻿using System.Windows.Forms;
 using Newtonsoft.Json;
 
 namespace Bloom.MiscUI
@@ -13,17 +7,17 @@ namespace Bloom.MiscUI
 	/// <summary>
 	/// This class is intended to replace the Windows.Forms MessageBox. It's fairly rudimentary at present, but
 	/// already more flexible in that it allows arbitrary button options. Also, we can use MaterialUI style,
-	/// making it more consistent with our other UI.
+	/// making it more consistent with our other UI, and the message can be arbitrary HTML.
 	/// As yet we only support MessageBoxIcon.Warning, but this can be added to (on the Typescript side)
 	/// as needed.
 	/// </summary>
 	public class BloomMessageBox
 	{
-		public static string Show(IWin32Window owner, string message, MessageBoxButton[] rightButtons, MessageBoxIcon icon = MessageBoxIcon.None)
+		public static string Show(IWin32Window owner, string messageHtml, MessageBoxButton[] rightButtons, MessageBoxIcon icon = MessageBoxIcon.None)
 		{
 			using (var dlg = new ReactDialog("messageBoxBundle", new
 			{
-				message,
+				messageHtml,
 				rightButtons,
 				icon = icon.ToString().ToLowerInvariant()
 			}))
