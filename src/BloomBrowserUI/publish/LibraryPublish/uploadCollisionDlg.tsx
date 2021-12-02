@@ -61,7 +61,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
     const kDarkerSecondaryTextColor = "#555555";
 
     const sameBook = useL10n(
-        "Are these the same book?",
+        "Is this an update of your existing book?",
         "PublishTab.UploadCollisionDialog.SameBook",
         "This is the dialog title"
     );
@@ -88,13 +88,13 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
     );
 
     const sameBookRadioLabel = useL10n(
-        "These are the same book",
+        "Yes, this is an update of my book",
         "PublishTab.UploadCollisionDialog.Radio.SameBook",
         "This is the label on a radio button."
     );
 
     const differentBooksRadioLabel = useL10n(
-        "These are different books",
+        "No, these are different books",
         "PublishTab.UploadCollisionDialog.Radio.DifferentBooks",
         "This is the label on a radio button."
     );

@@ -74,7 +74,7 @@ namespace Bloom.Book
 			}
 		}
 
-		private static readonly string[] ExcludedFiles = { "placeholder.png", "license.png", "thumbnail.png" };
+		private static readonly string[] ExcludedFiles = { "placeholder.png", "license.png", "thumbnail.png", "nonPaddedThumbnail.png" };
 
 		/// <summary>
 		/// We want all the images in the folder, except the above excluded files and any images that come from
