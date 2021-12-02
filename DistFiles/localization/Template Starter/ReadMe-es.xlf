@@ -71,7 +71,7 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es pa
       </trans-unit>
       <trans-unit id="template.starter.share.publish" approved="yes">
         <source xml:lang="en">Remember that Bloom is about planting seeds, about sharing. So plan to share your template on the BloomLibrary for people around the world to find. This takes just a few clicks in the Publish Tab.</source>
-        <target xml:lang="es-ES" state="final">Recuerde que Bloom se trata de plantar semillas y compartirlas. Así que planee compartir su plantilla en la Biblioteca de Bloom para que personas en todo el mundo las puedan encontrar. Esto solamente requiere algunos clics en la pestaña "Publicar".</target>
+        <target xml:lang="es-ES" state="final">Recuerde que Bloom se trata de plantar semillas y compartirlas. Así que planee compartir su plantilla en la Biblioteca Bloom (Bloom Library) para que personas en todo el mundo las puedan encontrar. Esto solamente requiere algunos clics en la pestaña "Publicar".</target>
         <note>ID: template.starter.share.publish</note>
       </trans-unit>
       <trans-unit id="template.starter.share.bloompack" approved="yes">

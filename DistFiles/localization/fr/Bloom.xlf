@@ -828,10 +828,10 @@
         <note>ID: CollectionTab.BookMenu.Rename</note>
         <target xml:lang="fr" state="final">Renommer</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem" approved="yes">
-        <source xml:lang="en">Save as single file (.bloom)...</source>
+      <trans-unit id="CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem">
+        <source xml:lang="en">Save as single file (.bloomSource)...</source>
         <note>ID: CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem</note>
-        <target xml:lang="fr" state="final">Enregistrer en tant que fichier unique (.bloom)...</target>
+        <target xml:lang="fr" state="translated">Enregistrer en tant que fichier unique (.bloom)...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip" approved="yes">
         <source xml:lang="en">Update Book</source>
@@ -2670,6 +2670,11 @@
         <note>ID: EditTab.Toolbox.DecodableReaderTool.FileDialogTextFiles</note>
         <target xml:lang="fr" state="final">Fichiers texte</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportAllUsableWords" approved="yes">
+        <source xml:lang="en">All Usable Words: {0}</source>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportAllUsableWords</note>
+        <target xml:lang="fr" state="final">Tous les Mots Utilisables : {0}</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters" approved="yes">
         <source xml:lang="en">Letters: {0}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters</note>
@@ -3610,16 +3615,6 @@
         <source xml:lang="en">A4 Landscape</source>
         <note>ID: LayoutChoices.A4Landscape</note>
         <target xml:lang="fr" state="final">A4Paysage</target>
-      </trans-unit>
-      <trans-unit id="LayoutChoices.A4Landscape SideBySide" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">A4 Landscape (Side By Side)</source>
-        <note>ID: LayoutChoices.A4Landscape SideBySide</note>
-        <target xml:lang="fr" state="final">A4Paysage (Côte A Côte)</target>
-      </trans-unit>
-      <trans-unit id="LayoutChoices.A4Landscape SplitAcrossPages" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">A4 Landscape (Split Across Pages)</source>
-        <note>ID: LayoutChoices.A4Landscape SplitAcrossPages</note>
-        <target xml:lang="fr" state="final">A4 Paysage (Réparti Sur Les Pages)</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A4 Portrait</source>
@@ -5252,11 +5247,11 @@ Do you want to go ahead?</note>
         <note>This is the dialog subtitle. The {0} will be replaced with the uploader's email address.</note>
         <target xml:lang="fr" state="final">BloomLibrary.org a déjà un livre avec cet identifiant de votre part ({0}).</target>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks" approved="yes">
-        <source xml:lang="en">These are different books</source>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks">
+        <source xml:lang="en">No, these are different books</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks</note>
         <note>This is the label on a radio button.</note>
-        <target xml:lang="fr" state="final">Ce sont des livres différents</target>
+        <target xml:lang="fr" state="translated">Ce sont des livres différents</target>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary" approved="yes">
         <source xml:lang="en">Add a new book. Bloom will fix the ID of your book and upload it. The old book on Bloom Library will stay the same.</source>
@@ -5264,11 +5259,11 @@ Do you want to go ahead?</note>
         <note>This is explanatory commentary on a radio button.</note>
         <target xml:lang="fr" state="final">Ajoutez un nouveau livre. Bloom va corriger l'identifiant de votre livre et le télécharger. L'ancien livre de la bibliothèque Bloom restera le même.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook" approved="yes">
-        <source xml:lang="en">These are the same book</source>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook">
+        <source xml:lang="en">Yes, this is an update of my book</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook</note>
         <note>This is the label on a radio button.</note>
-        <target xml:lang="fr" state="final">Ce sont les mêmes livres</target>
+        <target xml:lang="fr" state="translated">Ce sont les mêmes livres</target>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary" approved="yes">
         <source xml:lang="en">Update the book. Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</source>
@@ -5276,11 +5271,11 @@ Do you want to go ahead?</note>
         <note>This is explanatory commentary on a radio button. Don't translate the website reference in brackets ([bloomlibrary.org]). It will be replaced by a link to bloomlibrary.org.</note>
         <target xml:lang="fr" state="final">Faire la mise à jour du livre. Bloom va supprimer la version sur [bloomlibrary.org] et la remplacer par votre téléchargement.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.SameBook" approved="yes">
-        <source xml:lang="en">Are these the same book?</source>
+      <trans-unit id="PublishTab.UploadCollisionDialog.SameBook">
+        <source xml:lang="en">Is this an update of your existing book?</source>
         <note>ID: PublishTab.UploadCollisionDialog.SameBook</note>
         <note>This is the dialog title</note>
-        <target xml:lang="fr" state="final">S'agit-il du même livre ?</target>
+        <target xml:lang="fr" state="translated">S'agit-il du même livre ?</target>
       </trans-unit>
       <trans-unit id="Quiz.CheckYourUnderstanding" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Check Your Understanding</source>
@@ -6264,6 +6259,16 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
         <target xml:lang="fr" state="final">Une page interactive avec une question et quelques réponses. Fonctionne sur le web et avec Bloom Reader. Lorsqu'on l utilise avec Bloom Reader, le tableau de bord de votre projet peut afficher les notes de compréhension agrégées.</target>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Picture" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">An interactive page with an image and some text buttons.</source>
+        <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
+        <target xml:lang="fr" state="final">Une page interactive avec une image et quelques boutons de texte.</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Choose Picture from Word" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">An interactive page with a text and some picture buttons.</source>
+        <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
+        <target xml:lang="fr" state="final">Une page interactive avec un texte et quelques boutons d'image.</target>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>
         <note>ID: TemplateBooks.PageDescription.Translation Instructions</note>
@@ -6795,6 +6800,18 @@ Do you want to go ahead?</note>
         <note>ID: WebServer.Warning.NoImageFile</note>
         <note>displays as a "toast"</note>
         <target xml:lang="fr" state="final">Fichier d'image non trouvé</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportDialog.Description" approved="yes">
+        <source xml:lang="en">Bloom will create a spreadsheet containing the text and images of this book. You can then make changes, like making new translations. Finally, use the “Import &amp; Update from Spreadsheet...” command to bring your changes back in.</source>
+        <target xml:lang="fr" state="final">Bloom va créer une feuille de calcul contenant le texte et les images de ce livre. Vous pourrez ensuite y apporter des modifications, comme revoir certaines traductions. Enfin, utilisez la commande "Importer &amp; Mettre à jour à partir de la Feuille de Calcul... " pour insérer vos modifications.</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportDialog.folderLabel" approved="yes">
+        <source xml:lang="en">Target folder for the spreadsheet and images:</source>
+        <target xml:lang="fr" state="final">Dossier cible pour la feuille de calcul et les images :</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportDialog.ExportButton" approved="yes">
+        <source xml:lang="en">Export</source>
+        <target xml:lang="fr" state="final">Exportation</target>
       </trans-unit>
     </body>
   </file>
