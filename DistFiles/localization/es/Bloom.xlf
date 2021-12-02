@@ -366,12 +366,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       <trans-unit id="BookStorage.CorruptBook">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please report the problem to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo leer este libro y se recuperó restaurando una copia del respaldo reciente. Recomendamos revisar los cambios recientes a este libro. Si esto vuelve suceder sin una explicación, por favor haga clic en Detalles e infórmenos del problema.</target>
+        <target xml:lang="es-ES" state="translated">Bloom no pudo leer este libro y se recuperó restaurando una copia de respaldo reciente. Recomendamos revisar los cambios recientes a este libro. Si esto vuelve suceder sin una explicación, por favor haga clic en Detalles e infórmenos del problema.</target>
       </trans-unit>
-      <trans-unit id="BookStorage.FolderMoved">
+      <trans-unit id="BookStorage.FolderMoved" approved="yes">
         <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please report the problem to us.</source>
         <note>ID: BookStorage.FolderMoved</note>
-        <target xml:lang="es-ES" state="translated">Parece que alguna parte de la ruta de la carpeta de este libro se ha movido o cambiado de nombre. Debido a esto, Bloom no puede guardar los cambios hechos en esta página, y tendrá que salir ahora. Si usted no ha estado cambiando el nombre o moviendo las cosas, por favor haga clic en Detalles, abajo, y reporte el problema a los programadores.</target>
+        <target xml:lang="es-ES" state="final">Parece que alguna parte de la ruta de la carpeta de este libro se ha movido o cambiado de nombre. Debido a esto, Bloom no puede guardar los cambios hechos en esta página, y tendrá que salir ahora. Si usted no ha estado cambiando el nombre o moviendo las cosas, por favor haga clic en Detalles, abajo, y reporte el problema a los programadores.</target>
       </trans-unit>
       <trans-unit id="Browser.CopyTroubleshootingInfo" approved="yes">
         <source xml:lang="en">Copy Troubleshooting Information</source>
@@ -418,6 +418,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalBookSources</note>
         <note>OLD TEXT (before 5.0/3.9): Show Experimental Templates (e.g. Picture Dictionary)</note>
         <target xml:lang="es-ES" state="translated">Mostrar fuentes de libros experimentales</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.SpreadsheetImportExport" approved="yes">
+        <source xml:lang="en">Spreadsheet Import/Export</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.SpreadsheetImportExport</note>
+        <note>This is the label of a checkbox which, if enabled, allows a menu command to be used that can import Bloom books from an Excel spreadsheet or to an Excel spreadsheet.</note>
+        <target xml:lang="es-ES" state="final">Importación/exportación de hojas de cálculo</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
@@ -717,6 +723,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Province</note>
         <target xml:lang="es-ES" state="final">Provincia</target>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.RequiresEnterprise_ToolTip_" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">To use this feature, you'll need to enable Bloom Enterprise.</source>
+        <note>ID: CollectionSettingsDialog.RequiresEnterprise_ToolTip_</note>
+        <note>Same as the text for "EditTab.RequiresEnterprise"</note>
+        <target xml:lang="es-ES" state="final">Para usar esta función, necesitará habilitar Bloom Empresarial.</target>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Restart" approved="yes">
         <source xml:lang="en">Restart</source>
         <note>ID: CollectionSettingsDialog.Restart</note>
@@ -787,10 +799,10 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: CollectionTab.BookMenu.ExportDocMessage</note>
         <target xml:lang="es-ES" state="final">Bloom abrirá este documento HTML en su programa de procesador de textos (normalmente Word o LibreOffice). Usted podrá revisar el texto y las imágenes de este libro. Como estos programas tienden a no preservar los diseños de página, no debe tener muchas expectativas.</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.ExportToSpreadsheet">
+      <trans-unit id="CollectionTab.BookMenu.ExportToSpreadsheet" approved="yes">
         <source xml:lang="en">Export to Spreadsheet...</source>
         <note>ID: CollectionTab.BookMenu.ExportToSpreadsheet</note>
-        <target xml:lang="es-ES" state="translated">Exportar a una hoja de cálculo...</target>
+        <target xml:lang="es-ES" state="final">Exportar a una hoja de cálculo...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.ExportToWordOrLibreOffice" approved="yes">
         <source xml:lang="en">Export to Word or LibreOffice...</source>
@@ -802,20 +814,20 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: CollectionTab.BookMenu.ExportToXMLForInDesign</note>
         <target xml:lang="es-ES" state="final">Exportar a XML para InDesign...</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.ImportContentFromSpreadsheet">
+      <trans-unit id="CollectionTab.BookMenu.ImportContentFromSpreadsheet" approved="yes">
         <source xml:lang="en">Import content from Spreadsheet...</source>
         <note>ID: CollectionTab.BookMenu.ImportContentFromSpreadsheet</note>
-        <target xml:lang="es-ES" state="translated">Importar contenido de una hoja de cálculo...</target>
+        <target xml:lang="es-ES" state="final">Importar contenido de una hoja de cálculo...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.MakeBloomPack" approved="yes">
         <source xml:lang="en">Make Bloom Pack...</source>
         <note>ID: CollectionTab.BookMenu.MakeBloomPack</note>
         <target xml:lang="es-ES" state="final">Crear un Paquete de Bloom...</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.Rename">
+      <trans-unit id="CollectionTab.BookMenu.Rename" approved="yes">
         <source xml:lang="en">Rename</source>
         <note>ID: CollectionTab.BookMenu.Rename</note>
-        <target xml:lang="es-ES" state="translated">Renombrar</target>
+        <target xml:lang="es-ES" state="final">Renombrar</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem" approved="yes">
         <source xml:lang="en">Save as single file (.bloom)...</source>
@@ -1071,6 +1083,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
         <target xml:lang="es-ES" state="final">Avanzado</target>
       </trans-unit>
+      <trans-unit id="Common.AskForHelp">
+        <source xml:lang="en">Ask for help</source>
+        <note>ID: Common.AskForHelp</note>
+        <note>Used in various places where someone might need to open a Problem Report dialog.</note>
+        <target xml:lang="es-ES" state="translated">Pedir ayuda</target>
+      </trans-unit>
       <trans-unit id="Common.BackButton" approved="yes">
         <source xml:lang="en">Back</source>
         <note>ID: Common.BackButton</note>
@@ -1132,10 +1150,10 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>Shown in a list of messages when Bloom has completed a task.</note>
         <target xml:lang="es-ES" state="final">Terminado</target>
       </trans-unit>
-      <trans-unit id="Common.EnterpriseRequired">
+      <trans-unit id="Common.EnterpriseRequired" approved="yes">
         <source xml:lang="en">Enterprise Required</source>
         <note>ID: Common.EnterpriseRequired</note>
-        <target xml:lang="es-ES" state="translated">Se requiere Bloom Empresarial</target>
+        <target xml:lang="es-ES" state="final">Se requiere Bloom Empresarial</target>
       </trans-unit>
       <trans-unit id="Common.Error" approved="yes">
         <source xml:lang="en">Error</source>
@@ -1211,10 +1229,10 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: Common.Optional</note>
         <target xml:lang="es-ES" state="final">opcional</target>
       </trans-unit>
-      <trans-unit id="Common.Pause" sil:dynamic="true">
+      <trans-unit id="Common.Pause" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Pause</source>
         <note>ID: Common.Pause</note>
-        <target xml:lang="es-ES" state="translated">Pausa</target>
+        <target xml:lang="es-ES" state="final">Pausa</target>
       </trans-unit>
       <trans-unit id="Common.Preview" approved="yes">
         <source xml:lang="en">Preview</source>
@@ -1260,10 +1278,20 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: Common.Settings</note>
         <target xml:lang="es-ES" state="final">Configuración</target>
       </trans-unit>
-      <trans-unit id="Common.Stop">
+      <trans-unit id="Common.Stop" approved="yes">
         <source xml:lang="en">Stop</source>
         <note>ID: Common.Stop</note>
-        <target xml:lang="es-ES" state="translated">Parar</target>
+        <target xml:lang="es-ES" state="final">Parar</target>
+      </trans-unit>
+      <trans-unit id="Common.Upload">
+        <source xml:lang="en">Upload</source>
+        <note>ID: Common.Upload</note>
+        <target xml:lang="es-ES" state="translated">Cargar</target>
+      </trans-unit>
+      <trans-unit id="Common.Uploading">
+        <source xml:lang="en">Uploading</source>
+        <note>ID: Common.Uploading</note>
+        <target xml:lang="es-ES" state="translated">Cargando</target>
       </trans-unit>
       <trans-unit id="Common.Warning" approved="yes">
         <source xml:lang="en">Info</source>
@@ -1271,11 +1299,17 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>A heading shown above some messages.</note>
         <target xml:lang="es-ES" state="final">Información</target>
       </trans-unit>
-      <trans-unit id="Common.WhatsThis" sil:dynamic="true">
+      <trans-unit id="Common.WhatsThis" sil:dynamic="true" approved="yes">
         <source xml:lang="en">What's this?</source>
         <note>ID: Common.WhatsThis</note>
         <note>minimal question indicating a link to information</note>
-        <target xml:lang="es-ES" state="translated">¿Qué es esto?</target>
+        <target xml:lang="es-ES" state="final">¿Qué es esto?</target>
+      </trans-unit>
+      <trans-unit id="Common.WhatCausedThisProblem">
+        <source xml:lang="en">What caused this problem?</source>
+        <note>ID: Common.WhatCausedThisProblem</note>
+        <note>This is usually a link to an explanatory document.</note>
+        <target xml:lang="es-ES" state="translated">¿Qué causó este problema?</target>
       </trans-unit>
       <trans-unit id="Download.Completed" approved="yes">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
@@ -1291,7 +1325,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please report the problem to the us.</source>
         <note>ID: Download.CopyFailed</note>
         <note xml:lang="en">OLD TEXT (before 3.9, period at end): Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers.</note>
-        <target xml:lang="es-ES" state="translated">Bloom ha descargado el libro, pero no pudo hacerlo disponible en Bloom. Por favor, reinicie su computadora y vuelva a intentarlo. Si recibe este mensaje nuevamente, por favor haga clic en el botón "Detalles" y reporte el problema a los programadores de Bloom</target>
+        <target xml:lang="es-ES" state="translated">Bloom ha descargado el libro, pero ha tenido problemas para que esté disponible en Bloom. Por favor, reinicie su computadora y vuelva a intentarlo. Si recibe este mensaje nuevamente, por favor haga clic en el botón "Detalles" y reporte el problema a los programadores de Bloom.</target>
       </trans-unit>
       <trans-unit id="Download.DownloadingDialogTitle" approved="yes">
         <source xml:lang="en">Downloading book</source>
@@ -1576,17 +1610,23 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>Button that tells Bloom to duplicate the currently selected page.</note>
         <target xml:lang="es-ES" state="final">Esta página no puede ser duplicada</target>
       </trans-unit>
-      <trans-unit id="EditTab.DuplicatePageMultiple">
+      <trans-unit id="EditTab.DuplicatePageMultiple" approved="yes">
         <source xml:lang="en">Duplicate Page Many Times...</source>
         <note>ID: EditTab.DuplicatePageMultiple</note>
         <note>Menu item that tells Bloom to duplicate the currently selected page several times.</note>
-        <target xml:lang="es-ES" state="translated">Duplicar la página muchas veces...</target>
+        <target xml:lang="es-ES" state="final">Duplicar la página muchas veces...</target>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageMultiple.Prompt">
-        <source xml:lang="en">How many more of this page? (1-999):</source>
+        <source xml:lang="en">How many more of this page? (2-999)</source>
         <note>ID: EditTab.DuplicatePageMultiple.Prompt</note>
         <note>Used in the window that asks how many times to duplicate the selected page.</note>
         <target xml:lang="es-ES" state="translated">¿Cuántas más de esta página? (1-999):</target>
+      </trans-unit>
+      <trans-unit id="EditTab.DuplicatePageMultiple.Title">
+        <source xml:lang="en">Duplicate Page Many Times</source>
+        <note>ID: EditTab.DuplicatePageMultiple.Title</note>
+        <note>Title of dialog that Bloom uses to ask the user how many times to duplicate the currently selected page.</note>
+        <target xml:lang="es-ES" state="translated">Duplicar la página muchas veces</target>
       </trans-unit>
       <trans-unit id="EditTab.Edit" approved="yes">
         <source xml:lang="en">Edit</source>
@@ -2029,10 +2069,10 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: EditTab.HowToUnlockBook</note>
         <target xml:lang="es-ES" state="final">Para desbloquear este libro prediseñado, haga clic en el ícono del candado en la esquina inferior izquierda.</target>
       </trans-unit>
-      <trans-unit id="EditTab.HowToUseHyperlink">
+      <trans-unit id="EditTab.HowToUseHyperlink" approved="yes">
         <source xml:lang="en">To use this hyperlink, go to the page where you are making a Table of Contents. Next, select some text and then click on the image of chain link. This will turn the selected text into a hyperlink to this page.</source>
         <note>ID: EditTab.HowToUseHyperlink</note>
-        <target xml:lang="es-ES" state="translated">Para utilizar este hiperenlace, diríjase a la página en la que está haciendo un Índice de contenidos. A continuación, seleccione algún texto y luego haga clic en la imagen de una cadena. Esto convertirá el texto seleccionado en un hiperenlace a esta página.</target>
+        <target xml:lang="es-ES" state="final">Para utilizar este hiperenlace, diríjase a la página en la que está haciendo un Índice de contenidos. A continuación, seleccione algún texto y luego haga clic en la imagen de una cadena. Esto convertirá el texto seleccionado en un hiperenlace a esta página.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.AltMsg" approved="yes">
         <source xml:lang="en">This picture, {0}, is missing or was loading too slowly.</source>
@@ -2255,15 +2295,15 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: EditTab.TextBoxProperties.BordersAndBackground</note>
         <target xml:lang="es-ES" state="final">Bordes y fondo</target>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.CollectionLanguage2" sil:dynamic="true">
+      <trans-unit id="EditTab.TextBoxProperties.CollectionLanguage2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Collection Language 2</source>
         <note>ID: EditTab.TextBoxProperties.CollectionLanguage2</note>
-        <target xml:lang="es-ES" state="translated">Idioma 2 de la colección</target>
+        <target xml:lang="es-ES" state="final">Idioma 2 de la colección</target>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.CollectionLanguage3" sil:dynamic="true">
+      <trans-unit id="EditTab.TextBoxProperties.CollectionLanguage3" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Collection Language 3</source>
         <note>ID: EditTab.TextBoxProperties.CollectionLanguage3</note>
-        <target xml:lang="es-ES" state="translated">Idioma 3 de la colección</target>
+        <target xml:lang="es-ES" state="final">Idioma 3 de la colección</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.HintBubbles" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Hint Bubbles</source>
@@ -2315,10 +2355,10 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>Obsolete for Bloom 5.1 and later</note>
         <target xml:lang="es-ES" state="final">Idioma regional</target>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.SelectedLanguage" sil:dynamic="true">
+      <trans-unit id="EditTab.TextBoxProperties.SelectedLanguage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Selected Language 1</source>
         <note>ID: EditTab.TextBoxProperties.SelectedLanguage</note>
-        <target xml:lang="es-ES" state="translated">Idioma 1 seleccionado</target>
+        <target xml:lang="es-ES" state="final">Idioma 1 seleccionado</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.ShowHintBubble" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Show the hint bubble</source>
@@ -2357,17 +2397,17 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
         <target xml:lang="es-ES" state="final">Información de la propiedad intelectual de la imagen</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.OverlayTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.OverlayTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Overlay Tool</source>
         <note>ID: EditTab.Toolbox.OverlayTool</note>
         <note>If "Overlay Tool" is hard to translate, "Floating Object Tool" is an alternate.</note>
         <note>This tool allows users to insert speech bubbles or callouts, which are pieces of text connected by a line, arrow, or other graphic to a part of a picture. These may be used to give dialogue or to give more information about a specific part of the picture.</note>
-        <target xml:lang="es-ES" state="translated">Herramienta de superposición</target>
+        <target xml:lang="es-ES" state="final">Herramienta de superposición</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Drag any of these overlays onto the image:</source>
         <note>ID: EditTab.Toolbox.ComicTool.DragInstructions</note>
-        <target xml:lang="es-ES" state="translated">Arrastra para añadir a una imagen</target>
+        <target xml:lang="es-ES" state="final">Arrastra para añadir a una imagen</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.AddChildBubble" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Child Bubble</source>
@@ -2392,11 +2432,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>Tooltip for the bubble Duplicate icon</note>
         <target xml:lang="es-ES" state="final">Duplicar</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true" approved="yes">
         <source xml:lang="en">There are no options for this kind of overlay</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ImageSelected</note>
         <note>This notification shows if a picture over picture is selected.</note>
-        <target xml:lang="es-ES" state="translated">Imagen seleccionada</target>
+        <target xml:lang="es-ES" state="final">Imagen seleccionada</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Outer Outline Color</source>
@@ -2415,11 +2455,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>This checkbox indicates whether a text box has rounded corners instead of square corners.</note>
         <target xml:lang="es-ES" state="final">Esquinas redondeadas</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ShowSignLanguageTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ShowSignLanguageTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Show Sign Language Tool</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ShowSignLanguageTool</note>
         <note>This button shows if a video bubble is selected.</note>
-        <target xml:lang="es-ES" state="translated">Mostrar la herramienta de lenguaje de signos</target>
+        <target xml:lang="es-ES" state="final">Mostrar la herramienta de lenguaje de signos</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ShowTail" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Show Tail</source>
@@ -2873,16 +2913,16 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Max</note>
         <target xml:lang="es-ES" state="final">Máx.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.MaxInBook" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.MaxInBook" sil:dynamic="true" approved="yes">
         <source xml:lang="en">max in book</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.MaxInBook</note>
-        <target xml:lang="es-ES" state="translated">máx en libro</target>
+        <target xml:lang="es-ES" state="final">máx en libro</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.MaxSentenceLength" sil:dynamic="true">
         <source xml:lang="en">longest sentence</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.MaxSentenceLength</note>
         <note>length of the longest sentence (in the book)</note>
-        <target xml:lang="es-ES" state="translated">oración más larga</target>
+        <target xml:lang="es-ES" state="translated">la oración más larga</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerPage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">per page</source>
@@ -2933,7 +2973,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.TotalInBook" sil:dynamic="true">
         <source xml:lang="en">total in book</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.TotalInBook</note>
-        <target xml:lang="es-ES" state="translated">total en libro</target>
+        <target xml:lang="es-ES" state="translated">total en el libro</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Unique" sil:dynamic="true" approved="yes">
         <source xml:lang="en">unique</source>
@@ -3257,11 +3297,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>Button that tells Bloom to temporarily unlock a shell book for editing other than translation.</note>
         <target xml:lang="es-ES" state="final">Este libro está protegido y solamente puede ser traducido. Si desea hacer otros cambios, haga clic aquí para desbloquearlo temporalmente.</target>
       </trans-unit>
-      <trans-unit id="EditTab.UsingHyperlink">
+      <trans-unit id="EditTab.UsingHyperlink" approved="yes">
         <source xml:lang="en">Using a hyperlink</source>
         <note>ID: EditTab.UsingHyperlink</note>
         <note>Title for dialog box showing the message for EditTab.HowToUseHyperlink</note>
-        <target xml:lang="es-ES" state="translated">Cómo utilizar un hiperenlace</target>
+        <target xml:lang="es-ES" state="final">Cómo utilizar un hiperenlace</target>
       </trans-unit>
       <trans-unit id="EditTab.Widget.ChooseWidget" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose Widget</source>
@@ -3302,7 +3342,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       <trans-unit id="Errors.CouldNotSavePage">
         <source xml:lang="en">Bloom had trouble saving a page. Please report the problem to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</source>
         <note>ID: Errors.CouldNotSavePage</note>
-        <target xml:lang="es-ES" state="translated">Bloom tuvo dificultades guardando la página. Por favor, haga clicen "Detalles" abajo e infórmenos. Luego cierre Bloom, reinícielo y averigüe si a la página que acaba de editar lr falta alguna cosa. ¡Discúlpenos!</target>
+        <target xml:lang="es-ES" state="translated">Bloom tuvo dificultades guardando la página. Por favor, haga clic en "Detalles" abajo e infórmenos. Luego cierre Bloom, reinícielo y averigüe si a la página que acaba de editar le falta alguna cosa. ¡Discúlpenos!</target>
       </trans-unit>
       <trans-unit id="Errors.CurrentRunningVersion" approved="yes">
         <source xml:lang="en">You are running Bloom {0}</source>
@@ -3333,17 +3373,17 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>This is a link that will take them to the Downloads (Installers) web page</note>
         <target xml:lang="es-ES" state="final">Actualice a la última versión de Bloom (requiere conexión a internet)</target>
       </trans-unit>
-      <trans-unit id="Errors.ErrorSelecting">
+      <trans-unit id="Errors.ErrorSelecting" approved="yes">
         <source xml:lang="en">There was a problem selecting the book.  Restarting Bloom may fix the problem.  If not, please report the problem to us.</source>
         <note>ID: Errors.ErrorSelecting</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added spaces): There was a problem selecting the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</note>
-        <target xml:lang="es-ES" state="translated">No se pudo seleccionar el libro. Reiniciando Bloom puede resolver el problema. Si no lo resuelve, por favor haga clic en el botón "Detalles" e infórmenos del problema.</target>
+        <target xml:lang="es-ES" state="final">No se pudo seleccionar el libro. Reiniciar Bloom puede resolver el problema. Si no lo resuelve, por favor haga clic en el botón "Detalles" e infórmenos del problema.</target>
       </trans-unit>
       <trans-unit id="Errors.ErrorUpdating">
         <source xml:lang="en">There was a problem updating the book.  Restarting Bloom may fix the problem.  If not, please report the problem to us.</source>
         <note>ID: Errors.ErrorUpdating</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added spaces): There was a problem updating the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</note>
-        <target xml:lang="es-ES" state="translated">No se pudo actualizar el lbro. Reiniciando Bloom puede resolver el problema. Si no lo resuelve, por favor haga clic en el botón "Detalles" e infórmenos del problema.</target>
+        <target xml:lang="es-ES" state="translated">No se pudo actualizar el libro. Reiniciar Bloom puede resolver el problema. Si no lo resuelve, por favor haga clic en el botón "Detalles" e infórmenos del problema.</target>
       </trans-unit>
       <trans-unit id="Errors.FeatureRequiresNewerVersionPlural" approved="yes">
         <source xml:lang="en">This book requires Bloom {0} or greater because it uses the following features:</source>
@@ -3723,10 +3763,10 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
         <target xml:lang="es-ES" state="final">Elija el idioma principal para esta Colección</target>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.CollectionName">
+      <trans-unit id="NewCollectionWizard.CollectionName" approved="yes">
         <source xml:lang="en">Collection Name</source>
         <note>ID: NewCollectionWizard.CollectionName</note>
-        <target xml:lang="es-ES" state="translated">Nombre de la colección</target>
+        <target xml:lang="es-ES" state="final">Nombre de la colección</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionNamePage.ExampleText" approved="yes">
         <source xml:lang="en">Examples: "Health Books", "PNG Animal Stories"</source>
@@ -4162,11 +4202,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: PublishTab.Android.Settings</note>
         <target xml:lang="es-ES" state="final">Configuración</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.TalkingBookLanguages" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.TalkingBookLanguages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Talking Book Languages</source>
         <note>ID: PublishTab.Android.TalkingBookLanguages</note>
         <note>Which languages will have the "Talking Book" (books with both text and narrated audio) feature enabled</note>
-        <target xml:lang="es-ES" state="translated">Idiomas de los audiolibros</target>
+        <target xml:lang="es-ES" state="final">Idiomas de los audiolibros</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.TextLanguages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Text Languages</source>
@@ -4371,35 +4411,35 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>This link opens a dialog box that lets you put in information someone (often a librarian) might use to search for a book with particular characteristics.</note>
         <target xml:lang="es-ES" state="final">Metadatos del libro</target>
       </trans-unit>
-      <trans-unit id="PublishTab.BulkBloomPub.Explanation" sil:dynamic="true">
+      <trans-unit id="PublishTab.BulkBloomPub.Explanation" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This file will cause these books to be grouped under a single bookshelf in Bloom Reader. This collection's bookshelf is set to "{0}".</source>
         <note>ID: Publish.BulkBloomPub.Explanation</note>
         <note>{0} will be replaced with the name of the bookshelf. Make sure to place the {0} at the appropriate place in the translation. The double quotes ("") around it can be replaced with whatever kind of quotation marks are appropriate in the language you are translating to.</note>
-        <target xml:lang="es-ES" state="translated">Este archivo hará que estos libros se agrupen en una sola estantería en Bloom Reader. La estantería de esta colección está configurada como "{0}".</target>
+        <target xml:lang="es-ES" state="final">Este archivo hará que estos libros se agrupen en una sola estantería en Bloom Reader. La estantería de esta colección está configurada como "{0}".</target>
       </trans-unit>
-      <trans-unit id="PublishTab.BulkBloomPub.Make" sil:dynamic="true">
+      <trans-unit id="PublishTab.BulkBloomPub.Make" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make</source>
         <note>ID: Publish.BulkBloomPub.Make</note>
         <note>"Make" is the label of a button that will make the selected file</note>
-        <target xml:lang="es-ES" state="translated">Crear</target>
+        <target xml:lang="es-ES" state="final">Crear</target>
       </trans-unit>
-      <trans-unit id="PublishTab.BulkBloomPub.MakeAllBloomPubs" sil:dynamic="true">
+      <trans-unit id="PublishTab.BulkBloomPub.MakeAllBloomPubs" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make All BloomPUBs from Collection</source>
         <note>ID: PublishTab.BulkBloomPub.MakeAllBloomPubs</note>
         <note>A BloomPUB is a type of file format that can be used to read books on the Bloom Reader app</note>
-        <target xml:lang="es-ES" state="translated">Crear todos los BloomPUBs de la colección</target>
+        <target xml:lang="es-ES" state="final">Crear todos los BloomPUBs de la colección</target>
       </trans-unit>
-      <trans-unit id="PublishTab.BulkBloomPub.MakeBloomBundle" sil:dynamic="true">
+      <trans-unit id="PublishTab.BulkBloomPub.MakeBloomBundle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Compress into a single .bloombundle file</source>
         <note>ID: Publish.BulkBloomPub.MakeBloomBundle</note>
         <note>"Compress" means to take multiple things and turn them into a single combined file. (The result is smaller than the sum of the parts.)</note>
         <note>.bloombundle is the file extension. It is in lowercase. It will be the same extension regardless of the user's language settings.</note>
-        <target xml:lang="es-ES" state="translated">Comprime en un único archivo .bloomBundle</target>
+        <target xml:lang="es-ES" state="final">Comprimir en un único archivo .bloomBundle</target>
       </trans-unit>
-      <trans-unit id="PublishTab.BulkBloomPub.ProduceBloomShelf" sil:dynamic="true">
+      <trans-unit id="PublishTab.BulkBloomPub.ProduceBloomShelf" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Produce a .bloomshelf file</source>
         <note>ID: Publish.BulkBloomPub.ProduceBloomShelf</note>
-        <target xml:lang="es-ES" state="translated">Producir un archivo .bloomshelf</target>
+        <target xml:lang="es-ES" state="final">Producir un archivo .bloomshelf</target>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm" approved="yes">
         <source xml:lang="en">Share on the Web</source>
@@ -4479,7 +4519,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       <trans-unit id="PublishTab.Epub.LocalLinksProblem">
         <source xml:lang="en">Links to other pages do not work in ePUBs. They will be changed to plain text that does not look like a link.</source>
         <note>ID: PublishTab.Epub.LocalLinksProblem</note>
-        <target xml:lang="es-ES" state="translated">Los enlaces a otras páginas no funcionan en los ePUBs. Se convertirán en texto simple que no son enlaces.</target>
+        <target xml:lang="es-ES" state="translated">Los enlaces a otras páginas no funcionan en los ePUBs. Se convertirán en texto simple que no parezca un enlace.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.IncludeOnPage" approved="yes">
         <source xml:lang="en">Include image descriptions on page</source>
@@ -4504,11 +4544,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>Shown in a progress box when Bloom finds interactive pages in an EPUB. Followed by a list of page labels.</note>
         <target xml:lang="es-ES" state="final">Las siguientes páginas fueron eliminados porque no son compatibles con los ePUBs:</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.NoOverlaySupport">
+      <trans-unit id="PublishTab.Epub.NoOverlaySupport" approved="yes">
         <source xml:lang="en">Sorry, Bloom cannot produce ePUBs if there are any overlays. The first overlay is on page {0}.</source>
         <note>ID: PublishTab.Epub.NoOverlaySupport</note>
         <note>The {0} will be replaced with the page number (or name of page). For example, it might be replaced by "1" or "Front Cover"</note>
-        <target xml:lang="es-ES" state="translated">Lo sentimos, Bloom no puede producir ePUBs si hay superposiciones. La primera superposición está en la página {0}.</target>
+        <target xml:lang="es-ES" state="final">Lo sentimos, Bloom no puede producir ePUBs si hay superposiciones. La primera superposición está en la página {0}.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.PageLabel.Content" approved="yes">
         <source xml:lang="en">Content</source>
@@ -4623,11 +4663,13 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       <trans-unit id="PublishTab.OverwriteWarning.ReplaceExistingButton" approved="yes">
         <source xml:lang="en">Replace Existing</source>
         <note>ID: PublishTab.OverwriteWarning.ReplaceExistingButton</note>
+        <note>Obsolete for Bloom 5.2 and later</note>
         <target xml:lang="es-ES" state="final">Reemplazar lo existente</target>
       </trans-unit>
       <trans-unit id="PublishTab.OverwriteWarning.WindowTitle" approved="yes">
         <source xml:lang="en">Notice</source>
         <note>ID: PublishTab.OverwriteWarning.WindowTitle</note>
+        <note>Obsolete for Bloom 5.2 and later</note>
         <target xml:lang="es-ES" state="final">Aviso</target>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Error.Failed" approved="yes">
@@ -4796,22 +4838,22 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: PublishTab.Publish</note>
         <target xml:lang="es-ES" state="final">Publicar</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.FirstOverlayPage">
+      <trans-unit id="PublishTab.PublishRequiresEnterprise.FirstOverlayPage" approved="yes">
         <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
         <note>ID: PublishTab.PublishRequiresEnterprise.FirstOverlayPage</note>
         <note>The {0} will be replaced by a page number.</note>
-        <target xml:lang="es-ES" state="translated">La página {0} es la primera página que utiliza elementos de Superposición.</target>
+        <target xml:lang="es-ES" state="final">La página {0} es la primera página que utiliza elementos de Superposición.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.Options">
+      <trans-unit id="PublishTab.PublishRequiresEnterprise.Options" approved="yes">
         <source xml:lang="en">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</source>
         <note>ID: PublishTab.PublishRequiresEnterprise.Options</note>
-        <target xml:lang="es-ES" state="translated">Para publicar su libro, debe activar Bloom Empresarial o eliminar los elementos de Superposición de su libro.</target>
+        <target xml:lang="es-ES" state="final">Para publicar su libro, debe activar Bloom Empresarial o eliminar los elementos de Superposición de su libro.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.ProblemExplanation">
+      <trans-unit id="PublishTab.PublishRequiresEnterprise.ProblemExplanation" approved="yes">
         <source xml:lang="en">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Enterprise feature.</source>
         <note>ID: PublishTab.PublishRequiresEnterprise.ProblemExplanation</note>
         <note>{0} will be replaced with the book's title.</note>
-        <target xml:lang="es-ES" state="translated">El libro titulado '{0}' añade nuevos elementos de Superposición. Los elementos de Superposición son una función de Bloom Empresarial.</target>
+        <target xml:lang="es-ES" state="final">El libro titulado '{0}' añade nuevos elementos de Superposición. Los elementos de Superposición son una función de Bloom Empresarial.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Save" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Save...</source>
@@ -5098,6 +5140,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: PublishTab.Upload.SignUpLogin</note>
         <target xml:lang="es-ES" state="final">Ingrese / Regístrese en BloomLibrary.org</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.SkipMakingPdf">
+        <source xml:lang="en">Skipping PDF because this book has video</source>
+        <note>ID: PublishTab.Upload.SkipMakingPdf</note>
+        <target xml:lang="es-ES" state="translated">Omitiendo el PDF porque este libro contiene vídeo</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.SomethingWrong" approved="yes">
         <source xml:lang="en">Oops, something went wrong when trying to sign you into our database.</source>
         <note>ID: PublishTab.Upload.SomethingWrong</note>
@@ -5192,6 +5239,48 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Uploading {0}</source>
         <note>ID: PublishTab.Upload.UploadingStatus</note>
         <target xml:lang="es-ES" state="final">Cargando {0}</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.AlreadyIn">
+        <source xml:lang="en">Already in Bloom Library</source>
+        <note>ID: PublishTab.UploadCollisionDialog.AlreadyIn</note>
+        <note>This is the header for the book that is in bloomlibrary.org already.</note>
+        <target xml:lang="es-ES" state="translated">Ya está en la Biblioteca Bloom</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.HaveOne">
+        <source xml:lang="en">BloomLibrary.org already has a book with this ID from you ({0}).</source>
+        <note>ID: PublishTab.UploadCollisionDialog.HaveOne</note>
+        <note>This is the dialog subtitle. The {0} will be replaced with the uploader's email address.</note>
+        <target xml:lang="es-ES" state="translated">BloomLibrary.org ya contiene un libro con este ID suyo ({0}).</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks">
+        <source xml:lang="en">These are different books</source>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks</note>
+        <note>This is the label on a radio button.</note>
+        <target xml:lang="es-ES" state="translated">Estos son diferentes libros</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary">
+        <source xml:lang="en">Add a new book. Bloom will fix the ID of your book and upload it. The old book on Bloom Library will stay the same.</source>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary</note>
+        <note>This is explanatory commentary on a radio button.</note>
+        <target xml:lang="es-ES" state="translated">Añada un nuevo libro. Bloom reparará el ID de su libro y lo subirá. El antiguo libro en la Biblioteca Bloom seguirá siendo lo mismo.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook">
+        <source xml:lang="en">These are the same book</source>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook</note>
+        <note>This is the label on a radio button.</note>
+        <target xml:lang="es-ES" state="translated">Estos son el mismo libro</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary">
+        <source xml:lang="en">Update the book. Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</source>
+        <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary</note>
+        <note>This is explanatory commentary on a radio button. Don't translate the website reference in brackets ([bloomlibrary.org]). It will be replaced by a link to bloomlibrary.org.</note>
+        <target xml:lang="es-ES" state="translated">Actualice el libro. Bloom eliminará la versión en [bloomlibrary.org] y la sustituirá por la que usted cargue.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.UploadCollisionDialog.SameBook">
+        <source xml:lang="en">Are these the same book?</source>
+        <note>ID: PublishTab.UploadCollisionDialog.SameBook</note>
+        <note>This is the dialog title</note>
+        <target xml:lang="es-ES" state="translated">¿Son estos el mismo libro?</target>
       </trans-unit>
       <trans-unit id="Quiz.CheckYourUnderstanding" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Check Your Understanding</source>
@@ -5914,6 +6003,12 @@ Do you want to go ahead?</note>
         <note>ID: TeamCollection.TeamCollection</note>
         <target xml:lang="es-ES" state="final">Colección de colaboración</target>
       </trans-unit>
+      <trans-unit id="TeamCollection.TeamCollections" approved="yes">
+        <source xml:lang="en">Team Collections</source>
+        <note>ID: TeamCollection.TeamCollections</note>
+        <note>Should be translated similarly as TeamCollection.TeamCollection, but plural instead of singular</note>
+        <target xml:lang="es-ES" state="final">Colección de colaboración</target>
+      </trans-unit>
       <trans-unit id="TeamCollection.Available" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This book is available for editing</source>
         <note>ID: TeamCollection.Available</note>
@@ -6088,20 +6183,20 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.BookName.Decodable Reader</note>
         <target xml:lang="es-ES" state="final">Libro Descifrable</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Digital Comic Book" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Digital Comic Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Digital Comic Book</source>
         <note>ID: TemplateBooks.BookName.Digital Comic Book</note>
-        <target xml:lang="es-ES" state="translated">Cómic digital</target>
+        <target xml:lang="es-ES" state="final">Cómic digital</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Leveled Reader</source>
         <note>ID: TemplateBooks.BookName.Leveled Reader</note>
         <target xml:lang="es-ES" state="final">Libro Graduado</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Paper Comic Book" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Paper Comic Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paper Comic Book</source>
         <note>ID: TemplateBooks.BookName.Paper Comic Book</note>
-        <target xml:lang="es-ES" state="translated">Cómic impreso</target>
+        <target xml:lang="es-ES" state="final">Cómic impreso</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture Dictionary</source>

@@ -45,12 +45,12 @@
       <trans-unit id="Settings.Enterprise.CheckUpdates">
         <source xml:lang="en">Check for updates</source>
         <note>ID: Settings.Enterprise.CheckUpdates</note>
-        <target xml:lang="pt-PT" state="translated">Verificar se há atualizações</target>
+        <target xml:lang="pt-PT" state="translated">Procurar actualizações</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Expiration">
         <source xml:lang="en">Expires:</source>
         <note>ID: Settings.Enterprise.Expiration</note>
-        <target xml:lang="pt-PT" state="translated">Expira em</target>
+        <target xml:lang="pt-PT" state="translated">Expira em:</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Expired">
         <source xml:lang="en">That code has expired.</source>
@@ -60,7 +60,7 @@
       <trans-unit id="Settings.Enterprise.Incomplete">
         <source xml:lang="en"> The code should look like SOMENAME-123456-7890</source>
         <note>ID: Settings.Enterprise.Incomplete</note>
-        <target xml:lang="pt-PT" state="translated"> O código deve se parecer com SOMENAME-123456-7890</target>
+        <target xml:lang="pt-PT" state="translated"> O código deve parecer-se com SOMENAME-123456-7890</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.LearnMore">
         <source xml:lang="en">Learn More</source>
@@ -79,13 +79,13 @@
       <trans-unit id="Settings.Enterprise.None">
         <source xml:lang="en">None. Enterprise features will be unavailable.</source>
         <note>ID: Settings.Enterprise.None</note>
-        <target xml:lang="pt-PT" state="translated">Nenhuma. Os recursos do Enterprise não estarão disponíveis.</target>
+        <target xml:lang="pt-PT" state="translated">Nenhuma. Os recursos do Bloom Enterprise não estarão disponíveis.</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NeedsCode">
         <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
         <note>ID: Settings.Enterprise.NeedsCode</note>
         <note>%0 will be replaced with the name of the branding. Keep surrounding **...**. [here](%1) will become a hot link; %1 will not be seen, but will be the URL for the destination page. Translate "here" and keep the [](%1) around it.</note>
-        <target xml:lang="pt-PT" state="needs-translation">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</target>
+        <target xml:lang="pt-PT" state="translated">Em uma versão mais antiga do Bloom, este projeto usou **%0**. Para continuar usando isso você precisará inserir um código de assinatura atual. Códigos para as marcas de SIL podem ser encontrados [aqui](%1). Para outras assinaturas, entre em contato com o administrador do projeto.</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NotValid">
         <source xml:lang="en">That code appears to be incorrect.</source>
@@ -100,7 +100,7 @@
       <trans-unit id="Settings.Enterprise.Subscription">
         <source xml:lang="en">Enterprise Subscription</source>
         <note>ID: Settings.Enterprise.Subscription</note>
-        <target xml:lang="pt-PT" state="needs-translation">Enterprise Subscription</target>
+        <target xml:lang="pt-PT" state="translated">Assinatura da Bloom Empresarial</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.SubscriptionCode">
         <source xml:lang="en">Subscription Code:</source>
@@ -110,7 +110,7 @@
       <trans-unit id="Settings.Enterprise.UnknownCode">
         <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
         <note>ID: Settings.Enterprise.UnknownCode</note>
-        <target xml:lang="pt-PT" state="translated">Esta versão do Bloom não tem as artes que estão relacionadas com essa assinatura.</target>
+        <target xml:lang="pt-PT" state="translated">Esta versão do Bloom não tem os desenhos que estão relacionados com essa assinatura.</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.WhatsThis">
         <source xml:lang="en">What's This?</source>

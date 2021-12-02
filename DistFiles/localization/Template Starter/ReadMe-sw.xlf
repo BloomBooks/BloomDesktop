@@ -31,7 +31,7 @@ Kuna njia mbili ambazo watu wanaweza kutumia kiolezo chako. Njia ya kwanza ni ku
       </trans-unit>
       <trans-unit id="template.starter.labeleachpage" approved="yes">
         <source xml:lang="en">When you add pages to your template, make sure to give each one a useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</source>
-        <target xml:lang="sw" state="final">Unapoongeza kurasa kwenye kiolezo chako, hakikisha umeupa kila ukurasa lebo muhimu<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</target>
+        <target xml:lang="sw" state="final">Unapoongeza kurasa kwenye kiolezo chako, hakikisha umeupa kila ukurasa lebo muhimu<g id="genid-5" ctype="x-html-sup"><g id="genid-5" ctype="x-html-sup">:4</g></g></target>
         <note>ID: template.starter.labeleachpage</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails" approved="yes">
@@ -88,17 +88,17 @@ Kuna njia mbili ambazo watu wanaweza kutumia kiolezo chako. Njia ya kwanza ni ku
       </trans-unit>
       <trans-unit id="template.starter.nothingautomatic" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
-        <target xml:lang="sw" state="final"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: Vitabu hivi vinaweza kuunganishwa baadaye kwa kutumia kipengele kijacho cha Folio. Kumbuka kuwa Bloom bado haikupi njia ya kuonyesha kwamba ukurasa unastahili kujumuishwa kiotomatiki katika vitabu vipya; mwandishi atalazimika kuongeza kila kitabu kutoka kwenye kisanduku kidadisi cha Ongeza Ukurasa.</target>
+        <target xml:lang="sw" state="final"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>:Vitabu hivi vinaweza kuunganishwa baadaye kwa kutumia kipengele kijacho cha Folio. Kumbuka kuwa Bloom bado haikupi njia ya kuonyesha kwamba ukurasa unastahili kujumuishwa kiotomatiki katika vitabu vipya; mwandishi atalazimika kuongeza kila kitabu kutoka kwenye kisanduku kidadisi cha Ongeza Ukurasa.</target>
         <note>ID: template.starter.nothingautomatic</note>
       </trans-unit>
       <trans-unit id="template.starter.nametonotaddpage" approved="yes">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
-        <target xml:lang="sw" state="final"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: Ikiwa hutaki kurasa zilizo kwenye kiolezo chako zionekane kwenye sanduku la mazungumzo ya Ongeza Ukurasa, unaweza kuonyesha hili kwa Bloom kwa kuunda faili kwenye folda ya kiolezo cha kitabu iitwayo NotForAddPage.txt.</target>
+        <target xml:lang="sw" state="final"><g id="genid-12" ctype="x-html-a" html:id="note2"></g>Ikiwa hutaki kurasa zilizo kwenye kiolezo chako zionekane kwenye sanduku la mazungumzo ya Ongeza Ukurasa, unaweza kuonyesha hili kwa Bloom kwa kuunda faili kwenye folda ya kiolezo cha kitabu iitwayo NotForAddPage.txt.</target>
         <note>ID: template.starter.nametonotaddpage</note>
       </trans-unit>
       <trans-unit id="template.starter.labelsnottranslatable" approved="yes">
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
-        <target xml:lang="sw" state="final"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: Watu hawataweza kutafsiri lebo na maelezo yako katika lugha zingine za kitaifa. Ikiwa hili ni tatizo, tafadhali wasiliana na timu ya Bloom.</target>
+        <target xml:lang="sw" state="final"><g id="genid-13" ctype="x-html-a" html:id="note3">3 </g>: Watu hawataweza kutafsiri lebo na maelezo yako katika lugha zingine za kitaifa. Ikiwa hili ni tatizo, tafadhali wasiliana na timu ya Bloom.</target>
         <note>ID: template.starter.labelsnottranslatable</note>
       </trans-unit>
       <trans-unit id="template.starter.editrawhtml" approved="yes">

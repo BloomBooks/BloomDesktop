@@ -56,7 +56,7 @@
       </trans-unit>
       <trans-unit id="android.publish.usb.automatic">
         <source xml:lang="en">When using this method the first time, you may need to go to the Bloom Reader menu, do "Receive from USB" and give the app permission to use the Bloom folder. After that, you should not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</source>
-        <target xml:lang="es-ES" state="translated">Mientras que utiliza este método, no tiene que entrar en ningún modo especial para recibir libros. Sólo ejecuta Bloom Reader. Los libros deben aparecer automáticamente cuando se transfieran.</target>
+        <target xml:lang="es-ES" state="translated">Cuando utilice este método por primera vez, es posible que deba ir al menú de Bloom Reader, hacer "Recibir desde USB" y dar permiso a la aplicación para utilizar la carpeta Bloom. Después de eso, no debería tener que entrar en ningún modo especial para recibir libros. Simplemente ejecuta Bloom Reader. Los libros deberían aparecer automáticamente cuando se transfieran.</target>
         <note>ID: android.publish.usb.automatic</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.uses.mtp" approved="yes">
