@@ -1,6 +1,8 @@
-﻿using System.Linq;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
+#if !__MonoCS__
+using System.Linq;
 using Microsoft.WindowsAPICodePack.Dialogs;
+#endif
 
 namespace Bloom.MiscUI
 {
@@ -32,7 +34,7 @@ namespace Bloom.MiscUI
 
 		private static string SelectFolderOnWindows(string initialFolderPath)
 		{
-			
+#if !__MonoCS__
 			// Note, this is Windows only.
 			CommonOpenFileDialog dialog = new CommonOpenFileDialog
 			{
@@ -44,6 +46,7 @@ namespace Bloom.MiscUI
 			var result = rootForm == null ? dialog.ShowDialog() : dialog.ShowDialog(rootForm.Handle);
 			if (result == CommonFileDialogResult.Ok)
 				return dialog.FileName;
+#endif
 			return null;
 		}
 	}
