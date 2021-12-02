@@ -22,6 +22,13 @@ namespace BloomTests.TeamCollection
 		public void MessageWithoutLocalizing(string message, ProgressKind kind = ProgressKind.Progress)
 		{
 			Messages.Add(Tuple.Create(message, kind));
+			switch (kind)
+			{
+				case ProgressKind.Error:
+				case ProgressKind.Warning:
+					HaveProblemsBeenReported = true;
+					break;
+			}
 		}
 
 		public void Message(string idSuffix, string comment, string message, ProgressKind progressKind = ProgressKind.Progress,
@@ -39,5 +46,7 @@ namespace BloomTests.TeamCollection
 		{
 			throw new NotImplementedException();
 		}
+
+		public bool HaveProblemsBeenReported { get; private set; }
 	}
 }
