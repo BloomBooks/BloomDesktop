@@ -34,6 +34,8 @@ export const BookInfoCard: React.FunctionComponent<IBookInfoCardProps> = props =
         <div
             css={css`
                 width: 300px;
+                max-height: 150px;
+                overflow-y: auto;
             `}
         >
             <DialogControlGroup>
