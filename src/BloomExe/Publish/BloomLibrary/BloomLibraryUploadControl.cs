@@ -488,7 +488,7 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			var newThumbPath = ChooseBestUploadingThumbnailPath(_model.Book).ToLocalhost();
 			var newTitle = _model.Book.TitleBestForUserDisplay;
-			var newLanguages = ConvertActiveLanguageCodesToNames(_model.Book.ActiveLanguages, _model.Book.BookData);
+			var newLanguages = ConvertLanguageCodesToNames(LanguagesCheckedToUpload, _model.Book.BookData);
 			var existingBookInfo = _model.ConflictingBookInfo;
 			var updatedDateTime = (DateTime) existingBookInfo.updatedAt;
 			var createdDateTime = (DateTime) existingBookInfo.createdAt;
@@ -605,9 +605,9 @@ namespace Bloom.Publish.BloomLibrary
 				       .Replace("BloomLibraryBooks", "bloomharvest") + "/";
 		}
 
-		private IEnumerable<string> ConvertActiveLanguageCodesToNames(IEnumerable<string> activeCodes, BookData bookData)
+		private IEnumerable<string> ConvertLanguageCodesToNames(IEnumerable<string> languageCodesToUpload, BookData bookData)
 		{
-			foreach (var langCode in activeCodes)
+			foreach (var langCode in languageCodesToUpload)
 			{
 				yield return bookData.GetDisplayNameForLanguage(langCode);
 			}
@@ -712,14 +712,25 @@ namespace Bloom.Publish.BloomLibrary
 			get { return UrlLookup.LookupUrl(UrlType.LibrarySite, BookUpload.UseSandbox); }
 		}
 
+		private IEnumerable<string> LanguagesCheckedToUpload
+		{
+			get
+			{
+				return _languagesFlow.Controls.Cast<CheckBox>().
+					Where(b => b.Checked).Select(b => b.Tag).Cast<string>();
+			}
+		}
+
 		string _parseId;
 
 		void BackgroundUpload(object sender, DoWorkEventArgs e)
 		{
 			var book = (Book.Book) e.Argument;
-			var languages = _languagesFlow.Controls.Cast<CheckBox>().
-				Where(b => b.Checked).Select(b => b.Tag).Cast<string>().ToList();
 			var checker = new LicenseChecker();
+			// It seems odd to me to make this a List and then convert it to an Array on the next line,
+			// but (besides this being the way I found it) a couple of usages need it as a list
+			// and another one converts it to an Array too.
+			var languages = LanguagesCheckedToUpload.ToList();
 			var message = checker.CheckBook(book, languages.ToArray());
 			if (message!= null)
 			{
