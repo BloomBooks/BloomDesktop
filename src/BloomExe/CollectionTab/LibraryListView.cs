@@ -26,6 +26,7 @@ using L10NSharp;
 using SIL.IO;
 using SIL.Reporting;
 using Bloom.Spreadsheet;
+using Bloom.web.controllers;
 
 namespace Bloom.CollectionTab
 {
@@ -54,6 +55,7 @@ namespace Bloom.CollectionTab
 		private string _previousTargetSaveAs = null;
 		private TeamCollectionManager _tcManager;
 		private SpreadsheetExporter.Factory _exporterFactory;
+		private BookCommandsApi _bookCommandsApi;
 
 		/// <summary>
 		/// we go through these at idle time, doing slow things like actually instantiating the book to get the title in preferred language
@@ -66,12 +68,14 @@ namespace Bloom.CollectionTab
 
 		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent,
 				LocalizationChangedEvent localizationChangedEvent, BookStatusChangeEvent tcStatusChangeEvent, TeamCollectionManager tcManager,
-				SpreadsheetExporter.Factory exporterFactory)
+				SpreadsheetExporter.Factory exporterFactory, BookCommandsApi bookCommandsApi)
 			//HistoryAndNotesDialog.Factory historyAndNotesDialogFactory)
 		{
 			_model = model;
 			_tcManager = tcManager;
 			_bookSelection = bookSelection;
+			_bookCommandsApi = bookCommandsApi;
+
 			localizationChangedEvent.Subscribe(unused=>LoadSourceCollectionButtons());
 			_tcBookStatusChangeEvent = tcStatusChangeEvent;
 			tcStatusChangeEvent.Subscribe(OnTeamCollectionBookStatusChange);
@@ -1439,6 +1443,7 @@ namespace Bloom.CollectionTab
 
 		private void ScheduleRefreshOfOneThumbnail(Book.Book book)
 		{
+			// Duplicated by BookCommandsApi.ScheduleRefreshOfOneThumbnail()
 			_model.UpdateThumbnailAsync(book, new HtmlThumbNailer.ThumbnailOptions(), RefreshOneThumbnail, HandleThumbnailerErrror);
 		}
 
@@ -1472,6 +1477,7 @@ namespace Bloom.CollectionTab
 
 		private void OnBringBookUpToDate_Click(object sender, EventArgs e)
 		{
+			// Duplicated by BookCommandsApi.HandleBringBookUpToDate()
 			try
 			{
 				_model.BringBookUpToDate();
@@ -1517,21 +1523,7 @@ namespace Bloom.CollectionTab
 
 		private void OnMakeBloomPackOfBook(object sender, EventArgs e)
 		{
-			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
-			{
-				var extension = Path.GetExtension(_model.GetSuggestedBloomPackPath());
-				var filename = _bookSelection.CurrentSelection.Storage.FileName;
-				dlg.FileName = Path.ChangeExtension(filename, extension);
-				dlg.Filter = "BloomPack|*.BloomPack";
-				dlg.RestoreDirectory = true;
-				dlg.OverwritePrompt = true;
-				if (DialogResult.Cancel == dlg.ShowDialog())
-				{
-					return;
-				}
-				var folder = _bookSelection.CurrentSelection.Storage.FolderPath;
-				_model.MakeSingleBookBloomPack(dlg.FileName, _bookSelection.CurrentSelection.Storage.FolderPath);
-			}
+			_bookCommandsApi.HandleMakeBloompackWrapper(_bookSelection.CurrentSelection);
 		}
 
 		private void _doChecksAndUpdatesOfAllBooksToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1599,6 +1591,8 @@ namespace Bloom.CollectionTab
 
 		private void exportToWordOrLibreOfficeToolStripMenuItem_Click(object sender, EventArgs e)
 		{
+			// NOTE: Duplicated by BookCommandsApi.HandleExportToWord()
+			// If you need to modify this method, please re-factor it instead to call the BookCommandsApi version
 			try
 			{
 				MessageBox.Show(LocalizationManager.GetString("CollectionTab.BookMenu.ExportDocMessage",
@@ -1698,6 +1692,8 @@ namespace Bloom.CollectionTab
 
 		private void SaveAsBloomToolStripMenuItem_Click(object sender, EventArgs e)
 		{
+			// NOTE: Duplicated by BookCommandsApi.HandleSaveAsDotBloom
+			// If you need to modify this method, please try to refactor it so that it calls BookCommandsApi instead.
 			if (SelectedBook == null) return;
 
 			const string bloomFilter = "Bloom files (*.bloom)|*.bloom|All files (*.*)|*.*";
@@ -1748,35 +1744,8 @@ namespace Bloom.CollectionTab
 
 		private void exportToSpreadsheetToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			// Throw up a Requires Bloom Enterprise dialog if it's not turned on
-			if (!_model.CollectionSettings.HaveEnterpriseFeatures)
-			{
-				Enterprise.ShowRequiresEnterpriseNotice(this, "Export to Spreadsheet");
-				return;
-			}
-			
-			var bookPath = _bookSelection.CurrentSelection.GetPathHtmlFile();
-			try
-			{
-				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));
-				var exporter = _exporterFactory();
-
-				var initialFolder = !String.IsNullOrWhiteSpace(Settings.Default.ExportImportFileFolder) ? Settings.Default.ExportImportFileFolder : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-				string outputParentFolder = BloomFolderChooser.ChooseFolder(initialFolder);
-				string outputFolder = Path.Combine(outputParentFolder, Path.GetFileNameWithoutExtension(bookPath));
-				string imagesFolderPath = Path.GetDirectoryName(bookPath);
-				exporter.ExportToFolderWithProgress(dom, imagesFolderPath, outputFolder, outputFilePath =>
-				{
-					if (outputFilePath != null)
-						PathUtilities.OpenFileInApplication(outputFilePath);
-				});
-				
-			}
-			catch (Exception ex)
-			{
-				var msg = LocalizationManager.GetString("Spreadsheet:ExportFailed", "Export failed: ");
-				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg + ex.Message, exception:ex);
-			}
+			SIL.Code.Guard.AgainstNull(_bookCommandsApi, "BookCommandsApi");
+			_bookCommandsApi.HandleExportToSpreadsheetWrapper(_bookSelection.CurrentSelection);
 		}
 				
 		private TextBox _renameOverlay;
@@ -1841,6 +1810,7 @@ namespace Bloom.CollectionTab
 
 		private void FinishRename()
 		{
+			// NOTE: Somewhat analogous code in BookCommandsApi.HandleRename()
 			if (_renameOverlay == null)
 				return; // typically, called again from lost focus after call from keydown.
 			var newName = _renameOverlay.Text;
@@ -1855,58 +1825,7 @@ namespace Bloom.CollectionTab
 
 		private void importContentFromSpreadsheetToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (!_model.CollectionSettings.HaveEnterpriseFeatures)
-			{
-				Enterprise.ShowRequiresEnterpriseNotice(this, "Import to Spreadsheet");
-				return;
-			}
-
-			var bookPath = _bookSelection.CurrentSelection.GetPathHtmlFile();
-			try
-			{
-				string inputFilepath;
-				using (var dlg = new DialogAdapters.OpenFileDialogAdapter())
-				{
-					dlg.Filter = "xlsx|*.xlsx";
-					dlg.RestoreDirectory = true;
-					dlg.InitialDirectory = !String.IsNullOrWhiteSpace(Settings.Default.ExportImportFileFolder) ? Settings.Default.ExportImportFileFolder : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-					if (DialogResult.Cancel == dlg.ShowDialog())
-					{
-						return;
-					}
-					inputFilepath = dlg.FileName;
-					Settings.Default.ExportImportFileFolder = Path.GetDirectoryName(inputFilepath);
-					Settings.Default.Save();
-				}
-
-				string folderPath = _bookSelection.CurrentSelection.FolderPath;
-				BookStorage.SaveCopyBeforeImportOverwrite(folderPath, bookPath);
-
-				var sheet = InternalSpreadsheet.ReadFromFile(inputFilepath);
-				var dom = _bookSelection.CurrentSelection.OurHtmlDom;
-				var importer = new SpreadsheetImporter(dom, sheet);
-				var messages = importer.Import();
-				if (messages.Count > 0)
-				{
-					var allMessages = String.Join("\r\n", messages);
-					var mainMsg = LocalizationManager.GetString("Spreadsheet:ImportWarning", "Import warning: ");
-					NonFatalProblem.Report(ModalIf.All, PassiveIf.None, mainMsg, moreDetails: allMessages, showSendReport: false);
-				}
-				// Review: A lot of other stuff happens in Book.Save() and BookStorage.SaveHtml().
-				// I doubt we need any of it for current purposes, but later we might.
-				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, bookPath);
-				_bookSelection.CurrentSelection.ReloadFromDisk(null);
-				_bookSelection.InvokeSelectionChanged(false);
-
-				// reload the collection so the backups show up
-				_model.ReloadCollections();
-				LoadPrimaryCollectionButtons();
-			}
-			catch (Exception ex)
-			{
-				var msg = LocalizationManager.GetString("Spreadsheet:ImportFailed", "Import failed: ");
-				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg + ex.Message, exception: ex, showSendReport: false);
-			}
+			_bookCommandsApi.HandleImportContentFromSpreadsheetWrapper(_bookSelection.CurrentSelection);			
 		}
 	}
 

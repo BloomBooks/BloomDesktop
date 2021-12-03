@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -69,7 +69,7 @@ namespace Bloom.web.controllers
 				// to the collection (a backup). However, we are probably going to change how backups are handled
 				// so this is no longer true.
 				case "importSpreadsheetContent":
-					HandleImportContentFromSpreadsheet(book, request);
+					HandleImportContentFromSpreadsheet(book);
 					break;
 				case "saveAsDotBloom":
 					HandleSaveAsDotBloom(book);
@@ -98,13 +98,16 @@ namespace Bloom.web.controllers
 		}
 
 
+		// TODO: Delete me after all references removed.
+		[Obsolete("Wrapper to allow legacy (WinForms) code to share this code. New code should try to use the API/React-based paradigm instead.")]
+		public void HandleMakeBloompackWrapper(Book.Book book) => this.HandleMakeBloompack(book);
 		private void HandleMakeBloompack(Book.Book book)
 		{
 			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
 			{
 				var extension = Path.GetExtension(_libraryModel.GetSuggestedBloomPackPath());
-				var filename = book.Storage.FileName;
-				dlg.FileName = Path.ChangeExtension(filename, extension);
+				var filename = book.Storage.FolderName;
+				dlg.FileName = $"{book.Storage.FolderName}{extension}";
 				dlg.Filter = "BloomPack|*.BloomPack";
 				dlg.RestoreDirectory = true;
 				dlg.OverwritePrompt = true;
@@ -112,7 +115,6 @@ namespace Bloom.web.controllers
 				{
 					return;
 				}
-				var folder = book.Storage.FolderPath;
 				_libraryModel.MakeSingleBookBloomPack(dlg.FileName, book.Storage.FolderPath);
 			}
 		}
@@ -140,6 +142,10 @@ namespace Bloom.web.controllers
 			}
 		}
 
+		// TODO: Delete me after all references removed.
+		[Obsolete("Wrapper to allow legacy (WinForms) code to share this code. New code should try to use the API/React-based paradigm instead.")]
+		public void HandleExportToSpreadsheetWrapper(Book.Book book) => this.HandleExportToSpreadsheet(book);
+		
 		private void HandleExportToSpreadsheet(Book.Book book)
 		{
 			// Throw up a Requires Bloom Enterprise dialog if it's not turned on
@@ -172,7 +178,11 @@ namespace Bloom.web.controllers
 			}
 		}
 
-		private void HandleImportContentFromSpreadsheet(Book.Book book, ApiRequest request)
+		// TODO: Delete me after all references removed.
+		[Obsolete("Wrapper to allow legacy (WinForms) code to share this code. New code should try to use the API/React-based paradigm instead.")]
+		public void HandleImportContentFromSpreadsheetWrapper(Book.Book book) => this.HandleImportContentFromSpreadsheet(book);
+
+		private void HandleImportContentFromSpreadsheet(Book.Book book)
 		{
 			if (!_libraryModel.CollectionSettings.HaveEnterpriseFeatures)
 			{
