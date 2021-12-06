@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Security;
 using System.Windows.Forms;
 using System.Xml;
@@ -123,7 +124,7 @@ namespace Bloom.Spreadsheet
 		private void AddContentRows(XmlElement page, string pageNumber, string imagesFolderPath, Color colorForPage)
 		{
 			var imageContainers = GetImageContainers(page);
-			var groups = TranslationGroupManager.SortTranslationGroups(TranslationGroupManager.GetTranslationGroups(page));
+			var groups = TranslationGroupManager.SortedGroupsOnPage(page, true);
 						
 			var pageContentTuples = imageContainers.MapUnevenPairs(groups, (imageContainer, group) => (imageContainer, group));
 			foreach(var pageContent in pageContentTuples)
@@ -149,6 +150,11 @@ namespace Bloom.Spreadsheet
 							continue;
 						var index = GetOrAddColumnForLang(langCode);
 						var content = editable.InnerXml;
+						// Don't just test content, it typically contains paragraph markup.
+						if (String.IsNullOrWhiteSpace(editable.InnerText))
+						{
+							content = InternalSpreadsheet.BlankContentIndicator;
+						}
 						row.SetCell(index, content);
 					}
 				}

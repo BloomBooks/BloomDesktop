@@ -29,6 +29,8 @@ namespace Bloom.Spreadsheet
 		public const string ImageSourceColumnLabel = "[image source]";
 		public const string ImageSourceColumnFriendlyName = "Image File Path";
 
+		public const string BlankContentIndicator = "[blank]";
+
 		public const string BookTitleRowLabel = "[bookTitle]";
 		public const string PageContentRowLabel = "[page content]";
 

@@ -146,6 +146,36 @@ namespace BloomTests.Spreadsheet
             </div>
         </div>
     </div>
+	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-left bloom-monolingual"" data-page="""" id=""703ed5fc-ef1e-4699-b151-a6a46c1059ef"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""3"" lang="""">
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
+            Basic Text &amp; Picture
+        </div>
+
+        <div class=""pageDescription"" lang=""en""></div>
+
+        <div class=""split-pane-component marginBox"" style="""">
+
+            <div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"" data-test-id=""tg1"">
+                <div class=""bloom-editable normal-style bloom-content1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""español"" lang=""es"" contenteditable=""true"">
+                    <p></p>
+                </div>
+
+                <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
+                    <p></p>
+                </div>
+            </div>
+			<div class=""bloom-imageContainer""><img src=""placeHolder.png""></img></div>
+			<div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"" data-test-id=""tg2"">
+                <div class=""bloom-editable normal-style bloom-content1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""español"" lang=""es"" contenteditable=""true"">
+                    <p>This should round trip to the second group.</p>
+                </div>
+
+                <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
+                    <p></p>
+                </div>
+            </div>
+         </div>
+    </div>
 </body>
 </html>
 ";
@@ -333,6 +363,18 @@ namespace BloomTests.Spreadsheet
 		{
 			Assert.That(SpreadsheetIO.ReplaceExcelEscapedChars(input), Is.EqualTo(expected));
 
+		}
+
+		// This test verifies the effect of inserting [blank] for empty cells. Without it,
+		// a row made of a picture and an empty cell would look like a row for just a picture,
+		// and the NEXT text row would go into the one that should be empty.
+		[TestCase("noRetainMarkup")]
+		[TestCase("retainMarkup")]
+		public void EmptyElementBeforeNonEmptyWithPictureRoundTrips(string source)
+		{
+			SetupFor(source);
+			AssertThatXmlIn.Dom(_roundtrippedDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-test-id='tg2']/div/p[contains(text(),'This should round trip to the second group.')]", 1);
+			AssertThatXmlIn.Dom(_roundtrippedDom.RawDom).HasNoMatchForXpath("//div[@data-test-id='tg1']/div/p[contains(text(),'This should round trip to the second group.')]");
 		}
 	}
 }

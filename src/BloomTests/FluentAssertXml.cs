@@ -29,6 +29,11 @@ namespace BloomTests
 		{
 			return new AssertXmlString(xmlString);
 		}
+
+		public static AssertElement Element(XmlElement element)
+		{
+			return new AssertElement(element);
+		}
 	}
 
 	public class AssertXmlString : AssertXmlCommands
@@ -102,6 +107,24 @@ namespace BloomTests
 			get
 			{
 				return _dom;
+			}
+		}
+	}
+
+	public class AssertElement : AssertXmlCommands
+	{
+		private readonly XmlElement _element;
+
+		public AssertElement(XmlElement element)
+		{
+			_element = element;
+		}
+
+		protected override XmlNode NodeOrDom
+		{
+			get
+			{
+				return _element;
 			}
 		}
 	}
@@ -184,7 +207,7 @@ namespace BloomTests
 		public static void PrintNodeToConsole(XmlNode node)
 		{
 			// without this, we may get "DTD is not allowed in XML fragments"
-			var doctype = ((XmlDocument) node)?.DocumentType;
+			var doctype = ( node as XmlDocument)?.DocumentType;
 			if(doctype != null)
 				node.RemoveChild(doctype);
 

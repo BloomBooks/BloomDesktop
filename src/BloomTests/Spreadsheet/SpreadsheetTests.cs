@@ -148,6 +148,14 @@ namespace BloomTests.Spreadsheet
 
 	                <div class=""split-pane-component position-bottom"" style=""height: 50%"">
 	                    <div class=""split-pane-component-inner"">
+							<div class=""box-header-off bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
+			                   <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
+			                        <p></p>
+			                    </div>
+								<div class=""bloom-editable normal-style"" style="""" lang=""en"" contenteditable=""true"">
+			                        <p></p>
+			                    </div>
+			                </div>
 							<div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto""  tabindex=""2"">
 	                            <div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"" data-audiorecordingendtimes=""2.920 4.160"" lang=""en"" contenteditable=""true"">
 	                                <p>Elephants should be handled with much care.</p>

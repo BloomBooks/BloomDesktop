@@ -3,8 +3,11 @@ using Bloom.Spreadsheet;
 using Moq;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Xml;
+using BloomTemp;
+using SIL.IO;
 
 namespace BloomTests.Spreadsheet
 {
@@ -109,7 +112,7 @@ namespace BloomTests.Spreadsheet
 		public void EnglishAndFrenchKeptOrModified()
 		{
 			var assertDom = AssertThatXmlIn.Dom(_dom.RawDom);
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-editable') and @lang='en' and not(@data-book='bookTitle')]", 5);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-translationGroup') and not(contains(@class, 'box-header-off'))]/div[contains(@class, 'bloom-editable') and @lang='en' and not(@data-book='bookTitle')]", 5);
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-editable') and @lang='fr' and not(@data-book='bookTitle')]", 3);
 			// Make sure these are in the right places. We put this in the first row, which because of tab index should be imported to the SECOND TG.
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@tabindex='1']/div[@lang='en']/p[text()='This elephant is running amok.']", 1); // modified
@@ -169,377 +172,814 @@ namespace BloomTests.Spreadsheet
 		}
 	}
 
-	public class SpreadsheetImportSyncWarnings
+	// Enhance: no test currently checks what happens when we have imported all the spreadsheet
+	// content but the book still has more pages (or more blocks on the last page).
+	// Currently the behavior is to leave the later pages and blocks unchanged.
+	// Possibly we should clear their content or remove the pages altogether.
+
+	public class SpreadsheetImageAndTextImportTests
 	{
-		// input DOM has page 1 (two blocks) and 2 (one block) and 5 (two blocks)
-		const string inputBook = @"
+		private HtmlDom _dom;
+
+		private TemporaryFolder _bookFolder;
+		private TemporaryFolder _otherImagesFolder;
+
+		public static string PageWithImageAndText(int pageNumber, int tgNumber, int icNumber, string editableDivs = "")
+		{
+			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
+            Basic Text &amp; Picture
+        </div>
+
+        <div class=""pageDescription"" lang=""en""></div>
+
+        <div class=""split-pane-component marginBox"" style="""">
+            <div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
+                <div class=""split-pane-component position-top"">
+                    <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
+                        <div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"" data-test-id=""tg{1}"">
+                           <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
+                                <p></p>
+                            </div>
+							{3}
+                        </div>
+                    </div>
+                </div>
+            </div>
+			<div class=""split-pane-component position-top"">
+                <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
+                    <div class=""bloom-imageContainer bloom-leadingElement"" data-test-id=""ic{2}""><img src=""placeHolder.png"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+                </div>
+            </div>
+        </div>
+    </div>", pageNumber, tgNumber, icNumber, editableDivs);
+		}
+
+		public static string PageWith2ImagesAnd2Texts(int pageNumber, int tgNumber, int icNumber)
+		{
+			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
+            Basic Text &amp; Picture
+        </div>
+
+        <div class=""pageDescription"" lang=""en""></div>
+
+        <div class=""split-pane-component marginBox"" style="""">
+            <div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
+                <div class=""split-pane-component position-top"">
+                    <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
+						<div class=""box-header-off bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
+                           <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
+                                <p></p>
+                            </div>
+							<div class=""bloom-editable normal-style"" style="""" lang=""en"" contenteditable=""true"">
+                                <p></p>
+                            </div>
+                        </div>
+                        <div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"" data-test-id=""tg{1}"">
+                           <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
+                                <p></p>
+                            </div>
+							<div class=""bloom-editable normal-style"" style="""" lang=""en"" contenteditable=""true"">
+                                <p>English group 1 from the source template page</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+			<div class=""split-pane-component position-top"">
+                <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
+                    <div class=""bloom-imageContainer bloom-leadingElement"" data-test-id=""ic{2}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+                </div>
+            </div>
+			<div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
+                <div class=""split-pane-component position-top"">
+                    <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
+                        <div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"" data-test-id=""tg{3}"">
+                           <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
+                                <p></p>
+                            </div>
+							<div class=""bloom-editable normal-style"" style="""" lang=""en"" contenteditable=""true"">
+                                <p>English group 2 from the source template page</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+			<div class=""split-pane-component position-top"">
+                <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
+                    <div class=""bloom-imageContainer bloom-leadingElement"" data-test-id=""ic{4}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+                </div>
+            </div>
+        </div>
+    </div>
+", pageNumber, tgNumber, icNumber, tgNumber+1, icNumber+1);
+		}
+
+
+
+		public static string PageWithJustText(int pageNumber, int tgNumber)
+		{
+			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
+            Basic Text &amp; Picture
+        </div>
+
+        <div class=""pageDescription"" lang=""en""></div>
+
+        <div class=""split-pane-component marginBox"" style="""">
+            <div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
+                <div class=""split-pane-component position-top"">
+                    <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
+                        <div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"" data-test-id=""tg{1}"">
+                           <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
+                                <p></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>", pageNumber, tgNumber);
+		}
+
+		public static string PageWithJustImage(int pageNumber, int icNumber)
+		{
+			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
+            Basic Text &amp; Picture
+        </div>
+
+        <div class=""pageDescription"" lang=""en""></div>
+
+        <div class=""split-pane-component marginBox"" style="""">
+			<div class=""split-pane-component position-top"">
+                <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
+                    <div class=""bloom-imageContainer bloom-leadingElement"" title=""this might be nonsense after import"" data-test-id=""ic{1}""><img src=""placeholder.png"" alt="""" data-copyright="""" data-creator="""" data-license="""" height=""100"" width=""200""></img></div>
+                </div>
+            </div>
+        </div>
+    </div>", pageNumber, icNumber);
+		}
+
+		public static string coverPage =
+			@"<div class=""bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover A5Portrait side-right"" data-page=""required singleton"" data-export=""front-matter-cover"" id=""bc85989e-9503-4f4e-b12f-f83a4002937f"">
+        <div class=""pageLabel"" lang=""en"">
+            Front Cover
+        </div>
+        <div class=""pageDescription"" lang=""en""></div>
+
+        <div class=""marginBox"">
+            <div class=""bloom-translationGroup bookTitle"" data-default-languages=""V,N1"">
+                <label class=""bubble"">Book title in {lang}</label>
+                <div class=""bloom-editable bloom-nodefaultstylerule Title-On-Cover-style"" lang=""z"" contenteditable=""true"" data-book=""bookTitle""></div>
+                <div class=""bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-contentNational2"" lang=""de"" contenteditable=""true"" data-book=""bookTitle""></div>
+                <div class=""bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-contentNational1 bloom-visibility-code-on"" lang=""ar"" contenteditable=""true"" data-book=""bookTitle"" dir=""rtl""></div>
+
+                <div class=""bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-content1 bloom-visibility-code-on"" lang=""ksf"" contenteditable=""true"" data-book=""bookTitle"">
+                    <p>a lion book</p>
+                </div>
+
+                <div class=""bloom-editable bloom-nodefaultstylerule Title-On-Cover-style"" lang=""en"" contenteditable=""true"" data-book=""bookTitle"">
+                    <p>Another lion book</p>
+                </div>
+                <div class=""bloom-editable bloom-nodefaultstylerule Title-On-Cover-style"" lang=""*"" contenteditable=""true"" data-book=""bookTitle""></div>
+            </div>
+            <div class=""bloom-imageContainer bloom-backgroundImage"" data-book=""coverImage"" style=""background-image:url('AOR_alb010.png')"" data-copyright=""Copyright, SIL International 2009."" data-creator="""" data-license=""cc-by-nd""></div>
+
+            <div class=""bottomBlock"">
+                <img class=""branding"" src=""/bloom/api/branding/image?id=cover-bottom-left.svg"" type=""image/svg"" onerror=""this.style.display='none'""></img> 
+
+                <div class=""bottomTextContent"">
+                    <div class=""creditsRow"" data-hint=""You may use this space for author/illustrator, or anything else."">
+                        <div class=""bloom-translationGroup"" data-default-languages=""V"">
+                            <div class=""bloom-editable Cover-Default-style"" lang=""z"" contenteditable=""true"" data-book=""smallCoverCredits""></div>
+                            <div class=""bloom-editable Cover-Default-style bloom-contentNational2"" lang=""de"" contenteditable=""true"" data-book=""smallCoverCredits""></div>
+                            <div class=""bloom-editable Cover-Default-style bloom-contentNational1"" lang=""ar"" contenteditable=""true"" data-book=""smallCoverCredits"" dir=""rtl""></div>
+                            <div class=""bloom-editable Cover-Default-style bloom-content1 bloom-visibility-code-on"" lang=""ksf"" contenteditable=""true"" data-book=""smallCoverCredits""></div>
+                        </div>
+                    </div>
+
+                    <div class=""bottomRow"" data-have-topic=""false"">
+                        <div class=""coverBottomLangName Cover-Default-style"" data-book=""languagesOfBook"">
+                            Bafia
+                        </div>
+
+                        <div class=""coverBottomBookTopic bloom-userCannotModifyStyles bloom-alwaysShowBubble Cover-Default-style"" data-derived=""topic"" data-functiononhintclick=""ShowTopicChooser()"" data-hint=""Click to choose topic""></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>";
+
+		public static string insideBackCoverPage = @"    <div class=""bloom-page cover coverColor insideBackCover bloom-backMatter A5Portrait layout-style-Default side-left"" data-page=""required singleton"" data-export=""back-matter-inside-back-cover"" id=""9ab4856a-c292-43b3-b430-10dd37cdeaf2"" data-page-number=""9"">
+        <div class=""pageLabel"" lang=""en"">
+            Inside Back Cover
+        </div>
+        <div class=""pageDescription"" lang=""en""></div>
+
+        <div class=""marginBox"">
+            <div class=""bloom-translationGroup"" data-default-languages=""N1"">
+                <div class=""bloom-editable Inside-Back-Cover-style bloom-content2 bloom-contentNational1 bloom-visibility-code-on"" lang=""en"" contenteditable=""true"" data-book=""insideBackCover"" dir=""rtl"">
+                    <label class=""bubble"">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</label>
+                </div>
+
+                <div class=""bloom-editable Inside-Back-Cover-style bloom-content3 bloom-contentNational2"" lang=""de"" contenteditable=""true"" data-book=""insideBackCover""></div>
+
+                <div class=""bloom-editable Inside-Back-Cover-style bloom-content1"" lang=""ksf"" contenteditable=""true"" data-book=""insideBackCover""></div>
+            </div>
+        </div>
+    </div>";
+
+		public static string backCoverPage =
+			@"    <div class=""bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait side-right"" data-page=""required singleton"" data-export=""back-matter-back-cover"" id=""ec266f7c-61b1-4c08-b5a3-cce44544e900"">
+        <div class=""pageLabel"" lang=""en"">
+            Outside Back Cover
+        </div>
+        <div class=""pageDescription"" lang=""en""></div>
+
+        <div class=""marginBox"">
+        <div class=""bloom-translationGroup"" data-default-languages=""N1"">
+            <div class=""bloom-editable Outside-Back-Cover-style bloom-contentNational1 bloom-visibility-code-on"" lang=""ar"" contenteditable=""true"" data-book=""outsideBackCover"" dir=""rtl"">
+                <label class=""bubble"">If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</label>
+            </div>
+
+            <div class=""bloom-editable Outside-Back-Cover-style bloom-contentNational2"" lang=""de"" contenteditable=""true"" data-book=""outsideBackCover""></div>
+
+            <div class=""bloom-editable Outside-Back-Cover-style bloom-content1"" lang=""ksf"" contenteditable=""true"" data-book=""outsideBackCover""></div>
+        </div><img class=""branding branding-wide"" src=""/bloom/api/branding/image?id=back-cover-outside-wide.svg"" type=""image/svg"" onerror=""this.style.display='none'""></img> <img class=""branding"" src=""/bloom/api/branding/image?id=back-cover-outside.svg"" type=""image/svg"" onerror=""this.style.display='none'""></img></div>
+    </div>";
+
+		public static string templateDom = @"
+<!DOCTYPE html>
+
 <html>
-	<head>
-	</head>
+<head>
+</head>
 
-	<body data-l1=""en"" data-l2=""en"" data-l3="""">
-		<div id=""bloomDataDiv"">
-			<div data-book=""topic"" lang=""*"">
-				FakeTopic
-			</div>
+<body data-l1=""es"" data-l2="""" data-l3="""">
+	<div id=""bloomDataDiv"">
+		<div data-book=""bookTitle"" lang=""en"" id=""idShouldGetKept"">
+			<p><em>Pineapple</em></p>
+
+            <p>Farm</p>
+
+		</div>
+        <div data-book=""topic"" lang=""en"">
+            Health
+		</div>
+		<div data-book=""coverImage"" lang=""*"" src=""cover.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly."">
+			cover.png
+		</div>
+		<div data-book=""licenseImage"" lang= ""*"" >
+			license.png
+		</div>
+		<div data-book=""outside-back-cover-branding-bottom-html"" lang=""*""><img class=""branding"" src=""BloomWithTaglineAgainstLight.svg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
 	</div>
-	     <div class=""bloom-page numberedPage customPage A5Portrait side-right "" data-page="""" id=""7403192b-f306-4653-b7b1-0acf7163f4b9"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""1"" lang="""">
-	        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
-	            Basic Text &amp; Picture
-	        </div>
-	        <div class=""pageDescription"" lang=""en""></div>
-
-	        <div class=""marginBox"">
-                <div class=""split-pane-component position-bottom"" style=""height: 50%"">
-                    <div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
-                        <div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-audiorecordingmode=""TextBox"" id=""i4b150910-b53d-4779-a1fb-8177982c651c"" recordingmd5=""9134cd4f71cf3d6e148a6c9b4afed8dc"" data-duration=""4.245963"" data-languagetipcontent=""English"" data-audiorecordingendtimes=""2.920 4.160"" lang=""en"" contenteditable=""true"">
-                            <p><span id=""e4bc05e5-4d65-4016-9bf3-ab44a0df3ea2"" class=""bloom-highlightSegment"" recordingmd5=""undefined"">This elephant is running amok.</span> <span id=""i2ba966b6-4212-4821-9268-04e820e95f50"" class=""bloom-highlightSegment"" recordingmd5=""undefined"">Causing much damage.</span></p>
-                        </div>
-						<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-audiorecordingmode=""TextBox"" id=""i4b150910-b53d-4779-a1fb-8177982c651c"" recordingmd5=""9134cd4f71cf3d6e148a6c9b4afed8dc"" data-duration=""4.245963"" data-languagetipcontent=""French"" data-audiorecordingendtimes=""2.920 4.160"" lang=""fr"" contenteditable=""true"">
-                            <p>This French elephant is running amok. Causing much damage.</p>
-                        </div>
-						<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-audiorecordingmode=""TextBox"" id=""i4b150910-b53d-4779-a1fb-8177982c651c"" recordingmd5=""9134cd4f71cf3d6e148a6c9b4afed8dc""  data-languagetipcontent=""Spanish""  lang=""es"" contenteditable=""true"">
-                            <p>This Spanish elephant is running amok. Causing much damage.</p>
-                        </div>
-                        <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
-                            <p></p>
-                        </div>
-                    </div>
-					<div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
-                        <div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"" data-audiorecordingendtimes=""2.920 4.160"" lang=""en"" contenteditable=""true"">
-                            <p>Elephants should be handled with much care.</p>
-                        </div>
-						<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" lang=""de"" contenteditable=""true"">
-                            <p>German elephants are quite orderly.</p>
-                        </div>
-						<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""French"" data-audiorecordingendtimes=""2.920 4.160"" lang=""fr"" contenteditable=""true"">
-                            <p>French elephants should be handled with special care.</p>
-                        </div>
-
-                        <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
-                            <p></p>
-                        </div>
-                    </div>
-	            </div>
-	        </div>
-	    </div>
-		<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""7403192b-f306-4653-b7b1-0acf7163f4b9"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""2"" lang="""">
-	        <div class=""marginBox"">
-				<div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
-					<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" lang=""de"" contenteditable=""true"">
-                        <p>Riding on German elephants can be less risky.</p>
-                    </div>
-					<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"" data-audiorecordingendtimes=""2.920 4.160"" lang=""en"" contenteditable=""true"">
-                        <p>Riding on elephants can be risky.</p>
-                    </div>
-					<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""French"" data-audiorecordingendtimes=""2.920 4.160"" lang=""fr"" contenteditable=""true"">
-                        <p>Riding on French elephants can be more risky.</p>
-                    </div>
-
-                    <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
-                        <p></p>
-                    </div>
-                </div>
-	        </div>
-	    </div>
-		<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""7403192b-f306-4653-b7b1-0acf7163f4b9"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""5"" lang="""">
-	        <div class=""marginBox"">
-				<div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
-					<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" lang=""de"" contenteditable=""true"">
-                        <p>German elephants triumph!</p>
-                    </div>
-					<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"" data-audiorecordingendtimes=""2.920 4.160"" lang=""en"" contenteditable=""true"">
-                        <p>English elephants triumph!</p>
-                    </div>
-					<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""French"" data-audiorecordingendtimes=""2.920 4.160"" lang=""fr"" contenteditable=""true"">
-                        <p>French elephants triumph!</p>
-                    </div>
-
-                    <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
-                        <p></p>
-                    </div>
-                </div>
-				<div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
-					<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" lang=""de"" contenteditable=""true"">
-                        <p>German elephants fail.</p>
-                    </div>
-					<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"" data-audiorecordingendtimes=""2.920 4.160"" lang=""en"" contenteditable=""true"">
-                        <p>English elephants fail.</p>
-                    </div>
-					<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""French"" data-audiorecordingendtimes=""2.920 4.160"" lang=""fr"" contenteditable=""true"">
-                        <p>French elephants fail.</p>
-                    </div>
-
-                    <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
-                        <p></p>
-                    </div>
-                </div>
-	        </div>
-	    </div>
-	</body>
+	{0}
+</body>
 </html>
 ";
-		private InternalSpreadsheet _sheet;
-		private HtmlDom _dom;
-		private List<string> _messages;
+
+		private List<XmlElement> _contentPages;
+		private XmlElement _firstPage;
+		private XmlElement _lastPage;
+		private XmlElement _secondLastPage;
+		private List<string> _warnings;
+		private string _spreadsheetFolder;
 
 		[OneTimeSetUp]
 		public void OneTimeSetUp()
 		{
-			// Cases we want to test:
-			// - page has too many translation groups
-			//		- V1: warn, leave extras unmodified
-			//		- eventual: ?
-			// - page has too few translation groups (special case: none)
-			//		- V1: warn, drop extra inputs
-			//		- V2: insert extra copies of page (and something else if it has no TGs)
-			//		- eventual: insert extra pages using template specified in sheet
-			// - there are input lines for pages that don't exist (pathological, in the middle; likely, after last; test both)
-			//		- V1: warn, ignore
-			//		- eventual: insert extra pages using template specified in sheet
-			// - there are pages that have no input lines (but later pages do)
-			// - there are pages after the last input line
-			//		- V1: warn, leave unchanged.
-			//		- eventual: ?
-			// In this test suite, the blocks on the last page and the pages run out before
-			// we run out of lines. So we can't test the case of running out of lines first.
-			// Another class tests that.
-			_dom = new HtmlDom(inputBook, true);
-			_sheet = new InternalSpreadsheet();
-			_sheet.AddColumnForLang("en", "English");
-			_sheet.AddColumnForLang("fr", "French");
-			_sheet.AddColumnForLang("*", "*");
+			// We will re-use the images from another test.
+			// Conveniently the images are in a folder called "images" which is what the importer expects.
+			// So we give it the parent directory of that images folder.
+			_spreadsheetFolder = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication("src/BloomTests/ImageProcessing");
 
-			MakeXmatterRows(_sheet);
+			// A place to put an image that is not in the spreadsheet folder so we can test absolute path import.
+			_otherImagesFolder = new TemporaryFolder("other images folder");
 
-			MakeRow("1","New message about tigers", "New message about French tigers", _sheet);
+			// Create an HtmlDom for a template to import into
+			var xml = string.Format(templateDom,
+				coverPage
+				+ PageWithJustText(1, 1)
+				+ PageWithImageAndText(2, 2, 1,
+					@"<div class=""bloom-editable normal-style"" style="""" lang=""en"" contenteditable=""true"">
+                                <p>old English</p>
+                            </div>")
+				+ PageWithImageAndText(3, 3, 2)
+				+ PageWithImageAndText(4, 4, 3)
+				+ PageWithImageAndText(5, 5, 4)
+				+ PageWith2ImagesAnd2Texts(6, 6, 5)
+				+ PageWithJustText(7, 8)
+				+ PageWithJustImage(8, 7)
+				+ insideBackCoverPage
+				+ backCoverPage);
+			_dom = new HtmlDom(xml, true);
 
-			// problem 1: input DOM has a second TG on page 1; sheet does not.
-			MakeRow("2", "More about tigers", "More about French tigers", _sheet);
-			// problem 2: input DOM has no second TG on page 2.
-			MakeRow("2", "Still more about tigers", "Still more about French tigers", _sheet);
-			MakeRow("2", "More and more about tigers", "More and more about French tigers", _sheet);
-			// problem 3: input DOM has no page 3 at all.
-			MakeRow("3", "Lost story about tigers", "Lost story about French tigers", _sheet);
-			MakeRow("3", "Another lost story about tigers", "Another lost story about French tigers", _sheet);
-			// problem 4: input DOM has no page 4 at all.
-			MakeRow("4", "Yet another lost story about tigers", "Yet another lost story about French tigers", _sheet);
-			MakeRow("5", "A good story about tigers", "A good story about French tigers", _sheet);
-			MakeRow("5", "Another good story about tigers", "Another good story about French tigers", _sheet);
-			// problem 5: an extra block on page 5
-			MakeRow("5", "Page 5 lost story about tigers", "Page 5 lost story about French tigers", _sheet);
-			// problem 6: an extra block on after the last page
-			MakeRow("6", "Page 6 lost story about tigers", "Page 6 lost story about French tigers", _sheet);
-			var importer = new SpreadsheetImporter(this._dom, _sheet);
-			_messages=importer.Import();
+			// Set up the internal spreadsheet rows directly.
+			var ss = new InternalSpreadsheet();
+			var columnForEn = ss.AddColumnForLang("en", "English");
+			var columnForImage = ss.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
+
+			// Will fill tg1 on page 1
+			var contentRow1 = new ContentRow(ss);
+			contentRow1.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow1.SetCell(columnForEn, "this is page 1");
+
+			// Will remove tg2 on page 2 (because we set the row to blank) and fill in ic1 on page 2
+			var contentRow2 = new ContentRow(ss);
+			contentRow2.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow2.SetCell(columnForEn, InternalSpreadsheet.BlankContentIndicator);
+			contentRow2.SetCell(columnForImage, "images/lady24b.png");
+
+			// Will fill tg3 on page 3
+			var contentRow3 = new ContentRow(ss);
+			contentRow3.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow3.SetCell(columnForEn, "this is page 3");
+
+			// Will fill tg4 on page 4 and ic3 on page 4.
+			// ic2 on page 3 should be skipped, so as to keep these two cells that are on the same
+			// row in the spreadsheet on the same page in the book.
+			var contentRow4 = new ContentRow(ss);
+			contentRow4.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow4.SetCell(columnForEn, "this is page 4");
+			contentRow4.SetCell(columnForImage, "images/missingBird.png");
+
+			// Will fill ic4 on page 5
+			var contentRow5 = new ContentRow(ss);
+			contentRow5.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow5.SetCell(columnForImage, "images/man.png");
+
+			// Will fill tg6 on page 6 and ic5 on page 6.
+			// tg5 on page 5 should be skipped, again to keep things on the same row going to the same page.
+			// tg6 should be made blank, and ic5 should be set to the placeholder
+			var contentRow6 = new ContentRow(ss);
+			contentRow6.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow6.SetCell(columnForEn, "<p>" + InternalSpreadsheet.BlankContentIndicator + "</p>");
+			contentRow6.SetCell(columnForImage, InternalSpreadsheet.BlankContentIndicator);
+
+			// Will fill tg7 on page 6 and ic6 on page 6
+			var contentRow6a = new ContentRow(ss);
+			contentRow6a.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow6a.SetCell(columnForEn, "this is page 6");
+			contentRow6a.SetCell(columnForImage, "images/shirt.png");
+
+			// Will cause a new page to be inserted, since the original 7th page is text-only
+			// Tests finding file by full path
+			var marsPath = Path.Combine(_spreadsheetFolder, "images/Mars 2.png");
+			var getMarsPath = Path.Combine(_otherImagesFolder.FolderPath, "Mars 3.png");
+			RobustFile.Copy(marsPath, getMarsPath, true);
+			var contentRow7 = new ContentRow(ss);
+			contentRow7.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow7.SetCell(columnForImage, getMarsPath);
+
+			// Will cause a new page to be inserted, since the original 7th page is text-only
+			var contentRow8 = new ContentRow(ss);
+			contentRow8.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow8.SetCell(columnForEn, "this is something extra on a new page before 7");
+			contentRow8.SetCell(columnForImage, "images/LakePendOreille.jpg");
+
+			// This will (finally) fill tg8 on original page 7, now the 9th page
+			var contentRow9 = new ContentRow(ss);
+			contentRow9.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow9.SetCell(columnForEn, "this is page 9");
+
+			// Since original page 8 is picture-only, this will cause a new text-only page to be inserted (tenth).
+			var contentRow10 = new ContentRow(ss);
+			contentRow10.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow10.SetCell(columnForEn, "This will go on a new page before 8");
+
+			// Will also cause a new page to be inserted, since the original 8th page is image-only (11th)
+			var contentRow11 = new ContentRow(ss);
+			contentRow11.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow11.SetCell(columnForEn, "this is something extra on a new page before 8");
+			contentRow11.SetCell(columnForImage, "images/levels.png");
+
+			// Will finally fill the image on the original page 8, now page 12
+			var contentRow12 = new ContentRow(ss);
+			contentRow12.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow12.SetCell(columnForImage, getMarsPath);
+
+			// Will also cause a new page to be inserted, since there are no more input pages.
+			// Since the original final page can only hold text, we'll insert a basic image and text.
+			var contentRow13 = new ContentRow(ss);
+			contentRow13.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow13.SetCell(columnForEn, "this is something extra after all the original pages");
+			contentRow13.SetCell(columnForImage, "images/man.png");
+
+			// But this is a picture, so the extra page inserted can be a clone of the original page 8
+			var contentRow14 = new ContentRow(ss);
+			contentRow14.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow14.SetCell(columnForImage, "images/shirt.png");
+
+			// We'll need another new page for this, not a clone since the last page template doesn't have a text slot.
+			var contentRow15 = new ContentRow(ss);
+			contentRow15.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow15.SetCell(columnForEn, "This will go on a new just-text page at the end");
+
+			_bookFolder = new TemporaryFolder("SpreadsheetImageAndTextImportTests");
+
+			// Do the import
+			var importer = new SpreadsheetImporter(_dom, ss, _spreadsheetFolder, _bookFolder.FolderPath);
+			_warnings = importer.Import();
+
+			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
+
+			// Remove the xmatter to get just the content pages, but save so we can test that too.
+			_firstPage = _contentPages[0];
+			_contentPages.RemoveAt(0);
+			_lastPage = _contentPages.Last();
+			_contentPages.RemoveAt(_contentPages.Count - 1);
+			_secondLastPage = _contentPages.Last();
+			_contentPages.RemoveAt(_contentPages.Count - 1);
+
+			// (individual test methods will evaluate the result)
 		}
 
-		public static void MakeRow(string pageNum, string langData1, string langData2, InternalSpreadsheet spreadsheet)
+		[OneTimeTearDown]
+		public void OneTimeTearDown()
 		{
-			var newRow = new ContentRow(spreadsheet);
-			newRow.SetCell(InternalSpreadsheet.MetadataKeyColumnLabel, InternalSpreadsheet.PageContentRowLabel);
-			newRow.SetCell(InternalSpreadsheet.PageNumberColumnLabel, pageNum);
-			newRow.SetCell("[en]", "<p>" + langData1 + "</p>");
-			newRow.SetCell("[fr]", "<p>" + langData2 + "</p>");
+			_bookFolder?.Dispose();
+			_otherImagesFolder.Dispose();
 		}
 
-		public static void MakeXmatterRows(InternalSpreadsheet spreadsheet)
+		[TestCase(0, "tg1", "this is page 1")]
+		[TestCase(2, "tg3", "this is page 3")]
+		[TestCase(3, "tg4", "this is page 4")]
+		[TestCase(5, "tg7", "this is page 6")]
+		public void GotTextOnPageN(int n, string tag, string text)
 		{
-			var topicRow = new ContentRow(spreadsheet);
-			topicRow.SetCell(InternalSpreadsheet.MetadataKeyColumnLabel, "[topic]");
-			topicRow.SetCell("[en]", "Agriculture");
-			topicRow.SetCell("[*]", "Agricultura");
+			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[@data-test-id='{tag}']/div[@lang='en' and text() = '{text}']", 1);
+		}
 
-			var coverImageRow = new ContentRow(spreadsheet);
-			coverImageRow.SetCell(InternalSpreadsheet.MetadataKeyColumnLabel, "[coverImage]");
-			//No content, to check that we get a warning
+		[TestCase(1, "tg2")]
+		[TestCase(5, "tg6")]
+		public void NoEnglishTextInBlock(int n, string tag)
+		{
+			// Sanity check: it does have the TG,
+			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[@data-test-id='{tag}']", 1);
+			// but nothing was added to it.
+			AssertThatXmlIn.Element(_contentPages[n]).HasNoMatchForXpath($".//div[@data-test-id='{tag}']/div[@lang='en']");
 		}
 
 		[Test]
-		public void UpdatesExpectedTGs()
+		public void NoTitleAttributesRemainOnImageContainers()
 		{
-			var assertDom = AssertThatXmlIn.Dom(_dom.RawDom);
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@data-page-number='1']//div[@lang='en']/p[text()='New message about tigers']", 1);
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@data-page-number='1']//div[@lang='fr']/p[text()='New message about French tigers']", 1);
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@data-page-number='2']//div[@lang='en']/p[text()='More about tigers']", 1);
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@data-page-number='2']//div[@lang='fr']/p[text()='More about French tigers']", 1);
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@data-page-number='5']//div[@lang='en']/p[text()='A good story about tigers']", 1);
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@data-page-number='5']//div[@lang='fr']/p[text()='A good story about French tigers']", 1);
+			AssertThatXmlIn.Dom(_dom.RawDom).HasNoMatchForXpath("//div[contains(@class, 'bloom-imageContainer') and @title]");
 		}
 
 		[Test]
-		public void LeavesOtherTGsAlone()
+		public void NoHeightOrWidthRemainOnImages()
 		{
-			var assertDom = AssertThatXmlIn.Dom(_dom.RawDom);
-			// No input columns for Spanish
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@data-page-number='1']//div[@lang='es']/p[text()='This Spanish elephant is running amok. Causing much damage.']", 1);
-			// No input row for page 1 block 2
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@data-page-number='1']//div[@lang='en']/p[text()='Elephants should be handled with much care.']", 1);
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@data-page-number='1']//div[@lang='fr']/p[text()='French elephants should be handled with special care.']", 1);
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@data-page-number='1']//div[@lang='de']/p[text()='German elephants are quite orderly.']", 1);
+			AssertThatXmlIn.Dom(_dom.RawDom).HasNoMatchForXpath("//img[@height]");
+			AssertThatXmlIn.Dom(_dom.RawDom).HasNoMatchForXpath("//img[@width]");
+		}
+
+		[TestCase(4)]
+		public void NoTextAddedOnPageN(int n)
+		{
+			AssertThatXmlIn.Element(_contentPages[n]).HasNoMatchForXpath($".//div/div[@lang='en']");
+		}
+
+		[TestCase(8)]
+		[TestCase(9)]
+		public void NoImageContainerAddedOnPageN(int n)
+		{
+			AssertThatXmlIn.Element(_contentPages[n]).HasNoMatchForXpath($".//div[contains(@class, 'bloom-imageContainer')]");
+		}
+
+		[TestCase(1, "ic1", "lady24b.png")]
+		[TestCase(2, "ic2", "placeHolder.png")] // not filled, because next row has both text and picture
+		[TestCase(3, "ic3", "missingBird.png")]
+		[TestCase(4, "ic4", "man.png")]
+		[TestCase(5, "ic5", "placeHolder.png")] // Todo: should be placeholder
+		[TestCase(5, "ic6", "shirt.png")]
+		[TestCase(11, "ic7", "Mars%203.png")]
+		[TestCase(13, "ic7", "shirt.png")]
+		public void GotImageSourceOnPageN(int n, string tag, string text)
+		{
+			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[@data-test-id='{tag}']/img[@src='{text}']", 1);
+		}
+
+		// Since these pages are sourced from Basic Book, we can't use the data-test-id trick.
+		[TestCase(6, "Mars%203.png")]
+		public void PageAddedWithPicture(int n, string src)
+		{
+			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-imageContainer')]/img[@src='{src}']", 1);
+			// This is the ID for the standard "Just a picture" page
+			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("adcd48df-e9ab-4a07-afd4-6a24d0398385"));
+			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("adcd48df-e9ab-4a07-afd4-6a24d0398385"));
+		}
+
+		[TestCase(7, "this is something extra on a new page before 7", "LakePendOreille.jpg", "Copyright © 2012, Stephen McConnel")]
+		[TestCase(10, "this is something extra on a new page before 8", "levels.png", "Copyright © 2021, USAID \"Okuu keremet!\"")]
+		[TestCase(12, "this is something extra after all the original pages", "man.png", "")]
+		public void PageAddedWithTextAndPicture(int n, string text, string src, string copyright)
+		{
+			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-imageContainer')]/img[@src='{src}']", 1);
+			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-translationGroup')]/div[contains(@class, 'bloom-editable') and @lang='en' and text()='{text}']", 1);
+			// This is the ID for the standard "Basic text and picture" page
+			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("adcd48df-e9ab-4a07-afd4-6a24d0398382"));
+			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("adcd48df-e9ab-4a07-afd4-6a24d0398382"));
+			var imgElt = _contentPages[n].SelectSingleNode(".//img");
+			Assert.That(imgElt.Attributes["data-copyright"]?.Value, Is.EqualTo(copyright));
+			// Could check other metadata here, but we're basically checking that one call was made which sets it all up.
+		}
+
+		[TestCase(9, "This will go on a new page before 8")]
+		[TestCase(14, "This will go on a new just-text page at the end")]
+		public void PageAddedWithText(int n, string text)
+		{
+			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-translationGroup')]/div[contains(@class, 'bloom-editable') and @lang='en' and text()='{text}']", 1);
+			// This is the ID for the standard "Just text" page
+			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"));
+			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"));
 		}
 
 		[Test]
-		public void GotAsteriskAndOtherLanguageXmatterWarning()
+		public void CoverPagesSurvived()
 		{
-			Assert.That(_messages, Contains.Item("topic information found in both * language column and other language column(s)"));
+			AssertThatXmlIn.Element(_firstPage).HasSpecifiedNumberOfMatchesForXpath("self::div[contains(@class, 'outsideFrontCover')]", 1);
+			AssertThatXmlIn.Element(_lastPage).HasSpecifiedNumberOfMatchesForXpath("self::div[contains(@class, 'outsideBackCover')]", 1);
+			AssertThatXmlIn.Element(_secondLastPage).HasSpecifiedNumberOfMatchesForXpath("self::div[contains(@class, 'insideBackCover')]", 1);
 		}
 
-
-		[Test]
-		public void GotNoCoverImageWarning()
+		[TestCase("shirt.png")]
+		[TestCase("Mars 3.png")]
+		[TestCase("man.png")]
+		[TestCase("LakePendOreille.jpg")]
+		[TestCase("levels.png")]
+		[TestCase("lady24b.png")]
+		public void ImageCopiedToOutput(string fileName)
 		{
-			Assert.That(_messages, Contains.Item("No cover image found"));
-		}
-
-		[Test]
-		public void GotMissingInputWarning()
-		{
-			Assert.That(_messages, Contains.Item("No input row found for block 2 of page 1"));
-		}
-
-		[Test]
-		public void GotMissingBlockWarning()
-		{
-			Assert.That(_messages, Contains.Item("Input has 3 row(s) for page 2, but page 2 has only 1 place(s) for text"));
-			Assert.That(_messages, Contains.Item("Input has 3 row(s) for page 5, but page 5 has only 2 place(s) for text"));
+			Assert.That(RobustFile.Exists(Path.Combine(_bookFolder.FolderPath, fileName)));
 		}
 
 		[Test]
-		public void GotMissingPagesWarning()
+		public void ImageNotFoundWarningPresent()
 		{
-			Assert.That(_messages, Contains.Item("Input has rows for page 3, but document has no page 3 that can hold text"));
-			Assert.That(_messages, Contains.Item("Input has rows for page 4, but document has no page 4 that can hold text"));
-			Assert.That(_messages, Contains.Item("Input has rows for page 6, but document has no page 6 that can hold text"));
+			var source = Path.Combine(_spreadsheetFolder, "images/missingBird.png");
+			Assert.That(_warnings, Does.Contain("Image \"" + source + "\" on row 4 was not found."));
+		}
+
+		[Test]
+		public void NoUnexpectedWarnings()
+		{
+			// Currently we just expect the one noted in ImageNotFoundWarningPresent().
+			// Adjust as necessary if we add others.
+			Assert.That(_warnings.Count, Is.EqualTo(1));
 		}
 	}
 
-	public class SpreadsheetImportSyncWarningsRunOutOfLines
+	/// <summary>
+	/// There are some special cases we can only test with a DOM in which the last content page
+	/// has neither text nor image elements.
+	/// </summary>
+	public class SpreadsheetImageAndTextImportToBookWithEmptyLastPageTests
 	{
-		// input has three content pages. Second has two blocks, the others, one. There's also
-		// a couple of non-content pages (one with no TGs, one with no data-page-number)
-		// to check that we skip those.
-		const string inputBook = @"
-<html>
-	<head>
-	</head>
-	<body data-l1=""en"" data-l2=""en"" data-l3="""">
-		<div id=""bloomDataDiv"">
-		</div>
-	     <div class=""bloom-page numberedPage customPage A5Portrait side-right "" data-page="""" id=""7403192b-f306-4653-b7b1-0acf7163f4b9"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""1"" lang="""">
-	        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
-	            Basic Text &amp; Picture
-	        </div>
-	        <div class=""pageDescription"" lang=""en""></div>
-
-	        <div class=""marginBox"">
-                <div class=""split-pane-component position-bottom"" style=""height: 50%"">
-                    <div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
-                        <div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-audiorecordingmode=""TextBox"" id=""i4b150910-b53d-4779-a1fb-8177982c651c"" recordingmd5=""9134cd4f71cf3d6e148a6c9b4afed8dc"" data-duration=""4.245963"" data-languagetipcontent=""English"" data-audiorecordingendtimes=""2.920 4.160"" lang=""en"" contenteditable=""true"">
-                            <p><span id=""e4bc05e5-4d65-4016-9bf3-ab44a0df3ea2"" class=""bloom-highlightSegment"" recordingmd5=""undefined"">This elephant is running amok.</span> <span id=""i2ba966b6-4212-4821-9268-04e820e95f50"" class=""bloom-highlightSegment"" recordingmd5=""undefined"">Causing much damage.</span></p>
-                        </div>
-						<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-audiorecordingmode=""TextBox"" id=""i4b150910-b53d-4779-a1fb-8177982c651c"" recordingmd5=""9134cd4f71cf3d6e148a6c9b4afed8dc"" data-duration=""4.245963"" data-languagetipcontent=""French"" data-audiorecordingendtimes=""2.920 4.160"" lang=""fr"" contenteditable=""true"">
-                            <p>This French elephant is running amok. Causing much damage.</p>
-                        </div>
-						<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-audiorecordingmode=""TextBox"" id=""i4b150910-b53d-4779-a1fb-8177982c651c"" recordingmd5=""9134cd4f71cf3d6e148a6c9b4afed8dc""  data-languagetipcontent=""Spanish""  lang=""es"" contenteditable=""true"">
-                            <p>This Spanish elephant is running amok. Causing much damage.</p>
-                        </div>
-                        <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
-                            <p></p>
-                        </div>
-                    </div>
-	            </div>
-	        </div>
-	    </div>
-		<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""7403192b-f306-4653-b7b1-0acf7163f4b9"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""2"" lang="""">
-	        <div class=""marginBox"">
-				<div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
-					<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" lang=""de"" contenteditable=""true"">
-                        <p>Riding on German elephants can be less risky.</p>
-                    </div>
-					<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"" data-audiorecordingendtimes=""2.920 4.160"" lang=""en"" contenteditable=""true"">
-                        <p>Riding on elephants can be risky.</p>
-                    </div>
-					<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""French"" data-audiorecordingendtimes=""2.920 4.160"" lang=""fr"" contenteditable=""true"">
-                        <p>Riding on French elephants can be more risky.</p>
-                    </div>
-
-                    <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
-                        <p></p>
-                    </div>
-                </div>
-				<div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
-					<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"" data-audiorecordingendtimes=""2.920 4.160"" lang=""en"" contenteditable=""true"">
-                        <p>There's no input for this block</p>
-                    </div>
-                    <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
-                        <p></p>
-                    </div>
-                </div>
-	        </div>
-	    </div>
-		<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""7403192b-f306-4653-b7b1-0acf7163f4b9"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""3"" lang="""">
-	        <div class=""marginBox"">
-				<!-- This page has no input but also no TGs. We should not complain about it -->
-	        </div>
-	    </div>
-		<div class=""bloom-page customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""7403192b-f306-4653-b7b1-0acf7163f4b9"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" lang="""">
-	        <div class=""marginBox"">
-				<div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
-					<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"" data-audiorecordingendtimes=""2.920 4.160"" lang=""en"" contenteditable=""true"">
-                        <p>There's no input for this whole page, but we should not complain because it's not a numbered page.</p>
-                    </div>
-                    <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
-                        <p></p>
-                    </div>
-                </div>
-	        </div>
-	    </div>
-		<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""7403192b-f306-4653-b7b1-0acf7163f4b9"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""4"" lang="""">
-	        <div class=""marginBox"">
-				<div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
-					<div class=""bloom-editable normal-style bloom-postAudioSplit audio-sentence bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"" data-audiorecordingendtimes=""2.920 4.160"" lang=""en"" contenteditable=""true"">
-                        <p>There's no input for this whole page</p>
-                    </div>
-                    <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
-                        <p></p>
-                    </div>
-                </div>
-	        </div>
-	    </div>
-	</body>
-</html>
-";
-		private InternalSpreadsheet _sheet;
 		private HtmlDom _dom;
-		private List<string> _messages;
+
+		private TemporaryFolder _bookFolder;
+
+		public static string PageWithNothing(int pageNumber)
+		{
+			return string.Format(
+				@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
+            Basic Text &amp; Picture
+        </div>
+
+        <div class=""pageDescription"" lang=""en""></div>
+
+        <div class=""split-pane-component marginBox"" style="""">
+            
+        </div>
+    </div>", pageNumber);
+		}
+
+
+		private List<XmlElement> _contentPages;
+		private XmlElement _firstPage;
+		private XmlElement _lastPage;
+		private XmlElement _secondLastPage;
+		private List<string> _warnings;
+		private string _spreadsheetFolder;
 
 		[OneTimeSetUp]
 		public void OneTimeSetUp()
 		{
-			// Cases we want to test:
-			// - there are more blocks on the last page after we run out of input lines
-			// - there are pages after the last input line
-			//		- V1: warn, leave unchanged.
-			//		- eventual: ?
-			// In this test suite, lines run out before the blocks.
-			_dom = new HtmlDom(inputBook, true);
-			_sheet = new InternalSpreadsheet();
-			_sheet.AddColumnForLang("en", "English");
-			_sheet.AddColumnForLang("fr", "French");
-			SpreadsheetImportSyncWarnings.MakeRow("1", "New message about tigers", "New message about French tigers", _sheet);
-			SpreadsheetImportSyncWarnings.MakeRow("2", "More about tigers", "More about French tigers", _sheet);
-			// problem: there's no input corresponding to the second block on page 2, nor any of page 4.
-			var importer = new SpreadsheetImporter(this._dom, _sheet);
-			_messages = importer.Import();
+			// We will re-use the images from another test.
+			// Conveniently the images are in a folder called "images" which is what the importer expects.
+			// So we give it the parent directory of that images folder.
+			_spreadsheetFolder = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication("src/BloomTests/ImageProcessing");
+
+			// Create an HtmlDom for a template to import into
+			var xml = string.Format(SpreadsheetImageAndTextImportTests.templateDom,
+				SpreadsheetImageAndTextImportTests.coverPage
+				+ PageWithNothing(1)
+				+ SpreadsheetImageAndTextImportTests.insideBackCoverPage
+				+ SpreadsheetImageAndTextImportTests.backCoverPage);
+			_dom = new HtmlDom(xml, true);
+
+			// Create an internal spreadsheet with the rows we want to import
+			var ss = new InternalSpreadsheet();
+			var columnForEn = ss.AddColumnForLang("en", "English");
+			var columnForImage = ss.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
+
+			// Will insert a just-text page
+			var contentRow1 = new ContentRow(ss);
+			contentRow1.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow1.SetCell(columnForEn, "this is page 1");
+
+			// Will insert a basic text and picture page
+			var contentRow2 = new ContentRow(ss);
+			contentRow2.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow2.SetCell(columnForEn, "this is page 2");
+			contentRow2.SetCell(columnForImage, "images/lady24b.png");
+
+			// Will insert a just-picture page
+			var contentRow3 = new ContentRow(ss);
+			contentRow3.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow3.SetCell(columnForImage, "images/man.png");
+
+			_bookFolder = new TemporaryFolder("SpreadsheetImageAndTextImportToBookWithEmptyLastPageTests");
+
+			// Do the import
+			var importer = new SpreadsheetImporter(_dom, ss, _spreadsheetFolder, _bookFolder.FolderPath);
+			_warnings = importer.Import();
+
+			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
+
+			// Remove the xmatter to get just the content pages, but save so we can test that too.
+			_firstPage = _contentPages[0];
+			_contentPages.RemoveAt(0);
+			_lastPage = _contentPages.Last();
+			_contentPages.RemoveAt(_contentPages.Count - 1);
+			_secondLastPage = _contentPages.Last();
+			_contentPages.RemoveAt(_contentPages.Count - 1);
+
+			// (individual test methods will evaluate the result)
+		}
+
+		[OneTimeTearDown]
+		public void OneTimeTearDown()
+		{
+			_bookFolder?.Dispose();
+		}
+
+		[TestCase(2, "man.png")]
+		public void PageAddedWithPicture(int n, string src)
+		{
+			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-imageContainer')]/img[@src='{src}']", 1);
+			// This is the ID for the standard "Just a picture" page
+			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("adcd48df-e9ab-4a07-afd4-6a24d0398385"));
+			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("adcd48df-e9ab-4a07-afd4-6a24d0398385"));
+		}
+
+		[TestCase(1, "this is page 2", "lady24b.png")]
+		public void PageAddedWithTextAndPicture(int n, string text, string src)
+		{
+			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-imageContainer')]/img[@src='{src}']", 1);
+			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-translationGroup')]/div[contains(@class, 'bloom-editable') and @lang='en' and text()='{text}']", 1);
+			// This is the ID for the standard "Basic text and picture" page
+			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("adcd48df-e9ab-4a07-afd4-6a24d0398382"));
+			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("adcd48df-e9ab-4a07-afd4-6a24d0398382"));
+		}
+
+		[TestCase(0, "this is page 1")]
+		public void PageAddedWithText(int n, string text)
+		{
+			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-translationGroup')]/div[contains(@class, 'bloom-editable') and @lang='en' and text()='{text}']", 1);
+			// This is the ID for the standard "Just text" page
+			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"));
+			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"));
 		}
 
 		[Test]
-		public void GotMissingInputWarnings()
+		public void CoverPagesSurvived()
 		{
-			Assert.That(_messages, Contains.Item("No input row found for block 2 of page 2"));
-			Assert.That(_messages, Contains.Item("No input found for pages from 4 onwards."));
+			AssertThatXmlIn.Element(_firstPage).HasSpecifiedNumberOfMatchesForXpath("self::div[contains(@class, 'outsideFrontCover')]", 1);
+			AssertThatXmlIn.Element(_lastPage).HasSpecifiedNumberOfMatchesForXpath("self::div[contains(@class, 'outsideBackCover')]", 1);
+			AssertThatXmlIn.Element(_secondLastPage).HasSpecifiedNumberOfMatchesForXpath("self::div[contains(@class, 'insideBackCover')]", 1);
+		}
+	}
+
+	/// <summary>
+	/// There are some special cases we can only test when the last page of a book has room
+	/// for more than one image and text.
+	/// </summary>
+	public class SpreadsheetImageAndTextImportToBookWithComplexLastPageTests
+	{
+		private HtmlDom _dom;
+
+		private TemporaryFolder _bookFolder;
+
+
+		private List<XmlElement> _contentPages;
+		private XmlElement _firstPage;
+		private XmlElement _lastPage;
+		private XmlElement _secondLastPage;
+		private List<string> _warnings;
+		private string _spreadsheetFolder;
+
+		[OneTimeSetUp]
+		public void OneTimeSetUp()
+		{
+			// We will re-use the images from another test.
+			// Conveniently the images are in a folder called "images" which is what the importer expects.
+			// So we give it the parent directory of that images folder.
+			_spreadsheetFolder = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication("src/BloomTests/ImageProcessing");
+
+			// Create an HtmlDom for a template to import into
+			var xml = string.Format(SpreadsheetImageAndTextImportTests.templateDom,
+				SpreadsheetImageAndTextImportTests.coverPage
+				+ SpreadsheetImageAndTextImportTests.PageWith2ImagesAnd2Texts(1, 1, 1)
+				+ SpreadsheetImageAndTextImportTests.insideBackCoverPage
+				+ SpreadsheetImageAndTextImportTests.backCoverPage);
+			_dom = new HtmlDom(xml, true);
+
+			// Create an internal spreadsheet with the row content we want to test
+			var ss = new InternalSpreadsheet();
+			var columnForEn = ss.AddColumnForLang("en", "English");
+			var columnForImage = ss.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
+
+			// Will fill the first part of the existing last page
+			var contentRow1 = new ContentRow(ss);
+			contentRow1.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow1.SetCell(columnForImage, "images/lady24b.png");
+			contentRow1.SetCell(columnForEn, "this is page 1");
+
+			// Will fill the other two slots on the existing last page
+			var contentRow2 = new ContentRow(ss);
+			contentRow2.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow2.SetCell(columnForEn, "this is the second block on page 1");
+			contentRow2.SetCell(columnForImage, "images/shirt.png");
+
+			// Will insert a copy of the last page, with two elements filled in and the
+			// others set blank.
+			var contentRow3 = new ContentRow(ss);
+			contentRow3.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow3.SetCell(columnForEn, "this is the first block on page 2");
+			contentRow3.SetCell(columnForImage, "images/man.png");
+
+			_bookFolder = new TemporaryFolder("SpreadsheetImageAndTextImportToBookWithComplexLastPageTests");
+
+			// Do the import
+			var importer = new SpreadsheetImporter(_dom, ss, _spreadsheetFolder, _bookFolder.FolderPath);
+			_warnings = importer.Import();
+
+			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
+
+			// Remove the xmatter to get just the content pages, but save so we can test that too.
+			_firstPage = _contentPages[0];
+			_contentPages.RemoveAt(0);
+			_lastPage = _contentPages.Last();
+			_contentPages.RemoveAt(_contentPages.Count - 1);
+			_secondLastPage = _contentPages.Last();
+			_contentPages.RemoveAt(_contentPages.Count - 1);
+
+			// (individual test methods will evaluate the result)
 		}
 
+		[OneTimeTearDown]
+		public void OneTimeTearDown()
+		{
+			_bookFolder?.Dispose();
+		}
+
+		[TestCase(0, "tg1", "this is page 1")]
+		[TestCase(0, "tg2", "this is the second block on page 1")]
+		[TestCase(1, "tg1", "this is the first block on page 2")]
+		public void GotTextOnPageN(int n, string tag, string text)
+		{
+			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[@data-test-id='{tag}']/div[@lang='en' and text() = '{text}']", 1);
+		}
+
+		[TestCase(1, "tg2")]
+		public void NoEnglishTextInBlock(int n, string tag)
+		{
+			// Sanity check: it does have the TG,
+			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[@data-test-id='{tag}']", 1);
+			// but nothing was added to it.
+			AssertThatXmlIn.Element(_contentPages[n]).HasNoMatchForXpath($".//div[@data-test-id='{tag}']/div[@lang='en']");
+		}
+
+		[TestCase(0, "ic1", "lady24b.png")]
+		[TestCase(0, "ic2", "shirt.png")]
+		[TestCase(1, "ic1", "man.png")]
+		[TestCase(1, "ic2", "placeHolder.png")]
+		public void GotImageSourceOnPageN(int n, string tag, string text)
+		{
+			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[@data-test-id='{tag}']/img[@src='{text}']", 1);
+		}
+
+		[Test]
+		public void NoUnexpectedWarnings()
+		{
+			// Currently we don't expect any.
+			// Adjust as necessary if we add some.
+			Assert.That(_warnings.Count, Is.EqualTo(0));
+		}
 	}
 }
