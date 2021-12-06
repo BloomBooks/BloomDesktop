@@ -132,7 +132,17 @@ const propsObject: IUploadCollisionDlgProps = {
     dialogEnvironment: normalDialogEnvironmentForStorybook
 };
 
-storiesOf("Publish/Share on the web", module).add(
-    "Upload Collision Dialog",
-    () => React.createElement(() => <UploadCollisionDlg {...propsObject} />)
-);
+const lotsOfLanguages = ["Sokoro", "English", "Swahili", "Hausa"];
+
+storiesOf("Publish/Share on the web", module)
+    .add("Upload Collision Dialog", () =>
+        React.createElement(() => <UploadCollisionDlg {...propsObject} />)
+    )
+    .add("Upload Collision Dialog -- lots of languages", () =>
+        React.createElement(() => (
+            <UploadCollisionDlg
+                {...propsObject}
+                newLanguages={lotsOfLanguages}
+            />
+        ))
+    );
