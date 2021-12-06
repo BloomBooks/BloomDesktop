@@ -124,7 +124,7 @@
         <note>ID: Spreadsheet.Overwrite</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.OverwriteBook">
-        <source xml:lang="en">YThe folder named {0} already exists and looks like it might be a Bloom book folder!</source>
+        <source xml:lang="en">The folder named {0} already exists and looks like it might be a Bloom book folder!</source>
         <note>ID: Spreadsheet.OverwriteBook</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.WriteFailed">
