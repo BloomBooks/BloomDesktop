@@ -92,6 +92,12 @@ public class BookHistory
 {
 	public static List<BookHistoryEvent> GetHistory(BookInfo book)
 	{
+		if (SIL.PlatformUtilities.Platform.IsLinux)
+		{
+			// SQLiteConnection never works on Linux.
+			return new List<BookHistoryEvent>();
+		}
+		else
 		{
 			using (var db = GetConnection(book.FolderPath))
 			{
@@ -104,6 +110,8 @@ public class BookHistory
 
 	public static void SetPendingCheckinMessage(Book book, string message)
 	{
+		if (SIL.PlatformUtilities.Platform.IsLinux)
+			return;     // SQLiteConnection never works on Linux.
 		try
 		{
 			using (var db = GetConnection(book.FolderPath))
@@ -125,6 +133,8 @@ public class BookHistory
 
 	public static string GetPendingCheckinMessage(Book book)
 	{
+		if (SIL.PlatformUtilities.Platform.IsLinux)
+			return "";     // SQLiteConnection never works on Linux.
 		try
 		{
 			using (var db = GetConnection(book.FolderPath))
@@ -146,6 +156,8 @@ public class BookHistory
 
 	public static void AddEvent(Book book,  BookHistoryEventType eventType, string message="")
 	{
+		if (SIL.PlatformUtilities.Platform.IsLinux)
+			return;     // SQLiteConnection never works on Linux.
 		try
 		{
 			using (var db = GetConnection(book.FolderPath))
