@@ -76,13 +76,20 @@ namespace Bloom.Spreadsheet
 						// It might be helpful for some uses of the group-on-page-index
 						// if Excel knew to treat them as numbers.
 
-						var content = row.GetCell(c).Content;
+						var sourceCell = row.GetCell(c);
+						var content = sourceCell.Content;
 						// Parse xml for markdown formatting on language columns,
 						// Display formatting in excel spreadsheet
 						ExcelRange currentCell = worksheet.Cells[r, c + 1];
+						if (!string.IsNullOrEmpty(sourceCell.Comment))
+						{
+							// Second arg is supposed to be the author.
+							currentCell.AddComment(sourceCell.Comment, "Bloom");
+						}
+
 						if (!retainMarkup
-							&& c >= spreadsheet.StandardLeadingColumns.Length
-							&& IsWysiwygFormattedRow(row))
+						    && c >= spreadsheet.StandardLeadingColumns.Length
+						    && IsWysiwygFormattedRow(row))
                         {
 							MarkedUpText markedUpText = MarkedUpText.ParseXml(content);
 							if (markedUpText.HasFormatting)
@@ -125,7 +132,7 @@ namespace Bloom.Spreadsheet
 						//Embed any images in the excel file
 						if (c == imageSourceColumn)
 						{
-							var imageSrc = row.GetCell(c).Content;
+							var imageSrc = sourceCell.Content;
 
 							// if this row has an image source value that is not a header 
 							if (imageSrc != "" && Array.IndexOf(spreadsheet.StandardLeadingColumns.Select(kvp => kvp.Key).ToArray(), imageSrc) == -1)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using Bloom.web;
+using L10NSharp;
 
 namespace Bloom.Spreadsheet
 {
@@ -80,8 +81,18 @@ namespace Bloom.Spreadsheet
 					var kvp = StandardLeadingColumns[Header.ColumnCount];
 					var tag = kvp.Key;
 					var friendlyName = kvp.Value;
-					Header.AddColumn(tag, friendlyName);
-				}				
+					var addedCells = Header.AddColumn(tag, friendlyName);
+					if (tag == ImageSourceColumnLabel)
+					{
+						// Todo: not quite true yet, since export doesn't copy the images to the destination folder.
+						addedCells.nameCell.Comment = LocalizationManager.GetString("Spreadsheet.ImageSourceComment",
+							"A full path like (C:\\foo) or a path relative to the location of this spreadsheet like images\\foo.png");
+					} else if (tag == ImageThumbnailColumnLabel)
+					{
+						addedCells.nameCell.Comment = LocalizationManager.GetString("Spreadsheet.ImageThumbnailComment",
+							"This is usually just so you can see what the picture is. Import is based on the path in a hidden column next to this one.");
+					}
+				}
 			}
 		}
 
@@ -142,7 +153,7 @@ namespace Bloom.Spreadsheet
 					return i;
 			}
 
-			return -1;
+			return -1;			
 		}
 
 		/// <summary>
@@ -173,7 +184,11 @@ namespace Bloom.Spreadsheet
 					return i;
 				}
 			}
-			Header.AddColumn(columnLabel, columnFriendlyName);
+			var addedCells = Header.AddColumn(columnLabel, columnFriendlyName);
+
+			// Enhance: when we implement showing a language name in a row below this one and hiding the current header,
+			// we want a comment there saying "Note, the real identification of this language is in a hidden row above this, e.g. [en]"
+			addedCells.nameCell.Comment = "This tag identifies the language. Soon we will show a name here and hide the tag.";
 			return Header.ColumnCount - 1;
 		}
 
