@@ -217,7 +217,7 @@ namespace Bloom.Spreadsheet
 				{
 					row = new ContentRow(_spreadsheet);
 					var label = "[" + dataBookLabel.Trim() + "]";
-					if (label != InternalSpreadsheet.BookTitleRowLabel)
+					if (label != InternalSpreadsheet.BookTitleRowLabel && label != InternalSpreadsheet.CoverImageRowLabel)
 						row.Hidden = true;
 					row.SetCell(InternalSpreadsheet.MetadataKeyColumnLabel, label);
 

@@ -30,6 +30,7 @@ namespace Bloom.Spreadsheet
 		public const string ImageSourceColumnFriendlyName = "Image File Path";
 
 		public const string BookTitleRowLabel = "[bookTitle]";
+		public const string CoverImageRowLabel = "[coverImage]";
 		public const string PageContentRowLabel = "[page content]";
 
 		private List<SpreadsheetRow> _rows = new List<SpreadsheetRow>();
