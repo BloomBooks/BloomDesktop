@@ -242,6 +242,9 @@ namespace Bloom.Utils
 		{
 			get
 			{
+				if (!IsComplete)
+					return 0;
+
 				TimeSpan diff = _end.when - _start.when;
 				
 				return Math.Round(diff.TotalMilliseconds / 1000, 2);
@@ -265,6 +268,9 @@ namespace Bloom.Utils
 
 		public override string ToString()
 		{
+			if (!IsComplete)
+				return $"Measurement: details=\"{_actionDetails}\"; measurement failed";
+
 			// For a ToString() summary, the delta/previousSizeKb is not important.
 			return $"Measurement: details=\"{_actionDetails}\"; start={_start.privateBytesKb}KB ({_start.when}); end={_end?.privateBytesKb}KB ({_end?.when})";
 		}
