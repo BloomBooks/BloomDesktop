@@ -84,10 +84,10 @@ namespace Bloom.Spreadsheet
 					var addedCells = Header.AddColumn(tag, friendlyName);
 					if (tag == ImageSourceColumnLabel)
 					{
-						// Todo: not quite true yet, since export doesn't copy the images to the destination folder.
 						addedCells.nameCell.Comment = LocalizationManager.GetString("Spreadsheet.ImageSourceComment",
 							"A full path like (C:\\foo) or a path relative to the location of this spreadsheet like images\\foo.png");
-					} else if (tag == ImageThumbnailColumnLabel)
+					}
+					else if (tag == ImageThumbnailColumnLabel)
 					{
 						addedCells.nameCell.Comment = LocalizationManager.GetString("Spreadsheet.ImageThumbnailComment",
 							"This is usually just so you can see what the picture is. Import is based on the path in a hidden column next to this one.");
@@ -166,7 +166,8 @@ namespace Bloom.Spreadsheet
 		public int AddColumnForLang(string langCode, string langDisplayName)
 		{
 			string columnLabel = "[" + langCode + "]";
-			return AddColumnForTag(columnLabel, langDisplayName);
+			string comment = "Note, the real identification of this language is in a hidden row above this, e.g. [en]";
+			return AddColumnForTag(columnLabel, langDisplayName, comment);
 		}
 
 		/// <summary>
@@ -174,8 +175,9 @@ namespace Bloom.Spreadsheet
 		/// </summary>
 		/// <param name="columnLabel">The label of the column</param>
 		/// <param name="columnFriendlyName">The friendly name of the column</param>
+		/// <param name="friendlyNameComment">Optional. If non-null and non-empty, sets a comment in the newly created cell for the friendly name of the column.</param>
 		/// <returns>The index of the column (0-based)</returns>
-		public int AddColumnForTag(string columnLabel, string columnFriendlyName)
+		public int AddColumnForTag(string columnLabel, string columnFriendlyName, string friendlyNameComment = null)
 		{
 			for (var i = 0; i < Header.ColumnCount; i++)
 			{
@@ -186,9 +188,11 @@ namespace Bloom.Spreadsheet
 			}
 			var addedCells = Header.AddColumn(columnLabel, columnFriendlyName);
 
-			// Enhance: when we implement showing a language name in a row below this one and hiding the current header,
-			// we want a comment there saying "Note, the real identification of this language is in a hidden row above this, e.g. [en]"
-			addedCells.nameCell.Comment = "This tag identifies the language. Soon we will show a name here and hide the tag.";
+			if (!string.IsNullOrEmpty(friendlyNameComment))
+			{
+				addedCells.nameCell.Comment = friendlyNameComment;
+			}
+
 			return Header.ColumnCount - 1;
 		}
 
