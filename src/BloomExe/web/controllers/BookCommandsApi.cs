@@ -159,7 +159,7 @@ namespace Bloom.web.controllers
 			try
 			{
 				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));
-				var exporter = new SpreadsheetExporter(_webSocketServer);
+				var exporter = new SpreadsheetExporter(_webSocketServer, book.CollectionSettings);
 
 				var initialFolder = !String.IsNullOrWhiteSpace(Settings.Default.ExportImportFileFolder) ? Settings.Default.ExportImportFileFolder : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 				string outputParentFolder = BloomFolderChooser.ChooseFolder(initialFolder);

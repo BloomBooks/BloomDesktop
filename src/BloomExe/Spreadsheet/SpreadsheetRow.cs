@@ -13,6 +13,9 @@ namespace Bloom.Spreadsheet
 		public Color BackgroundColor;
 		public bool Hidden;
 
+		public virtual bool IsHeader => false;
+		
+
 		public SpreadsheetRow(InternalSpreadsheet spreadsheet)
 		{
 			spreadsheet.AddRow(this);
@@ -32,7 +35,7 @@ namespace Bloom.Spreadsheet
 
 		public void SetCell(string columnName, string content)
 		{
-			int index = Spreadsheet.ColumnForTag(columnName);
+			int index = Spreadsheet.GetColumnForTag(columnName);
 			SetCell(index, content);
 		}
 
@@ -49,7 +52,7 @@ namespace Bloom.Spreadsheet
 		{
 			get
 			{
-				return _cells[Spreadsheet.ColumnForTag(InternalSpreadsheet.MetadataKeyColumnLabel)];
+				return _cells[Spreadsheet.GetColumnForTag(InternalSpreadsheet.MetadataKeyColumnLabel)];
 			}
 		}
 
@@ -62,9 +65,9 @@ namespace Bloom.Spreadsheet
 
 		public SpreadsheetCell GetCell(string columnName)
 		{
-			return GetCell(Spreadsheet.ColumnForTag(columnName));
+			return GetCell(Spreadsheet.GetColumnForTag(columnName));
 		}
 
 		public int Count => _cells.Count;
-	}
+	}	
 }

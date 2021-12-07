@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -20,25 +21,27 @@ namespace Bloom.Spreadsheet
 		public static Color HiddenColor = Color.FromArgb(210, 210, 210); // light gray
 
 		public const string MetadataKeyColumnLabel = "[metadata key]";
+		public const string MetadataKeyColumnFriendlyName = "Metadata Key";
 		public const string PageNumberColumnLabel = "(exported page)";
+		public const string PageNumberColumnFriendlyName = "Page Number";
 		public const string ImageThumbnailColumnLabel = "[image thumbnail]";
+		public const string ImageThumbnailColumnFriendlyName = "Image";
 		public const string ImageSourceColumnLabel = "[image source]";
+		public const string ImageSourceColumnFriendlyName = "Image File Path";
 
 		public const string BookTitleRowLabel = "[bookTitle]";
 		public const string PageContentRowLabel = "[page content]";
 
 		private List<SpreadsheetRow> _rows = new List<SpreadsheetRow>();
-		private HeaderRow _header;
-
 		public SpreadsheetExportParams Params = new SpreadsheetExportParams();
 
-		public string[] StandardLeadingColumns = new[]
+		public KeyValuePair<string, string>[] StandardLeadingColumns = new KeyValuePair<string, string>[]
 		{
-			MetadataKeyColumnLabel, // what kind of data is in the row; might be book-data key or [textgroup] or [image]
-			PageNumberColumnLabel, // value from data-page-number of bloom-page
+			new KeyValuePair<string, string>(MetadataKeyColumnLabel, MetadataKeyColumnFriendlyName), // what kind of data is in the row; might be book-data key or [textgroup] or [image]
+			new KeyValuePair<string, string>(PageNumberColumnLabel, PageNumberColumnFriendlyName), // value from data-page-number of bloom-page
 			// Todo: [page layout], // something that indicates the template for the page
-			ImageSourceColumnLabel, // the full path of where the image comes from
-			ImageThumbnailColumnLabel, // a small version of the image embedded and displayed in the excel sheet
+			new KeyValuePair<string, string>(ImageSourceColumnLabel, ImageSourceColumnFriendlyName), // the full path of where the image comes from
+			new KeyValuePair<string, string>(ImageThumbnailColumnLabel, ImageThumbnailColumnFriendlyName) // a small version of the image embedded and displayed in the excel sheet
 			// Todo: (lang slot) // L1, L2, L3, auto etc...which languages should be visible here?
 		};
 
@@ -49,9 +52,9 @@ namespace Bloom.Spreadsheet
 			get
 			{
 				var result = new List<string>();
-				for (int i = StandardLeadingColumns.Length; i < _header.Count; i++)
+				for (int i = StandardLeadingColumns.Length; i < Header.ColumnCount; i++)
 				{
-					var content = _header.GetCell(i).Content.Trim();
+					var content = Header.ColumnIdRow.GetCell(i).Content.Trim();
 					if (!content.StartsWith("["))
 						continue;
 					if (!content.EndsWith("]"))
@@ -69,14 +72,16 @@ namespace Bloom.Spreadsheet
 
 		private InternalSpreadsheet(bool populateHeader)
 		{
-			_header = new HeaderRow(this);
+			Header = new Header(this);
 			if (populateHeader)
 			{
-				while (_header.Count < StandardLeadingColumns.Length)
+				while (Header.ColumnCount < StandardLeadingColumns.Length)
 				{
-					var tag = StandardLeadingColumns[_header.Count];
-					_header.AddCell(tag);
-				}
+					var kvp = StandardLeadingColumns[Header.ColumnCount];
+					var tag = kvp.Key;
+					var friendlyName = kvp.Value;
+					Header.AddColumn(tag, friendlyName);
+				}				
 			}
 		}
 
@@ -92,9 +97,9 @@ namespace Bloom.Spreadsheet
 			}
 		}
 
-		public int ColumnCount => _header.Count;
+		public int ColumnCount => Header.ColumnCount;
 
-		public HeaderRow Header => _header;
+		public Header Header { get; }
 
 		public IEnumerable<SpreadsheetRow> AllRows()
 		{
@@ -107,31 +112,79 @@ namespace Bloom.Spreadsheet
 			row.Spreadsheet = this;
 		}
 
-		public int ColumnForLang(string lang)
+		public int GetRequiredColumnForLang(string langCode)
 		{
-			string columnLabel = "[" + lang + "]";
-			return ColumnForTag(columnLabel);
+			int columnIndex = GetOptionalColumnForLang(langCode);
+			if (columnIndex < 0)
+			{
+				throw new ArgumentException($"GetRequiredColumnForLang({langCode}): No column exists for language \"{langCode}\"");
+			}
+			return columnIndex;
 		}
 
-		public int ColumnForTag(string columnLabel) {
-			for (var i = 0; i < _header.Count; i++)
+		public int GetOptionalColumnForLang(string langCode)
+		{
+			string columnLabel = "[" + langCode + "]";
+			return GetColumnForTag(columnLabel);
+		}
+
+		/// <summary>
+		/// Gets the index for the specified column.
+		/// </summary>
+		/// <param name="columnLabel">The label (id) of the column to look up. (This is the value written in the first row's cell for that column</param>
+		/// <remarks>This function has been changed so that if the column does not exist, it will NOT be added. That is, this is a pure, side-effect free getter.</remarks>
+		/// <returns>The 0-based index of the column, or -1 if not found.</returns>
+		public int GetColumnForTag(string columnLabel)
+		{
+			for (var i = 0; i < Header.ColumnCount; i++)
 			{
-				if (_header.GetCell(i).Content.Equals(columnLabel))
+				if (Header.ColumnIdRow.GetCell(i).Content.Equals(columnLabel))
 					return i;
 			}
 
-			_header.AddCell(columnLabel);
-			return _header.Count - 1;
+			return -1;
 		}
 
-		public int ColumnForPageNumber => ColumnForTag(PageNumberColumnLabel); // or just answer 2? or cache?
+		/// <summary>
+		/// Adds a column. If the column label already exists, no changes will be made nor will a new column be added
+		/// </summary>
+		/// <param name="langCode">The language code. It should not include surrounding brackets</param>
+		/// <param name="langDisplayName">The display name of the language, which will be used as the column friendly name</param>
+		/// <returns>The index of the column (0-based)</returns>
 
-		public List<int> HiddenColumns => new List<int>{ColumnForTag(PageNumberColumnLabel), ColumnForTag(ImageSourceColumnLabel)};
+		public int AddColumnForLang(string langCode, string langDisplayName)
+		{
+			string columnLabel = "[" + langCode + "]";
+			return AddColumnForTag(columnLabel, langDisplayName);
+		}
 
-		public void SortHiddenRowsToTheBottom()
+		/// <summary>
+		/// Adds a column. If the column label already exists, no changes will be made nor will a new column be added
+		/// </summary>
+		/// <param name="columnLabel">The label of the column</param>
+		/// <param name="columnFriendlyName">The friendly name of the column</param>
+		/// <returns>The index of the column (0-based)</returns>
+		public int AddColumnForTag(string columnLabel, string columnFriendlyName)
+		{
+			for (var i = 0; i < Header.ColumnCount; i++)
+			{
+				if (Header.ColumnIdRow.GetCell(i).Content.Equals(columnLabel))
+				{
+					return i;
+				}
+			}
+			Header.AddColumn(columnLabel, columnFriendlyName);
+			return Header.ColumnCount - 1;
+		}
+
+		public int ColumnForPageNumber => GetColumnForTag(PageNumberColumnLabel); // or just answer 2? or cache?
+
+		public List<int> HiddenColumns => new List<int>{GetColumnForTag(PageNumberColumnLabel), GetColumnForTag(ImageSourceColumnLabel)};
+
+		public void SortHiddenContentRowsToTheBottom()
 		{
 			// Needs to be a stable sort, so can't use .Sort().
-			_rows = _rows.OrderBy(r => r.Hidden).ToList();
+			_rows = _rows.OrderBy(r => r.Hidden && !r.IsHeader).ToList();
 		}
 
 		public void WriteToFile(string path, IWebSocketProgress progress = null)

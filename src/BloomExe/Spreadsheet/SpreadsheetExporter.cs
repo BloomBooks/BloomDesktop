@@ -1,21 +1,20 @@
-using System;
+using Bloom.Api;
 using Bloom.Book;
+using Bloom.Collection;
+using Bloom.MiscUI;
+using Bloom.web;
 using L10NSharp;
+using SIL.IO;
 using SIL.Xml;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security;
 using System.Windows.Forms;
 using System.Xml;
-using Bloom.Api;
-using Bloom.MiscUI;
-using Bloom.web;
-using SIL.IO;
 
 namespace Bloom.Spreadsheet
 {
@@ -27,18 +26,38 @@ namespace Bloom.Spreadsheet
 		private string _outputFolder; // null if not exporting to folder (mainly some unit tests)
 		private string _outputImageFolder; // null if not exporting to folder (mainly some unit tests)
 
+		private ILanguageDisplayNameResolver LangDisplayNameResolver { get; set; }
+
 
 		public delegate SpreadsheetExporter Factory();
 
-		public SpreadsheetExporter(BloomWebSocketServer webSocketServer)
+		/// <summary>
+		/// Constructs a new Spreadsheet Exporter
+		/// </summary>
+		/// <param name="webSocketServer">The webSockerServer of the instance</param>
+		/// <param name="langDisplayNameResolver">The object that will be used to  retrieve the language display names</param>
+		public SpreadsheetExporter(BloomWebSocketServer webSocketServer, ILanguageDisplayNameResolver langDisplayNameResolver)
 		{
 			_webSocketServer = webSocketServer;
+			LangDisplayNameResolver = langDisplayNameResolver;
 		}
 
-		public SpreadsheetExporter()
+		/// <summary>
+		/// Constructs a new Spreadsheet Exporter
+		/// </summary>
+		/// <param name="webSocketServer">The webSockerServer of the instance</param>
+		/// <param name="collectionSettings">The collectionSettings of the book that will be exported. This is used to retrieve the language display names</param>
+		public SpreadsheetExporter(BloomWebSocketServer webSocketServer, CollectionSettings collectionSettings)
+			:this(webSocketServer, new CollectionSettingsLanguageDisplayNameResolver(collectionSettings))
+		{
+		}
+
+		public SpreadsheetExporter(ILanguageDisplayNameResolver langDisplayNameResolver)
 		{
 			Debug.Assert(Bloom.Program.RunningUnitTests,
 				"SpreadsheetExporter should be passed a webSocketProgress unless running unit tests that don't need it");
+
+			LangDisplayNameResolver = langDisplayNameResolver;
 		}
 
 		//a list of values which, if they occur in the data-book attribute of an element in the bloomDataDiv,
@@ -97,7 +116,7 @@ namespace Bloom.Spreadsheet
 				var colorForPage = iContentPage++ % 2 == 0 ? InternalSpreadsheet.AlternatingRowsColor1 : InternalSpreadsheet.AlternatingRowsColor2;
 				AddContentRows(page, pageNumber, imagesFolderPath, colorForPage);
 			}
-			_spreadsheet.SortHiddenRowsToTheBottom();
+			_spreadsheet.SortHiddenContentRowsToTheBottom();
 			return _spreadsheet;
 		}
 
@@ -125,10 +144,10 @@ namespace Bloom.Spreadsheet
 				{
 					foreach (var editable in pageContent.group.SafeSelectNodes("./*[contains(@class, 'bloom-editable')]").Cast<XmlElement>())
 					{
-						var lang = editable.Attributes["lang"]?.Value ?? "";
-						if (lang == "z" || lang == "")
+						var langCode = editable.Attributes["lang"]?.Value ?? "";
+						if (langCode == "z" || langCode == "")
 							continue;
-						var index = _spreadsheet.ColumnForLang(lang);
+						var index = GetOrAddColumnForLang(langCode);
 						var content = editable.InnerXml;
 						row.SetCell(index, content);
 					}
@@ -154,6 +173,28 @@ namespace Bloom.Spreadsheet
 			return Path.Combine(imagesFolderPath, UrlPathString.CreateFromUrlEncodedString(imageSrc).NotEncoded);
 		}
 
+		/// <summary>
+		/// Get the column for a language. If no column exists, one will be added
+		/// </summary>
+		/// <remarks>If the column does not exist it will be added.
+		/// The friendly name used for the column will be the display name for that language according to {this.LangDisplayNameResolver}</remarks>
+		/// If the column already exists, its index will be returned. The column, including the column friendly name, will not be modified
+		/// <param name="langCode">The language code to look up, as specified in the header</param>
+		/// <returns>The index of the column</returns>
+		private int GetOrAddColumnForLang(string langCode)
+		{
+			// Check if a column already exists for this column
+			var colIndex = _spreadsheet.GetOptionalColumnForLang(langCode);
+			if (colIndex >= 0)
+			{
+				return colIndex;
+			}
+
+			// Doesn't exist yet. Let's add a column for it.
+			var langFriendlyName = LangDisplayNameResolver.GetLanguageDisplayName(langCode);
+			return _spreadsheet.AddColumnForLang(langCode, langFriendlyName);
+		}
+
 		private void AddDataDivData(XmlNode node, string imagesFolderPath)
 		{
 			var dataBookNodeList = node.SafeSelectNodes("./div[@data-book]").Cast<XmlElement>().ToList();
@@ -163,8 +204,8 @@ namespace Bloom.Spreadsheet
 			SpreadsheetRow row = null;
 			foreach (XmlElement dataBookElement in dataBookNodeList)
 			{
-				var lang = dataBookElement.GetAttribute("lang");
-				if (lang == "z")
+				var langCode = dataBookElement.GetAttribute("lang");
+				if (langCode == "z")
 				{
 					continue;
 				}
@@ -248,7 +289,8 @@ namespace Bloom.Spreadsheet
 					continue;
 				}
 
-				row.SetCell(_spreadsheet.ColumnForLang(lang), dataBookElement.InnerXml.Trim());
+				var colIndex = GetOrAddColumnForLang(langCode);
+				row.SetCell(colIndex, dataBookElement.InnerXml.Trim());
 				prevDataBookLabel = dataBookLabel;
 			}
 		}
@@ -394,4 +436,38 @@ namespace Bloom.Spreadsheet
 		Quit,
 		Ask
 	}
+
+	/// <summary>
+	/// An interface for SpreadsheetExporter to be able to convert language ISO codes to their display names.
+	/// This allows unit tests to use mocks to handle this functionality instead of figuring out how to construct a concrete resolver
+	/// </summary>
+	public interface ILanguageDisplayNameResolver
+	{
+		/// <summary>
+		/// Given a language code, returns the friendly name of that language (according to the dictionary passed into the constructor)
+		/// </summary>
+		/// <param name="langCode"></param>
+		/// <returns>Returns the friendly name if available. If not, returns the language code unchanged.</returns>
+		string GetLanguageDisplayName(string langCode);
+	}
+
+	/// <summary>
+	/// Resolves language codes to language display names based on the book's CollectionSettings
+	/// </summary>
+	class CollectionSettingsLanguageDisplayNameResolver : ILanguageDisplayNameResolver
+	{
+		private CollectionSettings CollectionSettings;
+		public CollectionSettingsLanguageDisplayNameResolver(CollectionSettings collectionSettings)
+		{
+			this.CollectionSettings = collectionSettings;
+		}
+
+		public string GetLanguageDisplayName(string langCode)
+		{
+			return this.CollectionSettings.GetDisplayNameForLanguage(langCode);
+		}
+	}
+
+	// Note: You can also resolve these from the book.BookInfo.MetaData.DisplayNames dictionary, but
+	// that seems to have fewer entries than CollectionSetting's or BookData's GetDisplayNameForLanguage() function
 }

@@ -176,7 +176,7 @@ namespace Bloom.Spreadsheet
 				templateNode.SetAttribute("data-book", dataBookLabel);
 			}
 
-			var imageSrcCol = _sheet.ColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
+			var imageSrcCol = _sheet.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
 			//TODO copy in images from their source paths. Will be done with the importing images step
 			var imageSrc = Path.GetFileName(currentRow.GetCell(imageSrcCol).Content);
 
@@ -208,12 +208,13 @@ namespace Bloom.Spreadsheet
 
 				foreach (string lang in _sheet.Languages)
 				{
-					var langVal = currentRow.GetCell(_sheet.ColumnForLang(lang)).Content;
+					var langVal = currentRow.GetCell(_sheet.GetRequiredColumnForLang(lang)).Content;
 					var langXPath = "div[@data-book=\"" + dataBookLabel + "\" and @lang=\"" + lang + "\"]";
 					var langMatchingNodes = _dataDivElement.SelectNodes(langXPath).Cast<XmlElement>();
 
-					if (langVal.Length >= 1) //Found content in spreadsheet for this language and row
+					if (!string.IsNullOrEmpty(langVal))
 					{
+						//Found content in spreadsheet for this language and row
 						if (lang.Equals("*"))
 						{
 							asteriskContentFound = true;
@@ -316,7 +317,7 @@ namespace Bloom.Spreadsheet
 			var sheetLanguages = _sheet.Languages;
 			foreach (var lang in sheetLanguages)
 			{
-				var colIndex = _sheet.ColumnForLang(lang);
+				var colIndex = _sheet.GetRequiredColumnForLang(lang);
 				var content = row.GetCell(colIndex).Content;
 				if (!string.IsNullOrEmpty(content))
 					return true;
@@ -335,7 +336,7 @@ namespace Bloom.Spreadsheet
 			var sheetLanguages = _sheet.Languages;
 			foreach (var lang in sheetLanguages)
 			{
-				var colIndex = _sheet.ColumnForLang(lang);
+				var colIndex = _sheet.GetRequiredColumnForLang(lang);
 				var content = row.GetCell(colIndex).Content;
 				var editable = HtmlDom.GetEditableChildInLang(group, lang);
 				if (editable == null)

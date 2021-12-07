@@ -1,5 +1,6 @@
 using Bloom.Book;
 using Bloom.Spreadsheet;
+using Moq;
 using NUnit.Framework;
 using OfficeOpenXml;
 using SIL.IO;
@@ -226,7 +227,15 @@ namespace BloomTests.Spreadsheet
 		public void OneTimeSetUp()
 		{
 			var dom = new HtmlDom(kSimpleTwoPageBook, true);
-			_exporter = new SpreadsheetExporter();
+			var langCodesToLangNames = new Dictionary<string, string>();
+			langCodesToLangNames.Add("en", "English");
+			langCodesToLangNames.Add("fr", "French");
+			langCodesToLangNames.Add("de", "German");
+			var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
+			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("en")).Returns("English");
+			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("fr")).Returns("French");
+			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("de")).Returns("German");
+			_exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
 			_sheetFromExport = _exporter.Export(dom, "fakeImagesFolderpath");
 			_rowsFromExport = _sheetFromExport.ContentRows.ToList();
 			using (var tempFile = TempFile.WithExtension("xslx"))
@@ -266,12 +275,61 @@ namespace BloomTests.Spreadsheet
 
 		[TestCase("fromExport")]
 		[TestCase("fromFile")]
+		public void HeaderHasExpectedNumRows(string source)
+		{
+			SetupFor(source);
+			Assert.That(_sheet.Header.RowCount, Is.EqualTo(2));
+		}
+
+		[TestCase("fromExport")]
+		[TestCase("fromFile")]
+		public void HeaderHasExpectedNumCols(string source)
+		{
+			SetupFor(source);
+			Assert.That(_sheet.Header.ColumnCount, Is.EqualTo(8));
+		}
+
+		[TestCase("fromExport")]
+		[TestCase("fromFile")]
+		public void HeaderHiddenRowsStillAtTop(string source)
+		{
+			SetupFor(source);
+			var firstRow = _sheet.AllRows().First();
+
+			Assert.That(firstRow.Hidden, Is.True);
+		}
+
+		[TestCase("fromExport")]
+		[TestCase("fromFile")]
+		public void HeaderFirstRowContainsColumnIds(string source)
+		{
+			SetupFor(source);
+			var firstRow = _sheet.AllRows().First();
+
+			Assert.That(firstRow.GetCell(0).Content, Is.EqualTo("[metadata key]"));
+			Assert.That(firstRow.GetCell(5).Content, Is.EqualTo("[de]"));
+		}
+
+		[TestCase("fromExport")]
+		[TestCase("fromFile")]
+		public void HeaderSecondRowContainsColumnFriendlyNames(string source)
+		{
+			// Note: This test depends on the Mocked ILanguageDisplayNameResolver
+			SetupFor(source);
+			var secondRow = _sheet.AllRows().ToList()[1];
+
+			Assert.That(secondRow.GetCell(0).Content, Is.EqualTo("Metadata Key"));
+			Assert.That(secondRow.GetCell(5).Content, Is.EqualTo("German"));
+		}
+
+		[TestCase("fromExport")]
+		[TestCase("fromFile")]
 		public void SavesTextFromBlocks(string source)
 		{
 			SetupFor(source);
-			var enCol = _sheet.ColumnForLang("en");
-			var frCol = _sheet.ColumnForLang("fr");
-			var deCol = _sheet.ColumnForLang("de");
+			var enCol = _sheet.GetRequiredColumnForLang("en");
+			var frCol = _sheet.GetRequiredColumnForLang("fr");
+			var deCol = _sheet.GetRequiredColumnForLang("de");
 			// The first row has data from the second element in the document, because of tabindex.
 			Assert.That(_pageContentRows[0].GetCell(enCol).Text, Is.EqualTo("This elephant is running amok. Causing much damage."));
 			Assert.That(_pageContentRows[0].GetCell(frCol).Text, Is.EqualTo("This French elephant is running amok. Causing much damage."));
@@ -299,7 +357,7 @@ namespace BloomTests.Spreadsheet
 		public void AddsRowLabels(string source)
 		{
 			SetupFor(source);
-			var pageNumIndex = _sheet.ColumnForTag(InternalSpreadsheet.PageNumberColumnLabel);
+			var pageNumIndex = _sheet.GetColumnForTag(InternalSpreadsheet.PageNumberColumnLabel);
 
 			Assert.That(_pageContentRows[0].GetCell(pageNumIndex).Content, Is.EqualTo("1"));
 			Assert.That(_pageContentRows[1].GetCell(pageNumIndex).Content, Is.EqualTo("1"));
@@ -312,13 +370,19 @@ namespace BloomTests.Spreadsheet
 		[Test]
 		public void ColumnsNotLanguagesNotCounted()
 		{
+			// Setup
 			var sheet = new InternalSpreadsheet();
 			var offset = sheet.StandardLeadingColumns.Length;
-			Assert.That(sheet.ColumnForLang("en"), Is.EqualTo(offset));
-			Assert.That(sheet.ColumnForLang("es"), Is.EqualTo(offset + 1));
-			Assert.That(sheet.Languages, Has.Count.EqualTo(2));
-			Assert.That(sheet.Languages, Has.Member("en"));
-			Assert.That(sheet.Languages, Has.Member("es"));
+			sheet.AddColumnForLang("en", "English");
+			sheet.AddColumnForLang("es", "Español");
+
+			// System under test
+			var langs = sheet.Languages;
+
+			// Verification
+			Assert.That(langs, Has.Count.EqualTo(2));
+			Assert.That(langs, Has.Member("en"));
+			Assert.That(langs, Has.Member("es"));
 		}
 
 		[Test]
@@ -351,7 +415,7 @@ namespace BloomTests.Spreadsheet
 				using (var package = new ExcelPackage(info))
 				{
 					var worksheet = package.Workbook.Worksheets[0];
-					int c = _sheetFromExport.ColumnForLang("en");
+					int c = _sheetFromExport.GetRequiredColumnForLang("en");
 					var rowCount = worksheet.Dimension.Rows;
 					//The first TextGroup row should contain the marked-up string we are looking for
 					for (int r = 0; true; r++)

@@ -17,6 +17,7 @@ using OfficeOpenXml.Style;
 using SIL.IO;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Drawing;
 using System.IO;
 using System.Text;
@@ -57,8 +58,8 @@ namespace Bloom.Spreadsheet
 					worksheet.Column(i).Width = standardLeadingColumnWidth;
 				}
 
-				var imageSourceColumn = spreadsheet.ColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
-				var imageThumbnailColumn = spreadsheet.ColumnForTag(InternalSpreadsheet.ImageThumbnailColumnLabel);
+				var imageSourceColumn = spreadsheet.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
+				var imageThumbnailColumn = spreadsheet.GetColumnForTag(InternalSpreadsheet.ImageThumbnailColumnLabel);
 				// Apparently the width is in some approximation of 'characters'. This empirically determined
 				// conversion factor seems to do a pretty good job.
 				worksheet.Column(imageThumbnailColumn + 1).Width = defaultImageWidth /6.88;
@@ -127,7 +128,7 @@ namespace Bloom.Spreadsheet
 							var imageSrc = row.GetCell(c).Content;
 
 							// if this row has an image source value that is not a header 
-							if (imageSrc != "" && Array.IndexOf(spreadsheet.StandardLeadingColumns, imageSrc) == -1)
+							if (imageSrc != "" && Array.IndexOf(spreadsheet.StandardLeadingColumns.Select(kvp => kvp.Key).ToArray(), imageSrc) == -1)
 							{
 								var sheetFolder = Path.GetDirectoryName(outputPath);
 								var imagePath = Path.Combine(sheetFolder, imageSrc);
@@ -240,7 +241,7 @@ namespace Bloom.Spreadsheet
 
 		private static bool IsWysiwygFormattedRow(ExcelWorksheet worksheet, int rowIndex, SpreadsheetRow row)
 		{
-			var metadataCol = row.Spreadsheet.ColumnForTag(InternalSpreadsheet.MetadataKeyColumnLabel);
+			var metadataCol = row.Spreadsheet.GetColumnForTag(InternalSpreadsheet.MetadataKeyColumnLabel);
 			string metadataKey = worksheet.Cells[rowIndex + 1, metadataCol + 1].Value.ToString();
 			return WysiwygFormattedRowKeys.Contains(metadataKey);
 		}
@@ -255,8 +256,13 @@ namespace Bloom.Spreadsheet
 				var colCount = worksheet.Dimension.Columns;
 				// Enhance: eventually we should detect any rows that are not ContentRows,
 				// and either drop them or make plain SpreadsheetRows.
-				ReadRow(worksheet, 0, colCount, spreadsheet.Header); 
-				for (var r = 1; r < rowCount; r++)
+				int numHeaderRows = spreadsheet.Header.RowCount;
+				for (int i = 0; i < numHeaderRows; ++i)
+				{
+					ReadRow(worksheet, i, colCount, spreadsheet.Header.GetRow(i));
+				}
+
+				for (var r = numHeaderRows; r < rowCount; r++)
 				{
 					var row = new ContentRow(spreadsheet);
 					ReadRow(worksheet, r, colCount, row);
