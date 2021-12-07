@@ -74,5 +74,26 @@ namespace Bloom.ToPalaso
 			}
 		}
 
+		/// <summary>
+		/// Return the longest pathname found in the given folder.
+		/// </summary>
+		public static string GetLongestPathname(string folderPath)
+		{
+			var longestPath = "";
+			foreach (var path in Directory.GetFiles(folderPath))
+			{
+				if (path.Length > longestPath.Length)
+					longestPath = path;
+			}
+			foreach (var dir in Directory.GetDirectories(folderPath))
+			{
+				foreach (var subpath in Directory.GetFiles(dir))
+				{
+					if (subpath.Length > longestPath.Length)
+						longestPath = subpath;
+				}
+			}
+			return longestPath;
+		}
 	}
 }
