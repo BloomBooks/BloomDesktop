@@ -406,7 +406,7 @@ namespace BloomTests.Spreadsheet
 		}
 
 		[Test]
-		public void RetainMarkupOptionRetainsMarkup()
+		public void SpreadsheetIOWriteSpreadsheet_RetainMarkupOptionRetainsMarkup()
 		{
 			using (var tempFile = TempFile.WithExtension("xslx"))
 			{
@@ -430,6 +430,22 @@ namespace BloomTests.Spreadsheet
 							break;
 						}
 					}
+				}
+			}
+		}
+
+		[Test]
+		public void SpreadsheetIOWriteSpreadsheet_HeaderFriendlyNameForImageNotOverwritten()
+		{
+			using (var tempFile = TempFile.WithExtension("xslx"))
+			{
+				SpreadsheetIO.WriteSpreadsheet(_sheetFromExport, tempFile.Path, retainMarkup:false);
+				var info = new FileInfo(tempFile.Path);
+				using (var package = new ExcelPackage(info))
+				{
+					var worksheet = package.Workbook.Worksheets[0];
+					var cell = worksheet.Cells[2, 4];	// Note: This uses 1-based index
+					Assert.That(cell.Value.ToString(), Is.EqualTo("Image"));
 				}
 			}
 		}
