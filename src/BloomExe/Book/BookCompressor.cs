@@ -34,7 +34,7 @@ namespace Bloom.Book
 		internal static readonly string[] VideoFileExtensions = { ".mp4" };
 		// These file extensions are the only ones that will be included in the compressed version
 		// at the top book level.
-		internal static readonly string[] BookLevelFileExtensionsLowerCase = { ".svg", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".otf", ".ttf", ".woff", ".htm", ".css", ".json", ".txt" };
+		internal static readonly string[] BookLevelFileExtensionsLowerCase = { ".svg", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".otf", ".ttf", ".woff", ".htm", ".css", ".json", ".txt", ".js", ".distribution" };
 
 		internal static void MakeSizedThumbnail(Book book, string destinationFolder, int heightAndWidth)
 		{
@@ -316,8 +316,8 @@ namespace Bloom.Book
 		private static bool FileIsWhitelisted(string filePath, int depthFromCollection)
 		{
 			var fileExtensionLc = Path.GetExtension(filePath).ToLowerInvariant();
-			// Whitelist appropriate book folder level files.
-			if (depthFromCollection == 1)
+			// Whitelist appropriate book folder level files (also applies to Collection-level files for BloomPacks)
+			if (depthFromCollection < 2)
 				return BookLevelFileExtensionsLowerCase.Contains(fileExtensionLc);
 
 			if (depthFromCollection == 2)
