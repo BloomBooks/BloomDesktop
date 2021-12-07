@@ -128,7 +128,9 @@ namespace Bloom.Utils
 			}
 
 			var previousSize = _previousMeasurement?.LastKnownSize ?? 0L;
-			var m = new Measurement(actionLabel, actionDetails, previousSize);
+			Measurement m = null;
+			m = new Measurement(actionLabel, actionDetails, previousSize);
+
 			_previousMeasurement = m;
 			_measurement = m;
 			return new Lifespan(m, MeasurementEnded);
@@ -187,16 +189,46 @@ namespace Bloom.Utils
 			_actionLabel = actionLabel;
 			_actionDetails = actionDetails;
 			_previousPrivateBytesKb = previousPrivateBytesKb;
-			_start = new PerfPoint();
+			try
+			{
+				_start = new PerfPoint();
+			}
+			catch (Exception e)
+			{
+				// The OS can get into a state where we can't load performance counters (BL-10689).
+				// If we're in such a state, just don't report performance.
+				Logger.WriteError("Failed to create PerfPoint", e);
+				// Reporting will do the right thing if _start is null
+			}
 		}
 
 		public void Finish()
 		{
-			_end = new PerfPoint();
+			try
+			{
+				_end = new PerfPoint();
+			}
+			catch (Exception e)
+			{
+				// The OS can get into a state where we can't load performance counters (BL-10689).
+				// If we're in such a state, just don't report performance.
+				Logger.WriteError("Failed to create Measurement", e);
+				// Reporting on the measurement will indicate failure if _end stays null
+			}
 		}
 
 		public object GetSummary()
 		{
+			if (!IsComplete)
+			{
+				return new
+				{
+					action = _actionLabel + " measurement failed",
+					details = _actionDetails,
+					privateBytes = 0,
+					duration = 0
+				};
+			}
 			return new
 			{
 				action = _actionLabel,
@@ -210,14 +242,25 @@ namespace Bloom.Utils
 		{
 			get
 			{
+				if (!IsComplete)
+					return 0;
+
 				TimeSpan diff = _end.when - _start.when;
 				
 				return Math.Round(diff.TotalMilliseconds / 1000, 2);
 			}
 		}
 
+		public bool IsComplete => _start != null && _end != null;
+
 		public string GetCsv()
 		{
+			if (!IsComplete)
+			{
+				// I'm trying to make this look enough like the usual message to indicate something went wrong,
+				// but not to crash any Javascript looking for the usual message.
+				return $"{_actionLabel} measurement failed,{_actionDetails},0:00,0,0";
+			}
 			TimeSpan diff = _end.when - _start.when;
 			var time = diff.ToString(@"ss\.ff");
 			return $"{_actionLabel},{_actionDetails},{time},{_end.privateBytesKb},{(_end.privateBytesKb - _previousPrivateBytesKb)}";
@@ -225,6 +268,9 @@ namespace Bloom.Utils
 
 		public override string ToString()
 		{
+			if (!IsComplete)
+				return $"Measurement: details=\"{_actionDetails}\"; measurement failed";
+
 			// For a ToString() summary, the delta/previousSizeKb is not important.
 			return $"Measurement: details=\"{_actionDetails}\"; start={_start.privateBytesKb}KB ({_start.when}); end={_end?.privateBytesKb}KB ({_end?.when})";
 		}
