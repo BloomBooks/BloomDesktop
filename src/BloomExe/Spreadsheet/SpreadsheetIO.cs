@@ -128,7 +128,7 @@ namespace Bloom.Spreadsheet
 							var imageSrc = row.GetCell(c).Content;
 
 							// if this row has an image source value that is not a header 
-							if (imageSrc != "" && Array.IndexOf(spreadsheet.StandardLeadingColumns.Select(kvp => kvp.Key).ToArray(), imageSrc) == -1)
+							if (imageSrc != "" && !row.IsHeader)
 							{
 								var sheetFolder = Path.GetDirectoryName(outputPath);
 								var imagePath = Path.Combine(sheetFolder, imageSrc);
