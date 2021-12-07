@@ -23,6 +23,7 @@ using SIL.CommandLineProcessing;
 using NAudio.Wave;
 #endif
 using SIL.IO;
+using SIL.PlatformUtilities;
 using SIL.Reporting;
 using SIL.Text;
 using SIL.Xml;
@@ -78,6 +79,8 @@ namespace Bloom.Publish.Epub
 		public delegate EpubMaker Factory();// autofac uses this
 
 		public const string kEPUBExportFolder = "ePUB_export";
+		private const int kPathMax = 260;	// maximum path length on Windows (including terminating NUL)
+
 		protected const string kEpubNamespace = "http://www.idpf.org/2007/ops";
 
 		public const string kAudioFolder = "audio";
@@ -279,7 +282,28 @@ namespace Bloom.Publish.Epub
 			// So it is useful to have a unique name for each one.
 			// However, it needs to be something we can put in a URL without complications,
 			// so a guid is better than say the book's own folder name.
-			BookInStagingFolder = Path.Combine(_outerStagingFolder.FolderPath, _book.ID);
+			var id64 = Convert.ToBase64String(new Guid(_book.ID).ToByteArray()).Replace("/","_").Replace("+","-").Trim(new[] {'='});
+			BookInStagingFolder = Path.Combine(_outerStagingFolder.FolderPath, id64);
+			if (Platform.IsWindows)
+			{
+				// https://issues.bloomlibrary.org/youtrack/issue/BH-5988 has a book with an image file whose name is 167 characters long.
+				// "C:\Users\steve\AppData\Local\Temp\ePUB_export\0" is already 47 characters long, and usernames can certainly be longer
+				// than 5 characters.  So we can't really afford much more in the folder name.  Certainly adding the full GUID will make
+				// this file's path too long, throwing an exception rather than creating an ePUB.  (This may not happen on the local user's
+				// machine, but certainly will on the harvester machine.)
+				var longestName = DirectoryUtils.GetLongestFilename(_book.FolderPath);
+				// Most likely an image file which is buried deepest in ePUB format.
+				var maxPathNeeded = BookInStagingFolder.Length + longestName.Length + 17;	// 17 accounts for @"\content\images\" plus NUL at end.
+				if (maxPathNeeded >= kPathMax)
+				{
+
+					var needToShrink = maxPathNeeded - kPathMax;
+					if (needToShrink < id64.Length)
+						BookInStagingFolder = Path.Combine(_outerStagingFolder.FolderPath, id64.Substring(0, id64.Length - needToShrink));
+					else
+						throw new System.IO.PathTooLongException($"\"{Path.Combine(_outerStagingFolder.FolderPath, id64)}\" is too long for the local Windows filesystem to handle even with shrinking the id foldername.");
+				}
+			}
 			// in case of previous versions // Enhance: delete when done? Generate new name if conflict?
 			var contentFolderName = "content";
 			_contentFolder = Path.Combine(BookInStagingFolder, contentFolderName);
