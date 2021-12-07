@@ -280,6 +280,15 @@ namespace Bloom.Publish.Epub
 			// However, it needs to be something we can put in a URL without complications,
 			// so a guid is better than say the book's own folder name.
 			BookInStagingFolder = Path.Combine(_outerStagingFolder.FolderPath, _book.ID);
+			if (BookInStagingFolder.Length > 60)
+			{
+				// https://issues.bloomlibrary.org/youtrack/issue/BH-5988 has a book with an image file whose name is 167 characters long.
+				// "C:\Users\steve\AppData\Local\Temp\ePUB_export\0" is already 47 characters long, and usernames can certainly be longer
+				// than 5 characters.  So we can't really afford much more in the folder name.  Certainly adding the full GUID will make
+				// the file's path too long, throwing an exception rather than creating an ePUB.  (This may not happen on the local user's
+				// machine, but certainly will on the harvester machine.)
+				BookInStagingFolder = BookInStagingFolder.Substring(0, 60);
+			}
 			// in case of previous versions // Enhance: delete when done? Generate new name if conflict?
 			var contentFolderName = "content";
 			_contentFolder = Path.Combine(BookInStagingFolder, contentFolderName);

@@ -604,7 +604,11 @@ namespace Bloom.WebLibraryIntegration
 			// So our temporary folder must be no more than 140 characters (allow some margin) since paths can be a
 			// maximum of 260 characters in Windows.  (More margin than that may be needed because there's no guarantee
 			// that image filenames are no longer than 65 characters.)  See https://jira.sil.org/browse/BL-1160.
-			using(var tempDestination = new TemporaryFolder("BDS_" + Guid.NewGuid()))
+			// https://issues.bloomlibrary.org/youtrack/issue/BH-5988 has a book with an image file whose name is 167 characters long.
+			// So, 50 + 2 for slashes + 167 = 219. This means the temporary folder should be no more than 40 characters long.
+			// "C:\Users\steve\AppData\Local\Temp\" is already 35 characters long, and usernames can certainly be longer
+			// than 5 characters.  So we can't really afford much randomness in the folder name.
+			using (var tempDestination = new TemporaryFolder(GetMinimalRandomFolderName()))
 			{
 				var tempDirectory = Path.Combine(tempDestination.FolderPath, bookFolderName);
 				float progressStep = 1.0F;
@@ -689,6 +693,33 @@ namespace Bloom.WebLibraryIntegration
 					return destinationPath;
 				}
 			}
+		}
+
+		private string GetMinimalRandomFolderName()
+		{
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+				return "BDS_" + Guid.NewGuid();		// no path length limits on Linux
+			for (int i = 0; i < 100; ++i)
+			{
+				var name = "BDS" + i;
+				var tempPath = Path.Combine(Path.GetTempPath(), name);
+				if (!File.Exists(tempPath) && !Directory.Exists(tempPath))
+					return name;
+			}
+			// Take a chance...
+			var temp = Path.Combine(Path.GetTempPath(), "BDS_");
+			try
+			{
+				if (File.Exists(temp))
+					RobustFile.Delete(temp);
+				else if (Directory.Exists(temp))
+					SIL.IO.RobustIO.DeleteDirectory(temp, true);
+			}
+			catch (IOException)
+			{
+				// can't delete it... hope we can copy into it.
+			}
+			return "BDS_";
 		}
 
 		public void Dispose()
