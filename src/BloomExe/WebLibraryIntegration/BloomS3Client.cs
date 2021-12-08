@@ -242,6 +242,8 @@ namespace Bloom.WebLibraryIntegration
 			var destDirName = Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory));
 			CopyDirectory(pathToBloomBookDirectory, destDirName);
 
+			BookStorage.EnsureSingleHtmFile(destDirName);
+
 			RemoveUnwantedVideoFiles(destDirName, videoFilesToInclude);
 			ProcessVideosInTempDirectory(destDirName);
 

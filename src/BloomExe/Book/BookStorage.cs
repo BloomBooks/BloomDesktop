@@ -1553,22 +1553,9 @@ namespace Bloom.Book
 			// BL-8893 Sometimes users can get into a state where a template directory Bloom thinks it should
 			// look in is closed to Bloom by system permissions. In that case, skip that directory.
 			// This is the location that threw an exception in the case of the original user's problem.
-			List<string> candidates = null;
-			try
-			{
-				candidates = new List<string>(
-					Directory.GetFiles(folderPath)
-
-						// Although GetFiles supports simple pattern matching, it doesn't support enforcing end-of-string matches...
-						// So let's do the filtering this way instead, to make sure we don't get any extensions that start with "htm" but aren't exact matches.
-						.Where(name => name.EndsWith(".htm") || name.EndsWith(".html"))
-				);
-			}
-			catch (UnauthorizedAccessException uaex)
-			{
-				Logger.WriteError("Bloom folder access problem: ", uaex);
+			var candidates = GetAllHtmCandidates(folderPath).ToList();
+			if (candidates.Count == 0)
 				return string.Empty;
-			}
 
 			var decoyMarkers = new[] {"configuration",
 				PrefixForCorruptHtmFiles, // Used to rename corrupt htm files before restoring backup
@@ -1590,6 +1577,52 @@ namespace Bloom.Book
 
 			return String.Empty;
 		}
+
+		private static IEnumerable<string> GetAllHtmCandidates(string folderPath)
+		{
+			try
+			{
+				return Directory.GetFiles(folderPath)
+
+						// Although GetFiles supports simple pattern matching, it doesn't support enforcing end-of-string matches...
+						// So let's do the filtering this way instead, to make sure we don't get any extensions that start with "htm" but aren't exact matches.
+						.Where(name => name.EndsWith(".htm") || name.EndsWith(".html"));
+			}
+			catch (UnauthorizedAccessException uaex)
+			{
+				Logger.WriteError("Bloom folder access problem: ", uaex);
+				return new List<string>();
+			}
+		}
+
+		/// <summary>
+		/// This method finds any .htm or .html files in the book folder that should not be published.
+		/// </summary>
+		/// <param name="folderPath"></param>
+		/// <remarks>Internal for testing.</remarks>
+		internal static IEnumerable<string> FindDeletableHtmFiles(string folderPath)
+		{
+			var theRealOne = FindBookHtmlInFolder(folderPath);
+			var okayFiles = new List<string> { theRealOne, Path.Combine(folderPath,"configuration.htm") };
+			var allCandidates = GetAllHtmCandidates(folderPath).ToList();
+			allCandidates.RemoveAll(f => okayFiles.Contains(f));
+			return allCandidates.Where(f => !Path.GetFileName(f).ToLowerInvariant().StartsWith("readme-"));
+		}
+
+		/// <summary>
+		/// PublishHelper (ePUB and Android) and BloomS3Client (Upload) call this after copying a book
+		/// to a staging folder.
+		/// </summary>
+		internal static void EnsureSingleHtmFile(string folderPath)
+		{
+			var badHtmFilesToDelete = FindDeletableHtmFiles(
+				folderPath);
+			foreach (string badFilePath in badHtmFilesToDelete)
+			{
+				RobustFile.Delete(badFilePath);
+			}
+		}
+
 
 		public static void SetBaseForRelativePaths(HtmlDom dom, string folderPath)
 		{
