@@ -234,14 +234,15 @@ namespace Bloom.TeamCollection
 			string whoHasBookLocked = null;
 			DateTime whenLocked = DateTime.MaxValue;
 			bool problem = false;
-			var status = _tcManager.CurrentCollection?.GetStatus(bookFolderName);
+			// bookFolderName may be null when no book is selected, e.g., after deleting one.
+			var status = bookFolderName == null ? null :_tcManager.CurrentCollection?.GetStatus(bookFolderName);
 				// At this level, we know this is the path to the .bloom file in the repo
 				// (though if we implement another backend, we'll have to generalize the notion somehow).
 				// For the Javascript, it's just an argument to pass to
 				// CommonMessages.GetPleaseClickHereForHelpMessage(). It's only used if hasInvalidRepoData is non-empty.
 				string clickHereArg = "";
 				var folderTC = _tcManager.CurrentCollection as FolderTeamCollection;
-				if (folderTC != null)
+				if (folderTC != null && bookFolderName != null)
 				{
 					clickHereArg = UrlPathString.CreateFromUnencodedString(folderTC.GetPathToBookFileInRepo(bookFolderName))
 						.UrlEncoded;
@@ -250,6 +251,30 @@ namespace Bloom.TeamCollection
 			string hasInvalidRepoData = (status?.hasInvalidRepoData ?? false) ?
 					(folderTC)?.GetCouldNotOpenCorruptZipMessage()
 				: "";
+
+			if (bookFolderName == null)
+			{
+				return JsonConvert.SerializeObject(
+					new
+					{
+						// Keep this in sync with IBookTeamCollectionStatus defined in TeamCollectionApi.tsx
+						who = "",
+						whoFirstName = "",
+						whoSurname = "",
+						when = DateTime.Now.ToShortDateString(),
+						where = "",
+						currentUser = CurrentUser,
+						currentUserName = TeamCollectionManager.CurrentUserFirstName,
+						currentMachine = TeamCollectionManager.CurrentMachine,
+						problem = "",
+						hasInvalidRepoData = false,
+						clickHereArg = "",
+						changedRemotely = false,
+						disconnected = false,
+						newLocalBook = true,
+						checkinMessage = ""
+					});
+			}
 
 			bool newLocalBook = false;
 			try
