@@ -109,6 +109,17 @@ namespace Bloom.Publish
 			{
 				PageLayout = BookSelection.CurrentSelection.GetLayout();
 				CanPublish = DeterminePublishability();
+				EnsureSingleHtmFile();
+			}
+		}
+
+		private void EnsureSingleHtmFile()
+		{
+			var badHtmFilesToDelete = BookStorage.FindNonPublishableHtmFiles(
+				BookSelection.CurrentSelection.FolderPath);
+			foreach(string badFilePath in badHtmFilesToDelete)
+			{
+				RobustFile.Delete(badFilePath);
 			}
 		}
 
