@@ -109,6 +109,7 @@ namespace Bloom.Publish
 			{
 				PageLayout = BookSelection.CurrentSelection.GetLayout();
 				CanPublish = DeterminePublishability();
+				BookStorage.EnsureSingleHtmFile(BookSelection.CurrentSelection);
 			}
 		}
 
