@@ -231,7 +231,7 @@ namespace BloomTests.TeamCollection
 			{
 				SIL.Windows.Forms.Registration.Registration.Default.Email = "me@example.com";
 
-				var apiBuilder = new TeamCollectionApiBuilder().WithDefaultMocks();
+				var apiBuilder = new TeamCollectionApiBuilder().WithDefaultMocks(true);
 				var api = apiBuilder.Build();
 				api.RegisterWithApiHandler(_server.ApiHandler);
 
@@ -274,7 +274,7 @@ namespace BloomTests.TeamCollection
 			{
 				SIL.Windows.Forms.Registration.Registration.Default.Email = "me@example.com";
 
-				var apiBuilder = new TeamCollectionApiBuilder().WithDefaultMocks();
+				var apiBuilder = new TeamCollectionApiBuilder().WithDefaultMocks(true);
 				var api = apiBuilder.Build();
 				api.RegisterWithApiHandler(_server.ApiHandler);
 

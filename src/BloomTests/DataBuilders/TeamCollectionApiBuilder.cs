@@ -50,10 +50,16 @@ namespace BloomTests.DataBuilders
 			this._bloomWebSocketServer = null;
 		}
 
-		public TeamCollectionApiBuilder WithDefaultMocks()
+		public TeamCollectionApiBuilder WithDefaultMocks(bool addFakeBookFolderPath = false)
 		{
 			this.MockCollectionSettings = new Mock<CollectionSettings>();
 			this.MockBookSelection = new Mock<BookSelection>();
+			if (addFakeBookFolderPath)
+			{
+				var book = new Mock<Bloom.Book.Book>();
+				book.Setup(m => m.FolderPath).Returns("");
+				MockBookSelection.Setup(m => m.CurrentSelection).Returns(book.Object);
+			}
 			this.MockTeamCollectionManager = new Mock<ITeamCollectionManager>();
 			this._bookServer = null;
 			this._bloomWebSocketServer = null;
