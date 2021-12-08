@@ -446,6 +446,11 @@ namespace Bloom.CollectionTab
 			}
 
 			_loadedPrimaryCollectionButtons = true;
+			if (_bookSelection.CurrentSelection != null)
+			{
+				// make the appropriate new button look selected
+				HighlightBookButtonAndShowContextMenuButton(_bookSelection.CurrentSelection.BookInfo);
+			}
 		}
 
 		private void LoadSourceCollectionButtons()
