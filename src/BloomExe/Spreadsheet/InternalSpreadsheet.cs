@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using Bloom.web;
+using L10NSharp;
 
 namespace Bloom.Spreadsheet
 {
@@ -82,8 +83,18 @@ namespace Bloom.Spreadsheet
 					var kvp = StandardLeadingColumns[Header.ColumnCount];
 					var tag = kvp.Key;
 					var friendlyName = kvp.Value;
-					Header.AddColumn(tag, friendlyName);
-				}				
+					var addedCells = Header.AddColumn(tag, friendlyName);
+					if (tag == ImageSourceColumnLabel)
+					{
+						addedCells.nameCell.Comment = LocalizationManager.GetString("Spreadsheet.ImageSourceComment",
+							"A full path like (C:\\foo) or a path relative to the location of this spreadsheet like images\\foo.png");
+					}
+					else if (tag == ImageThumbnailColumnLabel)
+					{
+						addedCells.nameCell.Comment = LocalizationManager.GetString("Spreadsheet.ImageThumbnailComment",
+							"This is usually just so you can see what the picture is. Import is based on the path in a hidden column next to this one.");
+					}
+				}
 			}
 		}
 
@@ -144,7 +155,7 @@ namespace Bloom.Spreadsheet
 					return i;
 			}
 
-			return -1;
+			return -1;			
 		}
 
 		/// <summary>
@@ -157,7 +168,8 @@ namespace Bloom.Spreadsheet
 		public int AddColumnForLang(string langCode, string langDisplayName)
 		{
 			string columnLabel = "[" + langCode + "]";
-			return AddColumnForTag(columnLabel, langDisplayName);
+			string comment = "Note, the real identification of this language is in a hidden row above this, e.g. [en]";
+			return AddColumnForTag(columnLabel, langDisplayName, comment);
 		}
 
 		/// <summary>
@@ -165,8 +177,9 @@ namespace Bloom.Spreadsheet
 		/// </summary>
 		/// <param name="columnLabel">The label of the column</param>
 		/// <param name="columnFriendlyName">The friendly name of the column</param>
+		/// <param name="friendlyNameComment">Optional. If non-null and non-empty, sets a comment in the newly created cell for the friendly name of the column.</param>
 		/// <returns>The index of the column (0-based)</returns>
-		public int AddColumnForTag(string columnLabel, string columnFriendlyName)
+		public int AddColumnForTag(string columnLabel, string columnFriendlyName, string friendlyNameComment = null)
 		{
 			for (var i = 0; i < Header.ColumnCount; i++)
 			{
@@ -175,7 +188,13 @@ namespace Bloom.Spreadsheet
 					return i;
 				}
 			}
-			Header.AddColumn(columnLabel, columnFriendlyName);
+			var addedCells = Header.AddColumn(columnLabel, columnFriendlyName);
+
+			if (!string.IsNullOrEmpty(friendlyNameComment))
+			{
+				addedCells.nameCell.Comment = friendlyNameComment;
+			}
+
 			return Header.ColumnCount - 1;
 		}
 

@@ -45,10 +45,12 @@ namespace Bloom.Spreadsheet
 		/// </summary>
 		/// <param name="identifier">The identifier of the column, e.g. "[en]"</param>
 		/// <param name="friendlyName">The friendly name of the column. This should be a user-readable string</param>
-		public void AddColumn(string identifier, string friendlyName)
+		/// <returns>A tuple containing the two cells added. {idCell} is the cell added in the first row (the ColumnId row) and {nameCell} is the cell added in the 2nd row (the ColumnName row)</returns>
+		public (SpreadsheetCell idCell, SpreadsheetCell nameCell) AddColumn(string identifier, string friendlyName)
 		{
-			ColumnIdRow.AddCell(identifier);
-			ColumnNameRow.AddCell(friendlyName);
+			var idCell = ColumnIdRow.AddCell(identifier);
+			var nameCell = ColumnNameRow.AddCell(friendlyName);
+			return (idCell, nameCell);
 		}
 
 		/// <summary>
