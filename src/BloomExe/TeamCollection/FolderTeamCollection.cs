@@ -1037,24 +1037,29 @@ namespace Bloom.TeamCollection
 				// Possibly call "/bin/df -T" and parse output for file system type for folders shared from network?
 #else
 				// Check whether the repo folder exists inside a *local* folder we've shared to the local network.
-				var repoFolderLower = repoFolderPath.ToLowerInvariant();
-				var searcher = new System.Management.ManagementObjectSearcher("select * from win32_share");
-				foreach (var share in searcher.Get())
-				{
-					string type = share["Type"].ToString();
-					if (type == "0") // 0 = DiskDrive (1 = Print Queue, 2 = Device, 3 = IPH)
-					{
-						var name = share["Name"].ToString(); //getting share name
-						var path = share["Path"].ToString(); //getting share path
-						if (name.EndsWith("$"))
-							continue;	// skip system shares like print$ or C$
-						if (Directory.Exists(path))
-						{
-							if (repoFolderLower.StartsWith(path.ToLowerInvariant()+"\\"))
-								return true;
-						}
-					}
-				}
+				// 8 Dec 2021:  (BL-10704) We are ignoring the machine from which the folder is shared for
+				// now, since we believe that the standard use case for local network sharing is to have a
+				// separate machine hosting the repo that never runs Bloom.
+				//var repoFolderLower = repoFolderPath.ToLowerInvariant();
+				//var searcher = new System.Management.ManagementObjectSearcher("select * from win32_share");
+				//foreach (var share in searcher.Get())
+				//{
+				//	string type = share["Type"].ToString();
+				//	if (type == "0") // 0 = DiskDrive (1 = Print Queue, 2 = Device, 3 = IPH)
+				//	{
+				//		var name = share["Name"].ToString(); //getting share name
+				//		var path = share["Path"].ToString(); //getting share path
+				//		if (name.EndsWith("$"))
+				//			continue;	// skip system shares like print$ or C$
+				//		if (Directory.Exists(path))
+				//		{
+				//			The problem was here where "C:/Users" was shared on most machines, so this
+				//			always returned true.
+				//			if (repoFolderLower.StartsWith(path.ToLowerInvariant()+"\\"))
+				//				return true;
+				//		}
+				//	}
+				//}
 				// Check whether the repo folder is actually one that has been shared *from elsewhere* on the local network.
 				// The RE matches paths like "\\this\is\a\test of a\network path" or "\\computer\C$"
 				// The alternation is needed to allow for single-character elements in the path as
