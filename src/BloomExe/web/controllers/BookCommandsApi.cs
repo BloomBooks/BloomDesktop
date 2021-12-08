@@ -213,7 +213,7 @@ namespace Bloom.web.controllers
 
 				var sheet = InternalSpreadsheet.ReadFromFile(inputFilepath);
 				var dom = book.OurHtmlDom;
-				var importer = new SpreadsheetImporter(dom, sheet);
+				var importer = new SpreadsheetImporter(dom, sheet, Path.GetDirectoryName(inputFilepath), book.FolderPath);
 				var messages = importer.Import();
 				if (messages.Count > 0)
 				{

@@ -314,6 +314,8 @@ namespace Bloom.Spreadsheet
 			}
 
 			string rawText = cell.Value.ToString();
+			if (string.IsNullOrEmpty(rawText))
+				return ""; // otherwise we'd wrap a paragraph around it, making it harder to detect empty cells.
 			if (HasMarkup(rawText))
 			{
 				// spreadsheet was exported using the retainMarkup parameter

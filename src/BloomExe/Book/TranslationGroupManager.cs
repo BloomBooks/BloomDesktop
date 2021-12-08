@@ -230,9 +230,16 @@ namespace Bloom.Book
 			}
 		}
 
-		public static XmlElement[] GetTranslationGroups(XmlNode elementOrDom)
+		public static XmlElement[] GetTranslationGroups(XmlNode elementOrDom, bool omitBoxHeaders = true)
 		{
-			return elementOrDom.SafeSelectNodes(".//*[contains(@class,'bloom-translationGroup')]").Cast<XmlElement>().ToArray();
+			var groups = elementOrDom
+				.SafeSelectNodes(".//div[contains(@class, 'bloom-translationGroup')]")
+				.Cast<XmlElement>();
+			if (omitBoxHeaders)
+			{
+				groups = groups.Where(g => !g.Attributes["class"].Value.Contains("box-header-off"));
+			}
+			return groups.ToArray();
 		}
 
 		private static void UpdateContentLanguageClassesOnElement(XmlElement e, Dictionary<string, string> contentLanguages, BookData bookData, string contentLanguageIso2, string contentLanguageIso3, string[] dataDefaultLanguages)
@@ -452,7 +459,7 @@ namespace Bloom.Book
 		/// For each group (meaning they have a common parent) of editable items, we
 		/// need to make sure there are the correct set of copies, with appropriate @lang attributes
 		/// </summary>
-		private static void MakeElementWithLanguageForOneGroup(XmlElement groupElement, string isoCode)
+		public static XmlElement MakeElementWithLanguageForOneGroup(XmlElement groupElement, string isoCode)
 		{
 			if (groupElement.GetAttribute("class").Contains("STOP"))
 			{
@@ -466,10 +473,10 @@ namespace Bloom.Book
 												select x;
 			if (elementsAlreadyInThisLanguage.Any())
 				//don't mess with this set, it already has a vernacular (this will happen when we're editing a shellbook, not just using it to make a vernacular edition)
-				return;
+				return elementsAlreadyInThisLanguage.First();
 
 			if (groupElement.SafeSelectNodes("ancestor-or-self::*[contains(@class,'bloom-translationGroup')]").Count == 0)
-				return;
+				return null;
 
 			var prototype = editableChildrenOfTheGroup[0] as XmlElement;
 			XmlElement newElementInThisLanguage;
@@ -516,6 +523,7 @@ namespace Bloom.Book
 				StripOutText(newElementInThisLanguage);
 			}
 			newElementInThisLanguage.SetAttribute("lang", isoCode);
+			return newElementInThisLanguage;
 		}
 
 		/// <summary>
@@ -574,12 +582,9 @@ namespace Bloom.Book
 		/// <summary>
 		/// bloom-translationGroup elements on the page in audio-reading order.
 		/// </summary>
-		public static List<XmlElement> SortedGroupsOnPage(XmlElement page)
+		public static List<XmlElement> SortedGroupsOnPage(XmlElement page, bool omitBoxHeaders = false)
 		{
-			return TranslationGroupManager.SortTranslationGroups(page
-				.SafeSelectNodes(".//div[contains(@class, 'bloom-translationGroup')]")
-				.Cast<XmlElement>());
-
+			return TranslationGroupManager.SortTranslationGroups(GetTranslationGroups(page, omitBoxHeaders));
 		}
 	}
 }

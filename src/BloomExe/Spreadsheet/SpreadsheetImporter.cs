@@ -1,8 +1,14 @@
-﻿using Bloom.Book;
+﻿using System;
+using Bloom.Book;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security;
 using System.Xml;
+using SIL.IO;
+using SIL.Progress;
+using SIL.Xml;
 
 namespace Bloom.Spreadsheet
 {
@@ -20,15 +26,22 @@ namespace Bloom.Spreadsheet
 		private XmlElement _currentGroup;
 		private List<XmlElement> _pages;
 		private List<XmlElement> _groupsOnPage;
+		private int _imageContainerOnPageIndex;
+		private List<XmlElement> _imageContainersOnPage;
+		private XmlElement _currentImageContainer;
 		private List<string> _warnings;
 		private List<ContentRow> _inputRows;
 		private XmlElement _dataDivElement;
+		private string _pathToSpreadsheetFolder;
+		private string _pathToBookFolder;
 
-		public SpreadsheetImporter(HtmlDom dest, InternalSpreadsheet sheet)
+		public SpreadsheetImporter(HtmlDom dest, InternalSpreadsheet sheet, string pathToSpreadsheetFolder = null, string pathToBookFolder = null)
 		{
 			_dest = dest;
 			_dataDivElement = _dest.SafeSelectNodes("//div[@id='bloomDataDiv']").Cast<XmlElement>().First();
 			_sheet = sheet;
+			_pathToBookFolder = pathToBookFolder;
+			_pathToSpreadsheetFolder = pathToSpreadsheetFolder;
 		}
 
 		/// <summary>
@@ -50,35 +63,11 @@ namespace Bloom.Spreadsheet
 			_pages = _dest.GetPageElements().ToList();
 			_currentRowIndex = 0;
 			_currentPageIndex = -1;
-			_groupsOnPage = new List<XmlElement>(0);
-			AdvanceToNextGroup();
-			while (_currentGroup != null || _currentRowIndex < _inputRows.Count)
+			_groupsOnPage = new List<XmlElement>();
+			_imageContainersOnPage = new List<XmlElement>();
+			while (_currentRowIndex < _inputRows.Count)
 			{
-				var pageNumber = HtmlDom.NumberOfPage(_currentPage);
-				if (_currentRowIndex >= _inputRows.Count)
-				{
-					if (_groupOnPageIndex > 0)
-					{
-						_warnings.Add($"No input row found for block {_groupOnPageIndex + 1} of page {pageNumber}");
-						_currentPageIndex++;
-					}
 
-					// complain about any pages that have numbers and TGs and no input.
-					// xmatter pages are not an issue.
-					pageNumber = "";
-					while (_currentPageIndex < _pages.Count && pageNumber == "")
-					{
-						var page = _pages[_currentPageIndex];
-						_currentPageIndex++;
-						if (TranslationGroupManager.SortedGroupsOnPage(page).Count == 0)
-							continue;
-						pageNumber = HtmlDom.NumberOfPage(page);
-
-					}
-					if (pageNumber != "")
-						_warnings.Add($"No input found for pages from {pageNumber} onwards.");
-					break;
-				}
 				var currentRow = _inputRows[_currentRowIndex];
 				string rowTypeLabel = currentRow.MetadataKey;
 
@@ -86,66 +75,22 @@ namespace Bloom.Spreadsheet
 				{
 					bool rowHasImage = !string.IsNullOrWhiteSpace(currentRow.GetCell(InternalSpreadsheet.ImageSourceColumnLabel).Text);
 					bool rowHasText = RowHasText(currentRow);
+					if (rowHasImage && rowHasText)
+					{
+						AdvanceToNextGroupAndImageContainer();
+					} else if (rowHasImage)
+					{
+						AdvanceToNextImageContainer();
+					} else if (rowHasText)
+					{
+						AdvanceToNextGroup();
+					}
 					if (rowHasImage)
 					{
-						// TODO import the picture
+						PutRowInImage(currentRow);
 					}
 					if (rowHasText) {
-						var rowPageNumberLabel = currentRow.PageNumber;
-						if (rowPageNumberLabel != pageNumber)
-						{
-							// Do we have a later page that has the right number?
-							var indexOfTargetPage = IndexOfNextPageWithNumber(rowPageNumberLabel);
-							if (indexOfTargetPage > 0)
-							{
-								// We're missing input for the current group.
-								_warnings.Add($"No input row found for block {_groupOnPageIndex + 1} of page {pageNumber}");
-								// We want to continue the loop, ensuring that GetNextGroup() will return the first group
-								// on the indicated page.
-								// Enhance: possibly we should do another warning if there are also whole pages with no input?
-								// but not if they have no groups.
-								_currentPageIndex = indexOfTargetPage - 1;
-								_groupsOnPage = new List<XmlElement>(0); // so we will at once move to next page
-								AdvanceToNextGroup();
-								continue; // same row, put it on that page.
-							}
-							// No later page matches this row. So we have nowhere to put it (until we implement
-							// adding pages). Warn the user.
-							var previousRowsOnSamePage = PreviousRowsOnSamePage(rowPageNumberLabel);
-							if (previousRowsOnSamePage == 0)
-							{
-								// entire page is missing.
-								// Or possibly, there IS such a page, but we couldn't put
-								// even one row on it because it has no TGs at all.
-								// Enhance: possibly better to give different messages for these two cases?
-								_warnings.Add($"Input has rows for page {rowPageNumberLabel}, but document has no page {rowPageNumberLabel} that can hold text");
-								// advance to input row on another page
-								_currentRowIndex++;
-								while (_currentRowIndex < _inputRows.Count &&
-									   _inputRows[_currentRowIndex].PageNumber == rowPageNumberLabel)
-									_currentRowIndex++;
-								continue; // keep same group
-							}
-							else
-							{
-								// We've put some rows on this page, but it doesn't have room for enough.
-								var rowsForPage = previousRowsOnSamePage;
-								while (_currentRowIndex < _inputRows.Count &&
-									   _inputRows[_currentRowIndex].PageNumber == rowPageNumberLabel)
-								{
-									_currentRowIndex++;
-									rowsForPage++;
-								}
-
-								_warnings.Add($"Input has {rowsForPage} row(s) for page {rowPageNumberLabel}, but page {rowPageNumberLabel} has only {previousRowsOnSamePage} place(s) for text");
-								continue; // keep same group
-							}
-						}
-
-						// This is actually the normal case. The next group matches the current row.
-						// Fill it in and advance to the next row and group.
 						PutRowInGroup(currentRow, _currentGroup);
-						AdvanceToNextGroup();
 					}
 				}
 				else if (rowTypeLabel[0]=='[' && rowTypeLabel[rowTypeLabel.Length - 1]==']') //This row is xmatter
@@ -157,6 +102,77 @@ namespace Bloom.Spreadsheet
 			}
 
 			return _warnings;
+		}
+
+		private void PutRowInImage(ContentRow currentRow)
+		{
+			var imgSrc = currentRow.GetCell(InternalSpreadsheet.ImageSourceColumnLabel).Content;
+			if (imgSrc == InternalSpreadsheet.BlankContentIndicator)
+			{
+				imgSrc = "placeHolder.png";
+			}
+
+			var imgFileName = Path.GetFileName(imgSrc);
+			var bloomSrc = Path.GetFileName(imgFileName);
+			var img = GetImgFromContainer(_currentImageContainer);
+			// Enhance: warn if null?
+			img?.SetAttribute("src", UrlPathString.CreateFromUnencodedString(bloomSrc).UrlEncoded);
+			// Earlier versions of Bloom often had explicit height and width settings on images.
+			// In case anything of the sort remains, it probably won't be correct for the new image,
+			// so best to get rid of it.
+			img?.RemoveAttribute("height");
+			img?.RemoveAttribute("width");
+			// image containers often have a generated title attribute that gives the file name and
+			// notes about its resolution, etc. We think it will be regenerated as needed, but certainly
+			// the one from a previous image is no use.
+			_currentImageContainer.RemoveAttribute("title");
+			if (_pathToSpreadsheetFolder != null) //currently will only be null in tests
+			{
+				// To my surprise, if imgSrc is rooted (a full path), this will just use it,
+				// ignoring _pathToSpreadsheetFolder, which is what we want.
+				var source = Path.Combine(_pathToSpreadsheetFolder, imgSrc);
+				if (imgSrc == "placeHolder.png")
+				{
+					// Don't assume the source has it, let's get a copy from files shipped with Bloom
+					source = Path.Combine(BloomFileLocator.FactoryCollectionsDirectory, "template books",
+						"Basic Book", "placeHolder.png");
+				}
+
+				try
+				{
+					// Copy image file to destination
+					if (_pathToBookFolder != null && _pathToSpreadsheetFolder != null)
+					{
+						var dest = Path.Combine(_pathToBookFolder, bloomSrc);
+						if (RobustFile.Exists(source))
+						{
+							RobustFile.Copy(source, dest, true);
+							ImageUpdater.UpdateImgMetadataAttributesToMatchImage(_pathToBookFolder, img,
+								new NullProgress());
+						}
+						else
+						{
+							// Review: I doubt these messages are worth localizing? The sort of people who attempt
+							// spreadsheet import can likely cope with some English?
+							_warnings.Add(
+								$"Image \"{source}\" on row {_currentRowIndex + 1} was not found.");
+						}
+					}
+				}
+				catch (Exception e) when (e is IOException || e is SecurityException ||
+				                          e is UnauthorizedAccessException)
+				{
+					_warnings.Add(
+						$"Bloom had trouble copying the file {source} to the book folder or retrieving its metadata: " +
+						e.Message);
+				}
+			}
+		}
+
+		private XmlElement GetImgFromContainer(XmlElement container)
+		{
+			return container.ChildNodes.Cast<XmlNode>()
+				.FirstOrDefault(x => x.Name == "img") as XmlElement;
 		}
 
 		private void UpdateDataDivFromRow(ContentRow currentRow, string dataBookLabel)
@@ -177,9 +193,7 @@ namespace Bloom.Spreadsheet
 			}
 
 			var imageSrcCol = _sheet.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
-			//TODO copy in images from their source paths. Will be done with the importing images step
 			var imageSrc = Path.GetFileName(currentRow.GetCell(imageSrcCol).Content);
-
 			bool specificLanguageContentFound = false;
 			bool asteriskContentFound = false;
 
@@ -268,47 +282,228 @@ namespace Bloom.Spreadsheet
 			_dataDivElement.AppendChild(node);
 		}
 
-		private int PreviousRowsOnSamePage(string label)
-		{
-			int lastRowOnDifferentPage = _currentRowIndex - 1;
-			while (lastRowOnDifferentPage >= 0 && _inputRows[lastRowOnDifferentPage].PageNumber == label)
-				lastRowOnDifferentPage--;
-			return _currentRowIndex - lastRowOnDifferentPage - 1;
-		}
-
-		private int IndexOfNextPageWithNumber(string number)
-		{
-			for (int i = _currentPageIndex; i < _pages.Count; i++)
-			{
-				if (HtmlDom.NumberOfPage(_pages[i]) == number)
-					return i;
-			}
-
-			return -1;
-		}
-
 		private void AdvanceToNextGroup()
 		{
 			_groupOnPageIndex++;
 			// We arrange for this to be always true initially
-			while (_groupOnPageIndex >= _groupsOnPage.Count)
+			if (_groupOnPageIndex >= _groupsOnPage.Count)
+			{
+				AdvanceToNextNumberedPage(false, true);
+				_groupOnPageIndex = 0;
+			}
+
+			_currentGroup = _groupsOnPage[_groupOnPageIndex];
+		}
+
+		private XmlDocument _basicBookTemplate;
+
+		private void GeneratePage(string guid)
+		{
+			if (_basicBookTemplate == null)
+			{
+				var path = Path.Combine(BloomFileLocator.FactoryCollectionsDirectory, "template books", "Basic Book", "Basic Book.html");
+				_basicBookTemplate = XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false);
+			}
+
+			var templatePage = _basicBookTemplate.SelectSingleNode($"//div[@id='{guid}']") as XmlElement;
+			ImportPage(templatePage);
+		}
+
+		// Insert a clone of templatePage into the document before _currentPage (or after _lastContentPage, if _currentPage is null),
+		// and make _currentPage point to the new page.
+		private void ImportPage(XmlElement templatePage)
+		{
+			var newPage = _pages[0].OwnerDocument.ImportNode(templatePage, true) as XmlElement;
+			BookStarter.SetupIdAndLineage(templatePage, newPage);
+			_pages.Insert(_currentPageIndex, newPage);
+			// Correctly inserts at end if _currentPage is null, though this will hardly ever
+			// be true because we normally have at least backmatter page to insert before.
+			_pages[0].ParentNode.InsertBefore(newPage, _currentPage);
+
+			// clear everything: this is useful in case it has slots we won't use.
+			// They might have content either from the original last page, or from the
+			// modifications we already made to it.
+			var editables = newPage.SelectNodes(".//div[contains(@class, 'bloom-editable') and @lang != 'z']").Cast<XmlElement>().ToArray();
+			foreach (var e in editables)
+			{
+				e.ParentNode.RemoveChild(e);
+			}
+
+			var imageContainers = GetImageContainers(newPage);
+			foreach (var c in imageContainers)
+			{
+				var img = GetImgFromContainer(c);
+				img?.SetAttribute("src", "placeHolder.png");
+				foreach (var attr in new[] { "alt", "data-copyright", "data-creator", "data-license" })
+					img?.RemoveAttribute(attr);
+				c.RemoveAttribute("title");
+			}
+
+			// This is not tested yet, but we want to remove video content if any from whatever last page we're copying.
+			foreach (var v in newPage.SelectNodes(".//div[contains(@class, 'bloom-videoContainer')]/video")
+				         .Cast<XmlElement>().ToList())
+			{
+				HtmlDom.AddClass(v.ParentNode as XmlElement, "bloom-noVideoSelected");
+				v.ParentNode.RemoveChild(v);
+			}
+
+			// and widgets (also not tested)
+			foreach (var w in newPage.SelectNodes(".//div[contains(@class, 'bloom-widgetContainer')]/iframe")
+				         .Cast<XmlElement>().ToList())
+			{
+				HtmlDom.AddClass(w.ParentNode as XmlElement, "bloom-noWidgetSelected");
+				w.ParentNode.RemoveChild(w);
+			}
+
+			_currentPage = newPage;
+		}
+
+		private XmlElement _lastContentPage; // Actually the last one we've seen so far, but used only when it really is the last
+		private bool _lastPageHasImageContainer;
+		private bool _lastPageHasTextGroup;
+
+		private void AdvanceToNextNumberedPage(bool needImageContainer, bool needTextGroup)
+		{
+			Debug.Assert(needTextGroup || needImageContainer,
+				"Shouldn't be advancing to another page unless we have something to put on it");
+			string guidOfPageToClone;
+			while (true)
 			{
 				_currentPageIndex++;
+
 				if (_currentPageIndex >= _pages.Count)
 				{
-					_currentGroup = null;
-					_currentPage = null;
+					// We'll have to generate a new page. It will have what we need, so the loop
+					// will terminate there.
+					_currentPage = null; // this has an effect on where we insert the new page.
+					InsertCloneOfLastPageOrDefault(needImageContainer, needTextGroup);
 					return;
 				}
 
 				_currentPage = _pages[_currentPageIndex];
-				if (HtmlDom.NumberOfPage(_currentPage) == "")
-					_groupsOnPage = new List<XmlElement>(0); // skip xmatter or similar page
-				else
-					_groupsOnPage = TranslationGroupManager.SortedGroupsOnPage(_currentPage);
+				// Is this where we want to stop, or should we skip this page and move on?
+				// If it's a numbered page, we consider that a template content page we can
+				// insert row content into...or if it doesn't hold the right sort of content,
+				// we'll insert a page that does before it.
+				// If it's a back matter page, we've come to the end...we'll have to insert
+				// extra pages before it for whatever remaining content we have.
+				if (HtmlDom.NumberOfPage(_currentPage) != "" ||
+				    _currentPage.Attributes["class"].Value.Contains("bloom-backMatter"))
+				{
+					break;
+				}
+			}
+
+			var isBackMatter = _currentPage.Attributes["class"].Value.Contains("bloom-backMatter");
+			if (isBackMatter)
+			{
+				InsertCloneOfLastPageOrDefault(needImageContainer, needTextGroup);
+				return;
+			}
+
+			// OK, we've found a page in the template book which can hold imported content.
+			// If it can hold the sort of content we have, we'll use it; otherwise,
+			// we'll insert a page that can.
+			GetElementsFromCurrentPage();
+			// Note that these are only updated when current page is set to an original usable page,
+			// not when it is set to an inserted one. Thus, once we start adding pages at the end,
+			// it and these variables are fixed at the values for the last content page.
+			_lastContentPage = _currentPage;
+			_lastPageHasImageContainer = _imageContainersOnPage.Count > 0;
+			_lastPageHasTextGroup = _groupsOnPage.Count > 0;
+			guidOfPageToClone = GuidOfPageToCopyIfNeeded(needImageContainer, needTextGroup, _lastPageHasImageContainer,
+				_lastPageHasTextGroup);
+
+			if (guidOfPageToClone != null)
+			{
+				GeneratePage(guidOfPageToClone);
+				GetElementsFromCurrentPage();
+			}
+
+			_imageContainerOnPageIndex = -1;
+			_groupOnPageIndex = -1;
+		}
+
+		private void InsertCloneOfLastPageOrDefault(bool needImageContainer, bool needTextGroup)
+		{
+			// If we don't have a last page at all, the _lastPageHas variables will both be false,
+			// so we'll know to create one.
+			var guidOfNeededPage = GuidOfPageToCopyIfNeeded(needImageContainer, needTextGroup,
+				_lastPageHasImageContainer, _lastPageHasTextGroup);
+			if (guidOfNeededPage == null)
+			{
+				ImportPage(_lastContentPage);
+			}
+			else
+			{
+				GeneratePage(guidOfNeededPage);
+			}
+
+			GetElementsFromCurrentPage();
+			_imageContainerOnPageIndex = -1;
+			_groupOnPageIndex = -1;
+		}
+
+		/// <summary>
+		/// If current page does not have one of the elements we need, return the guid of a page from Basic Book
+		/// that does. If current page is fine, just return null.
+		/// </summary>
+		private string GuidOfPageToCopyIfNeeded(bool needImageContainer, bool needTextGroup, bool haveImageContainer, bool haveTextGroup)
+		{
+			if (needImageContainer && !haveImageContainer)
+			{
+				return needTextGroup
+					? "adcd48df-e9ab-4a07-afd4-6a24d0398382" // basic text and image
+					: "adcd48df-e9ab-4a07-afd4-6a24d0398385"; // just an image
+			}
+			else if (needTextGroup && !haveTextGroup)
+			{
+				return needImageContainer
+					? "adcd48df-e9ab-4a07-afd4-6a24d0398382" // basic text and image
+					: "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"; // just text
+			}
+
+			return null;
+		}
+
+		private List<XmlElement> GetImageContainers(XmlElement ancestor)
+		{
+			return ancestor.SafeSelectNodes(".//div[contains(@class, 'bloom-imageContainer')]").Cast<XmlElement>()
+				.ToList();
+		}
+
+		private void GetElementsFromCurrentPage()
+		{
+			_imageContainersOnPage = GetImageContainers(_currentPage);
+			_groupsOnPage = TranslationGroupManager.SortedGroupsOnPage(_currentPage, true);
+		}
+
+		private void AdvanceToNextImageContainer()
+		{
+			_imageContainerOnPageIndex++;
+			// We arrange for this to be always true initially
+			if (_imageContainerOnPageIndex >= _imageContainersOnPage.Count)
+			{
+				AdvanceToNextNumberedPage(true, false);
+				_imageContainerOnPageIndex = 0;
+			}
+
+			_currentImageContainer = _imageContainersOnPage[_imageContainerOnPageIndex];
+		}
+
+		private void AdvanceToNextGroupAndImageContainer()
+		{
+			_imageContainerOnPageIndex++;
+			_groupOnPageIndex++;
+			// We arrange for this to be always true initially
+			if (_imageContainerOnPageIndex >= _imageContainersOnPage.Count || _groupOnPageIndex >= _groupsOnPage.Count)
+			{
+				AdvanceToNextNumberedPage(true, true);
+				_imageContainerOnPageIndex = 0;
 				_groupOnPageIndex = 0;
 			}
 
+			_currentImageContainer = _imageContainersOnPage[_imageContainerOnPageIndex];
 			_currentGroup = _groupsOnPage[_groupOnPageIndex];
 		}
 
@@ -323,6 +518,14 @@ namespace Bloom.Spreadsheet
 					return true;
 			}
 			return false;
+		}
+
+		public static bool IsEmptyCell(string content)
+		{
+			return string.IsNullOrEmpty(content)
+			       || content == InternalSpreadsheet.BlankContentIndicator
+				   // How the blank content indicator appears when read from spreadsheet by SpreadsheetIO
+			       || content == "<p>" + InternalSpreadsheet.BlankContentIndicator + "</p>";
 		}
 
 		/// <summary>
@@ -341,26 +544,20 @@ namespace Bloom.Spreadsheet
 				var editable = HtmlDom.GetEditableChildInLang(group, lang);
 				if (editable == null)
 				{
-					if (string.IsNullOrEmpty(content))
+					if (IsEmptyCell(content))
 						continue; // Review: or make an empty one?
-					var temp = HtmlDom.GetEditableChildInLang(group, "z"); // standard template element
-					if (temp == null)
-						temp = HtmlDom.GetEditableChildInLang(group, null); // use any available template
-					if (temp == null)
-					{
-						// Enhance: Eventually we should be able to come up with some sort of default here.
-						// Since this is a rather simple temporary expedient I haven't unit tested it.
-						_warnings.Add(
-							$"Could not import group {_groupOnPageIndex} ({content}) on page {HtmlDom.NumberOfPage(_currentPage)} because it has no bloom-editable children to use as templates.");
-						return;
-					}
 
-					editable = temp.Clone() as XmlElement;
-					editable.SetAttribute("lang", lang);
-					group.AppendChild(editable);
+					editable = TranslationGroupManager.MakeElementWithLanguageForOneGroup(group, lang);
 				}
 
-				editable.InnerXml = content;
+				if (IsEmptyCell(content))
+				{
+					editable.ParentNode.RemoveChild(editable);
+				}
+				else
+				{
+					editable.InnerXml = content;
+				}
 			}
 
 			if (RemoveOtherLanguages)
