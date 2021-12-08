@@ -218,17 +218,16 @@ namespace BloomTests.Spreadsheet
 		}
 
 		[Test]
-		public void MetadataRowsAreHiddenExceptTitle()
+		public void MetadataRowsAreHiddenExceptTitleAndImageCover()
 		{
 			SetupFor("fromExport");
-			foreach(var row in _rows)
+			foreach (var row in _rows)
 			{
-				if (row.MetadataKey == InternalSpreadsheet.BookTitleRowLabel)
+				if (new string[] { InternalSpreadsheet.BookTitleRowLabel, InternalSpreadsheet.CoverImageRowLabel }.Contains(row.MetadataKey))
 					Assert.That(row.Hidden, Is.False);
 				else
 					Assert.That(row.Hidden, Is.True);
-			}
-				
+			}				
 		}
 	}
 }
