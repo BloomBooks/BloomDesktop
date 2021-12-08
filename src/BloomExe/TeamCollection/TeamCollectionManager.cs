@@ -255,9 +255,12 @@ namespace Bloom.TeamCollection
 				{
 					var repoFolderPath = RepoFolderPathFromLinkPath(localCollectionLinkPath);
 					CurrentCollection = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath); // will be replaced if CheckConnection fails
+					// BL-10704: We set this to the CurrentCollection BEFORE checking the connection,
+					// so that there will be a valid MessageLog if we need it during CheckConnection().
+					// If CheckConnection() fails, it will reset this to a DisconnectedTeamCollection.
+					CurrentCollectionEvenIfDisconnected = CurrentCollection;
 					if (CheckConnection())
 					{
-						CurrentCollectionEvenIfDisconnected = CurrentCollection;
 						CurrentCollection.SocketServer = SocketServer;
 						CurrentCollection.TCManager = this;
 						// Later, we will sync everything else, but we want the current collection settings before
