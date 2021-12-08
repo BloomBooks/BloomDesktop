@@ -349,6 +349,8 @@ namespace Bloom.Workspace
 				return;
 			if (bookName != Path.GetFileName(_bookSelection.CurrentSelection?.FolderPath))
 				return; // change is not to the book we're interested in.
+			if (this.IsDisposed)
+				return; // We can't need the notification, and Invoke will fail.
 			// Notify anything on the Javascript side that might care about the status change.
 			SafeInvoke.Invoke("sending reload status", this, false, true,
 				() =>
