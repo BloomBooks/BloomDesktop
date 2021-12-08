@@ -411,6 +411,7 @@ namespace Bloom.Publish
 			HashSet<string> omittedPageLabels = null)
 		{
 			BookStorage.CopyDirectory(bookFolderPath, tempFolderPath);
+			BookStorage.EnsureSingleHtmFile(tempFolderPath);
 			// We can always save in a temp book
 			var bookInfo = new BookInfo(tempFolderPath, true, new AlwaysEditSaveContext()) {UseDeviceXMatter = !isTemplateBook};
 			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
