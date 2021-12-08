@@ -163,6 +163,8 @@ namespace Bloom.web.controllers
 
 				var initialFolder = !String.IsNullOrWhiteSpace(Settings.Default.ExportImportFileFolder) ? Settings.Default.ExportImportFileFolder : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 				string outputParentFolder = BloomFolderChooser.ChooseFolder(initialFolder);
+				if (outputParentFolder == null)
+					return; // user canceled
 				string outputFolder = Path.Combine(outputParentFolder, Path.GetFileNameWithoutExtension(bookPath));
 				string imagesFolderPath = Path.GetDirectoryName(bookPath);
 				exporter.ExportToFolderWithProgress(dom, imagesFolderPath, outputFolder, outputFilePath =>
