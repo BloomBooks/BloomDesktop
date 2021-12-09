@@ -167,6 +167,19 @@ namespace Bloom.Book
 				else
 					Storage.Dom.RemoveMetaElement("xmatter");
 			}
+			(Storage as BookStorage).BookTitleChanged += Book_BookTitleChanged;
+		}
+
+		private void Book_BookTitleChanged(object sender, EventArgs e)
+		{
+			if (!BookInfo.NameLocked)
+			{
+				var folderName = Path.GetFileName(FolderPath);
+				if (folderName == Storage.Dom.Title)
+					BookHistory.AddEvent(this, BookHistoryEventType.Renamed, $"Book title changed to \"{Storage.Dom.Title}\"");
+				else
+					BookHistory.AddEvent(this, BookHistoryEventType.Renamed, $"Book title changed to \"{Storage.Dom.Title}\" (folder=\"{folderName}\")");
+			}
 		}
 
 		void _storage_FolderPathChanged(object sender, EventArgs e)
