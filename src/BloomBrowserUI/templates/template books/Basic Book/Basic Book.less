@@ -26,128 +26,63 @@ generic*/
     .bloom-editable {
         left: 0;
     }
-    &:not(.layout-style-SideBySide):not(.layout-style-SplitAcrossPages) {
-        .bloom-imageContainer {
-            .SetHeightWithPercentMinusConstant(
-                45%,
-                @StandardMultilingualEditBoxSeparation
-            );
-            width: 100%;
-            position: absolute;
-            left: 0;
-            top: 0;
-        }
-        .bloom-monolingual& {
-            .bloom-translationGroup {
-                top: 50%;
-                height: 50%;
-            }
-            .bloom-editable {
-                position: absolute;
-                bottom: 0;
-            }
-        }
-        .bloom-bilingual& {
-            @ImageHeight: 32%;
-            .bloom-imageContainer {
-                top: 33%;
-                height: @ImageHeight;
-                margin-top: 5px;
-            }
-            .bloom-editable {
-                height: @ImageHeight;
-            }
-            .bloom-content2 {
-                position: absolute;
-                bottom: 0;
-            }
-            .bloom-content3 {
-                position: absolute;
-                bottom: 0;
-            }
-        }
 
-        .bloom-trilingual& {
-            @ImageHeight: 24%;
-            .bloom-imageContainer {
-                top: calc(~"13px + @{ImageHeight}");
-                height: @ImageHeight;
-            }
-            .bloom-editable {
-                height: @ImageHeight;
-            }
-            .bloom-content2 {
-                position: absolute;
-                top: calc(~"1.3% + @{ImageHeight} +  @{ImageHeight}");
-            }
-            .bloom-content3 {
-                position: absolute;
-                bottom: 0;
-            }
-        }
+    .bloom-imageContainer {
+        .SetHeightWithPercentMinusConstant(
+            45%,
+            @StandardMultilingualEditBoxSeparation
+        );
+        width: 100%;
+        position: absolute;
+        left: 0;
+        top: 0;
     }
-
-    &.layout-style-SplitAcrossPages {
-        .bloom-imageContainer {
-            width: 100%;
-            height: 100%;
-            top: 0;
-        }
-        &.bloom-bilingual .bloom-editable {
-            .SetHeightWithPercentMinusConstant(
-                50%,
-                @StandardMultilingualEditBoxSeparation
-            );
-        }
-        &.bloom-trilingual .bloom-editable {
-            .SetHeightWithPercentMinusConstant(
-                33%,
-                @StandardMultilingualEditBoxSeparation
-            );
-        }
+    .bloom-monolingual& {
         .bloom-translationGroup {
-            height: 100%;
-            width: 100%;
-            /*Note, this is supposed to respond to bloom-centerVertically, but it doesn't. The jscript for CenterVerticallyInParent() always things the block is as big as the marginbox, so it doesn't center it*/
-            /*[disabled]position:relative;*/
-            /*So instead, we're settling for starting the text part of the way down*/
-            //position: relative !important;
-            display: block !important;
-            position: relative;
-            left: 0;
-            top: 0;
-            .bloom-editable {
-                font-size: 300%;
-            }
-        }
-    }
-    &.layout-style-SideBySide {
-        .bloom-imageContainer {
-            width: 48%;
-            height: 100%;
-            position: absolute;
-            left: auto; //need to override the "left" of the other layouts
-            right: 0;
-        }
-        .bloom-translationGroup {
-            width: 44%;
+            top: 50%;
+            height: 50%;
         }
         .bloom-editable {
-            &.bloom-monolingual {
-                height: 100%;
-            }
-            .bloom-bilingual& {
-                .SetHeightWithPercentMinusConstant(
-                    50%,
-                    @StandardMultilingualEditBoxSeparation
-                );
-            }
-            .bloom-trilingual& {
-                .SetHeightWithPercentMinusConstant(
-                    33%,
-                    @StandardMultilingualEditBoxSeparation
-                );
-            }
+            position: absolute;
+            bottom: 0;
+        }
+    }
+    .bloom-bilingual& {
+        @ImageHeight: 32%;
+        .bloom-imageContainer {
+            top: 33%;
+            height: @ImageHeight;
+            margin-top: 5px;
+        }
+        .bloom-editable {
+            height: @ImageHeight;
+        }
+        .bloom-content2 {
+            position: absolute;
+            bottom: 0;
+        }
+        .bloom-content3 {
+            position: absolute;
+            bottom: 0;
+        }
+    }
+
+    .bloom-trilingual& {
+        @ImageHeight: 24%;
+        .bloom-imageContainer {
+            top: calc(~"13px + @{ImageHeight}");
+            height: @ImageHeight;
+        }
+        .bloom-editable {
+            height: @ImageHeight;
+        }
+        .bloom-content2 {
+            position: absolute;
+            top: calc(~"1.3% + @{ImageHeight} +  @{ImageHeight}");
+        }
+        .bloom-content3 {
+            position: absolute;
+            bottom: 0;
         }
     }
 }
@@ -187,23 +122,6 @@ generic*/
             );
         }
     }
-
-    &.A4Landscape.layout-style-SideBySide {
-        .bloom-imageContainer {
-            width: 48%;
-            height: 100%;
-            position: absolute;
-            left: auto; //need to override the "left" of the other layouts
-            right: 0;
-        }
-        .bloom-translationGroup {
-            height: 100%;
-            width: 45%;
-            position: absolute;
-            left: 0;
-            top: 0;
-        }
-    }
 }
 
 .imageInMiddle {
@@ -241,46 +159,6 @@ generic*/
         bottom: 0;
         .bloom-editable {
             margin-top: @SpaceBetweenMultilingualAlternatives;
-        }
-    }
-
-    &.layout-style-SplitAcrossPages {
-        .bloom-imageContainer {
-            width: 100%;
-            height: 100%;
-            top: 0;
-        }
-        .bloom-translationGroup {
-            .SetHeightWithPercentMinusConstant(
-                50%,
-                @StandardMultilingualEditBoxSeparation
-            );
-        }
-        &.bloom-bilingual .bloom-translationGroup .bloom-editable {
-            .SetHeightWithPercentMinusConstant(
-                50%,
-                @StandardMultilingualEditBoxSeparation
-            );
-        }
-        &.bloom-trilingual .bloom-translationGroup .bloom-editable {
-            .SetHeightWithPercentMinusConstant(
-                33%,
-                @StandardMultilingualEditBoxSeparation
-            );
-        }
-        .bloom-translationGroup {
-            width: 100%;
-            /*Note, this is supposed to respond to bloom-centerVertically, but it doesn't. The jscript for CenterVerticallyInParent() always things the block is as big as the marginbox, so it doesn't center it*/
-            /*[disabled]position:relative;*/
-            /*So instead, we're settling for starting the text part of the way down*/
-            //position: relative !important;
-            display: block !important;
-            position: relative;
-            left: 0;
-            top: 0;
-            .bloom-editable {
-                font-size: 300%;
-            }
         }
     }
     // ----- Text Boxes ------
@@ -340,42 +218,6 @@ generic*/
             33%,
             @StandardMultilingualEditBoxSeparation
         );
-    }
-    &.A4Landscape.layout-style-SideBySide .bloom-imageContainer {
-        width: 48%;
-        height: 100%;
-        position: absolute;
-        left: auto; //need to override the "left" of the other layouts
-        right: 0;
-    }
-    &.A4Landscape.layout-style-SideBySide .bloom-translationGroup {
-        height: 100%;
-        width: 45%;
-        position: absolute;
-        left: 0;
-        top: 0;
-    }
-    &.layout-style-SplitAcrossPages {
-        .bloom-imageContainer {
-            width: 100%;
-            height: 100%;
-            top: 0;
-        }
-        .bloom-translationGroup {
-            width: 100%;
-            height: 100%;
-            /*Note, this is supposed to respond to bloom-centerVertically, but it doesn't. The jscript for CenterVerticallyInParent() always things the block is as big as the marginbox, so it doesn't center it*/
-            /*[disabled]position:relative;*/
-            /*So instead, we're settling for starting the text part of the way down*/
-            //position: relative !important;
-            display: block !important;
-            position: relative;
-            left: 0;
-            top: 0;
-            .bloom-editable {
-                font-size: 300%;
-            }
-        }
     }
 }
 .imageWholePage {

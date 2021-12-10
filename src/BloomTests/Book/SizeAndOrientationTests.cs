@@ -26,7 +26,7 @@ namespace BloomTests.Book
 		{
 			string json = @"{'layouts': [
 		'A5Portrait',
-		{'A4Landscape' : { 'Styles': ['Default', 'SideBySide']}}
+		{'A4Landscape' : { 'Styles': ['Default', 'Foobar']}}
 	]}";
 			var x = Layout.GetConfigurationsFromConfigurationOptionsString(json);
 			Assert.AreEqual(3, x.Count());
@@ -39,10 +39,10 @@ namespace BloomTests.Book
 			Assert.IsTrue(a4landscapeDefault.SizeAndOrientation.IsLandScape);
 			Assert.AreEqual("Default", a4landscapeDefault.Style);
 
-			Layout a4landscapeSideBySide = x.ToArray()[2];
-			Assert.AreEqual("A4", a4landscapeSideBySide.SizeAndOrientation.PageSizeName);
-			Assert.IsTrue(a4landscapeSideBySide.SizeAndOrientation.IsLandScape);
-			Assert.AreEqual("SideBySide", a4landscapeSideBySide.Style);
+			Layout a4landscapeFoobar = x.ToArray()[2];
+			Assert.AreEqual("A4", a4landscapeFoobar.SizeAndOrientation.PageSizeName);
+			Assert.IsTrue(a4landscapeFoobar.SizeAndOrientation.IsLandScape);
+			Assert.AreEqual("Foobar", a4landscapeFoobar.Style);
 		}
 
 		[Test]
