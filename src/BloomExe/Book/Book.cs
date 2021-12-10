@@ -167,7 +167,8 @@ namespace Bloom.Book
 				else
 					Storage.Dom.RemoveMetaElement("xmatter");
 			}
-			(Storage as BookStorage).BookTitleChanged += Book_BookTitleChanged;
+			if (Storage is BookStorage)
+				(Storage as BookStorage).BookTitleChanged += Book_BookTitleChanged;
 		}
 
 		private void Book_BookTitleChanged(object sender, EventArgs e)
