@@ -161,6 +161,25 @@ generic*/
             margin-top: @SpaceBetweenMultilingualAlternatives;
         }
     }
+    // ----- Text Boxes ------
+    .bloom-editable {
+        width: 100%;
+    }
+    &.bloom-monolingual .bloom-editable {
+        height: calc(
+            ~"100% - @{SpaceBetweenMultilingualAlternatives}"
+        ) !important;
+    }
+    &.bloom-bilingual .bloom-editable {
+        height: calc(
+            ~"50% - @{SpaceBetweenMultilingualAlternatives} - 1px"
+        ) !important;
+    }
+    &.bloom-trilingual .bloom-editable {
+        height: calc(
+            ~"33% - @{SpaceBetweenMultilingualAlternatives} - 1px"
+        ) !important;
+    }
 }
 
 .imageOnBottom {
