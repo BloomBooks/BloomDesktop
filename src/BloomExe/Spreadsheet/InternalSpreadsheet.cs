@@ -21,8 +21,8 @@ namespace Bloom.Spreadsheet
 		public static Color AlternatingRowsColor2 = Color.FromArgb(237, 249, 250); // even lighter version of Color.PowderBlue
 		public static Color HiddenColor = Color.FromArgb(210, 210, 210); // light gray
 
-		public const string MetadataKeyColumnLabel = "[metadata key]";
-		public const string MetadataKeyColumnFriendlyName = "Metadata Key";
+		public const string RowTypeColumnLabel = "[row type]";
+		public const string RowTypeColumnFriendlyName = "Row type";
 		public const string PageNumberColumnLabel = "(exported page)";
 		public const string PageNumberColumnFriendlyName = "Page Number";
 		public const string ImageThumbnailColumnLabel = "[image thumbnail]";
@@ -41,7 +41,7 @@ namespace Bloom.Spreadsheet
 
 		public KeyValuePair<string, string>[] StandardLeadingColumns = new KeyValuePair<string, string>[]
 		{
-			new KeyValuePair<string, string>(MetadataKeyColumnLabel, MetadataKeyColumnFriendlyName), // what kind of data is in the row; might be book-data key or [textgroup] or [image]
+			new KeyValuePair<string, string>(RowTypeColumnLabel, RowTypeColumnFriendlyName), // what kind of data is in the row; might be book-data key or [textgroup] or [image]
 			new KeyValuePair<string, string>(PageNumberColumnLabel, PageNumberColumnFriendlyName), // value from data-page-number of bloom-page
 			// Todo: [page layout], // something that indicates the template for the page
 			new KeyValuePair<string, string>(ImageSourceColumnLabel, ImageSourceColumnFriendlyName), // the full path of where the image comes from

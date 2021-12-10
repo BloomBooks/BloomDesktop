@@ -315,7 +315,7 @@ namespace BloomTests.Spreadsheet
 		{
 			SetupFor(source);
 			var thumbnailColumn = _sheet.GetColumnForTag(InternalSpreadsheet.ImageThumbnailColumnLabel);
-			var svgRow = _rows.First(x => x.GetCell(InternalSpreadsheet.MetadataKeyColumnLabel).Text.Equals("[outside-back-cover-branding-bottom-html]"));
+			var svgRow = _rows.First(x => x.GetCell(InternalSpreadsheet.RowTypeColumnLabel).Text.Equals("[outside-back-cover-branding-bottom-html]"));
 			Assert.That(svgRow.GetCell(thumbnailColumn).Text, Is.EqualTo("Can't display SVG"));
 		}
 	}

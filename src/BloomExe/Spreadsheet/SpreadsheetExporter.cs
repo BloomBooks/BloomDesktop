@@ -130,7 +130,7 @@ namespace Bloom.Spreadsheet
 			foreach(var pageContent in pageContentTuples)
 			{
 				var row = new ContentRow(_spreadsheet);
-				row.SetCell(InternalSpreadsheet.MetadataKeyColumnLabel, InternalSpreadsheet.PageContentRowLabel);
+				row.SetCell(InternalSpreadsheet.RowTypeColumnLabel, InternalSpreadsheet.PageContentRowLabel);
 				row.SetCell(InternalSpreadsheet.PageNumberColumnLabel, pageNumber);
 
 				if (pageContent.imageContainer != null)
@@ -225,7 +225,7 @@ namespace Bloom.Spreadsheet
 					var label = "[" + dataBookLabel.Trim() + "]";
 					if (label != InternalSpreadsheet.BookTitleRowLabel && label != InternalSpreadsheet.CoverImageRowLabel)
 						row.Hidden = true;
-					row.SetCell(InternalSpreadsheet.MetadataKeyColumnLabel, label);
+					row.SetCell(InternalSpreadsheet.RowTypeColumnLabel, label);
 
 					var imageSrcAttribute = dataBookElement.GetAttribute("src").Trim();
 

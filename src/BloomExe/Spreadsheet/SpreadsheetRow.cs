@@ -54,7 +54,7 @@ namespace Bloom.Spreadsheet
 		{
 			get
 			{
-				return _cells[Spreadsheet.GetColumnForTag(InternalSpreadsheet.MetadataKeyColumnLabel)].Content;
+				return _cells[Spreadsheet.GetColumnForTag(InternalSpreadsheet.RowTypeColumnLabel)].Content;
 			}
 		}
 
