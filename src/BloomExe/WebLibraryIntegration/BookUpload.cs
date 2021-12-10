@@ -501,7 +501,7 @@ namespace Bloom.WebLibraryIntegration
 		/// <summary>
 		/// Common routine used in normal upload and bulk upload.
 		/// </summary>
-		internal string FullUpload(Book.Book book, IProgress progress , PublishView publishView, BookUploadParameters bookParams, out string parseId)
+		internal string FullUpload(Book.Book book, IProgress progress, PublishView publishView, BookUploadParameters bookParams, out string parseId)
 		{
 			// this (isForPublish:true) is dangerous and the product of much discussion.
 			// See "finally" block later to see that we put branding files back
@@ -510,11 +510,19 @@ namespace Bloom.WebLibraryIntegration
 			{
 				var bookFolder = book.FolderPath;
 				parseId = ""; // in case of early return
+
+				var languagesToUpload = book.BookInfo.MetaData.TextLangsToPublish.ForBloomLibrary.IncludedLanguages().ToArray();
+				// When initializing, we may set the collection's sign language to IncludeByDefault so the checkbox on the publish screen
+				// gets set by default. Also, videos could have been removed since the user last visited the publish screen (e.g. bulk upload).
+				// So we need to make sure we have videos before including the sign language.
+				if (book.HasSignLanguageVideos())
+					languagesToUpload = languagesToUpload.Union(book.BookInfo.MetaData.SignLangsToPublish.ForBloomLibrary.IncludedLanguages()).ToArray();
+
 				// Set this in the metadata so it gets uploaded. Do this in the background task as it can take some time.
 				// These bits of data can't easily be set while saving the book because we save one page at a time
 				// and they apply to the book as a whole.
 				book.BookInfo.LanguageTableReferences =
-					ParseClient.GetLanguagePointers(book.BookData.MakeLanguageUploadData(bookParams.LanguagesToUpload));
+					ParseClient.GetLanguagePointers(book.BookData.MakeLanguageUploadData(languagesToUpload));
 				book.BookInfo.PageCount = book.GetPages().Count();
 				book.BookInfo.Save();
 				// If the caller wants to preserve existing thumbnails, recreate them only if one or more of them do not exist.
@@ -576,10 +584,14 @@ namespace Bloom.WebLibraryIntegration
 				if (progress.CancelRequested)
 					return "";
 
-				return UploadBook(bookFolder, progress, out parseId, hasVideo ? null : Path.GetFileName(uploadPdfPath),
-					GetAudioFilesToInclude(book, bookParams.ExcludeNarrationAudio, bookParams.ExcludeMusic),
+				return UploadBook(bookFolder,
+					progress,
+					out parseId,
+					hasVideo ? null : Path.GetFileName(uploadPdfPath),
+					GetAudioFilesToInclude(book, bookParams.ExcludeMusic),
 					videoFiles,
-					bookParams.LanguagesToUpload, book.CollectionSettings);
+					languagesToUpload,
+					book.CollectionSettings);
 			}
 			finally
 			{
@@ -606,9 +618,10 @@ namespace Bloom.WebLibraryIntegration
 		/// Conditionally exclude .mp3 files for narration and music.
 		/// Always exclude .wav files for narration.
 		/// </summary>
-		private static ISet<string> GetAudioFilesToInclude(Book.Book book, bool excludeNarrationAudio, bool excludeMusic)
+		private static ISet<string> GetAudioFilesToInclude(Book.Book book, bool excludeMusic)
 		{
 			HashSet<string> result = new HashSet<string>();
+			bool excludeNarrationAudio = !book.BookInfo.MetaData.IncludeAudioForBloomLibraryPublish;
 			if (!excludeNarrationAudio)
 				result.AddRange(book.Storage.GetNarrationAudioFileNamesReferencedInBook(false));
 			if (!excludeMusic)
@@ -668,11 +681,9 @@ namespace Bloom.WebLibraryIntegration
 	public class BookUploadParameters
 	{
 		public string Folder;
-		public bool ExcludeNarrationAudio;
 		public bool ExcludeMusic;
 		public bool PreserveThumbnails;
 		public bool ForceUpload;
-		public string[] LanguagesToUpload;
 
 		public BookUploadParameters()
 		{
@@ -681,7 +692,6 @@ namespace Bloom.WebLibraryIntegration
 		public BookUploadParameters(UploadParameters options)
 		{
 			Folder = options.Path;
-			ExcludeNarrationAudio = options.ExcludeNarrationAudio;
 			ExcludeMusic = options.ExcludeMusicAudio;
 			PreserveThumbnails = options.PreserveThumbnails;
 			ForceUpload = options.ForceUpload;

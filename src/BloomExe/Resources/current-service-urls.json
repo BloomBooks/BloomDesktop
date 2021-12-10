@@ -2,15 +2,14 @@
     "urls": [
         {
             "id": "parse",
-            "url":
-                "https://bloom-parse-server-production.azurewebsites.net/parse/"
+            "url": "https://bloom-parse-server-production.azurewebsites.net/parse/"
         },
         {
             "id": "parseSandbox",
             "url": "https://bloom-parse-server-develop.azurewebsites.net/parse/"
         },
-        { "id": "librarySite", "url": "http://bloomlibrary.org" },
-        { "id": "librarySiteSandbox", "url": "http://dev.bloomlibrary.org" },
+        { "id": "librarySite", "url": "https://bloomlibrary.org" },
+        { "id": "librarySiteSandbox", "url": "https://dev.bloomlibrary.org" },
         {
             "id": "userSuggestions",
             "url": "https://community.software.sil.org/c/bloom/featurerequests"
@@ -25,7 +24,7 @@
         },
         {
             "id": "issueTrackingSystemBackend",
-            "url": "http://issues.bloomlibrary.org"
+            "url": "https://issues.bloomlibrary.org"
         },
         {
             "id": "localizingSystem",

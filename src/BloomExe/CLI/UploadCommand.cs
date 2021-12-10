@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Text;
 using Bloom.Properties;
@@ -102,9 +102,6 @@ public class UploadParameters
 {
 	[Value(0, MetaName = "path", HelpText = "Specify the path to a folder containing books to upload at some level within.", Required = true)]
 	public string Path { get; set; }
-
-	[Option('x', "excludeNarrationAudio", HelpText = "Exclude narration audio files from upload. (The default is to upload narration files.)", Required = false)]
-	public bool ExcludeNarrationAudio { get; set; }
 
 	[Option('e', "excludeMusicAudio", HelpText = "Exclude music (background) audio files from upload.  (The default is to upload music files.)", Required = false)]
 	public bool ExcludeMusicAudio { get; set; }

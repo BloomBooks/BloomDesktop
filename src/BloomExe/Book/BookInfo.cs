@@ -1143,6 +1143,12 @@ namespace Bloom.Book
 		[JsonProperty("audioLangsToPublish")]
 		public LangsToPublishSetting AudioLangsToPublish { get; set; }
 
+		/// <summary>
+		/// The sign language(s) -- currently we allow only one -- which the user wants to publish
+		/// </summary>
+		[JsonProperty("signLangsToPublish")]
+		public LangsToPublishSetting SignLangsToPublish { get; set; }
+
 		// About this ignore: this actually would be perfectly fine as a top-level bit of true metadata.
 		// However, it is currently also in the toolstate, so we're leaving it out of the meta.json so as not to
 		// duplicate that. We could reasonably decide in the future to instead make *this* the source of truth and
@@ -1484,6 +1490,10 @@ namespace Bloom.Book
 		private string GetUpdateSource() => $"BloomDesktop {Application.ProductVersion}";
 
 		private ParseServerDate GetCurrentDate() => new ParseServerDate { Iso = DateTime.UtcNow.ToString("o") };
+
+		// For now, the audio language selection is all or nothing for Bloom Library publish
+		[JsonIgnore]
+		public bool IncludeAudioForBloomLibraryPublish => AudioLangsToPublish.ForBloomLibrary.Any(al => al.Value.IsIncluded());
 	}
 
 	/// <summary>

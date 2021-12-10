@@ -18,4 +18,12 @@ namespace Bloom.Publish
 		[JsonProperty("bloomLibrary")]
 		public Dictionary<string, InclusionSetting> ForBloomLibrary;	// The language codes of the languages that should be published when publishing to Bloom Library
 	}
+
+	public static class LangsToPublishSettingExtensions
+	{
+		public static IEnumerable<string> IncludedLanguages(this Dictionary<string, InclusionSetting> settings)
+		{
+			return settings.Where(l => l.Value.IsIncluded()).Select(kvp => kvp.Key);
+		}
+	}
 }

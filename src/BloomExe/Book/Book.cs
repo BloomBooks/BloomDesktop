@@ -4100,7 +4100,7 @@ namespace Bloom.Book
 		/// <param name="allowedLanguages">If non-null, limits the calculation to only considering the languages specified. Applies only to language-specific features (e.g. blind and talkingBook. Does not apply to Sign Language or language-independent faetures</param>
 		internal void UpdateMetadataFeatures(
 			bool isBlindEnabled, bool isTalkingBookEnabled, bool isSignLanguageEnabled,
-			IEnumerable<string> allowedLanguages = null)
+			IEnumerable<string> allowedLanguages)
 		{
 			// Language-specific features
 			UpdateBlindFeature(isBlindEnabled, allowedLanguages);
@@ -4116,6 +4116,8 @@ namespace Bloom.Book
 			UpdateMotionFeature();
 			UpdateComicFeature();
 			UpdateWidgetFeature();
+
+			BookInfo.Save();
 		}
 
 		/// <summary>
@@ -4123,7 +4125,7 @@ namespace Bloom.Book
 		/// </summary>
 		/// <param name="isEnabled">True to indicate the feature is enabled, or false for disabled (will clear the feature in the metadata)</param>
 		/// <param name="allowedLanguages">If non-null, limits the calculation to only considering the languages specified</param>
-		private void UpdateBlindFeature(bool isEnabled, IEnumerable<string> allowedLanguages = null)
+		private void UpdateBlindFeature(bool isEnabled, IEnumerable<string> allowedLanguages)
 		{
 			if (!isEnabled)
 			{
@@ -4158,7 +4160,7 @@ namespace Bloom.Book
 		/// </summary>
 		/// <param name="isEnabled">True to indicate the feature is enabled, or false for disabled (will clear the feature in the metadata)</param>
 		/// <param name="allowedLanguages">If non-null, limits the calculation to only considering the languages specified</param>
-		private void UpdateTalkingBookFeature(bool isEnabled, IEnumerable<string> allowedLanguages = null)
+		private void UpdateTalkingBookFeature(bool isEnabled, IEnumerable<string> allowedLanguages)
 		{
 			if (!isEnabled)
 			{
