@@ -133,6 +133,7 @@ namespace Bloom.Book
 		private bool _errorAlreadyContainsInstructions;
 
 		public event EventHandler FolderPathChanged;
+		public event EventHandler BookTitleChanged;
 
 
 		// Returns any errors reported while loading the book (during 'expensive initialization').
@@ -1391,7 +1392,10 @@ namespace Bloom.Book
 			// remote users of a TeamCollection when we were just renaming the copy
 			// we were publishing.)
 			if (FolderPath.StartsWith(_collectionSettings.FolderPath))
+			{
 				_bookRenamedEvent.Raise(fromToPair);
+				BookTitleChanged?.Invoke(this, EventArgs.Empty);
+			}
 		}
 
 		protected virtual void OnFolderPathChanged()
