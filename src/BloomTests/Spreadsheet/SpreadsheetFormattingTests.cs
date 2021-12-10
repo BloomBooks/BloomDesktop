@@ -106,6 +106,14 @@ namespace BloomTests.Spreadsheet
 			var result = xmlresult.PlainText();
 			Assert.That(result, Is.EqualTo(expected));
 		}
+
+		[TestCase("<p>Some <span>text</span></p>", "Some text")] // span without class caused problems at one point
+		public void ParsesFormattedXmlSpecialCases(string input, string expected)
+		{
+			var xmlresult = MarkedUpText.ParseXml(input);
+			var result = xmlresult.PlainText();
+			Assert.That(result, Is.EqualTo(expected));
+		}
 	}
 
 

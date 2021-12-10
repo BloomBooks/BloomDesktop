@@ -153,7 +153,7 @@ namespace Bloom.Spreadsheet
 		{
 			MarkedUpText markedUpText;
 			if ((node.Name == "br")
-				|| (node.Name == "span" && node.Attributes.GetNamedItem("class").Value.Equals("bloom-linebreak")))
+				|| (node.Name == "span" && (node.Attributes["class"]?.Value??"").Equals("bloom-linebreak")))
 			{
 				MarkedUpTextRun run = new MarkedUpTextRun("\r\n");
 				markedUpText = new MarkedUpText();
