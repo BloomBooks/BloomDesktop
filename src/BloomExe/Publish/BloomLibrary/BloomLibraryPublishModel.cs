@@ -10,6 +10,9 @@ using SIL.Windows.Forms.Progress;
 using SIL.Xml;
 using BloomTemp;
 using System.IO;
+using Bloom.Collection;
+using Bloom.Book;
+using System.Diagnostics;
 
 namespace Bloom.Publish.BloomLibrary
 {
@@ -148,17 +151,15 @@ namespace Bloom.Publish.BloomLibrary
 
 		internal bool IsThisVersionAllowedToUpload => _uploader.IsThisVersionAllowedToUpload();
 
-		internal string UploadOneBook(BookInstance book, LogBox progressBox, PublishView publishView, string[] languages, bool excludeNarrationAudio, bool excludeMusic, out string parseId)
+		internal string UploadOneBook(BookInstance book, LogBox progressBox, PublishView publishView, bool excludeMusic, out string parseId)
 		{
 			using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))
 			{
 				BookUpload.PrepareBookForUpload(ref book, _publishModel.BookServer, tempFolder.FolderPath, progressBox);
 				var bookParams = new BookUploadParameters
 				{
-					ExcludeNarrationAudio = excludeNarrationAudio,
 					ExcludeMusic = excludeMusic,
 					PreserveThumbnails = false,
-					LanguagesToUpload = languages,
 				};
 				return _uploader.FullUpload(book, progressBox, publishView, bookParams, out parseId);
 			}
@@ -217,6 +218,150 @@ namespace Bloom.Publish.BloomLibrary
 			// Or it might be because a non-template book doesn't have any 'complete' languages.
 			// every non-x - matter field which contains text in any language contains text in this
 			return couldNotUpload + "A non-template book needs at least one language where every non-xmatter field contains text in that language.";
+		}
+
+		public void UpdateBookMetadataFeatures(bool isBlind, bool isTalkingBook, bool isSignLanguage)
+		{
+			var allowedLanguages = Book.BookInfo.MetaData.TextLangsToPublish.ForBloomLibrary.IncludedLanguages()
+				.Union(Book.BookInfo.MetaData.SignLangsToPublish.ForBloomLibrary.IncludedLanguages());
+
+			Book.UpdateMetadataFeatures(
+				isBlindEnabled: isBlind,
+				isTalkingBookEnabled: isTalkingBook,
+				isSignLanguageEnabled: isSignLanguage,
+				allowedLanguages);
+		}
+
+		public void SaveTextLanguageSelection(string langCode, bool include)
+		{
+			Book.BookInfo.MetaData.TextLangsToPublish.ForBloomLibrary[langCode] = include ? InclusionSetting.Include : InclusionSetting.Exclude;
+			Book.BookInfo.Save();   // We updated the BookInfo, so need to persist the changes. (but only the bookInfo is necessary, not the whole book)
+		}
+
+		public void SaveAudioLanguageSelection(bool include)
+		{
+			// Currently, audio language selection is all or nothing for Bloom Library publish
+			foreach (var langCode in Book.BookInfo.MetaData.AudioLangsToPublish.ForBloomLibrary.Keys.ToList())
+			{
+				Book.BookInfo.MetaData.AudioLangsToPublish.ForBloomLibrary[langCode] = include ? InclusionSetting.Include : InclusionSetting.Exclude;
+			}
+			Book.BookInfo.Save();   // We updated the BookInfo, so need to persist the changes. (but only the bookInfo is necessary, not the whole book)
+		}
+
+		public void InitializeLanguages()
+		{
+			InitializeLanguages(Book);
+		}
+
+		public static void InitializeLanguages(BookInstance book)
+		{
+			var allLanguages = book.AllPublishableLanguages();
+
+			var bookInfo = book.BookInfo;
+			Debug.Assert(bookInfo?.MetaData != null, "Precondition: MetaData must not be null");
+
+			if (bookInfo.MetaData.TextLangsToPublish == null)
+			{
+				bookInfo.MetaData.TextLangsToPublish = new LangsToPublishSetting();
+			}
+
+			if (bookInfo.MetaData.TextLangsToPublish.ForBloomLibrary == null)
+			{
+				bookInfo.MetaData.TextLangsToPublish.ForBloomLibrary = new Dictionary<string, InclusionSetting>();
+			}
+
+			// reinitialize our list of which languages to publish, defaulting to the ones that are complete.
+			foreach (var kvp in allLanguages)
+			{
+				var langCode = kvp.Key;
+
+				// First, check if the user has already explicitly set the value. If so, we'll just use that value and be done.
+				if (bookInfo.MetaData.TextLangsToPublish.ForBloomLibrary.TryGetValue(langCode, out InclusionSetting checkboxValFromSettings))
+				{
+					if (checkboxValFromSettings.IsSpecified())
+					{
+						continue;
+					}
+				}
+
+				// Nope, either no value exists or the value was some kind of default value.
+				// Compute (or recompute) what the value should default to.
+				bool isChecked = kvp.Value || IsRequiredLanguageForBook(langCode, book);
+
+				var newInitialValue = isChecked ? InclusionSetting.IncludeByDefault : InclusionSetting.ExcludeByDefault;
+				bookInfo.MetaData.TextLangsToPublish.ForBloomLibrary[langCode] = newInitialValue;
+			}
+
+			// Initialize the Talking Book Languages settings
+			if (bookInfo.MetaData.AudioLangsToPublish == null)
+			{
+				bookInfo.MetaData.AudioLangsToPublish = new LangsToPublishSetting();
+			}
+
+			if (bookInfo.MetaData.AudioLangsToPublish.ForBloomLibrary == null)
+			{
+				bookInfo.MetaData.AudioLangsToPublish.ForBloomLibrary = new Dictionary<string, InclusionSetting>();
+				var allLangCodes = allLanguages.Select(x => x.Key);
+				foreach (var langCode in allLangCodes)
+				{
+					bookInfo.MetaData.AudioLangsToPublish.ForBloomLibrary[langCode] = InclusionSetting.IncludeByDefault;
+				}
+			}
+
+			if (bookInfo.MetaData.SignLangsToPublish == null)
+				bookInfo.MetaData.SignLangsToPublish = new LangsToPublishSetting();
+			if (bookInfo.MetaData.SignLangsToPublish.ForBloomLibrary == null)
+				bookInfo.MetaData.SignLangsToPublish.ForBloomLibrary = new Dictionary<string, InclusionSetting>();
+			var collectionSignLangCode = book.CollectionSettings.SignLanguageIso639Code;
+			// User may have unset or modified the sign language for the collection in which case we need to exclude the old one it if it was previously included.
+			foreach (var includedSignLangCode in bookInfo.MetaData.SignLangsToPublish.ForBloomLibrary.IncludedLanguages().ToList())
+			{
+				if (includedSignLangCode != collectionSignLangCode)
+				{
+					bookInfo.MetaData.SignLangsToPublish.ForBloomLibrary[includedSignLangCode] = InclusionSetting.ExcludeByDefault;
+				}
+			}
+			// Include the collection sign language by default unless the user excluded it.
+			if (!string.IsNullOrEmpty(collectionSignLangCode))
+			{
+				if (!bookInfo.MetaData.SignLangsToPublish.ForBloomLibrary.ContainsKey(collectionSignLangCode) ||
+					bookInfo.MetaData.SignLangsToPublish.ForBloomLibrary[collectionSignLangCode] != InclusionSetting.Exclude)
+				{
+					bookInfo.MetaData.SignLangsToPublish.ForBloomLibrary[collectionSignLangCode] = InclusionSetting.IncludeByDefault;
+				}
+			}
+
+			// The metadata may have been changed, so save it.
+			bookInfo.Save();
+		}
+
+		public static bool IsRequiredLanguageForBook(string langCode, Book.Book book)
+		{
+			// Languages which have been selected for display in this book need to be selected
+			return
+				langCode == book.BookData.Language1.Iso639Code ||
+				langCode == book.Language2IsoCode ||
+				langCode == book.Language3IsoCode;
+		}
+
+		public void ClearSignLanguageToPublish()
+		{
+			foreach (var includedSignLangCode in Book.BookInfo.MetaData.SignLangsToPublish.ForBloomLibrary.IncludedLanguages().ToList()) {
+				Book.BookInfo.MetaData.SignLangsToPublish.ForBloomLibrary[includedSignLangCode] = InclusionSetting.Exclude;
+			}
+			Book.BookInfo.Save();
+		}
+
+		public void SetOnlySignLanguageToPublish(string langCode)
+		{
+			Book.BookInfo.MetaData.SignLangsToPublish.ForBloomLibrary = new Dictionary<string, InclusionSetting>();
+			Book.BookInfo.MetaData.SignLangsToPublish.ForBloomLibrary[langCode] = InclusionSetting.Include;
+			Book.BookInfo.Save();
+		}
+
+		public bool IsPublishSignLanguage()
+		{
+			return Book.BookInfo.MetaData.SignLangsToPublish.ForBloomLibrary.IncludedLanguages().Any();
 		}
 	}
 

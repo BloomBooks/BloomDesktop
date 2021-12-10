@@ -169,7 +169,9 @@ namespace Bloom.Publish.Android
 			modifiedBook.UpdateMetadataFeatures(
 				isBlindEnabled: enableBlind,
 				isSignLanguageEnabled: enableSignLanguage,
-				isTalkingBookEnabled: true);	// talkingBook is only ever set automatically as far as I can tell.
+				isTalkingBookEnabled: true, // talkingBook is only ever set automatically as far as I can tell.
+				allowedLanguages: null // allow all because we've already filtered out the unwanted ones from the dom above.
+				);	
 
 			modifiedBook.SetAnimationDurationsFromAudioDurations();
 
