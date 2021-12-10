@@ -314,7 +314,7 @@ namespace BloomTests.Spreadsheet
 			SetupFor(source);
 			var firstRow = _sheet.AllRows().First();
 
-			Assert.That(firstRow.GetCell(0).Content, Is.EqualTo("[metadata key]"));
+			Assert.That(firstRow.GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.RowTypeColumnLabel));
 			Assert.That(firstRow.GetCell(5).Content, Is.EqualTo("[de]"));
 		}
 
@@ -326,7 +326,7 @@ namespace BloomTests.Spreadsheet
 			SetupFor(source);
 			var secondRow = _sheet.AllRows().ToList()[1];
 
-			Assert.That(secondRow.GetCell(0).Content, Is.EqualTo("Metadata Key"));
+			Assert.That(secondRow.GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.RowTypeColumnFriendlyName));
 			Assert.That(secondRow.GetCell(5).Content, Is.EqualTo("German"));
 		}
 

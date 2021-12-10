@@ -69,7 +69,7 @@ namespace BloomTests.Spreadsheet
 			thirdXmatterRowToModify.SetCell(_sheet.GetRequiredColumnForLang("en"), "<p>This is Not the End of the English World</p>");
 
 			var fourthXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.MetadataKey.Contains("contentLanguage1"));
-			fourthXmatterRowToModify.SetCell(_sheet.GetColumnForTag(InternalSpreadsheet.MetadataKeyColumnLabel), "[newDataBookLabel]");
+			fourthXmatterRowToModify.SetCell(_sheet.GetColumnForTag(InternalSpreadsheet.RowTypeColumnLabel), "[newDataBookLabel]");
 			fourthXmatterRowToModify.SetCell(asteriskColumn, "newContent");
 
 			var fifthXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.MetadataKey.Contains("licenseImage"));

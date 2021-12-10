@@ -248,7 +248,7 @@ namespace Bloom.Spreadsheet
 
 		private static bool IsWysiwygFormattedRow(ExcelWorksheet worksheet, int rowIndex, SpreadsheetRow row)
 		{
-			var metadataCol = row.Spreadsheet.GetColumnForTag(InternalSpreadsheet.MetadataKeyColumnLabel);
+			var metadataCol = row.Spreadsheet.GetColumnForTag(InternalSpreadsheet.RowTypeColumnLabel);
 			string metadataKey = worksheet.Cells[rowIndex + 1, metadataCol + 1].Value.ToString();
 			return WysiwygFormattedRowKeys.Contains(metadataKey);
 		}
