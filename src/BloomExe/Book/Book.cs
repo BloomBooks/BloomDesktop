@@ -4425,8 +4425,8 @@ namespace Bloom.Book
 		{
 			if (!string.IsNullOrWhiteSpace(newName))
 			{
-				Storage.SetBookName(newName);
 				BookInfo.NameLocked = true;
+				Storage.SetBookName(newName);
 				BookInfo.Save();
 			}
 			else

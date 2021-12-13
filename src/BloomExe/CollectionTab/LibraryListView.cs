@@ -1825,7 +1825,10 @@ namespace Bloom.CollectionTab
 				return;
 			book.SetAndLockBookName(newName);
 			BringButtonTitleUpToDate(book);
-			BookHistory.AddEvent(book, BookHistoryEventType.Renamed, $"Book renamed to \"{newName}\"");
+			if (String.IsNullOrEmpty(newName))
+				BookHistory.AddEvent(book, BookHistoryEventType.Renamed, $"Book renamed to \"{book.TitleBestForUserDisplay}\"");
+			else
+				BookHistory.AddEvent(book, BookHistoryEventType.Renamed, $"Book renamed to \"{newName}\"");
 		}
 
 		private void importContentFromSpreadsheetToolStripMenuItem_Click(object sender, EventArgs e)
