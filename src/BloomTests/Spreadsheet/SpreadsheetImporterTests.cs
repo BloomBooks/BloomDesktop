@@ -1,4 +1,5 @@
-﻿using Bloom.Book;
+﻿using System;
+using Bloom.Book;
 using Bloom.Spreadsheet;
 using Moq;
 using NUnit.Framework;
@@ -6,7 +7,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using Bloom.web;
 using BloomTemp;
+using BloomTests.web;
+using Pango;
 using SIL.IO;
 
 namespace BloomTests.Spreadsheet
@@ -76,7 +80,7 @@ namespace BloomTests.Spreadsheet
 			Assert.IsNotNull(fifthXmatterRowToModify, "Did not find the fifth xmatter row that OneTimeSetup was expecting to modify");
 			fifthXmatterRowToModify.SetCell(imageSrcColumn, "newLicenseImage.png");
 
-			var importer = new SpreadsheetImporter(this._dom, _sheet);
+			var importer = new SpreadsheetImporter(null, this._dom, _sheet);
 			InitializeImporter(importer);
 			importer.Import();
 		}
@@ -183,6 +187,7 @@ namespace BloomTests.Spreadsheet
 
 		private TemporaryFolder _bookFolder;
 		private TemporaryFolder _otherImagesFolder;
+		private WebSocketProgressSpy _socketProgressSpy;
 
 		public static string PageWithImageAndText(int pageNumber, int tgNumber, int icNumber, string editableDivs = "")
 		{
@@ -581,8 +586,9 @@ namespace BloomTests.Spreadsheet
 			_bookFolder = new TemporaryFolder("SpreadsheetImageAndTextImportTests");
 
 			// Do the import
-			var importer = new SpreadsheetImporter(_dom, ss, _spreadsheetFolder, _bookFolder.FolderPath);
-			_warnings = importer.Import();
+			_socketProgressSpy = new WebSocketProgressSpy();
+			var importer = new SpreadsheetImporter(null, _dom, ss, _spreadsheetFolder, _bookFolder.FolderPath);
+			_warnings = importer.Import(_socketProgressSpy);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -730,6 +736,44 @@ namespace BloomTests.Spreadsheet
 			// Adjust as necessary if we add others.
 			Assert.That(_warnings.Count, Is.EqualTo(1));
 		}
+
+		[TestCase("by copying the last page")]
+		[TestCase("Adding page 7 using a Basic Text")]
+		[TestCase("Updating page 3")]
+		[TestCase("was not found")]
+		[TestCase("Done")]
+		public void GotProgressMessage(string message)
+		{
+			Assert.That(_socketProgressSpy.Messages, Has.Some.Property("Item2").Contains(message));
+		}
+	}
+
+	public class WebSocketProgressSpy : IWebSocketProgress
+	{
+
+		public List<Tuple<ProgressKind, string>> Messages = new List<Tuple<ProgressKind, string>>();
+		public void MessageWithoutLocalizing(string message, ProgressKind kind = ProgressKind.Progress)
+		{
+			Messages.Add(Tuple.Create(kind, message));
+		}
+
+		public void Message(string idSuffix, string comment, string message, ProgressKind progressKind = ProgressKind.Progress,
+			bool useL10nIdPrefix = true)
+		{
+			throw new System.NotImplementedException();
+		}
+
+		public void Message(string idSuffix, string message, ProgressKind kind = ProgressKind.Progress, bool useL10nIdPrefix = true)
+		{
+			throw new System.NotImplementedException();
+		}
+
+		public void MessageWithParams(string idSuffix, string comment, string message, ProgressKind kind, params object[] parameters)
+		{
+			throw new System.NotImplementedException();
+		}
+
+		public bool HaveProblemsBeenReported { get; }
 	}
 
 	/// <summary>
@@ -806,7 +850,7 @@ namespace BloomTests.Spreadsheet
 			_bookFolder = new TemporaryFolder("SpreadsheetImageAndTextImportToBookWithEmptyLastPageTests");
 
 			// Do the import
-			var importer = new SpreadsheetImporter(_dom, ss, _spreadsheetFolder, _bookFolder.FolderPath);
+			var importer = new SpreadsheetImporter(null, _dom, ss, _spreadsheetFolder, _bookFolder.FolderPath);
 			_warnings = importer.Import();
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
@@ -926,7 +970,7 @@ namespace BloomTests.Spreadsheet
 			_bookFolder = new TemporaryFolder("SpreadsheetImageAndTextImportToBookWithComplexLastPageTests");
 
 			// Do the import
-			var importer = new SpreadsheetImporter(_dom, ss, _spreadsheetFolder, _bookFolder.FolderPath);
+			var importer = new SpreadsheetImporter(null, _dom, ss, _spreadsheetFolder, _bookFolder.FolderPath);
 			_warnings = importer.Import();
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();

@@ -81,7 +81,7 @@ namespace Bloom.Spreadsheet
 							titleBackgroundColor = Palette.kBloomBlueHex,
 							webSocketContext = "spreadsheet-export",
 							showReportButton = "if-error"
-						}, "Sync Team Collection")
+						}, "Export Spreadsheet")
 					// winforms dialog properties
 					{ Width = 620, Height = 550 }, (progress, worker) =>
 			{
