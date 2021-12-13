@@ -209,7 +209,7 @@ namespace BloomTests.Spreadsheet
 			{
 				sheetFromExport.WriteToFile(tempFile.Path);
 				var sheet = InternalSpreadsheet.ReadFromFile(tempFile.Path);
-				var importer = new SpreadsheetImporter(roundtrippedDom, sheet);
+				var importer = new SpreadsheetImporter(null, roundtrippedDom, sheet);
 				importer.Import();
 			}
 			return roundtrippedDom;

@@ -76,12 +76,12 @@ namespace Bloom.Spreadsheet
 						new
 						{
 							title = "Exporting Spreadsheet",
-							titleIcon = "", // todo:
+							titleIcon = "", // enhance: add icon if wanted
 							titleColor = "white",
 							titleBackgroundColor = Palette.kBloomBlueHex,
 							webSocketContext = "spreadsheet-export",
 							showReportButton = "if-error"
-						}, "Sync Team Collection")
+						}, "Export Spreadsheet")
 					// winforms dialog properties
 					{ Width = 620, Height = 550 }, (progress, worker) =>
 			{

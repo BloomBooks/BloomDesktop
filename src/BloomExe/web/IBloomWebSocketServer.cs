@@ -8,5 +8,8 @@ namespace Bloom.web
 		void Init(string port);
 		void Dispose();
 		void SendBundle(string clientContext, string progress, object messageBundle);
+		bool IsSocketOpen(string name);
+
+		void SendEvent(string clientContext, string eventId);
 	}
 }
