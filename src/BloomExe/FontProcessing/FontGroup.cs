@@ -1,12 +1,13 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 #if __MonoCS__
 using SharpFont;
 #else
-using System.Windows.Media;		// not implemented in Mono
+using System.Windows.Media;     // not implemented in Mono
 #endif
 
-namespace Bloom.Publish.Epub
+namespace Bloom.FontProcessing
 {
 	/// <summary>
 	/// Set of up to four files useful for a given font name
@@ -74,6 +75,20 @@ namespace Bloom.Publish.Epub
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return GetEnumerator();
+		}
+
+		public IEnumerable<string> GetAvailableVariants()
+		{
+			var variants = new List<string>();
+			if (Normal != null)
+				variants.Add("regular");
+			if (Bold != null)
+				variants.Add("bold");
+			if (Italic != null)
+				variants.Add("italic");
+			if (BoldItalic != null)
+				variants.Add("bold italic");
+			return variants;
 		}
 	}
 }

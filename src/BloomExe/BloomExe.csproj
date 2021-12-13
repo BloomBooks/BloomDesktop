@@ -370,6 +370,9 @@
     <Compile Include="Book\SaveContext.cs" />
     <Compile Include="MiscUI\BloomMessageBox.cs" />
     <Compile Include="Spreadsheet\Header.cs" />
+    <Compile Include="FontProcessing\FontFileFinder.cs" />
+    <Compile Include="FontProcessing\FontGroup.cs" />
+    <Compile Include="FontProcessing\FontMetadata.cs" />
     <Compile Include="Utils\BloomArchiveFile.cs" />
     <Compile Include="Utils\BloomTarArchive.cs" />
     <Compile Include="BloomWebClient.cs">
@@ -670,8 +673,6 @@
     <Compile Include="Publish\BulkUploadProgressDlg.Designer.cs">
       <DependentUpon>BulkUploadProgressDlg.cs</DependentUpon>
     </Compile>
-    <Compile Include="Publish\Epub\FontFileFinder.cs" />
-    <Compile Include="Publish\Epub\FontGroup.cs" />
     <Compile Include="Publish\PDF\MakePdfUsingGeckofxHtmlToPdfProgram.cs" />
     <Compile Include="Publish\PDF\PdfViewer.cs">
       <SubType>UserControl</SubType>
@@ -1194,6 +1195,7 @@
     <Compile Include="WebLibraryIntegration\ProxyManager.cs" />
     <Compile Include="web\BloomApiHandler.cs" />
     <Compile Include="MiscUI\BloomFolderChooser.cs" />
+    <Compile Include="FontProcessing\FontsApi.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\current-service-urls.json" />

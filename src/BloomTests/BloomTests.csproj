@@ -263,6 +263,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BloomFileLocatorTests.cs" />
+    <Compile Include="FontProcessingTests.cs" />
     <Compile Include="Utils\BloomArchiveFileTests.cs" />
     <Compile Include="Utils\BloomTarArchiveTests.cs" />
     <Compile Include="Utils\BloomZipFileTests.cs" />
