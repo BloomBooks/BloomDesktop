@@ -54,7 +54,7 @@ namespace Bloom.MiscUI
 					{Width = 620, Height = 550}, doWhat, doWhenMainActionFalse);
 		}
 
-		public static void DoWorkWithProgressDialog(BloomWebSocketServer socketServer, string socketContext,  Func<Form> makeDialog,
+		public static void DoWorkWithProgressDialog(IBloomWebSocketServer socketServer, string socketContext,  Func<Form> makeDialog,
 			Func<IWebSocketProgress, BackgroundWorker, bool> doWhat, Action<Form> doWhenMainActionFalse = null, IWin32Window owner = null)
 		{
 			var progress = new WebSocketProgress(socketServer, socketContext);

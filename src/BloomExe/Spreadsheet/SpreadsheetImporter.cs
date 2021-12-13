@@ -5,7 +5,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security;
+using System.Windows.Forms;
 using System.Xml;
+using Bloom.Api;
+using Bloom.MiscUI;
+using Bloom.web;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Xml;
@@ -35,15 +39,29 @@ namespace Bloom.Spreadsheet
 		private XmlElement _dataDivElement;
 		private string _pathToSpreadsheetFolder;
 		private string _pathToBookFolder;
+		private IBloomWebSocketServer _webSocketServer;
+		private IWebSocketProgress _progress;
+		private int _unNumberedPagesSeen;
 		private bool _bookIsLandscape;
 
-		public SpreadsheetImporter(HtmlDom dest, InternalSpreadsheet sheet, string pathToSpreadsheetFolder = null, string pathToBookFolder = null)
+		public delegate SpreadsheetImporter Factory();
+
+		/// <summary>
+		/// Create an instance. The webSocketServer may be null unless using ImportWithProgress.
+		/// </summary>
+		/// <remarks>The web socket server is a constructor argument as a step in the direction
+		/// of allowing this class to be instantiated and supplied with the socket server by
+		/// AutoFac. However, for that to work, we'd need to move the other constructor arguments,
+		/// which AutoFac can't know, to the Import method. And for now, all callers which need
+		/// to pass a socket server already have one.</remarks>
+		public SpreadsheetImporter(IBloomWebSocketServer webSocketServer, HtmlDom dest, InternalSpreadsheet sheet, string pathToSpreadsheetFolder = null, string pathToBookFolder = null)
 		{
 			_dest = dest;
 			_dataDivElement = _dest.SafeSelectNodes("//div[@id='bloomDataDiv']").Cast<XmlElement>().First();
 			_sheet = sheet;
 			_pathToBookFolder = pathToBookFolder;
 			_pathToSpreadsheetFolder = pathToSpreadsheetFolder;
+			_webSocketServer = webSocketServer;
 		}
 
 		/// <summary>
@@ -54,12 +72,37 @@ namespace Bloom.Spreadsheet
 
 		public SpreadsheetImportParams Params = new SpreadsheetImportParams();
 
+		public void ImportWithProgress()
+		{
+			var mainShell = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, "spreadsheet-import", () =>
+				new ReactDialog("progressDialogBundle",
+						// props to send to the react component
+						new
+						{
+							title = "Importing Spreadsheet",
+							titleIcon = "", // enhance: add icon if wanted
+							titleColor = "white",
+							titleBackgroundColor = Palette.kBloomBlueHex,
+							webSocketContext = "spreadsheet-import",
+							showReportButton = "if-error"
+						}, "Import Spreadsheet")
+					// winforms dialog properties
+					{ Width = 620, Height = 550 }, (progress, worker) =>
+			{
+				Import(progress);
+				return true; // always leave the dialog up until the user chooses 'close'
+			}, null, mainShell);
+		}
+
 		/// <summary>
 		/// Import the spreadsheet into the dom
 		/// </summary>
 		/// <returns>a list of warnings</returns>
-		public List<string> Import()
+		public List<string> Import(IWebSocketProgress progress = null)
 		{
+			_progress = progress ?? new NullWebSocketProgress();
+			Progress("Importing spreadsheet...");
 			_warnings = new List<string>();
 			_inputRows = _sheet.ContentRows.ToList();
 			_pages = _dest.GetPageElements().ToList();
@@ -104,6 +147,7 @@ namespace Bloom.Spreadsheet
 				_currentRowIndex++;
 			}
 
+			Progress("Done");
 			return _warnings;
 		}
 
@@ -157,7 +201,7 @@ namespace Bloom.Spreadsheet
 						{
 							// Review: I doubt these messages are worth localizing? The sort of people who attempt
 							// spreadsheet import can likely cope with some English?
-							_warnings.Add(
+							Warn(
 								$"Image \"{source}\" on row {_currentRowIndex + 1} was not found.");
 						}
 					}
@@ -165,11 +209,24 @@ namespace Bloom.Spreadsheet
 				catch (Exception e) when (e is IOException || e is SecurityException ||
 				                          e is UnauthorizedAccessException)
 				{
-					_warnings.Add(
+					Warn(
 						$"Bloom had trouble copying the file {source} to the book folder or retrieving its metadata: " +
 						e.Message);
 				}
 			}
+		}
+
+		void Warn(string message)
+		{
+			_warnings.Add(message);
+			_progress?.MessageWithoutLocalizing(message, ProgressKind.Warning);
+		}
+
+		void Progress(string message)
+		{
+			// We don't think the importer messages are worth localizing at this point.
+			// Users sophisticated enough to use this feature can probably cope with some English.
+			_progress?.MessageWithoutLocalizing(message, ProgressKind.Progress);
 		}
 
 		private XmlElement GetImgFromContainer(XmlElement container)
@@ -180,6 +237,22 @@ namespace Bloom.Spreadsheet
 
 		private void UpdateDataDivFromRow(ContentRow currentRow, string dataBookLabel)
 		{
+			// Only a few of these are worth reporting
+			string whatsUpdated = null;
+			switch (dataBookLabel)
+			{
+				case "coverImage":
+					whatsUpdated = "the image on the cover";
+					break;
+				case "bookTitle":
+					whatsUpdated = "the book title";
+					break;
+				case "copyright":
+					whatsUpdated = "copyright information";
+					break;
+			}
+			if (whatsUpdated != null)
+				Progress($"Updating {whatsUpdated}.");
 			var xPath = "div[@data-book=\"" + dataBookLabel + "\"]";
 			var matchingNodes = _dataDivElement.SelectNodes(xPath);
 			XmlElement templateNode;
@@ -220,7 +293,7 @@ namespace Bloom.Spreadsheet
 			{
 				if (dataBookLabel.Equals("coverImage"))
 				{
-					_warnings.Add("No cover image found");
+					Warn("No cover image found");
 				}
 
 				foreach (string lang in _sheet.Languages)
@@ -247,7 +320,7 @@ namespace Bloom.Spreadsheet
 							matchingNode.InnerXml = langVal;
 							if (langMatchingNodes.Count() > 1)
 							{
-								_warnings.Add("Found more than one " + dataBookLabel +" element for language "
+								Warn("Found more than one " + dataBookLabel +" element for language "
 												+ lang + " in the book dom. Only the first will be updated.");
 							}
 						}
@@ -275,7 +348,7 @@ namespace Bloom.Spreadsheet
 
 				if (asteriskContentFound && specificLanguageContentFound)
 				{
-					_warnings.Add(dataBookLabel + " information found in both * language column and other language column(s)");
+					Warn(dataBookLabel + " information found in both * language column and other language column(s)");
 				}
 			}
 		}
@@ -298,6 +371,8 @@ namespace Bloom.Spreadsheet
 			_currentGroup = _groupsOnPage[_groupOnPageIndex];
 		}
 
+		private int PageNumberToReport => _currentPageIndex + 1 - _unNumberedPagesSeen;
+
 		private XmlDocument _basicBookTemplate;
 
 		private void GeneratePage(string guid)
@@ -310,6 +385,8 @@ namespace Bloom.Spreadsheet
 
 			var templatePage = _basicBookTemplate.SelectSingleNode($"//div[@id='{guid}']") as XmlElement;
 			ImportPage(templatePage);
+			var pageLabel = templatePage.SafeSelectNodes("//div[@class='pageLabel']").Cast<XmlElement>().FirstOrDefault()?.InnerText ?? "";
+			Progress($"Adding page {PageNumberToReport} using a {pageLabel} layout");
 		}
 
 		// Insert a clone of templatePage into the document before _currentPage (or after _lastContentPage, if _currentPage is null),
@@ -395,6 +472,8 @@ namespace Bloom.Spreadsheet
 				{
 					break;
 				}
+
+				_unNumberedPagesSeen++;
 			}
 
 			var isBackMatter = _currentPage.Attributes["class"].Value.Contains("bloom-backMatter");
@@ -419,8 +498,12 @@ namespace Bloom.Spreadsheet
 
 			if (guidOfPageToClone != null)
 			{
-				GeneratePage(guidOfPageToClone);
+				GeneratePage(guidOfPageToClone); // includes progress message
 				GetElementsFromCurrentPage();
+			}
+			else
+			{
+				Progress($"Updating page {PageNumberToReport}");
 			}
 
 			_imageContainerOnPageIndex = -1;
@@ -435,6 +518,7 @@ namespace Bloom.Spreadsheet
 				_lastPageHasImageContainer, _lastPageHasTextGroup);
 			if (guidOfNeededPage == null)
 			{
+				Progress($"Adding page {PageNumberToReport} by copying the last page");
 				ImportPage(_lastContentPage);
 			}
 			else
