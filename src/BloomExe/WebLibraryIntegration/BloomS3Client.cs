@@ -604,7 +604,11 @@ namespace Bloom.WebLibraryIntegration
 			// So our temporary folder must be no more than 140 characters (allow some margin) since paths can be a
 			// maximum of 260 characters in Windows.  (More margin than that may be needed because there's no guarantee
 			// that image filenames are no longer than 65 characters.)  See https://jira.sil.org/browse/BL-1160.
-			using(var tempDestination = new TemporaryFolder("BDS_" + Guid.NewGuid()))
+			// https://issues.bloomlibrary.org/youtrack/issue/BH-5988 has a book with an image file whose name is 167 characters long.
+			// So, 50 + 2 for slashes + 167 = 219. This means the temporary folder should be no more than 40 characters long.
+			// "C:\Users\steve\AppData\Local\Temp\" is already 35 characters long, and usernames can certainly be longer
+			// than 5 characters.  So we can't really afford much randomness in the folder name.
+			using (var tempDestination = new TemporaryFolder(GetMinimalRandomFolderName()))
 			{
 				var tempDirectory = Path.Combine(tempDestination.FolderPath, bookFolderName);
 				float progressStep = 1.0F;
@@ -689,6 +693,40 @@ namespace Bloom.WebLibraryIntegration
 					return destinationPath;
 				}
 			}
+		}
+
+		private string GetMinimalRandomFolderName()
+		{
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+				return "BDS_" + Guid.NewGuid();		// no path length limits on Linux
+			string name = "BDS_";	// won't get used, but prevent compiler from squawking...
+			for (int i = 0; i < 100; ++i)
+			{
+				var randomID = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Replace("/","_").Replace("+","-").Trim(new []{'='});
+				name = "BDS" + randomID.Substring(0,2);	// 2 chars of randomness = 64 ** 2 = 4096 possibilities.
+				var tempPath = Path.Combine(Path.GetTempPath(), name);
+				if (!File.Exists(tempPath) && !Directory.Exists(tempPath))
+					return name;
+				// We're finding a lot of names in use.  To improve our chances, and since this is probably garbage left behind by other
+				// downloads, start trying to clean them up.
+				if (i > 10)
+				{
+					try
+					{
+						if (File.Exists(tempPath))
+							File.Delete(tempPath);
+						else if (Directory.Exists(tempPath))
+							Directory.Delete(tempPath, true);
+						return name;
+					}
+					catch (Exception)
+					{
+						// can't delete it... hope we can the next one.  or copy into the last one...
+					}
+				}
+			}
+			// Take a chance...
+			return name;
 		}
 
 		public void Dispose()
