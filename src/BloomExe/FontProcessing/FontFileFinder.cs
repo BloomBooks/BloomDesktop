@@ -85,8 +85,7 @@ namespace Bloom.FontProcessing
 		private void InitializeFontData()
 		{
 			FontNameToFiles = new Dictionary<string, FontGroup>();
-			if (NoteFontsWeCantInstall)
-				FontsWeCantInstall = new HashSet<string>();
+			FontsWeCantInstall = new HashSet<string>();
 #if __MonoCS__
 				using (var lib = new SharpFont.Library())
 				{
