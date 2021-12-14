@@ -81,9 +81,9 @@ namespace BloomTests.Spreadsheet
 			Assert.IsNotNull(fifthXmatterRowToModify, "Did not find the fifth xmatter row that OneTimeSetup was expecting to modify");
 			fifthXmatterRowToModify.SetCell(imageSrcColumn, "newLicenseImage.png");
 
-			var importer = new SpreadsheetImporter(null, this._dom, _sheet);
+			var importer = new SpreadsheetImporter(null, this._dom);
 			InitializeImporter(importer);
-			importer.Import();
+			importer.Import(_sheet);
 		}
 
 		/// <summary>
@@ -588,8 +588,8 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			_progressSpy = new ProgressSpy();
-			var importer = new SpreadsheetImporter(null, _dom, ss, _spreadsheetFolder, _bookFolder.FolderPath);
-			_warnings = importer.Import(_progressSpy);
+			var importer = new SpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
+			_warnings = importer.Import(ss, _progressSpy);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -824,8 +824,8 @@ namespace BloomTests.Spreadsheet
 			_bookFolder = new TemporaryFolder("SpreadsheetImageAndTextImportToBookWithEmptyLastPageTests");
 
 			// Do the import
-			var importer = new SpreadsheetImporter(null, _dom, ss, _spreadsheetFolder, _bookFolder.FolderPath);
-			_warnings = importer.Import();
+			var importer = new SpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
+			_warnings = importer.Import(ss);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -944,8 +944,8 @@ namespace BloomTests.Spreadsheet
 			_bookFolder = new TemporaryFolder("SpreadsheetImageAndTextImportToBookWithComplexLastPageTests");
 
 			// Do the import
-			var importer = new SpreadsheetImporter(null, _dom, ss, _spreadsheetFolder, _bookFolder.FolderPath);
-			_warnings = importer.Import();
+			var importer = new SpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
+			_warnings = importer.Import(ss);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -998,6 +998,68 @@ namespace BloomTests.Spreadsheet
 			// Currently we don't expect any.
 			// Adjust as necessary if we add some.
 			Assert.That(_warnings.Count, Is.EqualTo(0));
+		}
+	}
+	public class SpreadsheetImporterErrorTests
+	{
+		[Test]
+		public void PlainTextFileReportsError()
+		{
+			using (var tempFile = new TempFile("This is complete junk and not a spreadsheet at all"))
+			{
+				var spy = new ProgressSpy();
+				InternalSpreadsheet.ReadFromFile(tempFile.Path, spy);
+				Assert.That(spy.Messages, Has.Some.Property("Item1").EqualTo("The input does not appear to be a valid Excel spreadsheet. Import failed."));
+			}
+		}
+		
+		[Test]
+		public void SpreadsheetWithNoHeaderReportsError()
+		{
+			// We'll do this one test with a real file that contains nothing like what we expect, just in case
+			// it catches anything that fails unexpectedly in the actual file-reading code.
+			// The file has a number of cells on one of its rows, which causes this error to be detected in SpreadsheetIO.
+			var path = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(
+				"src/BloomTests/Spreadsheet/spreadsheets/SheetWithNoHeader.xlsx");
+			var spy = new ProgressSpy();
+			var ss = InternalSpreadsheet.ReadFromFile(path, spy);
+			Assert.That(ss, Is.Null);
+
+			// We can also detect this problem on a different path if the spreadsheet doesn't have enough
+			// columns to trigger the detection in SpreadsheetIO.
+			ss = new InternalSpreadsheet();
+			ss.Header.GetRow(0).SetCell(0, "[metadata key]"); // used in earlier versions
+
+			var xml = string.Format(SpreadsheetImageAndTextImportTests.templateDom,
+				SpreadsheetImageAndTextImportTests.coverPage
+				+ SpreadsheetImageAndTextImportTests.insideBackCoverPage
+				+ SpreadsheetImageAndTextImportTests.backCoverPage);
+			var dom = new HtmlDom(xml, true);
+			var importer = new SpreadsheetImporter(null, dom, null, null);
+			Assert.That(importer.Validate(ss, spy), Is.False);
+			Assert.That(spy.Messages,
+				Has.Some.Property("Item1")
+					.EqualTo(
+						SpreadsheetImporter.MissingHeaderMessage));
+		}
+
+		[Test]
+		public void SpreadsheetWithNoContentReportsWarning()
+		{
+			var spy = new ProgressSpy();
+			var ss = new InternalSpreadsheet();
+			var xml = string.Format(SpreadsheetImageAndTextImportTests.templateDom,
+				SpreadsheetImageAndTextImportTests.coverPage
+				+ SpreadsheetImageAndTextImportTests.insideBackCoverPage
+				+ SpreadsheetImageAndTextImportTests.backCoverPage);
+			var dom = new HtmlDom(xml, true);
+			var importer = new SpreadsheetImporter(null, dom, null, null);
+			Assert.That(importer.Validate(ss, spy), Is.False);
+			Assert.That(spy.Messages,
+				Has.Some.Property("Item1")
+					.EqualTo(
+						"This spreadsheet has no data that Bloom knows how to import. Did you follow the standard format for Bloom spreadsheets?"));
+
 		}
 	}
 }

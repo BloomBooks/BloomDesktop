@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using Bloom.web;
 using L10NSharp;
@@ -38,6 +39,7 @@ namespace Bloom.Spreadsheet
 
 		private List<SpreadsheetRow> _rows = new List<SpreadsheetRow>();
 		public SpreadsheetExportParams Params = new SpreadsheetExportParams();
+		private IWebSocketProgress _progress;
 
 		public KeyValuePair<string, string>[] StandardLeadingColumns = new KeyValuePair<string, string>[]
 		{
@@ -214,11 +216,40 @@ namespace Bloom.Spreadsheet
 			SpreadsheetIO.WriteSpreadsheet(this, path, Params.RetainMarkup, progress);
 		}
 
-		public static InternalSpreadsheet ReadFromFile(string path)
+		public static InternalSpreadsheet ReadFromFile(string path, IWebSocketProgress progress = null)
 		{
+			progress = progress ?? new NullWebSocketProgress();
 			var result = new InternalSpreadsheet(false);
-			SpreadsheetIO.ReadSpreadsheet(result, path);
+			try
+			{
+				SpreadsheetIO.ReadSpreadsheet(result, path);
+			}
+			catch (InvalidDataException e)
+			{
+				progress.MessageWithoutLocalizing(
+					"The input does not appear to be a valid Excel spreadsheet. Import failed.", ProgressKind.Error);
+				return null;
+			}
+			catch (SpreadsheetException se)
+			{
+				progress.MessageWithoutLocalizing(se.Message, ProgressKind.Error);
+				return null;
+			}
+			catch (Exception e)
+			{
+				progress.MessageWithoutLocalizing("Something went wrong reading the input file. Import failed. " + e.Message, ProgressKind.Error);
+				return null;
+			}
+
 			return result;
 		}
+	}
+
+	// Thrown when something goes wrong importing a spreadsheet file. The message
+	// should be fully ready to show the user. We add this class so we can distinguish
+	// these exceptions in catch clauses.
+	class SpreadsheetException : ApplicationException
+	{
+		public SpreadsheetException(string message) : base(message) { }
 	}
 }
