@@ -215,14 +215,9 @@ namespace Bloom.web.controllers
 
 				var sheet = InternalSpreadsheet.ReadFromFile(inputFilepath);
 				var dom = book.OurHtmlDom;
-				var importer = new SpreadsheetImporter(dom, sheet, Path.GetDirectoryName(inputFilepath), book.FolderPath);
-				var messages = importer.Import();
-				if (messages.Count > 0)
-				{
-					var allMessages = String.Join("\r\n", messages);
-					var mainMsg = LocalizationManager.GetString("Spreadsheet:ImportWarning", "Import warning: ");
-					NonFatalProblem.Report(ModalIf.All, PassiveIf.None, mainMsg, moreDetails: allMessages, showSendReport: false);
-				}
+				var importer = new SpreadsheetImporter(_webSocketServer, dom, sheet, Path.GetDirectoryName(inputFilepath), book.FolderPath);
+				importer.ImportWithProgress();
+
 				// Review: A lot of other stuff happens in Book.Save() and BookStorage.SaveHtml().
 				// I doubt we need any of it for current purposes, but later we might.
 				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, bookPath);

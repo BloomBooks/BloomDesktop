@@ -63,5 +63,15 @@ namespace BloomTests.web
 			_isInitialized = false;
 			_events = null;
 		}
+
+		public bool IsSocketOpen(string name)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void SendEvent(string clientContext, string eventId)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }
