@@ -774,12 +774,13 @@ namespace BloomTests.Spreadsheet
 			// So we give it the parent directory of that images folder.
 			_spreadsheetFolder = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication("src/BloomTests/ImageProcessing");
 
-			// Create an HtmlDom for a template to import into
+			// Create an HtmlDom for a template to import into. We will give this one a landscape orientation.
 			var xml = string.Format(SpreadsheetImageAndTextImportTests.templateDom,
 				SpreadsheetImageAndTextImportTests.coverPage
 				+ PageWithNothing(1)
 				+ SpreadsheetImageAndTextImportTests.insideBackCoverPage
-				+ SpreadsheetImageAndTextImportTests.backCoverPage);
+				+ SpreadsheetImageAndTextImportTests.backCoverPage)
+				.Replace("A5Portrait", "A5Landscape");
 			_dom = new HtmlDom(xml, true);
 
 			// Create an internal spreadsheet with the rows we want to import
@@ -792,7 +793,7 @@ namespace BloomTests.Spreadsheet
 			contentRow1.AddCell(InternalSpreadsheet.PageContentRowLabel);
 			contentRow1.SetCell(columnForEn, "this is page 1");
 
-			// Will insert a basic text and picture page
+			// Will insert a picture-on-left page
 			var contentRow2 = new ContentRow(ss);
 			contentRow2.AddCell(InternalSpreadsheet.PageContentRowLabel);
 			contentRow2.SetCell(columnForEn, "this is page 2");
@@ -843,8 +844,8 @@ namespace BloomTests.Spreadsheet
 			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-imageContainer')]/img[@src='{src}']", 1);
 			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-translationGroup')]/div[contains(@class, 'bloom-editable') and @lang='en' and text()='{text}']", 1);
 			// This is the ID for the standard "Basic text and picture" page
-			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("adcd48df-e9ab-4a07-afd4-6a24d0398382"));
-			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("adcd48df-e9ab-4a07-afd4-6a24d0398382"));
+			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("7b192144-527c-417c-a2cb-1fb5e78bf38a"));
+			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("7b192144-527c-417c-a2cb-1fb5e78bf38a"));
 		}
 
 		[TestCase(0, "this is page 1")]
