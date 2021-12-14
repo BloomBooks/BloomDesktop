@@ -54,11 +54,10 @@ namespace Bloom.Spreadsheet
 		/// AutoFac. However, for that to work, we'd need to move the other constructor arguments,
 		/// which AutoFac can't know, to the Import method. And for now, all callers which need
 		/// to pass a socket server already have one.</remarks>
-		public SpreadsheetImporter(IBloomWebSocketServer webSocketServer, HtmlDom dest, InternalSpreadsheet sheet, string pathToSpreadsheetFolder = null, string pathToBookFolder = null)
+		public SpreadsheetImporter(IBloomWebSocketServer webSocketServer, HtmlDom dest, string pathToSpreadsheetFolder = null, string pathToBookFolder = null)
 		{
 			_dest = dest;
 			_dataDivElement = _dest.SafeSelectNodes("//div[@id='bloomDataDiv']").Cast<XmlElement>().First();
-			_sheet = sheet;
 			_pathToBookFolder = pathToBookFolder;
 			_pathToSpreadsheetFolder = pathToSpreadsheetFolder;
 			_webSocketServer = webSocketServer;
@@ -72,7 +71,7 @@ namespace Bloom.Spreadsheet
 
 		public SpreadsheetImportParams Params = new SpreadsheetImportParams();
 
-		public void ImportWithProgress()
+		public void ImportWithProgress(string inputFilepath)
 		{
 			var mainShell = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
 			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, "spreadsheet-import", () =>
@@ -90,17 +89,46 @@ namespace Bloom.Spreadsheet
 					// winforms dialog properties
 					{ Width = 620, Height = 550 }, (progress, worker) =>
 			{
-				Import(progress);
+				var sheet = InternalSpreadsheet.ReadFromFile(inputFilepath, progress);
+				if (sheet == null)
+					return true;
+				if (!Validate(sheet, progress))
+					return true; // errors already reported to progress
+				Import(sheet, progress);
 				return true; // always leave the dialog up until the user chooses 'close'
 			}, null, mainShell);
+		}
+
+		public bool Validate(InternalSpreadsheet sheet, IWebSocketProgress progress)
+		{
+			// An export would have several others. But none of them is absolutely required except this one.
+			// (We could do without it, too, by assuming the first column contains them. But it's helpful to be
+			// able to recognize spreadsheets created without any knowledge at all of the expected content.)
+			// Note: depending on row content, this problem may be detected earlier in SpreadsheetIO while
+			// converting the file to an InternalSpreadsheet.
+			var rowTypeColumn = sheet.GetColumnForTag(InternalSpreadsheet.RowTypeColumnLabel);
+			if (rowTypeColumn < 0)
+			{
+				progress.MessageWithoutLocalizing(MissingHeaderMessage, ProgressKind.Error);
+				return false;
+			}
+			var inputRows = sheet.ContentRows.ToList();
+			if (!inputRows.Any(r => r.GetCell(rowTypeColumn).Content.StartsWith("[")))
+			{
+				progress.MessageWithoutLocalizing("This spreadsheet has no data that Bloom knows how to import. Did you follow the standard format for Bloom spreadsheets?", ProgressKind.Warning);
+				// Technically this isn't a fatal error. We could just let the main loop do nothing. But reporting it as one avoids creating a spurious backup.
+				return false;
+			}
+			return true;
 		}
 
 		/// <summary>
 		/// Import the spreadsheet into the dom
 		/// </summary>
 		/// <returns>a list of warnings</returns>
-		public List<string> Import(IWebSocketProgress progress = null)
+		public List<string> Import(InternalSpreadsheet sheet, IWebSocketProgress progress = null)
 		{
+			_sheet = sheet;
 			_progress = progress ?? new NullWebSocketProgress();
 			Progress("Importing spreadsheet...");
 			_warnings = new List<string>();
@@ -269,7 +297,7 @@ namespace Bloom.Spreadsheet
 			}
 
 			var imageSrcCol = _sheet.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
-			var imageSrc = Path.GetFileName(currentRow.GetCell(imageSrcCol).Content);
+			var imageSrc = imageSrcCol >= 0 ? Path.GetFileName(currentRow.GetCell(imageSrcCol).Content) : null;
 			bool specificLanguageContentFound = false;
 			bool asteriskContentFound = false;
 
@@ -441,6 +469,7 @@ namespace Bloom.Spreadsheet
 		private XmlElement _lastContentPage; // Actually the last one we've seen so far, but used only when it really is the last
 		private bool _lastPageHasImageContainer;
 		private bool _lastPageHasTextGroup;
+		public const string MissingHeaderMessage = "Bloom can only import spreadsheets that match a certain layout. In this spreadsheet, Bloom was unable to find the required \"[row type]\" column in row 1";
 
 		private void AdvanceToNextNumberedPage(bool needImageContainer, bool needTextGroup)
 		{

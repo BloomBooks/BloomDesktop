@@ -213,10 +213,9 @@ namespace Bloom.web.controllers
 				string folderPath = book.FolderPath;
 				BookStorage.SaveCopyBeforeImportOverwrite(folderPath, bookPath);
 
-				var sheet = InternalSpreadsheet.ReadFromFile(inputFilepath);
 				var dom = book.OurHtmlDom;
-				var importer = new SpreadsheetImporter(_webSocketServer, dom, sheet, Path.GetDirectoryName(inputFilepath), book.FolderPath);
-				importer.ImportWithProgress();
+				var importer = new SpreadsheetImporter(_webSocketServer, dom, Path.GetDirectoryName(inputFilepath), book.FolderPath);
+				importer.ImportWithProgress(inputFilepath);
 
 				// Review: A lot of other stuff happens in Book.Save() and BookStorage.SaveHtml().
 				// I doubt we need any of it for current purposes, but later we might.
