@@ -45,10 +45,33 @@ namespace Bloom.Publish.Android
 
 		public static AndroidPublishSettings FromBookInfo(BookInfo bookInfo)
 		{
-			var languagesToInclude = bookInfo.MetaData.TextLangsToPublish != null
-				? new HashSet<string>(bookInfo.MetaData.TextLangsToPublish.ForBloomPUB
-					.Where(kvp => kvp.Value.IsIncluded()).Select(kvp => kvp.Key))
-				: new HashSet<string>();
+			// Handle the case where Harvester is running on book that's been uploaded
+			// but was never published to BloomPUB before uploading.
+			Dictionary<string, InclusionSetting> publishTextLangs;
+			if (bookInfo.MetaData.TextLangsToPublish != null)
+			{
+				publishTextLangs = bookInfo.MetaData.TextLangsToPublish.ForBloomPUB == null ?
+					bookInfo.MetaData.TextLangsToPublish.ForBloomLibrary :
+					bookInfo.MetaData.TextLangsToPublish.ForBloomPUB;
+			}
+			else
+			{
+				publishTextLangs = new Dictionary<string, InclusionSetting>();
+			}
+			Dictionary<string, InclusionSetting> publishAudioLangs;
+			if (bookInfo.MetaData.AudioLangsToPublish != null)
+			{
+				publishAudioLangs = bookInfo.MetaData.AudioLangsToPublish.ForBloomPUB == null ?
+					bookInfo.MetaData.AudioLangsToPublish.ForBloomLibrary :
+					bookInfo.MetaData.AudioLangsToPublish.ForBloomPUB;
+			}
+			else
+			{
+				publishAudioLangs = new Dictionary<string, InclusionSetting>();
+			}
+
+			var languagesToInclude = new HashSet<string>(publishTextLangs
+				.Where(kvp =>kvp.Value.IsIncluded()).Select(kvp => kvp.Key));
 
 			HashSet<string> audioLanguagesToExclude;
 			if (bookInfo.MetaData.AudioLangsToPublish == null)
@@ -62,14 +85,14 @@ namespace Bloom.Publish.Android
 				{
 					// We want to exclude the audio files for the languages that we are not publishing the text of.
 					// We aren't sure if we need this, or if AudioLangsToPublish is only null when there is no audio in the book at all.
-					audioLanguagesToExclude = new HashSet<string>(bookInfo.MetaData.TextLangsToPublish.ForBloomPUB
+					audioLanguagesToExclude = new HashSet<string>(publishTextLangs
 						.Where(kvp => !kvp.Value.IsIncluded()).Select(kvp => kvp.Key));
 				}
 			}
 			else
 			{
 				// We do have some settings for the audio languages, choose the ones that have been explicitly marked as excluded
-				audioLanguagesToExclude = new HashSet<string>(bookInfo.MetaData.AudioLangsToPublish.ForBloomPUB
+				audioLanguagesToExclude = new HashSet<string>(publishAudioLangs
 					.Where(kvp => !kvp.Value.IsIncluded()).Select(kvp => kvp.Key));
 			}
 
