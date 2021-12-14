@@ -115,11 +115,17 @@ namespace Bloom.CLI
 
 			string zippedBloomDOutputPath = parameters.BloomDOutputPath;
 			string unzippedBloomDigitalOutputPath = parameters.BloomDigitalOutputPath;
+			string zippedDotBloomOutputPath = parameters.DotBloomOutputPath;
 
 			bool isBloomDOrBloomDigitalRequested = !String.IsNullOrEmpty(zippedBloomDOutputPath) || !String.IsNullOrEmpty(unzippedBloomDigitalOutputPath);
 			if (isBloomDOrBloomDigitalRequested)
 			{
 				exitCode |= CreateBloomDigitalArtifacts(parameters.BookPath, parameters.Creator, zippedBloomDOutputPath, unzippedBloomDigitalOutputPath);
+			}
+
+			if (!String.IsNullOrEmpty(zippedDotBloomOutputPath))
+			{
+				exitCode |= CreateDotBloomArtifact(parameters.BookPath, parameters.Creator, zippedDotBloomOutputPath);
 			}
 
 			Control control = new Control();
@@ -155,6 +161,15 @@ namespace Bloom.CLI
 			CreateThumbnailArtifact(parameters);
 
 			return exitCode;
+		}
+
+		private static CreateArtifactsExitCode CreateDotBloomArtifact(string bookPath, string creator, string zippedBloomOutputPath)
+		{
+			if (!CollectionTab.LibraryModel.SaveAsBloomFile(bookPath, zippedBloomOutputPath, out Exception exception))
+			{
+				return CreateArtifactsExitCode.UnhandledException;
+			}
+			return CreateArtifactsExitCode.Success;
 		}
 
 		private static void LoadBook(string bookPath)
@@ -328,6 +343,9 @@ namespace Bloom.CLI
 
 		[Option("collectionPath", HelpText = "Input path in which to find Bloom collection file for this book", Required = true)]
 		public string CollectionPath { get; set; }
+
+		[Option("dotBloomOutputPath", HelpText ="Output destination path in which to place a .bloom file", Required = false)]
+		public string DotBloomOutputPath { get; set; }
 
 		[Option("bloomdOutputPath", HelpText = "Output destination path in which to place bloomd file", Required = false)]
 		public string BloomDOutputPath { get; set; }
