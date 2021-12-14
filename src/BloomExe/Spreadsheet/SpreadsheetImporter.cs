@@ -9,6 +9,7 @@ using System.Xml;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Xml;
+using TagLib;
 
 namespace Bloom.Spreadsheet
 {
@@ -34,6 +35,7 @@ namespace Bloom.Spreadsheet
 		private XmlElement _dataDivElement;
 		private string _pathToSpreadsheetFolder;
 		private string _pathToBookFolder;
+		private bool _bookIsLandscape;
 
 		public SpreadsheetImporter(HtmlDom dest, InternalSpreadsheet sheet, string pathToSpreadsheetFolder = null, string pathToBookFolder = null)
 		{
@@ -61,6 +63,7 @@ namespace Bloom.Spreadsheet
 			_warnings = new List<string>();
 			_inputRows = _sheet.ContentRows.ToList();
 			_pages = _dest.GetPageElements().ToList();
+			_bookIsLandscape = _pages[0]?.Attributes["class"]?.Value?.Contains("Landscape") ?? false;
 			_currentRowIndex = 0;
 			_currentPageIndex = -1;
 			_groupsOnPage = new List<XmlElement>();
@@ -444,26 +447,31 @@ namespace Bloom.Spreadsheet
 			_groupOnPageIndex = -1;
 		}
 
+		private const string basicTextAndImageGuid = "adcd48df-e9ab-4a07-afd4-6a24d0398382";
+
 		/// <summary>
 		/// If current page does not have one of the elements we need, return the guid of a page from Basic Book
 		/// that does. If current page is fine, just return null.
 		/// </summary>
 		private string GuidOfPageToCopyIfNeeded(bool needImageContainer, bool needTextGroup, bool haveImageContainer, bool haveTextGroup)
 		{
+			string guid = null;
 			if (needImageContainer && !haveImageContainer)
 			{
-				return needTextGroup
-					? "adcd48df-e9ab-4a07-afd4-6a24d0398382" // basic text and image
+				guid = needTextGroup
+					? basicTextAndImageGuid
 					: "adcd48df-e9ab-4a07-afd4-6a24d0398385"; // just an image
 			}
 			else if (needTextGroup && !haveTextGroup)
 			{
-				return needImageContainer
-					? "adcd48df-e9ab-4a07-afd4-6a24d0398382" // basic text and image
+				guid = needImageContainer
+					? basicTextAndImageGuid
 					: "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"; // just text
 			}
 
-			return null;
+			if (_bookIsLandscape && guid == basicTextAndImageGuid)
+				guid = "7b192144-527c-417c-a2cb-1fb5e78bf38a"; // Picture on left
+			return guid;
 		}
 
 		private List<XmlElement> GetImageContainers(XmlElement ancestor)
