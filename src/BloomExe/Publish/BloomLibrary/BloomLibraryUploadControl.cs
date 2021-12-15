@@ -122,17 +122,20 @@ namespace Bloom.Publish.BloomLibrary
 					"optional--check out to edit");
 			}
 
+			_model.InitializeLanguages();
+
 			UpdateFeaturesCheckBoxesDisplay();
 
+			var languageSelectionsForThisBook = _model.Book.BookInfo.MetaData.TextLangsToPublish.ForBloomLibrary;
 			var allLanguages = _model.AllLanguages;
 			foreach (var lang in allLanguages.Keys)
 			{
 				var checkBox = new CheckBox();
 				checkBox.UseMnemonic = false;
 				checkBox.Text = _model.PrettyLanguageName(lang);
-				if (allLanguages[lang])
+				if (languageSelectionsForThisBook[lang].IsIncluded())
 					checkBox.Checked = true;
-				else
+				if (!allLanguages[lang])
 				{
 					checkBox.Text += @" " + LocalizationManager.GetString("PublishTab.Upload.IncompleteTranslation",
 						"(incomplete translation)",
@@ -140,18 +143,20 @@ namespace Bloom.Publish.BloomLibrary
 				}
 				// Disable clicking on languages that have been selected for display in this book.
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-7166.
-				if (lang == _model.Book.BookData.Language1.Iso639Code ||
-					lang == _model.Book.Language2IsoCode ||
-					lang == _model.Book.Language3IsoCode)
+				if (BloomLibraryPublishModel.IsRequiredLanguageForBook(lang, _model.Book))
 				{
 					checkBox.Checked = true;	// even if partial
 					checkBox.AutoCheck = false;
+					checkBox.Enabled = false;
 				}
 				checkBox.Margin = _checkBoxMargin;
 				checkBox.AutoSize = true;
 				checkBox.Tag = lang;
 				checkBox.CheckStateChanged += delegate(object sender, EventArgs args)
 				{
+					var changedCheckBox = (CheckBox)sender;
+					_model.SaveTextLanguageSelection((string)changedCheckBox.Tag, changedCheckBox.Checked);
+
 					_langsLabel.ForeColor = LanguagesOkToUpload ? Color.Black : Color.Red;
 					if (_okToUploadDependsOnLangsChecked)
 					{
@@ -205,11 +210,7 @@ namespace Bloom.Publish.BloomLibrary
 			var bookInfoMetaData = _model.Book.BookInfo.MetaData;
 			_blindCheckBox.Checked = bookInfoMetaData.Feature_Blind;
 			_signLanguageCheckBox.Enabled = _model.Book.HasSignLanguageVideos();
-			_signLanguageCheckBox.Checked = _signLanguageCheckBox.Enabled
-				  //the previous setting of the check box (would be nice if we had a 3-way value here
-				  // so that we could default to checked if we knew they had not previously unchecked it
-				  // (as they would if the video was not sign language)
-				  && bookInfoMetaData.Feature_SignLanguage;
+			_signLanguageCheckBox.Checked = _signLanguageCheckBox.Enabled && _model.IsPublishSignLanguage();
 
 			// Set Sign Language link
 			_changeSignLanguageLinkLabel.Visible = _signLanguageCheckBox.Checked;
@@ -222,10 +223,14 @@ namespace Bloom.Publish.BloomLibrary
 		private void UpdateAudioCheckBoxDisplay()
 		{
 			var book = _model.Book;
+
+			_narrationAudioCheckBox.Checked = book.BookInfo.MetaData.IncludeAudioForBloomLibraryPublish;
+
 			if (!book.Storage.GetNarrationAudioFileNamesReferencedInBook(false)
 				.Any(fileName => RobustFile.Exists(Path.Combine(AudioProcessor.GetAudioFolderPath(book.FolderPath), fileName))))
 			{
 				_narrationAudioCheckBox.Enabled = false;
+				_narrationAudioCheckBox.Checked = false;
 			}
 			if (!book.Storage.GetBackgroundMusicFileNamesReferencedInBook()
 				.Any(fileName => RobustFile.Exists(Path.Combine(AudioProcessor.GetAudioFolderPath(book.FolderPath), fileName))))
@@ -683,7 +688,7 @@ namespace Bloom.Publish.BloomLibrary
 				_uploadWorker = null;
 			};
 			SetStateOfNonUploadControls(false); // Last thing we do before launching the worker, so we can't get stuck in this state.
-			_uploadWorker.RunWorkerAsync(_model.Book);
+			_uploadWorker.RunWorkerAsync(_model);
 		}
 
 		private string GetBasicErrorUploadingMessage()
@@ -725,34 +730,25 @@ namespace Bloom.Publish.BloomLibrary
 
 		void BackgroundUpload(object sender, DoWorkEventArgs e)
 		{
-			var book = (Book.Book) e.Argument;
+			var model = (BloomLibraryPublishModel)e.Argument;
+			var book = model.Book;
 			var checker = new LicenseChecker();
-			// It seems odd to me to make this a List and then convert it to an Array on the next line,
-			// but (besides this being the way I found it) a couple of usages need it as a list
-			// and another one converts it to an Array too.
-			var languages = LanguagesCheckedToUpload.ToList();
-			var message = checker.CheckBook(book, languages.ToArray());
-			if (message!= null)
+
+			var message = checker.CheckBook(book, LanguagesCheckedToUpload.ToArray());
+			if (message != null)
 			{
 				_progressBox.WriteError(message);
 				e.Result = "quiet"; // suppress other completion/fail messages
 				return;
 			}
 
-			if (_signLanguageCheckBox.Checked && !string.IsNullOrEmpty(book.CollectionSettings.SignLanguageIso639Code))
-			{
-				languages.Insert(0, book.CollectionSettings.SignLanguageIso639Code);
-			}
+			_model.UpdateBookMetadataFeatures(
+				_blindCheckBox.Checked,
+				_narrationAudioCheckBox.Checked,
+				_signLanguageCheckBox.Checked);
 
-			book.UpdateMetadataFeatures(
-				isBlindEnabled: _blindCheckBox.Checked,
-				isTalkingBookEnabled: _narrationAudioCheckBox.Checked,
-				isSignLanguageEnabled: _signLanguageCheckBox.Checked,
-				allowedLanguages: languages);
-
-			var includeNarrationAudio = _narrationAudioCheckBox.Checked;
 			var includeBackgroundMusic = _backgroundMusicCheckBox.Checked;
-			var result = _model.UploadOneBook(book, _progressBox, _parentView, languages.ToArray(), !includeNarrationAudio, !includeBackgroundMusic, out _parseId);
+			var result = _model.UploadOneBook(book, _progressBox, _parentView, !includeBackgroundMusic, out _parseId);
 			e.Result = result;
 		}
 
@@ -779,6 +775,15 @@ namespace Bloom.Publish.BloomLibrary
 		private void _signLanguageCheckBox_CheckedChanged(object sender, EventArgs e)
 		{
 			_changeSignLanguageLinkLabel.Visible = _signLanguageCheckBox.Checked;
+
+			if (!_signLanguageCheckBox.Checked)
+			{
+				_model.ClearSignLanguageToPublish();
+			}
+			else if (!string.IsNullOrEmpty(_model.Book.CollectionSettings.SignLanguageIso639Code))
+			{
+				_model.SetOnlySignLanguageToPublish(_model.Book.CollectionSettings.SignLanguageIso639Code);
+			}
 		}
 
 		private void _changeSignLanguageLinkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -794,6 +799,8 @@ namespace Bloom.Publish.BloomLibrary
 			collectionSettings.SignLanguageIso639Code = l.LanguageTag;
 			collectionSettings.SignLanguageName = l.DesiredName;
 			collectionSettings.Save();
+
+			_model.SetOnlySignLanguageToPublish(collectionSettings.SignLanguageIso639Code);
 		}
 
 		private string CurrentSignLanguageName
@@ -858,7 +865,7 @@ namespace Bloom.Publish.BloomLibrary
 			_progressBox.WriteMessage("Starting bulk upload in a terminal window...");
 			_progressBox.WriteMessage("This process will skip books if it can tell that nothing has changed since the last bulk upload.");
 			_progressBox.WriteMessage("When the upload is complete, there will be a file named 'BloomBulkUploadLog.txt' in your collection folder.");
-			var url = "https://bloomlibrary.org/" +_model.Book.CollectionSettings.DefaultBookshelf;
+			var url = $"{BloomLibraryUrlPrefix}/{_model.Book.CollectionSettings.DefaultBookshelf}";
 			_progressBox.WriteMessage("Your books will show up at {0}", url);
 		
 		}
@@ -913,6 +920,11 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			BookUpload.Destination =
 				_targetProduction.Checked ? UploadDestination.Production : UploadDestination.Development;
+		}
+
+		private void _narrationAudioCheckBox_CheckedChanged(object sender, EventArgs e)
+		{
+			_model.SaveAudioLanguageSelection(_narrationAudioCheckBox.Checked);
 		}
 	}
 }
