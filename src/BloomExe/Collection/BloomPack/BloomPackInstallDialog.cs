@@ -141,7 +141,7 @@ namespace Bloom.Collection.BloomPack
 					rootDirectory = parts[0];
 				}
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				// Report a corrupt file instead of crashing.  See http://issues.bloomlibrary.org/youtrack/issue/BL-2485.
 				if (InvokeRequired)
@@ -218,7 +218,7 @@ namespace Bloom.Collection.BloomPack
 					}
 				}
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				// Report a corrupt file instead of crashing.  See http://issues.bloomlibrary.org/youtrack/issue/BL-2485.
 				if (InvokeRequired)

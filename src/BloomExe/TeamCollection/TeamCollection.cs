@@ -2179,7 +2179,7 @@ namespace Bloom.TeamCollection
 			{
 				status = GetStatus(bookName);
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				// We may want to do more, such as put a red circle on the book. But at least don't crash.
 				// The case where we observed this, a corrupt zip file that can't be read, caused

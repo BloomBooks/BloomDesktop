@@ -119,7 +119,7 @@ namespace Bloom.Publish
 				term = dom.SelectSingleNode("//div[contains(@data-book,'term')]").InnerText.Trim();
 				week = dom.SelectSingleNode("//div[contains(@data-book,'week')]").InnerText.Trim();
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
 				Debug.Fail("Book missing either term or week variable");
 				throw new ApplicationException("This page is lacking either a term or week data-book variable.");

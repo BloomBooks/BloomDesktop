@@ -45,7 +45,7 @@ namespace Bloom.web.controllers
 				{
 					clipContent = PortableClipboard.GetText();
 				}
-				catch (Exception e)
+				catch (Exception)
 				{
 					// Need to make sure to handle exceptions.
 					// If the worker thread dies with an unhandled exception,

@@ -176,7 +176,6 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		private string AvailableLostAndFoundPath(string bookFolderName)
 		{
-			string bookPath;
 			var lfPath = Path.Combine(_repoFolderPath, "Lost and Found");
 			return AvailablePath(bookFolderName, lfPath, ".bloom");
 		}
@@ -746,11 +745,11 @@ namespace Bloom.TeamCollection
 					}
 				}, maxRetryAttempts:25);
 			}
-			catch (IOException e)
+			catch (IOException)
 			{
 				return true;
 			}
-			catch (UnauthorizedAccessException e)
+			catch (UnauthorizedAccessException)
 			{
 				return true;
 			}

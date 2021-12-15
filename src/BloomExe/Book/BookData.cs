@@ -549,7 +549,7 @@ namespace Bloom.Book
 					// has \r\n.
 					credits = elt.Value.Replace("\n", Environment.NewLine);
 				}
-				catch (XmlException ex)
+				catch (XmlException)
 				{
 					// If we can't parse it...maybe the user really did type some XML? Just keep what we have
 				}

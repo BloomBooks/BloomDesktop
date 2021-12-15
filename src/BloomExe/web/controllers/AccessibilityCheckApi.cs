@@ -27,8 +27,6 @@ namespace Bloom.web.controllers
 		private readonly BloomWebSocketServer _webSocketServer;
 		private PublishEpubApi _epubApi;
 
-		private readonly NavigationIsolator _isolator;
-		private readonly BookServer _bookServer;
 		private WebSocketProgress _webSocketProgress;
 
 		public const string kApiUrlPart = "accessibilityCheck/";
@@ -295,7 +293,7 @@ namespace Bloom.web.controllers
 					return (versionString, old);
 				}
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				// just ignore not being able to get the version.
 			}

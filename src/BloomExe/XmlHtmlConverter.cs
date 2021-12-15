@@ -161,7 +161,7 @@ namespace Bloom
 				temp.Dispose();
 					//enhance... could make a version of this which collects up any failed deletes and re-attempts them with each call to this
 			}
-			catch (Exception error)
+			catch (Exception)
 			{
 				//swallow
 				Debug.Fail("Repro of http://jira.palaso.org/issues/browse/BL-46 ");

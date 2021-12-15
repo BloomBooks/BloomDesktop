@@ -319,7 +319,7 @@ namespace Bloom.Book
 					image = ImageUtils.GetImageFromFile(path);
 					return true;
 				}
-				catch(Exception e) // If that file became corrupted, we would not want to lock user out of their book.
+				catch(Exception) // If that file became corrupted, we would not want to lock user out of their book.
 				{
 					// Per BL-5241, and since some books in BL.org have empty thumbnail.png files and can easily get into
 					// books from bloom library, and we don't fix them there, we don't want a yellow screen even for alpha.
@@ -851,7 +851,7 @@ namespace Bloom.Book
 				result = FromString(RobustFile.ReadAllText(path));
 				return true;
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
 				return false;
 			}

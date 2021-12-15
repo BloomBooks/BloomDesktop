@@ -5,8 +5,6 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using Newtonsoft.Json;
-using SIL.IO;
-using SIL.Windows.Forms.Extensions;
 
 namespace Bloom.web
 {
@@ -25,7 +23,6 @@ namespace Bloom.web
 	public partial class ReactControl : UserControl
 	{
 		private string _javascriptBundleName;
-		private string _reactComponentName;
 		// props to provide to the react component
 		public object Props;
 

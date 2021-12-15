@@ -377,7 +377,7 @@ namespace Bloom.Collection
 				var xml = XElement.Parse(settingsContent);
 				return ReadString(xml, "CollectionId", "");
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return "";
 			}
@@ -645,8 +645,6 @@ namespace Bloom.Collection
 		public bool AllowNewBooks { get; set; }
 
 		public TalkingBookApi.AudioRecordingMode AudioRecordingMode { get; set; }
-
-		private int _audioRecordingTrimEndMilliseconds = -1;
 
 		public int AudioRecordingTrimEndMilliseconds { get; set; }
 

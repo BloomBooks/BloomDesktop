@@ -874,7 +874,7 @@ namespace Bloom.Edit
 					{
 						clipboardImage = PortableClipboard.GetImageFromClipboardWithExceptions();
 					}
-					catch (Exception ex)
+					catch (Exception)
 					{
 						MessageBox.Show(
 							LocalizationManager.GetString("EditTab.NoValidImageFoundOnClipboard",

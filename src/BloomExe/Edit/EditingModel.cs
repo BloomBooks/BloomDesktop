@@ -38,7 +38,6 @@ namespace Bloom.Edit
 		private readonly PageSelection _pageSelection;
 		private readonly DuplicatePageCommand _duplicatePageCommand;
 		private readonly DeletePageCommand _deletePageCommand;
-		private readonly LocalizationChangedEvent _localizationChangedEvent;
 		private readonly CollectionSettings _collectionSettings;
 		private readonly SourceCollectionsList _sourceCollectionsList;
 		//private readonly SendReceiver _sendReceiver;
@@ -54,7 +53,6 @@ namespace Bloom.Edit
 		private IPage _previouslySelectedPage;
 		private bool _inProcessOfDeleting;
 		private bool _inProcessOfLoading;
-		private string _toolboxFolder;
 		private BloomServer _server;
 		private readonly BloomWebSocketServer _webSocketServer;
 		private Dictionary<string, IPage> _templatePagesDict;

@@ -1930,11 +1930,10 @@ namespace Bloom.Book
 				xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false);
 				return String.IsNullOrEmpty(ValidateBook(new HtmlDom(xmlDomFromHtmlFile), path));
 			}
-			catch (Exception error)
+			catch (Exception)
 			{
 				return false;
 			}
-			return true;
 		}
 
 		/// <summary>

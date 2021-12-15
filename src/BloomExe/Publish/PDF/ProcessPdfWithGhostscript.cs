@@ -281,7 +281,6 @@ namespace Bloom.Publish.PDF
 				return L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.CompressConvertColor",
 					"Compressing PDF & Converting Color to CMYK",
 					@"Message displayed in a progress report dialog box");
-								break;
 			}
 			return String.Empty;
 		}
@@ -332,7 +331,7 @@ namespace Bloom.Publish.PDF
 						var percentage = (int)(100.0F * (float)(pageNumber - _firstPage) / (float)_numPages);
 						_worker.ReportProgress(percentage);
 					}
-					catch (ObjectDisposedException e)
+					catch (ObjectDisposedException)
 					{
 						// Don't worry about not being able to update while/after the progress dialog is closing/has closed.
 					}

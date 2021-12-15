@@ -65,7 +65,7 @@ namespace BloomTests.ImageProcessing
 			var inputPath = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, testImageName);
 			using (var image = PalasoImage.FromFileRobustly(inputPath))
 			{
-				using (var folder = new TemporaryFolder())
+				using (var folder = new TemporaryFolder("ImageUtilsTest_ProcessAndSaveImageIntoFolder_AndTestResults"))
 				{
 					var fileName = ImageUtils.ProcessAndSaveImageIntoFolder(image, folder.Path, false);
 					Assert.AreEqual(expectedOutputFormat == ImageFormat.Jpeg ? ".jpg" : ".png", Path.GetExtension(fileName));

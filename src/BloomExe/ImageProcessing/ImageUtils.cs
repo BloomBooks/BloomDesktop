@@ -412,7 +412,7 @@ namespace Bloom.ImageProcessing
 								return true;
 						}
 					}
-					catch (Exception ex)
+					catch (Exception)
 					{
 						continue; // if something goes wrong, well, we'll just hope this image isn't too big.
 					}
@@ -432,7 +432,7 @@ namespace Bloom.ImageProcessing
 								return true;
 						}
 					}
-					catch (Exception ex)
+					catch (Exception)
 					{
 						continue; // if something goes wrong, well, we'll just hope this image isn't too big.
 					}
@@ -604,7 +604,7 @@ namespace Bloom.ImageProcessing
 				{
 					RobustFile.Delete(tempCopy);	// don't need this any longer
 				}
-				catch (Exception e)
+				catch (Exception)
 				{
 					// ignore
 				}
@@ -784,7 +784,7 @@ namespace Bloom.ImageProcessing
 						if (sourcePath != imageInfo.GetCurrentFilePath())
 							RobustFile.Delete(sourcePath);
 					}
-					catch (Exception e)
+					catch (Exception)
 					{
 						// ignore
 					}
@@ -1027,7 +1027,7 @@ namespace Bloom.ImageProcessing
 			{
 				result = ColorTranslator.FromHtml(input);
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
 				return false;
 			}

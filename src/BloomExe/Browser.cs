@@ -1058,7 +1058,7 @@ namespace Bloom
 				//				}
 
 			}
-			catch(Exception e)
+			catch(Exception)
 			{
 				Debug.Fail("Debug Mode Only: Error while trying to read changes to CSSRules. In Release, this just gets swallowed. Will now re-throw the exception.");
 #if DEBUG

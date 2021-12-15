@@ -175,7 +175,7 @@ namespace Bloom.web
 				iNetResponse.Close();
 				return true;
 			}
-			catch (WebException ex)
+			catch (WebException)
 			{
 				return false;
 			}

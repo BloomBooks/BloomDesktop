@@ -20,7 +20,6 @@ namespace BloomTests.TeamCollection
 		protected TemporaryFolder _collectionFolder;
 		protected Mock<ITeamCollectionManager> _mockTcManager;
 		protected FolderTeamCollection _collection;
-		private string _originalUser;
 		private string _checkMeOutOriginalChecksum;
 		protected List<string> _syncMessages;
 		protected ProgressSpy _progressSpy;

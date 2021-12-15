@@ -420,7 +420,7 @@ namespace Bloom.WebLibraryIntegration
 						if (!BookUpload.IsDryRun)
 							transferUtility.Upload(request);
 					}
-					catch(Exception e)
+					catch(Exception)
 					{
 						throw;
 					}

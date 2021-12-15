@@ -33,20 +33,9 @@ namespace Bloom.WebLibraryIntegration
 		private readonly BookThumbNailer _thumbnailer;
 		public IProgress Progress;
 
-		private HashSet<string> _collectionFoldersUploaded;
-		private int _newBooksUploaded;
-		private int _booksUpdated;
-		private int _booksSkipped;
-		private int _booksWithErrors;
-
 		public const string UploadHashesFilename = ".lastUploadInfo";	// this filename must begin with a period
 
-		// The full path of the log text file used to restart failed bulk uploads.
-		private string _bulkUploadLogPath;
-
 		static string _destination;
-
-		private IProgressDialog _progressDialog;
 
 		public BookUpload(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, BookThumbNailer htmlThumbnailer)
 		{

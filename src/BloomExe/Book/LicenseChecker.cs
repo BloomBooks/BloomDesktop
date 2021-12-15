@@ -44,13 +44,13 @@ namespace Bloom.Book
                             Directory.CreateDirectory(_offlineFolderPath);
                             LicenseChecker.WriteObfuscatedFile(getCacheFile(), permissionsJson);
                         }
-                        catch (IOException e)
+                        catch (IOException)
                         {
                             // just ignore if we can't cache
                         }
                     }
                 }
-                catch (WebException w)
+                catch (WebException)
                 {
                     if (!TryGetOfflineCache(out permissionsJson))
                     {
@@ -139,7 +139,7 @@ namespace Bloom.Book
             {
                 permissionsJson = ReadObfuscatedFile(path);
             }
-            catch (IOException ex)
+            catch (IOException)
             {
                 return false;
             }

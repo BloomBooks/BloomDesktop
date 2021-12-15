@@ -28,7 +28,6 @@ namespace Bloom.Publish
 	public partial class PublishView : UserControl, IBloomTabArea
 	{
 		public readonly PublishModel _model;
-		private readonly ComposablePartCatalog _extensionCatalog;
 		private bool _activated;
 		private BloomLibraryUploadControl _uploadControl;
 		private BookUpload _bookTransferrer;

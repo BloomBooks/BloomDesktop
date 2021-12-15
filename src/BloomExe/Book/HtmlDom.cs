@@ -146,7 +146,7 @@ namespace Bloom.Book
 				//Console.WriteLine("DEBUG ReplaceAllIdValues(\"{0}\") => \"{1}\"", xmlContent, doc.FirstChild.InnerXml);
 				xmlContent = doc.FirstChild.InnerXml;   // exclude the outer div we introduced
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
 				// Ignore any errors: maybe it's not really XML after all?
 			}
@@ -2518,8 +2518,9 @@ namespace Bloom.Book
 			{
 #if DEBUG
 				throw new ApplicationException("Don't feed non-page images to this method!");
-#endif
+#else
 				return "unknown";
+#endif
 			}
 			// optional because unit tests might be missing data-page-number
 			var pageNumber = pageElement.GetOptionalStringAttribute("data-page-number","unknown");

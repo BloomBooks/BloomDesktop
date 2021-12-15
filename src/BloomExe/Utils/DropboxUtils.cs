@@ -94,7 +94,7 @@ namespace Bloom.Utils
 
 				return result.Status == System.Net.NetworkInformation.IPStatus.Success;
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				// Some problems, like being completely offline, produce exceptions
 				// rather than a nice failure.

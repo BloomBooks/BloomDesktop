@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
@@ -39,7 +39,7 @@ namespace Bloom.Publish.Android.wifi
 			{
 				_listener = new UdpClient(_portToListen);
 			}
-			catch (SocketException e)
+			catch (SocketException)
 			{
 				//do nothing
 			}
