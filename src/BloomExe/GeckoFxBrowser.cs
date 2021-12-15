@@ -25,7 +25,7 @@ using SimulatedPageFileSource = Bloom.Api.BloomServer.SimulatedPageFileSource;
 
 namespace Bloom
 {
-	public partial class Browser : UserControl
+	public partial class GeckoFxBrowser : UserControl, IBrowser
 	{
 		protected GeckoWebBrowser _browser;
 		bool _browserIsReadyToNavigate;
@@ -33,9 +33,9 @@ namespace Bloom
 		private string _replacedUrl;
 		private XmlDocument _rootDom; // root DOM we navigate the browser to; typically a shell with other doms in iframes
 		private XmlDocument _pageEditDom; // DOM, dypically in an iframe of _rootDom, which we are editing.
-		// A temporary object needed just as long as it is the content of this browser.
-		// Currently may be a TempFile (a real filesystem file) or a SimulatedPageFile (just a dictionary entry).
-		// It gets disposed when the Browser goes away.
+										  // A temporary object needed just as long as it is the content of this browser.
+										  // Currently may be a TempFile (a real filesystem file) or a SimulatedPageFile (just a dictionary entry).
+										  // It gets disposed when the Browser goes away.
 		private IDisposable _dependentContent;
 		private PasteCommand _pasteCommand;
 		private CopyCommand _copyCommand;
@@ -79,15 +79,15 @@ namespace Bloom
 			GeckoPreferences.User["network.proxy.http"] = string.Empty;
 			GeckoPreferences.User["network.proxy.http_port"] = 80;
 			GeckoPreferences.User["network.proxy.type"] = 1; // 0 = direct (uses system settings on Windows), 1 = manual configuration
-			// Try some settings to reduce memory consumption by the mozilla browser engine.
-			// Testing on Linux showed eventual substantial savings after several cycles of viewing
-			// all the pages and then going to the publish tab and producing PDF files for several
-			// books with embedded jpeg files.  (physical memory 1,153,864K, managed heap 37,789K
-			// instead of physical memory 1,952,380K, managed heap 37,723K for stepping through the
-			// same operations on the same books in the same order.  I don't know why managed heap
-			// changed although it didn't change much.)
-			// See http://kb.mozillazine.org/About:config_entries, http://www.davidtan.org/tips-reduce-firefox-memory-cache-usage
-			// and http://forums.macrumors.com/showthread.php?t=1838393.
+															 // Try some settings to reduce memory consumption by the mozilla browser engine.
+															 // Testing on Linux showed eventual substantial savings after several cycles of viewing
+															 // all the pages and then going to the publish tab and producing PDF files for several
+															 // books with embedded jpeg files.  (physical memory 1,153,864K, managed heap 37,789K
+															 // instead of physical memory 1,952,380K, managed heap 37,723K for stepping through the
+															 // same operations on the same books in the same order.  I don't know why managed heap
+															 // changed although it didn't change much.)
+															 // See http://kb.mozillazine.org/About:config_entries, http://www.davidtan.org/tips-reduce-firefox-memory-cache-usage
+															 // and http://forums.macrumors.com/showthread.php?t=1838393.
 			GeckoPreferences.User["memory.free_dirty_pages"] = true;
 			// Do NOT set this to zero. Somehow that disables following hyperlinks within a document (e.g., the ReadMe
 			// for the template starter, BL-5321).
@@ -101,27 +101,27 @@ namespace Bloom
 			// and http://kb.mozillazine.org/Memory_Leak.
 			// maximum amount of memory used to cache decoded images
 			GeckoPreferences.User["image.mem.max_decoded_image_kb"] = 40960;        // 40MB (default = 256000 == 250MB)
-			// maximum amount of memory used by javascript
+																					// maximum amount of memory used by javascript
 			GeckoPreferences.User["javascript.options.mem.max"] = 40960;            // 40MB (default = -1 == automatic)
-			// memory usage at which javascript starts garbage collecting
+																					// memory usage at which javascript starts garbage collecting
 			GeckoPreferences.User["javascript.options.mem.high_water_mark"] = 20;   // 20MB (default = 128 == 128MB)
-			// SurfaceCache is an imagelib-global service that allows caching of temporary
-			// surfaces. Surfaces normally expire from the cache automatically if they go
-			// too long without being accessed.
-			// 40MB is not enough for pdfjs to work reliably with some (large?) jpeg images with some test data.
-			// (See https://silbloom.myjetbrains.com/youtrack/issue/BL-6247.)  That value was chosen arbitrarily
-			// a couple of years ago, possibly to match image.mem.max_decoded_image_kb and javascript.options.mem.max
-			// above.  It seemed to work okay until we stumbled across occasional books that refused to display their
-			// jpeg files.  70MB was enough in my testing of a couple of those books, but let's go with 100MB since
-			// other books may well need more.  (Mozilla seems to have settled on 1GB for the default surfacecache
-			// size, but that doesn't appear to be needed in the Bloom context.)  Most Linux systems are 64-bit and
-			// run a 64-bit version of of Bloom, while Bloom on Windows is still a 32-bit program regardless of the
-			// system.  Since Windows Bloom uses Adobe Acrobat code to display PDF files, it doesn't need the larger
-			// size for surfacecache, and that memory may be needed elsewhere.
+																					// SurfaceCache is an imagelib-global service that allows caching of temporary
+																					// surfaces. Surfaces normally expire from the cache automatically if they go
+																					// too long without being accessed.
+																					// 40MB is not enough for pdfjs to work reliably with some (large?) jpeg images with some test data.
+																					// (See https://silbloom.myjetbrains.com/youtrack/issue/BL-6247.)  That value was chosen arbitrarily
+																					// a couple of years ago, possibly to match image.mem.max_decoded_image_kb and javascript.options.mem.max
+																					// above.  It seemed to work okay until we stumbled across occasional books that refused to display their
+																					// jpeg files.  70MB was enough in my testing of a couple of those books, but let's go with 100MB since
+																					// other books may well need more.  (Mozilla seems to have settled on 1GB for the default surfacecache
+																					// size, but that doesn't appear to be needed in the Bloom context.)  Most Linux systems are 64-bit and
+																					// run a 64-bit version of of Bloom, while Bloom on Windows is still a 32-bit program regardless of the
+																					// system.  Since Windows Bloom uses Adobe Acrobat code to display PDF files, it doesn't need the larger
+																					// size for surfacecache, and that memory may be needed elsewhere.
 			if (SIL.PlatformUtilities.Platform.IsLinux)
-				GeckoPreferences.User["image.mem.surfacecache.max_size_kb"] = 102400;	// 100MB
+				GeckoPreferences.User["image.mem.surfacecache.max_size_kb"] = 102400;   // 100MB
 			else
-				GeckoPreferences.User["image.mem.surfacecache.max_size_kb"] = 40960;	// 40MB
+				GeckoPreferences.User["image.mem.surfacecache.max_size_kb"] = 40960;    // 40MB
 			GeckoPreferences.User["image.mem.surfacecache.min_expiration_ms"] = 500;    // 500ms (default = 60000 == 60sec)
 
 			// maximum amount of memory for the browser cache (probably redundant with browser.cache.memory.enable above, but doesn't hurt)
@@ -181,7 +181,7 @@ namespace Bloom
 				foreach (var lang in defaultLangs)
 				{
 					if (lang != langId)
-						newLangs = newLangs.AppendFormat(",{0}",lang);
+						newLangs = newLangs.AppendFormat(",{0}", lang);
 				}
 				GeckoPreferences.User["intl.accept_languages"] = newLangs.ToString();
 			}
@@ -191,7 +191,7 @@ namespace Bloom
 			}
 		}
 
-		public Browser()
+		public GeckoFxBrowser()
 		{
 			InitializeComponent();
 			_isolator = NavigationIsolator.GetOrCreateTheOneNavigationIsolator();
@@ -438,7 +438,7 @@ namespace Bloom
 
 			_browser.FrameEventsPropagateToMainWindow = true; // we want clicks in iframes to propagate all the way up to C#
 
-			RaiseGeckoReady();
+			RaiseBrowserReady();
 		}
 
 		// We'd like to suppress them just in one browser. But it seems to be unpredictable which
@@ -447,7 +447,7 @@ namespace Bloom
 
 		private void OnConsoleMessage(object sender, ConsoleMessageEventArgs e)
 		{
-			if(e.Message.StartsWith("[JavaScript Warning"))
+			if (e.Message.StartsWith("[JavaScript Warning"))
 				return;
 			if (e.Message.StartsWith("[JavaScript Error"))
 			{
@@ -511,8 +511,8 @@ namespace Bloom
 			//}
 			//else
 			//{
-				//just let ckeditor do the MSWord filtering
-				_browser.Paste();
+			//just let ckeditor do the MSWord filtering
+			_browser.Paste();
 			//}
 		}
 
@@ -548,7 +548,7 @@ namespace Bloom
 					return; // only the provider's items
 			}
 
-			if(FFMenuItem == null)
+			if (FFMenuItem == null)
 				AddOpenPageInFFItem(e);
 			// Allow debugging entries on any alpha builds as well as any debug builds.
 			if (_addDebuggingMenuItems || ApplicationUpdateSupport.IsDevOrAlpha)
@@ -586,7 +586,7 @@ namespace Bloom
 			form.SecondLinkMessage = "See https://developer.mozilla.org/en-US/docs/Mozilla/Performance/GC_and_CC_logs for more details.";
 			form.SecondLinkUrl = "https://developer.mozilla.org/en-US/docs/Mozilla/Performance/GC_and_CC_logs";
 			form.Navigate("about:memory");
-			form.Show();	// NOT Modal!
+			form.Show();    // NOT Modal!
 		}
 
 		private void OnOpenAboutConfig(object sender, EventArgs e)
@@ -645,10 +645,10 @@ namespace Bloom
 				// box asynchronously lets us get out of the GTK message loop and displays it
 				// properly on the SWF message loop. Technically this is only necessary on Linux, but
 				// it doesn't hurt on Windows.
-				BeginInvoke((Action) delegate()
-				{
-					MessageBox.Show("Debugging information has been placed on your clipboard. You can paste it into an email.");
-				});
+				BeginInvoke((Action)delegate ()
+			   {
+				   MessageBox.Show("Debugging information has been placed on your clipboard. You can paste it into an email.");
+			   });
 			}
 			catch (Exception ex)
 			{
@@ -683,7 +683,7 @@ namespace Bloom
 					// See comment in OnGetTroubleShootingInformation() about why BeginInvoke is needed.
 					// Also, in Linux, xdg-open calls the System Browser, which isn't necessarily Firefox.
 					// It isn't necessarily in Windows, either, but there we're specifying Firefox.
-					BeginInvoke((Action)delegate()
+					BeginInvoke((Action)delegate ()
 					{
 						MessageBox.Show(genericError + "the System Browser.");
 					});
@@ -695,7 +695,7 @@ namespace Bloom
 		void OnBrowser_DomClick(object sender, DomEventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
-		  //this helps with a weird condition: make a new page, click in the text box, go over to another program, click in the box again.
+			//this helps with a weird condition: make a new page, click in the text box, go over to another program, click in the box again.
 			//it loses its focus.
 			_browser.WebBrowserFocus.Activate();//trying to help the disappearing cursor problem
 
@@ -802,7 +802,7 @@ namespace Bloom
 			}
 
 			_url = url; //TODO: fix up this hack. We found that deleting the pdf while we're still showing it is a bad idea.
-			if(cleanupFileAfterNavigating && !_url.EndsWith(".pdf"))
+			if (cleanupFileAfterNavigating && !_url.EndsWith(".pdf"))
 			{
 				SetNewDependent(TempFile.TrackExisting(url));
 			}
@@ -811,28 +811,28 @@ namespace Bloom
 
 		public static void ClearCache()
 		{
-            try
-            {
+			try
+			{
 				// Review: is this supposed to say "netwerk" or "network"?
 				// Haven't found a clear answer; https://hg.mozilla.org/releases/mozilla-release/rev/496aaf774697f817a689ee0d59f2f866fdb16801
 				// seems to indicate that both may be supported.
 				var instance = Xpcom.CreateInstance<nsICacheStorageService>("@mozilla.org/netwerk/cache-storage-service;1");
-                instance.Clear();
-            }
-            catch (InvalidCastException e)
-            {
-                // For some reason, Release builds (only) sometimes run into this when uploading.
-                // Don't let it stop us just to clear a cache.
+				instance.Clear();
+			}
+			catch (InvalidCastException e)
+			{
+				// For some reason, Release builds (only) sometimes run into this when uploading.
+				// Don't let it stop us just to clear a cache.
 				// Todo Gecko60: see if we can get rid of these catch clauses.
-                Logger.WriteError(e);
-            }
-            catch (NullReferenceException e)
-            {
+				Logger.WriteError(e);
+			}
+			catch (NullReferenceException e)
+			{
 				// Similarly, the Harvester has run into this one, and ignoring it doesn't seem to have been a problem.
 				Logger.WriteError(e);
 			}
 
-        }
+		}
 
 		public void SetEditDom(HtmlDom editDom)
 		{
@@ -888,7 +888,7 @@ namespace Bloom
 			_pageEditDom = editDom ?? dom;
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-			var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(htmlDom, setAsCurrentPageForDebugging: setAsCurrentPageForDebugging, source:source);
+			var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(htmlDom, setAsCurrentPageForDebugging: setAsCurrentPageForDebugging, source: source);
 			SetNewDependent(fakeTempFile);
 			_url = fakeTempFile.Key;
 			UpdateDisplay();
@@ -951,7 +951,7 @@ namespace Bloom
 			}
 
 			var tf = TempFile.WithExtension("htm"); // For some reason Gecko won't recognize a utf-8 file as html unless it has the right extension
-			RobustFile.WriteAllText(tf.Path,html, Encoding.UTF8);
+			RobustFile.WriteAllText(tf.Path, html, Encoding.UTF8);
 			SetNewDependent(tf);
 			_url = tf.Path;
 			UpdateDisplay();
@@ -963,15 +963,15 @@ namespace Bloom
 			var simulated = _dependentContent as SimulatedPageFile;
 			_replacedUrl = (simulated != null) ? simulated.Key : null;
 
-			if(_dependentContent!=null)
+			if (_dependentContent != null)
 			{
 				try
 				{
 					_dependentContent.Dispose();
 				}
-				catch(Exception)
+				catch (Exception)
 				{
-						//not worth talking to the user about it. Just abandon it in the Temp directory.
+					//not worth talking to the user about it. Just abandon it in the Temp directory.
 #if DEBUG
 					throw;
 #endif
@@ -989,7 +989,7 @@ namespace Bloom
 			if (!_browserIsReadyToNavigate)
 				return;
 
-			if (_url!=null)
+			if (_url != null)
 			{
 				_browser.Visible = true;
 				_isolator.Navigate(_browser, _url);
@@ -1037,7 +1037,7 @@ namespace Bloom
 					return;//why? but I've seen it happen
 
 				var thisPageId = browserDomPage.Attributes["id"].Value;
-				if(expectedPageId != thisPageId)
+				if (expectedPageId != thisPageId)
 				{
 					SIL.Reporting.ErrorReport.NotifyUserOfProblem(LocalizationManager.GetString("Browser.ProblemSaving",
 						"There was a problem while saving. Please return to the previous page and make sure it looks correct."));
@@ -1058,7 +1058,7 @@ namespace Bloom
 				//				}
 
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				Debug.Fail("Debug Mode Only: Error while trying to read changes to CSSRules. In Release, this just gets swallowed. Will now re-throw the exception.");
 #if DEBUG
@@ -1080,7 +1080,7 @@ namespace Bloom
 
 		}
 
-		public const string  CdataPrefix = "/*<![CDATA[*/";
+		public const string CdataPrefix = "/*<![CDATA[*/";
 		public const string CdataSuffix = "/*]]>*/";
 
 		private void SaveCustomizedCssRules(string userCssContent)
@@ -1148,8 +1148,8 @@ namespace Bloom
 		{
 			if (_url != "about:blank")
 			{
-		//		RunJavaScript("Cleanup()");
-					//nb: it's important not to move this into LoadPageDomFromBrowser(), which is also called during validation, becuase it isn't allowed then
+				//		RunJavaScript("Cleanup()");
+				//nb: it's important not to move this into LoadPageDomFromBrowser(), which is also called during validation, becuase it isn't allowed then
 				LoadPageDomFromBrowser(bodyHtml, userCssContent);
 			}
 		}
@@ -1271,11 +1271,11 @@ namespace Bloom
 			//_browser.WebBrowser.Navigate("javascript:void(alert($(\"form\").serialize()))");
 
 			*/
-		public event EventHandler GeckoReady;
+		public event EventHandler BrowserReady;
 
-		public void RaiseGeckoReady()
+		public void RaiseBrowserReady()
 		{
-			EventHandler handler = GeckoReady;
+			EventHandler handler = BrowserReady;
 			if (handler != null) handler(this, null);
 		}
 
@@ -1348,7 +1348,7 @@ namespace Bloom
 
 		private bool IsLocalLink(string anchorHref)
 		{
-			var originalUrlUpToOptionalHash = _browser.Url.OriginalString.Split(new []{'#'}, StringSplitOptions.None)[0];
+			var originalUrlUpToOptionalHash = _browser.Url.OriginalString.Split(new[] { '#' }, StringSplitOptions.None)[0];
 			return anchorHref.StartsWith(originalUrlUpToOptionalHash + "#");
 		}
 
@@ -1395,10 +1395,10 @@ namespace Bloom
 			{
 				var modifierTerms = new string[] { "condensed", "semilight", "black", "bold", "medium", "semibold", "light", "narrow" };
 
-				foreach(var family in installedFontCollection.Families)
+				foreach (var family in installedFontCollection.Families)
 				{
 					var name = family.Name.ToLowerInvariant();
-					if(modifierTerms.Any(modifierTerm => name.Contains(" " + modifierTerm)))
+					if (modifierTerms.Any(modifierTerm => name.Contains(" " + modifierTerm)))
 					{
 						continue;
 						// sorry, we just can't display that font, it will come out as some browser default font (at least on Windows, and at least up to Firefox 36)
@@ -1408,8 +1408,8 @@ namespace Bloom
 					yield return family.Name;
 				}
 			}
-			if(!foundAndika) // see BL-3674. We want to offer Andika even if the Andika installer isn't finished yet.
-			{	// it's possible that the user actually uninstalled Andika, but that's ok. Until they change to another font,
+			if (!foundAndika) // see BL-3674. We want to offer Andika even if the Andika installer isn't finished yet.
+			{   // it's possible that the user actually uninstalled Andika, but that's ok. Until they change to another font,
 				// they'll get a message that this font is not actually installed when they try to edit a book.
 				Logger.WriteMinorEvent("Andika not installed (BL-3674)");
 				yield return "Andika New Basic";
@@ -1451,10 +1451,10 @@ namespace Bloom
 			if (anchor == null)
 				anchor = target.Parent as GeckoAnchorElement;   // Might be a span inside an anchor
 			if (anchor != null && !String.IsNullOrEmpty(anchor.Href) &&
-			    // Handle only http(s) and mailto protocols.
-			    (anchor.Href.ToLowerInvariant().StartsWith("http") || anchor.Href.ToLowerInvariant().StartsWith("mailto")) &&
-			    // Don't try to handle localhost Bloom requests.
-			    !anchor.Href.ToLowerInvariant().StartsWith(Api.BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
+				// Handle only http(s) and mailto protocols.
+				(anchor.Href.ToLowerInvariant().StartsWith("http") || anchor.Href.ToLowerInvariant().StartsWith("mailto")) &&
+				// Don't try to handle localhost Bloom requests.
+				!anchor.Href.ToLowerInvariant().StartsWith(Api.BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
 			{
 				SIL.Program.Process.SafeStart(anchor.Href);
 				ge.Handled = true;

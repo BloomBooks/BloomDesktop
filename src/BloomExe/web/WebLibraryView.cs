@@ -10,18 +10,19 @@ namespace Bloom.Library
 {
 	public partial class WebLibraryView : UserControl
 	{
-		private Browser b;
+		private IBrowser _browser;
 
 		public delegate WebLibraryView Factory();//autofac uses this
 
 		public WebLibraryView()
 		{
 			InitializeComponent();
-			//_browser.GeckoReady += new EventHandler(OnLod);
-			b = new Browser();
+			//_browser.BrowserReady += new EventHandler(OnLod);
+			UserControl b = new  WebView2Browser();//GeckoFxBrowser();//
 			b.Parent = this;
 			b.Dock = DockStyle.Fill;
 			Controls.Add(b);
+			_browser = (IBrowser)b;
 			Load+=new EventHandler(WebLibraryView_Load);
 		}
 
@@ -35,7 +36,7 @@ namespace Bloom.Library
 
 		private void WebLibraryView_Load(object sender, EventArgs e)
 		{
-			b.Navigate(BloomServer.ServerUrlWithBloomPrefixEndingInSlash+"library/library.htm",false);
+			_browser.Navigate(BloomServer.ServerUrlWithBloomPrefixEndingInSlash+"library/library.htm",false);
 		}
 	}
 }

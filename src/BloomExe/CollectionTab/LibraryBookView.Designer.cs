@@ -37,7 +37,7 @@ namespace Bloom.CollectionTab
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._splitContainerForPreviewAndAboutBrowsers = new Bloom.ToPalaso.BetterSplitContainer(this.components);
-			this._readmeBrowser = new Bloom.Browser();
+			this._readmeBrowser = new Bloom.GeckoFxBrowser();
 			this._reactBookPreviewControl = new ReactControl();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._splitContainerForPreviewAndAboutBrowsers)).BeginInit();
@@ -129,7 +129,7 @@ namespace Bloom.CollectionTab
         private System.Windows.Forms.ToolTip toolTip1;
         private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
         private ToPalaso.BetterSplitContainer _splitContainerForPreviewAndAboutBrowsers;
-        private Browser _readmeBrowser;
+        private GeckoFxBrowser _readmeBrowser;
 		private web.ReactControl _reactBookPreviewControl;
 	}
 }

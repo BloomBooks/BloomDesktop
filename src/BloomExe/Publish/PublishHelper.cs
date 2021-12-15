@@ -45,7 +45,7 @@ namespace Bloom.Publish
 		// other views.
 		public static bool InPublishTab { get; set; }
 
-		Browser _browser = new Browser();
+		GeckoFxBrowser _browser = new GeckoFxBrowser();
 		// The only reason this isn't just ../* is performance. We could change it.  It comes from the need to actually
 		// remove any elements that the style rules would hide, because epub readers ignore visibility settings.
 		private const string kSelectThingsThatCanBeHidden = ".//div | .//img";

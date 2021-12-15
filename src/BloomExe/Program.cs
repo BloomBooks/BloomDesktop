@@ -214,7 +214,7 @@ namespace Bloom
 				// by the user.
 				if (!Settings.Default.LicenseAccepted)
 				{
-					Browser.SetUpXulRunner();
+					GeckoFxBrowser.SetUpXulRunner();
 					using (var dlg = new LicenseDialog("license.htm"))
 						if (dlg.ShowDialog() != DialogResult.OK)
 							return 1;
@@ -294,7 +294,7 @@ namespace Bloom
 						using (_applicationContainer = new ApplicationContainer())
 						{
 							SetUpLocalization();
-							Browser.SetUpXulRunner();
+							GeckoFxBrowser.SetUpXulRunner();
 							using (var fakeProjectFolder = new TemporaryFolder("projectName"))
 							{
 								var fakeCollectionPath = FolderTeamCollection.SetupMinimumLocalCollectionFilesForRepo(
@@ -416,8 +416,8 @@ namespace Bloom
 							}
 
 						}
-						Browser.SetUpXulRunner();
-						Browser.XulRunnerShutdown += OnXulRunnerShutdown;
+						GeckoFxBrowser.SetUpXulRunner();
+						GeckoFxBrowser.XulRunnerShutdown += OnXulRunnerShutdown;
 #if DEBUG
 						if (SIL.PlatformUtilities.Platform.IsWindows)
 							StartDebugServer();
@@ -434,7 +434,7 @@ namespace Bloom
 						}
 
 						LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
-						Browser.SetBrowserLanguage(Settings.Default.UserInterfaceLanguage);
+						GeckoFxBrowser.SetBrowserLanguage(Settings.Default.UserInterfaceLanguage);
 
 						DialogAdapters.CommonDialogAdapter.ForceKeepAbove = true;
 						DialogAdapters.CommonDialogAdapter.UseMicrosoftPositioning = true;
@@ -573,8 +573,8 @@ namespace Bloom
 				SetUpLocalization();
 				//JT please review: is this needed? InstallerSupport.MakeBloomRegistryEntries(args);
 				BookDownloadSupport.EnsureDownloadFolderExists();
-				Browser.SetUpXulRunner();
-				Browser.XulRunnerShutdown += OnXulRunnerShutdown;
+				GeckoFxBrowser.SetUpXulRunner();
+				GeckoFxBrowser.XulRunnerShutdown += OnXulRunnerShutdown;
 				LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 				var downloader = new BookDownload(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
 					new BookDownloadStartingEvent()) /*not hooked to anything*/;
@@ -662,7 +662,7 @@ namespace Bloom
 		internal static void OnXulRunnerShutdown(object sender, EventArgs e)
 		{
 			ApplicationExiting = true;
-			Browser.XulRunnerShutdown -= OnXulRunnerShutdown;
+			GeckoFxBrowser.XulRunnerShutdown -= OnXulRunnerShutdown;
 			if (_debugServerStarter != null)
 				_debugServerStarter.Dispose();
 			_debugServerStarter = null;

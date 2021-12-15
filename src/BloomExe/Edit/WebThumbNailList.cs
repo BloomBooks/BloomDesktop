@@ -33,7 +33,7 @@ namespace Bloom.Edit
 	{
 		public HtmlThumbNailer Thumbnailer;
 		public event EventHandler PageSelectedChanged;
-		private Bloom.Browser _browser;
+		private Bloom.GeckoFxBrowser _browser;
 		internal EditingModel Model;
 		private static string _thumbnailInterval;
 		private string _baseForRelativePaths;
@@ -78,7 +78,7 @@ namespace Bloom.Edit
 
 			if (!ReallyDesignMode)
 			{
-				_browser = new Browser();
+				_browser = new GeckoFxBrowser();
 				_browser.BackColor = Color.DarkGray;
 				_browser.Dock = DockStyle.Fill;
 				_browser.Location = new Point(0, 0);

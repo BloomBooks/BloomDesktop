@@ -52,7 +52,7 @@ namespace Bloom.web
 		}
 
 		public bool UseEditContextMenu;
-		private Browser _browser;
+		private IBrowser _browser;
 
 		private void ReactControl_Load(object sender, System.EventArgs e)
 		{
@@ -70,7 +70,7 @@ namespace Bloom.web
 
 			// The Size setting is needed on Linux to keep the browser from coming up as a small
 			// rectangle in the upper left corner...
-			_browser = new Browser
+			_browser = new WebView2Browser// GeckoFxBrowser
 			{
 				Dock = DockStyle.Fill,
 				Location = new Point(3, 3),
@@ -85,25 +85,25 @@ namespace Bloom.web
 			// browser to handle itself, so for now, I'm making them all use the more reliable
 			// code in Bloom. This means, for example, that the "See how it works here" link
 			// will open the URL in the user's default browser.
-			_browser.OnBrowserClick += Browser.HandleExternalLinkClick;
-			if (UseEditContextMenu)
-				_browser.ContextMenuProvider = args => {
-					args.ContextMenu.MenuItems.Add(new MenuItem(L10NSharp.LocalizationManager.GetString("Common.Copy", "Copy"),
-							(s1, e1) => { _browser.WebBrowser.CopySelection(); }));
-					args.ContextMenu.MenuItems.Add(new MenuItem(L10NSharp.LocalizationManager.GetString("Common.SelectAll", "Select all"),
-							(s1, e1) => { _browser.WebBrowser.SelectAll(); }));
-					return true;
-				};
+			_browser.OnBrowserClick += GeckoFxBrowser.HandleExternalLinkClick;
+			//if (UseEditContextMenu)
+			//	_browser.ContextMenuProvider = args => {
+			//		args.ContextMenu.MenuItems.Add(new MenuItem(L10NSharp.LocalizationManager.GetString("Common.Copy", "Copy"),
+			//				(s1, e1) => { _browser.WebBrowser.CopySelection(); }));
+			//		args.ContextMenu.MenuItems.Add(new MenuItem(L10NSharp.LocalizationManager.GetString("Common.SelectAll", "Select all"),
+			//				(s1, e1) => { _browser.WebBrowser.SelectAll(); }));
+			//		return true;
+			//	};
 
-			var dummy = _browser.Handle; // gets the WebBrowser created
+			//var dummy = _browser.Handle; // gets the WebBrowser created
 
 			// If the control gets added before it has navigated somewhere,
 			// it shows as solid black, despite setting the BackColor to white.
 			// So just don't show it at all until it contains what we want to see.
-			_browser.WebBrowser.DocumentCompleted += (unused, args) =>
-			{
-				Controls.Add(_browser);
-			};
+		//_browser.WebBrowser.DocumentCompleted += (unused, args) =>
+		//	{
+				Controls.Add((UserControl)_browser);
+			//};
 			_browser.NavigateToTempFileThenRemoveIt(tempFile.Path);
 		}
 

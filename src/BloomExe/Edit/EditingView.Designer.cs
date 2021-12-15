@@ -61,7 +61,7 @@
 			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
 			this._contentLanguagesDropdown = new System.Windows.Forms.ToolStripDropDownButton();
 			this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
-			this._browser1 = new Bloom.Browser();
+			this._browser1 = new Bloom.WebView2Browser();
 			this._splitTemplateAndSource = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._betterToolTip1 = new Bloom.ToPalaso.BetterToolTip(this.components);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
@@ -337,7 +337,6 @@
 			// _browser1
 			// 
 			this._browser1.BackColor = System.Drawing.Color.DarkGray;
-			this._browser1.ContextMenuProvider = null;
 			this._browser1.ControlKeyEvent = null;
 			this._browser1.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._browser1, null);
@@ -409,7 +408,7 @@
         #endregion
 
         private Bloom.ToPalaso.BetterSplitContainer _splitContainer2;
-        private Browser _browser1;
+        private WebView2Browser _browser1;
 		private Bloom.ToPalaso.BetterSplitContainer _splitTemplateAndSource;
         private System.Windows.Forms.Timer _editButtonsUpdateTimer;
 		private System.Windows.Forms.Timer _handleMessageTimer;

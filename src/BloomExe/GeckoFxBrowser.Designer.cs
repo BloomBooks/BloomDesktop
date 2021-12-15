@@ -1,6 +1,6 @@
 ﻿namespace Bloom
 {
-    partial class Browser
+    partial class GeckoFxBrowser
     {
         /// <summary> 
         /// Required designer variable.

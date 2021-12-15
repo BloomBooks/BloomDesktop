@@ -31,7 +31,7 @@ namespace Bloom.Collection
 		private List<string> _styleNames = new List<string>();
 		// Enhance: when all the tabs are in Typescript, we should be able to move the tabs themselves there and
 		// have one browser for the whole dialog.
-		private Browser _enterpriseBrowser;
+		private GeckoFxBrowser _enterpriseBrowser;
 		private string _subscriptionCode;
 		private string _brand;
 		private ReactControl _defaultBookshelfControl;
@@ -154,7 +154,7 @@ namespace Bloom.Collection
 			// The Size setting is needed on Linux to keep the browser from coming up as a small
 			// rectangle in the upper left corner when the dialog is initialized to open on the
 			// Enterprise tab.
-			_enterpriseBrowser = new Browser {Dock = DockStyle.Fill, Location=new Point(3,3), Size=new Size(_enterpriseTab.Width-6, _enterpriseTab.Height-6)};
+			_enterpriseBrowser = new GeckoFxBrowser {Dock = DockStyle.Fill, Location=new Point(3,3), Size=new Size(_enterpriseTab.Width-6, _enterpriseTab.Height-6)};
 			_enterpriseBrowser.BackColor = Color.White;
 			
 			var rootFile = BloomFileLocator.GetBrowserFile(false, "collection", "enterpriseSettings.html");
@@ -492,7 +492,7 @@ namespace Bloom.Collection
 		{
 			// Display the fonts in sorted order.  See https://jira.sil.org/browse/BL-864.
 			var fontNames = new List<string>();
-			fontNames.AddRange(Browser.NamesOfFontsThatBrowserCanRender());
+			fontNames.AddRange(GeckoFxBrowser.NamesOfFontsThatBrowserCanRender());
 			fontNames.Sort();
 			foreach (var font in fontNames)
 			{

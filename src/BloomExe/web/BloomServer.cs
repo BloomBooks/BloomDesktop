@@ -636,7 +636,7 @@ namespace Bloom.Api
 					return true;
 				case "availableFontNames":
 					info.ResponseContentType = "application/json";
-					var list = new List<string>(Browser.NamesOfFontsThatBrowserCanRender());
+					var list = new List<string>(GeckoFxBrowser.NamesOfFontsThatBrowserCanRender());
 					list.Sort();
 					info.WriteCompleteOutput(JsonConvert.SerializeObject(new{fonts = list}));
 					return true;

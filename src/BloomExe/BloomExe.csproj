@@ -3,7 +3,7 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ProjectGuid>{304D5612-167C-4725-AF27-B9F2BB788B57}</ProjectGuid>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
@@ -188,6 +188,15 @@
       <HintPath>..\..\packages\Microsoft.IO.RecyclableMemoryStream.1.4.1\lib\net46\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="Microsoft.Web.WebView2.Core, Version=1.0.1054.31, Culture=neutral, PublicKeyToken=2a8ab48044d2601e, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Web.WebView2.1.0.1054.31\lib\net45\Microsoft.Web.WebView2.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Web.WebView2.WinForms, Version=1.0.1054.31, Culture=neutral, PublicKeyToken=2a8ab48044d2601e, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Web.WebView2.1.0.1054.31\lib\net45\Microsoft.Web.WebView2.WinForms.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Web.WebView2.Wpf, Version=1.0.1054.31, Culture=neutral, PublicKeyToken=2a8ab48044d2601e, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Web.WebView2.1.0.1054.31\lib\net45\Microsoft.Web.WebView2.Wpf.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.4.0, Culture=neutral, PublicKeyToken=8985beaab7ea3f04, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft-WindowsAPICodePack-Core.1.1.4\lib\net452\Microsoft.WindowsAPICodePack.dll</HintPath>
     </Reference>
@@ -368,6 +377,13 @@
       <DependentUpon>AboutMemory.cs</DependentUpon>
     </Compile>
     <Compile Include="Book\SaveContext.cs" />
+    <Compile Include="WebView2Browser.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="WebView2Browser.Designer.cs">
+      <DependentUpon>WebView2Browser.cs</DependentUpon>
+    </Compile>
+    <Compile Include="IBrowser.cs" />
     <Compile Include="MiscUI\BloomMessageBox.cs" />
     <Compile Include="Spreadsheet\Header.cs" />
     <Compile Include="Utils\BloomArchiveFile.cs" />
@@ -851,11 +867,11 @@
       <DependentUpon>ConfigurationDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Edit\Configurator.cs" />
-    <Compile Include="Browser.cs">
+    <Compile Include="GeckoFxBrowser.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Browser.Designer.cs">
-      <DependentUpon>Browser.cs</DependentUpon>
+    <Compile Include="GeckoFxBrowser.Designer.cs">
+      <DependentUpon>GeckoFxBrowser.cs</DependentUpon>
     </Compile>
     <Compile Include="Command.cs" />
     <Compile Include="web\DynamicJson.cs" />
@@ -965,8 +981,12 @@
     <EmbeddedResource Include="AboutMemory.resx">
       <DependentUpon>AboutMemory.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Browser.resx">
-      <DependentUpon>Browser.cs</DependentUpon>
+    <EmbeddedResource Include="WebView2Browser.resx">
+      <DependentUpon>WebView2Browser.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GeckoFxBrowser.resx">
+      <DependentUpon>GeckoFxBrowser.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionTab\BloomLibraryLinkVerification.resx">
@@ -1632,6 +1652,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Error Condition="!Exists('..\..\packages\SIL.Media.9.0.0-beta0072\build\SIL.Media.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Media.9.0.0-beta0072\build\SIL.Media.targets'))" />
     <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.0-beta0072\build\SIL.Windows.Forms.Keyboarding.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.0-beta0072\build\SIL.Windows.Forms.Keyboarding.targets'))" />
     <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.9.0.0-beta0072\build\SIL.Windows.Forms.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.9.0.0-beta0072\build\SIL.Windows.Forms.targets'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1054.31\build\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Web.WebView2.1.0.1054.31\build\Microsoft.Web.WebView2.targets'))" />
   </Target>
   <!-- msbuild mistakenly copies the 64-bit version of irrKlang.NET4.dll to $(Output) as it resolves
        SIL.Media.dll in our 32-bit build.  It also always copies both the 32-bit and 64-bit versions
@@ -1675,6 +1696,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <RemoveDir Directories="@(RemoveForLinux)" />
   </Target>
   <Import Project="..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets" Condition="Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" />
+  <Import Project="..\..\packages\Microsoft.Web.WebView2.1.0.1054.31\build\Microsoft.Web.WebView2.targets" Condition="Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1054.31\build\Microsoft.Web.WebView2.targets')" />
   <!-- Note: Visual Studio automatically inserts any imports from installing packages into the end here,
   but the AfterBuild target may not run if .targets files are imported after it.
   I recommend you move the Import statements before the "AfterBuild" target,

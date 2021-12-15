@@ -150,8 +150,8 @@ namespace Bloom.Publish
 				_htmlControl.Dispose();
 				_htmlControl = null;
 			}
-			Browser.SuppressJavaScriptErrors = false;
-			Browser.ClearCache(); // of anything used in publish mode; may help free memory.
+			GeckoFxBrowser.SuppressJavaScriptErrors = false;
+			GeckoFxBrowser.ClearCache(); // of anything used in publish mode; may help free memory.
 			PublishHelper.Cancel();
 			PublishHelper.InPublishTab = false;
 		}
@@ -495,8 +495,8 @@ namespace Bloom.Publish
 		public void SetDisplayMode(PublishModel.DisplayModes displayMode)
 		{
 			// This is only supposed to be active in one mode of PublishView.
-			Browser.SuppressJavaScriptErrors = false;
-			Browser.ClearCache(); // try to free memory when switching
+			GeckoFxBrowser.SuppressJavaScriptErrors = false;
+			GeckoFxBrowser.ClearCache(); // try to free memory when switching
 			// Abort any work we're doing to prepare a preview (at least stop it interfering with other navigation).
 			PublishHelper.Cancel();
 
@@ -593,7 +593,7 @@ namespace Bloom.Publish
 					// what we want in our preview. So just suppress the toasts for all of them. This is unfortunate because
 					// we'll lose them for all the other JS code in this pane. But I don't have a better solution.
 					// We still get them in the output window, in case we really want to look for one.
-					Browser.SuppressJavaScriptErrors = true;
+					GeckoFxBrowser.SuppressJavaScriptErrors = true;
 					PublishEpubApi.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "ePUBPublish", "loader.html"));
 					break;

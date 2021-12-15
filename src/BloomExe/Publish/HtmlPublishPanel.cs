@@ -10,24 +10,24 @@ namespace Bloom.Publish
 	/// </summary>
 	public partial class HtmlPublishPanel : UserControl
 	{
-		private Browser _browser;
+		private GeckoFxBrowser _browser;
 
 		public HtmlPublishPanel(string pathToHtmlFile)
 		{
 			InitializeComponent();
 
-			_browser = new Browser();
+			_browser = new GeckoFxBrowser();
 			_browser.Dock = DockStyle.Fill;
 			Controls.Add(_browser);
 			// Has to be in front of the panel docked top for Fill to work.
 			_browser.BringToFront();
 			_browser.Navigate(pathToHtmlFile.ToLocalhost() + GetUrlParams(), false);
-			_browser.OnBrowserClick += Browser.HandleExternalLinkClick;
+			_browser.OnBrowserClick += GeckoFxBrowser.HandleExternalLinkClick;
 
 			VisibleChanged += OnVisibleChanged;
 		}
 
-		public Browser Browser => _browser;
+		public GeckoFxBrowser Browser => _browser;
 
 		private string GetUrlParams()
 		{
