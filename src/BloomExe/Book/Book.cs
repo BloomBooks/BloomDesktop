@@ -918,6 +918,8 @@ namespace Bloom.Book
 			// Fix bug reported in BL-8599 (and possibly other issues): missing audio ids.
 			FixMissingAudioIdsInDataDiv(bookDOM);
 			FixMissingAudioIdsInBookPages(bookDOM);
+			// Fix bug reported in BL-10786: coverImage multiply HTML-encoded.
+			FixExcessiveHTMLEncodingOfCoverImage(bookDOM);
 		}
 
 		/// <summary>
@@ -1021,6 +1023,32 @@ namespace Bloom.Book
 			{
 				var msg = $"Fixed {idsAdded} missing audio ids in the book's pages.";
 				Logger.WriteEvent(msg);
+			}
+		}
+
+		private void FixExcessiveHTMLEncodingOfCoverImage(HtmlDom bookDOM)
+		{
+			var coverImgElt = bookDOM.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book='coverImage']")
+				.Cast<XmlElement>()
+				.FirstOrDefault();
+			if (coverImgElt == null)
+				return;
+			var coverImageFileName = coverImgElt.InnerText;
+			if (string.IsNullOrEmpty(coverImageFileName))
+				return;
+			coverImageFileName = coverImageFileName.Trim();
+			// The fileName might be URL encoded.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3901.
+			var coverImagePath = UrlPathString.GetFullyDecodedPath(StoragePageFolder, ref coverImageFileName);
+			while (coverImagePath.Contains("&amp;") && !File.Exists(coverImagePath))
+				coverImagePath = HttpUtility.HtmlDecode(coverImagePath);
+			var filename = Path.GetFileName(coverImagePath);
+			if (filename != coverImageFileName)
+			{
+				coverImgElt.InnerText = filename;
+				var urlPathString = UrlPathString.CreateFromUnencodedString(filename);
+				var encoded = urlPathString.UrlEncoded;
+				coverImgElt.SetAttribute("src", encoded);
+				coverImgElt.SetAttribute("alt", $"This picture, {encoded}, is missing or was loading too slowly.");
 			}
 		}
 
@@ -3914,7 +3942,16 @@ namespace Bloom.Book
 			// The fileName might be URL encoded.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3901.
 			var coverImagePath = UrlPathString.GetFullyDecodedPath(StoragePageFolder, ref coverImageFileName);
 			if (!File.Exists(coverImagePath))
+			{
+				// And the filename might be multiply-HTML encoded.
+				while (coverImagePath.Contains("&amp;"))
+				{
+					coverImagePath = HttpUtility.HtmlDecode(coverImagePath);
+					if (File.Exists(coverImagePath))
+						return coverImagePath;
+				}
 				return null;
+			}
 			return coverImagePath;
 		}
 
