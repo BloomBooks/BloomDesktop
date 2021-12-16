@@ -54,7 +54,11 @@ namespace BloomTests.Spreadsheet
 			var frColumn = _sheet.GetRequiredColumnForLang("fr");
 			var secondRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.GetCell(frColumn).Content.Contains("Riding on French elephants can be more risky."));
 			Assert.IsNotNull(secondRowToModify, "Did not find the second text row that OneTimeSetup was expecting to modify");
-			secondRowToModify.SetCell(frColumn, "<p>Riding on French elephants can be very risky.</p>");
+			// This is what SpreadsheetIO should put in the cell when the Excel spreadsheet contains
+			// Riding on <div id='notMarkup'>French&Spanish</div> elephants can be very risky.
+			// That is, the paragraph markup is present (added by BuildXmlString()) but the markup in the
+			// Excel cell is escaped. Our test will verify that it gets inserted so as to look unescaped in HTML.
+			secondRowToModify.SetCell(frColumn, "<p>" + SpreadsheetIO.ReplaceExcelEscapedCharsAndEscapeXmlOnes("Riding on <div id='notMarkup'>French&Spanish</div> elephants can be very risky.") + "</p>");
 
 			var asteriskColumn = _sheet.GetRequiredColumnForLang("*");
 			var imageSrcColumn = _sheet.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
@@ -123,9 +127,19 @@ namespace BloomTests.Spreadsheet
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-editable') and @lang='fr' and not(@data-book='bookTitle')]", 3);
 			// Make sure these are in the right places. We put this in the first row, which because of tab index should be imported to the SECOND TG.
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@tabindex='1']/div[@lang='en']/p[text()='This elephant is running amok.']", 1); // modified
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='group3']/div[@lang='fr']/p[text()='Riding on French elephants can be very risky.']", 1); // modified
+			// I can't figure out an xpath to check this; the required escaping for both ampersand and single quote is too tricky.
+			// This is easier to understand and arguably more useful to test.
+			var group3 = _dom.RawDom.SelectSingleNode("//div[@id='group3']/div[@lang='fr']/p");
+			Assert.That(group3.InnerText, Is.EqualTo("Riding on <div id='notMarkup'>French&Spanish</div> elephants can be very risky."));
+			//assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='group3']/div[@lang='fr']/p[text()='Riding on &amp;lt;div id=&apos;notMarkup&apos;&amp;gt;French&amp;amp;Spanish&amp;lt;/div&amp;gt; elephants can be very risky.']", 1); // modified
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='group3']/div[@lang='en']/p[text()='Riding on elephants can be risky.']", 1); // unchanged
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@tabindex='2']/div[@lang='fr']/p[text()='French elephants should be handled with special care.']", 1); // unchanged
+		}
+
+		[Test]
+		public void MarkupInCellNotInterpreted()
+		{
+			AssertThatXmlIn.Dom(_dom.RawDom).HasNoMatchForXpath("//div[@id='notMarkup']");
 		}
 
 		[Test]
