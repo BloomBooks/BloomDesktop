@@ -2767,56 +2767,21 @@ namespace Bloom.Book
 			return newPathForExtraBook;
 		}
 
-		//Will not authomatically cause the new backup book to appear in Bloom until the next time Bloom is re-opened
-		public static void SaveCopyBeforeImportOverwrite(string folderPath, string bookPath)
+		/// <summary>
+		/// Save a copy of the specified book in the a folder %temp%/bloom pre-import backups.
+		/// Generate a unique name for the backup as necessary, and return its full path.
+		/// </summary>
+		public static string SaveCopyBeforeImportOverwrite(string bookFolder, string bookFilePath)
 		{
-			string parentPath = Directory.GetParent(folderPath).FullName;
-			string origFileName = Path.GetFileName(folderPath);
-			//If the original file name already ends with "(before import overwrite...", strip it off
-			origFileName = origFileName.Split(new string[]{" (before import overwrite"}, StringSplitOptions.None)[0];
-			string newFolderPath = GetUniqueFolderPath(parentPath,
-														origFileName + " (before import overwrite)",
-														origFileName + " (before import overwrite-{0})");
-			try
-			{
-				// directory for the new book
-				Directory.CreateDirectory(newFolderPath);
+			string origFileName = Path.GetFileName(bookFolder);
+			var parentFolder = Path.Combine(Path.GetTempPath(), "bloom pre-import backups");
+			var destPath = GetUniqueFileName(parentFolder, origFileName, ".bloom");
+			Directory.CreateDirectory(parentFolder);
+			var zipFile = new BloomZipFile(destPath);
+			zipFile.AddDirectory(bookFolder, bookFolder.Length + 1, null, null);
+			zipFile.Save();
 
-				// copy files
-				CopyDirectory(folderPath, newFolderPath, new[] { ".bak", ".bloombookorder", ".pdf", ".map" });
-				var metaPath = Path.Combine(newFolderPath, "meta.json");
-
-				// Update the InstanceId. This was not done prior to Bloom 4.2.104
-				// If the meta.json file is missing, ok that's weird but that means we
-				// don't have a duplicate bookInstanceId to worry about.
-				if (RobustFile.Exists(metaPath))
-				{
-					var meta = DynamicJson.Parse(File.ReadAllText(metaPath));
-					meta.bookInstanceId = Guid.NewGuid().ToString();
-					RobustFile.WriteAllText(metaPath, meta.ToString());
-				}
-
-				// This bookInfo is not going to hang around, so it's harmless to say it can always save.
-				BookInfo backupBook = new BookInfo(newFolderPath, true, new AlwaysEditSaveContext());
-				backupBook.NameLocked = true;
-				backupBook.Save();
-			}
-			catch (Exception ex)
-			{
-				//Delete any part that was already copied before the exception
-				if (Directory.Exists(newFolderPath))
-				{
-					SIL.IO.RobustIO.DeleteDirectory(newFolderPath, recursive: true);
-				}
-				throw ex;
-			}
-
-			// Get rid of any TC status we copied from the original, so Bloom treats it correctly as a new book.
-			RemoveLocalOnlyFiles(newFolderPath);
-
-			string origHtmlFileName = Path.GetFileName(bookPath);
-			string newCopyHtmlFileName = Path.GetFileName(newFolderPath) + ".htm";
-			RobustFile.Move(Path.Combine(newFolderPath, origHtmlFileName), Path.Combine(newFolderPath, newCopyHtmlFileName));
+			return destPath;
 		}
 	}
 }

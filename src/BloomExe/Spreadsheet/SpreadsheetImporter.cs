@@ -71,7 +71,7 @@ namespace Bloom.Spreadsheet
 
 		public SpreadsheetImportParams Params = new SpreadsheetImportParams();
 
-		public void ImportWithProgress(string inputFilepath)
+		public void ImportWithProgress(string inputFilepath, string bookPath)
 		{
 			var mainShell = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
 			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, "spreadsheet-import", () =>
@@ -94,6 +94,10 @@ namespace Bloom.Spreadsheet
 					return true;
 				if (!Validate(sheet, progress))
 					return true; // errors already reported to progress
+				progress.MessageWithoutLocalizing($"Making a backup of the original book...");
+				string folderPath = Path.GetDirectoryName(bookPath);
+				var backupPath = BookStorage.SaveCopyBeforeImportOverwrite(folderPath, bookPath);
+				progress.MessageWithoutLocalizing($"Backup completed (at {backupPath})");
 				Import(sheet, progress);
 				return true; // always leave the dialog up until the user chooses 'close'
 			}, null, mainShell);

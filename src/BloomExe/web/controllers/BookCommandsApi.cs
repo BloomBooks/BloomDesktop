@@ -210,23 +210,15 @@ namespace Bloom.web.controllers
 					Settings.Default.Save();
 				}
 
-				string folderPath = book.FolderPath;
-				BookStorage.SaveCopyBeforeImportOverwrite(folderPath, bookPath);
-
 				var dom = book.OurHtmlDom;
 				var importer = new SpreadsheetImporter(_webSocketServer, dom, Path.GetDirectoryName(inputFilepath), book.FolderPath);
-				importer.ImportWithProgress(inputFilepath);
+				importer.ImportWithProgress(inputFilepath, bookPath);
 
 				// Review: A lot of other stuff happens in Book.Save() and BookStorage.SaveHtml().
 				// I doubt we need any of it for current purposes, but later we might.
 				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, bookPath);
 				book.ReloadFromDisk(null);
 				_bookSelection.InvokeSelectionChanged(false);
-
-				// reload the collection so the backups show up.
-				// Note: if we come up with some other backup strategy, we can remove this.
-				_libraryModel.ReloadEditableCollection();
-
 			}
 			catch (Exception ex)
 			{
