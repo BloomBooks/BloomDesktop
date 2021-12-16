@@ -700,7 +700,7 @@ namespace Bloom.CollectionTab
 		/// <param name="exception">any exception which occurs when trying to save the file</param>
 		/// <returns>true if file was saved successfully; false otherwise</returns>
 		/// <remarks>if return value is false, exception is non-null and vice versa</remarks>
-		internal bool SaveAsBloomFile(string srcFolderName, string destFileName, out Exception exception)
+		public static bool SaveAsBloomFile(string srcFolderName, string destFileName, out Exception exception)
 		{
 			exception = null;
 			try

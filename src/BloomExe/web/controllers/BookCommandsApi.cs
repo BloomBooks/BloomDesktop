@@ -260,7 +260,7 @@ namespace Bloom.web.controllers
 			var destFileName = dlg.FileName;
 			_previousTargetSaveAs = Path.GetDirectoryName(destFileName);
 
-			if (!_libraryModel.SaveAsBloomFile(srcFolderName, destFileName, out var exception))
+			if (!LibraryModel.SaveAsBloomFile(srcFolderName, destFileName, out var exception))
 			{
 				// Purposefully not adding to the L10N burden...
 				NonFatalProblem.Report(ModalIf.All, PassiveIf.None,
