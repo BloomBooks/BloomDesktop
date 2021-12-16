@@ -199,7 +199,7 @@ namespace Bloom.CollectionTab
 			this._L10NSharpExtender.SetLocalizingId(this.SaveAsBloomToolStripMenuItem, "CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem");
 			this.SaveAsBloomToolStripMenuItem.Name = "SaveAsBloomToolStripMenuItem";
 			this.SaveAsBloomToolStripMenuItem.Size = new System.Drawing.Size(242, 26);
-			this.SaveAsBloomToolStripMenuItem.Text = "Save as single file (.bloom)...";
+			this.SaveAsBloomToolStripMenuItem.Text = "Save as single file (.bloomSource)...";
 			this.SaveAsBloomToolStripMenuItem.Click += new System.EventHandler(this.SaveAsBloomToolStripMenuItem_Click);
 			// 
 			// toolStripSeparator4

@@ -50,7 +50,7 @@ namespace BloomTests.TeamCollection
 			// (Despite the name, it is only converted to a new local in the default case. When we do a First Time Join,
 			// it just gets copied into the repo.)
 			MakeBook("Should be converted to new local", "This should become a new local (no status) book as it has local status but is not in the repo", true);
-			var delPath = Path.Combine(_repoFolder.FolderPath, "Books", "Should be converted to new local.bloom");
+			var delPath = Path.Combine(_repoFolder.FolderPath, "Books", "Should be converted to new local.bloomSource");
 			RobustFile.Delete(delPath);
 
 			// Simulate a book newly created locally. Not in repo, but should not be deleted.
@@ -73,7 +73,7 @@ namespace BloomTests.TeamCollection
 			SIL.IO.RobustIO.DeleteDirectoryAndContents(delPathAddMe);
 
 			// Simulate a book that was checked in, then checked out again and renamed,
-			// but not yet checked in. Both "A renamed book" folder and content and "An old name.bloom"
+			// but not yet checked in. Both "A renamed book" folder and content and "An old name.bloomSource"
 			// should survive. (Except for an obscure reason when joining a TC...see comment in the test.)
 			MakeBook("An old name", "Should be kept in both places with different names");
 			_collection.AttemptLock("An old name", "test@somewhere.org");
@@ -171,12 +171,12 @@ namespace BloomTests.TeamCollection
 			_collection.WriteLocalStatus(copiedEx, new BookStatus(), collectionId: Bloom.TeamCollection.TeamCollection.GenerateCollectionId());
 
 			// Simulate a corrupt zip file, only in the repo
-			File.WriteAllText(Path.Combine(_repoFolder.FolderPath, "Books", "new corrupt book.bloom"), "This is not a valid zip!");
+			File.WriteAllText(Path.Combine(_repoFolder.FolderPath, "Books", "new corrupt book.bloomSource"), "This is not a valid zip!");
 
 			// Simulate a corrupt zip file that corresponds to a local book.
 			var badZip = "has a bad zip in repo";
 			MakeBook(badZip, "This book seems to be in both places, but the repo is corrupt");
-			File.WriteAllText(Path.Combine(_repoFolder.FolderPath, "Books", badZip + ".bloom"), "This is also not a valid zip!");
+			File.WriteAllText(Path.Combine(_repoFolder.FolderPath, "Books", badZip + ".bloomSource"), "This is also not a valid zip!");
 
 			// Simulate a book that was renamed remotely. That is, there's a local book Old Name, with local status,
 			// and there's no repo book by that name, but there's a repo book New Name (and no such local book).
@@ -231,8 +231,8 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public virtual void SyncAtStartup_FoldersWithoutHtml_NotTurnedIntoBooks()
 		{
-			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", "Allowed Words.bloom")), Is.False);
-			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", "Sample Texts.bloom")), Is.False);
+			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", "Allowed Words.bloomSource")), Is.False);
+			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", "Sample Texts.bloomSource")), Is.False);
 		}
 
 		/// <summary>
@@ -273,7 +273,7 @@ namespace BloomTests.TeamCollection
 			// weird to find a book checked out at all...that implies we're already connected to the repo.
 			// Weirder still to find it checked out AND renamed. Still, this is clearly not a new book
 			// that just needs to be added, so we should probably not check it in.
-			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", "An old name.bloom")),
+			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", "An old name.bloomSource")),
 				Is.True);
 		}
 
@@ -347,13 +347,13 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public virtual void SyncAtStartup_BookCreatedLocallyNotCheckedIn_CopiedToRepoOnlyOnJoin()
 		{
-			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books" ,"New book.bloom")), Is.EqualTo(FirstTimeJoin()));
+			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books" ,"New book.bloomSource")), Is.EqualTo(FirstTimeJoin()));
 		}
 
 		[Test]
 		public virtual void SyncAtStartup_BookCopiedFromAnotherTcWithExplorer_CopiedToRepoOnlyOnJoin()
 		{
-			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", "copied with Explorer.bloom")), Is.EqualTo(FirstTimeJoin()));
+			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", "copied with Explorer.bloomSource")), Is.EqualTo(FirstTimeJoin()));
 		}
 
 		[Test]
@@ -448,7 +448,7 @@ namespace BloomTests.TeamCollection
 
 		public void AssertLostAndFound(string bookName)
 		{
-			var bookPath = Path.Combine(_repoFolder.FolderPath, "Lost and Found", Path.ChangeExtension(bookName, "bloom"));
+			var bookPath = Path.Combine(_repoFolder.FolderPath, "Lost and Found", Path.ChangeExtension(bookName, "bloomSource"));
 			Assert.That(File.Exists(bookPath));
 			// We could try to check the content (from an extra argument). However, there's no plausible path
 			// for the book to get to lost-and-found except by PutBook, and we have other tests to check
@@ -469,7 +469,7 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public void SyncAtStartup_BadBookInRepo_NoLocalBook_GivesError_NoChanges()
 		{
-			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", "new corrupt book.bloom")));
+			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", "new corrupt book.bloomSource")));
 			Assert.That(Directory.Exists(Path.Combine(_collectionFolder.FolderPath, "new corrupt book")), Is.False);
 			// I think this is better than spelling it out. We have a test for the method itself.
 			var msg = _collection.GetBadZipFileMessage("new corrupt book");
@@ -480,7 +480,7 @@ namespace BloomTests.TeamCollection
 		public void SyncAtStartup_BadBookInRepo_LocalBook_GivesError_NoChanges()
 		{
 			var badZip = "has a bad zip in repo";
-			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", badZip + ".bloom")));
+			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", badZip + ".bloomSource")));
 			// we didn't delete the local one!
 			AssertLocalContent(badZip, "This book seems to be in both places, but the repo is corrupt");
 
@@ -603,7 +603,7 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public void SyncAtStartup_BookDeletedRemotely_NoTombstone_RestoredToTC()
 		{
-			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", "Should be converted to new local.bloom")));
+			Assert.That(File.Exists(Path.Combine(_repoFolder.FolderPath, "Books", "Should be converted to new local.bloomSource")));
 		}
 	}
 }

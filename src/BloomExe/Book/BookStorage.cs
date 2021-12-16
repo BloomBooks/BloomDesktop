@@ -2775,7 +2775,7 @@ namespace Bloom.Book
 		{
 			string origFileName = Path.GetFileName(bookFolder);
 			var parentFolder = Path.Combine(Path.GetTempPath(), "bloom pre-import backups");
-			var destPath = GetUniqueFileName(parentFolder, origFileName, ".bloom");
+			var destPath = GetUniqueFileName(parentFolder, origFileName, ".bloomSource");
 			Directory.CreateDirectory(parentFolder);
 			var zipFile = new BloomZipFile(destPath);
 			zipFile.AddDirectory(bookFolder, bookFolder.Length + 1, null, null);

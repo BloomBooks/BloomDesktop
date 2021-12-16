@@ -93,7 +93,7 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public void PutBook_CreatesExpectedBloomFile()
 		{
-			var destPath = Path.Combine(_repoFolder.FolderPath, "Books" ,"My book.bloom");
+			var destPath = Path.Combine(_repoFolder.FolderPath, "Books" ,"My book.bloomSource");
 			Assert.That(RobustFile.Exists(destPath));
 		}
 
@@ -169,7 +169,7 @@ namespace BloomTests.TeamCollection
 			// cleanup
 			_collection.NewBook -= monitorFunction;
 			_collection.StopMonitoring();
-			var newBookPath = Path.Combine(_repoFolder.FolderPath, "newly put book.bloom");
+			var newBookPath = Path.Combine(_repoFolder.FolderPath, "newly put book.bloomSource");
 			RobustFile.Delete(newBookPath);
 
 			Assert.IsTrue(waitSucceeded, "New book was not raised");
@@ -179,7 +179,7 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public void NewBook_RaisesNewBookEvent()
 		{
-			var newBookPath = Path.Combine(_repoFolder.FolderPath, "Books", "A new book.bloom");
+			var newBookPath = Path.Combine(_repoFolder.FolderPath, "Books", "A new book.bloomSource");
 			var newBookName = "";
 			_collection.StartMonitoring();
 			// used to wait for the OS notification to raise the event
@@ -195,13 +195,13 @@ namespace BloomTests.TeamCollection
 			RobustFile.Delete(newBookPath);
 
 			Assert.IsTrue(waitSucceeded, "New book was not raised");
-			Assert.That(newBookName, Is.EqualTo("A new book.bloom"));
+			Assert.That(newBookName, Is.EqualTo("A new book.bloomSource"));
 		}
 
 		[Test]
 		public void ChangedBook_RaisesBookChangedEvent()
 		{
-			var bloomBookPath = Path.Combine(_repoFolder.FolderPath, "Books", "put book to modify.bloom");
+			var bloomBookPath = Path.Combine(_repoFolder.FolderPath, "Books", "put book to modify.bloomSource");
 			// Don't use PutBook here...changing the file immediately after putting it won't work,
 			// because of the code that tries to prevent notifications of our own checkins.
 			RobustFile.WriteAllText(bloomBookPath, @"This is original"); // no, not a zip at all
@@ -228,13 +228,13 @@ namespace BloomTests.TeamCollection
 			RobustFile.Delete(bloomBookPath);
 
 			Assert.That(waitSucceeded, "book changed was not raised");
-			Assert.That(modifiedBookName, Is.EqualTo("put book to modify.bloom"));
+			Assert.That(modifiedBookName, Is.EqualTo("put book to modify.bloomSource"));
 		}
 
 		[Test]
 		public void DeletedBook_RaisesDeleteRepoBookFileEvent()
 		{
-			var bloomBookPath = Path.Combine(_repoFolder.FolderPath, "Books", "put book to delete.bloom");
+			var bloomBookPath = Path.Combine(_repoFolder.FolderPath, "Books", "put book to delete.bloomSource");
 			// Don't use PutBook here...changing the file immediately after putting it won't work,
 			// because of the code that tries to prevent notifications of our own checkins.
 			RobustFile.WriteAllText(bloomBookPath, @"This is original"); // no, not a zip at all
@@ -260,7 +260,7 @@ namespace BloomTests.TeamCollection
 			_collection.StopMonitoring();
 
 			Assert.That(waitSucceeded, "book deleted was not raised");
-			Assert.That(deletedBookName, Is.EqualTo("put book to delete.bloom"));
+			Assert.That(deletedBookName, Is.EqualTo("put book to delete.bloomSource"));
 		}
 
 		[Test]
@@ -297,7 +297,7 @@ namespace BloomTests.TeamCollection
 			_collection.BookRepoChange -= monitorFunction;
 			_collection.DeleteRepoBookFile -= monitorFunction2;
 			_collection.StopMonitoring();
-			var bloomBookPath = Path.Combine(_repoFolder.FolderPath, "put existing book.bloom");
+			var bloomBookPath = Path.Combine(_repoFolder.FolderPath, "put existing book.bloomSource");
 			RobustFile.Delete(bloomBookPath);
 
 			Assert.That(waitSucceeded, "OnChanged was not called");
@@ -309,14 +309,14 @@ namespace BloomTests.TeamCollection
 		[Test]
 		public void PutBook_InLostAndFound_DoesSo()
 		{
-			var lfPath = Path.Combine(_repoFolder.FolderPath, "Lost and Found", kAnotherBook + ".bloom");
+			var lfPath = Path.Combine(_repoFolder.FolderPath, "Lost and Found", kAnotherBook + ".bloomSource");
 			Assert.That(RobustFile.Exists(lfPath));
 		}
 
 		[Test]
 		public void PutBook_InLostAndFoundTwice_KeepsBoth()
 		{
-			var lfPath = Path.Combine(_repoFolder.FolderPath, "Lost and Found", kAnotherBook + "2.bloom");
+			var lfPath = Path.Combine(_repoFolder.FolderPath, "Lost and Found", kAnotherBook + "2.bloomSource");
 			Assert.That(RobustFile.Exists(lfPath));
 		}
 

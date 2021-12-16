@@ -169,9 +169,9 @@ export const BooksOfCollection: React.FunctionComponent<{
             requiresSavePermission: true
         },
         {
-            label: "Save as single file (.bloom)...",
+            label: "Save as single file (.bloomSource)...",
             l10nId: "CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem",
-            command: "bookCommand/saveAsDotBloom"
+            command: "bookCommand/saveAsDotBloomSource"
         },
         { label: "-" },
         {

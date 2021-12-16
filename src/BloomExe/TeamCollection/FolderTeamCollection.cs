@@ -77,7 +77,7 @@ namespace Bloom.TeamCollection
 
 		/// <summary>
 		/// The folder-implementation-specific part of PutBook, the public method in TeamRepo.
-		/// Write the book as a .bloom by zipping the specified folder (and use its name).
+		/// Write the book as a .bloomSource by zipping the specified folder (and use its name).
 		/// </summary>
 		/// <param name="sourceBookFolderPath">The root folder for the book, typically ending in its title,
 		///     typically in the current collection folder.</param>
@@ -172,13 +172,13 @@ namespace Bloom.TeamCollection
 		/// <summary>
 		/// Find a path in the Lost And Found folder for the specified book.
 		/// It must not have an existing file, and the name should be a similar
-		/// as possible to bookFolderName.bloom
+		/// as possible to bookFolderName.bloomSource
 		/// </summary>
 		private string AvailableLostAndFoundPath(string bookFolderName)
 		{
 			string bookPath;
 			var lfPath = Path.Combine(_repoFolderPath, "Lost and Found");
-			return AvailablePath(bookFolderName, lfPath, ".bloom");
+			return AvailablePath(bookFolderName, lfPath, ".bloomSource");
 		}
 
 		private static string AvailablePath(string bookFolderName, string folderName, string extension)
@@ -212,7 +212,7 @@ namespace Bloom.TeamCollection
 		{
 			// Don't use ChangeExtension here, it will fail if the folderName contains
 			// some arbitrary period.
-			return Path.Combine(GetPathToBookFolder(_repoFolderPath), bookFolderName) + ".bloom";
+			return Path.Combine(GetPathToBookFolder(_repoFolderPath), bookFolderName) + ".bloomSource";
 		}
 
 		public override string GetRepoBookFile(string bookName, string fileName)
@@ -229,9 +229,9 @@ namespace Bloom.TeamCollection
 		/// <returns></returns>
 		public override string[] GetBookList()
 		{
-			return Directory.EnumerateFiles(Path.Combine(_repoFolderPath, "Books"), "*.bloom")
+			return Directory.EnumerateFiles(Path.Combine(_repoFolderPath, "Books"), "*.bloomSource")
 				// We are usually wary of stripping extensions for fear of periods in book names,
-				// but it's OK here because we KNOW path ends in .bloom, so exactly that will be removed.
+				// but it's OK here because we KNOW path ends in .bloomSource, so exactly that will be removed.
 				.Select(path => Path.GetFileNameWithoutExtension(path)).ToArray();
 		}
 
@@ -240,14 +240,14 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		/// <param name="destinationCollectionFolder">Where to put the retrieved book folder,
 		/// typically the local collection folder.</param>
-		/// <param name="bookName">The name of the book, with or without the .bloom suffix - either way is fine</param>
+		/// <param name="bookName">The name of the book, with or without the .bloomSource suffix - either way is fine</param>
 		/// <returns>error message if there was a problem, otherwise, null</returns>
 		protected override string FetchBookFromRepo(string destinationCollectionFolder, string bookName)
 		{
 			var bookPath = GetPathToBookFileInRepo(bookName);
 			var destFolder = Path.Combine(destinationCollectionFolder, GetBookNameWithoutSuffix(bookName));
-			Debug.Assert(!destFolder.EndsWith(".bloom"),
-				$"Copying zipFile to folder \"{destFolder}\", which ends with .bloom. This is probably an error, unless the book title literally contains .bloom");
+			Debug.Assert(!destFolder.EndsWith(".bloomSource"),
+				$"Copying zipFile to folder \"{destFolder}\", which ends with .bloomSource. This is probably an error, unless the book title literally contains .bloomSource");
 
 			try
 			{
@@ -362,6 +362,32 @@ namespace Bloom.TeamCollection
 		}
 
 		/// <summary>
+		/// Books stored in the remote repos originally had the extension ".bloom".  This has changed to ".bloomSource".
+		/// </summary>
+		/// <returns>
+		/// true iff any files renamed.
+		/// </returns>
+		/// <remarks>
+		/// This may have a nontrivial implementation only for FolderTeamCollection.
+		/// </remarks>
+		public override bool MigrateDotBloomFiles()
+		{
+			// REVIEW: should we have a bit of UI (disabled during unit tests) to warn users about irreversable migration that
+			// requires all team members to update their versions of Bloom at the same time?
+			var needToRename = Directory.EnumerateFiles(Path.Combine(RepoFolderPath, "Books"), "*.bloom");
+			if (needToRename.Any())
+			{
+				foreach (var path in needToRename)
+				{
+					var newPath = Path.ChangeExtension(path, "bloomSource");
+					RobustFile.Move(path, newPath);
+				}
+				return true;
+			}
+			return false;
+		}
+
+		/// <summary>
 		/// Copy collection level files from the repo to the local directory
 		/// </summary>
 		/// <param name="destFolder"></param>
@@ -420,7 +446,7 @@ namespace Bloom.TeamCollection
 		//public override string[] GetPeople()
 		//{
 		//	var users = new HashSet<string>();
-		//	foreach (var path in Directory.EnumerateFiles(_repoFolderPath, "*.bloom"))
+		//	foreach (var path in Directory.EnumerateFiles(Path.Combine(_repoFolderPath,"Books"), "*.bloomSource"))
 		//	{
 		//		var whoHasBookLocked = WhoHasBookLocked(Path.GetFileNameWithoutExtension(path));
 		//		if (whoHasBookLocked != null)

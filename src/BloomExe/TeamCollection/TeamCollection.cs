@@ -160,7 +160,7 @@ namespace Bloom.TeamCollection
 				if (Directory.Exists(oldBookFolder))
 				{
 					// This is pathological, but it may not be obvious why.
-					// For example: we renamed NastyBook to NiceBook. We expect that there is a NastyBook.bloom
+					// For example: we renamed NastyBook to NiceBook. We expect that there is a NastyBook.bloomSource
 					// in the repo, and a folder NiceBook with a file NiceBook.htm in the local folder,
 					// and a status file in the NiceBook folder indicating that it is checked out locally and is
 					// a rename of NastyBook.
@@ -172,7 +172,7 @@ namespace Bloom.TeamCollection
 					// About the only way is that the user made a new book called NastyBook since renaming the old NastyBook.
 					// Undoing the checkout of the renamed NastyBook will result in two books called NastyBook.
 					// The original (renamed) NastyBook must get back the original folder name, because that matches
-					// the .bloom file in the repo. So something must be done about the unexpected one.
+					// the .bloomSource file in the repo. So something must be done about the unexpected one.
 					// It's not very obvious what to do about it. Actually, possibly we should have prevented
 					// creating the new NastyBook at that folder location, because if the user were to check it in
 					// before checking in the rename, the new NastyBook would try to overwrite the old, renamed one.
@@ -496,7 +496,7 @@ namespace Bloom.TeamCollection
 		protected abstract string GetBookStatusJsonFromRepo(string bookFolderName);
 
 		/// <summary>
-		/// Try to get the status, typically from a new or modified .bloom file.
+		/// Try to get the status, typically from a new or modified .bloomSource file.
 		/// If not successful, an error is written to the log.
 		/// Note that false indicates a repo file was found but we could not read it.
 		/// We return TRUE (but status null) if there is no repo file at all.
@@ -919,13 +919,13 @@ namespace Bloom.TeamCollection
 		protected abstract DateTime LastRepoCollectionFileModifyTime { get; }
 
 		/// <summary>
-		/// Gets the book name without the .bloom suffix
+		/// Gets the book name without the .bloomSource suffix
 		/// </summary>
-		/// <param name="bookName">A book name, with our without the .bloom suffix</param>
-		/// <returns>A string which is the book name without the .bloom suffix</returns>
+		/// <param name="bookName">A book name, with our without the .bloomSource suffix</param>
+		/// <returns>A string which is the book name without the .bloomSource suffix</returns>
 		protected static string GetBookNameWithoutSuffix(string bookName)
 		{
-			if (bookName.EndsWith(".bloom"))
+			if (bookName.EndsWith(".bloomSource"))
 				return Path.GetFileNameWithoutExtension(bookName);
 
 			return bookName;
@@ -963,7 +963,7 @@ namespace Bloom.TeamCollection
 			NewBook?.Invoke(this, new NewBookEventArgs() {BookFileName = bookName});
 		}
 
-		/// <param name="bookFileName">The book name, including the .bloom suffix</param>
+		/// <param name="bookFileName">The book name, including the .bloomSource suffix</param>
 		protected void RaiseBookStateChange(string bookFileName)
 		{
 			BookRepoChange?.Invoke(this, new BookRepoChangeEventArgs() { BookFileName = bookFileName });
@@ -1171,7 +1171,7 @@ namespace Bloom.TeamCollection
 		/// <param name="args"></param>
 		public void HandleModifiedFile(BookRepoChangeEventArgs args)
 		{
-			if (args.BookFileName.EndsWith(".bloom"))
+			if (args.BookFileName.EndsWith(".bloomSource"))
 			{
 				var bookBaseName = GetBookNameWithoutSuffix(args.BookFileName);
 
@@ -1179,7 +1179,7 @@ namespace Bloom.TeamCollection
 				// other Bloom instance hasn't finished writing it yet. If we can't get its status,
 				// it's probably locked, and anything else we might try will fail. Try again in 2 seconds.
 				// It's also possible that, due to some disaster like a power failure on the remote Bloom
-				// or the LAN server, the .bloom file gets permanently locked or corrupted so that the comment
+				// or the LAN server, the .bloomSource file gets permanently locked or corrupted so that the comment
 				// cannot be extracted from the zip file even though we can read the content. We thought about
 				// trying to handle those cases. But
 				// (a) we expect them to be rare, and this modified-file-handling is only about keeping
@@ -1292,7 +1292,7 @@ namespace Bloom.TeamCollection
 			// Bizarrely, we can get a new book notification when a book is being deleted.
 			if (!IsBookPresentInRepo(bookBaseName))
 				return;
-			if (args.BookFileName.EndsWith(".bloom"))
+			if (args.BookFileName.EndsWith(".bloomSource"))
 			{
 				HandleNewBook(bookBaseName);
 			}
@@ -1361,7 +1361,7 @@ namespace Bloom.TeamCollection
 		/// <summary>
 		/// Returns a string representing a path to the book.status file of the specified book in the specified collection.
 		/// </summary>
-		/// <param name="bookName">Can have the .bloom extension or not, either way is fine.
+		/// <param name="bookName">Can have the .bloomSource extension or not, either way is fine.
 		/// Other extensions are not supported, because of the possibility of getting simple
 		/// folder names containing periods.</param>
 		/// <param name="collectionFolder">The collection that contains the book</param>
@@ -1371,8 +1371,8 @@ namespace Bloom.TeamCollection
 			// Don't use GetFileNameWithoutExtension here, what comes in might be a plain folder name
 			// that doesn't have an extension, but might contain a period if the book title does.
 			var bookFolderName = Path.GetFileName(bookName);
-			if (bookFolderName.EndsWith(".bloom"))
-				bookFolderName = bookFolderName.Substring(0, bookFolderName.Length - ".bloom".Length);
+			if (bookFolderName.EndsWith(".bloomSource"))
+				bookFolderName = bookFolderName.Substring(0, bookFolderName.Length - ".bloomSource".Length);
 			var bookFolderPath = Path.Combine(collectionFolder, bookFolderName);
 			return GetStatusFilePathFromBookFolderPath(bookFolderPath);
 		}
@@ -1542,6 +1542,17 @@ namespace Bloom.TeamCollection
 		}
 
 		/// <summary>
+		/// Books stored in the remote repos originally had the extension ".bloom".  This has changed to ".bloomSource".
+		/// </summary>
+		/// <returns>
+		/// true iff any files renamed.
+		/// </returns>
+		public virtual bool MigrateDotBloomFiles()
+		{
+			return false;
+		}
+
+		/// <summary>
 		/// Run this when Bloom starts up to get the repo and local directories as sync'd as possible.
 		/// Also run when first joining an existing collection to merge them. A few behaviors are
 		/// different in this case.
@@ -1640,7 +1651,7 @@ namespace Bloom.TeamCollection
 							// existing book folder checked out with status file, but nothing matching in repo.
 							// Most likely it is in the process of being renamed. In that case, not only
 							// should we not delete it, we should avoid re-creating the local book it was
-							// renamed from, for which we most likely have a .bloom in the repo.
+							// renamed from, for which we most likely have a .bloomSource in the repo.
 							// Here we just remember the name.
 							var oldName = GetLocalStatus(bookFolderName).oldName;
 							if (!string.IsNullOrEmpty(oldName))
@@ -2036,6 +2047,7 @@ namespace Bloom.TeamCollection
 					StopMonitoring();
 
 					MigrateStatusFiles();
+					MigrateDotBloomFiles();
 					var waitForUserToCloseDialogOrReportProblems = SyncAtStartup(progress, doingFirstTimeJoinCollectionMerge);
 
 					// Now that we've finished synchronizing, update these icons based on the post-sync result
@@ -2165,7 +2177,7 @@ namespace Bloom.TeamCollection
 		/// (This is necessary when books are checked in).</param>
 		public void UpdateBookStatus(string bookName, bool shouldNotifyIfNotCheckedOut)
 		{
-			Debug.Assert(!bookName.EndsWith(".bloom"), $"UpdateBookStatus was passed bookName=\"{bookName}\", which has a .bloom suffix. This is probably incorrect. This function wants only the bookBaseName");
+			Debug.Assert(!bookName.EndsWith(".bloomSource"), $"UpdateBookStatus was passed bookName=\"{bookName}\", which has a .bloomSource suffix. This is probably incorrect. This function wants only the bookBaseName");
 
 			var bookFolder = Path.Combine(_localCollectionFolder, bookName);
 			if (!Directory.Exists(bookFolder))

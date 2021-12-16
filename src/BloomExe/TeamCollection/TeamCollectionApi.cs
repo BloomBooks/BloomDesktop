@@ -236,7 +236,7 @@ namespace Bloom.TeamCollection
 			bool problem = false;
 			// bookFolderName may be null when no book is selected, e.g., after deleting one.
 			var status = bookFolderName == null ? null :_tcManager.CurrentCollection?.GetStatus(bookFolderName);
-				// At this level, we know this is the path to the .bloom file in the repo
+				// At this level, we know this is the path to the .bloomSource file in the repo
 				// (though if we implement another backend, we'll have to generalize the notion somehow).
 				// For the Javascript, it's just an argument to pass to
 				// CommonMessages.GetPleaseClickHereForHelpMessage(). It's only used if hasInvalidRepoData is non-empty.

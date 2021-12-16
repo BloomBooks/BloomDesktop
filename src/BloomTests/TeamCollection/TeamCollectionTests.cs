@@ -66,7 +66,7 @@ namespace BloomTests.TeamCollection
 			var prevMessages = _tcLog.Messages.Count;
 
 			// SUT: We're mainly testing HandleNewbook, but it's convenient to check that this method calls it properly.
-			_collection.QueuePendingBookChange(new NewBookEventArgs() { BookFileName = "My new book.bloom" });
+			_collection.QueuePendingBookChange(new NewBookEventArgs() { BookFileName = "My new book.bloomSource" });
 			_collection.HandleRemoteBookChangesOnIdle(null, new EventArgs());
 
 
@@ -98,7 +98,7 @@ namespace BloomTests.TeamCollection
 				.Throws(new ArgumentException("RaiseBookStatus should not be called"));
 
 			// System Under Test //
-			_collection.HandleModifiedFile(new BookRepoChangeEventArgs() { BookFileName = $"{bookFolderName}.bloom" });
+			_collection.HandleModifiedFile(new BookRepoChangeEventArgs() { BookFileName = $"{bookFolderName}.bloomSource" });
 
 			// Verification
 			Assert.That(_tcLog.Messages.Count, Is.EqualTo(prevMessages));
@@ -124,7 +124,7 @@ namespace BloomTests.TeamCollection
 			var prevMessages = _tcLog.Messages.Count;
 
 			// System Under Test //
-			_collection.HandleModifiedFile(new BookRepoChangeEventArgs() { BookFileName = $"{bookFolderName}.bloom" } );
+			_collection.HandleModifiedFile(new BookRepoChangeEventArgs() { BookFileName = $"{bookFolderName}.bloomSource" } );
 
 			// Verification
 			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];
@@ -153,7 +153,7 @@ namespace BloomTests.TeamCollection
 			var prevMessages = _tcLog.Messages.Count;
 
 			// System Under Test //
-			_collection.HandleModifiedFile(new BookRepoChangeEventArgs() { BookFileName = $"{bookFolderName}.bloom" });
+			_collection.HandleModifiedFile(new BookRepoChangeEventArgs() { BookFileName = $"{bookFolderName}.bloomSource" });
 
 			// Verification
 			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];
@@ -182,7 +182,7 @@ namespace BloomTests.TeamCollection
 			var prevMessages = _tcLog.Messages.Count;
 
 			// System Under Test //
-			_collection.HandleModifiedFile(new BookRepoChangeEventArgs() { BookFileName = $"{bookFolderName}.bloom" });
+			_collection.HandleModifiedFile(new BookRepoChangeEventArgs() { BookFileName = $"{bookFolderName}.bloomSource" });
 
 			// Verification
 			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations.Last().Arguments[0];
@@ -219,7 +219,7 @@ namespace BloomTests.TeamCollection
 			// System Under Test...basically HandleModifiedFile, but this is a convenient place to
 			// make sure we take the right path through this calling method.
 			_collection.QueuePendingBookChange(
-				new BookRepoChangeEventArgs() {BookFileName = $"{bookFolderName}.bloom"});
+				new BookRepoChangeEventArgs() {BookFileName = $"{bookFolderName}.bloomSource"});
 			_collection.HandleRemoteBookChangesOnIdle(null, new EventArgs());
 
 			// Verification
@@ -249,7 +249,7 @@ namespace BloomTests.TeamCollection
 
 			_collection.PutBook(bookFolderPath);
 			var pathToBookFileInRepo = _collection.GetPathToBookFileInRepo(bookFolderName);
-			// Save the data we will eventually write back to the .bloom file to simulate the remote change.
+			// Save the data we will eventually write back to the .bloomSource file to simulate the remote change.
 			var remoteContent = RobustFile.ReadAllBytes(pathToBookFileInRepo);
 
 			_collection.AttemptLock(bookFolderName);
@@ -265,7 +265,7 @@ namespace BloomTests.TeamCollection
 			var prevMessages = _tcLog.Messages.Count;
 
 			// System Under Test //
-			_collection.HandleModifiedFile(new BookRepoChangeEventArgs() { BookFileName = $"{bookFolderName}.bloom" });
+			_collection.HandleModifiedFile(new BookRepoChangeEventArgs() { BookFileName = $"{bookFolderName}.bloomSource" });
 
 			// Verification
 			var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];
@@ -348,15 +348,15 @@ namespace BloomTests.TeamCollection
 
 			_collection.PutBook(newBookFolderPath, true);
 
-			var newRepoPath = Path.Combine(_sharedFolder.FolderPath, "Books", newBookName + ".bloom");
+			var newRepoPath = Path.Combine(_sharedFolder.FolderPath, "Books", newBookName + ".bloomSource");
 			// It should not have been deleted! This is a regression test for BL-10156.
 			// The danger is that Windows considers the old and new names the same, so after
 			// we move the file to the new name, if we go to delete the old name, we get rid of the new one.
 			Assert.That(File.Exists(newRepoPath));
 
 			// Did it get renamed?
-			var matchingFiles = Directory.EnumerateFiles(Path.Combine(_sharedFolder.FolderPath, "Books"), newBookName + ".bloom").ToArray();
-			Assert.That(matchingFiles[0], Is.EqualTo(Path.Combine(_sharedFolder.FolderPath, "Books", newBookName + ".bloom")));
+			var matchingFiles = Directory.EnumerateFiles(Path.Combine(_sharedFolder.FolderPath, "Books"), newBookName + ".bloomSource").ToArray();
+			Assert.That(matchingFiles[0], Is.EqualTo(Path.Combine(_sharedFolder.FolderPath, "Books", newBookName + ".bloomSource")));
 
 			var newStatus = _collection.GetLocalStatus(newBookName);
 			var repoStatus = _collection.GetStatus(newBookName);
@@ -389,7 +389,7 @@ namespace BloomTests.TeamCollection
 			var prevInvocations = _mockTcManager.Invocations.Count;
 
 			// System Under Test //
-			_collection.HandleDeletedRepoFile($"{bookFolderName}.bloom" );
+			_collection.HandleDeletedRepoFile($"{bookFolderName}.bloomSource" );
 
 			// Verification
 			// (This is a bit fragile, as it depends on how many times the method calls ANY function in the
@@ -435,7 +435,7 @@ namespace BloomTests.TeamCollection
 			var prevInvocations = _mockTcManager.Invocations.Count;
 
 			// System Under Test: a spurious notification //
-			_collection.HandleDeletedRepoFile($"{bookFolderName}.bloom");
+			_collection.HandleDeletedRepoFile($"{bookFolderName}.bloomSource");
 
 			// Verification
 			Assert.That(_mockTcManager.Invocations.Count, Is.EqualTo(prevInvocations));
@@ -463,7 +463,7 @@ namespace BloomTests.TeamCollection
 			var prevInvocations = _mockTcManager.Invocations.Count;
 
 			// System Under Test: a valid notification, but one we want to ignore //
-			_collection.HandleDeletedRepoFile($"{bookFolderName}.bloom");
+			_collection.HandleDeletedRepoFile($"{bookFolderName}.bloomSource");
 
 			// Verification
 			Assert.That(_mockTcManager.Invocations.Count, Is.EqualTo(prevInvocations));
@@ -491,7 +491,7 @@ namespace BloomTests.TeamCollection
 			var prevInvocations = _mockTcManager.Invocations.Count;
 
 			// System Under Test //
-			_collection.HandleDeletedRepoFile($"{bookFolderName}.bloom");
+			_collection.HandleDeletedRepoFile($"{bookFolderName}.bloomSource");
 
 			// Verification
 			Assert.That(_mockTcManager.Invocations.Count, Is.EqualTo(prevInvocations));
@@ -526,7 +526,7 @@ namespace BloomTests.TeamCollection
 			var prevInvocations = _mockTcManager.Invocations.Count;
 
 			// System Under Test //
-			_collection.HandleDeletedRepoFile($"{bookFolderName}.bloom");
+			_collection.HandleDeletedRepoFile($"{bookFolderName}.bloomSource");
 
 			// Verification
 			Assert.That(_tcLog.Messages.Count, Is.EqualTo(prevMessages + 1));

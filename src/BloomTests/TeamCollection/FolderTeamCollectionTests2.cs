@@ -72,9 +72,9 @@ namespace BloomTests.TeamCollection
 					Assert.That(collectionFileContent, Is.EqualTo(sharedFolder.FolderPath));
 					var sharedSettingsPath = Path.Combine(collectionFolder.FolderPath, settingsFileName);
 					Assert.That(RobustFile.ReadAllText(sharedSettingsPath), Is.EqualTo("This is a fake settings file"));
-					var bookPath = Path.Combine(sharedFolder.FolderPath, "Books", bookFolderName1 + ".bloom");
+					var bookPath = Path.Combine(sharedFolder.FolderPath, "Books", bookFolderName1 + ".bloomSource");
 					Assert.That(File.Exists(bookPath));
-					var bookPath2 = Path.Combine(sharedFolder.FolderPath, "Books", bookFolderName2 + ".bloom");
+					var bookPath2 = Path.Combine(sharedFolder.FolderPath, "Books", bookFolderName2 + ".bloomSource");
 					Assert.That(File.Exists(bookPath2));
 				}
 			}
@@ -522,7 +522,7 @@ namespace BloomTests.TeamCollection
 						Is.EqualTo(
 							"There is a problem with the book \"Roses are red& Violets are blue.\" in the Team Collection system. Bloom was not able to open the zip file, which may be corrupted. Please click <a href='/bloom/api/teamCollection/reportBadZip?file="
 							+ UrlPathString.CreateFromUnencodedString(repoFolder.FolderPath.Replace("\\", "/")).UrlEncoded
-							+ "%2fBooks%2fRoses%20are%20red%26%20Violets%20are%20blue..bloom'>here</a> to get help from the Bloom support team."));
+							+ "%2fBooks%2fRoses%20are%20red%26%20Violets%20are%20blue..bloomSource'>here</a> to get help from the Bloom support team."));
 				}
 			}
 		}
@@ -545,7 +545,7 @@ namespace BloomTests.TeamCollection
 					if (reallyNew)
 						SIL.IO.RobustIO.DeleteDirectory(localBookFolderPath, true);
 
-					tc.HandleNewBook(new NewBookEventArgs() {BookFileName = "New book.bloom"});
+					tc.HandleNewBook(new NewBookEventArgs() {BookFileName = "New book.bloomSource"});
 
 					if (reallyNew)
 					{
@@ -578,7 +578,7 @@ namespace BloomTests.TeamCollection
 					SIL.IO.RobustIO.MoveDirectory(localBookFolderPath, Path.Combine(collectionFolder.FolderPath, "old name"));
 					// We could rename the book file too, but it doesn't matter for the current SUT
 
-					tc.HandleNewBook(new NewBookEventArgs() { BookFileName = "Renamed book.bloom" });
+					tc.HandleNewBook(new NewBookEventArgs() { BookFileName = "Renamed book.bloomSource" });
 
 					var msg = tcLog.Messages[0];
 					Assert.That(msg.RawEnglishMessageTemplate, Is.EqualTo("The book \"{0}\" has been renamed to \"{1}\" by a teammate."));

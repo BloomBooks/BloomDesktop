@@ -695,12 +695,13 @@ namespace Bloom.CollectionTab
 
 		/// <summary>
 		/// Zip up the book folder, excluding .pdf, .bloombookorder, .map, .bloompack, .db files.
-		/// The resulting file will have a .bloom extension.
+		/// The resulting file should have a .bloomSource extension, but this depends on properly
+		/// setting the value of destFileName before calling this method.
 		/// </summary>
 		/// <param name="exception">any exception which occurs when trying to save the file</param>
 		/// <returns>true if file was saved successfully; false otherwise</returns>
 		/// <remarks>if return value is false, exception is non-null and vice versa</remarks>
-		public static bool SaveAsBloomFile(string srcFolderName, string destFileName, out Exception exception)
+		public static bool SaveAsBloomSourceFile(string srcFolderName, string destFileName, out Exception exception)
 		{
 			exception = null;
 			try
@@ -714,7 +715,7 @@ namespace Bloom.CollectionTab
 				Logger.WriteEvent("Saving {0} ...", destFileName);
 				zipFile.Save();
 
-				Logger.WriteEvent("Finished writing .bloom file.");
+				Logger.WriteEvent("Finished writing .bloomSource file.");
 			}
 			catch (Exception e)
 			{
