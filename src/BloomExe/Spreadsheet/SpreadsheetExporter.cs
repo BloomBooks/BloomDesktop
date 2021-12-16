@@ -121,10 +121,17 @@ namespace Bloom.Spreadsheet
 			return _spreadsheet;
 		}
 
+		private bool _reportedImageDescription;
+
 		private void AddContentRows(XmlElement page, string pageNumber, string imagesFolderPath, Color colorForPage)
 		{
 			var imageContainers = GetImageContainers(page);
-			var groups = TranslationGroupManager.SortedGroupsOnPage(page, true);
+			var allGroups = TranslationGroupManager.SortedGroupsOnPage(page, true);
+			var groups = allGroups.Where(x => !x.Attributes["class"].Value.Contains("bloom-imageDescription")).ToList();
+			if (!_reportedImageDescription && groups.Count < allGroups.Count)
+			{
+				_progress?.MessageWithoutLocalizing("Image description are not currently supported by spreadsheet import/export. They will be ignored.");
+			}
 						
 			var pageContentTuples = imageContainers.MapUnevenPairs(groups, (imageContainer, group) => (imageContainer, group));
 			foreach(var pageContent in pageContentTuples)
@@ -137,7 +144,11 @@ namespace Bloom.Spreadsheet
 				{
 					var image = (XmlElement)pageContent.imageContainer.SafeSelectNodes(".//img").Item(0);
 					var imagePath = ImagePath(imagesFolderPath, image.GetAttribute("src"));
-					row.SetCell(InternalSpreadsheet.ImageSourceColumnLabel, Path.Combine("images", Path.GetFileName(imagePath)));
+					var fileName = Path.GetFileName(imagePath);
+					var outputPath = Path.Combine("images", fileName);
+					if (fileName == "placeHolder.png")
+						outputPath = InternalSpreadsheet.BlankContentIndicator;
+					row.SetCell(InternalSpreadsheet.ImageSourceColumnLabel, outputPath);
 					CopyImageFileToSpreadsheetFolder(imagePath);
 				}
 
@@ -217,6 +228,16 @@ namespace Bloom.Spreadsheet
 				}
 
 				var dataBookLabel = dataBookElement.GetAttribute("data-book");
+				// Don't export branding, these elements often contain complex content
+				// beyond our current capabilities, but also, importing branding won't work
+				// because these elements are determined by the current branding of the collection.
+				// So there's no point in cluttering the export with them.
+				if (dataBookLabel.Contains("branding"))
+					continue;
+				// No need to export this, Bloom has them all and chooses the right one
+				// based on the licenseUrl.
+				if (dataBookLabel == "licenseImage")
+					continue;
 
 				//The first time we see this tag:
 				if (!dataBookLabel.Equals(prevDataBookLabel))
@@ -305,6 +326,8 @@ namespace Bloom.Spreadsheet
 		{
 			if (_outputImageFolder != null)
 			{
+				if (Path.GetFileName(imageSourcePath) == "placeHolder.png")
+					return; // don't need to copy this around.
 				if (!RobustFile.Exists(imageSourcePath))
 				{
 					_progress.MessageWithParams("Spreadsheet.MissingImage", "",

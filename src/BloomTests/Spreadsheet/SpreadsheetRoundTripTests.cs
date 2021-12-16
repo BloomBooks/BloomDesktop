@@ -43,7 +43,7 @@ namespace BloomTests.Spreadsheet
         <div data-book=""topic"" lang=""en"">
             Health
 		</div>
-		<div data-book=""coverImage"" lang=""*"" src=""cover.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly."">
+		<div data-book=""coverImage"" lang=""*"" src=""cover.png"" alt=""This picture, cover.png, is missing or was loading too slowly."">
 			cover.png
 		</div>
 		<div data-book=""licenseImage"" lang= ""*"" >
@@ -183,6 +183,7 @@ namespace BloomTests.Spreadsheet
 		private HtmlDom _roundtrippedDom_retainMarkup;
 		private HtmlDom _roundtrippedDom_noRetainMarkup;
 		private HtmlDom _roundtrippedDom;
+		private InternalSpreadsheet _sheetFromExport;
 
 		[OneTimeSetUp]
 		public void OneTimeSetUp()
@@ -198,16 +199,23 @@ namespace BloomTests.Spreadsheet
 		{
 			var origDom = new HtmlDom(roundtripTestBook, true);
 			var roundtrippedDom = new HtmlDom(roundtripTestBook, true); //Will get imported into
+
+			// We want to test that exporting a book with branding in the data-dive and importing into a book with no branding
+			// does not reinstate the branding. So we need to remove it from the pre-import DOM, which is otherwise
+			// (for this test) the same as what we originally exported.
+			var branding =
+				roundtrippedDom.SelectSingleNode("//div[@data-book='outside-back-cover-branding-bottom-html']");
+			branding.ParentNode.RemoveChild(branding);
 			AssertThatXmlIn.Dom(origDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='simpleFormattingTest']", 1);
 			AssertThatXmlIn.Dom(origDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='nestedFormattingTest']", 1);
 			var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
 			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("en")).Returns("English");
 			var exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
 			exporter.Params = parameters;
-			var sheetFromExport = exporter.Export(origDom, "fakeImagesFolderpath");
+			_sheetFromExport = exporter.Export(origDom, "fakeImagesFolderpath");
 			using (var tempFile = TempFile.WithExtension("xslx"))
 			{
-				sheetFromExport.WriteToFile(tempFile.Path);
+				_sheetFromExport.WriteToFile(tempFile.Path);
 				var sheet = InternalSpreadsheet.ReadFromFile(tempFile.Path);
 				var importer = new SpreadsheetImporter(null, roundtrippedDom);
 				importer.Import(sheet);
@@ -328,6 +336,25 @@ namespace BloomTests.Spreadsheet
 				"Pineapple", bold: false, italic: true, underlined: false, superscript: false));
 			Assert.That(HasTextWithFormatting("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and @id='idShouldGetKept']//",
 				"Farm", bold: false, italic: false, underlined: false, superscript: false));
+		}
+
+		[TestCase("noRetainMarkup")]
+		[TestCase("retainMarkup")]
+		public void BrandingRemoved(string source)
+		{
+			SetupFor(source);
+			AssertThatXmlIn.Dom(_roundtrippedDom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[contains(@data-book, 'branding')]");
+		}
+
+		[TestCase("noRetainMarkup")]
+		[TestCase("retainMarkup")]
+		public void BrandingNotExported(string source)
+		{
+			SetupFor(source);
+			foreach (var row in _sheetFromExport.ContentRows)
+			{
+				Assert.That(row.GetCell(0).Content, Does.Not.Contain("branding"));
+			}
 		}
 
 		[TestCase("noRetainMarkup")]

@@ -269,6 +269,8 @@ namespace Bloom.Spreadsheet
 
 		private void UpdateDataDivFromRow(ContentRow currentRow, string dataBookLabel)
 		{
+			if (dataBookLabel.Contains("branding"))
+				return; // branding data-div elements are complex and difficult and determined by current collection state
 			// Only a few of these are worth reporting
 			string whatsUpdated = null;
 			switch (dataBookLabel)
@@ -285,6 +287,7 @@ namespace Bloom.Spreadsheet
 			}
 			if (whatsUpdated != null)
 				Progress($"Updating {whatsUpdated}.");
+
 			var xPath = "div[@data-book=\"" + dataBookLabel + "\"]";
 			var matchingNodes = _dataDivElement.SelectNodes(xPath);
 			XmlElement templateNode;
@@ -600,7 +603,12 @@ namespace Bloom.Spreadsheet
 		private void GetElementsFromCurrentPage()
 		{
 			_imageContainersOnPage = GetImageContainers(_currentPage);
-			_groupsOnPage = TranslationGroupManager.SortedGroupsOnPage(_currentPage, true);
+			// For now we are ignoring image description slots as possible destinations for text.
+			// It's difficult to know whether a page intentionally has one or not, as empty ones
+			// can easily be added by just turning on the tool, and they can confuse alignment
+			// of images and main text blocks.
+			var allGroups = TranslationGroupManager.SortedGroupsOnPage(_currentPage, true);
+			_groupsOnPage = allGroups.Where(x => !x.Attributes["class"].Value.Contains("bloom-imageDescription")).ToList();
 		}
 
 		private void AdvanceToNextImageContainer()

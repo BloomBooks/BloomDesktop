@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Bloom.Book;
 using Bloom.Spreadsheet;
 using Moq;
@@ -77,9 +77,11 @@ namespace BloomTests.Spreadsheet
 			fourthXmatterRowToModify.SetCell(_sheet.GetColumnForTag(InternalSpreadsheet.RowTypeColumnLabel), "[newDataBookLabel]");
 			fourthXmatterRowToModify.SetCell(asteriskColumn, "newContent");
 
-			var fifthXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.MetadataKey.Contains("licenseImage"));
-			Assert.IsNotNull(fifthXmatterRowToModify, "Did not find the fifth xmatter row that OneTimeSetup was expecting to modify");
-			fifthXmatterRowToModify.SetCell(imageSrcColumn, "newLicenseImage.png");
+			// This was for testing the special behavior for DataDivImagesWithNoSrcAttributes. However, the only such element
+			// is licenseImage, and we now don't export that at all.
+			//var fifthXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row => row.MetadataKey.Contains("licenseImage"));
+			//Assert.IsNotNull(fifthXmatterRowToModify, "Did not find the fifth xmatter row that OneTimeSetup was expecting to modify");
+			//fifthXmatterRowToModify.SetCell(imageSrcColumn, "newLicenseImage.png");
 
 			var importer = new SpreadsheetImporter(null, this._dom);
 			InitializeImporter(importer);
@@ -143,7 +145,8 @@ namespace BloomTests.Spreadsheet
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage1' and @lang='*']", 1);
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='newDataBookLabel' and @lang='*' and text()='newContent']", 1);
 
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='licenseImage' and @lang='*' and not(@src) and text()='newLicenseImage.png']", 1);
+			// For testing DataDivImagesWithNoSrcAttributes. But we no longer export licenseImg at all.
+			//assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='licenseImage' and @lang='*' and not(@src) and text()='newLicenseImage.png']", 1);
 
 			//make sure z language node is not removed
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='ztest' and @lang='z']", 1);
@@ -309,6 +312,8 @@ namespace BloomTests.Spreadsheet
     </div>", pageNumber, tgNumber);
 		}
 
+		// The image has a slot for an imageDescription, which will mess up all kinds of things
+		// if we don't ignore it properly.
 		public static string PageWithJustImage(int pageNumber, int icNumber)
 		{
 			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
@@ -321,7 +326,12 @@ namespace BloomTests.Spreadsheet
         <div class=""split-pane-component marginBox"" style="""">
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
-                    <div class=""bloom-imageContainer bloom-leadingElement"" title=""this might be nonsense after import"" data-test-id=""ic{1}""><img src=""placeholder.png"" alt="""" data-copyright="""" data-creator="""" data-license="""" height=""100"" width=""200""></img></div>
+                    <div class=""bloom-imageContainer bloom-leadingElement"" title=""this might be nonsense after import"" data-test-id=""ic{1}"">
+						<img src=""placeholder.png"" alt="""" data-copyright="""" data-creator="""" data-license="""" height=""100"" width=""200""></img>
+						<div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement"" data-default-languages=""auto"">
+		                    <div class=""bloom-editable ImageDescriptionEdit-style"" lang=""z"" contenteditable=""true"" data-book=""coverImageDescription""></div>
+		                </div>
+					</div>
                 </div>
             </div>
         </div>
