@@ -1,4 +1,4 @@
-﻿using Bloom.Book;
+using Bloom.Book;
 using Bloom.Spreadsheet;
 using NUnit.Framework;
 using SIL.IO;
@@ -78,6 +78,7 @@ namespace BloomTests.Spreadsheet
         </div>
 
         <div data-book=""outside-back-cover-branding-bottom-html"" lang=""*""><img class=""branding"" src=""BloomWithTaglineAgainstLight.svg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+        <div data-book=""outside-back-cover-bottom-html"" lang=""*""><img class=""branding"" src=""BloomWithTaglineAgainstLight.svg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
 
         <div data-book=""licenseUrl"" lang=""*"">
             http://creativecommons.org/licenses/by/4.0/
@@ -200,10 +201,9 @@ namespace BloomTests.Spreadsheet
 			Assert.That(coverImageRow.GetCell(imageSourceCol).Content, Is.EqualTo(Path.Combine("images","microwave1.png")));
 
 			var licenseImageRow = _rows.Find(x => x.MetadataKey.Equals("[licenseImage]"));
-			Assert.That(licenseImageRow, Is.Not.Null);
-			Assert.That(licenseImageRow.GetCell(imageSourceCol).Content, Is.EqualTo(Path.Combine("images", "license.png")));
+			Assert.That(licenseImageRow, Is.Null);
 
-			var backImageRow = _rows.Find(x => x.MetadataKey.Equals("[outside-back-cover-branding-bottom-html]"));
+			var backImageRow = _rows.Find(x => x.MetadataKey.Equals("[outside-back-cover-bottom-html]"));
 			Assert.That(backImageRow, Is.Not.Null);
 			Assert.That(backImageRow.GetCell(imageSourceCol).Content, Is.EqualTo(Path.Combine("images", "BloomWithTaglineAgainstLight.svg")));
 		}

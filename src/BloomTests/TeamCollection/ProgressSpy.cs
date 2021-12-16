@@ -44,7 +44,7 @@ namespace BloomTests.TeamCollection
 
 		public void MessageWithParams(string idSuffix, string comment, string message, ProgressKind kind, params object[] parameters)
 		{
-			throw new NotImplementedException();
+			MessageWithoutLocalizing(string.Format(message, parameters), kind);
 		}
 
 		public bool HaveProblemsBeenReported { get; private set; }
