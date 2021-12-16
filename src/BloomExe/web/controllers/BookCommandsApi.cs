@@ -71,8 +71,8 @@ namespace Bloom.web.controllers
 				case "importSpreadsheetContent":
 					HandleImportContentFromSpreadsheet(book);
 					break;
-				case "saveAsDotBloom":
-					HandleSaveAsDotBloom(book);
+				case "saveAsDotBloomSource":
+					HandleSaveAsDotBloomSource(book);
 					break;
 				case "updateThumbnail":
 					ScheduleRefreshOfOneThumbnail(book);
@@ -232,9 +232,9 @@ namespace Bloom.web.controllers
 			_libraryModel.UpdateThumbnailAsync(book);
 		}
 
-		private void HandleSaveAsDotBloom(Book.Book book)
+		internal void HandleSaveAsDotBloomSource(Book.Book book)
 		{
-			const string bloomFilter = "Bloom files (*.bloom)|*.bloom|All files (*.*)|*.*";
+			const string bloomFilter = "Bloom files (*.bloomSource)|*.bloomSource|All files (*.*)|*.*";
 
 			HandleBringBookUpToDate(book);
 
@@ -246,7 +246,7 @@ namespace Bloom.web.controllers
 			{
 				AddExtension = true,
 				OverwritePrompt = true,
-				DefaultExt = "bloom",
+				DefaultExt = "bloomSource",
 				FileName = Path.GetFileName(srcFolderName),
 				Filter = bloomFilter,
 				InitialDirectory = _previousTargetSaveAs != null ?
@@ -260,7 +260,7 @@ namespace Bloom.web.controllers
 			var destFileName = dlg.FileName;
 			_previousTargetSaveAs = Path.GetDirectoryName(destFileName);
 
-			if (!LibraryModel.SaveAsBloomFile(srcFolderName, destFileName, out var exception))
+			if (!LibraryModel.SaveAsBloomSourceFile(srcFolderName, destFileName, out var exception))
 			{
 				// Purposefully not adding to the L10N burden...
 				NonFatalProblem.Report(ModalIf.All, PassiveIf.None,

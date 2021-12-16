@@ -115,7 +115,7 @@ namespace Bloom.CLI
 
 			string zippedBloomDOutputPath = parameters.BloomDOutputPath;
 			string unzippedBloomDigitalOutputPath = parameters.BloomDigitalOutputPath;
-			string zippedDotBloomOutputPath = parameters.DotBloomOutputPath;
+			string zippedBloomSourceOutputPath = parameters.BloomSourceOutputPath;
 
 			bool isBloomDOrBloomDigitalRequested = !String.IsNullOrEmpty(zippedBloomDOutputPath) || !String.IsNullOrEmpty(unzippedBloomDigitalOutputPath);
 			if (isBloomDOrBloomDigitalRequested)
@@ -123,9 +123,9 @@ namespace Bloom.CLI
 				exitCode |= CreateBloomDigitalArtifacts(parameters.BookPath, parameters.Creator, zippedBloomDOutputPath, unzippedBloomDigitalOutputPath);
 			}
 
-			if (!String.IsNullOrEmpty(zippedDotBloomOutputPath))
+			if (!String.IsNullOrEmpty(zippedBloomSourceOutputPath))
 			{
-				exitCode |= CreateDotBloomArtifact(parameters.BookPath, parameters.Creator, zippedDotBloomOutputPath);
+				exitCode |= CreateBloomSourceArtifact(parameters.BookPath, parameters.Creator, zippedBloomSourceOutputPath);
 			}
 
 			Control control = new Control();
@@ -163,9 +163,9 @@ namespace Bloom.CLI
 			return exitCode;
 		}
 
-		private static CreateArtifactsExitCode CreateDotBloomArtifact(string bookPath, string creator, string zippedBloomOutputPath)
+		private static CreateArtifactsExitCode CreateBloomSourceArtifact(string bookPath, string creator, string zippedBloomSourceOutputPath)
 		{
-			if (!CollectionTab.LibraryModel.SaveAsBloomFile(bookPath, zippedBloomOutputPath, out Exception exception))
+			if (!CollectionTab.LibraryModel.SaveAsBloomSourceFile(bookPath, zippedBloomSourceOutputPath, out Exception exception))
 			{
 				return CreateArtifactsExitCode.UnhandledException;
 			}
@@ -344,8 +344,8 @@ namespace Bloom.CLI
 		[Option("collectionPath", HelpText = "Input path in which to find Bloom collection file for this book", Required = true)]
 		public string CollectionPath { get; set; }
 
-		[Option("dotBloomOutputPath", HelpText ="Output destination path in which to place a .bloom file", Required = false)]
-		public string DotBloomOutputPath { get; set; }
+		[Option("bloomSourceOutputPath", HelpText = "Output destination path in which to place a .bloomSource file", Required = false)]
+		public string BloomSourceOutputPath { get; set; }
 
 		[Option("bloomdOutputPath", HelpText = "Output destination path in which to place bloomd file", Required = false)]
 		public string BloomDOutputPath { get; set; }

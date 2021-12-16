@@ -85,7 +85,7 @@ namespace Bloom.Utils
 						{
 							Directory.CreateDirectory(fullOutputPath);
 							// In the SharpZipLib code, IsFile and IsDirectory are not defined exactly as inverse: a third
-							// (or fourth) type of entry might be possible.  In practice in .bloom files, this should not be
+							// (or fourth) type of entry might be possible.  In practice in .bloomSource files, this should not be
 							// an issue.
 							continue;
 						}

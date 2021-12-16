@@ -672,7 +672,7 @@
         <note>ID: CollectionTab.BookMenu.Rename</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem">
-        <source xml:lang="en">Save as single file (.bloom)...</source>
+        <source xml:lang="en">Save as single file (.bloomSource)...</source>
         <note>ID: CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
