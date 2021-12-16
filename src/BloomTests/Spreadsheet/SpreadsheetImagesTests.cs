@@ -1,14 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using Bloom;
 using Bloom.Book;
 using Bloom.Spreadsheet;
 using BloomTemp;
 using BloomTests.Book;
+using BloomTests.TeamCollection;
 using Gtk;
 using Moq;
 using NUnit.Framework;
@@ -32,7 +34,7 @@ namespace BloomTests.Spreadsheet
 
 <body data-l1=""en"" data-l2="""" data-l3="""">
 	<div id=""bloomDataDiv"">
-        <div data-book=""outside-back-cover-branding-bottom-html"" lang=""*""><img class=""branding"" src=""BloomWithTaglineAgainstLight.svg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+        <div data-book=""outside-back-cover-bottom-html"" lang=""*""><img class=""branding"" src=""BloomWithTaglineAgainstLight.svg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
 	</div>
     <div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""bdf2acc2-1ea1-4f70-9e36-6bcee3613752"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398384"" data-page-number=""1"" lang="""">
         <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Picture on Bottom"" lang=""en"">
@@ -47,7 +49,13 @@ namespace BloomTests.Spreadsheet
                     <div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
                         <div class=""split-pane-component position-top"">
                             <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px"">
-                                <div class=""bloom-imageContainer bloom-leadingElement"" title=""Name: man.jpg Size: 178.00 kb Dots: 1041 x 781 For the current paper size: • The image container is 406 x 231 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 325 DPI. • An image with 1269 x 722 dots would fill this container at 300 DPI.""><img src=""man.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+                                <div class=""bloom-imageContainer bloom-leadingElement"" title=""Name: man.jpg Size: 178.00 kb Dots: 1041 x 781 For the current paper size: • The image container is 406 x 231 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 325 DPI. • An image with 1269 x 722 dots would fill this container at 300 DPI."">
+									<img src=""man.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+									<div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement"" data-default-languages=""auto"">
+					                    <div class=""bloom-editable ImageDescriptionEdit-style"" lang=""z"" contenteditable=""true"" data-book=""coverImageDescription""></div>
+					                    <div class=""bloom-editable ImageDescriptionEdit-style bloom-content1 bloom-visibility-code-on"" lang=""en"" contenteditable=""true"" >A picture of a man</div>
+					                </div>
+								</div>
                             </div>
                         </div>
 
@@ -148,6 +156,7 @@ namespace BloomTests.Spreadsheet
         <div class=""pageDescription"" lang=""en""></div>
         <div class=""marginBox"">
 			<div class=""bloom-imageContainer bloom-leadingElement"" title=""Name: lady24b.png Size: 3.86 kb Dots: 225 x 225 For the current paper size: • The image container is 406 x 335 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 64 DPI. • An image with 1269 x 1047 dots would fill this container at 300 DPI.""><img src=""lady24b.png"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+			<div class=""bloom-imageContainer bloom-leadingElement"" title=""Name: placeHolder.png Size: 3.86 kb Dots: 225 x 225 For the current paper size: • The image container is 406 x 335 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 64 DPI. • An image with 1269 x 1047 dots would fill this container at 300 DPI.""><img src=""placeHolder.png""></img></div>
         </div>
     </div>
 </body>
@@ -169,6 +178,8 @@ namespace BloomTests.Spreadsheet
 		private InternalSpreadsheet _sheetFromFile;
 		private List<ContentRow> _rowsFromFile;
 		private TemporaryFolder _spreadsheetFolder;
+		private TemporaryFolder _bookFolder;
+		private ProgressSpy _progressSpy;
 
 		[OneTimeSetUp]
 		public void OneTimeSetUp()
@@ -176,14 +187,23 @@ namespace BloomTests.Spreadsheet
 			var dom = new HtmlDom(imageBook, true);
 
 			_spreadsheetFolder = new TemporaryFolder("SpreadsheetImagesTests");
+			_bookFolder = new TemporaryFolder("SpreadsheetImagesTests_Book");
 
 			var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
 			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("en")).Returns("English");
 
 			_exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
 			var path = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(_pathToTestImages);
+
+			// We need all these files in one place so we can verify that all of them get copied except placeHolder.png
+			foreach (var name in new []{ "BloomWithTaglineAgainstLight.svg", "man.jpg", "mars 2.png", "lady24b.png", "empty-file.jpg" })
+				RobustFile.Copy(Path.Combine(path, name), Path.Combine(_bookFolder.FolderPath, name));
+			var placeHolderSource = Path.Combine(BloomFileLocator.FactoryCollectionsDirectory, "template books", "Basic Book", "placeHolder.png");
+			RobustFile.Copy(placeHolderSource, Path.Combine(_bookFolder.FolderPath, "placeHolder.png"));
+
+			_progressSpy = new ProgressSpy();
 			_sheetFromExport =
-				_exporter.ExportToFolder(dom, path, _spreadsheetFolder.FolderPath, out string outputPath, null, OverwriteOptions.Overwrite);
+				_exporter.ExportToFolder(dom, _bookFolder.FolderPath, _spreadsheetFolder.FolderPath, out string outputPath, _progressSpy, OverwriteOptions.Overwrite);
 			_rowsFromExport = _sheetFromExport.ContentRows.ToList();
 			_sheetFromFile = InternalSpreadsheet.ReadFromFile(outputPath);
 			_rowsFromFile = _sheetFromFile.ContentRows.ToList();
@@ -193,6 +213,7 @@ namespace BloomTests.Spreadsheet
 		public void OneTimeTearDown()
 		{
 			_spreadsheetFolder?.Dispose();
+			_bookFolder?.Dispose();
 		}
 
 		void SetupFor(string source)
@@ -247,6 +268,7 @@ namespace BloomTests.Spreadsheet
 			Assert.That(File.Exists(Path.Combine(destImageFolder, "man.jpg")));
 			Assert.That(File.Exists(Path.Combine(destImageFolder, "mars 2.png")));
 			Assert.That(File.Exists(Path.Combine(destImageFolder, "lady24b.png")));
+			Assert.That(File.Exists(Path.Combine(destImageFolder, "placeHolder.png")), Is.False);
 		}
 
 		[TestCase("fromExport")]
@@ -268,6 +290,7 @@ namespace BloomTests.Spreadsheet
 			Assert.That(_pageContentRows[5].GetCell(imageSourceColumn).Text, Is.EqualTo("")); // no images, but there is text on P3
 			var ladyImagePath = Path.Combine("images", "lady24b.png");
 			Assert.That(_pageContentRows[6].GetCell(imageSourceColumn).Text, Is.EqualTo(ladyImagePath));
+			Assert.That(_pageContentRows[7].GetCell(imageSourceColumn).Text, Is.EqualTo(InternalSpreadsheet.BlankContentIndicator));
 		}
 
 		[TestCase("fromExport")]
@@ -315,8 +338,21 @@ namespace BloomTests.Spreadsheet
 		{
 			SetupFor(source);
 			var thumbnailColumn = _sheet.GetColumnForTag(InternalSpreadsheet.ImageThumbnailColumnLabel);
-			var svgRow = _rows.First(x => x.GetCell(InternalSpreadsheet.RowTypeColumnLabel).Text.Equals("[outside-back-cover-branding-bottom-html]"));
+			var svgRow = _rows.First(x => x.GetCell(InternalSpreadsheet.RowTypeColumnLabel).Text.Equals("[outside-back-cover-bottom-html]"));
 			Assert.That(svgRow.GetCell(thumbnailColumn).Text, Is.EqualTo("Can't display SVG"));
+		}
+
+		[TestCase("fromFile")]
+		public void GotWarningForExportingImageDescription(string source)
+		{
+			SetupFor(source);
+			// A better test would be to have multiple image descriptions and verify that we only get one
+			// warning. However, this is throw-away code: eventually we most likely WILL handle image
+			// descriptions. I think it's enough.
+			Assert.That(_progressSpy.Messages,
+				Has.Some.Property("Item1")
+					.EqualTo(
+						"Image description are not currently supported by spreadsheet import/export. They will be ignored."));
 		}
 	}
 }
