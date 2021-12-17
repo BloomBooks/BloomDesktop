@@ -30,8 +30,6 @@ namespace Bloom.WebLibraryIntegration
 
 		public const string HashInfoFromLastUpload = ".lastUploadInfo";   // this filename must begin with a period
 		public bool LoggedIn => _singleBookUploader.ParseClient.LoggedIn;
-		private string _uploadedBy;
-		private string _accountWhenUploadedByLastSet;
 		
 
 		public BulkUploader(BookUpload singleBookUploader)

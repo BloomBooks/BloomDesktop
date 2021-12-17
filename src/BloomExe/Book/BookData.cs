@@ -551,6 +551,8 @@ namespace Bloom.Book
 				}
 				catch (XmlException ex)
 				{
+					Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
+
 					// If we can't parse it...maybe the user really did type some XML? Just keep what we have
 				}
 				// If the most promising alternative is empty (e.g., vernacular usually is <p>\r\n</p>)

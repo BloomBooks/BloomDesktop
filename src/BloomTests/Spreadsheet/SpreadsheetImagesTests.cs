@@ -162,7 +162,6 @@ namespace BloomTests.Spreadsheet
 </body>
 </html>
 ";
-		private HtmlDom _dom;
 		private SpreadsheetExporter _exporter;
 		// The tests are all written in terms of _sheet and _rows, the output
 		// of an export operation. But we create two sheets, one by export, and

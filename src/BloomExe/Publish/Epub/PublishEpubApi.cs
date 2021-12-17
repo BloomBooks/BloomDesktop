@@ -19,7 +19,6 @@ namespace Bloom.Publish.Epub
 	public class PublishEpubApi
 	{
 		private const string kApiUrlPart = "publish/epub/"; // common prefix of requests this class handles
-		private EpubMaker _epubMaker;
 		// Autofac singletons we need and get through our constructor
 		private BookServer _bookServer;
 		private BookThumbNailer _thumbNailer;
@@ -35,7 +34,6 @@ namespace Bloom.Publish.Epub
 		private WebSocketProgress _progress;
 
 		private EpubPublishUiSettings _desiredEpubSettings = new EpubPublishUiSettings();
-		private bool _needNewPreview; // Used when asked to update preview while in the middle of using the current one (e.g., to save it).
 		private string _previewSrc;
 		private string _bookVersion;
 		// lock for threads that test or change EpubMaker == null, _stagingEpub, EpubMaker.AbortRequested,
@@ -438,6 +436,8 @@ namespace Bloom.Publish.Epub
 					}
 					catch (ApplicationException ex)
 					{
+						Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
+
 						if (i >= 2)
 							throw;
 						ReportProgress("Something went wrong, trying again");

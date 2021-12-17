@@ -13,7 +13,6 @@ namespace Bloom.web.controllers
 	/// </summary>
 	public class AddOrChangePageApi
 	{
-		private Dictionary<string, IPage> _templatePagesDict;
 		private readonly TemplateInsertionCommand _templateInsertionCommand;
 		private readonly PageRefreshEvent _pageRefreshEvent;
 		private readonly PageSelection _pageSelection;

@@ -414,6 +414,7 @@ namespace Bloom.ImageProcessing
 					}
 					catch (Exception ex)
 					{
+						Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
 						continue; // if something goes wrong, well, we'll just hope this image isn't too big.
 					}
 				}
@@ -434,6 +435,7 @@ namespace Bloom.ImageProcessing
 					}
 					catch (Exception ex)
 					{
+						Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
 						continue; // if something goes wrong, well, we'll just hope this image isn't too big.
 					}
 				}
@@ -606,7 +608,8 @@ namespace Bloom.ImageProcessing
 				}
 				catch (Exception e)
 				{
-					// ignore
+					// log and ignore
+					Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
 				}
 			}
 			return false;
@@ -786,7 +789,8 @@ namespace Bloom.ImageProcessing
 					}
 					catch (Exception e)
 					{
-						// ignore
+						// log and ignore
+						Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
 					}
 				}
 			}
@@ -1029,6 +1033,7 @@ namespace Bloom.ImageProcessing
 			}
 			catch (Exception e)
 			{
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
 				return false;
 			}
 			return true;

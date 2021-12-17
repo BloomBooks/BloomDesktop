@@ -554,21 +554,24 @@ namespace BloomTests.Publish
 			var foundUnlocked = false;
 			var foundReadingOrder = false;
 			var foundTableOfContents = false;
-			var foundSignLanguage = false;
-			var foundAlternativeText = false;
+			
 			foreach (XmlNode node in xdoc.SelectNodes("opf:package/opf:metadata/opf:meta[@property='schema:accessibilityFeature']", _ns))
 			{
 				switch (node.InnerXml)
 				{
-				case "synchronizedAudioText": foundSynchronizedAudio = true; break;
-				case "displayTransformability": foundDisplayTransformability = true; break;
-				case "printPageNumbers": foundPageNumbers = true; break;
-				case "unlocked": foundUnlocked = true; break;
-				case "readingOrder": foundReadingOrder = true; break;
-				case "tableOfContents": foundTableOfContents = true; break;
-				case "signLanguage": foundSignLanguage = true; break;
-				case "alternativeText": foundAlternativeText = true; break;
-				default: foundOther = true; break;
+					case "synchronizedAudioText": foundSynchronizedAudio = true; break;
+					case "displayTransformability": foundDisplayTransformability = true; break;
+					case "printPageNumbers": foundPageNumbers = true; break;
+					case "unlocked": foundUnlocked = true; break;
+					case "readingOrder": foundReadingOrder = true; break;
+					case "tableOfContents": foundTableOfContents = true; break;
+
+					// Other accessbilityFeature values that we recognize, but don't need to process in this test
+					case "signLanguage":
+					case "alternativeText":
+						break;
+
+					default: foundOther = true; break;
 				}
 			}
 			Assert.IsFalse(foundOther, "Unrecognized accessibilityFeature value in manifest");

@@ -108,7 +108,6 @@ namespace Bloom.Book
 			//could just deal with the metadata
 			//e.g., var metadata = Metadata.FromFile(path)
 			var path = Path.Combine(folderPath, imageFilePath);
-			PalasoImage imageInfo = null;
 			try
 			{
 				return PalasoImage.FromFileRobustly(path);

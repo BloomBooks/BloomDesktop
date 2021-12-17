@@ -127,8 +127,9 @@ namespace Bloom
 							}
 						}
 					}
-					catch(Exception ex)
+					catch (Exception ex)
 					{
+						Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
 						//if we're running when the UI is already shut down, the above is going to throw.
 						//At least if we're running in a debugger, we'll stop here:
 						throw new ApplicationException(fullDetailedMessage + "Error trying to report normally.");

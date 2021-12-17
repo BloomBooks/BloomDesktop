@@ -876,6 +876,7 @@ namespace Bloom.Edit
 					}
 					catch (Exception ex)
 					{
+						Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
 						MessageBox.Show(
 							LocalizationManager.GetString("EditTab.NoValidImageFoundOnClipboard",
 								"Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else."));

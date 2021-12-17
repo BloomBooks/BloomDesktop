@@ -177,6 +177,7 @@ namespace Bloom.web
 			}
 			catch (WebException ex)
 			{
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
 				return false;
 			}
 		}

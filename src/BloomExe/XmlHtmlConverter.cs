@@ -164,6 +164,7 @@ namespace Bloom
 			catch (Exception error)
 			{
 				//swallow
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(error);
 				Debug.Fail("Repro of http://jira.palaso.org/issues/browse/BL-46 ");
 			}
 

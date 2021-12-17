@@ -428,7 +428,6 @@ namespace BloomTests.Publish
 					break;
 				default:
 					return;
-					break;
 			}
 			// Similar input as the basic Missing_Audio_Ignored, (also verifies that IDs are really adjusted), but this time we don't create one of the expected audio files.
 			MakeImageFiles(book, "my image");

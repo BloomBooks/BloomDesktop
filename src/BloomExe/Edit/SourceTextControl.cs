@@ -10,8 +10,6 @@ namespace Bloom.Edit
 {
 	public partial class SourceTextControl : UserControl
 	{
-		private string _previouslySelectedLangCode;
-
 		public SourceTextControl()
 		{
 			InitializeComponent();

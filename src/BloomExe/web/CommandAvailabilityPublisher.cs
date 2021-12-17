@@ -21,8 +21,6 @@ namespace Bloom.Api
 	/// </summary>
 	class CommandAvailabilityPublisher : IDisposable
 	{
-		private readonly DuplicatePageCommand _duplicatePageCommand;
-
 		//WebSocketServer comes from the fleck nuget library
 		private WebSocketServer _server;
 

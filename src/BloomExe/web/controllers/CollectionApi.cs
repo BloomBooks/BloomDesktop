@@ -33,7 +33,6 @@ namespace Bloom.web.controllers
 		private readonly CollectionSettings _settings;
 		private readonly LibraryModel _libraryModel;
 		public const string kApiUrlPart = "collections/";
-		private string _previousTargetSaveAs;
 		private readonly BookSelection _bookSelection;
 		public 	 CollectionApi(CollectionSettings settings, LibraryModel libraryModel, BookSelection bookSelection)
 		{
