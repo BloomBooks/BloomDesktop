@@ -176,7 +176,6 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		private string AvailableLostAndFoundPath(string bookFolderName)
 		{
-			string bookPath;
 			var lfPath = Path.Combine(_repoFolderPath, "Lost and Found");
 			return AvailablePath(bookFolderName, lfPath, ".bloom");
 		}
@@ -748,10 +747,12 @@ namespace Bloom.TeamCollection
 			}
 			catch (IOException e)
 			{
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
 				return true;
 			}
 			catch (UnauthorizedAccessException e)
 			{
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
 				return true;
 			}
 

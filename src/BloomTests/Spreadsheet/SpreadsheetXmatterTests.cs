@@ -104,7 +104,6 @@ namespace BloomTests.Spreadsheet
 </body>
 </html>";
 
-		private HtmlDom _dom;
 		private SpreadsheetExporter _exporter;
 		// The tests are all written in terms of _sheet and _rows, the output
 		// of an export operation. But we create two sheets, one by export, and
@@ -114,8 +113,6 @@ namespace BloomTests.Spreadsheet
 		// or (_sheetFromFile, _rowsFromFile) to set as _sheet and _rows.
 		private InternalSpreadsheet _sheet;
 		private List<ContentRow> _rows;
-		private List<ContentRow> _imageRows;
-		private List<ContentRow> _textRows;
 		private InternalSpreadsheet _sheetFromExport;
 		private List<ContentRow> _rowsFromExport;
 		private InternalSpreadsheet _sheetFromFile;

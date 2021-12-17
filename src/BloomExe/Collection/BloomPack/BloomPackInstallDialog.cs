@@ -143,6 +143,8 @@ namespace Bloom.Collection.BloomPack
 			}
 			catch (Exception ex)
 			{
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
+
 				// Report a corrupt file instead of crashing.  See http://issues.bloomlibrary.org/youtrack/issue/BL-2485.
 				if (InvokeRequired)
 					Invoke(new ReportBadBloomPack(ReportErrorUnzippingBloomPack));
@@ -220,6 +222,8 @@ namespace Bloom.Collection.BloomPack
 			}
 			catch (Exception ex)
 			{
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
+
 				// Report a corrupt file instead of crashing.  See http://issues.bloomlibrary.org/youtrack/issue/BL-2485.
 				if (InvokeRequired)
 					Invoke(new ReportBadBloomPack(ReportErrorUnzippingBloomPack));

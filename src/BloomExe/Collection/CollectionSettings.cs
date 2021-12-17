@@ -379,6 +379,7 @@ namespace Bloom.Collection
 			}
 			catch (Exception ex)
 			{
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
 				return "";
 			}
 		}
@@ -645,8 +646,6 @@ namespace Bloom.Collection
 		public bool AllowNewBooks { get; set; }
 
 		public TalkingBookApi.AudioRecordingMode AudioRecordingMode { get; set; }
-
-		private int _audioRecordingTrimEndMilliseconds = -1;
 
 		public int AudioRecordingTrimEndMilliseconds { get; set; }
 

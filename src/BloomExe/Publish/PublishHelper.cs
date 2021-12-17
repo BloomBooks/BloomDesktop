@@ -210,7 +210,6 @@ namespace Bloom.Publish
 				epubMaker.AddEpubVisibilityStylesheetAndClass(displayDom);
 			if (this != _latestInstance)
 				return;
-			var tries = 0;
 			if (!_browser.NavigateAndWaitTillDone(displayDom, 10000, "publish", () => this != _latestInstance,
 				false))
 			{

@@ -2181,6 +2181,8 @@ namespace Bloom.TeamCollection
 			}
 			catch (Exception ex)
 			{
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
+
 				// We may want to do more, such as put a red circle on the book. But at least don't crash.
 				// The case where we observed this, a corrupt zip file that can't be read, caused
 				// plenty of other errors, so I'm thinking just giving up is enough. This is just

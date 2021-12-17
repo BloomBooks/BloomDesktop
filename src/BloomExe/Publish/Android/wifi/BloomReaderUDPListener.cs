@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
@@ -41,7 +41,8 @@ namespace Bloom.Publish.Android.wifi
 			}
 			catch (SocketException e)
 			{
-				//do nothing
+				//log then do nothing
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
 			}
 
 			if (_listener != null)

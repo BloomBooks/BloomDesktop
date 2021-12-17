@@ -58,8 +58,6 @@ namespace Bloom.Workspace
 		private int _originalUiMenuWidth;
 		private int _stage1SpaceSaved;
 		private int _stage2SpaceSaved;
-		private string _originalSettingsText;
-		private string _originalCollectionText;
 		private string _originalHelpText;
 		private Image _originalHelpImage;
 		private string _originalUiLanguageSelection;
@@ -915,6 +913,7 @@ namespace Bloom.Workspace
 			{
 				// Unfortunately it typically throws, being for some reason unable to clear everything...
 				// doc says it may still have got rid of some things, so seems marginally worth doing...
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
 			}
 		}
 

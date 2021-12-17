@@ -53,8 +53,6 @@ namespace Bloom.CLI
 [Verb("download", HelpText = "Download a book to a specified location")]
 public class DownloadBookOptions
 {
-	private string _sizeAndOrientation;
-
 	[Option("url", HelpText = "url of folder on S3, e.g., https://s3.amazonaws.com/BloomLibraryBooks/someone@example.com/0a2745dd-ca98-47ea-8ba4-2cabc67022e5", Required = true)]
 	public string Url { get; set; }
 

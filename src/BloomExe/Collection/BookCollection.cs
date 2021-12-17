@@ -24,7 +24,6 @@ namespace Bloom.Collection
 
 		private readonly string _path;
 		private List<BookInfo> _bookInfos;
-		private string _factoryDir;
 		private TeamCollectionManager _tcManager;
 
 		private readonly BookSelection _bookSelection;

@@ -30,11 +30,11 @@ namespace BloomTests
 		public void SetString_CanReturnIt()
 		{
 			var e = MakeElement("<div id='foo'/>");
-			e.SetAttribute("id", "blah");
+			e.SetAttribute("id", XmlString.FromUnencoded("blah"));
             Assert.AreEqual("blah", e.GetAttribute("id"));
 
 			MakeElement("<div/>");
-			e.SetAttribute("id", "blah");
+			e.SetAttribute("id", XmlString.FromUnencoded("blah"));
 			Assert.AreEqual("blah", e.GetAttribute("id"));
 		}
 

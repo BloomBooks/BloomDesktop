@@ -420,8 +420,9 @@ namespace Bloom.WebLibraryIntegration
 						if (!BookUpload.IsDryRun)
 							transferUtility.Upload(request);
 					}
-					catch(Exception e)
+					catch (Exception e)
 					{
+						Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
 						throw;
 					}
 					if(fileName.EndsWith(BookInfo.BookOrderExtension))

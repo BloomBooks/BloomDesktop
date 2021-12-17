@@ -121,6 +121,7 @@ namespace Bloom.Publish
 			}
 			catch (Exception e)
 			{
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
 				Debug.Fail("Book missing either term or week variable");
 				throw new ApplicationException("This page is lacking either a term or week data-book variable.");
 			}

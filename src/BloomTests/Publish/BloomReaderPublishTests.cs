@@ -30,9 +30,6 @@ namespace BloomTests.Publish
 	class BloomReaderPublishTests : BookTestsBase
 	{
 		private BookServer _bookServer;
-		private TemporaryFolder _projectFolder;
-		private BookStarter _starter;
-
 		protected BloomServer s_bloomServer;
 
 		[OneTimeSetUp]
@@ -1183,6 +1180,8 @@ namespace BloomTests.Publish
 				MessagesNotLocalized.Add(message);
 			}
 			public readonly List<string> ErrorsNotLocalized = new List<string>();
+
+			[Obsolete("Instead, use normal messages with an kind=Error")]
 			public override void ErrorWithoutLocalizing(string message)
 			{
 				ErrorsNotLocalized.Add(message);

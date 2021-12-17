@@ -47,11 +47,13 @@ namespace Bloom.Book
                         catch (IOException e)
                         {
                             // just ignore if we can't cache
+							Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
                         }
                     }
                 }
                 catch (WebException w)
                 {
+					Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(w);
                     if (!TryGetOfflineCache(out permissionsJson))
                     {
                         didCheck = false;
@@ -141,6 +143,7 @@ namespace Bloom.Book
             }
             catch (IOException ex)
             {
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
                 return false;
             }
 

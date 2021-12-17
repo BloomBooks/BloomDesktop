@@ -90,6 +90,7 @@ namespace Bloom.Publish.PDF
 			}
 			catch (Exception e)
 			{
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
 				_adobeReader.Hide();
 				_problemLabel.Text = LocalizationManager.GetString("PublishTab.AdobeReaderControl.ProblemShowingPDF", "That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.");
 				_problemLabel.Visible = _problemPicture.Visible = true;

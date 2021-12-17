@@ -148,6 +148,8 @@ namespace Bloom.Book
 			}
 			catch (Exception e)
 			{
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
+
 				// Ignore any errors: maybe it's not really XML after all?
 			}
 			return xmlContent;
@@ -2518,8 +2520,9 @@ namespace Bloom.Book
 			{
 #if DEBUG
 				throw new ApplicationException("Don't feed non-page images to this method!");
-#endif
+#else
 				return "unknown";
+#endif
 			}
 			// optional because unit tests might be missing data-page-number
 			var pageNumber = pageElement.GetOptionalStringAttribute("data-page-number","unknown");

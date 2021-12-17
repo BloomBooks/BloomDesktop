@@ -50,6 +50,8 @@ namespace Bloom.web.controllers
 					// Need to make sure to handle exceptions.
 					// If the worker thread dies with an unhandled exception,
 					// it causes the whole program to immediately crash without opportunity for error reporting
+					Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
+
 					request.ReplyWithBoolean(false);
 				}
 			}, null);

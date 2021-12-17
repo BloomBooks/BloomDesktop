@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using SIL.IO;
@@ -185,6 +186,25 @@ namespace Bloom.Utils
 			// NOTE: Currently, we always wrap argument in double quotes, regardless of if it's strictly needed or not.
 			// If desired, you could omit the double quotes if they're not strictly necessary.
 			return $"\"{argument}\"";
+		}
+
+		/// <summary>
+		/// Suppresses an "unused variable" warning for the exception variable in a catch block (by giving it this reference)
+		/// </summary>
+		/// <remarks>This can be useful because it allows you to keep the exception variable, even if the catch block doesn't organically reference it.
+		/// You may want this because the exception variable in the catch provides an easy way to view the exception in the debugger.
+		/// (Of course, you can also add a watch for $exception instead).
+		/// </remarks>
+		public static void SuppressUnusedExceptionVarWarning(Exception e)
+		{
+			// Paranoia
+			if (e == null)
+				return;
+
+			// For now, we just write it to Debug
+			Debug.WriteLine(e.ToString());
+
+			// If desired, we could write it to the log file, or report to Sentry, etc...
 		}
 	}
 }

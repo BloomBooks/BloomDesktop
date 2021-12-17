@@ -98,6 +98,7 @@ namespace Bloom.Utils
 			{
 				// Some problems, like being completely offline, produce exceptions
 				// rather than a nice failure.
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
 				return false;
 			}
 		}

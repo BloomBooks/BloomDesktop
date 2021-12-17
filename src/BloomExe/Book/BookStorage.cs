@@ -1932,9 +1932,9 @@ namespace Bloom.Book
 			}
 			catch (Exception error)
 			{
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(error);
 				return false;
 			}
-			return true;
 		}
 
 		/// <summary>
