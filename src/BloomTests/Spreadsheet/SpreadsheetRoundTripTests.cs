@@ -12,9 +12,13 @@ namespace BloomTests.Spreadsheet
 {
 	/// <summary>
 	/// This class tests roundtripping a book with formatted text to and from a spreadsheet.
-	/// Note that formatting is now round-tripped whether or not retainMarkup is true,
-	/// though the representation in the spreadsheet is different.
-	/// The tests here save it both ways and expect the same results in both cases.
+	/// An earlier version of this class (pre-Dec 16, 2021) tested round tripping both
+	/// with retainMarkup and without it, but as of BL-10764 we deliberately don't ever
+	/// interpret HTML markup in the spreadsheet...if there is any we escape it so it
+	/// ends up as literal text. Therefore round trips with retainMarkup true are no longer
+	/// possible. This means that export with retainMarkup is not currently tested;
+	/// I'm not worried about this as we will probably discard the capability, and there
+	/// is no UI way to do it anyway, nor likely to be.
 	/// </summary>
 	public class SpreadsheetRoundtripTests
 	{
@@ -180,47 +184,35 @@ namespace BloomTests.Spreadsheet
 </html>
 ";
 
-		private HtmlDom _roundtrippedDom_retainMarkup;
-		private HtmlDom _roundtrippedDom_noRetainMarkup;
 		private HtmlDom _roundtrippedDom;
 		private InternalSpreadsheet _sheetFromExport;
 
 		[OneTimeSetUp]
 		public void OneTimeSetUp()
 		{
-			_roundtrippedDom_noRetainMarkup =  SetupWithParams(new SpreadsheetExportParams());
-
-			var retainMarkupParamsObj = new SpreadsheetExportParams();
-			retainMarkupParamsObj.RetainMarkup = true;
-			_roundtrippedDom_retainMarkup = SetupWithParams(retainMarkupParamsObj);
-		}
-
-		private HtmlDom SetupWithParams(SpreadsheetExportParams parameters)
-		{
 			var origDom = new HtmlDom(roundtripTestBook, true);
-			var roundtrippedDom = new HtmlDom(roundtripTestBook, true); //Will get imported into
+			_roundtrippedDom = new HtmlDom(roundtripTestBook, true); //Will get imported into
 
 			// We want to test that exporting a book with branding in the data-dive and importing into a book with no branding
 			// does not reinstate the branding. So we need to remove it from the pre-import DOM, which is otherwise
 			// (for this test) the same as what we originally exported.
 			var branding =
-				roundtrippedDom.SelectSingleNode("//div[@data-book='outside-back-cover-branding-bottom-html']");
+				_roundtrippedDom.SelectSingleNode("//div[@data-book='outside-back-cover-branding-bottom-html']");
 			branding.ParentNode.RemoveChild(branding);
 			AssertThatXmlIn.Dom(origDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='simpleFormattingTest']", 1);
 			AssertThatXmlIn.Dom(origDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='nestedFormattingTest']", 1);
 			var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
 			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("en")).Returns("English");
 			var exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
-			exporter.Params = parameters;
+			exporter.Params = new SpreadsheetExportParams();
 			_sheetFromExport = exporter.Export(origDom, "fakeImagesFolderpath");
 			using (var tempFile = TempFile.WithExtension("xslx"))
 			{
 				_sheetFromExport.WriteToFile(tempFile.Path);
 				var sheet = InternalSpreadsheet.ReadFromFile(tempFile.Path);
-				var importer = new SpreadsheetImporter(null, roundtrippedDom);
+				var importer = new SpreadsheetImporter(null, _roundtrippedDom);
 				importer.Import(sheet);
 			}
-			return roundtrippedDom;
 		}
 
 		[OneTimeTearDown]
@@ -229,27 +221,9 @@ namespace BloomTests.Spreadsheet
 
 		}
 
-		void SetupFor(string source)
+		[Test]
+		public void RoundTripSimpleFormatting()
 		{
-			if (source.Equals("retainMarkup"))
-			{
-				_roundtrippedDom = _roundtrippedDom_retainMarkup;
-			}
-			else if (source.Equals("noRetainMarkup"))
-			{
-				_roundtrippedDom = _roundtrippedDom_noRetainMarkup;
-			}
-			else
-			{
-				throw new System.ArgumentException();
-			}
-		}
-
-		[TestCase("retainMarkup")]
-		[TestCase("noRetainMarkup")]
-		public void RoundtripSimpleFormatting(string source)
-		{
-			SetupFor(source);
 			var nodeList = _roundtrippedDom.SafeSelectNodes("//div[@id='simpleFormattingTest']");
 			Assert.That(nodeList.Count, Is.EqualTo(1));
 			var node = nodeList[0];
@@ -267,11 +241,9 @@ namespace BloomTests.Spreadsheet
 			Assert.That(FormatNodeContainsText("//div[@id='simpleFormattingTest']//sup", "dog"), Is.False);
 		}
 
-		[TestCase("retainMarkup")]
-		[TestCase("noRetainMarkup")]
-		public void RoundtripNestedFormatting(string source)
+		[Test]
+		public void RoundtripNestedFormatting()
 		{
-			SetupFor(source);
 			var nodeList = _roundtrippedDom.SafeSelectNodes("//div[@id='nestedFormattingTest']");
 			Assert.That(nodeList.Count, Is.EqualTo(1));
 			var node = nodeList[0];
@@ -303,11 +275,9 @@ namespace BloomTests.Spreadsheet
 			}
 		}
 
-		[TestCase("noRetainMarkup")]
-		[TestCase("retainMarkup")]
-		public void WhitespaceTestKeepLineBreak(string source)
+		[Test]
+		public void WhitespaceTestKeepLineBreak()
 		{
-			SetupFor(source);
 			var nodeList = _roundtrippedDom.SafeSelectNodes("//div[@id='whitespaceTest']");
 			Assert.That(nodeList.Count, Is.EqualTo(1));
 			var node = nodeList[0];
@@ -327,41 +297,33 @@ namespace BloomTests.Spreadsheet
 			Assert.That(children[5].InnerText, Is.EqualTo(""));
 		}
 
-		[TestCase("noRetainMarkup")]
-		[TestCase("retainMarkup")]
-		public void DatDivUnchanged(string source)
+		[Test]
+		public void DatDivUnchanged()
 		{
-			SetupFor(source);
 			Assert.That(HasTextWithFormatting("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and @id='idShouldGetKept']//",
 				"Pineapple", bold: false, italic: true, underlined: false, superscript: false));
 			Assert.That(HasTextWithFormatting("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and @id='idShouldGetKept']//",
 				"Farm", bold: false, italic: false, underlined: false, superscript: false));
 		}
 
-		[TestCase("noRetainMarkup")]
-		[TestCase("retainMarkup")]
-		public void BrandingRemoved(string source)
+		[Test]
+		public void BrandingRemoved()
 		{
-			SetupFor(source);
 			AssertThatXmlIn.Dom(_roundtrippedDom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[contains(@data-book, 'branding')]");
 		}
 
-		[TestCase("noRetainMarkup")]
-		[TestCase("retainMarkup")]
-		public void BrandingNotExported(string source)
+		[Test]
+		public void BrandingNotExported()
 		{
-			SetupFor(source);
 			foreach (var row in _sheetFromExport.ContentRows)
 			{
 				Assert.That(row.GetCell(0).Content, Does.Not.Contain("branding"));
 			}
 		}
 
-		[TestCase("noRetainMarkup")]
-		[TestCase("retainMarkup")]
-		public void DatDivImagesUnchanged(string source)
+		[Test]
+		public void DatDivImagesUnchanged()
 		{
-			SetupFor(source);
 			Assert.That(FormatNodeContainsText("//div[@id='bloomDataDiv']/div[@data-book='coverImage' and @src='cover.png']", "cover.png"));
 			Assert.That(FormatNodeContainsText("//div[@id='bloomDataDiv']/div[@data-book='licenseImage' and not(@src)]", "license.png"));
 		}
@@ -388,18 +350,16 @@ namespace BloomTests.Spreadsheet
 		[TestCase("foo_x000D_bar_x005F_baz_x000D_", "foo\rbar_baz\r")]
 		public void UndoExcelEscapedChars(string input, string expected)
 		{
-			Assert.That(SpreadsheetIO.ReplaceExcelEscapedChars(input), Is.EqualTo(expected));
+			Assert.That(SpreadsheetIO.ReplaceExcelEscapedCharsAndEscapeXmlOnes(input), Is.EqualTo(expected));
 
 		}
 
 		// This test verifies the effect of inserting [blank] for empty cells. Without it,
 		// a row made of a picture and an empty cell would look like a row for just a picture,
 		// and the NEXT text row would go into the one that should be empty.
-		[TestCase("noRetainMarkup")]
-		[TestCase("retainMarkup")]
-		public void EmptyElementBeforeNonEmptyWithPictureRoundTrips(string source)
+		[Test]
+		public void EmptyElementBeforeNonEmptyWithPictureRoundTrips()
 		{
-			SetupFor(source);
 			AssertThatXmlIn.Dom(_roundtrippedDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-test-id='tg2']/div/p[contains(text(),'This should round trip to the second group.')]", 1);
 			AssertThatXmlIn.Dom(_roundtrippedDom.RawDom).HasNoMatchForXpath("//div[@data-test-id='tg1']/div/p[contains(text(),'This should round trip to the second group.')]");
 		}

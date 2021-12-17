@@ -287,19 +287,19 @@ namespace Bloom.Spreadsheet
 			{
 				ExcelRange currentCell = worksheet.Cells[rowIndex + 1, c + 1];
 				if (c >= row.Spreadsheet.StandardLeadingColumns.Length
-					&& IsWysiwygFormattedRow(worksheet, rowIndex, row))
+				    && IsWysiwygFormattedRow(worksheet, rowIndex, row))
 				{
 					row.AddCell(BuildXmlString(currentCell));
 				}
 				else
 				{
 					var cellContent = worksheet.Cells[rowIndex + 1, c + 1].Value ?? "";
-					row.AddCell(cellContent.ToString());
+					row.AddCell(ReplaceExcelEscapedCharsAndEscapeXmlOnes(cellContent.ToString()));
 				}
 			}
 		}
 
-		public static string ReplaceExcelEscapedChars(string escapedString)
+		public static string ReplaceExcelEscapedCharsAndEscapeXmlOnes(string escapedString)
 		{
 			string plainString = escapedString;
 			string pattern = "_x([0-9A-F]{4})_";
@@ -314,7 +314,8 @@ namespace Bloom.Spreadsheet
 
 				match = rgx.Match(plainString);
 			}
-			return plainString;
+			// Note: ampersand must be handled first! Otherwise it will modify the output of the other replaces.
+			return plainString.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");
 		}
 
 		public static string BuildXmlString(ExcelRange cell)
@@ -327,11 +328,6 @@ namespace Bloom.Spreadsheet
 			string rawText = cell.Value.ToString();
 			if (string.IsNullOrEmpty(rawText))
 				return ""; // otherwise we'd wrap a paragraph around it, making it harder to detect empty cells.
-			if (HasMarkup(rawText))
-			{
-				// spreadsheet was exported using the retainMarkup parameter
-				return rawText;
-			}
 
 			StringBuilder markedupStringBuilder = new StringBuilder();
 			var whitespaceSplitters = new string[] { "\n", "\r\n" };
@@ -344,7 +340,7 @@ namespace Bloom.Spreadsheet
 				{
 					if (run.Text.Length > 0)
 					{
-						run.Text = ReplaceExcelEscapedChars(run.Text);
+						run.Text = ReplaceExcelEscapedCharsAndEscapeXmlOnes(run.Text);
 					}
 					var splits = run.Text.Split(whitespaceSplitters, StringSplitOptions.None);
 					string pending = "";
@@ -358,7 +354,7 @@ namespace Bloom.Spreadsheet
 			}
 			else
 			{
-				markedupStringBuilder.Append(ReplaceExcelEscapedChars(rawText));
+				markedupStringBuilder.Append(ReplaceExcelEscapedCharsAndEscapeXmlOnes(rawText));
 			}
 
 			StringBuilder paragraphedStringBuilder = new StringBuilder();
@@ -447,12 +443,6 @@ namespace Bloom.Spreadsheet
 				endTag.Add("</" + tagName + ">");
 
 			}
-		}
-
-		private static bool HasMarkup(string content)
-		{
-			// Anything that is bloom marked-up content is bound to have angle brackets.
-			return content.IndexOf("<", StringComparison.InvariantCulture) >= 0;
 		}
 
 		private static void SetBackgroundColorOfRow(ExcelWorksheet worksheet, int iRow, Color color)
