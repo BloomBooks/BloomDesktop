@@ -145,6 +145,27 @@ namespace Bloom.web.controllers
 		// TODO: Delete me after all references removed.
 		[Obsolete("Wrapper to allow legacy (WinForms) code to share this code. New code should try to use the API/React-based paradigm instead.")]
 		public void HandleExportToSpreadsheetWrapper(Book.Book book) => this.HandleExportToSpreadsheet(book);
+
+		/// <summary>
+		/// Get and set the folder where a particular book should be exported to (actually its parent is used) or
+		/// imported from. Not sure the BookInfo is the right place for this, so use these methods to make sure
+		/// we only have to change one thing if we decide to do it differently.
+		/// </summary>
+		/// <param name="book"></param>
+		/// <returns></returns>
+		private string GetSpreadsheetFolderFor(Book.Book book)
+		{
+			var folder = book.BookInfo.SpreadsheetFolder;
+			if (!Directory.Exists(folder))
+				return null; // deleted? Or settings copied from another computer? Anyway not a useful default
+			return folder;
+		}
+
+		private void SetSpreadsheetFolder(Book.Book book, string folder)
+		{
+			book.BookInfo.SpreadsheetFolder = folder;
+			book.BookInfo.Save();
+		}
 		
 		private void HandleExportToSpreadsheet(Book.Book book)
 		{
@@ -161,11 +182,24 @@ namespace Bloom.web.controllers
 				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));
 				var exporter = new SpreadsheetExporter(_webSocketServer, book.CollectionSettings);
 
-				var initialFolder = !String.IsNullOrWhiteSpace(Settings.Default.ExportImportFileFolder) ? Settings.Default.ExportImportFileFolder : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+				var initialFolder = GetSpreadsheetFolderFor(book);
+				if (initialFolder == null)
+				{
+					// Fall back to the last place used for ANY import or export, or if there is no such, the system Documents folder.
+					initialFolder = !String.IsNullOrWhiteSpace(Settings.Default.ExportImportFileFolder) ? Settings.Default.ExportImportFileFolder : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+				}
+				else
+				{
+					// We have a saved location (the folder of the spreadsheet itself), but for export we want its parent
+					// (the folder in which we will create a folder for the spreadsheet)
+					initialFolder = Path.GetDirectoryName(initialFolder);
+				}
+
 				string outputParentFolder = BloomFolderChooser.ChooseFolder(initialFolder);
 				if (outputParentFolder == null)
 					return; // user canceled
 				string outputFolder = Path.Combine(outputParentFolder, Path.GetFileNameWithoutExtension(bookPath));
+				SetSpreadsheetFolder(book, outputFolder);
 				string imagesFolderPath = Path.GetDirectoryName(bookPath);
 				exporter.ExportToFolderWithProgress(dom, imagesFolderPath, outputFolder, outputFilePath =>
 				{
@@ -200,13 +234,23 @@ namespace Bloom.web.controllers
 				{
 					dlg.Filter = "xlsx|*.xlsx";
 					dlg.RestoreDirectory = true;
-					dlg.InitialDirectory = !String.IsNullOrWhiteSpace(Settings.Default.ExportImportFileFolder) ? Settings.Default.ExportImportFileFolder : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+					var initialFolder = GetSpreadsheetFolderFor(book);
+					if (initialFolder == null)
+					{
+						// Fall back to the last place used for ANY import or export, or if there is no such, the system Documents folder.
+						initialFolder = !String.IsNullOrWhiteSpace(Settings.Default.ExportImportFileFolder) ? Settings.Default.ExportImportFileFolder : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+					}
+					dlg.InitialDirectory = initialFolder;
 					if (DialogResult.Cancel == dlg.ShowDialog())
 					{
 						return;
 					}
 					inputFilepath = dlg.FileName;
-					Settings.Default.ExportImportFileFolder = Path.GetDirectoryName(inputFilepath);
+					var spreadsheetFolder = Path.GetDirectoryName(inputFilepath);
+					SetSpreadsheetFolder(book, spreadsheetFolder);
+					// We go up two levels since typically the first is a folder specific to this book, while the parent of that
+					// is a likely place to do future exports and imports.
+					Settings.Default.ExportImportFileFolder = Path.GetDirectoryName(spreadsheetFolder);
 					Settings.Default.Save();
 				}
 

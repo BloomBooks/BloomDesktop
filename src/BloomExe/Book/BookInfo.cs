@@ -374,6 +374,12 @@ namespace Bloom.Book
 			set { MetaData.ProvinceName = value; }
 		}
 
+		public string SpreadsheetFolder
+		{
+			get { return MetaData.SpreadsheetFolder; }
+			set { MetaData.SpreadsheetFolder = value; }
+		}
+
 		public string DistrictName
 		{
 			get { return MetaData.DistrictName; }
@@ -1498,6 +1504,14 @@ namespace Bloom.Book
 		// For now, the audio language selection is all or nothing for Bloom Library publish
 		[JsonIgnore]
 		public bool IncludeAudioForBloomLibraryPublish => AudioLangsToPublish.ForBloomLibrary.Any(al => al.Value.IsIncluded());
+
+		// The folder where this book was last written as a spreadsheet or from which it last last imported.
+		// Null for books where either has never happened. Be careful...if meta.json was shared from another
+		// computer, this might be a path to a folder that does not exist. If so, it should be ignored.
+		// Review: is there a better place to store information like this that is not strictly metadata
+		// nor useful to share between computers?
+		[JsonProperty("spreadsheetFolder")]
+		public string SpreadsheetFolder { get; set; }
 	}
 
 	/// <summary>
