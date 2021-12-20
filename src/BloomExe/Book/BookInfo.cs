@@ -691,7 +691,9 @@ namespace Bloom.Book
 					// My inclination is to let it crash for now. I expect duplicate IDs are fairly rare, and for more
 					// than one member of a duplicate set to be in a TC is hopefully vanishingly rare. If it happens,
 					// I think it's worth hearing about.
-					throw new ApplicationException("Bloom found two or more books that are already shared in your Team Collection and have the same ID. You will need help from the Bloom Team to sort this out.");
+					var problemPaths = string.Join(", ",sortedFilepaths.Values.Except(filePathsToChange).Select(Path.GetFileName));
+					throw new ApplicationException("Bloom found two or more books that are already shared in your Team Collection and have the same ID ("
+					+ problemPaths + "). You will need help from the Bloom Team to sort this out.");
 				}
 
 				Logger.WriteEvent($"***Fixing {filePathsToChange.Count()} duplicate ids for: {id}");
