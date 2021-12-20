@@ -9,11 +9,13 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml;
 using System.Xml.Xsl;
-using Bloom.Api; // for DynamicJson
+using Bloom.Api;
+using Bloom.Publish; // for DynamicJson
 using Bloom.Publish.Epub;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using Gecko;
+using Gecko.WebIDL;
 using L10NSharp;
 using Microsoft.CSharp.RuntimeBinder;
 using SIL.Code;
@@ -2186,6 +2188,14 @@ namespace Bloom.Book
 			// It's unexpected for a book to have nodes with class audio-sentence and no id to link them to a file, but
 			// if they do occur, it's better to ignore them than for other code to crash when looking for the ID.
 			return element.SafeSelectNodes(kAudioSentenceElementsXPath);
+		}
+
+		public IEnumerable<XmlElement> GetRecordedAudioSentences(string bookFolder)
+		{
+			return
+				HtmlDom.SelectAudioSentenceElements(RawDom.DocumentElement)
+					.Cast<XmlElement>()
+					.Where(span => AudioProcessor.DoesAudioExistForSegment(bookFolder, span.Attributes["id"]?.Value));
 		}
 
 		public static XmlNodeList SelectAudioSentenceElementsWithDataDuration(XmlElement element)

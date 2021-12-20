@@ -2323,9 +2323,7 @@ namespace Bloom.Book
 		public IEnumerable<XmlElement> GetRecordedAudioSentences()
 		{
 			return
-				HtmlDom.SelectAudioSentenceElements(RawDom.DocumentElement)
-					.Cast<XmlElement>()
-					.Where(span => AudioProcessor.DoesAudioExistForSegment(Storage.FolderPath, span.Attributes["id"]?.Value));
+				OurHtmlDom.GetRecordedAudioSentences(Storage.FolderPath);
 		}
 
 		/// <summary>

@@ -89,13 +89,19 @@ namespace Bloom.Spreadsheet
 					// winforms dialog properties
 					{ Width = 620, Height = 550 }, (progress, worker) =>
 			{
+				string folderPath = Path.GetDirectoryName(bookPath);
+				var hasAudio = _dest.GetRecordedAudioSentences(folderPath).Any();
+				if (hasAudio)
+				{
+					progress.MessageWithoutLocalizing($"Warning: Spreadsheet import cannot current preserve Talking Book audio that is already in this book. For this reason, we need to abandon the import.", ProgressKind.Error);
+					return true; // leave progress window up so user can see error.
+				}
 				var sheet = InternalSpreadsheet.ReadFromFile(inputFilepath, progress);
 				if (sheet == null)
 					return true;
 				if (!Validate(sheet, progress))
 					return true; // errors already reported to progress
 				progress.MessageWithoutLocalizing($"Making a backup of the original book...");
-				string folderPath = Path.GetDirectoryName(bookPath);
 				var backupPath = BookStorage.SaveCopyBeforeImportOverwrite(folderPath, bookPath);
 				progress.MessageWithoutLocalizing($"Backup completed (at {backupPath})");
 				Import(sheet, progress);
