@@ -1697,44 +1697,9 @@ namespace Bloom.CollectionTab
 
 		private void SaveAsBloomToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			// NOTE: Duplicated by BookCommandsApi.HandleSaveAsDotBloom
-			// If you need to modify this method, please try to refactor it so that it calls BookCommandsApi instead.
 			if (SelectedBook == null) return;
 
-			const string bloomFilter = "Bloom files (*.bloom)|*.bloom|All files (*.*)|*.*";
-
-			OnBringBookUpToDate_Click(sender, e);
-
-			var srcFolderName = SelectedBook.StoragePageFolder;
-
-			// Save As dialog, initially proposing My Documents, then defaulting to last target folder
-			// Review: Do we need to persist this to some settings somewhere, or just for the current run?
-			var dlg = new SaveFileDialog
-			{
-				AddExtension = true,
-				OverwritePrompt = true,
-				DefaultExt = "bloom",
-				FileName = Path.GetFileName(srcFolderName),
-				Filter = bloomFilter,
-				InitialDirectory = _previousTargetSaveAs != null ?
-					_previousTargetSaveAs :
-					Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
-			};
-			var result = dlg.ShowDialog(this);
-			if (result != DialogResult.OK)
-				return;
-
-			var destFileName = dlg.FileName;
-			_previousTargetSaveAs = Path.GetDirectoryName(destFileName);
-
-			if (!LibraryModel.SaveAsBloomFile(srcFolderName, destFileName, out var exception))
-			{
-				// Purposefully not adding to the L10N burden...
-				NonFatalProblem.Report(ModalIf.All, PassiveIf.None,
-					shortUserLevelMessage: "The file could not be saved. Make sure it is not open and try again.",
-					moreDetails: null,
-					exception: exception, showSendReport: false);
-			}
+			_bookCommandsApi.HandleSaveAsDotBloomSource(SelectedBook);
 		}
 
 		private void _leveledReaderMenuItem_Click(object sender, EventArgs e)
