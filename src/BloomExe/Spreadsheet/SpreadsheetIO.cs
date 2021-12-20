@@ -35,10 +35,6 @@ namespace Bloom.Spreadsheet
 		private const int languageColumnWidth = 30;
 		private const int defaultImageWidth = 150; //width of images in pixels.
 
-		public static HashSet<string> WysiwygFormattedRowKeys = new HashSet<string>()
-			{ InternalSpreadsheet.PageContentRowLabel, InternalSpreadsheet.BookTitleRowLabel,
-				"[licenseDescription]", "[originalContributions]", "[versionAcknowledgments]", "[originalAcknowledgments]"};
-
 		static SpreadsheetIO()
 		{
 			// The package requires us to do this as a way of acknowledging that we
@@ -88,7 +84,7 @@ namespace Bloom.Spreadsheet
 						}
 
 						if (!retainMarkup
-						    && c >= spreadsheet.StandardLeadingColumns.Length
+						    && IsWysiwygFormattedColumn(row, c)
 						    && IsWysiwygFormattedRow(row))
                         {
 							MarkedUpText markedUpText = MarkedUpText.ParseXml(content);
@@ -121,7 +117,7 @@ namespace Bloom.Spreadsheet
 							// Generally, we just want to blast our cell content into the spreadsheet cell.
 							// However, there are cases where we put an error message in an image thumbnail cell when processing the image path.
 							// We don't want to overwrite these. An easy way to prevent it is to not overwrite any cell that already has content.
-							// Since export is creating a new spreadsheet, cells we want to write will always be empty initiall.
+							// Since export is creating a new spreadsheet, cells we want to write will always be empty initially.
 							if (currentCell.Value == null)
 							{
 								currentCell.Value = content;
@@ -243,18 +239,35 @@ namespace Bloom.Spreadsheet
 
 		private static bool IsWysiwygFormattedRow(SpreadsheetRow row)
 		{
-			return WysiwygFormattedRowKeys.Contains(row.MetadataKey);
+			var key = row.MetadataKey;
+			// At this point we're treating all content rows except the headers (and some labels) as wysiwyg
+			return key != InternalSpreadsheet.RowTypeColumnLabel && key.StartsWith("[") && key.EndsWith("]");
 		}
 
-		private static bool IsWysiwygFormattedRow(ExcelWorksheet worksheet, int rowIndex, SpreadsheetRow row)
+		// A list of columns that, even if in Wysiwyg rows, should not receive Wysiwyg processing.
+		// They are columns that do not contain markup when exported and should not receive paragraph
+		// wrappers when imported. This is the data that supports the implementation of IsWysiwygFormattedColumn.
+		// We use tags like this rather than comparing the column index to the count of leading columns
+		// because, on import, some of the standard columns may be missing,
+		// or there may be extra columns added as comments. The basic idea is that all the language
+		// data columns should get the Wysiwyg processing, which prevents HTML markup appearing in
+		// exports, and prevents unexpected HTML getting imported and processed.
+		// The asterisk 'language' is special because it is used for data-div stuff like [styleNumberSequence]
+		// for which we don't want import to wrap paragraph tags around the content.
+		// Review: is it better to try to come up with an inventory of rows like [styleNumberSequence]
+		// where the * column should not be wysiwyg processed? We had a hard time previously when attempting
+		// to come up with a list of rows that SHOULD be.
+		private static HashSet<string> nonWysiwygColumns = new HashSet<string>(new[]
 		{
-			var metadataCol = row.Spreadsheet.GetColumnForTag(InternalSpreadsheet.RowTypeColumnLabel);
-			if (metadataCol < 0)
-			{
-				throw new SpreadsheetException(SpreadsheetImporter.MissingHeaderMessage);
-			}
-			string metadataKey = worksheet.Cells[rowIndex + 1, metadataCol + 1].Value?.ToString();
-			return WysiwygFormattedRowKeys.Contains(metadataKey);
+			"[*]", InternalSpreadsheet.RowTypeColumnLabel,
+			InternalSpreadsheet.ImageSourceColumnLabel, InternalSpreadsheet.ImageThumbnailColumnLabel,
+			InternalSpreadsheet.PageNumberColumnLabel
+		});
+
+		private static bool IsWysiwygFormattedColumn(SpreadsheetRow row, int index)
+		{
+			var key = row.Spreadsheet.Header.GetRow(0).GetCell(index).Content;
+			return !nonWysiwygColumns.Contains(key);
 		}
 
 		public static void ReadSpreadsheet(InternalSpreadsheet spreadsheet, string path)
@@ -286,8 +299,9 @@ namespace Bloom.Spreadsheet
 			for (var c = 0; c < colCount; c++)
 			{
 				ExcelRange currentCell = worksheet.Cells[rowIndex + 1, c + 1];
-				if (c >= row.Spreadsheet.StandardLeadingColumns.Length
-				    && IsWysiwygFormattedRow(worksheet, rowIndex, row))
+				// The first row is special because it contains the headers needed by IsWysiwygFormattedColumn
+				if (rowIndex > 0 && IsWysiwygFormattedColumn(row, c)
+				    && IsWysiwygFormattedRow(row))
 				{
 					row.AddCell(BuildXmlString(currentCell));
 				}
