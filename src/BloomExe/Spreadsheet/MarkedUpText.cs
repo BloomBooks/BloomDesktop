@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,9 +38,9 @@ namespace Bloom.Spreadsheet
 			stringBuilder.Append("<p>");
 			foreach (var run in _runList)
 			{
-				if (run.Text.Equals("\r\n"))
+				if (run.Text.Equals("\n"))
 				{
-					stringBuilder.Append("</p>\r\n<p>");
+					stringBuilder.Append($"</p>{Environment.NewLine}<p>");
 					continue;
 				}
 				List<string> endTags = new List<string>();
@@ -133,9 +134,10 @@ namespace Bloom.Spreadsheet
 				{
 					// We want a line break here, but only if something follows...we don't need a blank line at
 					// the end of the cell, which is what Excel will do with a trailing newline.
-					// Review or Environment.Newline? But I'd rather generate something consistent.
-					// Linux: what line break is best to use when constructing an Excel spreadsheet in Linux?
-					pending._runList.Add(new MarkedUpTextRun("\r\n"));
+					// It's important to use a simple \n here, not something that is (or might be) \r\n.
+					// The latter looks fine in Excel, but when converted to Google Docs the \r shows up
+					// as an explicit \x000D. \n works in both places.
+					pending._runList.Add(new MarkedUpTextRun("\n"));
 				}
 			}
 			return result;
@@ -155,7 +157,8 @@ namespace Bloom.Spreadsheet
 			if ((node.Name == "br")
 				|| (node.Name == "span" && (node.Attributes["class"]?.Value??"").Equals("bloom-linebreak")))
 			{
-				MarkedUpTextRun run = new MarkedUpTextRun("\r\n");
+				// not \r\n or something that might translate to that. See comment in ParseXml()
+				MarkedUpTextRun run = new MarkedUpTextRun("\n");
 				markedUpText = new MarkedUpText();
 				markedUpText._runList.Add(run);
 			}
@@ -197,7 +200,8 @@ namespace Bloom.Spreadsheet
 	{
 		public MarkedUpTextRun(string textContent)
 		{
-			Text = textContent;
+			// Windows-type newlines cause problems when an excel spreasheet is converted to a Google doc.
+			Text = textContent.Replace("\r\n", "\n");
 		}
 
 		public string Text { get; set; }

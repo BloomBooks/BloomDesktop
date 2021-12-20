@@ -348,7 +348,8 @@ namespace Bloom.Spreadsheet
 					{
 						markedupStringBuilder.Append(pending);
 						AddRunToXmlString(run, cellLevelFormatting, split, markedupStringBuilder);
-						pending = "\r\n";
+						// Not something that is or might be \r\n. See comment in MarkedUpText.ParseXml()
+						pending = "\n";
 					}
 				}
 			}

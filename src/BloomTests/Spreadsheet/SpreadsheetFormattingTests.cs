@@ -1,4 +1,5 @@
-﻿using Bloom.Spreadsheet;
+﻿using System;
+using Bloom.Spreadsheet;
 using NUnit.Framework;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
@@ -63,7 +64,7 @@ namespace BloomTests.Spreadsheet
 		public void MarkedUpText_ToString_ReturnsDecentXmlString()
 		{
 			MarkedUpText parsed = MarkedUpText.ParseXml("<p>This <strong>papaya</strong> </p><p>tastes perfect</p><p></p>");
-			Assert.That(parsed.ToString(), Is.EqualTo("<p>This <strong>papaya</strong> </p>\r\n<p>tastes perfect</p>\r\n<p></p>"));
+			Assert.That(parsed.ToString(), Is.EqualTo($"<p>This <strong>papaya</strong> </p>{Environment.NewLine}<p>tastes perfect</p>{Environment.NewLine}<p></p>"));
 		}
 
 		private void AssertHasFormatting(MarkedUpTextRun textRun, string text, bool bolded, bool italicized, bool superscripted, bool underlined)
@@ -79,27 +80,27 @@ namespace BloomTests.Spreadsheet
 		[TestCase("", "")]
 		[TestCase("<p>1Some text</p>", "1Some text")]
 		[TestCase("\r\n\t\t<p>2Some text</p>\r\n", "2Some text")]
-		[TestCase("\r\n\t\t<p>3Some text.</p><p>Some more.</p>\r\n", "3Some text.\r\nSome more.")]
-		[TestCase("\r\n\t\t<p>4Some text.</p><p>Some more.</p>\r\n", "4Some text.\r\nSome more.")]
-		[TestCase("\r\n\t\t<p>4Some text.</p>\r\n\t\t<p>Some more.</p>\r\n", "4Some text.\r\nSome more.")]
-		[TestCase("\r\n\t\t<p></p><p></p><p>5Some text</p>\r\n", "\r\n\r\n5Some text")]
-		[TestCase("\r\n\t\t<p>6Some text</p><p></p>", "6Some text\r\n")]
+		[TestCase("\r\n\t\t<p>3Some text.</p><p>Some more.</p>\r\n", "3Some text.\nSome more.")]
+		[TestCase("\r\n\t\t<p>4Some text.</p><p>Some more.</p>\r\n", "4Some text.\nSome more.")]
+		[TestCase("\r\n\t\t<p>4Some text.</p>\r\n\t\t<p>Some more.</p>\r\n", "4Some text.\nSome more.")]
+		[TestCase("\r\n\t\t<p></p><p></p><p>5Some text</p>\r\n", "\n\n5Some text")]
+		[TestCase("\r\n\t\t<p>6Some text</p><p></p>", "6Some text\n")]
 
 		//handles other types of line breaks:
-		[TestCase(@"<p>7Some text.<span class=""bloom-linebreak""></span></p>", "7Some text.\r\n")]
-		[TestCase(@"<p>8Some text.<span class=""bloom-linebreak""></span>Some more.</p>", "8Some text.\r\nSome more.")]
-		[TestCase("<p><br></br>9Some text.</p>", "\r\n9Some text.")]
-		[TestCase(@"<p>Some text.<span class=""bloom-linebreak""></span>Some more.</p>", "Some text.\r\nSome more.")]
-		[TestCase(@"<p>Some text.<span class=""bloom-linebreak""></span>Some more.</p>", "Some text.\r\nSome more.")]
+		[TestCase(@"<p>7Some text.<span class=""bloom-linebreak""></span></p>", "7Some text.\n")]
+		[TestCase(@"<p>8Some text.<span class=""bloom-linebreak""></span>Some more.</p>", "8Some text.\nSome more.")]
+		[TestCase("<p><br></br>9Some text.</p>", "\n9Some text.")]
+		[TestCase(@"<p>Some text.<span class=""bloom-linebreak""></span>Some more.</p>", "Some text.\nSome more.")]
+		[TestCase(@"<p>Some text.<span class=""bloom-linebreak""></span>Some more.</p>", "Some text.\nSome more.")]
 
 		//Keeps text outside of <p> tags:
 		[TestCase("\r\nfront text\t<p>Some text.</p>middletext<p>Some more.</p>\t end text",
-					"\r\nfront text\tSome text.\r\nmiddletextSome more.\r\n\t end text")]
+					"\nfront text\tSome text.\nmiddletextSome more.\n\t end text")]
 		[TestCase("<div>front div text</div><p>Some paragraph text.</p><div>middle div text</div><p>More paragraph text.</p><div>End div text</div>",
-					"front div textSome paragraph text.\r\nmiddle div textMore paragraph text.\r\nEnd div text")]
+					"front div textSome paragraph text.\nmiddle div textMore paragraph text.\nEnd div text")]
 
 		//Keeps all whitespace if there are no <p> tags:
-		[TestCase("\r\n\t\tText without p tags.\r\n\tSome more.\r\n", "\r\n\t\tText without p tags.\r\n\tSome more.\r\n")]
+		[TestCase("\r\n\t\tText without p tags.\r\n\tSome more.\r\n", "\n\t\tText without p tags.\n\tSome more.\n")]
 		public void ParsesFormattedXmlHandlesWhitespace(string input, string expected)
 		{
 			var xmlresult = MarkedUpText.ParseXml(input);
