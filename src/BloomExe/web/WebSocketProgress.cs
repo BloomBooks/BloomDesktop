@@ -108,22 +108,6 @@ namespace Bloom.web
 			_clientContext = clientContext;
 		}
 
-		[Obsolete("Instead, use normal messages with an kind=Error")]
-		public virtual void ErrorWithoutLocalizing(string message)
-		{
-			MessageWithoutLocalizing(message, ProgressKind.Error);
-		}
-
-		[Obsolete("Instead, use normal messages with an kind=Error")]
-		public void Error(string idSuffix, string message, bool useL10nIdPrefix = true)
-		{
-			var localizedMessage = LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix),
-				englishText: message);
-			ErrorWithoutLocalizing(localizedMessage);
-			if (localizedMessage != message)
-				SIL.Reporting.Logger.WriteEvent($"Error: {message}"); // repeat message in the log unlocalized.
-		}
-
 		public virtual void MessageWithoutLocalizing(string message, ProgressKind kind=ProgressKind.Progress)
 		{
 			dynamic messageBundle = new DynamicJson();
@@ -195,8 +179,7 @@ namespace Bloom.web
 
 		public void Exception(Exception exception)
 		{
-			ErrorWithoutLocalizing(exception.Message);
-			ErrorWithoutLocalizing(exception.StackTrace);
+			MessageWithoutLocalizing(exception.ToString(), ProgressKind.Error);
 		}
 	}
 

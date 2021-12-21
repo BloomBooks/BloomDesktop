@@ -39,7 +39,6 @@ namespace Bloom.Spreadsheet
 
 		private List<SpreadsheetRow> _rows = new List<SpreadsheetRow>();
 		public SpreadsheetExportParams Params = new SpreadsheetExportParams();
-		private IWebSocketProgress _progress;
 
 		public KeyValuePair<string, string>[] StandardLeadingColumns = new KeyValuePair<string, string>[]
 		{
@@ -226,6 +225,7 @@ namespace Bloom.Spreadsheet
 			}
 			catch (InvalidDataException e)
 			{
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
 				progress.MessageWithoutLocalizing(
 					"The input does not appear to be a valid Excel spreadsheet. Import failed.", ProgressKind.Error);
 				return null;

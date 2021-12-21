@@ -90,7 +90,7 @@ namespace Bloom.Publish.Android.wifi
 			catch (Exception error)
 			{
 				// not worth localizing
-				_progress.ErrorWithoutLocalizing($"Error in Advertiser: {error.Message}");
+				_progress.MessageWithoutLocalizing($"Error in Advertiser: {error.Message}", ProgressKind.Error);
 			}
 		}
 		public static void SendCallback(IAsyncResult args)

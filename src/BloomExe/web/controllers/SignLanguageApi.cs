@@ -31,7 +31,6 @@ namespace Bloom.web.controllers
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly PageSelection _pageSelection;
-		private bool _doingEditOutsideBloom;
 		private bool _importedVideoIntoBloom;
 		private const string noVideoClass = "bloom-noVideoSelected";
 
@@ -479,21 +478,7 @@ namespace Bloom.web.controllers
 			// is to dangerous, as well as quite difficult.
 			if (CurrentBook == null)
 				return;
-			// These two mechanisms are in danger of fighting over the change. If we're in the
-			// middle of editing a single file from the Bloom command, don't do anything here.
-			// Note: this means we _could_ miss another edit the user did while he was off doing
-			// the edit outside. But the race condition between the event handlers for Bloom activated
-			// and the end of the edit-outside process is a real one (different threads) and they
-			// did really overlap before I put this in. The edit-outside process is looking for the most recently
-			// modified video to replace the current one, so things are likely to get confused
-			// anyway if the user is trying to use both mechanisms at once. This mechanism can't
-			// just replace that one (at least as it stands), because we're expecting the outside
-			// program to make a new file, allowing Bloom to save the old one as an original, while
-			// this is looking for in-place changes.
-			// A downside is that if the user never closes the edit-outside program, this mechanism
-			// will stay disabled. But I don't see a better answer, at least if we keep both commands.
-			if (_doingEditOutsideBloom)
-				return;
+			
 			// On Linux, this method interferes with successfully referencing a newly imported video file.
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6723.  Ignoring just the one call to
 			// this method suffices for things  to work.  (On Windows, the sequence of events differs, but

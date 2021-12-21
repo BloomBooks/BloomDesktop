@@ -1645,9 +1645,11 @@ namespace Bloom.Api
 				{
 					//prompted by the mysterious BL 273, Crash while closing down the imageserver
 					#if DEBUG
-					throw;
-					#else             //just quietly report this
-										DesktopAnalytics.Analytics.ReportException(e);
+						Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
+						throw;
+					#else
+						//just quietly report this
+						DesktopAnalytics.Analytics.ReportException(e);
 #endif
 				}
 			}

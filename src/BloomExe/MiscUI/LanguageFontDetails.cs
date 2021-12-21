@@ -75,7 +75,8 @@ namespace Bloom.MiscUI
 			get { return _fontCombo.Text; }
 		}
 
-		public bool RightToLeft
+		// Hides Control.RightToLeft, which returns an enum (No / Yes / Inherit) instead of a bool
+		public new bool RightToLeft
 		{
 			get { return _rightToLeftCheck.Checked; }
 		}
