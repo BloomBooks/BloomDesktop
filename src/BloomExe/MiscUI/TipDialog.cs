@@ -19,7 +19,8 @@ namespace Bloom.MiscUI
 			set { _message.Text = value; }
 		}
 
-		public Image Icon
+		// Hides Form.Icon (which returns System.Drawing.Icon instead)
+		public new Image Icon
 		{
 			get { return _icon.Image; }
 			set { _icon.Image = value; }

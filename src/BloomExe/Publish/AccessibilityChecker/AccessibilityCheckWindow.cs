@@ -13,7 +13,7 @@ namespace Bloom.Publish.AccessibilityChecker
 		private readonly Action _onWindowActivated;
 
 		private static AccessibilityCheckWindow _sTheOneAccessibilityCheckerWindow;
-		private bool _disposed;
+		private bool _disposed = false;
 
 		public static void StaticShow(Action onWindowActivated)
 		{
@@ -54,12 +54,15 @@ namespace Bloom.Publish.AccessibilityChecker
 
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing)
+			if (!_disposed)
 			{
-				components?.Dispose();
+				if (disposing)
+				{
+					components?.Dispose();
+				}
+				_disposed = true;
 			}
-			base.Dispose(disposing);
-			_disposed = true;
+			base.Dispose(disposing);			
 		}
 
 		private void AccessibilityCheckWindow_Activated(object sender, System.EventArgs e)

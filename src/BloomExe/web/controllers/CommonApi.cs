@@ -392,7 +392,7 @@ namespace Bloom.web.controllers
 			var arrayOfKeyValuePairs = from key in keyToLocalizedTopicDictionary.Keys
 				orderby keyToLocalizedTopicDictionary[key]
 				select string.Format("\"{0}\": \"{1}\"", key, keyToLocalizedTopicDictionary[key]);
-			var pairs = arrayOfKeyValuePairs.Concat(",");
+			var pairs = String.Join(",", arrayOfKeyValuePairs);
 			var data = string.Format("{{\"NoTopic\": \"{0}\", {1} }}", localizedNoTopic, pairs);
 
 			request.ReplyWithJson(data);

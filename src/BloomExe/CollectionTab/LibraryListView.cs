@@ -52,7 +52,6 @@ namespace Bloom.CollectionTab
 		private bool _disposed;
 		private BookCollection _downloadedBookCollection;
 		private Image _dropdownImage;
-		private string _previousTargetSaveAs = null;
 		private TeamCollectionManager _tcManager;
 		private SpreadsheetExporter.Factory _exporterFactory;
 		private BookCommandsApi _bookCommandsApi;

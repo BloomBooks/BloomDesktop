@@ -1181,12 +1181,6 @@ namespace BloomTests.Publish
 			}
 			public readonly List<string> ErrorsNotLocalized = new List<string>();
 
-			[Obsolete("Instead, use normal messages with an kind=Error")]
-			public override void ErrorWithoutLocalizing(string message)
-			{
-				ErrorsNotLocalized.Add(message);
-			}
-
 			public override void Message(string idSuffix, string comment, string message, ProgressKind progressKind, bool useL10nIdPrefix = true)
 			{
 				MessagesNotLocalized.Add(string.Format(message));

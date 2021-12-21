@@ -35,6 +35,7 @@ namespace Bloom.WebLibraryIntegration
 		public BulkUploader(BookUpload singleBookUploader)
 		{
 			_singleBookUploader = singleBookUploader;
+			_thumbnailer = singleBookUploader._thumbnailer;
 		}
 
 		/// <summary>

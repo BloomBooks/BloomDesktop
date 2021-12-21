@@ -183,9 +183,7 @@ namespace Bloom.Utils
 
 	public struct MemoryInformation
 	{
-		[CLSCompliant(false)]
 		public ulong TotalPhysicalMemory;
-		[CLSCompliant(false)]
 		public ulong TotalVirtualMemory;
 	}
 }

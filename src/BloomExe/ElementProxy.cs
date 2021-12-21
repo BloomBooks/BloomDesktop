@@ -30,23 +30,6 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// Sets the named attribute to {value}, which should be a simple string (i.e. not, encoded.)
-		/// </summary>
-		[Obsolete("Use the version where the 2nd parameter is an XmlString instead")]
-		public void SetAttribute(string attributeName, string value)
-		{
-			// ENHANCE: Remove references to this
-			if (_xmlElement == null)
-			{
-				_geckoElement.SetAttribute(attributeName, value);
-			}
-			else
-			{
-				_xmlElement.SetAttribute(attributeName, value);	// This method will apply XML-encoding to {value}
-			}
-		}
-
-		/// <summary>
 		/// Sets the named attribute to {value}
 		/// </summary>
 		public void SetAttribute(string attributeName, XmlString value)
@@ -57,7 +40,7 @@ namespace Bloom
 			}
 			else
 			{
-				_xmlElement.SetAttribute(attributeName, value.Unencoded);
+				_xmlElement.SetAttribute(attributeName, value.Unencoded);	// This method will apply XML-encoding to its {value} parameter
 			}
 		}
 
@@ -241,7 +224,12 @@ namespace Bloom
 			{
 				classes.Remove(className);
 			}
-			SetAttribute("class", string.Join(" ", classes));
+
+			// CSS class names can't contain punctuation other than underscore or hyphen,
+			// so in terms of XML encoding, both FromUnencoded or FromXml will work fine because there's no special characters.
+			// Just pick whichever one you want, don't fret about it.
+			var classAttributeValue = XmlString.FromUnencoded(string.Join(" ", classes));
+			SetAttribute("class", classAttributeValue);
 		}
 
 		public bool SelfOrAncestorHasClass(string className)
