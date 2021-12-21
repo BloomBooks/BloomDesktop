@@ -55,7 +55,6 @@ namespace Bloom.Edit
 		private bool _inProcessOfLoading;
 		private BloomServer _server;
 		private readonly BloomWebSocketServer _webSocketServer;
-		private Dictionary<string, IPage> _templatePagesDict;
 		internal IPage PageChangingLayout; // used to save the page on which the choose different layout command was invoked while the dialog is active.
 		// This event fires after the EditingModel has finished responding to a PageSelection change.
 		internal event EventHandler PageSelectModelChangesComplete;
@@ -103,7 +102,6 @@ namespace Bloom.Edit
 			_server = server;
 			_webSocketServer = webSocketServer;
 			_sourceCollectionsList = sourceCollectionsList;
-			_templatePagesDict = null;
 
 			bookSelection.SelectionChanged += OnBookSelectionChanged;
 			pageSelection.SelectionChanged += OnPageSelectionChanged;
@@ -218,7 +216,6 @@ namespace Bloom.Edit
 			var wasNull = _domForCurrentPage == null;
 			_domForCurrentPage = null;
 			_currentlyDisplayedBook = null;
-			_templatePagesDict = null;
 			if (Visible)
 			{
 				_view.ClearOutDisplay();

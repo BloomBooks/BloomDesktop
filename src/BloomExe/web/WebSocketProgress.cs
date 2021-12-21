@@ -108,18 +108,15 @@ namespace Bloom.web
 			_clientContext = clientContext;
 		}
 
-		[Obsolete("Instead, use normal messages with an kind=Error")]
-		public virtual void ErrorWithoutLocalizing(string message)
-		{
-			MessageWithoutLocalizing(message, ProgressKind.Error);
-		}
-
-		[Obsolete("Instead, use normal messages with an kind=Error")]
+		[Obsolete("Instead, use normal messages (Message) with a kind=Error")]
 		public void Error(string idSuffix, string message, bool useL10nIdPrefix = true)
 		{
 			var localizedMessage = LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix),
 				englishText: message);
-			ErrorWithoutLocalizing(localizedMessage);
+			MessageWithoutLocalizing(localizedMessage, ProgressKind.Error);
+
+			// NOTE: Not sure what to do about deprecating this function.
+			// The below functionality is not present in the suggested Message() alternative.
 			if (localizedMessage != message)
 				SIL.Reporting.Logger.WriteEvent($"Error: {message}"); // repeat message in the log unlocalized.
 		}
@@ -195,8 +192,9 @@ namespace Bloom.web
 
 		public void Exception(Exception exception)
 		{
-			ErrorWithoutLocalizing(exception.Message);
-			ErrorWithoutLocalizing(exception.StackTrace);
+			// ENHANCE: Maybe we should just output a single message that has exception.ToString() instead? It's usually the most informative method/property...
+			MessageWithoutLocalizing(exception.Message, ProgressKind.Error);
+			MessageWithoutLocalizing(exception.StackTrace, ProgressKind.Error);
 		}
 	}
 

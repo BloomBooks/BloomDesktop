@@ -30,7 +30,7 @@ namespace Bloom.WebLibraryIntegration
 	{
 		public BloomParseClient ParseClient;
 		private BloomS3Client _s3Client;
-		private readonly BookThumbNailer _thumbnailer;
+		internal readonly BookThumbNailer _thumbnailer;
 		public IProgress Progress;
 
 		public const string UploadHashesFilename = ".lastUploadInfo";	// this filename must begin with a period

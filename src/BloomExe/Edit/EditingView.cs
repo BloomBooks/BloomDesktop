@@ -764,7 +764,7 @@ namespace Bloom.Edit
 					// just give a summary of the metadata
 					if(ImageUpdater.ImageIsFromOfficialCollection(imageInfo.Metadata) || !_model.CanEditCopyrightAndLicense)
 					{
-						MessageBox.Show(imageInfo.Metadata.GetSummaryParagraph("en"));
+						MessageBox.Show(imageInfo.Metadata.GetSummaryParagraph(new string[] { "en" }, out string idOfLangUsed));
 						return;
 					}
 				}

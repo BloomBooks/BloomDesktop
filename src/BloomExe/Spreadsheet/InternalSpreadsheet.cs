@@ -226,6 +226,7 @@ namespace Bloom.Spreadsheet
 			}
 			catch (InvalidDataException e)
 			{
+				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
 				progress.MessageWithoutLocalizing(
 					"The input does not appear to be a valid Excel spreadsheet. Import failed.", ProgressKind.Error);
 				return null;

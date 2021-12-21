@@ -93,7 +93,7 @@ namespace Bloom
 		/// during startup of the application before we show our main window.
 		/// </summary>
 		/// ------------------------------------------------------------------------------------
-		protected void HandleUnhandledException(object sender, UnhandledExceptionEventArgs e)
+		protected new void HandleUnhandledException(object sender, UnhandledExceptionEventArgs e)
 		{
 			if (!GetShouldHandleException(sender, e.ExceptionObject as Exception))
 				return;
