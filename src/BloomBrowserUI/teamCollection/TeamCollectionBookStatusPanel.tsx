@@ -427,6 +427,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         css={css`
                             ${busy &&
                                 "cursor: progress; .checkin-button{cursor:progress;}"};
+                            margin-bottom: 12px;
                         `}
                         lockState={state}
                         title={
