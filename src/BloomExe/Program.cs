@@ -70,9 +70,8 @@ namespace Bloom
 #if PerProjectMutex
 		private static Mutex _oneInstancePerProjectMutex;
 #else
-		// Some splash screen management variables were move from here to StartupScreenManager.
+		// Some splash screen management variables were moved from here to StartupScreenManager.
 		// Not sure what should be done about them if we ever turn on PerProjectMutex.
-		private static BookDownloadSupport _bookDownloadSupport;
 #endif
 		internal static string PathToBookDownloadedAtStartup { get; set; }
 

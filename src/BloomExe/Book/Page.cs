@@ -12,7 +12,6 @@ namespace Bloom.Book
 		string Id { get; }
 		string Caption { get; }
 		string CaptionI18nId { get; }
-		Image Thumbnail { get; }
 		string XPathToDiv { get; }
 		XmlElement GetDivNodeForThisPage();
 		bool Required { get; }
@@ -28,13 +27,12 @@ namespace Bloom.Book
 	public class Page : IPage
 	{
 		private readonly string _id;
-		private readonly Func<IPage, Image> _getThumbnail;
 		private readonly Func<IPage, XmlElement> _getDivNodeForThisPageMethod;
 		private List<string> _classes;
 		private List<string> _tags;
 		private string[] _pageLineage;
 
-		public Page(Book book, XmlElement sourcePage,  string caption, string captionI18nId, /*Func<IPage, Image> getThumbnail,*/ Func<IPage, XmlElement> getDivNodeForThisPageMethod)
+		public Page(Book book, XmlElement sourcePage,  string caption, string captionI18nId, Func<IPage, XmlElement> getDivNodeForThisPageMethod)
 		{
 			sourcePage = EnsureID(sourcePage);
 			_id = FixPageId(sourcePage.Attributes["id"].Value);
@@ -187,8 +185,6 @@ namespace Bloom.Book
 
 		public string Caption { get; private set; }
 		public string CaptionI18nId { get; private set; }
-		public Image Thumbnail { get
-		{ return _getThumbnail(this); } }
 
 		public string XPathToDiv
 		{

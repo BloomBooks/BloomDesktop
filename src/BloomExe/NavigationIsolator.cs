@@ -319,5 +319,10 @@ namespace Bloom
 				return _browser == (obj as IsolatedBrowser)._browser;
 			return false;
 		}
+
+		public override int GetHashCode()
+		{
+			return _browser.GetHashCode();
+		}
 	}
 }

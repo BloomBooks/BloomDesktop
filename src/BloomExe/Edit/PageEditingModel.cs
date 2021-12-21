@@ -58,12 +58,11 @@ namespace Bloom.Edit
 		{
 			//see also Book.UpdateMetadataAttributesOnImage(), which does the same thing but on the document itself, not the browser dom
 			imgOrDivWithBackgroundImage.SetAttribute("data-copyright",
-							 String.IsNullOrEmpty(imageInfo.Metadata.CopyrightNotice) ? "" : imageInfo.Metadata.CopyrightNotice);
+							 XmlString.FromUnencoded(imageInfo.Metadata.CopyrightNotice ?? ""));
+			
+			imgOrDivWithBackgroundImage.SetAttribute("data-creator", XmlString.FromUnencoded(imageInfo.Metadata.Creator ?? ""));
 
-			imgOrDivWithBackgroundImage.SetAttribute("data-creator", String.IsNullOrEmpty(imageInfo.Metadata.Creator) ? "" : imageInfo.Metadata.Creator);
-
-
-			imgOrDivWithBackgroundImage.SetAttribute("data-license", imageInfo.Metadata.License == null ? "" : imageInfo.Metadata.License.ToString());
+			imgOrDivWithBackgroundImage.SetAttribute("data-license", XmlString.FromUnencoded(imageInfo.Metadata.License?.ToString() ?? ""));
 		}
 
 		/*

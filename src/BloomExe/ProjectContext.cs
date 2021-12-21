@@ -194,6 +194,7 @@ namespace Bloom
 					}
 					catch (Exception error)
 					{
+						Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(error);
 #if USING_CHORUS
 #if !DEBUG
 					SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,

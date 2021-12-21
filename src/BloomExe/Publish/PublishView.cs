@@ -228,7 +228,7 @@ namespace Bloom.Publish
 			var toolStripItemCollection = new List<ToolStripItem>(from ToolStripItem x in _contextMenuStrip.Items select x);
 			foreach (ToolStripItem item in toolStripItemCollection)
 			{
-				if (item.Tag == "extension")
+				if (((string)item.Tag) == "extension")
 					_contextMenuStrip.Items.Remove(item);
 			}
 			foreach (var item in _model.GetExtensionMenuItems())

@@ -93,7 +93,7 @@ namespace Bloom.Publish.Android.usb
 			_progress.Message(idSuffix: "UnableToConnect",
 				 message: "Unable to connect to any Android device.");
 
-			_progress.ErrorWithoutLocalizing("\tTechnical details to share with the development team: " + e);
+			_progress.MessageWithoutLocalizing("\tTechnical details to share with the development team: " + e, ProgressKind.Error);
 			Logger.WriteError(e);
 			Stopped();
 		}
@@ -199,7 +199,7 @@ namespace Bloom.Publish.Android.usb
 				if (e != null)
 				{
 					//intentionally not localizable (each of these strings costs effort by each translation team)
-					_progress.ErrorWithoutLocalizing("\tTechnical details to share with the development team: ");
+					_progress.MessageWithoutLocalizing("\tTechnical details to share with the development team: ", ProgressKind.Error);
 					_progress.Exception(e);
 					Logger.WriteError(e);
 				}

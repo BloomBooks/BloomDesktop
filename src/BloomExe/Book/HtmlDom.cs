@@ -2041,16 +2041,24 @@ namespace Bloom.Book
 		/// </summary>
 		public static void SetImageElementUrl(ElementProxy imgOrDivWithBackgroundImage, UrlPathString url, bool urlEncode = true)
 		{
+			string urlFormToUse = urlEncode ? url.UrlEncoded : url.NotEncoded;
+			
 			if(imgOrDivWithBackgroundImage.Name.ToLower() == "img")
 			{
 				// This does not need to be encoded until sent over the network.
 				// Indeed, encoding it breaks links within epubs.
-				imgOrDivWithBackgroundImage.SetAttribute("src", urlEncode ? url.UrlEncoded : url.NotEncoded);
+
+				// This is really convoluted to process, but regardless of whether it's UrlEncoded or NotEncoded,
+				// that is URL encoding and irrelevant to the XML Encoding.
+				// From the XML perspective, neither of these strings have been XML-Encoded yet, so we should call XmlString.FromUnencoded.
+				// (Also, from a legacy perspective, the old SetAttribute function would pass these into subfunctions that expect unencoded values, so that's a 2nd reason)
+				XmlString urlAttributeValue = XmlString.FromUnencoded(urlFormToUse);
+				imgOrDivWithBackgroundImage.SetAttribute("src", urlAttributeValue);
 			}
 			else
 			{
 				// The string formatting must match BookCompressor.kBackgroundImage
-				imgOrDivWithBackgroundImage.SetAttribute("style", String.Format("background-image:url('{0}')", urlEncode ? url.UrlEncoded : url.NotEncoded));
+				imgOrDivWithBackgroundImage.SetAttribute("style", XmlString.FromUnencoded(String.Format("background-image:url('{0}')", urlFormToUse)));
 			}
 		}
 
@@ -2071,14 +2079,15 @@ namespace Bloom.Book
 			if (srcElement == null)
 			{
 				srcElement = videoElt.AppendChild("source");
-				srcElement.SetAttribute("type", "video/mp4");
+				srcElement.SetAttribute("type", XmlString.FromUnencoded("video/mp4"));
 			}
 			SetSrcOfVideoElement(url, srcElement, urlEncode);
 			// Hides the placeholder.
 
 			videoContainer.SetAttribute("class",
-				RemoveClass("bloom-noVideoSelected",
-					videoContainer.GetAttribute("class")));
+				XmlString.FromUnencoded(
+					RemoveClass("bloom-noVideoSelected",
+						videoContainer.GetAttribute("class"))));
 		}
 
 		/// <summary>
@@ -2092,8 +2101,9 @@ namespace Bloom.Book
 				encodedParamString = "";
 			if (!String.IsNullOrEmpty(encodedParamString) && !(encodedParamString.StartsWith("?")))
 				encodedParamString = "?" + encodedParamString;
+			string srcUrl = (urlEncodePath ? url.PathOnly.UrlEncodedForHttpPath : url.PathOnly.NotEncoded) + encodedParamString;
 			srcElement.SetAttribute("src",
-				(urlEncodePath ? url.PathOnly.UrlEncodedForHttpPath : url.PathOnly.NotEncoded) + encodedParamString);
+				XmlString.FromUnencoded(srcUrl));
 		}
 
 		public static string RemoveClass(string className, string input)

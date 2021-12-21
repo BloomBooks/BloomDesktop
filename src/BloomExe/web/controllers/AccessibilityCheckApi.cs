@@ -169,8 +169,8 @@ namespace Bloom.web.controllers
 			// https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css.
 			if (!UrlLookup.CheckGeneralInternetAvailability(true))
 			{
-				_webSocketProgress.ErrorWithoutLocalizing(
-					"Sorry, you must have an internet connection in order to view the Ace by DAISY report.");
+				_webSocketProgress.MessageWithoutLocalizing(
+					"Sorry, you must have an internet connection in order to view the Ace by DAISY report.", ProgressKind.Error);
 				request.Failed();
 				return;
 			}
@@ -184,7 +184,6 @@ namespace Bloom.web.controllers
 
 			// was having a problem with some files from previous reports getting locked.
 			// so give new folder names if needed
-			var haveReportedError = false;
 			var errorMessage = "Unknown Error";
 
 			var version = GetAceByDaisyVersion(daisyDirectory);
@@ -235,7 +234,7 @@ namespace Bloom.web.controllers
 				if (res.DidTimeOut)
 				{
 					errorMessage = $"Daisy Ace timed out after {kSecondsBeforeTimeout} seconds.";
-					_webSocketProgress.ErrorWithoutLocalizing(errorMessage);
+					_webSocketProgress.MessageWithoutLocalizing(errorMessage, ProgressKind.Error);
 					continue;
 				}
 
@@ -251,7 +250,7 @@ namespace Bloom.web.controllers
 					               $"Standard Error{Environment.NewLine}{res.StandardError}{Environment.NewLine}" +
 					               $"Standard Out{res.StandardOutput}";
 
-					_webSocketProgress.ErrorWithoutLocalizing(errorMessage);
+					_webSocketProgress.MessageWithoutLocalizing(errorMessage, ProgressKind.Error);
 
 					continue; // something went wrong, try again
 				}
@@ -319,7 +318,7 @@ namespace Bloom.web.controllers
 			var whereResult = CommandLineRunner.Run(whereProgram, npmFileName, Encoding.ASCII, "", 2, new NullProgress());
 			if (!String.IsNullOrEmpty(whereResult.StandardError))
 			{
-				_webSocketProgress.ErrorWithoutLocalizing(whereResult.StandardError);
+				_webSocketProgress.MessageWithoutLocalizing(whereResult.StandardError, ProgressKind.Error);
 			}
 			if (!whereResult.StandardOutput.Contains(npmFileName))
 			{
@@ -383,14 +382,14 @@ namespace Bloom.web.controllers
 
 		private void ReportErrorAndFailTheRequest(ApiRequest request, ExecutionResult commandLineResult, string error)
 		{
-			_webSocketProgress.ErrorWithoutLocalizing(commandLineResult.StandardError);
-			_webSocketProgress.ErrorWithoutLocalizing(commandLineResult.StandardOutput);
+			_webSocketProgress.MessageWithoutLocalizing(commandLineResult.StandardError, ProgressKind.Error);
+			_webSocketProgress.MessageWithoutLocalizing(commandLineResult.StandardOutput, ProgressKind.Error);
 			ReportErrorAndFailTheRequest(request, error);
 		}
 
 		private void ReportErrorAndFailTheRequest(ApiRequest request, string error)
 		{
-			_webSocketProgress.ErrorWithoutLocalizing(error);
+			_webSocketProgress.MessageWithoutLocalizing(error, ProgressKind.Error);
 			if (Platform.IsWindows)
 			{
 				_webSocketProgress.MessageWithoutLocalizing("Please follow <a href= 'https://inclusivepublishing.org/toolbox/accessibility-checker/getting-started/' >these instructions</a> to install the Ace by DAISY system on this computer.");
