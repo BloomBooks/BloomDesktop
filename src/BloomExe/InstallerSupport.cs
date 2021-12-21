@@ -80,7 +80,6 @@ namespace Bloom
 			Debug.Fail("HandleSquirrelInstallEvent should not run on Linux!");	// and the code below doesn't compile on Linux
 			return;
 #else
-			bool firstTime = false;
 			var updateUrlResult = LookupUrlOfSquirrelUpdate();
 			// Should only be null if we're not online. Not sure how squirrel will handle that,
 			// but at least one of these operations is responsible for setting up shortcuts to the program,
@@ -159,7 +158,7 @@ namespace Bloom
 							},
 							onAppUpdate: v => HandleAppUpdate(mgr),
 							onAppUninstall: v => mgr.RemoveShortcutsForExecutable(Path.GetFileName(Assembly.GetEntryAssembly().Location), StartMenuLocations, SharedByAllUsers()),
-							onFirstRun: () => firstTime = true,
+							onFirstRun: () => { },
 							arguments: args);
 					}
 					break;

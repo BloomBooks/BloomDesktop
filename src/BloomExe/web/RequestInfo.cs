@@ -239,11 +239,15 @@ namespace Bloom.Api
 
 		private bool ShouldCache(string path, string originalPath)
 		{
+			bool bypassCache = false;
 #if DEBUG
 			// Developers never want caching...interferes with trying new versions of stuff.
 			// So, obviously, you want to comment this line out to test caching.
-			return false;
+			bypassCache = true;
 #endif
+			if (bypassCache)
+				return false;
+
 			if (path.EndsWith(ProblemReportApi.ScreenshotName))
 				return false; // Otherwise we can get stale screenshot images from our ProblemReportApi
 			if (string.IsNullOrEmpty(DoNotCacheFolder))

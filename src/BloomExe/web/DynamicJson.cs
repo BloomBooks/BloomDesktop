@@ -446,5 +446,10 @@ namespace Bloom.Api
 				return false;
 			return this.ToString() == obj.ToString();
 		}
+
+		public override int GetHashCode()
+		{
+			return this.ToString().GetHashCode();
+		}
 	}
 }

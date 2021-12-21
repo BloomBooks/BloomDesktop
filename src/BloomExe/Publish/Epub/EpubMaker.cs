@@ -110,10 +110,6 @@ namespace Bloom.Publish.Epub
 			get { return _book.Storage; }
 		}
 
-		// The only reason this isn't just ../* is performance. We could change it.  It comes from the need to actually
-		// remove any elements that the style rules would hide, becuase epub readers ignore visibility settings.
-		private string kSelectThingsThatCanBeHidden = ".//div | .//img";
-
 		// Keeps track of IDs that have been used in the manifest. These are generated to roughly match file
 		// names, but the algorithm could pathologically produce duplicates, so we guard against this.
 		private HashSet<string> _idsUsed = new HashSet<string>();
