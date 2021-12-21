@@ -14,7 +14,8 @@ import { BloomAvatar } from "../react_components/bloomAvatar";
 import {
     kBloomBlue,
     kBloomGold,
-    kBloomLightBlue
+    kBloomLightBlue,
+    kBloomPurple
 } from "../bloomMaterialUITheme.js";
 import { useRef, useState, useEffect } from "react";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
@@ -112,7 +113,10 @@ export const BookButton: React.FunctionComponent<{
                         borderColor={
                             teamCollectionStatus.who ===
                             teamCollectionStatus.currentUser
-                                ? kBloomGold
+                                ? teamCollectionStatus.where ===
+                                  teamCollectionStatus.currentMachine
+                                    ? kBloomGold
+                                    : kBloomPurple
                                 : kBloomBlue
                         }
                     />
