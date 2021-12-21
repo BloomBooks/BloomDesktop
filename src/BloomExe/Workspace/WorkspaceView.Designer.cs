@@ -1,4 +1,4 @@
-﻿//#define SHOW_REACT_COLLECTION_TAB
+﻿#define SHOW_REACT_COLLECTION_TAB
 namespace Bloom.Workspace
 {
 
@@ -114,11 +114,6 @@ namespace Bloom.Workspace
 			this._tabStrip.Location = new System.Drawing.Point(0, 0);
 			this._tabStrip.Name = "_tabStrip";
 			this._tabStrip.RenderStyle = System.Windows.Forms.ToolStripRenderMode.ManagerRenderMode;
-#if SHOW_REACT_COLLECTION_TAB
-			this._tabStrip.SelectedTab = this._reactCollectionTab;
-#else
-            this._tabStrip.SelectedTab = this._legacyCollectionTab;
-#endif
 			this._tabStrip.Size = new System.Drawing.Size(1098, 71);
 			this._tabStrip.TabIndex = 15;
 			this._tabStrip.Text = "tabStrip1";

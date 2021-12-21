@@ -11,6 +11,7 @@ namespace Bloom
 		public const string kExperimentalSourceBooks = "experimental-source-books";
 		public const string kTeamCollections = "team-collections";
 		public const string kSpreadsheetImportExport = "spreadsheet-import-export";
+		public const string kNewCollectionTab = "new-collection-tab";
 
 		public static string TokensOfEnabledFeatures => Settings.Default.EnabledExperimentalFeatures;
 

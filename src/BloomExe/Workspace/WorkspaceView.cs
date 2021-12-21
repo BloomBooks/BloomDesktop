@@ -1,7 +1,7 @@
 // Current plan is that instead of just defining this and so getting both tabs,
 // we will make the new collection tab an experimental feature, and so only ever
 // have one in use.
-//#define SHOW_REACT_COLLECTION_TAB
+#define SHOW_REACT_COLLECTION_TAB
 using System;
 using System.Diagnostics;
 using System.Drawing;
@@ -173,18 +173,36 @@ namespace Bloom.Workspace
 			this._legacyCollectionView.Dock = DockStyle.Fill;
 			_legacyCollectionTab.Tag = _legacyCollectionView;
 
-#if SHOW_REACT_COLLECTION_TAB // we will turn this back on for Bloom 5.2
-			_reactCollectionTabView = reactCollectionsTabsView;
-
-			_reactCollectionTabView.ManageSettings(_settingsLauncherHelper);
-			_reactCollectionTabView.Dock = DockStyle.Fill;
-			_reactCollectionTab.Tag = _reactCollectionTabView;
-#endif
 			//
-			// _editingView
+			// _editingView needs to be created before we select a tab, since the model
+			// gets notified about tab selection, and expects its view to be non-null,
+			// and that is done by the EditingView constructor.
 			//
 			this._editingView = editingViewFactory();
 			this._editingView.Dock = DockStyle.Fill;
+
+#if SHOW_REACT_COLLECTION_TAB
+			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kNewCollectionTab))
+			{
+				_reactCollectionTabView = reactCollectionsTabsView;
+				_reactCollectionTabView.ManageSettings(_settingsLauncherHelper);
+				_reactCollectionTabView.Dock = DockStyle.Fill;
+				_reactCollectionTab.Tag = _reactCollectionTabView;
+				_tabStrip.SelectedTab = _reactCollectionTab;
+				_tabStrip.Items.Remove(_legacyCollectionTab);
+				// make sure we catch anything trying to use it in this mode
+				_legacyCollectionTab.Dispose();
+				_legacyCollectionTab = null;
+			}
+			else
+			{
+				_tabStrip.SelectedTab = _legacyCollectionTab;
+				_tabStrip.Items.Remove(_reactCollectionTab);
+				_reactCollectionTab.Dispose();
+			}
+#else
+            this._tabStrip.SelectedTab = this._legacyCollectionTab;
+#endif
 
 			//
 			// _pdfView
@@ -198,20 +216,24 @@ namespace Bloom.Workspace
 			_publishTab.Tag = _publishView;
 			_editTab.Tag = _editingView;
 
-#if SHOW_REACT_COLLECTION_TAB
-			this._legacyCollectionTab.Text = "Legacy"; // _legacyCollectionView.CollectionTabLabel;
-			this._reactCollectionTab.Text = _reactCollectionTabView.CollectionTabLabel;
-#else
-			this._legacyCollectionTab.Text =  _legacyCollectionView.CollectionTabLabel;
-#endif
-
 			SetTabVisibility(_publishTab, false);
 			SetTabVisibility(_editTab, false);
 
 #if SHOW_REACT_COLLECTION_TAB
-			_tabStrip.SelectedTab = _reactCollectionTab;
-			SelectPage(_reactCollectionTabView);
+			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kNewCollectionTab))
+			{
+				this._reactCollectionTab.Text = _reactCollectionTabView.CollectionTabLabel;
+				_tabStrip.SelectedTab = _reactCollectionTab;
+				SelectPage(_reactCollectionTabView);
+			}
+			else
+			{
+				this._legacyCollectionTab.Text = _legacyCollectionView.CollectionTabLabel;
+				_tabStrip.SelectedTab = _legacyCollectionTab;
+				SelectPage(_legacyCollectionView);
+			}
 #else
+			this._legacyCollectionTab.Text =  _legacyCollectionView.CollectionTabLabel;
 			_tabStrip.SelectedTab = _legacyCollectionTab;
 			SelectPage(_legacyCollectionView);
 #endif
@@ -250,24 +272,15 @@ namespace Bloom.Workspace
 			// Note, this not put into _startupActions...it should never be disabled.
 			if (_tcManager?.CurrentCollectionEvenIfDisconnected == null)
 			{
-#if SHOW_REACT_COLLECTION_TAB
-				_reactCollectionTabView.ReadyToShowCollections();
-#endif
-				_legacyCollectionView.ReadyToShowCollections();
-			} else
+				ReadyToShowCollections();
+			}
+			else
 			{
 				StartupScreenManager.AddStartupAction(() =>
 				{
 					// Don't do anything else after this as part of this idle task.
 					// See the comment near the end of HandleTeamStuffBeforeGetBookCollections.
-					_model.HandleTeamStuffBeforeGetBookCollections(() =>
-						{
-#if SHOW_REACT_COLLECTION_TAB
-							_reactCollectionTabView.ReadyToShowCollections();
-#endif
-							_legacyCollectionView.ReadyToShowCollections();
-						}
-					);
+					_model.HandleTeamStuffBeforeGetBookCollections(ReadyToShowCollections);
 				}, shouldHideSplashScreen: true);
 			}
 
@@ -276,6 +289,22 @@ namespace Bloom.Workspace
 			// needs to be checked out before BringBookUpToDate renames it here.
 			StartupScreenManager.AddStartupAction(() =>
 				SelectPreviouslySelectedBook());
+		}
+
+		private void ReadyToShowCollections()
+		{
+#if SHOW_REACT_COLLECTION_TAB
+			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kNewCollectionTab))
+			{
+				_reactCollectionTabView.ReadyToShowCollections();
+			}
+			else
+			{
+				_legacyCollectionView.ReadyToShowCollections();
+			}
+#else
+				_legacyCollectionView.ReadyToShowCollections();
+#endif
 		}
 
 		/// <summary>
