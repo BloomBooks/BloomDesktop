@@ -93,7 +93,7 @@ namespace Bloom.Spreadsheet
 				var hasAudio = _dest.GetRecordedAudioSentences(folderPath).Any();
 				if (hasAudio)
 				{
-					progress.MessageWithoutLocalizing($"Warning: Spreadsheet import cannot current preserve Talking Book audio that is already in this book. For this reason, we need to abandon the import.", ProgressKind.Error);
+					progress.MessageWithoutLocalizing($"Warning: Spreadsheet import cannot currently preserve Talking Book audio that is already in this book. For this reason, we need to abandon the import.", ProgressKind.Error);
 					return true; // leave progress window up so user can see error.
 				}
 				var sheet = InternalSpreadsheet.ReadFromFile(inputFilepath, progress);
