@@ -98,7 +98,7 @@ namespace BloomTests
 		public void EqualsNonProxy_ReturnsFalse()
 		{
 			var elementProxy = MakeElement("<div id='foo'/>");
-			#pragma warning disable CS0253 "Possible unintended reference comparison, [...]"
+			#pragma warning disable CS0253 // "Possible unintended reference comparison, [...]"
 			Assert.That(elementProxy == new object(), Is.False); // won't exercise current == code, but I think still worth checking.
 			#pragma warning restore CS0253
 			Assert.That(elementProxy.Equals(new object()), Is.False);

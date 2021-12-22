@@ -60,7 +60,6 @@ namespace Bloom
 		private static ProjectContext _projectContext;
 		private static int _uiThreadId;
 		private static ApplicationContainer _applicationContainer;
-		public static bool ApplicationExiting;
 		public static bool StartUpWithFirstOrNewVersionBehavior;
 
 		private static GeckoWebBrowser _debugServerStarter;
@@ -416,7 +415,6 @@ namespace Bloom
 
 						}
 						Browser.SetUpXulRunner();
-						Browser.XulRunnerShutdown += OnXulRunnerShutdown;
 #if DEBUG
 						if (SIL.PlatformUtilities.Platform.IsWindows)
 							StartDebugServer();
@@ -578,7 +576,6 @@ namespace Bloom
 				//JT please review: is this needed? InstallerSupport.MakeBloomRegistryEntries(args);
 				BookDownloadSupport.EnsureDownloadFolderExists();
 				Browser.SetUpXulRunner();
-				Browser.XulRunnerShutdown += OnXulRunnerShutdown;
 				LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 				var downloader = new BookDownload(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
 					new BookDownloadStartingEvent()) /*not hooked to anything*/;
@@ -662,15 +659,6 @@ namespace Bloom
 		// This allows us to have different sets of deltas and upgrade targets for betas and stable releases,
 		// or indeed to do something special for any particular version(s) of Bloom,
 		// or even to switch to a different upgrade path after releasing a version.
-
-		internal static void OnXulRunnerShutdown(object sender, EventArgs e)
-		{
-			ApplicationExiting = true;
-			Browser.XulRunnerShutdown -= OnXulRunnerShutdown;
-			if (_debugServerStarter != null)
-				_debugServerStarter.Dispose();
-			_debugServerStarter = null;
-		}
 
 		internal static void SetProjectContext(ProjectContext projectContext)
 		{
