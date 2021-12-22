@@ -80,7 +80,6 @@ namespace Bloom.CLI
 				{
 					Program.SetUpLocalization(applicationContainer);
 					Browser.SetUpXulRunner();
-					Browser.XulRunnerShutdown += Program.OnXulRunnerShutdown;
 					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);   // Unclear if this line is needed or not.
 					if (DesktopAnalytics.Analytics.AllowTracking)
 					{
