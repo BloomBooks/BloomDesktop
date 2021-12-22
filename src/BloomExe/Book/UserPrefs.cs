@@ -16,6 +16,7 @@ namespace Bloom.Book
 		private bool _reducePdfMemory;
 		private bool _cmykPdf;
 		private bool _fullBleed;
+		private string _spreadsheetFolder;
 
 		private UserPrefs() {}
 
@@ -100,6 +101,21 @@ namespace Bloom.Book
 			set
 			{
 				_fullBleed = value;
+				Save();
+			}
+		}
+
+		// The folder where this book was last written as a spreadsheet or from which it was last imported.
+		// Null for books where either has never happened. Be careful...this might be a path to a folder
+		// that does not exist (e.g., deleted by user, or on a thumb drive since dismounted).
+		// If so, it should be ignored.
+		[JsonProperty("spreadsheetFolder")]
+		public string SpreadsheetFolder
+		{
+			get { return _spreadsheetFolder; }
+			set
+			{
+				_spreadsheetFolder = value;
 				Save();
 			}
 		}

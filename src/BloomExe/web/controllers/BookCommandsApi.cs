@@ -145,6 +145,42 @@ namespace Bloom.web.controllers
 		// TODO: Delete me after all references removed.
 		[Obsolete("Wrapper to allow legacy (WinForms) code to share this code. New code should try to use the API/React-based paradigm instead.")]
 		public void HandleExportToSpreadsheetWrapper(Book.Book book) => this.HandleExportToSpreadsheet(book);
+
+		/// <summary>
+		/// Get and set the folder where we should initially open the chooser for importing (or exporting, if
+		/// forExport is true) the book as a spreadsheet.
+		/// </summary>
+		private string GetSpreadsheetFolderFor(Book.Book book, bool forExport)
+		{
+			var folder = book.UserPrefs.SpreadsheetFolder; // saved directory if any for this book
+			if (!Directory.Exists(folder))
+			{
+
+				// Fall back to the last place used for ANY import or export, or if there is no such, the system Documents folder.
+				return String.IsNullOrWhiteSpace(Settings.Default.ExportImportFileFolder)
+					? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+					: Settings.Default.ExportImportFileFolder;
+			}
+
+			if (forExport)
+			{
+				// We have a saved location (the folder of the spreadsheet itself), but for export we want its parent
+				// (the folder in which we will create a folder for the spreadsheet)
+				return Path.GetDirectoryName(folder);
+			}
+
+			return folder; // save folder itself for import
+		}
+
+		private void SetSpreadsheetFolder(Book.Book book, string folder)
+		{
+			book.UserPrefs.SpreadsheetFolder = folder;
+			// We go up a level since the input folder is specific to this book, while the parent of that
+			// is a likely place to do future exports and imports of books that have not previously
+			// been imported or exported.
+			Settings.Default.ExportImportFileFolder = Path.GetDirectoryName(folder);
+			Settings.Default.Save();
+		}
 		
 		private void HandleExportToSpreadsheet(Book.Book book)
 		{
@@ -161,11 +197,11 @@ namespace Bloom.web.controllers
 				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));
 				var exporter = new SpreadsheetExporter(_webSocketServer, book.CollectionSettings);
 
-				var initialFolder = !String.IsNullOrWhiteSpace(Settings.Default.ExportImportFileFolder) ? Settings.Default.ExportImportFileFolder : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-				string outputParentFolder = BloomFolderChooser.ChooseFolder(initialFolder);
+				string outputParentFolder = BloomFolderChooser.ChooseFolder(GetSpreadsheetFolderFor(book, true));
 				if (outputParentFolder == null)
 					return; // user canceled
 				string outputFolder = Path.Combine(outputParentFolder, Path.GetFileNameWithoutExtension(bookPath));
+				SetSpreadsheetFolder(book, outputFolder);
 				string imagesFolderPath = Path.GetDirectoryName(bookPath);
 				exporter.ExportToFolderWithProgress(dom, imagesFolderPath, outputFolder, outputFilePath =>
 				{
@@ -200,14 +236,14 @@ namespace Bloom.web.controllers
 				{
 					dlg.Filter = "xlsx|*.xlsx";
 					dlg.RestoreDirectory = true;
-					dlg.InitialDirectory = !String.IsNullOrWhiteSpace(Settings.Default.ExportImportFileFolder) ? Settings.Default.ExportImportFileFolder : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+					dlg.InitialDirectory = GetSpreadsheetFolderFor(book, false);
 					if (DialogResult.Cancel == dlg.ShowDialog())
 					{
 						return;
 					}
 					inputFilepath = dlg.FileName;
-					Settings.Default.ExportImportFileFolder = Path.GetDirectoryName(inputFilepath);
-					Settings.Default.Save();
+					var spreadsheetFolder = Path.GetDirectoryName(inputFilepath);
+					SetSpreadsheetFolder(book, spreadsheetFolder);
 				}
 
 				var dom = book.OurHtmlDom;
