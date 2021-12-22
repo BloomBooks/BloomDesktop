@@ -4,6 +4,7 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
+using Bloom.Utils;
 using Newtonsoft.Json;
 
 namespace Bloom.web
@@ -72,7 +73,7 @@ namespace Bloom.web
 				Dock = DockStyle.Fill,
 				Location = new Point(3, 3),
 				Size = new Size(Width - 6, Height - 6),
-				BackColor = Color.White
+				BackColor = this.BackColor
 				
 			};
 			// This is mainly so that the mailTo: link in the Team Collection settings panel
@@ -140,6 +141,10 @@ namespace Bloom.web
 				bundleNameWithExtension += ".js";
 			}
 
+			// We insert this as the initial background color of the HTML element
+			// to prevent a flash of white while the React is rendering.
+			var backColor = MiscUtils.ColorToHtmlCode(BackColor);
+
 			RobustFile.WriteAllText(tempFile.Path, $@"<!DOCTYPE html>
 				<html style='height:100%'>
 				<head>
@@ -153,7 +158,7 @@ namespace Bloom.web
 						}};
 					</script>					
 				</head>
-				<body style='margin:0; height:100%'>
+				<body style='margin:0; height:100%; background-color:{backColor};'>
 					<div id='reactRoot' style='height:100%'>Javascript should have replaced this. Make sure that the javascript bundle '{bundleNameWithExtension}' includes a single call to WireUpForWinforms()</div>
 				</body>
 				</html>");

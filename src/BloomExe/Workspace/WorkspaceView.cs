@@ -187,6 +187,7 @@ namespace Bloom.Workspace
 				_reactCollectionTabView = reactCollectionsTabsView;
 				_reactCollectionTabView.ManageSettings(_settingsLauncherHelper);
 				_reactCollectionTabView.Dock = DockStyle.Fill;
+				_reactCollectionTabView.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
 				_reactCollectionTab.Tag = _reactCollectionTabView;
 				_tabStrip.SelectedTab = _reactCollectionTab;
 				_tabStrip.Items.Remove(_legacyCollectionTab);

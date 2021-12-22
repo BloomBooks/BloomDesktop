@@ -1,8 +1,15 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
+using System.Management;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Text;
+using System.Windows.Forms;
+using Mono.Unix;
 using SIL.IO;
+using SIL.PlatformUtilities;
 
 namespace Bloom.Utils
 {
@@ -18,7 +25,7 @@ namespace Bloom.Utils
 		/// </summary>
 		public static void SetTimeout(Action action, int timeout)
 		{
-			var timer = new System.Windows.Forms.Timer();
+			var timer = new Timer();
 			timer.Interval = timeout;
 			timer.Tick += delegate (object sender, EventArgs args)
 			{
@@ -32,41 +39,41 @@ namespace Bloom.Utils
 			var bldr = new StringBuilder();
 			try
 			{
-				if (SIL.PlatformUtilities.Platform.IsWindows)
+				if (Platform.IsWindows)
 				{
-					var currentUser = System.Security.Principal.WindowsIdentity.GetCurrent();
+					var currentUser = WindowsIdentity.GetCurrent();
 					bldr.AppendLine($"current user is {currentUser.Name}");
-					var principal = new System.Security.Principal.WindowsPrincipal(currentUser);
+					var principal = new WindowsPrincipal(currentUser);
 					bool isInRoleWithAccess = false;
 					bool accessDenied = false;
 					bool accessAllowed = false;
-					System.Security.AccessControl.FileSystemRights accessRights = System.Security.AccessControl.FileSystemRights.Write;
+					FileSystemRights accessRights = FileSystemRights.Write;
 					var acl = File.GetAccessControl(filePath);
-					var rules = acl.GetAccessRules(true, true, typeof(System.Security.Principal.NTAccount));
-					var sid = acl.GetOwner(typeof(System.Security.Principal.SecurityIdentifier));
-					var acct = sid.Translate(typeof(System.Security.Principal.NTAccount)) as System.Security.Principal.NTAccount;
+					var rules = acl.GetAccessRules(true, true, typeof(NTAccount));
+					var sid = acl.GetOwner(typeof(SecurityIdentifier));
+					var acct = sid.Translate(typeof(NTAccount)) as NTAccount;
 					if (acct != null)
 						bldr.AppendLine($"owner of \"{filePath}\" is {acct.Value}");
 					var fileAttributes = RobustFile.GetAttributes(filePath);
 					bldr.AppendLine($"{filePath} current ReadOnly attribute of {filePath} is {(fileAttributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly}");
-					foreach (System.Security.AccessControl.AuthorizationRule rule in rules)
+					foreach (AuthorizationRule rule in rules)
 					{
-						var fsAccessRule = rule as System.Security.AccessControl.FileSystemAccessRule;
+						var fsAccessRule = rule as FileSystemAccessRule;
 						if (fsAccessRule == null)
 							continue;
 						if ((fsAccessRule.FileSystemRights & accessRights) > 0)
 						{
-							var ntAccount = rule.IdentityReference as System.Security.Principal.NTAccount;
+							var ntAccount = rule.IdentityReference as NTAccount;
 							if (ntAccount == null)
 								continue;
 							if (principal.IsInRole(ntAccount.Value))
 							{
-								if (fsAccessRule.AccessControlType == System.Security.AccessControl.AccessControlType.Deny)
+								if (fsAccessRule.AccessControlType == AccessControlType.Deny)
 								{
 									bldr.AppendLine($"current user is denied write access to {filePath} by {ntAccount.Value}{(rule.IsInherited ? " (inherited)":"")}");
 									accessDenied = true;
 								}
-								if (fsAccessRule.AccessControlType == System.Security.AccessControl.AccessControlType.Allow)
+								if (fsAccessRule.AccessControlType == AccessControlType.Allow)
 								{
 									bldr.AppendLine($"current user is allowed write access to {filePath} by {ntAccount.Value}{(rule.IsInherited ? " (inherited)":"")}");
 									accessAllowed = true;
@@ -90,9 +97,9 @@ namespace Bloom.Utils
 				else
 				{
 					var folder = Path.GetDirectoryName(filePath);
-					var fileInfo = new Mono.Unix.UnixFileInfo(filePath);
-					var dirInfo = new Mono.Unix.UnixDirectoryInfo(folder);
-					var userInfo = Mono.Unix.UnixUserInfo.GetRealUser();
+					var fileInfo = new UnixFileInfo(filePath);
+					var dirInfo = new UnixDirectoryInfo(folder);
+					var userInfo = UnixUserInfo.GetRealUser();
 					bldr.AppendLine($"current user is {userInfo.UserName}");
 					bldr.AppendLine($"owner of \"{filePath}\" is {fileInfo.OwnerUser.UserName}");
 					bldr.AppendLine($"permissions of \"{filePath}\" = {fileInfo.FileAccessPermissions.ToString()}");
@@ -110,17 +117,17 @@ namespace Bloom.Utils
 		public static string InstalledAntivirusPrograms()
 		{
 			string result = "";
-			if (SIL.PlatformUtilities.Platform.IsWindows)
+			if (Platform.IsWindows)
 			{
 				string wmipathstr = @"\\" + Environment.MachineName + @"\root\SecurityCenter2";
 				try
 				{
 					var searcher =
-						new System.Management.ManagementObjectSearcher(wmipathstr, "SELECT * FROM AntivirusProduct");
+						new ManagementObjectSearcher(wmipathstr, "SELECT * FROM AntivirusProduct");
 					var instances = searcher.Get();
 					foreach (var instance in instances)
 					{
-						result += instance.GetText(System.Management.TextFormat.Mof) + Environment.NewLine;
+						result += instance.GetText(TextFormat.Mof) + Environment.NewLine;
 					}
 				}
 				catch (Exception error)
@@ -205,6 +212,12 @@ namespace Bloom.Utils
 			Debug.WriteLine(e.ToString());
 
 			// If desired, we could write it to the log file, or report to Sentry, etc...
+		}
+
+		public static string ColorToHtmlCode(Color color)
+		{
+			// thanks to http://stackoverflow.com/questions/982028/convert-net-color-objects-to-hex-codes-and-back
+			return string.Format("#{0:X2}{1:X2}{2:X2}", color.R, color.G, color.B);
 		}
 	}
 }
