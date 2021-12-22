@@ -22,11 +22,6 @@ namespace Bloom.Edit
 
 		public string CaptionI18nId { get { return null; } }
 
-		public Image Thumbnail
-		{
-			get { return new Bitmap(32,32); }
-		}
-
 		public string XPathToDiv
 		{
 			get { return null; }

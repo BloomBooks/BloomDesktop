@@ -93,7 +93,7 @@ namespace Bloom.Publish.Android.usb
 			_progress.Message(idSuffix: "UnableToConnect",
 				 message: "Unable to connect to any Android device.");
 
-			_progress.ErrorWithoutLocalizing("\tTechnical details to share with the development team: " + e);
+			_progress.MessageWithoutLocalizing("\tTechnical details to share with the development team: " + e, ProgressKind.Error);
 			Logger.WriteError(e);
 			Stopped();
 		}
@@ -194,12 +194,13 @@ namespace Bloom.Publish.Android.usb
 			}
 			else
 			{
-				_progress.Error(idSuffix: "FailureToSend",
-					message: "An error occurred and the book was not sent to your Android device.");
+				_progress.Message(idSuffix: "FailureToSend",
+					message: "An error occurred and the book was not sent to your Android device.",
+					progressKind: ProgressKind.Error);
 				if (e != null)
 				{
 					//intentionally not localizable (each of these strings costs effort by each translation team)
-					_progress.ErrorWithoutLocalizing("\tTechnical details to share with the development team: ");
+					_progress.MessageWithoutLocalizing("\tTechnical details to share with the development team: ", ProgressKind.Error);
 					_progress.Exception(e);
 					Logger.WriteError(e);
 				}
@@ -224,9 +225,10 @@ namespace Bloom.Publish.Android.usb
 		private void SendOutOfStorageSpaceMessage(Exception e)
 		{
 			// {0} is the size of the book that Bloom is trying to copy over to the Android device.
-			_progress.Error("DeviceOutOfSpace",
+			_progress.Message("DeviceOutOfSpace",
 				string.Format("The device reported that it does not have enough space for this book. The book is {0} MB.",
-					_lastPublishedBloomdSize ?? "of unknown"));
+					_lastPublishedBloomdSize ?? "of unknown"),
+				ProgressKind.Error);
 			Logger.WriteError(e);
 			Stopped();
 		}

@@ -63,6 +63,8 @@ namespace BloomTests
 			Assert.That(proxy2 == elementProxy, Is.False);
 		}
 
+		// Disable warning for "Comparison made to same variable; did you mean to compare something else?"
+		#pragma warning disable CS1718
 		[Test]
 		public void EqualsSelf_ReturnsTrue()
 		{
@@ -70,6 +72,7 @@ namespace BloomTests
 			Assert.That(elementProxy == elementProxy, Is.True);
 			Assert.That(elementProxy.Equals(elementProxy), Is.True);
 		}
+		#pragma warning restore CS1718
 
 		[Test]
 		public void EqualsProxyForSameThing_ReturnsTrue()
@@ -95,7 +98,9 @@ namespace BloomTests
 		public void EqualsNonProxy_ReturnsFalse()
 		{
 			var elementProxy = MakeElement("<div id='foo'/>");
+			#pragma warning disable CS0253 // "Possible unintended reference comparison, [...]"
 			Assert.That(elementProxy == new object(), Is.False); // won't exercise current == code, but I think still worth checking.
+			#pragma warning restore CS0253
 			Assert.That(elementProxy.Equals(new object()), Is.False);
 		}
 

@@ -537,9 +537,6 @@ namespace Bloom
 			if (order == null)
 				return;
 
-			if (Program.ApplicationExiting)
-				return;
-
 			try
 			{	// This doesn't have an IsDisposed() method, so catch a possible exception.
 				// Note that tests won't have a order.CancelToken set.
@@ -661,9 +658,6 @@ namespace Bloom
 
 		private GeckoWebBrowser MakeNewBrowser()
 		{
-			if (Program.ApplicationExiting)
-				return null;
-
 			Debug.WriteLine("making browser ({0})", Thread.CurrentThread.ManagedThreadId);
 #if !__MonoCS__
 			var browser = new GeckoWebBrowser();

@@ -11,8 +11,6 @@ namespace Bloom.ToPalaso
 	/// </summary>
 	public class MessageLabelProgress :Label, IProgress
 	{
-		private bool _loaded;
-
 		public MessageLabelProgress()
 		{
 			VisibleChanged += new EventHandler(MessageLabelProgress_VisibleChanged);
@@ -20,7 +18,6 @@ namespace Bloom.ToPalaso
 
 		void MessageLabelProgress_VisibleChanged(object sender, EventArgs e)
 		{
-			_loaded = true;
 		}
 		public SynchronizationContext SyncContext { get; set; }
 
@@ -41,46 +38,17 @@ namespace Bloom.ToPalaso
 
 		public void WriteMessage(string message, params object[] args)
 		{
-//			if (!_loaded)
-//				return;
-
 			try
 			{
-//				string theMessage = GenericProgress.SafeFormat(message, args);
-//				//Guard.AgainstNull(SyncContext,"SyncContext");
-//				///SyncContext.Post(UpdateText, theMessage);
-//
-//				this.Invoke(new Action(() => { UpdateText(theMessage);}));
-//				Application.DoEvents();
-
 				string theMessage = GenericProgress.SafeFormat(message, args);
-
-//				if (SyncContext != null)
-//				{
-//					SyncContext.Post(UpdateText, theMessage);//Post() means do it asynchronously, don't wait around and see if there is an exception
-//				}
-//				else
-//				{
-//					Text = theMessage;
-//				}
-
-				//if (IsHandleCreated)
+				if (InvokeRequired)
 				{
-					if (InvokeRequired)
-					{
-						BeginInvoke(new Action(() => UpdateText(theMessage)));
-					}
-					else
-					{
-						UpdateText(theMessage);
-					}
+					BeginInvoke(new Action(() => UpdateText(theMessage)));
 				}
-//				else
-//				{
-//					// in this case InvokeRequired might lie - you need to make sure that this never happens!
-//					throw new Exception("Somehow Handle has not yet been created on the UI thread!");
-//				}
-
+				else
+				{
+					UpdateText(theMessage);
+				}
 			}
 			catch (Exception error)
 			{
