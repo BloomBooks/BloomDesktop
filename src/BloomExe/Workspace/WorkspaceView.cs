@@ -50,7 +50,7 @@ namespace Bloom.Workspace
 #if CHORUS
 			private readonly ChorusSystem _chorusSystem;
 #else
-		private readonly object _chorusSystem;
+		// private readonly object _chorusSystem;
 #endif
 		private bool _viewInitialized;
 		private int _originalToolStripPanelWidth;

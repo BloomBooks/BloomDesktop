@@ -131,6 +131,7 @@ namespace Bloom.Spreadsheet
 			if (!_reportedImageDescription && groups.Count < allGroups.Count)
 			{
 				_progress?.MessageWithoutLocalizing("Image description are not currently supported by spreadsheet import/export. They will be ignored.");
+				_reportedImageDescription = true;
 			}
 						
 			var pageContentTuples = imageContainers.MapUnevenPairs(groups, (imageContainer, group) => (imageContainer, group));
