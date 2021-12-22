@@ -720,12 +720,6 @@
     <Compile Include="ToPalaso\ProgressDialogForeground.Designer.cs">
       <DependentUpon>ProgressDialogForeground.cs</DependentUpon>
     </Compile>
-    <Compile Include="Edit\FlowThumbNailList.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Edit\FlowThumbNailList.Designer.cs">
-      <DependentUpon>FlowThumbNailList.cs</DependentUpon>
-    </Compile>
     <Compile Include="ToPalaso\ProgressDialogBackground.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -1061,9 +1055,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\ProgressDialogForeground.resx">
       <DependentUpon>ProgressDialogForeground.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Edit\FlowThumbNailList.resx">
-      <DependentUpon>FlowThumbNailList.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\ProgressDialogBackground.resx">
       <DependentUpon>ProgressDialogBackground.cs</DependentUpon>

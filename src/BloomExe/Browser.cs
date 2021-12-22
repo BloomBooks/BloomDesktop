@@ -43,7 +43,6 @@ namespace Bloom
 		private CutCommand _cutCommand;
 		private bool _disposed;
 		public event EventHandler OnBrowserClick;
-		public static event EventHandler XulRunnerShutdown;
 		// We need some way to pass the cursor location in the Browser context to the EditingView command handlers
 		// for Add/Delete TextOverPicture textboxes. These will store the cursor location when the context menu is
 		// generated.
