@@ -22,7 +22,13 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     // There's no event built into the splitter that will tell us when drag is done.
     // So to tell that it's over, we have a global listener for mouseup.
     // useEventListener handles cleaning up the listener when this component is disposed.
-    useEventListener("mouseup", () => setDraggingVSplitter(false));
+    // The small delay somehow prevents a problem where the drag would continue after
+    // mouse up. My hypothesis is that causing a re-render during mouse-up handling
+    // interferes with the implementation of the splitter and causes it to miss
+    // mouse up events, perhaps especially if outside the splitter control itself.
+    useEventListener("mouseup", () =>
+        setTimeout(() => setDraggingVSplitter(false), 10)
+    );
 
     if (collections) {
         const sourcesCollections = collections.slice(1);
