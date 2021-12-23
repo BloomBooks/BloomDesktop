@@ -4,6 +4,7 @@ import "BooksOfCollection.less";
 import { BloomApi } from "../utils/bloomApi";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
+import NestedMenuItem from "material-ui-nested-menu-item";
 import { BookButton } from "./BookButton";
 import { useMonitorBookSelection } from "../app/selectedBook";
 import { element } from "prop-types";
@@ -11,7 +12,6 @@ import { useL10n } from "../react_components/l10nHooks";
 import { useState } from "react";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import { Divider } from "@material-ui/core";
-import { Book } from "@material-ui/icons";
 
 interface IBookInfo {
     id: string;
@@ -24,6 +24,7 @@ export const BooksOfCollection: React.FunctionComponent<{
     isEditableCollection: boolean;
 }> = props => {
     const [renaming, setRenaming] = useState(false);
+    const [showCollectionMenu, setShowCollectionMenu] = useState(false);
 
     if (!props.collectionId) {
         window.alert("null collectionId");
@@ -73,10 +74,13 @@ export const BooksOfCollection: React.FunctionComponent<{
         if (!(event.target instanceof Element)) {
             return; // huh?
         }
+        setAdjustedContextMenuPoint(event.clientX - 2, event.clientY - 4);
         const target = event.target as Element;
-        let bookTarget = target.closest(".book-wrapper");
+        let bookTarget = target.closest(".book-button");
         if (bookTarget == null) {
-            // We're not going to do our own right-click menu; let whatever default happens go ahead.
+            // We're going to do the whole-collection menu, since no particular book
+            // was clicked.
+            setShowCollectionMenu(true);
             return;
         }
 
@@ -90,11 +94,12 @@ export const BooksOfCollection: React.FunctionComponent<{
 
         event.preventDefault();
         event.stopPropagation();
-        setAdjustedContextMenuPoint(event.clientX - 2, event.clientY - 4);
     };
 
     const handleClose = () => {
         setContextMousePoint(undefined);
+        setShowCollectionMenu(false);
+        setClickedBookId("");
     };
 
     const handleBookCommand = (command: string) => {
@@ -121,6 +126,7 @@ export const BooksOfCollection: React.FunctionComponent<{
         // Involves making changes to the book; therefore, can only be done in the one editable collection
         // (unless shouldInclude returns true), and if we're in a Team Collection, the book must be checked out.
         requiresSavePermission?: boolean;
+        submenu?: MenuItemSpec[];
     }
     const handleRename = () => {
         handleClose();
@@ -134,7 +140,7 @@ export const BooksOfCollection: React.FunctionComponent<{
         );
     };
 
-    const menuItemsSpecs: MenuItemSpec[] = [
+    const bookMenuItemsSpecs: MenuItemSpec[] = [
         {
             label: "Duplicate Book",
             l10nId: "CollectionTab.BookMenu.DuplicateBook",
@@ -205,62 +211,115 @@ export const BooksOfCollection: React.FunctionComponent<{
         }
     ];
 
-    const menuItemsT = menuItemsSpecs
-        .map((spec: MenuItemSpec) => {
-            if (spec.label === "-") {
-                return <Divider />;
-            }
-            if (spec.shouldShow) {
-                if (!spec.shouldShow()) {
-                    return undefined;
+    const collectionMenuItemsSpecs: MenuItemSpec[] = [
+        {
+            label: "Open or Create Another Collection",
+            l10nId: "CollectionTab.OpenCreateCollectionMenuItem",
+            command: "collections/openOrCreateCollection"
+        },
+        {
+            label: "Make Reader Template Bloom Pack...",
+            l10nId:
+                "CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem",
+            command: "collections/makeBloompack"
+        },
+        {
+            label: "Advanced",
+            l10nId: "CollectionTab.AdvancedToolStripMenuItem",
+            shouldShow: () => true, // show for all collections (except factory)
+            submenu: [
+                {
+                    label: "Do Checks of All Books",
+                    l10nId: "CollectionTab.CollectionMenu.doChecksOfAllBooks",
+                    command: "collections/doChecksOfAllBooks"
+                },
+                {
+                    label: "Rescue Missing Images...",
+                    l10nId: "CollectionTab.CollectionMenu.rescueMissingImages",
+                    command: "collections/rescueMissingImages"
+                },
+                {
+                    label: "Do Updates of All Books",
+                    l10nId:
+                        "CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks",
+                    command: "collections/doUpdatesOfAllBooks"
                 }
-            } else {
-                // default logic for whether to show the command
-                if (props.isEditableCollection) {
-                    // eliminate commands that require permission to change the book, if we don't have it
-                    if (
-                        spec.requiresSavePermission &&
-                        !selectedBookInfo.saveable
-                    ) {
+            ]
+        }
+    ];
+
+    const makeMenuItems = menuItemsSpecs => {
+        const menuItemsT = menuItemsSpecs
+            .map((spec: MenuItemSpec) => {
+                if (spec.label === "-") {
+                    return <Divider />;
+                }
+                if (spec.submenu) {
+                    var submenuItems = makeMenuItems(spec.submenu);
+                    return (
+                        <LocalizableNestedMenuItem
+                            english={spec.label}
+                            l10nId={spec.l10nId!}
+                        >
+                            {submenuItems}
+                        </LocalizableNestedMenuItem>
+                    );
+                }
+                if (spec.shouldShow) {
+                    if (!spec.shouldShow()) {
                         return undefined;
                     }
                 } else {
-                    // outside that collection, commands can only be shown if they have a shouldShow function.
-                    return undefined;
+                    // default logic for whether to show the command
+                    if (props.isEditableCollection) {
+                        // eliminate commands that require permission to change the book, if we don't have it
+                        if (
+                            spec.requiresSavePermission &&
+                            !selectedBookInfo.saveable
+                        ) {
+                            return undefined;
+                        }
+                    } else {
+                        // outside that collection, commands can only be shown if they have a shouldShow function.
+                        return undefined;
+                    }
                 }
-            }
 
-            // It should be possible to use spec.onClick || () => handleBookCommand(spec.command!) inline,
-            // but I can't make Typescript accept it.
-            let clickAction: React.MouseEventHandler = () =>
-                handleBookCommand(spec.command!);
-            if (spec.onClick) {
-                clickAction = spec.onClick;
-            }
-            return (
-                <LocalizableMenuItem
-                    english={spec.label}
-                    l10nId={spec.l10nId!}
-                    onClick={clickAction}
-                ></LocalizableMenuItem>
-            );
-        })
-        .filter(x => x); // that is, remove ones where the map function returned undefined
+                // It should be possible to use spec.onClick || () => handleBookCommand(spec.command!) inline,
+                // but I can't make Typescript accept it.
+                let clickAction: React.MouseEventHandler = () =>
+                    handleBookCommand(spec.command!);
+                if (spec.onClick) {
+                    clickAction = spec.onClick;
+                }
+                return (
+                    <LocalizableMenuItem
+                        english={spec.label}
+                        l10nId={spec.l10nId!}
+                        onClick={clickAction}
+                    ></LocalizableMenuItem>
+                );
+            })
+            .filter(x => x); // that is, remove ones where the map function returned undefined
 
-    // Can't find a really good way to tell that an element is a Divider.
-    // But we only have Dividers and LocalizableMenuItems in this list,
-    // so it's a Dividier if it doesn't have one of the required props of LocalizableMenuItem.
-    const isDivider = (element: JSX.Element): boolean => {
-        return !element.props.english;
+        // Can't find a really good way to tell that an element is a Divider.
+        // But we only have Dividers and LocalizableMenuItems in this list,
+        // so it's a Dividier if it doesn't have one of the required props of LocalizableMenuItem.
+        const isDivider = (element: JSX.Element): boolean => {
+            return !element.props.english;
+        };
+        // filter out dividers if (a) followed by another divider, or (b) at the start or end of the list
+        return menuItemsT.filter(
+            (elt, index) =>
+                !isDivider(elt!) ||
+                (index > 0 &&
+                    index < menuItemsT.length - 1 &&
+                    !isDivider(menuItemsT[index + 1]!))
+        );
     };
-    // filter out dividers if (a) followed by another divider, or (b) at the start or end of the list
-    const menuItems = menuItemsT.filter(
-        (elt, index) =>
-            !isDivider(elt!) ||
-            (index > 0 &&
-                index < menuItemsT.length - 1 &&
-                !isDivider(menuItemsT[index + 1]!))
-    );
+
+    const bookMenuItems = makeMenuItems(bookMenuItemsSpecs);
+    const collectionMenuItems = makeMenuItems(collectionMenuItemsSpecs);
 
     const anchor = !!contextMousePoint
         ? contextMousePoint!.mouseY !== null &&
@@ -334,13 +393,24 @@ export const BooksOfCollection: React.FunctionComponent<{
                     // with the right book selected.
                     open={
                         !!contextMousePoint &&
+                        !showCollectionMenu &&
                         clickedBookId === selectedBookInfo.id
                     }
                     onClose={handleClose}
                     anchorReference="anchorPosition"
                     anchorPosition={anchor}
                 >
-                    {menuItems}
+                    {bookMenuItems}
+                </Menu>
+            )}
+            {props.isEditableCollection && (
+                <Menu
+                    keepMounted={true}
+                    open={showCollectionMenu}
+                    anchorReference="anchorPosition"
+                    anchorPosition={anchor}
+                >
+                    {collectionMenuItems}
                 </Menu>
             )}
         </div>
@@ -354,4 +424,20 @@ const LocalizableMenuItem: React.FunctionComponent<{
 }> = props => {
     const label = useL10n(props.english, props.l10nId);
     return <MenuItem onClick={props.onClick}>{label}</MenuItem>;
+};
+
+const LocalizableNestedMenuItem: React.FunctionComponent<{
+    english: string;
+    l10nId: string;
+}> = props => {
+    const label = useL10n(props.english, props.l10nId);
+    return (
+        // Can't find any doc on parentMenuOpen. Examples set it to the same value
+        // as the open prop of the parent menu. But it seems to work fine just set
+        // to true. (If omitted, however, the child menu does not appear when the
+        // parent is hovered over.)
+        <NestedMenuItem label={label} parentMenuOpen={true}>
+            {props.children}
+        </NestedMenuItem>
+    );
 };

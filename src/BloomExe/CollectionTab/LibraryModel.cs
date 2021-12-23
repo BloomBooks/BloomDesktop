@@ -223,6 +223,50 @@ namespace Bloom.CollectionTab
 			}
 		}
 
+		private Form MainShell => Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+
+		// Not entirely happy that this method which launches a dialog is in the Model.
+		// but with the Collection UI moving to JS I don't see a good alternative
+		public void MakeBloomPack(bool forReaderTools)
+		{
+			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
+			{
+				dlg.FileName = GetSuggestedBloomPackPath();
+				dlg.Filter = "BloomPack|*.BloomPack";
+				dlg.RestoreDirectory = true;
+				dlg.OverwritePrompt = true;
+				if (DialogResult.Cancel == dlg.ShowDialog(MainShell))
+				{
+					return;
+				}
+				MakeBloomPack(dlg.FileName, forReaderTools);
+			}
+		}
+
+		public void RescueMissingImages()
+		{
+			using (var dlg = new FolderBrowserDialog())
+			{
+				dlg.ShowNewFolderButton = false;
+				dlg.Description = "Select the folder where replacement images can be found";
+				if (DialogResult.OK == dlg.ShowDialog(MainShell))
+				{
+					AttemptMissingImageReplacements(dlg.SelectedPath);
+				}
+			}
+		}
+		public void MakeReaderTemplateBloompack()
+		{
+			using (var dlg = new MakeReaderTemplateBloomPackDlg())
+			{
+				dlg.SetLanguage(LanguageName);
+				dlg.SetTitles(BookTitles);
+				var mainWindow = MainShell;
+				if (dlg.ShowDialog(mainWindow) != DialogResult.OK)
+					return;
+				MakeBloomPack(true);
+			}
+		}
 
 		public  void SelectBook(Book.Book book)
 		{

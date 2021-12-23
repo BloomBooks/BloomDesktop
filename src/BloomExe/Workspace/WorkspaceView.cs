@@ -107,7 +107,8 @@ namespace Bloom.Workspace
 							TeamCollectionManager tcManager,
 							BloomWebSocketServer webSocketServer,
 							AppApi appApi,
-							BookServer bookServer
+							BookServer bookServer,
+							CollectionApi collectionApi
 			)
 		{
 			_model = model;
@@ -119,6 +120,7 @@ namespace Bloom.Workspace
 			_tcManager = tcManager;
 			_webSocketServer = webSocketServer;
 			_bookServer = bookServer;
+			collectionApi.WorkspaceView = this; // avoids an Autofac exception that appears if collectionApi constructor takes a WorkspaceView
 			appApi.WorkspaceView = this; // it needs to know, and there's some circularity involved in having factory pass it in
 
 			_collectionSettings = collectionSettings;

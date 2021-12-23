@@ -151,13 +151,13 @@ namespace Bloom.CollectionTab
 			if (SIL.PlatformUtilities.Platform.IsMono)
 				Application.Idle += DeferredBloompackFileChooser;
 			else
-				_collectionListView.MakeBloomPack(false);
+				_model.MakeBloomPack(false);
 		}
 
 		private void DeferredBloompackFileChooser(object sender, EventArgs e)
 		{
 			Application.Idle -= DeferredBloompackFileChooser;
-			_collectionListView.MakeBloomPack(false);
+			_model.MakeBloomPack(false);
 		}
 
 		public string HelpTopicUrl

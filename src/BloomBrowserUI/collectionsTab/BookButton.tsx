@@ -92,18 +92,19 @@ export const BookButton: React.FunctionComponent<{
     const downSize = 14; // size of down-arrow icon
 
     return (
-        <Grid
-            item={true}
-            // This class and data-book-id attribute help the BooksOfCollection class figure out
-            // what book (if any) is being right-clicked.
-            className="book-wrapper"
-            data-book-id={props.book.id}
-        >
+        <Grid item={true} className="book-wrapper">
             <div
+                // This class and data-book-id attribute help the BooksOfCollection class figure out
+                // what book (if any) is being right-clicked.
+
+                className="book-button"
                 // relative so the absolutely positioned rename div will be relative to this.
                 css={css`
                     position: relative;
                 `}
+                // This is the div that looks like the button, so it is the one that counts as
+                // this book if clicked.
+                data-book-id={props.book.id}
             >
                 {teamCollectionStatus?.who && (
                     <BloomAvatar

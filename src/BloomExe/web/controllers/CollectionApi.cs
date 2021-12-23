@@ -16,6 +16,7 @@ using Bloom.Properties;
 using Bloom.Spreadsheet;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
+using Bloom.Workspace;
 using DesktopAnalytics;
 using Gecko.WebIDL;
 using L10NSharp;
@@ -34,6 +35,10 @@ namespace Bloom.web.controllers
 		private readonly LibraryModel _libraryModel;
 		public const string kApiUrlPart = "collections/";
 		private readonly BookSelection _bookSelection;
+		// public so that WorkspaceView can set it in constructor.
+		// We'd prefer to just let the WorkspaceView be a constructor arg passed to this by Autofac,
+		// but that throws an exception, probably there is some circularity.
+		public WorkspaceView WorkspaceView;
 		public 	 CollectionApi(CollectionSettings settings, LibraryModel libraryModel, BookSelection bookSelection)
 		{
 			_settings = settings;
@@ -85,6 +90,54 @@ namespace Bloom.web.controllers
 				request.PostSucceeded();
 			}, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "collectionProps/", HandleCollectionProps, true);
+
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "openOrCreateCollection/", HandleOpenOrCreateCollection,
+				true);
+
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "makeBloompack/", (request) =>
+				{
+					_libraryModel.MakeReaderTemplateBloompack();
+					request.PostSucceeded();
+				},
+				true);
+
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "doChecksOfAllBooks/", (request) =>
+				{
+					_libraryModel.DoChecksOfAllBooks();
+					request.PostSucceeded();
+				},
+				true);
+
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "rescueMissingImages/", (request) =>
+				{
+					_libraryModel.RescueMissingImages();
+					request.PostSucceeded();
+				},
+				true);
+
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "doUpdatesOfAllBooks/", (request) =>
+				{
+					_libraryModel.DoUpdatesOfAllBooks();
+					request.PostSucceeded();
+				},
+				true);
+
+		}
+
+
+
+		private void HandleOpenOrCreateCollection(ApiRequest request)
+		{
+			// This shuts everything down, so it needs to happen after all the request processing
+			// is complete.
+			Application.Idle += OpenCreateLibrary;
+			request.PostSucceeded();
+		}
+
+		private void OpenCreateLibrary(object sender, EventArgs e)
+		{
+			Application.Idle -= OpenCreateLibrary;
+			WorkspaceView.OpenCreateLibrary();
 		}
 
 		private void HandleCollectionProps(ApiRequest request)

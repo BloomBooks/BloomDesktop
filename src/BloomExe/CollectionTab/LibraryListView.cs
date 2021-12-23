@@ -1540,15 +1540,7 @@ namespace Bloom.CollectionTab
 
 		private void _rescueMissingImagesToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			using (var dlg = new FolderBrowserDialog())
-			{
-				dlg.ShowNewFolderButton = false;
-				dlg.Description = "Select the folder where replacement images can be found";
-				if (DialogResult.OK == dlg.ShowDialog())
-				{
-					_model.AttemptMissingImageReplacements(dlg.SelectedPath);
-				}
-			}
+			_model.RescueMissingImages();
 		}
 
 		/// <summary>
@@ -1573,22 +1565,6 @@ namespace Bloom.CollectionTab
 			}
 			base.Dispose(disposing);
 			_disposed = true;
-		}
-
-		internal void MakeBloomPack(bool forReaderTools)
-		{
-			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
-			{
-				dlg.FileName = _model.GetSuggestedBloomPackPath();
-				dlg.Filter = "BloomPack|*.BloomPack";
-				dlg.RestoreDirectory = true;
-				dlg.OverwritePrompt = true;
-				if (DialogResult.Cancel == dlg.ShowDialog())
-				{
-					return;
-				}
-				_model.MakeBloomPack(dlg.FileName, forReaderTools);
-			}
 		}
 
 		private void exportToWordOrLibreOfficeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1618,14 +1594,7 @@ namespace Bloom.CollectionTab
 
 		private void makeReaderTemplateBloomPackToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			using (var dlg = new MakeReaderTemplateBloomPackDlg())
-			{
-				dlg.SetLanguage(_model.LanguageName);
-				dlg.SetTitles(_model.BookTitles);
-				if (dlg.ShowDialog(this) != DialogResult.OK)
-					return;
-				MakeBloomPack(true);
-			}
+			_model.MakeReaderTemplateBloompack();
 		}
 
 		private void _menuButton_Click(object sender, EventArgs e)
