@@ -502,7 +502,16 @@ namespace Bloom
 //			}
 		}
 
+		// This variable is intended to be private to IsTemplateBookFolder(). If for any reason some other method
+		// needs to use it, bear in mind that a Dictionary is not thread-safe, and see comments on thread safety of
+		// IsTemplateBookFolder
 		static Dictionary<string, bool> _mapPathToIsTemplateFolder = new Dictionary<string, bool>();
+
+		// Be careful about thread safety here. This method could be called on any thread that first needs to initialize
+		// _userInstalledDirctories. The code that does that makes sure it is initialized on only one thread.
+		// If anything else uses this method, it needs to somehow ensure thread safety for access to _mapPathToIsTemplateFolder,
+		// while making sure that whatever locking ensures that can't produce a deadlock with the locking code for
+		// initializing _userInstalledDirctories.
 		static bool IsTemplateBookFolder(string path)
 		{
 			// Whether a particular book is a template can only change once it's created if a user
@@ -538,18 +547,34 @@ namespace Bloom
 			}
 		}
 
+		// Lock to ensure only one thread initializes _userInstalledDirectories.
+		// Any access to _userInstalledDirectories must lock this.
+		private static object _userInstalledDirectoriesLock = new object();
 		private static List<string> _userInstalledDirectories;
 
 		public static void ClearUserInstalledDirectoriesCache()
 		{
-			_userInstalledDirectories = null;
+			lock (_userInstalledDirectoriesLock)
+			{
+				_userInstalledDirectories = null;
+			}
 		}
 
 		public static IEnumerable<string> GetUserInstalledDirectories()
 		{
-			if (_userInstalledDirectories == null)
+			lock (_userInstalledDirectoriesLock)
 			{
-				_userInstalledDirectories = GetUserInstalledDirectoriesInternal().ToList();
+				// Only one thread may initialize this list. For one thing, initializing it is expensive
+				// and we don't want it happening in multiple overlapping threads. For another, the
+				// initialization uses _mapPathToIsTemplateFolder, which is not thread-safe.
+				// Once the list is initialized, it never gets changed (only re-created, after
+				// ClearUserInstalledDirectoriesCache() is called) so I believe it is safe to access
+				// it without the lock; and I'm very unsure of the implications of holding a lock
+				// while yielding a result.
+				if (_userInstalledDirectories == null)
+				{
+					_userInstalledDirectories = GetUserInstalledDirectoriesInternal().ToList();
+				}
 			}
 
 			// We do this rather than just returning the list so that if something makes it necessary
