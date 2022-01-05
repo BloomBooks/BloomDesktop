@@ -366,7 +366,12 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
         min-height: @B5Portrait-Height;
         max-height: @B5Portrait-Height;
     }
-    &.A4Landscape,
+    &.A4Landscape {
+        min-width: @A4Landscape-Width;
+        max-width: @A4Landscape-Width;
+        min-height: @A4Landscape-Height;
+        max-height: @A4Landscape-Height;
+    }
     &.A4Portrait {
         min-width: @A4Portrait-Width;
         max-width: @A4Portrait-Width;
