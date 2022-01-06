@@ -91,7 +91,11 @@ export const ColorChooser: React.FunctionComponent<IColorChooserProps> = props =
                         <div className="cc-hex-leadin">#</div>
                         <div className="cc-hex-value">
                             <ContentEditable
-                                content={props.color.substring(1)}
+                                content={
+                                    props.color.startsWith("#")
+                                        ? props.color.substring(1)
+                                        : getHexColor(props.color)
+                                }
                                 onChange={newContent => {
                                     if (props.onColorChanged) {
                                         if (!newContent)
@@ -113,3 +117,21 @@ export const ColorChooser: React.FunctionComponent<IColorChooserProps> = props =
         </div>
     );
 };
+
+// adapted from 5th answer in https://stackoverflow.com/questions/1573053/javascript-function-to-convert-color-names-to-hex-codes/24390910
+function getHexColor(colorStr) {
+    let a = document.createElement("div");
+    a.style.color = colorStr;
+    let rgbColor = window.getComputedStyle(document.body.appendChild(a)).color;
+    a.remove();
+    let colors = rgbColor.match(/\d+/g)?.map(function(a) {
+        return parseInt(a, 10);
+    });
+    if (colors && colors.length >= 3) {
+        return ((1 << 24) + (colors[0] << 16) + (colors[1] << 8) + colors[2])
+            .toString(16)
+            .substring(1) // remove leading 1, ensure leading 0 for returned value if needed
+            .toUpperCase();
+    }
+    return colorStr;
+}
