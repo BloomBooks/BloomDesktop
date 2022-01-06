@@ -1379,12 +1379,11 @@ namespace Bloom.Book
 			if (doesAlreadyExist)
 			{
 				var cssLangs = new HashSet<string>();
-				cssLangs.Add(_bookData.Language1IsoCode);
-				cssLangs.Add(_bookData.MetadataLanguage1IsoCode);
-				if (!String.IsNullOrEmpty(_bookData.Language2IsoCode))
-					cssLangs.Add(_bookData.Language2IsoCode);
-				if (!String.IsNullOrEmpty(_bookData.Language3IsoCode))
-					cssLangs.Add(_bookData.Language3IsoCode);
+				// Load cssLangs with all the languages actually found in collectionStylesCss.
+				cssLangs.Add(CollectionSettings.Language1Iso639Code);
+				cssLangs.Add(CollectionSettings.Language2Iso639Code);
+				if (!String.IsNullOrEmpty(CollectionSettings.Language3Iso639Code))
+					cssLangs.Add(CollectionSettings.Language3Iso639Code);
 
 				var cssLines = RobustFile.ReadAllLines(path);
 				const string kLangTag = "[lang='";
@@ -1399,6 +1398,8 @@ namespace Bloom.Book
 						{
 							var lang = line.Substring(kLangTag.Length, idxQuote - kLangTag.Length);
 							copyCurrentRule = !cssLangs.Contains(lang);
+							if (copyCurrentRule)
+								cssLangs.Add(lang);	// don't copy a second time if another one has crept in.
 						}
 					}
 					if (copyCurrentRule)
