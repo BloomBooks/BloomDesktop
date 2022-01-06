@@ -317,7 +317,7 @@ namespace Bloom.Publish.BloomLibrary
 			_progressBox.Clear();
 			_uploadSource.Enabled = _uploadButton.Enabled;
 
-			_uploadSource.Visible = _model.Book.CollectionSettings.HaveEnterpriseFeatures;
+			_uploadSource.Visible = _model.Book.CollectionSettings.HaveEnterpriseSubscription;
 
 
 			if (_uploadSource.SelectedIndex != 0)
