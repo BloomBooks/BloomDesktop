@@ -492,7 +492,12 @@ namespace Bloom.Publish.BloomLibrary
 		private void ShowIdCollisionDialog()
 		{
 			var newThumbPath = ChooseBestUploadingThumbnailPath(_model.Book).ToLocalhost();
-			var newTitle = _model.Book.TitleBestForUserDisplay;
+
+			// FYI, we used to get newTitle from _model.Book.TitleBestForUserDisplay, but for multi-line titles,
+			// TitleBestForUserDisplay just deletes the newlines, whereas originalTitle preserves them.
+			// Switched to BookInfo.Title because it also preserves newlines, the better to match originalTitle's formatting.
+			var newTitle = _model.Book.BookInfo.Title;
+
 			var newLanguages = ConvertLanguageCodesToNames(LanguagesCheckedToUpload, _model.Book.BookData);
 			var existingBookInfo = _model.ConflictingBookInfo;
 			var updatedDateTime = (DateTime) existingBookInfo.updatedAt;
