@@ -27,6 +27,8 @@ import {
     MenuItemSpec
 } from "./BooksOfCollection";
 
+export const bookButtonHeight = 120;
+
 export const BookButton: React.FunctionComponent<{
     book: IBookInfo;
     collection: ICollection;
@@ -190,7 +192,6 @@ export const BookButton: React.FunctionComponent<{
             props.book.title
         );
 
-    const buttonHeight = 120;
     const renameHeight = 40;
     const downSize = 14; // size of down-arrow icon
 
@@ -270,7 +271,7 @@ export const BookButton: React.FunctionComponent<{
                         (teamCollectionStatus?.who ? " checkedOut" : "")
                     }
                     css={css`
-                        height: ${buttonHeight}px;
+                        height: ${bookButtonHeight}px;
                         width: 90px;
                         border: none;
                         overflow: hidden;
@@ -372,7 +373,7 @@ export const BookButton: React.FunctionComponent<{
                             height: ${renameHeight}px;
                             margin-left: 1px;
                             border: 1px solid ${kBloomLightBlue};
-                            top: ${buttonHeight - renameHeight - 6}px;
+                            top: ${bookButtonHeight - renameHeight - 6}px;
                             padding-top: 4px;
                             position: absolute;
                             font-size: 12px;

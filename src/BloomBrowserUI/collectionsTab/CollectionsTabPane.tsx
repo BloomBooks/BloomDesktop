@@ -47,6 +47,16 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                         collectionId={c.id}
                         isEditableCollection={false}
                         manager={manager}
+                        // We need this selector to identify the element that scrolls the collections...
+                        // the one that actually has overflow=auto. This is an element nested inside the
+                        // SplitPane, and (since the documentation of react-collapse-pane is broken) I can't
+                        // find any way to put an explicit id on that element. Nor is there a different
+                        // class automatically applied to the second one. So all I can see to do is
+                        // to get it by finding an element with these two classes that follows another one
+                        // that has them. This is of course using knowledge of the implementation of SplitPane
+                        // which we have no business using, and may break with the next version of SplitPane.
+                        // But I can't find a better option.
+                        lazyContainer=".Pane.horizontal ~ .Pane.horizontal"
                     />
                 </div>
             );

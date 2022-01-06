@@ -5,7 +5,7 @@ import { BloomApi } from "../utils/bloomApi";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import NestedMenuItem from "material-ui-nested-menu-item";
-import { BookButton } from "./BookButton";
+import { BookButton, bookButtonHeight } from "./BookButton";
 import { useMonitorBookSelection } from "../app/selectedBook";
 import { element } from "prop-types";
 import { useL10n } from "../react_components/l10nHooks";
@@ -13,6 +13,7 @@ import { useState } from "react";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import { Divider } from "@material-ui/core";
 import { BookSelectionManager, useIsSelected } from "./bookSelectionManager";
+import LazyLoad from "react-lazyload";
 
 export interface IBookInfo {
     id: string;
@@ -33,6 +34,11 @@ export const BooksOfCollection: React.FunctionComponent<{
     collectionId: string;
     isEditableCollection: boolean;
     manager: BookSelectionManager;
+    // If supplied, the collection will be wrapped in a LazyLoad so that most of its rendering
+    // isn't done until it is visible on screen. This requires that we can identify the containing
+    // element which actually scrolls the BooksOfCollection into and out of view. This prop is
+    // required to be a selector which will select that exact element.
+    lazyContainer?: string;
 }> = props => {
     if (!props.collectionId) {
         window.alert("null collectionId");
@@ -139,7 +145,13 @@ export const BooksOfCollection: React.FunctionComponent<{
         props.collectionId
     );
 
-    return (
+    // This is an approximation. 5 buttons per line is about what we get in a default
+    // layout on a fairly typical screen. We'd get a better approximation if we used
+    // the width of a button and knew the width of the container. But I think this is good
+    // enough. Worst case, we expand a bit more than we need.
+    const collectionHeight = bookButtonHeight * Math.ceil(books.length / 5);
+
+    const content = (
         <div
             key={"BookCollection-" + props.collectionId}
             className="bookButtonPane"
@@ -178,6 +190,22 @@ export const BooksOfCollection: React.FunctionComponent<{
                 </Menu>
             )}
         </div>
+    );
+    // There's no point in lazily loading an empty list of books. But more importantly, on early renders
+    // before we actually retrieve the list of books, books is always an empty array. If we render a
+    // LazyLoad at that point, it will have height zero, and then all of them fit on the page, and the
+    // LazyLoad code determines that they are all visible and expands all of them, and we don't get any
+    // laziness at all.
+    return props.lazyContainer && books.length > 0 ? (
+        <LazyLoad
+            height={collectionHeight}
+            scrollContainer={props.lazyContainer}
+            resize={true} // expand lazy elements as needed when container resizes
+        >
+            {content}
+        </LazyLoad>
+    ) : (
+        content
     );
 };
 
