@@ -4,7 +4,7 @@ import { jsx, css } from "@emotion/core";
 import Grid from "@material-ui/core/Grid";
 import * as React from "react";
 import { BloomApi } from "../utils/bloomApi";
-import { Button } from "@material-ui/core";
+import { Button, Menu } from "@material-ui/core";
 import TruncateMarkup from "react-truncate-markup";
 import {
     IBookTeamCollectionStatus,
@@ -19,27 +19,46 @@ import {
 } from "../bloomMaterialUITheme.js";
 import { useRef, useState, useEffect } from "react";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
+import { BookSelectionManager, useIsSelected } from "./bookSelectionManager";
+import {
+    IBookInfo,
+    ICollection,
+    makeMenuItems,
+    MenuItemSpec
+} from "./BooksOfCollection";
 
 export const BookButton: React.FunctionComponent<{
-    book: any;
-    isInEditableCollection: boolean;
-    selected: boolean;
-    renaming: boolean;
-    onClick: (bookId: string) => void;
-    onRenameComplete: (newName: string | undefined) => void;
-    onContextMenuArrowClicked: (
-        mouseX: number,
-        mouseY: number,
-        bookId: string
-    ) => void;
+    book: IBookInfo;
+    collection: ICollection;
+    //selected: boolean;
+    manager: BookSelectionManager;
 }> = props => {
     // TODO: the c# had Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont,
+
+    const [renaming, setRenaming] = useState(false);
+    const [contextMousePoint, setContextMousePoint] = React.useState<
+        | {
+              mouseX: number;
+              mouseY: number;
+          }
+        | undefined
+    >();
+    const selected = useIsSelected(props.manager, props.book.id);
+    const collectionQuery = `collection-id=${encodeURIComponent(
+        props.collection.id
+    )}`;
+    // Don't use the 'get' value here because we're not monitoring anything to get it
+    // updated when the selection changes some other way than calling the set method.
+    const [unused, setSelectedBookIdWithApi] = BloomApi.useApiStringState(
+        `collections/selected-book-id?${collectionQuery}`,
+        ""
+    );
 
     const renameDiv = useRef<HTMLElement | null>();
 
     const teamCollectionStatus = useTColBookStatus(
         props.book.folderName,
-        props.isInEditableCollection
+        props.collection.isEditableCollection
     );
 
     const [reload, setReload] = useState(0);
@@ -49,6 +68,90 @@ export const BookButton: React.FunctionComponent<{
             setReload(old => old + 1);
         }
     });
+
+    const handleClose = () => {
+        setContextMousePoint(undefined);
+    };
+
+    const handleRename = () => {
+        handleClose();
+        setRenaming(true);
+    };
+
+    const getBookMenuItemsSpecs: () => MenuItemSpec[] = () => {
+        return [
+            {
+                label: "Duplicate Book",
+                l10nId: "CollectionTab.BookMenu.DuplicateBook",
+                command: "collections/duplicateBook"
+            },
+            {
+                label: "Make Bloom Pack",
+                l10nId: "CollectionTab.MakeBloomPackButton",
+                command: "bookCommand/makeBloompack"
+            },
+            {
+                label: "Open Folder on Disk",
+                l10nId: "CollectionTab.ContextMenu.OpenFolderOnDisk",
+                command: "bookCommand/openFolderOnDisk",
+                shouldShow: () => true // show for all collections (except factory)
+            },
+            { label: "-" },
+            {
+                label: "Export to Word or LibreOffice...",
+                l10nId: "CollectionTab.BookMenu.ExportToWordOrLibreOffice",
+                command: "bookCommand/exportToWord"
+            },
+            {
+                label: "Export to Spreadsheet...",
+                l10nId: "CollectionTab.BookMenu.ExportToSpreadsheet",
+                command: "bookCommand/exportToSpreadsheet"
+            },
+            {
+                label: "Import content from Spreadsheet...",
+                l10nId: "CollectionTab.BookMenu.ImportContentFromSpreadsheet",
+                command: "bookCommand/importSpreadsheetContent",
+                requiresSavePermission: true
+            },
+            {
+                label: "Save as single file (.bloomSource)...",
+                l10nId: "CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem",
+                command: "bookCommand/saveAsDotBloomSource"
+            },
+            { label: "-" },
+            {
+                label: "Update Thumbnail",
+                l10nId: "CollectionTab.BookMenu.UpdateThumbnail",
+                command: "bookCommand/updateThumbnail",
+                requiresSavePermission: true // marginal, but it does change the content of the book folder
+            },
+            {
+                label: "Update Book",
+                l10nId: "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
+                command: "bookCommand/updateBook",
+                requiresSavePermission: true // marginal, but it does change the content of the book folder
+            },
+            {
+                label: "Rename",
+                l10nId: "CollectionTab.BookMenu.Rename",
+                onClick: () => handleRename(),
+                requiresSavePermission: true
+            },
+            { label: "-" },
+            {
+                label: "Delete Book",
+                l10nId: "CollectionTab.BookMenu.DeleteBook",
+                command: "collections/deleteBook",
+                requiresSavePermission: true, // for consistency, but not used since shouldShow is defined
+                // Allowed for the downloaded books collection and the editable collection (provided the book is checked out, if applicable)
+                shouldShow: () =>
+                    props.collection.containsDownloadedBooks ||
+                    (props.collection.isEditableCollection &&
+                        (props.manager.getSelectedBookInfo()?.saveable ??
+                            false))
+            }
+        ];
+    };
 
     useEffect(() => {
         if (renameDiv.current) {
@@ -64,19 +167,19 @@ export const BookButton: React.FunctionComponent<{
                 // I tried the obvious approach of putting an onBlur in the JSX for the renameDiv,
                 // but it gets activated immediately, and I cannot figure out why.
                 renameDiv.current?.addEventListener("blur", () => {
-                    props.onRenameComplete(renameDiv.current!.innerText);
+                    finishRename(renameDiv.current!.innerText);
                 });
                 renameDiv.current?.addEventListener("keypress", e => {
                     if (e.key === "Enter") {
-                        props.onRenameComplete(renameDiv.current!.innerText);
+                        finishRename(renameDiv.current!.innerText);
                     } else if (e.key === "Escape") {
-                        props.onRenameComplete(undefined);
+                        finishRename(undefined);
                     }
                 });
                 p.focus();
             }, 10);
         }
-    }, [props.renaming, renameDiv.current]);
+    }, [renaming, renameDiv.current]);
 
     const label =
         props.book.title.length > 20 ? (
@@ -90,6 +193,44 @@ export const BookButton: React.FunctionComponent<{
     const buttonHeight = 120;
     const renameHeight = 40;
     const downSize = 14; // size of down-arrow icon
+
+    const setAdjustedContextMenuPoint = (x: number, y: number) => {
+        setContextMousePoint({
+            mouseX: x - 2,
+            mouseY: y - 4
+        });
+    };
+
+    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+        if (props.book.id !== props.manager.getSelectedBookInfo()?.id) {
+            // Not only is it useless to select the book that is already selected,
+            // it might have side effects. This might have been a contributing factor
+            // to the rename box getting blurred when clicked in.
+            setSelectedBookIdWithApi(props.book.id);
+        }
+
+        // There's a default right-click menu implemented by C# code which we don't want here.
+        // Also BooksOfCollection implements a different context menu when a click isn't
+        // intercepted here, and we don't want to get it as well.
+        event.preventDefault();
+        event.stopPropagation();
+    };
+
+    const handleContextClick = (event: React.MouseEvent<HTMLElement>) => {
+        setAdjustedContextMenuPoint(event.clientX - 2, event.clientY - 4);
+
+        handleClick(event);
+    };
+
+    const finishRename = (name: string | undefined) => {
+        setRenaming(false);
+        if (name !== undefined) {
+            BloomApi.postString(
+                `bookCommand/rename?collection-id=${props.collection.id}&name=${name}`,
+                props.manager.getSelectedBookInfo()!.id!
+            );
+        }
+    };
 
     return (
         <Grid item={true} className="book-wrapper">
@@ -125,7 +266,7 @@ export const BookButton: React.FunctionComponent<{
                 <Button
                     className={
                         "bookButton" +
-                        (props.selected ? " selected " : "") +
+                        (selected ? " selected " : "") +
                         (teamCollectionStatus?.who ? " checkedOut" : "")
                     }
                     css={css`
@@ -137,7 +278,8 @@ export const BookButton: React.FunctionComponent<{
                     `}
                     variant="outlined"
                     size="large"
-                    onClick={() => props.onClick(props.book.id)}
+                    onClick={e => handleClick(e)}
+                    onContextMenu={e => handleContextClick(e)}
                     startIcon={
                         <div className={"thumbnail-wrapper"}>
                             <img
@@ -150,11 +292,40 @@ export const BookButton: React.FunctionComponent<{
                         </div>
                     }
                 >
-                    {props.renaming || label}
+                    {renaming || label}
                 </Button>
-                {// I tried putting this div inside the button but then...in FF 60 but not 68 or later...
+
+                {// contextMenuPoint has a value if this button has been right-clicked.
+                // if it wasn't the selected button at the time, however, the menu will not show
+                // until we re-render after making it selected.
+                // Note that we avoid doing all the work to render the menu except when it is
+                // visible. Since there may be a large number of buttons this could be a significant
+                // saving.
+                contextMousePoint && selected && (
+                    <Menu
+                        keepMounted={true}
+                        open={!!contextMousePoint}
+                        onClose={handleClose}
+                        anchorReference="anchorPosition"
+                        anchorPosition={{
+                            top: contextMousePoint!.mouseY,
+                            left: contextMousePoint!.mouseX
+                        }}
+                    >
+                        {makeMenuItems(
+                            getBookMenuItemsSpecs(),
+                            props.collection.isEditableCollection,
+                            props.manager.getSelectedBookInfo()!.saveable,
+                            handleClose,
+                            props.book.id,
+                            props.collection.id
+                        )}
+                    </Menu>
+                )}
+                {// The down-arrow button, which is equivalent to right-clicking on the button.
+                // I tried putting this div inside the button but then...in FF 60 but not 68 or later...
                 // the button gets the click even if its inside this div.
-                props.selected && (
+                selected && (
                     <div
                         css={css`
                             position: absolute;
@@ -166,13 +337,10 @@ export const BookButton: React.FunctionComponent<{
                             border: solid transparent ${downSize / 2}px;
                             border-top-color: white;
                         `}
-                        onClick={e =>
-                            props.onContextMenuArrowClicked?.(
-                                e.clientX,
-                                e.clientY,
-                                props.book.id
-                            )
-                        }
+                        onClick={e => {
+                            setAdjustedContextMenuPoint(e.clientX, e.clientY);
+                            handleClick(e);
+                        }}
                     ></div>
                 )}
                 {// I tried putting this div inside the button as an alternate to label.
@@ -181,7 +349,7 @@ export const BookButton: React.FunctionComponent<{
                 // triggered by the fact that we're in a button. It was very hard to debug,
                 // and stopPropagation did not help. I finally decided that letting the
                 // edit box be over the button was easier and possibly safer.
-                props.renaming && (
+                renaming && selected && (
                     <div
                         // For some unknown reason, the selection background color was coming out white.
                         // I reset it to what I think is Windows standard. Need -moz- for Gecko60

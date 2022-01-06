@@ -9,8 +9,9 @@ import { SplitPane } from "react-collapse-pane";
 import { kPanelBackground, kDarkestBackground } from "../bloomMaterialUITheme";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { CollectionsTabBookPane } from "./collectionsTabBookPane/CollectionsTabBookPane";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import useEventListener from "@use-it/event-listener";
+import { BookSelectionManager } from "./bookSelectionManager";
 
 const kResizerSize = 10;
 
@@ -18,6 +19,12 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     const collections = BloomApi.useApiJson("collections/list");
 
     const [draggingVSplitter, setDraggingVSplitter] = useState(false);
+
+    const manager: BookSelectionManager = useMemo(() => {
+        const manager = new BookSelectionManager();
+        manager.initialize();
+        return manager;
+    }, []);
 
     // There's no event built into the splitter that will tell us when drag is done.
     // So to tell that it's over, we have a global listener for mouseup.
@@ -39,6 +46,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                     <BooksOfCollection
                         collectionId={c.id}
                         isEditableCollection={false}
+                        manager={manager}
                     />
                 </div>
             );
@@ -128,6 +136,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                             <BooksOfCollection
                                 collectionId={collections[0].id}
                                 isEditableCollection={true}
+                                manager={manager}
                             />
                         </div>
 

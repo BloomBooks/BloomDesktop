@@ -19,8 +19,9 @@ namespace Bloom.CollectionTab
 	{
 		private readonly LibraryModel _model;
 
-		public ReactCollectionTabView(LibraryModel model, LibraryListView.Factory libraryListViewFactory,
-			LibraryBookView.Factory templateBookViewFactory,
+		public delegate ReactCollectionTabView Factory();//autofac uses this
+
+		public ReactCollectionTabView(LibraryModel model,
 			SelectedTabChangedEvent selectedTabChangedEvent,
 			SendReceiveCommand sendReceiveCommand,
 			TeamCollectionManager tcManager, BookSelection bookSelection)
@@ -65,7 +66,7 @@ namespace Bloom.CollectionTab
 			SetTeamCollectionStatus(tcManager);
 			TeamCollectionManager.TeamCollectionStatusChanged += (sender, args) =>
 			{
-				if (!IsDisposed)
+				if (IsHandleCreated && !IsDisposed)
 				{
 					SafeInvoke.InvokeIfPossible("update TC status", this, false,
 						() => SetTeamCollectionStatus(tcManager));

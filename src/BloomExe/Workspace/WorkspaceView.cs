@@ -88,7 +88,7 @@ namespace Bloom.Workspace
 		public WorkspaceView(WorkspaceModel model,
 							Control libraryView,
 #if SHOW_REACT_COLLECTION_TAB
-							ReactCollectionTabView reactCollectionsTabsView,
+							ReactCollectionTabView.Factory reactCollectionsTabsViewFactory,
 #endif
 							EditingView.Factory editingViewFactory,
 							PublishView.Factory pdfViewFactory,
@@ -186,7 +186,7 @@ namespace Bloom.Workspace
 #if SHOW_REACT_COLLECTION_TAB
 			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kNewCollectionTab))
 			{
-				_reactCollectionTabView = reactCollectionsTabsView;
+				_reactCollectionTabView = reactCollectionsTabsViewFactory();
 				_reactCollectionTabView.ManageSettings(_settingsLauncherHelper);
 				_reactCollectionTabView.Dock = DockStyle.Fill;
 				_reactCollectionTabView.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
@@ -196,6 +196,8 @@ namespace Bloom.Workspace
 				// make sure we catch anything trying to use it in this mode
 				_legacyCollectionTab.Dispose();
 				_legacyCollectionTab = null;
+				_legacyCollectionView.Dispose();
+				_legacyCollectionView = null;
 			}
 			else
 			{
@@ -256,7 +258,13 @@ namespace Bloom.Workspace
 			_viewInitialized = false;
 			CommonApi.WorkspaceView = this;
 
-			bookSelection.SelectionChanged += HandleBookSelectionChanged;
+			// We put this on the high priority list because the notification it sends
+			// updates the highlighting of the selected button. Other subscribers include
+			// the code that updates the preview, which is quite slow. We need the button
+			// to respond quickly.
+			// We'll need to do something even trickier if there start to be slow things that
+			// happen in response to the book selection changed websocked message.
+			bookSelection.SelectionChangedHighPriority += HandleBookSelectionChanged;
 			bookStatusChangeEvent.Subscribe(args => { HandleBookStatusChange(args); });
 		}
 
