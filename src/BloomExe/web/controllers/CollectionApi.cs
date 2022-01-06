@@ -91,9 +91,6 @@ namespace Bloom.web.controllers
 			}, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "collectionProps/", HandleCollectionProps, true);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "openOrCreateCollection/", HandleOpenOrCreateCollection,
-				true);
-
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "makeBloompack/", (request) =>
 				{
 					_libraryModel.MakeReaderTemplateBloompack();
@@ -122,22 +119,6 @@ namespace Bloom.web.controllers
 				},
 				true);
 
-		}
-
-
-
-		private void HandleOpenOrCreateCollection(ApiRequest request)
-		{
-			// This shuts everything down, so it needs to happen after all the request processing
-			// is complete.
-			Application.Idle += OpenCreateLibrary;
-			request.PostSucceeded();
-		}
-
-		private void OpenCreateLibrary(object sender, EventArgs e)
-		{
-			Application.Idle -= OpenCreateLibrary;
-			WorkspaceView.OpenCreateLibrary();
 		}
 
 		private void HandleCollectionProps(ApiRequest request)

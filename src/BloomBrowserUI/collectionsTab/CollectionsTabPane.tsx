@@ -34,7 +34,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     // interferes with the implementation of the splitter and causes it to miss
     // mouse up events, perhaps especially if outside the splitter control itself.
     useEventListener("mouseup", () =>
-        setTimeout(() => setDraggingVSplitter(false), 10)
+        setTimeout(() => setDraggingVSplitter(false), 0)
     );
 
     if (collections) {

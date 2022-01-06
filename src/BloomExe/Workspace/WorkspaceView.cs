@@ -215,9 +215,6 @@ namespace Bloom.Workspace
 			this._publishView = pdfViewFactory();
 			this._publishView.Dock = DockStyle.Fill;
 
-
-			
-
 			_publishTab.Tag = _publishView;
 			_editTab.Tag = _editingView;
 
@@ -266,6 +263,29 @@ namespace Bloom.Workspace
 			// happen in response to the book selection changed websocked message.
 			bookSelection.SelectionChangedHighPriority += HandleBookSelectionChanged;
 			bookStatusChangeEvent.Subscribe(args => { HandleBookStatusChange(args); });
+		}
+
+		/// <summary>
+		/// If this gets complex, we can create a WorkspaceApi, but for just one command it's not worth it, I think.
+		/// </summary>
+		/// <param name="apiHandler"></param>
+		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
+		{
+			apiHandler.RegisterEndpointHandler( "workspace/openOrCreateCollection/", HandleOpenOrCreateCollection,
+				true);
+		}
+		private void OpenCreateLibrary(object sender, EventArgs e)
+		{
+			Application.Idle -= OpenCreateLibrary;
+			OpenCreateLibrary();
+		}
+
+		private void HandleOpenOrCreateCollection(ApiRequest request)
+		{
+			// This shuts everything down, so it needs to happen after all the request processing
+			// is complete.
+			Application.Idle += OpenCreateLibrary;
+			request.PostSucceeded();
 		}
 
 		public void HandleRenameCommand()

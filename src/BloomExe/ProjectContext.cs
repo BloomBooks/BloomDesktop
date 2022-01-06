@@ -322,7 +322,9 @@ namespace Bloom
 //					}
 //					else
 //					{
-						return factory(c.Resolve<LibraryView>());
+						WorkspaceView wsv = factory(c.Resolve<LibraryView>());
+						wsv.RegisterWithApiHandler(_scope.Resolve<BloomServer>().ApiHandler);
+						return wsv;
 //					}
 					});
 
@@ -383,6 +385,7 @@ namespace Bloom
 			_scope.Resolve<LibraryPublishApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<PerformanceMeasurement>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<FontsApi>().RegisterWithApiHandler(server.ApiHandler);
+			// WorkspaceView also has one of these calls, but is created differently so it can't be here
 		}
 
 		// Get the collection settings. Passed the expected path, but if not found,

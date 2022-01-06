@@ -94,7 +94,7 @@ export const BooksOfCollection: React.FunctionComponent<{
         {
             label: "Open or Create Another Collection",
             l10nId: "CollectionTab.OpenCreateCollectionMenuItem",
-            command: "collections/openOrCreateCollection"
+            command: "workspace/openOrCreateCollection"
         },
         {
             label: "Make Reader Template Bloom Pack...",
