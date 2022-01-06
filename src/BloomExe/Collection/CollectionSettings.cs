@@ -770,7 +770,8 @@ namespace Bloom.Collection
 			}
 		}
 
-		public bool HaveEnterpriseFeatures => this.BrandingProjectKey != "Default";
+		public bool HaveEnterpriseFeatures => !String.IsNullOrEmpty(BrandingProjectKey) && BrandingProjectKey != "Default";
+		public bool HaveEnterpriseSubscription => HaveEnterpriseFeatures && BrandingProjectKey != "Local-Community";
 
 		/// <summary>
 		/// The collection settings point to object which might not exist. For example, the xmatter pack might not exist.
