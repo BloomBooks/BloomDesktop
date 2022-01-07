@@ -50,7 +50,10 @@
     border-bottom: 3px dashed transparent;
 }
 
-.origami-layout-mode .bloom-editable {
+// BL-9953 Added 'p' so a competing audioRecording rule won't have more precedence. The competing
+// rule also "targets" the p element and all the text whose color we are concerned about is inside
+// of p elements anyway.
+.origami-layout-mode .bloom-editable p {
     // We want to see some text in the background, but it can't interfer with the forground.
     // If you change this color, be sure to see how it looks when grey background is enabled.
     color: #ececec !important;
