@@ -1757,10 +1757,21 @@ namespace Bloom.Book
 		{
 			if (input == null)
 				return null;
+
 			// Parsing it as XML and then extracting the value removes any markup.  Internal
 			// spaces might disappear if we don't preserve whitespace during the parse.
 			var doc = XElement.Parse("<doc>" + input + "</doc>", LoadOptions.PreserveWhitespace);
-			// Leading and trailing whitespace are undesireable for the title even if the user has
+
+			// Handle Shift+Enter, which gets translated to <span class="bloom-linebreak" />
+			// This is being handled using at the XElement level instead of string level, so that it'll work regardless of
+			// whether it uses the <span /> form or <span></span> form. (I do see places in the debugger where the data is in <span></span> form.)
+			var lineBreaks = doc.Descendants("span").Where(e => e.Attribute("class")?.Value == "bloom-linebreak").ToList();
+			foreach (var lineBreakSpan in lineBreaks)
+			{
+				lineBreakSpan.ReplaceWith("\n");
+			}
+			
+			// Leading and trailing whitespace are undesirable for the title even if the user has
 			// put them in for some strange reason.  (BL-7558)
 			return doc.Value.Trim();
 		}
