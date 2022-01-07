@@ -513,8 +513,6 @@ namespace Bloom.TeamCollection
 					BookHistory.AddEvent(_bookSelection.CurrentSelection, BookHistoryEventType.CheckIn, message);
 					BookHistory.SetPendingCheckinMessage(_bookSelection.CurrentSelection, "");
 
-					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, checkin:true);
-
 					Analytics.Track("TeamCollectionCheckinBook",
 						new Dictionary<string, string>(){
 							{"CollectionId", _settings?.CollectionId},
@@ -547,6 +545,12 @@ namespace Bloom.TeamCollection
 							{"BookId", _bookSelection?.CurrentSelection?.ID},
 							{"BookName", _bookSelection?.CurrentSelection?.Title}
 						});
+				}
+				// BL-10704 In case the Internet went away while we were trying to CheckIn a book...
+				if (!_tcManager.CheckConnection())
+				{
+					request.Failed();
+					return;
 				}
 
 				UpdateUiForBook();
