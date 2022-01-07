@@ -71,9 +71,13 @@ namespace Bloom
 		{
 			if (!GetShouldHandleException(sender, e.Exception))
 				return;
+
 			if (UseFallback)
 			{
-				_fallbackHandler.HandleTopLevelError(sender, e);
+				if (Program.RunningHarvesterMode)
+					Console.WriteLine("Uncaught Exception: {0}", e.Exception);
+				else
+					_fallbackHandler.HandleTopLevelError(sender, e);
 				return;
 			}
 
@@ -100,7 +104,10 @@ namespace Bloom
 
 			if (UseFallback)
 			{
-				_fallbackHandler.HandleUnhandledException(sender, e);
+				if (Program.RunningHarvesterMode)
+					Console.WriteLine("Uncaught Exception: {0}", e.ExceptionObject);
+				else
+					_fallbackHandler.HandleUnhandledException(sender, e);
 				return;
 			}
 

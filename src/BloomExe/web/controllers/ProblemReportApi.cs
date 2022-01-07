@@ -431,6 +431,11 @@ namespace Bloom.web.controllers
 		{
 			// Before we do anything that might be "risky", put the problem in the log.
 			LogProblem(exception, detailedMessage, levelOfProblem);
+			if (Program.RunningHarvesterMode)
+			{
+				Console.WriteLine(levelOfProblem + " Problem Detected: " + shortUserLevelMessage + "  " + detailedMessage + "  " + exception);
+				return;
+			}
 			StartupScreenManager.CloseSplashScreen(); // if it's still up, it'll be on top of the dialog
 
 			lock (_showingProblemReportLock)
