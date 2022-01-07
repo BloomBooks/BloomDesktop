@@ -652,7 +652,7 @@ namespace Bloom.Collection
 		public BulkBloomPubPublishSettings BulkPublishBloomPubSettings = new BulkBloomPubPublishSettings
 		{
 			makeBookshelfFile = true,
-			bookshelfColor = "lightblue",
+			bookshelfColor = Palette.kBloomLightBlueHex,
 			makeBloomBundle = true,
 			distributionTag = ""
 		};

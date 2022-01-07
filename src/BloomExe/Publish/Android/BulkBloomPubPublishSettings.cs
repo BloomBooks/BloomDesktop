@@ -38,7 +38,10 @@ namespace Bloom.Publish.Android
 			var publishSettings = new BulkBloomPubPublishSettings();
 			publishSettings.makeBookshelfFile = CollectionSettings.ReadBoolean(settingsElement, "MakeBookshelfFile", true);
 			publishSettings.makeBloomBundle = CollectionSettings.ReadBoolean(settingsElement, "MakeBloomBundle", true);
-			publishSettings.bookshelfColor = CollectionSettings.ReadString(settingsElement, "BookshelfColor", "lightblue");
+			publishSettings.bookshelfColor = CollectionSettings.ReadString(settingsElement, "BookshelfColor", Palette.kBloomLightBlueHex);
+			// patch a problem we introduced with the first version of the code. (BL-10573)
+			if (publishSettings.bookshelfColor == "lightblue")
+				publishSettings.bookshelfColor = Palette.kBloomLightBlueHex;
 			publishSettings.distributionTag = CollectionSettings.ReadString(settingsElement, "DistributionTag", "");
 			publishSettings.bookshelfLabel = CollectionSettings.ReadString(settingsElement, "BookshelfLabel", "");
 			return publishSettings;
