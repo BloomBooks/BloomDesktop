@@ -43,6 +43,7 @@ namespace Bloom.Spreadsheet
 		private IWebSocketProgress _progress;
 		private int _unNumberedPagesSeen;
 		private bool _bookIsLandscape;
+		private Layout _destLayout;
 
 		public delegate SpreadsheetImporter Factory();
 
@@ -149,6 +150,7 @@ namespace Bloom.Spreadsheet
 			_currentPageIndex = -1;
 			_groupsOnPage = new List<XmlElement>();
 			_imageContainersOnPage = new List<XmlElement>();
+			_destLayout = Layout.FromDom(_dest, Layout.A5Portrait);
 			while (_currentRowIndex < _inputRows.Count)
 			{
 
@@ -437,6 +439,7 @@ namespace Bloom.Spreadsheet
 			var newPage = _pages[0].OwnerDocument.ImportNode(templatePage, true) as XmlElement;
 			BookStarter.SetupIdAndLineage(templatePage, newPage);
 			_pages.Insert(_currentPageIndex, newPage);
+			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPage, _destLayout);
 			// Correctly inserts at end if _currentPage is null, though this will hardly ever
 			// be true because we normally have at least backmatter page to insert before.
 			_pages[0].ParentNode.InsertBefore(newPage, _currentPage);

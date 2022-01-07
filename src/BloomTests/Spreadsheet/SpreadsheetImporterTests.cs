@@ -821,7 +821,7 @@ namespace BloomTests.Spreadsheet
 				+ PageWithNothing(1)
 				+ SpreadsheetImageAndTextImportTests.insideBackCoverPage
 				+ SpreadsheetImageAndTextImportTests.backCoverPage)
-				.Replace("A5Portrait", "A5Landscape");
+				.Replace("A5Portrait", "A4Landscape");
 			_dom = new HtmlDom(xml, true);
 
 			// Create an internal spreadsheet with the rows we want to import
@@ -877,6 +877,7 @@ namespace BloomTests.Spreadsheet
 			// This is the ID for the standard "Just a picture" page
 			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("adcd48df-e9ab-4a07-afd4-6a24d0398385"));
 			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("adcd48df-e9ab-4a07-afd4-6a24d0398385"));
+			Assert.That(_contentPages[n].Attributes["class"].Value, Does.Contain("A4Landscape"));
 		}
 
 		[TestCase(1, "this is page 2", "lady24b.png")]
@@ -887,6 +888,7 @@ namespace BloomTests.Spreadsheet
 			// This is the ID for the standard "Basic text and picture" page
 			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("7b192144-527c-417c-a2cb-1fb5e78bf38a"));
 			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("7b192144-527c-417c-a2cb-1fb5e78bf38a"));
+			Assert.That(_contentPages[n].Attributes["class"].Value, Does.Contain("A4Landscape"));
 		}
 
 		[TestCase(0, "this is page 1")]
@@ -896,6 +898,7 @@ namespace BloomTests.Spreadsheet
 			// This is the ID for the standard "Just text" page
 			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"));
 			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"));
+			Assert.That(_contentPages[n].Attributes["class"].Value, Does.Contain("A4Landscape"));
 		}
 
 		[Test]
