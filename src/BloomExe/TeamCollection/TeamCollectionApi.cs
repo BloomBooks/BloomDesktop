@@ -513,8 +513,6 @@ namespace Bloom.TeamCollection
 					BookHistory.AddEvent(_bookSelection.CurrentSelection, BookHistoryEventType.CheckIn, message);
 					BookHistory.SetPendingCheckinMessage(_bookSelection.CurrentSelection, "");
 
-					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, checkin:true);
-
 					Analytics.Track("TeamCollectionCheckinBook",
 						new Dictionary<string, string>(){
 							{"CollectionId", _settings?.CollectionId},
@@ -548,9 +546,10 @@ namespace Bloom.TeamCollection
 							{"BookName", _bookSelection?.CurrentSelection?.Title}
 						});
 				}
-
 				UpdateUiForBook();
 				request.PostSucceeded();
+
+				Application.Idle += OnIdleConnectionCheck;
 			}
 			catch (Exception e)
 			{
@@ -567,6 +566,18 @@ namespace Bloom.TeamCollection
 				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()} ({_bookSelection?.CurrentSelection?.FolderPath})");
 				request.Failed("checkin failed");
 			}
+		}
+
+		private void OnIdleConnectionCheck(object sender, EventArgs e)
+		{
+			Application.Idle -= OnIdleConnectionCheck;
+
+			// BL-10704: In case the Internet went away while we were trying to CheckIn a book...
+			// This will at least signal to the user in the Dropbox case, that while his checkin
+			// may have succeeded, his colleagues won't know about it until the Internet is up again.
+			// If we don't do it "OnIdle", the book status pane doesn't reflect that we actually did
+			// (probably, assuming we are on Dropbox, anyway) complete the checkin.
+			_tcManager.CheckConnection();
 		}
 
 		// Tell the CollectionSettingsDialog that we should reopen the collection now
