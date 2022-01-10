@@ -1050,19 +1050,19 @@ namespace BloomTests.Spreadsheet
 				"src/BloomTests/Spreadsheet/spreadsheets/SheetWithNoHeader.xlsx");
 			var spy = new ProgressSpy();
 			var ss = InternalSpreadsheet.ReadFromFile(path, spy);
-			Assert.That(ss, Is.Null);
-
-			// We can also detect this problem on a different path if the spreadsheet doesn't have enough
-			// columns to trigger the detection in SpreadsheetIO.
-			ss = new InternalSpreadsheet();
-			ss.Header.GetRow(0).SetCell(0, "[metadata key]"); // used in earlier versions
-
 			var xml = string.Format(SpreadsheetImageAndTextImportTests.templateDom,
 				SpreadsheetImageAndTextImportTests.coverPage
 				+ SpreadsheetImageAndTextImportTests.insideBackCoverPage
 				+ SpreadsheetImageAndTextImportTests.backCoverPage);
 			var dom = new HtmlDom(xml, true);
 			var importer = new SpreadsheetImporter(null, dom, null, null);
+			Assert.That(importer.Validate(ss, spy), Is.False);
+
+			// We can also detect this problem on a different path if the spreadsheet doesn't have enough
+			// columns to trigger the detection.
+			ss = new InternalSpreadsheet();
+			ss.Header.GetRow(0).SetCell(0, "[metadata key]"); // used in earlier versions
+
 			Assert.That(importer.Validate(ss, spy), Is.False);
 			Assert.That(spy.Messages,
 				Has.Some.Property("Item1")
