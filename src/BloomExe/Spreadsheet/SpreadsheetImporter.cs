@@ -241,8 +241,10 @@ namespace Bloom.Spreadsheet
 						{
 							// Review: I doubt these messages are worth localizing? The sort of people who attempt
 							// spreadsheet import can likely cope with some English?
+							// +1 conversion from zero-based to 1-based counting, further adding header.RowCount
+							// makes it match up with the actual row label in the spreadsheet.
 							Warn(
-								$"Image \"{source}\" on row {_currentRowIndex + 1} was not found.");
+								$"Image \"{source}\" on row {_currentRowIndex + 1 + _sheet.Header.RowCount} was not found.");
 						}
 					}
 				}
