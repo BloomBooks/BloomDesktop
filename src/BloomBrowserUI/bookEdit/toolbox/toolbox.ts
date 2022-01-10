@@ -664,8 +664,9 @@ async function activateToolInternalAsync(
     // happen after showTool.
     await newTool.showTool();
 
-    // Note: Allowed to begin some async work too, but currently no need to await its result.
-    newTool.newPageReady();
+    // Note: Allowed to begin some async work too, and we will await its result.
+    // (This apparently solves the single flash mentioned in BL-10471.)
+    await newTool.newPageReady();
 
     // Note: Begins some async work too, but currently no need to await its result.
     ToolBox.insertLangAttributesIntoToolboxElements();
