@@ -751,7 +751,7 @@ namespace BloomTests.Spreadsheet
 		public void ImageNotFoundWarningPresent()
 		{
 			var source = Path.Combine(_spreadsheetFolder, "images/missingBird.png");
-			Assert.That(_warnings, Does.Contain("Image \"" + source + "\" on row 4 was not found."));
+			Assert.That(_warnings, Does.Contain("Image \"" + source + "\" on row 6 was not found."));
 		}
 
 		[Test]
