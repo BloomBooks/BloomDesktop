@@ -37,7 +37,7 @@ namespace Bloom.web.controllers
 					{
 						metapicture =  new {type="image", value = "/bloom/"+_bookSelection.CurrentSelection.GetCoverImagePath(),
 							translatedLabel = LocalizationManager.GetString("BookMetadata.metapicture", "Picture")},
-						name = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.TitleBestForUserDisplay,
+						name = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.TitleOrNameBestForUserDisplay,
 							translatedLabel = LocalizationManager.GetString("BookMetadata.name", "Name") },
 						numberOfPages = new { type = "readOnlyText", value = _bookSelection.CurrentSelection.GetLastNumberedPageNumber().ToString(),
 							translatedLabel = LocalizationManager.GetString("BookMetadata.numberOfPages", "Number of pages") },

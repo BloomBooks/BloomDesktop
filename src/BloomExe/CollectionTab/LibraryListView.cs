@@ -608,13 +608,14 @@ namespace Bloom.CollectionTab
 				// converting it to XHTML first.
 				// Maybe in this context we can rely on the collection settings for the languages?
 				var langCodes = _model.CollectionSettings.GetAllLanguageCodes().ToList();
+
 				var bestTitle = bookInfo.GetBestTitleForUserDisplay(langCodes);
 				if (String.IsNullOrEmpty(bestTitle))
 				{
 					// Getting the book can be very slow for large books: do we really want to update the title enough to make the user wait?
 					book = LoadBookAndBringItUpToDate(bookInfo, out badBook);
 					if (book != null)
-						bestTitle = book.TitleBestForUserDisplay;
+						bestTitle = book.TitleOrNameBestForUserDisplay;
 					else
 						bestTitle = bookInfo.QuickTitleUserDisplay;
 				}
@@ -1200,7 +1201,7 @@ namespace Bloom.CollectionTab
 		{
 			if (SelectedButton == null || _bookSelection.CurrentSelection == null)
 				return;
-			var bestTitle = book.TitleBestForUserDisplay;
+			var bestTitle = book.TitleOrNameBestForUserDisplay;
 			SelectedButton.SetTextSafely(ShortenTitleIfNeeded(bestTitle, SelectedButton));
 			SetBookButtonTooltip(SelectedButton);
 		}
@@ -1687,7 +1688,7 @@ namespace Bloom.CollectionTab
 			var bookInfo = AllBookButtons().Select(GetBookInfoFromButton).FirstOrDefault(info => info.FolderPath == newBookDir);
 			if (bookInfo != null)
 			{
-				var existingTitle = SelectedBook.TitleBestForUserDisplay;
+				var existingTitle = SelectedBook.TitleOrNameBestForUserDisplay;
 				SelectBook(bookInfo);
 				HighlightBookButtonAndShowContextMenuButton(bookInfo);
 				BookHistory.AddEvent(SelectedBook, BookHistoryEventType.Created, $"Duplicated from existing book \"{existingTitle}\"");
@@ -1790,7 +1791,7 @@ namespace Bloom.CollectionTab
 			book.SetAndLockBookName(newName);
 			BringButtonTitleUpToDate(book);
 			if (String.IsNullOrEmpty(newName))
-				BookHistory.AddEvent(book, BookHistoryEventType.Renamed, $"Book renamed to \"{book.TitleBestForUserDisplay}\"");
+				BookHistory.AddEvent(book, BookHistoryEventType.Renamed, $"Book renamed to \"{book.TitleOrNameBestForUserDisplay}\"");
 			else
 				BookHistory.AddEvent(book, BookHistoryEventType.Renamed, $"Book renamed to \"{newName}\"");
 		}

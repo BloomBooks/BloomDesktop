@@ -627,7 +627,7 @@ namespace Bloom.web.controllers
 			}
 
 			var book = _bookSelection?.CurrentSelection;
-			var bestBookName = book?.TitleBestForUserDisplay;
+			var bestBookName = book?.TitleOrNameBestForUserDisplay;
 
 			var userEmail = SIL.Windows.Forms.Registration.Registration.Default.Email;
 			var userFirstName = SIL.Windows.Forms.Registration.Registration.Default.FirstName;

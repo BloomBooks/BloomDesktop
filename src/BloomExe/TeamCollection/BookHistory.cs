@@ -196,7 +196,7 @@ public class BookHistory
 			{
 				Id = book.ID,
 				// TODO: update Name every time because it can change? Add an event if we notice that it changed?
-				Name = book.TitleBestForUserDisplay
+				Name = book.TitleOrNameBestForUserDisplay
 			};
 			db.Insert(bookRecord);
 		}

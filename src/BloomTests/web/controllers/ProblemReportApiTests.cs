@@ -31,7 +31,7 @@ namespace BloomTests.web.controllers
 		{
 			var bookSelection = new BookSelection();
 			var mockBook = new Mock<Bloom.Book.Book>();
-			mockBook.Setup(x => x.TitleBestForUserDisplay).Returns("Fake Book Title");
+			mockBook.Setup(x => x.TitleOrNameBestForUserDisplay).Returns("Fake Book Title");
 
 			bookSelection.SelectBook(mockBook.Object);
 

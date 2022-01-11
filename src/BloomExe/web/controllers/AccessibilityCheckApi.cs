@@ -83,7 +83,7 @@ namespace Bloom.web.controllers
 		{
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "bookName", request =>
 			{
-				request.ReplyWithText(request.CurrentBook.TitleBestForUserDisplay);
+				request.ReplyWithText(request.CurrentBook.TitleOrNameBestForUserDisplay);
 			}, false);
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "showAccessibilityChecker", request =>

@@ -258,7 +258,7 @@ namespace Bloom.CollectionTab
 						return false;
 					}
 				}
-				var title = _bookSelection.CurrentSelection.TitleBestForUserDisplay;
+				var title = _bookSelection.CurrentSelection.TitleOrNameBestForUserDisplay;
 				var confirmRecycleDescription = L10NSharp.LocalizationManager.GetString("CollectionTab.ConfirmRecycleDescription", "The book '{0}'");
 				if (ConfirmRecycleDialog.JustConfirm(string.Format(confirmRecycleDescription, title), false, "Palaso"))
 				{
@@ -570,7 +570,7 @@ namespace Bloom.CollectionTab
 				i++;
 				var book = _bookServer.GetBookFromBookInfo(bookInfo);
 				//gets overwritten: progress.WriteStatus(book.TitleBestForUserDisplay);
-				progress.WriteMessage("Processing " + book.TitleBestForUserDisplay+ " " + i + "/" + TheOneEditableCollection.GetBookInfos().Count());
+				progress.WriteMessage("Processing " + book.TitleOrNameBestForUserDisplay+ " " + i + "/" + TheOneEditableCollection.GetBookInfos().Count());
 				book.BringBookUpToDate(progress);
 			}
 		}
@@ -638,7 +638,7 @@ namespace Bloom.CollectionTab
 
 				var book = _bookServer.GetBookFromBookInfo(bookInfo);
 
-				dialog.Progress.WriteMessage("Checking " + book.TitleBestForUserDisplay);
+				dialog.Progress.WriteMessage("Checking " + book.TitleOrNameBestForUserDisplay);
 				book.CheckBook(dialog.Progress, pathToFolderOfReplacementImages);
 				dialog.ProgressString.WriteMessage("");
 			}

@@ -492,7 +492,7 @@ namespace Bloom.Publish.BloomLibrary
 		private void ShowIdCollisionDialog()
 		{
 			var newThumbPath = ChooseBestUploadingThumbnailPath(_model.Book).ToLocalhost();
-			var newTitle = _model.Book.TitleBestForUserDisplay;
+			var newTitle = _model.Book.TitleOrNameBestForUserDisplay;
 			var newLanguages = ConvertLanguageCodesToNames(LanguagesCheckedToUpload, _model.Book.BookData);
 			var existingBookInfo = _model.ConflictingBookInfo;
 			var updatedDateTime = (DateTime) existingBookInfo.updatedAt;
