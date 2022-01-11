@@ -1,11 +1,13 @@
-﻿#if CHORUS
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
+#if CHORUS
 using Chorus;
+#endif
 
 namespace Bloom.CollectionTab
 {
 	public partial class HistoryAndNotesDialog : Form
 	{
+#if CHORUS
 		public delegate HistoryAndNotesDialog Factory();//autofac uses this
 
 		public HistoryAndNotesDialog(ChorusSystem chorusSystem)
@@ -31,6 +33,6 @@ namespace Bloom.CollectionTab
 			if (ShowNotesFirst)
 				tabControl1.SelectTab(_notesPage);
 		}
+#endif
 	}
 }
-#endif

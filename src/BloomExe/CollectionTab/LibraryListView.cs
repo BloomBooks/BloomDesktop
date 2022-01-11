@@ -1370,15 +1370,15 @@ namespace Bloom.CollectionTab
 			//This caused more problems then it was worth for people editing source books they got off of BloomLibrary, or making a Bloompack of shells, etc.
 			return true;
 
-			// We'd prefer to use collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
-			// but we don't have access to the collection at all the points where we need to evaluate this.
-			// Depending on the parent like this unfortunately means we can't use this method until the button
-			// has its parent.
-			// Either way, the basic idea is that books in the main collection you are now editing are always usable.
-			if (bookButton.Parent == _primaryCollectionFlow)
-				return true;
-			var bookInfo = GetBookInfoFromButton(bookButton);
-			return IsSuitableSourceForThisEditableCollection(bookInfo);
+			//// We'd prefer to use collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
+			//// but we don't have access to the collection at all the points where we need to evaluate this.
+			//// Depending on the parent like this unfortunately means we can't use this method until the button
+			//// has its parent.
+			//// Either way, the basic idea is that books in the main collection you are now editing are always usable.
+			//if (bookButton.Parent == _primaryCollectionFlow)
+			//	return true;
+			//var bookInfo = GetBookInfoFromButton(bookButton);
+			//return IsSuitableSourceForThisEditableCollection(bookInfo);
 		}
 
 		// Adapted from http://tech.pro/tutorial/660/csharp-tutorial-convert-a-color-image-to-grayscale

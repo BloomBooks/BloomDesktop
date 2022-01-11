@@ -1,5 +1,4 @@
-﻿#if !__MonoCS__
-using System;
+﻿using System;
 using System.Windows.Forms;
 using L10NSharp;
 
@@ -15,6 +14,7 @@ namespace Bloom.Publish.PDF
 	/// </summary>
 	public partial class AdobeReaderControl : UserControl
 	{
+#if !__MonoCS__
 		private AxAcroPDFLib.AxAcroPDF _adobeReader;
 
 		public AdobeReaderControl()
@@ -126,6 +126,6 @@ namespace Bloom.Publish.PDF
 				_adobeReader = null;
 			}
 		}
+#endif
 	}
 }
-#endif
