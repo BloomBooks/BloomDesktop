@@ -348,10 +348,9 @@ namespace BloomTests.Spreadsheet
 			// A better test would be to have multiple image descriptions and verify that we only get one
 			// warning. However, this is throw-away code: eventually we most likely WILL handle image
 			// descriptions. I think it's enough.
-			Assert.That(_progressSpy.Messages,
-				Has.Some.Property("Item1")
-					.EqualTo(
-						"Image description are not currently supported by spreadsheet import/export. They will be ignored."));
+			Assert.That(_progressSpy.Warnings,
+				Does.Contain(
+						"Image descriptions are not currently supported by spreadsheet import/export. They will be ignored."));
 		}
 	}
 }

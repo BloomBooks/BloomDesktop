@@ -54,7 +54,13 @@ namespace Bloom.Spreadsheet
 		{
 			get
 			{
-				return _cells[Spreadsheet.GetColumnForTag(InternalSpreadsheet.RowTypeColumnLabel)].Content;
+				var columnForTag = Spreadsheet.GetColumnForTag(InternalSpreadsheet.RowTypeColumnLabel);
+				// We give up import quite early if we can't identify this column, but this gets called even
+				// earlier, during creation of the Spreadsheeet from the file, so we'll just consider the row
+				// not to have a tag if we can't even figure out what column it should be in.
+				if (columnForTag < 0)
+					return "";
+				return _cells[columnForTag].Content;
 			}
 		}
 

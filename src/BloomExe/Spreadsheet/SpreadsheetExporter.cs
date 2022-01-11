@@ -130,7 +130,7 @@ namespace Bloom.Spreadsheet
 			var groups = allGroups.Where(x => !x.Attributes["class"].Value.Contains("bloom-imageDescription")).ToList();
 			if (!_reportedImageDescription && groups.Count < allGroups.Count)
 			{
-				_progress?.MessageWithoutLocalizing("Image description are not currently supported by spreadsheet import/export. They will be ignored.");
+				_progress?.MessageWithoutLocalizing("Image descriptions are not currently supported by spreadsheet import/export. They will be ignored.", ProgressKind.Warning);
 				_reportedImageDescription = true;
 			}
 						
