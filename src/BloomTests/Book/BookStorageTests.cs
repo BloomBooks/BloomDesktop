@@ -1444,5 +1444,34 @@ namespace BloomTests.Book
 				Assert.Throws(typeof(System.ArgumentException), systemUnderTest);
 			}
 		}
+
+		[Test]
+		[TestCase("foo.html", true)]
+		[TestCase("foo.htm", true)]
+		[TestCase("My Htm file test book1.htm", true)]
+		[TestCase("My Htm file test book1.html", true)]
+		[TestCase("ReadMe-en.htm", false)]
+		[TestCase("Readme-fr.htm", false)]
+		[TestCase("configuration.htm", false)]
+		public void FindDeletableHtmFiles_DeletesTheRightFiles(string fileName, bool expectToDelete)
+		{
+			const string folderAndCorrectFilename = "My Htm file test book";
+			using (var directory = new TemporaryFolder("BookStorageTests_FindDeletableHtmFiles_DeletesTheRightFiles"))
+			{
+				var bookFolderPath = Path.Combine(directory.Path, folderAndCorrectFilename);
+				Directory.CreateDirectory(bookFolderPath);
+				var correctFilePath = Path.Combine(bookFolderPath, folderAndCorrectFilename + ".htm");
+				File.WriteAllText(correctFilePath,
+					"This is the correct filename and directory for this test book.");
+				var testFilePath = Path.Combine(bookFolderPath, fileName);
+				File.WriteAllText(testFilePath, "This is the contents for the current testcase file.");
+
+				// SUT
+				var results = BookStorage.FindDeletableHtmFiles(bookFolderPath);
+
+				Assert.IsFalse(results.Contains(correctFilePath)); // don't delete the right .htm file!
+				Assert.IsTrue(expectToDelete ? results.Contains(testFilePath) : !results.Contains(testFilePath));
+			}
+		}
 	}
 }
