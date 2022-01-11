@@ -466,6 +466,8 @@ namespace Bloom.Api
 			sb.AppendLineFormat(str, CurrentBook.BookData.Language1.Name);
 
 			var idx = 1;
+			var everyStageWord = new HashSet<string>();
+			var everySightWord = new List<string>();
 			foreach (var stage in settings.stages)
 			{
 				sb.AppendLine();
@@ -481,6 +483,22 @@ namespace Bloom.Api
 				string[] stageWords = rawWords.Select(x => x.ToString()).ToArray();
 				Array.Sort(stageWords);
 				sb.AppendLineFormat(LocalizationManager.GetString("EditTab.Toolbox.DecodableReaderTool.LetterWordReportNewDecodableWords", "New Decodable Words: {0}"), String.Join(" ", stageWords));
+				sb.AppendLine();
+				// Show all words usable to this point. (BL-10544)
+				if (!String.IsNullOrEmpty(sightWords))
+					everySightWord.AddRange(sightWords.Split(' '));
+				foreach (var word in stageWords)
+					everyStageWord.Add(word);
+				var everyUsableWord = new List<string>();
+				everyUsableWord.AddRange(everyStageWord);
+				foreach (var word in everySightWord)
+				{	// prevent duplicating sight words once they're decodable
+					if (!everyStageWord.Contains(word))
+						everyUsableWord.Add(word);
+				}
+				var currentWords = everyUsableWord.ToArray();
+				Array.Sort(currentWords);
+				sb.AppendLineFormat(LocalizationManager.GetString("EditTab.Toolbox.DecodableReaderTool.LetterWordReportAllUsableWords", "All Usable Words: {0}"), String.Join(" ", currentWords));
 				sb.AppendLine();
 			}
 

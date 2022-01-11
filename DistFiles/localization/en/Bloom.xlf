@@ -2173,6 +2173,10 @@
         <source xml:lang="en">Text files</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.FileDialogTextFiles</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportAllUsableWords">
+        <source xml:lang="en">All Usable Words: {0}</source>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportAllUsableWords</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters">
         <source xml:lang="en">Letters: {0}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters</note>
