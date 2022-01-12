@@ -173,7 +173,7 @@ namespace Bloom.Book
 
 		private void Book_BookTitleChanged(object sender, EventArgs e)
 		{
-			if (!BookInfo.NameLocked)
+			if (!BookInfo.FileNameLocked)
 			{
 				var folderName = Path.GetFileName(FolderPath);
 				if (folderName == Storage.Dom.Title)
@@ -222,11 +222,20 @@ namespace Bloom.Book
 		/// <summary>
 		/// If the user has renamed the book, returns that. Otherwise, returns the title
 		/// </summary>
+		/// <remarks>
+		/// When should you use this vs TitleBestForUserDisplay?
+		/// NameBestForUserDisplay should definitely be used on the button caption and when deriving a related file name (for a book artifact).
+		/// In general, messages about the book as well as logs, and in general most things should probably use this (NameBestForUserDisplay),
+		/// because the user has explicitly told us that this is how they want to refer to the book.
+		/// The only exceptions where TitleBestForUserDisplay is more appropriate that come to mind are maybe on Publishing related things where
+		/// the actual, literal book title that readers see is important.
+		/// Also, when comparing with any title-related variables like {originalTitle}.
+		/// </remarks>
 		public virtual string NameBestForUserDisplay
 		{
 			get
 			{
-				if (BookInfo.NameLocked)
+				if (BookInfo.FileNameLocked)
 				{
 					// The user has explicitly chosen a name to use for the book, distinct from its titles.
 					return Path.GetFileName(FolderPath);
@@ -282,18 +291,54 @@ namespace Bloom.Book
 			// Handle both Windows and Linux line endings in case a file copied between the two
 			// ends up with the wrong one.
 			display = display.Replace("<br />", " ").Replace("\r\n", " ").Replace("\n", " ").Replace("  ", " ");
-			display = RemoveXmlMarkup(display).Trim();
+			display = RemoveXmlMarkup(display, LineBreakSpanConversionMode.ToSpace).Trim();
 			return display;
 		}
 
+		public enum LineBreakSpanConversionMode
+		{
+			ToNewline,
+			ToSpace
+		}
+
 		// might be better named RemoveMarkup; what can be in here is *HTML*, e.g. bold, italics, etc.
-		public static string RemoveXmlMarkup(string input)
+		public static string RemoveXmlMarkup(string input, LineBreakSpanConversionMode lineBreakSpanConversionOptions)
 		{
 			try
 			{
 				var doc = new XmlDocument();
 				doc.PreserveWhitespace = true;
 				doc.LoadXml("<div>" + input + "</div>");
+
+				// NOTE: There is a similar section of code dealing with bloom-linebreak
+				//       in BookData.cs::TextOfInnerHtml().
+				//       (That operates on XElements though, this deals with XmlElements)
+				if (lineBreakSpanConversionOptions == LineBreakSpanConversionMode.ToSpace || lineBreakSpanConversionOptions == LineBreakSpanConversionMode.ToNewline)
+				{
+					string zeroWidthNbsp = ((char)65279).ToString();
+
+					// Handle Shift+Enter, which gets translated to <span class="bloom-linebreak" />
+					// This is being handled using at the XML level instead of string level, so that it'll work regardless of
+					// whether it uses the <span /> form or <span></span> form. (I do see places in the debugger where the data is in <span></span> form.)
+					var lineBreaks = doc.SafeSelectNodes("//span[contains(concat(' ', normalize-space(@class), ' '), ' bloom-linebreak ')]");
+					var lineBreakElements = lineBreaks.Cast<XmlElement>().ToArray();
+					foreach (var lineBreakSpan in lineBreakElements)
+					{
+						// But before we mess with lineBreakSpan, first check if it's immediately followed by a zero-width no-break space
+						// (which is also inserted upon Shift-Enter), and if so delete that out.
+						var nextSibling = lineBreakSpan.NextSibling;
+						if (nextSibling?.NodeType == XmlNodeType.Text && nextSibling.Value != null && nextSibling.Value.StartsWith(zeroWidthNbsp))
+						{
+							nextSibling.Value = nextSibling.Value.Substring(1);
+						}
+
+						// Now delete lineBreakSpan and replace it
+						var replacementText = lineBreakSpanConversionOptions == LineBreakSpanConversionMode.ToSpace ? " " : Environment.NewLine;
+						var newlineNode = doc.CreateTextNode(replacementText);
+						lineBreakSpan.ParentNode.ReplaceChild(newlineNode, lineBreakSpan);
+					}
+				}
+
 				return doc.DocumentElement.InnerText;
 			}
 			catch (XmlException)
@@ -3137,7 +3182,7 @@ namespace Bloom.Book
 					return;
 				}
 
-				if (!BookInfo.NameLocked)
+				if (!BookInfo.FileNameLocked)
 					Storage.UpdateBookFileAndFolderName(CollectionSettings);
 				//review used to have   UpdateBookFolderAndFileNames(data);
 
@@ -3587,7 +3632,7 @@ namespace Bloom.Book
 		{
 			get
 			{
-				if (LockDownTheFileAndFolderName || BookInfo.NameLocked)
+				if (LockDownTheFileAndFolderName || BookInfo.FileNameLocked)
 					return false;
 				return IsSaveable;
 			}
@@ -4473,7 +4518,7 @@ namespace Bloom.Book
 		{
 			if (!string.IsNullOrWhiteSpace(newName))
 			{
-				BookInfo.NameLocked = true;
+				BookInfo.FileNameLocked = true;
 				Storage.SetBookName(newName);
 				BookInfo.Save();
 			}
@@ -4481,7 +4526,7 @@ namespace Bloom.Book
 			{
 				// Back to automatic name
 				Storage.UpdateBookFileAndFolderName(CollectionSettings);
-				BookInfo.NameLocked = false;
+				BookInfo.FileNameLocked = false;
 				BookInfo.Save();
 			}
 		}
