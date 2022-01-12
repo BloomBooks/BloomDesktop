@@ -617,7 +617,7 @@ namespace Bloom.Publish
 			var book = _model.BookSelection.CurrentSelection;
 			var firstOverlayPageNum = book.GetNumberOfFirstPageWithOverlay();
 			_publishReqEntOverlayPage.Text = _cantPublishPageWithPlaceholder.Replace("{0}", firstOverlayPageNum);
-			_publishReqEntProblem.Text = _cantPublishProblemWithPlaceholder.Replace("{0}", book.TitleOrNameBestForUserDisplay);
+			_publishReqEntProblem.Text = _cantPublishProblemWithPlaceholder.Replace("{0}", book.TitleBestForUserDisplay);
 
 			// Turn on the hidden panel
 			_publishRequiresEnterprisePanel.Visible = true;

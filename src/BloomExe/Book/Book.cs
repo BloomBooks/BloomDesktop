@@ -211,23 +211,7 @@ namespace Bloom.Book
 		/// If we have to just show title in one language, which should it be?
 		/// Note, this isn't going to be the best for choosing a filename, which we are more likely to want in a national language
 		/// </summary>
-		public virtual string TitleOrNameBestForUserDisplay
-		{
-			get
-			{
-				if (BookInfo.NameLocked)
-				{
-					// The user has explicitly chosen a name to use for the book, distinct from its titles.
-					return Path.GetFileName(FolderPath);
-				}
-				return GetBestTitleForDisplay(_bookData.GetMultiTextVariableOrEmpty("bookTitle"), _bookData.GetBasicBookLanguageCodes().ToList(), IsEditable);
-			}
-		}
-
-		/// <summary>
-		/// The actual title of the book
-		/// </summary>
-		public string TitleBestForUserDisplay
+		public virtual string TitleBestForUserDisplay
 		{
 			get
 			{
@@ -236,9 +220,9 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// If the user has renamed the book, returns that. Otherwise, shows the title
+		/// If the user has renamed the book, returns that. Otherwise, returns the title
 		/// </summary>
-		public string NameBestForUserDisplay
+		public virtual string NameBestForUserDisplay
 		{
 			get
 			{

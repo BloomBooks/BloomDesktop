@@ -35,7 +35,7 @@ namespace Bloom.Book
 		}
 
 
-		public override string TitleOrNameBestForUserDisplay
+		public override string TitleBestForUserDisplay
 		{
 			get
 			{

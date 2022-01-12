@@ -87,7 +87,7 @@ namespace Bloom.CollectionTab
 			}
 			if (_shell != null)
 			{
-				_shell.SetWindowText((_bookSelection.CurrentSelection == null) ? null : _bookSelection.CurrentSelection.TitleOrNameBestForUserDisplay);
+				_shell.SetWindowText((_bookSelection.CurrentSelection == null) ? null : _bookSelection.CurrentSelection.NameBestForUserDisplay);
 			}
 		}
 

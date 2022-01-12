@@ -392,7 +392,7 @@ namespace BloomTests.Book
 
 			var server = CreateBookServer();
 			var book = server.GetBookFromBookInfo(new BookInfo(path, true));
-			Assert.AreEqual("Title Missing",book.TitleOrNameBestForUserDisplay);
+			Assert.AreEqual("Title Missing", book.TitleBestForUserDisplay);
 			Assert.That(book.GetDataItem("Title").Empty);
 
 		}

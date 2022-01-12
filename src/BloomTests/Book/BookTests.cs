@@ -4453,12 +4453,12 @@ namespace BloomTests.Book
 		{
 			var book = CreateBookWithPhysicalFile(ThreePageHtml);
 			book.SetAndLockBookName("animals");
-			var title = book.TitleOrNameBestForUserDisplay;
-			Assert.That(title, Is.EqualTo("animals"));
+			var bookName = book.NameBestForUserDisplay;
+			Assert.That(bookName, Is.EqualTo("animals"));
 			Assert.That(Path.GetFileName(book.FolderPath), Is.EqualTo("animals"));
 			book.SetAndLockBookName(null);
-			title = book.TitleOrNameBestForUserDisplay;
-			Assert.That(title, Is.EqualTo("dog"));
+			bookName = book.NameBestForUserDisplay;
+			Assert.That(bookName, Is.EqualTo("dog"));
 			Assert.That(Path.GetFileName(book.FolderPath), Is.EqualTo("dog"));
 		}
 

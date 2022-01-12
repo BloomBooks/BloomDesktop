@@ -1268,7 +1268,7 @@ namespace Bloom.Edit
 						String.Format(
 							@"CurrentBook.GetPages() gave no pages (BL-262 repro).
 									  Book is '{0}'\r\nErrors known to book=[{1}]\r\n{2}\r\n{3}",
-							CurrentBook.TitleOrNameBestForUserDisplay,
+							CurrentBook.NameBestForUserDisplay,
 							CurrentBook.CheckForErrors(),
 							CurrentBook.RawDom.OuterXml,
 							new StackTrace().ToString()));
