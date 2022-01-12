@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -503,6 +503,7 @@
     <Compile Include="WebLibraryIntegration\BulkUploader.cs" />
     <Compile Include="WebLibraryIntegration\FirebaseLoginDialog.cs" />
     <Compile Include="WebLibraryIntegration\S3Extensions.cs" />
+    <Compile Include="web\controllers\SpreadsheetApi.cs" />
     <Compile Include="web\controllers\BookCommandsApi.cs" />
     <Compile Include="web\controllers\CollectionApi.cs" />
     <Compile Include="web\controllers\ProgressDialogApi.cs" />

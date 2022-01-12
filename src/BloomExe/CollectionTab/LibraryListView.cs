@@ -53,7 +53,6 @@ namespace Bloom.CollectionTab
 		private BookCollection _downloadedBookCollection;
 		private Image _dropdownImage;
 		private TeamCollectionManager _tcManager;
-		private SpreadsheetExporter.Factory _exporterFactory;
 		private BookCommandsApi _bookCommandsApi;
 
 		/// <summary>
@@ -83,7 +82,6 @@ namespace Bloom.CollectionTab
 			selectedTabChangedEvent.Subscribe(OnSelectedTabChanged);
 			InitializeComponent();
 			_primaryCollectionFlow.HorizontalScroll.Visible = false;
-			_exporterFactory = exporterFactory;
 
 			_primaryCollectionFlow.Controls.Clear();
 			_primaryCollectionFlow.HorizontalScroll.Visible = false;

@@ -29,14 +29,16 @@ namespace Bloom.web.controllers
 	{
 		private readonly LibraryModel _libraryModel;
 		private BookSelection _bookSelection;
+		private readonly SpreadsheetApi _spreadsheetApi;
 		private readonly BloomWebSocketServer _webSocketServer;
 		private string _previousTargetSaveAs; // enhance: should this be shared with CollectionApi or other save as locations?
 
-		public BookCommandsApi(LibraryModel libraryModel, BloomWebSocketServer webSocketServer, BookSelection bookSelection)
+		public BookCommandsApi(LibraryModel libraryModel, BloomWebSocketServer webSocketServer, BookSelection bookSelection, SpreadsheetApi spreadsheetApi)
 		{
 			_libraryModel = libraryModel;
 			_webSocketServer = webSocketServer;
 			_bookSelection = bookSelection;
+			this._spreadsheetApi = spreadsheetApi;
 		}
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
@@ -63,13 +65,13 @@ namespace Bloom.web.controllers
 					HandleExportToWord(book);
 					break;
 				case "exportToSpreadsheet":
-					HandleExportToSpreadsheet(book);
+					_spreadsheetApi.HandleExportToSpreadsheet(book);
 					break;
 				// As currently implemented this would more naturally go in CollectionApi, since it adds a book
 				// to the collection (a backup). However, we are probably going to change how backups are handled
 				// so this is no longer true.
 				case "importSpreadsheetContent":
-					HandleImportContentFromSpreadsheet(book);
+					_spreadsheetApi.HandleImportContentFromSpreadsheet(book);
 					break;
 				case "saveAsDotBloomSource":
 					HandleSaveAsDotBloomSource(book);
@@ -86,6 +88,14 @@ namespace Bloom.web.controllers
 			}
 			request.PostSucceeded();
 		}
+		// TODO: Delete me after all references removed.
+		[Obsolete("Wrapper to allow legacy (WinForms) code to share this code. New code should try to use the API/React-based paradigm instead.")]
+		public void HandleImportContentFromSpreadsheetWrapper(Book.Book book) => _spreadsheetApi.HandleImportContentFromSpreadsheet(book);
+
+		// TODO: Delete me after all references removed.
+		[Obsolete("Wrapper to allow legacy (WinForms) code to share this code. New code should try to use the API/React-based paradigm instead.")]
+		public void HandleExportToSpreadsheetWrapper(Book.Book book) => _spreadsheetApi.HandleExportToSpreadsheet(book);
+
 
 		private void HandleRename(Book.Book book, ApiRequest request)
 		{
@@ -142,126 +152,6 @@ namespace Bloom.web.controllers
 			}
 		}
 
-		// TODO: Delete me after all references removed.
-		[Obsolete("Wrapper to allow legacy (WinForms) code to share this code. New code should try to use the API/React-based paradigm instead.")]
-		public void HandleExportToSpreadsheetWrapper(Book.Book book) => this.HandleExportToSpreadsheet(book);
-
-		/// <summary>
-		/// Get and set the folder where we should initially open the chooser for importing (or exporting, if
-		/// forExport is true) the book as a spreadsheet.
-		/// </summary>
-		private string GetSpreadsheetFolderFor(Book.Book book, bool forExport)
-		{
-			var folder = book.UserPrefs.SpreadsheetFolder; // saved directory if any for this book
-			if (!Directory.Exists(folder))
-			{
-
-				// Fall back to the last place used for ANY import or export, or if there is no such, the system Documents folder.
-				return String.IsNullOrWhiteSpace(Settings.Default.ExportImportFileFolder)
-					? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
-					: Settings.Default.ExportImportFileFolder;
-			}
-
-			if (forExport)
-			{
-				// We have a saved location (the folder of the spreadsheet itself), but for export we want its parent
-				// (the folder in which we will create a folder for the spreadsheet)
-				return Path.GetDirectoryName(folder);
-			}
-
-			return folder; // save folder itself for import
-		}
-
-		private void SetSpreadsheetFolder(Book.Book book, string folder)
-		{
-			book.UserPrefs.SpreadsheetFolder = folder;
-			// We go up a level since the input folder is specific to this book, while the parent of that
-			// is a likely place to do future exports and imports of books that have not previously
-			// been imported or exported.
-			Settings.Default.ExportImportFileFolder = Path.GetDirectoryName(folder);
-			Settings.Default.Save();
-		}
-		
-		private void HandleExportToSpreadsheet(Book.Book book)
-		{
-			// Throw up a Requires Bloom Enterprise dialog if it's not turned on
-			if (!_libraryModel.CollectionSettings.HaveEnterpriseFeatures)
-			{
-				Enterprise.ShowRequiresEnterpriseNotice(Form.ActiveForm, "Export to Spreadsheet");
-				return;
-			}
-
-			var bookPath = book.GetPathHtmlFile();
-			try
-			{
-				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));
-				var exporter = new SpreadsheetExporter(_webSocketServer, book.CollectionSettings);
-
-				string outputParentFolder = BloomFolderChooser.ChooseFolder(GetSpreadsheetFolderFor(book, true));
-				if (outputParentFolder == null)
-					return; // user canceled
-				string outputFolder = Path.Combine(outputParentFolder, Path.GetFileNameWithoutExtension(bookPath));
-				SetSpreadsheetFolder(book, outputFolder);
-				string imagesFolderPath = Path.GetDirectoryName(bookPath);
-				exporter.ExportToFolderWithProgress(dom, imagesFolderPath, outputFolder, outputFilePath =>
-				{
-					if (outputFilePath != null)
-						PathUtilities.OpenFileInApplication(outputFilePath);
-				});
-			}
-			catch (Exception ex)
-			{
-				var msg = LocalizationManager.GetString("Spreadsheet:ExportFailed", "Export failed: ");
-				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg + ex.Message, exception: ex);
-			}
-		}
-
-		// TODO: Delete me after all references removed.
-		[Obsolete("Wrapper to allow legacy (WinForms) code to share this code. New code should try to use the API/React-based paradigm instead.")]
-		public void HandleImportContentFromSpreadsheetWrapper(Book.Book book) => this.HandleImportContentFromSpreadsheet(book);
-
-		private void HandleImportContentFromSpreadsheet(Book.Book book)
-		{
-			if (!_libraryModel.CollectionSettings.HaveEnterpriseFeatures)
-			{
-				Enterprise.ShowRequiresEnterpriseNotice(Form.ActiveForm, "Import to Spreadsheet");
-				return;
-			}
-
-			var bookPath = book.GetPathHtmlFile();
-			try
-			{
-				string inputFilepath;
-				using (var dlg = new DialogAdapters.OpenFileDialogAdapter())
-				{
-					dlg.Filter = "xlsx|*.xlsx";
-					dlg.RestoreDirectory = true;
-					dlg.InitialDirectory = GetSpreadsheetFolderFor(book, false);
-					if (DialogResult.Cancel == dlg.ShowDialog())
-					{
-						return;
-					}
-					inputFilepath = dlg.FileName;
-					var spreadsheetFolder = Path.GetDirectoryName(inputFilepath);
-					SetSpreadsheetFolder(book, spreadsheetFolder);
-				}
-
-				var dom = book.OurHtmlDom;
-				var importer = new SpreadsheetImporter(_webSocketServer, dom, Path.GetDirectoryName(inputFilepath), book.FolderPath);
-				importer.ImportWithProgress(inputFilepath, bookPath);
-
-				// Review: A lot of other stuff happens in Book.Save() and BookStorage.SaveHtml().
-				// I doubt we need any of it for current purposes, but later we might.
-				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, bookPath);
-				book.ReloadFromDisk(null);
-				_bookSelection.InvokeSelectionChanged(false);
-			}
-			catch (Exception ex)
-			{
-				var msg = LocalizationManager.GetString("Spreadsheet:ImportFailed", "Import failed: ");
-				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg + ex.Message, exception: ex, showSendReport: false);
-			}
-		}
 
 		private void ScheduleRefreshOfOneThumbnail(Book.Book book)
 		{
