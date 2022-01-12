@@ -149,7 +149,7 @@ namespace Bloom.Book
 		/// True if the user explicitly set a name (name is not automatically derived
 		/// from title).
 		/// </summary>
-		public bool NameLocked
+		public bool FileNameLocked
 		{
 			get { return MetaData.NameLocked; }
 			set { MetaData.NameLocked = value; }
@@ -195,7 +195,7 @@ namespace Bloom.Book
 			get { return MetaData.Title; }
 			set
 			{
-				var titleStr = Book.RemoveXmlMarkup(value);
+				var titleStr = Book.RemoveXmlMarkup(value, Book.LineBreakSpanConversionMode.ToNewline);
 				MetaData.Title = titleStr;
 			}
 		}
@@ -730,7 +730,7 @@ namespace Bloom.Book
 
 		internal string GetBestTitleForUserDisplay(List<string> langCodes)
 		{
-			if (NameLocked)
+			if (FileNameLocked)
 				return FolderName;
 			try
 			{

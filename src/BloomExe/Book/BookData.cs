@@ -1762,12 +1762,26 @@ namespace Bloom.Book
 			// spaces might disappear if we don't preserve whitespace during the parse.
 			var doc = XElement.Parse("<doc>" + input + "</doc>", LoadOptions.PreserveWhitespace);
 
+			string zeroWidthNbsp = ((char)65279).ToString();
+
 			// Handle Shift+Enter, which gets translated to <span class="bloom-linebreak" />
 			// This is being handled using at the XElement level instead of string level, so that it'll work regardless of
 			// whether it uses the <span /> form or <span></span> form. (I do see places in the debugger where the data is in <span></span> form.)
 			var lineBreaks = doc.Descendants("span").Where(e => e.Attribute("class")?.Value == "bloom-linebreak").ToList();
 			foreach (var lineBreakSpan in lineBreaks)
 			{
+				// But before we mess with lineBreakSpan, first check if it's immediately followed by a zero-width no-break space
+				// (which is also inserted upon Shift-Enter), and if so delete that out.
+				if (lineBreakSpan.NextNode?.NodeType == XmlNodeType.Text)
+				{
+					var nextText = lineBreakSpan.NextNode as XText;
+					if (nextText?.Value?.StartsWith(zeroWidthNbsp) == true)
+					{
+						nextText.Value = nextText.Value.Substring(1);
+					}
+				}
+
+				// Now delete lineBreakSpan and replace it
 				lineBreakSpan.ReplaceWith("\n");
 			}
 			
