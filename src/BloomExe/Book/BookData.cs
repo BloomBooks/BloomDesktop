@@ -1758,6 +1758,9 @@ namespace Bloom.Book
 			if (input == null)
 				return null;
 
+			// Shift-enter also inserts a zero-width no-break space, so delete that out
+			input = input.Replace(((char)65279).ToString(), "");
+
 			// Parsing it as XML and then extracting the value removes any markup.  Internal
 			// spaces might disappear if we don't preserve whitespace during the parse.
 			var doc = XElement.Parse("<doc>" + input + "</doc>", LoadOptions.PreserveWhitespace);
