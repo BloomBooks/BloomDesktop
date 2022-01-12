@@ -26,6 +26,7 @@ import { ExperimentalBadge } from "../../react_components/experimentalBadge";
 
 export const SpreadsheetExportDialog: React.FunctionComponent<{
     dialogEnvironment?: IBloomDialogEnvironmentParams;
+    folder: string;
 }> = props => {
     var title = useL10n(
         "Export to spreadsheet",
@@ -59,7 +60,7 @@ export const SpreadsheetExportDialog: React.FunctionComponent<{
                         apiCommandToChooseAndSetFolder=""
                         // TODO: should DialogFolderChooser also be getting this from the same API?
                         // I.e. /spreadsheet-folder  endpoint would have a get and put
-                        path=""
+                        path={props.folder}
                     />
                 </div>
             </DialogMiddle>
@@ -83,13 +84,7 @@ export const SpreadsheetExportDialog: React.FunctionComponent<{
                 >
                     Export
                 </BloomButton>
-                <DialogCancelButton
-                    onClick={() => {
-                        // TODO: If we can have a generic cancel api, then we can also move this onClick to the DialogCancelButton Class
-                        BloomApi.post("common/cancel");
-                        closeDialog();
-                    }}
-                />
+                <DialogCancelButton closeDialog={closeDialog} />
             </DialogBottomButtons>
         </BloomDialog>
     );

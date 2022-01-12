@@ -37,7 +37,7 @@ namespace Bloom.web.controllers
 			// Instead all we need to register is any api enpoints used by our own spreadsheet dialogs
 		}
 
-		public void HandleExportToSpreadsheet(Book.Book book)
+		public void ShowExportToSpreadsheetUI(Book.Book book)
 		{
 			// Throw up a Requires Bloom Enterprise dialog if it's not turned on
 			if (!_libraryModel.CollectionSettings.HaveEnterpriseFeatures)
@@ -45,7 +45,16 @@ namespace Bloom.web.controllers
 				Enterprise.ShowRequiresEnterpriseNotice(Form.ActiveForm, "Export to Spreadsheet");
 				return;
 			}
+			var folder = GetSpreadsheetFolderFor(book, true);
 
+			using (var dlg = new ReactDialog("exportSpreadsheetDialogBundle", new
+			{ folder }, "Export to Spreadsheet..."))
+			{
+				dlg.ShowDialog();
+			}
+		}
+		private void ExportToSpreadsheet(Book.Book book)
+		{
 			var bookPath = book.GetPathHtmlFile();
 			try
 			{

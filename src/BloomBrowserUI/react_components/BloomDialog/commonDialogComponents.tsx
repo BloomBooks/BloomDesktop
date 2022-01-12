@@ -107,7 +107,10 @@ export const DialogCloseButton: React.FunctionComponent<{
 );
 
 export const DialogCancelButton: React.FunctionComponent<{
-    onClick: () => void;
+    // you must provided either this
+    onClick?: () => void;
+    // ... or this
+    closeDialog?: () => void;
     default?: boolean;
 }> = props => (
     <BloomButton
@@ -116,7 +119,18 @@ export const DialogCancelButton: React.FunctionComponent<{
         enabled={true}
         // by default, Cancel is NOT the default button
         variant={props.default === true ? "contained" : "outlined"}
-        onClick={props.onClick}
+        onClick={
+            props.onClick
+                ? props.onClick
+                : () => {
+                      if (!props.closeDialog)
+                          throw Error(
+                              "DialogCancelButton requires either an onClick or a closeDialog prop"
+                          );
+                      BloomApi.post("common/closeReactDialog");
+                      props.closeDialog();
+                  }
+        }
     >
         Cancel
     </BloomButton>

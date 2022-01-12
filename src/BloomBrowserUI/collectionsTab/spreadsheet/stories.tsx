@@ -8,5 +8,6 @@ storiesOf("Spreadsheet Export Dialog", module).add("Default", () => (
             initiallyOpen: true,
             dialogFrameProvidedExternally: false
         }}
+        folder={"somewhere"}
     />
 ));
