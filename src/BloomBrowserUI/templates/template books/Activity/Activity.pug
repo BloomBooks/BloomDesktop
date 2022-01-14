@@ -1,6 +1,7 @@
 include ../standard-page-mixins.pug
 include ./simpleComprehensionQuiz.pug
 include ./customWidgetPage.pug
+include ./choiceActivities.pug
 
 doctype html
 html
@@ -17,6 +18,10 @@ html
 			= '\n'
 			| .QuizAnswer-style { font-size: 12pt !important;}
 			| .QuizQuestion-style {font-size: 12pt !important; font-weight: bold !important;}
+			//- color of button is left to the stylesheet
+			| .ButtonText-style { font-size: 40pt !important; text-align: center !important; line-height: 1.1 !important; }
+			| .TextToMatch-style { font-size: 40pt !important; text-align: center !important; line-height: 1.1 !important; font-weight: bold !important;}
+			| .Prompt-style { font-size: 18pt !important; line-height: 1.5 !important; word-spacing: normal !important; font-weight: font-style: normal !important; text-decoration: none !important; text-align: initial !important; color: white; }
 	body
 		+dataDiv
 			+bookVariable-title('en', 'Activity')
@@ -26,3 +31,5 @@ html
 		+quizPage
 		+customWidgetPage
 		+captiveWidgetPage
+		+chooseWordFromPicture
+		+choosePictureFromWord
