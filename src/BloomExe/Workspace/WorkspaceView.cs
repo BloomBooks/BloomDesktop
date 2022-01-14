@@ -319,7 +319,18 @@ namespace Bloom.Workspace
 			// if the book has been renamed remotely but not yet here, we may not be able to tell that it
 			// needs to be checked out before BringBookUpToDate renames it here.
 			StartupScreenManager.AddStartupAction(() =>
-				SelectPreviouslySelectedBook());
+				SelectPreviouslySelectedBook(),
+				// In the new collection tab, we want to delay this until the buttons get drawn,
+				// since it ties up the UI thread for a while. (In the legacy view, the buttons are
+				// drawn first on the UI thread so this isn't an issue. When we get rid of the legacy
+				// collection tab we can simplify this code.)
+				// Enhance: the code in CollectionsApi that raises this event is crude; it just
+				// looks for the first two button thumbnails to be requested. It would be better if
+				// we had some way of knowing when the collection panes were fully rendered.
+				// It would be better still if most of the work of SelectPreviouslySelectedBook could
+				// be done on a background thread so it could make progress as quickly as possible
+				// without holding up drawing the collection panes.
+				waitForMilestone: CurrentTabView==_legacyCollectionView? null : "collectionButtonsDrawn");
 		}
 
 		private void ReadyToShowCollections()

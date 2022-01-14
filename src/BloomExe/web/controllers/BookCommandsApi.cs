@@ -226,7 +226,7 @@ namespace Bloom.web.controllers
 		private BookCollection GetCollectionOfRequest(ApiRequest request)
 		{
 			var id = request.RequiredParam("collection-id").Trim();
-			var collection = _libraryModel.GetBookCollections().Find(c => c.PathToDirectory == id);
+			var collection = _libraryModel.GetBookCollections().FirstOrDefault(c => c.PathToDirectory == id);
 			if (collection == null)
 			{
 				request.Failed($"Collection named '{id}' was not found.");

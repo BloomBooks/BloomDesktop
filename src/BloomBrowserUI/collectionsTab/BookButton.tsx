@@ -28,6 +28,7 @@ import {
 } from "./BooksOfCollection";
 
 export const bookButtonHeight = 120;
+export const bookButtonWidth = 90;
 
 export const BookButton: React.FunctionComponent<{
     book: IBookInfo;
@@ -49,12 +50,14 @@ export const BookButton: React.FunctionComponent<{
     const collectionQuery = `collection-id=${encodeURIComponent(
         props.collection.id
     )}`;
-    // Don't use the 'get' value here because we're not monitoring anything to get it
-    // updated when the selection changes some other way than calling the set method.
-    const [unused, setSelectedBookIdWithApi] = BloomApi.useApiStringState(
-        `collections/selected-book-id?${collectionQuery}`,
-        ""
-    );
+
+    // Don't use useApiStringState to get this function because it does an unnecessary server query
+    // to get the value, which we are not using, and this hurts performance.
+    const setSelectedBookIdWithApi = value =>
+        BloomApi.postString(
+            `collections/selected-book-id?${collectionQuery}`,
+            value
+        );
 
     const renameDiv = useRef<HTMLElement | null>();
 
@@ -234,170 +237,168 @@ export const BookButton: React.FunctionComponent<{
     };
 
     return (
-        <Grid item={true} className="book-wrapper">
-            <div
-                // This class and data-book-id attribute help the BooksOfCollection class figure out
-                // what book (if any) is being right-clicked.
+        <div
+            // This class and data-book-id attribute help the BooksOfCollection class figure out
+            // what book (if any) is being right-clicked.
 
-                className="book-button"
-                // relative so the absolutely positioned rename div will be relative to this.
+            className="book-button"
+            // relative so the absolutely positioned rename div will be relative to this.
+            css={css`
+                position: relative;
+            `}
+            // This is the div that looks like the button, so it is the one that counts as
+            // this book if clicked.
+            data-book-id={props.book.id}
+        >
+            {teamCollectionStatus?.who && (
+                <BloomAvatar
+                    email={teamCollectionStatus.who}
+                    name={teamCollectionStatus.whoFirstName}
+                    avatarSizeInt={32}
+                    borderColor={
+                        teamCollectionStatus.who ===
+                        teamCollectionStatus.currentUser
+                            ? teamCollectionStatus.where ===
+                              teamCollectionStatus.currentMachine
+                                ? kBloomGold
+                                : kBloomPurple
+                            : kBloomBlue
+                    }
+                />
+            )}
+            <Button
+                className={
+                    "bookButton" +
+                    (selected ? " selected " : "") +
+                    (teamCollectionStatus?.who ? " checkedOut" : "")
+                }
                 css={css`
-                    position: relative;
+                    height: ${bookButtonHeight}px;
+                    width: ${bookButtonWidth}px;
+                    border: none;
+                    overflow: hidden;
+                    padding: 0;
                 `}
-                // This is the div that looks like the button, so it is the one that counts as
-                // this book if clicked.
-                data-book-id={props.book.id}
-            >
-                {teamCollectionStatus?.who && (
-                    <BloomAvatar
-                        email={teamCollectionStatus.who}
-                        name={teamCollectionStatus.whoFirstName}
-                        avatarSizeInt={32}
-                        borderColor={
-                            teamCollectionStatus.who ===
-                            teamCollectionStatus.currentUser
-                                ? teamCollectionStatus.where ===
-                                  teamCollectionStatus.currentMachine
-                                    ? kBloomGold
-                                    : kBloomPurple
-                                : kBloomBlue
-                        }
-                    />
-                )}
-                <Button
-                    className={
-                        "bookButton" +
-                        (selected ? " selected " : "") +
-                        (teamCollectionStatus?.who ? " checkedOut" : "")
-                    }
-                    css={css`
-                        height: ${bookButtonHeight}px;
-                        width: 90px;
-                        border: none;
-                        overflow: hidden;
-                        padding: 0;
-                    `}
-                    variant="outlined"
-                    size="large"
-                    onClick={e => handleClick(e)}
-                    onContextMenu={e => handleContextClick(e)}
-                    startIcon={
-                        <div className={"thumbnail-wrapper"}>
-                            <img
-                                src={`/bloom/api/collections/book/thumbnail?book-id=${
-                                    props.book.id
-                                }&collection-id=${encodeURIComponent(
-                                    props.book.collectionId
-                                )}&reload=${reload}`}
-                            />
-                        </div>
-                    }
-                >
-                    {renaming || label}
-                </Button>
-
-                {// contextMenuPoint has a value if this button has been right-clicked.
-                // if it wasn't the selected button at the time, however, the menu will not show
-                // until we re-render after making it selected.
-                // Note that we avoid doing all the work to render the menu except when it is
-                // visible. Since there may be a large number of buttons this could be a significant
-                // saving.
-                contextMousePoint && selected && (
-                    <Menu
-                        keepMounted={true}
-                        open={!!contextMousePoint}
-                        onClose={handleClose}
-                        anchorReference="anchorPosition"
-                        anchorPosition={{
-                            top: contextMousePoint!.mouseY,
-                            left: contextMousePoint!.mouseX
-                        }}
-                    >
-                        {makeMenuItems(
-                            getBookMenuItemsSpecs(),
-                            props.collection.isEditableCollection,
-                            props.manager.getSelectedBookInfo()!.saveable,
-                            handleClose,
-                            props.book.id,
-                            props.collection.id
-                        )}
-                    </Menu>
-                )}
-                {// The down-arrow button, which is equivalent to right-clicking on the button.
-                // I tried putting this div inside the button but then...in FF 60 but not 68 or later...
-                // the button gets the click even if its inside this div.
-                selected && (
-                    <div
-                        css={css`
-                            position: absolute;
-                            box-sizing: border-box;
-                            bottom: -${downSize / 2 - 4}px;
-                            right: 3px;
-                            height: ${downSize}px;
-                            width: ${downSize}px;
-                            border: solid transparent ${downSize / 2}px;
-                            border-top-color: white;
-                        `}
-                        onClick={e => {
-                            setAdjustedContextMenuPoint(e.clientX, e.clientY);
-                            handleClick(e);
-                        }}
-                    ></div>
-                )}
-                {// I tried putting this div inside the button as an alternate to label.
-                // Somehow, this causes the blur to happen when the user clicks in the label
-                // to position the IP during editing. I suspect default events are being
-                // triggered by the fact that we're in a button. It was very hard to debug,
-                // and stopPropagation did not help. I finally decided that letting the
-                // edit box be over the button was easier and possibly safer.
-                renaming && selected && (
-                    <div
-                        // For some unknown reason, the selection background color was coming out white.
-                        // I reset it to what I think is Windows standard. Need -moz- for Gecko60
-                        // (until FF62).
-                        // Enhance: ideally we'd either figure out why we don't get the usual default
-                        // selection background (maybe because the window has a dark background?)
-                        // or make it use the user's configured system highlight background (but that
-                        // really might not work with white text and a dark background?)
-
-                        // 12px of text height matches the size we're getting in the button.
-                        // 18px is more line spacing than we normally use for these labels, but it's
-                        // the minimum to avoid descenders in the top line being cut off by the highlight
-                        // of selected text in the second line. (Of course other fonts might need
-                        // a different value...but it's not a terrible problem if there is some cut off.)
-
-                        // (I think the 6 fudge factor in the top calculation is made up of two 1px
-                        // borders and the 4px padding-top.)
-                        css={css`
-                            width: calc(100% - 4px);
-                            height: ${renameHeight}px;
-                            margin-left: 1px;
-                            border: 1px solid ${kBloomLightBlue};
-                            top: ${bookButtonHeight - renameHeight - 6}px;
-                            padding-top: 4px;
-                            position: absolute;
-                            font-size: 12px;
-                            line-height: 18px;
-                            text-align: center;
-                            &::selection {
-                                background: rgb(0, 120, 215);
-                            }
-                            &::-moz-selection {
-                                background: rgb(0, 120, 215);
-                            }
-                        `}
-                        contentEditable={true}
-                        tabIndex={0}
-                        ref={renderedElement =>
-                            (renameDiv.current = renderedElement)
-                        }
-                        // Note: we want a blur on this element, but putting it here does not work right.
-                        // See the comment where we add it in a delayed effect.
-                    >
-                        {props.book.title}
+                variant="outlined"
+                size="large"
+                onClick={e => handleClick(e)}
+                onContextMenu={e => handleContextClick(e)}
+                startIcon={
+                    <div className={"thumbnail-wrapper"}>
+                        <img
+                            src={`/bloom/api/collections/book/thumbnail?book-id=${
+                                props.book.id
+                            }&collection-id=${encodeURIComponent(
+                                props.book.collectionId
+                            )}&reload=${reload}`}
+                        />
                     </div>
-                )}
-            </div>
-        </Grid>
+                }
+            >
+                {renaming || label}
+            </Button>
+
+            {// contextMenuPoint has a value if this button has been right-clicked.
+            // if it wasn't the selected button at the time, however, the menu will not show
+            // until we re-render after making it selected.
+            // Note that we avoid doing all the work to render the menu except when it is
+            // visible. Since there may be a large number of buttons this could be a significant
+            // saving.
+            contextMousePoint && selected && (
+                <Menu
+                    keepMounted={true}
+                    open={!!contextMousePoint}
+                    onClose={handleClose}
+                    anchorReference="anchorPosition"
+                    anchorPosition={{
+                        top: contextMousePoint!.mouseY,
+                        left: contextMousePoint!.mouseX
+                    }}
+                >
+                    {makeMenuItems(
+                        getBookMenuItemsSpecs(),
+                        props.collection.isEditableCollection,
+                        props.manager.getSelectedBookInfo()!.saveable,
+                        handleClose,
+                        props.book.id,
+                        props.collection.id
+                    )}
+                </Menu>
+            )}
+            {// The down-arrow button, which is equivalent to right-clicking on the button.
+            // I tried putting this div inside the button but then...in FF 60 but not 68 or later...
+            // the button gets the click even if its inside this div.
+            selected && (
+                <div
+                    css={css`
+                        position: absolute;
+                        box-sizing: border-box;
+                        bottom: -${downSize / 2 - 4}px;
+                        right: 3px;
+                        height: ${downSize}px;
+                        width: ${downSize}px;
+                        border: solid transparent ${downSize / 2}px;
+                        border-top-color: white;
+                    `}
+                    onClick={e => {
+                        setAdjustedContextMenuPoint(e.clientX, e.clientY);
+                        handleClick(e);
+                    }}
+                ></div>
+            )}
+            {// I tried putting this div inside the button as an alternate to label.
+            // Somehow, this causes the blur to happen when the user clicks in the label
+            // to position the IP during editing. I suspect default events are being
+            // triggered by the fact that we're in a button. It was very hard to debug,
+            // and stopPropagation did not help. I finally decided that letting the
+            // edit box be over the button was easier and possibly safer.
+            renaming && selected && (
+                <div
+                    // For some unknown reason, the selection background color was coming out white.
+                    // I reset it to what I think is Windows standard. Need -moz- for Gecko60
+                    // (until FF62).
+                    // Enhance: ideally we'd either figure out why we don't get the usual default
+                    // selection background (maybe because the window has a dark background?)
+                    // or make it use the user's configured system highlight background (but that
+                    // really might not work with white text and a dark background?)
+
+                    // 12px of text height matches the size we're getting in the button.
+                    // 18px is more line spacing than we normally use for these labels, but it's
+                    // the minimum to avoid descenders in the top line being cut off by the highlight
+                    // of selected text in the second line. (Of course other fonts might need
+                    // a different value...but it's not a terrible problem if there is some cut off.)
+
+                    // (I think the 6 fudge factor in the top calculation is made up of two 1px
+                    // borders and the 4px padding-top.)
+                    css={css`
+                        width: calc(100% - 4px);
+                        height: ${renameHeight}px;
+                        margin-left: 1px;
+                        border: 1px solid ${kBloomLightBlue};
+                        top: ${bookButtonHeight - renameHeight - 6}px;
+                        padding-top: 4px;
+                        position: absolute;
+                        font-size: 12px;
+                        line-height: 18px;
+                        text-align: center;
+                        &::selection {
+                            background: rgb(0, 120, 215);
+                        }
+                        &::-moz-selection {
+                            background: rgb(0, 120, 215);
+                        }
+                    `}
+                    contentEditable={true}
+                    tabIndex={0}
+                    ref={renderedElement =>
+                        (renameDiv.current = renderedElement)
+                    }
+                    // Note: we want a blur on this element, but putting it here does not work right.
+                    // See the comment where we add it in a delayed effect.
+                >
+                    {props.book.title}
+                </div>
+            )}
+        </div>
     );
 };

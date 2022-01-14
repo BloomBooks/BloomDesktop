@@ -100,24 +100,33 @@ namespace Bloom.CollectionTab
 			get { return _collectionSettings.Language1.Name; }	// collection tab still uses collection language settings
 		}
 
-		public List<BookCollection> GetBookCollections()
-		{
-			if(_bookCollections == null)
-			{
-				_bookCollections = new List<BookCollection>(GetBookCollectionsOnce());
+		private object _bookCollectionLock = new object(); // Locks creation of _bookCollections
 
-				//we want the templates to be second (after the vernacular collection) regardless of alphabetical sorting
-				var templates = _bookCollections.First(c => c.Name == "Templates");
-				_bookCollections.Remove(templates);
-				_bookCollections.Insert(1,templates);
+		public IReadOnlyList<BookCollection> GetBookCollections()
+		{
+			lock (_bookCollectionLock)
+			{
+				if (_bookCollections == null)
+				{
+					_bookCollections = new List<BookCollection>(GetBookCollectionsOnce());
+
+					//we want the templates to be second (after the vernacular collection) regardless of alphabetical sorting
+					var templates = _bookCollections.First(c => c.Name == "Templates");
+					_bookCollections.Remove(templates);
+					_bookCollections.Insert(1, templates);
+				}
+				return _bookCollections;
 			}
-			return _bookCollections;
 		}
 
 		public void ReloadCollections()
 		{
-			_bookCollections = null;
-			GetBookCollections();
+			lock (_bookCollectionLock)
+			{
+				_bookCollections = null;
+				GetBookCollections();
+			}
+
 			_webSocketServer.SendEvent("editableCollectionList", "reload:" + _bookCollections[0].PathToDirectory);
 		}
 
@@ -200,6 +209,11 @@ namespace Bloom.CollectionTab
 			};
 		}
 
+		/// <summary>
+		/// This may be called on any thread. Please leave things where the only call is in GetBookCollections,
+		/// having claimed the appropriate lock.
+		/// </summary>
+		/// <returns></returns>
 		private IEnumerable<BookCollection> GetBookCollectionsOnce()
 		{
 			BookCollection editableCollection;

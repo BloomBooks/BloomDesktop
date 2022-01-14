@@ -48,23 +48,23 @@ namespace Bloom.TeamCollection
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler("teamCollection/repoFolderPath", HandleRepoFolderPath, false);
-			apiHandler.RegisterEndpointHandler("teamCollection/isTeamCollectionEnabled", HandleIsTeamCollectionEnabled, false);
-			apiHandler.RegisterEndpointHandler("teamCollection/bookStatus", HandleBookStatus, false);
-			apiHandler.RegisterEndpointHandler("teamCollection/selectedBookStatus", HandleSelectedBookStatus, false);
-			apiHandler.RegisterEndpointHandler("teamCollection/attemptLockOfCurrentBook", HandleAttemptLockOfCurrentBook, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/checkInCurrentBook", HandleCheckInCurrentBook, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/forgetChangesInSelectedBook", HandleForgetChangesInSelectedBook, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/chooseFolderLocation", HandleChooseFolderLocation, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/createTeamCollection", HandleCreateTeamCollection, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/joinTeamCollection", HandleJoinTeamCollection, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/getLog", HandleGetLog, false);
-			apiHandler.RegisterEndpointHandler("teamCollection/getCollectionName", HandleGetCollectionName, false);
-			apiHandler.RegisterEndpointHandler("teamCollection/showCreateTeamCollectionDialog", HandleShowCreateTeamCollectionDialog, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/reportBadZip", HandleReportBadZip, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/showRegistrationDialog", HandleShowRegistrationDialog, true, false);
-			apiHandler.RegisterEndpointHandler("teamCollection/getHistory", HandleGetHistory, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/checkinMessage", HandleCheckinMessage, false);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/repoFolderPath", HandleRepoFolderPath, false);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/isTeamCollectionEnabled", HandleIsTeamCollectionEnabled, false);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/bookStatus", HandleBookStatus, false, false);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/selectedBookStatus", HandleSelectedBookStatus, false);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/attemptLockOfCurrentBook", HandleAttemptLockOfCurrentBook, true);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/checkInCurrentBook", HandleCheckInCurrentBook, true);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/forgetChangesInSelectedBook", HandleForgetChangesInSelectedBook, true);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/chooseFolderLocation", HandleChooseFolderLocation, true);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/createTeamCollection", HandleCreateTeamCollection, true);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/joinTeamCollection", HandleJoinTeamCollection, true);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/getLog", HandleGetLog, false);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/getCollectionName", HandleGetCollectionName, false);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/showCreateTeamCollectionDialog", HandleShowCreateTeamCollectionDialog, true);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/reportBadZip", HandleReportBadZip, true);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/showRegistrationDialog", HandleShowRegistrationDialog, true, false);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/getHistory", HandleGetHistory, true);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/checkinMessage", HandleCheckinMessage, false);
 		}
 
 		/// <summary>
@@ -207,6 +207,7 @@ namespace Bloom.TeamCollection
 			}
 		}
 
+		// needs to be thread-safe
 		public void HandleBookStatus(ApiRequest request)
 		{
 			try
@@ -229,6 +230,7 @@ namespace Bloom.TeamCollection
 			}
 		}
 
+		// Needs to be thread-safe
 		private string GetBookStatusJson(string bookFolderName, Book.Book book)
 		{
 			string whoHasBookLocked = null;

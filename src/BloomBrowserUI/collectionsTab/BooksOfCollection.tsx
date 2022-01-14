@@ -5,15 +5,15 @@ import { BloomApi } from "../utils/bloomApi";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import NestedMenuItem from "material-ui-nested-menu-item";
-import { BookButton, bookButtonHeight } from "./BookButton";
+import { BookButton, bookButtonHeight, bookButtonWidth } from "./BookButton";
 import { useMonitorBookSelection } from "../app/selectedBook";
 import { element } from "prop-types";
 import { useL10n } from "../react_components/l10nHooks";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import { Divider } from "@material-ui/core";
 import { BookSelectionManager, useIsSelected } from "./bookSelectionManager";
-import LazyLoad from "react-lazyload";
+import LazyLoad, { forceCheck } from "react-lazyload";
 
 export interface IBookInfo {
     id: string;
@@ -34,11 +34,9 @@ export const BooksOfCollection: React.FunctionComponent<{
     collectionId: string;
     isEditableCollection: boolean;
     manager: BookSelectionManager;
-    // If supplied, the collection will be wrapped in a LazyLoad so that most of its rendering
-    // isn't done until it is visible on screen. This requires that we can identify the containing
-    // element which actually scrolls the BooksOfCollection into and out of view. This prop is
-    // required to be a selector which will select that exact element.
-    lazyContainer?: string;
+    // If true, the collection will be wrapped in a LazyLoad so that most of its rendering
+    // isn't done until it is visible on screen.
+    lazyLoadCollection?: boolean;
 }> = props => {
     if (!props.collectionId) {
         window.alert("null collectionId");
@@ -158,24 +156,58 @@ export const BooksOfCollection: React.FunctionComponent<{
             onContextMenu={e => handleClick(e)}
             style={{ cursor: "context-menu" }}
         >
-            <Grid
-                container={true}
-                spacing={3}
-                direction="row"
-                justify="flex-start"
-                alignItems="flex-start"
-            >
-                {books?.map(book => {
-                    return (
-                        <BookButton
-                            key={book.id}
-                            book={book}
-                            collection={collection}
-                            manager={props.manager}
-                        />
-                    );
-                })}
-            </Grid>
+            {books.length > 0 && (
+                <Grid
+                    container={true}
+                    spacing={3}
+                    direction="row"
+                    justify="flex-start"
+                    alignItems="flex-start"
+                >
+                    {books?.map(book => {
+                        return (
+                            <Grid item={true} className="book-wrapper">
+                                <LazyLoad
+                                    height={bookButtonHeight}
+                                    // Tells lazy loader to look for the parent element that has overflowY set to scroll or
+                                    // auto. This requires a patch to react-lazyload (as of 3.2.0) because currently it looks for
+                                    // a parent that has overflow:scroll or auto in BOTH directions, which is not what we're getting
+                                    // from our splitter.
+                                    // Note: using this is better than using splitContainer, because that has multiple bugs
+                                    // that are not as easy to patch. See https://github.com/twobin/react-lazyload/issues/371.
+                                    overflow={true}
+                                    resize={true} // expand lazy elements as needed when container resizes
+                                    // We need to specify a placeholder because the default one has zero width,
+                                    // and therefore the parent grid thinks they will all fit on one line,
+                                    // and then they're all visible so we get no laziness.
+                                    placeholder={
+                                        <div
+                                            className="placeholder"
+                                            style={{
+                                                height:
+                                                    bookButtonHeight.toString(
+                                                        10
+                                                    ) + "px",
+                                                width:
+                                                    bookButtonWidth.toString(
+                                                        10
+                                                    ) + "px"
+                                            }}
+                                        ></div>
+                                    }
+                                >
+                                    <BookButton
+                                        key={book.id}
+                                        book={book}
+                                        collection={collection}
+                                        manager={props.manager}
+                                    />
+                                </LazyLoad>
+                            </Grid>
+                        );
+                    })}
+                </Grid>
+            )}
             {contextMousePoint && (
                 <Menu
                     keepMounted={true}
@@ -196,10 +228,11 @@ export const BooksOfCollection: React.FunctionComponent<{
     // LazyLoad at that point, it will have height zero, and then all of them fit on the page, and the
     // LazyLoad code determines that they are all visible and expands all of them, and we don't get any
     // laziness at all.
-    return props.lazyContainer && books.length > 0 ? (
+    return props.lazyLoadCollection && books.length > 0 ? (
         <LazyLoad
             height={collectionHeight}
-            scrollContainer={props.lazyContainer}
+            // See comment in the other LazyLoad above.
+            overflow={true}
             resize={true} // expand lazy elements as needed when container resizes
         >
             {content}

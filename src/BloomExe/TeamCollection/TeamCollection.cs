@@ -440,6 +440,8 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		/// <param name="bookFolderName"></param>
 		/// <returns></returns>
+		/// <remarks>Needs to be thread-safe; may be called on multiple threads at the same time,
+		/// typically but not necessarily for different books.</remarks>
 		public BookStatus GetStatus(string bookFolderName)
 		{
 			if (!TryGetBookStatusJsonFromRepo(bookFolderName, out string statusString))

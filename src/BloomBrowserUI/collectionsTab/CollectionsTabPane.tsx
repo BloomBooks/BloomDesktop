@@ -12,13 +12,15 @@ import { CollectionsTabBookPane } from "./collectionsTabBookPane/CollectionsTabB
 import { useMemo, useState } from "react";
 import useEventListener from "@use-it/event-listener";
 import { BookSelectionManager } from "./bookSelectionManager";
+import Delay from "../react_components/delay";
+import { forceCheck as convertAnyVisibleLazyLoads } from "react-lazyload";
 
 const kResizerSize = 10;
 
 export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     const collections = BloomApi.useApiJson("collections/list");
 
-    const [draggingVSplitter, setDraggingVSplitter] = useState(false);
+    const [draggingSplitter, setDraggingSplitter] = useState(false);
 
     const manager: BookSelectionManager = useMemo(() => {
         const manager = new BookSelectionManager();
@@ -33,9 +35,15 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     // mouse up. My hypothesis is that causing a re-render during mouse-up handling
     // interferes with the implementation of the splitter and causes it to miss
     // mouse up events, perhaps especially if outside the splitter control itself.
-    useEventListener("mouseup", () =>
-        setTimeout(() => setDraggingVSplitter(false), 0)
-    );
+    useEventListener("mouseup", () => {
+        if (draggingSplitter) {
+            // LazyLoad isn't smart enough to notice that the size of the parent scrolling box changed.
+            // We help out by telling it to check for anything that might have become visible
+            // because of the drag.
+            convertAnyVisibleLazyLoads();
+        }
+        setTimeout(() => setDraggingSplitter(false), 0);
+    });
 
     if (collections) {
         const sourcesCollections = collections.slice(1);
@@ -47,16 +55,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                         collectionId={c.id}
                         isEditableCollection={false}
                         manager={manager}
-                        // We need this selector to identify the element that scrolls the collections...
-                        // the one that actually has overflow=auto. This is an element nested inside the
-                        // SplitPane, and (since the documentation of react-collapse-pane is broken) I can't
-                        // find any way to put an explicit id on that element. Nor is there a different
-                        // class automatically applied to the second one. So all I can see to do is
-                        // to get it by finding an element with these two classes that follows another one
-                        // that has them. This is of course using knowledge of the implementation of SplitPane
-                        // which we have no business using, and may break with the next version of SplitPane.
-                        // But I can't find a better option.
-                        lazyContainer=".Pane.horizontal ~ .Pane.horizontal"
+                        lazyLoadCollection={true}
                     />
                 </div>
             );
@@ -113,7 +112,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                     }}
                     hooks={{
                         onDragStarted: () => {
-                            setDraggingVSplitter(true);
+                            setDraggingSplitter(true);
                         }
                     }}
                     // onDragFinished={() => {
@@ -135,6 +134,11 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                                 background: `${kDarkestBackground}`
                             }
                         }}
+                        hooks={{
+                            onDragStarted: () => {
+                                setDraggingSplitter(true);
+                            }
+                        }}
                     >
                         <div
                             css={css`
@@ -147,6 +151,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                                 collectionId={collections[0].id}
                                 isEditableCollection={true}
                                 manager={manager}
+                                lazyLoadCollection={false}
                             />
                         </div>
 
@@ -159,7 +164,12 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                                     className={`group fade-${state}`}
                                 >
                                     <h1>Sources For New Books</h1>
-                                    {collectionComponents}
+
+                                    <Delay
+                                        waitBeforeShow={100} // REview: we really want to wait for an event that indicates the main collection is mostly painted
+                                    >
+                                        {collectionComponents}
+                                    </Delay>
                                 </div>
                             )}
                         </Transition>
@@ -170,11 +180,15 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                             height: 100%;
                         `}
                     >
-                        <CollectionsTabBookPane
-                            // While we're dragging the splitter, we need to overlay the iframe book preview
-                            // so it doesn't steal the mouse events we need for dragging the splitter.
-                            disableEventsInIframe={draggingVSplitter}
-                        />
+                        <Delay
+                            waitBeforeShow={500} // Review: we really want an event that indicates the collection panes are mostly painted.
+                        >
+                            <CollectionsTabBookPane
+                                // While we're dragging the splitter, we need to overlay the iframe book preview
+                                // so it doesn't steal the mouse events we need for dragging the splitter.
+                                disableEventsInIframe={draggingSplitter}
+                            />
+                        </Delay>
                     </div>
                 </SplitPane>
             </div>
