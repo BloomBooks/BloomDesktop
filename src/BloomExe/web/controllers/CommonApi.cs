@@ -30,6 +30,7 @@ namespace Bloom.web.controllers
 	{
 		private readonly BookSelection _bookSelection;
 		private BloomParseClient _parseClient;
+		private readonly BloomWebSocketServer _webSocketServer;
 		public static bool AuthorMode { get; set; }
 		public EditingModel Model { get; set; }
 
@@ -38,10 +39,11 @@ namespace Bloom.web.controllers
 		public static WorkspaceView WorkspaceView { get; set; }
 
 		// Called by autofac, which creates the one instance and registers it with the server.
-		public CommonApi(BookSelection bookSelection, BloomParseClient parseClient)
+		public CommonApi(BookSelection bookSelection, BloomParseClient parseClient, BloomWebSocketServer webSocketServer)
 		{
 			_bookSelection = bookSelection;
 			_parseClient = parseClient;
+			_webSocketServer = webSocketServer;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -54,6 +56,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("common/error", HandleJavascriptError, false); // Common
 			apiHandler.RegisterEndpointHandler("common/preliminaryError", HandlePreliminaryJavascriptError, false); // Common
 			apiHandler.RegisterEndpointHandler("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true); // Move to EditingViewApi
+			apiHandler.RegisterEndpointHandler("common/chooseFolder", HandleChooseFolder, true);
 			apiHandler.RegisterEndpointHandler("common/showInFolder", HandleShowInFolderRequest, true); // Common
 			apiHandler.RegisterEndpointHandler("common/canModifyCurrentBook", HandleCanModifyCurrentBook, true);
 			apiHandler.RegisterEndpointHandler("common/showSettingsDialog", HandleShowSettingsDialog, false); // Common
@@ -494,6 +497,45 @@ namespace Bloom.web.controllers
 				}
 				request.PostSucceeded();
 			}
+		}
+
+		public void HandleChooseFolder(ApiRequest request)
+		{	
+				string path;
+			dynamic result = new DynamicJson();
+			using (var dlg = new FolderBrowserDialog())
+				{
+					path = request.GetParamOrNull("path");
+					if (!String.IsNullOrEmpty(path))
+						dlg.SelectedPath = path;
+					dlg.ShowNewFolderButton = true;
+
+					var description = request.GetParamOrNull("description");
+					
+					if (!string.IsNullOrEmpty(description))
+					{
+						dlg.Description = description;
+					}
+					else
+					{
+						//dlg.Description = LocalizationManager.GetString("common.chooseFolder",
+						//	"something generic");
+					}
+					result.success = dlg.ShowDialog() == DialogResult.OK;
+					result.path = result.success  ? dlg.SelectedPath : "";
+				}
+				// We send the result through a websocket rather than simply returning it because
+				// if the user is very slow (one site said FF times out after 90s) the browser may
+				// abandon the request before it completes. The POST result is ignored and the
+				// browser simply listens to the socket.
+				// We'd prefer this request to return immediately and set a callback to run
+				// when the dialog closes and handle the results, but FolderBrowserDialog
+				// does not offer such an API. Instead, we just ignore any timeout
+				// in our Javascript code.
+			
+
+				_webSocketServer.SendBundle("common", "chooseFolder-results", result);
+				request.PostSucceeded();
 		}
 	}
 }

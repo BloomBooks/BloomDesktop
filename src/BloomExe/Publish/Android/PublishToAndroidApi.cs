@@ -262,7 +262,7 @@ namespace Bloom.Publish.Android
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/bulkSaveBloomPubs", request =>
 			{
 				// update what's in the collection so that we remember for next time
-				_collectionSettings.BulkPublishBloomPubSettings = request.RequiredObject<BulkBloomPubPublishSettings>();
+				_collectionSettings.BulkPublishBloomPubSettings = request.RequiredPostObject<BulkBloomPubPublishSettings>();
 				_collectionSettings.Save();
 
 				_bulkBloomPubCreator.PublishAllBooks(_collectionSettings.BulkPublishBloomPubSettings);

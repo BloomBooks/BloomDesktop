@@ -11,7 +11,10 @@ import { ThemeProvider } from "@material-ui/styles";
 
 import BloomButton from "../react_components/bloomButton";
 
-import { WarningBox } from "../react_components/BloomDialog/commonDialogComponents";
+import {
+    ExperimentalWarningBox,
+    WarningBox
+} from "../react_components/BloomDialog/commonDialogComponents";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 
 // The contents of the Team Collection panel of the Settings dialog.
@@ -24,20 +27,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
 
     const intro: JSX.Element = (
         <div>
-            <WarningBox>
-                <span>
-                    This is an <strong>experimental</strong> feature. Please
-                    contact us at{" "}
-                    <a
-                        href="mailto:experimental@bloomlibrary.org?subject= Our interest in Team Collections"
-                        target="blank"
-                    >
-                        experimental@bloomlibrary.org
-                    </a>{" "}
-                    so that we can talk over your needs and make sure that this
-                    feature is ready for you.
-                </span>
-            </WarningBox>
+            <ExperimentalWarningBox />
             <P
                 l10nKey="TeamCollection.Intro"
                 l10nParam0="https://docs.bloomlibrary.org/team-collections"

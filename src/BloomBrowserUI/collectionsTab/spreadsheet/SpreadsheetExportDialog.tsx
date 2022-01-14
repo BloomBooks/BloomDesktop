@@ -17,25 +17,33 @@ import {
 import HelpLink from "../../react_components/helpLink";
 import {
     DialogCancelButton,
-    DialogFolderChooser
+    DialogFolderChooser,
+    ExperimentalWarningBox
 } from "../../react_components/BloomDialog/commonDialogComponents";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
 
 import { kVerticalSpacingBetweenDialogSections } from "../../bloomMaterialUITheme";
 import { ExperimentalBadge } from "../../react_components/experimentalBadge";
+import { Div, P } from "../../react_components/l10nComponents";
 
 export const SpreadsheetExportDialog: React.FunctionComponent<{
     dialogEnvironment?: IBloomDialogEnvironmentParams;
-    folder: string;
+    folderPath: string;
 }> = props => {
     var title = useL10n(
-        "Export to spreadsheet",
-        "Spreadsheet.ExportDialogTitle"
+        "Export to Spreadsheet...",
+        "CollectionTab.BookMenu.ExportToSpreadsheet" // same as the menu
+    );
+    var chooseFolderDescription = useL10n(
+        "Target folder for the spreadsheet and images:",
+        "Spreadsheet.ExportDialog.folderLabel"
     );
 
     const { closeDialog, propsForBloomDialog } = useSetupBloomDialog(
         props.dialogEnvironment
     );
+
+    const [folderPath, setFolderPath] = React.useState(props.folderPath);
 
     return (
         <BloomDialog {...propsForBloomDialog}>
@@ -44,43 +52,48 @@ export const SpreadsheetExportDialog: React.FunctionComponent<{
             </DialogTitle>
             <DialogMiddle
                 css={css`
-                    gap: ${kVerticalSpacingBetweenDialogSections};
+                    // our geckofx60 doesn't support this. So there is a <p></p> below instead
+                    // gap: ${kVerticalSpacingBetweenDialogSections};
                 `}
             >
-                <div>
+                <Div l10nKey="Spreadsheet.ExportDialog.Description">
                     Bloom will create a spreadsheet containing the text and
                     images of this book. You can then make changes, like making
                     new translations. Finally, use the “Import &amp; Update from
                     Spreadsheet...” command to bring your changes back in.
-                </div>
-                <div>
-                    <div>Target folder for the spreadsheet and images:</div>
-                    <DialogFolderChooser
-                        // TODO: wire this up
-                        apiCommandToChooseAndSetFolder=""
-                        // TODO: should DialogFolderChooser also be getting this from the same API?
-                        // I.e. /spreadsheet-folder  endpoint would have a get and put
-                        path={props.folder}
-                    />
-                </div>
+                </Div>
+                <p></p>
+                <div>{chooseFolderDescription}</div>
+
+                <DialogFolderChooser
+                    path={folderPath}
+                    setPath={setFolderPath}
+                    description={chooseFolderDescription}
+                />
             </DialogMiddle>
             <DialogBottomButtons>
                 <DialogBottomLeftButtons>
+                    {/* Currently we don't really have any help for this.
+
                     <HelpLink
                         helpId="Tasks/Basic_tasks/Export_to_Spreadsheet.htm"
                         l10nKey="Common.Help"
                     >
                         Help
-                    </HelpLink>
+                    </HelpLink> */}
                 </DialogBottomLeftButtons>
                 <BloomButton
                     enabled={true}
                     variant="contained"
-                    l10nKey="Spreadsheet.Export"
+                    l10nKey="Spreadsheet.ExportDialog.ExportButton"
                     hasText={true}
                     size="medium"
-                    // TODO: make it do something, then close
-                    onClick={closeDialog}
+                    onClick={() => {
+                        BloomApi.postData("spreadsheet/export", {
+                            parentFolderPath: folderPath
+                        });
+                        // that api call will close the dialog // closeDialog();
+                    }}
                 >
                     Export
                 </BloomButton>

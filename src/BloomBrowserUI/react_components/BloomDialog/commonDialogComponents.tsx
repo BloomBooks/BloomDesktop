@@ -8,6 +8,7 @@ import BloomButton from "../bloomButton";
 import InfoIcon from "@material-ui/icons/Info";
 import WarningIcon from "@material-ui/icons/Warning";
 import ErrorIcon from "@material-ui/icons/Error";
+import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
 
 export const kErrorBoxColor = "#eb3941";
 const kWarningBoxColor = "#FEBF00"; // isn't exactly bloom gold. This looks more orangy, intentionally.
@@ -36,7 +37,8 @@ export const DialogControlGroup: React.FunctionComponent<{}> = props => (
     </div>
 );
 
-export const DialogFolderChooser: React.FunctionComponent<{
+// This is extracted from DialogFolderChooser because CreateTeamCollection has a special api endpoint for it
+export const DialogFolderChooserWithApi: React.FunctionComponent<{
     path: string;
     apiCommandToChooseAndSetFolder: string;
 }> = props => (
@@ -85,6 +87,35 @@ export const DialogFolderChooser: React.FunctionComponent<{
         </div>
     </div>
 );
+
+export const DialogFolderChooser: React.FunctionComponent<{
+    path: string;
+    setPath: (path: string) => void;
+    description?: string;
+}> = props => {
+    // Since a user will have as much time as they want to deal with the dialog,
+    // we can't just wait for the api call to return. Instead we get called back
+    // via web socket iff they select a folder and close the dialog.
+    useSubscribeToWebSocketForObject<{ success: boolean; path: string }>(
+        "common",
+        "chooseFolder-results",
+        results => {
+            if (results.success) {
+                props.setPath(results.path);
+            }
+        }
+    );
+    const params = new URLSearchParams({
+        path: props.path,
+        description: props.description || ""
+    }).toString();
+    return (
+        <DialogFolderChooserWithApi
+            {...props}
+            apiCommandToChooseAndSetFolder={"common/chooseFolder?" + params}
+        />
+    );
+};
 
 export const DialogCloseButton: React.FunctionComponent<{
     onClick: () => void;
@@ -212,6 +243,22 @@ export const WarningBox: React.FunctionComponent<{}> = props => (
         />
         {props.children}
     </p>
+);
+export const ExperimentalWarningBox: React.FunctionComponent<{}> = () => (
+    <WarningBox>
+        <span>
+            This is an <strong>experimental</strong> feature. Please contact us
+            at{" "}
+            <a
+                href="mailto:experimental@bloomlibrary.org?subject= Our interest in Team Collections"
+                target="blank"
+            >
+                experimental@bloomlibrary.org
+            </a>{" "}
+            so that we can talk over your needs and make sure that this feature
+            is ready for you.
+        </span>
+    </WarningBox>
 );
 
 export const ErrorBox: React.FunctionComponent<{}> = props => (

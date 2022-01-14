@@ -16,7 +16,7 @@ export const ExperimentalBadge: React.FunctionComponent<{}> = props => {
                 font-weight: normal;
             `}
         >
-            {/* Intentionally not localizing this. First, we rarely localize while somehting is experimental,
+            {/* Intentionally not localizing this. First, we rarely localize while something is experimental,
             and second, a longer translation is going to look really bad. */}
             Experimental
         </div>

@@ -16,6 +16,8 @@ import { kUiFontStack } from "../../bloomMaterialUITheme.js";
 // If the dialog content contains something with class initialFocus, it will be automatically
 // focused initially. This should usually be the default button.
 
+// Enhance: Would be interested to see if this would improve if we used https://github.com/eBay/nice-modal-react
+
 const kDialogTopPadding = "24px";
 const kDialogSidePadding = "24px";
 const kDialogBottomPadding = "10px"; // per material, the bottom buttons are supposed to be closer to the edges

@@ -20,7 +20,7 @@ import {
 import {
     DialogCancelButton,
     DialogControlGroup,
-    DialogFolderChooser,
+    DialogFolderChooserWithApi,
     ErrorBox
 } from "../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../react_components/l10nHooks";
@@ -106,7 +106,7 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
                     >
                         LAN or Dropbox Folder:
                     </Div>
-                    <DialogFolderChooser
+                    <DialogFolderChooserWithApi
                         path={repoFolderPath}
                         apiCommandToChooseAndSetFolder="teamCollection/chooseFolderLocation"
                     />
