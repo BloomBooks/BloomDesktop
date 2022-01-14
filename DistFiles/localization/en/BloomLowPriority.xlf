@@ -131,6 +131,9 @@
         <source xml:lang="en">Bloom had problems writing files to that location ({0}). Check that you have permission to write there.</source>
         <note>ID: Spreadsheet.WriteFailed</note>
       </trans-unit>
+      <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer">
+        <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

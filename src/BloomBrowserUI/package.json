@@ -49,6 +49,8 @@
         "watch-kyrgyzstan": "npm-run-all --parallel watchBrandingFiles watchBrandingLess  watchTemplatesLess kyrgyzstanpug",
         "postinstall": "patch-package",
         "kyrgyzstanpug": "pug templates/xMatter/project-specific/Kyrgyzstan2020-XMatter/Kyrgyzstan2020-Xmatter.pug --pretty --watch -o ../../output/browser/templates/xMatter/Kyrgyzstan2020-XMatter --pretty"
+        "activity-pug": "pug \"templates/template books/Activity/Activity.pug\" --pretty -o \"../../output/browser/templates/template books/Activity/\" --pretty",
+        "DIDNt WORK watch-activity-less": "less-watch-compiler \"templates/template books/Activity\" \"c:/Users/hatto/Documents/Bloom/Simple Activities Templates/test-activities\""
     },
     "repository": {
         "type": "git",

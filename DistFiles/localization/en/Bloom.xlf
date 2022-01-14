@@ -5123,6 +5123,14 @@ Do you want to go ahead?</note>
         <source xml:lang="en">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</source>
         <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Picture" sil:dynamic="true">
+        <source xml:lang="en">An interactive page with an image and some text buttons.</source>
+        <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Choose Picture from Word" sil:dynamic="true">
+        <source xml:lang="en">An interactive page with a text and some picture buttons.</source>
+        <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true">
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>
         <note>ID: TemplateBooks.PageDescription.Translation Instructions</note>

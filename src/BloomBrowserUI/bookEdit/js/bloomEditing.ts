@@ -110,9 +110,15 @@ function Cleanup() {
         $(this).removeClass("hoverUp");
     });
 
-    $("button").each(function() {
-        $(this).remove();
-    });
+    $("button")
+        // Note, previously this was just removing all <button>s.
+        // We could have instead decided to enforce the rule that temporary
+        // ui elements are supposed to have ".bloom-ui" (see above in this function)
+        // Feeling cowardly, I'm introducing page-content so as to change existing behavior as little as possible.
+        .not($(".page-content"))
+        .each(function() {
+            $(this).remove();
+        });
 
     $("div.bloom-editable").each(function() {
         TrimTrailingLineBreaksInDivs(this);
