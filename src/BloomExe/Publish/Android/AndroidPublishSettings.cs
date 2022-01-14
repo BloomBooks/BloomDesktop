@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Bloom.Book;
 
@@ -40,17 +40,39 @@ namespace Bloom.Publish.Android
 			// REVIEW: why wasn't AudioLanguagesToExclude included here?
 		}
 
-		public static AndroidPublishSettings FromBookInfo(BookInfo bookInfo)
+		// BL-10840 When the Harvester is getting AndroidPublishSettings, we want to use the settings
+		// for BloomLibrary, since the book has been uploaded using those settings for text and audio
+		// languages.
+		private static HashSet<string> GetLanguagesToInclude(LangsToPublishSetting langsToPublish)
 		{
-			var languagesToInclude = bookInfo.MetaData.TextLangsToPublish != null
-				? new HashSet<string>(bookInfo.MetaData.TextLangsToPublish.ForBloomPUB
+			return langsToPublish != null
+				? new HashSet<string>((Program.RunningHarvesterMode ? langsToPublish.ForBloomLibrary: langsToPublish.ForBloomPUB)
 					.Where(kvp => kvp.Value.IsIncluded()).Select(kvp => kvp.Key))
 				: new HashSet<string>();
+
+		}
+
+		// BL-10840 When the Harvester is getting AndroidPublishSettings, we want to use the settings
+		// for BloomLibrary, since the book has been uploaded using those settings for text and audio
+		// languages.
+		private static HashSet<string> GetLanguagesToExclude(LangsToPublishSetting langsToNotPublish)
+		{
+			return langsToNotPublish != null
+				? new HashSet<string>((Program.RunningHarvesterMode ? langsToNotPublish.ForBloomLibrary : langsToNotPublish.ForBloomPUB)
+				.Where(kvp => !kvp.Value.IsIncluded()).Select(kvp =>kvp.Key))
+				: new HashSet<string>();
+		}
+
+		public static AndroidPublishSettings FromBookInfo(BookInfo bookInfo)
+		{
+			var textLangsToPublish = bookInfo.MetaData.TextLangsToPublish;
+			var audioLangsToPublish = bookInfo.MetaData.AudioLangsToPublish;
+			var languagesToInclude = GetLanguagesToInclude(textLangsToPublish);
 
 			HashSet<string> audioLanguagesToExclude;
 			if (bookInfo.MetaData.AudioLangsToPublish == null)
 			{
-				if (bookInfo.MetaData.TextLangsToPublish == null)
+				if (textLangsToPublish == null)
 				{
 					// We really want to exclude all of them, but we don't know what all the possibilities are.
 					audioLanguagesToExclude = new HashSet<string>();
@@ -59,15 +81,13 @@ namespace Bloom.Publish.Android
 				{
 					// We want to exclude the audio files for the languages that we are not publishing the text of.
 					// We aren't sure if we need this, or if AudioLangsToPublish is only null when there is no audio in the book at all.
-					audioLanguagesToExclude = new HashSet<string>(bookInfo.MetaData.TextLangsToPublish.ForBloomPUB
-						.Where(kvp => !kvp.Value.IsIncluded()).Select(kvp => kvp.Key));
+					audioLanguagesToExclude = GetLanguagesToExclude(textLangsToPublish);
 				}
 			}
 			else
 			{
 				// We do have some settings for the audio languages, choose the ones that have been explicitly marked as excluded
-				audioLanguagesToExclude = new HashSet<string>(bookInfo.MetaData.AudioLangsToPublish.ForBloomPUB
-					.Where(kvp => !kvp.Value.IsIncluded()).Select(kvp => kvp.Key));
+				audioLanguagesToExclude = GetLanguagesToExclude(audioLangsToPublish);
 			}
 
 			return new AndroidPublishSettings()

@@ -211,7 +211,7 @@ namespace Bloom.CLI
 					// Ensure directory exists, just in case.
 					Directory.CreateDirectory(Path.GetDirectoryName(zippedBloomDOutputPath));
 					// Make the bloomd
-					string unzippedPath = Publish.Android.BloomPubMaker.CreateBloomPub(
+					string unzippedPath = BloomPubMaker.CreateBloomPub(
 					zippedBloomDOutputPath,
 					bookPath,
 					bookServer,
