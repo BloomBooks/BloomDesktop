@@ -34,8 +34,7 @@ const theme = createMuiTheme({
     palette: {
         primary: { main: kBloomBlue },
         secondary: { main: kBloomPurple },
-        warning: { main: kBloomGold },
-        text: { secondary: kRefreshIconColor }
+        warning: { main: kBloomGold }
     },
     typography: {
         fontSize: 12,
@@ -71,6 +70,16 @@ const theme = createMuiTheme({
         MuiTypography: {
             h6: {
                 fontSize: "1rem"
+            }
+        },
+        MuiCheckbox: {
+            root: {
+                // for some reason,  in Material-UI 4.0 without this, we instead get unchecked boxes having the color of secondary text!!!!
+                color: kBloomBlue,
+                // In Material-UI 4.0, these just FLAT OUT DON'T WORK, despite the documentation, which I read to say that, if we didn't
+                // specify a `color` above, would then let us specify the color you get for primary and secondary. See https://github.com/mui-org/material-ui/issues/13895
+                colorPrimary: "green", //kBloomBlue,
+                colorSecondary: "pink" //kBloomPurple
             }
         }
     }
