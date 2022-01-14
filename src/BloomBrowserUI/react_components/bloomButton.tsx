@@ -5,15 +5,13 @@ import {
     ILocalizationState,
     LocalizableElement
 } from "./l10nComponents";
-import Button from "@material-ui/core/Button";
+import Button, { ButtonProps } from "@material-ui/core/Button";
 
-export interface IBloomButtonProps extends ILocalizationProps {
-    id?: string;
+export interface IBloomButtonProps extends ILocalizationProps, ButtonProps {
     enabled: boolean;
     clickApiEndpoint?: string;
     onClick?: () => void;
     transparent?: boolean;
-    variant?: "text" | "outlined" | "contained" | undefined; // see https://material-ui.com/api/button/
     mightNavigate?: boolean; // true if the post of clickEndpoint might navigate to a new page.
     hasText?: boolean; // default is undefined which we take to mean "yes". This allows us to define buttons with only images and no text.
     // If neither enabled or disabled image file is provided, no image will show.
@@ -23,9 +21,6 @@ export interface IBloomButtonProps extends ILocalizationProps {
     l10nTipEnglishEnabled?: string; // existence of these two strings (or one of them) enables tooltips on the button.
     l10nTipEnglishDisabled?: string;
     iconBeforeText?: React.ReactNode;
-    size?: "small" | "medium" | "large" | undefined;
-    color?: "primary" | "secondary" | undefined;
-    href?: string;
 }
 
 // A button that takes a Bloom API endpoint to post() when clicked
@@ -99,6 +94,7 @@ export default class BloomButton extends LocalizableElement<
                 size={this.props.size}
                 href={this.props.href}
                 {...extraCssFromContainer} // allows defining more css rules from container
+                {...this.props} // bring in other props like disableRipple
             >
                 {commonChildren}
             </Button>

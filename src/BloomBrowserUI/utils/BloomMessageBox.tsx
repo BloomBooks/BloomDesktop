@@ -3,7 +3,6 @@ import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
-import { DialogContent, DialogContentText } from "@material-ui/core";
 import BloomButton from "../react_components/bloomButton";
 import { BloomApi } from "./bloomApi";
 import WarningOutlinedIcon from "@material-ui/icons/WarningOutlined";
@@ -11,9 +10,10 @@ import {
     BloomDialog,
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog,
-    DialogBottomButtons
+    DialogBottomButtons,
+    DialogMiddle,
+    DialogTitle
 } from "../react_components/BloomDialog/BloomDialog";
-import { useEffect } from "react";
 
 export interface MessageBoxButton {
     text: string;
@@ -54,6 +54,7 @@ export const BloomMessageBox: React.FunctionComponent<{
             hasText={true}
             variant={button.default ? "contained" : "outlined"}
             onClick={() => closeDialogForButton(button.id)}
+            disableRipple // I have nothing against ripple, but when a default buttons shows with a ripple even though your'e not clicking or even pointing at it... it looks dumb.
         >
             {button.text}
         </BloomButton>
@@ -61,7 +62,9 @@ export const BloomMessageBox: React.FunctionComponent<{
 
     return (
         <BloomDialog {...propsForBloomDialog}>
-            <DialogContent>
+            {/* We need a element title to make things space correctly because BloomDialog expects to have one, even though at the moment we aren't including a title */}
+            <DialogTitle title={""}></DialogTitle>
+            <DialogMiddle>
                 <div
                     id="root"
                     css={css`
@@ -78,14 +81,19 @@ export const BloomMessageBox: React.FunctionComponent<{
                             `}
                         />
                     )}
-                    <DialogContentText
-                        className="allowSelect"
+                    <div
+                        css={css`
+                            -moz-user-select: text; // Firefox before v69
+                            user-select: text;
+                            margin-left: 20px;
+                            padding-top: 7px;
+                        `}
                         dangerouslySetInnerHTML={{
                             __html: props.messageHtml || ""
                         }}
                     />
                 </div>
-            </DialogContent>
+            </DialogMiddle>
             <DialogBottomButtons>{rightButtons}</DialogBottomButtons>
         </BloomDialog>
     );
