@@ -7,7 +7,10 @@ Copyright (c) 2014 Simon Hagström
 Released under the MIT license
 https://raw.github.com/shagstrom/split-pane/master/LICENSE
 
+Modified Jan 17, 2022 gjm: Get shim dragging to work with scaling
 */
+import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
+
 (function($) {
     $.fn.splitPane = function() {
         var $splitPanes = this;
@@ -265,6 +268,9 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
     }
 
     function createMousemove($splitPane, pageX, pageY) {
+        var pageScale = EditableDivUtils.getPageScale();
+        var scaledX = pageX / pageScale;
+        var scaledY = pageY / pageScale;
         var splitPane = $splitPane[0],
             firstComponent = $splitPane.children(
                 ".split-pane-component:first"
@@ -279,13 +285,13 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
                     splitPane.offsetHeight -
                     minHeight(lastComponent) -
                     divider.offsetHeight,
-                topOffset = divider.offsetTop - pageY;
+                topOffset = divider.offsetTop - scaledY;
             return function(event) {
                 event.preventDefault();
                 var top = Math.min(
                     Math.max(
                         firstComponentMinHeight,
-                        topOffset + pageYof(event)
+                        topOffset + pageYof(event) / pageScale
                     ),
                     maxFirstComponentHeight
                 );
@@ -298,13 +304,13 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
                     splitPane.offsetHeight -
                     minHeight(firstComponent) -
                     divider.offsetHeight,
-                bottomOffset = lastComponent.offsetHeight + pageY;
+                bottomOffset = lastComponent.offsetHeight + scaledY;
             return function(event) {
                 event.preventDefault();
                 var bottom = Math.min(
                     Math.max(
                         lastComponentMinHeight,
-                        bottomOffset - pageYof(event)
+                        bottomOffset - pageYof(event) / pageScale
                     ),
                     maxLastComponentHeight
                 );
@@ -323,13 +329,13 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
                     splitPaneHeight -
                     minHeight(firstComponent) -
                     divider.offsetHeight,
-                bottomOffset = lastComponent.offsetHeight + pageY;
+                bottomOffset = lastComponent.offsetHeight + scaledY;
             return function(event) {
                 event.preventDefault();
                 var bottom = Math.min(
                     Math.max(
                         lastComponentMinHeight,
-                        bottomOffset - pageYof(event)
+                        bottomOffset - pageYof(event) / pageScale
                     ),
                     maxLastComponentHeight
                 );
@@ -344,13 +350,13 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
                     splitPane.offsetWidth -
                     minWidth(lastComponent) -
                     divider.offsetWidth,
-                leftOffset = divider.offsetLeft - pageX;
+                leftOffset = divider.offsetLeft - scaledX;
             return function(event) {
                 event.preventDefault();
                 var left = Math.min(
                     Math.max(
                         firstComponentMinWidth,
-                        leftOffset + pageXof(event)
+                        leftOffset + pageXof(event) / pageScale
                     ),
                     maxFirstComponentWidth
                 );
@@ -363,13 +369,13 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
                     splitPane.offsetWidth -
                     minWidth(firstComponent) -
                     divider.offsetWidth,
-                rightOffset = lastComponent.offsetWidth + pageX;
+                rightOffset = lastComponent.offsetWidth + scaledX;
             return function(event) {
                 event.preventDefault();
                 var right = Math.min(
                     Math.max(
                         lastComponentMinWidth,
-                        rightOffset - pageXof(event)
+                        rightOffset - pageXof(event) / pageScale
                     ),
                     maxLastComponentWidth
                 );
@@ -383,13 +389,13 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
                     splitPaneWidth -
                     minWidth(firstComponent) -
                     divider.offsetWidth,
-                rightOffset = lastComponent.offsetWidth + pageX;
+                rightOffset = lastComponent.offsetWidth + scaledX;
             return function(event) {
                 event.preventDefault();
                 var right = Math.min(
                     Math.max(
                         lastComponentMinWidth,
-                        rightOffset - pageXof(event)
+                        rightOffset - pageXof(event) / pageScale
                     ),
                     maxLastComponentWidth
                 );
