@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
 using System.Xml;
+using Bloom.Api;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Publish;
@@ -593,7 +594,7 @@ namespace Bloom.Book
 		private HtmlDom GetErrorDom(string extraMessages="")
 		{
 			var builder = new StringBuilder();
-			builder.Append("<html><head><meta charset=\"UTF-8\" /></head><body style='font-family:arial,sans'>");
+			builder.Append("<html><head><meta charset=\"UTF-8\" /></head><body style='font-family:arial,sans; background-color:white'>");
 
 			builder.AppendLine(
 				Storage != null ?
@@ -610,8 +611,12 @@ namespace Bloom.Book
 			if (Storage.ErrorAllowsReporting)
 			{
 				var message = LocalizationManager.GetString("Errors.ReportThisProblemButton", "Report this problem to Bloom Support");
-				builder.AppendFormat(
-					"<input type='button' value='" + message + "' href='ReportProblem'></input>");
+				// The easiest way to get something in this generated DOM to actually do something back in C#
+				// is to embed an inline click action which posts to our fileserver directly.
+				var url = BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "api/problemReport/unreadableBook";
+				// No single quotes allowed in this string!
+				var onClick = "const Http = new XMLHttpRequest(); const url=\"" + url + "\"; Http.open(\"POST\", url); Http.send();";
+				builder.Append("<button onClick='" + onClick + "'>" + message + "</button>");
 			}
 
 			builder.Append("</body></html>");

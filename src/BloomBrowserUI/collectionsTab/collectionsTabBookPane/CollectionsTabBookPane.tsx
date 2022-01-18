@@ -100,7 +100,8 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     // Note: If canMakeBook is true, then saveable is probably false (the source book is likely not in the editable collection),
     // but you still want the button to be enabled
     const isButtonEnabled = canMakeBook || saveable;
-    const editOrMakeButton: JSX.Element = (
+    const editOrMakeButton: JSX.Element | boolean = collectionKind !==
+        "error" && (
         <BloomButton
             enabled={isButtonEnabled}
             variant={"outlined"}
