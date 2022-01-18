@@ -1,5 +1,4 @@
-﻿#define SHOW_REACT_COLLECTION_TAB
-namespace Bloom.Workspace
+﻿namespace Bloom.Workspace
 {
 
 	partial class WorkspaceView
@@ -60,9 +59,7 @@ namespace Bloom.Workspace
 			this._aboutBloomMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._panelHoldingToolStrip = new Bloom.Workspace.NestedDockedChildPanel();
 			this._applicationUpdateCheckTimer = new System.Windows.Forms.Timer(this.components);
-#if SHOW_REACT_COLLECTION_TAB
 			this._reactCollectionTab = new Messir.Windows.Forms.TabStripButton();
-#endif
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this._tabStrip.SuspendLayout();
 			this._toolStrip.SuspendLayout();
@@ -101,10 +98,8 @@ namespace Bloom.Workspace
 			this._tabStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
 			this._tabStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
 			this._tabStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-#if SHOW_REACT_COLLECTION_TAB
-            this._reactCollectionTab,
-#endif
-            this._legacyCollectionTab,
+			this._reactCollectionTab,
+			this._legacyCollectionTab,
             this._editTab,
             this._publishTab});
 			this._L10NSharpExtender.SetLocalizableToolTip(this._tabStrip, null);
@@ -414,7 +409,6 @@ namespace Bloom.Workspace
 			// 
 			this._applicationUpdateCheckTimer.Interval = 60000;
 			this._applicationUpdateCheckTimer.Tick += new System.EventHandler(this._applicationUpdateCheckTimer_Tick);
-#if SHOW_REACT_COLLECTION_TAB
 			// 
 			// _reactCollectionTab
 			// 
@@ -437,7 +431,6 @@ namespace Bloom.Workspace
 			this._reactCollectionTab.Size = new System.Drawing.Size(103, 71);
 			this._reactCollectionTab.Text = "Collections";
 			this._reactCollectionTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-#endif
 			// 
 			// WorkspaceView
 			// 
@@ -497,8 +490,6 @@ namespace Bloom.Workspace
 		private System.Windows.Forms.ToolStripMenuItem _aboutBloomMenuItem;
 		private NestedDockedChildPanel _panelHoldingToolStrip;
 		private System.Windows.Forms.ToolStripMenuItem _askAQuestionMenuItem;
-#if SHOW_REACT_COLLECTION_TAB
 		private Messir.Windows.Forms.TabStripButton _reactCollectionTab;
-#endif
-	}
+    }
 }

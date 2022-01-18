@@ -43,6 +43,12 @@ namespace Bloom.Api
 			CurrentCollectionSettings = collectionSettings;
 		}
 
+		public void ClearEndpointHandlers()
+		{
+			_endpointRegistrations.Clear();
+			_exactEndpointRegistrations.Clear();
+		}
+
 		/// <summary>
 		/// Get called when a client (i.e. javascript) does an HTTP api call
 		/// </summary>
@@ -90,7 +96,7 @@ namespace Bloom.Api
 				RequiresSync = requiresSync,
 				MeasurementLabel = pattern, // can be overridden... this is just a default
 			};
-			_exactEndpointRegistrations[pattern.ToLowerInvariant().Trim(new char[] { '/' })] = registration;
+			_exactEndpointRegistrations.Add(pattern.ToLowerInvariant().Trim(new char[] { '/' }), registration);
 			return registration; // return it so the caller can say  RegisterEndpointHandler().Measurable();
 		}
 

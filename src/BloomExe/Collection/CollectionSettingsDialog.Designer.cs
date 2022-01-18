@@ -930,7 +930,7 @@ namespace Bloom.Collection
 			this._newCollectionCheckbox.Name = "_newCollectionCheckbox";
 			this._newCollectionCheckbox.Size = new System.Drawing.Size(143, 23);
 			this._newCollectionCheckbox.TabIndex = 12;
-			this._newCollectionCheckbox.Text = "New Collection Tab";
+			this._newCollectionCheckbox.Text = "Try the New Version of the Collection Tab";
 			this._newCollectionCheckbox.UseVisualStyleBackColor = true;
 			this._newCollectionCheckbox.CheckedChanged += new System.EventHandler(this._newCollectionCheckbox_CheckedChanged);
 			// 

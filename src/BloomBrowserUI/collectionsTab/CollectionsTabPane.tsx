@@ -12,7 +12,7 @@ import { CollectionsTabBookPane } from "./collectionsTabBookPane/CollectionsTabB
 import { useMemo, useState } from "react";
 import useEventListener from "@use-it/event-listener";
 import { BookSelectionManager } from "./bookSelectionManager";
-import Delay from "../react_components/delay";
+import ShowAfterDelay from "../react_components/showAfterDelay";
 import { forceCheck as convertAnyVisibleLazyLoads } from "react-lazyload";
 
 const kResizerSize = 10;
@@ -165,11 +165,11 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                                 >
                                     <h1>Sources For New Books</h1>
 
-                                    <Delay
+                                    <ShowAfterDelay
                                         waitBeforeShow={100} // REview: we really want to wait for an event that indicates the main collection is mostly painted
                                     >
                                         {collectionComponents}
-                                    </Delay>
+                                    </ShowAfterDelay>
                                 </div>
                             )}
                         </Transition>
@@ -180,7 +180,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                             height: 100%;
                         `}
                     >
-                        <Delay
+                        <ShowAfterDelay
                             waitBeforeShow={500} // Review: we really want an event that indicates the collection panes are mostly painted.
                         >
                             <CollectionsTabBookPane
@@ -188,7 +188,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                                 // so it doesn't steal the mouse events we need for dragging the splitter.
                                 disableEventsInIframe={draggingSplitter}
                             />
-                        </Delay>
+                        </ShowAfterDelay>
                     </div>
                 </SplitPane>
             </div>

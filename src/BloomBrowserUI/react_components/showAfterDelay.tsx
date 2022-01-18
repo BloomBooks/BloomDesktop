@@ -1,8 +1,8 @@
 import * as React from "react";
 
-// This class shows nothing for waitBeforeShow ms, then its children.
+// This class shows nothing for showAfterDelay ms, then its children.
 // Thanks to goulashsoup on StackOverflow.
-class Delayed extends React.Component<
+class ShowAfterDelay extends React.Component<
     { waitBeforeShow: number },
     { hidden: boolean }
 > {
@@ -22,4 +22,4 @@ class Delayed extends React.Component<
     }
 }
 
-export default Delayed;
+export default ShowAfterDelay;

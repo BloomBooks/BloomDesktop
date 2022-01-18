@@ -1,7 +1,3 @@
-// Current plan is that instead of just defining this and so getting both tabs,
-// we will make the new collection tab an experimental feature, and so only ever
-// have one in use.
-#define SHOW_REACT_COLLECTION_TAB
 using System;
 using System.Diagnostics;
 using System.Drawing;
@@ -64,9 +60,7 @@ namespace Bloom.Workspace
 		private LibraryView _legacyCollectionView;
 		private EditingView _editingView;
 		private PublishView _publishView;
-#if SHOW_REACT_COLLECTION_TAB
 		private ReactCollectionTabView _reactCollectionTabView;
-#endif
 		private Control _previouslySelectedControl;
 		public event EventHandler CloseCurrentProject;
 		public event EventHandler ReopenCurrentProject;
@@ -87,9 +81,7 @@ namespace Bloom.Workspace
 
 		public WorkspaceView(WorkspaceModel model,
 							Control libraryView,
-#if SHOW_REACT_COLLECTION_TAB
 							ReactCollectionTabView.Factory reactCollectionsTabsViewFactory,
-#endif
 							EditingView.Factory editingViewFactory,
 							PublishView.Factory pdfViewFactory,
 							CollectionSettingsDialog.Factory settingsDialogFactory,
@@ -108,7 +100,8 @@ namespace Bloom.Workspace
 							BloomWebSocketServer webSocketServer,
 							AppApi appApi,
 							BookServer bookServer,
-							CollectionApi collectionApi
+							CollectionApi collectionApi,
+							WorkspaceApi workspaceApi
 			)
 		{
 			_model = model;
@@ -122,6 +115,7 @@ namespace Bloom.Workspace
 			_bookServer = bookServer;
 			collectionApi.WorkspaceView = this; // avoids an Autofac exception that appears if collectionApi constructor takes a WorkspaceView
 			appApi.WorkspaceView = this; // it needs to know, and there's some circularity involved in having factory pass it in
+			workspaceApi.WorkspaceView = this; // and yet one more
 
 			_collectionSettings = collectionSettings;
 			// This provides the common API with a hook it can use to reload
@@ -183,7 +177,6 @@ namespace Bloom.Workspace
 			this._editingView = editingViewFactory();
 			this._editingView.Dock = DockStyle.Fill;
 
-#if SHOW_REACT_COLLECTION_TAB
 			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kNewCollectionTab))
 			{
 				_reactCollectionTabView = reactCollectionsTabsViewFactory();
@@ -205,9 +198,6 @@ namespace Bloom.Workspace
 				_tabStrip.Items.Remove(_reactCollectionTab);
 				_reactCollectionTab.Dispose();
 			}
-#else
-            this._tabStrip.SelectedTab = this._legacyCollectionTab;
-#endif
 
 			//
 			// _pdfView
@@ -221,7 +211,6 @@ namespace Bloom.Workspace
 			SetTabVisibility(_publishTab, false);
 			SetTabVisibility(_editTab, false);
 
-#if SHOW_REACT_COLLECTION_TAB
 			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kNewCollectionTab))
 			{
 				this._reactCollectionTab.Text = _reactCollectionTabView.CollectionTabLabel;
@@ -234,11 +223,7 @@ namespace Bloom.Workspace
 				_tabStrip.SelectedTab = _legacyCollectionTab;
 				SelectPage(_legacyCollectionView);
 			}
-#else
-			this._legacyCollectionTab.Text =  _legacyCollectionView.CollectionTabLabel;
-			_tabStrip.SelectedTab = _legacyCollectionTab;
-			SelectPage(_legacyCollectionView);
-#endif
+
 			if (Platform.IsMono)
 			{
 				// Without this adjustment, we lose some controls on smaller resolutions.
@@ -263,29 +248,6 @@ namespace Bloom.Workspace
 			// happen in response to the book selection changed websocked message.
 			bookSelection.SelectionChangedHighPriority += HandleBookSelectionChanged;
 			bookStatusChangeEvent.Subscribe(args => { HandleBookStatusChange(args); });
-		}
-
-		/// <summary>
-		/// If this gets complex, we can create a WorkspaceApi, but for just one command it's not worth it, I think.
-		/// </summary>
-		/// <param name="apiHandler"></param>
-		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
-		{
-			apiHandler.RegisterEndpointHandler( "workspace/openOrCreateCollection/", HandleOpenOrCreateCollection,
-				true);
-		}
-		private void OpenCreateLibrary(object sender, EventArgs e)
-		{
-			Application.Idle -= OpenCreateLibrary;
-			OpenCreateLibrary();
-		}
-
-		private void HandleOpenOrCreateCollection(ApiRequest request)
-		{
-			// This shuts everything down, so it needs to happen after all the request processing
-			// is complete.
-			Application.Idle += OpenCreateLibrary;
-			request.PostSucceeded();
 		}
 
 		public void HandleRenameCommand()
@@ -335,7 +297,6 @@ namespace Bloom.Workspace
 
 		private void ReadyToShowCollections()
 		{
-#if SHOW_REACT_COLLECTION_TAB
 			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kNewCollectionTab))
 			{
 				_reactCollectionTabView.ReadyToShowCollections();
@@ -344,9 +305,6 @@ namespace Bloom.Workspace
 			{
 				_legacyCollectionView.ReadyToShowCollections();
 			}
-#else
-				_legacyCollectionView.ReadyToShowCollections();
-#endif
 		}
 
 		/// <summary>

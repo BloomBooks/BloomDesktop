@@ -198,6 +198,8 @@ export const BookButton: React.FunctionComponent<{
     const renameHeight = 40;
     const downSize = 14; // size of down-arrow icon
 
+    // Given the actual point the user clicked, set our state variable to a slightly adjusted point
+    // where we want the popup menu to appear.
     const setAdjustedContextMenuPoint = (x: number, y: number) => {
         setContextMousePoint({
             mouseX: x - 2,
