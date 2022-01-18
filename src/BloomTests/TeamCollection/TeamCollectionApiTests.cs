@@ -183,6 +183,12 @@ namespace BloomTests.TeamCollection
 			_server = new BloomServer(new BookSelection());
 		}
 
+		[SetUp]
+		public void Setup()
+		{
+			_server?.ApiHandler?.ClearEndpointHandlers();
+		}
+
 		[OneTimeTearDown]
 		public void OneTimeTearDown()
 		{

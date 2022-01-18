@@ -19,7 +19,7 @@ export const IconHeadingBodyMenuPanel: React.FunctionComponent<{
 }> = props => {
     // Might eventually become props
     const panelHeight = 180;
-    const mainTitleHeight = 52;
+    const mainTitleHeight = 60; // just enough for two lines of heading without a scroll bar
     return (
         <div
             css={css`
@@ -38,10 +38,13 @@ export const IconHeadingBodyMenuPanel: React.FunctionComponent<{
                         //padding-top: 6px;
                         padding-left: 8px;
                         padding-right: 8px;
-                        display: flex;
+                        // The following will center it vertically, relative to the following div containing
+                        // the heading and subheading. I (JohnT) think this looks strange when the text is higher than
+                        // the icon; better to keep it in the top left.
+                        /* display: flex;
                         flex-direction: column;
                         justify-content: center;
-                        align-items: flex-start;
+                        align-items: flex-start; */
                         img {
                             width: 90%;
                         }
@@ -63,11 +66,26 @@ export const IconHeadingBodyMenuPanel: React.FunctionComponent<{
                         max-height: ${mainTitleHeight}px;
                         // If the main title runs to more than two lines, we allow a scroll bar.
                         overflow-y: auto;
+                        // tighten up line spacing; helps fit two lines, and when there are two, makes sure they
+                        // are closer to each other than the main heading is to the subheading.
+                        line-height: 1.3 !important;
                     `}
                     align="left"
                     variant="h6"
                 >
-                    {props.heading}
+                    <div
+                        css={css`
+                            // I don't understand this at all, but somehow, with line-height set to 1.3 to make a 2-line heading
+                            // tight, if the heading is not wrapped with another div and this much bottom margin,
+                            // the browser makes the parent header element shorter than the two lines and shows a
+                            // (tiny, confusing) scroll bar.
+                            // We could also prevent the scroll bar by setting a height rather than just a max-height for the parent,
+                            // but then it could not shrink to a single line in the common case where that's all we need.
+                            margin-bottom: 8px;
+                        `}
+                    >
+                        {props.heading}
+                    </div>
                 </Typography>
                 <Typography
                     css={css`
@@ -77,7 +95,7 @@ export const IconHeadingBodyMenuPanel: React.FunctionComponent<{
                         // The MUI default here makes the lines more widely spaced than the gap between the
                         // main heading and the subheading. Previously we added extra margin-bottom on the
                         // header to compensate, but it looks better tighter.
-                        line-height: unset !important;
+                        line-height: 1.3 !important;
                     `}
                     align="left"
                     variant="subtitle2"

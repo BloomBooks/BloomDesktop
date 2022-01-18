@@ -9,20 +9,41 @@ import { SplitPane } from "react-collapse-pane";
 import { kPanelBackground, kDarkestBackground } from "../bloomMaterialUITheme";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { CollectionsTabBookPane } from "./collectionsTabBookPane/CollectionsTabBookPane";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import useEventListener from "@use-it/event-listener";
+import { BookSelectionManager } from "./bookSelectionManager";
+import ShowAfterDelay from "../react_components/showAfterDelay";
+import { forceCheck as convertAnyVisibleLazyLoads } from "react-lazyload";
 
 const kResizerSize = 10;
 
 export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     const collections = BloomApi.useApiJson("collections/list");
 
-    const [draggingVSplitter, setDraggingVSplitter] = useState(false);
+    const [draggingSplitter, setDraggingSplitter] = useState(false);
+
+    const manager: BookSelectionManager = useMemo(() => {
+        const manager = new BookSelectionManager();
+        manager.initialize();
+        return manager;
+    }, []);
 
     // There's no event built into the splitter that will tell us when drag is done.
     // So to tell that it's over, we have a global listener for mouseup.
     // useEventListener handles cleaning up the listener when this component is disposed.
-    useEventListener("mouseup", () => setDraggingVSplitter(false));
+    // The small delay somehow prevents a problem where the drag would continue after
+    // mouse up. My hypothesis is that causing a re-render during mouse-up handling
+    // interferes with the implementation of the splitter and causes it to miss
+    // mouse up events, perhaps especially if outside the splitter control itself.
+    useEventListener("mouseup", () => {
+        if (draggingSplitter) {
+            // LazyLoad isn't smart enough to notice that the size of the parent scrolling box changed.
+            // We help out by telling it to check for anything that might have become visible
+            // because of the drag.
+            convertAnyVisibleLazyLoads();
+        }
+        setTimeout(() => setDraggingSplitter(false), 0);
+    });
 
     if (collections) {
         const sourcesCollections = collections.slice(1);
@@ -33,6 +54,8 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                     <BooksOfCollection
                         collectionId={c.id}
                         isEditableCollection={false}
+                        manager={manager}
+                        lazyLoadCollection={true}
                     />
                 </div>
             );
@@ -89,7 +112,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                     }}
                     hooks={{
                         onDragStarted: () => {
-                            setDraggingVSplitter(true);
+                            setDraggingSplitter(true);
                         }
                     }}
                     // onDragFinished={() => {
@@ -111,6 +134,11 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                                 background: `${kDarkestBackground}`
                             }
                         }}
+                        hooks={{
+                            onDragStarted: () => {
+                                setDraggingSplitter(true);
+                            }
+                        }}
                     >
                         <div
                             css={css`
@@ -122,6 +150,8 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                             <BooksOfCollection
                                 collectionId={collections[0].id}
                                 isEditableCollection={true}
+                                manager={manager}
+                                lazyLoadCollection={false}
                             />
                         </div>
 
@@ -134,7 +164,12 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                                     className={`group fade-${state}`}
                                 >
                                     <h1>Sources For New Books</h1>
-                                    {collectionComponents}
+
+                                    <ShowAfterDelay
+                                        waitBeforeShow={100} // REview: we really want to wait for an event that indicates the main collection is mostly painted
+                                    >
+                                        {collectionComponents}
+                                    </ShowAfterDelay>
                                 </div>
                             )}
                         </Transition>
@@ -145,11 +180,15 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                             height: 100%;
                         `}
                     >
-                        <CollectionsTabBookPane
-                            // While we're dragging the splitter, we need to overlay the iframe book preview
-                            // so it doesn't steal the mouse events we need for dragging the splitter.
-                            disableEventsInIframe={draggingVSplitter}
-                        />
+                        <ShowAfterDelay
+                            waitBeforeShow={500} // Review: we really want an event that indicates the collection panes are mostly painted.
+                        >
+                            <CollectionsTabBookPane
+                                // While we're dragging the splitter, we need to overlay the iframe book preview
+                                // so it doesn't steal the mouse events we need for dragging the splitter.
+                                disableEventsInIframe={draggingSplitter}
+                            />
+                        </ShowAfterDelay>
                     </div>
                 </SplitPane>
             </div>

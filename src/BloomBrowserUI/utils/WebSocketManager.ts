@@ -41,10 +41,7 @@ function useWebSocketListenerInner<T>(
         };
         WebSocketManager.addListener(clientContext, l);
         // Clean up when we are unmounted or this useEffect runs again (i.e. if the props.webSocketContext were to change)
-        // TODO: we want this, but it breaks ReaderPublishScreen, maybe
-        // because the progress dialog closes and something disconnects and then
-        // the preview screen doesn't get the message that we're done.
-        //return WebSocketManager.removeListener(clientContext, l);
+        return () => WebSocketManager.removeListener(clientContext, l);
     }, []);
 }
 

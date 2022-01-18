@@ -112,7 +112,7 @@ namespace Bloom.Edit
 				}
 			}
 			var frame = BloomFileLocator.GetBrowserFile(false, "bookEdit", "pageThumbnailList", "pageThumbnailList.html");
-			var backColor = ColorToHtmlCode(BackColor);
+			var backColor = MiscUtils.ColorToHtmlCode(BackColor);
 			_baseHtml = RobustFile.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
 		}
 
@@ -184,12 +184,6 @@ namespace Bloom.Edit
 				PageListApi.SelectedPage = page;
 				WebSocketServer.SendString("pageThumbnailList", "selecting", page.Id);
 			}
-		}
-
-		string ColorToHtmlCode(Color color)
-		{
-			// thanks to http://stackoverflow.com/questions/982028/convert-net-color-objects-to-hex-codes-and-back
-			return string.Format("#{0:X2}{1:X2}{2:X2}", color.R, color.G, color.B);
 		}
 
 		public void SetItems(IEnumerable<IPage> pages)

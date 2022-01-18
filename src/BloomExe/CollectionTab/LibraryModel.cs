@@ -100,24 +100,33 @@ namespace Bloom.CollectionTab
 			get { return _collectionSettings.Language1.Name; }	// collection tab still uses collection language settings
 		}
 
-		public List<BookCollection> GetBookCollections()
-		{
-			if(_bookCollections == null)
-			{
-				_bookCollections = new List<BookCollection>(GetBookCollectionsOnce());
+		private object _bookCollectionLock = new object(); // Locks creation of _bookCollections
 
-				//we want the templates to be second (after the vernacular collection) regardless of alphabetical sorting
-				var templates = _bookCollections.First(c => c.Name == "Templates");
-				_bookCollections.Remove(templates);
-				_bookCollections.Insert(1,templates);
+		public IReadOnlyList<BookCollection> GetBookCollections()
+		{
+			lock (_bookCollectionLock)
+			{
+				if (_bookCollections == null)
+				{
+					_bookCollections = new List<BookCollection>(GetBookCollectionsOnce());
+
+					//we want the templates to be second (after the vernacular collection) regardless of alphabetical sorting
+					var templates = _bookCollections.First(c => c.Name == "Templates");
+					_bookCollections.Remove(templates);
+					_bookCollections.Insert(1, templates);
+				}
+				return _bookCollections;
 			}
-			return _bookCollections;
 		}
 
 		public void ReloadCollections()
 		{
-			_bookCollections = null;
-			GetBookCollections();
+			lock (_bookCollectionLock)
+			{
+				_bookCollections = null;
+				GetBookCollections();
+			}
+
 			_webSocketServer.SendEvent("editableCollectionList", "reload:" + _bookCollections[0].PathToDirectory);
 		}
 
@@ -200,6 +209,11 @@ namespace Bloom.CollectionTab
 			};
 		}
 
+		/// <summary>
+		/// This may be called on any thread. Please leave things where the only call is in GetBookCollections,
+		/// having claimed the appropriate lock.
+		/// </summary>
+		/// <returns></returns>
 		private IEnumerable<BookCollection> GetBookCollectionsOnce()
 		{
 			BookCollection editableCollection;
@@ -223,6 +237,50 @@ namespace Bloom.CollectionTab
 			}
 		}
 
+		private Form MainShell => Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+
+		// Not entirely happy that this method which launches a dialog is in the Model.
+		// but with the Collection UI moving to JS I don't see a good alternative
+		public void MakeBloomPack(bool forReaderTools)
+		{
+			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
+			{
+				dlg.FileName = GetSuggestedBloomPackPath();
+				dlg.Filter = "BloomPack|*.BloomPack";
+				dlg.RestoreDirectory = true;
+				dlg.OverwritePrompt = true;
+				if (DialogResult.Cancel == dlg.ShowDialog(MainShell))
+				{
+					return;
+				}
+				MakeBloomPack(dlg.FileName, forReaderTools);
+			}
+		}
+
+		public void RescueMissingImages()
+		{
+			using (var dlg = new FolderBrowserDialog())
+			{
+				dlg.ShowNewFolderButton = false;
+				dlg.Description = "Select the folder where replacement images can be found";
+				if (DialogResult.OK == dlg.ShowDialog(MainShell))
+				{
+					AttemptMissingImageReplacements(dlg.SelectedPath);
+				}
+			}
+		}
+		public void MakeReaderTemplateBloompack()
+		{
+			using (var dlg = new MakeReaderTemplateBloomPackDlg())
+			{
+				dlg.SetLanguage(LanguageName);
+				dlg.SetTitles(BookTitles);
+				var mainWindow = MainShell;
+				if (dlg.ShowDialog(mainWindow) != DialogResult.OK)
+					return;
+				MakeBloomPack(true);
+			}
+		}
 
 		public  void SelectBook(Book.Book book)
 		{

@@ -632,6 +632,7 @@ namespace Bloom.TeamCollection
 		/// Get the raw (JSON) string that stores the status information. Currently stored
 		/// in the zip file comment.
 		/// </summary>
+		/// <remarks>Needs to be thread-safe</remarks>
 		protected override string GetBookStatusJsonFromRepo(string bookFolderName)
 		{
 			var bookPath = GetPathToBookFileInRepo(bookFolderName);
@@ -643,6 +644,9 @@ namespace Bloom.TeamCollection
 			return RobustZip.GetComment(bookPath);
 		}
 
+		/// <summary>
+		/// needs to be thread-safe
+		/// </summary>
 		protected override bool TryGetBookStatusJsonFromRepo(string bookFolderName, out string status, bool reportFailure = true)
 		{
 			try
