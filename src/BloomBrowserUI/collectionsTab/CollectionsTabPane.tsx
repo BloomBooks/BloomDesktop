@@ -166,7 +166,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                                     <h1>Sources For New Books</h1>
 
                                     <Delay
-                                        waitBeforeShow={100} // REview: we really want to wait for an event that indicates the main collection is mostly painted
+                                        showAfterDelay={100} // REview: we really want to wait for an event that indicates the main collection is mostly painted
                                     >
                                         {collectionComponents}
                                     </Delay>
@@ -181,7 +181,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                         `}
                     >
                         <Delay
-                            waitBeforeShow={500} // Review: we really want an event that indicates the collection panes are mostly painted.
+                            showAfterDelay={500} // Review: we really want an event that indicates the collection panes are mostly painted.
                         >
                             <CollectionsTabBookPane
                                 // While we're dragging the splitter, we need to overlay the iframe book preview

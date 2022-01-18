@@ -100,7 +100,7 @@ export class BookSelectionManager {
     }
 
     // You should generally avoid using this in render methods, since nothing will
-    // cause a re-render when it changes. It is intended for us in click handlers
+    // cause a re-render when it changes. It is intended for use in click handlers
     // and similar methods.
     public getSelectedBookInfo(): ISelectedBookInfo | undefined {
         return this.selectedBookInfo;

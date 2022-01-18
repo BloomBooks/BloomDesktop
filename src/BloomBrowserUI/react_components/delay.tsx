@@ -1,12 +1,12 @@
 import * as React from "react";
 
-// This class shows nothing for waitBeforeShow ms, then its children.
+// This class shows nothing for showAfterDelay ms, then its children.
 // Thanks to goulashsoup on StackOverflow.
 class Delayed extends React.Component<
-    { waitBeforeShow: number },
+    { showAfterDelay: number },
     { hidden: boolean }
 > {
-    constructor(props: { waitBeforeShow: number }) {
+    constructor(props: { showAfterDelay: number }) {
         super(props);
         this.state = { hidden: true };
     }
@@ -14,7 +14,7 @@ class Delayed extends React.Component<
     componentDidMount() {
         setTimeout(() => {
             this.setState({ hidden: false });
-        }, this.props.waitBeforeShow);
+        }, this.props.showAfterDelay);
     }
 
     render() {
