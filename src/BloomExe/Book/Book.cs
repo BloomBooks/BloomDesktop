@@ -3509,11 +3509,11 @@ namespace Bloom.Book
 			return Layout.FromDom(OurHtmlDom, Layout.A5Portrait);
 		}
 
-		public IEnumerable<Layout> GetLayoutChoices()
+		public IEnumerable<Layout> GetSizeAndOrientationChoices()
 		{
 			try
 			{
-				return SizeAndOrientation.GetLayoutChoices(OurHtmlDom, Storage.GetFileLocator());
+				return SizeAndOrientation.GetSizeAndOrientationChoices(OurHtmlDom, Storage.GetFileLocator());
 			}
 			catch (Exception error)
 			{

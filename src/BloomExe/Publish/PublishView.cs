@@ -398,10 +398,10 @@ namespace Bloom.Publish
 		{
 			if (_model == null || _model.BookSelection == null || _model.BookSelection.CurrentSelection == null)
 				return; // May get called when localization changes even though tab is not visible.
-			var layout = _model.PageLayout;
-			var layoutChoices = _model.BookSelection.CurrentSelection.GetLayoutChoices();
 			_pdfOptions.DropDownItems.Clear();
 			// Disabled as requested in BL-8872. We are waiting to see if anyone misses these.
+			//var layout = _model.PageLayout;
+			//var layoutChoices = _model.BookSelection.CurrentSelection.GetSizeAndOrientationChoices();
 			//_pdfOptions.DropDownItems.Add(new ToolStripSeparator());
 			//var headerText = LocalizationManager.GetString(@"PublishTab.OptionsMenu.SizeLayout", "Size/Orientation",
 			//	@"Header for a region of the menu which lists various standard page sizes and orientations");

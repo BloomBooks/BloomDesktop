@@ -1487,17 +1487,17 @@ namespace Bloom.Edit
 
 				_layoutChoices.DropDownItems.Clear();
 				var layout = _model.GetCurrentLayout();
-				var layoutChoices = _model.GetLayoutChoices();
-				foreach(var l in layoutChoices)
+				var sizeAndOrientationChoices = _model.GetSizeAndOrientationChoices();
+				foreach(var choice in sizeAndOrientationChoices)
 				{
-					var text = l.DisplayName;
+					var text = choice.DisplayName;
 					var item = AddDropdownItemSafely(_layoutChoices, text);
-					item.Tag = l;
+					item.Tag = choice;
 					item.Text = text;
 					item.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);
 				}
 
-				if(layoutChoices.Count() < 2)
+				if(sizeAndOrientationChoices.Count() < 2)
 				{
 					var text = LocalizationManager.GetString("EditTab.NoOtherLayouts",
 						"There are no other options for this template.",
