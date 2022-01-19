@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Resources;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -35,6 +36,7 @@ namespace Bloom.web.controllers
 		private readonly LibraryModel _libraryModel;
 		public const string kApiUrlPart = "collections/";
 		private readonly BookSelection _bookSelection;
+		private BookThumbNailer _thumbNailer;
 
 		private int _thumbnailEventsToWaitFor = -1;
 
@@ -43,11 +45,12 @@ namespace Bloom.web.controllers
 		// We'd prefer to just let the WorkspaceView be a constructor arg passed to this by Autofac,
 		// but that throws an exception, probably there is some circularity.
 		public WorkspaceView WorkspaceView;
-		public 	 CollectionApi(CollectionSettings settings, LibraryModel libraryModel, BookSelection bookSelection)
+		public 	 CollectionApi(CollectionSettings settings, LibraryModel libraryModel, BookSelection bookSelection, BookThumbNailer thumbNailer)
 		{
 			_settings = settings;
 			_libraryModel = libraryModel;
 			_bookSelection = bookSelection;
+			_thumbNailer = thumbNailer;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -217,11 +220,27 @@ namespace Bloom.web.controllers
 				}
 			}
 
-			// TODO: This is just a hack to get something showing. It can't make new thumbnails
 			string path = Path.Combine(bookInfo.FolderPath, "thumbnail.png");
+			if (!RobustFile.Exists(path))
+			{
+				// This is rarely if ever needed. Bloom already does this when selecting a book
+				// or after editing it. One case (but it won't succeed) is when the book doesn't
+				// HAVE an image on the cover.
+				_thumbNailer.MakeThumbnailOfCover(_libraryModel.GetBookFromBookInfo(bookInfo));
+			}
 			if (RobustFile.Exists(path))
 				request.ReplyWithImage(path);
-			else request.Failed("Thumbnail doesn't exist, and making a new thumbnail is not yet implemented.");
+			else
+			{
+				var errorImg = Resources.placeHolderBookThumbnail;
+				if (_libraryModel.GetBookFromBookInfo(bookInfo).HasFatalError)
+					errorImg = Resources.Error70x70;
+				var stream = new MemoryStream();
+				errorImg.Save(stream, ImageFormat.Png);
+				stream.Seek(0L, SeekOrigin.Begin);
+				request.ReplyWithStreamContent(stream, "image/png");
+				//request.Failed("Thumbnail doesn't exist, and making a new thumbnail is not yet implemented.");
+			}
 		}
 
 		private BookInfo GetBookInfoFromRequestParam(ApiRequest request)

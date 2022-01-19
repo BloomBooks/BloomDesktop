@@ -5,7 +5,7 @@ import { useSubscribeToWebSocketForObject } from "../utils/WebSocketManager";
 export interface ISelectedBookInfo {
     id: string | undefined;
     saveable: boolean; // changes can safely be saved, including considering whether checked out if necessary
-    collectionKind: "main" | "factory" | "other"; // true if we can make a book from this source. Should never be true if saveable is.
+    collectionKind: "main" | "factory" | "error" | "other"; //error indicates the book is not usable for anything.
 }
 
 // Anything that uses this will always have the current book info. The first render will see the default

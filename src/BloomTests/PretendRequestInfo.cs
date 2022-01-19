@@ -68,6 +68,11 @@ namespace Bloom.Api
 			HaveOutput = true;
 		}
 
+		public void ReplyWithStreamContent(Stream input, string responseType)
+		{
+			throw new NotImplementedException();
+		}
+
 		public void ReplyWithImage(string path, string originalPath = null)
 		{
 			ReplyImagePath = path;

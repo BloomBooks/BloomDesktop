@@ -344,7 +344,11 @@ namespace Bloom.Workspace
 		{
 			var book = _bookSelection.CurrentSelection;
 			var collectionKind = "other";
-			if (book != null && book.IsEditable)
+			if (book != null && book.HasFatalError)
+			{
+				collectionKind = "error"; // not exactly a kind of collection, but a convenient way to indicate this unusual state
+			}
+			else if (book != null && book.IsEditable)
 			{
 				collectionKind = "main";
 			}
