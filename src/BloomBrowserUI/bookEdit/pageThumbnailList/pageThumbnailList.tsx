@@ -204,12 +204,9 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
             ContinueAutomatedPageClicking(realPageList);
         } else {
             if (e.currentTarget) {
-                const pageId = (e.currentTarget.parentElement!.parentElement!
-                    .parentElement as HTMLElement)!.getAttribute("id");
-                const caption = (e.currentTarget.parentElement!.parentElement!
-                    .parentElement as HTMLElement)!.getAttribute(
-                    "data-caption"
-                );
+                const pageElt = e.currentTarget.closest("[id]")!;
+                const pageId = pageElt.getAttribute("id");
+                const caption = pageElt.getAttribute("data-caption");
                 BloomApi.postJson(
                     "pageList/pageClicked",
                     {
