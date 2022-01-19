@@ -54,7 +54,7 @@ export const BooksOfCollection: React.FunctionComponent<{
 
     //const selectedBookInfo = useMonitorBookSelection();
     const collection: ICollection = BloomApi.useApiData(
-        `collections/collectionProps?collection-id=${props.collectionId}`,
+        `collections/collectionProps?${collectionQuery}`,
         {
             isEditableCollection: props.isEditableCollection,
             isFactoryInstalled: true,
@@ -319,7 +319,9 @@ export const makeMenuItems = (
             let clickAction: React.MouseEventHandler = () => {
                 close();
                 BloomApi.postString(
-                    `${spec.command!}?collection-id=${collectionId}`,
+                    `${spec.command!}?collection-id=${encodeURIComponent(
+                        collectionId
+                    )}`,
                     bookId
                 );
             };

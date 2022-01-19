@@ -232,7 +232,7 @@ export const BookButton: React.FunctionComponent<{
         setRenaming(false);
         if (name !== undefined) {
             BloomApi.postString(
-                `bookCommand/rename?collection-id=${props.collection.id}&name=${name}`,
+                `bookCommand/rename?${collectionQuery}&name=${name}`,
                 props.manager.getSelectedBookInfo()!.id!
             );
         }
@@ -288,11 +288,7 @@ export const BookButton: React.FunctionComponent<{
                 startIcon={
                     <div className={"thumbnail-wrapper"}>
                         <img
-                            src={`/bloom/api/collections/book/thumbnail?book-id=${
-                                props.book.id
-                            }&collection-id=${encodeURIComponent(
-                                props.book.collectionId
-                            )}&reload=${reload}`}
+                            src={`/bloom/api/collections/book/thumbnail?book-id=${props.book.id}&${collectionQuery}&reload=${reload}`}
                         />
                     </div>
                 }
