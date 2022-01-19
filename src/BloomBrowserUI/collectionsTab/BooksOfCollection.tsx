@@ -212,6 +212,7 @@ export const BooksOfCollection: React.FunctionComponent<{
                 <Menu
                     keepMounted={true}
                     open={contextMousePoint !== undefined}
+                    onClose={handleClose}
                     anchorReference="anchorPosition"
                     anchorPosition={{
                         top: contextMousePoint!.mouseY,
