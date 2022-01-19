@@ -1420,13 +1420,16 @@ namespace Bloom.Book
 			var cssBuilder = new StringBuilder(collectionStylesCss);
 			if (doesAlreadyExist)
 			{
-				var cssLangs = new HashSet<string>();
-				cssLangs.Add(_bookData.Language1IsoCode);
-				cssLangs.Add(_bookData.MetadataLanguage1IsoCode);
-				if (!String.IsNullOrEmpty(_bookData.Language2IsoCode))
-					cssLangs.Add(_bookData.Language2IsoCode);
-				if (!String.IsNullOrEmpty(_bookData.Language3IsoCode))
-					cssLangs.Add(_bookData.Language3IsoCode);
+				// We want to use the current CSS from our collection, which we already added to the
+				// string builder, for all the languages it contains, but keep the rules already in
+				// defaultLangStyles.css for any other languages that are there.  We start by setting
+				// languagesWeAlreadyHave to the languages we do NOT want to copy from defaultLangStyles.css
+				// (because we have more current data about them already).
+				var languagesWeAlreadyHave = new HashSet<string>();
+				languagesWeAlreadyHave.Add(CollectionSettings.Language1Iso639Code);
+				languagesWeAlreadyHave.Add(CollectionSettings.Language2Iso639Code);
+				if (!String.IsNullOrEmpty(CollectionSettings.Language3Iso639Code))
+					languagesWeAlreadyHave.Add(CollectionSettings.Language3Iso639Code);
 
 				var cssLines = RobustFile.ReadAllLines(path);
 				const string kLangTag = "[lang='";
@@ -1440,7 +1443,8 @@ namespace Bloom.Book
 						if (idxQuote > 0)
 						{
 							var lang = line.Substring(kLangTag.Length, idxQuote - kLangTag.Length);
-							copyCurrentRule = !cssLangs.Contains(lang);
+							copyCurrentRule = !languagesWeAlreadyHave.Contains(lang);
+							languagesWeAlreadyHave.Add(lang);	// don't copy if another css block has crept in.
 						}
 					}
 					if (copyCurrentRule)
