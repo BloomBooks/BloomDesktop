@@ -208,6 +208,9 @@ namespace Bloom.Publish.BloomLibrary
 		private void UpdateFeaturesCheckBoxesDisplay()
 		{
 			var bookInfoMetaData = _model.Book.BookInfo.MetaData;
+			var hasImageDesc = _model.Book.OurHtmlDom.GetLangCodesWithImageDescription().Any();
+
+			_blindCheckBox.Enabled = hasImageDesc;
 			_blindCheckBox.Checked = bookInfoMetaData.Feature_Blind;
 			_signLanguageCheckBox.Enabled = _model.Book.HasSignLanguageVideos();
 			_signLanguageCheckBox.Checked = _signLanguageCheckBox.Enabled && _model.IsPublishSignLanguage();
@@ -808,6 +811,18 @@ namespace Bloom.Publish.BloomLibrary
 			get
 			{
 				return _model.Book.CollectionSettings.SignLanguageName;
+			}
+		}
+
+		private void _blindCheckBox_CheckedChanged(object sender, EventArgs e)
+		{
+			if (!_blindCheckBox.Checked)
+			{
+				_model.ClearBlindAccessibleToPublish();
+			}
+			else
+			{
+				_model.SetOnlyBlindAccessibleToPublish(LanguagesCheckedToUpload.FirstOrDefault());
 			}
 		}
 
