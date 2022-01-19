@@ -45,10 +45,15 @@ namespace Bloom.Publish.Android
 		// languages.
 		private static HashSet<string> GetLanguagesToInclude(LangsToPublishSetting langsToPublish)
 		{
-			return langsToPublish != null
-				? new HashSet<string>((Program.RunningHarvesterMode ? langsToPublish.ForBloomLibrary: langsToPublish.ForBloomPUB)
-					.Where(kvp => kvp.Value.IsIncluded()).Select(kvp => kvp.Key))
-				: new HashSet<string>();
+			var dictToUse = Program.RunningHarvesterMode ? langsToPublish?.ForBloomLibrary : langsToPublish?.ForBloomPUB;
+			// The following problem can happen if running in Harvester and 'ForBloomLibrary' isn't set up.
+			// So just use 'ForBloomPUB', which should be set up.
+			if (dictToUse == null)
+				dictToUse = langsToPublish?.ForBloomPUB;
+			// If it's still null, bail.
+			if (dictToUse == null)
+				return new HashSet<string>();
+			return new HashSet<string>(dictToUse.Where(kvp => kvp.Value.IsIncluded()).Select(kvp => kvp.Key));
 
 		}
 
@@ -57,10 +62,15 @@ namespace Bloom.Publish.Android
 		// languages.
 		private static HashSet<string> GetLanguagesToExclude(LangsToPublishSetting langsToNotPublish)
 		{
-			return langsToNotPublish != null
-				? new HashSet<string>((Program.RunningHarvesterMode ? langsToNotPublish.ForBloomLibrary : langsToNotPublish.ForBloomPUB)
-				.Where(kvp => !kvp.Value.IsIncluded()).Select(kvp =>kvp.Key))
-				: new HashSet<string>();
+			var dictToUse = Program.RunningHarvesterMode ? langsToNotPublish?.ForBloomLibrary : langsToNotPublish?.ForBloomPUB;
+			// The following problem can happen if running in Harvester and 'ForBloomLibrary' isn't set up.
+			// So just use 'ForBloomPUB', which should be set up.
+			if (dictToUse == null)
+				dictToUse = langsToNotPublish?.ForBloomPUB;
+			// If it's still null, bail.
+			if (dictToUse == null)
+				return new HashSet<string>();
+			return new HashSet<string>(dictToUse.Where(kvp => !kvp.Value.IsIncluded()).Select(kvp =>kvp.Key));
 		}
 
 		public static AndroidPublishSettings FromBookInfo(BookInfo bookInfo)
