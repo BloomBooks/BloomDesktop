@@ -4190,7 +4190,7 @@ namespace Bloom.Book
 		/// </summary>
 		/// <param name="isEnabled">True to indicate the feature is enabled, or false for disabled (will clear the feature in the metadata)</param>
 		/// <param name="allowedLanguages">If non-null, limits the calculation to only considering the languages specified</param>
-		private void UpdateBlindFeature(bool isEnabled, IEnumerable<string> allowedLanguages)
+		public void UpdateBlindFeature(bool isEnabled, IEnumerable<string> allowedLanguages)
 		{
 			if (!isEnabled)
 			{
