@@ -56,6 +56,7 @@ namespace Bloom.Book
 		HtmlDom MakeDomRelocatable(HtmlDom dom);
 		string SaveHtml(HtmlDom bookDom);
 		void SetBookName(string name);
+		void RestoreBookName(string restoredName);
 		string GetHtmlMessageIfFeatureIncompatibility();
 		string GetValidateErrors();
 		void CheckBook(IProgress progress,string pathToFolderOfReplacementImages = null);
@@ -1377,6 +1378,23 @@ namespace Bloom.Book
 				Debug.Fail("(debug mode only): could not rename the folder");
 			}
 
+			RaiseBookRenamedEvent(fromToPair);
+
+			OnFolderPathChanged();
+		}
+
+		/// <summary>
+		/// This does the minimum notifications when a book's name is being restored to an earlier one.
+		/// The caller is responsible to ensure that the name is Sanitized and the folder and HTML file
+		/// are restored; this just updates the BookStorage's notion of where it is, and sends the
+		/// notifications for which bookstorage is responsible about the change.
+		/// </summary>
+		/// <param name="restoredName"></param>
+		public void RestoreBookName(string restoredName)
+		{
+			string restoredPath = Path.Combine(Path.GetDirectoryName(FolderPath), restoredName);
+			var fromToPair = new KeyValuePair<string, string>(FolderPath, restoredPath);
+			FolderPath = restoredPath;
 			RaiseBookRenamedEvent(fromToPair);
 
 			OnFolderPathChanged();
