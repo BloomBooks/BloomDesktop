@@ -17,7 +17,7 @@ export function useMonitorBookSelection(): ISelectedBookInfo {
         {
             id: undefined,
             saveable: false,
-            collectionKind: "main" // better to see the 'edit' button until we know which it is
+            collectionKind: "error" // better to see no button at all until we know which it is
         }
     );
 

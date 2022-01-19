@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionTab;
 using Bloom.MiscUI;
 using Bloom.Registration;
 using Bloom.Utils;
@@ -30,11 +31,13 @@ namespace Bloom.TeamCollection
 		private BloomWebSocketServer _socketServer;
 		private readonly CurrentEditableCollectionSelection _currentBookCollectionSelection;
 		private CollectionSettings _settings;
+		private LibraryModel _libraryModel;
 
 		public static TeamCollectionApi TheOneInstance { get; private set; }
 
 		// Called by autofac, which creates the one instance and registers it with the server.
-		public TeamCollectionApi(CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings settings, BookSelection bookSelection, ITeamCollectionManager tcManager, BookServer bookServer, BloomWebSocketServer socketServer)
+		public TeamCollectionApi(CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings settings, BookSelection bookSelection,
+			ITeamCollectionManager tcManager, BookServer bookServer, BloomWebSocketServer socketServer, LibraryModel libraryModel)
 		{
 			_currentBookCollectionSelection = currentBookCollectionSelection;
 			_settings = settings;
@@ -43,6 +46,7 @@ namespace Bloom.TeamCollection
 			_bookSelection = bookSelection;
 			_socketServer = socketServer;
 			_bookServer = bookServer;
+			_libraryModel = libraryModel;
 			TheOneInstance = this;
 		}
 
@@ -455,6 +459,12 @@ namespace Bloom.TeamCollection
 				{
 					updatedBookFolder = modifiedBookFolders[0];
 					finalBookName = Path.GetFileName(updatedBookFolder);
+				}
+
+				if (finalBookName != bookName)
+				{
+					_bookSelection.CurrentSelection.Storage.RestoreBookName(finalBookName);
+					_libraryModel.UpdateLabelOfBookInEditableCollection(_bookSelection.CurrentSelection);
 				}
 				BookHistory.SetPendingCheckinMessage(_bookSelection.CurrentSelection, "");
 				UpdateUiForBook(reloadFromDisk:true, renamedTo: updatedBookFolder);

@@ -344,9 +344,12 @@ namespace Bloom.Workspace
 		{
 			var book = _bookSelection.CurrentSelection;
 			var collectionKind = "other";
-			if (book != null && book.HasFatalError)
+
+			if (book == null || book.HasFatalError)
 			{
-				collectionKind = "error"; // not exactly a kind of collection, but a convenient way to indicate this unusual state
+				// not exactly a kind of collection, but a convenient way to indicate these states,
+				// in which edit/make button should not show at all.
+				collectionKind = "error";
 			}
 			else if (book != null && book.IsEditable)
 			{
