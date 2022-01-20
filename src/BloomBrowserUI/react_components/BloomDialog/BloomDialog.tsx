@@ -1,14 +1,14 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
 import * as React from "react";
-import theme from "../../bloomMaterialUITheme";
+import { lightTheme } from "../../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { Dialog } from "@material-ui/core";
 import CloseOnEscape from "react-close-on-escape";
 import { kDialogPadding } from "../../bloomMaterialUITheme";
 import { BloomApi } from "../../utils/bloomApi";
 import { useEffect, useState } from "react";
-import { kUiFontStack } from "../../bloomMaterialUITheme.js";
+import { kUiFontStack } from "../../bloomMaterialUITheme.ts";
 
 // The <BloomDialog> component and its children provides consistent layout across Bloom Dialogs.
 // It can be used either inside of a winforms dialog, or as a MaterialUI Dialog.
@@ -83,7 +83,7 @@ export const BloomDialog: React.FunctionComponent<{
                 props.onClose();
             }}
         >
-            <ThemeProvider theme={theme}>
+            <ThemeProvider theme={lightTheme}>
                 {props.dialogFrameProvidedExternally ? (
                     inner
                 ) : (

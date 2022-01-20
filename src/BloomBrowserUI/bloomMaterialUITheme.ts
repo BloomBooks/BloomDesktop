@@ -1,16 +1,10 @@
-/* --------------- NOTE --------------------
-    This is current js instead of ts because as of 4.0.0-beta,
-    the typescript definitions for material-ui
-    don't allow some perfectly valid ThemeOptions. I guess I could "any" the object instead...
-*/
-
-import { createMuiTheme } from "@material-ui/core/styles";
+import { createTheme } from "@material-ui/core/styles";
 
 export const kBloomBlue = "#1d94a4";
 export const kBloomLightBlue = "#1e94a4"; // review: was this meant to be BloomBlue? see use in BooksOfCollection.less
 export const kBloomPurple = "#96668f";
 const kDialogTopBottomGray = "#F1F3F4";
-const kRefreshIconColor = "#988b8b";
+const kGreyOnDarkColor = "#988b8b";
 export const kBloomGold = "#f3aa18";
 export const kErrorColor = "red";
 export const kDialogPadding = "10px";
@@ -27,7 +21,7 @@ export const kUiFontStack = "NotoSans, Roboto, sans-serif";
 //const AACompliantBloomBlue = "#177c8a";
 
 // lots of examples: https://github.com/search?q=createMuiTheme&type=Code
-const theme = createMuiTheme({
+export const lightTheme = createTheme({
     //this spacing doesn't seem to do anything. The example at https://material-ui.com/customization/default-theme/
     // would be spacing{unit:23} but that gives an error saying to use a number
     //spacing: 23,
@@ -85,4 +79,12 @@ const theme = createMuiTheme({
     }
 });
 
-export default theme;
+// Starting with the lightTheme, make any changes.
+export const darkTheme = createTheme(lightTheme, {
+    palette: {
+        text: {
+            // the only place I *know* this is currently used is the refresh button in the BloomPub publish preview panel
+            secondary: kGreyOnDarkColor
+        }
+    }
+});

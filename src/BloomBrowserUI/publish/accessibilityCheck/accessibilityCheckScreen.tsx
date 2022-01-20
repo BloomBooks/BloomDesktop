@@ -8,7 +8,7 @@ import { DaisyChecks } from "./daisyChecks";
 import WebSocketManager from "../../utils/WebSocketManager";
 import { BloomApi } from "../../utils/bloomApi";
 import { LocalizedString } from "../../react_components/l10nComponents";
-import theme from "../../bloomMaterialUITheme";
+import { lightTheme } from "../../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 // This is a screen of controls that gives the user instructions and controls
 // for creating epubs
@@ -95,7 +95,7 @@ export class AccessibilityCheckScreen extends React.Component<{}, IState> {
 // allow plain 'ol javascript in the html to connect up react
 (window as any).connectAccessibilityCheckScreen = element => {
     ReactDOM.render(
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={lightTheme}>
             <AccessibilityCheckScreen />
         </ThemeProvider>,
         element
