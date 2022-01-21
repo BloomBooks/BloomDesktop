@@ -1,4 +1,6 @@
-﻿namespace Bloom.Workspace
+﻿using Bloom.Collection;
+
+namespace Bloom.Workspace
 {
 
 	partial class WorkspaceView
@@ -16,7 +18,8 @@
         {
             if (disposing && (components != null))
             {
-                components.Dispose();
+	            BookCollection.CollectionCreated -= OnBookCollectionCreated;
+	            components.Dispose();
             }
             base.Dispose(disposing);
         }
