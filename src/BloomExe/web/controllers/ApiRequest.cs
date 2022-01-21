@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.ExceptionServices;
+using System.Web.Script.Serialization;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Utils;
@@ -281,9 +283,22 @@ namespace Bloom.Api
 			throw new ApplicationException("The query " + _requestInfo.RawUrl + " should have parameter " + name);
 		}
 
-		public T RequiredObject<T>()
+		public T RequiredPostObject<T>()
 		{
 			return JsonConvert.DeserializeObject<T>(RequiredPostJson());
+		}
+
+		/// <summary>
+		/// Convert the json to an anonymous object such that you can use RequiredPostDynamic().foobar to get foobar of any type.
+		/// </summary>
+		/// <remarks> Note: Surprisingly,
+		///	string x = request.RequiredPostDynamic().someString;
+		///	var y = request.RequiredPostDynamic().someString;
+		///	x != y, but x == y.Value
+		/// </remarks>
+		public dynamic RequiredPostDynamic()
+		{
+			return RequiredPostObject<dynamic>();
 		}
 
 		public string RequiredPostJson()
@@ -313,6 +328,7 @@ namespace Bloom.Api
 		public string GetPostJson()
 		{
 			Debug.Assert(_requestInfo.HttpMethod == HttpMethods.Post, "Expected HttpMethod to be Post but instead got: " + _requestInfo.HttpMethod.ToString());
+
 			return _requestInfo.GetPostJson();
 		}
 		public string RequiredPostString()
@@ -331,7 +347,6 @@ namespace Bloom.Api
 			{
 				return null;
 			}
-
 			Debug.Assert(_requestInfo.HttpMethod == HttpMethods.Post);
 			return _requestInfo.GetPostString();			
 		}
@@ -367,13 +382,17 @@ namespace Bloom.Api
 			return RequiredPostJson() == "true";
 		}
 
-		public string RequiredPostValue(string key)
+		// NB: This is probably going to fail if the JSON contains anything that isn't a string. 
+		public string RequiredPostString(string key)
 		{
 			Debug.Assert(_requestInfo.HttpMethod == HttpMethods.Post);
 			var values = _requestInfo.GetPostDataWhenFormEncoded().GetValues(key);
-			if (values == null || values.Length != 1)
-				throw new ApplicationException("The query " + _requestInfo.RawUrl + " should have 1 value for " + key);
-			return values[0];
+
+			if (values != null && values.Length == 1)
+			{
+				return values[0];
+			}
+			throw new ApplicationException("The query " + _requestInfo.RawUrl + " should have 1 value for " + key) ;
 		}
 
 		public byte[] RawPostData => _requestInfo.GetRawPostData();

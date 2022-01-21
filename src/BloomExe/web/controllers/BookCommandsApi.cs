@@ -65,7 +65,7 @@ namespace Bloom.web.controllers
 					HandleExportToWord(book);
 					break;
 				case "exportToSpreadsheet":
-					_spreadsheetApi.HandleExportToSpreadsheet(book);
+					_spreadsheetApi.ShowExportToSpreadsheetUI(book);
 					break;
 				// As currently implemented this would more naturally go in CollectionApi, since it adds a book
 				// to the collection (a backup). However, we are probably going to change how backups are handled
@@ -94,7 +94,7 @@ namespace Bloom.web.controllers
 
 		// TODO: Delete me after all references removed.
 		[Obsolete("Wrapper to allow legacy (WinForms) code to share this code. New code should try to use the API/React-based paradigm instead.")]
-		public void HandleExportToSpreadsheetWrapper(Book.Book book) => _spreadsheetApi.HandleExportToSpreadsheet(book);
+		public void HandleExportToSpreadsheetWrapper(Book.Book book) => _spreadsheetApi.ShowExportToSpreadsheetUI(book);
 
 
 		private void HandleRename(Book.Book book, ApiRequest request)

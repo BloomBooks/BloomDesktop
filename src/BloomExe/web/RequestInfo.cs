@@ -384,14 +384,27 @@ namespace Bloom.Api
 			if (!request.HasEntityBody)
 				return string.Empty;
 
-			using(var body = request.InputStream)
+			return UnescapeString(GetStringContent());
+		}
+
+		// you can only read from the stream once. But this makes for a fragile API for this class, where
+		// asking the same thing twice, you'll get null the second time. So we store the contents.
+		private string _stringContent;
+		private string GetStringContent()
+		{
+			var request = _actualContext.Request;
+			if (_stringContent== null)
 			{
-				using (StreamReader reader = new StreamReader(body, request.ContentEncoding))
+				using (var body = request.InputStream)
 				{
-					var inputString = reader.ReadToEnd();
-					return UnescapeString(inputString);
+					using (StreamReader reader = new StreamReader(body, request.ContentEncoding))
+					{
+						_stringContent = reader.ReadToEnd();
+
+					}
 				}
 			}
+			return _stringContent;
 		}
 
 		public byte[] GetRawPostData()
@@ -433,35 +446,26 @@ namespace Bloom.Api
 
 		public NameValueCollection GetPostDataWhenFormEncoded()
 		{
-			if(_postData == null)
+			Debug.Assert(RequestContentType == "application/x-www-form-urlencoded");
+			if (_postData == null)
 			{
 				var request = _actualContext.Request;
 
-				if(!request.HasEntityBody)
+				if (!request.HasEntityBody)
 					return null;
 
 				_postData = new NameValueCollection();
-
-				using(var body = request.InputStream)
+				var pairs = GetStringContent().Split('&');
+				foreach (var pair in pairs)
 				{
-					using(StreamReader reader = new StreamReader(body, request.ContentEncoding))
-					{
-						var inputString = reader.ReadToEnd();
-						var pairs = inputString.Split('&');
-						foreach(var pair in pairs)
-						{
-							var kvp = pair.Split('=');
-							if(kvp.Length == 1)
-								_postData.Add(UnescapeString(kvp[0]), String.Empty);
-							else
-								_postData.Add(UnescapeString(kvp[0]), UnescapeString(kvp[1]));
-						}
-					}
+					var kvp = pair.Split('=');
+					if (kvp.Length == 1)
+						_postData.Add(UnescapeString(kvp[0]), String.Empty);
+					else
+						_postData.Add(UnescapeString(kvp[0]), UnescapeString(kvp[1]));
 				}
 			}
-
 			return _postData;
-
 		}
 
 		private static string UnescapeString(string value)

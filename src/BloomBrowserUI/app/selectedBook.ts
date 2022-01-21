@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { BloomApi } from "../utils/bloomApi";
-import { useSubscribeToWebSocketForObject } from "../utils/WebSocketManager";
+import { useSubscribeToWebSocketForObjectInMessageParam } from "../utils/WebSocketManager";
 
 export interface ISelectedBookInfo {
     id: string | undefined;
@@ -25,7 +25,7 @@ export function useMonitorBookSelection(): ISelectedBookInfo {
     // BookSelection.InvokeSelectionChanged(), via TeamCollectionApi.UpdateUiForBook().
     // As a result, the top-level (WorkspaceView) handler for changing selection fires the websocket
     // event referenced here.
-    useSubscribeToWebSocketForObject<ISelectedBookInfo>(
+    useSubscribeToWebSocketForObjectInMessageParam<ISelectedBookInfo>(
         "book-selection",
         "changed",
         e => setSelectedBookInfo(e)

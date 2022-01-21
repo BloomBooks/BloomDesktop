@@ -332,6 +332,7 @@
       <HintPath>..\..\packages\System.ValueTuple.4.5.0\lib\net461\System.ValueTuple.dll</HintPath>
     </Reference>
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
@@ -375,8 +376,8 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Book\LicenseChecker.cs" />
-    <Compile Include="CLI\SpreadsheetExportCommand.cs" />
-    <Compile Include="CLI\SpreadsheetImportCommand.cs" />
+    <Compile Include="Spreadsheet\SpreadsheetExportCommand.cs" />
+    <Compile Include="Spreadsheet\SpreadsheetImportCommand.cs" />
     <Compile Include="CollectionTab\ReactCollectionTabView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -503,7 +504,7 @@
     <Compile Include="WebLibraryIntegration\BulkUploader.cs" />
     <Compile Include="WebLibraryIntegration\FirebaseLoginDialog.cs" />
     <Compile Include="WebLibraryIntegration\S3Extensions.cs" />
-    <Compile Include="web\controllers\SpreadsheetApi.cs" />
+    <Compile Include="Spreadsheet\SpreadsheetApi.cs" />
     <Compile Include="web\controllers\BookCommandsApi.cs" />
     <Compile Include="web\controllers\CollectionApi.cs" />
     <Compile Include="web\controllers\ProgressDialogApi.cs" />

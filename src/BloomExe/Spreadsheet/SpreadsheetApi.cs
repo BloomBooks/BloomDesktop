@@ -1,5 +1,7 @@
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -20,7 +22,7 @@ namespace Bloom.web.controllers
 		private readonly LibraryModel _libraryModel;
 		private BookSelection _bookSelection;
 		private readonly BloomWebSocketServer _webSocketServer;
-		private string _previousTargetSaveAs; // enhance: should this be shared with CollectionApi or other save as locations?
+
 
 		public SpreadsheetApi(LibraryModel libraryModel, BloomWebSocketServer webSocketServer, BookSelection bookSelection)
 		{
@@ -29,15 +31,17 @@ namespace Bloom.web.controllers
 			_bookSelection = bookSelection;
 		}
 
-		
-		 public void RegisterWithApiHandler(BloomApiHandler apiHandler)
+
+		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			// Note: all book commands, including import and export spreadsheets,
 			// go through a single "bookCommand/" API, so we don't register that here.
 			// Instead all we need to register is any api enpoints used by our own spreadsheet dialogs
-		}
 
-		public void HandleExportToSpreadsheet(Book.Book book)
+			apiHandler.RegisterEndpointHandler("spreadsheet/export", ExportToSpreadsheet, true);
+		}
+		private ReactDialog _openDialog = null;
+		public void ShowExportToSpreadsheetUI(Book.Book book)
 		{
 			// Throw up a Requires Bloom Enterprise dialog if it's not turned on
 			if (!_libraryModel.CollectionSettings.HaveEnterpriseFeatures)
@@ -45,19 +49,34 @@ namespace Bloom.web.controllers
 				Enterprise.ShowRequiresEnterpriseNotice(Form.ActiveForm, "Export to Spreadsheet");
 				return;
 			}
+			var folderPath = GetSpreadsheetFolderFor(book, true);
 
+			using (var dlg = new ReactDialog("exportSpreadsheetDialogBundle", new
+			{ folderPath }, "Export to Spreadsheet...")
+			{ Width = 550, Height = 350 })
+			{
+				_openDialog = dlg;
+				dlg.ShowDialog();
+			}
+		}
+		private void ExportToSpreadsheet(ApiRequest request)
+		{
+			Debug.Assert(_openDialog != null);
+			_openDialog.Close();
+			_openDialog.Dispose();
+			_openDialog = null;
+
+			var book = _bookSelection.CurrentSelection;
 			var bookPath = book.GetPathHtmlFile();
 			try
 			{
 				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));
 				var exporter = new SpreadsheetExporter(_webSocketServer, book.CollectionSettings);
-
-				string outputParentFolder = BloomFolderChooser.ChooseFolder(GetSpreadsheetFolderFor(book, true));
-				if (outputParentFolder == null)
-					return; // user canceled
+				string outputParentFolder = request.RequiredPostDynamic().parentFolderPath;
 				string outputFolder = Path.Combine(outputParentFolder, Path.GetFileNameWithoutExtension(bookPath));
 				SetSpreadsheetFolder(book, outputFolder);
 				string imagesFolderPath = Path.GetDirectoryName(bookPath);
+
 				exporter.ExportToFolderWithProgress(dom, imagesFolderPath, outputFolder, outputFilePath =>
 				{
 					if (outputFilePath != null)
@@ -69,6 +88,7 @@ namespace Bloom.web.controllers
 				var msg = LocalizationManager.GetString("Spreadsheet:ExportFailed", "Export failed: ");
 				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg + ex.Message, exception: ex);
 			}
+			request.PostSucceeded();
 		}
 
 

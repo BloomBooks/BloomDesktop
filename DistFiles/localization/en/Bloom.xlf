@@ -342,7 +342,7 @@
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.SpreadsheetImportExport">
         <source xml:lang="en">Spreadsheet Import/Export</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.SpreadsheetImportExport</note>
-    	<note>This is the label of a checkbox which, if enabled, allows a menu command to be used that can import Bloom books from an Excel spreadsheet or to an Excel spreadsheet.</note>
+        <note>This is the label of a checkbox which, if enabled, allows a menu command to be used that can import Bloom books from an Excel spreadsheet or to an Excel spreadsheet.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
@@ -4884,10 +4884,10 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Team Collection</source>
         <note>ID: TeamCollection.TeamCollection</note>
       </trans-unit>
-	  <trans-unit id="TeamCollection.TeamCollections">
+      <trans-unit id="TeamCollection.TeamCollections">
         <source xml:lang="en">Team Collections</source>
         <note>ID: TeamCollection.TeamCollections</note>
-		<note>Should be translated similarly as TeamCollection.TeamCollection, but plural instead of singular</note>
+        <note>Should be translated similarly as TeamCollection.TeamCollection, but plural instead of singular</note>
       </trans-unit>
       <trans-unit id="TeamCollection.Available" sil:dynamic="true">
         <source xml:lang="en">This book is available for editing</source>
@@ -5554,6 +5554,15 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Cannot Find Image File</source>
         <note>ID: WebServer.Warning.NoImageFile</note>
         <note>displays as a "toast"</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportDialog.Description">
+        <source xml:lang="en">Bloom will create a spreadsheet containing the text and images of this book. You can then make changes, like making new translations. Finally, use the “Import &amp; Update from Spreadsheet...” command to bring your changes back in.</source>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportDialog.folderLabel">
+        <source xml:lang="en">Target folder for the spreadsheet and images:</source>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportDialog.ExportButton">
+        <source xml:lang="en">Export</source>
       </trans-unit>
     </body>
   </file>

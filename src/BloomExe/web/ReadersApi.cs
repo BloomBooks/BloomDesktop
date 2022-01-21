@@ -161,7 +161,7 @@ namespace Bloom.Api
 					break;
 
 				case "makeLetterAndWordList":
-					MakeLetterAndWordList(request.RequiredPostValue("settings"), request.RequiredPostValue("allWords"));
+					MakeLetterAndWordList(request.RequiredPostString("settings"), request.RequiredPostString("allWords"));
 					request.PostSucceeded();
 					break;
 
@@ -618,7 +618,7 @@ namespace Bloom.Api
 		public void ProcessDirectoryWatcher(ApiRequest request)
 		{
 			// thread synchronization is done in the calling BloomApiHandler.
-			var dirName = request.RequiredPostValue("dir");
+			var dirName = request.RequiredPostString("dir");
 			if (dirName == "Sample Texts")
 			{
 				CheckForSampleTextChanges(request);

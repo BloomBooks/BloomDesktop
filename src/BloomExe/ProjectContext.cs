@@ -136,6 +136,7 @@ namespace Bloom
 							typeof (EditingModel),
 							typeof (AudioRecording),
 							typeof(BookSettingsApi),
+							typeof(SpreadsheetApi),
 							typeof(BookMetadataApi),
 							typeof(PublishToAndroidApi),
 							typeof(PublishEpubApi),
