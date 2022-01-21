@@ -76,6 +76,7 @@ namespace Bloom.Workspace
 		private ToastNotifier _returnToCollectionTabNotifier;
 		private BloomWebSocketServer _webSocketServer;
 		private BookServer _bookServer;
+		private LibraryModel _libraryModel;
 
 		//autofac uses this
 
@@ -101,8 +102,9 @@ namespace Bloom.Workspace
 							AppApi appApi,
 							BookServer bookServer,
 							CollectionApi collectionApi,
-							WorkspaceApi workspaceApi
-			)
+							WorkspaceApi workspaceApi,
+							LibraryModel libraryModel
+		)
 		{
 			_model = model;
 			_settingsDialogFactory = settingsDialogFactory;
@@ -113,9 +115,12 @@ namespace Bloom.Workspace
 			_tcManager = tcManager;
 			_webSocketServer = webSocketServer;
 			_bookServer = bookServer;
+			_libraryModel = libraryModel;
 			collectionApi.WorkspaceView = this; // avoids an Autofac exception that appears if collectionApi constructor takes a WorkspaceView
 			appApi.WorkspaceView = this; // it needs to know, and there's some circularity involved in having factory pass it in
 			workspaceApi.WorkspaceView = this; // and yet one more
+
+			BookCollection.CollectionCreated += OnBookCollectionCreated;
 
 			_collectionSettings = collectionSettings;
 			// This provides the common API with a hook it can use to reload
@@ -248,6 +253,23 @@ namespace Bloom.Workspace
 			// happen in response to the book selection changed websocked message.
 			bookSelection.SelectionChangedHighPriority += HandleBookSelectionChanged;
 			bookStatusChangeEvent.Subscribe(args => { HandleBookStatusChange(args); });
+		}
+
+		private void OnBookCollectionCreated(object collection, EventArgs args)
+		{
+			var c = collection as BookCollection;
+			if (c.ContainsDownloadedBooks)
+			{
+				c.FolderContentChanged += (sender, eventArgs) =>
+				{
+					if (_tabStrip.SelectedTab == _reactCollectionTab || _tabStrip.SelectedTab == _legacyCollectionTab)
+					{
+						var newBook = new BookInfo(eventArgs.Path, false);
+						var book = _libraryModel.GetBookFromBookInfo(newBook, true);
+						_bookSelection.SelectBook(book, false);
+					}
+				};
+			}
 		}
 
 		public void HandleRenameCommand()
