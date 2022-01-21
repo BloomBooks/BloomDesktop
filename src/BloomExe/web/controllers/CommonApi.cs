@@ -501,7 +501,7 @@ namespace Bloom.web.controllers
 
 		public void HandleChooseFolder(ApiRequest request)
 		{	
-				string path;
+			string path;
 			dynamic result = new DynamicJson();
 			using (var dlg = new FolderBrowserDialog())
 				{
@@ -516,11 +516,7 @@ namespace Bloom.web.controllers
 					{
 						dlg.Description = description;
 					}
-					else
-					{
-						//dlg.Description = LocalizationManager.GetString("common.chooseFolder",
-						//	"something generic");
-					}
+
 					result.success = dlg.ShowDialog() == DialogResult.OK;
 					result.path = result.success  ? dlg.SelectedPath : "";
 				}

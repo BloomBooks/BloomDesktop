@@ -14,11 +14,9 @@ import {
     useSetupBloomDialog,
     IBloomDialogEnvironmentParams
 } from "../../react_components/BloomDialog/BloomDialog";
-import HelpLink from "../../react_components/helpLink";
 import {
     DialogCancelButton,
-    DialogFolderChooser,
-    ExperimentalWarningBox
+    DialogFolderChooser
 } from "../../react_components/BloomDialog/commonDialogComponents";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
 
@@ -97,7 +95,7 @@ export const SpreadsheetExportDialog: React.FunctionComponent<{
                 >
                     Export
                 </BloomButton>
-                <DialogCancelButton closeDialog={closeDialog} />
+                <DialogCancelButton onClick={closeDialog} />
             </DialogBottomButtons>
         </BloomDialog>
     );

@@ -75,7 +75,8 @@ export function useSubscribeToWebSocketForStringMessage(
         e => !!e.message // ignore if no message
     );
 }
-// Subscribe to an event that gives an object. For an example of the c# server side of this, see HandleChooseFolder()
+
+// Subscribe to an event and listen for the whole object bundle that the server sends. For an example of the c# server side of this, see HandleChooseFolder().
 export function useSubscribeToWebSocketForObject<T>(
     clientContext: string,
     eventId: string,
