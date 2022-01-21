@@ -23,7 +23,7 @@ import { CollectionHistoryTable } from "./CollectionHistoryTable";
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import { LocalizedString } from "../react_components/l10nComponents";
 import { ThemeProvider } from "@material-ui/styles";
-import theme from "../bloomMaterialUITheme";
+import { lightTheme } from "../bloomMaterialUITheme";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 export let showTeamCollectionDialog: () => void;
 import "react-tabs/style/react-tabs.less";
@@ -54,7 +54,7 @@ export const TeamCollectionDialog: React.FunctionComponent<{
 
     return (
         <BloomDialog {...propsForBloomDialog}>
-            <ThemeProvider theme={theme}>
+            <ThemeProvider theme={lightTheme}>
                 <DialogTitle
                     title={`${dialogTitle} (experimental)`}
                     icon={"Team Collection.svg"}

@@ -13,7 +13,7 @@ import CloseOnEscape from "react-close-on-escape";
 import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";
 import { useL10n } from "./l10nHooks";
 import { ThemeProvider } from "@material-ui/styles";
-import theme from "../bloomMaterialUITheme";
+import { lightTheme } from "../bloomMaterialUITheme";
 import { BloomApi } from "../utils/bloomApi";
 import CustomColorPicker from "./customColorPicker";
 import * as tinycolor from "tinycolor2";
@@ -201,7 +201,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
     const CancelText = useL10n("Cancel", "Common.Cancel");
 
     return (
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={lightTheme}>
             <CloseOnEscape onEscape={() => onClose(DialogResult.Cancel)}>
                 <Dialog
                     className="bloomModalDialog color-picker-dialog"

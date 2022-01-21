@@ -16,7 +16,7 @@ import {
     kBloomGold,
     kBloomLightBlue,
     kBloomPurple
-} from "../bloomMaterialUITheme.js";
+} from "../bloomMaterialUITheme.ts";
 import { useRef, useState, useEffect } from "react";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import { BookSelectionManager, useIsSelected } from "./bookSelectionManager";

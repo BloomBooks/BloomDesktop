@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
-import theme, { kBloomYellow } from "../bloomMaterialUITheme";
+import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { useMemo, useRef, useState } from "react";
 import { BloomApi } from "../utils/bloomApi";
@@ -135,7 +135,8 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                 email={props.who ?? ""}
                 name={lockedByDisplay}
                 borderColor={
-                    tcPanelState === "lockedByMe" && theme.palette.warning.main
+                    tcPanelState === "lockedByMe" &&
+                    (lightTheme.palette.warning.main as any) // `as any` here patches over a minor typescript typing problem
                 }
             />
         );
@@ -612,7 +613,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
     };
 
     return (
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={lightTheme}>
             {panelContents(tcPanelState)}
             <AvatarDialog
                 open={avatarDialogOpen}

@@ -22,7 +22,7 @@ import { useL10n } from "../../react_components/l10nHooks";
 import { TextWithEmbeddedLink } from "../../react_components/link";
 import { BloomApi } from "../../utils/bloomApi";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
-import theme from "../../bloomMaterialUITheme";
+import { lightTheme } from "../../bloomMaterialUITheme";
 import { CSSProperties, ThemeProvider } from "@material-ui/styles";
 import HelpLink from "../../react_components/helpLink";
 
@@ -99,7 +99,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
         "This is the label on a radio button."
     );
 
-    theme.palette.text.secondary = kDarkerSecondaryTextColor;
+    lightTheme.palette.text.secondary = kDarkerSecondaryTextColor;
 
     // This could be pulled out to a separate file, or at least outside of the UploadCollisionDlg
     // component. But then this component would not have access to the buttonState.
@@ -207,7 +207,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
     };
 
     return (
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={lightTheme}>
             <BloomDialog {...propsForBloomDialog}>
                 <div
                     css={css`

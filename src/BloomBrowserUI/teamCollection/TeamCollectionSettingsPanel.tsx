@@ -6,7 +6,7 @@ import { BloomApi } from "../utils/bloomApi";
 import { P } from "../react_components/l10nComponents";
 import { RequiresBloomEnterpriseOverlayWrapper } from "../react_components/requiresBloomEnterprise";
 import "./TeamCollectionSettingsPanel.less";
-import theme from "../bloomMaterialUITheme";
+import { lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 
 import BloomButton from "../react_components/bloomButton";
@@ -152,7 +152,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
     );
 
     return (
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={lightTheme}>
             <div id="teamCollection-settings">
                 <RequiresBloomEnterpriseOverlayWrapper>
                     <React.Fragment>

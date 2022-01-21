@@ -5,7 +5,7 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { BloomApi } from "../utils/bloomApi";
 import Button from "@material-ui/core/Button";
-import theme from "../bloomMaterialUITheme";
+import { lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { Div } from "./l10nComponents";
 import { useL10n } from "./l10nHooks";
@@ -21,7 +21,7 @@ import {
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog
 } from "./BloomDialog/BloomDialog";
-import { kUiFontStack } from "../bloomMaterialUITheme.js";
+import { kUiFontStack } from "../bloomMaterialUITheme.ts";
 
 /**
  * This function sets up the hooks to get the status of whether Bloom Enterprise is available or not
@@ -194,7 +194,7 @@ export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequire
     `;
 
     return (
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={lightTheme}>
             <div
                 css={
                     !visible

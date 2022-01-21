@@ -1,4 +1,4 @@
-import theme from "../bloomMaterialUITheme";
+import { lightTheme } from "../bloomMaterialUITheme";
 import * as React from "react";
 import { ThemeProvider } from "@material-ui/styles";
 import { storiesOf } from "@storybook/react";
@@ -25,7 +25,7 @@ import {
 addDecorator(withA11y as any);
 
 addDecorator(storyFn => (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={lightTheme}>
         <StorybookContext.Provider value={true}>
             {storyFn()}
         </StorybookContext.Provider>

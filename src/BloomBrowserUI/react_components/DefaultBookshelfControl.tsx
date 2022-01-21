@@ -5,7 +5,7 @@ import * as React from "react";
 import { useState } from "react";
 import { BloomApi } from "../utils/bloomApi";
 import { Div } from "./l10nComponents";
-import theme, { kBloomYellow } from "../bloomMaterialUITheme";
+import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import BloomSelect from "./bloomSelect";
 import { makeStyles, MenuItem, Select } from "@material-ui/core";
@@ -146,7 +146,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
     });
     const classes = useStyles(); // part of the magic of MaterialUI styles. Possibly could be inlined.
     return (
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={lightTheme}>
             <div
                 // Not sure whether we need to specify a different font for Linux, which probably doesn't
                 // have Segoe UI, or whether the default is OK. 10pt seems to be the size this dialog uses,

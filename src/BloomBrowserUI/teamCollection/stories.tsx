@@ -1,5 +1,5 @@
 // Storybook stories for Team Collection components
-import theme from "../bloomMaterialUITheme";
+import { lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import * as React from "react";
 import { storiesOf, addDecorator } from "@storybook/react";
@@ -16,7 +16,7 @@ import { CreateTeamCollectionDialog } from "./CreateTeamCollection";
 import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialog";
 
 addDecorator(storyFn => (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={lightTheme}>
         <StorybookContext.Provider value={true}>
             <div id="reactRoot">{storyFn()}</div>
         </StorybookContext.Provider>
@@ -66,7 +66,7 @@ const avatar = (lockedByMe: boolean) => (
     <BloomAvatar
         email={"test@example.com"}
         name={"A B"}
-        borderColor={lockedByMe && theme.palette.warning.main}
+        borderColor={lockedByMe && (lightTheme.palette.warning.main as any)} // `as any` here patches over a minor typescript typing problem
     />
 );
 

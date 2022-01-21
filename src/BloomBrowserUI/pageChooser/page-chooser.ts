@@ -8,7 +8,7 @@ import "errorHandler";
 import SelectedTemplatePageControls from "./selectedTemplatePageControls";
 import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";
 import { ThemeProvider } from "@material-ui/styles";
-import theme from "../bloomMaterialUITheme";
+import { lightTheme } from "../bloomMaterialUITheme";
 
 document.addEventListener("DOMContentLoaded", () => {
     BloomApi.get("pageTemplates", result => {
@@ -137,7 +137,7 @@ export class PageChooser {
         ReactDOM.render(
             React.createElement(
                 ThemeProvider,
-                { theme: theme } as any,
+                { theme: lightTheme } as any,
                 React.createElement(SelectedTemplatePageControls, {
                     enterpriseAvailable: this._enterpriseAvailable,
                     caption: englishCaptionText ? englishCaptionText : "",
