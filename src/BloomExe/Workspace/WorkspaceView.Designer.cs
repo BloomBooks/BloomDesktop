@@ -18,7 +18,6 @@ namespace Bloom.Workspace
         {
             if (disposing && (components != null))
             {
-	            BookCollection.CollectionCreated -= OnBookCollectionCreated;
 	            components.Dispose();
             }
             base.Dispose(disposing);

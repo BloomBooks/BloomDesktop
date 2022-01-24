@@ -949,6 +949,7 @@
       <DependentUpon>PublishView.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
+    <Compile Include="Workspace\WorkspaceTabSelection.cs" />
     <Compile Include="Workspace\WorkspaceView.cs">
       <SubType>UserControl</SubType>
     </Compile>

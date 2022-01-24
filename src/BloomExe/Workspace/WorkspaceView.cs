@@ -76,7 +76,7 @@ namespace Bloom.Workspace
 		private ToastNotifier _returnToCollectionTabNotifier;
 		private BloomWebSocketServer _webSocketServer;
 		private BookServer _bookServer;
-		private LibraryModel _libraryModel;
+		private WorkspaceTabSelection _tabSelection;
 
 		//autofac uses this
 
@@ -103,7 +103,7 @@ namespace Bloom.Workspace
 							BookServer bookServer,
 							CollectionApi collectionApi,
 							WorkspaceApi workspaceApi,
-							LibraryModel libraryModel
+							WorkspaceTabSelection tabSelection
 		)
 		{
 			_model = model;
@@ -115,12 +115,10 @@ namespace Bloom.Workspace
 			_tcManager = tcManager;
 			_webSocketServer = webSocketServer;
 			_bookServer = bookServer;
-			_libraryModel = libraryModel;
+			_tabSelection = tabSelection;
 			collectionApi.WorkspaceView = this; // avoids an Autofac exception that appears if collectionApi constructor takes a WorkspaceView
 			appApi.WorkspaceView = this; // it needs to know, and there's some circularity involved in having factory pass it in
 			workspaceApi.WorkspaceView = this; // and yet one more
-
-			BookCollection.CollectionCreated += OnBookCollectionCreated;
 
 			_collectionSettings = collectionSettings;
 			// This provides the common API with a hook it can use to reload
@@ -253,23 +251,6 @@ namespace Bloom.Workspace
 			// happen in response to the book selection changed websocked message.
 			bookSelection.SelectionChangedHighPriority += HandleBookSelectionChanged;
 			bookStatusChangeEvent.Subscribe(args => { HandleBookStatusChange(args); });
-		}
-
-		private void OnBookCollectionCreated(object collection, EventArgs args)
-		{
-			var c = collection as BookCollection;
-			if (c.ContainsDownloadedBooks)
-			{
-				c.FolderContentChanged += (sender, eventArgs) =>
-				{
-					if (_tabStrip.SelectedTab == _reactCollectionTab || _tabStrip.SelectedTab == _legacyCollectionTab)
-					{
-						var newBook = new BookInfo(eventArgs.Path, false);
-						var book = _libraryModel.GetBookFromBookInfo(newBook, true);
-						_bookSelection.SelectBook(book, false);
-					}
-				};
-			}
 		}
 
 		public void HandleRenameCommand()
@@ -997,7 +978,12 @@ namespace Bloom.Workspace
 
 		private void _tabStrip_SelectedTabChanged(object sender, SelectedTabChangedEventArgs e)
 		{
-			// TODO: React version
+			if (_tabStrip.SelectedTab == _editTab)
+				_tabSelection.ActiveTab = WorkspaceTab.edit;
+			else if (_tabStrip.SelectedTab == _publishTab)
+				_tabSelection.ActiveTab = WorkspaceTab.publish;
+			else
+				_tabSelection.ActiveTab = WorkspaceTab.collection;
 			if (_returnToCollectionTabNotifier != null && _tabStrip.SelectedTab == _legacyCollectionTab)
 			{
 				_returnToCollectionTabNotifier.CloseSafely();

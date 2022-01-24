@@ -54,6 +54,7 @@ namespace Bloom.CollectionTab
 		private Image _dropdownImage;
 		private TeamCollectionManager _tcManager;
 		private BookCommandsApi _bookCommandsApi;
+		private WorkspaceTabSelection _tabSelection;
 
 		/// <summary>
 		/// we go through these at idle time, doing slow things like actually instantiating the book to get the title in preferred language
@@ -66,13 +67,14 @@ namespace Bloom.CollectionTab
 
 		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent,
 				LocalizationChangedEvent localizationChangedEvent, BookStatusChangeEvent tcStatusChangeEvent, TeamCollectionManager tcManager,
-				SpreadsheetExporter.Factory exporterFactory, BookCommandsApi bookCommandsApi)
+				SpreadsheetExporter.Factory exporterFactory, BookCommandsApi bookCommandsApi,  WorkspaceTabSelection tabSelection)
 			//HistoryAndNotesDialog.Factory historyAndNotesDialogFactory)
 		{
 			_model = model;
 			_tcManager = tcManager;
 			_bookSelection = bookSelection;
 			_bookCommandsApi = bookCommandsApi;
+			_tabSelection = tabSelection;
 
 			localizationChangedEvent.Subscribe(unused=>LoadSourceCollectionButtons());
 			_tcBookStatusChangeEvent = tcStatusChangeEvent;
@@ -759,29 +761,19 @@ namespace Bloom.CollectionTab
 
 		private void DownLoadedBooksChanged(object sender, ProjectChangedEventArgs eventArgs)
 	   {
+		   var newBook = new BookInfo(eventArgs.Path, false);
 			// It's always worth reloading...maybe we didn't have a button before because it was not
 			// suitable for making vernacular books, but now it is! Or maybe the metadata changed some
 			// other way...we want the button to have valid metadata for the book.
 			// Optimize: maybe it would be worth trying to find the right place to insert or replace just one button?
 			LoadSourceCollectionButtons();
-			// Restore the appearance of any selection that exists
-			if (_bookSelection.CurrentSelection != null)
-				OnBookSelectionChanged(_bookSelection, new BookSelectionChangedEventArgs(){AboutToEdit = _bookSelection.CurrentSelection.IsEditable});
-	   }
+			// Select the book if we're in the collection tab; don't switch books if we're editing or publishing one.
+			if (Enabled && CollectionTabIsActive)
+				SelectBook(newBook);
 
-		/// <summary>
-		/// Tells whether the collections tab is visible. If it isn't, we don't try to switch to show the selected book.
-		/// In the current configuration, Parent.Parent.Parent is the LibraryView; this is added and removed from
-		/// the higher level view depending on whether it is wanted, so if it has no higher parent it is hidden
-		/// (although Visible is still true!) and we should not try to switch.
-		/// One day we may enhance it so that we switch tabs and show it, but there are states where that would
-		/// be dangerous.
-		/// </summary>
-		private bool CollectionTabIsActive
-		{
-			get { return Parent.Parent.Parent.Parent != null; }
 		}
 
+		private bool CollectionTabIsActive => _tabSelection.ActiveTab == WorkspaceTab.collection;
 		private void AddOneBook(BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel, BookCollection collection)
 		{
 			string title = bookInfo.QuickTitleUserDisplay;
