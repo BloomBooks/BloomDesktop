@@ -447,7 +447,7 @@ namespace Bloom.Api
 			{
 				localPath = _keyToCurrentPage;
 			}
-			if (localPath.ToLower().Contains("current-bloompub-url")) //useful when debugging. E.g. http://localhost:8091/bloom/CURRENTPAGE.htm will always show the page we're on.
+			if (localPath.ToLower().Contains("current-bloompub-url")) //useful when debugging. E.g. http://localhost:8091/bloom/current-bloompub-url.htm will always show the page we're on.
 			{
 				info.ResponseContentType = "text/plain";
 				info.WriteCompleteOutput(PublishToAndroidApi.PreviewUrl);
