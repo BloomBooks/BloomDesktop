@@ -8,6 +8,7 @@ Released under the MIT license
 https://raw.github.com/shagstrom/split-pane/master/LICENSE
 
 */
+
 (function($) {
 
     $.fn.splitPane = function() {
@@ -159,6 +160,9 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
     }
 
     function createMousemove($splitPane, pageX, pageY) {
+        var pageScale = $splitPane[0].getBoundingClientRect().width / $splitPane[0].offsetWidth;
+        var scaledX = pageX / pageScale;
+        var scaledY = pageY / pageScale;
         var splitPane = $splitPane[0],
             firstComponent = $splitPane.children('.split-pane-component:first')[0],
             divider = $splitPane.children('.split-pane-divider')[0],
@@ -166,20 +170,20 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
         if ($splitPane.is('.fixed-top')) {
             var firstComponentMinHeight =  minHeight(firstComponent),
                 maxFirstComponentHeight = splitPane.offsetHeight - minHeight(lastComponent) - divider.offsetHeight,
-                topOffset = divider.offsetTop - pageY;
+                topOffset = divider.offsetTop - scaledY;
             return function(event) {
                 event.preventDefault();
-                var top = Math.min(Math.max(firstComponentMinHeight, topOffset + pageYof(event)), maxFirstComponentHeight);
+                var top = Math.min(Math.max(firstComponentMinHeight, topOffset + pageYof(event) / pageScale), maxFirstComponentHeight);
                 setTop(firstComponent, divider, lastComponent, top + 'px');
                 $splitPane.resize();
             };
         } else if ($splitPane.is('.fixed-bottom')) {
             var lastComponentMinHeight = minHeight(lastComponent),
                 maxLastComponentHeight = splitPane.offsetHeight - minHeight(firstComponent) - divider.offsetHeight,
-                bottomOffset = lastComponent.offsetHeight + pageY;
+                bottomOffset = lastComponent.offsetHeight + scaledY;
             return function(event) {
                 event.preventDefault();
-                var bottom = Math.min(Math.max(lastComponentMinHeight, bottomOffset - pageYof(event)), maxLastComponentHeight);
+                var bottom = Math.min(Math.max(lastComponentMinHeight, bottomOffset - pageYof(event) / pageScale), maxLastComponentHeight);
                 setBottom(firstComponent, divider, lastComponent, bottom + 'px');
                 $splitPane.resize();
             };
@@ -187,10 +191,10 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
             var splitPaneHeight = splitPane.offsetHeight,
                 lastComponentMinHeight = minHeight(lastComponent),
                 maxLastComponentHeight = splitPaneHeight - minHeight(firstComponent) - divider.offsetHeight,
-                bottomOffset = lastComponent.offsetHeight + pageY;
+                bottomOffset = lastComponent.offsetHeight + scaledY;
             return function(event) {
                 event.preventDefault();
-                var bottom = Math.min(Math.max(lastComponentMinHeight, bottomOffset - pageYof(event)), maxLastComponentHeight);
+                var bottom = Math.min(Math.max(lastComponentMinHeight, bottomOffset - pageYof(event) / pageScale), maxLastComponentHeight);
                 var amount = (bottom / splitPaneHeight * 100);
                 setDividerTitle(divider,amount);
                 setBottom(firstComponent, divider, lastComponent, amount + "%");
@@ -199,20 +203,20 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
         } else if ($splitPane.is('.fixed-left')) {
             var firstComponentMinWidth = minWidth(firstComponent),
                 maxFirstComponentWidth = splitPane.offsetWidth - minWidth(lastComponent) - divider.offsetWidth,
-                leftOffset = divider.offsetLeft - pageX;
+                leftOffset = divider.offsetLeft - scaledX;
             return function(event) {
                 event.preventDefault();
-                var left = Math.min(Math.max(firstComponentMinWidth, leftOffset + pageXof(event)), maxFirstComponentWidth);
+                var left = Math.min(Math.max(firstComponentMinWidth, leftOffset + pageXof(event) / pageScale), maxFirstComponentWidth);
                 setLeft(firstComponent, divider, lastComponent, left + 'px')
                 $splitPane.resize();
             };
         } else if ($splitPane.is('.fixed-right')) {
             var lastComponentMinWidth = minWidth(lastComponent),
                 maxLastComponentWidth = splitPane.offsetWidth - minWidth(firstComponent) - divider.offsetWidth,
-                rightOffset = lastComponent.offsetWidth + pageX;
+                rightOffset = lastComponent.offsetWidth + scaledX;
             return function(event) {
                 event.preventDefault();
-                var right = Math.min(Math.max(lastComponentMinWidth, rightOffset - pageXof(event)), maxLastComponentWidth);
+                var right = Math.min(Math.max(lastComponentMinWidth, rightOffset - pageXof(event) / pageScale), maxLastComponentWidth);
                 setRight(firstComponent, divider, lastComponent, right + 'px');
                 $splitPane.resize();
             };
@@ -220,10 +224,10 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
             var splitPaneWidth = splitPane.offsetWidth,
                 lastComponentMinWidth = minWidth(lastComponent),
                 maxLastComponentWidth = splitPaneWidth - minWidth(firstComponent) - divider.offsetWidth,
-                rightOffset = lastComponent.offsetWidth + pageX;
+                rightOffset = lastComponent.offsetWidth + scaledX;
             return function(event) {
                 event.preventDefault();
-                var right = Math.min(Math.max(lastComponentMinWidth, rightOffset - pageXof(event)), maxLastComponentWidth);
+                var right = Math.min(Math.max(lastComponentMinWidth, rightOffset - pageXof(event) / pageScale), maxLastComponentWidth);
                 var amount = (right / splitPaneWidth * 100);
                 setDividerTitle(divider, amount);
                 setRight(firstComponent, divider, lastComponent, amount + '%');

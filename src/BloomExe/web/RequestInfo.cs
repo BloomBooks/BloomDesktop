@@ -446,7 +446,8 @@ namespace Bloom.Api
 
 		public NameValueCollection GetPostDataWhenFormEncoded()
 		{
-			Debug.Assert(RequestContentType == "application/x-www-form-urlencoded");
+			// Modified the Assert because suddenly I'm getting ";charset='UTF-8'" appended to this.
+			Debug.Assert(RequestContentType.StartsWith("application/x-www-form-urlencoded"));
 			if (_postData == null)
 			{
 				var request = _actualContext.Request;
