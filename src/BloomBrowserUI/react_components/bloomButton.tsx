@@ -87,14 +87,14 @@ export default class BloomButton extends LocalizableElement<
         ) : (
             // if not transparent, then we can use Material-ui
             <Button
+                {...this.props} // Bring in other props like disableRipple. By being first, this will be overridden by anything that follows
                 {...commonProps}
                 variant={this.props.variant || "contained"}
                 color={this.props.color ? this.props.color : "primary"}
                 startIcon={this.props.iconBeforeText}
                 size={this.props.size}
                 href={this.props.href}
-                {...extraCssFromContainer} // allows defining more css rules from container
-                {...this.props} // bring in other props like disableRipple
+                {...extraCssFromContainer} // Allow defining more css rules from the parent. By being last, the parent will win.
             >
                 {commonChildren}
             </Button>
