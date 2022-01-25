@@ -704,8 +704,6 @@ namespace Bloom.CollectionTab
 		}
 
 
-
-
 		private void CreateFromSourceBook(Book.Book sourceBook)
 		{
 			try
@@ -718,6 +716,7 @@ namespace Bloom.CollectionTab
 
 				if (_bookSelection != null)
 				{
+					Book.Book.SourceToReportForNextRename = Path.GetFileName(sourceBook.FolderPath);
 					_bookSelection.SelectBook(newBook, aboutToEdit: true);
 				}
 				//enhance: would be nice to know if this is a new shell
@@ -730,7 +729,8 @@ namespace Bloom.CollectionTab
 							{ "Country", _collectionSettings.Country}
 						});
 				}
-				BookHistory.AddEvent(newBook, BookHistoryEventType.Created, "New book created");
+				// Better reported in Book_BookTitleChanged as a side effect of selecting it.
+				// BookHistory.AddEvent(newBook, BookHistoryEventType.Created, "New book created");
 				_editBookCommand.Raise(newBook);
 			}
 			catch (Exception e)
