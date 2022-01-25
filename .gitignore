@@ -154,3 +154,7 @@ src/BloomBrowserUI/branding/Education-For-Life/branding.css
 src/BloomBrowserUI/branding/Nigeria-CAPRO-Temporary/branding.css
 
 src/BloomBrowserUI/bloomWebFonts.css
+
+src/BloomBrowserUI/templates/template books/Activity/domActivities.css
+
+src/BloomBrowserUI/templates/template books/Activity/choiceActivities.css
