@@ -1,4 +1,5 @@
-﻿using Bloom.TeamCollection;
+﻿using Bloom.Collection;
+using Bloom.TeamCollection;
 using Bloom.web;
 
 namespace Bloom.CollectionTab
@@ -18,6 +19,7 @@ namespace Bloom.CollectionTab
 		{
 			if (disposing && (components != null))
 			{
+				BookCollection.CollectionCreated -= OnBookCollectionCreated;
 				components.Dispose();
 			}
 			base.Dispose(disposing);

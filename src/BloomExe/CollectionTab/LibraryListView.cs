@@ -54,6 +54,7 @@ namespace Bloom.CollectionTab
 		private Image _dropdownImage;
 		private TeamCollectionManager _tcManager;
 		private BookCommandsApi _bookCommandsApi;
+		private WorkspaceTabSelection _tabSelection;
 
 		/// <summary>
 		/// we go through these at idle time, doing slow things like actually instantiating the book to get the title in preferred language
@@ -66,13 +67,14 @@ namespace Bloom.CollectionTab
 
 		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent,
 				LocalizationChangedEvent localizationChangedEvent, BookStatusChangeEvent tcStatusChangeEvent, TeamCollectionManager tcManager,
-				SpreadsheetExporter.Factory exporterFactory, BookCommandsApi bookCommandsApi)
+				SpreadsheetExporter.Factory exporterFactory, BookCommandsApi bookCommandsApi,  WorkspaceTabSelection tabSelection)
 			//HistoryAndNotesDialog.Factory historyAndNotesDialogFactory)
 		{
 			_model = model;
 			_tcManager = tcManager;
 			_bookSelection = bookSelection;
 			_bookCommandsApi = bookCommandsApi;
+			_tabSelection = tabSelection;
 
 			localizationChangedEvent.Subscribe(unused=>LoadSourceCollectionButtons());
 			_tcBookStatusChangeEvent = tcStatusChangeEvent;
@@ -287,6 +289,7 @@ namespace Bloom.CollectionTab
 			var selection = (BookSelection)sender;
 			if ((selection.CurrentSelection != null) && (selection.CurrentSelection.BookInfo != null))
 			{
+				SetupForNewSelectedBook();
 				HighlightBookButtonAndShowContextMenuButton(selection.CurrentSelection.BookInfo);
 			}
 		}
@@ -692,7 +695,7 @@ namespace Bloom.CollectionTab
 		/// <returns>True if the collection should be shown</returns>
 		private bool LoadOneCollection(BookCollection collection, FlowLayoutPanel flowLayoutPanel)
 		{
-			collection.CollectionChanged += OnCollectionChanged;
+			 collection.CollectionChanged += OnCollectionChanged;
 			bool loadedAtLeastOneBook = false;
 			foreach (var bookInfo in collection.GetBookInfos())
 			{
@@ -713,7 +716,6 @@ namespace Bloom.CollectionTab
 			{
 				_downloadedBookCollection = collection;
 				collection.FolderContentChanged += DownLoadedBooksChanged;
-				collection.WatchDirectory(); // In case another instance downloads a book.
 				var bloomLibraryLink = new LinkLabel()
 				{
 					Margin = new Padding(17, 0, 0, 0),
@@ -755,106 +757,23 @@ namespace Bloom.CollectionTab
 				   (!_model.IsShellProject && bookInfo.IsSuitableForVernacularLibrary);
 		}
 
-		private Timer _newDownloadTimer;
-		private HashSet<string> _changingFolders = new HashSet<string>();
+	   private bool _loadedPrimaryCollectionButtons;
 
-		private bool _loadedPrimaryCollectionButtons;
-
-		/// <summary>
-		/// Called when a file system watcher notices a new book (or some similar change) in our downloaded books folder.
-		/// This will happen on a thread-pool thread.
-		/// Since we are updating the UI in response we want to deal with it on the main thread.
-		/// This also has the effect that it can't happen in the middle of another LoadSourceCollectionButtons().
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="eventArgs"></param>
 		private void DownLoadedBooksChanged(object sender, ProjectChangedEventArgs eventArgs)
-		{
-			SafeInvoke.InvokeIfPossible("LibraryListView update downloaded books",this,true,(Action) (() =>
-			{
-				// We may notice a change to the downloaded books directory before the other Bloom instance has finished
-				// copying the new book there. Finishing should not take long, because the download is done...at worst
-				// we have to copy the book on our own filesystem. Typically we only have to move the directory.
-				// As a safeguard, wait half a second before we update things.
-				if (_newDownloadTimer != null)
-				{
-					// Things changed again before we started the update! Forget the old update and wait until things
-					// are stable for the required interval.
-					_newDownloadTimer.Stop();
-					_newDownloadTimer.Dispose();
-				}
-				_newDownloadTimer = new Timer();
-				_newDownloadTimer.Tick += (o, args) =>
-				{
-					_newDownloadTimer.Stop();
-					_newDownloadTimer.Dispose();
-					_newDownloadTimer = null;
-
-					// Updating the books involves selecting the modified book, which might involve changing
-					// some files (e.g., adding a branding image, BL-4914), which could trigger this again.
-					// So don't allow it to be triggered by changes to a folder we're already sending
-					// notifications about.
-					// (It's PROBABLY overkill to maintain a set of these...don't expect a notification about
-					// one folder to trigger a change to another...but better safe than sorry.)
-					// (Note that we don't need synchronized access to this dictionary, because all this
-					// happens only on the UI thread.)
-					if (!_changingFolders.Contains(eventArgs.Path))
-					{
-						try
-						{
-							_changingFolders.Add(eventArgs.Path);
-							UpdateDownloadedBooks(eventArgs.Path);
-						}
-						finally
-						{
-							// Now we need to arrange to remove it again. But the critical time to suppress
-							// a notification on the same folder isn't DURING the notification, but just AFTER
-							// it, when the system is idle enough to notice the change in the folder.
-							// I'm giving it a generous 10 seconds before paying attention to new changes to
-							// this folder. Probably excessive, but this monitor is meant to catch new downloads;
-							// it's unlikely the same book can be downloaded again within 10 seconds.
-							var waitTimer = new Timer();
-							waitTimer.Interval = 10000;
-							waitTimer.Tick += (sender1, args1) =>
-							{
-								_changingFolders.Remove(eventArgs.Path);
-								waitTimer.Stop();
-								waitTimer.Dispose();
-							};
-							waitTimer.Start();
-						}
-					}
-				};
-				_newDownloadTimer.Interval = 500;
-				_newDownloadTimer.Start();
-			}));
-		}
-
-		private void UpdateDownloadedBooks(string pathToChangedBook)
-		{
-			var newBook = new BookInfo(pathToChangedBook, false);
+	   {
+		   var newBook = new BookInfo(eventArgs.Path, false);
 			// It's always worth reloading...maybe we didn't have a button before because it was not
 			// suitable for making vernacular books, but now it is! Or maybe the metadata changed some
 			// other way...we want the button to have valid metadata for the book.
 			// Optimize: maybe it would be worth trying to find the right place to insert or replace just one button?
 			LoadSourceCollectionButtons();
+			// Select the book if we're in the collection tab; don't switch books if we're editing or publishing one.
 			if (Enabled && CollectionTabIsActive)
 				SelectBook(newBook);
+
 		}
 
-		/// <summary>
-		/// Tells whether the collections tab is visible. If it isn't, we don't try to switch to show the selected book.
-		/// In the current configuration, Parent.Parent.Parent is the LibraryView; this is added and removed from
-		/// the higher level view depending on whether it is wanted, so if it has no higher parent it is hidden
-		/// (although Visible is still true!) and we should not try to switch.
-		/// One day we may enhance it so that we switch tabs and show it, but there are states where that would
-		/// be dangerous.
-		/// </summary>
-		private bool CollectionTabIsActive
-		{
-			get { return Parent.Parent.Parent.Parent != null; }
-		}
-
+		private bool CollectionTabIsActive => _tabSelection.ActiveTab == WorkspaceTab.collection;
 		private void AddOneBook(BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel, BookCollection collection)
 		{
 			string title = bookInfo.QuickTitleUserDisplay;
@@ -1056,11 +975,13 @@ namespace Bloom.CollectionTab
 
 		private void HighlightBookButtonAndShowContextMenuButton(BookInfo bookInfo)
 		{
+			bool foundMatch = false;
 			foreach (var btn in AllBookButtons())
 			{
 				var bookButtonInfo = btn.Tag as BookButtonInfo;
 				if (bookButtonInfo.BookInfo.FolderPath == bookInfo.FolderPath)
 				{
+					foundMatch = true;
 					// BL-2678 don't display menu triangle if there's no menu to display
 					if(!bookButtonInfo.HasNoContextMenu) btn.Paint += btn_Paint;
 					btn.FlatAppearance.BorderColor = Palette.LightTextAgainstDarkBackground;
@@ -1070,6 +991,21 @@ namespace Bloom.CollectionTab
 					btn.Paint -= btn_Paint;
 					btn.FlatAppearance.BorderColor = BackColor;
 				}
+			}
+
+			if (!foundMatch)
+			{
+				// try again...maybe we tried to select it before we finished making the buttons
+				Application.Idle += TryToHighlightSelectedBook;
+			}
+		}
+
+		private void TryToHighlightSelectedBook(object sender, EventArgs e)
+		{
+			Application.Idle -= TryToHighlightSelectedBook;
+			if (!this.IsDisposed && _bookSelection.CurrentSelection.BookInfo != null)
+			{
+				HighlightBookButtonAndShowContextMenuButton(_bookSelection.CurrentSelection.BookInfo);
 			}
 		}
 
@@ -1093,20 +1029,6 @@ namespace Bloom.CollectionTab
 				using (PerformanceMeasurement.Global?.Measure("select book", bookInfo.QuickTitleUserDisplay))
 				{
 					_bookSelection.SelectBook(_model.GetBookFromBookInfo(bookInfo, true));
-
-					_bookContextMenu.Enabled = true;
-					//Debug.WriteLine("before selecting " + SelectedBook.Title);
-					_model.SelectBook(SelectedBook);
-					//Debug.WriteLine("after selecting " + SelectedBook.Title);
-					//didn't help: _listView.Focus();//hack we were losing clicks
-					SelectedBook.ContentsChanged -=
-						new EventHandler(OnContentsOfSelectedBookChanged); //in case we're already subscribed
-					SelectedBook.ContentsChanged += new EventHandler(OnContentsOfSelectedBookChanged);
-
-					deleteMenuItem.Enabled = _model.CanDeleteSelection;
-					_updateThumbnailMenu.Visible = _model.CanUpdateSelection;
-					exportToWordOrLibreOfficeToolStripMenuItem.Visible = _model.CanExportSelection;
-					_updateFrontMatterToolStripMenu.Visible = _model.CanUpdateSelection;
 				}
 			}
 			catch (Exception error)
@@ -1117,6 +1039,23 @@ namespace Bloom.CollectionTab
 
 				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom cannot display that book.");
 			}
+		}
+
+		private void SetupForNewSelectedBook()
+		{
+			_bookContextMenu.Enabled = true;
+			//Debug.WriteLine("before selecting " + SelectedBook.Title);
+			_model.SelectBook(SelectedBook);
+			//Debug.WriteLine("after selecting " + SelectedBook.Title);
+			//didn't help: _listView.Focus();//hack we were losing clicks
+			SelectedBook.ContentsChanged -=
+				new EventHandler(OnContentsOfSelectedBookChanged); //in case we're already subscribed
+			SelectedBook.ContentsChanged += new EventHandler(OnContentsOfSelectedBookChanged);
+
+			deleteMenuItem.Enabled = _model.CanDeleteSelection;
+			_updateThumbnailMenu.Visible = _model.CanUpdateSelection;
+			exportToWordOrLibreOfficeToolStripMenuItem.Visible = _model.CanExportSelection;
+			_updateFrontMatterToolStripMenu.Visible = _model.CanUpdateSelection;
 		}
 
 		private Book.Book SelectedBook
@@ -1137,6 +1076,8 @@ namespace Bloom.CollectionTab
 		/// </summary>
 		private void OnContentsOfSelectedBookChanged(object sender, EventArgs e)
 		{
+			if (this.IsDisposed)
+				return;
 			if (CollectionTabIsActive && _bookSelection.CurrentSelection != null)
 			{
 				// Fix it now
@@ -1427,7 +1368,7 @@ namespace Bloom.CollectionTab
 
 		private Button FindBookButton(BookInfo bookInfo)
 		{
-			return AllBookButtons().FirstOrDefault(b => GetBookInfoFromButton(b) == bookInfo);
+			return AllBookButtons().FirstOrDefault(b => GetBookInfoFromButton(b).FolderPath == bookInfo.FolderPath);
 		}
 
 		private IEnumerable<Button> AllBookButtons()
@@ -1549,11 +1490,6 @@ namespace Bloom.CollectionTab
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing && (_newDownloadTimer != null))
-			{
-				_newDownloadTimer.Stop();
-				_newDownloadTimer.Dispose();
-			}
 			if (disposing && (components != null))
 			{
 				components.Dispose();

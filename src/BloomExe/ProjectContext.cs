@@ -170,7 +170,8 @@ namespace Bloom
 							typeof(FontsApi),
 							typeof(BulkBloomPubCreator),
 							typeof(LibraryPublishApi),
-							typeof(WorkspaceApi)
+							typeof(WorkspaceApi),
+							typeof(WorkspaceTabSelection)
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())

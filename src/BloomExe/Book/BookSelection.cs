@@ -1,5 +1,6 @@
 ﻿using System;
 using Bloom.Api;
+using Bloom.Collection;
 using Bloom.Properties;
 using SIL.Progress;
 
@@ -33,6 +34,9 @@ namespace Bloom.Book
 		{
 			if (_currentSelection == book)
 				return;
+			// We don't need to reload the collection just because we make changes bringing the book up to date.
+			if (book != null)
+				BookCollection.TemporariliyIgnoreChangesToFolder(book.FolderPath);
 
 			// The bookdata null test prevents doing this on books not sufficiently initialized to
 			// BringUpToDate, typically only in unit tests.

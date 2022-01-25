@@ -7,6 +7,7 @@ using L10NSharp;
 using SIL.Reporting;
 using System.Drawing;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.MiscUI;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
@@ -18,15 +19,23 @@ namespace Bloom.CollectionTab
 	public partial class ReactCollectionTabView : UserControl, IBloomTabArea
 	{
 		private readonly LibraryModel _model;
+		private WorkspaceTabSelection _tabSelection;
+		private BookSelection _bookSelection;
 
 		public delegate ReactCollectionTabView Factory();//autofac uses this
 
 		public ReactCollectionTabView(LibraryModel model,
 			SelectedTabChangedEvent selectedTabChangedEvent,
 			SendReceiveCommand sendReceiveCommand,
-			TeamCollectionManager tcManager, BookSelection bookSelection)
+			TeamCollectionManager tcManager, BookSelection bookSelection,
+			WorkspaceTabSelection tabSelection)
 		{
 			_model = model;
+			_tabSelection = tabSelection;
+			_bookSelection = bookSelection;
+
+			BookCollection.CollectionCreated += OnBookCollectionCreated;
+
 			InitializeComponent();
 			BackColor = _reactControl.BackColor = Palette.GeneralBackground;
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
@@ -109,6 +118,30 @@ namespace Bloom.CollectionTab
 				_model.UpdateThumbnailAsync(book);
 				_model.UpdateLabelOfBookInEditableCollection(book);
 			};
+		}
+		private void OnBookCollectionCreated(object collection, EventArgs args)
+		{
+			var c = collection as BookCollection;
+			if (c.ContainsDownloadedBooks)
+			{
+				c.FolderContentChanged += (sender, eventArgs) =>
+				{
+					if (IsDisposed)
+						return;
+					if (_tabSelection.ActiveTab == WorkspaceTab.collection)
+					{
+						// We got a new or modified book in the downloaded books collection.
+						// If this (collection) tab is active, we want to select it.
+						// (If we're in the middle of editing or publishing some book, we
+						// don't want to change that.)
+						// One day we may enhance it so that we switch tabs and show it,
+						// but there are states where that would be dangerous.
+						var newBook = new BookInfo(eventArgs.Path, false);
+						var book = _model.GetBookFromBookInfo(newBook, true);
+						_bookSelection.SelectBook(book, false);
+					}
+				};
+			}
 		}
 
 		public void ReadyToShowCollections()

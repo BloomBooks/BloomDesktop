@@ -76,6 +76,7 @@ namespace Bloom.Workspace
 		private ToastNotifier _returnToCollectionTabNotifier;
 		private BloomWebSocketServer _webSocketServer;
 		private BookServer _bookServer;
+		private WorkspaceTabSelection _tabSelection;
 
 		//autofac uses this
 
@@ -101,8 +102,9 @@ namespace Bloom.Workspace
 							AppApi appApi,
 							BookServer bookServer,
 							CollectionApi collectionApi,
-							WorkspaceApi workspaceApi
-			)
+							WorkspaceApi workspaceApi,
+							WorkspaceTabSelection tabSelection
+		)
 		{
 			_model = model;
 			_settingsDialogFactory = settingsDialogFactory;
@@ -113,6 +115,7 @@ namespace Bloom.Workspace
 			_tcManager = tcManager;
 			_webSocketServer = webSocketServer;
 			_bookServer = bookServer;
+			_tabSelection = tabSelection;
 			collectionApi.WorkspaceView = this; // avoids an Autofac exception that appears if collectionApi constructor takes a WorkspaceView
 			appApi.WorkspaceView = this; // it needs to know, and there's some circularity involved in having factory pass it in
 			workspaceApi.WorkspaceView = this; // and yet one more
@@ -975,7 +978,12 @@ namespace Bloom.Workspace
 
 		private void _tabStrip_SelectedTabChanged(object sender, SelectedTabChangedEventArgs e)
 		{
-			// TODO: React version
+			if (_tabStrip.SelectedTab == _editTab)
+				_tabSelection.ActiveTab = WorkspaceTab.edit;
+			else if (_tabStrip.SelectedTab == _publishTab)
+				_tabSelection.ActiveTab = WorkspaceTab.publish;
+			else
+				_tabSelection.ActiveTab = WorkspaceTab.collection;
 			if (_returnToCollectionTabNotifier != null && _tabStrip.SelectedTab == _legacyCollectionTab)
 			{
 				_returnToCollectionTabNotifier.CloseSafely();
