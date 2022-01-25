@@ -172,15 +172,37 @@ namespace Bloom.Book
 				(Storage as BookStorage).BookTitleChanged += Book_BookTitleChanged;
 		}
 
+		/// <summary>
+		/// This gets set when a new book is created by copying a source book.
+		/// It is the folder name (without path) of the source book.
+		/// Setting this allows the code which renames the new book to make a more helpful history report.
+		/// </summary>
+		public static string SourceToReportForNextRename;
+
 		private void Book_BookTitleChanged(object sender, EventArgs e)
 		{
 			if (!BookInfo.NameLocked)
 			{
 				var folderName = Path.GetFileName(FolderPath);
-				if (folderName == Storage.Dom.Title)
-					BookHistory.AddEvent(this, BookHistoryEventType.Renamed, $"Book title changed to \"{Storage.Dom.Title}\"");
+				if (SourceToReportForNextRename == null)
+				{
+					if (folderName == Storage.Dom.Title)
+						BookHistory.AddEvent(this, BookHistoryEventType.Renamed,
+							$"Book title changed to \"{Storage.Dom.Title}\"");
+					else
+						BookHistory.AddEvent(this, BookHistoryEventType.Renamed,
+							$"Book title changed to \"{Storage.Dom.Title}\" (folder=\"{folderName}\")");
+				}
 				else
-					BookHistory.AddEvent(this, BookHistoryEventType.Renamed, $"Book title changed to \"{Storage.Dom.Title}\" (folder=\"{folderName}\")");
+				{
+					if (folderName == Storage.Dom.Title)
+						BookHistory.AddEvent(this, BookHistoryEventType.Created,
+							$"Created a new book \"{Storage.Dom.Title}\" from a source book \"{SourceToReportForNextRename}\"");
+					else
+						BookHistory.AddEvent(this, BookHistoryEventType.Created,
+							$"Created a new book \"{Storage.Dom.Title}\" (folder=\"{folderName}\") from a source book \"{SourceToReportForNextRename}\"");
+					SourceToReportForNextRename = null;
+				}
 			}
 		}
 

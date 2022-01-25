@@ -446,7 +446,7 @@ namespace Bloom.Api
 
 		public NameValueCollection GetPostDataWhenFormEncoded()
 		{
-			Debug.Assert(RequestContentType == "application/x-www-form-urlencoded");
+			Debug.Assert(RequestContentType.StartsWith("application/x-www-form-urlencoded"));
 			if (_postData == null)
 			{
 				var request = _actualContext.Request;
