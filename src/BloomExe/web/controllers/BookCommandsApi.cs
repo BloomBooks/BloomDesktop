@@ -42,7 +42,14 @@ namespace Bloom.web.controllers
 		}
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-
+			// Must not require sync, because it launches a Bloom dialog, which will make other api requests
+			// that will be blocked if this is locked.
+			apiHandler.RegisterEndpointHandlerExact("bookCommand/exportToSpreadsheet",
+				(request) =>
+				{
+					_spreadsheetApi.ShowExportToSpreadsheetUI(GetBookObjectFromPost(request));
+					request.PostSucceeded();
+				}, true, false);
 			apiHandler.RegisterEndpointHandler("bookCommand/", HandleBookCommand, true);
 		}
 
@@ -63,9 +70,6 @@ namespace Bloom.web.controllers
 					break;
 				case "exportToWord":
 					HandleExportToWord(book);
-					break;
-				case "exportToSpreadsheet":
-					_spreadsheetApi.ShowExportToSpreadsheetUI(book);
 					break;
 				// As currently implemented this would more naturally go in CollectionApi, since it adds a book
 				// to the collection (a backup). However, we are probably going to change how backups are handled
