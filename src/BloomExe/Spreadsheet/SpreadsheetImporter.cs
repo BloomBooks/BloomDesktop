@@ -179,7 +179,7 @@ namespace Bloom.Spreadsheet
 						PutRowInGroup(currentRow, _currentGroup);
 					}
 				}
-				else if (rowTypeLabel[0]=='[' && rowTypeLabel[rowTypeLabel.Length - 1]==']') //This row is xmatter
+				else if (rowTypeLabel.StartsWith("[") && rowTypeLabel.EndsWith("]")) //This row is xmatter
 				{
 					string dataBookLabel = rowTypeLabel.Substring(1, rowTypeLabel.Length - 2); //remove brackets
 					UpdateDataDivFromRow(currentRow, dataBookLabel);
