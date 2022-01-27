@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Windows.Forms;
-using Bloom;
-using Bloom.Api;
 using Bloom.web;
+using DesktopAnalytics;
 using Fleck;
+using L10NSharp;
 using SIL.Reporting;
 
 namespace Bloom.Api
@@ -34,33 +34,92 @@ namespace Bloom.Api
 		//own connection (socket).
 		private WebSocketServer _server;
 		private List<IWebSocketConnection> _allSockets;
+		// http://www.networksorcery.com/enp/protocol/ip/ports08000.htm indicates no known port usage
+		// starting at this point for at least the next 12 ports.
+		private const int kDefaultPort = 8102;
+
 
 		public bool IsSocketOpen(string name)
 		{
 			return _allSockets.Exists(s => s.ConnectionInfo?.SubProtocol == name);
 		}
 
-		public void Init(string port)
+		public void Init()
+		{
+			// Since we are no longer tying the port number to the BloomServer, we need to guard against
+			// a new ProjectContext re-initializing the port. This shouldn't happen anyway, because we
+			// only have one ApplicationContainer, but it's better to be safe.
+			if (_allSockets != null)
+				return; // already initialized
+
+			bool success = TryToFindAnAvailablePort(kDefaultPort, AttemptToOpenPort);
+
+			if (!success)
+			{
+				ErrorReport.NotifyUserOfProblem(GetSocketStartFailureMessage());
+				Logger.WriteEvent("Error: Could not start up internal WebSocket Server");
+				Analytics.ReportException(new ApplicationException("Could not start socket server."));
+				Application.Exit();
+			}
+			Logger.WriteEvent("BloomWebSocketServer will use ws://127.0.0.1:" + _server.Port);
+
+		}
+
+		private string GetSocketStartFailureMessage()
+		{
+			return LocalizationManager.GetString("Errors.CannotConnectToBloomSocketServer",
+				"Bloom was unable to start its own web socket server that it uses to communicate between different parts of Bloom internally. If this happens even if you just restarted your computer, then ask someone to investigate why this is happening on your system.");
+		}
+
+		private const string SocketExceptionMsg =
+			"Bloom cannot start properly, because something prevented it from opening port {1},{0}" +
+			"which different parts of Bloom use to talk to each other.{0}" +
+			"Possibly another version of Bloom is running, perhaps not very obviously.{0}" +
+			"Other things that can cause this are firewalls (including Covenant Eyes) and anti-malware programs.{0}{0}" +
+			"What can you do?{0}" +
+			"When you click OK, Bloom will exit. Then, restart your computer.{0}" +
+			"If that doesn't fix the problem, try disabling any third-party firewalls and anti-malware programs (Microsoft's are OK).{0}" +
+			"If the problem keeps happening, click 'Details' and report the problem to the developers.";
+
+		public static bool TryToFindAnAvailablePort(int startingPort, Func<int, bool> attemptToOpenPort)
+		{
+			const int kNumberOfPortsToTry = 10;
+			bool success = false;
+			for (var i = 0; !success && i < kNumberOfPortsToTry; i++)
+			{
+				success = attemptToOpenPort(startingPort + i);
+			}
+			return success;
+		}
+
+		/// <summary>
+		/// Tries to start listening on the currently proposed server url
+		/// In this case, we're trying to open a webSocket.
+		/// </summary>
+		private bool AttemptToOpenPort(int portNumberToTry)
 		{
 			FleckLog.Level = LogLevel.Warn;
 			_allSockets = new List<IWebSocketConnection>();
-			var websocketaddr = "ws://127.0.0.1:" + port;
+			var websocketaddr = "ws://127.0.0.1:" + portNumberToTry;
 			Logger.WriteMinorEvent("Attempting to open a WebSocketServer on " + websocketaddr);
 			_server = new WebSocketServer(websocketaddr);
+
 			// If we want, we can specify the subprotocols we are expecting:
-			//_server.SupportedSubProtocols = new[] { "performance","pageThumbnailList", "pageThumbnailList-pageControls", "bookStatus" etc etc};
+			// _server.SupportedSubProtocols = new[] { "performance","pageThumbnailList",
+			//     "pageThumbnailList-pageControls", "bookStatus" etc etc};
 			// This tells Fleck to be picky.
 			// It would allow Chrome to work without any special Chrome code on the client side.
 			// But it seems like a pain. Firefox is able to negotiate with Fleck just fine, and
 			// we only use subprotocols for debugging, so rather than list every
-			// subprotocol we use here, for now I just changed our browser-side code to to not send
+			// subprotocol we use here, for now I just changed our browser-side code to not send
 			// the subprotocol unless we're in Firefox.
 
 			try
 			{
+				ApplicationContainer.Port = websocketaddr;
 				_server.Start(socket =>
 				{
-					Debug.WriteLine("subprotocol "+socket.ConnectionInfo.SubProtocol);
+					Debug.WriteLine("subprotocol " + socket.ConnectionInfo.SubProtocol);
 
 					socket.OnOpen = () =>
 					{
@@ -74,9 +133,9 @@ namespace Bloom.Api
 					{
 						// The following is probably out of date as of Bloom 5.0, which fixed the Chrome problem.
 
-					//NB: In May 2019, we found that chrome could not open a socket, and we'd immediately get here and close.
-					// WebSocketManager.ts:87 WebSocket connection to 'ws://127.0.0.1:8090/' failed: Error during WebSocket
-					// handshake: Sent non-empty 'Sec-WebSocket-Protocol' header but no response was received
+						//NB: In May 2019, we found that chrome could not open a socket, and we'd immediately get here and close.
+						// WebSocketManager.ts:87 WebSocket connection to 'ws://127.0.0.1:8090/' failed: Error during WebSocket
+						// handshake: Sent non-empty 'Sec-WebSocket-Protocol' header but no response was received
 						Debug.WriteLine($"Closing websocket \"{socket.ConnectionInfo?.SubProtocol}\"");
 						_allSockets.Remove(socket);
 						socket.Close();
@@ -90,27 +149,18 @@ namespace Bloom.Api
 			catch (SocketException ex)
 			{
 				Logger.WriteEvent("Opening a WebSocketServer on " + websocketaddr + " failed.  Error = " + ex);
-				ReportSocketExceptionAndExit(ex, _server);
+				ReportSocketException(ex, _server);
+				return false;
 			}
+			return true;
 		}
-
-		private const string SocketExceptionMsg =
-			"Bloom cannot start properly, because something prevented it from opening port {1},{0}" +
-			"which different parts of Bloom use to talk to each other.{0}" +
-			"Possibly another version of Bloom is running, perhaps not very obviously.{0}" +
-			"Other things that can cause this are firewalls (including Covenant Eyes) and anti-malware programs.{0}{0}" +
-			"What can you do?{0}" +
-			"When you click OK, Bloom will exit. Then, restart your computer.{0}" +
-			"If that doesn't fix the problem, try disabling any third-party firewalls and anti-malware programs (Microsoft's are OK).{0}" +
-			"If the problem keeps happening, click 'Details' and report the problem to the developers.";
 
 		/// <summary>
 		/// Internal for re-use by CommandAvailabilityPublisher
 		/// </summary>
-		internal static void ReportSocketExceptionAndExit(SocketException exception, WebSocketServer server)
+		internal static void ReportSocketException(SocketException exception, WebSocketServer server)
 		{
 			ErrorReport.NotifyUserOfProblem(exception, SocketExceptionMsg, Environment.NewLine, server.Port);
-			Application.Exit();
 		}
 
 		/// <summary>

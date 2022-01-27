@@ -20,30 +20,25 @@ namespace Bloom.Publish.Android
 	{
 		private readonly BookServer _bookServer;
 		private readonly LibraryModel _libraryModel;
-		private readonly BloomWebSocketServer _webSocketServer;
 
-		public delegate BulkBloomPubCreator Factory(BookServer bookServer, LibraryModel collectionModel,
-			BloomWebSocketServer webSocketServer); //autofac uses this
+		public delegate BulkBloomPubCreator Factory(BookServer bookServer, LibraryModel collectionModel); //autofac uses this
 
-		public BulkBloomPubCreator(BookServer bookServer, LibraryModel libraryModel,
-			BloomWebSocketServer webSocketServer)
+		public BulkBloomPubCreator(BookServer bookServer, LibraryModel libraryModel)
 		{
 			_bookServer = bookServer;
 			_libraryModel = libraryModel;
-			_webSocketServer = webSocketServer;
 		}
 
 		// Precondition: bulkSaveSettings must be non-null
 		public void PublishAllBooks(BulkBloomPubPublishSettings bulkSaveSettings)
 		{
-			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, "Bulk Save BloomPubs",
-				(progress, worker) =>
+			BrowserProgressDialog.DoWorkWithProgressDialog("Bulk Save BloomPubs", (progress, worker) =>
 				{
 					var dest = new TemporaryFolder("BloomPubs");
 					progress.MessageWithoutLocalizing($"Creating files in {dest.FolderPath}...");
 
 					var filenameWithoutExtension = _libraryModel.CollectionSettings.DefaultBookshelf.SanitizeFilename(' ', true);
-;
+					;
 					if (bulkSaveSettings.makeBookshelfFile)
 					{
 						// see https://docs.google.com/document/d/1UUvwxJ32W2X5CRgq-TS-1HmPj7gCKH9Y9bxZKbmpdAI

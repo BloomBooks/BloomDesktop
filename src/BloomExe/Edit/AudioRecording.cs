@@ -39,7 +39,7 @@ namespace Bloom.Edit
 		private readonly BookSelection _bookSelection;
 		private AudioRecorder _recorder;
 		private bool _exitHookSet;
-		BloomWebSocketServer _webSocketServer;
+		private readonly BloomWebSocketServer _webSocketServer;
 		private const string kWebsocketContext = "audio-recording"; // must match that found in audioRecording.tsx
 
 		public const string kPublishableExtension = "mp3";

@@ -12,7 +12,6 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.TeamCollection;
-//using Bloom.SendReceive;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Utils;

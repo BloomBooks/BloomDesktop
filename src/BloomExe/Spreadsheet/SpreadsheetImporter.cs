@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Bloom.Book;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -39,7 +39,6 @@ namespace Bloom.Spreadsheet
 		private XmlElement _dataDivElement;
 		private string _pathToSpreadsheetFolder;
 		private string _pathToBookFolder;
-		private IBloomWebSocketServer _webSocketServer;
 		private IWebSocketProgress _progress;
 		private int _unNumberedPagesSeen;
 		private bool _bookIsLandscape;
@@ -55,13 +54,12 @@ namespace Bloom.Spreadsheet
 		/// AutoFac. However, for that to work, we'd need to move the other constructor arguments,
 		/// which AutoFac can't know, to the Import method. And for now, all callers which need
 		/// to pass a socket server already have one.</remarks>
-		public SpreadsheetImporter(IBloomWebSocketServer webSocketServer, HtmlDom dest, string pathToSpreadsheetFolder = null, string pathToBookFolder = null)
+		public SpreadsheetImporter(HtmlDom dest, string pathToSpreadsheetFolder = null, string pathToBookFolder = null)
 		{
 			_dest = dest;
 			_dataDivElement = _dest.SafeSelectNodes("//div[@id='bloomDataDiv']").Cast<XmlElement>().First();
 			_pathToBookFolder = pathToBookFolder;
 			_pathToSpreadsheetFolder = pathToSpreadsheetFolder;
-			_webSocketServer = webSocketServer;
 		}
 
 		/// <summary>
@@ -75,7 +73,7 @@ namespace Bloom.Spreadsheet
 		public void ImportWithProgress(string inputFilepath, string bookPath)
 		{
 			var mainShell = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
-			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, "spreadsheet-import", () =>
+			BrowserProgressDialog.DoWorkWithProgressDialog("spreadsheet-import", () =>
 				new ReactDialog("progressDialogBundle",
 						// props to send to the react component
 						new

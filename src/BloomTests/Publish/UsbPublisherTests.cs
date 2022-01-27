@@ -41,7 +41,7 @@ namespace BloomTests.Publish
 		private static WebSocketProgress CreateWebSocketProgress(out WebSocketServerSpy spy)
 		{
 			spy = new WebSocketServerSpy();
-			spy.Init("webSocketServerSpy");
+			spy.Init();
 			return new WebSocketProgress( spy, "ummm...");
 		}
 
@@ -49,8 +49,7 @@ namespace BloomTests.Publish
 		public void SendBookAsync_HandlesDiskFullException()
 		{
 			// Setup
-			WebSocketServerSpy spy;
-			var progress = CreateWebSocketProgress(out spy);
+			var progress = CreateWebSocketProgress(out WebSocketServerSpy spy);
 			var testUsbPublisher = new MockUsbPublisher(progress, _bookServer);
 			testUsbPublisher.SetExceptionToThrow(MockUsbPublisher.ExceptionToThrow.DeviceFull);
 

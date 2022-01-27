@@ -51,7 +51,6 @@ namespace Bloom.Edit
 		private Color _enabledToolbarColor = Palette.DarkTextAgainstBackgroundColor;
 		private Color _disabledToolbarColor = Color.FromArgb(114, 74, 106);
 		private bool _visible;
-		private BloomWebSocketServer _webSocketServer;
 		private ZoomControl _zoomControl;
 		private PageListApi _pageListApi;
 
@@ -70,7 +69,6 @@ namespace Bloom.Edit
 			_undoCommand = undoCommand;
 			_duplicatePageCommand = duplicatePageCommand;
 			_deletePageCommand = deletePageCommand;
-			_webSocketServer = model.EditModelSocketServer;
 			_pageListApi = pageListApi;
 			InitializeComponent();
 

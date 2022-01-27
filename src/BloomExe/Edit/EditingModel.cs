@@ -88,7 +88,6 @@ namespace Bloom.Edit
 			LibraryClosing libraryClosingEvent,
 			LocalizationChangedEvent localizationChangedEvent,
 			CollectionSettings collectionSettings,
-			//SendReceiver sendReceiver,
 			BloomServer server,
 			BloomWebSocketServer webSocketServer,
 			SourceCollectionsList sourceCollectionsList)
@@ -98,7 +97,6 @@ namespace Bloom.Edit
 			_duplicatePageCommand = duplicatePageCommand;
 			_deletePageCommand = deletePageCommand;
 			_collectionSettings = collectionSettings;
-			//_sendReceiver = sendReceiver;
 			_server = server;
 			_webSocketServer = webSocketServer;
 			_sourceCollectionsList = sourceCollectionsList;

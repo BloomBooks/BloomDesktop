@@ -21,13 +21,10 @@ namespace Bloom.web.controllers
 	{
 		private readonly LibraryModel _libraryModel;
 		private BookSelection _bookSelection;
-		private readonly BloomWebSocketServer _webSocketServer;
 
-
-		public SpreadsheetApi(LibraryModel libraryModel, BloomWebSocketServer webSocketServer, BookSelection bookSelection)
+		public SpreadsheetApi(LibraryModel libraryModel, BookSelection bookSelection)
 		{
 			_libraryModel = libraryModel;
-			_webSocketServer = webSocketServer;
 			_bookSelection = bookSelection;
 		}
 
@@ -71,7 +68,7 @@ namespace Bloom.web.controllers
 			try
 			{
 				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));
-				var exporter = new SpreadsheetExporter(_webSocketServer, book.CollectionSettings);
+				var exporter = new SpreadsheetExporter(book.CollectionSettings);
 				string outputParentFolder = request.RequiredPostDynamic().parentFolderPath;
 				string outputFolder = Path.Combine(outputParentFolder, Path.GetFileNameWithoutExtension(bookPath));
 				SetSpreadsheetFolder(book, outputFolder);
@@ -119,7 +116,7 @@ namespace Bloom.web.controllers
 				}
 
 				var dom = book.OurHtmlDom;
-				var importer = new SpreadsheetImporter(_webSocketServer, dom, Path.GetDirectoryName(inputFilepath), book.FolderPath);
+				var importer = new SpreadsheetImporter(dom, Path.GetDirectoryName(inputFilepath), book.FolderPath);
 				importer.ImportWithProgress(inputFilepath, bookPath);
 
 				// Review: A lot of other stuff happens in Book.Save() and BookStorage.SaveHtml().

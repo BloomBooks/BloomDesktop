@@ -21,7 +21,7 @@ namespace Bloom.CLI
 			try
 			{
 				var collectionSettings = GetCollectionSettings(options.BookPath);
-				var exporter = new SpreadsheetExporter(null, collectionSettings);
+				var exporter = new SpreadsheetExporter(collectionSettings);
 				if (!string.IsNullOrEmpty(options.ParamsPath))
 				{
 					exporter.Params = SpreadsheetExportParams.FromFile(options.ParamsPath);

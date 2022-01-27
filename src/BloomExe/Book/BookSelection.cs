@@ -8,27 +8,14 @@ namespace Bloom.Book
 {
 	public class BookSelection
 	{
-		private readonly BloomWebSocketServer _webSocketServer;
 		private Book _currentSelection;
 		// Both of these are raised when the selected book changes, but the HighPriority subscribers
 		// are notified first.
 		public event EventHandler<BookSelectionChangedEventArgs> SelectionChanged;
 		public event EventHandler<BookSelectionChangedEventArgs> SelectionChangedHighPriority;
 
-		// this one is used for short-lived things other than the "global" one
-		public BookSelection()
-		{
-			// this constructor doesn't do anything. It's just here so that these special cases don't need
-			// to provide a websocketServer.	
-		}
-
-		// This one is created by the ProjectContext and is used for the global current book
-		// In actual fact, this ctor (and the associated instance variable) may not be needed at all.
-		// Perhaps it used to?! 12 Aug 2021 gjm
-		public BookSelection(BloomWebSocketServer webSocketServer)
-		{
-			_webSocketServer = webSocketServer;
-		}
+		// We used to have 2 ctors here; the one used by autofac had an unused websocketserver.
+		// The other was an empty default ctor. We no longer need either.
 
 		public void SelectBook(Book book, bool aboutToEdit = false)
 		{

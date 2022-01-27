@@ -54,7 +54,8 @@ namespace Bloom.Api
 			}
 			catch (SocketException ex)
 			{
-				BloomWebSocketServer.ReportSocketExceptionAndExit(ex, _server);
+				BloomWebSocketServer.ReportSocketException(ex, _server);
+				Application.Exit();
 			}
 		}
 

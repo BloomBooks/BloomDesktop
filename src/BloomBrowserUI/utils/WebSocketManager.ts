@@ -1,5 +1,5 @@
 import { BloomApi } from "./bloomApi";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export interface IBloomWebSocketEvent {
     clientContext: string;
@@ -127,6 +127,24 @@ export default class WebSocketManager {
         [clientContext: string]: WebSocket;
     } = {};
 
+    private static portAddress: string;
+    private static kApiString: string = "app/getWebSocketPort";
+
+    public static async init(): Promise<string> {
+        return new Promise(resolve => {
+            // This will get called whenever we go to a new page,
+            // but we shouldn't need to re-initialize it.
+            if (WebSocketManager.portAddress) {
+                resolve(WebSocketManager.portAddress); // resolve immediately
+            } else {
+                BloomApi.getString(WebSocketManager.kApiString, value => {
+                    WebSocketManager.portAddress = value;
+                    resolve(WebSocketManager.portAddress); // resolve when api returns
+                });
+            }
+        });
+    }
+
     /**
      *  In an attempt to make it easier to come to grips with some lifetime issues, we
      * are naming the websocket by a "clientContext" and making this private, so
@@ -134,62 +152,66 @@ export default class WebSocketManager {
      * Instead the client should call "addListener(clientContext)" and then when cleaning
      * up, call "closeSocket(clientContext)".
      */
-    public static getOrCreateWebSocket(clientContext: string): WebSocket {
-        if (!WebSocketManager.socketMap[clientContext]) {
-            //currently we use a different port for this websocket, and it's the main port + 1
-            const websocketPort = parseInt(window.location.port, 10) + 1;
-            //here we're passing "socketName" in the "subprotocol" parameter, just for ease of identifying
-            //sockets on the server side when debugging.
+    public static async getOrCreateWebSocket(
+        clientContext: string
+    ): Promise<WebSocket> {
+        await WebSocketManager.init();
+        return new Promise(resolve => {
+            if (!WebSocketManager.socketMap[clientContext]) {
+                // currently we use a different port for this websocket
+                // here we're passing "socketName" in the "subprotocol" parameter, just for ease of identifying
+                // sockets on the server side when debugging.
 
-            // I tried a lot of error handling here: catching any exception in the constructor, attaching
-            // onerror and onclose handlers to the new socket...and we still get notifications sent to the unhandled
-            // error hook, when a connection is refused, as it is if the page we're trying to set up
-            // a socket for has already been navigated away from. Apparently there's a browser spec that
-            // says clients should purposely make it difficult for Javascript to explore what's going
-            // wrong when a socket can't be opened. So instead those errors are suppressed
-            // in Browser.ReportJavascriptError.
-            const address = "ws://127.0.0.1:" + websocketPort.toString();
-            // Note, the trailing slash is needed to not match on Chrome's "like Gecko)". I kid you not.
-            const isGeckoFxOrFirefox =
-                navigator.userAgent.toLowerCase().indexOf("gecko/") > -1;
-            // Chrome doesn't seem to handle our websocket (provided by the Fleck project) if you specify a
-            // subprotocol AND you don't tell Fleck about the protocol. Which is reasonable, but for some
-            // reason not a problem with GeckoFx 60. Since we only use the subprotocol for debugging, we
-            // just drop it if we're in not in geckofx or Firefox.
+                // I tried a lot of error handling here: catching any exception in the constructor, attaching
+                // onerror and onclose handlers to the new socket...and we still get notifications sent to the unhandled
+                // error hook, when a connection is refused, as it is if the page we're trying to set up
+                // a socket for has already been navigated away from. Apparently there's a browser spec that
+                // says clients should purposely make it difficult for Javascript to explore what's going
+                // wrong when a socket can't be opened. So instead those errors are suppressed
+                // in Browser.ReportJavascriptError.
 
-            const ws = new WebSocket(
-                address,
-                isGeckoFxOrFirefox ? clientContext : undefined
-            );
+                // Note, the trailing slash is needed to not match on Chrome's "like Gecko)". I kid you not.
+                const isGeckoFxOrFirefox =
+                    navigator.userAgent.toLowerCase().indexOf("gecko/") > -1;
+                // Chrome doesn't seem to handle our websocket (provided by the Fleck project) if you specify a
+                // subprotocol AND you don't tell Fleck about the protocol. Which is reasonable, but for some
+                // reason not a problem with GeckoFx 60. Since we only use the subprotocol for debugging, we
+                // just drop it if we're in not in geckofx or Firefox.
 
-            WebSocketManager.socketMap[clientContext] = ws;
+                const ws = new WebSocket(
+                    WebSocketManager.portAddress,
+                    isGeckoFxOrFirefox ? clientContext : undefined
+                );
 
-            if (!WebSocketManager.clientContextCallbacks[clientContext]) {
-                WebSocketManager.clientContextCallbacks[clientContext] = [];
-            }
-            // the following is a refactored holdover from a situation where we were having trouble
-            // getting the web ui to properly close its own listeners and socket, so we had to
-            // revert to have c# send a message that would close this down. It may or may not be
-            // used, but it's here if we need it. The preferred method is for the client UI to call closeSocket().
-            const listener = (event: MessageEvent) => {
-                const e: IBloomWebSocketEvent = JSON.parse(event.data);
-                if (e.id === "websocketControl/close/" + clientContext) {
-                    WebSocketManager.closeSocket(clientContext);
-                } else if (e.clientContext === clientContext) {
-                    WebSocketManager.clientContextCallbacks[
-                        clientContext
-                    ].forEach(callback => callback(e));
+                WebSocketManager.socketMap[clientContext] = ws;
+
+                if (!WebSocketManager.clientContextCallbacks[clientContext]) {
+                    WebSocketManager.clientContextCallbacks[clientContext] = [];
                 }
-            };
-            WebSocketManager.clientContextToDispatcherFunction[
-                clientContext
-            ] = listener;
-            WebSocketManager.socketMap[clientContext].addEventListener(
-                "message",
-                listener
-            );
-        }
-        return WebSocketManager.socketMap[clientContext];
+                // the following is a refactored holdover from a situation where we were having trouble
+                // getting the web ui to properly close its own listeners and socket, so we had to
+                // revert to have c# send a message that would close this down. It may or may not be
+                // used, but it's here if we need it. The preferred method is for the client UI to call closeSocket().
+                const listener = (event: MessageEvent) => {
+                    const e: IBloomWebSocketEvent = JSON.parse(event.data);
+                    if (e.id === "websocketControl/close/" + clientContext) {
+                        WebSocketManager.closeSocket(clientContext);
+                    } else if (e.clientContext === clientContext) {
+                        WebSocketManager.clientContextCallbacks[
+                            clientContext
+                        ].forEach(callback => callback(e));
+                    }
+                };
+                WebSocketManager.clientContextToDispatcherFunction[
+                    clientContext
+                ] = listener;
+                WebSocketManager.socketMap[clientContext].addEventListener(
+                    "message",
+                    listener
+                );
+            }
+            resolve(WebSocketManager.socketMap[clientContext]);
+        });
     }
 
     /**
@@ -216,18 +238,18 @@ export default class WebSocketManager {
      * is equal to the given clientContext, the parsed data object will be passed to the listener function.
      * @param {string} clientContext - should use the same name through the lifetime of the WebSocketManager.socketMap
      */
-    public static addListener<T extends IBloomWebSocketEvent>(
+    public static async addListener<T extends IBloomWebSocketEvent>(
         clientContext: string,
         listener: (messageEvent: T) => void,
         tagForDebugging?: string
-    ): void {
+    ) {
         if (clientContext.indexOf("mock_") > -1) {
             // this is used in storybook stories. Don't try finding a server because there isn't one.
             // Events will come in via mockSend().
             if (!WebSocketManager.clientContextCallbacks[clientContext])
                 WebSocketManager.clientContextCallbacks[clientContext] = [];
         } else {
-            WebSocketManager.getOrCreateWebSocket(clientContext); // side effect makes sure there's an array in listenerMap to push onto.
+            await WebSocketManager.getOrCreateWebSocket(clientContext); // side effect makes sure there's an array in listenerMap to push onto.
         }
         WebSocketManager.clientContextCallbacks[clientContext].push(listener);
         // console.log(
@@ -273,8 +295,13 @@ export default class WebSocketManager {
      * receive (and send) messages. If the socket is already open, onReady() will be called at
      * once, before the call to this method returns.
      */
-    public static notifyReady(clientContext: string, onReady: () => void) {
-        const socket = WebSocketManager.getOrCreateWebSocket(clientContext);
+    public static async notifyReady(
+        clientContext: string,
+        onReady: () => void
+    ) {
+        const socket = await WebSocketManager.getOrCreateWebSocket(
+            clientContext
+        );
         console.log(
             "WebSocketManager:notifyReady. readyState = " +
                 socket.readyState.toString()

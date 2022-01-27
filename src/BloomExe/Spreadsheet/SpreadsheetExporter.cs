@@ -12,7 +12,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Security;
 using System.Windows.Forms;
 using System.Xml;
@@ -23,7 +22,6 @@ namespace Bloom.Spreadsheet
 	{
 		InternalSpreadsheet _spreadsheet = new InternalSpreadsheet();
 		private IWebSocketProgress _progress;
-		private BloomWebSocketServer _webSocketServer;
 		private string _outputFolder; // null if not exporting to folder (mainly some unit tests)
 		private string _outputImageFolder; // null if not exporting to folder (mainly some unit tests)
 
@@ -35,30 +33,20 @@ namespace Bloom.Spreadsheet
 		/// <summary>
 		/// Constructs a new Spreadsheet Exporter
 		/// </summary>
-		/// <param name="webSocketServer">The webSockerServer of the instance</param>
 		/// <param name="langDisplayNameResolver">The object that will be used to  retrieve the language display names</param>
-		public SpreadsheetExporter(BloomWebSocketServer webSocketServer, ILanguageDisplayNameResolver langDisplayNameResolver)
+		public SpreadsheetExporter(ILanguageDisplayNameResolver langDisplayNameResolver)
 		{
-			_webSocketServer = webSocketServer;
 			LangDisplayNameResolver = langDisplayNameResolver;
 		}
 
 		/// <summary>
 		/// Constructs a new Spreadsheet Exporter
 		/// </summary>
-		/// <param name="webSocketServer">The webSockerServer of the instance</param>
 		/// <param name="collectionSettings">The collectionSettings of the book that will be exported. This is used to retrieve the language display names</param>
-		public SpreadsheetExporter(BloomWebSocketServer webSocketServer, CollectionSettings collectionSettings)
-			: this(webSocketServer, new CollectionSettingsLanguageDisplayNameResolver(collectionSettings))
+		/// 
+		public SpreadsheetExporter(CollectionSettings collectionSettings)
+			: this(new CollectionSettingsLanguageDisplayNameResolver(collectionSettings))
 		{
-		}
-
-		public SpreadsheetExporter(ILanguageDisplayNameResolver langDisplayNameResolver)
-		{
-			Debug.Assert(Bloom.Program.RunningUnitTests,
-				"SpreadsheetExporter should be passed a webSocketProgress unless running unit tests that don't need it");
-
-			LangDisplayNameResolver = langDisplayNameResolver;
 		}
 
 		//a list of values which, if they occur in the data-book attribute of an element in the bloomDataDiv,
@@ -70,7 +58,7 @@ namespace Bloom.Spreadsheet
 			Action<string> resultCallback)
 		{
 			var mainShell = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
-			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, "spreadsheet-export", () =>
+			BrowserProgressDialog.DoWorkWithProgressDialog("spreadsheet-export", () =>
 				new ReactDialog("progressDialogBundle",
 						// props to send to the react component
 						new

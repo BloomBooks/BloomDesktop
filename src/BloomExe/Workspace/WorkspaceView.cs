@@ -71,12 +71,12 @@ namespace Bloom.Workspace
 
 		public delegate WorkspaceView Factory(Control libraryView);
 
-		private TeamCollectionManager _tcManager;
-		private BookSelection _bookSelection;
+		private readonly TeamCollectionManager _tcManager;
+		private readonly BookSelection _bookSelection;
 		private ToastNotifier _returnToCollectionTabNotifier;
-		private BloomWebSocketServer _webSocketServer;
-		private BookServer _bookServer;
-		private WorkspaceTabSelection _tabSelection;
+		private readonly BloomWebSocketServer _webSocketServer;
+		private readonly BookServer _bookServer;
+		private readonly WorkspaceTabSelection _tabSelection;
 
 		//autofac uses this
 

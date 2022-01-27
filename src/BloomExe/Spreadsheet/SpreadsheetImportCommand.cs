@@ -23,7 +23,7 @@ namespace Bloom.CLI
 				BookStorage.SaveCopyBeforeImportOverwrite(folderPath, options.BookPath);
 				var sheet = InternalSpreadsheet.ReadFromFile(options.InputPath);
 				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(options.BookPath, false));
-				var importer = new SpreadsheetImporter(null, dom,Path.GetDirectoryName(options.InputPath), folderPath);
+				var importer = new SpreadsheetImporter(dom, Path.GetDirectoryName(options.InputPath), folderPath);
 				if (!string.IsNullOrEmpty(options.ParamsPath))
 					importer.Params = SpreadsheetImportParams.FromFile(options.ParamsPath);
 				var messages = importer.Import(sheet);

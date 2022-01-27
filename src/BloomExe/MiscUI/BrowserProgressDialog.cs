@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.web;
@@ -28,6 +24,7 @@ namespace Bloom.MiscUI
 	/// after this is clicked. The Report button allows the user to send a report
 	/// to the Bloom team if the progress messages are unexpected. Again, the code
 	/// that initiated the doWhat() task resumes when the report is complete.
+	/// (01/27/22): This class now has direct access to the BloomWebSocketServer on ApplicationContainer.
 	/// </summary>
 	/// <remarks>The action is performed in the background not so that the main program
 	/// can keep going...it can't, DoWorkWithProgressDialog does not return until doWhat()
@@ -35,11 +32,10 @@ namespace Bloom.MiscUI
 	/// responding to paint events, a click on the buttons, and and so forth.</remarks>
 	public class BrowserProgressDialog
 	{
-		public static void DoWorkWithProgressDialog(BloomWebSocketServer socketServer, string title, Func<IWebSocketProgress, BackgroundWorker,bool> doWhat, Action<Form> doWhenMainActionFalse = null, Action<Form> doWhenCancel = null)
+		public static void DoWorkWithProgressDialog(string title, Func<IWebSocketProgress, BackgroundWorker, bool> doWhat, Action<Form> doWhenMainActionFalse = null, Action<Form> doWhenCancel = null)
 		{
 			var kProgressContextName = "progress";
-			BrowserProgressDialog.DoWorkWithProgressDialog(socketServer, kProgressContextName,
-				() => new ReactDialog("ProgressDialogBundle",
+			BrowserProgressDialog.DoWorkWithProgressDialog(kProgressContextName, () => new ReactDialog("ProgressDialogBundle",
 						// props to send to the react component
 						new
 						{
@@ -50,13 +46,15 @@ namespace Bloom.MiscUI
 							showReportButton = "if-error",
 							showCancelButton = true
 						}, title)
-					// winforms dialog properties
-					{Width = 620, Height = 550}, doWhat, doWhenMainActionFalse);
+			// winforms dialog properties
+			{ Width = 620, Height = 550 },
+				doWhat, doWhenMainActionFalse);
 		}
 
-		public static void DoWorkWithProgressDialog(IBloomWebSocketServer socketServer, string socketContext,  Func<Form> makeDialog,
-			Func<IWebSocketProgress, BackgroundWorker, bool> doWhat, Action<Form> doWhenMainActionFalse = null, IWin32Window owner = null)
+		public static void DoWorkWithProgressDialog(string socketContext, Func<Form> makeDialog, Func<IWebSocketProgress, BackgroundWorker, bool> doWhat,
+			Action<Form> doWhenMainActionFalse = null, IWin32Window owner = null)
 		{
+			var socketServer = ApplicationContainer.WebSocketServer;
 			var progress = new WebSocketProgress(socketServer, socketContext);
 			
 

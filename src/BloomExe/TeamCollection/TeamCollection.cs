@@ -1994,8 +1994,7 @@ namespace Bloom.TeamCollection
 
 		protected void ShowProgressDialog(string title, Func<IWebSocketProgress,BackgroundWorker, bool> doWhat, Action<Form> doWhenMainActionFalse = null)
 		{
-			BrowserProgressDialog.DoWorkWithProgressDialog(SocketServer, TeamCollection.kWebSocketContext,
-				() => new ReactDialog("progressDialogBundle",
+			BrowserProgressDialog.DoWorkWithProgressDialog(TeamCollection.kWebSocketContext, () => new ReactDialog("progressDialogBundle",
 					// props to send to the react component
 					new
 					{

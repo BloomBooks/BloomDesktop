@@ -14,11 +14,9 @@ using System.Windows.Forms;
 using System.Xml;
 using DesktopAnalytics;
 using L10NSharp;
-using Newtonsoft.Json;
 using SIL.Code;
 using SIL.IO;
 using SIL.Reporting;
-using BloomTemp;
 using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.Collection;
@@ -1010,35 +1008,26 @@ namespace Bloom.Api
 		public virtual void StartListening()
 		{
 			const int kStartingPort = 8089;
-			const int kNumberOfPortsToTry = 10;
-			bool success = false;
-			const int kNumberOfPortsWeNeed = 2;//one for http, one for peakLevel webSocket
 
-			//Note: while this will find a port for the http, it does not actually know if the accompanying
-			//ports are available. It just assume they are.
-			//So while it's an improvement, it's not yet as solid as we would like it
-			//to be.  The ultimate solution is to run the websocket and http on the same port.
-			//This could be done using this proxy thing that internally routes to different ports:
-			// https://github.com/lifeemotions/websocketproxy
+			// Note: This will only find a port for the http. Our WebSocketServer is now handled separately.
+			// At least we are now using common code to try multiple times to get an available port in the
+			// two cases.
+			// Old note: We could run both on the same port using this proxy thing that internally routes
+			// to different ports: https://github.com/lifeemotions/websocketproxy
 			// Another thing to check on is https://github.com/bryceg/Owin.WebSocket/pull/20 which
 			// would give us an owin-compliant version of the fleck websocket server, and we could
 			// switch to using an owin-compliant http server like NancyFx.
-			for (var i=0; !success && i < kNumberOfPortsToTry; i++)
-			{
-				BloomServer.portForHttp = kStartingPort + (i*kNumberOfPortsWeNeed);
-				success = AttemptToOpenPort();
-			}
+			bool success = BloomWebSocketServer.TryToFindAnAvailablePort(kStartingPort, AttemptToOpenPort);
 
 			if(!success)
 			{
-
 				ErrorReport.NotifyUserOfProblem(GetServerStartFailureMessage());
 				Logger.WriteEvent("Error: Could not start up internal HTTP Server");
-				Analytics.ReportException(new ApplicationException("Could not start server."));
+				Analytics.ReportException(new ApplicationException("Could not start http server."));
 				Application.Exit();
 			}
 
-			Logger.WriteEvent("Server will use " + ServerUrlEndingInSlash);
+			Logger.WriteEvent("BloomServer will use " + ServerUrlEndingInSlash);
 			_listenerThread.Start();
 
 			for (var i = 0; i < Math.Max(Environment.ProcessorCount, 2); i++)
@@ -1051,9 +1040,11 @@ namespace Bloom.Api
 
 		/// <summary>
 		/// Tries to start listening on the currently proposed server url
+		/// In this case, we're trying to open an http server.
 		/// </summary>
-		private bool AttemptToOpenPort()
+		private bool AttemptToOpenPort(int portNumberToTry)
 		{
+			BloomServer.portForHttp = portNumberToTry;
 			try
 			{
 				Logger.WriteMinorEvent("Attempting to start http listener on "+ ServerUrlEndingInSlash);

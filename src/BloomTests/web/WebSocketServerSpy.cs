@@ -34,7 +34,7 @@ namespace BloomTests.web
 			_events.Add(new KeyValuePair<string, Tuple<string, string,ProgressKind>>(eventId,
 				Tuple.Create(messageBundle.message as string, clientContext, kind)));
 		}
-		public void Init(string dummy)
+		public void Init()
 		{
 			_isInitialized = true;
 			_events = new List<KeyValuePair<string, Tuple<string, string, ProgressKind>>>();

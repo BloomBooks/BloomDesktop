@@ -16,6 +16,7 @@ namespace Bloom.Api
 
 		private readonly BookSelection _bookSelection;
 		private readonly EditBookCommand _editBookCommand;
+		private readonly string _webSocketPort;
 		private readonly CreateFromSourceBookCommand _createFromSourceBookCommand;
 		public WorkspaceView WorkspaceView;
 
@@ -26,6 +27,7 @@ namespace Bloom.Api
 			_bookSelection = bookSelection;
 			_editBookCommand = editBookCommand;
 			_createFromSourceBookCommand = createFromSourceBookCommand;
+			_webSocketPort = ApplicationContainer.Port;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -80,6 +82,18 @@ namespace Bloom.Api
 					// when the selection changes.
 					request.ReplyWithJson(WorkspaceView.GetCurrentSelectedBookInfo());
 				}, true);
+			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "getWebSocketPort", request =>
+			{
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					request.ReplyWithText(_webSocketPort);
+				}
+				else // post
+				{
+					System.Diagnostics.Debug.Fail("We shouldn't ever be using the 'post' version.");
+					request.PostSucceeded();
+				}
+			}, false);
 		}
 
 		public void HandleAutoUpdate(ApiRequest request)

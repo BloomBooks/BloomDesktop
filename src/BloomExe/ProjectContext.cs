@@ -12,7 +12,6 @@ using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.FontProcessing;
 using Bloom.ImageProcessing;
-//using Bloom.SendReceive;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using Bloom.Api;
@@ -24,7 +23,6 @@ using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 using BloomTests.web.controllers;
-//using Chorus;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
@@ -114,27 +112,27 @@ namespace Bloom
 						.InstancePerLifetimeScope()
 						.Where(t => new[]
 						{
-							typeof (TemplateInsertionCommand),
-							typeof (EditBookCommand),
-							typeof (SendReceiveCommand),
-							typeof (SelectedTabAboutToChangeEvent),
-							typeof (SelectedTabChangedEvent),
-							typeof (LibraryClosing),
-							typeof (PageListChangedEvent), // REMOVE+++++++++++++++++++++++++++
-							typeof (BookRefreshEvent),
-							typeof (BookSavedEvent),
-							typeof (PageRefreshEvent),
-							typeof (BookDownloadStartingEvent),
-							typeof (BookSelection),
-							typeof (CurrentEditableCollectionSelection),
-							typeof (RelocatePageEvent),
-							typeof (QueueRenameOfCollection),
-							typeof (PageSelection),
-							typeof (LocalizationChangedEvent),
-							typeof (ControlKeyEvent),
-							typeof (BookStatusChangeEvent),
-							typeof (EditingModel),
-							typeof (AudioRecording),
+							typeof(TemplateInsertionCommand),
+							typeof(EditBookCommand),
+							typeof(SendReceiveCommand),
+							typeof(SelectedTabAboutToChangeEvent),
+							typeof(SelectedTabChangedEvent),
+							typeof(LibraryClosing),
+							typeof(PageListChangedEvent), // REMOVE+++++++++++++++++++++++++++
+							typeof(BookRefreshEvent),
+							typeof(BookSavedEvent),
+							typeof(PageRefreshEvent),
+							typeof(BookDownloadStartingEvent),
+							typeof(BookSelection),
+							typeof(CurrentEditableCollectionSelection),
+							typeof(RelocatePageEvent),
+							typeof(QueueRenameOfCollection),
+							typeof(PageSelection),
+							typeof(LocalizationChangedEvent),
+							typeof(ControlKeyEvent),
+							typeof(BookStatusChangeEvent),
+							typeof(EditingModel),
+							typeof(AudioRecording),
 							typeof(BookSettingsApi),
 							typeof(SpreadsheetApi),
 							typeof(BookMetadataApi),
@@ -147,7 +145,6 @@ namespace Bloom
 							typeof(ReadersApi),
 							typeof(PageTemplatesApi),
 							typeof(AddOrChangePageApi),
-							typeof(BloomWebSocketServer),
 							typeof(PerformanceMeasurement),
 							typeof(KeyboardingConfigApi),
 							typeof(ImageApi),
@@ -217,7 +214,7 @@ namespace Bloom
 					{
 						// It's important to create the TC manager before we create CollectionSettings, as its constructor makes sure
 						// we have a current version of the file that CollectionSettings is built from.
-						builder.Register<TeamCollectionManager>(c => new TeamCollectionManager(projectSettingsPath,
+						builder.Register(c => new TeamCollectionManager(projectSettingsPath,
 							c.Resolve<BloomWebSocketServer>(), c.Resolve<BookRenamedEvent>(),
 							c.Resolve<BookStatusChangeEvent>(),
 							c.Resolve<BookSelection>(),
@@ -238,9 +235,6 @@ namespace Bloom
 					builder.Register<LibraryModel>(
 						c =>
 							new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(),
-							#if Chorus
-								c.Resolve<SendReceiver>(),
-							#endif
 								c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(),
 								c.Resolve<EditBookCommand>(), c.Resolve<CreateFromSourceBookCommand>(), c.Resolve<BookServer>(),
 								c.Resolve<CurrentEditableCollectionSelection>(), c.Resolve<BookThumbNailer>(), c.Resolve<TeamCollectionManager>(),
@@ -350,7 +344,6 @@ namespace Bloom
 			server.StartListening();
 			_scope.Resolve<AudioRecording>().RegisterWithApiHandler(server.ApiHandler);
 
-			_scope.Resolve<BloomWebSocketServer>().Init((BloomServer.portForHttp + 1).ToString(CultureInfo.InvariantCulture));
 			HelpLauncher.RegisterWithApiHandler(server.ApiHandler);
 			ExternalLinkController.RegisterWithApiHandler(server.ApiHandler);
 			ToolboxView.RegisterWithApiHandler(server.ApiHandler);

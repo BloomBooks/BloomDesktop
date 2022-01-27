@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.TeamCollection;
 using Bloom.MiscUI;
-using Bloom.web;
 using Bloom.web.controllers;
 using Gecko;
 using MarkdownDeep;
@@ -20,14 +18,13 @@ namespace Bloom.CollectionTab
 	public partial class LibraryBookView : UserControl
 	{
 		private readonly BookSelection _bookSelection;
-		//private readonly SendReceiver _sendReceiver;
 		private readonly CreateFromSourceBookCommand _createFromSourceBookCommand;
 		private readonly EditBookCommand _editBookCommand;
 		private Shell _shell;
 		private bool _reshowPending = false;
 		private bool _visible;
 
-		private BloomWebSocketServer _webSocketServer;
+		private readonly BloomWebSocketServer _webSocketServer;
 
 		public TeamCollectionManager TeamCollectionMgr { get; internal set; }
 

@@ -87,7 +87,7 @@ namespace BloomTests.Spreadsheet
 			//Assert.IsNotNull(fifthXmatterRowToModify, "Did not find the fifth xmatter row that OneTimeSetup was expecting to modify");
 			//fifthXmatterRowToModify.SetCell(imageSrcColumn, "newLicenseImage.png");
 
-			var importer = new SpreadsheetImporter(null, this._dom);
+			var importer = new SpreadsheetImporter(this._dom);
 			InitializeImporter(importer);
 			importer.Import(_sheet);
 		}
@@ -612,7 +612,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			_progressSpy = new ProgressSpy();
-			var importer = new SpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
+			var importer = new SpreadsheetImporter(_dom, _spreadsheetFolder, _bookFolder.FolderPath);
 			_warnings = importer.Import(ss, _progressSpy);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
@@ -848,7 +848,7 @@ namespace BloomTests.Spreadsheet
 			_bookFolder = new TemporaryFolder("SpreadsheetImageAndTextImportToBookWithEmptyLastPageTests");
 
 			// Do the import
-			var importer = new SpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
+			var importer = new SpreadsheetImporter(_dom, _spreadsheetFolder, _bookFolder.FolderPath);
 			_warnings = importer.Import(ss);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
@@ -971,7 +971,7 @@ namespace BloomTests.Spreadsheet
 			_bookFolder = new TemporaryFolder("SpreadsheetImageAndTextImportToBookWithComplexLastPageTests");
 
 			// Do the import
-			var importer = new SpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
+			var importer = new SpreadsheetImporter(_dom, _spreadsheetFolder, _bookFolder.FolderPath);
 			_warnings = importer.Import(ss);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
@@ -1055,7 +1055,7 @@ namespace BloomTests.Spreadsheet
 				+ SpreadsheetImageAndTextImportTests.insideBackCoverPage
 				+ SpreadsheetImageAndTextImportTests.backCoverPage);
 			var dom = new HtmlDom(xml, true);
-			var importer = new SpreadsheetImporter(null, dom, null, null);
+			var importer = new SpreadsheetImporter(dom, null, null);
 			Assert.That(importer.Validate(ss, spy), Is.False);
 
 			// We can also detect this problem on a different path if the spreadsheet doesn't have enough
@@ -1080,7 +1080,7 @@ namespace BloomTests.Spreadsheet
 				+ SpreadsheetImageAndTextImportTests.insideBackCoverPage
 				+ SpreadsheetImageAndTextImportTests.backCoverPage);
 			var dom = new HtmlDom(xml, true);
-			var importer = new SpreadsheetImporter(null, dom, null, null);
+			var importer = new SpreadsheetImporter(dom, null, null);
 			Assert.That(importer.Validate(ss, spy), Is.False);
 			Assert.That(spy.Messages,
 				Has.Some.Property("Item1")

@@ -243,6 +243,7 @@ namespace Bloom
 					if (args.Length > 0)
 						_supressRegistrationDialog = true;
 
+					// Check to see if we're loading a BloomPack
 					if (args.Length == 1 && args[0].ToLowerInvariant().EndsWith(".bloompack"))
 					{
 						SetUpErrorHandling();
@@ -274,6 +275,7 @@ namespace Bloom
 						args = new string[] { };
 					}
 
+					// Check to see if we're joining a Team Collection
 					if (FolderTeamCollection.IsJoinTeamCollectionFile(args))
 					{
 						SetUpErrorHandling();
@@ -357,6 +359,7 @@ namespace Bloom
 							return 1;
 					}
 					else
+					// Check to see if we're downloading a book from a .bloomBookOrder
 					if (IsBloomBookOrder(args))
 					{
 						HandleDownload(args[0]);
@@ -388,7 +391,7 @@ namespace Bloom
 
 						if (args.Length == 1 && !IsInstallerLaunch(args) && !IsLocalizationHarvestingLaunch(args) && args[0].ToLowerInvariant().EndsWith(@".bloomcollection"))
 						{
-							if (CollectionChoosing.OpenCreateCloneControl.ReportIfInvalidCollectionToEdit(args[0]))
+							if (OpenCreateCloneControl.ReportIfInvalidCollectionToEdit(args[0]))
 								return 1;
 							Settings.Default.MruProjects.AddNewPath(args[0]);
 						}
