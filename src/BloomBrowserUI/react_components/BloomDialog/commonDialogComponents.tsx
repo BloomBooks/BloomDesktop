@@ -9,10 +9,12 @@ import InfoIcon from "@material-ui/icons/Info";
 import WarningIcon from "@material-ui/icons/Warning";
 import ErrorIcon from "@material-ui/icons/Error";
 import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
+import {
+    kBloomDarkTextOverWarning,
+    kBloomWarning
+} from "../../utils/colorUtils";
 
 export const kErrorBoxColor = "#eb3941";
-const kWarningBoxColor = "#FEBF00"; // isn't exactly bloom gold. This looks more orangy, intentionally.
-const kTextOverWarningColor = "#000000CC"; // black with 20% transparency
 const kLightBlueBackground = "#e5f9f0";
 const kBorderRadiusForSpecialBlocks = "3px";
 
@@ -212,9 +214,9 @@ export const WarningBox: React.FunctionComponent<{}> = props => (
             display: flex;
             &,
             * {
-                color: ${kTextOverWarningColor} !important;
+                color: ${kBloomDarkTextOverWarning} !important;
             }
-            background-color: ${kWarningBoxColor};
+            background-color: ${kBloomWarning};
             border-radius: ${kBorderRadiusForSpecialBlocks};
             padding: ${kDialogPadding};
             font-weight: 500;
@@ -224,7 +226,7 @@ export const WarningBox: React.FunctionComponent<{}> = props => (
         <WarningIcon
             css={css`
                 margin-right: ${kDialogPadding};
-                color: ${kTextOverWarningColor};
+                color: ${kBloomDarkTextOverWarning};
             `}
         />
         {props.children}

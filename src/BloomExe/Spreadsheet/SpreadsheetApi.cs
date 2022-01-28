@@ -53,7 +53,7 @@ namespace Bloom.web.controllers
 
 			using (var dlg = new ReactDialog("exportSpreadsheetDialogBundle", new
 			{ folderPath }, "Export to Spreadsheet...")
-			{ Width = 550, Height = 350 })
+			{ Width = 550, Height = 450 })
 			{
 				_openDialog = dlg;
 				dlg.ShowDialog();

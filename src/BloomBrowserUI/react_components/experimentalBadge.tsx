@@ -1,6 +1,7 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
 import React = require("react");
+import { kBloomDarkTextOverWarning, kBloomWarning } from "../utils/colorUtils";
 
 export const ExperimentalBadge: React.FunctionComponent<{}> = props => {
     return (
@@ -8,8 +9,8 @@ export const ExperimentalBadge: React.FunctionComponent<{}> = props => {
             className={"avatar " + props["className"]}
             css={css`
                 border-radius: 8px;
-                background-color: orange;
-                color: white;
+                background-color: ${kBloomWarning};
+                color: ${kBloomDarkTextOverWarning};
                 padding: 5px;
                 transform: rotate(15deg);
                 margin-left: auto;
