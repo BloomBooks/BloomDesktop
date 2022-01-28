@@ -69,6 +69,45 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandlerExact("teamCollection/showRegistrationDialog", HandleShowRegistrationDialog, true, false);
 			apiHandler.RegisterEndpointHandlerExact("teamCollection/getHistory", HandleGetHistory, true);
 			apiHandler.RegisterEndpointHandlerExact("teamCollection/checkinMessage", HandleCheckinMessage, false);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/forceUnlock", HandleForceUnlock, false);
+		}
+
+		private void HandleForceUnlock(ApiRequest request)
+		{
+			if (!_tcManager.CheckConnection())
+			{
+				request.Failed();
+				return;
+			}
+
+			try
+			{
+				// Could be a problem if there's no current book or it's not in the collection folder.
+				// But in that case, we don't show the UI that leads to this being called.
+				_tcManager.CurrentCollection.ForceUnlock(BookFolderName);
+
+				UpdateUiForBook();
+
+				Analytics.Track("TeamCollectionRevertOtherCheckout",
+					new Dictionary<string, string>()
+					{
+						{ "CollectionId", _settings?.CollectionId },
+						{ "CollectionName", _settings?.CollectionName },
+						{ "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
+						{ "User", CurrentUser },
+						{ "BookId", _bookSelection?.CurrentSelection?.ID },
+						{ "BookName", _bookSelection?.CurrentSelection?.Title }
+					});
+
+
+				request.PostSucceeded();
+			}
+			catch (Exception e)
+			{
+
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Could not force unlock", null, e, true);
+				request.Failed("could not unlock");
+			}
 		}
 
 		/// <summary>
@@ -278,7 +317,8 @@ namespace Bloom.TeamCollection
 						changedRemotely = false,
 						disconnected = false,
 						newLocalBook = true,
-						checkinMessage = ""
+						checkinMessage = "",
+						isUserAdmin = _tcManager.OkToEditCollectionSettings
 					});
 			}
 
@@ -322,7 +362,8 @@ namespace Bloom.TeamCollection
 					changedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(bookFolderName),
 					disconnected = _tcManager.CurrentCollectionEvenIfDisconnected?.IsDisconnected,
 					newLocalBook,
-					checkinMessage
+					checkinMessage,
+					isUserAdmin = _tcManager.OkToEditCollectionSettings
 				});
 		}
 		public void HandleSelectedBookStatus(ApiRequest request)

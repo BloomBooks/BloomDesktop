@@ -17,10 +17,13 @@ import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
 import { AvatarDialog } from "./AvatarDialog";
 import { ForgetChangesDialog } from "./ForgetChangesDialog";
 import { createMuiTheme } from "@material-ui/core";
+import WarningIcon from "@material-ui/icons/Warning";
 import {
     IBookTeamCollectionStatus,
     initialBookStatus
 } from "./teamCollectionApi";
+import { ForceUnlockDialog } from "./ForceUnlockDialog";
+import { kBloomRed } from "../utils/colorUtils";
 
 // The panel that shows the book preview and settings in the collection tab in a Team Collection.
 
@@ -51,6 +54,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
     const [checkinFailed, setCheckinFailed] = useState(false);
     const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
     const [forgetDialogOpen, setForgetDialogOpen] = useState(false);
+    const [forceUnlockDialogOpen, setForceUnlockDialogOpen] = useState(false);
     const [message, setMessage] = useState(props.checkinMessage);
     const messageInput = useRef<HTMLInputElement>(null);
 
@@ -320,6 +324,23 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
             l10nKey: "TeamCollection.ForgetChangesMenuItem",
             action: () => setForgetDialogOpen(true),
             disabled: props.newLocalBook
+        });
+    }
+
+    if (tcPanelState == "locked" || tcPanelState == "lockedByMeElsewhere") {
+        menuItems.push("-");
+        menuItems.push({
+            text: "Force Unlock (Administrator Only)...",
+            l10nKey: "TeamCollection.ForceUnlockMenuItem",
+            action: () => setForceUnlockDialogOpen(true),
+            disabled: !props.isUserAdmin,
+            icon: (
+                <WarningIcon
+                    css={css`
+                        color: ${kBloomRed};
+                    `}
+                ></WarningIcon>
+            )
         });
     }
 
@@ -625,6 +646,10 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                 open={forgetDialogOpen}
                 close={() => setForgetDialogOpen(false)}
             ></ForgetChangesDialog>
+            <ForceUnlockDialog
+                open={forceUnlockDialogOpen}
+                close={() => setForceUnlockDialogOpen(false)}
+            ></ForceUnlockDialog>
         </ThemeProvider>
     );
 };
