@@ -296,7 +296,7 @@
     <Compile Include="TeamCollection\TeamCollectionMessageTests.cs" />
     <Compile Include="TeamCollection\TeamCollectionTests.cs" />
     <Compile Include="TeamCollection\TestFolderTeamCollection.cs" />
-    <Compile Include="Edit\MakeActivityTests.cs" />
+    <Compile Include="Edit\MakeWidgetTests.cs" />
     <Compile Include="ExtensionsTests.cs" />
     <Compile Include="ErrorReporter\HtmlErrorReporterTests.cs" />
     <Compile Include="TestDoubles\Book\FakeBookServer.cs" />
