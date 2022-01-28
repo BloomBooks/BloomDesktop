@@ -27,6 +27,7 @@ export const BloomDialog: React.FunctionComponent<{
     // true if the caller is wrapping in a winforms dialog already
     dialogFrameProvidedExternally?: boolean;
     onClose: () => void;
+    innerCss?: string;
 }> = props => {
     const inner = (
         <div
@@ -37,12 +38,15 @@ export const BloomDialog: React.FunctionComponent<{
                 padding-left: ${kDialogSidePadding};
                 padding-right: ${kDialogSidePadding};
                 padding-bottom: ${kDialogBottomPadding};
+                ${props.innerCss || ""}
 
                 // dialogFrameProvidedExternally means that we're inside of a winforms dialog.
                 /// So we grow to fit it, and we supply a single black border for some reason (?)
-                ${props.dialogFrameProvidedExternally
-                    ? `height: 100%; border: solid thin black; box-sizing: border-box;`
-                    : ""}
+                ${
+                    props.dialogFrameProvidedExternally
+                        ? `height: 100%; border: solid thin black; box-sizing: border-box;`
+                        : ""
+                }
 
                 * {
                     // This value is the same as that given in bloomMaterialUITheme.  For some

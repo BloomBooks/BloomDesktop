@@ -24,6 +24,7 @@ export interface IBookTeamCollectionStatus {
     newLocalBook: boolean;
     error: string;
     checkinMessage: string;
+    isUserAdmin: boolean;
 }
 
 export const initialBookStatus: IBookTeamCollectionStatus = {
@@ -42,7 +43,8 @@ export const initialBookStatus: IBookTeamCollectionStatus = {
     disconnected: false,
     newLocalBook: false,
     error: "",
-    checkinMessage: ""
+    checkinMessage: "",
+    isUserAdmin: false
 };
 
 export function useTColBookStatus(
