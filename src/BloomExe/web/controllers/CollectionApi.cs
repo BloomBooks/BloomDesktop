@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -37,6 +38,7 @@ namespace Bloom.web.controllers
 		public const string kApiUrlPart = "collections/";
 		private readonly BookSelection _bookSelection;
 		private BookThumbNailer _thumbNailer;
+		private BloomWebSocketServer _webSocketServer;
 
 		private int _thumbnailEventsToWaitFor = -1;
 
@@ -45,13 +47,15 @@ namespace Bloom.web.controllers
 		// We'd prefer to just let the WorkspaceView be a constructor arg passed to this by Autofac,
 		// but that throws an exception, probably there is some circularity.
 		public WorkspaceView WorkspaceView;
-		public 	 CollectionApi(CollectionSettings settings, LibraryModel libraryModel, BookSelection bookSelection, BookThumbNailer thumbNailer)
+		public 	 CollectionApi(CollectionSettings settings, LibraryModel libraryModel, BookSelection bookSelection, BookThumbNailer thumbNailer, BloomWebSocketServer webSocketServer)
 		{
 			_settings = settings;
 			_libraryModel = libraryModel;
 			_bookSelection = bookSelection;
 			_thumbNailer = thumbNailer;
+			_webSocketServer = webSocketServer;
 		}
+
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
@@ -156,6 +160,7 @@ namespace Bloom.web.controllers
 			});
 			request.ReplyWithJson(JsonConvert.SerializeObject(output));
 		}
+
 		public void HandleBooksRequest(ApiRequest request)
 		{
 			var collection = GetCollectionOfRequest(request);
@@ -166,13 +171,17 @@ namespace Bloom.web.controllers
 
 			// Note: the winforms version used ImproveAndRefreshBookButtons(), which may load the whole book.
 
-			var infos = collection.GetBookInfos()
+			var bookInfos = collection.GetBookInfos();
+			var jsonInfos = bookInfos
 				.Select(info =>
 				{
-					//var book = _libraryModel.GetBookFromBookInfo(info);
+					var title = info.QuickTitleUserDisplay;
+					if (collection.IsFactoryInstalled)
+						title = LocalizationManager.GetDynamicString("Bloom", "TemplateBooks.BookName." + title, title);
 					return new
-						{id = info.Id, title = info.QuickTitleUserDisplay, collectionId = collection.PathToDirectory, folderName= Path.GetFileName(info.FolderPath) };
+						{id = info.Id, title, collectionId = collection.PathToDirectory, folderName= Path.GetFileName(info.FolderPath), factory = collection.IsFactoryInstalled };
 				}).ToArray();
+
 			// The goal here is to draw the book buttons before we tie up the UI thread for a long time loading
 			// the previously selected book and showing it. So we're going to wait until we get a few requests
 			// for the thumbnails used in book buttons. But we need to be sure we will actually get those requests,
@@ -187,10 +196,10 @@ namespace Bloom.web.controllers
 			lock (_thumbnailEventsLock)
 			{
 				if (collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
-					_thumbnailEventsToWaitFor = Math.Max(Math.Min(infos.Length, 2), 1);
+					_thumbnailEventsToWaitFor = Math.Max(Math.Min(jsonInfos.Length, 2), 1);
 			}
 
-			var json = DynamicJson.Serialize(infos);
+			var json = DynamicJson.Serialize(jsonInfos);
 			request.ReplyWithJson(json);
 		}
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -39,6 +40,8 @@ namespace Bloom.web.controllers
 			_webSocketServer = webSocketServer;
 			_bookSelection = bookSelection;
 			this._spreadsheetApi = spreadsheetApi;
+			Application.Idle += EnhanceButtonNeedingSlowUpdate;
+			_libraryModel.BookCommands = this;
 		}
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
@@ -50,7 +53,94 @@ namespace Bloom.web.controllers
 					_spreadsheetApi.ShowExportToSpreadsheetUI(GetBookObjectFromPost(request));
 					request.PostSucceeded();
 				}, true, false);
+			apiHandler.RegisterEndpointHandlerExact("bookCommand/enhanceLabel", (request) =>
+			{
+				// We want this to be fast...many things are competing for api handling threads while
+				// Bloom is starting up, including many buttons sending this request...
+				// so we'll postpone until idle even searching for the right BookInfo.
+				var collection = request.RequiredParam("collection-id").Trim();
+				var id = request.RequiredParam("id");
+				_buttonsNeedingSlowUpdate.Enqueue(Tuple.Create(collection, id));
+				request.PostSucceeded();
+			}, false, false);
 			apiHandler.RegisterEndpointHandler("bookCommand/", HandleBookCommand, true);
+		}
+
+		public void RequestButtonLabelUpdate(string collectionPath, string id)
+		{
+			_buttonsNeedingSlowUpdate.Enqueue(Tuple.Create(collectionPath, id));
+		}
+
+		private ConcurrentQueue<Tuple<string,string>> _buttonsNeedingSlowUpdate = new ConcurrentQueue<Tuple<string, string>>();
+
+		private void EnhanceButtonNeedingSlowUpdate(object sender, EventArgs e)
+		{
+			if (!_buttonsNeedingSlowUpdate.TryDequeue(out Tuple<string, string> item))
+				return;
+			var bookInfo = _libraryModel.BookInfoFromCollectionAndId(item.Item1, item.Item2);
+			if (bookInfo == null || bookInfo.NameLocked)
+				return; // the title it already has is the folder name which is the right locked name.
+			var langCodes = _libraryModel.CollectionSettings.GetAllLanguageCodes().ToList();
+			var bestTitle = bookInfo.GetBestTitleForUserDisplay(langCodes);
+			if (String.IsNullOrEmpty(bestTitle))
+			{
+				// Getting the book can be very slow for large books: do we really want to update the title enough to make the user wait?
+				var book = LoadBookAndBringItUpToDate(bookInfo, out bool badBook);
+				if (book == null)
+					return; // can't get the book, can't improve title
+				bestTitle = book.TitleBestForUserDisplay;
+			}
+
+			if (bestTitle != bookInfo.QuickTitleUserDisplay)
+			{
+				UpdateButtonTitle(_webSocketServer, bookInfo, bestTitle);
+			}
+		}
+
+		public static void UpdateButtonTitle(BloomWebSocketServer server, BookInfo bookInfo, string bestTitle)
+		{
+			server.SendString("book", IdForBookButton(bookInfo), bestTitle);
+		}
+
+		/// <summary>
+		/// We identify a book, for purposes of updating the title of the right button,
+		/// by a combination of the collection path and the book ID.
+		/// We can't use the full path to the book, because we need to be able to update the
+		/// button when its folder changes.
+		/// We need the collection name because we're not entirely confident that there can't
+		/// be duplicate book IDs across collections.
+		/// </summary>
+		/// <param name="info"></param>
+		/// <returns></returns>
+		public static string IdForBookButton(BookInfo info)
+		{
+			return "label-" + Path.GetDirectoryName(info.FolderPath) + "-" + info.Id;
+		}
+
+		private bool _alreadyReportedErrorDuringImproveAndRefreshBookButtons;
+		private Book.Book LoadBookAndBringItUpToDate(BookInfo bookInfo, out bool badBook)
+		{
+			try
+			{
+				badBook = false;
+				return _libraryModel.GetBookFromBookInfo(bookInfo);
+			}
+			catch (Exception error)
+			{
+				//skip over the dependency injection layer
+				if (error.Source == "Autofac" && error.InnerException != null)
+					error = error.InnerException;
+				Logger.WriteEvent("There was a problem with the book at " + bookInfo.FolderPath + ". " + error.Message);
+				if (!_alreadyReportedErrorDuringImproveAndRefreshBookButtons)
+				{
+					_alreadyReportedErrorDuringImproveAndRefreshBookButtons = true;
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,
+						"There was a problem with the book at {0}. \r\n\r\nClick the 'Details' button for more information.\r\n\r\nOther books may have this problem, but this is the only notice you will receive.\r\n\r\nSee 'Help:Show Event Log' for any further errors.",
+						bookInfo.FolderPath);
+				}
+				badBook = true;
+				return null;
+			}
 		}
 
 		private void HandleBookCommand(ApiRequest request)

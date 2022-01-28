@@ -739,7 +739,10 @@ namespace Bloom.Book
 				dynamic titles = DynamicJson.Parse(jsonString);
 				IEnumerable<string> langs = titles.GetDynamicMemberNames();
 				var multiText = new MultiTextBase();
-				foreach (var lang in langs)
+				// I have no idea why "item" gets included...it's never a language id, so never in the json...
+				// but sometimes it does, and then titles["item"] throws, and this method does not
+				// behave as expected.
+				foreach (var lang in langs.Where((l) => l != "item"))
 					multiText[lang] = titles[lang].Trim();
 				return Book.GetBestTitleForDisplay(multiText, langCodes, IsEditable);
 			}
