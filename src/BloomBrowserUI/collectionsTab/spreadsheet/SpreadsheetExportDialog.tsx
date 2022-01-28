@@ -16,7 +16,8 @@ import {
 } from "../../react_components/BloomDialog/BloomDialog";
 import {
     DialogCancelButton,
-    DialogFolderChooser
+    DialogFolderChooser,
+    WarningBox
 } from "../../react_components/BloomDialog/commonDialogComponents";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
 
@@ -60,6 +61,16 @@ export const SpreadsheetExportDialog: React.FunctionComponent<{
                     new translations. Finally, use the “Import &amp; Update from
                     Spreadsheet...” command to bring your changes back in.
                 </Div>
+                <p></p>
+                <WarningBox>
+                    <span>
+                        This feature is still a work in progress. Though you can{" "}
+                        <em>export</em> all books, Bloom cannot
+                        <em>import</em> books with these features: TalkingBooks,
+                        Quizzes and other Activities. There may be other export
+                        and import limitations we are not aware of.
+                    </span>
+                </WarningBox>
                 <p></p>
                 <div>{chooseFolderDescription}</div>
 
