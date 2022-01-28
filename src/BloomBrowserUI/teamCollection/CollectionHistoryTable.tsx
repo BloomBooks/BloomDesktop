@@ -50,7 +50,13 @@ const TextCell: React.FunctionComponent<{
     );
 };
 
-const kEventTypes = ["Check In", "Created", "Renamed", "Uploaded"]; // REVIEW maybe better to do this in c# and just send it over?
+const kEventTypes = [
+    "Check In",
+    "Created",
+    "Renamed",
+    "Uploaded",
+    "Force Unlock"
+]; // REVIEW maybe better to do this in c# and just send it over?
 
 export const CollectionHistoryTable: React.FunctionComponent = props => {
     const events = BloomApi.useApiData<IBookHistoryEvent[]>(

@@ -82,9 +82,14 @@ namespace Bloom.TeamCollection
 
 			try
 			{
+				var bookStatus = _tcManager.CurrentCollection.GetStatus(BookFolderName);
+				var lockedBy = bookStatus.lockedByFirstName;
+				if (string.IsNullOrEmpty(lockedBy))
+					lockedBy = bookStatus.lockedBy;
 				// Could be a problem if there's no current book or it's not in the collection folder.
 				// But in that case, we don't show the UI that leads to this being called.
 				_tcManager.CurrentCollection.ForceUnlock(BookFolderName);
+				BookHistory.AddEvent(_bookSelection.CurrentSelection, BookHistoryEventType.ForcedUnlock, $"Admin force-unlocked while checked out to {lockedBy}.");
 
 				UpdateUiForBook();
 
