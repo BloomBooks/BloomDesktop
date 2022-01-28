@@ -354,14 +354,28 @@ namespace Bloom.Publish.BloomLibrary
 
 		public void SetOnlySignLanguageToPublish(string langCode)
 		{
-			Book.BookInfo.MetaData.SignLangsToPublish.ForBloomLibrary = new Dictionary<string, InclusionSetting>();
-			Book.BookInfo.MetaData.SignLangsToPublish.ForBloomLibrary[langCode] = InclusionSetting.Include;
+			Book.BookInfo.MetaData.SignLangsToPublish.ForBloomLibrary = new Dictionary<string, InclusionSetting>
+			{
+				[langCode] = InclusionSetting.Include
+			};
 			Book.BookInfo.Save();
 		}
 
 		public bool IsPublishSignLanguage()
 		{
 			return Book.BookInfo.MetaData.SignLangsToPublish.ForBloomLibrary.IncludedLanguages().Any();
+		}
+
+		public void ClearBlindAccessibleToPublish()
+		{
+			Book.UpdateBlindFeature(false, null);
+			Book.BookInfo.Save();
+		}
+
+		public void SetOnlyBlindAccessibleToPublish(string langCode)
+		{
+			Book.UpdateBlindFeature(true, new List<string> { langCode });
+			Book.BookInfo.Save();
 		}
 	}
 
