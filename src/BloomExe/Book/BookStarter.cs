@@ -610,6 +610,9 @@ namespace Bloom.Book
 					continue;
 				if (Path.GetFileNameWithoutExtension(filePath).StartsWith(".")) //.guidsForInstaller.xml
 					continue;
+				// We don't want to include any history of the original in the new collection history.
+				if (Path.GetFileName(filePath) == "history.db")
+					continue;
 				var ext = Path.GetExtension(filePath).ToLowerInvariant();
 				// We don't need to copy any backups, and we don't want userPrefs because they are likely
 				// to include a page number and we want the new book to open at the cover.

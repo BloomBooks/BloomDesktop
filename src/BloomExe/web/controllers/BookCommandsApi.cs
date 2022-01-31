@@ -267,8 +267,6 @@ namespace Bloom.web.controllers
 			book.SetAndLockBookName(newName);
 
 			_libraryModel.UpdateLabelOfBookInEditableCollection(book);
-
-			BookHistory.AddEvent(book, BookHistoryEventType.Renamed, $"Book renamed to \"{newName}\"");
 		}
 
 
