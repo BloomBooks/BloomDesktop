@@ -20,7 +20,7 @@ export interface IBookInfo {
     title: string;
     collectionId: string;
     folderName: string;
-    factory: boolean;
+    isFactory: boolean;
 }
 
 // A very minimal set of collection properties for now

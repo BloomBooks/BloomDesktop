@@ -40,7 +40,6 @@ namespace Bloom.web.controllers
 			_webSocketServer = webSocketServer;
 			_bookSelection = bookSelection;
 			this._spreadsheetApi = spreadsheetApi;
-			Application.Idle += EnhanceButtonNeedingSlowUpdate;
 			_libraryModel.BookCommands = this;
 		}
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -60,7 +59,7 @@ namespace Bloom.web.controllers
 				// so we'll postpone until idle even searching for the right BookInfo.
 				var collection = request.RequiredParam("collection-id").Trim();
 				var id = request.RequiredParam("id");
-				_buttonsNeedingSlowUpdate.Enqueue(Tuple.Create(collection, id));
+				RequestButtonLabelUpdate(collection, id);
 				request.PostSucceeded();
 			}, false, false);
 			apiHandler.RegisterEndpointHandler("bookCommand/", HandleBookCommand, true);
@@ -68,15 +67,82 @@ namespace Bloom.web.controllers
 
 		public void RequestButtonLabelUpdate(string collectionPath, string id)
 		{
+			var oldCount = _buttonsNeedingSlowUpdate.Count;
 			_buttonsNeedingSlowUpdate.Enqueue(Tuple.Create(collectionPath, id));
+			// I'm nervous about messing with event subscriptions and unsubscriptions on multiple threads,
+			// but it is undesirable to leave the idle event running forever once there is nothing to enhance.
+			// Therefore, the event handler removes itself when it finds nothing in the queue, and so
+			// we need to make sure we have one when we put something into the queue. That could easily result in the event
+			// handler being present many times, leading to longer delays when the event is raised, so we
+			// remove it before adding it.
+			// So far so good, but we need to consider race conditions. I very much don't want to use Invoke
+			// here, and would prefer to avoid even a lock, so as to minimize the time that handling this
+			// event keeps a server thread busy during application startup.
+			// So, what can go wrong? The last thing we do in relation to the event is to add the handler.
+			// At that point, there is a handler, so the button will eventually get processed.
+			// It turns out we have to add the event handler on the UI thread. If that were not the case,
+			// we could get more than one handler added: context switches could cause unsubscribe
+			// to happen on multiple threads, followed by two or more threads subscribing. This would be fairly
+			// harmless: at worst, each subscription results in one button being enhanced, and once the queue
+			// is empty, successive calls to the handler will eventually remove all of them.
+			// More worrying is this possibility:
+			// - event handler looks at queue and finds nothing. Before the code in that method for removing the handler executes,
+			// - context switch to server thread which adds event, removes and adds handler, we have 1 handler
+			// - context switch back to event handler, which proceeds to remove the handler. We have 0 handlers,
+			// but a button queued. I don't think this could happen given that we have to Invoke to subscribe,
+			// but just in case, the handler is careful about how it removes itself to prevent this.
+			if (oldCount == 0) // otherwise, we must already have a subscription
+			{
+				// I can't find any documentation indicating that we must use Invoke here, but if we don't,
+				// it doesn't work: the event handler is never called. So I'm going to compromise and let
+				// the first call to this (and the first after we empty the queue) do so. (There may be a race
+				// condition in which more than one thread does it, but that's OK because we remove before adding.)
+				var formToInvokeOn = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+				if (formToInvokeOn != null)
+				{
+					formToInvokeOn.Invoke((Action)(() =>
+					{
+						Application.Idle -= EnhanceButtonNeedingSlowUpdate;
+						Application.Idle += EnhanceButtonNeedingSlowUpdate;
+					}));
+				}
+			}
 		}
 
 		private ConcurrentQueue<Tuple<string,string>> _buttonsNeedingSlowUpdate = new ConcurrentQueue<Tuple<string, string>>();
 
 		private void EnhanceButtonNeedingSlowUpdate(object sender, EventArgs e)
 		{
-			if (!_buttonsNeedingSlowUpdate.TryDequeue(out Tuple<string, string> item))
-				return;
+			Tuple<string, string> item;
+			
+			if (!_buttonsNeedingSlowUpdate.TryDequeue(out item))
+			{
+				Application.Idle -= EnhanceButtonNeedingSlowUpdate;
+				// If you ignore threading, it would seem we could just return here.
+				// And given that we're invoking for subscriptions, I think it would be OK.
+				// But if we were ever able to subscribe on a different thread,
+				// then between the TryDeque and removing the event handler,
+				// another thread might add an item, or even more than one! Then we'd have
+				// queued items and no event handler looking for them!
+				// So, after removing the event handler, we try AGAIN to Deque an item.
+				if (_buttonsNeedingSlowUpdate.TryDequeue(out item))
+				{
+					// And if we succeed, we put the event handler back. This might be
+					// redundant, but I don't think it always is (multiple items might have been
+					// added between the TryDeque and removing the handler above), and it is
+					// harmless...if we don't need it, we'll just do one more cycle of
+					// running this handler, finding no items, and removing the handler.
+					Application.Idle += EnhanceButtonNeedingSlowUpdate;
+				}
+				else
+				{
+					// Now we can safely return. Another thread might have added an item
+					// between the TryDeque and this return, but it will also have restored
+					// the event handler, so we'll handle the new item on the next invocation.
+					return;
+				}
+			}
+
 			var bookInfo = _libraryModel.BookInfoFromCollectionAndId(item.Item1, item.Item2);
 			if (bookInfo == null || bookInfo.NameLocked)
 				return; // the title it already has is the folder name which is the right locked name.
@@ -85,6 +151,10 @@ namespace Bloom.web.controllers
 			if (String.IsNullOrEmpty(bestTitle))
 			{
 				// Getting the book can be very slow for large books: do we really want to update the title enough to make the user wait?
+				// (Yes, we're doing this lazily, one book at a time, while the system is idle. But we're tying up the UI thread
+				// for as long as it takes to load any one book. That might be a noticeable unresponsiveness. OTOH, it's only happening
+				// once per book, after which, the titles should be in meta.json and can be loaded fairly quickly. This will be less and less
+				// of an issue as books that don't have the titles in meta.json become fewer and fewer.)
 				var book = LoadBookAndBringItUpToDate(bookInfo, out bool badBook);
 				if (book == null)
 					return; // can't get the book, can't improve title
@@ -107,7 +177,7 @@ namespace Bloom.web.controllers
 		/// by a combination of the collection path and the book ID.
 		/// We can't use the full path to the book, because we need to be able to update the
 		/// button when its folder changes.
-		/// We need the collection name because we're not entirely confident that there can't
+		/// We need the collection path because we're not entirely confident that there can't
 		/// be duplicate book IDs across collections.
 		/// </summary>
 		/// <param name="info"></param>

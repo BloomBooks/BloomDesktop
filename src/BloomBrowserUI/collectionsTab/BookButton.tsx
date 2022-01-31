@@ -65,7 +65,7 @@ export const BookButton: React.FunctionComponent<{
         // - typically we won't request a new enhanced label for unchanged books when re-rendering the collection
         // We don't want to try to enhance labels of factory books because their original names
         // are good (already localized) and enhancing them somehow comes up with 'Title Missing'.
-        if (!props.book.factory) {
+        if (!props.book.isFactory) {
             BloomApi.post(
                 `bookCommand/enhanceLabel?${collectionQuery}&id=${encodeURIComponent(
                     props.book.id
