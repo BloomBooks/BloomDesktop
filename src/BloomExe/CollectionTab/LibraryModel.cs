@@ -230,7 +230,7 @@ namespace Bloom.CollectionTab
 				_webSocketServer.SendEvent("editableCollectionList", "reload:" + collection.PathToDirectory);
 			};
 
-			_localizationChangedEvent.Subscribe(unused =>
+			_localizationChangedEvent?.Subscribe(unused =>
 			{
 				if (collection.IsFactoryInstalled)
 				{
