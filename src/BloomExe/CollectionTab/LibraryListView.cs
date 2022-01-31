@@ -455,6 +455,8 @@ namespace Bloom.CollectionTab
 
 		private void LoadSourceCollectionButtons()
 		{
+			if (IsDisposed)
+				return;
 			if (!_model.ShowSourceCollections)
 			{
 				_sourceBooksFlow.Visible = false;

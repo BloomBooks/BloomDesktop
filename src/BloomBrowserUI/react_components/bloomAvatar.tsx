@@ -29,6 +29,10 @@ export const BloomAvatar: React.FunctionComponent<{
                     width: ${avatarSize};
                     height: ${avatarSize};
                     border: ${borderStyle};
+                    // Generated (three-letter) avatars somehow let a little of the background
+                    // show through around the edges. This makes it look like just part of the
+                    // border.
+                    background-color: ${props.borderColor};
                 `}
             >
                 <Avatar

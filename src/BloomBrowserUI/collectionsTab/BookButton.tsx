@@ -47,9 +47,33 @@ export const BookButton: React.FunctionComponent<{
         | undefined
     >();
     const selected = useIsSelected(props.manager, props.book.id);
+    const bookLabel = BloomApi.useWatchString(
+        props.book.title,
+        // These must correspond to what BookCommandsApi.UpdateButtonTitle sends
+        "book",
+        "label-" + props.collection.id + "-" + props.book.id
+    );
     const collectionQuery = `collection-id=${encodeURIComponent(
         props.collection.id
     )}`;
+    useEffect(() => {
+        // By requesting this here like this rather than, say, as a side effect of
+        // loading the collection, we achieve several things:
+        // - there's no danger of the enhanced label message arriving before the button is watching
+        // - we don't waste effort computing enhanced labels for buttons we're not yet rendering because of laziness
+        // - we can automatically request a new enhanced label if the book's title or folder name changes
+        // - typically we won't request a new enhanced label for unchanged books when re-rendering the collection
+        // We don't want to try to enhance labels of factory books because their original names
+        // are good (already localized) and enhancing them somehow comes up with 'Title Missing'.
+        if (!props.book.isFactory) {
+            BloomApi.post(
+                `bookCommand/enhanceLabel?${collectionQuery}&id=${encodeURIComponent(
+                    props.book.id
+                )}`
+            );
+        }
+        // logically it should also be done if props.collection.id or props.book.id changes, but they don't.
+    }, [props.book.folderName, props.book.title]);
 
     // Don't use useApiStringState to get this function because it does an unnecessary server query
     // to get the value, which we are not using, and this hurts performance.
@@ -187,12 +211,12 @@ export const BookButton: React.FunctionComponent<{
     }, [renaming, renameDiv.current]);
 
     const label =
-        props.book.title.length > 20 ? (
+        bookLabel.length > 20 ? (
             <TruncateMarkup lines={2}>
-                <span>{props.book.title}</span>
+                <span>{bookLabel}</span>
             </TruncateMarkup>
         ) : (
-            props.book.title
+            bookLabel
         );
 
     const renameHeight = 40;
@@ -394,7 +418,7 @@ export const BookButton: React.FunctionComponent<{
                     // Note: we want a blur on this element, but putting it here does not work right.
                     // See the comment where we add it in a delayed effect.
                 >
-                    {props.book.title}
+                    {bookLabel}
                 </div>
             )}
         </div>
