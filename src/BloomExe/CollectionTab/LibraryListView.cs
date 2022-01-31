@@ -1127,6 +1127,7 @@ namespace Bloom.CollectionTab
 					{
 						SelectBook(SelectedBook.BookInfo);
 						ScheduleRefreshOfOneThumbnail(book);
+						BringButtonTitleUpToDate(book);
 					}
 				}
 			}
