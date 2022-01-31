@@ -497,6 +497,14 @@ namespace Bloom.Publish.BloomLibrary
 			var newThumbPath = ChooseBestUploadingThumbnailPath(_model.Book).ToLocalhost();
 			var newTitle = _model.Book.TitleBestForUserDisplay;
 			var newLanguages = ConvertLanguageCodesToNames(LanguagesCheckedToUpload, _model.Book.BookData);
+			if (_signLanguageCheckBox.Checked && !string.IsNullOrEmpty(CurrentSignLanguageName))
+			{
+				var newLangs = newLanguages.ToList();
+				if (!newLangs.Contains(CurrentSignLanguageName))
+					newLangs.Add(CurrentSignLanguageName);
+				newLanguages = newLangs;
+			}
+
 			var existingBookInfo = _model.ConflictingBookInfo;
 			var updatedDateTime = (DateTime) existingBookInfo.updatedAt;
 			var createdDateTime = (DateTime) existingBookInfo.createdAt;
