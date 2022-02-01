@@ -1101,6 +1101,20 @@ namespace Bloom.CollectionTab
 				// Just make a note to re-show it next time we're visible
 				_thumbnailRefreshPending = true;
 			}
+			if (SelectedButton == null)
+			{
+				// Title must have changed, which has changed the FolderPath.  Try to find the button by book Id.
+				var buttons = AllBookButtons().Where(b => GetBookInfoFromButton(b).Id == SelectedBook?.BookInfo.Id).Select(b => b).ToList();
+				if (buttons.Count == 1)
+				{
+					var bkInfo = GetBookInfoFromButton(buttons[0]);
+					bkInfo.FolderPath = _bookSelection.CurrentSelection.BookInfo.FolderPath;
+				}
+				else if (buttons.Count > 1)
+				{
+					// Multiple books have the same Id.  This should not happen, but what to do?
+				}
+			}
 			BringBookNameButtonUpToDateQuick(_bookSelection.CurrentSelection);
 		}
 
@@ -1707,7 +1721,11 @@ namespace Bloom.CollectionTab
 			var book = SelectedBook;
 			if (book == null) //don't think this can happen, but play safe
 				return;
-			book.SetAndLockBookName(newName);
+			var button = SelectedButton;
+			book.SetAndLockBookName(newName);	// can change BookInfo.FolderPath
+			var btnInfo = (button?.Tag as BookButtonInfo);
+			if (btnInfo != null)	// continue to be paranoid...
+				btnInfo.BookInfo.FolderPath = book.BookInfo.FolderPath;
 			BringBookNameButtonUpToDateQuick(book);
 		}
 

@@ -1716,6 +1716,10 @@ namespace Bloom.Book
 					info.AllTitles = sb.ToString();
 				}
 			}
+			else
+			{
+				_dom.Title = "";
+			}
 
 			if (BookIsDerivative())
 			{
