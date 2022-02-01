@@ -91,7 +91,10 @@ namespace Bloom.web.controllers
 			request.PostSucceeded();
 		}
 
-
+		/// <summary>
+		/// This is our primary entry point for importing from a spreadsheet. There is also a CLI command,
+		/// but we shouldn't need that one much, now that we have this on our book thumb context menus.
+		/// </summary>
 		public void HandleImportContentFromSpreadsheet(Book.Book book)
 		{
 			if (!_libraryModel.CollectionSettings.HaveEnterpriseFeatures)
@@ -118,13 +121,12 @@ namespace Bloom.web.controllers
 					SetSpreadsheetFolder(book, spreadsheetFolder);
 				}
 
-				var dom = book.OurHtmlDom;
-				var importer = new SpreadsheetImporter(_webSocketServer, dom, Path.GetDirectoryName(inputFilepath), book.FolderPath);
-				importer.ImportWithProgress(inputFilepath, bookPath);
+				var importer = new SpreadsheetImporter(_webSocketServer, book, Path.GetDirectoryName(inputFilepath));
+				importer.ImportWithProgress(inputFilepath);
 
 				// Review: A lot of other stuff happens in Book.Save() and BookStorage.SaveHtml().
 				// I doubt we need any of it for current purposes, but later we might.
-				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, bookPath);
+				XmlHtmlConverter.SaveDOMAsHtml5(book.OurHtmlDom.RawDom, bookPath);
 				book.ReloadFromDisk(null);
 				_bookSelection.InvokeSelectionChanged(false);
 			}

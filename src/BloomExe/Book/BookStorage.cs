@@ -2822,7 +2822,7 @@ namespace Bloom.Book
 		/// Save a copy of the specified book in the a folder %temp%/bloom pre-import backups.
 		/// Generate a unique name for the backup as necessary, and return its full path.
 		/// </summary>
-		public static string SaveCopyBeforeImportOverwrite(string bookFolder, string bookFilePath)
+		public static string SaveCopyBeforeImportOverwrite(string bookFolder)
 		{
 			string origFileName = Path.GetFileName(bookFolder);
 			var parentFolder = Path.Combine(Path.GetTempPath(), "bloom pre-import backups");
