@@ -74,7 +74,7 @@ namespace Bloom.Book
 			UpdatePageSizeAndOrientationClasses(dom.RawDom, layout);
 		}
 
-		public static IEnumerable<Layout> GetLayoutChoices(HtmlDom dom, IFileLocator fileLocator)
+		public static IEnumerable<Layout> GetSizeAndOrientationChoices(HtmlDom dom, IFileLocator fileLocator)
 		{
 			//here we walk through all the stylesheets, looking for one with the special comment which tells us which page/orientations it supports
 			foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))

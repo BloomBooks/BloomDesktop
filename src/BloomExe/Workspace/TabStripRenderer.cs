@@ -73,50 +73,7 @@ namespace Bloom.Workspace
 
 		protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e)
 		{
-			return;
-			Color c = SystemColors.AppWorkspace;
-			if (UseVisualStyles)
-			{
-				VisualStyleRenderer rndr = new VisualStyleRenderer(VisualStyleElement.Tab.Pane.Normal);
-				c = rndr.GetColor(ColorProperty.BorderColorHint);
-			}
-
-			using (Pen p = new Pen(c))
-			using (Pen p2 = new Pen(e.BackColor))
-			{
-				Rectangle r = e.ToolStrip.Bounds;
-				int x1 = (Mirrored) ? 0 : r.Width - 1 - e.ToolStrip.Padding.Horizontal;
-				int y1 = (Mirrored) ? 0 : r.Height - 1;
-				if (e.ToolStrip.Orientation == Orientation.Horizontal)
-					e.Graphics.DrawLine(p, 0, y1, r.Width, y1);
-				else
-				{
-					e.Graphics.DrawLine(p, x1, 0, x1, r.Height);
-					if (!Mirrored)
-						for (int i = x1 + 1; i < r.Width; i++)
-							e.Graphics.DrawLine(p2, i, 0, i, r.Height);
-				}
-				foreach (ToolStripItem x in e.ToolStrip.Items)
-				{
-					if (x.IsOnOverflow) continue;
-					TabStripButton btn = x as TabStripButton;
-					if (btn == null) continue;
-					Rectangle rc = btn.Bounds;
-					int x2 = (Mirrored) ? rc.Left : rc.Right;
-					int y2 = (Mirrored) ? rc.Top : rc.Bottom - 1;
-					int addXY = (Mirrored) ? 0 : 1;
-					if (e.ToolStrip.Orientation == Orientation.Horizontal)
-					{
-						e.Graphics.DrawLine(p, rc.Left, y2, rc.Right, y2);
-						if (btn.Checked) e.Graphics.DrawLine(p2, rc.Left + 2 - addXY, y2, rc.Right - 2 - addXY, y2);
-					}
-					else
-					{
-						e.Graphics.DrawLine(p, x2, rc.Top, x2, rc.Bottom);
-						if (btn.Checked) e.Graphics.DrawLine(p2, x2, rc.Top + 2 - addXY, x2, rc.Bottom - 2 - addXY);
-					}
-				}
-			}
+			return;			
 		}
 
 		protected override void OnRenderToolStripBackground(ToolStripRenderEventArgs e)

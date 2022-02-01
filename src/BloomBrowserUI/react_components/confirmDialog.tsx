@@ -13,7 +13,7 @@ import { useL10n } from "./l10nHooks";
 import BloomButton from "./bloomButton";
 import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";
 import { BloomApi } from "../utils/bloomApi";
-import theme from "../bloomMaterialUITheme";
+import { lightTheme } from "../bloomMaterialUITheme";
 
 // All strings are assumed localized by the caller
 export interface IConfirmDialogProps {
@@ -42,7 +42,7 @@ const ConfirmDialog: React.FC<IConfirmDialogProps> = props => {
     };
 
     return (
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={lightTheme}>
             <CloseOnEscape onEscape={() => onClose(DialogResult.Cancel)}>
                 <Dialog className="bloomModalDialog confirmDialog" open={open}>
                     <DialogTitle>

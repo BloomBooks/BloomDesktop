@@ -18,7 +18,7 @@ import "./ReaderPublish.less";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
 import ReactDOM = require("react-dom");
 import { ThemeProvider } from "@material-ui/styles";
-import theme from "../../bloomMaterialUITheme";
+import { darkTheme, lightTheme } from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import {
     useSubscribeToWebSocketForStringMessage,
@@ -132,19 +132,21 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
             <RequiresBloomEnterpriseDialog />
             <BasePublishScreen className="ReaderPublishScreen">
                 <PreviewPanel>
-                    <DeviceAndControls
-                        defaultLandscape={defaultLandscape}
-                        canRotate={canRotate}
-                        url={
-                            pathToOutputBrowser +
-                            "bloom-player/dist/bloomplayer.htm?centerVertically=true&url=" +
-                            encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
-                            "&independent=false&host=bloomdesktop"
-                        }
-                        showRefresh={true}
-                        highlightRefreshIcon={highlightRefresh}
-                        onRefresh={() => props.onReset()}
-                    />
+                    <ThemeProvider theme={darkTheme}>
+                        <DeviceAndControls
+                            defaultLandscape={defaultLandscape}
+                            canRotate={canRotate}
+                            url={
+                                pathToOutputBrowser +
+                                "bloom-player/dist/bloomplayer.htm?centerVertically=true&url=" +
+                                encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
+                                "&independent=false&host=bloomdesktop"
+                            }
+                            showRefresh={true}
+                            highlightRefreshIcon={highlightRefresh}
+                            onRefresh={() => props.onReset()}
+                        />
+                    </ThemeProvider>
                 </PreviewPanel>
                 <PublishPanel>
                     <MethodChooser />
@@ -241,7 +243,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
 // if that html has the root page we need.
 if (document.getElementById("BloomReaderPublishScreen")) {
     ReactDOM.render(
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={lightTheme}>
             <ReaderPublishScreen />
         </ThemeProvider>,
         document.getElementById("BloomReaderPublishScreen")

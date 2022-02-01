@@ -1,5 +1,6 @@
 ﻿using System;
 using Bloom.Api;
+using Bloom.Collection;
 using Bloom.Properties;
 using SIL.Progress;
 
@@ -9,7 +10,10 @@ namespace Bloom.Book
 	{
 		private readonly BloomWebSocketServer _webSocketServer;
 		private Book _currentSelection;
+		// Both of these are raised when the selected book changes, but the HighPriority subscribers
+		// are notified first.
 		public event EventHandler<BookSelectionChangedEventArgs> SelectionChanged;
+		public event EventHandler<BookSelectionChangedEventArgs> SelectionChangedHighPriority;
 
 		// this one is used for short-lived things other than the "global" one
 		public BookSelection()
@@ -30,6 +34,9 @@ namespace Bloom.Book
 		{
 			if (_currentSelection == book)
 				return;
+			// We don't need to reload the collection just because we make changes bringing the book up to date.
+			if (book != null)
+				BookCollection.TemporariliyIgnoreChangesToFolder(book.FolderPath);
 
 			// The bookdata null test prevents doing this on books not sufficiently initialized to
 			// BringUpToDate, typically only in unit tests.
@@ -53,7 +60,9 @@ namespace Bloom.Book
 
 		public void InvokeSelectionChanged(bool aboutToEdit)
 		{
-			SelectionChanged?.Invoke(this, new BookSelectionChangedEventArgs() { AboutToEdit = aboutToEdit });
+			var args = new BookSelectionChangedEventArgs() { AboutToEdit = aboutToEdit };
+			SelectionChangedHighPriority?.Invoke(this, args);
+			SelectionChanged?.Invoke(this, args);
 		}
 	}
 }

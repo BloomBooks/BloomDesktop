@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.TeamCollection;
+using Bloom.ToPalaso;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.FileSystem;
@@ -27,6 +30,11 @@ namespace Bloom.Collection
 		private TeamCollectionManager _tcManager;
 
 		private readonly BookSelection _bookSelection;
+		private Timer _folderChangeDebounceTimer;
+		private static HashSet<string> _changingFolders = new HashSet<string>();
+		private BloomWebSocketServer _webSocketServer;
+
+		public static event EventHandler CollectionCreated;
 
 		//for moq only
 		public BookCollection()
@@ -40,11 +48,12 @@ namespace Bloom.Collection
 		}
 
 		public BookCollection(string path, CollectionType collectionType,
-			BookSelection bookSelection, TeamCollectionManager tcm = null)
+			BookSelection bookSelection, TeamCollectionManager tcm = null, BloomWebSocketServer webSocketServer = null)
 		{
 			_path = path;
 			_bookSelection = bookSelection;
 			_tcManager = tcm;
+			_webSocketServer = webSocketServer;
 
 			Type = collectionType;
 
@@ -52,6 +61,104 @@ namespace Bloom.Collection
 			{
 				MakeCollectionCSSIfMissing();
 			}
+
+			CollectionCreated?.Invoke(this, new EventArgs());
+
+			if (ContainsDownloadedBooks)
+			{
+				WatchDirectory();
+			}
+		}
+
+		/// <summary>
+		/// Called when a file system watcher notices a new book (or some similar change) in our downloaded books folder.
+		/// This will happen on a thread-pool thread.
+		/// Since we are updating the UI in response we want to deal with it on the main thread.
+		/// That also has the effect of a lock, preventing multiple threads trying to respond to changes.
+		/// The main purpose of this method is to debounce such changes, since lots of them may
+		/// happen in succession while downloading a book, and also some that we don't want
+		/// to process may happen while we are selecting one. Debounced changes result in a websocket message
+		/// that acts as an event for Javascript, and also raising a C# event.
+		/// </summary>
+		private void DebounceFolderChanged(string fullPath)
+		{
+			var shell = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+			SafeInvoke.InvokeIfPossible("update downloaded books", shell, true, (Action)(() =>
+			{
+				// We may notice a change to the downloaded books directory before the other Bloom instance has finished
+				// copying the new book there. Finishing should not take long, because the download is done...at worst
+				// we have to copy the book on our own filesystem. Typically we only have to move the directory.
+				// As a safeguard, wait half a second before we update things.
+				if (_folderChangeDebounceTimer != null)
+				{
+					// Things changed again before we started the update! Forget the old update and wait until things
+					// are stable for the required interval.
+					_folderChangeDebounceTimer.Stop();
+					_folderChangeDebounceTimer.Dispose();
+				}
+				_folderChangeDebounceTimer = new Timer();
+				_folderChangeDebounceTimer.Tick += (o, args) =>
+				{
+					_folderChangeDebounceTimer.Stop();
+					_folderChangeDebounceTimer.Dispose();
+					_folderChangeDebounceTimer = null;
+
+					// Updating the books involves selecting the modified book, which might involve changing
+					// some files (e.g., adding a branding image, BL-4914), which could trigger this again.
+					// So don't allow it to be triggered by changes to a folder we're already sending
+					// notifications about.
+					// (It's PROBABLY overkill to maintain a set of these...don't expect a notification about
+					// one folder to trigger a change to another...but better safe than sorry.)
+					// (Note that we don't need synchronized access to this dictionary, because all this
+					// happens only on the UI thread.)
+					if (!_changingFolders.Contains(fullPath))
+					{
+						try
+						{
+							_changingFolders.Add(fullPath);
+							_webSocketServer.SendEvent("editableCollectionList", "reload:" + PathToDirectory);
+							if (FolderContentChanged != null)
+								FolderContentChanged(this, new ProjectChangedEventArgs() { Path = fullPath });
+						}
+						finally
+						{
+							// Now we need to arrange to remove it again. Not right now, because
+							// whatever changes might be made during event handling may get noticed slightly later.
+							// But we don't want to miss it if the book gets downloaded again.
+							RemoveFromChangingFoldersLater(fullPath);
+						}
+					}
+				};
+				_folderChangeDebounceTimer.Interval = 500;
+				_folderChangeDebounceTimer.Start();
+			}));
+		}
+
+		// Arrange that the specified path should be removed from changingFolders after 10s.
+		// This means for 10s we wont pay attention to new changes to
+		// this folder. Probably excessive, but this monitor is meant to catch new downloads;
+		// it's unlikely the same book can be downloaded again within 10 seconds.
+		private static void RemoveFromChangingFoldersLater(string fullPath)
+		{
+			var waitTimer = new Timer();
+			waitTimer.Interval = 10000;
+			waitTimer.Tick += (sender1, args1) =>
+			{
+				_changingFolders.Remove(fullPath);
+				waitTimer.Stop();
+				waitTimer.Dispose();
+			};
+			waitTimer.Start();
+		}
+
+		// We will ignore changes to this folder for 10s. This is typically because it
+		// has just been selected. That may result in file mods as the book is brought
+		// up to date, but we don't want to treat those changes like a new book or
+		// version of a book arriving from BL.
+		public static void TemporariliyIgnoreChangesToFolder(string fullPath)
+		{
+			_changingFolders.Add(fullPath);
+			RemoveFromChangingFoldersLater(fullPath);
 		}
 
 		private void MakeCollectionCSSIfMissing()
@@ -78,8 +185,10 @@ namespace Bloom.Collection
 				return;
 
 			Logger.WriteEvent("After BookStorage.DeleteBook({0})", bookInfo.FolderPath);
+			var infoToDelete = _bookInfos.FirstOrDefault(b => b.FolderPath == bookInfo.FolderPath);
 			//Debug.Assert(_bookInfos.Contains(bookInfo)); this will occur if we delete a book from the BloomLibrary section
-			_bookInfos.Remove(bookInfo);
+			if (infoToDelete != null) // for paranoia. We shouldn't be trying to delete a book that isn't there.
+				_bookInfos.Remove(infoToDelete);
 
 			if (CollectionChanged != null)
 				CollectionChanged.Invoke(this, null);
@@ -105,42 +214,45 @@ namespace Bloom.Collection
 
 		}
 
+		private object _bookInfoLock = new object();
+
+		// Needs to be thread-safe
 		public virtual IEnumerable<Book.BookInfo> GetBookInfos()
 		{
-			if (_bookInfos == null)
+			lock (_bookInfoLock)
 			{
-				_watcherIsDisabled = true;
-				LoadBooks();
-				_watcherIsDisabled = false;
-			}
+				if (_bookInfos == null)
+				{
+					_watcherIsDisabled = true;
+					_bookInfos = new List<Book.BookInfo>();
+					var bookFolders = ProjectContext.SafeGetDirectories(_path).Select(dir => new DirectoryInfo(dir))
+						.ToArray();
 
-			return _bookInfos;
-		}
+					//var orderedBookFolders = bookFolders.OrderBy(f => f.Name);
+					var orderedBookFolders = bookFolders.OrderBy(f => f.Name, new NaturalSortComparer<string>());
+					foreach (var folder in orderedBookFolders)
+					{
+						if (Path.GetFileName(folder.FullName).StartsWith(".")) //as in ".hg"
+							continue;
+						// Don't want things in the templates/xmatter folder
+						// (even SIL-Cameroon-Mothballed, which no longer has xmatter in its filename)
+						// so filter on the whole path.
+						if (folder.FullName.ToLowerInvariant().Contains("xmatter"))
+							continue;
+						// Note: this used to be .bloom-ignore. We believe that is no longer used.
+						// It was changed because files starting with dot are normally invisible,
+						// which could make it hard to see why a book is skipped, and also because
+						// we were having trouble finding a way to get a file called .bloom-ignore
+						// included in the filesThatMightBeNeededInOutput list in gulpfile.js.
+						if (RobustFile.Exists(Path.Combine(folder.FullName, "BloomIgnore.txt")))
+							continue;
+						AddBookInfo(folder.FullName);
+					}
 
-		private void LoadBooks()
-		{
-			_bookInfos = new List<Book.BookInfo>();
-			var bookFolders = ProjectContext.SafeGetDirectories(_path).Select(dir => new DirectoryInfo(dir)).ToArray();
-			
-			//var orderedBookFolders = bookFolders.OrderBy(f => f.Name);
-			var orderedBookFolders = bookFolders.OrderBy(f => f.Name, new NaturalSortComparer<string>());
-			foreach (var folder in orderedBookFolders)
-			{
-				if (Path.GetFileName(folder.FullName).StartsWith("."))//as in ".hg"
-					continue;
-				// Don't want things in the templates/xmatter folder
-				// (even SIL-Cameroon-Mothballed, which no longer has xmatter in its filename)
-				// so filter on the whole path.
-				if (folder.FullName.ToLowerInvariant().Contains("xmatter"))
-					continue;
-				// Note: this used to be .bloom-ignore. We believe that is no longer used.
-				// It was changed because files starting with dot are normally invisible,
-				// which could make it hard to see why a book is skipped, and also because
-				// we were having trouble finding a way to get a file called .bloom-ignore
-				// included in the filesThatMightBeNeededInOutput list in gulpfile.js.
-				if (RobustFile.Exists(Path.Combine(folder.FullName, "BloomIgnore.txt")))
-					continue;
-				AddBookInfo(folder.FullName);
+					_watcherIsDisabled = false;
+				}
+
+				return _bookInfos;
 			}
 		}
 
@@ -292,8 +404,7 @@ namespace Bloom.Collection
 			if (_watcherIsDisabled)
 				return;
 			_bookInfos = null; // Possibly obsolete; next request will update it.
-			if (FolderContentChanged != null)
-				FolderContentChanged(this, new ProjectChangedEventArgs() { Path = fileSystemEventArgs.FullPath });
+			DebounceFolderChanged(fileSystemEventArgs.FullPath);
 		}
 	}
 

@@ -83,7 +83,11 @@ mixin field-withSampleText
 	.bloom-translationGroup&attributes(attributes)
 		+editable(kLanguageForPrototypeOnly)
 			block
-
+mixin field-withEnglishText
+	-requireZeroArguments('field-withSampleText');
+	.bloom-translationGroup&attributes(attributes)
+		+editable("en")
+			block
 //- Sometimes, especially when we're just pug-ifying some existing html with existing css,
 //- we need to put attributes directly on the prototype div inside of a translation group.
 //- This one lets us do that

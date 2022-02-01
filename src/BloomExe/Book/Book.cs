@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
 using System.Xml;
+using Bloom.Api;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Publish;
@@ -171,15 +172,36 @@ namespace Bloom.Book
 				(Storage as BookStorage).BookTitleChanged += Book_BookTitleChanged;
 		}
 
+		/// <summary>
+		/// This gets set when a new book is created by copying a source book.
+		/// It is the folder name (without path) of the source book.
+		/// Setting this allows the code which renames the new book to make a more helpful history report.
+		/// </summary>
+		public static string SourceToReportForNextRename;
+
 		private void Book_BookTitleChanged(object sender, EventArgs e)
 		{
-			if (!BookInfo.FileNameLocked)
+			if (BookInfo.FileNameLocked)
+			{
+				// Forced rename
+				BookHistory.AddEvent(this, BookHistoryEventType.Created,
+					$"The book with title \"{Storage.Dom.Title}\" had its folder set to \"{Path.GetFileName(FolderPath)}\"");
+			}
+			else
 			{
 				var folderName = Path.GetFileName(FolderPath);
-				if (folderName == Storage.Dom.Title)
-					BookHistory.AddEvent(this, BookHistoryEventType.Renamed, $"Book title changed to \"{Storage.Dom.Title}\"");
+				if (SourceToReportForNextRename == null)
+				{
+					BookHistory.AddEvent(this, BookHistoryEventType.Renamed,$"Book title changed to \"{Storage.Dom.Title}\"");
+				}
 				else
-					BookHistory.AddEvent(this, BookHistoryEventType.Renamed, $"Book title changed to \"{Storage.Dom.Title}\" (folder=\"{folderName}\")");
+				{
+					// On this path we don't think the folder name will be significantly different from the title
+					// (added number to disambiguate, illegal characters removed). So don't need two versions.
+					BookHistory.AddEvent(this, BookHistoryEventType.Created,
+							$"Created a new book \"{Storage.Dom.Title}\" from a source book \"{SourceToReportForNextRename}\"");
+					SourceToReportForNextRename = null;
+				}
 			}
 		}
 
@@ -649,7 +671,7 @@ namespace Bloom.Book
 		private HtmlDom GetErrorDom(string extraMessages="")
 		{
 			var builder = new StringBuilder();
-			builder.Append("<html><head><meta charset=\"UTF-8\" /></head><body style='font-family:arial,sans'>");
+			builder.Append("<html><head><meta charset=\"UTF-8\" /></head><body style='font-family:arial,sans; background-color:white'>");
 
 			builder.AppendLine(
 				Storage != null ?
@@ -666,8 +688,12 @@ namespace Bloom.Book
 			if (Storage.ErrorAllowsReporting)
 			{
 				var message = LocalizationManager.GetString("Errors.ReportThisProblemButton", "Report this problem to Bloom Support");
-				builder.AppendFormat(
-					"<input type='button' value='" + message + "' href='ReportProblem'></input>");
+				// The easiest way to get something in this generated DOM to actually do something back in C#
+				// is to embed an inline click action which posts to our fileserver directly.
+				var url = BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "api/problemReport/unreadableBook";
+				// No single quotes allowed in this string!
+				var onClick = "const Http = new XMLHttpRequest(); const url=\"" + url + "\"; Http.open(\"POST\", url); Http.send();";
+				builder.Append("<button onClick='" + onClick + "'>" + message + "</button>");
 			}
 
 			builder.Append("</body></html>");
@@ -1476,13 +1502,16 @@ namespace Bloom.Book
 			var cssBuilder = new StringBuilder(collectionStylesCss);
 			if (doesAlreadyExist)
 			{
-				var cssLangs = new HashSet<string>();
-				cssLangs.Add(_bookData.Language1IsoCode);
-				cssLangs.Add(_bookData.MetadataLanguage1IsoCode);
-				if (!String.IsNullOrEmpty(_bookData.Language2IsoCode))
-					cssLangs.Add(_bookData.Language2IsoCode);
-				if (!String.IsNullOrEmpty(_bookData.Language3IsoCode))
-					cssLangs.Add(_bookData.Language3IsoCode);
+				// We want to use the current CSS from our collection, which we already added to the
+				// string builder, for all the languages it contains, but keep the rules already in
+				// defaultLangStyles.css for any other languages that are there.  We start by setting
+				// languagesWeAlreadyHave to the languages we do NOT want to copy from defaultLangStyles.css
+				// (because we have more current data about them already).
+				var languagesWeAlreadyHave = new HashSet<string>();
+				languagesWeAlreadyHave.Add(CollectionSettings.Language1Iso639Code);
+				languagesWeAlreadyHave.Add(CollectionSettings.Language2Iso639Code);
+				if (!String.IsNullOrEmpty(CollectionSettings.Language3Iso639Code))
+					languagesWeAlreadyHave.Add(CollectionSettings.Language3Iso639Code);
 
 				var cssLines = RobustFile.ReadAllLines(path);
 				const string kLangTag = "[lang='";
@@ -1496,7 +1525,8 @@ namespace Bloom.Book
 						if (idxQuote > 0)
 						{
 							var lang = line.Substring(kLangTag.Length, idxQuote - kLangTag.Length);
-							copyCurrentRule = !cssLangs.Contains(lang);
+							copyCurrentRule = !languagesWeAlreadyHave.Contains(lang);
+							languagesWeAlreadyHave.Add(lang);	// don't copy if another css block has crept in.
 						}
 					}
 					if (copyCurrentRule)
@@ -3565,11 +3595,11 @@ namespace Bloom.Book
 			return Layout.FromDom(OurHtmlDom, Layout.A5Portrait);
 		}
 
-		public IEnumerable<Layout> GetLayoutChoices()
+		public IEnumerable<Layout> GetSizeAndOrientationChoices()
 		{
 			try
 			{
-				return SizeAndOrientation.GetLayoutChoices(OurHtmlDom, Storage.GetFileLocator());
+				return SizeAndOrientation.GetSizeAndOrientationChoices(OurHtmlDom, Storage.GetFileLocator());
 			}
 			catch (Exception error)
 			{
@@ -4216,7 +4246,7 @@ namespace Bloom.Book
 		/// </summary>
 		/// <param name="isEnabled">True to indicate the feature is enabled, or false for disabled (will clear the feature in the metadata)</param>
 		/// <param name="allowedLanguages">If non-null, limits the calculation to only considering the languages specified</param>
-		private void UpdateBlindFeature(bool isEnabled, IEnumerable<string> allowedLanguages)
+		public void UpdateBlindFeature(bool isEnabled, IEnumerable<string> allowedLanguages)
 		{
 			if (!isEnabled)
 			{

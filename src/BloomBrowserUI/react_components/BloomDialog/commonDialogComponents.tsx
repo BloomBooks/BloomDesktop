@@ -8,10 +8,13 @@ import BloomButton from "../bloomButton";
 import InfoIcon from "@material-ui/icons/Info";
 import WarningIcon from "@material-ui/icons/Warning";
 import ErrorIcon from "@material-ui/icons/Error";
+import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
+import {
+    kBloomDarkTextOverWarning,
+    kBloomWarning
+} from "../../utils/colorUtils";
 
 export const kErrorBoxColor = "#eb3941";
-const kWarningBoxColor = "#FEBF00"; // isn't exactly bloom gold. This looks more orangy, intentionally.
-const kTextOverWarningColor = "#000000CC"; // black with 20% transparency
 const kLightBlueBackground = "#e5f9f0";
 const kBorderRadiusForSpecialBlocks = "3px";
 
@@ -36,7 +39,8 @@ export const DialogControlGroup: React.FunctionComponent<{}> = props => (
     </div>
 );
 
-export const DialogFolderChooser: React.FunctionComponent<{
+// This is extracted from DialogFolderChooser because CreateTeamCollection has a special api endpoint for it
+export const DialogFolderChooserWithApi: React.FunctionComponent<{
     path: string;
     apiCommandToChooseAndSetFolder: string;
 }> = props => (
@@ -85,6 +89,35 @@ export const DialogFolderChooser: React.FunctionComponent<{
         </div>
     </div>
 );
+
+export const DialogFolderChooser: React.FunctionComponent<{
+    path: string;
+    setPath: (path: string) => void;
+    description?: string;
+}> = props => {
+    // Since a user will have as much time as they want to deal with the dialog,
+    // we can't just wait for the api call to return. Instead we get called back
+    // via web socket iff they select a folder and close the dialog.
+    useSubscribeToWebSocketForObject<{ success: boolean; path: string }>(
+        "common",
+        "chooseFolder-results",
+        results => {
+            if (results.success) {
+                props.setPath(results.path);
+            }
+        }
+    );
+    const params = new URLSearchParams({
+        path: props.path,
+        description: props.description || ""
+    }).toString();
+    return (
+        <DialogFolderChooserWithApi
+            {...props}
+            apiCommandToChooseAndSetFolder={"common/chooseFolder?" + params}
+        />
+    );
+};
 
 export const DialogCloseButton: React.FunctionComponent<{
     onClick: () => void;
@@ -181,9 +214,9 @@ export const WarningBox: React.FunctionComponent<{}> = props => (
             display: flex;
             &,
             * {
-                color: ${kTextOverWarningColor} !important;
+                color: ${kBloomDarkTextOverWarning} !important;
             }
-            background-color: ${kWarningBoxColor};
+            background-color: ${kBloomWarning};
             border-radius: ${kBorderRadiusForSpecialBlocks};
             padding: ${kDialogPadding};
             font-weight: 500;
@@ -193,7 +226,7 @@ export const WarningBox: React.FunctionComponent<{}> = props => (
         <WarningIcon
             css={css`
                 margin-right: ${kDialogPadding};
-                color: ${kTextOverWarningColor};
+                color: ${kBloomDarkTextOverWarning};
             `}
         />
         {props.children}

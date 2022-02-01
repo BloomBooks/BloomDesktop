@@ -24,5 +24,7 @@ namespace Bloom
 			// Note that Mono doesn't have System.Windows.Media.
 			return ColorTranslator.FromHtml(hexColor);
 		}
+
+		public static string kBloomLightBlueHex = "#B0DEE4";
 	}
 }

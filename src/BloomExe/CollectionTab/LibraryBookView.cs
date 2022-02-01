@@ -6,6 +6,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.TeamCollection;
 using Bloom.MiscUI;
+using Bloom.web;
 using Bloom.web.controllers;
 using Gecko;
 using MarkdownDeep;
@@ -130,8 +131,12 @@ namespace Bloom.CollectionTab
 			UpdateTitleBar();
 		}
 
+		private object _pendingPreviewProps;
+
 		private void ShowBook(bool updatePreview = true)
 		{
+			if (IsDisposed)
+				return; // typically because we're using the new collection tab, but unfortunately hooked this event up when constructed.
 			if (_bookSelection.CurrentSelection == null || !_visible)
 			{
 				HidePreview();
@@ -147,7 +152,8 @@ namespace Bloom.CollectionTab
 					var previewDom = _bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook();
 					XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(previewDom.RawDom);
 					var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(previewDom, setAsCurrentPageForDebugging: false, source: BloomServer.SimulatedPageFileSource.Preview);
-					_reactBookPreviewControl.Props = new { initialBookPreviewUrl = fakeTempFile.Key }; // need this for initial selection
+					Application.Idle += UpdatePreview;
+					_pendingPreviewProps = new { initialBookPreviewUrl = fakeTempFile.Key }; // need this for initial selection
 					// We need this for changing selection's book info display if team collection.
 					_webSocketServer.SendEvent("bookStatus", "reload");
 					_reactBookPreviewControl.Visible = true;
@@ -173,6 +179,12 @@ namespace Bloom.CollectionTab
 				}
 				_reshowPending = false;
 			}
+		}
+
+		private void UpdatePreview(object sender, EventArgs e)
+		{
+			Application.Idle -= UpdatePreview;
+			_reactBookPreviewControl.Props = _pendingPreviewProps;
 		}
 
 		SimulatedPageFile _previousPageFile;

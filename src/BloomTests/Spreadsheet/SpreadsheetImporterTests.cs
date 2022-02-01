@@ -751,7 +751,7 @@ namespace BloomTests.Spreadsheet
 		public void ImageNotFoundWarningPresent()
 		{
 			var source = Path.Combine(_spreadsheetFolder, "images/missingBird.png");
-			Assert.That(_warnings, Does.Contain("Image \"" + source + "\" on row 4 was not found."));
+			Assert.That(_warnings, Does.Contain("Image \"" + source + "\" on row 6 was not found."));
 		}
 
 		[Test]
@@ -821,7 +821,7 @@ namespace BloomTests.Spreadsheet
 				+ PageWithNothing(1)
 				+ SpreadsheetImageAndTextImportTests.insideBackCoverPage
 				+ SpreadsheetImageAndTextImportTests.backCoverPage)
-				.Replace("A5Portrait", "A5Landscape");
+				.Replace("A5Portrait", "A4Landscape");
 			_dom = new HtmlDom(xml, true);
 
 			// Create an internal spreadsheet with the rows we want to import
@@ -877,6 +877,7 @@ namespace BloomTests.Spreadsheet
 			// This is the ID for the standard "Just a picture" page
 			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("adcd48df-e9ab-4a07-afd4-6a24d0398385"));
 			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("adcd48df-e9ab-4a07-afd4-6a24d0398385"));
+			Assert.That(_contentPages[n].Attributes["class"].Value, Does.Contain("A4Landscape"));
 		}
 
 		[TestCase(1, "this is page 2", "lady24b.png")]
@@ -887,6 +888,7 @@ namespace BloomTests.Spreadsheet
 			// This is the ID for the standard "Basic text and picture" page
 			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("7b192144-527c-417c-a2cb-1fb5e78bf38a"));
 			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("7b192144-527c-417c-a2cb-1fb5e78bf38a"));
+			Assert.That(_contentPages[n].Attributes["class"].Value, Does.Contain("A4Landscape"));
 		}
 
 		[TestCase(0, "this is page 1")]
@@ -896,6 +898,7 @@ namespace BloomTests.Spreadsheet
 			// This is the ID for the standard "Just text" page
 			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"));
 			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"));
+			Assert.That(_contentPages[n].Attributes["class"].Value, Does.Contain("A4Landscape"));
 		}
 
 		[Test]
@@ -1047,19 +1050,19 @@ namespace BloomTests.Spreadsheet
 				"src/BloomTests/Spreadsheet/spreadsheets/SheetWithNoHeader.xlsx");
 			var spy = new ProgressSpy();
 			var ss = InternalSpreadsheet.ReadFromFile(path, spy);
-			Assert.That(ss, Is.Null);
-
-			// We can also detect this problem on a different path if the spreadsheet doesn't have enough
-			// columns to trigger the detection in SpreadsheetIO.
-			ss = new InternalSpreadsheet();
-			ss.Header.GetRow(0).SetCell(0, "[metadata key]"); // used in earlier versions
-
 			var xml = string.Format(SpreadsheetImageAndTextImportTests.templateDom,
 				SpreadsheetImageAndTextImportTests.coverPage
 				+ SpreadsheetImageAndTextImportTests.insideBackCoverPage
 				+ SpreadsheetImageAndTextImportTests.backCoverPage);
 			var dom = new HtmlDom(xml, true);
 			var importer = new SpreadsheetImporter(null, dom, null, null);
+			Assert.That(importer.Validate(ss, spy), Is.False);
+
+			// We can also detect this problem on a different path if the spreadsheet doesn't have enough
+			// columns to trigger the detection.
+			ss = new InternalSpreadsheet();
+			ss.Header.GetRow(0).SetCell(0, "[metadata key]"); // used in earlier versions
+
 			Assert.That(importer.Validate(ss, spy), Is.False);
 			Assert.That(spy.Messages,
 				Has.Some.Property("Item1")

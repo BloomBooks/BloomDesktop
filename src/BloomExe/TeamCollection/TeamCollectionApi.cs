@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionTab;
 using Bloom.MiscUI;
 using Bloom.Registration;
 using Bloom.Utils;
@@ -30,11 +31,13 @@ namespace Bloom.TeamCollection
 		private BloomWebSocketServer _socketServer;
 		private readonly CurrentEditableCollectionSelection _currentBookCollectionSelection;
 		private CollectionSettings _settings;
+		private LibraryModel _libraryModel;
 
 		public static TeamCollectionApi TheOneInstance { get; private set; }
 
 		// Called by autofac, which creates the one instance and registers it with the server.
-		public TeamCollectionApi(CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings settings, BookSelection bookSelection, ITeamCollectionManager tcManager, BookServer bookServer, BloomWebSocketServer socketServer)
+		public TeamCollectionApi(CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings settings, BookSelection bookSelection,
+			ITeamCollectionManager tcManager, BookServer bookServer, BloomWebSocketServer socketServer, LibraryModel libraryModel)
 		{
 			_currentBookCollectionSelection = currentBookCollectionSelection;
 			_settings = settings;
@@ -43,28 +46,73 @@ namespace Bloom.TeamCollection
 			_bookSelection = bookSelection;
 			_socketServer = socketServer;
 			_bookServer = bookServer;
+			_libraryModel = libraryModel;
 			TheOneInstance = this;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler("teamCollection/repoFolderPath", HandleRepoFolderPath, false);
-			apiHandler.RegisterEndpointHandler("teamCollection/isTeamCollectionEnabled", HandleIsTeamCollectionEnabled, false);
-			apiHandler.RegisterEndpointHandler("teamCollection/bookStatus", HandleBookStatus, false);
-			apiHandler.RegisterEndpointHandler("teamCollection/selectedBookStatus", HandleSelectedBookStatus, false);
-			apiHandler.RegisterEndpointHandler("teamCollection/attemptLockOfCurrentBook", HandleAttemptLockOfCurrentBook, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/checkInCurrentBook", HandleCheckInCurrentBook, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/forgetChangesInSelectedBook", HandleForgetChangesInSelectedBook, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/chooseFolderLocation", HandleChooseFolderLocation, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/createTeamCollection", HandleCreateTeamCollection, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/joinTeamCollection", HandleJoinTeamCollection, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/getLog", HandleGetLog, false);
-			apiHandler.RegisterEndpointHandler("teamCollection/getCollectionName", HandleGetCollectionName, false);
-			apiHandler.RegisterEndpointHandler("teamCollection/showCreateTeamCollectionDialog", HandleShowCreateTeamCollectionDialog, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/reportBadZip", HandleReportBadZip, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/showRegistrationDialog", HandleShowRegistrationDialog, true, false);
-			apiHandler.RegisterEndpointHandler("teamCollection/getHistory", HandleGetHistory, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/checkinMessage", HandleCheckinMessage, false);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/repoFolderPath", HandleRepoFolderPath, false);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/isTeamCollectionEnabled", HandleIsTeamCollectionEnabled, false);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/bookStatus", HandleBookStatus, false, false);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/selectedBookStatus", HandleSelectedBookStatus, false);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/attemptLockOfCurrentBook", HandleAttemptLockOfCurrentBook, true);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/checkInCurrentBook", HandleCheckInCurrentBook, true);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/forgetChangesInSelectedBook", HandleForgetChangesInSelectedBook, true);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/chooseFolderLocation", HandleChooseFolderLocation, true);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/createTeamCollection", HandleCreateTeamCollection, true);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/joinTeamCollection", HandleJoinTeamCollection, true);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/getLog", HandleGetLog, false);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/getCollectionName", HandleGetCollectionName, false);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/showCreateTeamCollectionDialog", HandleShowCreateTeamCollectionDialog, true);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/reportBadZip", HandleReportBadZip, true);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/showRegistrationDialog", HandleShowRegistrationDialog, true, false);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/getHistory", HandleGetHistory, true);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/checkinMessage", HandleCheckinMessage, false);
+			apiHandler.RegisterEndpointHandlerExact("teamCollection/forceUnlock", HandleForceUnlock, false);
+		}
+
+		private void HandleForceUnlock(ApiRequest request)
+		{
+			if (!_tcManager.CheckConnection())
+			{
+				request.Failed();
+				return;
+			}
+
+			try
+			{
+				var bookStatus = _tcManager.CurrentCollection.GetStatus(BookFolderName);
+				var lockedBy = bookStatus.lockedByFirstName;
+				if (string.IsNullOrEmpty(lockedBy))
+					lockedBy = bookStatus.lockedBy;
+				// Could be a problem if there's no current book or it's not in the collection folder.
+				// But in that case, we don't show the UI that leads to this being called.
+				_tcManager.CurrentCollection.ForceUnlock(BookFolderName);
+				BookHistory.AddEvent(_bookSelection.CurrentSelection, BookHistoryEventType.ForcedUnlock, $"Admin force-unlocked while checked out to {lockedBy}.");
+
+				UpdateUiForBook();
+
+				Analytics.Track("TeamCollectionRevertOtherCheckout",
+					new Dictionary<string, string>()
+					{
+						{ "CollectionId", _settings?.CollectionId },
+						{ "CollectionName", _settings?.CollectionName },
+						{ "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
+						{ "User", CurrentUser },
+						{ "BookId", _bookSelection?.CurrentSelection?.ID },
+						{ "BookName", _bookSelection?.CurrentSelection?.Title }
+					});
+
+
+				request.PostSucceeded();
+			}
+			catch (Exception e)
+			{
+
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Could not force unlock", null, e, true);
+				request.Failed("could not unlock");
+			}
 		}
 
 		/// <summary>
@@ -207,6 +255,7 @@ namespace Bloom.TeamCollection
 			}
 		}
 
+		// needs to be thread-safe
 		public void HandleBookStatus(ApiRequest request)
 		{
 			try
@@ -229,6 +278,7 @@ namespace Bloom.TeamCollection
 			}
 		}
 
+		// Needs to be thread-safe
 		private string GetBookStatusJson(string bookFolderName, Book.Book book)
 		{
 			string whoHasBookLocked = null;
@@ -272,7 +322,8 @@ namespace Bloom.TeamCollection
 						changedRemotely = false,
 						disconnected = false,
 						newLocalBook = true,
-						checkinMessage = ""
+						checkinMessage = "",
+						isUserAdmin = _tcManager.OkToEditCollectionSettings
 					});
 			}
 
@@ -316,7 +367,8 @@ namespace Bloom.TeamCollection
 					changedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(bookFolderName),
 					disconnected = _tcManager.CurrentCollectionEvenIfDisconnected?.IsDisconnected,
 					newLocalBook,
-					checkinMessage
+					checkinMessage,
+					isUserAdmin = _tcManager.OkToEditCollectionSettings
 				});
 		}
 		public void HandleSelectedBookStatus(ApiRequest request)
@@ -454,6 +506,12 @@ namespace Bloom.TeamCollection
 					updatedBookFolder = modifiedBookFolders[0];
 					finalBookName = Path.GetFileName(updatedBookFolder);
 				}
+
+				if (finalBookName != bookName)
+				{
+					_bookSelection.CurrentSelection.Storage.RestoreBookName(finalBookName);
+					_libraryModel.UpdateLabelOfBookInEditableCollection(_bookSelection.CurrentSelection);
+				}
 				BookHistory.SetPendingCheckinMessage(_bookSelection.CurrentSelection, "");
 				UpdateUiForBook(reloadFromDisk:true, renamedTo: updatedBookFolder);
 				// We need to do this after updating the rest of the UI, so the button we're
@@ -513,8 +571,6 @@ namespace Bloom.TeamCollection
 					BookHistory.AddEvent(_bookSelection.CurrentSelection, BookHistoryEventType.CheckIn, message);
 					BookHistory.SetPendingCheckinMessage(_bookSelection.CurrentSelection, "");
 
-					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, checkin:true);
-
 					Analytics.Track("TeamCollectionCheckinBook",
 						new Dictionary<string, string>(){
 							{"CollectionId", _settings?.CollectionId},
@@ -548,9 +604,10 @@ namespace Bloom.TeamCollection
 							{"BookName", _bookSelection?.CurrentSelection?.Title}
 						});
 				}
-
 				UpdateUiForBook();
 				request.PostSucceeded();
+
+				Application.Idle += OnIdleConnectionCheck;
 			}
 			catch (Exception e)
 			{
@@ -567,6 +624,18 @@ namespace Bloom.TeamCollection
 				NonFatalProblem.ReportSentryOnly(e, $"Something went wrong for {request.LocalPath()} ({_bookSelection?.CurrentSelection?.FolderPath})");
 				request.Failed("checkin failed");
 			}
+		}
+
+		private void OnIdleConnectionCheck(object sender, EventArgs e)
+		{
+			Application.Idle -= OnIdleConnectionCheck;
+
+			// BL-10704: In case the Internet went away while we were trying to CheckIn a book...
+			// This will at least signal to the user in the Dropbox case, that while his checkin
+			// may have succeeded, his colleagues won't know about it until the Internet is up again.
+			// If we don't do it "OnIdle", the book status pane doesn't reflect that we actually did
+			// (probably, assuming we are on Dropbox, anyway) complete the checkin.
+			_tcManager.CheckConnection();
 		}
 
 		// Tell the CollectionSettingsDialog that we should reopen the collection now

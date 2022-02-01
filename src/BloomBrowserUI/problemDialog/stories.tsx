@@ -1,4 +1,4 @@
-import theme from "../bloomMaterialUITheme";
+import { lightTheme } from "../bloomMaterialUITheme";
 import * as React from "react";
 import { ThemeProvider } from "@material-ui/styles";
 import { storiesOf } from "@storybook/react";
@@ -10,7 +10,7 @@ import { ReportDialog } from "./ReportDialog";
 
 // ENHANCE: Could we make this have the exact same dimensions the browser dialog would have?
 addDecorator(storyFn => (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={lightTheme}>
         <StorybookContext.Provider value={true}>
             {storyFn()}
         </StorybookContext.Provider>

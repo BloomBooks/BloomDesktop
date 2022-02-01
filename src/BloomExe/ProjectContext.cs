@@ -136,6 +136,7 @@ namespace Bloom
 							typeof (EditingModel),
 							typeof (AudioRecording),
 							typeof(BookSettingsApi),
+							typeof(SpreadsheetApi),
 							typeof(BookMetadataApi),
 							typeof(PublishToAndroidApi),
 							typeof(PublishEpubApi),
@@ -168,7 +169,9 @@ namespace Bloom
 							typeof(ProblemReportApi),
 							typeof(FontsApi),
 							typeof(BulkBloomPubCreator),
-							typeof(LibraryPublishApi)
+							typeof(LibraryPublishApi),
+							typeof(WorkspaceApi),
+							typeof(WorkspaceTabSelection)
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
@@ -241,7 +244,7 @@ namespace Bloom
 								c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(),
 								c.Resolve<EditBookCommand>(), c.Resolve<CreateFromSourceBookCommand>(), c.Resolve<BookServer>(),
 								c.Resolve<CurrentEditableCollectionSelection>(), c.Resolve<BookThumbNailer>(), c.Resolve<TeamCollectionManager>(),
-								c.Resolve<BloomWebSocketServer>())).InstancePerLifetimeScope();
+								c.Resolve<BloomWebSocketServer>(), c.Resolve<LocalizationChangedEvent>())).InstancePerLifetimeScope();
 
 					// Keep in sync with OptimizedFileLocator: it wants to return the object created here.
 					builder.Register<IChangeableFileLocator>(
@@ -322,7 +325,8 @@ namespace Bloom
 //					}
 //					else
 //					{
-						return factory(c.Resolve<LibraryView>());
+						WorkspaceView wsv = factory(c.Resolve<LibraryView>());
+						return wsv;
 //					}
 					});
 
@@ -358,6 +362,7 @@ namespace Bloom
 			_scope.Resolve<CollectionSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<CollectionApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<BookCommandsApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<SpreadsheetApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<PageControlsApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<KeyboardingConfigApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<BookSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
@@ -382,6 +387,7 @@ namespace Bloom
 			_scope.Resolve<LibraryPublishApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<PerformanceMeasurement>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<FontsApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<WorkspaceApi>().RegisterWithApiHandler(server.ApiHandler);
 		}
 
 		// Get the collection settings. Passed the expected path, but if not found,
@@ -501,7 +507,16 @@ namespace Bloom
 //			}
 		}
 
+		// This variable is intended to be private to IsTemplateBookFolder(). If for any reason some other method
+		// needs to use it, bear in mind that a Dictionary is not thread-safe, and see comments on thread safety of
+		// IsTemplateBookFolder
 		static Dictionary<string, bool> _mapPathToIsTemplateFolder = new Dictionary<string, bool>();
+
+		// Be careful about thread safety here. This method could be called on any thread that first needs to initialize
+		// _userInstalledDirctories. The code that does that makes sure it is initialized on only one thread.
+		// If anything else uses this method, it needs to somehow ensure thread safety for access to _mapPathToIsTemplateFolder,
+		// while making sure that whatever locking ensures that can't produce a deadlock with the locking code for
+		// initializing _userInstalledDirctories.
 		static bool IsTemplateBookFolder(string path)
 		{
 			// Whether a particular book is a template can only change once it's created if a user
@@ -537,18 +552,34 @@ namespace Bloom
 			}
 		}
 
+		// Lock to ensure only one thread initializes _userInstalledDirectories.
+		// Any access to _userInstalledDirectories must lock this.
+		private static object _userInstalledDirectoriesLock = new object();
 		private static List<string> _userInstalledDirectories;
 
 		public static void ClearUserInstalledDirectoriesCache()
 		{
-			_userInstalledDirectories = null;
+			lock (_userInstalledDirectoriesLock)
+			{
+				_userInstalledDirectories = null;
+			}
 		}
 
 		public static IEnumerable<string> GetUserInstalledDirectories()
 		{
-			if (_userInstalledDirectories == null)
+			lock (_userInstalledDirectoriesLock)
 			{
-				_userInstalledDirectories = GetUserInstalledDirectoriesInternal().ToList();
+				// Only one thread may initialize this list. For one thing, initializing it is expensive
+				// and we don't want it happening in multiple overlapping threads. For another, the
+				// initialization uses _mapPathToIsTemplateFolder, which is not thread-safe.
+				// Once the list is initialized, it never gets changed (only re-created, after
+				// ClearUserInstalledDirectoriesCache() is called) so I believe it is safe to access
+				// it without the lock; and I'm very unsure of the implications of holding a lock
+				// while yielding a result.
+				if (_userInstalledDirectories == null)
+				{
+					_userInstalledDirectories = GetUserInstalledDirectoriesInternal().ToList();
+				}
 			}
 
 			// We do this rather than just returning the list so that if something makes it necessary

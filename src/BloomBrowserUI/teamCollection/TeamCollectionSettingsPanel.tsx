@@ -6,7 +6,7 @@ import { BloomApi } from "../utils/bloomApi";
 import { P } from "../react_components/l10nComponents";
 import { RequiresBloomEnterpriseOverlayWrapper } from "../react_components/requiresBloomEnterprise";
 import "./TeamCollectionSettingsPanel.less";
-import theme from "../bloomMaterialUITheme";
+import { lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 
 import BloomButton from "../react_components/bloomButton";
@@ -24,20 +24,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
 
     const intro: JSX.Element = (
         <div>
-            <WarningBox>
-                <span>
-                    This is an <strong>experimental</strong> feature. Please
-                    contact us at{" "}
-                    <a
-                        href="mailto:experimental@bloomlibrary.org?subject= Our interest in Team Collections"
-                        target="blank"
-                    >
-                        experimental@bloomlibrary.org
-                    </a>{" "}
-                    so that we can talk over your needs and make sure that this
-                    feature is ready for you.
-                </span>
-            </WarningBox>
+            <ExperimentalWarningBox />
             <P
                 l10nKey="TeamCollection.Intro"
                 l10nParam0="https://docs.bloomlibrary.org/team-collections"
@@ -152,7 +139,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
     );
 
     return (
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={lightTheme}>
             <div id="teamCollection-settings">
                 <RequiresBloomEnterpriseOverlayWrapper>
                     <React.Fragment>
@@ -167,4 +154,20 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
     );
 };
 
+const ExperimentalWarningBox: React.FunctionComponent<{}> = () => (
+    <WarningBox>
+        <span>
+            This is an <strong>experimental</strong> feature. Please contact us
+            at{" "}
+            <a
+                href="mailto:experimental@bloomlibrary.org?subject= Our interest in Team Collections"
+                target="blank"
+            >
+                experimental@bloomlibrary.org
+            </a>{" "}
+            so that we can talk over your needs and make sure that this feature
+            is ready for you.
+        </span>
+    </WarningBox>
+);
 WireUpForWinforms(TeamCollectionSettingsPanel);

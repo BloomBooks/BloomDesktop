@@ -70,14 +70,21 @@ namespace Bloom.MiscUI
 		/// <param name="needsToRun"> If not null, the task will run from zero to many times,
 		/// until needsToRun returns false, before any subsequent tasks.</param>
 		/// <returns></returns>
-		public static IStartupAction AddStartupAction(Action task, bool shouldHideSplashScreen = false, bool lowPriority = false, Func<bool> needsToRun = null)
+		public static IStartupAction AddStartupAction(Action task, bool shouldHideSplashScreen = false, bool lowPriority = false, Func<bool> needsToRun = null, string waitForMilestone=null)
 		{
 			var startupAction = new StartupAction()
 				{ Priority = lowPriority ? StartupActionPriority.low : StartupActionPriority.high,
-					ShouldHideSplashScreen = shouldHideSplashScreen, Task = task, NeedsToRun = needsToRun};
+					ShouldHideSplashScreen = shouldHideSplashScreen, Task = task, NeedsToRun = needsToRun, WaitForMilestone = waitForMilestone};
 			_startupActions.Add(startupAction);
 			EnableProcessing();
 			return startupAction;
+		}
+
+		private static HashSet<string> _milestones = new HashSet<string>();
+
+		public static void StartupMilestoneReached(string what)
+		{
+			_milestones.Add(what);
 		}
 
 		/// <summary>
@@ -139,6 +146,12 @@ namespace Bloom.MiscUI
 					Application.Idle -= DoStartupAction;
 				}
 				return;
+			}
+
+			if (_current.WaitForMilestone != null && !_milestones.Contains(_current.WaitForMilestone))
+			{
+				_current = null; // nothing in progress we need to wait for
+				return; // we'll try again on another idle event
 			}
 
 			if (_current.ShouldHideSplashScreen)
@@ -301,6 +314,8 @@ namespace Bloom.MiscUI
 
 			public StartupActionPriority Priority;
 			public bool ShouldHideSplashScreen;
+			// If this is set, event handling should pause if the specified event has not occurred.
+			public string WaitForMilestone;
 			private bool _enabled = true;
 		}
 	}

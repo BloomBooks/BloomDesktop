@@ -473,11 +473,11 @@ namespace Bloom.Edit
 			}
 		}
 
-		public IEnumerable<Layout> GetLayoutChoices()
+		public IEnumerable<Layout> GetSizeAndOrientationChoices()
 		{
-			foreach(var layout in CurrentBook.GetLayoutChoices())
+			foreach(var sizeChoice in CurrentBook.GetSizeAndOrientationChoices())
 			{
-				yield return layout;
+				yield return sizeChoice;
 			}
 		}
 

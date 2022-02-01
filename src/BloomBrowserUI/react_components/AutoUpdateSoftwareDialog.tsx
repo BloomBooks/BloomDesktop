@@ -2,7 +2,7 @@ import * as React from "react";
 import BloomButton from "./bloomButton";
 import { BloomApi } from "../utils/bloomApi";
 import "./AutoUpdateSoftwareDialog.less";
-import theme from "../bloomMaterialUITheme";
+import { lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { FormControlLabel, Radio, RadioGroup } from "@material-ui/core";
 import { L10nLabel } from "./L10nLabel";
@@ -27,7 +27,7 @@ export const AutoUpdateSoftwareDialog: React.FunctionComponent = () => {
     const isAutoUpdate: boolean = chosenRadio == "automatic";
 
     return (
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={lightTheme}>
             <div className="auto-update-dialog">
                 <L10nLabel
                     variant="h4"

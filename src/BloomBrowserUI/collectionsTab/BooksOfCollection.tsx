@@ -4,27 +4,41 @@ import "BooksOfCollection.less";
 import { BloomApi } from "../utils/bloomApi";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
-import { BookButton } from "./BookButton";
+import NestedMenuItem from "material-ui-nested-menu-item";
+import { BookButton, bookButtonHeight, bookButtonWidth } from "./BookButton";
 import { useMonitorBookSelection } from "../app/selectedBook";
 import { element } from "prop-types";
 import { useL10n } from "../react_components/l10nHooks";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import { Divider } from "@material-ui/core";
-import { Book } from "@material-ui/icons";
+import { BookSelectionManager, useIsSelected } from "./bookSelectionManager";
+import LazyLoad, { forceCheck } from "react-lazyload";
 
-interface IBookInfo {
+export interface IBookInfo {
     id: string;
     title: string;
     collectionId: string;
     folderName: string;
+    isFactory: boolean;
 }
+
+// A very minimal set of collection properties for now
+export interface ICollection {
+    isEditableCollection: boolean;
+    isFactoryInstalled: boolean;
+    containsDownloadedBooks: boolean;
+    id: string;
+}
+
 export const BooksOfCollection: React.FunctionComponent<{
     collectionId: string;
     isEditableCollection: boolean;
+    manager: BookSelectionManager;
+    // If true, the collection will be wrapped in a LazyLoad so that most of its rendering
+    // isn't done until it is visible on screen.
+    lazyLoadCollection?: boolean;
 }> = props => {
-    const [renaming, setRenaming] = useState(false);
-
     if (!props.collectionId) {
         window.alert("null collectionId");
     }
@@ -38,21 +52,21 @@ export const BooksOfCollection: React.FunctionComponent<{
         "editableCollectionList",
         "reload:" + props.collectionId
     );
-    const [clickedBookId, setClickedBookId] = useState("");
-    // Don't use the 'get' value here because we're not monitoring anything to get it
-    // updated when the selection changes some other way than calling the set method.
-    const [unused, setSelectedBookIdWithApi] = BloomApi.useApiStringState(
-        `collections/selected-book-id?${collectionQuery}`,
-        ""
-    );
-    const selectedBookInfo = useMonitorBookSelection();
-    const collection = BloomApi.useApiData(
-        `collections/collectionProps?collection-id=${props.collectionId}`,
+
+    //const selectedBookInfo = useMonitorBookSelection();
+    const collection: ICollection = BloomApi.useApiData(
+        `collections/collectionProps?${collectionQuery}`,
         {
+            isEditableCollection: props.isEditableCollection,
             isFactoryInstalled: true,
-            containsDownloadedBooks: false
+            containsDownloadedBooks: false,
+            id: props.collectionId
         }
     );
+    // not getting these from the api currently, and I'm not sure the initial defaults will carry over
+    // when we get data from the API.
+    collection.isEditableCollection = props.isEditableCollection;
+    collection.id = props.collectionId;
 
     const [contextMousePoint, setContextMousePoint] = React.useState<
         | {
@@ -70,145 +84,219 @@ export const BooksOfCollection: React.FunctionComponent<{
     };
 
     const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-        if (!(event.target instanceof Element)) {
-            return; // huh?
+        if (props.isEditableCollection) {
+            setAdjustedContextMenuPoint(event.clientX - 2, event.clientY - 4);
+            event.preventDefault();
+            event.stopPropagation();
         }
-        const target = event.target as Element;
-        let bookTarget = target.closest(".book-wrapper");
-        if (bookTarget == null) {
-            // We're not going to do our own right-click menu; let whatever default happens go ahead.
-            return;
-        }
-
-        // BookButton puts this attribute on the {selected-}book-wrapper element so this code
-        // can use it to determine which book was selected.
-        const bookId = bookTarget.getAttribute("data-book-id")!;
-        if (bookId !== selectedBookInfo.id) {
-            setSelectedBookIdWithApi(bookId);
-        }
-        setClickedBookId(bookTarget.getAttribute("data-book-id")!);
-
-        event.preventDefault();
-        event.stopPropagation();
-        setAdjustedContextMenuPoint(event.clientX - 2, event.clientY - 4);
     };
 
     const handleClose = () => {
         setContextMousePoint(undefined);
     };
 
-    const handleBookCommand = (command: string) => {
-        handleClose();
-        BloomApi.postString(
-            `${command}?collection-id=${props.collectionId}`,
-            selectedBookInfo.id!
-        );
-    };
-
-    interface MenuItemSpec {
-        label: string;
-        l10nId?: string;
-        // One of these two must be provided. If both are, onClick is used and command is ignored.
-        // If only command is provided, the click action is to call handleBookCommand with that argument,
-        // which invokes the corresponding API call to C# code.
-        command?: string;
-        onClick?: React.MouseEventHandler<HTMLElement>;
-        // If this is defined (rare), it determines whether the menu item should be shown
-        // (except in factory collections, where we never show any).
-        // If it's not defined, a menu item is shown if we're in the editable collection and
-        // other requirements are satisfied, and not otherwise.
-        shouldShow?: () => boolean;
-        // Involves making changes to the book; therefore, can only be done in the one editable collection
-        // (unless shouldInclude returns true), and if we're in a Team Collection, the book must be checked out.
-        requiresSavePermission?: boolean;
-    }
-    const handleRename = () => {
-        handleClose();
-        setRenaming(true);
-    };
-
-    const finishRename = (name: string) => {
-        BloomApi.postString(
-            `bookCommand/rename?collection-id=${props.collectionId}&name=${name}`,
-            selectedBookInfo.id!
-        );
-    };
-
-    const menuItemsSpecs: MenuItemSpec[] = [
+    const collectionMenuItemsSpecs: MenuItemSpec[] = [
         {
-            label: "Duplicate Book",
-            l10nId: "CollectionTab.BookMenu.DuplicateBook",
-            command: "collections/duplicateBook"
+            label: "Open or Create Another Collection",
+            l10nId: "CollectionTab.OpenCreateCollectionMenuItem",
+            command: "workspace/openOrCreateCollection"
         },
         {
-            label: "Make Bloom Pack",
-            l10nId: "CollectionTab.MakeBloomPackButton",
-            command: "bookCommand/makeBloompack"
+            label: "Make Reader Template Bloom Pack...",
+            l10nId:
+                "CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem",
+            command: "collections/makeBloompack"
         },
         {
-            label: "Open Folder on Disk",
-            l10nId: "CollectionTab.ContextMenu.OpenFolderOnDisk",
-            command: "bookCommand/openFolderOnDisk",
-            shouldShow: () => true // show for all collections (except factory)
-        },
-        { label: "-" },
-        {
-            label: "Export to Word or LibreOffice...",
-            l10nId: "CollectionTab.BookMenu.ExportToWordOrLibreOffice",
-            command: "bookCommand/exportToWord"
-        },
-        {
-            label: "Export to Spreadsheet...",
-            l10nId: "CollectionTab.BookMenu.ExportToSpreadsheet",
-            command: "bookCommand/exportToSpreadsheet"
-        },
-        {
-            label: "Import content from Spreadsheet...",
-            l10nId: "CollectionTab.BookMenu.ImportContentFromSpreadsheet",
-            command: "bookCommand/importSpreadsheetContent",
-            requiresSavePermission: true
-        },
-        {
-            label: "Save as single file (.bloomSource)...",
-            l10nId: "CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem",
-            command: "bookCommand/saveAsDotBloomSource"
-        },
-        { label: "-" },
-        {
-            label: "Update Thumbnail",
-            l10nId: "CollectionTab.BookMenu.UpdateThumbnail",
-            command: "bookCommand/updateThumbnail",
-            requiresSavePermission: true // marginal, but it does change the content of the book folder
-        },
-        {
-            label: "Update Book",
-            l10nId: "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
-            command: "bookCommand/updateBook",
-            requiresSavePermission: true // marginal, but it does change the content of the book folder
-        },
-        {
-            label: "Rename",
-            l10nId: "CollectionTab.BookMenu.Rename",
-            onClick: () => handleRename(),
-            requiresSavePermission: true
-        },
-        { label: "-" },
-        {
-            label: "Delete Book",
-            l10nId: "CollectionTab.BookMenu.DeleteBook",
-            command: "collections/deleteBook",
-            requiresSavePermission: true, // for consistency, but not used since shouldShow is defined
-            // Allowed for the downloaded books collection and the editable collection (provided the book is checked out, if applicable)
-            shouldShow: () =>
-                collection.containsDownloadedBooks ||
-                (props.isEditableCollection && selectedBookInfo.saveable)
+            label: "Advanced",
+            l10nId: "CollectionTab.AdvancedToolStripMenuItem",
+            shouldShow: () => true, // show for all collections (except factory)
+            submenu: [
+                {
+                    label: "Do Checks of All Books",
+                    l10nId: "CollectionTab.CollectionMenu.doChecksOfAllBooks",
+                    command: "collections/doChecksOfAllBooks"
+                },
+                {
+                    label: "Rescue Missing Images...",
+                    l10nId: "CollectionTab.CollectionMenu.rescueMissingImages",
+                    command: "collections/rescueMissingImages"
+                },
+                {
+                    label: "Do Updates of All Books",
+                    l10nId:
+                        "CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks",
+                    command: "collections/doUpdatesOfAllBooks"
+                }
+            ]
         }
     ];
 
+    //const bookMenuItems = makeMenuItems(bookMenuItemsSpecs);
+    const collectionMenuItems = makeMenuItems(
+        collectionMenuItemsSpecs,
+        props.isEditableCollection,
+        props.manager.getSelectedBookInfo()!.saveable,
+        handleClose,
+        // the collection menu commands don't actually use the ID of
+        // a particular book
+        "",
+        props.collectionId
+    );
+
+    // This is an approximation. 5 buttons per line is about what we get in a default
+    // layout on a fairly typical screen. We'd get a better approximation if we used
+    // the width of a button and knew the width of the container. But I think this is good
+    // enough. Worst case, we expand a bit more than we need.
+    const collectionHeight = bookButtonHeight * Math.ceil(books.length / 5);
+
+    const content = (
+        <div
+            key={"BookCollection-" + props.collectionId}
+            className="bookButtonPane"
+            onContextMenu={e => handleClick(e)}
+            style={{ cursor: "context-menu" }}
+        >
+            {books.length > 0 && (
+                <Grid
+                    container={true}
+                    spacing={3}
+                    direction="row"
+                    justify="flex-start"
+                    alignItems="flex-start"
+                >
+                    {books?.map(book => {
+                        return (
+                            <Grid item={true} className="book-wrapper">
+                                <LazyLoad
+                                    height={bookButtonHeight}
+                                    // Tells lazy loader to look for the parent element that has overflowY set to scroll or
+                                    // auto. This requires a patch to react-lazyload (as of 3.2.0) because currently it looks for
+                                    // a parent that has overflow:scroll or auto in BOTH directions, which is not what we're getting
+                                    // from our splitter.
+                                    // Note: using this is better than using splitContainer, because that has multiple bugs
+                                    // that are not as easy to patch. See https://github.com/twobin/react-lazyload/issues/371.
+                                    overflow={true}
+                                    resize={true} // expand lazy elements as needed when container resizes
+                                    // We need to specify a placeholder because the default one has zero width,
+                                    // and therefore the parent grid thinks they will all fit on one line,
+                                    // and then they're all visible so we get no laziness.
+                                    placeholder={
+                                        <div
+                                            className="placeholder"
+                                            style={{
+                                                height:
+                                                    bookButtonHeight.toString(
+                                                        10
+                                                    ) + "px",
+                                                width:
+                                                    bookButtonWidth.toString(
+                                                        10
+                                                    ) + "px"
+                                            }}
+                                        ></div>
+                                    }
+                                >
+                                    <BookButton
+                                        key={book.id}
+                                        book={book}
+                                        collection={collection}
+                                        manager={props.manager}
+                                    />
+                                </LazyLoad>
+                            </Grid>
+                        );
+                    })}
+                </Grid>
+            )}
+            {contextMousePoint && (
+                <Menu
+                    keepMounted={true}
+                    open={contextMousePoint !== undefined}
+                    onClose={handleClose}
+                    anchorReference="anchorPosition"
+                    anchorPosition={{
+                        top: contextMousePoint!.mouseY,
+                        left: contextMousePoint!.mouseX
+                    }}
+                >
+                    {collectionMenuItems}
+                </Menu>
+            )}
+        </div>
+    );
+    // There's no point in lazily loading an empty list of books. But more importantly, on early renders
+    // before we actually retrieve the list of books, books is always an empty array. If we render a
+    // LazyLoad at that point, it will have height zero, and then all of them fit on the page, and the
+    // LazyLoad code determines that they are all visible and expands all of them, and we don't get any
+    // laziness at all.
+    return props.lazyLoadCollection && books.length > 0 ? (
+        <LazyLoad
+            height={collectionHeight}
+            // See comment in the other LazyLoad above.
+            overflow={true}
+            resize={true} // expand lazy elements as needed when container resizes
+        >
+            {content}
+        </LazyLoad>
+    ) : (
+        content
+    );
+};
+
+export interface MenuItemSpec {
+    label: string;
+    l10nId?: string;
+    // One of these two must be provided. If both are, onClick is used and command is ignored.
+    // If only command is provided, the click action is to call handleBookCommand with that argument,
+    // which invokes the corresponding API call to C# code.
+    command?: string;
+    onClick?: React.MouseEventHandler<HTMLElement>;
+    // If this is defined (rare), it determines whether the menu item should be shown
+    // (except in factory collections, where we never show any).
+    // If it's not defined, a menu item is shown if we're in the editable collection and
+    // other requirements are satisfied, and not otherwise.
+    shouldShow?: () => boolean;
+    // Involves making changes to the book; therefore, can only be done in the one editable collection
+    // (unless shouldInclude returns true), and if we're in a Team Collection, the book must be checked out.
+    requiresSavePermission?: boolean;
+    submenu?: MenuItemSpec[];
+}
+
+// This function and the associated MenuItem classes want to become a general component for making
+// pop-up menus. But at the moment a lot of the logic is specific to making menus about books and
+// book collections. I'm not seeing a good way to factor that out. Maybe it will become clear when
+// we have a third need for such a menu. For now it is just logic shared with BookButton.
+export const makeMenuItems = (
+    menuItemsSpecs: MenuItemSpec[],
+    isEditableCollection: boolean,
+    isBookSavable: boolean,
+    close: () => void,
+    bookId: string,
+    collectionId: string
+) => {
     const menuItemsT = menuItemsSpecs
         .map((spec: MenuItemSpec) => {
             if (spec.label === "-") {
                 return <Divider />;
+            }
+            if (spec.submenu) {
+                var submenuItems = makeMenuItems(
+                    spec.submenu,
+                    isEditableCollection,
+                    isBookSavable,
+                    close,
+                    bookId,
+                    collectionId
+                );
+                return (
+                    <LocalizableNestedMenuItem
+                        english={spec.label}
+                        l10nId={spec.l10nId!}
+                    >
+                        {submenuItems}
+                    </LocalizableNestedMenuItem>
+                );
             }
             if (spec.shouldShow) {
                 if (!spec.shouldShow()) {
@@ -216,12 +304,9 @@ export const BooksOfCollection: React.FunctionComponent<{
                 }
             } else {
                 // default logic for whether to show the command
-                if (props.isEditableCollection) {
+                if (isEditableCollection) {
                     // eliminate commands that require permission to change the book, if we don't have it
-                    if (
-                        spec.requiresSavePermission &&
-                        !selectedBookInfo.saveable
-                    ) {
+                    if (spec.requiresSavePermission && !isBookSavable) {
                         return undefined;
                     }
                 } else {
@@ -232,8 +317,15 @@ export const BooksOfCollection: React.FunctionComponent<{
 
             // It should be possible to use spec.onClick || () => handleBookCommand(spec.command!) inline,
             // but I can't make Typescript accept it.
-            let clickAction: React.MouseEventHandler = () =>
-                handleBookCommand(spec.command!);
+            let clickAction: React.MouseEventHandler = () => {
+                close();
+                BloomApi.postString(
+                    `${spec.command!}?collection-id=${encodeURIComponent(
+                        collectionId
+                    )}`,
+                    bookId
+                );
+            };
             if (spec.onClick) {
                 clickAction = spec.onClick;
             }
@@ -254,96 +346,12 @@ export const BooksOfCollection: React.FunctionComponent<{
         return !element.props.english;
     };
     // filter out dividers if (a) followed by another divider, or (b) at the start or end of the list
-    const menuItems = menuItemsT.filter(
+    return menuItemsT.filter(
         (elt, index) =>
             !isDivider(elt!) ||
             (index > 0 &&
                 index < menuItemsT.length - 1 &&
                 !isDivider(menuItemsT[index + 1]!))
-    );
-
-    const anchor = !!contextMousePoint
-        ? contextMousePoint!.mouseY !== null &&
-          contextMousePoint!.mouseX !== null
-            ? {
-                  top: contextMousePoint!.mouseY,
-                  left: contextMousePoint!.mouseX
-              }
-            : undefined
-        : undefined;
-
-    return (
-        <div
-            key={"BookCollection-" + props.collectionId}
-            className="bookButtonPane"
-            onContextMenu={e => handleClick(e)}
-            style={{ cursor: "context-menu" }}
-        >
-            <Grid
-                container={true}
-                spacing={3}
-                direction="row"
-                justify="flex-start"
-                alignItems="flex-start"
-            >
-                {books?.map(book => {
-                    const selected = selectedBookInfo.id === book.id;
-                    return (
-                        <BookButton
-                            key={book.id}
-                            book={book}
-                            isInEditableCollection={props.isEditableCollection}
-                            selected={selected}
-                            renaming={selected && renaming}
-                            onClick={bookId => {
-                                if (!selected) {
-                                    // Not only is it useless to select the book that is already selected,
-                                    // it might have side effects. This might have been a contributing factor
-                                    // to the rename box getting blurred when clicked in.
-                                    setSelectedBookIdWithApi(bookId);
-                                }
-                            }}
-                            onRenameComplete={newName => {
-                                // Note, only undefined (from pressing escape) avoids calling newName.
-                                // Empty string is a valid rename value, and ends automatic naming.
-                                if (newName != undefined) {
-                                    finishRename(newName);
-                                }
-                                setRenaming(false);
-                            }}
-                            onContextMenuArrowClicked={(
-                                mouseX,
-                                mouseY,
-                                bookId
-                            ) => {
-                                setAdjustedContextMenuPoint(mouseX, mouseY);
-                                setClickedBookId(bookId);
-                            }}
-                        />
-                    );
-                })}
-            </Grid>
-            {collection.isFactoryInstalled || (
-                <Menu
-                    keepMounted={true}
-                    // When we right-click on a book that's not selected, we invoke a BloomApi to select it,
-                    // and eventually that produces a render where it is selected. But before that, we go ahead
-                    // and set contextMousePoint. So there tends to be a brief flash of the context menu that should be
-                    // rendered for the (previously) selected book. To prevent this, the click action sets clickedBookId
-                    // to the book we want the menu for, and this check stops the menu appearing until the render
-                    // with the right book selected.
-                    open={
-                        !!contextMousePoint &&
-                        clickedBookId === selectedBookInfo.id
-                    }
-                    onClose={handleClose}
-                    anchorReference="anchorPosition"
-                    anchorPosition={anchor}
-                >
-                    {menuItems}
-                </Menu>
-            )}
-        </div>
     );
 };
 
@@ -353,5 +361,25 @@ const LocalizableMenuItem: React.FunctionComponent<{
     onClick: React.MouseEventHandler<HTMLElement>;
 }> = props => {
     const label = useL10n(props.english, props.l10nId);
-    return <MenuItem onClick={props.onClick}>{label}</MenuItem>;
+    return (
+        <MenuItem key={props.l10nId} onClick={props.onClick}>
+            {label}
+        </MenuItem>
+    );
+};
+
+const LocalizableNestedMenuItem: React.FunctionComponent<{
+    english: string;
+    l10nId: string;
+}> = props => {
+    const label = useL10n(props.english, props.l10nId);
+    return (
+        // Can't find any doc on parentMenuOpen. Examples set it to the same value
+        // as the open prop of the parent menu. But it seems to work fine just set
+        // to true. (If omitted, however, the child menu does not appear when the
+        // parent is hovered over.)
+        <NestedMenuItem key={props.l10nId} label={label} parentMenuOpen={true}>
+            {props.children}
+        </NestedMenuItem>
+    );
 };

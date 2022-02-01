@@ -1,7 +1,7 @@
 import { createMuiTheme, Theme } from "@material-ui/core/styles";
 import { kBloomBlue } from "../utils/colorUtils";
 import { ProblemKind } from "./ProblemDialog";
-import { kUiFontStack } from "../bloomMaterialUITheme.js";
+import { kUiFontStack } from "../bloomMaterialUITheme.ts";
 
 const kNonFatalColor = "#F3AA18";
 export const kindParams = {

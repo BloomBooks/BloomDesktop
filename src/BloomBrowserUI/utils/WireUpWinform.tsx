@@ -1,7 +1,7 @@
 import React = require("react");
 import * as ReactDOM from "react-dom";
 import { IBloomDialogEnvironmentParams } from "../react_components/BloomDialog/BloomDialog";
-import theme from "../bloomMaterialUITheme";
+import { lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 
 /**
@@ -36,7 +36,7 @@ export function WireUpForWinforms(
 }
 
 const ThemedRoot: React.FunctionComponent<{}> = props => {
-    return <ThemeProvider theme={theme}>{props.children}</ThemeProvider>;
+    return <ThemeProvider theme={lightTheme}>{props.children}</ThemeProvider>;
 };
 
 // These props will not be wanted when we call the dialog component from within browser-land.

@@ -11,7 +11,7 @@ import BloomButton from "./bloomButton";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 import "./RequestStringDialog.less";
 import { ThemeProvider } from "@material-ui/styles";
-import theme from "../bloomMaterialUITheme";
+import { lightTheme } from "../bloomMaterialUITheme";
 
 let root: HTMLElement | undefined;
 
@@ -36,7 +36,7 @@ export const RequestStringDialog: React.FunctionComponent<{
     };
 
     return (
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={lightTheme}>
             <Dialog
                 className="requestStringDialog"
                 open={open}

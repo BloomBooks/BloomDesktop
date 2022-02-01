@@ -40,7 +40,7 @@ namespace BloomTests.TeamCollection
 				Path.ChangeExtension(Path.GetFileName(_localCollection.FolderPath), ".bloomCollection"));
 			_tcManager = new TeamCollectionManager(collectionPath, new BloomWebSocketServer(), new BookRenamedEvent(), null, null, null);
 			_api = new TeamCollectionApi(new CurrentEditableCollectionSelection(), new CollectionSettings(collectionPath), new BookSelection(),
-				_tcManager, null,  null);
+				_tcManager, null,  null, null);
 		}
 
 		[OneTimeTearDown]
@@ -181,6 +181,12 @@ namespace BloomTests.TeamCollection
 		public void OneTimeSetUp()
 		{
 			_server = new BloomServer(new BookSelection());
+		}
+
+		[SetUp]
+		public void Setup()
+		{
+			_server?.ApiHandler?.ClearEndpointHandlers();
 		}
 
 		[OneTimeTearDown]

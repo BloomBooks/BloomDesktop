@@ -16,6 +16,7 @@ using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Utils;
+using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.IO;
@@ -42,6 +43,7 @@ namespace Bloom.CollectionTab
 		private readonly BookThumbNailer _thumbNailer;
 		private TeamCollectionManager _tcManager;
 		private readonly BloomWebSocketServer _webSocketServer;
+		private LocalizationChangedEvent _localizationChangedEvent;
 
 		public LibraryModel(string pathToLibrary, CollectionSettings collectionSettings,
 			//SendReceiver sendReceiver,
@@ -54,7 +56,8 @@ namespace Bloom.CollectionTab
 			CurrentEditableCollectionSelection currentEditableCollectionSelection,
 			BookThumbNailer thumbNailer,
 			TeamCollectionManager tcManager,
-			BloomWebSocketServer webSocketServer)
+			BloomWebSocketServer webSocketServer,
+			LocalizationChangedEvent localizationChangedEvent)
 		{
 			_bookSelection = bookSelection;
 			_pathToLibrary = pathToLibrary;
@@ -68,9 +71,15 @@ namespace Bloom.CollectionTab
 			_thumbNailer = thumbNailer;
 			_tcManager = tcManager;
 			_webSocketServer = webSocketServer;
+			_localizationChangedEvent = localizationChangedEvent;
 
 			createFromSourceBookCommand.Subscribe(CreateFromSourceBook);
 		}
+
+		/// <summary>
+		/// The constructor of BookCommandsApi calls this to work around an Autofac circularity problem.
+		/// </summary>
+		public BookCommandsApi BookCommands { get; set; }
 
 
 		public bool CanDeleteSelection
@@ -100,24 +109,41 @@ namespace Bloom.CollectionTab
 			get { return _collectionSettings.Language1.Name; }	// collection tab still uses collection language settings
 		}
 
-		public List<BookCollection> GetBookCollections()
-		{
-			if(_bookCollections == null)
-			{
-				_bookCollections = new List<BookCollection>(GetBookCollectionsOnce());
+		private object _bookCollectionLock = new object(); // Locks creation of _bookCollections
 
-				//we want the templates to be second (after the vernacular collection) regardless of alphabetical sorting
-				var templates = _bookCollections.First(c => c.Name == "Templates");
-				_bookCollections.Remove(templates);
-				_bookCollections.Insert(1,templates);
+		public IReadOnlyList<BookCollection> GetBookCollections()
+		{
+			lock (_bookCollectionLock)
+			{
+				if (_bookCollections == null)
+				{
+					_bookCollections = new List<BookCollection>(GetBookCollectionsOnce());
+
+					//we want the templates to be second (after the vernacular collection) regardless of alphabetical sorting
+					var templates = _bookCollections.First(c => c.Name == "Templates");
+					_bookCollections.Remove(templates);
+					_bookCollections.Insert(1, templates);
+				}
+				return _bookCollections;
 			}
-			return _bookCollections;
+		}
+
+		public BookInfo BookInfoFromCollectionAndId(string collectionPath, string bookId)
+		{
+			var collection = GetBookCollections().FirstOrDefault(c => c.PathToDirectory == collectionPath);
+			if (collection == null)
+				return null;
+			return collection.GetBookInfos().FirstOrDefault(bi => bi.Id == bookId);
 		}
 
 		public void ReloadCollections()
 		{
-			_bookCollections = null;
-			GetBookCollections();
+			lock (_bookCollectionLock)
+			{
+				_bookCollections = null;
+				GetBookCollections();
+			}
+
 			_webSocketServer.SendEvent("editableCollectionList", "reload:" + _bookCollections[0].PathToDirectory);
 		}
 
@@ -156,7 +182,12 @@ namespace Bloom.CollectionTab
 		{
 			// We can find a more efficient way to do this if necessary.
 			//ReloadEditableCollection();
+			// This allows it to get resorted. Is that good? It may move dramatically, even disappear from the screen.
 			TheOneEditableCollection.UpdateBookInfo(book.BookInfo);
+			// This actually changes the label. (One would think that re-rendering the collection would do this,
+			// but somehow the way we are caching the book title as state in anticipation of the following
+			// message was preventing this. It might be redundant now.)
+			BookCommandsApi.UpdateButtonTitle(_webSocketServer, book.BookInfo, book.TitleBestForUserDisplay);
 
 			// happens as a side effect
 			//_webSocketServer.SendEvent("editableCollectionList", "reload:" + _bookCollections[0].PathToDirectory);
@@ -198,8 +229,30 @@ namespace Bloom.CollectionTab
 			{
 				_webSocketServer.SendEvent("editableCollectionList", "reload:" + collection.PathToDirectory);
 			};
+
+			_localizationChangedEvent?.Subscribe(unused =>
+			{
+				if (collection.IsFactoryInstalled)
+				{
+					_webSocketServer.SendEvent("editableCollectionList", "reload:" + collection.PathToDirectory);
+				}
+				else
+				{
+					// This is tricky. Reloading the collection won't do it, because nothing has changed that would cause
+					// the buttons to re-render. But some of them may be showing a string like "Missing title" that
+					// is localizable. This is not very efficient, as we may process updates for many books that
+					// don't need it or don't even have buttons due to laziness. But changing UI language is really rare.
+					foreach (var info in collection.GetBookInfos())
+						BookCommands.RequestButtonLabelUpdate(collection.PathToDirectory, info.Id);
+				}
+			});
 		}
 
+		/// <summary>
+		/// This may be called on any thread. Please leave things where the only call is in GetBookCollections,
+		/// having claimed the appropriate lock.
+		/// </summary>
+		/// <returns></returns>
 		private IEnumerable<BookCollection> GetBookCollectionsOnce()
 		{
 			BookCollection editableCollection;
@@ -223,6 +276,50 @@ namespace Bloom.CollectionTab
 			}
 		}
 
+		private Form MainShell => Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+
+		// Not entirely happy that this method which launches a dialog is in the Model.
+		// but with the Collection UI moving to JS I don't see a good alternative
+		public void MakeBloomPack(bool forReaderTools)
+		{
+			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
+			{
+				dlg.FileName = GetSuggestedBloomPackPath();
+				dlg.Filter = "BloomPack|*.BloomPack";
+				dlg.RestoreDirectory = true;
+				dlg.OverwritePrompt = true;
+				if (DialogResult.Cancel == dlg.ShowDialog(MainShell))
+				{
+					return;
+				}
+				MakeBloomPack(dlg.FileName, forReaderTools);
+			}
+		}
+
+		public void RescueMissingImages()
+		{
+			using (var dlg = new FolderBrowserDialog())
+			{
+				dlg.ShowNewFolderButton = false;
+				dlg.Description = "Select the folder where replacement images can be found";
+				if (DialogResult.OK == dlg.ShowDialog(MainShell))
+				{
+					AttemptMissingImageReplacements(dlg.SelectedPath);
+				}
+			}
+		}
+		public void MakeReaderTemplateBloompack()
+		{
+			using (var dlg = new MakeReaderTemplateBloomPackDlg())
+			{
+				dlg.SetLanguage(LanguageName);
+				dlg.SetTitles(BookTitles);
+				var mainWindow = MainShell;
+				if (dlg.ShowDialog(mainWindow) != DialogResult.OK)
+					return;
+				MakeBloomPack(true);
+			}
+		}
 
 		public  void SelectBook(Book.Book book)
 		{
@@ -646,8 +743,6 @@ namespace Bloom.CollectionTab
 		}
 
 
-
-
 		private void CreateFromSourceBook(Book.Book sourceBook)
 		{
 			try
@@ -660,6 +755,7 @@ namespace Bloom.CollectionTab
 
 				if (_bookSelection != null)
 				{
+					Book.Book.SourceToReportForNextRename = Path.GetFileName(sourceBook.FolderPath);
 					_bookSelection.SelectBook(newBook, aboutToEdit: true);
 				}
 				//enhance: would be nice to know if this is a new shell
@@ -672,7 +768,8 @@ namespace Bloom.CollectionTab
 							{ "Country", _collectionSettings.Country}
 						});
 				}
-				BookHistory.AddEvent(newBook, BookHistoryEventType.Created, "New book created");
+				// Better reported in Book_BookTitleChanged as a side effect of selecting it.
+				// BookHistory.AddEvent(newBook, BookHistoryEventType.Created, "New book created");
 				_editBookCommand.Raise(newBook);
 			}
 			catch (Exception e)

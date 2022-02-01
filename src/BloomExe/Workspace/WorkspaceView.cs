@@ -1,7 +1,3 @@
-// Current plan is that instead of just defining this and so getting both tabs,
-// we will make the new collection tab an experimental feature, and so only ever
-// have one in use.
-//#define SHOW_REACT_COLLECTION_TAB
 using System;
 using System.Diagnostics;
 using System.Drawing;
@@ -50,7 +46,7 @@ namespace Bloom.Workspace
 #if CHORUS
 			private readonly ChorusSystem _chorusSystem;
 #else
-		private readonly object _chorusSystem;
+		// private readonly object _chorusSystem;
 #endif
 		private bool _viewInitialized;
 		private int _originalToolStripPanelWidth;
@@ -64,9 +60,7 @@ namespace Bloom.Workspace
 		private LibraryView _legacyCollectionView;
 		private EditingView _editingView;
 		private PublishView _publishView;
-#if SHOW_REACT_COLLECTION_TAB
 		private ReactCollectionTabView _reactCollectionTabView;
-#endif
 		private Control _previouslySelectedControl;
 		public event EventHandler CloseCurrentProject;
 		public event EventHandler ReopenCurrentProject;
@@ -82,14 +76,13 @@ namespace Bloom.Workspace
 		private ToastNotifier _returnToCollectionTabNotifier;
 		private BloomWebSocketServer _webSocketServer;
 		private BookServer _bookServer;
+		private WorkspaceTabSelection _tabSelection;
 
 		//autofac uses this
 
 		public WorkspaceView(WorkspaceModel model,
 							Control libraryView,
-#if SHOW_REACT_COLLECTION_TAB
-							ReactCollectionTabView reactCollectionsTabsView,
-#endif
+							ReactCollectionTabView.Factory reactCollectionsTabsViewFactory,
 							EditingView.Factory editingViewFactory,
 							PublishView.Factory pdfViewFactory,
 							CollectionSettingsDialog.Factory settingsDialogFactory,
@@ -107,8 +100,11 @@ namespace Bloom.Workspace
 							TeamCollectionManager tcManager,
 							BloomWebSocketServer webSocketServer,
 							AppApi appApi,
-							BookServer bookServer
-			)
+							BookServer bookServer,
+							CollectionApi collectionApi,
+							WorkspaceApi workspaceApi,
+							WorkspaceTabSelection tabSelection
+		)
 		{
 			_model = model;
 			_settingsDialogFactory = settingsDialogFactory;
@@ -119,7 +115,10 @@ namespace Bloom.Workspace
 			_tcManager = tcManager;
 			_webSocketServer = webSocketServer;
 			_bookServer = bookServer;
+			_tabSelection = tabSelection;
+			collectionApi.WorkspaceView = this; // avoids an Autofac exception that appears if collectionApi constructor takes a WorkspaceView
 			appApi.WorkspaceView = this; // it needs to know, and there's some circularity involved in having factory pass it in
+			workspaceApi.WorkspaceView = this; // and yet one more
 
 			_collectionSettings = collectionSettings;
 			// This provides the common API with a hook it can use to reload
@@ -173,18 +172,35 @@ namespace Bloom.Workspace
 			this._legacyCollectionView.Dock = DockStyle.Fill;
 			_legacyCollectionTab.Tag = _legacyCollectionView;
 
-#if SHOW_REACT_COLLECTION_TAB // we will turn this back on for Bloom 5.2
-			_reactCollectionTabView = reactCollectionsTabsView;
-
-			_reactCollectionTabView.ManageSettings(_settingsLauncherHelper);
-			_reactCollectionTabView.Dock = DockStyle.Fill;
-			_reactCollectionTab.Tag = _reactCollectionTabView;
-#endif
 			//
-			// _editingView
+			// _editingView needs to be created before we select a tab, since the model
+			// gets notified about tab selection, and expects its view to be non-null,
+			// and that is done by the EditingView constructor.
 			//
 			this._editingView = editingViewFactory();
 			this._editingView.Dock = DockStyle.Fill;
+
+			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kNewCollectionTab))
+			{
+				_reactCollectionTabView = reactCollectionsTabsViewFactory();
+				_reactCollectionTabView.ManageSettings(_settingsLauncherHelper);
+				_reactCollectionTabView.Dock = DockStyle.Fill;
+				_reactCollectionTabView.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
+				_reactCollectionTab.Tag = _reactCollectionTabView;
+				_tabStrip.SelectedTab = _reactCollectionTab;
+				_tabStrip.Items.Remove(_legacyCollectionTab);
+				// make sure we catch anything trying to use it in this mode
+				_legacyCollectionTab.Dispose();
+				_legacyCollectionTab = null;
+				_legacyCollectionView.Dispose();
+				_legacyCollectionView = null;
+			}
+			else
+			{
+				_tabStrip.SelectedTab = _legacyCollectionTab;
+				_tabStrip.Items.Remove(_reactCollectionTab);
+				_reactCollectionTab.Dispose();
+			}
 
 			//
 			// _pdfView
@@ -192,29 +208,25 @@ namespace Bloom.Workspace
 			this._publishView = pdfViewFactory();
 			this._publishView.Dock = DockStyle.Fill;
 
-
-			
-
 			_publishTab.Tag = _publishView;
 			_editTab.Tag = _editingView;
-
-#if SHOW_REACT_COLLECTION_TAB
-			this._legacyCollectionTab.Text = "Legacy"; // _legacyCollectionView.CollectionTabLabel;
-			this._reactCollectionTab.Text = _reactCollectionTabView.CollectionTabLabel;
-#else
-			this._legacyCollectionTab.Text =  _legacyCollectionView.CollectionTabLabel;
-#endif
 
 			SetTabVisibility(_publishTab, false);
 			SetTabVisibility(_editTab, false);
 
-#if SHOW_REACT_COLLECTION_TAB
-			_tabStrip.SelectedTab = _reactCollectionTab;
-			SelectPage(_reactCollectionTabView);
-#else
-			_tabStrip.SelectedTab = _legacyCollectionTab;
-			SelectPage(_legacyCollectionView);
-#endif
+			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kNewCollectionTab))
+			{
+				this._reactCollectionTab.Text = _reactCollectionTabView.CollectionTabLabel;
+				_tabStrip.SelectedTab = _reactCollectionTab;
+				SelectPage(_reactCollectionTabView);
+			}
+			else
+			{
+				this._legacyCollectionTab.Text = _legacyCollectionView.CollectionTabLabel;
+				_tabStrip.SelectedTab = _legacyCollectionTab;
+				SelectPage(_legacyCollectionView);
+			}
+
 			if (Platform.IsMono)
 			{
 				// Without this adjustment, we lose some controls on smaller resolutions.
@@ -231,7 +243,13 @@ namespace Bloom.Workspace
 			_viewInitialized = false;
 			CommonApi.WorkspaceView = this;
 
-			bookSelection.SelectionChanged += HandleBookSelectionChanged;
+			// We put this on the high priority list because the notification it sends
+			// updates the highlighting of the selected button. Other subscribers include
+			// the code that updates the preview, which is quite slow. We need the button
+			// to respond quickly.
+			// We'll need to do something even trickier if there start to be slow things that
+			// happen in response to the book selection changed websocked message.
+			bookSelection.SelectionChangedHighPriority += HandleBookSelectionChanged;
 			bookStatusChangeEvent.Subscribe(args => { HandleBookStatusChange(args); });
 		}
 
@@ -250,24 +268,15 @@ namespace Bloom.Workspace
 			// Note, this not put into _startupActions...it should never be disabled.
 			if (_tcManager?.CurrentCollectionEvenIfDisconnected == null)
 			{
-#if SHOW_REACT_COLLECTION_TAB
-				_reactCollectionTabView.ReadyToShowCollections();
-#endif
-				_legacyCollectionView.ReadyToShowCollections();
-			} else
+				ReadyToShowCollections();
+			}
+			else
 			{
 				StartupScreenManager.AddStartupAction(() =>
 				{
 					// Don't do anything else after this as part of this idle task.
 					// See the comment near the end of HandleTeamStuffBeforeGetBookCollections.
-					_model.HandleTeamStuffBeforeGetBookCollections(() =>
-						{
-#if SHOW_REACT_COLLECTION_TAB
-							_reactCollectionTabView.ReadyToShowCollections();
-#endif
-							_legacyCollectionView.ReadyToShowCollections();
-						}
-					);
+					_model.HandleTeamStuffBeforeGetBookCollections(ReadyToShowCollections);
 				}, shouldHideSplashScreen: true);
 			}
 
@@ -275,7 +284,30 @@ namespace Bloom.Workspace
 			// if the book has been renamed remotely but not yet here, we may not be able to tell that it
 			// needs to be checked out before BringBookUpToDate renames it here.
 			StartupScreenManager.AddStartupAction(() =>
-				SelectPreviouslySelectedBook());
+				SelectPreviouslySelectedBook(),
+				// In the new collection tab, we want to delay this until the buttons get drawn,
+				// since it ties up the UI thread for a while. (In the legacy view, the buttons are
+				// drawn first on the UI thread so this isn't an issue. When we get rid of the legacy
+				// collection tab we can simplify this code.)
+				// Enhance: the code in CollectionsApi that raises this event is crude; it just
+				// looks for the first two button thumbnails to be requested. It would be better if
+				// we had some way of knowing when the collection panes were fully rendered.
+				// It would be better still if most of the work of SelectPreviouslySelectedBook could
+				// be done on a background thread so it could make progress as quickly as possible
+				// without holding up drawing the collection panes.
+				waitForMilestone: CurrentTabView==_legacyCollectionView? null : "collectionButtonsDrawn");
+		}
+
+		private void ReadyToShowCollections()
+		{
+			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kNewCollectionTab))
+			{
+				_reactCollectionTabView.ReadyToShowCollections();
+			}
+			else
+			{
+				_legacyCollectionView.ReadyToShowCollections();
+			}
 		}
 
 		/// <summary>
@@ -315,7 +347,14 @@ namespace Bloom.Workspace
 		{
 			var book = _bookSelection.CurrentSelection;
 			var collectionKind = "other";
-			if (book != null && book.IsEditable)
+
+			if (book == null || book.HasFatalError)
+			{
+				// not exactly a kind of collection, but a convenient way to indicate these states,
+				// in which edit/make button should not show at all.
+				collectionKind = "error";
+			}
+			else if (book != null && book.IsEditable)
 			{
 				collectionKind = "main";
 			}
@@ -939,7 +978,12 @@ namespace Bloom.Workspace
 
 		private void _tabStrip_SelectedTabChanged(object sender, SelectedTabChangedEventArgs e)
 		{
-			// TODO: React version
+			if (_tabStrip.SelectedTab == _editTab)
+				_tabSelection.ActiveTab = WorkspaceTab.edit;
+			else if (_tabStrip.SelectedTab == _publishTab)
+				_tabSelection.ActiveTab = WorkspaceTab.publish;
+			else
+				_tabSelection.ActiveTab = WorkspaceTab.collection;
 			if (_returnToCollectionTabNotifier != null && _tabStrip.SelectedTab == _legacyCollectionTab)
 			{
 				_returnToCollectionTabNotifier.CloseSafely();

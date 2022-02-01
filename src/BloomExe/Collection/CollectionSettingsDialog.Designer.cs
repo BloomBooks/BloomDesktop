@@ -91,6 +91,7 @@ namespace Bloom.Collection
 			this.settingsProtectionLauncherButton1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton();
 			this._helpButton = new System.Windows.Forms.Button();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+			this._newCollectionCheckbox = new System.Windows.Forms.CheckBox();
 			this._tab.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.tabPage2.SuspendLayout();
@@ -730,6 +731,7 @@ namespace Bloom.Collection
 			this.tabPage4.Controls.Add(this._showExperimentalBookSources);
 			this.tabPage4.Controls.Add(this._enterpriseRequiredForTeamCollection);
 			this.tabPage4.Controls.Add(this._allowTeamCollection);
+			this.tabPage4.Controls.Add(this._newCollectionCheckbox);
 			this.tabPage4.Controls.Add(this._enterpriseRequiredForSpreadsheetImportExport);
 			this.tabPage4.Controls.Add(this._allowSpreadsheetImportExport);
 			this._L10NSharpExtender.SetLocalizableToolTip(this.tabPage4, null);
@@ -917,6 +919,21 @@ namespace Bloom.Collection
 			this._helpButton.UseVisualStyleBackColor = true;
 			this._helpButton.Click += new System.EventHandler(this._helpButton_Click);
 			// 
+			// _newCollectionCheckbox
+			// 
+			this._newCollectionCheckbox.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._newCollectionCheckbox, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._newCollectionCheckbox, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._newCollectionCheckbox, L10NSharp.LocalizationPriority.Low);
+			this._L10NSharpExtender.SetLocalizingId(this._newCollectionCheckbox, "CollectionSettingsDialog.AdvancedTab.Experimental.NewCollectionTab");
+			this._newCollectionCheckbox.Location = new System.Drawing.Point(27, 187);
+			this._newCollectionCheckbox.Name = "_newCollectionCheckbox";
+			this._newCollectionCheckbox.Size = new System.Drawing.Size(143, 23);
+			this._newCollectionCheckbox.TabIndex = 12;
+			this._newCollectionCheckbox.Text = "Try the New Version of the Collection Tab";
+			this._newCollectionCheckbox.UseVisualStyleBackColor = true;
+			this._newCollectionCheckbox.CheckedChanged += new System.EventHandler(this._newCollectionCheckbox_CheckedChanged);
+			// 
 			// CollectionSettingsDialog
 			// 
 			this.AcceptButton = this._okButton;
@@ -1017,5 +1034,6 @@ namespace Bloom.Collection
 		protected Label _signLanguageLabel;
 		private web.ReactControl reactControl1;
 		private Label _noRenameTeamCollectionLabel;
+		private CheckBox _newCollectionCheckbox;
 	}
 }

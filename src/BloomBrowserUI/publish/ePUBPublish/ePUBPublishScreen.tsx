@@ -10,7 +10,7 @@ import "./ePUBPublish.less";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
 import ReactDOM = require("react-dom");
 import ThemeProvider from "@material-ui/styles/ThemeProvider";
-import theme from "../../bloomMaterialUITheme";
+import { lightTheme } from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import {
     useSubscribeToWebSocketForStringMessage,
@@ -132,7 +132,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
 // if that html has the root page we need.
 if (document.getElementById("ePUBPublishScreen")) {
     ReactDOM.render(
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={lightTheme}>
             <EPUBPublishScreen />
         </ThemeProvider>,
         document.getElementById("ePUBPublishScreen")

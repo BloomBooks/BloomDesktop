@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
-import theme, { kBloomYellow } from "../bloomMaterialUITheme";
+import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { useMemo, useRef, useState } from "react";
 import { BloomApi } from "../utils/bloomApi";
@@ -17,10 +17,13 @@ import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
 import { AvatarDialog } from "./AvatarDialog";
 import { ForgetChangesDialog } from "./ForgetChangesDialog";
 import { createMuiTheme } from "@material-ui/core";
+import WarningIcon from "@material-ui/icons/Warning";
 import {
     IBookTeamCollectionStatus,
     initialBookStatus
 } from "./teamCollectionApi";
+import { ForceUnlockDialog } from "./ForceUnlockDialog";
+import { kBloomRed } from "../utils/colorUtils";
 
 // The panel that shows the book preview and settings in the collection tab in a Team Collection.
 
@@ -51,6 +54,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
     const [checkinFailed, setCheckinFailed] = useState(false);
     const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
     const [forgetDialogOpen, setForgetDialogOpen] = useState(false);
+    const [forceUnlockDialogOpen, setForceUnlockDialogOpen] = useState(false);
     const [message, setMessage] = useState(props.checkinMessage);
     const messageInput = useRef<HTMLInputElement>(null);
 
@@ -135,7 +139,8 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                 email={props.who ?? ""}
                 name={lockedByDisplay}
                 borderColor={
-                    tcPanelState === "lockedByMe" && theme.palette.warning.main
+                    tcPanelState === "lockedByMe" &&
+                    (lightTheme.palette.warning.main as any) // `as any` here patches over a minor typescript typing problem
                 }
             />
         );
@@ -322,6 +327,23 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         });
     }
 
+    if (tcPanelState == "locked" || tcPanelState == "lockedByMeElsewhere") {
+        menuItems.push("-");
+        menuItems.push({
+            text: "Force Unlock (Administrator Only)...",
+            l10nKey: "TeamCollection.ForceUnlockMenuItem",
+            action: () => setForceUnlockDialogOpen(true),
+            disabled: !props.isUserAdmin,
+            icon: (
+                <WarningIcon
+                    css={css`
+                        color: ${kBloomRed};
+                    `}
+                ></WarningIcon>
+            )
+        });
+    }
+
     const menu = (
         <SimpleMenu
             text="..."
@@ -427,6 +449,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         css={css`
                             ${busy &&
                                 "cursor: progress; .checkin-button{cursor:progress;}"};
+                            margin-bottom: 12px;
                         `}
                         lockState={state}
                         title={
@@ -611,7 +634,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
     };
 
     return (
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={lightTheme}>
             {panelContents(tcPanelState)}
             <AvatarDialog
                 open={avatarDialogOpen}
@@ -623,6 +646,10 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                 open={forgetDialogOpen}
                 close={() => setForgetDialogOpen(false)}
             ></ForgetChangesDialog>
+            <ForceUnlockDialog
+                open={forceUnlockDialogOpen}
+                close={() => setForceUnlockDialogOpen(false)}
+            ></ForceUnlockDialog>
         </ThemeProvider>
     );
 };

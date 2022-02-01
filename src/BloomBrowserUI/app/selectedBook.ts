@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { BloomApi } from "../utils/bloomApi";
-import { useSubscribeToWebSocketForObject } from "../utils/WebSocketManager";
+import { useSubscribeToWebSocketForObjectInMessageParam } from "../utils/WebSocketManager";
 
 export interface ISelectedBookInfo {
     id: string | undefined;
     saveable: boolean; // changes can safely be saved, including considering whether checked out if necessary
-    collectionKind: "main" | "factory" | "other"; // true if we can make a book from this source. Should never be true if saveable is.
+    collectionKind: "main" | "factory" | "error" | "other"; //error indicates the book is not usable for anything.
 }
 
 // Anything that uses this will always have the current book info. The first render will see the default
@@ -17,7 +17,7 @@ export function useMonitorBookSelection(): ISelectedBookInfo {
         {
             id: undefined,
             saveable: false,
-            collectionKind: "main" // better to see the 'edit' button until we know which it is
+            collectionKind: "error" // better to see no button at all until we know which it is
         }
     );
 
@@ -25,7 +25,7 @@ export function useMonitorBookSelection(): ISelectedBookInfo {
     // BookSelection.InvokeSelectionChanged(), via TeamCollectionApi.UpdateUiForBook().
     // As a result, the top-level (WorkspaceView) handler for changing selection fires the websocket
     // event referenced here.
-    useSubscribeToWebSocketForObject<ISelectedBookInfo>(
+    useSubscribeToWebSocketForObjectInMessageParam<ISelectedBookInfo>(
         "book-selection",
         "changed",
         e => setSelectedBookInfo(e)

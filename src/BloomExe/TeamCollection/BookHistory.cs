@@ -33,7 +33,8 @@ namespace Bloom.TeamCollection
 		CheckIn,
 		Created,
 		Renamed,
-		Uploaded
+		Uploaded,
+		ForcedUnlock
 	}
 	[Table("events")]
 	public class BookHistoryEvent

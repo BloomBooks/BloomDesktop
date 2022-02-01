@@ -61,7 +61,8 @@ namespace Bloom.Book
 			//if something bad happens from here on out, we need to delete that folder we just made
 			try
 			{
-				var oldNamedFile = Path.Combine(newBookFolder, Path.GetFileName(GetPathToHtmlFile(sourceBookFolder)));
+				var oldNamedFile = Path.Combine(newBookFolder,
+					Path.GetFileName(GetPathToSingleHtmlFileOrReport(sourceBookFolder)));
 				var newNamedFile = Path.Combine(newBookFolder, initialBookName + ".htm");
 				RobustFile.Move(oldNamedFile, newNamedFile);
 
@@ -80,19 +81,9 @@ namespace Bloom.Book
 			return newBookFolder;
 		}
 
-		private string GetPathToHtmlFile(string folder)
+		private string GetPathToSingleHtmlFileOrReport(string folder)
 		{
-			// BL-4160 don't put an asterisk after the .htm. It is unnecessary as this search pattern
-			// already returns both *.htm and *.html, but NOT *.htm.xyz [returns *.html only for Windows]
-			// For both, "*.htm?" should work, but it doesn't return *.htm on Linux [Mono4 bug?].
-			var candidates = from x in Directory.GetFiles(folder, "*.htm")
-							 where !(Path.GetFileName(x).ToLowerInvariant().StartsWith("configuration.htm") ||
-									 IsPathToReadMeHtm(x))
-							 select x;
-			if (!candidates.Any())
-				candidates = from x in Directory.GetFiles(folder, "*.html")
-							 where !(Path.GetFileName(x).ToLowerInvariant().StartsWith("configuration.html"))
-							 select x;
+			var candidates = GetHtmFileCandidates(folder);
 			if (candidates.Count() == 1)
 				return candidates.First();
 			else
@@ -104,7 +95,22 @@ namespace Bloom.Book
 				ErrorReport.NotifyUserOfProblem(msg.ToString());
 				throw new ApplicationException();
 			}
+		}
 
+		private static IEnumerable<string> GetHtmFileCandidates(string folder)
+		{
+		    // BL-4160 don't put an asterisk after the .htm. It is unnecessary as this search pattern
+			// already returns both *.htm and *.html, but NOT *.htm.xyz [returns *.html only for Windows]
+			// For both, "*.htm?" should work, but it doesn't return *.htm on Linux [Mono4 bug?].
+			var candidates = from x in Directory.GetFiles(folder, "*.htm")
+							 where !(Path.GetFileName(x).ToLowerInvariant().StartsWith("configuration.htm") ||
+									 IsPathToReadMeHtm(x))
+							 select x;
+			if (!candidates.Any())
+				candidates = from x in Directory.GetFiles(folder, "*.html")
+							 where !(Path.GetFileName(x).ToLowerInvariant().StartsWith("configuration.html"))
+							 select x;
+			return candidates;
 		}
 
 		private static bool IsPathToReadMeHtm(string path)
@@ -219,7 +225,8 @@ namespace Bloom.Book
 			int multilingualLevel = int.Parse(GetMetaValue(storage.Dom.RawDom, "defaultMultilingualLevel", "1"));
 			TranslationGroupManager.SetInitialMultilingualSetting(bookData, multilingualLevel);
 
-			var sourceDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(sourceFolderPath.CombineForPath(Path.GetFileName(GetPathToHtmlFile(sourceFolderPath))), false);
+			var sourceDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(sourceFolderPath.CombineForPath(
+				Path.GetFileName(GetPathToSingleHtmlFileOrReport(sourceFolderPath))), false);
 
 			//If this is a shell book, make elements to hold the vernacular
 			foreach (XmlElement div in storage.Dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
@@ -602,6 +609,9 @@ namespace Bloom.Book
 				if (Path.GetFileNameWithoutExtension(filePath).ToLowerInvariant() == "thumbnail")
 					continue;
 				if (Path.GetFileNameWithoutExtension(filePath).StartsWith(".")) //.guidsForInstaller.xml
+					continue;
+				// We don't want to include any history of the original in the new collection history.
+				if (Path.GetFileName(filePath) == "history.db")
 					continue;
 				var ext = Path.GetExtension(filePath).ToLowerInvariant();
 				// We don't need to copy any backups, and we don't want userPrefs because they are likely

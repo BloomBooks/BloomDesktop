@@ -1,20 +1,22 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
 import * as React from "react";
-import theme from "../../bloomMaterialUITheme";
+import { lightTheme } from "../../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { Dialog } from "@material-ui/core";
 import CloseOnEscape from "react-close-on-escape";
 import { kDialogPadding } from "../../bloomMaterialUITheme";
 import { BloomApi } from "../../utils/bloomApi";
 import { useEffect, useState } from "react";
-import { kUiFontStack } from "../../bloomMaterialUITheme.js";
+import { kUiFontStack } from "../../bloomMaterialUITheme.ts";
 
 // The <BloomDialog> component and its children provides consistent layout across Bloom Dialogs.
 // It can be used either inside of a winforms dialog, or as a MaterialUI Dialog.
 // See the accompanying storybook story for usage.
 // If the dialog content contains something with class initialFocus, it will be automatically
 // focused initially. This should usually be the default button.
+
+// Enhance: Would be interested to see if this would improve if we used https://github.com/eBay/nice-modal-react
 
 const kDialogTopPadding = "24px";
 const kDialogSidePadding = "24px";
@@ -25,6 +27,7 @@ export const BloomDialog: React.FunctionComponent<{
     // true if the caller is wrapping in a winforms dialog already
     dialogFrameProvidedExternally?: boolean;
     onClose: () => void;
+    innerCss?: string;
 }> = props => {
     const inner = (
         <div
@@ -35,12 +38,15 @@ export const BloomDialog: React.FunctionComponent<{
                 padding-left: ${kDialogSidePadding};
                 padding-right: ${kDialogSidePadding};
                 padding-bottom: ${kDialogBottomPadding};
+                ${props.innerCss || ""}
 
                 // dialogFrameProvidedExternally means that we're inside of a winforms dialog.
                 /// So we grow to fit it, and we supply a single black border for some reason (?)
-                ${props.dialogFrameProvidedExternally
-                    ? `height: 100%; border: solid thin black; box-sizing: border-box;`
-                    : ""}
+                ${
+                    props.dialogFrameProvidedExternally
+                        ? `height: 100%; border: solid thin black; box-sizing: border-box;`
+                        : ""
+                }
 
                 * {
                     // This value is the same as that given in bloomMaterialUITheme.  For some
@@ -83,7 +89,7 @@ export const BloomDialog: React.FunctionComponent<{
                 props.onClose();
             }}
         >
-            <ThemeProvider theme={theme}>
+            <ThemeProvider theme={lightTheme}>
                 {props.dialogFrameProvidedExternally ? (
                     inner
                 ) : (

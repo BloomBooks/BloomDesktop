@@ -26,7 +26,7 @@ export function useWebSocketListener(
 }
 
 // avoid making this public, so that we can have more freedom to make changes to the signature
-function useWebSocketListenerInner<T>(
+function useWebSocketListenerInnerWithMessage<T>(
     clientContext: string,
     eventId: string,
     listener: (T) => void,
@@ -41,10 +41,7 @@ function useWebSocketListenerInner<T>(
         };
         WebSocketManager.addListener(clientContext, l);
         // Clean up when we are unmounted or this useEffect runs again (i.e. if the props.webSocketContext were to change)
-        // TODO: we want this, but it breaks ReaderPublishScreen, maybe
-        // because the progress dialog closes and something disconnects and then
-        // the preview screen doesn't get the message that we're done.
-        //return WebSocketManager.removeListener(clientContext, l);
+        return () => WebSocketManager.removeListener(clientContext, l);
     }, []);
 }
 
@@ -54,7 +51,7 @@ export function useSubscribeToWebSocketForEvent(
     listener: (e: IBloomWebSocketEvent) => void,
     onlyCallListenerIfMessageIsTruthy?: boolean
 ) {
-    useWebSocketListenerInner<IBloomWebSocketEvent>(
+    useWebSocketListenerInnerWithMessage<IBloomWebSocketEvent>(
         clientContext,
         eventId,
         listener,
@@ -67,7 +64,7 @@ export function useSubscribeToWebSocketForStringMessage(
     eventId: string,
     listener: (message: string) => void
 ) {
-    useWebSocketListenerInner<string>(
+    useWebSocketListenerInnerWithMessage<string>(
         clientContext,
         eventId,
         listener,
@@ -76,14 +73,31 @@ export function useSubscribeToWebSocketForStringMessage(
     );
 }
 
-// Subscribe to an event where the message string is holding a JSON object
-// which this will parse.
+// Subscribe to an event and listen for the whole object bundle that the server sends. For an example of the c# server side of this, see HandleChooseFolder().
 export function useSubscribeToWebSocketForObject<T>(
     clientContext: string,
     eventId: string,
     listener: (message: T) => void
 ) {
-    useWebSocketListenerInner<T>(
+    useEffect(() => {
+        WebSocketManager.addListener(clientContext, e => {
+            if (e.id === eventId) {
+                listener((e as unknown) as T);
+            }
+        });
+    }, []);
+}
+
+// Subscribe to an event where the "message" string is holding a JSON object
+// which this will parse.
+// Deprecated for general use: this makes sense for progress messages, but
+// in general APIs should just use objects and not a "message" string.
+export function useSubscribeToWebSocketForObjectInMessageParam<T>(
+    clientContext: string,
+    eventId: string,
+    listener: (message: T) => void
+) {
+    useWebSocketListenerInnerWithMessage<T>(
         clientContext,
         eventId,
         listener,

@@ -52,6 +52,8 @@ module.exports = function(config) {
 
         specReporter: {
             suppressSkipped: true // do not print information about skipped tests
-        }
+        },
+
+        client: { jasmine: { timeoutInterval: 15000 } }
     });
 };

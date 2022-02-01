@@ -43,6 +43,7 @@ namespace Bloom.Spreadsheet
 		private IWebSocketProgress _progress;
 		private int _unNumberedPagesSeen;
 		private bool _bookIsLandscape;
+		private Layout _destLayout;
 
 		public delegate SpreadsheetImporter Factory();
 
@@ -149,6 +150,7 @@ namespace Bloom.Spreadsheet
 			_currentPageIndex = -1;
 			_groupsOnPage = new List<XmlElement>();
 			_imageContainersOnPage = new List<XmlElement>();
+			_destLayout = Layout.FromDom(_dest, Layout.A5Portrait);
 			while (_currentRowIndex < _inputRows.Count)
 			{
 
@@ -177,7 +179,7 @@ namespace Bloom.Spreadsheet
 						PutRowInGroup(currentRow, _currentGroup);
 					}
 				}
-				else if (rowTypeLabel[0]=='[' && rowTypeLabel[rowTypeLabel.Length - 1]==']') //This row is xmatter
+				else if (rowTypeLabel.StartsWith("[") && rowTypeLabel.EndsWith("]")) //This row is xmatter
 				{
 					string dataBookLabel = rowTypeLabel.Substring(1, rowTypeLabel.Length - 2); //remove brackets
 					UpdateDataDivFromRow(currentRow, dataBookLabel);
@@ -239,8 +241,10 @@ namespace Bloom.Spreadsheet
 						{
 							// Review: I doubt these messages are worth localizing? The sort of people who attempt
 							// spreadsheet import can likely cope with some English?
+							// +1 conversion from zero-based to 1-based counting, further adding header.RowCount
+							// makes it match up with the actual row label in the spreadsheet.
 							Warn(
-								$"Image \"{source}\" on row {_currentRowIndex + 1} was not found.");
+								$"Image \"{source}\" on row {_currentRowIndex + 1 + _sheet.Header.RowCount} was not found.");
 						}
 					}
 				}
@@ -437,6 +441,7 @@ namespace Bloom.Spreadsheet
 			var newPage = _pages[0].OwnerDocument.ImportNode(templatePage, true) as XmlElement;
 			BookStarter.SetupIdAndLineage(templatePage, newPage);
 			_pages.Insert(_currentPageIndex, newPage);
+			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPage, _destLayout);
 			// Correctly inserts at end if _currentPage is null, though this will hardly ever
 			// be true because we normally have at least backmatter page to insert before.
 			_pages[0].ParentNode.InsertBefore(newPage, _currentPage);

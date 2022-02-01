@@ -440,6 +440,8 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		/// <param name="bookFolderName"></param>
 		/// <returns></returns>
+		/// <remarks>Needs to be thread-safe; may be called on multiple threads at the same time,
+		/// typically but not necessarily for different books.</remarks>
 		public BookStatus GetStatus(string bookFolderName)
 		{
 			if (!TryGetBookStatusJsonFromRepo(bookFolderName, out string statusString))
@@ -588,6 +590,14 @@ namespace Bloom.TeamCollection
 			UpdateBookStatus(bookName, true);
 
 			return IsCheckedOutHereBy(status, whoBy);
+		}
+
+		public void ForceUnlock(string bookName)
+		{
+			var status = GetStatus(bookName);
+			status = status.WithLockedBy(null);
+			WriteBookStatus(bookName, status);
+			UpdateBookStatus(bookName, true);
 		}
 
 		// Get the email of the user, if any, who has the book locked. Returns null if not locked.

@@ -37,7 +37,7 @@ namespace BloomTests.DataBuilders
 		/// <returns>Returns a TeamCollectionApi object that you can use</returns>
 		public TeamCollectionApi Build()
 		{
-			return new TeamCollectionApi(new CurrentEditableCollectionSelection(), _collectionSettings, _bookSelection, _teamCollectionManager, _bookServer, _bloomWebSocketServer);
+			return new TeamCollectionApi(new CurrentEditableCollectionSelection(), _collectionSettings, _bookSelection, _teamCollectionManager, _bookServer, _bloomWebSocketServer, null);
 		}
 
 		#region Defaults

@@ -235,6 +235,42 @@ namespace Bloom.Api
 			HaveOutput = true;
 		}
 
+		public void ReplyWithStreamContent(Stream input, string responseType)
+		{
+			ResponseContentType = responseType;
+			var buffer = new byte[2 * 1024 * 1024];// hopefully plenty big enough for any resource we want to return this way
+			var length = input.Read(buffer, 0, buffer.Length);
+
+			_actualContext.Response.ContentLength64 = length;
+			_actualContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");
+
+			// Any reason to cache?
+			//_actualContext.Response.AppendHeader("Cache-Control",
+			//	"max-age=600000"); // about a week...if someone spends longer editing one book, well, files will get loaded one more time...
+
+			// A HEAD request (rather than a GET or POST request) is a request for just headers, and nothing can be written
+			// to the OutputStream. It is normally used to check if the contents of the file have changed without taking the
+			// time and bandwidth needed to download the full contents of the file. The 2 pieces of information being returned
+			// are the Content-Length and Last-Modified headers. The requestor can use this information to determine if the
+			// contents of the file have changed, and if they have changed the requestor can then decide if the file needs to
+			// be reloaded. It is useful when debugging with tools which automatically reload the page when something changes.
+			if (_actualContext.Request.HttpMethod == "HEAD")
+			{
+				var lastModified = DateTime.Now.ToString("R");
+
+				// Originally we were returning the Last-Modified header with every response, but we discovered that this was
+				// causing Geckofx to cache the contents of the files. This made debugging difficult because, even if the file
+				// changed, Geckofx would use the cached file rather than requesting the updated file from the localhost.
+				_actualContext.Response.AppendHeader("Last-Modified", lastModified);
+			}
+			else
+			{
+				_actualContext.Response.Close(buffer, false);
+			}
+
+			HaveOutput = true;
+		}
+
 		readonly HashSet<string> _cacheableExtensions = new HashSet<string>(new[] {".js", ".css", ".jpg", ".jpeg", ".svg", ".png"});
 
 		private bool ShouldCache(string path, string originalPath)
@@ -348,14 +384,27 @@ namespace Bloom.Api
 			if (!request.HasEntityBody)
 				return string.Empty;
 
-			using(var body = request.InputStream)
+			return UnescapeString(GetStringContent());
+		}
+
+		// you can only read from the stream once. But this makes for a fragile API for this class, where
+		// asking the same thing twice, you'll get null the second time. So we store the contents.
+		private string _stringContent;
+		private string GetStringContent()
+		{
+			var request = _actualContext.Request;
+			if (_stringContent== null)
 			{
-				using (StreamReader reader = new StreamReader(body, request.ContentEncoding))
+				using (var body = request.InputStream)
 				{
-					var inputString = reader.ReadToEnd();
-					return UnescapeString(inputString);
+					using (StreamReader reader = new StreamReader(body, request.ContentEncoding))
+					{
+						_stringContent = reader.ReadToEnd();
+
+					}
 				}
 			}
+			return _stringContent;
 		}
 
 		public byte[] GetRawPostData()
@@ -397,35 +446,26 @@ namespace Bloom.Api
 
 		public NameValueCollection GetPostDataWhenFormEncoded()
 		{
-			if(_postData == null)
+			Debug.Assert(RequestContentType.StartsWith("application/x-www-form-urlencoded"));
+			if (_postData == null)
 			{
 				var request = _actualContext.Request;
 
-				if(!request.HasEntityBody)
+				if (!request.HasEntityBody)
 					return null;
 
 				_postData = new NameValueCollection();
-
-				using(var body = request.InputStream)
+				var pairs = GetStringContent().Split('&');
+				foreach (var pair in pairs)
 				{
-					using(StreamReader reader = new StreamReader(body, request.ContentEncoding))
-					{
-						var inputString = reader.ReadToEnd();
-						var pairs = inputString.Split('&');
-						foreach(var pair in pairs)
-						{
-							var kvp = pair.Split('=');
-							if(kvp.Length == 1)
-								_postData.Add(UnescapeString(kvp[0]), String.Empty);
-							else
-								_postData.Add(UnescapeString(kvp[0]), UnescapeString(kvp[1]));
-						}
-					}
+					var kvp = pair.Split('=');
+					if (kvp.Length == 1)
+						_postData.Add(UnescapeString(kvp[0]), String.Empty);
+					else
+						_postData.Add(UnescapeString(kvp[0]), UnescapeString(kvp[1]));
 				}
 			}
-
 			return _postData;
-
 		}
 
 		private static string UnescapeString(string value)

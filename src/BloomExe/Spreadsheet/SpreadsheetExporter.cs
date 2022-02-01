@@ -49,7 +49,7 @@ namespace Bloom.Spreadsheet
 		/// <param name="webSocketServer">The webSockerServer of the instance</param>
 		/// <param name="collectionSettings">The collectionSettings of the book that will be exported. This is used to retrieve the language display names</param>
 		public SpreadsheetExporter(BloomWebSocketServer webSocketServer, CollectionSettings collectionSettings)
-			:this(webSocketServer, new CollectionSettingsLanguageDisplayNameResolver(collectionSettings))
+			: this(webSocketServer, new CollectionSettingsLanguageDisplayNameResolver(collectionSettings))
 		{
 		}
 
@@ -82,14 +82,14 @@ namespace Bloom.Spreadsheet
 							webSocketContext = "spreadsheet-export",
 							showReportButton = "if-error"
 						}, "Export Spreadsheet")
-					// winforms dialog properties
-					{ Width = 620, Height = 550 }, (progress, worker) =>
-			{
-				var spreadsheet = ExportToFolder(dom, imagesFolderPath, outputFolder, out string outputFilePath,
-					progress);
-				resultCallback(outputFilePath);
-				return progress.HaveProblemsBeenReported;
-			}, null, mainShell);
+				// winforms dialog properties
+				{ Width = 620, Height = 550 }, (progress, worker) =>
+		{
+			var spreadsheet = ExportToFolder(dom, imagesFolderPath, outputFolder, out string outputFilePath,
+				progress);
+			resultCallback(outputFilePath);
+			return progress.HaveProblemsBeenReported;
+		}, null, mainShell);
 		}
 
 		public SpreadsheetExportParams Params = new SpreadsheetExportParams();
@@ -130,11 +130,12 @@ namespace Bloom.Spreadsheet
 			var groups = allGroups.Where(x => !x.Attributes["class"].Value.Contains("bloom-imageDescription")).ToList();
 			if (!_reportedImageDescription && groups.Count < allGroups.Count)
 			{
-				_progress?.MessageWithoutLocalizing("Image description are not currently supported by spreadsheet import/export. They will be ignored.");
+				_progress?.MessageWithoutLocalizing("Image descriptions are not currently supported by spreadsheet import/export. They will be ignored.", ProgressKind.Warning);
+				_reportedImageDescription = true;
 			}
-						
+
 			var pageContentTuples = imageContainers.MapUnevenPairs(groups, (imageContainer, group) => (imageContainer, group));
-			foreach(var pageContent in pageContentTuples)
+			foreach (var pageContent in pageContentTuples)
 			{
 				var row = new ContentRow(_spreadsheet);
 				row.SetCell(InternalSpreadsheet.RowTypeColumnLabel, InternalSpreadsheet.PageContentRowLabel);
@@ -253,8 +254,8 @@ namespace Bloom.Spreadsheet
 					if (IsDataDivImageElement(dataBookElement, dataBookLabel))
 					{
 						if (imageSrcAttribute.Length > 0
-						    && dataBookElement.InnerText.Trim().Length > 0
-						    && !imageSrcAttribute.Equals(dataBookElement.InnerText.Trim()))
+							&& dataBookElement.InnerText.Trim().Length > 0
+							&& !imageSrcAttribute.Equals(dataBookElement.InnerText.Trim()))
 						{
 							//Some data-book items redundantly store the src of the image which they capture in both their content and
 							//src attribute. We haven't yet found any case in which they are different, so are only storing one in the
@@ -282,9 +283,9 @@ namespace Bloom.Spreadsheet
 							// Don't think we ever have data-book elements with more than one image. But if we encounter one,
 							// I think it's worth warning the user that we don't handle it.
 							if (dataBookElement.ChildNodes
-								    .Cast<XmlNode>().Count(n =>
-									    n.Name == "img" && string.IsNullOrEmpty(((XmlElement)n).GetAttribute("src"))) >
-							    1)
+									.Cast<XmlNode>().Count(n =>
+										n.Name == "img" && string.IsNullOrEmpty(((XmlElement)n).GetAttribute("src"))) >
+								1)
 							{
 								_progress.MessageWithParams("Spreadsheet.MultipleImageChildren", "",
 									"Export warning: Found multiple images in data-book element {0}. Only the first will be exported.",
@@ -348,8 +349,8 @@ namespace Bloom.Spreadsheet
 			//images in the main document.Some can be identified by having a src attribute on the data-book element itself. Some actually contain
 			//an img element. And some don't have any identifying mark at all, so to recognize them we just have to hard-code a list.
 			return imageSrc.Length > 0
-			       || ChildImgElementSrc(dataBookElement).Length > 0
-			       || DataDivImagesWithNoSrcAttributes.Contains(dataBookLabel);
+				   || ChildImgElementSrc(dataBookElement).Length > 0
+				   || DataDivImagesWithNoSrcAttributes.Contains(dataBookLabel);
 		}
 
 		private string ChildImgElementSrc(XmlElement node)

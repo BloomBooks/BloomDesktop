@@ -208,7 +208,10 @@ namespace Bloom.Publish.BloomLibrary
 		private void UpdateFeaturesCheckBoxesDisplay()
 		{
 			var bookInfoMetaData = _model.Book.BookInfo.MetaData;
-			_blindCheckBox.Checked = bookInfoMetaData.Feature_Blind;
+			var hasImageDesc = _model.Book.OurHtmlDom.GetLangCodesWithImageDescription().Any();
+
+			_blindCheckBox.Enabled = hasImageDesc;
+			_blindCheckBox.Checked = hasImageDesc && bookInfoMetaData.Feature_Blind;
 			_signLanguageCheckBox.Enabled = _model.Book.HasSignLanguageVideos();
 			_signLanguageCheckBox.Checked = _signLanguageCheckBox.Enabled && _model.IsPublishSignLanguage();
 
@@ -317,7 +320,7 @@ namespace Bloom.Publish.BloomLibrary
 			_progressBox.Clear();
 			_uploadSource.Enabled = _uploadButton.Enabled;
 
-			_uploadSource.Visible = _model.Book.CollectionSettings.HaveEnterpriseFeatures;
+			_uploadSource.Visible = _model.Book.CollectionSettings.HaveEnterpriseSubscription;
 
 
 			if (_uploadSource.SelectedIndex != 0)
@@ -494,6 +497,14 @@ namespace Bloom.Publish.BloomLibrary
 			var newThumbPath = ChooseBestUploadingThumbnailPath(_model.Book).ToLocalhost();
 			var newTitle = _model.Book.TitleBestForUserDisplay;
 			var newLanguages = ConvertLanguageCodesToNames(LanguagesCheckedToUpload, _model.Book.BookData);
+			if (_signLanguageCheckBox.Checked && !string.IsNullOrEmpty(CurrentSignLanguageName))
+			{
+				var newLangs = newLanguages.ToList();
+				if (!newLangs.Contains(CurrentSignLanguageName))
+					newLangs.Add(CurrentSignLanguageName);
+				newLanguages = newLangs;
+			}
+
 			var existingBookInfo = _model.ConflictingBookInfo;
 			var updatedDateTime = (DateTime) existingBookInfo.updatedAt;
 			var createdDateTime = (DateTime) existingBookInfo.createdAt;
@@ -808,6 +819,18 @@ namespace Bloom.Publish.BloomLibrary
 			get
 			{
 				return _model.Book.CollectionSettings.SignLanguageName;
+			}
+		}
+
+		private void _blindCheckBox_CheckedChanged(object sender, EventArgs e)
+		{
+			if (!_blindCheckBox.Checked)
+			{
+				_model.ClearBlindAccessibleToPublish();
+			}
+			else
+			{
+				_model.SetOnlyBlindAccessibleToPublish(LanguagesCheckedToUpload.FirstOrDefault());
 			}
 		}
 

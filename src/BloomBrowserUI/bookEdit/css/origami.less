@@ -50,12 +50,6 @@
     border-bottom: 3px dashed transparent;
 }
 
-.origami-layout-mode .bloom-editable {
-    // We want to see some text in the background, but it can't interfer with the forground.
-    // If you change this color, be sure to see how it looks when grey background is enabled.
-    color: #ececec !important;
-}
-
 @firstButtonOffset: 10px;
 @secondButtonOffset: 10px;
 @distanceOfButtonToEdge: 10px;
@@ -170,27 +164,6 @@
     font-size: 12pt;
 }
 
-/*the commented line below would also add it to an empty bloom-content1 for re-entry to layout mode*/
-/*but that would be problematic/confusing in a multilingual context*/
-/*.origami-layout-mode .split-pane-component-inner .bloom-editable.bloom-content1:empty:before,*/
-/* not setting z-index in the upper layer allows the adder buttons to be visible and active when the */
-/* cursor is over the "Text Box" text, but not when it is over the .formatButton gearbox icon. (BL-9176) */
-.origami-layout-mode .split-pane-component-inner .textBox-identifier {
-    /*content: "Text Box";*/
-    color: @flowerPetalGrey;
-    white-space: normal;
-    transition-property: font-size;
-    transition-duration: 0.5s;
-    text-align: center;
-    width: 100%;
-    position: absolute;
-    top: 45%;
-    .formatButton {
-        z-index: 60000;
-        padding-left: 10px;
-        display: inline-flex;
-    }
-}
 .container-selector-links {
     display: none;
 }
@@ -265,9 +238,48 @@
     }
 }
 
-//only show the plus signs that add new blocks for the block that has the mouse
-.origami-layout-mode .origami-ui {
-    .adders {
+.origami-layout-mode {
+    .bloom-editable {
+        // BL-9953 Added 'p' so a competing audioRecording rule won't have more precedence. The competing
+        // rule also "targets" the p element and all the text whose color we are concerned about is inside
+        // of p elements anyway.
+        p {
+            // We want to see some text in the background, but it can't interfer with the forground.
+            // If you change this color, be sure to see how it looks when grey background is enabled.
+            color: #ececec !important;
+
+            // Defeat Toolbox tool highlighting while origami is 'active'
+            // (Talking Book, Leveled Reader, and Decodable Reader).
+            span {
+                background-color: unset !important;
+            }
+        }
+    }
+
+    // Only show the plus signs that add new blocks for the block that has the mouse
+    .origami-ui .adders {
         display: none;
     }
-}
+
+    /*the commented line below would also add it to an empty bloom-content1 for re-entry to layout mode*/
+    /*but that would be problematic/confusing in a multilingual context*/
+    /*.origami-layout-mode .split-pane-component-inner .bloom-editable.bloom-content1:empty:before,*/
+    /* not setting z-index in the upper layer allows the adder buttons to be visible and active when the */
+    /* cursor is over the "Text Box" text, but not when it is over the .formatButton gearbox icon. (BL-9176) */
+    .split-pane-component-inner .textBox-identifier {
+        /*content: "Text Box";*/
+        color: @flowerPetalGrey;
+        white-space: normal;
+        transition-property: font-size;
+        transition-duration: 0.5s;
+        text-align: center;
+        width: 100%;
+        position: absolute;
+        top: 45%;
+        .formatButton {
+            z-index: 60000;
+            padding-left: 10px;
+            display: inline-flex;
+        }
+    }
+} // end .origami-layout-mode

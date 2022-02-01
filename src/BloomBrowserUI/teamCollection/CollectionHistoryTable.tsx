@@ -3,13 +3,7 @@ import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
 import { BloomApi } from "../utils/bloomApi";
-import theme, { kBloomYellow } from "../bloomMaterialUITheme";
-import { ThemeProvider } from "@material-ui/styles";
-import { useState } from "react";
-import { useL10n } from "../react_components/l10nHooks";
-
 import { BloomAvatar } from "../react_components/bloomAvatar";
-import { string } from "prop-types";
 
 interface IBookHistoryEvent {
     Title: string;
@@ -56,7 +50,13 @@ const TextCell: React.FunctionComponent<{
     );
 };
 
-const kEventTypes = ["Check In", "Created", "Renamed", "Uploaded"]; // REVIEW maybe better to do this in c# and just send it over?
+const kEventTypes = [
+    "Check In",
+    "Created",
+    "Renamed",
+    "Uploaded",
+    "Force Unlock"
+]; // REVIEW maybe better to do this in c# and just send it over?
 
 export const CollectionHistoryTable: React.FunctionComponent = props => {
     const events = BloomApi.useApiData<IBookHistoryEvent[]>(

@@ -254,6 +254,26 @@ export class BloomApi {
         return this.useApiDataInternal(urlSuffix, defaultValue, generation);
     }
 
+    // Manages a state that is initially defaultValue, but subscribes to the specified web
+    // socket, and when it arrives, set the state to its message.
+    public static useWatchString(
+        defaultValue: string,
+        clientContext: string,
+        eventId: string
+    ): string {
+        const [val, setVal] = useState(defaultValue);
+        useSubscribeToWebSocketForEvent(clientContext, eventId, data => {
+            setVal(data.message!);
+        });
+        // If we get re-rendered with a different defaultValue, update our result to that.
+        React.useEffect(() => {
+            if (val != defaultValue) {
+                setVal(defaultValue);
+            }
+        }, [defaultValue]);
+        return val;
+    }
+
     public static useApiString(
         urlSuffix: string,
         defaultValue: string

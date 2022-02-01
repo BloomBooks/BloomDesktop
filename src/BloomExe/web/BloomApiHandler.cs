@@ -24,6 +24,9 @@ namespace Bloom.Api
 	{
 		// This dictionary ties API endpoints to functions that handle the requests.
 		private Dictionary<string, EndpointRegistration> _endpointRegistrations = new Dictionary<string, EndpointRegistration>();
+		// This one can really be used as a dictionary, because the keys match exactly, not just as a prefix.
+		private Dictionary<string, EndpointRegistration> _exactEndpointRegistrations =
+			new Dictionary<string, EndpointRegistration>();
 		// Special lock for making thumbnails. See discussion at the one point of usage.
 		private object ThumbnailsAndPreviewsSyncObj = new object();
 		// We use two different locks to synchronize access to API requests.
@@ -38,6 +41,12 @@ namespace Bloom.Api
 		{
 			_bookSelection = bookSelection;
 			CurrentCollectionSettings = collectionSettings;
+		}
+
+		public void ClearEndpointHandlers()
+		{
+			_endpointRegistrations.Clear();
+			_exactEndpointRegistrations.Clear();
 		}
 
 		/// <summary>
@@ -69,6 +78,25 @@ namespace Bloom.Api
 				MeasurementLabel = pattern, // can be overridden... this is just a default
 			};
 			_endpointRegistrations[pattern.ToLowerInvariant().Trim(new char[] {'/'})] = registration;
+			return registration; // return it so the caller can say  RegisterEndpointHandler().Measurable();
+		}
+
+		/// <summary>
+		/// As above, but used (especially for frequently-used API calls) when the pattern matches exactly, rather than as a prefix or regex
+		/// </summary>
+		/// <param name="pattern">Simple string identifying the API that this can handle. This must match what comes after the ".../api/" of the URL</param>
+		/// <param name="handler">The method to call</param>
+		/// <param name="handleOnUiThread">If true, the current thread will suspend until the UI thread can be used to call the method.
+		public EndpointRegistration RegisterEndpointHandlerExact(string pattern, EndpointHandler handler, bool handleOnUiThread, bool requiresSync = true)
+		{
+			var registration = new EndpointRegistration()
+			{
+				Handler = handler,
+				HandleOnUIThread = handleOnUiThread,
+				RequiresSync = requiresSync,
+				MeasurementLabel = pattern, // can be overridden... this is just a default
+			};
+			_exactEndpointRegistrations.Add(pattern.ToLowerInvariant().Trim(new char[] { '/' }), registration);
 			return registration; // return it so the caller can say  RegisterEndpointHandler().Measurable();
 		}
 
@@ -157,6 +185,23 @@ namespace Bloom.Api
 			if (localPathLc.StartsWith(ApiPrefix, StringComparison.InvariantCulture))
 			{
 				var endpointPath = localPath.Substring(3).ToLowerInvariant().Trim(new char[] {'/'});
+				if (_exactEndpointRegistrations.TryGetValue(endpointPath, out var epRegistration))
+				{
+					return ProcessRequest(epRegistration, info, localPathLc);
+				}
+				// Enhance: this can be significantly slow when large numbers of requests are being received.
+				// A large proportion of our API calls actually have a single, complete string that identifies
+				// them and should be changed to use RegisterEndpointHandlerExact. Most or all of the remainder
+				// would work as intended by testing that pair.Key.ToLower.StartsWith(endpointPath).
+				// To encourage progress towards this, we plan some renaming so that we end up with
+				// RegisterEndpointHandler...default, rename of RegisterEndpointHandlerExact
+				// RegisterEndpointHandlerPattern...same as RegisterEndpointHandler, used when we know we
+				// need Regex matching. Hopefully can be retired eventually, and we can switch to StartsWith here.
+				// RegisterEndpointHandlerStartsWith...for now will delegate to RegisterEndpointHandlerPattern,
+				// but use when we have determined that using StartsWith is necessary and sufficient.
+				// RegisterEndpointHandlerReview...rename of current RegisterEndpointHandler, indicates
+				// APIs we have not yet checked to see which of the above they should use.
+				// For now it will delegate to RegisterEndpointHandlerPattern. Hopefully can be retired eventually.
 				foreach (var pair in _endpointRegistrations.Where(pair =>
 					Regex.Match(endpointPath,
 								"^" + //must match the beginning
@@ -164,78 +209,83 @@ namespace Bloom.Api
 							).Success))
 				{
 					var endpointRegistration = pair.Value;
-					if (endpointRegistration.RequiresSync)
-					{
-						// A single synchronization object won't do, because when processing a request to create a thumbnail or update a preview,
-						// we have to load the HTML page the thumbnail is based on, or other HTML pages (like one used to figure what's
-						// visible in a preview). If the page content somehow includes
-						// an api request (api/branding/image is one example), that request will deadlock if the
-						// api/pageTemplateThumbnail request already has the main lock.
-						// Another case is the Bloom Reader preview, where the whole UI is rebuilt at the same time as the preview.
-						// This leads to multiple api requests racing with the preview one, and it was possible for all
-						// the server threads to be processing these and waiting for SyncObject while the updatePreview
-						// request held the lock...and the request for the page that would free the lock was sitting in
-						// the queue, waiting for a thread.
-						// To the best of my knowledge, there's no shared data between the thumbnailing and preview processes and any
-						// other api requests, so it seems safe to have one lock that prevents working on multiple
-						// thumbnails/previews at the same time, and one that prevents working on other api requests at the same time.
-						var syncOn = SyncObj;
-						if (localPathLc.StartsWith("api/pagetemplatethumbnail", StringComparison.InvariantCulture)
-						|| localPathLc == "api/publish/android/thumbnail"
-						|| localPathLc == "api/publish/android/updatepreview")
-							syncOn = ThumbnailsAndPreviewsSyncObj;
-						else if (localPathLc.StartsWith("api/i18n/"))
-							syncOn = I18NLock;
-
-						// Basically what lock(syncObj) {} is syntactic sugar for (see its documentation),
-						// but we wrap RegisterThreadBlocking/Unblocked around acquiring the lock.
-						// We need the more complicated structure because we would like RegisterThreadUnblocked
-						// to be called immediately after acquiring the lock (notably, before Handle() is called),
-						// but we also want to handle the case where Monitor.Enter throws an exception.
-						bool lockAcquired = false;
-						try						
-						{
-							// Try to acquire lock
-							BloomServer._theOneInstance.RegisterThreadBlocking();
-							try
-							{
-								// Blocks until it either succeeds (lockAcquired will then always be true) or throws (lockAcquired will stay false)
-								Monitor.Enter(syncOn, ref lockAcquired);
-							}
-							finally
-							{
-								BloomServer._theOneInstance.RegisterThreadUnblocked();
-							}
-
-							// Lock has been acquired.
-							ApiRequest.Handle(endpointRegistration, info, CurrentCollectionSettings,
-									_bookSelection.CurrentSelection);
-
-							// Even if ApiRequest.Handle() fails, return true to indicate that the request was processed and there
-							// is no further need for the caller to continue trying to process the request as a filename.
-							// See https://issues.bloomlibrary.org/youtrack/issue/BL-6763.
-							return true;							
-						}
-						finally
-						{
-							if (lockAcquired)
-							{
-								Monitor.Exit(syncOn);
-							}
-						}
-					}
-					else
-					{
-						// Up to api's that request no sync to do things right!
-						ApiRequest.Handle(endpointRegistration, info, CurrentCollectionSettings, _bookSelection.CurrentSelection);
-						// Even if ApiRequest.Handle() fails, return true to indicate that the request was processed and there
-						// is no further need for the caller to continue trying to process the request as a filename.
-						// See https://issues.bloomlibrary.org/youtrack/issue/BL-6763.
-						return true;
-					}
+					return ProcessRequest(endpointRegistration, info, localPathLc);
 				}
 			}
 			return false;
-		}		
+		}
+
+		private bool ProcessRequest(EndpointRegistration endpointRegistration, IRequestInfo info, string localPathLc)
+		{
+			if (endpointRegistration.RequiresSync)
+			{
+				// A single synchronization object won't do, because when processing a request to create a thumbnail or update a preview,
+				// we have to load the HTML page the thumbnail is based on, or other HTML pages (like one used to figure what's
+				// visible in a preview). If the page content somehow includes
+				// an api request (api/branding/image is one example), that request will deadlock if the
+				// api/pageTemplateThumbnail request already has the main lock.
+				// Another case is the Bloom Reader preview, where the whole UI is rebuilt at the same time as the preview.
+				// This leads to multiple api requests racing with the preview one, and it was possible for all
+				// the server threads to be processing these and waiting for SyncObject while the updatePreview
+				// request held the lock...and the request for the page that would free the lock was sitting in
+				// the queue, waiting for a thread.
+				// To the best of my knowledge, there's no shared data between the thumbnailing and preview processes and any
+				// other api requests, so it seems safe to have one lock that prevents working on multiple
+				// thumbnails/previews at the same time, and one that prevents working on other api requests at the same time.
+				var syncOn = SyncObj;
+				if (localPathLc.StartsWith("api/pagetemplatethumbnail", StringComparison.InvariantCulture)
+				    || localPathLc == "api/publish/android/thumbnail"
+				    || localPathLc == "api/publish/android/updatepreview")
+					syncOn = ThumbnailsAndPreviewsSyncObj;
+				else if (localPathLc.StartsWith("api/i18n/"))
+					syncOn = I18NLock;
+
+				// Basically what lock(syncObj) {} is syntactic sugar for (see its documentation),
+				// but we wrap RegisterThreadBlocking/Unblocked around acquiring the lock.
+				// We need the more complicated structure because we would like RegisterThreadUnblocked
+				// to be called immediately after acquiring the lock (notably, before Handle() is called),
+				// but we also want to handle the case where Monitor.Enter throws an exception.
+				bool lockAcquired = false;
+				try
+				{
+					// Try to acquire lock
+					BloomServer._theOneInstance.RegisterThreadBlocking();
+					try
+					{
+						// Blocks until it either succeeds (lockAcquired will then always be true) or throws (lockAcquired will stay false)
+						Monitor.Enter(syncOn, ref lockAcquired);
+					}
+					finally
+					{
+						BloomServer._theOneInstance.RegisterThreadUnblocked();
+					}
+
+					// Lock has been acquired.
+					ApiRequest.Handle(endpointRegistration, info, CurrentCollectionSettings,
+						_bookSelection.CurrentSelection);
+
+					// Even if ApiRequest.Handle() fails, return true to indicate that the request was processed and there
+					// is no further need for the caller to continue trying to process the request as a filename.
+					// See https://issues.bloomlibrary.org/youtrack/issue/BL-6763.
+					return true;
+				}
+				finally
+				{
+					if (lockAcquired)
+					{
+						Monitor.Exit(syncOn);
+					}
+				}
+			}
+			else
+			{
+				// Up to api's that request no sync to do things right!
+				ApiRequest.Handle(endpointRegistration, info, CurrentCollectionSettings, _bookSelection.CurrentSelection);
+				// Even if ApiRequest.Handle() fails, return true to indicate that the request was processed and there
+				// is no further need for the caller to continue trying to process the request as a filename.
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-6763.
+				return true;
+			}
+		}
 	}
 }

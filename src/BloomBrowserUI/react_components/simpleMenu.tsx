@@ -6,7 +6,12 @@ import Button from "@material-ui/core/Button";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import { useL10n } from "./l10nHooks";
-import { Divider, makeStyles } from "@material-ui/core";
+import {
+    Divider,
+    ListItemIcon,
+    ListItemText,
+    makeStyles
+} from "@material-ui/core";
 
 export class SimpleMenuItem {
     text: string;
@@ -14,6 +19,7 @@ export class SimpleMenuItem {
     temporarilyDisableI18nWarning?: boolean;
     action: () => void; // in addition to closing the menu
     disabled?: boolean;
+    icon?: React.ReactNode;
 }
 
 const useButtonStyles = makeStyles({
@@ -187,7 +193,20 @@ const SimpleMenuRow: React.FunctionComponent<{
             }}
             disabled={props.item.disabled}
         >
-            {itemText}
+            {props.item.icon ? (
+                <React.Fragment>
+                    <ListItemIcon
+                        css={css`
+                            min-width: 30px !important; // overrides MUI default that leaves way too much space
+                        `}
+                    >
+                        {props.item.icon}
+                    </ListItemIcon>
+                    <ListItemText>{itemText}</ListItemText>
+                </React.Fragment>
+            ) : (
+                itemText
+            )}
         </MenuItem>
     );
 };
