@@ -1,6 +1,5 @@
 ﻿using Bloom.Book;
 using Bloom.Spreadsheet;
-using Bloom.ToPalaso;
 using CommandLine;
 using System;
 using System.Diagnostics;

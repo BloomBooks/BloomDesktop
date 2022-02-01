@@ -11,13 +11,11 @@
 // (also as educational).
 
 using Bloom.ImageProcessing;
-using L10NSharp;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using SIL.IO;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Drawing;
 using System.IO;
 using System.Text;

@@ -7,13 +7,12 @@ using System.Linq;
 using System.Security;
 using System.Windows.Forms;
 using System.Xml;
-using Bloom.Api;
 using Bloom.MiscUI;
 using Bloom.web;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Xml;
-using TagLib;
+using Bloom.Collection;
 
 namespace Bloom.Spreadsheet
 {
@@ -44,6 +43,7 @@ namespace Bloom.Spreadsheet
 		private int _unNumberedPagesSeen;
 		private bool _bookIsLandscape;
 		private Layout _destLayout;
+		private readonly CollectionSettings _collectionSettings;
 
 		public delegate SpreadsheetImporter Factory();
 
@@ -55,13 +55,15 @@ namespace Bloom.Spreadsheet
 		/// AutoFac. However, for that to work, we'd need to move the other constructor arguments,
 		/// which AutoFac can't know, to the Import method. And for now, all callers which need
 		/// to pass a socket server already have one.</remarks>
-		public SpreadsheetImporter(IBloomWebSocketServer webSocketServer, HtmlDom dest, string pathToSpreadsheetFolder = null, string pathToBookFolder = null)
+		public SpreadsheetImporter(IBloomWebSocketServer webSocketServer, HtmlDom dest, string pathToSpreadsheetFolder = null, string pathToBookFolder = null, CollectionSettings collectionSettings = null)
 		{
 			_dest = dest;
 			_dataDivElement = _dest.SafeSelectNodes("//div[@id='bloomDataDiv']").Cast<XmlElement>().First();
 			_pathToBookFolder = pathToBookFolder;
 			_pathToSpreadsheetFolder = pathToSpreadsheetFolder;
 			_webSocketServer = webSocketServer;
+			// Tests and CLI may not set this
+			_collectionSettings = collectionSettings;
 		}
 
 		/// <summary>
@@ -186,6 +188,10 @@ namespace Bloom.Spreadsheet
 				}
 				_currentRowIndex++;
 			}
+			if (_collectionSettings != null)
+				_dest.UpdatePageNumberAndSideClassOfPages(
+					_collectionSettings.CharactersForDigitsForPageNumbers,
+					_collectionSettings.Language1.IsRightToLeft);
 
 			Progress("Done");
 			return _warnings;

@@ -119,7 +119,8 @@ namespace Bloom.web.controllers
 				}
 
 				var dom = book.OurHtmlDom;
-				var importer = new SpreadsheetImporter(_webSocketServer, dom, Path.GetDirectoryName(inputFilepath), book.FolderPath);
+				var importer = new SpreadsheetImporter(_webSocketServer, dom,
+					Path.GetDirectoryName(inputFilepath), book.FolderPath, book.CollectionSettings);
 				importer.ImportWithProgress(inputFilepath, bookPath);
 
 				// Review: A lot of other stuff happens in Book.Save() and BookStorage.SaveHtml().

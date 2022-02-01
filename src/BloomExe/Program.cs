@@ -153,6 +153,9 @@ namespace Bloom
 						(ChangeLayoutParameters opts) => ChangeLayoutCommand.Handle(opts),
 						(CreateArtifactsParameters opts) => CreateArtifactsCommand.Handle(opts),
 						(SpreadsheetExportParameters opts) => SpreadsheetExportCommand.Handle(opts),
+						// We don't have a way to get the CollectionSettings object for the Import process.
+						// This means that if we use this CLI version, care should be taken to update the book,
+						// so the pages get the correct "side" classes (side-left, side-right). (BL-10884)
 						(SpreadsheetImportParameters opts) => SpreadsheetImportCommand.Handle(opts),
 						errors =>
 						{
