@@ -1,17 +1,11 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.Spreadsheet;
 using BloomTemp;
-using BloomTests.Book;
 using BloomTests.TeamCollection;
-using Gtk;
 using Moq;
 using NUnit.Framework;
 using SIL.IO;

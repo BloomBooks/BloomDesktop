@@ -7,13 +7,12 @@ using System.Linq;
 using System.Security;
 using System.Windows.Forms;
 using System.Xml;
-using Bloom.Api;
 using Bloom.MiscUI;
 using Bloom.web;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Xml;
-using TagLib;
+using Bloom.Collection;
 
 namespace Bloom.Spreadsheet
 {
@@ -22,7 +21,7 @@ namespace Bloom.Spreadsheet
 	/// </summary>
 	public class SpreadsheetImporter
 	{
-		private HtmlDom _dest;
+		private readonly HtmlDom _dest;
 		private InternalSpreadsheet _sheet;
 		private int _currentRowIndex;
 		private int _currentPageIndex;
@@ -36,14 +35,15 @@ namespace Bloom.Spreadsheet
 		private XmlElement _currentImageContainer;
 		private List<string> _warnings;
 		private List<ContentRow> _inputRows;
-		private XmlElement _dataDivElement;
-		private string _pathToSpreadsheetFolder;
-		private string _pathToBookFolder;
-		private IBloomWebSocketServer _webSocketServer;
+		private readonly XmlElement _dataDivElement;
+		private readonly string _pathToSpreadsheetFolder;
+		private readonly string _pathToBookFolder;
+		private readonly IBloomWebSocketServer _webSocketServer;
 		private IWebSocketProgress _progress;
 		private int _unNumberedPagesSeen;
 		private bool _bookIsLandscape;
 		private Layout _destLayout;
+		private readonly CollectionSettings _collectionSettings;
 
 		public delegate SpreadsheetImporter Factory();
 
@@ -55,13 +55,24 @@ namespace Bloom.Spreadsheet
 		/// AutoFac. However, for that to work, we'd need to move the other constructor arguments,
 		/// which AutoFac can't know, to the Import method. And for now, all callers which need
 		/// to pass a socket server already have one.</remarks>
-		public SpreadsheetImporter(IBloomWebSocketServer webSocketServer, HtmlDom dest, string pathToSpreadsheetFolder = null, string pathToBookFolder = null)
+		public SpreadsheetImporter(IBloomWebSocketServer webSocketServer, HtmlDom dest, string pathToSpreadsheetFolder = null, string pathToBookFolder = null, CollectionSettings collectionSettings = null)
 		{
 			_dest = dest;
 			_dataDivElement = _dest.SafeSelectNodes("//div[@id='bloomDataDiv']").Cast<XmlElement>().First();
 			_pathToBookFolder = pathToBookFolder;
 			_pathToSpreadsheetFolder = pathToSpreadsheetFolder;
 			_webSocketServer = webSocketServer;
+			// Tests and CLI may not set this
+			_collectionSettings = collectionSettings;
+		}
+
+		/// <summary>
+		/// Used by the main SpreadsheetApi call. Tests and CLI (which don't usually have access to the book)
+		/// use the other ctor.
+		/// </summary>
+		public SpreadsheetImporter(IBloomWebSocketServer webSocketServer, Book.Book book, string pathToSpreadsheetFolder)
+			: this(webSocketServer, book.OurHtmlDom, pathToSpreadsheetFolder, book.FolderPath, book.CollectionSettings)
+		{
 		}
 
 		/// <summary>
@@ -72,8 +83,10 @@ namespace Bloom.Spreadsheet
 
 		public SpreadsheetImportParams Params = new SpreadsheetImportParams();
 
-		public void ImportWithProgress(string inputFilepath, string bookPath)
+		public void ImportWithProgress(string inputFilepath)
 		{
+			Debug.Assert(_pathToBookFolder != null,
+				"Somehow we made it into ImportWithProgress() without a path to the book folder");
 			var mainShell = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
 			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, "spreadsheet-import", () =>
 				new ReactDialog("progressDialogBundle",
@@ -90,8 +103,7 @@ namespace Bloom.Spreadsheet
 					// winforms dialog properties
 					{ Width = 620, Height = 550 }, (progress, worker) =>
 			{
-				string folderPath = Path.GetDirectoryName(bookPath);
-				var hasAudio = _dest.GetRecordedAudioSentences(folderPath).Any();
+				var hasAudio = _dest.GetRecordedAudioSentences(_pathToBookFolder).Any();
 				if (hasAudio)
 				{
 					progress.MessageWithoutLocalizing($"Warning: Spreadsheet import cannot currently preserve Talking Book audio that is already in this book. For this reason, we need to abandon the import.", ProgressKind.Error);
@@ -103,7 +115,7 @@ namespace Bloom.Spreadsheet
 				if (!Validate(sheet, progress))
 					return true; // errors already reported to progress
 				progress.MessageWithoutLocalizing($"Making a backup of the original book...");
-				var backupPath = BookStorage.SaveCopyBeforeImportOverwrite(folderPath, bookPath);
+				var backupPath = BookStorage.SaveCopyBeforeImportOverwrite(_pathToBookFolder);
 				progress.MessageWithoutLocalizing($"Backup completed (at {backupPath})");
 				Import(sheet, progress);
 				return true; // always leave the dialog up until the user chooses 'close'
@@ -186,6 +198,10 @@ namespace Bloom.Spreadsheet
 				}
 				_currentRowIndex++;
 			}
+			if (_collectionSettings != null)
+				_dest.UpdatePageNumberAndSideClassOfPages(
+					_collectionSettings.CharactersForDigitsForPageNumbers,
+					_collectionSettings.Language1.IsRightToLeft);
 
 			Progress("Done");
 			return _warnings;
