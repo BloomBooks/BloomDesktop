@@ -600,6 +600,24 @@ namespace Bloom.CollectionTab
 			Book.Book book = null;	// This is really expensive to initialize, so we won't unless we really need it.
 			bool badBook = false;	// Helps us not to try to load an invalid book twice.
 
+			BringBookNameButtonUpToDateFull(button, bookInfo, out book, out badBook);
+			
+			if (buttonRefreshInfo.ThumbnailRefreshNeeded)
+			{
+				// This is relatively rare, so we'll risk the really slow loading of the book.
+				if (book == null && !badBook)
+					book = LoadBookAndBringItUpToDate(bookInfo, out badBook);
+				if (book != null)
+					ScheduleRefreshOfOneThumbnail(book);
+			}
+			SetBookButtonTooltip(button);
+		}
+
+		private void BringBookNameButtonUpToDateFull(Button button, BookInfo bookInfo, out Book.Book book, out bool badBook)
+		{
+			book = null;
+			badBook = false;
+
 			//Only go looking for a better title if the book hasn't already been localized when we first showed it.
 			//The idea is, if we already have a localization mapping for this name, then
 			// we're not going to get a better title by digging into the document itself and overriding what the localizer
@@ -611,34 +629,26 @@ namespace Bloom.CollectionTab
 				// converting it to XHTML first.
 				// Maybe in this context we can rely on the collection settings for the languages?
 				var langCodes = _model.CollectionSettings.GetAllLanguageCodes().ToList();
-				var bestTitle = bookInfo.GetBestTitleForUserDisplay(langCodes);
-				if (String.IsNullOrEmpty(bestTitle))
+
+				var bestButtonLabel = bookInfo.GetBestTitleForUserDisplay(langCodes);
+				if (String.IsNullOrEmpty(bestButtonLabel))
 				{
 					// Getting the book can be very slow for large books: do we really want to update the title enough to make the user wait?
 					book = LoadBookAndBringItUpToDate(bookInfo, out badBook);
 					if (book != null)
-						bestTitle = book.TitleBestForUserDisplay;
+						bestButtonLabel = book.NameBestForUserDisplay;
 					else
-						bestTitle = bookInfo.QuickTitleUserDisplay;
+						bestButtonLabel = bookInfo.QuickTitleUserDisplay;
 				}
-				var titleBestForUserDisplay = ShortenTitleIfNeeded(bestTitle, button);
+				var buttonLabelBestForUserDisplay = ShortenTitleIfNeeded(bestButtonLabel, button);
 				string buttonText = button.GetTextSafely();
-				if (titleBestForUserDisplay != buttonText)
+				if (buttonLabelBestForUserDisplay != buttonText)
 				{
-					Debug.WriteLine(buttonText + " --> " + titleBestForUserDisplay);
-					button.SetTextSafely(titleBestForUserDisplay);
+					Debug.WriteLine(buttonText + " --> " + buttonLabelBestForUserDisplay);
+					button.SetTextSafely(buttonLabelBestForUserDisplay);
 					
 				}
 			}
-			if (buttonRefreshInfo.ThumbnailRefreshNeeded)
-			{
-				// This is relatively rare, so we'll risk the really slow loading of the book.
-				if (book == null && !badBook)
-					book = LoadBookAndBringItUpToDate(bookInfo, out badBook);
-				if (book != null)
-					ScheduleRefreshOfOneThumbnail(book);
-			}
-			SetBookButtonTooltip(button);
 		}
 
 		private void SetBookButtonTooltip(Button button)
@@ -1091,7 +1101,7 @@ namespace Bloom.CollectionTab
 				// Just make a note to re-show it next time we're visible
 				_thumbnailRefreshPending = true;
 			}
-			BringButtonTitleUpToDate(_bookSelection.CurrentSelection);
+			BringBookNameButtonUpToDateQuick(_bookSelection.CurrentSelection);
 		}
 
 		private void OnBackColorChanged(object sender, EventArgs e)
@@ -1107,7 +1117,7 @@ namespace Bloom.CollectionTab
 				Book.Book book = SelectedBook;
 				if (book != null && SelectedButton != null)
 				{
-					BringButtonTitleUpToDate(book);
+					BringBookNameButtonUpToDateQuick(book);
 					if (_thumbnailRefreshPending)
 					{
 						_thumbnailRefreshPending = false;
@@ -1127,7 +1137,7 @@ namespace Bloom.CollectionTab
 					{
 						SelectBook(SelectedBook.BookInfo);
 						ScheduleRefreshOfOneThumbnail(book);
-						BringButtonTitleUpToDate(book);
+						BringBookNameButtonUpToDateQuick(book);
 					}
 				}
 			}
@@ -1138,12 +1148,16 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-		private void BringButtonTitleUpToDate(Book.Book book)
+		/// <summary>
+		/// Brings the text of the selected book button up to date.
+		/// Does a quick version, which doesn't require loading the whole book, which is expensive.
+		/// </summary>
+		private void BringBookNameButtonUpToDateQuick(Book.Book book)
 		{
 			if (SelectedButton == null || _bookSelection.CurrentSelection == null)
 				return;
-			var bestTitle = book.TitleBestForUserDisplay;
-			SelectedButton.SetTextSafely(ShortenTitleIfNeeded(bestTitle, SelectedButton));
+			var bestName = book.NameBestForUserDisplay;
+			SelectedButton.SetTextSafely(ShortenTitleIfNeeded(bestName, SelectedButton));
 			SetBookButtonTooltip(SelectedButton);
 		}
 
@@ -1593,10 +1607,10 @@ namespace Bloom.CollectionTab
 			var bookInfo = AllBookButtons().Select(GetBookInfoFromButton).FirstOrDefault(info => info.FolderPath == newBookDir);
 			if (bookInfo != null)
 			{
-				var existingTitle = SelectedBook.TitleBestForUserDisplay;
+				var existingBookName = SelectedBook.NameBestForUserDisplay;
 				SelectBook(bookInfo);
 				HighlightBookButtonAndShowContextMenuButton(bookInfo);
-				BookHistory.AddEvent(SelectedBook, BookHistoryEventType.Created, $"Duplicated from existing book \"{existingTitle}\"");
+				BookHistory.AddEvent(SelectedBook, BookHistoryEventType.Created, $"Duplicated from existing book \"{existingBookName}\"");
 			}
 		}
 
@@ -1694,7 +1708,7 @@ namespace Bloom.CollectionTab
 			if (book == null) //don't think this can happen, but play safe
 				return;
 			book.SetAndLockBookName(newName);
-			BringButtonTitleUpToDate(book);
+			BringBookNameButtonUpToDateQuick(book);
 		}
 
 		private void importContentFromSpreadsheetToolStripMenuItem_Click(object sender, EventArgs e)

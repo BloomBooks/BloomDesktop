@@ -355,9 +355,9 @@ namespace Bloom.CollectionTab
 						return false;
 					}
 				}
-				var title = _bookSelection.CurrentSelection.TitleBestForUserDisplay;
+				var bookName = _bookSelection.CurrentSelection.NameBestForUserDisplay;
 				var confirmRecycleDescription = L10NSharp.LocalizationManager.GetString("CollectionTab.ConfirmRecycleDescription", "The book '{0}'");
-				if (ConfirmRecycleDialog.JustConfirm(string.Format(confirmRecycleDescription, title), false, "Palaso"))
+				if (ConfirmRecycleDialog.JustConfirm(string.Format(confirmRecycleDescription, bookName), false, "Palaso"))
 				{
 					// The sequence of these is a bit arbitrary. We'd like to delete the book in both places.
 					// Either could conceivably fail. If something goes wrong with removing the selection
@@ -666,8 +666,8 @@ namespace Bloom.CollectionTab
 			{
 				i++;
 				var book = _bookServer.GetBookFromBookInfo(bookInfo);
-				//gets overwritten: progress.WriteStatus(book.TitleBestForUserDisplay);
-				progress.WriteMessage("Processing " + book.TitleBestForUserDisplay+ " " + i + "/" + TheOneEditableCollection.GetBookInfos().Count());
+				//gets overwritten: progress.WriteStatus(book.NameBestForUserDisplay);
+				progress.WriteMessage("Processing " + book.NameBestForUserDisplay+ " " + i + "/" + TheOneEditableCollection.GetBookInfos().Count());
 				book.BringBookUpToDate(progress);
 			}
 		}
@@ -735,7 +735,7 @@ namespace Bloom.CollectionTab
 
 				var book = _bookServer.GetBookFromBookInfo(bookInfo);
 
-				dialog.Progress.WriteMessage("Checking " + book.TitleBestForUserDisplay);
+				dialog.Progress.WriteMessage("Checking " + book.NameBestForUserDisplay);
 				book.CheckBook(dialog.Progress, pathToFolderOfReplacementImages);
 				dialog.ProgressString.WriteMessage("");
 			}

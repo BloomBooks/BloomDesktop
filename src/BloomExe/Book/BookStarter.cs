@@ -514,7 +514,7 @@ namespace Bloom.Book
 			// template is unlikely to be useful. (It's arguable whether this belongs in this
 			// method, but it's already manipulating the BookInfo, and this somewhat affects
 			// editing titles.)
-			storage.BookInfo.NameLocked = false;
+			storage.BookInfo.FileNameLocked = false;
 		}
 
 
