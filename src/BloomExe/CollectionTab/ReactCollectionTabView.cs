@@ -6,6 +6,7 @@ using Bloom.Workspace;
 using L10NSharp;
 using SIL.Reporting;
 using System.Drawing;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
@@ -21,6 +22,7 @@ namespace Bloom.CollectionTab
 		private readonly LibraryModel _model;
 		private WorkspaceTabSelection _tabSelection;
 		private BookSelection _bookSelection;
+		private BloomWebSocketServer _webSocketServer;
 
 		public delegate ReactCollectionTabView Factory();//autofac uses this
 
@@ -28,11 +30,12 @@ namespace Bloom.CollectionTab
 			SelectedTabChangedEvent selectedTabChangedEvent,
 			SendReceiveCommand sendReceiveCommand,
 			TeamCollectionManager tcManager, BookSelection bookSelection,
-			WorkspaceTabSelection tabSelection)
+			WorkspaceTabSelection tabSelection, BloomWebSocketServer webSocketServer)
 		{
 			_model = model;
 			_tabSelection = tabSelection;
 			_bookSelection = bookSelection;
+			_webSocketServer = webSocketServer;
 
 			BookCollection.CollectionCreated += OnBookCollectionCreated;
 
@@ -117,6 +120,10 @@ namespace Bloom.CollectionTab
 			{
 				_model.UpdateThumbnailAsync(book);
 				_model.UpdateLabelOfBookInEditableCollection(book);
+				// This not-quite-ideally-named message causes the preview to update
+				// (it's being shared with the TC book status panel, though that is less likely
+				// to need updating just because the book was saved).
+				_webSocketServer.SendEvent("bookStatus", "reload");
 			};
 		}
 		private void OnBookCollectionCreated(object collection, EventArgs args)
