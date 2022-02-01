@@ -1079,7 +1079,19 @@ namespace Bloom.CollectionTab
 		{
 			get
 			{
-				return AllBookButtons().FirstOrDefault(b => GetBookInfoFromButton(b).FolderPath == SelectedBook?.BookInfo.FolderPath);
+				if (SelectedBook == null)
+					return null;
+				var allButtons = AllBookButtons();
+				// Search for book button by FolderPath because that is guaranteed to be unique.
+				var btnFound = allButtons.FirstOrDefault(b => GetBookInfoFromButton(b).FolderPath == SelectedBook.BookInfo.FolderPath);
+				if (btnFound == null)
+				{
+					// If search fails, try searching by Id, which should be unique but isn't guaranteed since users can copy folders on disk.
+					var buttonsFromId = allButtons.Where(b => GetBookInfoFromButton(b).Id == SelectedBook.BookInfo.Id).Select(b => b).ToList();
+					if (buttonsFromId.Count == 1)
+						btnFound = buttonsFromId[0];
+				}
+				return btnFound;	// may still be null...
 			}
 		}
 
@@ -1100,6 +1112,11 @@ namespace Bloom.CollectionTab
 			{
 				// Just make a note to re-show it next time we're visible
 				_thumbnailRefreshPending = true;
+			}
+			if (SelectedButton != null && SelectedBook?.BookInfo != null)
+			{
+				// Title may have changed, which changes the FolderPath.  Fix this just in case.
+				GetBookInfoFromButton(SelectedButton).FolderPath = SelectedBook.BookInfo.FolderPath;
 			}
 			BringBookNameButtonUpToDateQuick(_bookSelection.CurrentSelection);
 		}
@@ -1707,7 +1724,11 @@ namespace Bloom.CollectionTab
 			var book = SelectedBook;
 			if (book == null) //don't think this can happen, but play safe
 				return;
-			book.SetAndLockBookName(newName);
+			var button = SelectedButton;		// Find button before possibly changing FolderPath
+			book.SetAndLockBookName(newName);	// can change BookInfo.FolderPath
+			var btnInfo = (button?.Tag as BookButtonInfo);
+			if (btnInfo != null)	// continue to be paranoid...
+				btnInfo.BookInfo.FolderPath = book.BookInfo.FolderPath;
 			BringBookNameButtonUpToDateQuick(book);
 		}
 
