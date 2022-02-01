@@ -7,13 +7,12 @@ using System.Linq;
 using System.Security;
 using System.Windows.Forms;
 using System.Xml;
-using Bloom.Api;
 using Bloom.MiscUI;
 using Bloom.web;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Xml;
-using TagLib;
+using Bloom.Collection;
 
 namespace Bloom.Spreadsheet
 {
@@ -186,9 +185,18 @@ namespace Bloom.Spreadsheet
 				}
 				_currentRowIndex++;
 			}
+			var collectionSettings = GetCollectionSettings();
+			_dest.UpdatePageNumberAndSideClassOfPages(collectionSettings.CharactersForDigitsForPageNumbers, collectionSettings.Language1.IsRightToLeft);
 
 			Progress("Done");
 			return _warnings;
+		}
+
+		private CollectionSettings GetCollectionSettings()
+		{
+			var settingsFilePath = CollectionSettings.FindSettingsFileInFolder(
+				Path.GetDirectoryName(_pathToBookFolder));
+			return new CollectionSettings(settingsFilePath);
 		}
 
 		private void PutRowInImage(ContentRow currentRow)
