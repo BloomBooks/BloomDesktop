@@ -261,7 +261,14 @@ namespace Bloom.Book
 			{
 				HtmlDom.AddClass(e, "bloom-contentNational1");
 			}
-			if (lang == bookData.Language3IsoCode)
+
+			// It's not clear that this class should be applied to blocks where lang == bookData.Language3IsoCode.
+			// I (JohnT) added lang == bookData.MetadataLanguage2IsoCode while dealing with BL-10893
+			// but am reluctant to remove the old code as something might depend on it. I believe it is (nearly?)
+			// always true that if we have Language3IsoCode at all, it will be equal to MetadataLanguage2IsoCode,
+			// so at least for now it probably makes no difference. In our next major reworking of language codes,
+			// hopefully we can make this distinction clearer and remove Language3IsoCode here.
+			if (lang == bookData.Language3IsoCode || lang == bookData.MetadataLanguage2IsoCode)
 			{
 				HtmlDom.AddClass(e, "bloom-contentNational2");
 			}
