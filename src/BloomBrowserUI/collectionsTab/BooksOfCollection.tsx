@@ -1,3 +1,6 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+
 import Grid from "@material-ui/core/Grid";
 import React = require("react");
 import "BooksOfCollection.less";
@@ -11,7 +14,7 @@ import { element } from "prop-types";
 import { useL10n } from "../react_components/l10nHooks";
 import { useEffect, useState } from "react";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
-import { Divider } from "@material-ui/core";
+import { Divider, ListItemIcon, ListItemText } from "@material-ui/core";
 import { BookSelectionManager, useIsSelected } from "./bookSelectionManager";
 import LazyLoad, { forceCheck } from "react-lazyload";
 
@@ -261,6 +264,7 @@ export interface MenuItemSpec {
     // (unless shouldInclude returns true), and if we're in a Team Collection, the book must be checked out.
     requiresSavePermission?: boolean;
     submenu?: MenuItemSpec[];
+    icon?: React.ReactNode;
 }
 
 // This function and the associated MenuItem classes want to become a general component for making
@@ -334,6 +338,7 @@ export const makeMenuItems = (
                     english={spec.label}
                     l10nId={spec.l10nId!}
                     onClick={clickAction}
+                    icon={spec.icon}
                 ></LocalizableMenuItem>
             );
         })
@@ -359,11 +364,25 @@ const LocalizableMenuItem: React.FunctionComponent<{
     english: string;
     l10nId: string;
     onClick: React.MouseEventHandler<HTMLElement>;
+    icon?: React.ReactNode;
 }> = props => {
     const label = useL10n(props.english, props.l10nId);
     return (
         <MenuItem key={props.l10nId} onClick={props.onClick}>
-            {label}
+            {props.icon ? (
+                <React.Fragment>
+                    <ListItemIcon
+                        css={css`
+                            min-width: 30px !important; // overrides MUI default that leaves way too much space
+                        `}
+                    >
+                        {props.icon}
+                    </ListItemIcon>
+                    <ListItemText>{label}</ListItemText>
+                </React.Fragment>
+            ) : (
+                label
+            )}
         </MenuItem>
     );
 };
