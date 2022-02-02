@@ -169,6 +169,7 @@ namespace Bloom.web.controllers
 
 		public static void UpdateButtonTitle(BloomWebSocketServer server, BookInfo bookInfo, string bestTitle)
 		{
+
 			server.SendString("book", IdForBookButton(bookInfo), bestTitle);
 		}
 

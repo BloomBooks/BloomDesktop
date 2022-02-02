@@ -510,10 +510,25 @@ namespace Bloom.TeamCollection
 				if (finalBookName != bookName)
 				{
 					_bookSelection.CurrentSelection.Storage.RestoreBookName(finalBookName);
+				}
+
+				// We've restored an old meta.json, things might be different...book titles for one.
+				// This needs to come AFTER RestoreBookName, which fixes the book's FolderPath
+				// so it knows where to load the restored meta.json from. But BEFORE
+				// UpdateLabelOfBookInEditableCollection, which wants to use the restored BookInfo
+				// to get a name (and fix the one in the Model).
+				_bookSelection.CurrentSelection.UpdateBookInfoFromDisk();
+				// We need to do this as early as possible so that as notifications start to
+				// go to the UI and it starts to request things from our server the answers are
+				// up to date.
+				_bookSelection.CurrentSelection.ReloadFromDisk(updatedBookFolder);
+
+				if (finalBookName != bookName)
+				{
 					_libraryModel.UpdateLabelOfBookInEditableCollection(_bookSelection.CurrentSelection);
 				}
 				BookHistory.SetPendingCheckinMessage(_bookSelection.CurrentSelection, "");
-				UpdateUiForBook(reloadFromDisk:true, renamedTo: updatedBookFolder);
+				UpdateUiForBook(reloadFromDisk:false, renamedTo: updatedBookFolder);
 				// We need to do this after updating the rest of the UI, so the button we're
 				// looking for has been adjusted.
 				_tcManager.CurrentCollection.UpdateBookStatus(finalBookName, true);

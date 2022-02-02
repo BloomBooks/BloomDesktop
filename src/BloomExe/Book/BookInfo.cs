@@ -68,21 +68,26 @@ namespace Bloom.Book
 			//NB: This was coded in an unfortunate way such that touching almost any property causes a new metadata to be quietly created.
 			//So It's vital that we not touch properties that could create a blank metadata, before attempting to load the existing one.
 
+			UpdateFromDisk();
+
+			IsEditable = isEditable;
+
+			FixDefaultsIfAppropriate();
+		}
+
+		public void UpdateFromDisk()
+		{
 			_metadata = BookMetaData.FromFolder(FolderPath);
 			if (_metadata == null)
 			{
 				// Look for old tags files not yet migrated
-				var oldTagsPath = Path.Combine(folderPath, "tags.txt");
+				var oldTagsPath = Path.Combine(FolderPath, "tags.txt");
 				if (RobustFile.Exists(oldTagsPath))
 				{
 					Book.ConvertTagsToMetaData(oldTagsPath, this);
 				}
 				// otherwise leave it null, first attempt to use will create a default one
 			}
-
-			IsEditable = isEditable;
-
-			FixDefaultsIfAppropriate();
 		}
 
 		public enum HowToPublishImageDescriptions
