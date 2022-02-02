@@ -87,6 +87,8 @@ namespace Bloom.Book
 			{
 				var t = value.Trim();
 				var titleNode = XmlUtils.GetOrCreateElement(_dom, "html/head", "title");
+				if (titleNode == null && t.Length == 0)
+					return;		// must be in a unit test.
 				//ah, but maybe that contains html element in there, like <br/> where the user typed a return in the title,
 				//so we set the xhtml (not the text) of the node
 				titleNode.InnerXml = t;
