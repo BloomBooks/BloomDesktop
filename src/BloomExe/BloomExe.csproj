@@ -365,6 +365,7 @@
       <DependentUpon>AboutMemory.cs</DependentUpon>
     </Compile>
     <Compile Include="Book\SaveContext.cs" />
+    <Compile Include="Collection\BookCollectionHolder.cs" />
     <Compile Include="MiscUI\BloomMessageBox.cs" />
     <Compile Include="Spreadsheet\Header.cs" />
     <Compile Include="FontProcessing\FontFileFinder.cs" />

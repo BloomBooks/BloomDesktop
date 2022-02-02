@@ -384,16 +384,17 @@ namespace Bloom.Workspace
 			var bookName = args.BookName;
 			if (_bookSelection.CurrentSelection == null)
 				return;
-			if (bookName != Path.GetFileName(_bookSelection.CurrentSelection?.FolderPath))
-				return; // change is not to the book we're interested in.
 			if (this.IsDisposed)
 				return; // We can't need the notification, and Invoke will fail.
 			// Notify anything on the Javascript side that might care about the status change.
+			// (This includes buttons that are not selected.)
 			SafeInvoke.Invoke("sending reload status", this, false, true,
 				() =>
 				{
 					_webSocketServer.SendEvent("bookStatus", "reload");
 				});
+			if (bookName != Path.GetFileName(_bookSelection.CurrentSelection?.FolderPath))
+				return; // change is not to the book we're interested in.
 			if (_tabStrip.SelectedTab == _legacyCollectionTab)
 				return; // this toast is all about returning to the collection tab
 			if (_returnToCollectionTabNotifier != null)

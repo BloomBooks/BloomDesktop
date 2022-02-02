@@ -15,6 +15,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Registration;
 using Bloom.ToPalaso;
 using Bloom.Utils;
@@ -49,6 +50,7 @@ namespace Bloom.TeamCollection
 		private static readonly TimeSpan kMaxRestartPromptFrequency = new TimeSpan(0, 2, 0);
 
 		internal string LocalCollectionFolder => _localCollectionFolder;
+		private BookCollectionHolder _bookCollectionHolder;
 
 		protected bool _updatingCollectionFiles;
 
@@ -58,11 +60,12 @@ namespace Bloom.TeamCollection
 		private HashSet<string> _remotelyRenamedBooks = new HashSet<string>();
 
 		public TeamCollection(ITeamCollectionManager manager, string localCollectionFolder,
-			TeamCollectionMessageLog tcLog = null)
+			TeamCollectionMessageLog tcLog = null, BookCollectionHolder bookCollectionHolder = null)
 		{
 			_tcManager = manager;
 			_localCollectionFolder = localCollectionFolder;
 			_tcLog = tcLog ?? new TeamCollectionMessageLog(TeamCollectionManager.GetTcLogPathFromLcPath(localCollectionFolder));
+			_bookCollectionHolder = bookCollectionHolder;
 		}
 
 		// For Moq
@@ -1098,8 +1101,9 @@ namespace Bloom.TeamCollection
 				return;
 			}
 
+			var deletedBookFolder = Path.Combine(_localCollectionFolder, bookBaseName);
 			if ((_tcManager?.BookSelection?.CurrentSelection?.FolderPath ?? "") ==
-			    Path.Combine(_localCollectionFolder, bookBaseName))
+			    deletedBookFolder)
 			{
 				// Argh! Somebody deleted the selected book! We might be right in the middle of any form
 				// of publication, or generating a preview, or anything! Just keep it, and let the user know
@@ -1109,7 +1113,8 @@ namespace Bloom.TeamCollection
 				TeamCollectionManager.RaiseTeamCollectionStatusChanged();
 				return;
 			}
-			PathUtilities.DeleteToRecycleBin(Path.Combine(_localCollectionFolder, bookBaseName));
+			PathUtilities.DeleteToRecycleBin(deletedBookFolder);
+			_bookCollectionHolder?.TheOneEditableCollection?.HandleBookDeletedFromCollection(deletedBookFolder);
 			UpdateBookStatus(bookBaseName, true);
 		}
 		internal void HandleCollectionSettingsChange(RepoChangeEventArgs result)
