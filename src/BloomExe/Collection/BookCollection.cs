@@ -185,17 +185,26 @@ namespace Bloom.Collection
 				return;
 
 			Logger.WriteEvent("After BookStorage.DeleteBook({0})", bookInfo.FolderPath);
-			var infoToDelete = _bookInfos.FirstOrDefault(b => b.FolderPath == bookInfo.FolderPath);
+			HandleBookDeletedFromCollection(bookInfo.FolderPath);
+			if (_bookSelection != null)
+			{
+				_bookSelection.SelectBook(null);
+			}
+		}
+
+		/// <summary>
+		/// Handles side effects of deleting a book (also used when remotely deleted)
+		/// </summary>
+		/// <param name="bookInfo"></param>
+		public void HandleBookDeletedFromCollection(string folderPath)
+		{
+			var infoToDelete = _bookInfos.FirstOrDefault(b => b.FolderPath == folderPath);
 			//Debug.Assert(_bookInfos.Contains(bookInfo)); this will occur if we delete a book from the BloomLibrary section
 			if (infoToDelete != null) // for paranoia. We shouldn't be trying to delete a book that isn't there.
 				_bookInfos.Remove(infoToDelete);
 
 			if (CollectionChanged != null)
 				CollectionChanged.Invoke(this, null);
-			if (_bookSelection != null)
-			{
-				_bookSelection.SelectBook(null);
-			}
 		}
 
 		public virtual string Name

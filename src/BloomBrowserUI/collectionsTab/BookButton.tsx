@@ -26,6 +26,7 @@ import {
     makeMenuItems,
     MenuItemSpec
 } from "./BooksOfCollection";
+import DeleteIcon from "@material-ui/icons/Delete";
 
 export const bookButtonHeight = 120;
 export const bookButtonWidth = 90;
@@ -171,6 +172,7 @@ export const BookButton: React.FunctionComponent<{
                 label: "Delete Book",
                 l10nId: "CollectionTab.BookMenu.DeleteBook",
                 command: "collections/deleteBook",
+                icon: <DeleteIcon></DeleteIcon>,
                 requiresSavePermission: true, // for consistency, but not used since shouldShow is defined
                 // Allowed for the downloaded books collection and the editable collection (provided the book is checked out, if applicable)
                 shouldShow: () =>

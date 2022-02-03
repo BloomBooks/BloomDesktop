@@ -44,6 +44,7 @@ namespace Bloom.CollectionTab
 		private TeamCollectionManager _tcManager;
 		private readonly BloomWebSocketServer _webSocketServer;
 		private LocalizationChangedEvent _localizationChangedEvent;
+		private BookCollectionHolder _bookCollectionHolder;
 
 		public LibraryModel(string pathToLibrary, CollectionSettings collectionSettings,
 			//SendReceiver sendReceiver,
@@ -57,6 +58,7 @@ namespace Bloom.CollectionTab
 			BookThumbNailer thumbNailer,
 			TeamCollectionManager tcManager,
 			BloomWebSocketServer webSocketServer,
+			BookCollectionHolder bookCollectionHolder,
 			LocalizationChangedEvent localizationChangedEvent)
 		{
 			_bookSelection = bookSelection;
@@ -71,6 +73,7 @@ namespace Bloom.CollectionTab
 			_thumbNailer = thumbNailer;
 			_tcManager = tcManager;
 			_webSocketServer = webSocketServer;
+			_bookCollectionHolder = bookCollectionHolder;
 			_localizationChangedEvent = localizationChangedEvent;
 
 			createFromSourceBookCommand.Subscribe(CreateFromSourceBook);
@@ -260,6 +263,8 @@ namespace Bloom.CollectionTab
 			{
 				editableCollection = _bookCollectionFactory(_pathToLibrary,
 					BookCollection.CollectionType.TheOneEditableCollection);
+				if (_bookCollectionHolder != null)
+					_bookCollectionHolder.TheOneEditableCollection = editableCollection;
 				SetupChangeNotifications(editableCollection);
 			}
 

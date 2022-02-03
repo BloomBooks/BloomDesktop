@@ -60,7 +60,8 @@ namespace Bloom.TeamCollection
 		}
 		 
 		public FolderTeamCollection(ITeamCollectionManager manager, string localCollectionFolder,
-			string repoFolderPath, TeamCollectionMessageLog tcLog=null) : base(manager, localCollectionFolder, tcLog)
+			string repoFolderPath, TeamCollectionMessageLog tcLog=null, BookCollectionHolder bookCollectionHolder=null)
+			: base(manager, localCollectionFolder, tcLog, bookCollectionHolder)
 		{
 			_repoFolderPath = repoFolderPath;
 		}

@@ -38,6 +38,7 @@ namespace Bloom.TeamCollection
 	{
 		private readonly BloomWebSocketServer _webSocketServer;
 		private readonly BookStatusChangeEvent _bookStatusChangeEvent;
+		private BookCollectionHolder _bookCollectionHolder;
 		public TeamCollection CurrentCollection { get; private set; }
 		// Normally the same as CurrentCollection, but CurrentCollection is only
 		// non-null when we have a fully functional Team Collection operating.
@@ -175,11 +176,12 @@ namespace Bloom.TeamCollection
 
 		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer,
 			BookRenamedEvent bookRenamedEvent, BookStatusChangeEvent bookStatusChangeEvent,
-			BookSelection bookSelection, LibraryClosing libraryClosingEvent)
+			BookSelection bookSelection, LibraryClosing libraryClosingEvent, BookCollectionHolder bookCollectionHolder)
 		{
 			_webSocketServer = webSocketServer;
 			_bookStatusChangeEvent = bookStatusChangeEvent;
 			_localCollectionFolder = Path.GetDirectoryName(localCollectionPath);
+			_bookCollectionHolder = bookCollectionHolder;
 			BookSelection = bookSelection;
 			libraryClosingEvent?.Subscribe((x) =>
 			{
@@ -209,7 +211,7 @@ namespace Bloom.TeamCollection
 						try
 						{
 							var repoFolderPath = RepoFolderPathFromLinkPath(tempCollectionLinkPath);
-							var tempCollection = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath);
+							var tempCollection = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath, bookCollectionHolder:_bookCollectionHolder);
 							var problemWithConnection = tempCollection.CheckConnection();
 							if (problemWithConnection == null)
 							{
@@ -254,7 +256,8 @@ namespace Bloom.TeamCollection
 				try
 				{
 					var repoFolderPath = RepoFolderPathFromLinkPath(localCollectionLinkPath);
-					CurrentCollection = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath); // will be replaced if CheckConnection fails
+					CurrentCollection = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath,
+						bookCollectionHolder: _bookCollectionHolder); // will be replaced if CheckConnection fails
 					// BL-10704: We set this to the CurrentCollection BEFORE checking the connection,
 					// so that there will be a valid MessageLog if we need it during CheckConnection().
 					// If CheckConnection() fails, it will reset this to a DisconnectedTeamCollection.
@@ -366,7 +369,7 @@ namespace Bloom.TeamCollection
 			// (Currently there is no way to change this except to hand-edit the file.)
 			Settings.Administrators = new[] {CurrentUser};
 			Settings.Save();
-			var newTc = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath);
+			var newTc = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath, bookCollectionHolder: _bookCollectionHolder);
 			newTc.CollectionId = collectionId;
 			newTc.SocketServer = SocketServer;
 			newTc.TCManager = this;

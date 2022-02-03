@@ -171,6 +171,7 @@ namespace Bloom
 							typeof(BulkBloomPubCreator),
 							typeof(LibraryPublishApi),
 							typeof(WorkspaceApi),
+							typeof(BookCollectionHolder),
 							typeof(WorkspaceTabSelection)
 						}.Contains(t));
 
@@ -221,7 +222,7 @@ namespace Bloom
 							c.Resolve<BloomWebSocketServer>(), c.Resolve<BookRenamedEvent>(),
 							c.Resolve<BookStatusChangeEvent>(),
 							c.Resolve<BookSelection>(),
-							c.Resolve<LibraryClosing>())).InstancePerLifetimeScope();
+							c.Resolve<LibraryClosing>(), c.Resolve<BookCollectionHolder>())).InstancePerLifetimeScope();
 						builder.Register<ITeamCollectionManager>(c => c.Resolve<TeamCollectionManager>()).InstancePerLifetimeScope();
 						builder.Register<CollectionSettings>(c =>
 						{
@@ -244,7 +245,7 @@ namespace Bloom
 								c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(),
 								c.Resolve<EditBookCommand>(), c.Resolve<CreateFromSourceBookCommand>(), c.Resolve<BookServer>(),
 								c.Resolve<CurrentEditableCollectionSelection>(), c.Resolve<BookThumbNailer>(), c.Resolve<TeamCollectionManager>(),
-								c.Resolve<BloomWebSocketServer>(), c.Resolve<LocalizationChangedEvent>())).InstancePerLifetimeScope();
+								c.Resolve<BloomWebSocketServer>(), c.Resolve<BookCollectionHolder>(), c.Resolve<LocalizationChangedEvent>())).InstancePerLifetimeScope();
 
 					// Keep in sync with OptimizedFileLocator: it wants to return the object created here.
 					builder.Register<IChangeableFileLocator>(
