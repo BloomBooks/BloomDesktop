@@ -139,7 +139,7 @@ export const BooksOfCollection: React.FunctionComponent<{
     const collectionMenuItems = makeMenuItems(
         collectionMenuItemsSpecs,
         props.isEditableCollection,
-        props.manager.getSelectedBookInfo()!.saveable,
+        props.manager.getSelectedBookInfo()?.saveable ?? false,
         handleClose,
         // the collection menu commands don't actually use the ID of
         // a particular book
