@@ -1253,7 +1253,10 @@ namespace Bloom.Workspace
 
 		public void SetStateOfNonPublishTabs(bool enable)
 		{
-			_legacyCollectionTab.Enabled = enable;
+			if (_legacyCollectionTab != null)
+				_legacyCollectionTab.Enabled = enable;
+			if (_reactCollectionTab != null)
+				_reactCollectionTab.Enabled = enable;
 			_editTab.Enabled = enable;
 		}
 
