@@ -17,6 +17,7 @@ import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import { Divider, ListItemIcon, ListItemText } from "@material-ui/core";
 import { BookSelectionManager, useIsSelected } from "./bookSelectionManager";
 import LazyLoad, { forceCheck } from "react-lazyload";
+import { Link } from "../react_components/link";
 
 export interface IBookInfo {
     id: string;
@@ -211,6 +212,19 @@ export const BooksOfCollection: React.FunctionComponent<{
                         );
                     })}
                 </Grid>
+            )}
+            {collection.containsDownloadedBooks && (
+                <Link
+                    l10nKey="CollectionTab.BloomLibraryLinkLabel"
+                    href="https://bloomlibrary.org"
+                    css={css`
+                        color: white !important;
+                        text-decoration: underline !important;
+                        font-size: 0.8rem !important;
+                    `}
+                >
+                    Get more source books at BloomLibrary.org
+                </Link>
             )}
             {contextMousePoint && (
                 <Menu
