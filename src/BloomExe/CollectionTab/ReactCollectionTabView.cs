@@ -25,6 +25,7 @@ namespace Bloom.CollectionTab
 		private BookSelection _bookSelection;
 		private BloomWebSocketServer _webSocketServer;
 		private TeamCollectionManager _tcManager;
+		private bool _bookChangesPending = false; // bookchanged event while tab not visible
 
 		public delegate ReactCollectionTabView Factory();//autofac uses this
 
@@ -76,6 +77,8 @@ namespace Bloom.CollectionTab
 				if (c.To == this)
 				{
 					Logger.WriteEvent("Entered Collections Tab");
+					if (_bookChangesPending && _bookSelection.CurrentSelection != null)
+						UpdateForBookChanges(_bookSelection.CurrentSelection);
 				}
 			});
 			SetTeamCollectionStatus(tcManager);
@@ -121,14 +124,26 @@ namespace Bloom.CollectionTab
 				_model.UpdateThumbnailAsync(book);
 			book.ContentsChanged += (sender, args) =>
 			{
-				_model.UpdateThumbnailAsync(book);
-				_model.UpdateLabelOfBookInEditableCollection(book);
-				// This not-quite-ideally-named message causes the preview to update
-				// (it's being shared with the TC book status panel, though that is less likely
-				// to need updating just because the book was saved).
-				_webSocketServer.SendEvent("bookStatus", "reload");
+				if (_tabSelection.ActiveTab == WorkspaceTab.collection)
+				{
+					UpdateForBookChanges(book);
+				}
+				else
+				{
+					_bookChangesPending = true;
+				}
 			};
 		}
+
+		private void UpdateForBookChanges(Book.Book book)
+		{
+			_model.UpdateThumbnailAsync(book);
+			_model.UpdateLabelOfBookInEditableCollection(book);
+			// This message causes the preview to update.
+			_webSocketServer.SendEvent("bookContent", "reload");
+			_bookChangesPending = false;
+		}
+
 		private void OnBookCollectionCreated(object collection, EventArgs args)
 		{
 			var c = collection as BookCollection;
