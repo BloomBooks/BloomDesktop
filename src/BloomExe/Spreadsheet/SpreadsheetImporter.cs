@@ -22,6 +22,7 @@ namespace Bloom.Spreadsheet
 	public class SpreadsheetImporter
 	{
 		private readonly HtmlDom _dest;
+		private readonly Book.Book _book;
 		private InternalSpreadsheet _sheet;
 		private int _currentRowIndex;
 		private int _currentPageIndex;
@@ -73,6 +74,7 @@ namespace Bloom.Spreadsheet
 		public SpreadsheetImporter(IBloomWebSocketServer webSocketServer, Book.Book book, string pathToSpreadsheetFolder)
 			: this(webSocketServer, book.OurHtmlDom, pathToSpreadsheetFolder, book.FolderPath, book.CollectionSettings)
 		{
+			_book = book;
 		}
 
 		/// <summary>
@@ -199,9 +201,14 @@ namespace Bloom.Spreadsheet
 				_currentRowIndex++;
 			}
 			if (_collectionSettings != null)
+			{
+				// This section is necessary to make sure changes to the dom are recorded.
 				_dest.UpdatePageNumberAndSideClassOfPages(
 					_collectionSettings.CharactersForDigitsForPageNumbers,
 					_collectionSettings.Language1.IsRightToLeft);
+				_book.BringXmatterHtmlUpToDate(_dest);
+				_book.Save();
+			}
 
 			Progress("Done");
 			return _warnings;
@@ -209,68 +216,73 @@ namespace Bloom.Spreadsheet
 
 		private void PutRowInImage(ContentRow currentRow)
 		{
-			var imgSrc = currentRow.GetCell(InternalSpreadsheet.ImageSourceColumnLabel).Content;
-			if (imgSrc == InternalSpreadsheet.BlankContentIndicator)
+			var spreadsheetImgPath = currentRow.GetCell(InternalSpreadsheet.ImageSourceColumnLabel).Content;
+			if (spreadsheetImgPath == InternalSpreadsheet.BlankContentIndicator)
 			{
-				imgSrc = "placeHolder.png";
+				spreadsheetImgPath = "placeHolder.png";
 			}
 
-			var imgFileName = Path.GetFileName(imgSrc);
-			var bloomSrc = Path.GetFileName(imgFileName);
-			var img = GetImgFromContainer(_currentImageContainer);
+			var destFileName = Path.GetFileName(spreadsheetImgPath);
+
+			var imgElement = GetImgFromContainer(_currentImageContainer);
 			// Enhance: warn if null?
-			img?.SetAttribute("src", UrlPathString.CreateFromUnencodedString(bloomSrc).UrlEncoded);
+			imgElement?.SetAttribute("src", UrlPathString.CreateFromUnencodedString(destFileName).UrlEncoded);
 			// Earlier versions of Bloom often had explicit height and width settings on images.
 			// In case anything of the sort remains, it probably won't be correct for the new image,
 			// so best to get rid of it.
-			img?.RemoveAttribute("height");
-			img?.RemoveAttribute("width");
+			imgElement?.RemoveAttribute("height");
+			imgElement?.RemoveAttribute("width");
 			// image containers often have a generated title attribute that gives the file name and
 			// notes about its resolution, etc. We think it will be regenerated as needed, but certainly
 			// the one from a previous image is no use.
 			_currentImageContainer.RemoveAttribute("title");
 			if (_pathToSpreadsheetFolder != null) //currently will only be null in tests
 			{
-				// To my surprise, if imgSrc is rooted (a full path), this will just use it,
+				// To my surprise, if spreadsheetImgPath is rooted (a full path), this will just use it,
 				// ignoring _pathToSpreadsheetFolder, which is what we want.
-				var source = Path.Combine(_pathToSpreadsheetFolder, imgSrc);
-				if (imgSrc == "placeHolder.png")
+				var fullSpreadsheetPath = Path.Combine(_pathToSpreadsheetFolder, spreadsheetImgPath);
+				if (spreadsheetImgPath == "placeHolder.png")
 				{
 					// Don't assume the source has it, let's get a copy from files shipped with Bloom
-					source = Path.Combine(BloomFileLocator.FactoryCollectionsDirectory, "template books",
+					fullSpreadsheetPath = Path.Combine(BloomFileLocator.FactoryCollectionsDirectory, "template books",
 						"Basic Book", "placeHolder.png");
 				}
 
-				try
+				CopyImageFileToDestination(destFileName, fullSpreadsheetPath, imgElement);
+			}
+		}
+
+		private void CopyImageFileToDestination(string destFileName, string fullSpreadsheetPath, XmlElement imgElement=null)
+		{
+			try
+			{
+				if (_pathToBookFolder != null && _pathToSpreadsheetFolder != null)
 				{
-					// Copy image file to destination
-					if (_pathToBookFolder != null && _pathToSpreadsheetFolder != null)
+					var dest = Path.Combine(_pathToBookFolder, destFileName);
+					if (RobustFile.Exists(fullSpreadsheetPath))
 					{
-						var dest = Path.Combine(_pathToBookFolder, bloomSrc);
-						if (RobustFile.Exists(source))
-						{
-							RobustFile.Copy(source, dest, true);
-							ImageUpdater.UpdateImgMetadataAttributesToMatchImage(_pathToBookFolder, img,
-								new NullProgress());
-						}
-						else
-						{
-							// Review: I doubt these messages are worth localizing? The sort of people who attempt
-							// spreadsheet import can likely cope with some English?
-							// +1 conversion from zero-based to 1-based counting, further adding header.RowCount
-							// makes it match up with the actual row label in the spreadsheet.
-							Warn(
-								$"Image \"{source}\" on row {_currentRowIndex + 1 + _sheet.Header.RowCount} was not found.");
-						}
+						RobustFile.Copy(fullSpreadsheetPath, dest, true);
+						if (imgElement != null)
+							ImageUpdater.UpdateImgMetadataAttributesToMatchImage(_pathToBookFolder, imgElement,
+							new NullProgress());
+					}
+					else
+					{
+						// Review: I doubt these messages are worth localizing? The sort of people who attempt
+						// spreadsheet import can likely cope with some English?
+						// +1 conversion from zero-based to 1-based counting, further adding header.RowCount
+						// makes it match up with the actual row label in the spreadsheet.
+						Warn(
+							$"Image \"{fullSpreadsheetPath}\" on row {_currentRowIndex + 1 + _sheet.Header.RowCount} was not found.");
 					}
 				}
-				catch (Exception e) when (e is IOException || e is SecurityException ||
-				                          e is UnauthorizedAccessException)
-				{
-					Warn(
-						$"Bloom had trouble copying the file {source} to the book folder or retrieving its metadata: " +
-						e.Message);
-				}
+			}
+			catch (Exception e) when (e is IOException || e is SecurityException ||
+									  e is UnauthorizedAccessException)
+			{
+				Warn(
+					$"Bloom had trouble copying the file {fullSpreadsheetPath} to the book folder or retrieving its metadata: " +
+					e.Message);
 			}
 		}
 
@@ -330,7 +342,8 @@ namespace Bloom.Spreadsheet
 			}
 
 			var imageSrcCol = _sheet.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
-			var imageSrc = imageSrcCol >= 0 ? Path.GetFileName(currentRow.GetCell(imageSrcCol).Content) : null;
+			var imageSrc = imageSrcCol >= 0 ? currentRow.GetCell(imageSrcCol).Content : null; // includes "images" folder
+			var imageFileName = Path.GetFileName(imageSrc);
 			bool specificLanguageContentFound = false;
 			bool asteriskContentFound = false;
 
@@ -338,17 +351,21 @@ namespace Bloom.Spreadsheet
 			//src of the image in the actual pages of the document, though we haven't found a case where they differ.
 			//So during export we put the innerText into the image source column, and want to put it into
 			//both src and innertext on import, unless the element is in the noSrcAttribute list
-			if (imageSrc.Length > 0)
+			if (imageFileName.Length > 0)
 			{
 				templateNode.SetAttribute("lang", "*");
-				templateNode.InnerText = imageSrc;
+				templateNode.InnerText = imageFileName;
 
-				if (! SpreadsheetExporter.DataDivImagesWithNoSrcAttributes.Contains(dataBookLabel))
+				if (!SpreadsheetExporter.DataDivImagesWithNoSrcAttributes.Contains(dataBookLabel))
 				{
-					templateNode.SetAttribute("src", imageSrc);
+					templateNode.SetAttribute("src", imageFileName);
 				}
 				if (templateNodeIsNew)
 					AddDataBookNode(templateNode);
+
+				// Make sure the image gets copied over too.
+				var fullSpreadsheetPath = Path.Combine(_pathToSpreadsheetFolder, imageSrc);
+				CopyImageFileToDestination(imageFileName, fullSpreadsheetPath);
 			}
 			else //This is not an image node
 			{
