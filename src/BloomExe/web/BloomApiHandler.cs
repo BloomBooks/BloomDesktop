@@ -120,6 +120,23 @@ namespace Bloom.Api
 			}, handleOnUiThread, requiresSync);
 		}
 
+		public void RegisterBooleanEndpointHandlerExact(string pattern, Func<ApiRequest, bool> readAction, Action<ApiRequest, bool> writeAction,
+			bool handleOnUiThread, bool requiresSync = true)
+		{
+			RegisterEndpointHandlerExact(pattern, request =>
+			{
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					request.ReplyWithBoolean(readAction(request));
+				}
+				else // post
+				{
+					writeAction(request, request.RequiredPostBooleanAsJson());
+					request.PostSucceeded();
+				}
+			}, handleOnUiThread, requiresSync);
+		}
+
 		/// <summary>
 		/// Samed as RegisterEndpointHandler, but for Endpoints that may be called by other endpoint handlers which are synchronous.
 		/// If so, sets RequiresSync to false (because it would deadlock if a synchronous handler spawned off another synchronous handler)
