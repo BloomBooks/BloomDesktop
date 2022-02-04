@@ -26,6 +26,8 @@ namespace BloomTests.TeamCollection
 		private TeamCollectionMessageLog _tcLog;
 		string kBookRenamedRemotely = "Book renamed remotely";
 		private string kNewNameForRemoteRename = "New name for remote rename";
+		private string kRepoNameForIdConflict = "Repo name for conflicting ID book";
+		private string kLocalNameForIdConflict = "Local name for conflicting ID book";
 
 		[OneTimeSetUp]
 		public void OneTimeSetup()
@@ -191,6 +193,21 @@ namespace BloomTests.TeamCollection
 			RobustFile.Delete(Path.Combine(_collectionFolder.FolderPath, kBookRenamedRemotely,
 				kNewNameForRemoteRename + ".htm")); // get rid of the 'new' content
 
+			// Simulate a book that is in the repo, where there is a local book that has no status, a different name,
+			// and the same ID. This might indicate (a) that it was renamed by someone else after this user's pre-TC
+			// copy of the collection diverged; (b) that it was renamed by this user after the divergence;
+			// (c) that they were independently copied from some common-ID source.
+			// We will treat this as a conflict, moving the local version to lost and found, even on a first time join.
+			MakeBook(kRepoNameForIdConflict, "This is the repo version of a book that has a no-status local book with the same ID.");
+			// Move the local version to a new folder
+			var oldFolder2 = Path.Combine(_collectionFolder.FolderPath, kRepoNameForIdConflict);
+			var newFolder2 = Path.Combine(_collectionFolder.FolderPath, kLocalNameForIdConflict);
+			RobustIO.MoveDirectory(oldFolder2, newFolder2);
+			var localStatusPath =
+				Bloom.TeamCollection.TeamCollection.GetStatusFilePath(kLocalNameForIdConflict,
+					_collectionFolder.FolderPath);
+			RobustFile.Delete(localStatusPath);
+
 			// Make a couple of folders that are legitimately present, but not books.
 			var allowedWords = Path.Combine(_collectionFolder.FolderPath, "Allowed Words");
 			Directory.CreateDirectory(allowedWords);
@@ -242,8 +259,8 @@ namespace BloomTests.TeamCollection
 		public virtual void SyncAtStartup_ProducesNoUnexpectedMessages()
 		{
 			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(3), "Unexpected number of progress warnings produced.");
-			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(5), "Unexpected number of progress errors produced. Did you mean to add one?");
-			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(4), "Unexpected number of progress messages produced. Did you mean to add one?");
+			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(6), "Unexpected number of progress errors produced. Did you mean to add one?");
+			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(5), "Unexpected number of progress messages produced. Did you mean to add one?");
 		}
 
 		[Test]
@@ -276,6 +293,18 @@ namespace BloomTests.TeamCollection
 				Is.True);
 		}
 
+		[Test]
+		public void SyncAtStartup_IdConflict_MovesToLostAndFound()
+		{
+			var conflictPath = Path.Combine(_collectionFolder.FolderPath, kLocalNameForIdConflict);
+			Assert.That(Directory.Exists(conflictPath), Is.False);
+			var fixedLocalPath = Path.Combine(_collectionFolder.FolderPath, kRepoNameForIdConflict);
+			Assert.That(Directory.Exists(fixedLocalPath));
+			AssertLostAndFound(kLocalNameForIdConflict);
+			AssertProgress("The book \"{0}\" was moved to Lost & Found, since it has the same ID as the book \"{1}\" in the repo.",
+				kLocalNameForIdConflict, kRepoNameForIdConflict,MessageAndMilestoneType.ErrorNoReload);
+			AssertProgress("Fetching a new book '{0}' from the Team Collection", kRepoNameForIdConflict);
+		}
 		[Test]
 		public void SyncAtStartup_RemoteRename_RenamedLocally()
 		{
@@ -589,8 +618,8 @@ namespace BloomTests.TeamCollection
 		public override void SyncAtStartup_ProducesNoUnexpectedMessages()
 		{
 			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(1), "Unexpected number of progress warnings produced. Did you mean to add one?");
-			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(6), "Unexpected number of progress errors produced. Did you mean to add one?");
-			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(4), "Unexpected number of progress messages produced. Did you mean to add one?");
+			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(7), "Unexpected number of progress errors produced. Did you mean to add one?");
+			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(5), "Unexpected number of progress messages produced. Did you mean to add one?");
 		}
 
 		public override void SyncAtStartup_BookDeletedRemotely_NoTombstone_BecomesNewLocalBook()

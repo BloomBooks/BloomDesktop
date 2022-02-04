@@ -233,6 +233,10 @@ namespace Bloom.TeamCollection
 				status = status.WithLockedBy(null);
 			var oldName = GetLocalStatus(bookFolderName).oldName;
 			PutBookInRepo(folderPath, status, inLostAndFound, progressCallback);
+			// If this is true, we're about to delete or overwrite the book, so no point
+			// in updating its status (and we never call with this true in regard to a rename).
+			if (inLostAndFound)
+				return status;
 			// We want the local status to reflect the latest repo status.
 			// In particular, it should have the correct checksum, and if
 			// we've renamed the book, we should no longer record the old name.
@@ -1571,7 +1575,7 @@ namespace Bloom.TeamCollection
 
 			var hasProblems = false; //set true if we get any problems
 
-			var newBooks = GetNewRepoBookMap();
+			var repoBooksByIdMap = GetRepoBooksByIdMap();
 
 			// The list of these that we maintain to track changes while we are running
 			// is distinct from the list that is a local variable here and tracks ones
@@ -1612,7 +1616,7 @@ namespace Bloom.TeamCollection
 							// (but independent of any checkout process)
 							// In the latter two cases we will keep the local version but not do an automatic checkin.
 							var id = GetBookId(bookFolderName);
-							var bookHasBeenRenamed = id != null && newBooks.TryGetValue(id, out string newName);
+							var bookHasBeenRenamed = id != null && repoBooksByIdMap.TryGetValue(id, out Tuple<string, bool> repoState) && !repoState.Item2;
 							// We also don't want to add it back if it is known to have been deleted.
 							// It's somewhat questionable what should happen if it has local status but isn't one
 							// of the cases above. Suggests it has somehow gone away remotely, but not in one
@@ -1629,7 +1633,22 @@ namespace Bloom.TeamCollection
 						// no sign of book in repo...should we delete it?
 						if (!File.Exists(localStatusFilePath))
 						{
-							// If there's no local status, presume it's a newly created local file and keep it
+							var id = GetBookId(bookFolderName);
+							if (id != null && repoBooksByIdMap.TryGetValue(id, out Tuple<string, bool> repoState))
+							{
+								// We have a book in the repo with this ID but a different name. This is a conflict,
+								// whether or not we have a local book by the same name, and whether or not we're
+								// joining for the first time
+								PutBook(path,inLostAndFound:true);
+								SIL.IO.RobustIO.DeleteDirectory(path, true);
+								hasProblems = true;
+								ReportProgressAndLog(progress, ProgressKind.Error, "TeamCollection.ConflictingIdMove",
+									"The book \"{0}\" was moved to Lost & Found, since it has the same ID as the book \"{1}\" in the repo.",
+									bookFolderName, repoState.Item1);
+								// We will copy the conflicting book to local in the second loop.
+								continue;
+							}
+							// If there's no local status (and no id conflict), presume it's a newly created local book and keep it
 							continue;
 						}
 
@@ -1676,9 +1695,10 @@ namespace Bloom.TeamCollection
 						// It's not checked out here and has local status (implying it was once shared) and isn't in the repo now.
 						// Can we identify it as a rename?
 						var localId = BookMetaData.FromFolder(Path.Combine(_localCollectionFolder, bookFolderName)).Id;
-						if (newBooks.TryGetValue(localId, out string newName1))
+						if (repoBooksByIdMap.TryGetValue(localId, out Tuple<string, bool> val) && !val.Item2)
 						{
-							// We have the same book in the repo under a new name, report a remote rename.
+							// We have the same book in the repo under a new name and no corresponding local book, report a remote rename.
+							var newName1 = val.Item1;
 							ReportProgressAndLog(progress, ProgressKind.Progress, "RenameFromRemote",
 								"The book \"{0}\" has been renamed to \"{1}\" by a teammate.",
 								bookFolderName, newName1);
@@ -1940,32 +1960,28 @@ namespace Bloom.TeamCollection
 
 		/// <summary>
 		/// Return a dictionary of all books in the repo which do not correspond to a local book folder.
-		/// key: book GUID; value: book name in repo (without extension).
+		/// key: book GUID; value: (book name in repo (without extension), haveCorrespondingLocalBook).
 		/// </summary>
-		private Dictionary<string, string> GetNewRepoBookMap()
+		private Dictionary<string, Tuple<string, bool>> GetRepoBooksByIdMap()
 		{
-			var newBooks = new Dictionary<string, string>();
+			var newBooks = new Dictionary<string, Tuple<string, bool>>();
 
 			foreach (var bookName in GetBookList())
 			{
 				var localFolderPath = Path.Combine(_localCollectionFolder, bookName);
-				if (!Directory.Exists(localFolderPath))
-				{
-					// This book MIGHT be the result of renaming a book we have locally.
-					try
+				try
 					{
 						var meta = GetRepoBookFile(bookName, "meta.json");
 						if (!string.IsNullOrEmpty(meta) && meta != "error")
 						{
 							var metaData = BookMetaData.FromString(meta);
-							newBooks[metaData.Id] = bookName;
+							newBooks[metaData.Id] = Tuple.Create(bookName, Directory.Exists(localFolderPath));
 						}
 					}
 					catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
 					{
-						// we just won't treat it as a possible rename if we can't get the meta.json.
+						// we just won't treat it as a possible rename or conflict if we can't get the meta.json.
 					}
-				}
 			}
 
 			return newBooks;
