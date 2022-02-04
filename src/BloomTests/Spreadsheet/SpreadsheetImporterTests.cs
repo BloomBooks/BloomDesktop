@@ -13,6 +13,7 @@ using BloomTests.TeamCollection;
 using BloomTests.web;
 using Pango;
 using SIL.IO;
+using Bloom.Collection;
 
 namespace BloomTests.Spreadsheet
 {
@@ -207,9 +208,17 @@ namespace BloomTests.Spreadsheet
 		private TemporaryFolder _otherImagesFolder;
 		private ProgressSpy _progressSpy;
 
+		private static string GetSideClassBasedOnPage(int pageNumber)
+		{
+			var isEven = pageNumber % 2 == 0;
+			// This seems backwards at first glance, but page "1" is after page "0" (front cover),
+			// which is 'side-right'. So page 1 (odd) is 'side-left'.
+			return string.Format(@"side-{0}", isEven ? "right" : "left");
+		}
+
 		public static string PageWithImageAndText(int pageNumber, int tgNumber, int icNumber, string editableDivs = "")
 		{
-			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
+			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait {4} bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
         <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
             Basic Text &amp; Picture
         </div>
@@ -235,12 +244,12 @@ namespace BloomTests.Spreadsheet
                 </div>
             </div>
         </div>
-    </div>", pageNumber, tgNumber, icNumber, editableDivs);
+    </div>", pageNumber, tgNumber, icNumber, editableDivs, GetSideClassBasedOnPage(pageNumber));
 		}
 
 		public static string PageWith2ImagesAnd2Texts(int pageNumber, int tgNumber, int icNumber)
 		{
-			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
+			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait {5} bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
         <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
             Basic Text &amp; Picture
         </div>
@@ -296,14 +305,12 @@ namespace BloomTests.Spreadsheet
             </div>
         </div>
     </div>
-", pageNumber, tgNumber, icNumber, tgNumber+1, icNumber+1);
+", pageNumber, tgNumber, icNumber, tgNumber+1, icNumber+1, GetSideClassBasedOnPage(pageNumber));
 		}
-
-
 
 		public static string PageWithJustText(int pageNumber, int tgNumber)
 		{
-			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
+			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait {2} bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
         <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
             Basic Text &amp; Picture
         </div>
@@ -323,14 +330,14 @@ namespace BloomTests.Spreadsheet
                 </div>
             </div>
         </div>
-    </div>", pageNumber, tgNumber);
+    </div>", pageNumber, tgNumber, GetSideClassBasedOnPage(pageNumber));
 		}
 
 		// The image has a slot for an imageDescription, which will mess up all kinds of things
 		// if we don't ignore it properly.
 		public static string PageWithJustImage(int pageNumber, int icNumber)
 		{
-			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
+			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait {2} bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
         <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
             Basic Text &amp; Picture
         </div>
@@ -349,7 +356,7 @@ namespace BloomTests.Spreadsheet
                 </div>
             </div>
         </div>
-    </div>", pageNumber, icNumber);
+    </div>", pageNumber, icNumber, GetSideClassBasedOnPage(pageNumber));
 		}
 
 		public static string coverPage =
@@ -610,9 +617,16 @@ namespace BloomTests.Spreadsheet
 
 			_bookFolder = new TemporaryFolder("SpreadsheetImageAndTextImportTests");
 
+			// This test class has a test (HasCorrectSideClass) that needs the Importer to have a
+			// CollectionSettings object. So we create a basic set of CollectionSettings, but we don't need
+			// very much and we certainly don't need to save it anywhere.
+			var settings = new NewCollectionSettings();
+			settings.Language1.Iso639Code = "es";
+			settings.Language1.SetName("Spanish", false);
+
 			// Do the import
 			_progressSpy = new ProgressSpy();
-			var importer = new SpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
+			var importer = new SpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath, settings);
 			_warnings = importer.Import(ss, _progressSpy);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
@@ -770,6 +784,30 @@ namespace BloomTests.Spreadsheet
 		public void GotProgressMessage(string message)
 		{
 			Assert.That(_progressSpy.Messages, Has.Some.Property("Item1").Contains(message));
+		}
+
+		[TestCase(0, "side-left")]
+		[TestCase(1, "side-right")]
+		[TestCase(2, "side-left")]
+		[TestCase(3, "side-right")]
+		[TestCase(4, "side-left")]
+		[TestCase(5, "side-right")]
+		[TestCase(6, "side-left")]
+		[TestCase(7, "side-right")]
+		[TestCase(8, "side-left")]
+		[TestCase(9, "side-right")]
+		[TestCase(10, "side-left")]
+		[TestCase(11, "side-right")]
+		[TestCase(12, "side-left")]
+		[TestCase(13, "side-right")]
+		[TestCase(14, "side-left")]
+		public void HasCorrectSideClass(int n, string expectedClass)
+		{
+			// Page 0 is 'side-left' because the only page before it was the front-cover, which is 'side-right'.
+			// Without the fix 6, 7, 9, 10, 12 and 14 will fail. This corresponds to pages that were added.
+			var unexpectedClass = expectedClass == "side-right" ? "side-left" : "side-right";
+			AssertThatXmlIn.Element(_contentPages[n]).HasNoMatchForXpath($"self::div[contains(@class, '" + unexpectedClass + "')]");
+			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($"self::div[contains(@class, '" + expectedClass + "')]", 1);
 		}
 	}
 
