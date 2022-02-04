@@ -184,8 +184,8 @@ namespace Bloom.Book
 			if (BookInfo.FileNameLocked)
 			{
 				// Forced rename
-				BookHistory.AddEvent(this, BookHistoryEventType.Created,
-					$"The book with title \"{Storage.Dom.Title}\" had its folder set to \"{Path.GetFileName(FolderPath)}\"");
+				BookHistory.AddEvent(this, BookHistoryEventType.Renamed,
+					$"Book renamed to \"{Path.GetFileName(FolderPath)}\"");
 			}
 			else
 			{
