@@ -18,6 +18,8 @@ import { Divider, ListItemIcon, ListItemText } from "@material-ui/core";
 import { BookSelectionManager, useIsSelected } from "./bookSelectionManager";
 import LazyLoad, { forceCheck } from "react-lazyload";
 import { Link } from "../react_components/link";
+import { ApiCheckbox } from "../react_components/ApiCheckbox";
+import { ApiBackedCheckbox } from "../react_components/apiBackedCheckbox";
 
 export interface IBookInfo {
     id: string;
@@ -279,6 +281,8 @@ export interface MenuItemSpec {
     requiresSavePermission?: boolean;
     submenu?: MenuItemSpec[];
     icon?: React.ReactNode;
+    // if true, menu item is rendered as an ApiCheckbox with the command as its api.
+    checkbox?: boolean;
 }
 
 // This function and the associated MenuItem classes want to become a general component for making
@@ -333,6 +337,17 @@ export const makeMenuItems = (
                 }
             }
 
+            if (spec.checkbox) {
+                return (
+                    <LocalizableCheckboxMenuItem
+                        english={spec.label}
+                        l10nId={spec.l10nId!}
+                        onClick={() => close()}
+                        apiEndpoint={spec.command!}
+                        icon={spec.icon}
+                    ></LocalizableCheckboxMenuItem>
+                );
+            }
             // It should be possible to use spec.onClick || () => handleBookCommand(spec.command!) inline,
             // but I can't make Typescript accept it.
             let clickAction: React.MouseEventHandler = () => {
@@ -397,6 +412,26 @@ const LocalizableMenuItem: React.FunctionComponent<{
             ) : (
                 label
             )}
+        </MenuItem>
+    );
+};
+
+const LocalizableCheckboxMenuItem: React.FunctionComponent<{
+    english: string;
+    l10nId: string;
+    onClick: React.MouseEventHandler<HTMLElement>;
+    apiEndpoint: string;
+    icon?: React.ReactNode;
+}> = props => {
+    const label = useL10n(props.english, props.l10nId);
+    return (
+        <MenuItem key={props.l10nId} onClick={props.onClick}>
+            <ApiBackedCheckbox
+                l10nKey={props.l10nId!}
+                apiEndpoint={props.apiEndpoint}
+            >
+                {label}
+            </ApiBackedCheckbox>
         </MenuItem>
     );
 };

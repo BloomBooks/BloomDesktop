@@ -148,6 +148,21 @@ export const BookButton: React.FunctionComponent<{
                 l10nId: "CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem",
                 command: "bookCommand/saveAsDotBloomSource"
             },
+            {
+                label: "Leveled Reader",
+                l10nId: "TemplateBooks.BookName.Leveled Reader", // not the most appropriate ID, but we have it already
+                command: "bookCommand/leveled",
+                requiresSavePermission: true,
+                checkbox: true
+            },
+            { label: "-" },
+            {
+                label: "Decodable Reader",
+                l10nId: "TemplateBooks.BookName.Decodable Reader", // not the most appropriate ID, but we have it already
+                command: "bookCommand/decodable",
+                requiresSavePermission: true,
+                checkbox: true
+            },
             { label: "-" },
             {
                 label: "Update Thumbnail",

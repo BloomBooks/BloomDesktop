@@ -121,6 +121,27 @@ namespace Bloom.Api
 		}
 
 		/// <summary>
+		/// Handle simple boolean reads/writes where the 'pattern' is exactly equal to the localPath of the URI to be handled
+		/// (after removing the initial api/, which should be in the URI but not in the pattern here).
+		/// </summary>
+		public void RegisterBooleanEndpointHandlerExact(string pattern, Func<ApiRequest, bool> readAction, Action<ApiRequest, bool> writeAction,
+			bool handleOnUiThread, bool requiresSync = true)
+		{
+			RegisterEndpointHandlerExact(pattern, request =>
+			{
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					request.ReplyWithBoolean(readAction(request));
+				}
+				else // post
+				{
+					writeAction(request, request.RequiredPostBooleanAsJson());
+					request.PostSucceeded();
+				}
+			}, handleOnUiThread, requiresSync);
+		}
+
+		/// <summary>
 		/// Samed as RegisterEndpointHandler, but for Endpoints that may be called by other endpoint handlers which are synchronous.
 		/// If so, sets RequiresSync to false (because it would deadlock if a synchronous handler spawned off another synchronous handler)
 		/// The caller should make sure that this endpoint handler can operate correctly without exclusive access to the lock!
