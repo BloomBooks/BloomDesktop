@@ -42,6 +42,7 @@ namespace Bloom.web.controllers
 			this._spreadsheetApi = spreadsheetApi;
 			_libraryModel.BookCommands = this;
 		}
+
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			// Must not require sync, because it launches a Bloom dialog, which will make other api requests
@@ -62,6 +63,15 @@ namespace Bloom.web.controllers
 				RequestButtonLabelUpdate(collection, id);
 				request.PostSucceeded();
 			}, false, false);
+			// Todo: figure how to get and set the real thing. Make an Exact version of RegisterBooleanEndpointHandler and use it.
+			apiHandler.RegisterBooleanEndpointHandler("bookCommand/decodable",
+				request => { return _libraryModel.IsBookDecodable;},
+				(request, b) => { _libraryModel.SetIsBookDecodable(b);},
+				true);
+			apiHandler.RegisterBooleanEndpointHandler("bookCommand/leveled",
+				request => { return _libraryModel.IsBookLeveled; },
+				(request, b) => { _libraryModel.SetIsBookLeveled(b); },
+				true);
 			apiHandler.RegisterEndpointHandler("bookCommand/", HandleBookCommand, true);
 		}
 
