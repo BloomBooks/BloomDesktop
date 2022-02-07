@@ -147,7 +147,7 @@ namespace Bloom.web.controllers
 				{
 					fullWidgetPath = EditingModel.CreateWidgetFromHtmlFolder(fullWidgetPath);
 				}
-				string activityName = View.Model.MakeActivity(fullWidgetPath);
+				string activityName = View.Model.MakeWidget(fullWidgetPath);
 				var url = UrlPathString.CreateFromUnencodedString(activityName);
 				request.ReplyWithText(url.UrlEncodedForHttpPath);
 				// clean up the temporary widget file we created.

@@ -21,7 +21,7 @@ namespace Bloom.Spreadsheet
 	/// </summary>
 	public class SpreadsheetImporter
 	{
-		private readonly HtmlDom _dest;
+		private HtmlDom _destinationDom;
 		private InternalSpreadsheet _sheet;
 		private int _currentRowIndex;
 		private int _currentPageIndex;
@@ -55,10 +55,10 @@ namespace Bloom.Spreadsheet
 		/// AutoFac. However, for that to work, we'd need to move the other constructor arguments,
 		/// which AutoFac can't know, to the Import method. And for now, all callers which need
 		/// to pass a socket server already have one.</remarks>
-		public SpreadsheetImporter(IBloomWebSocketServer webSocketServer, HtmlDom dest, string pathToSpreadsheetFolder = null, string pathToBookFolder = null, CollectionSettings collectionSettings = null)
+		public SpreadsheetImporter(IBloomWebSocketServer webSocketServer, HtmlDom destinationDom, string pathToSpreadsheetFolder = null, string pathToBookFolder = null, CollectionSettings collectionSettings = null)
 		{
-			_dest = dest;
-			_dataDivElement = _dest.SafeSelectNodes("//div[@id='bloomDataDiv']").Cast<XmlElement>().First();
+			_destinationDom = destinationDom;
+			_dataDivElement = _destinationDom.SafeSelectNodes("//div[@id='bloomDataDiv']").Cast<XmlElement>().First();
 			_pathToBookFolder = pathToBookFolder;
 			_pathToSpreadsheetFolder = pathToSpreadsheetFolder;
 			_webSocketServer = webSocketServer;
@@ -103,10 +103,17 @@ namespace Bloom.Spreadsheet
 					// winforms dialog properties
 					{ Width = 620, Height = 550 }, (progress, worker) =>
 			{
-				var hasAudio = _dest.GetRecordedAudioSentences(_pathToBookFolder).Any();
+				var hasAudio = _destinationDom.GetRecordedAudioSentences(_pathToBookFolder).Any();
+				var cannotImportEnding = " For this reason, we need to abandon the import. Instead, you can import into a blank book.";
 				if (hasAudio)
 				{
-					progress.MessageWithoutLocalizing($"Warning: Spreadsheet import cannot currently preserve Talking Book audio that is already in this book. For this reason, we need to abandon the import.", ProgressKind.Error);
+					progress.MessageWithoutLocalizing($"Warning: Spreadsheet import cannot currently preserve Talking Book audio that is already in this book."+cannotImportEnding, ProgressKind.Error);
+					return true; // leave progress window up so user can see error.
+				}
+				var hasActivities = _destinationDom.HasActivityPages();
+				if (hasActivities)
+				{
+					progress.MessageWithoutLocalizing($"Warning: Spreadsheet import cannot currently preserve quizzes, widgets, or other activities that are already in this book."+ cannotImportEnding, ProgressKind.Error);
 					return true; // leave progress window up so user can see error.
 				}
 				var sheet = InternalSpreadsheet.ReadFromFile(inputFilepath, progress);
@@ -156,13 +163,13 @@ namespace Bloom.Spreadsheet
 			Progress("Importing spreadsheet...");
 			_warnings = new List<string>();
 			_inputRows = _sheet.ContentRows.ToList();
-			_pages = _dest.GetPageElements().ToList();
+			_pages = _destinationDom.GetPageElements().ToList();
 			_bookIsLandscape = _pages[0]?.Attributes["class"]?.Value?.Contains("Landscape") ?? false;
 			_currentRowIndex = 0;
 			_currentPageIndex = -1;
 			_groupsOnPage = new List<XmlElement>();
 			_imageContainersOnPage = new List<XmlElement>();
-			_destLayout = Layout.FromDom(_dest, Layout.A5Portrait);
+			_destLayout = Layout.FromDom(_destinationDom, Layout.A5Portrait);
 			while (_currentRowIndex < _inputRows.Count)
 			{
 
@@ -199,7 +206,7 @@ namespace Bloom.Spreadsheet
 				_currentRowIndex++;
 			}
 			if (_collectionSettings != null)
-				_dest.UpdatePageNumberAndSideClassOfPages(
+				_destinationDom.UpdatePageNumberAndSideClassOfPages(
 					_collectionSettings.CharactersForDigitsForPageNumbers,
 					_collectionSettings.Language1.IsRightToLeft);
 
@@ -325,7 +332,7 @@ namespace Bloom.Spreadsheet
 			else
 			{
 				templateNodeIsNew = true;
-				templateNode = _dest.RawDom.CreateElement("div");
+				templateNode = _destinationDom.RawDom.CreateElement("div");
 				templateNode.SetAttribute("data-book", dataBookLabel);
 			}
 
