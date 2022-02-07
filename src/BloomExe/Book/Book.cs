@@ -179,6 +179,11 @@ namespace Bloom.Book
 		/// </summary>
 		public static string SourceToReportForNextRename;
 
+		public void UpdateBookInfoFromDisk()
+		{
+			BookInfo.UpdateFromDisk();
+		}
+
 		private void Book_BookTitleChanged(object sender, EventArgs e)
 		{
 			if (BookInfo.FileNameLocked)

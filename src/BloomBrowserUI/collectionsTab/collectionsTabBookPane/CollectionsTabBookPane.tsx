@@ -26,7 +26,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     const [bookStatus, setBookStatus] = useState(initialBookStatus);
     const [reload, setReload] = useState(0);
     // Force a reload when told the book changed, even if it's the same book [id]
-    useSubscribeToWebSocketForEvent("bookStatus", "reload", () =>
+    useSubscribeToWebSocketForEvent("bookContent", "reload", () =>
         setReload(old => old + 1)
     );
 

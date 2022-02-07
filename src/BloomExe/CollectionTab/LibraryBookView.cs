@@ -155,7 +155,7 @@ namespace Bloom.CollectionTab
 					Application.Idle += UpdatePreview;
 					_pendingPreviewProps = new { initialBookPreviewUrl = fakeTempFile.Key }; // need this for initial selection
 					// We need this for changing selection's book info display if team collection.
-					_webSocketServer.SendEvent("bookStatus", "reload");
+					_webSocketServer.SendEvent("bookContent", "reload");
 					_reactBookPreviewControl.Visible = true;
 					RecordAndCleanupFakeFiles(fakeTempFile);
 				}

@@ -6,6 +6,7 @@ using Bloom.Workspace;
 using L10NSharp;
 using SIL.Reporting;
 using System.Drawing;
+using System.IO;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -23,6 +24,8 @@ namespace Bloom.CollectionTab
 		private WorkspaceTabSelection _tabSelection;
 		private BookSelection _bookSelection;
 		private BloomWebSocketServer _webSocketServer;
+		private TeamCollectionManager _tcManager;
+		private bool _bookChangesPending = false; // bookchanged event while tab not visible
 
 		public delegate ReactCollectionTabView Factory();//autofac uses this
 
@@ -36,6 +39,7 @@ namespace Bloom.CollectionTab
 			_tabSelection = tabSelection;
 			_bookSelection = bookSelection;
 			_webSocketServer = webSocketServer;
+			_tcManager = tcManager;
 
 			BookCollection.CollectionCreated += OnBookCollectionCreated;
 
@@ -73,6 +77,8 @@ namespace Bloom.CollectionTab
 				if (c.To == this)
 				{
 					Logger.WriteEvent("Entered Collections Tab");
+					if (_bookChangesPending && _bookSelection.CurrentSelection != null)
+						UpdateForBookChanges(_bookSelection.CurrentSelection);
 				}
 			});
 			SetTeamCollectionStatus(tcManager);
@@ -118,14 +124,26 @@ namespace Bloom.CollectionTab
 				_model.UpdateThumbnailAsync(book);
 			book.ContentsChanged += (sender, args) =>
 			{
-				_model.UpdateThumbnailAsync(book);
-				_model.UpdateLabelOfBookInEditableCollection(book);
-				// This not-quite-ideally-named message causes the preview to update
-				// (it's being shared with the TC book status panel, though that is less likely
-				// to need updating just because the book was saved).
-				_webSocketServer.SendEvent("bookStatus", "reload");
+				if (_tabSelection.ActiveTab == WorkspaceTab.collection)
+				{
+					UpdateForBookChanges(book);
+				}
+				else
+				{
+					_bookChangesPending = true;
+				}
 			};
 		}
+
+		private void UpdateForBookChanges(Book.Book book)
+		{
+			_model.UpdateThumbnailAsync(book);
+			_model.UpdateLabelOfBookInEditableCollection(book);
+			// This message causes the preview to update.
+			_webSocketServer.SendEvent("bookContent", "reload");
+			_bookChangesPending = false;
+		}
+
 		private void OnBookCollectionCreated(object collection, EventArgs args)
 		{
 			var c = collection as BookCollection;
@@ -153,7 +171,36 @@ namespace Bloom.CollectionTab
 
 		public void ReadyToShowCollections()
 		{
-			Invoke((Action) (()=> Controls.Add(_reactControl)));
+			Invoke((Action) (()=>
+			{
+				// I'm not sure this is the best place to do this. The old LibraryListView had a comment:
+				// "If we repair duplicates and there is a reason to toast (e.g. locked meta.json file),
+				// The ongoing UI activity focuses Bloom over top of the toast after a brief flash.
+				// For that reason, we add a new stage for tasks that need to happen after the UI is updated."
+				// I don't fully understand that. In that view, it was done after we created the collection buttons.
+				// My current inclination is that it's not a view responsibility at all.
+				// However, until we get rid of the old collection tab, it's tricky to move it, so I've just
+				// duplicated it here.
+				// Doing it at this point seems to work fine.
+				RepairDuplicates();
+				Controls.Add(_reactControl);
+			}));
+		}
+
+		private void RepairDuplicates()
+		{
+			var collectionPath = _model.TheOneEditableCollection.PathToDirectory;
+			// A book's ID may not be changed if we have a TC and the book is actually in the shared folder.
+			// Eventually we may allow it if the book is checked out.
+			BookInfo.RepairDuplicateInstanceIds(collectionPath, (bookPath) =>
+			{
+				if (_tcManager?.CurrentCollection == null)
+				{
+					return true; // OK to change, not a TC.
+				}
+				// Only OK if not present in the TC repo.
+				return !_tcManager.CurrentCollection.IsBookPresentInRepo(Path.GetFileName(bookPath));
+			});
 		}
 
 		internal void ManageSettings(SettingsProtectionHelper settingsLauncherHelper)

@@ -450,6 +450,9 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                             ${busy &&
                                 "cursor: progress; .checkin-button{cursor:progress;}"};
                             margin-bottom: 12px;
+                            .panel-children {
+                                margin-top: 10px; // leaves some extra space for the "What changes did you make" overlay
+                            }
                         `}
                         lockState={state}
                         title={
@@ -485,7 +488,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                             <div
                                 css={css`
                                     position: absolute;
-                                    bottom: 14px;
+                                    bottom: 25px; // aligns bottom with Checkin button
                                     width: 320px;
                                 `}
                             >
