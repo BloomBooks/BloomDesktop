@@ -579,12 +579,14 @@ namespace Bloom.TeamCollection
 				var bookName = Path.GetFileName(_bookSelection.CurrentSelection.FolderPath);
 				if (_tcManager.CurrentCollection.OkToCheckIn(bookName))
 				{
-					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, true, false, reportCheckinProgress);
 					// review: not super happy about this being here in the api. Was stymied by
 					// PutBook not knowing about the actual book object, but maybe that could be passed in.
+					// It's important that this is done BEFORE the checkin: we want other users to see the
+					// comment, and NOT see the pending comment as if it was their own if they check out.
 					var message = BookHistory.GetPendingCheckinMessage(_bookSelection.CurrentSelection);
 					BookHistory.AddEvent(_bookSelection.CurrentSelection, BookHistoryEventType.CheckIn, message);
 					BookHistory.SetPendingCheckinMessage(_bookSelection.CurrentSelection, "");
+					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, true, false, reportCheckinProgress);
 
 					Analytics.Track("TeamCollectionCheckinBook",
 						new Dictionary<string, string>(){
