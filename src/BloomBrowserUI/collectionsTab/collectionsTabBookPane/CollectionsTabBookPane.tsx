@@ -214,7 +214,10 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
             // If that stops being true we might need another more specialized status flag.
             isTeamCollection && !canMakeBook ? (
                 <div id="teamCollection">
-                    <TeamCollectionBookStatusPanel {...bookStatus} />
+                    <TeamCollectionBookStatusPanel
+                        bookId={selectedBookId}
+                        {...bookStatus}
+                    />
                 </div>
             ) : null}
         </div>
