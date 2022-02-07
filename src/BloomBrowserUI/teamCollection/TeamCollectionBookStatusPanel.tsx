@@ -40,7 +40,11 @@ export type StatusPanelState =
     | "lockedByMeDisconnected" // We're disconnected, but before that happened the book was checked out to me, here
     | "error"; // we couldn't get the IBookTeamCollectionStatus; should never happen.
 
-export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCollectionStatus> = props => {
+interface IProps extends IBookTeamCollectionStatus {
+    bookId: string | undefined;
+}
+
+export const TeamCollectionBookStatusPanel: React.FunctionComponent<IProps> = props => {
     const [tcPanelState, setTcPanelState] = useState<StatusPanelState>(
         "initializing"
     );
@@ -49,7 +53,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
     // show the bar and make other alterations in the panel layout.
     // Only applicable in the lockedByMe state.
     const [checkinProgress, setCheckinProgress] = useState(0);
-
+    const [idBeingCheckedIn, setIdBeingCheckedIn] = useState("");
     const [busy, setBusy] = useState(false);
     const [checkinFailed, setCheckinFailed] = useState(false);
     const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
@@ -122,8 +126,15 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         // time the lockedByMe state happens.
         if (tcPanelState != "lockedByMe" && checkinProgress != 0) {
             setCheckinProgress(0);
+            setIdBeingCheckedIn("");
         }
-    }, [tcPanelState]);
+        if (idBeingCheckedIn && idBeingCheckedIn != props.bookId) {
+            // User selected another book before we got the messages indicating the checkin is finished. Clean up.
+            setCheckinProgress(0);
+            setIdBeingCheckedIn("");
+            setBusy(false);
+        }
+    }, [tcPanelState, props.bookId]);
 
     useSubscribeToWebSocketForEvent(
         "checkinProgress",
@@ -428,6 +439,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                 const checkinHandler = () => {
                     setBusy(true);
                     setCheckinProgress(0.0001); // just enough to show the bar at once
+                    setIdBeingCheckedIn(props.bookId!);
                     BloomApi.post(
                         "teamCollection/checkInCurrentBook",
                         () => {
@@ -440,6 +452,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                             setBusy(false);
                             setCheckinFailed(true);
                             setCheckinProgress(0); // Should be redundant, but makes sure.
+                            setIdBeingCheckedIn("");
                         }
                     );
                 };
