@@ -1475,12 +1475,13 @@ namespace Bloom.Edit
 			Book.Book.EnsureWidgetPlaceholderFile(_bookSelection.CurrentSelection);
 		}
 
-		public string MakeActivity(string fullWidgetPath)
+		// "Widgets" are HTML Activities that the user creates outside of Bloom, as distinct from our built-in activities.
+		public string MakeWidget(string fullWidgetPath)
 		{
-			return MakeActivity(CurrentBook.FolderPath, fullWidgetPath);
+			return MakeWidget(CurrentBook.FolderPath, fullWidgetPath);
 		}
 
-		public static string MakeActivity(string bookFolderPath, string fullWidgetPath)
+		public static string MakeWidget(string bookFolderPath, string fullWidgetPath)
 		{
 			var widgetPath = fullWidgetPath.Replace("\\", "/");
 			var widgetName = Path.GetFileNameWithoutExtension(widgetPath);

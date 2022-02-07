@@ -4197,11 +4197,11 @@ namespace Bloom.Book
 			}
 		}
 
-		public bool HasMotionPages => HtmlDom.HasMotionFeature(OurHtmlDom.Body);
+		public bool HasMotionPages => OurHtmlDom.HasMotionPages();
 
-		public bool HasQuizPages => HtmlDom.HasQuizFeature(OurHtmlDom.Body);
+		public bool HasQuizPages => OurHtmlDom.HasQuizPages();
 
-		public bool HasOverlayPages => HtmlDom.HasOverlayFeature(OurHtmlDom.Body);
+		public bool HasOverlayPages => OurHtmlDom.HasOverlayPages();
 
 		public bool HasOnlyPictureOnlyPages()
 		{
