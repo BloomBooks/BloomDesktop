@@ -146,5 +146,6 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/XliffForHtml_Lin
 # extract downloaded zip files
 ls -l ../Downloads
 file ../Downloads/*
+head -c1024 ../Downloads/pdfjs-viewer.zip
 unzip -uqo ../Downloads/pdfjs-viewer.zip -d "../DistFiles/pdf"
 # End of script
