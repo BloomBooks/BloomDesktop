@@ -587,6 +587,7 @@ namespace Bloom.TeamCollection
 					BookHistory.AddEvent(_bookSelection.CurrentSelection, BookHistoryEventType.CheckIn, message);
 					BookHistory.SetPendingCheckinMessage(_bookSelection.CurrentSelection, "");
 					_tcManager.CurrentCollection.PutBook(_bookSelection.CurrentSelection.FolderPath, true, false, reportCheckinProgress);
+					reportCheckinProgress(0); // hides the progress bar (important if a different book has been selected that is still checked out)
 
 					Analytics.Track("TeamCollectionCheckinBook",
 						new Dictionary<string, string>(){
