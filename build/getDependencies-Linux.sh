@@ -127,21 +127,21 @@ mkdir -p ../build/
 mkdir -p ../lib/dotnet
 
 # download artifact dependencies
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-5.1.tcbuildtag/connections.dll ../DistFiles/connections.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-5.1.tcbuildtag/MSBuild.Community.Tasks.dll ../build/MSBuild.Community.Tasks.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-5.1.tcbuildtag/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
-copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp51/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/bloom-5.1.tcbuildtag/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
-copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/bloom-5.1.tcbuildtag/Args.dll ../lib/dotnet/Args.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/bloom-5.1.tcbuildtag/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/bloom-5.1.tcbuildtag/GeckofxHtmlToPdf.exe.config ../lib/dotnet/GeckofxHtmlToPdf.exe.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt344/bloom-5.1.tcbuildtag/PdfDroplet.exe ../lib/dotnet/PdfDroplet.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt344/bloom-5.1.tcbuildtag/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt351/bloom-5.1.tcbuildtag/TidyManaged.dll ../lib/dotnet/TidyManaged.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt351/bloom-5.1.tcbuildtag/TidyManaged.dll.config ../lib/dotnet/TidyManaged.dll.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/XliffForHtml_LinuxMasterContinuous/bloom-5.1.tcbuildtag/HtmlXliff.exe ../lib/dotnet/HtmlXliff.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/XliffForHtml_LinuxMasterContinuous/bloom-5.1.tcbuildtag/HtmlXliff.exe.mdb ../lib/dotnet/HtmlXliff.exe.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/XliffForHtml_LinuxMasterContinuous/bloom-5.1.tcbuildtag/HtmlAgilityPack.dll ../lib/dotnet/HtmlAgilityPack.dll
+copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/bloom-5.1.tcbuildtag/connections.dll ../DistFiles/connections.dll
+copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/bloom-5.1.tcbuildtag/MSBuild.Community.Tasks.dll ../build/MSBuild.Community.Tasks.dll
+copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/bloom-5.1.tcbuildtag/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
+copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp51/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
+copy_auto https://build.palaso.org/guestAuth/repository/download/bt401/bloom-5.1.tcbuildtag/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
+copy_auto https://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/bloom-5.1.tcbuildtag/Args.dll ../lib/dotnet/Args.dll
+copy_auto https://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/bloom-5.1.tcbuildtag/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
+copy_auto https://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/bloom-5.1.tcbuildtag/GeckofxHtmlToPdf.exe.config ../lib/dotnet/GeckofxHtmlToPdf.exe.config
+copy_auto https://build.palaso.org/guestAuth/repository/download/bt344/bloom-5.1.tcbuildtag/PdfDroplet.exe ../lib/dotnet/PdfDroplet.exe
+copy_auto https://build.palaso.org/guestAuth/repository/download/bt344/bloom-5.1.tcbuildtag/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
+copy_auto https://build.palaso.org/guestAuth/repository/download/bt351/bloom-5.1.tcbuildtag/TidyManaged.dll ../lib/dotnet/TidyManaged.dll
+copy_auto https://build.palaso.org/guestAuth/repository/download/bt351/bloom-5.1.tcbuildtag/TidyManaged.dll.config ../lib/dotnet/TidyManaged.dll.config
+copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_LinuxMasterContinuous/bloom-5.1.tcbuildtag/HtmlXliff.exe ../lib/dotnet/HtmlXliff.exe
+copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_LinuxMasterContinuous/bloom-5.1.tcbuildtag/HtmlXliff.exe.mdb ../lib/dotnet/HtmlXliff.exe.mdb
+copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_LinuxMasterContinuous/bloom-5.1.tcbuildtag/HtmlAgilityPack.dll ../lib/dotnet/HtmlAgilityPack.dll
 # extract downloaded zip files
 unzip -uqo ../Downloads/pdfjs-viewer.zip -d "../DistFiles/pdf"
 # End of script
