@@ -144,14 +144,5 @@ copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_Li
 copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_LinuxMasterContinuous/latest.lastSuccessful/HtmlXliff.exe.mdb ../lib/dotnet/HtmlXliff.exe.mdb
 copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_LinuxMasterContinuous/latest.lastSuccessful/HtmlAgilityPack.dll ../lib/dotnet/HtmlAgilityPack.dll
 # extract downloaded zip files
-ls -l ../DistFiles/*.dll ../DistFiles/*.chm
-ls -l ../build/MSBuild.Community.Tasks.*
-ls -l ../lib/dotnet/*
-file ../DistFiles/*.dll ../DistFiles/*.chm
-file ../build/MSBuild.Community.Tasks.*
-file ../lib/dotnet/*
-ls -l ../Downloads
-file ../Downloads/*
-head -c1024 ../Downloads/pdfjs-viewer.zip
 unzip -uqo ../Downloads/pdfjs-viewer.zip -d "../DistFiles/pdf"
 # End of script
