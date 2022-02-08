@@ -1,4 +1,3 @@
-using System;
 using Bloom.Book;
 using Bloom.Spreadsheet;
 using Moq;
@@ -7,11 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using Bloom.web;
 using BloomTemp;
 using BloomTests.TeamCollection;
-using BloomTests.web;
-using Pango;
 using SIL.IO;
 using Bloom.Collection;
 
@@ -382,7 +378,7 @@ namespace BloomTests.Spreadsheet
                 </div>
                 <div class=""bloom-editable bloom-nodefaultstylerule Title-On-Cover-style"" lang=""*"" contenteditable=""true"" data-book=""bookTitle""></div>
             </div>
-            <div class=""bloom-imageContainer bloom-backgroundImage"" data-book=""coverImage"" style=""background-image:url('AOR_alb010.png')"" data-copyright=""Copyright, SIL International 2009."" data-creator="""" data-license=""cc-by-nd""></div>
+            <div class=""bloom-imageContainer bloom-backgroundImage"" data-book=""coverImage"" style=""background-image:url('Othello 199.jpg')"" data-copyright=""Copyright, SIL International 2009."" data-creator="""" data-license=""cc-by-nd""></div>
 
             <div class=""bottomBlock"">
                 <img class=""branding"" src=""/bloom/api/branding/image?id=cover-bottom-left.svg"" type=""image/svg"" onerror=""this.style.display='none'""></img> 
@@ -519,6 +515,15 @@ namespace BloomTests.Spreadsheet
 			var columnForEn = ss.AddColumnForLang("en", "English");
 			var columnForImage = ss.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
 
+			// This row is only tested in XMatterUpdatesTitleCorrectlyOnImport.
+			var titleRow = new ContentRow(ss);
+			titleRow.AddCell(InternalSpreadsheet.BookTitleRowLabel);
+			titleRow.SetCell(columnForEn, "My new book title");
+
+			var coverImageRow = new ContentRow(ss);
+			coverImageRow.AddCell(InternalSpreadsheet.CoverImageRowLabel);
+			coverImageRow.SetCell(columnForImage, Path.Combine("images", "Othello 199.jpg"));
+
 			// Will fill tg1 on page 1
 			var contentRow1 = new ContentRow(ss);
 			contentRow1.AddCell(InternalSpreadsheet.PageContentRowLabel);
@@ -621,8 +626,8 @@ namespace BloomTests.Spreadsheet
 			// CollectionSettings object. So we create a basic set of CollectionSettings, but we don't need
 			// very much and we certainly don't need to save it anywhere.
 			var settings = new NewCollectionSettings();
-			settings.Language1.Iso639Code = "es";
-			settings.Language1.SetName("Spanish", false);
+			settings.Language1.Iso639Code = "en";
+			settings.Language1.SetName("English", false);
 
 			// Do the import
 			_progressSpy = new ProgressSpy();
@@ -746,8 +751,19 @@ namespace BloomTests.Spreadsheet
 		public void CoverPagesSurvived()
 		{
 			AssertThatXmlIn.Element(_firstPage).HasSpecifiedNumberOfMatchesForXpath("self::div[contains(@class, 'outsideFrontCover')]", 1);
+			AssertThatXmlIn.Element(_firstPage).HasSpecifiedNumberOfMatchesForXpath(
+				@".//div[contains(@class, ""bloom-imageContainer"") and contains(@style, ""background-image:url('Othello 199.jpg')"")]", 1);
 			AssertThatXmlIn.Element(_lastPage).HasSpecifiedNumberOfMatchesForXpath("self::div[contains(@class, 'outsideBackCover')]", 1);
 			AssertThatXmlIn.Element(_secondLastPage).HasSpecifiedNumberOfMatchesForXpath("self::div[contains(@class, 'insideBackCover')]", 1);
+		}
+
+		[Test]
+		public void XMatterUpdatesTitleCorrectlyOnImport()
+		{
+			// Test DataDiv
+			var assertDom = AssertThatXmlIn.Dom(_dom.RawDom);
+			assertDom.HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en']/text()[.='Another lion book']");
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en']/text()[.='My new book title']", 1);
 		}
 
 		[TestCase("shirt.png")]
@@ -756,6 +772,7 @@ namespace BloomTests.Spreadsheet
 		[TestCase("LakePendOreille.jpg")]
 		[TestCase("levels.png")]
 		[TestCase("lady24b.png")]
+		[TestCase("Othello 199.jpg")]
 		public void ImageCopiedToOutput(string fileName)
 		{
 			Assert.That(RobustFile.Exists(Path.Combine(_bookFolder.FolderPath, fileName)));
@@ -765,7 +782,7 @@ namespace BloomTests.Spreadsheet
 		public void ImageNotFoundWarningPresent()
 		{
 			var source = Path.Combine(_spreadsheetFolder, "images/missingBird.png");
-			Assert.That(_warnings, Does.Contain("Image \"" + source + "\" on row 6 was not found."));
+			Assert.That(_warnings, Does.Contain("Image \"" + source + "\" on row 8 was not found."));
 		}
 
 		[Test]
