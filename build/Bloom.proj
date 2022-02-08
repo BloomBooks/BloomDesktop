@@ -252,7 +252,7 @@
 		The relaseDir here is a shared drive for all the build agents (though for now we only use one, because only it has the signing data).
         The framework code (there's a list at https://docs.microsoft.com/en-us/dotnet/standard/frameworks) controls
         what version of .net the installer will require to be installed. -->
-		<Exec Command="$(RootDir)\lib\dotnet\Update --releasify $(RootDir)\build\Bloom$(channel).$(Version).nupkg --releaseDir=$(SquirrelReleaseFolder) --no-msi -i $(RootDir)\src\SquirrelInstaller\BloomSetup.ico -g $(RootDir)\src\SquirrelInstaller\installing.gif -l 'Desktop,StartMenu' --framework-version=net47"/>
+		<Exec Command="$(RootDir)\lib\dotnet\Update --releasify $(RootDir)\build\Bloom$(channel).$(Version).nupkg --releaseDir=$(SquirrelReleaseFolder) --no-msi -i $(RootDir)\src\SquirrelInstaller\BloomSetup.ico -g $(RootDir)\src\SquirrelInstaller\installing.gif -l 'Desktop,StartMenu' --framework-version=net472"/>
 
 		<Copy SourceFiles="$(SquirrelReleaseFolder)\Setup.exe"
 			  DestinationFiles="$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"
