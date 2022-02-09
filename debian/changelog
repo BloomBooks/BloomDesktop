@@ -1,3 +1,10 @@
+bloom-desktop-alpha (5.3.0) stable; urgency=medium
+
+  * Up the version number on the master (alpha) branch to 5.3.
+  * More bug fixes and enhancements: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Tue, 08 Feb 2022 13:40:53 -0700
+
 bloom-desktop-alpha (5.2.0) stable; urgency=medium
 
   * Up the version number on the master (alpha) branch to 5.2.
