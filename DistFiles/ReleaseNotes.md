@@ -1,10 +1,82 @@
-If you run Bloom on _beta_ channel, you are a crucial part of the Bloom team. Your help ensures that folks who don't have easy access to technical help get a solid product when the beta becomes the _release_ version. **Thank you!**
+If you run Bloom on the_beta_ channel, you are a crucial part of the Bloom team. Your help ensures that folks who don't have easy access to technical support get a solid product when the beta becomes the _release_ version. **Thank you!**
 
 ## Reminder for SILers
 
-Most SIL projects can freely use the SIL internal Enterprise License. Questions? Shoot us an email at **enterprise (preposition) bloomlibrary.org**.
+Most SIL projects can freely use the SIL internal Enterprise License. Questions? Please shoot us an email at **enterprise (preposition) bloomlibrary.org**.
 
-# 5.1 (beta)
+# 5.2 (beta)
+
+## Decodable Reader
+
+⭐ When the Decodable Reader tool generates a report, it now includes a list of all the usable words for each level. [Feature Request](https://community.software.sil.org/t/new-category-in-the-letter-and-word-report-in-decodable-tool/5291)
+
+## BloomLibrary.org Upload
+
+When you upload a book, Bloom checks to see if there is already a book with the same internal ID on the library. If it finds one, it now gives you two choices. You can replace the existing book or upload your book as a new item. The latter option fixes your book's ID to be unique.
+
+![](https://i.imgur.com/eXpIwXf.png)
+
+## Team Collections (Bloom Enterprise, Experimental)
+
+⭐ When you check in a book, you can now type in a short note saying what you did.
+
+![](https://i.imgur.com/sdOTGzO.png)
+
+⭐ Bloom now lists check-in notes and other operations in the collection's history panel.
+
+![](https://i.imgur.com/6nzCY04.png)
+
+⭐ Team administrators can now force-unlock a book that has someone else has left checked out. This feature is helpful when a computer is lost or when the teammate who checked out the book cannot check it back in for any other reason.
+
+![](https://i.imgur.com/1kBrIlq.png)
+
+## ⭐ Export / Import Spreadsheet (Bloom Enterprise, Experimental)
+
+### Export
+
+You can now export a Bloom book to Excel spreadsheet format in a way that preserves text and images. (Satisfies this [Feature Request](https://community.software.sil.org/t/ability-to-export-source-text/5451))
+
+![](https://i.imgur.com/3WbK1k9.png)
+
+Note that there are currently several things that Bloom does not export: Talking Book audio, Music, Video, Activities.
+
+### Import
+
+You can now import an Excel spreadsheet *onto* an existing Bloom book. The target book can be a new empty book you just created or an existing book that you want to update. When importing onto an existing book, Bloom can currently not safely protect some things in the existing book, so if your book has any of these things, it will refuse to do the import. These items in a book prevent it from getting an update through a spreadsheet import: Talking Book audio, Activities.
+
+Bloom's import/export feature is still a work in progress. Already, for simple books, it will enable you to do many previously difficult things, including:
+
+* Get translations done by people without Bloom, using Excel, Libre Office, or Google Sheets.
+
+* Apply bulk changes to the text in an external editor.
+
+* Fix mistakes where someone typed text into a box with the wrong language.
+
+* Merge text in different languages into a single book
+
+While not fully supported yet, we also expect that this feature will eventually be useful for:
+
+* Making new editions of books designed for paper vs. devices. This is possible because the importer can actually spread content out over a different number of pages.
+
+* Use online translation services like Crowdin to engage translators, including paid ones.
+
+To enable Spreadsheet Import/Export, tick the box under `Collection Settings / Advanced Program Settings / Spreadsheet Import/Export`.
+
+# Collection User Interface
+
+## New Collection UI (Experimental)
+
+As the next phase of our multi-year effort to modernize the Bloom code base, we have completely rewritten the left-hand side of the Collection Tab using Web technologies. This has been a *very large* undertaking, so we're making it available as an experimental feature for Bloom 5.2 to give us all more time to test it. With this new interface, Team Collections get nice avatar images of their teammates over books they have checked out:
+![image|284x373](upload://kc9k4d5h1vHV4lvDH98AmW4pmKh.png)
+
+Other users will notice only minor improvements to book thumbnail buttons. To enable this new mode, tick the box under `Collection Settings / Advanced Program Settings / Try the New Version of the Collection Tab`.
+
+## Collection Settings
+
+Many Bloom Enterprise projects use their own custom front/back matter packs. Previously in Bloom, everyone could see these in the list of choices. Now, these custom choices are not listed but instead are automatically selected based on the Bloom Enterprise code.
+
+
+# 5.1 
 
 ## Collection Tab
 
