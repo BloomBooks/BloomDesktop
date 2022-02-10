@@ -1,4 +1,3 @@
-using System;
 using Bloom.Book;
 using Bloom.Spreadsheet;
 using Moq;
@@ -7,11 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using Bloom.web;
 using BloomTemp;
 using BloomTests.TeamCollection;
-using BloomTests.web;
-using Pango;
 using SIL.IO;
 using Bloom.Collection;
 
@@ -208,17 +204,9 @@ namespace BloomTests.Spreadsheet
 		private TemporaryFolder _otherImagesFolder;
 		private ProgressSpy _progressSpy;
 
-		private static string GetSideClassBasedOnPage(int pageNumber)
-		{
-			var isEven = pageNumber % 2 == 0;
-			// This seems backwards at first glance, but page "1" is after page "0" (front cover),
-			// which is 'side-right'. So page 1 (odd) is 'side-left'.
-			return string.Format(@"side-{0}", isEven ? "right" : "left");
-		}
-
 		public static string PageWithImageAndText(int pageNumber, int tgNumber, int icNumber, string editableDivs = "")
 		{
-			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait {4} bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
+			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
         <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
             Basic Text &amp; Picture
         </div>
@@ -244,12 +232,12 @@ namespace BloomTests.Spreadsheet
                 </div>
             </div>
         </div>
-    </div>", pageNumber, tgNumber, icNumber, editableDivs, GetSideClassBasedOnPage(pageNumber));
+    </div>", pageNumber, tgNumber, icNumber, editableDivs);
 		}
 
 		public static string PageWith2ImagesAnd2Texts(int pageNumber, int tgNumber, int icNumber)
 		{
-			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait {5} bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
+			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
         <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
             Basic Text &amp; Picture
         </div>
@@ -305,12 +293,12 @@ namespace BloomTests.Spreadsheet
             </div>
         </div>
     </div>
-", pageNumber, tgNumber, icNumber, tgNumber+1, icNumber+1, GetSideClassBasedOnPage(pageNumber));
+", pageNumber, tgNumber, icNumber, tgNumber+1, icNumber+1);
 		}
 
 		public static string PageWithJustText(int pageNumber, int tgNumber)
 		{
-			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait {2} bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
+			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
         <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
             Basic Text &amp; Picture
         </div>
@@ -330,14 +318,14 @@ namespace BloomTests.Spreadsheet
                 </div>
             </div>
         </div>
-    </div>", pageNumber, tgNumber, GetSideClassBasedOnPage(pageNumber));
+    </div>", pageNumber, tgNumber);
 		}
 
 		// The image has a slot for an imageDescription, which will mess up all kinds of things
 		// if we don't ignore it properly.
 		public static string PageWithJustImage(int pageNumber, int icNumber)
 		{
-			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait {2} bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
+			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
         <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
             Basic Text &amp; Picture
         </div>
@@ -356,7 +344,7 @@ namespace BloomTests.Spreadsheet
                 </div>
             </div>
         </div>
-    </div>", pageNumber, icNumber, GetSideClassBasedOnPage(pageNumber));
+    </div>", pageNumber, icNumber);
 		}
 
 		public static string coverPage =
@@ -382,7 +370,7 @@ namespace BloomTests.Spreadsheet
                 </div>
                 <div class=""bloom-editable bloom-nodefaultstylerule Title-On-Cover-style"" lang=""*"" contenteditable=""true"" data-book=""bookTitle""></div>
             </div>
-            <div class=""bloom-imageContainer bloom-backgroundImage"" data-book=""coverImage"" style=""background-image:url('AOR_alb010.png')"" data-copyright=""Copyright, SIL International 2009."" data-creator="""" data-license=""cc-by-nd""></div>
+            <div class=""bloom-imageContainer bloom-backgroundImage"" data-book=""coverImage"" style=""background-image:url('Othello 199.jpg')"" data-copyright=""Copyright, SIL International 2009."" data-creator="""" data-license=""cc-by-nd""></div>
 
             <div class=""bottomBlock"">
                 <img class=""branding"" src=""/bloom/api/branding/image?id=cover-bottom-left.svg"" type=""image/svg"" onerror=""this.style.display='none'""></img> 
@@ -518,6 +506,15 @@ namespace BloomTests.Spreadsheet
 			var ss = new InternalSpreadsheet();
 			var columnForEn = ss.AddColumnForLang("en", "English");
 			var columnForImage = ss.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
+
+			// This row is only tested in XMatterUpdatesTitleCorrectlyOnImport.
+			var titleRow = new ContentRow(ss);
+			titleRow.AddCell(InternalSpreadsheet.BookTitleRowLabel);
+			titleRow.SetCell(columnForEn, "My new book title");
+
+			var coverImageRow = new ContentRow(ss);
+			coverImageRow.AddCell(InternalSpreadsheet.CoverImageRowLabel);
+			coverImageRow.SetCell(columnForImage, Path.Combine("images", "Othello 199.jpg"));
 
 			// Will fill tg1 on page 1
 			var contentRow1 = new ContentRow(ss);
@@ -746,8 +743,19 @@ namespace BloomTests.Spreadsheet
 		public void CoverPagesSurvived()
 		{
 			AssertThatXmlIn.Element(_firstPage).HasSpecifiedNumberOfMatchesForXpath("self::div[contains(@class, 'outsideFrontCover')]", 1);
+			AssertThatXmlIn.Element(_firstPage).HasSpecifiedNumberOfMatchesForXpath(
+				@".//div[contains(@class, ""bloom-imageContainer"") and contains(@style, ""background-image:url('Othello 199.jpg')"")]", 1);
 			AssertThatXmlIn.Element(_lastPage).HasSpecifiedNumberOfMatchesForXpath("self::div[contains(@class, 'outsideBackCover')]", 1);
 			AssertThatXmlIn.Element(_secondLastPage).HasSpecifiedNumberOfMatchesForXpath("self::div[contains(@class, 'insideBackCover')]", 1);
+		}
+
+		[Test]
+		public void XMatterUpdatesTitleCorrectlyOnImport()
+		{
+			// Test DataDiv
+			var assertDom = AssertThatXmlIn.Dom(_dom.RawDom);
+			assertDom.HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en']/text()[.='Another lion book']");
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en']/text()[.='My new book title']", 1);
 		}
 
 		[TestCase("shirt.png")]
@@ -756,6 +764,7 @@ namespace BloomTests.Spreadsheet
 		[TestCase("LakePendOreille.jpg")]
 		[TestCase("levels.png")]
 		[TestCase("lady24b.png")]
+		[TestCase("Othello 199.jpg")]
 		public void ImageCopiedToOutput(string fileName)
 		{
 			Assert.That(RobustFile.Exists(Path.Combine(_bookFolder.FolderPath, fileName)));
@@ -765,7 +774,7 @@ namespace BloomTests.Spreadsheet
 		public void ImageNotFoundWarningPresent()
 		{
 			var source = Path.Combine(_spreadsheetFolder, "images/missingBird.png");
-			Assert.That(_warnings, Does.Contain("Image \"" + source + "\" on row 6 was not found."));
+			Assert.That(_warnings, Does.Contain("Image \"" + source + "\" on row 8 was not found."));
 		}
 
 		[Test]
@@ -784,30 +793,6 @@ namespace BloomTests.Spreadsheet
 		public void GotProgressMessage(string message)
 		{
 			Assert.That(_progressSpy.Messages, Has.Some.Property("Item1").Contains(message));
-		}
-
-		[TestCase(0, "side-left")]
-		[TestCase(1, "side-right")]
-		[TestCase(2, "side-left")]
-		[TestCase(3, "side-right")]
-		[TestCase(4, "side-left")]
-		[TestCase(5, "side-right")]
-		[TestCase(6, "side-left")]
-		[TestCase(7, "side-right")]
-		[TestCase(8, "side-left")]
-		[TestCase(9, "side-right")]
-		[TestCase(10, "side-left")]
-		[TestCase(11, "side-right")]
-		[TestCase(12, "side-left")]
-		[TestCase(13, "side-right")]
-		[TestCase(14, "side-left")]
-		public void HasCorrectSideClass(int n, string expectedClass)
-		{
-			// Page 0 is 'side-left' because the only page before it was the front-cover, which is 'side-right'.
-			// Without the fix 6, 7, 9, 10, 12 and 14 will fail. This corresponds to pages that were added.
-			var unexpectedClass = expectedClass == "side-right" ? "side-left" : "side-right";
-			AssertThatXmlIn.Element(_contentPages[n]).HasNoMatchForXpath($"self::div[contains(@class, '" + unexpectedClass + "')]");
-			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($"self::div[contains(@class, '" + expectedClass + "')]", 1);
 		}
 	}
 
@@ -1065,6 +1050,7 @@ namespace BloomTests.Spreadsheet
 			Assert.That(_warnings.Count, Is.EqualTo(0));
 		}
 	}
+
 	public class SpreadsheetImporterErrorTests
 	{
 		[Test]

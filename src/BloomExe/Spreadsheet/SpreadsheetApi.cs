@@ -124,9 +124,10 @@ namespace Bloom.web.controllers
 				var importer = new SpreadsheetImporter(_webSocketServer, book, Path.GetDirectoryName(inputFilepath));
 				importer.ImportWithProgress(inputFilepath);
 
-				// Review: A lot of other stuff happens in Book.Save() and BookStorage.SaveHtml().
-				// I doubt we need any of it for current purposes, but later we might.
-				XmlHtmlConverter.SaveDOMAsHtml5(book.OurHtmlDom.RawDom, bookPath);
+				// The importer now does BringBookUpToDate() which accomplishes everything this did,
+				// plus it may have actually changed the folder (and subsequent 'bookPath')
+				// due to a newly imported title. That would cause this call to fail.
+				//XmlHtmlConverter.SaveDOMAsHtml5(book.OurHtmlDom.RawDom, bookPath);
 				book.ReloadFromDisk(null);
 				_bookSelection.InvokeSelectionChanged(false);
 			}
