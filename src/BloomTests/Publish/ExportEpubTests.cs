@@ -205,6 +205,16 @@ namespace BloomTests.Publish
 			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='asideContainer']/xhtml:aside[3][@id='figdesc1.2']", _ns, 1);
 		}
 
+		[Test]
+		public void NavPageHasLangAttr()
+		{
+			var book = SetupBook("This is some text", "en");
+			MakeEpub("NavPageHasLangAttr", "NavPageHasLangAttr", book);
+			var navPageData = CheckNavPage();
+			AssertThatXmlIn.String(navPageData)
+				.HasSpecifiedNumberOfMatchesForXpath("xhtml:html[@lang='en']", _ns, 1);
+		}
+
 		private string CheckNavPage()
 		{
 			XNamespace opf = "http://www.idpf.org/2007/opf";
