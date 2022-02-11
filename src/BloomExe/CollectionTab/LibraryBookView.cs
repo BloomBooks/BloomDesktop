@@ -53,7 +53,7 @@ namespace Bloom.CollectionTab
 
 			selectedTabAboutToChangeEvent.Subscribe(c =>
 			{
-				if (!(c.To is LibraryView))
+				if (!(c.To is ReactCollectionTabView))
 				{
 					// We're becoming invisible. Stop any work in progress to generate a preview
 					// (thus allowing other browsers, like the ones in the Edit view, to navigate
@@ -65,7 +65,7 @@ namespace Bloom.CollectionTab
 			selectedTabChangedEvent.Subscribe(c =>
 			{
 				var wasVisible = _visible;
-				_visible = c.To is LibraryView || c.To is ReactCollectionTabView;
+				_visible = c.To is ReactCollectionTabView;
 				if (_reshowPending || wasVisible != _visible)
 				{
 					ShowBook();

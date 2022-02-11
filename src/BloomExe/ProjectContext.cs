@@ -326,7 +326,7 @@ namespace Bloom
 //					}
 //					else
 //					{
-						WorkspaceView wsv = factory(c.Resolve<LibraryView>());
+						WorkspaceView wsv = factory();
 						return wsv;
 //					}
 					});
