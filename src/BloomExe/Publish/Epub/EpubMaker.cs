@@ -93,6 +93,7 @@ namespace Bloom.Publish.Epub
 		private HashSet<string> _omittedPageLabels = new HashSet<string>();
 
 		public static readonly string EpubExportRootFolder = Path.Combine(Path.GetTempPath(), kEPUBExportFolder);
+		private string _navPageLang;
 
 		public Book.Book Book
 		{
@@ -1267,10 +1268,13 @@ namespace Bloom.Publish.Epub
 			else if (_firstContentPageItem == null)
 			{
 				// Record the first non-blank page that isn't front-matter as the first content page.
+				// Somewhat arbitrarily, we will use the language that LM finds to label this page as the language of the TOC file.
+				// This should be enhanced if we one day figure out how to make a TOC that includes vernacular labels for at least some elements.
+				// It may be necessary to generate distinct lang attrs for different elements in the TOC.
+				// But for now, I think it's a pretty good assumption that all the labels will be localized into the same language.
 				_firstContentPageItem = pageDocName;
-				string languageIdUsed;
 				pageLabel = LocalizationManager.GetString("PublishTab.Epub.PageLabel.Content", "Content", "label for the book content in the ePUB's Table of Contents",
-					_langsForLocalization, out languageIdUsed);
+					_langsForLocalization, out _navPageLang);
 			}
 			if (!String.IsNullOrEmpty(pageLabel))
 				_tocList.Add(String.Format("<li><a href=\"{0}\">{1}</a></li>", pageDocName, pageLabel));
@@ -2420,7 +2424,9 @@ namespace Bloom.Publish.Epub
 			XNamespace xhtml = "http://www.w3.org/1999/xhtml";
 			var sb = new StringBuilder ();
 			sb.Append (@"
-<html xmlns='http://www.w3.org/1999/xhtml' xmlns:epub='http://www.idpf.org/2007/ops'>
+<html xmlns='http://www.w3.org/1999/xhtml' xmlns:epub='http://www.idpf.org/2007/ops' "
+					   + $"lang='{_navPageLang}'"
+			+ @">
 	<head>
 		<meta charset='utf-8' />
 		<title>"+ HttpUtility.HtmlEncode(Book.Title) + @"</title>

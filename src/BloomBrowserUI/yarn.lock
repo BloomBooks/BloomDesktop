@@ -3947,9 +3947,9 @@ blob@0.0.5:
   integrity sha512-gaqbzQPqOoamawKg0LGVd7SzLgXS+JH61oWprSLH+P+abTczqJbhTR8CmJ2u9/bUYNmHTGJx/UEmn6doAvvuig==
 
 bloom-player@^2.0.85:
-  version "2.0.97"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.0.97.tgz#642e290c6e2bcc864901339359b20032f691f89f"
-  integrity sha512-m56YwY8HoKdeygWiSZqqL6skvp6QDrzLKyEBjl8wiEuj/8ojtGiL9MTuR/SAgUWp81+pJX6vb+a8QdqRIq/cAA==
+  version "2.0.99"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.0.99.tgz#ec2720157c0876ca7f8c50b373f0771f36fe2d75"
+  integrity sha512-9xTtV1UADOUk0TvvxdDZXhH2/Qg4UDIuGA9t2kc39rnfmiI+QPIGvYzOdDh85M6e7Gd4FDrkBQWT8G/6H4gFAQ==
   dependencies:
     dynamic-import-polyfill "^0.1.1"
     jquery.nicescroll "^3.7.6"
