@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using System.Collections.Generic;
@@ -222,6 +223,10 @@ namespace Bloom
 					Settings.Default.LicenseAccepted = true;
 					Settings.Default.Save();
 				}
+
+				// Needs to be before Autofac initilalizes
+				if (!VerifyValidDotNetFrameworkVersion())
+					return 1;
 
 #if !USING_CHORUS
 				Settings.Default.ShowSendReceive = false; // in case someone turned it on before we disabled
@@ -469,6 +474,34 @@ namespace Bloom
 			Settings.Default.FirstTimeRun = false;
 			Settings.Default.Save();
 			return 0;
+		}
+
+		private static bool VerifyValidDotNetFrameworkVersion()
+		{
+			try
+			{
+				var fullDotNetVersionStr = SIL.Reporting.ErrorReport.DotNet4VersionFromWindowsRegistry();
+				// We expect to get something like `4.6.01590 (394806)`. The part in parentheses is the code we want to compare.
+				// 461308 is the minimal .NET Framework 4.7.1.
+				// See https://docs.microsoft.com/en-us/dotnet/framework/migration-guide/how-to-determine-which-versions-are-installed.
+				var pattern = @".* \((\d+)\)";
+				Match match = Regex.Match(fullDotNetVersionStr, pattern, RegexOptions.Compiled);
+				if (match.Success)
+				{
+					var versionCodeStr = match.Groups[1].Value;
+					if (int.TryParse(versionCodeStr, out int versionCode) && versionCode < 461308)
+						{
+						MessageBox.Show("Bloom requires .NET Framework 4.7.1 or higher. Please install the latest version and try running Bloom again.\n\nBloom will close and the article at http://community.bloomlibrary.org/t/5896 will open in your browser.");
+						SIL.Program.Process.SafeStart("http://community.bloomlibrary.org/t/5896");
+						return false;
+					}
+				}
+			}
+			catch
+			{
+				// We couldn't determine the .NET Version. Hope for the best...
+			}
+			return true;
 		}
 
 		/// <summary>
