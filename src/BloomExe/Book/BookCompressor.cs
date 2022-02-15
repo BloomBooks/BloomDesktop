@@ -659,6 +659,9 @@ namespace Bloom.Book
 							var metadata = SIL.Windows.Forms.ClearShare.Metadata.FromFile(filePath);
 							if (!metadata.IsEmpty)
 								metadata.Write(tempFile.Path);
+							// compressing PNG images can reduce ePUB size by 10-50% depending on the number and nature of the .png files.
+							if (Path.GetExtension(tempFile.Path).ToLowerInvariant() == ".png")
+								ImageUpdater.CompressImage(tempFile.Path, new SIL.Progress.ConsoleProgress());
 							var newBytes = RobustFile.ReadAllBytes(tempFile.Path);
 							if (newBytes.Length < originalBytes.Length || needTransparencyConversion)
 								return newBytes;

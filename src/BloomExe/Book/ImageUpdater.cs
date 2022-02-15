@@ -224,8 +224,10 @@ namespace Bloom.Book
 		public static void CompressImage(string path, IProgress progress)
 		{
 			progress.WriteStatus("Compressing image: " + Path.GetFileName(path));
-			var pngoutPath = FileLocationUtilities.LocateExecutable("optipng.exe");
-			var result = CommandLineRunner.Run(pngoutPath, "\"" + path + "\"", Encoding.UTF8,
+			var optipngPath = "/usr/bin/optipng";	// installed on Linux
+			if (SIL.PlatformUtilities.Platform.IsWindows)
+				optipngPath = FileLocationUtilities.LocateExecutable("optipng.exe");
+			var result = CommandLineRunner.Run(optipngPath, "-force \"" + path + "\"", Encoding.UTF8,
 				Path.GetDirectoryName(path), 300, progress,
 				(s) => progress.WriteMessage(s));
 		}
