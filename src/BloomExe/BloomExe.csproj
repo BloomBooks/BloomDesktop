@@ -918,19 +918,7 @@
     <Compile Include="HtmlThumbNailer.cs" />
     <Compile Include="Collection\BookCollection.cs" />
     <Compile Include="Book\BookSelection.cs" />
-    <Compile Include="CollectionTab\LibraryListView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="CollectionTab\LibraryListView.Designer.cs">
-      <DependentUpon>LibraryListView.cs</DependentUpon>
-    </Compile>
     <Compile Include="CollectionTab\LibraryModel.cs" />
-    <Compile Include="CollectionTab\LibraryView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="CollectionTab\LibraryView.Designer.cs">
-      <DependentUpon>LibraryView.cs</DependentUpon>
-    </Compile>
     <Compile Include="Edit\PageListView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -1092,13 +1080,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\SourceTextControl.resx">
       <DependentUpon>SourceTextControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CollectionTab\LibraryListView.resx">
-      <DependentUpon>LibraryListView.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CollectionTab\LibraryView.resx">
-      <DependentUpon>LibraryView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\PageListView.resx">
       <DependentUpon>PageListView.cs</DependentUpon>

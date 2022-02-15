@@ -95,16 +95,6 @@ namespace Bloom
 			this.Controls.Add(this._workspaceView);
 
 			SetWindowText(null);
-
-			KeyPreview = true; // allows us to process keyboard events before children see them (for F2).
-
-			KeyUp += (sender, args) =>
-			{
-				if (args.KeyCode == Keys.F2)
-				{
-					_workspaceView.HandleRenameCommand();
-				}
-			};
 		}
 
 		public void CheckForInvalidBranding()

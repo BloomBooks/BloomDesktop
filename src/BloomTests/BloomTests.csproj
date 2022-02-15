@@ -301,7 +301,6 @@
     <Compile Include="ExtensionsTests.cs" />
     <Compile Include="ErrorReporter\HtmlErrorReporterTests.cs" />
     <Compile Include="TestDoubles\Book\FakeBookServer.cs" />
-    <Compile Include="CollectionTab\LibraryListViewTests.cs" />
     <Compile Include="Publish\BloomReaderPublishTests.cs" />
     <Compile Include="Book\BookCopyrightAndLicenseTests.cs" />
     <Compile Include="Book\BookInfoTests.cs" />

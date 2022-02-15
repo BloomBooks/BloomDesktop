@@ -75,7 +75,6 @@ namespace Bloom.Collection
 			this._provinceLabel = new System.Windows.Forms.Label();
 			this._enterpriseTab = new System.Windows.Forms.TabPage();
 			this._teamCollectionTab = new System.Windows.Forms.TabPage();
-			this.reactControl1 = new Bloom.web.ReactControl();
 			this.tabPage4 = new System.Windows.Forms.TabPage();
 			this._automaticallyUpdate = new System.Windows.Forms.CheckBox();
 			this.label2 = new System.Windows.Forms.Label();
@@ -91,7 +90,6 @@ namespace Bloom.Collection
 			this.settingsProtectionLauncherButton1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton();
 			this._helpButton = new System.Windows.Forms.Button();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this._newCollectionCheckbox = new System.Windows.Forms.CheckBox();
 			this._tab.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.tabPage2.SuspendLayout();
@@ -714,13 +712,13 @@ namespace Bloom.Collection
 			// 
 			this.reactControl1.BackColor = System.Drawing.Color.White;
 			this.reactControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.reactControl1.JavascriptBundleName = "teamCollectionSettingsBundle";
 			this._L10NSharpExtender.SetLocalizableToolTip(this.reactControl1, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.reactControl1, null);
 			this._L10NSharpExtender.SetLocalizingId(this.reactControl1, "ReactControl");
 			this.reactControl1.Location = new System.Drawing.Point(3, 3);
 			this.reactControl1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 			this.reactControl1.Name = "reactControl1";
-			this.reactControl1.JavascriptBundleName = "teamCollectionSettingsBundle";
 			this.reactControl1.Size = new System.Drawing.Size(636, 446);
 			this.reactControl1.TabIndex = 0;
 			// 
@@ -731,7 +729,6 @@ namespace Bloom.Collection
 			this.tabPage4.Controls.Add(this._showExperimentalBookSources);
 			this.tabPage4.Controls.Add(this._enterpriseRequiredForTeamCollection);
 			this.tabPage4.Controls.Add(this._allowTeamCollection);
-			this.tabPage4.Controls.Add(this._newCollectionCheckbox);
 			this.tabPage4.Controls.Add(this._enterpriseRequiredForSpreadsheetImportExport);
 			this.tabPage4.Controls.Add(this._allowSpreadsheetImportExport);
 			this._L10NSharpExtender.SetLocalizableToolTip(this.tabPage4, null);
@@ -772,7 +769,6 @@ namespace Bloom.Collection
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(146, 19);
 			this.label2.TabIndex = 6;
-			this.label2.TabStop = false;	// Just in case. (Normally its constructor sets it to false already)
 			this.label2.Text = "Experimental Features";
 			// 
 			// _showExperimentalBookSources
@@ -791,15 +787,15 @@ namespace Bloom.Collection
 			this._showExperimentalBookSources.CheckedChanged += new System.EventHandler(this._showExperimentalBookSources_CheckedChanged);
 			// 
 			// _enterpriseRequiredForTeamCollection
-			//
-			this._enterpriseRequiredForTeamCollection.Name = "_enterpriseRequiredForTeamCollection";
+			// 
+			this._enterpriseRequiredForTeamCollection.Image = global::Bloom.Properties.Resources.enterpriseBadge;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._enterpriseRequiredForTeamCollection, "To use this feature, you\'ll need to enable Bloom Enterprise.");
+			this._L10NSharpExtender.SetLocalizationComment(this._enterpriseRequiredForTeamCollection, null);
+			this._L10NSharpExtender.SetLocalizingId(this._enterpriseRequiredForTeamCollection, "CollectionSettingsDialog.RequiresEnterprise");
 			this._enterpriseRequiredForTeamCollection.Location = new System.Drawing.Point(0, 129);
+			this._enterpriseRequiredForTeamCollection.Name = "_enterpriseRequiredForTeamCollection";
 			this._enterpriseRequiredForTeamCollection.Size = new System.Drawing.Size(23, 23);
 			this._enterpriseRequiredForTeamCollection.TabIndex = 8;
-			this._enterpriseRequiredForTeamCollection.TabStop = false;	// Just in case. (Normally its constructor sets it to false already)
-			this._enterpriseRequiredForTeamCollection.Image = Properties.Resources.enterpriseBadge;	// Easiest is if the image is already the same size as the button. I had trouble figuring out how to shrink it.
-			this._L10NSharpExtender.SetLocalizableToolTip(this._enterpriseRequiredForTeamCollection, "To use this feature, you'll need to enable Bloom Enterprise.");	// Appends _ToolTip__ to the LocalizingId
-			this._L10NSharpExtender.SetLocalizingId(this._enterpriseRequiredForTeamCollection, "CollectionSettingsDialog.RequiresEnterprise");
 			// 
 			// _allowTeamCollection
 			// 
@@ -810,22 +806,22 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizingId(this._allowTeamCollection, "TeamCollection.TeamCollections");
 			this._allowTeamCollection.Location = new System.Drawing.Point(27, 129);
 			this._allowTeamCollection.Name = "_allowTeamCollection";
-			this._allowTeamCollection.Size = new System.Drawing.Size(124, 23);
+			this._allowTeamCollection.Size = new System.Drawing.Size(130, 23);
 			this._allowTeamCollection.TabIndex = 9;
 			this._allowTeamCollection.Text = "Team Collections";
 			this._allowTeamCollection.UseVisualStyleBackColor = true;
 			this._allowTeamCollection.CheckedChanged += new System.EventHandler(this._allowTeamCollection_CheckedChanged);
 			// 
 			// _enterpriseRequiredForSpreadsheetImportExport
-			//
-			this._enterpriseRequiredForSpreadsheetImportExport.Name = "_enterpriseRequiredForSpreadsheetImportExport";
+			// 
+			this._enterpriseRequiredForSpreadsheetImportExport.Image = global::Bloom.Properties.Resources.enterpriseBadge;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._enterpriseRequiredForSpreadsheetImportExport, "To use this feature, you\'ll need to enable Bloom Enterprise.");
+			this._L10NSharpExtender.SetLocalizationComment(this._enterpriseRequiredForSpreadsheetImportExport, null);
+			this._L10NSharpExtender.SetLocalizingId(this._enterpriseRequiredForSpreadsheetImportExport, "CollectionSettingsDialog.RequiresEnterprise");
 			this._enterpriseRequiredForSpreadsheetImportExport.Location = new System.Drawing.Point(0, 158);
+			this._enterpriseRequiredForSpreadsheetImportExport.Name = "_enterpriseRequiredForSpreadsheetImportExport";
 			this._enterpriseRequiredForSpreadsheetImportExport.Size = new System.Drawing.Size(23, 23);
 			this._enterpriseRequiredForSpreadsheetImportExport.TabIndex = 10;
-			this._enterpriseRequiredForSpreadsheetImportExport.TabStop = false;	// Just in case. (Normally its constructor sets it to false already)
-			this._enterpriseRequiredForSpreadsheetImportExport.Image = Properties.Resources.enterpriseBadge;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._enterpriseRequiredForSpreadsheetImportExport, "To use this feature, you'll need to enable Bloom Enterprise.");	// Appends _ToolTip__ to the LocalizingId
-			this._L10NSharpExtender.SetLocalizingId(this._enterpriseRequiredForSpreadsheetImportExport, "CollectionSettingsDialog.RequiresEnterprise");
 			// 
 			// _allowSpreadsheetImportExport
 			// 
@@ -836,7 +832,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizingId(this._allowSpreadsheetImportExport, "CollectionSettingsDialog.AdvancedTab.Experimental.SpreadsheetImportExport");
 			this._allowSpreadsheetImportExport.Location = new System.Drawing.Point(27, 158);
 			this._allowSpreadsheetImportExport.Name = "_allowSpreadsheetImportExport";
-			this._allowSpreadsheetImportExport.Size = new System.Drawing.Size(124, 23);
+			this._allowSpreadsheetImportExport.Size = new System.Drawing.Size(193, 23);
 			this._allowSpreadsheetImportExport.TabIndex = 11;
 			this._allowSpreadsheetImportExport.Text = "Spreadsheet Import/Export";
 			this._allowSpreadsheetImportExport.UseVisualStyleBackColor = true;
@@ -918,21 +914,6 @@ namespace Bloom.Collection
 			this._helpButton.Text = "&Help";
 			this._helpButton.UseVisualStyleBackColor = true;
 			this._helpButton.Click += new System.EventHandler(this._helpButton_Click);
-			// 
-			// _newCollectionCheckbox
-			// 
-			this._newCollectionCheckbox.AutoSize = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._newCollectionCheckbox, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._newCollectionCheckbox, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._newCollectionCheckbox, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this._newCollectionCheckbox, "CollectionSettingsDialog.AdvancedTab.Experimental.NewCollectionTab");
-			this._newCollectionCheckbox.Location = new System.Drawing.Point(27, 187);
-			this._newCollectionCheckbox.Name = "_newCollectionCheckbox";
-			this._newCollectionCheckbox.Size = new System.Drawing.Size(143, 23);
-			this._newCollectionCheckbox.TabIndex = 12;
-			this._newCollectionCheckbox.Text = "Try the New Version of the Collection Tab";
-			this._newCollectionCheckbox.UseVisualStyleBackColor = true;
-			this._newCollectionCheckbox.CheckedChanged += new System.EventHandler(this._newCollectionCheckbox_CheckedChanged);
 			// 
 			// CollectionSettingsDialog
 			// 
@@ -1034,6 +1015,5 @@ namespace Bloom.Collection
 		protected Label _signLanguageLabel;
 		private web.ReactControl reactControl1;
 		private Label _noRenameTeamCollectionLabel;
-		private CheckBox _newCollectionCheckbox;
 	}
 }

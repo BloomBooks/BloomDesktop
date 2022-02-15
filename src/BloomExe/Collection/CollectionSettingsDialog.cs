@@ -80,7 +80,6 @@ namespace Bloom.Collection
 			_showExperimentalBookSources.Checked = ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kExperimentalSourceBooks);
 			_allowTeamCollection.Checked = ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections);
 			_allowSpreadsheetImportExport.Checked = ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kSpreadsheetImportExport);
-			_newCollectionCheckbox.Checked = ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kNewCollectionTab);
 
 			if (!ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections) && tcManager.CurrentCollectionEvenIfDisconnected == null)
 			{
@@ -727,12 +726,6 @@ namespace Bloom.Collection
 		private void _allowSpreadsheetImportExport_CheckedChanged(object sender, EventArgs e)
 		{
 			ExperimentalFeatures.SetValue(ExperimentalFeatures.kSpreadsheetImportExport, _allowSpreadsheetImportExport.Checked);
-			ChangeThatRequiresRestart();
-		}
-
-		private void _newCollectionCheckbox_CheckedChanged(object sender, EventArgs e)
-		{
-			ExperimentalFeatures.SetValue(ExperimentalFeatures.kNewCollectionTab, _newCollectionCheckbox.Checked);
 			ChangeThatRequiresRestart();
 		}
 	}
