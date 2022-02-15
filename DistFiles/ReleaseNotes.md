@@ -1,15 +1,12 @@
-If you run Bloom on _beta_ channel, you are a crucial part of the Bloom team. Your help ensures that folks who don't have easy access to technical help get a solid product when the beta becomes the _release_ version. **Thank you!**
-
 ## Reminder for SILers
 
 Most SIL projects can freely use the SIL internal Enterprise License. Questions? Shoot us an email at **enterprise (preposition) bloomlibrary.org**.
 
-# 5.1 (beta)
+# 5.1
 
 ## Collection Tab
 
-⭐You can now rename a book. Previously, Bloom always used the name of a book's title. The new name appears under the thumbnail of the book and also the name of the folder on disk ([see animation](https://imgur.com/dcMz5tu)).
-[Feature Request](https://community.software.sil.org/t/allow-changing-book-filenames/489/14)
+⭐You can now rename a book. Previously, Bloom always used the name of a book's title. The new name appears under the thumbnail of the book and also the name of the folder on disk ([see animation](https://imgur.com/dcMz5tu)). [Feature Request](https://community.software.sil.org/t/allow-changing-book-filenames/489/14)
 
 ## Edit Tab
 
@@ -31,22 +28,23 @@ We improved how we count words in complex pages (such as arithmetic pages).
 
 ⭐The Overlay Tool can now add images on top of the image [Feature Request](https://community.software.sil.org/t/ability-to-place-images-on-images/2982)
 
-(See animation of these [new overlay features](https://imgur.com/E83qLj6))
+(See an animation of these [new overlay features](https://imgur.com/E83qLj6))
 
 ## Team Collections (Bloom Enterprise)
 
-Team Collections are new feature that helps you safely share a collection within your team, across the internet, without full-time internet access. For this release, we're going to keep this feature behind the "Experimental" checkbox. For now, we are only supporting Dropbox & LAN environments. Please contact us if you are considering using this. We need your help to fully understand how this will be used, and how the experience goes.
+Team Collections are a new feature that helps you safely share a collection within your team, across the internet, without full-time internet access. For this release, we're going to keep this feature behind the "Experimental" checkbox. For now, we are only supporting Dropbox & LAN environments. Please contact us if you are considering using this. We need your help to fully understand how this will be used, and how the experience goes.
 
 #### About Bloom's use of Dropbox
 
-People will be naturally resistent to installing Dropbox. There are two things that may help them. First, once Dropbox is set up, you will not have to actually learn to use Dropbox, as it just sits in the background for Bloom to use, invisibly. Second, we are starting with Dropbox support because it is far superior to Google Drive in one crucial way: when you make a small change to a book, Dropbox will send just a small amount of data over the internet to your teammates. In contrast, Google Drive will send the entire book: all the text, images, recordings, videos, activities, etc. Because we want this feature to work well in environments with slow or expensive internet, we therefore decided to put our initial efforts into supporting Dropbox. In the near future, we will attempt to make Google Drive an option for teams with great internet.
+People will be naturally resistant to installing Dropbox. There are two things that may help them. First, once Dropbox is set up, you will not have to actually learn to use Dropbox, as it just sits in the background for Bloom to use, invisibly. Second, we are starting with Dropbox support because it is far superior to Google Drive in one crucial way: when you make a small change to a book, Dropbox will send just a small amount of data over the internet to your teammates. In contrast, Google Drive will send the entire book: all the text, images, recordings, videos, activities, etc. Because we want this feature to work well in environments with slow or expensive internet, we, therefore, decided to put our initial efforts into supporting Dropbox. In the near future, we will attempt to make Google Drive an option for teams with great internet.
+
 <br/>
 
 ![screenshot-online-only](https://i.imgur.com/VCqWEft.png)
 
 Team Collections debuted in Bloom 5.0 beta. For 5.1, we have added a few small features:
 
-⭐We added a basic History tab to the Team Collection dialog. It currently only tells you the history of checkins (who edited the book, when). We will be adding more history in future versions.
+⭐We added a basic History tab to the Team Collection dialog. It currently only tells you the history of check-ins (who edited the book, when). We will be adding more history in future versions.
 
 <br/>
 
@@ -64,7 +62,7 @@ We added a little informational menu option that provides information about the 
 
 ### Images
 
-We have removed, from the lower left corner of images, the button that opened the "Image Description Tool". We did this because of reports that users were clicking on it, not understanding what was happening, and then entering their story text into the image description box. Authors making books for the blind can still use this tool, of course. You just won't have this convenient short-cut anymore. [Feature Request](https://community.software.sil.org/t/allow-for-image-description-button-to-show-hide/4700)
+We have removed, from the lower-left corner of images, the button that opened the "Image Description Tool". We did this because of reports that users were clicking on it, not understanding what was happening and then entering their story text into the image description box. Authors making books for the blind can still use this tool, of course. You just won't have this convenient shortcut anymore. [Feature Request](https://community.software.sil.org/t/allow-for-image-description-button-to-show-hide/4700)
 
 When Bloom has trouble loading an image and you send us an error report, we now will receive the offending image file. That will help us figure out what the problem is.
 
@@ -88,12 +86,11 @@ We added a new page selector for Bloom Player, the engine that powers book readi
 
 ## Other Good Stuff
 
-**Faster Enterprise Subscription Delivery** When projects get a new Enterprise subscription, there is a delay while we build their branding pack (logos, boilerplate text, etc). Starting with Bloom 5.1, customers don't have to wait... their Enterprise code will work immediately. Bloom will show a place holder message on the back cover that shows subscription name. When an update to Bloom contains the branding files for the subscription, this message will be automatically replaced with the branding images, the next time the books in the the collection are edited.
+**Faster Enterprise Subscription Delivery** When projects get a new Enterprise subscription, there is a delay while we build their branding pack (logos, boilerplate text, etc). Starting with Bloom 5.1, customers don't have to wait... their Enterprise code will work immediately. Bloom will show a placeholder message on the back cover that shows the subscription name. When an update to Bloom contains the branding files for the subscription, this message will be automatically replaced with the branding images, the next time the books in the collection are edited.
 
 ### Work towards a more cross-platform Bloom
 
-As with most versions, we did a bunch of behind-the-scenes work towards rewriting making Bloom to be more portable to other operating systems. For the most part, you won't be able to tell the difference.
-
+As with most versions, we did a bunch of behind-the-scenes work towards rewriting making Bloom be more portable to other operating systems. For the most part, you won't be able to tell the difference.
 # 5.0
 
 ## Collection Tab
