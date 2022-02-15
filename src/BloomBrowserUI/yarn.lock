@@ -3946,7 +3946,7 @@ blob@0.0.5:
   resolved "https://registry.yarnpkg.com/blob/-/blob-0.0.5.tgz#d680eeef25f8cd91ad533f5b01eed48e64caf683"
   integrity sha512-gaqbzQPqOoamawKg0LGVd7SzLgXS+JH61oWprSLH+P+abTczqJbhTR8CmJ2u9/bUYNmHTGJx/UEmn6doAvvuig==
 
-bloom-player@^2.0.85:
+bloom-player@^2.0.99:
   version "2.0.99"
   resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.0.99.tgz#ec2720157c0876ca7f8c50b373f0771f36fe2d75"
   integrity sha512-9xTtV1UADOUk0TvvxdDZXhH2/Qg4UDIuGA9t2kc39rnfmiI+QPIGvYzOdDh85M6e7Gd4FDrkBQWT8G/6H4gFAQ==
