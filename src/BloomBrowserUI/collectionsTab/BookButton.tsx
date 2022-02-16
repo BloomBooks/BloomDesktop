@@ -263,6 +263,13 @@ export const BookButton: React.FunctionComponent<{
         event.stopPropagation();
     };
 
+    const handleDoubleClick = (event: React.MouseEvent<HTMLElement>) => {
+        BloomApi.postString(
+            `collections/selectAndEditBook?${collectionQuery}`,
+            props.book.id
+        );
+    };
+
     const handleContextClick = (event: React.MouseEvent<HTMLElement>) => {
         setAdjustedContextMenuPoint(event.clientX - 2, event.clientY - 4);
 
@@ -324,6 +331,7 @@ export const BookButton: React.FunctionComponent<{
                 `}
                 variant="outlined"
                 size="large"
+                onDoubleClick={handleDoubleClick}
                 onClick={e => handleClick(e)}
                 onContextMenu={e => handleContextClick(e)}
                 startIcon={
