@@ -423,7 +423,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <source xml:lang="en">Spreadsheet Import/Export</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.SpreadsheetImportExport</note>
         <note>This is the label of a checkbox which, if enabled, allows a menu command to be used that can import Bloom books from an Excel spreadsheet or to an Excel spreadsheet.</note>
-        <target xml:lang="sw" state="needs-translation">Spreadsheet Import/Export</target>
+        <target xml:lang="sw" state="translated">Lahajedwali Ingiza/Hamisha</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
@@ -727,7 +727,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <source xml:lang="en">To use this feature, you'll need to enable Bloom Enterprise.</source>
         <note>ID: CollectionSettingsDialog.RequiresEnterprise_ToolTip_</note>
         <note>Same as the text for "EditTab.RequiresEnterprise"</note>
-        <target xml:lang="sw" state="needs-translation">To use this feature, you'll need to enable Bloom Enterprise.</target>
+        <target xml:lang="sw" state="translated">Ili kutumia kipengele hiki, utahitaji kuwezesha Bloom Enterprise.</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Restart" approved="yes">
         <source xml:lang="en">Restart</source>
@@ -802,7 +802,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       <trans-unit id="CollectionTab.BookMenu.ExportToSpreadsheet">
         <source xml:lang="en">Export to Spreadsheet...</source>
         <note>ID: CollectionTab.BookMenu.ExportToSpreadsheet</note>
-        <target xml:lang="sw" state="needs-translation">Export to Spreadsheet...</target>
+        <target xml:lang="sw" state="translated">Hamisha kwa Lahajedwali...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.ExportToWordOrLibreOffice" approved="yes">
         <source xml:lang="en">Export to Word or LibreOffice...</source>
@@ -817,7 +817,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       <trans-unit id="CollectionTab.BookMenu.ImportContentFromSpreadsheet">
         <source xml:lang="en">Import content from Spreadsheet...</source>
         <note>ID: CollectionTab.BookMenu.ImportContentFromSpreadsheet</note>
-        <target xml:lang="sw" state="needs-translation">Import content from Spreadsheet...</target>
+        <target xml:lang="sw" state="translated">Ingiza maudhui kutoka kwa Lahajedwali...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.MakeBloomPack" approved="yes">
         <source xml:lang="en">Make Bloom Pack...</source>
@@ -827,12 +827,12 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       <trans-unit id="CollectionTab.BookMenu.Rename">
         <source xml:lang="en">Rename</source>
         <note>ID: CollectionTab.BookMenu.Rename</note>
-        <target xml:lang="sw" state="needs-translation">Rename</target>
+        <target xml:lang="sw" state="translated">Badili jina</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem" approved="yes">
-        <source xml:lang="en">Save as single file (.bloom)...</source>
+      <trans-unit id="CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem">
+        <source xml:lang="en">Save as single file (.bloomSource)...</source>
         <note>ID: CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem</note>
-        <target xml:lang="sw" state="final">Hifadhi kama faili moja (bloom)...</target>
+        <target xml:lang="sw" state="translated">Hifadhi kama faili moja (bloom)...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip" approved="yes">
         <source xml:lang="en">Update Book</source>
@@ -1087,7 +1087,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <source xml:lang="en">Ask for help</source>
         <note>ID: Common.AskForHelp</note>
         <note>Used in various places where someone might need to open a Problem Report dialog.</note>
-        <target xml:lang="sw" state="needs-translation">Ask for help</target>
+        <target xml:lang="sw" state="translated">Omba msaada</target>
       </trans-unit>
       <trans-unit id="Common.BackButton" approved="yes">
         <source xml:lang="en">Back</source>
@@ -1153,7 +1153,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       <trans-unit id="Common.EnterpriseRequired">
         <source xml:lang="en">Enterprise Required</source>
         <note>ID: Common.EnterpriseRequired</note>
-        <target xml:lang="sw" state="needs-translation">Enterprise Required</target>
+        <target xml:lang="sw" state="translated">Kampuni kubwa yahitajika</target>
       </trans-unit>
       <trans-unit id="Common.Error" approved="yes">
         <source xml:lang="en">Error</source>
@@ -1232,7 +1232,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       <trans-unit id="Common.Pause" sil:dynamic="true">
         <source xml:lang="en">Pause</source>
         <note>ID: Common.Pause</note>
-        <target xml:lang="sw" state="needs-translation">Pause</target>
+        <target xml:lang="sw" state="translated">Sitisha</target>
       </trans-unit>
       <trans-unit id="Common.Preview" approved="yes">
         <source xml:lang="en">Preview</source>
@@ -1281,17 +1281,17 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       <trans-unit id="Common.Stop">
         <source xml:lang="en">Stop</source>
         <note>ID: Common.Stop</note>
-        <target xml:lang="sw" state="needs-translation">Stop</target>
+        <target xml:lang="sw" state="translated">Komesha</target>
       </trans-unit>
       <trans-unit id="Common.Upload">
         <source xml:lang="en">Upload</source>
         <note>ID: Common.Upload</note>
-        <target xml:lang="sw" state="needs-translation">Upload</target>
+        <target xml:lang="sw" state="translated">Pakia</target>
       </trans-unit>
       <trans-unit id="Common.Uploading">
         <source xml:lang="en">Uploading</source>
         <note>ID: Common.Uploading</note>
-        <target xml:lang="sw" state="needs-translation">Uploading</target>
+        <target xml:lang="sw" state="translated">Kupakia</target>
       </trans-unit>
       <trans-unit id="Common.Warning" approved="yes">
         <source xml:lang="en">Info</source>
@@ -1309,7 +1309,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <source xml:lang="en">What caused this problem?</source>
         <note>ID: Common.WhatCausedThisProblem</note>
         <note>This is usually a link to an explanatory document.</note>
-        <target xml:lang="sw" state="needs-translation">What caused this problem?</target>
+        <target xml:lang="sw" state="translated">Tatizo hili lilisababishwa na nini?</target>
       </trans-unit>
       <trans-unit id="Download.Completed" approved="yes">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
@@ -1614,19 +1614,19 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <source xml:lang="en">Duplicate Page Many Times...</source>
         <note>ID: EditTab.DuplicatePageMultiple</note>
         <note>Menu item that tells Bloom to duplicate the currently selected page several times.</note>
-        <target xml:lang="sw" state="needs-translation">Duplicate Page Many Times...</target>
+        <target xml:lang="sw" state="translated">Nakili ukurasa mara nyingi...</target>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageMultiple.Prompt">
         <source xml:lang="en">How many more of this page? (2-999)</source>
         <note>ID: EditTab.DuplicatePageMultiple.Prompt</note>
         <note>Used in the window that asks how many times to duplicate the selected page.</note>
-        <target xml:lang="sw" state="needs-translation">How many more of this page? (2-999)</target>
+        <target xml:lang="sw" state="translated">Je, ni ngapi zaidi za ukurasa huu? (2-999)</target>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageMultiple.Title">
         <source xml:lang="en">Duplicate Page Many Times</source>
         <note>ID: EditTab.DuplicatePageMultiple.Title</note>
         <note>Title of dialog that Bloom uses to ask the user how many times to duplicate the currently selected page.</note>
-        <target xml:lang="sw" state="needs-translation">Duplicate Page Many Times</target>
+        <target xml:lang="sw" state="translated">Nakili ukurasa mara nyingi</target>
       </trans-unit>
       <trans-unit id="EditTab.Edit" approved="yes">
         <source xml:lang="en">Edit</source>
@@ -2071,7 +2071,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       <trans-unit id="EditTab.HowToUseHyperlink">
         <source xml:lang="en">To use this hyperlink, go to the page where you are making a Table of Contents. Next, select some text and then click on the image of chain link. This will turn the selected text into a hyperlink to this page.</source>
         <note>ID: EditTab.HowToUseHyperlink</note>
-        <target xml:lang="sw" state="needs-translation">To use this hyperlink, go to the page where you are making a Table of Contents. Next, select some text and then click on the image of chain link. This will turn the selected text into a hyperlink to this page.</target>
+        <target xml:lang="sw" state="translated">Ili kutumia kiungo hiki, nenda kwenye ukurasa ambapo unatengeneza Jedwali la Yaliyomo. Ifuatayo, chagua maandishi kisha ubofye kwenye msururu wa kiungo cha picha. Hii itageuza maandishi yaliyochaguliwa kuwa kiungo cha ukurasa huu.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.AltMsg" approved="yes">
         <source xml:lang="en">This picture, {0}, is missing or was loading too slowly.</source>
@@ -2401,7 +2401,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <note>ID: EditTab.Toolbox.OverlayTool</note>
         <note>If "Overlay Tool" is hard to translate, "Floating Object Tool" is an alternate.</note>
         <note>This tool allows users to insert speech bubbles or callouts, which are pieces of text connected by a line, arrow, or other graphic to a part of a picture. These may be used to give dialogue or to give more information about a specific part of the picture.</note>
-        <target xml:lang="sw" state="needs-translation">Overlay Tool</target>
+        <target xml:lang="sw" state="translated">Zana ya uwekeleaji</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true">
         <source xml:lang="en">Drag any of these overlays onto the image:</source>
@@ -2435,7 +2435,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <source xml:lang="en">There are no options for this kind of overlay</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ImageSelected</note>
         <note>This notification shows if a picture over picture is selected.</note>
-        <target xml:lang="sw" state="needs-translation">There are no options for this kind of overlay</target>
+        <target xml:lang="sw" state="translated">Hakuna chaguo kwa aina hii ya uwekaji</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Outer Outline Color</source>
@@ -2458,7 +2458,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <source xml:lang="en">Show Sign Language Tool</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ShowSignLanguageTool</note>
         <note>This button shows if a video bubble is selected.</note>
-        <target xml:lang="sw" state="needs-translation">Show Sign Language Tool</target>
+        <target xml:lang="sw" state="translated">Onyesha Zana ya Lugha ya Ishara</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ShowTail" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Show Tail</source>
@@ -2670,6 +2670,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <source xml:lang="en">Text files</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.FileDialogTextFiles</note>
         <target xml:lang="sw" state="final">Jalada za  maandishi</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportAllUsableWords">
+        <source xml:lang="en">All Usable Words: {0}</source>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportAllUsableWords</note>
+        <target xml:lang="sw" state="translated">Maneno Yote Yanayoweza Kutumika: {0}</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters" approved="yes">
         <source xml:lang="en">Letters: {0}</source>
@@ -3300,7 +3305,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <source xml:lang="en">Using a hyperlink</source>
         <note>ID: EditTab.UsingHyperlink</note>
         <note>Title for dialog box showing the message for EditTab.HowToUseHyperlink</note>
-        <target xml:lang="sw" state="needs-translation">Using a hyperlink</target>
+        <target xml:lang="sw" state="translated">Kutumia kiungo</target>
       </trans-unit>
       <trans-unit id="EditTab.Widget.ChooseWidget" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose Widget</source>
@@ -3612,16 +3617,6 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <note>ID: LayoutChoices.A4Landscape</note>
         <target xml:lang="sw" state="final">Ukurasa mlalo wa A4</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A4Landscape SideBySide" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">A4 Landscape (Side By Side)</source>
-        <note>ID: LayoutChoices.A4Landscape SideBySide</note>
-        <target xml:lang="sw" state="final">Ukurasa mlalo wa A4 (Upande kwa Upande)</target>
-      </trans-unit>
-      <trans-unit id="LayoutChoices.A4Landscape SplitAcrossPages" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">A4 Landscape (Split Across Pages)</source>
-        <note>ID: LayoutChoices.A4Landscape SplitAcrossPages</note>
-        <target xml:lang="sw" state="final">Kurasa mlalo ya A4 (Gawa Kwenye Kurasa)</target>
-      </trans-unit>
       <trans-unit id="LayoutChoices.A4Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A4 Portrait</source>
         <note>ID: LayoutChoices.A4Portrait</note>
@@ -3765,7 +3760,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       <trans-unit id="NewCollectionWizard.CollectionName">
         <source xml:lang="en">Collection Name</source>
         <note>ID: NewCollectionWizard.CollectionName</note>
-        <target xml:lang="sw" state="needs-translation">Collection Name</target>
+        <target xml:lang="sw" state="translated">Jina la Mkusanyiko wa Bloom</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionNamePage.ExampleText" approved="yes">
         <source xml:lang="en">Examples: "Health Books", "PNG Animal Stories"</source>
@@ -4030,7 +4025,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <source xml:lang="en">On the Android device, run Bloom Reader, open the menu and choose 'Receive books via USB'.</source>
         <note>ID: PublishTab.Android.USB.OpenMenuItem</note>
         <note/>
-        <target xml:lang="sw" state="needs-translation">On the Android device, run Bloom Reader, open the menu and choose 'Receive books via USB'.</target>
+        <target xml:lang="sw" state="translated">Kwenye kifaa cha Android, endesha Bloom Reader, fungua menyu na uchague 'Pokea vitabu kupitia kifaa cha USB'.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">No Wi-Fi Network?</source>
@@ -4205,7 +4200,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <source xml:lang="en">Talking Book Languages</source>
         <note>ID: PublishTab.Android.TalkingBookLanguages</note>
         <note>Which languages will have the "Talking Book" (books with both text and narrated audio) feature enabled</note>
-        <target xml:lang="sw" state="needs-translation">Talking Book Languages</target>
+        <target xml:lang="sw" state="translated">Lugha za vitabu vyenye sauti</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.TextLanguages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Text Languages</source>
@@ -4414,31 +4409,31 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <source xml:lang="en">This file will cause these books to be grouped under a single bookshelf in Bloom Reader. This collection's bookshelf is set to "{0}".</source>
         <note>ID: Publish.BulkBloomPub.Explanation</note>
         <note>{0} will be replaced with the name of the bookshelf. Make sure to place the {0} at the appropriate place in the translation. The double quotes ("") around it can be replaced with whatever kind of quotation marks are appropriate in the language you are translating to.</note>
-        <target xml:lang="sw" state="needs-translation">This file will cause these books to be grouped under a single bookshelf in Bloom Reader. This collection's bookshelf is set to "{0}".</target>
+        <target xml:lang="sw" state="translated">Faili hii itasababisha vitabu hivi kupangwa chini ya rafu moja ya vitabu katika Bloom Reader. Rafu ya vitabu ya mkusanyiko huu imewekwa kuwa "{0}".</target>
       </trans-unit>
       <trans-unit id="PublishTab.BulkBloomPub.Make" sil:dynamic="true">
         <source xml:lang="en">Make</source>
         <note>ID: Publish.BulkBloomPub.Make</note>
         <note>"Make" is the label of a button that will make the selected file</note>
-        <target xml:lang="sw" state="needs-translation">Make</target>
+        <target xml:lang="sw" state="translated">Tengeneza</target>
       </trans-unit>
       <trans-unit id="PublishTab.BulkBloomPub.MakeAllBloomPubs" sil:dynamic="true">
         <source xml:lang="en">Make All BloomPUBs from Collection</source>
         <note>ID: PublishTab.BulkBloomPub.MakeAllBloomPubs</note>
         <note>A BloomPUB is a type of file format that can be used to read books on the Bloom Reader app</note>
-        <target xml:lang="sw" state="needs-translation">Make All BloomPUBs from Collection</target>
+        <target xml:lang="sw" state="translated">Tengeneza BloomPUB Zote kutoka kwa Mkusanyiko</target>
       </trans-unit>
       <trans-unit id="PublishTab.BulkBloomPub.MakeBloomBundle" sil:dynamic="true">
         <source xml:lang="en">Compress into a single .bloombundle file</source>
         <note>ID: Publish.BulkBloomPub.MakeBloomBundle</note>
         <note>"Compress" means to take multiple things and turn them into a single combined file. (The result is smaller than the sum of the parts.)</note>
         <note>.bloombundle is the file extension. It is in lowercase. It will be the same extension regardless of the user's language settings.</note>
-        <target xml:lang="sw" state="needs-translation">Compress into a single .bloombundle file</target>
+        <target xml:lang="sw" state="translated">Finyaza kwenye faili moja ya .bloombundle</target>
       </trans-unit>
       <trans-unit id="PublishTab.BulkBloomPub.ProduceBloomShelf" sil:dynamic="true">
         <source xml:lang="en">Produce a .bloomshelf file</source>
         <note>ID: Publish.BulkBloomPub.ProduceBloomShelf</note>
-        <target xml:lang="sw" state="needs-translation">Produce a .bloomshelf file</target>
+        <target xml:lang="sw" state="translated">Tengeneza faili ya .bloomshelf</target>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm" approved="yes">
         <source xml:lang="en">Share on the Web</source>
@@ -4518,7 +4513,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       <trans-unit id="PublishTab.Epub.LocalLinksProblem">
         <source xml:lang="en">Links to other pages do not work in ePUBs. They will be changed to plain text that does not look like a link.</source>
         <note>ID: PublishTab.Epub.LocalLinksProblem</note>
-        <target xml:lang="sw" state="needs-translation">Links to other pages do not work in ePUBs. They will be changed to plain text that does not look like a link.</target>
+        <target xml:lang="sw" state="translated">Viungo vya kurasa zingine havifanyi kazi katika ePUBs. Zitabadilishwa kuwa maandishi wazi ambayo hayaonekani kama kiungo.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.IncludeOnPage" approved="yes">
         <source xml:lang="en">Include image descriptions on page</source>
@@ -4547,7 +4542,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <source xml:lang="en">Sorry, Bloom cannot produce ePUBs if there are any overlays. The first overlay is on page {0}.</source>
         <note>ID: PublishTab.Epub.NoOverlaySupport</note>
         <note>The {0} will be replaced with the page number (or name of page). For example, it might be replaced by "1" or "Front Cover"</note>
-        <target xml:lang="sw" state="needs-translation">Sorry, Bloom cannot produce ePUBs if there are any overlays. The first overlay is on page {0}.</target>
+        <target xml:lang="sw" state="translated">Samahani, Bloom haiwezi kutoa ePUB ikiwa kuna viwekeleo vyovyote. Uwekeleaji wa kwanza uko kwenye ukurasa wa {0}.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.PageLabel.Content" approved="yes">
         <source xml:lang="en">Content</source>
@@ -4842,18 +4837,18 @@ kisomaji cha ePUB</target>
         <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
         <note>ID: PublishTab.PublishRequiresEnterprise.FirstOverlayPage</note>
         <note>The {0} will be replaced by a page number.</note>
-        <target xml:lang="sw" state="needs-translation">Page {0} is the first page that uses Overlay elements.</target>
+        <target xml:lang="sw" state="translated">Ukurasa wa {0} ni ukurasa wa kwanza unaotumia vipengele vya Uwekeleaji.</target>
       </trans-unit>
       <trans-unit id="PublishTab.PublishRequiresEnterprise.Options">
         <source xml:lang="en">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</source>
         <note>ID: PublishTab.PublishRequiresEnterprise.Options</note>
-        <target xml:lang="sw" state="needs-translation">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</target>
+        <target xml:lang="sw" state="translated">Ili kuchapisha kitabu chako, unahitaji kuwezesha Bloom Enterprise, au kuondoa vipengele vya Uwekeleaji kwenye kitabu chako.</target>
       </trans-unit>
       <trans-unit id="PublishTab.PublishRequiresEnterprise.ProblemExplanation">
         <source xml:lang="en">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Enterprise feature.</source>
         <note>ID: PublishTab.PublishRequiresEnterprise.ProblemExplanation</note>
         <note>{0} will be replaced with the book's title.</note>
-        <target xml:lang="sw" state="needs-translation">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Enterprise feature.</target>
+        <target xml:lang="sw" state="translated">Kitabu chenye kichwa '{0}' kinaongeza vipengele vipya vya Uwekeleaji. Vipengele vilivyowekelea ni kipengele cha Bloom Enterprise.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Save" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Save...</source>
@@ -5143,7 +5138,7 @@ kisomaji cha ePUB</target>
       <trans-unit id="PublishTab.Upload.SkipMakingPdf">
         <source xml:lang="en">Skipping PDF because this book has video</source>
         <note>ID: PublishTab.Upload.SkipMakingPdf</note>
-        <target xml:lang="sw" state="needs-translation">Skipping PDF because this book has video</target>
+        <target xml:lang="sw" state="translated">Inaruka PDF kwa sababu kitabu hiki kina video</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SomethingWrong" approved="yes">
         <source xml:lang="en">Oops, something went wrong when trying to sign you into our database.</source>
@@ -5244,43 +5239,43 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Already in Bloom Library</source>
         <note>ID: PublishTab.UploadCollisionDialog.AlreadyIn</note>
         <note>This is the header for the book that is in bloomlibrary.org already.</note>
-        <target xml:lang="sw" state="needs-translation">Already in Bloom Library</target>
+        <target xml:lang="sw" state="translated">Tayari iko kwenye maktaba ya Bloom</target>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.HaveOne">
         <source xml:lang="en">BloomLibrary.org already has a book with this ID from you ({0}).</source>
         <note>ID: PublishTab.UploadCollisionDialog.HaveOne</note>
         <note>This is the dialog subtitle. The {0} will be replaced with the uploader's email address.</note>
-        <target xml:lang="sw" state="needs-translation">BloomLibrary.org already has a book with this ID from you ({0}).</target>
+        <target xml:lang="sw" state="translated">BloomLibrary.org tayari ina kitabu chenye kitambulisho hiki kutoka kwako ({0}).</target>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks">
-        <source xml:lang="en">These are different books</source>
+        <source xml:lang="en">No, these are different books</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks</note>
         <note>This is the label on a radio button.</note>
-        <target xml:lang="sw" state="needs-translation">These are different books</target>
+        <target xml:lang="sw" state="translated">Hapana, hivi ni vitabu tofauti</target>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary">
         <source xml:lang="en">Add a new book. Bloom will fix the ID of your book and upload it. The old book on Bloom Library will stay the same.</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary</note>
         <note>This is explanatory commentary on a radio button.</note>
-        <target xml:lang="sw" state="needs-translation">Add a new book. Bloom will fix the ID of your book and upload it. The old book on Bloom Library will stay the same.</target>
+        <target xml:lang="sw" state="translated">Ongeza kitabu kipya. Bloom itarekebisha kitambulisho cha kitabu chako na kukipakia. Kitabu cha zamani kwenye Maktaba ya Bloom kitabaki vile vile.</target>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook">
-        <source xml:lang="en">These are the same book</source>
+        <source xml:lang="en">Yes, this is an update of my book</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook</note>
         <note>This is the label on a radio button.</note>
-        <target xml:lang="sw" state="needs-translation">These are the same book</target>
+        <target xml:lang="sw" state="translated">Ndiyo, hii ni sasisho la kitabu changu</target>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary">
         <source xml:lang="en">Update the book. Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary</note>
         <note>This is explanatory commentary on a radio button. Don't translate the website reference in brackets ([bloomlibrary.org]). It will be replaced by a link to bloomlibrary.org.</note>
-        <target xml:lang="sw" state="needs-translation">Update the book. Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</target>
+        <target xml:lang="sw" state="translated">Sasisha kitabu. Bloom itaondoa toleo kwenye [bloomlibrary.org] na kuibadili na upakiaji wako.</target>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.SameBook">
-        <source xml:lang="en">Are these the same book?</source>
+        <source xml:lang="en">Is this an update of your existing book?</source>
         <note>ID: PublishTab.UploadCollisionDialog.SameBook</note>
         <note>This is the dialog title</note>
-        <target xml:lang="sw" state="needs-translation">Are these the same book?</target>
+        <target xml:lang="sw" state="translated">Je, hili ni sasisho la kitabu chako kilichopo?</target>
       </trans-unit>
       <trans-unit id="Quiz.CheckYourUnderstanding" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Check Your Understanding</source>
@@ -6007,7 +6002,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Team Collections</source>
         <note>ID: TeamCollection.TeamCollections</note>
         <note>Should be translated similarly as TeamCollection.TeamCollection, but plural instead of singular</note>
-        <target xml:lang="sw" state="needs-translation">Team Collections</target>
+        <target xml:lang="sw" state="translated">Mikusanyiko ya Timu</target>
       </trans-unit>
       <trans-unit id="TeamCollection.Available" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This book is available for editing</source>
@@ -6186,7 +6181,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.BookName.Digital Comic Book" sil:dynamic="true">
         <source xml:lang="en">Digital Comic Book</source>
         <note>ID: TemplateBooks.BookName.Digital Comic Book</note>
-        <target xml:lang="sw" state="translated">Kitabu cha Kichekesho cha Kidigitali</target>
+        <target xml:lang="sw" state="translated">Kitabu cha Vichekesho cha Kidigitali</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Leveled Reader</source>
@@ -6263,6 +6258,16 @@ Do you want to go ahead?</note>
         <source xml:lang="en">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</source>
         <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
         <target xml:lang="sw" state="final">Ukurasa wa maingiliano ulio na swali na majibu kadhaa. Unafanya kazi kwenye wavuti na kwenye Bloom Reader. Unapotumiwa na Bloom Reader, dashibodi ya mradi wako inaweza kuonyesha alama za jumla za ufahamu.</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Picture" sil:dynamic="true">
+        <source xml:lang="en">An interactive page with an image and some text buttons.</source>
+        <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
+        <target xml:lang="sw" state="translated">Ukurasa wa maingiliano wenye picha na baadhi ya vitufe vya maandishi.</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Choose Picture from Word" sil:dynamic="true">
+        <source xml:lang="en">An interactive page with a text and some picture buttons.</source>
+        <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
+        <target xml:lang="sw" state="translated">Ukurasa wa maingiliano wenye maandishi na baadhi ya vitufe vya picha.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>
@@ -6795,6 +6800,18 @@ Do you want to go ahead?</note>
         <note>ID: WebServer.Warning.NoImageFile</note>
         <note>displays as a "toast"</note>
         <target xml:lang="sw" state="final">Haiwezi kupata faili ya picha</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportDialog.Description">
+        <source xml:lang="en">Bloom will create a spreadsheet containing the text and images of this book. You can then make changes, like making new translations. Finally, use the “Import &amp; Update from Spreadsheet...” command to bring your changes back in.</source>
+        <target xml:lang="sw" state="translated">Bloom itatengeza lahajedwali lililo na maandishi na picha za kitabu hiki. Kisha unaweza kufanya mabadiliko, kama vile kufanya tafsiri mpya. Hatimaye, tumia "Leta &amp; Sasisho kutoka kwa Lahajedwali... "amri ya kurejesha mabadiliko yako.</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportDialog.folderLabel">
+        <source xml:lang="en">Target folder for the spreadsheet and images:</source>
+        <target xml:lang="sw" state="translated">Folda iliyolengwa ya lahajedwali na picha:</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportDialog.ExportButton">
+        <source xml:lang="en">Export</source>
+        <target xml:lang="sw" state="translated">Hamisha</target>
       </trans-unit>
     </body>
   </file>

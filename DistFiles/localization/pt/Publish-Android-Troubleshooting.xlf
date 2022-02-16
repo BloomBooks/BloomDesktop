@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="android.publish.wifi.run.receive">
         <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from Wi-Fi".</source>
-        <target xml:lang="pt-PT" state="translated">Ao usar este método, você precisa executar o LeitorBloom. Abra o menu e escolha "Receber do WiFi".</target>
+        <target xml:lang="pt-PT" state="translated">Ao usar este método, é necessário executar o LeitorBloom. Abra o menu e escolha "Receber do WiFi".</target>
         <note>ID: android.publish.wifi.run.receive</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.receive.from">
@@ -56,7 +56,7 @@
       </trans-unit>
       <trans-unit id="android.publish.usb.automatic">
         <source xml:lang="en">When using this method the first time, you may need to go to the Bloom Reader menu, do "Receive from USB" and give the app permission to use the Bloom folder. After that, you should not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</source>
-        <target xml:lang="pt-PT" state="translated">Ao usar este método, você não precisa entrar de forma especial para receber livros. Basta executar o LeitorBloom. Os livros devem aparecer automaticamente quando são transferidos.</target>
+        <target xml:lang="pt-PT" state="translated">Ao usar este método pela primeira vez, você pode precisar ir ao menu LeitorBloom, faça "Receber do USB" e dê permissão ao aplicativo para usar a pasta Bloom. Depois disso, você não deve ter que ativar nenhum modo especial para receber livros. Apenas execute o LeitorBloom. Os livros devem aparecer automaticamente quando forem transferidos.</target>
         <note>ID: android.publish.usb.automatic</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.uses.mtp">
