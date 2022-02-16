@@ -6,7 +6,7 @@
         <source xml:lang="en">A future update of Bloom will contain the branding assets for this project, “{0}”.  Thank you for your patience.</source>
         <note>ID: BackCover.NewBrandingNotice</note>
         <note>The {0} is replaced at runtime with the name of the new branding project.</note>
-        <target xml:lang="pt-PT" state="translated">Uma futura atualização do Bloom terá os recursos de marca para este projeto, “{0}. Obrigado por sua paciência.</target>
+        <target xml:lang="pt-PT" state="translated">Uma futura atualização do Bloom terá os recursos de marca para este projeto, “{0}". Obrigado por sua paciência.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed">
         <source xml:lang="en">Conversion file used:</source>
@@ -31,6 +31,11 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion</note>
         <note>After this text, the program will display the text of the current text box after being converted into the script of another language using the settings in the conversion file.</note>
         <target xml:lang="pt-PT" state="translated">Resultado da conversão da ortografia:</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateCloneControl.InZipFileMessage">
+        <source xml:lang="en">It looks like you are trying to open a Bloom Collection from inside of a ZIP file. You need to first unzip the ZIP file, and then open the collection.</source>
+        <note>ID: OpenCreateCloneControl.InZipFileMessage</note>
+        <target xml:lang="pt-PT" state="translated">Parece que está a tentar abrir uma coleção Bloom de dentro de um arquivo ZIP. Primeiro, precisa descompactar o arquivo ZIP e, em seguida, abrir a coleção.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckEmailFailed">
         <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
