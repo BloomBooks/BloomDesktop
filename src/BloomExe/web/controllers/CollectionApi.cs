@@ -151,12 +151,18 @@ namespace Bloom.web.controllers
 			_libraryModel.GetBookCollections().ForEach(c =>
 			{
 				Debug.WriteLine($"collection: {c.Name}-->{c.PathToDirectory}");
-				output.Add(
-					new
-					{
-						id = c.PathToDirectory,
-						name = c.Name
-					});
+				// For this purpose there's no point in returning empty collections,
+				// and in particular this filters out our xmatter folders which aren't really
+				// collections.
+				if (c.GetBookInfos().Any())
+				{
+					output.Add(
+						new
+						{
+							id = c.PathToDirectory,
+							name = c.Name
+						});
+				}
 			});
 			request.ReplyWithJson(JsonConvert.SerializeObject(output));
 		}
