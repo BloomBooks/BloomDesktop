@@ -32,6 +32,11 @@
         <note>After this text, the program will display the text of the current text box after being converted into the script of another language using the settings in the conversion file.</note>
         <target xml:lang="th" state="needs-translation">Result of orthography conversion:</target>
       </trans-unit>
+      <trans-unit id="OpenCreateCloneControl.InZipFileMessage">
+        <source xml:lang="en">It looks like you are trying to open a Bloom Collection from inside of a ZIP file. You need to first unzip the ZIP file, and then open the collection.</source>
+        <note>ID: OpenCreateCloneControl.InZipFileMessage</note>
+        <target xml:lang="th" state="needs-translation">It looks like you are trying to open a Bloom Collection from inside of a ZIP file. You need to first unzip the ZIP file, and then open the collection.</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckEmailFailed">
         <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
         <note>ID: PublishTab.Upload.CheckEmailFailed</note>
