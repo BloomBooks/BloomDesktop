@@ -4,37 +4,37 @@
     <body>
       <trans-unit id="decodable.definition">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Decodable Reader</g> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 <g id="genid-2" ctype="x-html-em">decodable stages</g> through which learners progress.</source>
-        <target xml:lang="vi" state="needs-translation">A <g id="genid-1" ctype="x-html-strong">Decodable Reader</g> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 <g id="genid-2" ctype="x-html-em">decodable stages</g> through which learners progress.</target>
+        <target xml:lang="vi" state="translated"><g id="genid-1" ctype="x-html-strong">Decodable Readers</g> là một cuốn sách chọn lọc chữ cái và từ ngữ được sử dụng để có thể phù hợp với những gì mà độc giả mới muốn đọc. Một ngôn ngữ điển hình có thể có 5-10<g id="genid-2" ctype="x-html-em">giai đoạn giải mã</g> mà thông quá đó người học có thể học.</target>
         <note>ID: decodable.definition</note>
       </trans-unit>
       <trans-unit id="decodable.stages">
         <source xml:lang="en">Bloom helps you to define this sequence of <g id="genid-3" ctype="x-html-em">stages</g> that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is <g id="genid-4" ctype="x-html-em">decodable</g> (figure out-able) by learners at that <g id="genid-5" ctype="x-html-em">stage</g>.</source>
-        <target xml:lang="vi" state="needs-translation">Bloom helps you to define this sequence of <g id="genid-3" ctype="x-html-em">stages</g> that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is <g id="genid-4" ctype="x-html-em">decodable</g> (figure out-able) by learners at that <g id="genid-5" ctype="x-html-em">stage</g>.</target>
+        <target xml:lang="vi" state="translated">Bloom giúp bạn xác định trình tự <g id="genid-3" ctype="x-html-em"> các giai đoạn </g> mà độc giả thông qua. Mỗi cuốn sách bạn tạo sẽ được nhắm mục tiêu của một trong các giai đoạn đó và Bloom giúp bạn đảm bảo rằng sách của bạn <g id="genid-4" ctype="x-html-em">có thể giải mã được </g> (khả thi) bởi những người học ở <g id="genid-5" ctype="x-html-em"> giai đoạn đó</g>.</target>
         <note>ID: decodable.stages</note>
       </trans-unit>
       <trans-unit id="decodable.templates">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-6" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
-        <target xml:lang="vi" state="needs-translation">You can also make a Bloom Pack of <g id="genid-6" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</target>
+        <target xml:lang="vi" state="translated">Bạn cũng có thể tạo Gói Bloom gồm <g id="genid-6" ctype="x-html-em"> các mẫu </g> mà những người khác có thể sử dụng để nhanh chóng tạo sách dựa trên các cấp độ và giai đoạn đã được chuẩn bị bởi một chuyên gia đọc viết.</target>
         <note>ID: decodable.templates</note>
       </trans-unit>
       <trans-unit id="decodable.learn">
         <source xml:lang="en">To learn about using Decodable Readers in Bloom, you can:</source>
-        <target xml:lang="vi" state="needs-translation">To learn about using Decodable Readers in Bloom, you can:</target>
+        <target xml:lang="vi" state="translated">Để đọc thêm về cách sử dụng Decodable Readers trong Bloom, bạn có thể:</target>
         <note>ID: decodable.learn</note>
       </trans-unit>
       <trans-unit id="decodable.learn.videos">
         <source xml:lang="en">Watch <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
-        <target xml:lang="vi" state="needs-translation">Watch <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</target>
+        <target xml:lang="vi" state="translated">Xem <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux"> các video hướng dẫn </g>.</target>
         <note>ID: decodable.learn.videos</note>
       </trans-unit>
       <trans-unit id="decodable.learn.helpindex">
         <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</source>
-        <target xml:lang="vi" state="needs-translation">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</target>
+        <target xml:lang="vi" state="translated">Đi tới danh mục Hỗ trợ, chọn "Tài liệu", và kiểm tra các chỉ số ở phần "Decodable Readers".</target>
         <note>ID: decodable.learn.helpindex</note>
       </trans-unit>
       <trans-unit id="decodable.learn.helpmenu">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="vi" state="needs-translation">Go to the Help menu and choose: "Building Reader Templates".</target>
+        <target xml:lang="vi" state="translated">Đi tới danh mục Hỗ trợ và chọn: "Xây Mẫu Đọc".</target>
         <note>ID: decodable.learn.helpmenu</note>
       </trans-unit>
     </body>

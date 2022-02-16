@@ -829,9 +829,9 @@
         <target xml:lang="bn" state="needs-translation">Rename</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem">
-        <source xml:lang="en">Save as single file (.bloom)...</source>
+        <source xml:lang="en">Save as single file (.bloomSource)...</source>
         <note>ID: CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem</note>
-        <target xml:lang="bn" state="needs-translation">Save as single file (.bloom)...</target>
+        <target xml:lang="bn" state="needs-translation">Save as single file (.bloomSource)...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip" approved="yes">
         <source xml:lang="en">Update Book</source>
@@ -2670,6 +2670,11 @@
         <note>ID: EditTab.Toolbox.DecodableReaderTool.FileDialogTextFiles</note>
         <target xml:lang="bn" state="final">লিখিত ফাইলসমূহ</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportAllUsableWords">
+        <source xml:lang="en">All Usable Words: {0}</source>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportAllUsableWords</note>
+        <target xml:lang="bn" state="needs-translation">All Usable Words: {0}</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters" approved="yes">
         <source xml:lang="en">Letters: {0}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters</note>
@@ -3610,16 +3615,6 @@
         <source xml:lang="en">A4 Landscape</source>
         <note>ID: LayoutChoices.A4Landscape</note>
         <target xml:lang="bn" state="translated">A4অনুভূমিক</target>
-      </trans-unit>
-      <trans-unit id="LayoutChoices.A4Landscape SideBySide" sil:dynamic="true">
-        <source xml:lang="en">A4 Landscape (Side By Side)</source>
-        <note>ID: LayoutChoices.A4Landscape SideBySide</note>
-        <target xml:lang="bn" state="translated">এ৪আনুভূমিক পাশাপাশি</target>
-      </trans-unit>
-      <trans-unit id="LayoutChoices.A4Landscape SplitAcrossPages" sil:dynamic="true">
-        <source xml:lang="en">A4 Landscape (Split Across Pages)</source>
-        <note>ID: LayoutChoices.A4Landscape SplitAcrossPages</note>
-        <target xml:lang="bn" state="translated">এ৪আনুভূমিক পৃষ্ঠাগুলোর মধ্যে বিভক্ত</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Portrait" sil:dynamic="true">
         <source xml:lang="en">A4 Portrait</source>
@@ -5251,10 +5246,10 @@ Do you want to go ahead?</note>
         <target xml:lang="bn" state="needs-translation">BloomLibrary.org already has a book with this ID from you ({0}).</target>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks">
-        <source xml:lang="en">These are different books</source>
+        <source xml:lang="en">No, these are different books</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks</note>
         <note>This is the label on a radio button.</note>
-        <target xml:lang="bn" state="needs-translation">These are different books</target>
+        <target xml:lang="bn" state="needs-translation">No, these are different books</target>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary">
         <source xml:lang="en">Add a new book. Bloom will fix the ID of your book and upload it. The old book on Bloom Library will stay the same.</source>
@@ -5263,10 +5258,10 @@ Do you want to go ahead?</note>
         <target xml:lang="bn" state="needs-translation">Add a new book. Bloom will fix the ID of your book and upload it. The old book on Bloom Library will stay the same.</target>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook">
-        <source xml:lang="en">These are the same book</source>
+        <source xml:lang="en">Yes, this is an update of my book</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook</note>
         <note>This is the label on a radio button.</note>
-        <target xml:lang="bn" state="needs-translation">These are the same book</target>
+        <target xml:lang="bn" state="needs-translation">Yes, this is an update of my book</target>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary">
         <source xml:lang="en">Update the book. Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</source>
@@ -5275,10 +5270,10 @@ Do you want to go ahead?</note>
         <target xml:lang="bn" state="needs-translation">Update the book. Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</target>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.SameBook">
-        <source xml:lang="en">Are these the same book?</source>
+        <source xml:lang="en">Is this an update of your existing book?</source>
         <note>ID: PublishTab.UploadCollisionDialog.SameBook</note>
         <note>This is the dialog title</note>
-        <target xml:lang="bn" state="needs-translation">Are these the same book?</target>
+        <target xml:lang="bn" state="needs-translation">Is this an update of your existing book?</target>
       </trans-unit>
       <trans-unit id="Quiz.CheckYourUnderstanding" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Check Your Understanding</source>
@@ -6262,6 +6257,16 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
         <target xml:lang="bn" state="final">একটি প্রশ্ন এবং কিছু উত্তর সহ একটি ইন্টারেক্টিভ পৃষ্ঠা। ওয়েবে এবং ব্লুম রিডারে কাজ করে। ব্লুম রিডার সহ যখন ব্যবহার করা হয় তখন আপনার প্রকল্পের ড্যাশবোর্ড সমষ্টিগত বোধগম্য স্কোর প্রদর্শন করতে পারে।</target>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Picture" sil:dynamic="true">
+        <source xml:lang="en">An interactive page with an image and some text buttons.</source>
+        <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
+        <target xml:lang="bn" state="needs-translation">An interactive page with an image and some text buttons.</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Choose Picture from Word" sil:dynamic="true">
+        <source xml:lang="en">An interactive page with a text and some picture buttons.</source>
+        <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
+        <target xml:lang="bn" state="needs-translation">An interactive page with a text and some picture buttons.</target>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>
         <note>ID: TemplateBooks.PageDescription.Translation Instructions</note>
@@ -6793,6 +6798,18 @@ Do you want to go ahead?</note>
         <note>ID: WebServer.Warning.NoImageFile</note>
         <note>displays as a "toast"</note>
         <target xml:lang="bn" state="final">ছবির ফাইল খুঁজে পাওয়া যায়নি</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportDialog.Description">
+        <source xml:lang="en">Bloom will create a spreadsheet containing the text and images of this book. You can then make changes, like making new translations. Finally, use the “Import &amp; Update from Spreadsheet...” command to bring your changes back in.</source>
+        <target xml:lang="bn" state="needs-translation">Bloom will create a spreadsheet containing the text and images of this book. You can then make changes, like making new translations. Finally, use the “Import &amp; Update from Spreadsheet...” command to bring your changes back in.</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportDialog.folderLabel">
+        <source xml:lang="en">Target folder for the spreadsheet and images:</source>
+        <target xml:lang="bn" state="needs-translation">Target folder for the spreadsheet and images:</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportDialog.ExportButton">
+        <source xml:lang="en">Export</source>
+        <target xml:lang="bn" state="needs-translation">Export</target>
       </trans-unit>
     </body>
   </file>

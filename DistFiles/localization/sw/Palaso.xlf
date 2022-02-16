@@ -223,7 +223,7 @@
       <trans-unit id="ImageToolbox.ImageGalleries">
         <source xml:lang="en">Image Galleries</source>
         <note>ID: ImageToolbox.ImageGalleries</note>
-        <target xml:lang="sw" state="translated">Kihifadhi Picha</target>
+        <target xml:lang="sw" state="translated">Vichanja vya Picha</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle" approved="yes">
         <source xml:lang="en">Image Toolbox</source>
@@ -314,7 +314,7 @@
         <source xml:lang="en">Read about IPA transcription on the web</source>
         <note>ID: IpaIdentifierView.linkLabel1</note>
         <note>In writing system setup when IPA special option is selected: text used in link to a webpage describing IPA transcription</note>
-        <target xml:lang="sw" state="translated">Soma maelezo ya IPA kwenye wavuti</target>
+        <target xml:lang="sw" state="translated">Soma kuhusu unukuzi wa IPA kwenye wavuti</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
