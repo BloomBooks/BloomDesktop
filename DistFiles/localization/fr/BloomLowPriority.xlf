@@ -118,6 +118,55 @@
         <note>A link offering more information about the Funded Local Community Only option</note>
         <target xml:lang="fr" state="final">Qu'est-ce que c'est?</target>
       </trans-unit>
+      <trans-unit id="Spreadsheet.DataDivConflictWarning" approved="yes">
+        <source xml:lang="en">Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.</source>
+        <note>ID: Spreadsheet.DataDivConflictWarning</note>
+        <target xml:lang="fr" state="final">Avertissement d'exportation : Des différences trouvées au niveau de l'attribut 'src' et du texte d'élément pour l'élément data-div {0}. On ne va pas tenir compte de l'attribut 'src'.</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.DataDivImageMultiple" approved="yes">
+        <source xml:lang="en">Export warning: Found multiple elements for image element {0}. Only the first will be exported.</source>
+        <note>ID: Spreadsheet.DataDivImageMultiple</note>
+        <target xml:lang="fr" state="final">Avertissement d'exportation : On note plusieurs éléments pour l'élément d'image {0}. Seul le premier sera exporté.</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportFailed" approved="yes">
+        <source xml:lang="en">Export failed: </source>
+        <note>ID: Spreadsheet.ExportFailed</note>
+        <target xml:lang="fr" state="final">Echec de l'exportation: </target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.SpreadsheetLocked" approved="yes">
+        <source xml:lang="en">Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?</source>
+        <note>ID: Spreadsheet.SpreadsheetLocked</note>
+        <target xml:lang="fr" state="final">Bloom n'a pas pu écrire dans la feuille de calcul car un autre programme l'a verrouillée. Est-ce que vous l'avez ouverte dans un autre programme?</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.MissingImage" approved="yes">
+        <source xml:lang="en">Export warning: did not find the image {0}. It will be missing from the export folder.</source>
+        <note>ID: Spreadsheet.MissingImage</note>
+        <target xml:lang="fr" state="final">Avertissement d'exportation : on n'a pas trouvé l'image {0}. Elle va manquer dans le dossier d'exportation.</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.MultipleImageChildren" approved="yes">
+        <source xml:lang="en">Export warning: Found multiple images in data-book element {0}. Only the first will be exported.</source>
+        <note>ID: Spreadsheet.MultipleImageChildren</note>
+        <target xml:lang="fr" state="final">Avertissement d'exportation : Plusieurs images trouvées dans l'élément du data-book {0}. Seule la première sera exportée.</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.Overwrite" approved="yes">
+        <source xml:lang="en">You are about to replace the existing folder named {0}</source>
+        <note>ID: Spreadsheet.Overwrite</note>
+        <target xml:lang="fr" state="final">Vous êtes sur le point de remplacer le dossier existant nommé {0}</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.OverwriteBook">
+        <source xml:lang="en">The folder named {0} already exists and looks like it might be a Bloom book folder!</source>
+        <note>ID: Spreadsheet.OverwriteBook</note>
+        <target xml:lang="fr" state="translated">Le dossier nommé {0} existe déjà et semble être un dossier Bloom !</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.WriteFailed" approved="yes">
+        <source xml:lang="en">Bloom had problems writing files to that location ({0}). Check that you have permission to write there.</source>
+        <note>ID: Spreadsheet.WriteFailed</note>
+        <target xml:lang="fr" state="final">Bloom a eu des problèmes pour écrire des fichiers à cet emplacement ({0}). Vérifiez que vous avez la permission d'écrire à cet endroit.</target>
+      </trans-unit>
+      <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer" approved="yes">
+        <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
+        <target xml:lang="fr" state="final">Insérer la bonne réponse dans ce bouton. Bloom va aléatoirer l'ordre plus tard.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

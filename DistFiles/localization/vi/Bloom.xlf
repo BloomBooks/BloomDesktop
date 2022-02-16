@@ -11,7 +11,7 @@
         <source xml:lang="en">Ace by DAISY Automated Checks</source>
         <note>ID: AccessibilityCheck.ACEByDaisy</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
-        <target xml:lang="vi" state="needs-translation">Ace by DAISY Automated Checks</target>
+        <target xml:lang="vi" state="translated">Tự động kiểm tra bằng Ace by DAISY</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.audioForAllText" sil:dynamic="true">
         <source xml:lang="en">Audio for all text</source>
@@ -122,24 +122,24 @@
       <trans-unit id="AutoUpdateSoftwareDialog.SoftwareUpdates" sil:dynamic="true">
         <source xml:lang="en">Software Updates</source>
         <note>ID: AutoUpdateSoftwareDialog.SoftwareUpdates</note>
-        <target xml:lang="vi" state="needs-translation">Software Updates</target>
+        <target xml:lang="vi" state="translated">Cập nhật phần mềm</target>
       </trans-unit>
       <trans-unit id="AutoUpdateSoftwareDialog.WhatShouldBloomDo" sil:dynamic="true">
         <source xml:lang="en">What should Bloom do when a new version is available?</source>
         <note>ID: AutoUpdateSoftwareDialog.WhatShouldBloomDo</note>
-        <target xml:lang="vi" state="needs-translation">What should Bloom do when a new version is available?</target>
+        <target xml:lang="vi" state="translated">Bloom nên làm gì khi phiên bản mới đã sẵn sàng?</target>
       </trans-unit>
       <trans-unit id="AutoUpdateSoftwareDialog.AutomaticUpdate" sil:dynamic="true">
         <source xml:lang="en">Automatically download and install it</source>
         <note>ID: AutoUpdateSoftwareDialog.AutomaticUpdate</note>
         <note>Radio button label</note>
-        <target xml:lang="vi" state="needs-translation">Automatically download and install it</target>
+        <target xml:lang="vi" state="translated">Tự động tải và cài đặt</target>
       </trans-unit>
       <trans-unit id="AutoUpdateSoftwareDialog.LetMeKnow" sil:dynamic="true">
         <source xml:lang="en">Just let me know about the new version</source>
         <note>ID: AutoUpdateSoftwareDialog.LetMeKnow</note>
         <note>Radio button label</note>
-        <target xml:lang="vi" state="needs-translation">Just let me know about the new version</target>
+        <target xml:lang="vi" state="translated">Thông báo cho tôi về phiên bản mới</target>
       </trans-unit>
       <trans-unit id="BloomIntegrity.WindowTitle">
         <source xml:lang="en">Bloom Problem</source>
@@ -829,9 +829,9 @@
         <target xml:lang="vi" state="needs-translation">Rename</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem">
-        <source xml:lang="en">Save as single file (.bloom)...</source>
+        <source xml:lang="en">Save as single file (.bloomSource)...</source>
         <note>ID: CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem</note>
-        <target xml:lang="vi" state="needs-translation">Save as single file (.bloom)...</target>
+        <target xml:lang="vi" state="needs-translation">Save as single file (.bloomSource)...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
         <source xml:lang="en">Update Book</source>
@@ -906,18 +906,18 @@
       <trans-unit id="CollectionTab.ContextMenu.OpenFolderOnDisk">
         <source xml:lang="en">Open Folder on Disk</source>
         <note>ID: CollectionTab.ContextMenu.OpenFolderOnDisk</note>
-        <target xml:lang="vi" state="needs-translation">Open Folder on Disk</target>
+        <target xml:lang="vi" state="translated">Mở thư mục trên ổ đĩa</target>
       </trans-unit>
       <trans-unit id="CollectionTab.EditBookButton">
         <source xml:lang="en">Edit this book</source>
         <note>ID: CollectionTab.EditBookButton</note>
-        <target xml:lang="vi" state="needs-translation">Edit this book</target>
+        <target xml:lang="vi" state="translated">Chỉnh sửa cuốn sách này</target>
       </trans-unit>
       <trans-unit id="CollectionTab.GetABetterBloom">
         <source xml:lang="en">Click to get a better Bloom!</source>
         <note>ID: CollectionTab.GetABetterBloom</note>
         <note>Clicking this message loads a web page which describes how to upgrade Bloom.</note>
-        <target xml:lang="vi" state="needs-translation">Click to get a better Bloom!</target>
+        <target xml:lang="vi" state="translated">Nhấn chọn để nhận phiên bản Bloom tốt hơn!</target>
       </trans-unit>
       <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections">
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
@@ -937,40 +937,40 @@
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate">
         <source xml:lang="en">Make a book using this source</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate</note>
-        <target xml:lang="vi" state="needs-translation">Make a book using this source</target>
+        <target xml:lang="vi" state="translated">Tạo một cuốn sách sử dụng nguồn này</target>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate_ToolTip_">
         <source xml:lang="en">Create a book in my language using this source book</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate_ToolTip_</note>
-        <target xml:lang="vi" state="needs-translation">Create a book in my language using this source book</target>
+        <target xml:lang="vi" state="translated">Tạo một cuốn sách bằng ngôn ngữ của tôi sử dụng cuốn sách nguồn này</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Open/CreateCollectionButton">
         <source xml:lang="en">Other Collection</source>
         <note>ID: CollectionTab.Open/CreateCollectionButton</note>
         <note>This is the button you use to create a new collection, open a new one, or get one from a repository somewhere.</note>
-        <target xml:lang="vi" state="needs-translation">Other Collection</target>
+        <target xml:lang="vi" state="translated">Bộ sưu tập khác</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Open/CreateCollectionButton_ToolTip_">
         <source xml:lang="en">Open/Create/Get Collection</source>
         <note>ID: CollectionTab.Open/CreateCollectionButton_ToolTip_</note>
         <note>This is the button you use to create a new collection, open a new one, or get one from a repository somewhere.</note>
-        <target xml:lang="vi" state="needs-translation">Open/Create/Get Collection</target>
+        <target xml:lang="vi" state="translated">Mở/Tạo/Chọn Bộ sưu tập</target>
       </trans-unit>
       <trans-unit id="CollectionTab.OpenCreateCollectionMenuItem">
         <source xml:lang="en">Open or Create Another Collection</source>
         <note>ID: CollectionTab.OpenCreateCollectionMenuItem</note>
-        <target xml:lang="vi" state="needs-translation">Open or Create Another Collection</target>
+        <target xml:lang="vi" state="translated">Mở hoặc Tạo Bộ sưu tập mới</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Progress">
         <source xml:lang="en">({0}% complete)</source>
         <note>ID: CollectionTab.Progress</note>
-        <target xml:lang="vi" state="needs-translation">({0}% complete)</target>
+        <target xml:lang="vi" state="translated">({0} hoàn thành)</target>
       </trans-unit>
       <trans-unit id="CollectionTab.RestartToUpdate">
         <source xml:lang="en">Restart Bloom to Update</source>
         <note>ID: CollectionTab.RestartToUpdate</note>
         <note>Restart the Bloom program, not Windows</note>
-        <target xml:lang="vi" state="needs-translation">Restart Bloom to Update</target>
+        <target xml:lang="vi" state="translated">Khởi động lại Bloom để cập nhật</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true">
         <source xml:lang="en">Sample Shells</source>
@@ -980,17 +980,17 @@
       <trans-unit id="CollectionTab.SendReceive">
         <source xml:lang="en">Send/Receive</source>
         <note>ID: CollectionTab.SendReceive</note>
-        <target xml:lang="vi" state="needs-translation">Send/Receive</target>
+        <target xml:lang="vi" state="translated">Gửi/Nhận</target>
       </trans-unit>
       <trans-unit id="CollectionTab.SettingsButton">
         <source xml:lang="en">Settings</source>
         <note>ID: CollectionTab.SettingsButton</note>
-        <target xml:lang="vi" state="needs-translation">Settings</target>
+        <target xml:lang="vi" state="translated">Cài đặt</target>
       </trans-unit>
       <trans-unit id="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
         <source xml:lang="en">Open Additional Collections Folder</source>
         <note>ID: CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections</note>
-        <target xml:lang="vi" state="needs-translation">Open Additional Collections Folder</target>
+        <target xml:lang="vi" state="translated">Mở Thư mục Bộ sưu tập bổ sung</target>
       </trans-unit>
       <trans-unit id="CollectionTab.SourcesForNewShellsHeading">
         <source xml:lang="en">Sources For New Shells</source>
@@ -1000,63 +1000,63 @@
       <trans-unit id="CollectionTab.Templates" sil:dynamic="true">
         <source xml:lang="en">Templates</source>
         <note>ID: CollectionTab.Templates</note>
-        <target xml:lang="vi" state="needs-translation">Templates</target>
+        <target xml:lang="vi" state="translated">Mẫu</target>
       </trans-unit>
       <trans-unit id="CollectionTab.TitleMissing">
         <source xml:lang="en">Title Missing</source>
         <note>ID: CollectionTab.TitleMissing</note>
         <note>Shown as the thumbnail caption when the book doesn't have a title.</note>
-        <target xml:lang="vi" state="needs-translation">Title Missing</target>
+        <target xml:lang="vi" state="translated">Thiếu tiêu đề</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UILanguageMenu.HelpTranslate">
         <source xml:lang="en">Help us translate Bloom (web)</source>
         <note>ID: CollectionTab.UILanguageMenu.HelpTranslate</note>
         <note>The final item in the UI Language menu. When clicked, it opens Bloom's page in the Crowdin web-based translation system.</note>
-        <target xml:lang="vi" state="needs-translation">Help us translate Bloom (web)</target>
+        <target xml:lang="vi" state="translated">Giúp trúng tôi dịch Bloom (web)</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UILanguageMenu.ItemTooltip">
         <source xml:lang="en">{0}% translated</source>
         <note>ID: CollectionTab.UILanguageMenu.ItemTooltip</note>
         <note>Shown when hovering over an item in the UI Language menu. The {0} marker is filled in by a number between 1 and 100.</note>
-        <target xml:lang="vi" state="needs-translation">{0}% translated</target>
+        <target xml:lang="vi" state="translated">{0}% đã dịch</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UnableToCheckForUpdate">
         <source xml:lang="en">Could not connect to the server to check for an update. Are you connected to the internet?</source>
         <note>ID: CollectionTab.UnableToCheckForUpdate</note>
         <note>Shown when Bloom tries to check for an update but can't, for example because it can't connect to the internet, or a problems with our server, etc.</note>
-        <target xml:lang="vi" state="needs-translation">Could not connect to the server to check for an update. Are you connected to the internet?</target>
+        <target xml:lang="vi" state="translated">Không thể kết nối với máy chủ để kiểm tra cập nhật. Bạn đã kết nối mạng chưa?</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpToDate">
         <source xml:lang="en">Your Bloom is up to date.</source>
         <note>ID: CollectionTab.UpToDate</note>
-        <target xml:lang="vi" state="needs-translation">Your Bloom is up to date.</target>
+        <target xml:lang="vi" state="translated">Bloom bản mới nhất.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateCheckInProgress">
         <source xml:lang="en">Bloom is already working on checking for updates.</source>
         <note>ID: CollectionTab.UpdateCheckInProgress</note>
-        <target xml:lang="vi" state="needs-translation">Bloom is already working on checking for updates.</target>
+        <target xml:lang="vi" state="translated">Bloom đang kiểm tra bản cập nhật.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateFailed">
         <source xml:lang="en">A new version appears to be available, but Bloom could not install it.</source>
         <note>ID: CollectionTab.UpdateFailed</note>
-        <target xml:lang="vi" state="needs-translation">A new version appears to be available, but Bloom could not install it.</target>
+        <target xml:lang="vi" state="translated">Phiên bản mới đã sẵn sàng, nhưng Bloom không thể thực hiện cài đặt.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateInstalled">
         <source xml:lang="en">Update for {0} is ready</source>
         <note>ID: CollectionTab.UpdateInstalled</note>
         <note>Appears after Bloom has downloaded a program update in the background and is ready to switch the user to it the next time they run Bloom.</note>
         <note xml:lang="en">OLD TEXT (before 3.9, period at end): Update for {0} is ready.</note>
-        <target xml:lang="vi" state="needs-translation">Update for {0} is ready</target>
+        <target xml:lang="vi" state="translated">Bản cập nhật {0} đã sẵn sàng</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateNow">
         <source xml:lang="en">Update Now</source>
         <note>ID: CollectionTab.UpdateNow</note>
-        <target xml:lang="vi" state="needs-translation">Update Now</target>
+        <target xml:lang="vi" state="translated">Cập nhật ngay</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdatesAvailable">
         <source xml:lang="en">A new version of Bloom is available.</source>
         <note>ID: CollectionTab.UpdatesAvailable</note>
-        <target xml:lang="vi" state="needs-translation">A new version of Bloom is available.</target>
+        <target xml:lang="vi" state="translated">Phiên bản mới của Bloom đã sẵn sàng.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Updating">
         <source xml:lang="en">Downloading update to {0} ({1}K)</source>
@@ -1080,74 +1080,74 @@
         <source xml:lang="en">Advanced</source>
         <note>ID: Common.Advanced</note>
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
-        <target xml:lang="vi" state="needs-translation">Advanced</target>
+        <target xml:lang="vi" state="translated">Nâng cao</target>
       </trans-unit>
       <trans-unit id="Common.AskForHelp">
         <source xml:lang="en">Ask for help</source>
         <note>ID: Common.AskForHelp</note>
         <note>Used in various places where someone might need to open a Problem Report dialog.</note>
-        <target xml:lang="vi" state="needs-translation">Ask for help</target>
+        <target xml:lang="vi" state="translated">Yêu cầu trợ giúp</target>
       </trans-unit>
       <trans-unit id="Common.BackButton">
         <source xml:lang="en">Back</source>
         <note>ID: Common.BackButton</note>
         <note>In a wizard, this button takes you to the previous step.</note>
-        <target xml:lang="vi" state="needs-translation">Back</target>
+        <target xml:lang="vi" state="translated">Quay Lại</target>
       </trans-unit>
       <trans-unit id="Common.Cancel">
         <source xml:lang="en">Cancel</source>
         <note>This is shown at the bottom of a dialog box. It is paired with an action button like "OK" and it means "do not do the action".  In English, this is the same as "Common.CancelProcess", but could be different in your language.</note>
         <note>ID: Common.Cancel</note>
-        <target xml:lang="vi" state="needs-translation">Cancel</target>
+        <target xml:lang="vi" state="translated">Huỷ</target>
       </trans-unit>
       <trans-unit id="Common.CancelButton">
         <source xml:lang="en">&amp;Cancel</source>
         <note>This is identical to Common.Cancel. The duplication was introduced by a mistake.</note>
         <note>This is shown at the bottom of a dialog box. It is paired with an action button like "OK" and it means "do not do the action".</note>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="vi" state="needs-translation">&amp;Cancel</target>
+        <target xml:lang="vi" state="translated">&amp;Hủy bỏ</target>
       </trans-unit>
       <trans-unit id="Common.Close">
         <source xml:lang="en">Close</source>
         <note>ID: Common.Close</note>
         <note>Used typically for a button that closes a dialog box. Unlike "OK", "Close" is not agreeing to anything, it's just dismissing the dialog box.</note>
-        <target xml:lang="vi" state="needs-translation">Close</target>
+        <target xml:lang="vi" state="translated">Đóng</target>
       </trans-unit>
       <trans-unit id="Common.Colors.Black">
         <source xml:lang="en">Black</source>
         <note>ID: Common.Colors.Black</note>
-        <target xml:lang="vi" state="needs-translation">Black</target>
+        <target xml:lang="vi" state="translated">Đen</target>
       </trans-unit>
       <trans-unit id="Common.Colors.Crimson">
         <source xml:lang="en">Crimson</source>
         <note>ID: Common.Colors.Crimson</note>
-        <target xml:lang="vi" state="needs-translation">Crimson</target>
+        <target xml:lang="vi" state="translated">Đỏ</target>
       </trans-unit>
       <trans-unit id="Common.Colors.White">
         <source xml:lang="en">White</source>
         <note>ID: Common.Colors.White</note>
-        <target xml:lang="vi" state="needs-translation">White</target>
+        <target xml:lang="vi" state="translated">Trắng</target>
       </trans-unit>
       <trans-unit id="Common.Colors.Yellow">
         <source xml:lang="en">Yellow</source>
         <note>ID: Common.Colors.Yellow</note>
-        <target xml:lang="vi" state="needs-translation">Yellow</target>
+        <target xml:lang="vi" state="translated">Vàng</target>
       </trans-unit>
       <trans-unit id="Common.Copy">
         <source xml:lang="en">Copy</source>
         <note>ID: Common.Copy</note>
-        <target xml:lang="vi" state="needs-translation">Copy</target>
+        <target xml:lang="vi" state="translated">Sao Chép</target>
       </trans-unit>
       <trans-unit id="Common.Delete">
         <source xml:lang="en">Delete</source>
         <note>ID: Common.Delete</note>
-        <target xml:lang="vi" state="needs-translation">Delete</target>
+        <target xml:lang="vi" state="translated">Xóa</target>
       </trans-unit>
       <trans-unit id="Common.Done">
         <source xml:lang="en">Done</source>
         <note>ID: Common.Done</note>
         <note>Shown in a list of messages when Bloom has completed a task.</note>
-        <target xml:lang="vi" state="needs-translation">Done</target>
+        <target xml:lang="vi" state="translated">Xong</target>
       </trans-unit>
       <trans-unit id="Common.EnterpriseRequired">
         <source xml:lang="en">Enterprise Required</source>
@@ -1158,7 +1158,7 @@
         <source xml:lang="en">Error</source>
         <note>ID: Common.Error</note>
         <note>A heading shown above some messages.</note>
-        <target xml:lang="vi" state="needs-translation">Error</target>
+        <target xml:lang="vi" state="translated">Lỗi</target>
       </trans-unit>
       <trans-unit id="Common.Finish">
         <source xml:lang="en">&amp;Finish</source>
@@ -1187,7 +1187,7 @@
         <note>ID: Common.LearnMore</note>
         <note>A link or button that leads to something that tells the user more about what they just read.</note>
         <note>This is the same as Settings.Enterprise.LearnMore</note>
-        <target xml:lang="vi" state="needs-translation">Learn More</target>
+        <target xml:lang="vi" state="translated">Tìm hiểu thêm</target>
       </trans-unit>
       <trans-unit id="Common.Loading" sil:dynamic="true">
         <source xml:lang="en">Loading...</source>
@@ -1211,7 +1211,7 @@
         <source xml:lang="en">Note</source>
         <note>ID: Common.Note</note>
         <note>A heading shown above some messages.</note>
-        <target xml:lang="vi" state="needs-translation">Note</target>
+        <target xml:lang="vi" state="translated">Ghi chú</target>
       </trans-unit>
       <trans-unit id="Common.OK">
         <source xml:lang="en">OK</source>
@@ -1231,7 +1231,7 @@
       <trans-unit id="Common.Pause" sil:dynamic="true">
         <source xml:lang="en">Pause</source>
         <note>ID: Common.Pause</note>
-        <target xml:lang="vi" state="needs-translation">Pause</target>
+        <target xml:lang="vi" state="translated">Tạm dừng</target>
       </trans-unit>
       <trans-unit id="Common.Preview">
         <source xml:lang="en">Preview</source>
@@ -1247,18 +1247,18 @@
         <source xml:lang="en">Refresh</source>
         <note>ID: Common.Refresh</note>
         <note>Sense of refreshing a web page.</note>
-        <target xml:lang="vi" state="needs-translation">Refresh</target>
+        <target xml:lang="vi" state="translated">Làm mới</target>
       </trans-unit>
       <trans-unit id="Common.Replace">
         <source xml:lang="en">Replace</source>
         <note>ID: Common.Replace</note>
-        <target xml:lang="vi" state="needs-translation">Replace</target>
+        <target xml:lang="vi" state="translated">Thay thế</target>
       </trans-unit>
       <trans-unit id="Common.Report">
         <source xml:lang="en">REPORT</source>
         <note>ID: Common.Report</note>
         <note>Used for a link that signifies "Bring up a dialog for sending a report of a problem. We usually want all-caps, unless inappropriate in a particular language"</note>
-        <target xml:lang="vi" state="needs-translation">REPORT</target>
+        <target xml:lang="vi" state="translated">BÁO CÁO</target>
       </trans-unit>
       <trans-unit id="Common.SeeWebPage">
         <source xml:lang="en">See {0}.</source>
@@ -1270,7 +1270,7 @@
         <source xml:lang="en">Select all</source>
         <note>ID: Common.SelectAll</note>
         <note>used for a menu item for selecting all text in a text box</note>
-        <target xml:lang="vi" state="needs-translation">Select all</target>
+        <target xml:lang="vi" state="translated">Chọn tất cả</target>
       </trans-unit>
       <trans-unit id="Common.Settings">
         <source xml:lang="en">Settings</source>
@@ -1280,23 +1280,23 @@
       <trans-unit id="Common.Stop">
         <source xml:lang="en">Stop</source>
         <note>ID: Common.Stop</note>
-        <target xml:lang="vi" state="needs-translation">Stop</target>
+        <target xml:lang="vi" state="translated">Dừng lại</target>
       </trans-unit>
       <trans-unit id="Common.Upload">
         <source xml:lang="en">Upload</source>
         <note>ID: Common.Upload</note>
-        <target xml:lang="vi" state="needs-translation">Upload</target>
+        <target xml:lang="vi" state="translated">Tải lên</target>
       </trans-unit>
       <trans-unit id="Common.Uploading">
         <source xml:lang="en">Uploading</source>
         <note>ID: Common.Uploading</note>
-        <target xml:lang="vi" state="needs-translation">Uploading</target>
+        <target xml:lang="vi" state="translated">Đang tải lên</target>
       </trans-unit>
       <trans-unit id="Common.Warning">
         <source xml:lang="en">Info</source>
         <note>ID: Common.Warning</note>
         <note>A heading shown above some messages.</note>
-        <target xml:lang="vi" state="needs-translation">Info</target>
+        <target xml:lang="vi" state="translated">Thông tin</target>
       </trans-unit>
       <trans-unit id="Common.WhatsThis" sil:dynamic="true">
         <source xml:lang="en">What's this?</source>
@@ -1352,60 +1352,60 @@
         <source xml:lang="en">Add Page</source>
         <note>ID: EditTab.AddPageDialog.AddPageButton</note>
         <note>This is for the button that LAUNCHES the dialog, not the 'Add this page' button that is IN the dialog.</note>
-        <target xml:lang="vi" state="needs-translation">Add Page</target>
+        <target xml:lang="vi" state="translated">Thêm Trang</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.AddThisPageButton" sil:dynamic="true">
         <source xml:lang="en">Add This Page</source>
         <note>ID: EditTab.AddPageDialog.AddThisPageButton</note>
         <note>This is for the button inside the dialog</note>
-        <target xml:lang="vi" state="needs-translation">Add This Page</target>
+        <target xml:lang="vi" state="translated">Thêm trang này</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutButton" sil:dynamic="true">
         <source xml:lang="en">Use This Layout</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutButton</note>
-        <target xml:lang="vi" state="needs-translation">Use This Layout</target>
+        <target xml:lang="vi" state="translated">Sử dụng bố cục này</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutContinueCheckbox" sil:dynamic="true">
         <source xml:lang="en">Continue anyway</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutContinueCheckbox</note>
-        <target xml:lang="vi" state="needs-translation">Continue anyway</target>
+        <target xml:lang="vi" state="translated">Vẫn tiếp tục</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutConvertBookCheckbox" sil:dynamic="true">
         <source xml:lang="en">Change all similar pages in this book to this layout.</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutConvertBookCheckbox</note>
-        <target xml:lang="vi" state="needs-translation">Change all similar pages in this book to this layout.</target>
+        <target xml:lang="vi" state="translated">Thay đổi các trang giống nhau của sách sang bố cục này.</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutTitle" sil:dynamic="true">
         <source xml:lang="en">Choose Different Layout...</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutTitle</note>
-        <target xml:lang="vi" state="needs-translation">Choose Different Layout...</target>
+        <target xml:lang="vi" state="translated">Chọn Bố cục khác...</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutWillLoseData" sil:dynamic="true">
         <source xml:lang="en">Converting to this layout will cause some content to be lost.</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutWillLoseData</note>
-        <target xml:lang="vi" state="needs-translation">Converting to this layout will cause some content to be lost.</target>
+        <target xml:lang="vi" state="translated">Chuyển đổi sang bố cục này có thể khiến một số nội dung bị mất.</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.DigitalPage" sil:dynamic="true">
         <source xml:lang="en">This kind of page will be included only in digital book outputs, not in PDF.</source>
         <note>ID: EditTab.AddPageDialog.DigitalPage</note>
-        <target xml:lang="vi" state="needs-translation">This kind of page will be included only in digital book outputs, not in PDF.</target>
+        <target xml:lang="vi" state="translated">Loại trang này sẽ chỉ có trong file xuất sách kĩ thuật số, không có trong PDF.</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true">
         <source xml:lang="en">Could not find {0}</source>
         <note>ID: EditTab.AddPageDialog.NoTemplate</note>
         <note>Seen when the book's main template page file is missing.</note>
         <note xml:lang="en">OLD TEXT (before 3.9): (no template file found)</note>
-        <target xml:lang="vi" state="needs-translation">Could not find {0}</target>
+        <target xml:lang="vi" state="translated">Không thể tìm thấy {0}</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.NumberOfPagesTooltip" sil:dynamic="true">
         <source xml:lang="en">Number of pages to add</source>
         <note>ID: EditTab.AddPageDialog.NumberOfPagesTooltip</note>
-        <target xml:lang="vi" state="needs-translation">Number of pages to add</target>
+        <target xml:lang="vi" state="translated">Số trang thêm</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true">
         <source xml:lang="en">Add Page...</source>
         <note>ID: EditTab.AddPageDialog.Title</note>
-        <target xml:lang="vi" state="needs-translation">Add Page...</target>
+        <target xml:lang="vi" state="translated">Thêm Trang...</target>
       </trans-unit>
       <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</source>
@@ -2670,6 +2670,11 @@
         <note>ID: EditTab.Toolbox.DecodableReaderTool.FileDialogTextFiles</note>
         <target xml:lang="vi" state="needs-translation">Text files</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportAllUsableWords">
+        <source xml:lang="en">All Usable Words: {0}</source>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportAllUsableWords</note>
+        <target xml:lang="vi" state="needs-translation">All Usable Words: {0}</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters">
         <source xml:lang="en">Letters: {0}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters</note>
@@ -3610,16 +3615,6 @@
         <source xml:lang="en">A4 Landscape</source>
         <note>ID: LayoutChoices.A4Landscape</note>
         <target xml:lang="vi" state="needs-translation">A4 Landscape</target>
-      </trans-unit>
-      <trans-unit id="LayoutChoices.A4Landscape SideBySide" sil:dynamic="true">
-        <source xml:lang="en">A4 Landscape (Side By Side)</source>
-        <note>ID: LayoutChoices.A4Landscape SideBySide</note>
-        <target xml:lang="vi" state="needs-translation">A4 Landscape (Side By Side)</target>
-      </trans-unit>
-      <trans-unit id="LayoutChoices.A4Landscape SplitAcrossPages" sil:dynamic="true">
-        <source xml:lang="en">A4 Landscape (Split Across Pages)</source>
-        <note>ID: LayoutChoices.A4Landscape SplitAcrossPages</note>
-        <target xml:lang="vi" state="needs-translation">A4 Landscape (Split Across Pages)</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Portrait" sil:dynamic="true">
         <source xml:lang="en">A4 Portrait</source>
@@ -5253,10 +5248,10 @@ Do you want to go ahead?</note>
         <target xml:lang="vi" state="needs-translation">BloomLibrary.org already has a book with this ID from you ({0}).</target>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks">
-        <source xml:lang="en">These are different books</source>
+        <source xml:lang="en">No, these are different books</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks</note>
         <note>This is the label on a radio button.</note>
-        <target xml:lang="vi" state="needs-translation">These are different books</target>
+        <target xml:lang="vi" state="needs-translation">No, these are different books</target>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary">
         <source xml:lang="en">Add a new book. Bloom will fix the ID of your book and upload it. The old book on Bloom Library will stay the same.</source>
@@ -5265,10 +5260,10 @@ Do you want to go ahead?</note>
         <target xml:lang="vi" state="needs-translation">Add a new book. Bloom will fix the ID of your book and upload it. The old book on Bloom Library will stay the same.</target>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook">
-        <source xml:lang="en">These are the same book</source>
+        <source xml:lang="en">Yes, this is an update of my book</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook</note>
         <note>This is the label on a radio button.</note>
-        <target xml:lang="vi" state="needs-translation">These are the same book</target>
+        <target xml:lang="vi" state="needs-translation">Yes, this is an update of my book</target>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary">
         <source xml:lang="en">Update the book. Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</source>
@@ -5277,10 +5272,10 @@ Do you want to go ahead?</note>
         <target xml:lang="vi" state="needs-translation">Update the book. Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</target>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.SameBook">
-        <source xml:lang="en">Are these the same book?</source>
+        <source xml:lang="en">Is this an update of your existing book?</source>
         <note>ID: PublishTab.UploadCollisionDialog.SameBook</note>
         <note>This is the dialog title</note>
-        <target xml:lang="vi" state="needs-translation">Are these the same book?</target>
+        <target xml:lang="vi" state="needs-translation">Is this an update of your existing book?</target>
       </trans-unit>
       <trans-unit id="Quiz.CheckYourUnderstanding" sil:dynamic="true">
         <source xml:lang="en">Check Your Understanding</source>
@@ -6264,6 +6259,16 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
         <target xml:lang="vi" state="needs-translation">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</target>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Picture" sil:dynamic="true">
+        <source xml:lang="en">An interactive page with an image and some text buttons.</source>
+        <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
+        <target xml:lang="vi" state="needs-translation">An interactive page with an image and some text buttons.</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Choose Picture from Word" sil:dynamic="true">
+        <source xml:lang="en">An interactive page with a text and some picture buttons.</source>
+        <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
+        <target xml:lang="vi" state="needs-translation">An interactive page with a text and some picture buttons.</target>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true">
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>
         <note>ID: TemplateBooks.PageDescription.Translation Instructions</note>
@@ -6795,6 +6800,18 @@ Do you want to go ahead?</note>
         <note>ID: WebServer.Warning.NoImageFile</note>
         <note>displays as a "toast"</note>
         <target xml:lang="vi" state="needs-translation">Cannot Find Image File</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportDialog.Description">
+        <source xml:lang="en">Bloom will create a spreadsheet containing the text and images of this book. You can then make changes, like making new translations. Finally, use the “Import &amp; Update from Spreadsheet...” command to bring your changes back in.</source>
+        <target xml:lang="vi" state="needs-translation">Bloom will create a spreadsheet containing the text and images of this book. You can then make changes, like making new translations. Finally, use the “Import &amp; Update from Spreadsheet...” command to bring your changes back in.</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportDialog.folderLabel">
+        <source xml:lang="en">Target folder for the spreadsheet and images:</source>
+        <target xml:lang="vi" state="needs-translation">Target folder for the spreadsheet and images:</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportDialog.ExportButton">
+        <source xml:lang="en">Export</source>
+        <target xml:lang="vi" state="needs-translation">Export</target>
       </trans-unit>
     </body>
   </file>

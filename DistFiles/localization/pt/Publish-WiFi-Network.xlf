@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="publish.help.tips.tempWiFi.hotspot.text">
         <source xml:lang="en">Many mobile phones have a feature called a 'hotspot' that creates a Wi-Fi network. First disconnect from the mobile network (so that there are no data charges). Next, enable the hotspot. Finally, set your laptop and other phones to join that network.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Many mobile phones have a feature called a 'hotspot' that creates a Wi-Fi network. First disconnect from the mobile network (so that there are no data charges). Next, enable the hotspot. Finally, set your laptop and other phones to join that network.</target>
+        <target xml:lang="pt-PT" state="translated">Muitos telemóveis têm um recurso chamado 'hotspot' que cria uma rede Wi-Fi. Primeiro desligar da rede celular (para que não haja cobranças de dados). Em seguida, ative o hotspot. Finalmente, defina o seu laptop e outros telefones para se juntar a essa rede.</target>
         <note>ID: publish.help.tips.tempWiFi.hotspot.text</note>
       </trans-unit>
       <trans-unit id="publish.help.tips.tempWiFi.hostednetwork">
@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="publish.help.tips.tempWiFi.hostednetwork.text">
         <source xml:lang="en">Windows 10 laptops can also create local Wi-Fi networks. Do a web search for "windows netsh hostednetwork". If your laptop does not support this, you can get inexpensive USB Wi-Fi adaptors that do. When shopping, make sure the adaptor supports "hosted network".</source>
-        <target xml:lang="pt-PT" state="needs-translation">Windows 10 laptops can also create local Wi-Fi networks. Do a web search for "windows netsh hostednetwork". If your laptop does not support this, you can get inexpensive USB Wi-Fi adaptors that do. When shopping, make sure the adaptor supports "hosted network".</target>
+        <target xml:lang="pt-PT" state="translated">Os computadores portateis (laptopes) do Windows 10 também podem criar redes de Wi-Fi local. Faça uma pesquisa no internet por "windows netsh hostednetwork". Se o seu laptop não suporta isto, você pode obter adaptadores USB baratos que o façam. Ao fazer compras, certifique-se de que o adaptador suporta "rede hospedada".</target>
         <note>ID: publish.help.tips.tempWiFi.hostednetwork.text</note>
       </trans-unit>
     </body>

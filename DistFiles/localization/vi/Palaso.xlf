@@ -525,7 +525,7 @@
         <source xml:lang="en">The copyright holder waives all rights</source>
         <note>ID: MetadataEditor.PublicDomain_ToolTip_</note>
         <note>This tooltip string is identical to the string displayed in the dialog in case there is not enough room in the dialog to display the full string.</note>
-        <target xml:lang="vi" state="needs-translation">The copyright holder waives all rights</target>
+        <target xml:lang="vi" state="translated">Người nắm giữ bản quyền có tất cả quyền hạn</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit">
         <source xml:lang="en">Copyright and License</source>
@@ -546,7 +546,7 @@
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
         <note>ID: MetadataEditor.UnknownLicense_ToolTip_</note>
         <note>This tooltip string is identical to the string displayed in the dialog in case there is not enough room in the dialog to display the full string.</note>
-        <target xml:lang="vi" state="needs-translation">Contact the copyright holder for any permissions</target>
+        <target xml:lang="vi" state="translated">Hãy liên lạc với người giữ bản quyền để xin phép</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.YesShareAlike">
         <source xml:lang="en">Yes, as long as others share alike</source>
@@ -557,7 +557,7 @@
         <source xml:lang="en">Yes, as long as others share alike</source>
         <note>ID: MetadataEditor.YesShareAlike_ToolTip_</note>
         <note>This tooltip string is identical to the string displayed in the dialog in case there is not enough room in the dialog to display the full string.</note>
-        <target xml:lang="vi" state="needs-translation">Yes, as long as others share alike</target>
+        <target xml:lang="vi" state="translated">Đúng, miễn là những người khác chia sẻ điều tương tự</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.additionalRequestsLabel">
         <source xml:lang="en">Additional Requests</source>
@@ -601,23 +601,23 @@
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
         <note>ID: SettingsProtection.AlsoHideOthersNotice</note>
-        <target xml:lang="vi" state="needs-translation">This may also hide other buttons which are not needed by the non-advanced user.</target>
+        <target xml:lang="vi" state="translated">Điều này cũng có thể ẩn các nút bấm không cần thiết cho người dùng không chuyên.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.CtrlShiftHint">
         <source xml:lang="en">The button will show up when you hold down the Ctrl and Shift keys together.</source>
         <note>ID: SettingsProtection.CtrlShiftHint</note>
-        <target xml:lang="vi" state="needs-translation">The button will show up when you hold down the Ctrl and Shift keys together.</target>
+        <target xml:lang="vi" state="translated">Nút ấn sẽ hiện khi bạn nhấn giữ đông thời phím Ctrl và Shift.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.LauncherButtonLabel">
         <source xml:lang="en">Settings Protection...</source>
         <note>ID: SettingsProtection.LauncherButtonLabel</note>
         <note xml:lang="en">OLD TEXT (before 4.0): Settings...</note>
-        <target xml:lang="vi" state="needs-translation">Settings Protection...</target>
+        <target xml:lang="vi" state="translated">Bảo vệ Cài đặt...</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.NormallyHiddenCheckbox">
         <source xml:lang="en">Hide the button that opens settings.</source>
         <note>ID: SettingsProtection.NormallyHiddenCheckbox</note>
-        <target xml:lang="vi" state="needs-translation">Hide the button that opens settings.</target>
+        <target xml:lang="vi" state="translated">Ẩn nút mở cài đặt.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.FactoryPassword">
         <source xml:lang="en">Factory Password</source>
@@ -627,17 +627,17 @@
       <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation">
         <source xml:lang="en">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</source>
         <note>ID: SettingsProtection.PasswordDialog.Password.Explanation</note>
-        <target xml:lang="vi" state="needs-translation">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</target>
+        <target xml:lang="vi" state="translated">Để ngăn chặn những thay đổi vô tình có thể khiến cho công cụ này ngừng hoạt động, các cài đặt này đã bị khóa.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle">
         <source xml:lang="en">Settings Protection Password</source>
         <note>ID: SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle</note>
-        <target xml:lang="vi" state="needs-translation">Settings Protection Password</target>
+        <target xml:lang="vi" state="translated">Mật khẩu Bảo vệ Cài đặt</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox">
         <source xml:lang="en">Show Characters</source>
         <note>ID: SettingsProtection.PasswordDialog.ShowCharactersCheckbox</note>
-        <target xml:lang="vi" state="needs-translation">Show Characters</target>
+        <target xml:lang="vi" state="translated">Hiển thị Kí tự</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNotice">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page.</source>
@@ -659,61 +659,61 @@
       <trans-unit id="SettingsProtection.SettingProtectionDialogTitle">
         <source xml:lang="en">Settings Protection</source>
         <note>ID: SettingsProtection.SettingProtectionDialogTitle</note>
-        <target xml:lang="vi" state="needs-translation">Settings Protection</target>
+        <target xml:lang="vi" state="translated">Bảo vệ Cài đặt</target>
       </trans-unit>
       <trans-unit id="ShowReleaseNotesDialog.WindowTitle">
         <source xml:lang="en">Release Notes</source>
         <note>ID: ShowReleaseNotesDialog.WindowTitle</note>
-        <target xml:lang="vi" state="needs-translation">Release Notes</target>
+        <target xml:lang="vi" state="translated">Ghi chú Phát hành</target>
       </trans-unit>
       <trans-unit id="VoiceIdentifierView.betterLabel1">
         <source xml:lang="en">In applications which support this option, fields with this input system will be able to play and record voice.</source>
         <note>ID: VoiceIdentifierView.betterLabel1</note>
         <note>Displayed if a user selects the voice special option in writing system setup</note>
-        <target xml:lang="vi" state="needs-translation">In applications which support this option, fields with this input system will be able to play and record voice.</target>
+        <target xml:lang="vi" state="translated">Trong các ứng dụng hỗ trợ lựa chọn này, các trường với hệ thống nhập này sẽ có thể bật và ghi âm giọng nói.</target>
       </trans-unit>
       <trans-unit id="WSFontControl.Font">
         <source xml:lang="en">&amp;Font:</source>
         <note>ID: WSFontControl.Font</note>
-        <target xml:lang="vi" state="needs-translation">&amp;Font:</target>
+        <target xml:lang="vi" state="translated">&amp;Phông chữ:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.FontNotAvailable">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
         <note>ID: WSFontControl.FontNotAvailable</note>
-        <target xml:lang="vi" state="needs-translation">(The selected font is not available on this machine. Using default.)</target>
+        <target xml:lang="vi" state="translated">(Phông chữ được chọn không có sẵn trên máy này. Đang sử dụng phông mặc định.)</target>
       </trans-unit>
       <trans-unit id="WSFontControl.RightToLeftWS">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
         <note>ID: WSFontControl.RightToLeftWS</note>
-        <target xml:lang="vi" state="needs-translation">This is a &amp;right to left writing system.</target>
+        <target xml:lang="vi" state="translated">Đây là &amp; hệ thống viết chữ từ phải qua trái.</target>
       </trans-unit>
       <trans-unit id="WSFontControl.Size">
         <source xml:lang="en">&amp;Size:</source>
         <note>ID: WSFontControl.Size</note>
-        <target xml:lang="vi" state="needs-translation">&amp;Size:</target>
+        <target xml:lang="vi" state="translated">&amp;Kích cỡ:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.TestArea">
         <source xml:lang="en">&amp;Test Area:</source>
         <note>ID: WSFontControl.TestArea</note>
-        <target xml:lang="vi" state="needs-translation">&amp;Test Area:</target>
+        <target xml:lang="vi" state="translated">&amp;Vùng thử nghiệm:</target>
       </trans-unit>
       <trans-unit id="WSIdentifierView.betterLabel4">
         <source xml:lang="en">Abbreviation</source>
         <note>ID: WSIdentifierView.betterLabel4</note>
         <note>In writing system setup general tab: label before abbreviation text box</note>
-        <target xml:lang="vi" state="needs-translation">Abbreviation</target>
+        <target xml:lang="vi" state="translated">Viết tắt</target>
       </trans-unit>
       <trans-unit id="WSIdentifierView.betterLabel5">
         <source xml:lang="en">Special:</source>
         <note>ID: WSIdentifierView.betterLabel5</note>
         <note>In writing system setup general tab:  Label before combo box with 'Special' choices</note>
-        <target xml:lang="vi" state="needs-translation">Special:</target>
+        <target xml:lang="vi" state="translated">Đặc biệt:</target>
       </trans-unit>
       <trans-unit id="WSIdentifiers.IpaIdentifierView.Default">
         <source xml:lang="en">Default</source>
         <note>ID: WSIdentifiers.IpaIdentifierView.Default</note>
         <note>Choice for most users</note>
-        <target xml:lang="vi" state="needs-translation">Default</target>
+        <target xml:lang="vi" state="translated">Mặc định</target>
       </trans-unit>
       <trans-unit id="WSIdentifiers.IpaIdentifierView.Emic">
         <source xml:lang="en">Emic (uses phonology of the language)</source>
@@ -730,32 +730,32 @@
       <trans-unit id="WSKeyboardControl.KeyboardNotListed">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
         <note>ID: WSKeyboardControl.KeyboardNotListed</note>
-        <target xml:lang="vi" state="needs-translation">If the keyboard you need is not listed, click the appropriate link below to set it up</target>
+        <target xml:lang="vi" state="translated">Nếu bàn phím bạn cần không có trong danh sách, nhấn chọn đường link bên dưới để thêm bàn phím</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardSettingsLink">
         <source xml:lang="en">Windows keyboard settings</source>
         <note>ID: WSKeyboardControl.KeyboardSettingsLink</note>
-        <target xml:lang="vi" state="needs-translation">Windows keyboard settings</target>
+        <target xml:lang="vi" state="translated">Cài đặt bàn phím Windows</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsAvailable">
         <source xml:lang="en">Available keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsAvailable</note>
-        <target xml:lang="vi" state="needs-translation">Available keyboards</target>
+        <target xml:lang="vi" state="translated">Bàn phím sẵn có</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed">
         <source xml:lang="en">Previously used keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsPreviouslyUsed</note>
-        <target xml:lang="vi" state="needs-translation">Previously used keyboards</target>
+        <target xml:lang="vi" state="translated">Bàn phím sử dụng trước đó</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanConfigurationLink">
         <source xml:lang="en">Keyman Configuration</source>
         <note>ID: WSKeyboardControl.KeymanConfigurationLink</note>
-        <target xml:lang="vi" state="needs-translation">Keyman Configuration</target>
+        <target xml:lang="vi" state="translated">Cấu hình Keyman</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanNotInstalled">
         <source xml:lang="en">Keyman 5.0 or later is not Installed.</source>
         <note>ID: WSKeyboardControl.KeymanNotInstalled</note>
-        <target xml:lang="vi" state="needs-translation">Keyman 5.0 or later is not Installed.</target>
+        <target xml:lang="vi" state="translated">Keymen 5.0 hoặc bản mới hơn chưa được cài đặt.</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SelectKeyboardLabel">
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
@@ -765,27 +765,27 @@
       <trans-unit id="WSKeyboardControl.SetupKeyboards">
         <source xml:lang="en">Set up keyboards</source>
         <note>ID: WSKeyboardControl.SetupKeyboards</note>
-        <target xml:lang="vi" state="needs-translation">Set up keyboards</target>
+        <target xml:lang="vi" state="translated">Cài đặt bàn phím</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.TestAreaCaption">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
-        <target xml:lang="vi" state="needs-translation">&amp;Test Area (Use this area to type something to test out your keyboard.)</target>
+        <target xml:lang="vi" state="translated">&amp; Vùng thử nghiệm ( sử dụng vùng này để gõ thử bàn phím của bạn.)</target>
       </trans-unit>
       <trans-unit id="Warning">
         <source xml:lang="en">Warning</source>
         <note>ID: Warning</note>
-        <target xml:lang="vi" state="needs-translation">Warning</target>
+        <target xml:lang="vi" state="translated">Cảnh báo</target>
       </trans-unit>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption">
         <source xml:lang="en">Unable to connect to SLDR</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrCaption</note>
-        <target xml:lang="vi" state="needs-translation">Unable to connect to SLDR</target>
+        <target xml:lang="vi" state="translated">Không thể kết nối với SLDR</target>
       </trans-unit>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText">
         <source xml:lang="en">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrText</note>
-        <target xml:lang="vi" state="needs-translation">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</target>
+        <target xml:lang="vi" state="translated">Ứng dụng không thể kết nối với Kho lưu trữ Dữ liệu Ngôn ngữ SIL để truy xuất thông tin mới nhất về ngôn ngữ này. Nếu bạn tạo hệ thống viết này, cài đặt mặc định có thể không chính xác hoặc đã cũ. Bạn có chắc muốn tạo một hệ thống viết mới không?</target>
       </trans-unit>
       <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard">
         <source xml:lang="en">[Missing] {0} ({1})</source>

@@ -118,6 +118,55 @@
         <note>A link offering more information about the Funded Local Community Only option</note>
         <target xml:lang="bn" state="final">এটি কি?</target>
       </trans-unit>
+      <trans-unit id="Spreadsheet.DataDivConflictWarning">
+        <source xml:lang="en">Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.</source>
+        <note>ID: Spreadsheet.DataDivConflictWarning</note>
+        <target xml:lang="bn" state="needs-translation">Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.DataDivImageMultiple">
+        <source xml:lang="en">Export warning: Found multiple elements for image element {0}. Only the first will be exported.</source>
+        <note>ID: Spreadsheet.DataDivImageMultiple</note>
+        <target xml:lang="bn" state="needs-translation">Export warning: Found multiple elements for image element {0}. Only the first will be exported.</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportFailed">
+        <source xml:lang="en">Export failed: </source>
+        <note>ID: Spreadsheet.ExportFailed</note>
+        <target xml:lang="bn" state="needs-translation">Export failed: </target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.SpreadsheetLocked">
+        <source xml:lang="en">Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?</source>
+        <note>ID: Spreadsheet.SpreadsheetLocked</note>
+        <target xml:lang="bn" state="needs-translation">Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.MissingImage">
+        <source xml:lang="en">Export warning: did not find the image {0}. It will be missing from the export folder.</source>
+        <note>ID: Spreadsheet.MissingImage</note>
+        <target xml:lang="bn" state="needs-translation">Export warning: did not find the image {0}. It will be missing from the export folder.</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.MultipleImageChildren">
+        <source xml:lang="en">Export warning: Found multiple images in data-book element {0}. Only the first will be exported.</source>
+        <note>ID: Spreadsheet.MultipleImageChildren</note>
+        <target xml:lang="bn" state="needs-translation">Export warning: Found multiple images in data-book element {0}. Only the first will be exported.</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.Overwrite">
+        <source xml:lang="en">You are about to replace the existing folder named {0}</source>
+        <note>ID: Spreadsheet.Overwrite</note>
+        <target xml:lang="bn" state="needs-translation">You are about to replace the existing folder named {0}</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.OverwriteBook">
+        <source xml:lang="en">The folder named {0} already exists and looks like it might be a Bloom book folder!</source>
+        <note>ID: Spreadsheet.OverwriteBook</note>
+        <target xml:lang="bn" state="needs-translation">The folder named {0} already exists and looks like it might be a Bloom book folder!</target>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.WriteFailed">
+        <source xml:lang="en">Bloom had problems writing files to that location ({0}). Check that you have permission to write there.</source>
+        <note>ID: Spreadsheet.WriteFailed</note>
+        <target xml:lang="bn" state="needs-translation">Bloom had problems writing files to that location ({0}). Check that you have permission to write there.</target>
+      </trans-unit>
+      <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer">
+        <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
+        <target xml:lang="bn" state="needs-translation">Put the correct answer in this button. Bloom will randomize the order later.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
