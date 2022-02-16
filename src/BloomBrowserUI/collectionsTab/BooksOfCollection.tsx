@@ -89,7 +89,34 @@ export const BooksOfCollection: React.FunctionComponent<{
         });
     };
 
-    const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const handleContextMenuClick = (
+        event: React.MouseEvent<HTMLDivElement>
+    ) => {
+        // Clicks on a book button should not open this menu. Normally the book button
+        // intercepts them itself, but we've had this problem when another book button
+        // is open. I think the following check is probably enough by itself, but this
+        // extra one can't hurt.
+        let badTargetParent = (event.target as HTMLElement).closest(
+            ".book-button"
+        );
+        if (badTargetParent) {
+            return;
+        }
+
+        // If there's already a Material-UI menu open somewhere (probably one of the book buttons),
+        // we don't want to open our own menu, and it's tricky to make it open the menu appropriate
+        // to the place clicked, which might not even be what the user wanted. Instead, just
+        // simulate a regular click on the backdrop, which will close the menu. If necessary the
+        // user can then right-click again.
+        // This is a known bug in Material-UI, fixed in version 5, so we may be able to do better
+        // when we switch to that. See https://github.com/mui/material-ui/issues/19145.
+        var menuBackdrop = (event.target as HTMLElement).closest(
+            ".MuiPopover-root"
+        );
+        if (menuBackdrop) {
+            (event.target as HTMLElement).click();
+            return;
+        }
         if (props.isEditableCollection) {
             setAdjustedContextMenuPoint(event.clientX - 2, event.clientY - 4);
             event.preventDefault();
@@ -160,7 +187,7 @@ export const BooksOfCollection: React.FunctionComponent<{
         <div
             key={"BookCollection-" + props.collectionId}
             className="bookButtonPane"
-            onContextMenu={e => handleClick(e)}
+            onContextMenu={e => handleContextMenuClick(e)}
             style={{ cursor: "context-menu" }}
         >
             {books.length > 0 && (
