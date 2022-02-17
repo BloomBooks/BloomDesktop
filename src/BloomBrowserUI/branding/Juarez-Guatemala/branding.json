@@ -4,7 +4,25 @@
             "data-book": "credits-page-branding-top-html",
             "lang": "*",
             // note: we want the text to adopt the same styling as the other Spanish on the credits page, so we give this the right style and @lang attribute:
-            "content": "<img class='branding' src='GuatemalaMOE-USAID.png'/><div class='Credits-Page-style' lang='es'><p>Este libro fue realizado gracias al apoyo del Pueblo de los Estados Unidos de América a través de la Agencia de los Estados Unidos de América para el Desarrollo Internacional (USAID, por sus siglas en inglés).</p> <p>El contenido de este material es responsabilidad exclusiva de los autores y el mismo no necesariamente refleja la perspectiva de USAID ni del Gobierno de los Estados Unidos de América.</p><p>La producción de este libro fue realizada bajo el Proyecto Leer y Aprender de USAID.</p></div>",
+            "content": "<img class='branding' src='Juarez-Guatemala.png'/><div class='Credits-Page-style' lang='es'><p>Este material ha sido elaborado gracias a la asistencia financiera del Programa USDA (FFE) Programa de Alimentos para la Educación del Departamento de Agricultura de los Estados Unidos a través del proyecto EDUCAMOS liderado por Global Communities (antes PCI) en asocio con Juárez &amp; Associates, Inc. bajo los términos del Convenio de Cooperación No. FFE-520-2016/008-00. Las opiniones aquí expresadas son responsabilidad exclusiva del autor y las mismas no necesariamente reflejan las opiniones de USDA o del Gobierno de los Estados Unidos de América.</p></div>",
+            "condition": "always"
+        },
+        {
+            "data-book": "copyright",
+            "lang": "*",
+            "content": "Ministerio de Educación de Guatemala y Juárez &amp; Associates Inc.",
+            "condition": "ifEmpty"
+        },
+        {
+            "data-book": "licenseUrl",
+            "lang": "*",
+            "content": "http://creativecommons.org/licenses/by-nc-sa/4.0/",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='made-with-bloom-badge.svg'/>",
             "condition": "always"
         }
     ]
