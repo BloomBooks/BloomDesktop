@@ -75,6 +75,7 @@ namespace Bloom.Collection
 			this._provinceLabel = new System.Windows.Forms.Label();
 			this._enterpriseTab = new System.Windows.Forms.TabPage();
 			this._teamCollectionTab = new System.Windows.Forms.TabPage();
+			this.reactControl1 = new Bloom.web.ReactControl();
 			this.tabPage4 = new System.Windows.Forms.TabPage();
 			this._automaticallyUpdate = new System.Windows.Forms.CheckBox();
 			this.label2 = new System.Windows.Forms.Label();
