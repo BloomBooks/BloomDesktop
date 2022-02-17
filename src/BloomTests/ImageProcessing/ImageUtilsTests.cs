@@ -85,7 +85,7 @@ namespace BloomTests.ImageProcessing
 
 		// See BL-3646 which showed we were blacking out the image when converting from png to jpg
 		[TestCase("shirt.png")]
-		// I think shirt.png still has a transparent background after being fixed by optipng, but I'm not absolutely sure,
+		// I think shirt.png still has a transparent background after being fixed, but I'm not absolutely sure,
 		// so I'm leaving both tests in place.
 		[TestCase("shirtWithTransparentBg.png")
 #if __MonoCS__

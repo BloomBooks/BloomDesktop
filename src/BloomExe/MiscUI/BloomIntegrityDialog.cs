@@ -28,7 +28,7 @@ namespace Bloom.MiscUI
 #if Chorus
 				"Chorus.exe",
 #endif
-				"BloomPdfMaker.exe", "optipng.exe" };
+				"BloomPdfMaker.exe" };
 
 				string[] dirs;
 			if (Platform.IsWindows)
@@ -38,11 +38,6 @@ namespace Bloom.MiscUI
 
 			foreach(var fileName in files)
 			{
-				if(!Platform.IsWindows && fileName == "optipng.exe")
-				{
-					// optipng is provided by a package dependency, will be found as /usr/bin/optipng (no .exe)
-					continue;
-				}
 				if(FileLocationUtilities.GetFileDistributedWithApplication(true, fileName) == null)
 				{
 					//In a code directory, the FileLocator considers the solution the root, so it can't find files in output\debug
