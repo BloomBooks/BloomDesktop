@@ -77,7 +77,7 @@ cd -
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=bt396
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"ghostscript-win32.zip!**"=>"DistFiles/ghostscript", "optipng-0.7.4-win32/optipng.exe"=>"DistFiles", "connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build", "MSBuild.Community.Tasks.Targets"=>"build", "Lame.zip!**"=>"lib/lame", "gm.zip!**"=>"lib", "FirefoxDependencies.zip!**"=>"lib/FirefoxDependencies"}
+#     paths: {"ghostscript-win32.zip!**"=>"DistFiles/ghostscript", "connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build", "MSBuild.Community.Tasks.Targets"=>"build", "Lame.zip!**"=>"lib/lame", "gm.zip!**"=>"lib", "FirefoxDependencies.zip!**"=>"lib/FirefoxDependencies"}
 # [1] build: PortableDevices (from PodcastUtilities) (Bloom_PortableDevicesFromPodcastUtitlies)
 #     project: Bloom
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=Bloom_PortableDevicesFromPodcastUtitlies
@@ -92,9 +92,9 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"*.*"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/Squirrel.Windows.git [refs/heads/master]
-# [3] build: Bloom Help 5.2 (Bloom_Help_BloomHelp52)
+# [3] build: Bloom Help 5.3 (Bloom_Help_BloomHelp53)
 #     project: Help
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp52
+#     URL: https://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp53
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.chm"=>"DistFiles"}
@@ -147,7 +147,6 @@ mkdir -p ../lib/lame
 
 # download artifact dependencies
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/ghostscript-win32.zip ../Downloads/ghostscript-win32.zip
-copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/optipng-0.7.4-win32/optipng.exe ../DistFiles/optipng.exe
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.dll ../build/MSBuild.Community.Tasks.dll
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
@@ -186,7 +185,7 @@ copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/WriteZipToSetup.exe ../lib/dotnet/WriteZipToSetup.exe
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/rcedit.exe ../lib/dotnet/rcedit.exe
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/signtool.exe ../lib/dotnet/signtool.exe
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp52/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
+copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp53/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt463/latest.lastSuccessful/Args.dll ../lib/dotnet/Args.dll
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt463/latest.lastSuccessful/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe

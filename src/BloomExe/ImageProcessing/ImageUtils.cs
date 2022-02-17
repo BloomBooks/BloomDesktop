@@ -177,26 +177,6 @@ namespace Bloom.ImageProcessing
 				else
 					imageInfo.Image.Save(destinationPath, ImageFormat.Png); // destinationPath already has .png extension
 				return imageFileName;
-
-				/* I (Hatton) have decided to stop compressing images until we have a suite of
-				tests based on a number of image exemplars. Compression can be great, but it
-				can also lead to very long waits; this is a "first, do no harm" decision.
-
-				//nb: there are cases (undefined) where we get out of memory if we are not operating on a copy
-				using (var image = new Bitmap(imageInfo.Image))
-				{
-					using (var tmp = new TempFile())
-					{
-						RobustImageIO.SaveImage(image, tmp.Path, isJpeg ? ImageFormat.Jpeg : ImageFormat.Png);
-						SIL.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tmp.Path, destinationPath, null);
-					}
-
-				}
-
-				using (var dlg = new ProgressDialogBackground())
-				{
-					dlg.ShowAndDoWork((progress, args) => ImageUpdater.CompressImage(dest, progress));
-				}*/
 			}
 			catch (IOException)
 			{
