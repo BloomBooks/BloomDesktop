@@ -1,0 +1,41 @@
+{
+    "presets": [
+        {
+            "data-book": "cover-branding-left-html",
+            "lang": "*",
+            "content": "<img class='branding' src='butterfly.png'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "credits-page-branding-top-html",
+            "lang": "*",
+            "content": "<img class='branding' src='butterfly.png'/><div class='standout'>Some sample text for Credits Page Top branding.</div>",
+            "condition": "always"
+        },
+        {
+            "data-book": "credits-page-branding-bottom-html",
+            "lang": "*",
+            "content": "<div  class='standout'>This should show at the bottom of the credits page.</div><img class='branding' src='butterfly.png'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "title-page-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='butterfly.png'/><div class='standout'>Some sample text for Title Page Bottom branding.</a></div>",
+            "condition": "always"
+        },
+
+        {
+            "data-book": "outside-back-cover-branding-top-html",
+            "lang": "*",
+            "content": "<img class='branding' src='butterfly.png'/><div class='standout'>Some sample text for the Outside Back Cover.</div>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<div class='standout'>Some sample text for the Outside Back Cover Bottom.<img class='branding' src='WideSoccerBalls.png'/>.</div>",
+            "condition": "always"
+        }
+    ]
+}
