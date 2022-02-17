@@ -1,32 +1,21 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Drawing.Imaging;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
-using System.Resources;
-using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.MiscUI;
 using Bloom.Properties;
-using Bloom.Spreadsheet;
-using Bloom.TeamCollection;
-using Bloom.ToPalaso;
 using Bloom.Workspace;
-using DesktopAnalytics;
-using Gecko.WebIDL;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Linq;
-using SIL.PlatformUtilities;
-using SIL.Reporting;
 
 namespace Bloom.web.controllers
 {
@@ -39,6 +28,7 @@ namespace Bloom.web.controllers
 		private readonly BookSelection _bookSelection;
 		private BookThumbNailer _thumbNailer;
 		private BloomWebSocketServer _webSocketServer;
+		private readonly EditBookCommand _editBookCommand;
 
 		private int _thumbnailEventsToWaitFor = -1;
 
@@ -47,11 +37,12 @@ namespace Bloom.web.controllers
 		// We'd prefer to just let the WorkspaceView be a constructor arg passed to this by Autofac,
 		// but that throws an exception, probably there is some circularity.
 		public WorkspaceView WorkspaceView;
-		public 	 CollectionApi(CollectionSettings settings, LibraryModel libraryModel, BookSelection bookSelection, BookThumbNailer thumbNailer, BloomWebSocketServer webSocketServer)
+		public 	 CollectionApi(CollectionSettings settings, LibraryModel libraryModel, BookSelection bookSelection, EditBookCommand editBookCommand, BookThumbNailer thumbNailer, BloomWebSocketServer webSocketServer)
 		{
 			_settings = settings;
 			_libraryModel = libraryModel;
 			_bookSelection = bookSelection;
+			_editBookCommand = editBookCommand;
 			_thumbNailer = thumbNailer;
 			_webSocketServer = webSocketServer;
 		}
@@ -90,6 +81,22 @@ namespace Bloom.web.controllers
 						break;
 				}
 			}, true);
+
+			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "selectAndEditBook", request =>
+			{
+				var book = GetBookObjectFromPost(request);
+				if (book.FolderPath != _bookSelection?.CurrentSelection?.FolderPath)
+				{
+					_libraryModel.SelectBook(book);
+				}
+				if (GetCollectionOfRequest(request).Type == BookCollection.CollectionType.TheOneEditableCollection)
+				{
+					_editBookCommand.Raise(_bookSelection.CurrentSelection);
+				}
+
+				request.PostSucceeded();
+			}, true);
+
 
 			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "duplicateBook/", (request) =>
 			{
