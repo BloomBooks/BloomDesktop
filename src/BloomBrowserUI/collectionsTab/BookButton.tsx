@@ -228,7 +228,7 @@ export const BookButton: React.FunctionComponent<{
     }, [renaming, renameDiv.current]);
 
     const label =
-        bookLabel.length > 20 ? (
+        bookLabel.length > 14 ? (
             <TruncateMarkup lines={2}>
                 <span>{bookLabel}</span>
             </TruncateMarkup>
@@ -293,8 +293,15 @@ export const BookButton: React.FunctionComponent<{
 
             className="book-button"
             // relative so the absolutely positioned rename div will be relative to this.
+            // We tweak the padding (Material UI speifies 7px 21px) to be consistent
+            // with rules that make the main content of the button 70px and the whole
+            // thing 90. With more than 10px here, the numbers don't add up, and the browser
+            // sometimes shrinks things too far, making labels not fit well.
             css={css`
                 position: relative;
+                .MuiButton-outlinedSizeLarge {
+                    padding: 7px 10px;
+                }
             `}
             // This is the div that looks like the button, so it is the one that counts as
             // this book if clicked.
