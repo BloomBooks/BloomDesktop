@@ -28,7 +28,8 @@ namespace Bloom.Book
 	{
 		/// <summary>
 		/// For each group of editable elements in the div which have lang attributes  (normally, a .bloom-translationGroup div),
-		/// make a new element with the lang code of the vernacular (normally, a .bloom-editable).
+		/// make sure we have child elements with the lang codes we need (most often, a .bloom-editable in the vernacular
+		/// is added).
 		/// Also enable/disable editing as warranted (e.g. in shell mode or not)
 		/// </summary>
 		public static void PrepareElementsInPageOrDocument(XmlNode pageOrDocumentNode, BookData bookData)
@@ -37,8 +38,31 @@ namespace Bloom.Book
 
 			foreach (var code in bookData.GetBasicBookLanguageCodes())
 				PrepareElementsOnPageOneLanguage(pageOrDocumentNode, code);
+			// I'm not sure exactly why, but GetBasicBookLanguageCodes() returns
+			// the languages identified as L1 (and possibly, if turned on, L2 and L3)
+			// and M1. I'm nervous about changing that. But it's now possible for
+			// a group to specify (using N2 in data-default-languages) that it should
+			// have an M2 block, and M2 may not be any of the GetBasicBookLanguageCodes()
+			// languages (unless we're in trilingual mode). So we need another method
+			// to handle any special languages this block needs that are not considered
+			// 'basic' for this book.
+			PrepareSpecialLanguageGroups(pageOrDocumentNode, bookData);
 
 			FixGroupStyleSettings(pageOrDocumentNode);
+		}
+
+		static void PrepareSpecialLanguageGroups(XmlNode pageDiv, BookData bookData)
+		{
+			foreach (
+				XmlElement groupElement in
+				pageDiv.SafeSelectNodes("descendant-or-self::*[contains(@class,'bloom-translationGroup')]"))
+			{
+				var dataDefaultLangs = groupElement.Attributes["data-default-languages"]?.Value;
+				if (dataDefaultLangs.Contains("N2"))
+				{
+					MakeElementWithLanguageForOneGroup(groupElement, bookData.MetadataLanguage2IsoCode);
+				}
+			}
 		}
 
 		/// <summary>
