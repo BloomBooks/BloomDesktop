@@ -1361,6 +1361,17 @@ export function attachToCkEditor(element) {
                 const barHeight = bar.height();
                 bar.offset({ top: boxTop - barHeight, left: barLeft });
             }
+            // for some reason when the color-choices panel has been shown once, it keeps coming
+            // up immediately each time the toolbar is shown. Any change of selection is good reason
+            // to hide it again. I'm using this specific way of hiding it because that seems to be
+            // what CkEditor uses and therefore what it will change when the button is clicked to
+            // show the popup panel.
+            const colorPanels = Array.from(
+                document.getElementsByClassName("cke_panel")
+            );
+            colorPanels.forEach(
+                p => ((p as HTMLElement).style.display = "none")
+            );
         }
     });
 
