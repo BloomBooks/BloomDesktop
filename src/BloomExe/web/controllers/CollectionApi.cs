@@ -186,6 +186,7 @@ namespace Bloom.web.controllers
 
 			var bookInfos = collection.GetBookInfos();
 			var jsonInfos = bookInfos
+				.Where(info => collection.Type == BookCollection.CollectionType.TheOneEditableCollection || info.ShowThisBookAsSource())
 				.Select(info =>
 				{
 					var title = info.QuickTitleUserDisplay;
