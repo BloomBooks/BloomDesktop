@@ -167,7 +167,7 @@ namespace Bloom.web.controllers
 				var book = LoadBookAndBringItUpToDate(bookInfo, out bool badBook);
 				if (book == null)
 					return; // can't get the book, can't improve title
-				bestTitle = book.TitleBestForUserDisplay;
+				bestTitle = book.NameBestForUserDisplay;
 			}
 
 			if (bestTitle != bookInfo.QuickTitleUserDisplay)

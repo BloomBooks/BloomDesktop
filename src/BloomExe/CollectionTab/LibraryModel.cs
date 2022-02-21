@@ -178,7 +178,7 @@ namespace Bloom.CollectionTab
 		{
 			// I hope we can get rid of this when we retire the old LibraryListView, but for now we need to keep both views up to date.
 			// optimize: we only need to reload the first (editable) collection; better yet, we only need to add the one new book to it.
-			ReloadCollections();
+			ReloadCollections();       
 		}
 
 		public void UpdateLabelOfBookInEditableCollection(Book.Book book)
@@ -190,7 +190,7 @@ namespace Bloom.CollectionTab
 			// This actually changes the label. (One would think that re-rendering the collection would do this,
 			// but somehow the way we are caching the book title as state in anticipation of the following
 			// message was preventing this. It might be redundant now.)
-			BookCommandsApi.UpdateButtonTitle(_webSocketServer, book.BookInfo, book.TitleBestForUserDisplay);
+			BookCommandsApi.UpdateButtonTitle(_webSocketServer, book.BookInfo, book.NameBestForUserDisplay);
 
 			// happens as a side effect
 			//_webSocketServer.SendEvent("editableCollectionList", "reload:" + _bookCollections[0].PathToDirectory);
