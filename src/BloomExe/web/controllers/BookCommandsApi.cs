@@ -262,14 +262,6 @@ namespace Bloom.web.controllers
 			}
 			request.PostSucceeded();
 		}
-		// TODO: Delete me after all references removed.
-		[Obsolete("Wrapper to allow legacy (WinForms) code to share this code. New code should try to use the API/React-based paradigm instead.")]
-		public void HandleImportContentFromSpreadsheetWrapper(Book.Book book) => _spreadsheetApi.HandleImportContentFromSpreadsheet(book);
-
-		// TODO: Delete me after all references removed.
-		[Obsolete("Wrapper to allow legacy (WinForms) code to share this code. New code should try to use the API/React-based paradigm instead.")]
-		public void HandleExportToSpreadsheetWrapper(Book.Book book) => _spreadsheetApi.ShowExportToSpreadsheetUI(book);
-
 
 		private void HandleRename(Book.Book book, ApiRequest request)
 		{
@@ -280,9 +272,6 @@ namespace Bloom.web.controllers
 		}
 
 
-		// TODO: Delete me after all references removed.
-		[Obsolete("Wrapper to allow legacy (WinForms) code to share this code. New code should try to use the API/React-based paradigm instead.")]
-		public void HandleMakeBloompackWrapper(Book.Book book) => this.HandleMakeBloompack(book);
 		private void HandleMakeBloompack(Book.Book book)
 		{
 			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
