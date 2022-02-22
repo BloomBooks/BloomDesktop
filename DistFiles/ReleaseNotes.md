@@ -165,6 +165,9 @@ We added a new page selector for Bloom Player, the engine that powers book readi
 ### Work towards a more cross-platform Bloom
 
 As with most versions, we did a bunch of behind-the-scenes work towards rewriting making Bloom be more portable to other operating systems. For the most part, you won't be able to tell the difference.
+
+<br/>
+
 # 5.0
 
 ## Collection Tab

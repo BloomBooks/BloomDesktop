@@ -76,6 +76,37 @@ export const BookButton: React.FunctionComponent<{
         // logically it should also be done if props.collection.id or props.book.id changes, but they don't.
     }, [props.book.folderName, props.book.title]);
 
+    // This is a bit of a hack. For almost all purposes, 'renaming' is a private state of the button,
+    // causing the button to render differently when it is true, and controlled by events inside the
+    // button. The exception is that, way out at the CollectionsTabPane level, we have a listener watching
+    // for F2 to be pressed anywhere, which wants to force the selected-book button into the renaming
+    // state.
+    // The theoretical way to handle such a thing in React is to force the relevant state up to the
+    // highest level component that cares. That's pretty ugly. CollectionsTabPane would be managing an
+    // array of states for each button for each collection...involving knowledge it shouldn't need
+    // about which collections and buttons we are being lazy about creating. Or else there's just a single
+    // renaming state for the whole collection...and they all have to be re-rendered when it changes,
+    // as well as pushing the state changes through at least one intermediate level.
+    // However, we already have a singleton object shared by the CollectionsTabPane and all its book buttons,
+    // so it's easy to notify that object when we need to make the selected button do something, and
+    // its easy to have the selected button register itself with that object as the one to receive such
+    // messages. So that's what I decided to do.
+    useEffect(() => {
+        if (selected) {
+            props.manager.setRenameCallback(() => {
+                if (props.manager.getSelectedBookInfo()?.saveable) {
+                    setRenaming(true);
+                }
+            });
+            // Seems it would be good to clean up like this, but if we do,
+            // F2 doesn't work after clicking a second button. Hypothesis: somehow the button
+            // losing selected status cleanup happens after the button gaining it sets itself up.
+            // Anyway, it works better without this, and it doesn't seem to cause any problem
+            // when pressing F2 after deleting a book.
+            //return () => props.manager.setRenameCallback(undefined);
+        }
+    }, [selected]);
+
     // Don't use useApiStringState to get this function because it does an unnecessary server query
     // to get the value, which we are not using, and this hurts performance.
     const setSelectedBookIdWithApi = value =>
