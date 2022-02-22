@@ -2833,6 +2833,36 @@
         <source xml:lang="en">Bloom cannot start properly, and this symptom has been observed on machines with ZoneAlarm installed. Note: disabling ZoneAlarm does not help. Nor does restarting with it turned off. Something about the installation of ZoneAlarm causes the problem, and so far only uninstalling ZoneAlarm has been shown to fix the problem.</source>
         <note>ID: Errors.ZoneAlarm</note>
       </trans-unit>
+      <trans-unit id="FontInformationPane.FontOkay">
+        <source xml:lang="en">The metadata inside this font indicates that it is legal to use for all Bloom purposes.</source>
+        <note>ID: FontInformationPane.FontOkay</note>
+        <note>This shows in the popup when hovering over a useable font.</note>
+      </trans-unit>
+      <trans-unit id="FontInformationPane.FontUnknown">
+        <source xml:lang="en">Bloom cannot determine what rules govern the use of this font. Please read the license and make sure it allows embedding in ebooks and the web. Before publishing to bloomlibrary.org, you will probably have to make a special request to the Bloom team to investigate this font so that we can make sure we won't get in trouble for hosting it.</source>
+        <note>ID: FontInformationPane.FontUnknown</note>
+        <note>This shows in the popup when hovering over a font when Bloom can't determine if it is useable legally.</note>
+      </trans-unit>
+      <trans-unit id="FontInformationPane.FontUnsuitable">
+        <source xml:lang="en">The metadata inside this font tells us that it may not be embedded for free in ebooks and the web. Please use a different font.</source>
+        <note>ID: FontInformationPane.FontUnsuitable</note>
+        <note>This shows in the popup when hovering over a font that Bloom can't legally host on its website.</note>
+      </trans-unit>
+      <trans-unit id="FontInformationPane.License">
+        <source xml:lang="en">License</source>
+        <note>ID: FontInformationPane.License</note>
+        <note>This shows in the popup as a link to the font's license.</note>
+      </trans-unit>
+      <trans-unit id="FontInformationPane.Styles">
+        <source xml:lang="en">Styles</source>
+        <note>ID: FontInformationPane.Styles</note>
+        <note>This shows in the popup before the types of variants in the font (e.g. bold, italic).</note>
+      </trans-unit>
+      <trans-unit id="FontInformationPane.Version">
+        <source xml:lang="en">Version</source>
+        <note>ID: FontInformationPane.Version</note>
+        <note>This shows in the popup before the font's version number.</note>
+      </trans-unit>
       <trans-unit id="HelpMenu.AskAQuestionMenuItem">
         <source xml:lang="en">Ask a Question</source>
         <note>ID: HelpMenu.AskAQuestionMenuItem</note>

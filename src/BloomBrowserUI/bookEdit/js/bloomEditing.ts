@@ -36,14 +36,6 @@ import { BloomApi } from "../../utils/bloomApi";
 import { showRequestStringDialog } from "../../react_components/RequestStringDialog";
 import { fixUpDownArrowEventHandler } from "./arrowKeyWorkaroundManager";
 
-export function GetDifferenceBetweenHeightAndParentHeight(jqueryNode) {
-    // function also declared and used in StyleEditor
-    if (!jqueryNode) {
-        return 0;
-    }
-    return jqueryNode.parent().height() - jqueryNode.height();
-}
-
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
     html: string,
