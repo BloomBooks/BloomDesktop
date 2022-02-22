@@ -12,6 +12,7 @@ export const kLogBackgroundColor = "#fcfcfc";
 export const kBloomYellow = "#FEBF00";
 export const kPanelBackground = "#2e2e2e";
 export const kDarkestBackground = "#1a1a1a";
+export const kDisabledControlGray = "#bbb";
 export const kVerticalSpacingBetweenDialogSections = "20px";
 
 // Should match @UIFontStack in bloomWebFonts.less

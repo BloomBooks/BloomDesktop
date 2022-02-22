@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 #if __MonoCS__
 using System.Diagnostics;
@@ -26,6 +28,9 @@ namespace Bloom.FontProcessing
 		public string trademark { get; private set; }
 		public string determinedSuitability { get; private set; }
 		public string determinedSuitabilityNotes { get; private set; }
+
+		public static HashSet<string> fontFileTypesBloomKnows = new HashSet<string>() { ".ttf", ".otf", ".woff", ".woff2" };
+
 
 		/// <summary>
 		/// On Window, we can use System.Windows.Media (which provides the GlyphTypeface class) to
@@ -201,6 +206,16 @@ namespace Bloom.FontProcessing
 			variants = group.GetAvailableVariants().ToArray();
 
 			// Now for the hard part: setting DeterminedSuitability
+			// First we declare unsuitable font types that we don't know how to handle (like .ttc)
+			var fontExtension = Path.GetExtension(gtf.FontUri.AbsolutePath);
+			var bloomKnows = fontFileTypesBloomKnows.Contains(fontExtension.ToLowerInvariant());
+			if (!bloomKnows)
+			{
+				determinedSuitability = "unsuitable";
+				determinedSuitabilityNotes = "Bloom does not support " + fontExtension.ToUpper() + " fonts.";
+				return;
+			}
+			// Now we check out the license information.
 			if (!String.IsNullOrEmpty(license))
 			{
 				if (license.Contains("Open Font License") || license.Contains("OFL") ||

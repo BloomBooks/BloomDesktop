@@ -15,14 +15,14 @@ import "../../node_modules/select2/dist/js/select2.js";
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
-import {
-    GetDifferenceBetweenHeightAndParentHeight,
-    IsPageXMatter
-} from "../js/bloomEditing";
+import { IsPageXMatter } from "../js/bloomEditing";
 import "../../lib/jquery.alphanum";
 import axios from "axios";
 import { BloomApi } from "../../utils/bloomApi";
 import { EditableDivUtils } from "../js/editableDivUtils";
+import * as ReactDOM from "react-dom";
+import FontSelectComponent, { IFontMetaData } from "./fontSelectComponent";
+import React = require("react");
 
 interface IFormattingValues {
     ptSize: string;
@@ -784,19 +784,21 @@ export default class StyleEditor {
         return ["0", "0.5", "0.75", "1", "1.25"];
     }
 
+    private getFontNameFromTextBox(textBox: JQuery): string {
+        let fontName = textBox.css("font-family");
+        if (fontName[0] === "'" || fontName[0] === '"') {
+            fontName = fontName.substring(1, fontName.length - 1); // strip off quotes
+        }
+        return fontName;
+    }
+
     // Returns an object giving the current selection for each format control.
     public getFormatValues(): IFormattingValues {
         const box = $(this.boxBeingEdited);
         const sizeString = box.css("font-size");
         const pxSize = parseInt(sizeString, 10);
         let ptSize = this.ConvertPxToPt(pxSize, false);
-        const sizes = this.getPointSizes();
-
         ptSize = Math.round(ptSize);
-        let fontName = box.css("font-family");
-        if (fontName[0] === "'" || fontName[0] === '"') {
-            fontName = fontName.substring(1, fontName.length - 1); // strip off quotes
-        }
 
         const lineHeightString = box.css("line-height");
         const lineHeightPx = parseInt(lineHeightString, 10);
@@ -855,7 +857,7 @@ export default class StyleEditor {
 
         return {
             ptSize: ptSize.toString(),
-            fontName: fontName,
+            fontName: this.getFontNameFromTextBox(box),
             lineHeight: lineHeight,
             wordSpacing: wordSpacing,
             center: center,
@@ -1000,13 +1002,13 @@ export default class StyleEditor {
             BloomApi.wrapAxios(
                 axios
                     .all([
-                        axios.get("/bloom/api/fonts/names"),
+                        axios.get("/bloom/api/fonts/metadata"),
                         axios.get(
                             "/bloom/bookEdit/StyleEditor/StyleEditor.html"
                         )
                     ])
                     .then(results => {
-                        const fonts = results[0].data["fonts"];
+                        const fontMetadata: IFontMetaData[] = results[0].data;
                         const html = results[1].data;
 
                         this.boxBeingEdited = targetBox;
@@ -1014,10 +1016,6 @@ export default class StyleEditor {
                             targetBox
                         );
                         const current = this.getFormatValues();
-
-                        //alert('font: ' + fontName + ' size: ' + sizeString + ' height: ' + lineHeight + ' space: ' + wordSpacing);
-                        // Enhance: lineHeight may well be something like 35px; what should we select initially?
-
                         this.styles = this.getFormattingStyles();
                         if (
                             styleName != null &&
@@ -1055,7 +1053,6 @@ export default class StyleEditor {
                             }
 
                             this.setupSelectControls(
-                                fonts,
                                 current,
                                 styleName ? styleName : ""
                             );
@@ -1080,14 +1077,18 @@ export default class StyleEditor {
                         toolbar.draggable("disable"); // until after we make sure it's in the Viewport
                         toolbar.css("opacity", 1.0);
                         if (!noFormatChange) {
+                            ReactDOM.render(
+                                React.createElement(FontSelectComponent, {
+                                    fontMetadata: fontMetadata,
+                                    currentFontName: current.fontName,
+                                    onChangeFont: name => this.changeFont(name)
+                                }),
+                                document.getElementById("fontSelectComponent")
+                            );
                             this.getCharTabDescription();
-                            this.getParagraphTabDescription();
 
-                            $("#font-select").change(() => {
-                                this.changeFont();
-                            });
                             this.AddQtipToElement(
-                                $("#font-select"),
+                                $("#fontSelectComponent"),
                                 theOneLocalizationManager.getText(
                                     "EditTab.FormatDialog.FontFaceToolTip",
                                     "Change the font face"
@@ -1127,6 +1128,7 @@ export default class StyleEditor {
                                 ),
                                 1500
                             );
+                            this.getParagraphTabDescription();
                             if (this.authorMode && !this.xmatterMode) {
                                 $("#styleSelect").change(() => {
                                     this.selectStyle();
@@ -1182,19 +1184,9 @@ export default class StyleEditor {
                         toolbar.draggable("enable");
 
                         $("html").off("click.toolbar");
-                        $("html").on("click.toolbar", event => {
-                            if (
-                                event.target !== toolbar.get(0) &&
-                                toolbar.has(event.target).length === 0 &&
-                                $(event.target).parent() !== toolbar &&
-                                toolbar.has(event.target).length === 0 &&
-                                toolbar.is(":visible")
-                            ) {
-                                toolbar.remove();
-                                event.stopPropagation();
-                                event.preventDefault();
-                            }
-                        });
+                        $("html").on("click.toolbar", event =>
+                            this.closeDialog(event, toolbar)
+                        );
                         toolbar.on("click.toolbar", event => {
                             // this stops an event inside the dialog from propagating to the html element, which would close the dialog
                             event.stopPropagation();
@@ -1204,19 +1196,32 @@ export default class StyleEditor {
         });
     }
 
-    public setupSelectControls(
-        fonts: string[],
-        current: IFormattingValues,
-        styleName: string
-    ) {
-        this.populateSelect(
-            fonts,
-            current.fontName,
-            "font-select",
-            true,
-            false,
-            25
-        );
+    // Since both the font list popover and the FontInformationPane use the same root class, and since
+    // both are well outside the dialog in the DOM, we can search the DOM for this class to determine
+    // if either popover is active.
+    private popoverIsUp(): boolean {
+        return $("body").find(".MuiPopover-root").length > 0;
+    }
+
+    public closeDialog(event: JQueryEventObject, toolbar: JQuery) {
+        // Prevent a click from closing the base format dialog when any popover is "up".
+        if (this.popoverIsUp()) {
+            return;
+        }
+        if (
+            event.target !== toolbar.get(0) &&
+            toolbar.has(event.target).length === 0 &&
+            $(event.target).parent() !== toolbar &&
+            toolbar.has(event.target).length === 0 &&
+            toolbar.is(":visible")
+        ) {
+            toolbar.remove();
+            event.stopPropagation();
+            event.preventDefault();
+        }
+    }
+
+    public setupSelectControls(current: IFormattingValues, styleName: string) {
         this.populateSelect(
             this.getPointSizes(),
             current.ptSize,
@@ -1451,7 +1456,6 @@ export default class StyleEditor {
     }
 
     public updateStyle() {
-        this.changeFont();
         this.changeSize();
         this.changeLineheight();
         this.changeWordSpace();
@@ -1667,14 +1671,13 @@ export default class StyleEditor {
         this.cleanupAfterStyleChange();
     }
 
-    public changeFont() {
+    public changeFont(fontname: string) {
         if (this.ignoreControlChanges) {
             return;
         }
         const rule = this.getStyleRule(false);
         if (rule != null) {
-            const font = $("#font-select").val();
-            rule.style.setProperty("font-family", font, "important");
+            rule.style.setProperty("font-family", fontname, "important");
             this.cleanupAfterStyleChange();
         }
     }
@@ -1834,6 +1837,7 @@ export default class StyleEditor {
     }
 
     public selectStyle() {
+        const oldValues = this.getFormatValues();
         const style = $("#styleSelect").val();
         $("#style-select-input").val(""); // we've chosen a style from the list, so we aren't creating a new one.
         StyleEditor.SetStyleNameForElement(
@@ -1879,14 +1883,17 @@ export default class StyleEditor {
             }
         }
         // Now update all the controls to reflect the effect of applying this style.
-        this.UpdateControlsToReflectAppliedStyle();
+        this.UpdateControlsToReflectAppliedStyle(oldValues.fontName);
     }
 
-    public UpdateControlsToReflectAppliedStyle() {
+    public UpdateControlsToReflectAppliedStyle(oldFontName: string) {
         const current = this.getFormatValues();
         this.ignoreControlChanges = true;
 
-        this.setValueAndUpdateSelect2Control("font-select", current.fontName);
+        // IIF the new style changed fonts, we need to reset the dialog so the font select updates.
+        if (oldFontName !== current.fontName) {
+            $("#format-toolbar").remove();
+        }
         this.setValueAndUpdateSelect2Control("size-select", current.ptSize);
         this.setValueAndUpdateSelect2Control(
             "line-height-select",
