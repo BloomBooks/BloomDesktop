@@ -30,6 +30,21 @@ export class BookSelectionManager {
         });
     };
 
+    private renameCallback: undefined | (() => void);
+
+    // The selected button calls this to identify itself as the one that should be kicked into
+    // the renaming state when F2 is pressed.
+    public setRenameCallback(callback: undefined | (() => void)) {
+        this.renameCallback = callback;
+    }
+
+    // Called when F2 is pressed, passes the request on to the selected button.
+    public setRenaming(): void {
+        if (this.renameCallback) {
+            this.renameCallback();
+        }
+    }
+
     // A map where the key is a bookId and the value is an array of callbacks that should
     // be invokved when that ID becomes or ceases to be selected.
     private registrations = {};

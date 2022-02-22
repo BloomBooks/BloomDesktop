@@ -9,7 +9,7 @@ import { SplitPane } from "react-collapse-pane";
 import { kPanelBackground, kDarkestBackground } from "../bloomMaterialUITheme";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { CollectionsTabBookPane } from "./collectionsTabBookPane/CollectionsTabBookPane";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useEventListener from "@use-it/event-listener";
 import { BookSelectionManager } from "./bookSelectionManager";
 import ShowAfterDelay from "../react_components/showAfterDelay";
@@ -44,6 +44,15 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
         }
         setTimeout(() => setDraggingSplitter(false), 0);
     });
+
+    useEffect(() => {
+        window.addEventListener("keyup", ev => {
+            if (ev.code == "F2") {
+                // We want to make the selected button show the renaming state.
+                manager.setRenaming();
+            }
+        });
+    }, []);
 
     if (collections) {
         const sourcesCollections = collections.slice(1);
