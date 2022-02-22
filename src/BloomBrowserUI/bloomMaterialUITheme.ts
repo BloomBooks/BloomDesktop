@@ -45,6 +45,10 @@ export const lightTheme = createTheme({
             }
         }
     },
+    zIndex: {
+        modal: 60001, // match bookEdit/css/bloomDialog.less dialogZindexPlusOne
+        tooltip: 60002 // needs to be higher than modal
+    },
     overrides: {
         MuiOutlinedInput: {
             // input: {

@@ -201,6 +201,19 @@ namespace Bloom.FontProcessing
 			variants = group.GetAvailableVariants().ToArray();
 
 			// Now for the hard part: setting DeterminedSuitability
+			// First we declare unsuitable font types that we don't know how to handle (like .ttc)
+			var fontFileTypesBloomKnows = new string[] { "ttf", "otf", "woff", "woff2" };
+			var fontPath = gtf.FontUri.AbsolutePath;
+			var fontExtension = fontPath.Substring(fontPath.LastIndexOf('.') + 1);
+			var bloomKnows = fontFileTypesBloomKnows.Any(
+				t => fontExtension.ToLowerInvariant().EndsWith(t));
+			if (!bloomKnows)
+			{
+				determinedSuitability = "unsuitable";
+				determinedSuitabilityNotes = "Bloom does not support " + fontExtension.ToUpper() + " fonts.";
+				return;
+			}
+			// Now we check out the license information.
 			if (!String.IsNullOrEmpty(license))
 			{
 				if (license.Contains("Open Font License") || license.Contains("OFL") ||

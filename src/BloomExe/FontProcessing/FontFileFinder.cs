@@ -133,23 +133,15 @@ namespace Bloom.FontProcessing
 					continue; // file is somehow corrupt or not really a font file? Just ignore it.
 				}
 
-				switch (gtf.EmbeddingRights)
+				// Now that our UI needs to give people information about fonts they shouldn't use (BL-10388),
+				// we need to handle this differently, while still allowing ePUB publishing to note that
+				// particular fonts are not embeddable.
+				if (!FontIsEmbeddable(gtf.EmbeddingRights) && NoteFontsWeCantInstall)
 				{
-					case FontEmbeddingRight.Editable:
-					case FontEmbeddingRight.EditableButNoSubsetting:
-					case FontEmbeddingRight.Installable:
-					case FontEmbeddingRight.InstallableButNoSubsetting:
-					case FontEmbeddingRight.PreviewAndPrint:
-					case FontEmbeddingRight.PreviewAndPrintButNoSubsetting:
-						break;
-					default:
-						if (NoteFontsWeCantInstall)
-						{
-							string name1 = GetFontNameFromFile(fontFile);
-							if (name1 != null)
-								FontsWeCantInstall.Add(name1);
-						}
-						continue; // not allowed to embed
+					string name1 = GetFontNameFromFile(fontFile);
+					if (name1 != null)
+						FontsWeCantInstall.Add(name1);
+					continue; // not allowed to embed in ePUB
 				}
 
 				string name = GetFontNameFromFile(fontFile);
@@ -165,6 +157,21 @@ namespace Bloom.FontProcessing
 				files.Add(gtf, fontFile);
 			}
 #endif
+		}
+
+		private bool FontIsEmbeddable(FontEmbeddingRight rights)
+		{
+			switch (rights)
+			{
+				case FontEmbeddingRight.Editable:
+				case FontEmbeddingRight.EditableButNoSubsetting:
+				case FontEmbeddingRight.Installable:
+				case FontEmbeddingRight.InstallableButNoSubsetting:
+				case FontEmbeddingRight.PreviewAndPrint:
+				case FontEmbeddingRight.PreviewAndPrintButNoSubsetting:
+					return true;
+			}
+			return false;
 		}
 
 		private static string GetFontNameFromFile(string fontFile)
@@ -214,15 +221,26 @@ namespace Bloom.FontProcessing
 					fontFiles.AddRange(FindFontsInFolder(subfolder));
 				foreach (var file in Directory.GetFiles(folder))
 				{
-					// ePUB only understands these types, so skip anything else.
 					switch (Path.GetExtension(file).ToLowerInvariant())
 					{
+						// ePUB only understands these types.
 						case ".ttf":
 						case ".otf":
 						case ".woff":
 						case ".woff2":
 							fontFiles.Add(file);
 							break;
+						// These will get marked as "unsuitable" in FontMetadata.cs, since Bloom
+						// does not understand them.
+						case ".compositefont":
+						case ".ttc":
+							fontFiles.Add(file);
+							break;
+						// Various files we skip:
+						//  .fon - old Win3.x font library files
+						//  .xml - font metadata files?
+						//  .dat - StaticCache.dat?
+						//  .ini - desktop.ini... really!?
 						default:
 							break;
 					}
