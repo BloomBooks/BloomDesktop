@@ -1,3 +1,10 @@
+bloom-desktop (5.1.0) stable; urgency=medium
+
+  * Change 5.1 to release
+  * More bug fixes and enhancements: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Tue, 22 Feb 2022 09:43:30 -0700
+
 bloom-desktop-beta (5.1.0) stable; urgency=medium
 
   * Change 5.1 to beta
