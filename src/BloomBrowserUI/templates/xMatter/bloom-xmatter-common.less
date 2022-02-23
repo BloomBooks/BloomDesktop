@@ -458,6 +458,9 @@ body[bookcreationtype="translation"] {
 
     [data-book="title-page-branding-bottom-html"] {
         width: 100%; // this allows the logo to grow horizontally and center.
+
+        // Enhance: this FORCES a max 1 inch high logo. There is no way for the branding to override this
+        // because it only provides the children of this element.
         flex: 0 2 1in;
         min-height: 0.25in;
         img {

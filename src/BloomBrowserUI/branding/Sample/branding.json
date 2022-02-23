@@ -27,7 +27,7 @@
         {
             "data-book": "title-page-branding-bottom-html",
             "lang": "*",
-            "content": "<img class='branding' src='sampleFiveLogos.png'/><div class='standout'>Branding can include image and text here (title-page-branding-bottom). </div>",
+            "content": "<img class='branding' src='sampleOneLogo.png'/>",
             "condition": "always"
         },
 
