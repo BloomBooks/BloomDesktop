@@ -16,16 +16,12 @@ import {
     kBloomGold,
     kBloomLightBlue,
     kBloomPurple
-} from "../bloomMaterialUITheme.ts";
+} from "../bloomMaterialUITheme";
 import { useRef, useState, useEffect } from "react";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import { BookSelectionManager, useIsSelected } from "./bookSelectionManager";
-import {
-    IBookInfo,
-    ICollection,
-    makeMenuItems,
-    MenuItemSpec
-} from "./BooksOfCollection";
+import { IBookInfo, ICollection } from "./BooksOfCollection";
+import { makeMenuItems, MenuItemSpec } from "./CollectionsTabPane";
 import DeleteIcon from "@material-ui/icons/Delete";
 
 export const bookButtonHeight = 120;
