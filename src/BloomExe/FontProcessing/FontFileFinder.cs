@@ -100,9 +100,14 @@ namespace Bloom.FontProcessing
 								if ((embeddingTypes & EmbeddingTypes.RestrictedLicense) == EmbeddingTypes.RestrictedLicense ||
 									(embeddingTypes & EmbeddingTypes.BitmapOnly) == EmbeddingTypes.BitmapOnly)
 								{
+									// Our font UI allows any font on the computer, but gives the user indications that some are more
+									// useable in publishing Bloom books. The NoteFontsWeCantInstall prop is only true when we call this
+									// from BloomPubMaker so that it can note that certain fonts are unsuitable for embedding in ePUBs.
 									if (NoteFontsWeCantInstall)
+									{
 										FontsWeCantInstall.Add(face.FamilyName);
-									continue;
+										continue;
+									}
 								}
 								var name = face.FamilyName;
 								// If you care about bold, italic, etc, you can filter here.
@@ -117,6 +122,7 @@ namespace Bloom.FontProcessing
 						}
 						catch (Exception)
 						{
+							continue;
 						}
 					}
 				}
@@ -159,21 +165,6 @@ namespace Bloom.FontProcessing
 #endif
 		}
 
-		private bool FontIsEmbeddable(FontEmbeddingRight rights)
-		{
-			switch (rights)
-			{
-				case FontEmbeddingRight.Editable:
-				case FontEmbeddingRight.EditableButNoSubsetting:
-				case FontEmbeddingRight.Installable:
-				case FontEmbeddingRight.InstallableButNoSubsetting:
-				case FontEmbeddingRight.PreviewAndPrint:
-				case FontEmbeddingRight.PreviewAndPrintButNoSubsetting:
-					return true;
-			}
-			return false;
-		}
-
 		private static string GetFontNameFromFile(string fontFile)
 		{
 			var fc = new PrivateFontCollection();
@@ -209,6 +200,21 @@ namespace Bloom.FontProcessing
 			// For the effect on Bloom, see https://issues.bloomlibrary.org/youtrack/issue/BL-7043.
 			fontFiles.AddRange(FindFontsInFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Microsoft","Windows","Fonts")));
 			return fontFiles;
+		}
+
+		private bool FontIsEmbeddable(FontEmbeddingRight rights)
+		{
+			switch (rights)
+			{
+				case FontEmbeddingRight.Editable:
+				case FontEmbeddingRight.EditableButNoSubsetting:
+				case FontEmbeddingRight.Installable:
+				case FontEmbeddingRight.InstallableButNoSubsetting:
+				case FontEmbeddingRight.PreviewAndPrint:
+				case FontEmbeddingRight.PreviewAndPrintButNoSubsetting:
+					return true;
+			}
+			return false;
 		}
 #endif
 

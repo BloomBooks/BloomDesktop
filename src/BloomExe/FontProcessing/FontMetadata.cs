@@ -207,7 +207,7 @@ namespace Bloom.FontProcessing
 
 			// Now for the hard part: setting DeterminedSuitability
 			// First we declare unsuitable font types that we don't know how to handle (like .ttc)
-			var fontExtension = Path.GetExtension(gtf.FontUri.AbsolutePath);
+			var fontExtension = Path.GetExtension(group.Normal);
 			var bloomKnows = fontFileTypesBloomKnows.Contains(fontExtension.ToLowerInvariant());
 			if (!bloomKnows)
 			{
