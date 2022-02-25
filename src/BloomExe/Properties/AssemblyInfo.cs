@@ -41,3 +41,13 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo("BloomHarvester")]
 [assembly: InternalsVisibleTo("BloomHarvesterTests")]
 [assembly: AssemblyMetadata("SquirrelAwareVersion", "1")]
+
+// Without explicitly disabling DPI awareness here, the subsequent
+// loading of some System.Windows.Media components will cause the
+// application to change from DPI "Unaware" to DPI "System Aware".
+// The one place we know this happens currently is when loading font metadata.
+// This causes problems when one monitor is set to different font scaling than another.
+// Depending on how far the UI has gotten in setting up when the awareness status changes,
+// it will either result in inconsistent font/icon sizing or the whole
+// window will shrink down. See BL-10981.
+[assembly: System.Windows.Media.DisableDpiAwareness]
