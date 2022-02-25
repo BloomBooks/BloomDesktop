@@ -18,6 +18,10 @@
     .spacing-fudge {
         margin: 0px 0px -2px 0px;
     }
+    .control-section {
+        display: flex;
+        align-items: center;
+    }
     #size-select {
         width: 43px;
         margin-left: 5px;
@@ -81,9 +85,11 @@
     }
 }
 
-//the select2 dropdown gets appended to the body, not to our dialog, so its z-index must be at least as high as the dialog's z-index
-.select2-container {
-    z-index: @dialogZindexPlusOne;
+// The select2 dropdown gets appended to the body, not to our dialog, so its z-index must be at least as high as the dialog's z-index.
+// The same sort of thing applies to the Popover popup list of fonts in the FontSelectComponent.
+.select2-container,
+.MuiPopover-root {
+    z-index: @dialogZindexPlusOne !important; // important is necessary for the popover case
 }
 
 #spacingRow {
@@ -117,13 +123,11 @@
 }
 #size-select + .select2-container {
     width: 60px !important;
+    padding-bottom: 5px; // line up with the new FontSelectComponent
 }
 #para-spacing-select + .select2-container {
     width: 60px !important;
 }
-// #font-select + .select2-container{
-// 	width: 120px;
-// }
 
 .select2-container--open .select2-selection__rendered {
     background-color: lightblue;
