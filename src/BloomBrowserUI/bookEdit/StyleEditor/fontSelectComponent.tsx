@@ -4,7 +4,7 @@ import * as React from "react";
 import { useState } from "react";
 import { ThemeProvider } from "@material-ui/styles";
 import { lightTheme } from "../../bloomMaterialUITheme";
-import { FormControl, MenuItem, Popover, Select } from "@material-ui/core";
+import { FormControl, MenuItem, Popover, TextField } from "@material-ui/core";
 import FontDisplayBar from "../../react_components/fontDisplayBar";
 import FontInformationPane from "../../react_components/fontInformationPane";
 
@@ -86,6 +86,8 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
         }
     };
 
+    const emptyIconComponent = () => <React.Fragment></React.Fragment>;
+
     return (
         <ThemeProvider theme={lightTheme}>
             <FormControl
@@ -93,30 +95,38 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
                 margin="dense"
                 error={fontChoice?.determinedSuitability === "unsuitable"}
                 css={css`
-                    // the following "!important" doesn't seem to be needed in production,
-                    // only in storybook!
+                    // Some of the following "!important"s are needed when the Style tab is present,
+                    // oddly enough!
                     min-width: 180px !important;
-                    margin-top: -2px;
-                    margin-right: 10px;
+                    margin-right: 12px !important;
+                    .MuiOutlinedInput-root {
+                        border-radius: 0;
+                    }
                 `}
             >
-                <Select
+                <TextField
                     id="font-select"
                     value={fontChoice?.name}
+                    select
+                    size="small"
+                    variant="outlined"
                     onChange={handleFontChange}
-                    IconComponent={() => <React.Fragment></React.Fragment>} // no down-arrow needed
+                    SelectProps={{
+                        // no down-arrow needed
+                        IconComponent: emptyIconComponent
+                    }}
                     css={css`
                         #font-select {
                             display: flex;
                             flex: 1;
                             flex-direction: row;
                             justify-content: space-between;
-                            padding-right: 15px;
+                            padding: 5px 12px 4px 8px; // try to match the font size input
                         }
                     `}
                 >
                     {getMenuItemsFromFontMetaData()}
-                </Select>
+                </TextField>
                 <Popover
                     id="mouse-over-popover"
                     open={isPopoverOpen}
