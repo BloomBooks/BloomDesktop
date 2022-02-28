@@ -18,13 +18,18 @@
     .spacing-fudge {
         margin: 0px 0px -2px 0px;
     }
-    .control-section {
+    .font-control-section {
         display: flex;
         align-items: center;
+        margin-top: -6px;
+        margin-bottom: 4px;
     }
     #size-select {
         width: 43px;
         margin-left: 5px;
+        & + span {
+            margin-top: 2px;
+        }
     }
     #line-height-select {
         width: 45px;
@@ -123,7 +128,6 @@
 }
 #size-select + .select2-container {
     width: 60px !important;
-    padding-bottom: 5px; // line up with the new FontSelectComponent
 }
 #para-spacing-select + .select2-container {
     width: 60px !important;

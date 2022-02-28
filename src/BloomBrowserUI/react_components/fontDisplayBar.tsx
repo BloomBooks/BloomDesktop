@@ -26,7 +26,7 @@ const FontDisplayBar: React.FunctionComponent<FontDisplayBarProps> = props => {
 
     const commonProps = {
         "aria-owns": ariaOwns,
-        "aria-haspop": "true",
+        "aria-haspopup": true,
         onMouseEnter: event => {
             if (props.onHover) props.onHover(event, props.fontMetadata);
         }
