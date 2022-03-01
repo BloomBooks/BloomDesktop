@@ -139,9 +139,9 @@ namespace Bloom.Collection
 
 			_defaultBookshelfControl = ReactControl.Create("defaultBookshelfControlBundle");
 
-			// Ensure these controls stand out against the current tab.  (BL-10973)
-			_xmatterDescription.BackColor = SystemColors.Control;	// standard control background color
-			_defaultBookshelfControl.BackColor = SystemColors.Control;
+			// Try to ensure these controls do not stand out against the current tab.  (BL-10973)
+			_defaultBookshelfControl.BackColor = tabPage2.BackColor;    // maybe transparent which TextBox won't allow
+			_xmatterDescription.BackColor = Color.FromArgb(255, tabPage2.BackColor);
 
 			tabPage2.Controls.Add(_defaultBookshelfControl);
 			_defaultBookshelfControl.Location = new Point(_xmatterDescription.Left, _xmatterDescription.Bottom + 30);
