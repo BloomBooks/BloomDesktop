@@ -281,8 +281,13 @@ namespace Bloom.Publish
 
 		public static void RemoveEnterpriseFeaturesIfNeeded(Book.Book book, List<XmlElement> pageElts, ISet<string> warningMessages)
 		{
-			if (RemoveEnterprisePagesIfNeeded(book.BookData, book.Storage.Dom, pageElts))
+			var omittedPages = RemoveEnterprisePagesIfNeeded(book.BookData, book.Storage.Dom, pageElts);
+			if (omittedPages.Count > 0)
+			{
 				warningMessages.Add(LocalizationManager.GetString("Publish.RemovingEnterprisePages", "Removing one or more pages which require Bloom Enterprise to be enabled"));
+				foreach (var label in omittedPages.Keys.OrderBy(x => x))
+					warningMessages.Add($"{omittedPages[label]} {label}");
+			}
 			if (!book.CollectionSettings.HaveEnterpriseFeatures)
 				RemoveEnterpriseOnlyAssets(book);
 		}
@@ -291,9 +296,10 @@ namespace Bloom.Publish
 		/// Remove any Bloom Enterprise-only pages if Bloom Enterprise is not enabled.
 		/// Also renumber the pages if any are removed.
 		/// </summary>
-		/// <returns><c>true</c>, if any pages were removed, <c>false</c> otherwise.</returns>
-		public static bool RemoveEnterprisePagesIfNeeded(BookData bookData, HtmlDom dom, List<XmlElement> pageElts)
+		/// <returns>dictionary of types of pages removed and how many of each type (may be empty)</returns>
+		public static Dictionary<string,int> RemoveEnterprisePagesIfNeeded(BookData bookData, HtmlDom dom, List<XmlElement> pageElts)
 		{
+			var omittedPages = new Dictionary<string,int>();
 			if (!bookData.CollectionSettings.HaveEnterpriseFeatures)
 			{
 				var pageRemoved = false;
@@ -301,6 +307,7 @@ namespace Bloom.Publish
 				{
 					if (Book.Book.IsPageBloomEnterpriseOnly(page))
 					{
+						CollectPageLabel(page, omittedPages);
 						page.ParentNode.RemoveChild(page);
 						pageElts.Remove(page);
 						pageRemoved = true;
@@ -310,10 +317,9 @@ namespace Bloom.Publish
 				{
 					dom.UpdatePageNumberAndSideClassOfPages(bookData.CollectionSettings.CharactersForDigitsForPageNumbers,
 						bookData.Language1.IsRightToLeft);
-					return true;
 				}
 			}
-			return false;
+			return omittedPages;
 		}
 
 
@@ -408,7 +414,7 @@ namespace Bloom.Publish
 		/// so that needs to be a folder we can write in.
 		/// </summary>
 		public static Book.Book MakeDeviceXmatterTempBook(string bookFolderPath, BookServer bookServer, string tempFolderPath, bool isTemplateBook,
-			HashSet<string> omittedPageLabels = null)
+			Dictionary<string,int> omittedPageLabels = null)
 		{
 			BookStorage.CopyDirectory(bookFolderPath, tempFolderPath);
 			BookStorage.EnsureSingleHtmFile(tempFolderPath);
@@ -467,17 +473,24 @@ namespace Bloom.Publish
 		#endregion
 
 		/// <summary>
-		/// If the page element has a label, collect it into the page labels set (if there is one;
+		/// If the page element has a label, collect it into the page labels/count dictionary (if there is one;
 		/// it might be null).
 		/// </summary>
-		public static void CollectPageLabel(XmlElement pageElement, HashSet<string> omittedPageLabels)
+		public static void CollectPageLabel(XmlElement pageElement, Dictionary<string, int> omittedPageLabels)
 		{
 			if (omittedPageLabels == null)
 				return;
 			var label = pageElement.SelectSingleNode(".//div[@class='pageLabel']")?.InnerText;
 			if (!String.IsNullOrWhiteSpace(label))
 			{
-				omittedPageLabels.Add(label);
+				if (omittedPageLabels.TryGetValue(label, out int count))
+					omittedPageLabels[label] = ++count;
+				else
+					omittedPageLabels.Add(label, 1);
+			}
+			else
+			{
+				Console.WriteLine("DEBUG: no label found for page being omitted!");
 			}
 		}
 
