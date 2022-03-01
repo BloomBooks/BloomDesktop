@@ -61,7 +61,7 @@ override_dh_auto_install:
 	cp -r output/browser $(DESTDIR)/$(LIB)
 	chmod -R a+rX,og-w $(DESTDIR)/$(LIB)/browser
 	# Remove unwanted files
-	cd $(DESTDIR)/$(LIB) && rm -rf AxInterop* BloomTests* Interop* Moq* nunit* AndikaNewBasic ffmpeg ghostscript
+	cd $(DESTDIR)/$(LIB) && rm -rf AxInterop* BloomTests* Interop* Moq* nunit* NUnit* AndikaNewBasic ffmpeg ghostscript
 	find $(DESTDIR)/$(LIB) -name '*.map' -print0 | xargs -0 rm -f
 	find $(DESTDIR)/$(LIB) -name '*Spec.js' -print0 | xargs -0 rm -f
 	find $(DESTDIR)/$(LIB) -name 'CheckOrFixXliff.*' -print0 | xargs -0 rm -f
