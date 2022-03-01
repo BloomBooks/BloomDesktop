@@ -56,12 +56,6 @@ const FontInformationPane: React.FunctionComponent<{
         "This shows in the popup before the types of variants in the font (e.g. bold, italic)."
     );
 
-    const versionWording = useL10n(
-        "Version",
-        "FontInformationPane.Version",
-        "This shows in the popup before the font's version number."
-    );
-
     // There is one other 'License' in BookMetaData, but I would like to have the comment here.
     // The other option would be to put it in Common and maybe port the BookMetaData one to Common too.
     const licenseWording = useL10n(
@@ -73,7 +67,7 @@ const FontInformationPane: React.FunctionComponent<{
     const showFontDeveloperData = (fontData: IFontMetaData | undefined) => {
         if (!fontData) return;
         let message = `name: ${fontData.name}\n`;
-        message += `version: ${fontData.version}\n`;
+        message += `ver: ${fontData.version}\n`;
         message += `license: ${fontData.license}\n`;
         message += `licenseURL: ${fontData.licenseURL}\n`;
         message += `copyright: ${fontData.copyright}\n`;
@@ -168,10 +162,10 @@ const FontInformationPane: React.FunctionComponent<{
                             linkText={props.metadata.manufacturerURL!}
                         />
                     )}
-                    {/* Font version number */}
+                    {/* Font version number (which comes to us prefixed with "Version ") */}
                     {props.metadata.version && (
                         <Typography variant="body2">
-                            {versionWording} {props.metadata.version}
+                            {props.metadata.version}
                         </Typography>
                     )}
                     {/* LicenseURL */}

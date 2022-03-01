@@ -78,6 +78,9 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
         });
     };
 
+    // Match the border color of the other selects in the Format dialog.
+    const matchingBorderColor = "border-color: #808080;";
+
     const handleFontChange = event => {
         const fontName: string = event.target.value;
         setFontChoice(getFontDataFromName(event.target.value));
@@ -85,8 +88,6 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
             props.onChangeFont(fontName);
         }
     };
-
-    const emptyIconComponent = () => <React.Fragment></React.Fragment>;
 
     return (
         <ThemeProvider theme={lightTheme}>
@@ -102,6 +103,9 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
                     .MuiOutlinedInput-root {
                         border-radius: 0;
                     }
+                    fieldset {
+                        ${matchingBorderColor}
+                    }
                 `}
             >
                 <TextField
@@ -111,17 +115,13 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
                     size="small"
                     variant="outlined"
                     onChange={handleFontChange}
-                    SelectProps={{
-                        // no down-arrow needed
-                        IconComponent: emptyIconComponent
-                    }}
                     css={css`
                         #font-select {
                             display: flex;
                             flex: 1;
                             flex-direction: row;
                             justify-content: space-between;
-                            padding: 5px 12px 4px 8px; // try to match the font size input
+                            padding: 3px 12px 2px 8px; // try to match the font size input
                         }
                     `}
                 >

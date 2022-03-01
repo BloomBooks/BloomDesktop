@@ -33,7 +33,11 @@ const FontDisplayBar: React.FunctionComponent<FontDisplayBarProps> = props => {
     };
 
     const getIconForFont = (): JSX.Element => (
-        <React.Fragment>
+        <div
+            css={css`
+                padding-right: 15px;
+            `}
+        >
             {suitability === "ok" && (
                 <OkIcon htmlColor={kBloomBlue} {...commonProps} />
             )}
@@ -55,7 +59,7 @@ const FontDisplayBar: React.FunctionComponent<FontDisplayBarProps> = props => {
                     {...commonProps}
                 />
             )}
-        </React.Fragment>
+        </div>
     );
 
     const shouldGrayOutText = (): boolean => {
@@ -65,7 +69,7 @@ const FontDisplayBar: React.FunctionComponent<FontDisplayBarProps> = props => {
         shouldGrayOutText() ? kDisabledControlGray : "black"
     };`;
 
-    const cssString = `font-family: "${props.fontMetadata.name}", "Roboto", "Arial" !important;`;
+    const cssFontFamily = `font-family: "${props.fontMetadata.name}", "Roboto", "Arial" !important;`;
 
     return (
         <div
@@ -78,7 +82,7 @@ const FontDisplayBar: React.FunctionComponent<FontDisplayBarProps> = props => {
         >
             <Typography
                 css={css`
-                    ${cssString}
+                    ${cssFontFamily}
                     ${textColor}
                 `}
             >
