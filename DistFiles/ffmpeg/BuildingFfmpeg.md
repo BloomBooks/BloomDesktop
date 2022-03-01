@@ -57,7 +57,7 @@ absent) setting.
 
 work directory
 --------------
-Launch the MinGW shell and create a directory for holding all this work (unless you
+Launch the MinGW shell ("C:\MinGW\msys\1.0\msys.bat") and create a directory for holding all this work (unless you
 already have such a location).
 <pre>
     mkdir ~/src
@@ -129,7 +129,8 @@ make install
 cd ../..
 </pre>
 Note, when I (Andrew) was trying to follow these instructions, I was getting errors during this build because it wanted to use nasm rather than yasm.
-I ended up installing nasm. Unfortunately, I didn't take notes on what I did.
+I ended up installing nasm. Unfortunately, I didn't take notes on what I did.<br>
+[JS] Yeah, x264 defaults to (and prefers) nasm over yasm now. You can download it for Windows. https://www.nasm.us/ -> Download -> Pick the latest release -> win32 (probably) -> download the installer. Some reported x264 doesn't find it unless it's installed system-wide, so I recommend installing it system-wide (Run as administrator). I used the default options. Add the NASM location (e.g. "C:\Program Files (x86)\NASM") to your PATH environment variable. Restart MinGW if it's open.
 
 lame
 ------
