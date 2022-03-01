@@ -2858,11 +2858,6 @@
         <note>ID: FontInformationPane.Styles</note>
         <note>This shows in the popup before the types of variants in the font (e.g. bold, italic).</note>
       </trans-unit>
-      <trans-unit id="FontInformationPane.Version">
-        <source xml:lang="en">Version</source>
-        <note>ID: FontInformationPane.Version</note>
-        <note>This shows in the popup before the font's version number.</note>
-      </trans-unit>
       <trans-unit id="HelpMenu.AskAQuestionMenuItem">
         <source xml:lang="en">Ask a Question</source>
         <note>ID: HelpMenu.AskAQuestionMenuItem</note>
