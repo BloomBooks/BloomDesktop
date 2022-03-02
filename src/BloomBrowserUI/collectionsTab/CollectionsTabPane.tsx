@@ -304,7 +304,13 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                                 `}
                                 className={`group fade-${state}`}
                             >
-                                <h1>Sources For New Books</h1>
+                                <h1
+                                    css={css`
+                                        padding-bottom: 20px;
+                                    `}
+                                >
+                                    Sources For New Books
+                                </h1>
 
                                 <ShowAfterDelay
                                     waitBeforeShow={100} // REview: we really want to wait for an event that indicates the main collection is mostly painted

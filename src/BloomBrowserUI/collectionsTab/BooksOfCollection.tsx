@@ -78,7 +78,7 @@ export const BooksOfCollection: React.FunctionComponent<{
             {books.length > 0 && (
                 <Grid
                     container={true}
-                    spacing={3}
+                    spacing={0}
                     direction="row"
                     justify="flex-start"
                     alignItems="flex-start"
