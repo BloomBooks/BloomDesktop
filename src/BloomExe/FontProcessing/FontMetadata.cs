@@ -154,6 +154,10 @@ namespace Bloom.FontProcessing
 				gtf = new GlyphTypeface(new Uri("file:///" + group.Normal));
 				var english = System.Globalization.CultureInfo.GetCultureInfo("en-US");
 				version = gtf.VersionStrings[english];
+				// Most fonts include the text "Version x" here, but our UI provides the
+				// (possibly localized) text, so we strip it out here.
+				if (version.StartsWith("Version "))
+					version = version.Replace("Version ", "");
 				copyright = gtf.Copyrights[english];
 				var embeddingRights = gtf.EmbeddingRights;
 				switch (embeddingRights)
