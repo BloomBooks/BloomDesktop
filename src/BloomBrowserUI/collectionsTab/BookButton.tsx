@@ -331,6 +331,7 @@ export const BookButton: React.FunctionComponent<{
                 position: relative;
                 .MuiButton-outlinedSizeLarge {
                     padding: 7px 10px;
+                    border: 0px;
                 }
             `}
             // This is the div that looks like the button, so it is the one that counts as
