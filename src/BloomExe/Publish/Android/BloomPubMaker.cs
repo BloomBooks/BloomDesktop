@@ -403,7 +403,8 @@ namespace Bloom.Publish.Android
 			foreach (var font in fontsWanted)
 			{
 				var fontFiles = fontFileFinder.GetFilesForFont(font);
-				if (fontFiles.Count() > 0)
+				var badFileType = fontFiles.Count() > 0 && !FontMetadata.fontFileTypesBloomKnows.Contains(Path.GetExtension(fontFiles.First()).ToLowerInvariant());
+				if (fontFiles.Count() > 0 && !badFileType)
 				{
 					filesToEmbed.AddRange(fontFiles);
 					progress.MessageWithParams("PublishTab.Android.File.Progress.CheckFontOK", "{0} is a font name", "Checking {0} font: License OK for embedding.", ProgressKind.Progress, font);
@@ -417,7 +418,11 @@ namespace Bloom.Publish.Android
 						font, sizeToReport);
 					continue;
 				}
-				if (fontFileFinder.FontsWeCantInstall.Contains(font))
+				if (badFileType)
+				{
+					progress.MessageWithParams("IncompatibleFontFileFormat", "{0} is a font name", "This book has text in a font named \"{0}\". The font's file format cannot be used for electronic publishing.", ProgressKind.Error, font);
+				}
+				else if (fontFileFinder.FontsWeCantInstall.Contains(font))
 				{
 					//progress.Error("Common.Warning", "Warning");
 					progress.MessageWithParams("LicenseForbids","{0} is a font name", "This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.",ProgressKind.Error, font);
@@ -426,6 +431,7 @@ namespace Bloom.Publish.Android
 				{
 					progress.MessageWithParams("NoFontFound", "{0} is a font name", "This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.", ProgressKind.Error, font);
 				}
+				// REVIEW/TODO: If we say this, shouldn't we revise fonts.css and defaultLangStyles.css to replace/remove the invalidated font? (and maybe other css files or styles in the html file)
 				progress.MessageWithParams("SubstitutingAndika", "{0} is a font name", "Bloom will substitute \"{0}\" instead.", ProgressKind.Error, defaultFont, font);
 			}
 			foreach (var file in filesToEmbed)

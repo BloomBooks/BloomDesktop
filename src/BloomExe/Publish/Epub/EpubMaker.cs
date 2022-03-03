@@ -412,7 +412,10 @@ namespace Bloom.Publish.Epub
 
 			CopyFileToEpub(epubThumbnailImagePath, true, true, kImagesFolder);
 
-			EmbedFonts(); // must call after copying stylesheets
+			warningMessages.Clear();
+			EmbedFonts(warningMessages); // must call after copying stylesheets
+			PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
+
 			MakeNavPage();
 
 			//supporting files
@@ -1985,15 +1988,29 @@ namespace Bloom.Publish.Epub
 		/// <summary>
 		/// Try to embed the fonts we need.
 		/// </summary>
-		private void EmbedFonts()
+		private void EmbedFonts(ISet<string> warningMessages)
 		{
 			var fontFileFinder = FontFileFinder.GetInstance(Program.RunningUnitTests);
 			var filesToEmbed = _fontsUsedInBook.SelectMany(fontFileFinder.GetFilesForFont).ToArray();
 			foreach (var file in filesToEmbed) {
-				CopyFileToEpub(file, subfolder:kFontsFolder);
+				var extension = Path.GetExtension(file).ToLowerInvariant();
+				if (FontMetadata.fontFileTypesBloomKnows.Contains(extension))
+				{
+					// ePUB only understands (and will embed) these types.
+					CopyFileToEpub(file, subfolder: kFontsFolder);
+				}
+				else
+				{
+					warningMessages.Add($"Cannot embed font file {file}");
+				}
 			}
 			var sb = new StringBuilder ();
 			foreach (var font in _fontsUsedInBook) {
+				if (!fontFileFinder.GetFilesForFont(font).Any(file => FontMetadata.fontFileTypesBloomKnows.Contains(Path.GetExtension(file).ToLowerInvariant())))
+				{
+					// If we can't embed the font, no reason to refer to it in the css.
+					continue;
+				}
 				var group = fontFileFinder.GetGroupForFont (font);
 				if (group != null) {
 					// The fonts.css file is stored in a subfolder as are the font files.  They are in different
