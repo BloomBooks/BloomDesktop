@@ -361,7 +361,7 @@ namespace Bloom.Publish
 			var fonts = fontFamily.Split(new[]{','}, StringSplitOptions.RemoveEmptyEntries);
 			// Fonts whose names contain spaces are quoted: remove the quotes.
 			var font = fonts[0].Replace("\"", "");
-			//Console.WriteLine("DEBUG font=\"{0}\", fontFamily=\"{1}\"", font, fontFamily);
+			//Console.WriteLine("DEBUG PublishHelper.StoreFontUsed(): font=\"{0}\", fontFamily=\"{1}\"", font, fontFamily);
 			FontsUsed.Add(font);
 		}
 
