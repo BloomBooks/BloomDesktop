@@ -12,24 +12,39 @@ import { Typography } from "@material-ui/core";
 import OkIcon from "@material-ui/icons/CheckCircle";
 import UnsuitableIcon from "@material-ui/icons/Error";
 import UnknownIcon from "@material-ui/icons/Help";
+import { useDebouncedCallback } from "use-debounce";
 
 interface FontDisplayBarProps {
     fontMetadata: IFontMetaData;
     inDropdownList: boolean;
     isPopoverOpen: boolean;
-    onHover?: (event: any, metadata: IFontMetaData) => void;
+    onHover?: (hoverTarget: HTMLElement, metadata: IFontMetaData) => void;
 }
 
 const FontDisplayBar: React.FunctionComponent<FontDisplayBarProps> = props => {
     const suitability = props.fontMetadata.determinedSuitability;
     const ariaOwns = props.isPopoverOpen ? "mouse-over-popover" : undefined;
 
+    const kHoverDelay = 700; // milliseconds; default MUI tooltip delay
+    const debouncedPopover = useDebouncedCallback((target: HTMLElement) => {
+        props.onHover!(target, props.fontMetadata);
+    }, kHoverDelay);
+
+    const handleMouseEnter = (event: React.MouseEvent) => {
+        if (!props.onHover) return;
+        debouncedPopover.callback(event.currentTarget as HTMLElement);
+    };
+
+    const handleMouseLeave = () => {
+        if (!props.onHover) return;
+        debouncedPopover.cancel();
+    };
+
     const commonProps = {
         "aria-owns": ariaOwns,
         "aria-haspopup": true,
-        onMouseEnter: event => {
-            if (props.onHover) props.onHover(event, props.fontMetadata);
-        }
+        onMouseEnter: handleMouseEnter,
+        onMouseLeave: handleMouseLeave
     };
 
     const getIconForFont = (): JSX.Element => (
