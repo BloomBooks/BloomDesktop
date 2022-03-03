@@ -93,7 +93,9 @@ namespace Bloom.Publish.Android
 			// MakeDeviceXmatterTempBook needs to be able to copy customCollectionStyles.css etc into parent of bookFolderPath
 			// And bloom-player expects folder name to match html file name.
 			var htmPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
-			var tentativeBookFolderPath = Path.Combine(temp.FolderPath, Path.GetFileNameWithoutExtension(htmPath));
+			var tentativeBookFolderPath = Path.Combine(temp.FolderPath,
+				// Windows directory names cannot have trailing periods, but FileNameWithoutExtension can have these.  (BH-6097)
+				BookStorage.SanitizeNameForFileSystem(Path.GetFileNameWithoutExtension(htmPath)));
 			Directory.CreateDirectory(tentativeBookFolderPath);
 			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer,
 				tentativeBookFolderPath, isTemplateBook);
