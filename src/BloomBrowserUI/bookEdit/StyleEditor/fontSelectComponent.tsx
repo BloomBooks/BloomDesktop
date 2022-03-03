@@ -47,8 +47,11 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
         HTMLElement | undefined
     >(undefined);
 
-    const handlePopoverOpen = (event, metadata: IFontMetaData) => {
-        setPopoverAnchorElement(event.currentTarget as HTMLElement);
+    const handlePopoverOpen = (
+        hoverTarget: HTMLElement,
+        metadata: IFontMetaData
+    ) => {
+        setPopoverAnchorElement(hoverTarget as HTMLElement);
         setPopoverFont(metadata);
     };
 
