@@ -261,7 +261,7 @@ namespace Bloom.Publish
 			string path = null;
 
 			// Sanitize fileName first
-			string fileName = SanitizeFileName(fname);
+			string fileName = BookStorage.SanitizeNameForFileSystem(fname);
 
 			for (int i = 0; i < 100; i++)
 			{
@@ -280,21 +280,6 @@ namespace Bloom.Publish
 				}
 			}
 			return path;
-		}
-
-		/// <summary>
-		/// Ampersand in book title was causing Publish problems
-		/// </summary>
-		/// <param name="fileName"></param>
-		/// <returns></returns>
-		private static string SanitizeFileName(string fileName)
-		{
-			fileName = Path.GetInvalidFileNameChars().Aggregate(
-				fileName, (current, character) => current.Replace(character, ' '));
-			// I (GJM) set this up to keep ampersand out of the book title,
-			// but discovered that ampersand isn't one of the characters that GetInvalidFileNameChars returns!
-			fileName = fileName.Replace('&', ' ');
-			return fileName;
 		}
 
 		DisplayModes _currentDisplayMode = DisplayModes.WaitForUserToChooseSomething;
