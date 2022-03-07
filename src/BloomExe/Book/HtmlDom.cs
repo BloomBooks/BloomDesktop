@@ -2253,8 +2253,11 @@ namespace Bloom.Book
 		// An Activity can be either a user-supplied html widget or a built-in interactive page like quizzes or multiple-choice pages
 		public bool HasActivityPages()
 		{
-			return _dom.SafeSelectNodes("//*[@data-activity]")?.Count >= 1 || HasQuizPages();
-	
+			// I think the test for bloom-interactivePage is sufficient for all current activity pages,
+			// but for compatibility with legacy books (and in case I'm wrong) I'm keeping the other checks.
+			// This test should be consistent with the isActivity method in bloom player's bloom-player-core code.
+			return _dom.SelectSingleNode("//div[contains(@class, 'bloom-interactive-page')]")!= null
+				|| HasQuizPages() || HasWidgetPages();
 		}
 
 		public  bool HasOverlayPages()
