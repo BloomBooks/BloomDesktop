@@ -369,6 +369,7 @@ namespace Bloom
 			{
 				if (_browser != null)
 				{
+					// no need to disconnect event handlers that are connect to this instance's methods.
 					_browser.Dispose();
 					_browser = null;
 				}
@@ -383,6 +384,7 @@ namespace Bloom
 				{
 					components.Dispose();
 				}
+				Application.Idle -= Application_Idle;   // just in case...  Multiple disconnects hurt nothing.
 			}
 			base.Dispose(disposing);
 			_disposed = true;
@@ -727,7 +729,7 @@ namespace Bloom
 		{
 			Debug.Assert(!InvokeRequired);
 
-			Application.Idle += new EventHandler(Application_Idle);
+			Application.Idle += Application_Idle;
 
 			//NO. We want to leave it around for debugging purposes. It will be deleted when the next page comes along, or when this class is disposed of
 			//    		if(_tempHtmlFile!=null)
@@ -748,7 +750,7 @@ namespace Bloom
 				Invoke(new Action<object, EventArgs>(Application_Idle), sender, e);
 				return;
 			}
-			Application.Idle -= new EventHandler(Application_Idle);
+			Application.Idle -= Application_Idle;
 		}
 
 		/// <summary>
