@@ -254,6 +254,18 @@ export class BloomApi {
         return this.useApiDataInternal(urlSuffix, defaultValue, generation);
     }
 
+    public static useWatchBooleanEvent(
+        defaultValue: boolean,
+        clientContext: string,
+        eventId: string
+    ) {
+        const [val, setVal] = useState(defaultValue);
+        useSubscribeToWebSocketForEvent(clientContext, eventId, data => {
+            setVal(data.message === "true");
+        });
+        return val;
+    }
+
     // Manages a state that is initially defaultValue, but subscribes to the specified web
     // socket, and when it arrives, set the state to its message.
     public static useWatchString(

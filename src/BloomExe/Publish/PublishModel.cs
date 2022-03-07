@@ -43,6 +43,7 @@ namespace Bloom.Publish
 			Printing,
 			ResumeAfterPrint,
 			Android,
+			Video,
 			EPUB,
 			NotPublishable
 		}

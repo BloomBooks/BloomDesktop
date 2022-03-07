@@ -212,6 +212,8 @@ namespace Bloom.Api
 			return IsArray && (xml.Elements().ElementAtOrDefault(index) != null);
 		}
 
+		public int Count => xml.Elements().Count();
+
 		/// <summary>delete property</summary>
 		public bool Delete(string name)
 		{

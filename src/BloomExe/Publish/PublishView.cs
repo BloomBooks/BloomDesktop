@@ -21,6 +21,7 @@ using Bloom.Publish.Android;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.Epub;
 using Bloom.Publish.PDF;
+using Bloom.Publish.Video;
 using SIL.Progress;
 
 namespace Bloom.Publish
@@ -35,6 +36,7 @@ namespace Bloom.Publish
 		private HtmlPublishPanel _htmlControl;
 		private NavigationIsolator _isolator;
 		private PublishToAndroidApi _publishApi;
+		private PublishToVideoApi _publishToVideoApi;
 		private PublishEpubApi _publishEpubApi;
 		private BloomWebSocketServer _webSocketServer;
 		private readonly string _cantPublishPageWithPlaceholder;
@@ -45,13 +47,15 @@ namespace Bloom.Publish
 
 		public PublishView(PublishModel model,
 			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookUpload bookTransferrer, NavigationIsolator isolator,
-			PublishToAndroidApi publishApi, PublishEpubApi publishEpubApi, BloomWebSocketServer webSocketServer)
+			PublishToAndroidApi publishApi, PublishEpubApi publishEpubApi, BloomWebSocketServer webSocketServer,
+			PublishToVideoApi publishToVideoApi)
 		{
 			_bookTransferrer = bookTransferrer;
 			_isolator = isolator;
 			_publishApi = publishApi;
 			_publishEpubApi = publishEpubApi;
 			_webSocketServer = webSocketServer;
+			_publishToVideoApi = publishToVideoApi;
 
 			InitializeComponent();
 
@@ -130,6 +134,7 @@ namespace Bloom.Publish
 			_bookletCoverRadio.Enabled = enable;
 			_simpleAllPagesRadio.Enabled = enable;
 			_androidRadio.Enabled = enable;
+			_recordVideoRadio.Enabled = enable;
 		}
 
 		private void Deactivate()
@@ -137,6 +142,7 @@ namespace Bloom.Publish
 			if (IsMakingPdf)
 				_makePdfBackgroundWorker.CancelAsync();
 			_publishEpubApi?.AbortMakingEpub();
+			_publishToVideoApi.AbortMakingVideo();
 			// This allows various cleanup of controls which we won't use again, since we
 			// always switch to this state when we reactivate the view.
 			// In particular, it is part of the solution to BL-4901 that the HtmlPublishPanel,
@@ -179,6 +185,7 @@ namespace Bloom.Publish
 			_uploadRadio.AutoCheck = autoCheck;
 			_epubRadio.AutoCheck = autoCheck;
 			_androidRadio.AutoCheck = autoCheck;
+			_recordVideoRadio.AutoCheck = autoCheck;
 		}
 
 		private void SetupLocalization()
@@ -188,6 +195,7 @@ namespace Bloom.Publish
 			LocalizeSuperToolTip(_bookletBodyRadio, "PublishTab.BodyOnlyRadio");
 			LocalizeSuperToolTip(_uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
 			LocalizeSuperToolTip(_androidRadio, "PublishTab.AndroidButton");
+			LocalizeSuperToolTip(_recordVideoRadio, "PublishTab.PublishTab.RecordVideoButton");
 		}
 
 		// Used by LocalizeSuperToolTip to remember original English keys
@@ -252,7 +260,7 @@ namespace Bloom.Publish
 		private void ClearRadioButtons()
 		{
 			_bookletCoverRadio.Checked = _bookletBodyRadio.Checked =
-				_simpleAllPagesRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = _androidRadio.Checked = false;
+				_simpleAllPagesRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = _androidRadio.Checked = _recordVideoRadio.Checked = false;
 		}
 
 		internal bool IsMakingPdf
@@ -344,6 +352,8 @@ namespace Bloom.Publish
 					_model.DisplayMode = PublishModel.DisplayModes.EPUB;
 				else if (_androidRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.Android;
+				else if (_recordVideoRadio.Checked)
+					_model.DisplayMode = PublishModel.DisplayModes.Video;
 				else if (_model.PdfGenerationSucceeded)
 					_model.DisplayMode = PublishModel.DisplayModes.ShowPdf;
 				else
@@ -506,7 +516,7 @@ namespace Bloom.Publish
 				Controls.Remove(_uploadControl);
 				_uploadControl = null;
 			}
-			if((displayMode != PublishModel.DisplayModes.Android || displayMode != PublishModel.DisplayModes.EPUB)
+			if((displayMode != PublishModel.DisplayModes.Android && displayMode != PublishModel.DisplayModes.EPUB && displayMode != PublishModel.DisplayModes.Video)
 			   && _htmlControl != null && Controls.Contains(_htmlControl))
 			{
 				Controls.Remove(_htmlControl);
@@ -520,6 +530,7 @@ namespace Bloom.Publish
 			}
 
 			ResetCantPublishMessage();
+			_publishToVideoApi.AbortMakingVideo();
 
 			switch (displayMode)
 			{
@@ -584,6 +595,11 @@ namespace Bloom.Publish
 					_saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
 					BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "ReaderPublish", "loader.html"));
+					break;
+				case PublishModel.DisplayModes.Video:
+					_saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
+					BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
+					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "video", "RecordVideoWindow.html"));
 					break;
 				case PublishModel.DisplayModes.EPUB:
 					_saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
@@ -741,6 +757,10 @@ namespace Bloom.Publish
 			else if (_androidRadio.Checked)
 			{
 				_model.DisplayMode = PublishModel.DisplayModes.Android;
+			}
+			else if (_recordVideoRadio.Checked)
+			{
+				_model.DisplayMode = PublishModel.DisplayModes.Video;
 			}
 			else // no buttons selected
 			{
