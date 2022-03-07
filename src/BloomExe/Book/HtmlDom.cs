@@ -2253,8 +2253,11 @@ namespace Bloom.Book
 		// An Activity can be either a user-supplied html widget or a built-in interactive page like quizzes or multiple-choice pages
 		public bool HasActivityPages()
 		{
-			return _dom.SafeSelectNodes("//*[@data-activity]")?.Count >= 1 || HasQuizPages();
-	
+			// This was previously a combination of a search like HasWidget pages and HasQuizPages(), but I think
+			// this is more accurate given the way we're currently doing things. At least, one of the current
+			// uses is for showing a warning if video modes is going to skip activity pages, and bloom-interactive-page
+			// is how BloomPlayer decides which to skip.
+			return _dom.SelectSingleNode("//div[contains(@class, 'bloom-interactive-page')]")!= null;
 		}
 
 		public  bool HasOverlayPages()

@@ -139,6 +139,7 @@ namespace Bloom
 							typeof(SpreadsheetApi),
 							typeof(BookMetadataApi),
 							typeof(PublishToAndroidApi),
+							typeof(PublishToVideoApi),
 							typeof(PublishEpubApi),
 							typeof(AccessibilityCheckApi),
 							typeof(CollectionSettingsApi),
@@ -358,6 +359,7 @@ namespace Bloom
 			_scope.Resolve<PageTemplatesApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<AddOrChangePageApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<PublishToAndroidApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<PublishToVideoApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<PublishEpubApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<AccessibilityCheckApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<CollectionSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
