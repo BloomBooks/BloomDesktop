@@ -1,15 +1,11 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
 
-import Grid from "@material-ui/core/Grid";
 import * as React from "react";
 import { BloomApi } from "../utils/bloomApi";
 import { Button, Menu } from "@material-ui/core";
 import TruncateMarkup from "react-truncate-markup";
-import {
-    IBookTeamCollectionStatus,
-    useTColBookStatus
-} from "../teamCollection/teamCollectionApi";
+import { useTColBookStatus } from "../teamCollection/teamCollectionApi";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import {
     kBloomBlue,
@@ -135,93 +131,106 @@ export const BookButton: React.FunctionComponent<{
         setRenaming(true);
     };
 
+    const bookSubMenuItemsSpecs: MenuItemSpec[] = [
+        {
+            label: "Leveled Reader",
+            l10nId: "TemplateBooks.BookName.Leveled Reader", // not the most appropriate ID, but we have it already
+            command: "bookCommand/leveled",
+            requiresSavePermission: true,
+            checkbox: true
+        },
+        {
+            label: "Decodable Reader",
+            l10nId: "TemplateBooks.BookName.Decodable Reader", // not the most appropriate ID, but we have it already
+            command: "bookCommand/decodable",
+            requiresSavePermission: true,
+            checkbox: true
+        },
+        { label: "-" },
+        {
+            label: "Export to Word or LibreOffice...",
+            l10nId: "CollectionTab.BookMenu.ExportToWordOrLibreOffice",
+            command: "bookCommand/exportToWord"
+        },
+        {
+            label: "Export to Spreadsheet...",
+            l10nId: "CollectionTab.BookMenu.ExportToSpreadsheet",
+            command: "bookCommand/exportToSpreadsheet",
+            requiresEnterprise: true
+        },
+        {
+            label: "Import content from Spreadsheet...",
+            l10nId: "CollectionTab.BookMenu.ImportContentFromSpreadsheet",
+            command: "bookCommand/importSpreadsheetContent",
+            requiresSavePermission: true,
+            requiresEnterprise: true
+        },
+        { label: "-" },
+        {
+            label: "Save as single file (.bloomSource)...",
+            l10nId: "CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem",
+            command: "bookCommand/saveAsDotBloomSource"
+        },
+        {
+            label: "Save as Bloom Pack (.bloomPack)",
+            l10nId: "CollectionTab.BookMenu.SaveAsBloomPackContextMenuItem",
+            command: "bookCommand/makeBloompack",
+            addEllipsis: true
+        },
+        { label: "-" },
+        {
+            label: "Update Thumbnail",
+            l10nId: "CollectionTab.BookMenu.UpdateThumbnail",
+            command: "bookCommand/updateThumbnail",
+            requiresSavePermission: true // marginal, but it does change the content of the book folder
+        },
+        {
+            label: "Update Book",
+            l10nId: "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
+            command: "bookCommand/updateBook",
+            requiresSavePermission: true // marginal, but it does change the content of the book folder
+        }
+    ];
+
     const getBookMenuItemsSpecs: () => MenuItemSpec[] = () => {
         return [
+            {
+                label: "Rename Book",
+                l10nId: "CollectionTab.BookMenu.RenameBook",
+                onClick: () => handleRename(),
+                requiresSavePermission: true,
+                addEllipsis: true
+            },
             {
                 label: "Duplicate Book",
                 l10nId: "CollectionTab.BookMenu.DuplicateBook",
                 command: "collections/duplicateBook"
             },
             {
-                label: "Make Bloom Pack",
-                l10nId: "CollectionTab.MakeBloomPackButton",
-                command: "bookCommand/makeBloompack"
-            },
-            {
-                label: "Open Folder on Disk",
-                l10nId: "CollectionTab.ContextMenu.OpenFolderOnDisk",
+                label: "Show in File Explorer",
+                l10nId: "CollectionTab.ContextMenu.ShowInFileExplorer",
                 command: "bookCommand/openFolderOnDisk",
                 shouldShow: () => true // show for all collections (except factory)
             },
-            { label: "-" },
-            {
-                label: "Export to Word or LibreOffice...",
-                l10nId: "CollectionTab.BookMenu.ExportToWordOrLibreOffice",
-                command: "bookCommand/exportToWord"
-            },
-            {
-                label: "Export to Spreadsheet...",
-                l10nId: "CollectionTab.BookMenu.ExportToSpreadsheet",
-                command: "bookCommand/exportToSpreadsheet"
-            },
-            {
-                label: "Import content from Spreadsheet...",
-                l10nId: "CollectionTab.BookMenu.ImportContentFromSpreadsheet",
-                command: "bookCommand/importSpreadsheetContent",
-                requiresSavePermission: true
-            },
-            {
-                label: "Save as single file (.bloomSource)...",
-                l10nId: "CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem",
-                command: "bookCommand/saveAsDotBloomSource"
-            },
-            {
-                label: "Leveled Reader",
-                l10nId: "TemplateBooks.BookName.Leveled Reader", // not the most appropriate ID, but we have it already
-                command: "bookCommand/leveled",
-                requiresSavePermission: true,
-                checkbox: true
-            },
-            { label: "-" },
-            {
-                label: "Decodable Reader",
-                l10nId: "TemplateBooks.BookName.Decodable Reader", // not the most appropriate ID, but we have it already
-                command: "bookCommand/decodable",
-                requiresSavePermission: true,
-                checkbox: true
-            },
-            { label: "-" },
-            {
-                label: "Update Thumbnail",
-                l10nId: "CollectionTab.BookMenu.UpdateThumbnail",
-                command: "bookCommand/updateThumbnail",
-                requiresSavePermission: true // marginal, but it does change the content of the book folder
-            },
-            {
-                label: "Update Book",
-                l10nId: "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
-                command: "bookCommand/updateBook",
-                requiresSavePermission: true // marginal, but it does change the content of the book folder
-            },
-            {
-                label: "Rename",
-                l10nId: "CollectionTab.BookMenu.Rename",
-                onClick: () => handleRename(),
-                requiresSavePermission: true
-            },
-            { label: "-" },
             {
                 label: "Delete Book",
                 l10nId: "CollectionTab.BookMenu.DeleteBook",
                 command: "collections/deleteBook",
                 icon: <DeleteIcon></DeleteIcon>,
                 requiresSavePermission: true, // for consistency, but not used since shouldShow is defined
+                addEllipsis: true,
                 // Allowed for the downloaded books collection and the editable collection (provided the book is checked out, if applicable)
                 shouldShow: () =>
                     props.collection.containsDownloadedBooks ||
                     (props.collection.isEditableCollection &&
                         (props.manager.getSelectedBookInfo()?.saveable ??
                             false))
+            },
+            { label: "-" },
+            {
+                label: "More",
+                l10nId: "CollectionTab.ContextMenu.More",
+                submenu: bookSubMenuItemsSpecs
             }
         ];
     };
@@ -301,7 +310,7 @@ export const BookButton: React.FunctionComponent<{
     };
 
     const handleContextClick = (event: React.MouseEvent<HTMLElement>) => {
-        setAdjustedContextMenuPoint(event.clientX - 2, event.clientY - 4);
+        setAdjustedContextMenuPoint(event.clientX, event.clientY);
 
         handleClick(event);
     };
