@@ -21,13 +21,13 @@ import {
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog
 } from "./BloomDialog/BloomDialog";
-import { kUiFontStack } from "../bloomMaterialUITheme.ts";
+import { kUiFontStack } from "../bloomMaterialUITheme";
 
 /**
  * This function sets up the hooks to get the status of whether Bloom Enterprise is available or not
  * @returns A boolean, which is true if Bloom Enterprise is enabled and false otherwise
  */
-function useEnterpriseAvailable() {
+export function useEnterpriseAvailable() {
     const [enterpriseAvailable, setEnterpriseAvailable] = useState(true);
 
     useEffect(() => {

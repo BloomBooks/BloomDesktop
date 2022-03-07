@@ -14,6 +14,7 @@ import { TeamCollectionDialog } from "./TeamCollectionDialog";
 import { TeamCollectionSettingsPanel } from "./TeamCollectionSettingsPanel";
 import { CreateTeamCollectionDialog } from "./CreateTeamCollection";
 import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialog";
+import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
 
 addDecorator(storyFn => (
     <ThemeProvider theme={lightTheme}>
@@ -276,3 +277,33 @@ storiesOf("Team Collection components/CreateTeamCollection", module)
             errorForTesting="Commodo veniam laboris ut ut ea laboris Lorem Lorem laborum enim minim velit."
         />
     ));
+
+const menuItems: (SimpleMenuItem | "-")[] = [
+    {
+        text: "About my Avatar...",
+        l10nKey: "TeamCollection.AboutAvatar",
+        action: () => {}
+    }
+];
+const menuBoxStyles: React.CSSProperties = {
+    display: "flex",
+    justifyContent: "flex-end",
+    border: "1px solid red",
+    padding: 20,
+    backgroundColor: "black",
+    width: 150
+};
+
+storiesOf("Team Collection components/Menu component", module).add(
+    "SimpleMenu test",
+    () => (
+        <div style={menuBoxStyles}>
+            <SimpleMenu
+                text="..."
+                l10nKey="Common.Ellipsis"
+                temporarilyDisableI18nWarning={true}
+                items={menuItems}
+            ></SimpleMenu>
+        </div>
+    )
+);

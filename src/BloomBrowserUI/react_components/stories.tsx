@@ -1,3 +1,7 @@
+/** @jsxFrag React.Fragment */
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+
 import * as React from "react";
 import { storiesOf } from "@storybook/react";
 import { Expandable } from "./expandable";
@@ -26,6 +30,12 @@ import {
     RequiresBloomEnterpriseOverlayWrapper
 } from "./requiresBloomEnterprise";
 import { normalDialogEnvironmentForStorybook } from "./BloomDialog/BloomDialog";
+import {
+    LocalizableMenuItem,
+    LocalizableCheckboxMenuItem,
+    LocalizableNestedMenuItem
+} from "./localizableMenuItem";
+import { Button, Divider, Menu } from "@material-ui/core";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -168,6 +178,106 @@ storiesOf("Localizable Widgets/ApiCheckbox", module).add("ApiCheckbox", () =>
             apiEndpoint="publish/android/motionBookMode"
         />
     ))
+);
+
+const menuBox = (menuItems: JSX.Element[]) => {
+    const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | undefined>(
+        undefined
+    );
+    return (
+        <div
+            css={css`
+                width: 200px;
+                height: 100px;
+                background-color: tan;
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                align-items: center;
+            `}
+        >
+            <Button
+                color="primary"
+                onClick={event =>
+                    setAnchorEl(event.target as HTMLButtonElement)
+                }
+                css={css`
+                    background-color: lightblue !important;
+                    width: 120px;
+                    height: 40px;
+                `}
+            >
+                Click Me!
+            </Button>
+            <Menu
+                anchorEl={anchorEl}
+                keepMounted
+                open={Boolean(anchorEl)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                transformOrigin={{ vertical: "top", horizontal: "left" }}
+                onClose={() => {
+                    setAnchorEl(undefined);
+                }}
+            >
+                {menuItems}
+            </Menu>
+        </div>
+    );
+};
+
+const normalMenuItem = React.createElement(() => (
+    <LocalizableMenuItem
+        english="Motion Book"
+        l10nId="PublishTab.Android.MotionBookMode"
+        icon={<DeleteIcon />}
+        onClick={() => {}}
+    />
+));
+
+const checkboxMenuItem = React.createElement(() => (
+    <LocalizableCheckboxMenuItem
+        english="Decodable Reader"
+        l10nId="TemplateBooks.BookName.Decodable Reader"
+        apiEndpoint="some/api/endpoint"
+        onClick={() => {}}
+    />
+));
+
+const normalMenuItemWithEllipsisAndEnterprise = React.createElement(() => (
+    <LocalizableMenuItem
+        english="Open or Create Another Collection"
+        l10nId="CollectionTab.OpenCreateCollectionMenuItem"
+        addEllipsis={true}
+        requiresEnterprise={true}
+        onClick={() => {}}
+    />
+));
+
+const nestedMenu = React.createElement(() => (
+    <LocalizableNestedMenuItem
+        english="Troubleshooting"
+        l10nId="CollectionTab.ContextMenu.Troubleshooting"
+    >
+        {[
+            normalMenuItem,
+            checkboxMenuItem,
+            normalMenuItemWithEllipsisAndEnterprise
+        ]}
+    </LocalizableNestedMenuItem>
+));
+
+const divider = React.createElement(() => <Divider />);
+
+const testMenu = [
+    normalMenuItem,
+    normalMenuItemWithEllipsisAndEnterprise,
+    checkboxMenuItem,
+    divider,
+    nestedMenu
+];
+
+storiesOf("Localizable Widgets/Localizable Menu", module).add("test menu", () =>
+    menuBox(testMenu)
 );
 
 const confirmDialogProps: IConfirmDialogProps = {
