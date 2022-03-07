@@ -219,5 +219,23 @@ namespace Bloom.Utils
 			// thanks to http://stackoverflow.com/questions/982028/convert-net-color-objects-to-hex-codes-and-back
 			return string.Format("#{0:X2}{1:X2}{2:X2}", color.R, color.G, color.B);
 		}
+
+		/// <summary>
+		/// Find the custom build of ffmpeg that Bloom uses. Unlike most of our dependencies, as of
+		/// March 2022 (Bloom 5.3), the binary of this ffmpeg (for Windows) is checked in under our lib
+		/// directory. It is built from a fork of the ffmpeg code at https://github.com/BloomBooks/ffmpeg.
+		/// A quite complex custom build process is used to create an exe that is two orders of magnitude
+		/// smaller than the default build with most features enabled. It has just the features we actually
+		/// use. The process is documented in BuildingFFMpeg.md (in this repo, currently at DistFiles/ffmpeg,
+		/// though I think that's the wrong place for it; we don't need to ship this to Bloom users).
+		/// </summary>
+		/// <returns></returns>
+		public static string FindFfmpegProgram()
+		{
+			var ffmpeg = "/usr/bin/ffmpeg";     // standard Linux location
+			if (SIL.PlatformUtilities.Platform.IsWindows)
+				ffmpeg = Path.Combine(BloomFileLocator.GetCodeBaseFolder(), "ffmpeg.exe");
+			return RobustFile.Exists(ffmpeg) ? ffmpeg : string.Empty;
+		}
 	}
 }

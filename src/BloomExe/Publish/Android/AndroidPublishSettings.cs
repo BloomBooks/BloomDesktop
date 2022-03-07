@@ -33,6 +33,20 @@ namespace Bloom.Publish.Android
 			// REVIEW: why wasn't AudioLanguagesToExclude included here?
 		}
 
+		/// <summary>
+		/// Return a clone, except that all languages in the passed set are wanted
+		/// (and no audio languages excluded).
+		/// </summary>
+		/// <param name="languages"></param>
+		/// <returns></returns>
+		public AndroidPublishSettings WithAllLanguages(IEnumerable<string> languages)
+		{
+			var result = this.MemberwiseClone() as AndroidPublishSettings;
+			result.AudioLanguagesToExclude = new HashSet<string>(); // exclude none!
+			result.LanguagesToInclude = new HashSet<string>(languages);
+			return result;
+		}
+
 		public override int GetHashCode()
 		{
 			return LanguagesToInclude.GetHashCode() + DistributionTag.GetHashCode();
