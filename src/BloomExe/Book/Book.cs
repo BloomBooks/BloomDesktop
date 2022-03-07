@@ -1259,7 +1259,8 @@ namespace Bloom.Book
 					if (bookDOM == _domBeingUpdated || (bookDOM != OurHtmlDom && _domBeingUpdated != OurHtmlDom))
 					{
 #if DEBUG
-						MessageBox.Show("Caught Bloom doing two updates at once! Possible BL-3166 is being prevented");
+						if (SIL.PlatformUtilities.Platform.IsWindows)	// hangs on Linux
+							MessageBox.Show("Caught Bloom doing two updates at once! Possible BL-3166 is being prevented");
 #endif
 						Console.WriteLine("WARNING: Bloom appears to be updating the same DOM twice at the same time! (BL-3166??)");
 						Console.WriteLine("Current StackTrace: {0}", Environment.StackTrace);
@@ -4419,7 +4420,7 @@ namespace Bloom.Book
 		/// BL-5886 Translation Instructions page should not end up in BR (or Epub or Pdf, but other classes ensure that).
 		/// N.B. This is only intended for use on temporary files.
 		/// </summary>
-		public void RemoveNonPublishablePages(HashSet<string> removedLabels = null)
+		public void RemoveNonPublishablePages(Dictionary<string,int> removedLabels = null)
 		{
 			const string xpath = "//div[contains(@class,'bloom-noreader')]";
 

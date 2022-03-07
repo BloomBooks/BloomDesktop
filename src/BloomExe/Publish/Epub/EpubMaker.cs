@@ -90,7 +90,7 @@ namespace Bloom.Publish.Epub
 		public const string kFontsFolder = "fonts";
 		public const string kVideoFolder = "video";
 		private Guid _thumbnailRequestId;
-		private HashSet<string> _omittedPageLabels = new HashSet<string>();
+		private Dictionary<string, int> _omittedPageLabels = new Dictionary<string, int>();
 
 		public static readonly string EpubExportRootFolder = Path.Combine(Path.GetTempPath(), kEPUBExportFolder);
 		private string _navPageLang;
@@ -360,10 +360,8 @@ namespace Bloom.Publish.Epub
 				progress.Message("OmittedPages",
 					"The following pages were removed because they are not supported in ePUBs:",
 					ProgressKind.Warning);
-				foreach (var label in _omittedPageLabels.OrderBy(x => x))
-				{
-					progress.MessageWithoutLocalizing(label, ProgressKind.Warning);
-				}
+				foreach (var label in _omittedPageLabels.Keys.OrderBy(x => x))
+					progress.MessageWithoutLocalizing($"{_omittedPageLabels[label]} {label}", ProgressKind.Warning);
 			}
 
 			var epubThumbnailImagePath = Path.Combine(Book.FolderPath, "epub-thumbnail.png");
