@@ -58,7 +58,7 @@ namespace Bloom.Book
 				pageDiv.SafeSelectNodes("descendant-or-self::*[contains(@class,'bloom-translationGroup')]"))
 			{
 				var dataDefaultLangs = groupElement.Attributes["data-default-languages"]?.Value;
-				if (dataDefaultLangs.Contains("N2"))
+				if (dataDefaultLangs != null && dataDefaultLangs.Contains("N2"))
 				{
 					MakeElementWithLanguageForOneGroup(groupElement, bookData.MetadataLanguage2IsoCode);
 				}
