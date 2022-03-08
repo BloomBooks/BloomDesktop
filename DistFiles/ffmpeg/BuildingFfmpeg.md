@@ -153,11 +153,11 @@ I had to edit one file to get the program to compile with MinGW on Windows.
 git clone https://github.com/BloomBooks/ffmpeg
 cd ffmpeg
 git config core.autocrlf false; [delete all non-git files]; git reset --hard [fixes an error where .mak files ended in CRLF and "make install" errors when doing "eval" on CRLF lines]
-git checkout Bloom
+git checkout bloom-ffmpeg5.0
 mkdir build
 cd build
 ../configure \
- --disable-everything --disable-postproc --enable-avcodec --enable-avdevice --enable-avformat --enable-avfilter --enable-swresample --enable-swscale --enable-decoder='h264,libvpx_vp8' --enable-encoder='rawvideo,libx264,libvpx_vp8' --enable-parser=h264,vp8 --enable-protocol=file --enable-protocol=concat --enable-demuxer=mov,webm,matroska --enable-muxer='rawvideo,mp4' --enable-filter=scale --enable-filter=adelay --enable-filter=amix --enable-filter=aresample --enable-filter=volume --enable-encoder=aac --enable-parser=mpegaudio --enable-demuxer=mp3 --enable-muxer=mp3 --enable-decoder=mp3* --enable-encoder=libmp3lame --enable-indev=gdigrab \
+ --disable-everything --disable-postproc --enable-avcodec --enable-avdevice --enable-avformat --enable-avfilter --enable-swresample --enable-swscale --enable-decoder='h264,libvpx_vp8,mp3*' --enable-encoder='rawvideo,libx264,libvpx_vp8,aac,libmp3lame' --enable-parser=h264,vp8,mpegaudio --enable-protocol='file,concat' --enable-demuxer=mov,webm,matroska,mp3 --enable-muxer='rawvideo,mp4,mp3' --enable-filter='scale,adelay,amix,aresample,volume' --enable-indev=gdigrab \
   \
  --disable-autodetect --enable-libx264 --enable-libvorbis --enable-libvpx --enable-libmp3lame \
   \
