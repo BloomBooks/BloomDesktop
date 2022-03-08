@@ -156,7 +156,16 @@ git config core.autocrlf false; [delete all non-git files]; git reset --hard [fi
 git checkout Bloom
 mkdir build
 cd build
-../configure --disable-everything --disable-autodetect --disable-programs --disable-doc --disable-alsa --disable-appkit --disable-avfoundation --disable-bzlib --disable-coreimage --disable-iconv --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape --disable-lzma --disable-sndio --disable-sdl2 --disable-xlib --disable-zlib --disable-amf --disable-audiotoolbox --disable-cuvid --disable-d3d11va --disable-dxva2 --disable-ffnvcodec --disable-nvdec --disable-nvenc --disable-v4l2-m2m --disable-vaapi --disable-vdpau --disable-videotoolbox --enable-ffmpeg --disable-postproc --enable-avcodec --enable-avdevice --enable-avformat --enable-avfilter --enable-swresample --enable-swscale --enable-decoder='h264,libvpx_vp8' --enable-encoder='rawvideo,libx264,libvpx_vp8' --enable-parser=h264,vp8 --enable-protocol=file --enable-protocol=concat --enable-demuxer=mov,webm,matroska --enable-muxer='rawvideo,mp4' --enable-filter=scale --enable-filter=adelay --enable-filter=amix --enable-filter=aresample --enable-filter=volume --enable-gpl --enable-libx264 --enable-libvorbis --enable-libvpx --enable-libmp3lame --enable-encoder=aac   --enable-parser=mpegaudio --enable-demuxer=mp3 --enable-muxer=mp3 --enable-decoder=mp3* --enable-encoder=libmp3lame --enable-indev=gdigrab --prefix=/mingw --extra-ldflags=-static --pkg-config-flags=--static
+../configure \
+ --disable-everything --disable-postproc --enable-avcodec --enable-avdevice --enable-avformat --enable-avfilter --enable-swresample --enable-swscale --enable-decoder='h264,libvpx_vp8' --enable-encoder='rawvideo,libx264,libvpx_vp8' --enable-parser=h264,vp8 --enable-protocol=file --enable-protocol=concat --enable-demuxer=mov,webm,matroska --enable-muxer='rawvideo,mp4' --enable-filter=scale --enable-filter=adelay --enable-filter=amix --enable-filter=aresample --enable-filter=volume --enable-encoder=aac --enable-parser=mpegaudio --enable-demuxer=mp3 --enable-muxer=mp3 --enable-decoder=mp3* --enable-encoder=libmp3lame --enable-indev=gdigrab \
+  \
+ --disable-autodetect --disable-alsa --disable-appkit --disable-avfoundation --disable-bzlib --disable-coreimage --disable-iconv --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape --disable-lzma --disable-sndio --disable-sdl2 --disable-xlib --disable-zlib --disable-amf --disable-audiotoolbox --disable-cuvid --disable-d3d11va --disable-dxva2 --disable-ffnvcodec --disable-nvdec --disable-nvenc --disable-v4l2-m2m --disable-vaapi --disable-vdpau --disable-videotoolbox --enable-libx264 --enable-libvorbis --enable-libvpx --enable-libmp3lame \
+  \
+ --disable-programs --enable-ffmpeg \
+ --disable-doc \
+ --enable-gpl \
+ --prefix=/mingw --pkg-config-flags=--static \
+  --extra-ldflags=-static
 
 make install
 cd ../..
