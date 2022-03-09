@@ -108,7 +108,7 @@ namespace BloomTests.Publish
 					var zip = paramObj.ZipFile;
 					foreach (var name in wantedFiles)
 					{
-						Assert.AreNotEqual(-1, zip.FindEntry(Path.GetFileName(name), true), "expected " + name + " to be part of .bloomd zip");
+						Assert.AreNotEqual(-1, zip.FindEntry(Path.GetFileName(name), true), "expected " + name + " to be part of .bloompub zip");
 					}
 					// A convenient place to check defaults on meta.json
 					var meta = BookMetaData.FromString(GetEntryContents(zip, "meta.json"));
@@ -123,7 +123,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void CompressBookForDevice_OmitsUnwantedFiles()
 		{
-			// some files we don't want copied into the .bloomd
+			// some files we don't want copied into the .bloompub
 			var unwantedFiles = new List<string> {
 				"book.BloomBookOrder", "book.pdf", "thumbnail-256.png", "thumbnail-70.png", // these are artifacts of uploading book to BloomLibrary.org
 				"Traditional-XMatter.css" // since we're adding Device-XMatter.css, this is no longer needed
@@ -137,7 +137,7 @@ namespace BloomTests.Publish
 					File.Copy(SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"), Path.Combine(folderPath, "thumbnail.png"));
 					File.WriteAllText(Path.Combine(folderPath, "previewMode.css"), @"This is wanted");
 
-					// now some files we expect to be omitted from the .bloomd archive
+					// now some files we expect to be omitted from the .bloompub archive
 					File.WriteAllText(Path.Combine(folderPath, "book.BloomBookOrder"), @"This is unwanted");
 					File.WriteAllText(Path.Combine(folderPath, "book.pdf"), @"This is unwanted");
 					File.Copy(SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"), Path.Combine(folderPath, "thumbnail-256.png"));
@@ -149,7 +149,7 @@ namespace BloomTests.Publish
 					foreach (var name in unwantedFiles)
 					{
 						Assert.AreEqual(-1, zip.FindEntry(Path.GetFileName(name), true),
-							"expected " + name + " to not be part of .bloomd zip");
+							"expected " + name + " to not be part of .bloompub zip");
 					}
 				});
 		}
@@ -389,7 +389,7 @@ namespace BloomTests.Publish
 			// This requires a real book file (which a mocked book usually doesn't have).
 			// It's also important that the book contains something like contenteditable that will be removed when
 			// sending the book. The sha is based on the actual file contents of the book, not the
-			// content actually embedded in the bloomd.
+			// content actually embedded in the bloompub.
 			var bookHtml = @"<html>
 								<head>
 									<meta charset='UTF-8'></meta>
@@ -417,7 +417,7 @@ namespace BloomTests.Publish
 				},
 
 				assertionsOnZipArchive: paramObj =>
-					// This test worked when we didn't have to modify the book before making the .bloomd.
+					// This test worked when we didn't have to modify the book before making the .bloompub.
 					// Now that we do I haven't figured out a reasonable way to rewrite it to test this value again...
 					// Assert.That(GetEntryContents(zip, "version.txt"), Is.EqualTo(Bloom.Book.Book.MakeVersionCode(html, bookPath)));
 					// ... so for now we just make sure that it was added and looks like a hash code

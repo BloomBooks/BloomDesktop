@@ -92,7 +92,7 @@ namespace Bloom.CLI
 					{
 						Bloom.Program.SetProjectContext(_projectContext);
 
-						// Make the .bloomd and /bloomdigital outputs
+						// Make the .bloompub and /bloomdigital outputs
 						var exitCode = CreateArtifacts(options);
 						return (int)exitCode;
 					}
@@ -112,14 +112,14 @@ namespace Bloom.CLI
 
 			LoadBook(parameters.BookPath);
 
-			string zippedBloomDOutputPath = parameters.BloomDOutputPath;
+			string zippedBloomPubOutputPath = parameters.BloomPubOutputPath;
 			string unzippedBloomDigitalOutputPath = parameters.BloomDigitalOutputPath;
 			string zippedBloomSourceOutputPath = parameters.BloomSourceOutputPath;
 
-			bool isBloomDOrBloomDigitalRequested = !String.IsNullOrEmpty(zippedBloomDOutputPath) || !String.IsNullOrEmpty(unzippedBloomDigitalOutputPath);
+			bool isBloomDOrBloomDigitalRequested = !String.IsNullOrEmpty(zippedBloomPubOutputPath) || !String.IsNullOrEmpty(unzippedBloomDigitalOutputPath);
 			if (isBloomDOrBloomDigitalRequested)
 			{
-				exitCode |= CreateBloomDigitalArtifacts(parameters.BookPath, parameters.Creator, zippedBloomDOutputPath, unzippedBloomDigitalOutputPath);
+				exitCode |= CreateBloomDigitalArtifacts(parameters.BookPath, parameters.Creator, zippedBloomPubOutputPath, unzippedBloomDigitalOutputPath);
 			}
 
 			if (!String.IsNullOrEmpty(zippedBloomSourceOutputPath))
@@ -178,9 +178,9 @@ namespace Bloom.CLI
 		}
 
 		/// <summary>
-		/// Creates the .bloomd and bloomdigital folders
+		/// Creates the .bloompub and bloomdigital folders
 		/// </summary>
-		private static CreateArtifactsExitCode CreateBloomDigitalArtifacts(string bookPath, string creator, string zippedBloomDOutputPath, string unzippedBloomDigitalOutputPath)
+		private static CreateArtifactsExitCode CreateBloomDigitalArtifacts(string bookPath, string creator, string zippedBloomPubOutputPath, string unzippedBloomDigitalOutputPath)
 		{
 #if DEBUG
 			// Useful for allowing debugging of Bloom while running the harvester
@@ -188,11 +188,11 @@ namespace Bloom.CLI
 #endif
 			var exitCode = CreateArtifactsExitCode.Success;
 
-			using (var tempBloomD = TempFile.CreateAndGetPathButDontMakeTheFile())
+			using (var tempBloomPub = TempFile.CreateAndGetPathButDontMakeTheFile())
 			{
-				if (String.IsNullOrEmpty(zippedBloomDOutputPath))
+				if (String.IsNullOrEmpty(zippedBloomPubOutputPath))
 				{
-					zippedBloomDOutputPath = tempBloomD.Path;
+					zippedBloomPubOutputPath = tempBloomPub.Path;
 				}
 
 				BookServer bookServer = _projectContext.BookServer;
@@ -209,10 +209,10 @@ namespace Bloom.CLI
 				using (var folderForUnzipped = new TemporaryFolder("BloomCreateArtifacts_Unzipped"))
 				{
 					// Ensure directory exists, just in case.
-					Directory.CreateDirectory(Path.GetDirectoryName(zippedBloomDOutputPath));
-					// Make the bloomd
+					Directory.CreateDirectory(Path.GetDirectoryName(zippedBloomPubOutputPath));
+					// Make the bloompub
 					string unzippedPath = BloomPubMaker.CreateBloomPub(
-					zippedBloomDOutputPath,
+					zippedBloomPubOutputPath,
 					bookPath,
 					bookServer,
 					new Bloom.web.NullWebSocketProgress(),
@@ -223,8 +223,8 @@ namespace Bloom.CLI
 
 					// Currently the zipping process does some things we actually need, like making the cover picture
 					// transparent (BL-7437). Eventually we plan to separate the preparation and zipping steps (BL-7445).
-					// Until that is done, the most reliable way to get an unzipped BloomD for our preview is to actually
-					// unzip the BloomD.
+					// Until that is done, the most reliable way to get an unzipped BloomPUB for our preview is to actually
+					// unzip the BloomPUB.
 					if (!String.IsNullOrEmpty(unzippedBloomDigitalOutputPath))
 					{
 						SIL.IO.RobustIO.DeleteDirectory(unzippedBloomDigitalOutputPath, recursive: true);   // In case the folder isn't already empty
@@ -232,7 +232,7 @@ namespace Bloom.CLI
 						// Ensure directory exists, just in case.
 						Directory.CreateDirectory(Path.GetDirectoryName(unzippedBloomDigitalOutputPath));
 
-						ZipFile.ExtractToDirectory(zippedBloomDOutputPath, unzippedBloomDigitalOutputPath);
+						ZipFile.ExtractToDirectory(zippedBloomPubOutputPath, unzippedBloomDigitalOutputPath);
 
 						exitCode |= RenameBloomDigitalFiles(unzippedBloomDigitalOutputPath);
 					}
@@ -334,7 +334,7 @@ namespace Bloom.CLI
 		}
 	}
 
-	[Verb("createArtifacts", HelpText = "Create artifacts for a book such as .bloomd, unzipped bloom digital, ePub, etc.")]
+	[Verb("createArtifacts", HelpText = "Create artifacts for a book such as .bloompub, unzipped bloom digital, ePub, etc.")]
 	public class CreateArtifactsParameters
 	{
 		[Option("bookPath", HelpText = "Input path in which to find book folder", Required = true)]
@@ -346,8 +346,12 @@ namespace Bloom.CLI
 		[Option("bloomSourceOutputPath", HelpText = "Output destination path in which to place a .bloomSource file", Required = false)]
 		public string BloomSourceOutputPath { get; set; }
 
-		[Option("bloomdOutputPath", HelpText = "Output destination path in which to place bloomd file", Required = false)]
-		public string BloomDOutputPath { get; set; }
+		// obsolete: will be removed when Harvester has been updated to use the new option.
+		[Option("bloomdOutputPath", HelpText = "Output destination path in which to place bloompub file [obsolete]", Required = false)]
+		public string BloomDOutputPath { get { return BloomPubOutputPath; } set { BloomPubOutputPath = value; } }
+
+		[Option("bloompubOutputPath", HelpText = "Output destination path in which to place bloompub file", Required = false)]
+		public string BloomPubOutputPath { get; set; }
 
 		[Option("bloomDigitalOutputPath", HelpText = "Output destination path in which to place bloomdigital folder", Required = false)]
 		public string BloomDigitalOutputPath { get; set; }
