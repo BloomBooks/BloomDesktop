@@ -14,7 +14,7 @@ using L10NSharp;
 namespace Bloom.Publish.Android.file
 {
 	/// <summary>
-	/// Saves a .bloomd as a local file which the user can somehow get onto devices using some other tools.
+	/// Saves a .bloompub as a local file which the user can somehow get onto devices using some other tools.
 	/// </summary>
 	public class FilePublisher
 	{

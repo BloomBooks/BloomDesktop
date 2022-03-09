@@ -67,9 +67,9 @@ namespace BloomTests.Book
 			}
 
 			// System Under Test //
-			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder("BookCompressorBloomd" + BookCompressor.BloomPubExtensionWithDot))
+			using (var bloomPubTempFile = TempFile.WithFilenameInTempFolder("BookCompressorBloomPub" + BookCompressor.BloomPubExtensionWithDot))
 			{
-				BookCompressor.CompressBookDirectory(bloomdTempFile.Path, _bookFolder.Path, "");
+				BookCompressor.CompressBookDirectory(bloomPubTempFile.Path, _bookFolder.Path, "");
 			}
 
 			// Verification //
@@ -101,11 +101,11 @@ namespace BloomTests.Book
 				});
 
 			// System Under Test //
-			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder("BookCompressorWithAudio" + BookCompressor.BloomPubExtensionWithDot))
+			using (var bloomPubTempFile = TempFile.WithFilenameInTempFolder("BookCompressorWithAudio" + BookCompressor.BloomPubExtensionWithDot))
 			{
-				BookCompressor.CompressBookDirectory(bloomdTempFile.Path, _bookFolder.Path, "");
+				BookCompressor.CompressBookDirectory(bloomPubTempFile.Path, _bookFolder.Path, "");
 				// Test by looking at the temp file content.
-				using (var zippedFile = new ZipFile(bloomdTempFile.Path))
+				using (var zippedFile = new ZipFile(bloomPubTempFile.Path))
 				{
 					var count = 0;
 					foreach (ZipEntry zipEntry in zippedFile)
@@ -115,7 +115,7 @@ namespace BloomTests.Book
 						Assert.Contains(zipEntry.Name, new[] { "book/book.htm",
 							"book/audio/musicfile1.mp3", "book/audio/musicfile2.ogg", "book/audio/musicfile3.wav", "book/audio/narration.mp3" });
 					}
-					Assert.AreEqual(5, count, "Should be five files stored in test .bloomd file");
+					Assert.AreEqual(5, count, "Should be five files stored in test .bloompub file");
 				}
 			}
 		}
@@ -183,11 +183,11 @@ namespace BloomTests.Book
 				});
 
 			// System Under Test //
-			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder("BookCompressorWithExtraFiles" + BookCompressor.BloomPubExtensionWithDot))
+			using (var bloomPubTempFile = TempFile.WithFilenameInTempFolder("BookCompressorWithExtraFiles" + BookCompressor.BloomPubExtensionWithDot))
 			{
-				BookCompressor.CompressBookDirectory(bloomdTempFile.Path, _bookFolder.Path, "");
+				BookCompressor.CompressBookDirectory(bloomPubTempFile.Path, _bookFolder.Path, "");
 				// Test by looking at the temp file content.
-				using (var zippedFile = new ZipFile(bloomdTempFile.Path))
+				using (var zippedFile = new ZipFile(bloomPubTempFile.Path))
 				{
 					var count = 0;
 					foreach (ZipEntry zipEntry in zippedFile)
@@ -199,7 +199,7 @@ namespace BloomTests.Book
 							"book/activities/My Widget/odd.html", "book/activities/My Widget/strange.js",
 							"book/activities/My Widget/Resources/includable.blob" });
 					}
-					Assert.AreEqual(8, count, "Should be eight files stored in test .bloomd file");
+					Assert.AreEqual(8, count, "Should be eight files stored in test .bloompub file");
 				}
 			}
 		}
