@@ -368,6 +368,13 @@
     <Compile Include="Book\SaveContext.cs" />
     <Compile Include="Collection\BookCollectionHolder.cs" />
     <Compile Include="MiscUI\BloomMessageBox.cs" />
+    <Compile Include="Publish\Video\PublishToVideoApi.cs" />
+    <Compile Include="Publish\Video\RecordVideoWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Publish\Video\RecordVideoWindow.Designer.cs">
+      <DependentUpon>RecordVideoWindow.cs</DependentUpon>
+    </Compile>
     <Compile Include="Spreadsheet\Header.cs" />
     <Compile Include="FontProcessing\FontFileFinder.cs" />
     <Compile Include="FontProcessing\FontGroup.cs" />
@@ -1015,6 +1022,9 @@
     <EmbeddedResource Include="Publish\AccessibilityChecker\AccessibilityCheckWindow.resx">
       <DependentUpon>AccessibilityCheckWindow.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Publish\Video\RecordVideoWindow.resx">
+      <DependentUpon>RecordVideoWindow.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Publish\PDF\AdobeReaderControl.resx">
       <DependentUpon>AdobeReaderControl.cs</DependentUpon>
     </EmbeddedResource>
@@ -1550,6 +1560,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Content Include="Firefox\sandboxbroker.dll" />
     <Content Include="Firefox\softokn3.dll" />
     <Content Include="Firefox\xul.dll" />
+    <None Include="Resources\publish video.png" />
     <None Include="Resources\bloom-enterprise-badge.png" />
     <None Include="Resources\Disconnected.png" />
     <None Include="Resources\Error32x32.png" />

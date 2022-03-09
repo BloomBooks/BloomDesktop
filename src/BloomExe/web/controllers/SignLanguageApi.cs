@@ -163,19 +163,11 @@ namespace Bloom.web.controllers
 			{
 				if (string.IsNullOrEmpty(_ffmpeg))
 				{
-					_ffmpeg = FindFfmpegProgram();
+					_ffmpeg = MiscUtils.FindFfmpegProgram();
 				}
 
 				return _ffmpeg;
 			}
-		}
-
-		private static string FindFfmpegProgram()
-		{
-			var ffmpeg = "/usr/bin/ffmpeg";     // standard Linux location
-			if (SIL.PlatformUtilities.Platform.IsWindows)
-				ffmpeg = Path.Combine(BloomFileLocator.GetCodeBaseFolder(), "ffmpeg.exe");
-			return RobustFile.Exists(ffmpeg) ? ffmpeg : string.Empty;
 		}
 
 		// Request from sign language tool to import a video.

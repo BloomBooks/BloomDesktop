@@ -57,6 +57,8 @@ namespace Bloom.Publish
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo5 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper6 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo6 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper7 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo7 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
 			this._loadTimer = new System.Windows.Forms.Timer(this.components);
 			this._makePdfBackgroundWorker = new System.ComponentModel.BackgroundWorker();
 			this._workingIndicator = new System.Windows.Forms.Panel();
@@ -69,6 +71,7 @@ namespace Bloom.Publish
 			this._openPDF = new System.Windows.Forms.ToolStripMenuItem();
 			this.exportAudioFiles1PerPageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._androidRadio = new System.Windows.Forms.RadioButton();
+			this._recordVideoRadio = new System.Windows.Forms.RadioButton();
 			this._uploadRadio = new System.Windows.Forms.RadioButton();
 			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
 			this._pdfOptions = new System.Windows.Forms.ToolStripDropDownButton();
@@ -174,7 +177,8 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.tableLayoutPanel1.ContextMenuStrip = this._contextMenuStrip;
 			this.tableLayoutPanel1.Controls.Add(this._androidRadio, 0, 8);
-			this.tableLayoutPanel1.Controls.Add(this._uploadRadio, 0, 9);
+			this.tableLayoutPanel1.Controls.Add(this._recordVideoRadio, 0, 9);
+			this.tableLayoutPanel1.Controls.Add(this._uploadRadio, 0, 10);
 			this.tableLayoutPanel1.Controls.Add(this._menusToolStrip, 0, 0);
 			this.tableLayoutPanel1.Controls.Add(this._bookletCoverRadio, 0, 3);
 			this.tableLayoutPanel1.Controls.Add(this.label1, 0, 5);
@@ -271,6 +275,33 @@ namespace Bloom.Publish
 			this._androidRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._androidRadio.UseVisualStyleBackColor = true;
 			this._androidRadio.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
+			// 
+			// _recordVideoRadio
+			// 
+			this._recordVideoRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._recordVideoRadio.Image = global::Bloom.Properties.Resources.publish_video;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._recordVideoRadio, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._recordVideoRadio, null);
+			this._L10NSharpExtender.SetLocalizingId(this._recordVideoRadio, "PublishTab.RecordVideoButton");
+			this._recordVideoRadio.Location = new System.Drawing.Point(3, 448);
+			this._recordVideoRadio.Name = "_recordVideoRadio";
+			this._recordVideoRadio.Size = new System.Drawing.Size(105, 71);
+			superToolTipInfo7.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			superToolTipInfo7.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
+			superToolTipInfo7.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
+			superToolTipInfo7.BodyText = "Create a video of the book being read";
+			superToolTipInfo7.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
+			superToolTipInfo7.ShowHeader = false;
+			superToolTipInfoWrapper7.SuperToolTipInfo = superToolTipInfo7;
+			superToolTipInfoWrapper7.UseSuperToolTip = true;
+			this._superToolTip.SetSuperStuff(this._recordVideoRadio, superToolTipInfoWrapper7);
+			this._recordVideoRadio.TabIndex = 22;
+			this._recordVideoRadio.TabStop = true;
+			this._recordVideoRadio.Text = "Video";
+			this._recordVideoRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			this._recordVideoRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._recordVideoRadio.UseVisualStyleBackColor = true;
+			this._recordVideoRadio.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
 			// 
 			// _uploadRadio
 			// 
@@ -610,6 +641,7 @@ namespace Bloom.Publish
 		private System.Windows.Forms.ToolStripMenuItem _openPDF;
         private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.RadioButton _androidRadio;
+		private System.Windows.Forms.RadioButton _recordVideoRadio;
 		private System.Windows.Forms.RadioButton _uploadRadio;
 		private System.Windows.Forms.RadioButton _epubRadio;
 		private System.Windows.Forms.Label _noBookletsMessage;

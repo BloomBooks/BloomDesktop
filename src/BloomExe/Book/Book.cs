@@ -4202,6 +4202,8 @@ namespace Bloom.Book
 
 		public bool HasQuizPages => OurHtmlDom.HasQuizPages();
 
+		public bool HasActivities => OurHtmlDom.HasActivityPages();
+
 		public bool HasOverlayPages => OurHtmlDom.HasOverlayPages();
 
 		public bool HasOnlyPictureOnlyPages()

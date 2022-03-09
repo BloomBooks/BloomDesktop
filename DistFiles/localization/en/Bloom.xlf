@@ -1023,6 +1023,16 @@
         <note>ID: Common.Report</note>
         <note>Used for a link that signifies "Bring up a dialog for sending a report of a problem. We usually want all-caps, unless inappropriate in a particular language"</note>
       </trans-unit>
+      <!-- 5.3
+      <trans-unit id="Common.Save">
+        <source xml:lang="en">Save</source>
+        <note>ID: Common.Save</note>
+      </trans-unit>
+      <trans-unit id="Common.Seconds">
+        <source xml:lang="en">%0 seconds</source>
+        <note>ID: Common.Seconds</note>
+      </trans-unit>
+      -->
       <trans-unit id="Common.SeeWebPage">
         <source xml:lang="en">See {0}.</source>
         <note>ID: Common.SeeWebPage</note>
@@ -3969,6 +3979,76 @@
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Publish</note>
       </trans-unit>
+      <!-- 5.3
+      <trans-unit id="PublishTab.RecordVideo.ActivitiesSkipped">
+        <source xml:lang="en">Activities will be skipped</source>
+        <note>ID: PublishTab.RecordVideo.ActivitiesSkipped</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.CheckRecording">
+        <source xml:lang="en">Check Recording</source>
+        <note>ID: PublishTab.RecordVideo.CheckRecording</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.ConfigureAndPreview">
+        <source xml:lang="en">Configure &amp; Preview</source>
+        <note>ID: PublishTab.RecordVideo.ConfigureAndPreview</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.Facebook">
+        <source xml:lang="en">Facebook</source>
+        <note>ID: PublishTab.RecordVideo.Facebook</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.FeaturePhone">
+        <source xml:lang="en">Feature Phone</source>
+        <note>ID: PublishTab.RecordVideo.FeaturePhone</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.Format">
+        <source xml:lang="en">Format</source>
+        <note>ID: PublishTab.RecordVideo.Format</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.Instructions">
+        <source xml:lang="en">Use the red buttons above the book player to select the language and other settings.</source>
+        <note>ID: PublishTab.RecordVideo.Instructions</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.MakeRecording">
+        <source xml:lang="en">MakeRecording</source>
+        <note>ID: PublishTab.RecordVideo.Mp3</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.MakeRecording">
+        <source xml:lang="en">Mp3 Audio</source>
+        <note>ID: PublishTab.RecordVideo.Mp3</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.Play">
+        <source xml:lang="en">Play Recording</source>
+        <note>ID: PublishTab.RecordVideo.Play</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.Record">
+        <source xml:lang="en">Record</source>
+        <note>ID: PublishTab.RecordVideo.Record</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.TurnPageAfter">
+        <source xml:lang="en">Turn pages without narration after:</source>
+        <note>ID: PublishTab.RecordVideo.TurnPageAfter</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.WillOpenProgram">
+        <source xml:lang="en">
+          This will open the program on your computer
+          that is associated with this file type.
+        </source>
+        <note>ID: PublishTab.RecordVideo.WillOpenProgram</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.WillOpenRecordingWindow">
+        <source xml:lang="en">
+          This will open a window and play the whole
+          book. Bloom will record it to match the
+          “Format” option in the upper right of this
+          screen.
+        </source>
+        <note>ID: PublishTab.RecordVideo.WillOpenRecordingWindow</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.YouTube">
+        <source xml:lang="en">YouTube (full HD)</source>
+        <note>ID: PublishTab.RecordVideo.YouTube</note>
+      </trans-unit>
+      -->
       <trans-unit id="PublishTab.PublishRequiresEnterprise.FirstOverlayPage">
         <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
         <note>ID: PublishTab.PublishRequiresEnterprise.FirstOverlayPage</note>
@@ -4329,6 +4409,12 @@ Do you want to go ahead?</note>
         <note>ID: PublishTab.UploadCollisionDialog.SameBook</note>
         <note>This is the dialog title</note>
       </trans-unit>
+      <!-- 5.3
+      <trans-unit id="PublishTab.VideoFile">
+        <source xml:lang="en">Video file</source>
+        <note>ID: PublishTab.VideoFile</note>
+      </trans-unit>
+      -->
       <trans-unit id="Quiz.CheckYourUnderstanding" sil:dynamic="true">
         <source xml:lang="en">Check Your Understanding</source>
         <note>ID: Quiz.CheckYourUnderstanding</note>
