@@ -558,7 +558,9 @@ namespace Bloom.TeamCollection
 		/// only local).
 		/// </summary>
 		/// <param name="bookFolderPath"></param>
-		/// <param name="makeTombstone"></param>
+		/// <param name="makeTombstone">May be set false if we don't want to remember that
+		/// a book was deleted here. This was previously desirable in the case of a rename, but
+		/// those are now handled using RenameBookInRepo, so currently we never pass false.</param>
 		public override void DeleteBookFromRepo(string bookFolderPath, bool makeTombstone = true)
 		{
 			var pathToBookFileInRepo = GetPathToBookFileInRepo(Path.GetFileName(bookFolderPath));
@@ -577,6 +579,16 @@ namespace Bloom.TeamCollection
 						"This file marks the deletion of a book previously in the collection");
 				}
 			}
+		}
+
+		public override void RenameBookInRepo(string newBookFolderPath, string oldName)
+		{
+			var oldLocalPath = Path.Combine(Path.GetDirectoryName(newBookFolderPath), oldName);
+			var pathToOldBookFileInRepo = GetPathToBookFileInRepo(oldLocalPath);
+			var pathToNewBookFileInRepo = GetPathToBookFileInRepo(newBookFolderPath);
+			// There is probably some pathological case where pathToNewBookFileInRepo already exists,
+			// but I can't think of a decent way to handle it, so just let it fail.
+			RobustFile.Move(pathToOldBookFileInRepo,pathToNewBookFileInRepo);
 		}
 
 		protected virtual void OnCreated(object sender, FileSystemEventArgs e)
