@@ -203,7 +203,11 @@ namespace Bloom.Workspace
 
 			_toolStrip.SizeChanged += ToolStripOnSizeChanged;
 
-			SetupUiLanguageMenu();
+			_uiLanguageMenu.DropDownOpening += (sender, args) =>
+			{
+				SetupUiLanguageMenu();
+			};
+			SetupUiLanguageMenu(true);
 			SetupZoomControl();
 			AdjustButtonTextsForLocale();
 			_viewInitialized = false;
@@ -494,9 +498,9 @@ namespace Bloom.Workspace
 
 		ToolStripMenuItem _showAllTranslationsItem;
 
-		private void SetupUiLanguageMenu()
+		private void SetupUiLanguageMenu(bool onlyActiveItem = false)
 		{
-			SetupUiLanguageMenuCommon(_uiLanguageMenu, FinishUiLanguageMenuItemClick);
+			SetupUiLanguageMenuCommon(_uiLanguageMenu, FinishUiLanguageMenuItemClick, onlyActiveItem);
 
 			// REVIEW: should this be part of SetupUiLanguageMenuCommon()?  should it be added only for alpha and beta?
 			_uiLanguageMenu.DropDownItems.Add("-");
@@ -577,21 +581,29 @@ namespace Bloom.Workspace
 		/// <summary>
 		/// This is also called by CollectionChoosing.OpenCreateCloneControl
 		/// </summary>
-		public static void SetupUiLanguageMenuCommon(ToolStripDropDownButton uiMenuControl, Action finishClickAction = null)
+		public static void SetupUiLanguageMenuCommon(ToolStripDropDownButton uiMenuControl, Action finishClickAction = null, bool onlyActiveItem = false)
 		{
 			var items = new List<LanguageItem>();
-			foreach (var lang in LocalizationManager.GetAvailableLocalizedLanguages())
+			if (onlyActiveItem)
 			{
-				// Require that at least 1% of the strings have been translated and approved for alphas,
-				// or 25% translated and approved for betas and release.
-				var approved = FractionApproved(lang);
-				if (Settings.Default.ShowUnapprovedLocalizations)
-					approved = FractionTranslated(lang);
-				var alpha = ApplicationUpdateSupport.IsDevOrAlpha;
-				if ((alpha && approved < 0.01F) || (!alpha && approved < 0.25F))
-					continue;
-				items.Add(CreateLanguageItem(lang));
+				items.Add(CreateLanguageItem(Settings.Default.UserInterfaceLanguage));
 			}
+			else
+			{
+				foreach (var lang in LocalizationManager.GetAvailableLocalizedLanguages())
+				{
+					// Require that at least 1% of the strings have been translated and approved for alphas,
+					// or 25% translated and approved for betas and release.
+					var approved = FractionApproved(lang);
+					if (Settings.Default.ShowUnapprovedLocalizations)
+						approved = FractionTranslated(lang);
+					var alpha = ApplicationUpdateSupport.IsDevOrAlpha;
+					if ((alpha && approved < 0.01F) || (!alpha && approved < 0.25F))
+						continue;
+					items.Add(CreateLanguageItem(lang));
+				}
+			}
+
 			items.Sort(compareLangItems);
 
 			var tooltipFormat = LocalizationManager.GetString("CollectionTab.UILanguageMenu.ItemTooltip", "{0}% translated",
