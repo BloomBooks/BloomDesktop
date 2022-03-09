@@ -3280,15 +3280,15 @@
         <source xml:lang="en">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</source>
         <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomD.Hint.Heading" sil:dynamic="true">
-        <source xml:lang="en">Sharing .bloomd Files</source>
-        <note>ID: PublishTab.Android.BloomD.Hint.Heading</note>
-        <note></note>
+      <trans-unit id="PublishTab.Android.BloomPub.Hint.Heading" sil:dynamic="true">
+        <source xml:lang="en">Sharing .bloompub Files</source>
+        <note>ID: PublishTab.Android.BloomPub.Hint.Heading</note>
+        <note>.bloompub is a filename extension that should not be translated</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true">
-        <source xml:lang="en">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</source>
-        <note>ID: PublishTab.Android.BloomD.Hint</note>
-        <note></note>
+      <trans-unit id="PublishTab.Android.BloomPub.Hint" sil:dynamic="true">
+        <source xml:lang="en">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloompub file onto a device.</source>
+        <note>ID: PublishTab.Android.BloomPub.Hint</note>
+        <note>.bloompub is a filename extension that should not be translated</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en"> USB is Difficult</source>

@@ -24,7 +24,7 @@ const methodNameToImageUrl = {
     file: fileImage
 };
 
-// Lets the user choose how they want to "publish" the bloomd, along with a button to start that process.
+// Lets the user choose how they want to "publish" the bloompub, along with a button to start that process.
 // This is a set of radio buttons and image that goes with each choice, plus a button to start off the sharing/saving
 export const MethodChooser: React.FunctionComponent = () => {
     const [method, setMethod] = BloomApi.useApiStringState(
@@ -75,7 +75,7 @@ function getStartButton(method: string) {
             return (
                 <BloomButton
                     l10nKey="PublishTab.Save"
-                    l10nComment="Button that tells Bloom to save the book as a .bloomD file."
+                    l10nComment="Button that tells Bloom to save the book as a .bloompub file."
                     clickApiEndpoint="publish/android/file/save"
                     enabled={true}
                     hasText={true}
@@ -121,15 +121,15 @@ function getHint(method: string) {
                     <div className="hint-heading">
                         <InfoIcon color="primary" />
                         <Typography variant="h6">
-                            <LocalizedString l10nKey="PublishTab.Android.BloomD.Hint.Heading">
-                                Sharing .bloomd Files
+                            <LocalizedString l10nKey="PublishTab.Android.BloomPub.Hint.Heading">
+                                Sharing .bloompub Files
                             </LocalizedString>
                         </Typography>
                     </div>
                     <Typography>
-                        <LocalizedString l10nKey="PublishTab.Android.BloomD.Hint">
+                        <LocalizedString l10nKey="PublishTab.Android.BloomPub.Hint">
                             You can use sharing apps like email, Dropbox, and
-                            WhatsApp to get your .bloomd file onto a device.
+                            WhatsApp to get your .bloompub file onto a device.
                         </LocalizedString>
                     </Typography>
                 </>

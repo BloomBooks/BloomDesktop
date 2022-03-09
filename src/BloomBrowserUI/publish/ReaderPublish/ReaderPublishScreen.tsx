@@ -75,8 +75,8 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
             ? window.location.protocol +
                   "//" +
                   window.location.host +
-                  "/templates/Sample Shells/The Moon and the Cap" // Enhance: provide an actual bloomd in the source tree
-            : // otherwise, wait for the websocket to deliver a url when the c# has finished creating the bloomd.
+                  "/templates/Sample Shells/The Moon and the Cap" // Enhance: provide an actual bloompub in the source tree
+            : // otherwise, wait for the websocket to deliver a url when the c# has finished creating the bloompub.
               //BloomPlayer recognizes "working" as a special value; it will show some spinner or some such.
               "working"
     );

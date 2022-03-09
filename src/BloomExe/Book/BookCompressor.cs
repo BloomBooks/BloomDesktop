@@ -20,7 +20,7 @@ namespace Bloom.Book
 {
 	public class BookCompressor
 	{
-		public const string BloomPubExtensionWithDot = ".bloomd";
+		public const string BloomPubExtensionWithDot = ".bloompub";
 		public static string LastVersionCode { get; private set; }
 
 		// these image files may need to be reduced before being stored in the compressed output file
@@ -40,7 +40,7 @@ namespace Bloom.Book
 		{
 			// If this fails to create a 'coverImage200.jpg', either the cover image is missing or it's only a placeholder.
 			// If this is a new book, the file may exist already, but we want to make sure it's up-to-date.
-			// If this is an older book, we need the .bloomd to have it so that Harvester will be able to access it.
+			// If this is an older book, we need the .bloompub to have it so that Harvester will be able to access it.
 			BookThumbNailer.GenerateImageForWeb(book);
 
 			var coverImagePath = book.GetCoverImagePath();
@@ -113,7 +113,7 @@ namespace Bloom.Book
 					{
 						// zip entry names will start with the files or directories at the root of the book folder
 						// (zip root will contain the folder contents...suitable for compressing a single book into
-						// a zip, as with .bloomd files)
+						// a zip, as with .bloompub files)
 						dirNameOffset = directoryToCompress.Length + 1;
 					}
 					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection, forReaderTools, excludeAudio, reduceImages, omitMetaJson, pathToFileForSha);
@@ -188,7 +188,7 @@ namespace Bloom.Book
 			foreach (var filePath in files)
 			{
 				if (!FileIsWhitelisted(filePath, depthFromCollection))
-					continue; // BL-2246: skip putting this one into the BloomPack or .bloomd
+					continue; // BL-2246: skip putting this one into the BloomPack or .bloompub
 				if (IsUnneededWaveFile(filePath, depthFromCollection))
 					continue;
 				if (localOnlyFiles.Contains(filePath))
@@ -312,7 +312,7 @@ namespace Bloom.Book
 
 		// We let files through as long as they are in the 'activities' folder (widgets) or they have
 		// one of the whitelisted extensions (BL-8956).
-		// This method should return 'false' only if the .bloomd doesn't need this file.
+		// This method should return 'false' only if the .bloompub doesn't need this file.
 		private static bool FileIsWhitelisted(string filePath, int depthFromCollection)
 		{
 			var fileExtensionLc = Path.GetExtension(filePath).ToLowerInvariant();
