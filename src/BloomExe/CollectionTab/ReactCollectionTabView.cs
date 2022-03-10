@@ -101,8 +101,9 @@ namespace Bloom.CollectionTab
 				// tcManager.CurrentCollection?.MessageLog?.LoadSavedMessages();
 				using (var dlg = new ReactDialog("teamCollectionDialogBundle", new { showReloadButton }))
 				{
-					dlg.Width = 600;
-					dlg.Height = 320;
+					dlg.FormBorderStyle = FormBorderStyle.SizableToolWindow;
+					dlg.Text = "";
+					dlg.MinimumSize = new Size(600, 320);
 					dlg.ShowDialog(this);
 					tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
 				}
