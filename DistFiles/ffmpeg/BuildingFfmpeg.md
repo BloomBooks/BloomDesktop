@@ -153,10 +153,19 @@ I had to edit one file to get the program to compile with MinGW on Windows.
 git clone https://github.com/BloomBooks/ffmpeg
 cd ffmpeg
 git config core.autocrlf false; [delete all non-git files]; git reset --hard [fixes an error where .mak files ended in CRLF and "make install" errors when doing "eval" on CRLF lines]
-git checkout Bloom
+git checkout bloom-ffmpeg5.0
 mkdir build
 cd build
-../configure --disable-all --disable-alsa --disable-appkit --disable-avfoundation --disable-bzlib --disable-coreimage --disable-iconv --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape --disable-lzma --disable-sndio --disable-sdl2 --disable-xlib --disable-zlib --disable-amf --disable-audiotoolbox --disable-cuvid --disable-d3d11va --disable-dxva2 --disable-ffnvcodec --disable-nvdec --disable-nvenc --disable-v4l2-m2m --disable-vaapi --disable-vdpau --disable-videotoolbox --enable-ffmpeg --enable-avcodec --enable-avdevice --enable-avformat --enable-avfilter --enable-swresample --enable-swscale --enable-decoder='h264,libvpx_vp8' --enable-encoder='rawvideo,libx264,libvpx_vp8' --enable-parser=h264,vp8 --enable-protocol=file --enable-protocol=concat --enable-demuxer=mov,webm,matroska --enable-muxer='rawvideo,mp4' --enable-filter=scale --enable-filter=adelay --enable-filter=amix --enable-filter=aresample --enable-filter=volume --enable-gpl --enable-libx264 --enable-libvorbis --enable-libvpx --enable-libmp3lame --enable-encoder=aac   --enable-parser=mpegaudio --enable-demuxer=mp3 --enable-muxer=mp3 --enable-decoder=mp3* --enable-encoder=libmp3lame --enable-indev=gdigrab --prefix=/mingw --extra-ldflags=-static --pkg-config-flags=--static
+../configure \
+ --disable-postproc --enable-avcodec --enable-avdevice --enable-avformat --enable-avfilter --enable-swresample --enable-swscale --disable-encoders --enable-encoder='rawvideo,libx264,libvpx_vp8,aac,libmp3lame,h263' --disable-hwaccels --disable-parsers --enable-parser=h264,vp8,mpegaudio --disable-protocols --enable-protocol='file,concat' --disable-muxers --enable-muxer='rawvideo,mp4,mp3,tgp' --disable-bsfs --disable-filters --enable-filter='scale,adelay,amix,aresample,volume' --disable-indevs --enable-indev=gdigrab --disable-outdevs \
+  \
+ --disable-autodetect --enable-libx264 --enable-libvorbis --enable-libvpx --enable-libmp3lame \
+  \
+ --disable-programs --enable-ffmpeg \
+ --disable-doc \
+ --enable-gpl \
+ --prefix=/mingw --pkg-config-flags=--static \
+  --extra-ldflags=-static
 
 make install
 cd ../..

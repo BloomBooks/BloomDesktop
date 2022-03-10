@@ -51,7 +51,7 @@ export const VideoOptionsGroup: React.FunctionComponent<{
             format: "feature",
             label: "Feature Phone",
             l10nKey: "PublishTab.RecordVideo.FeaturePhone",
-            dimension: "240x320",
+            dimension: "352x288",
             codec: "3GP H.263",
             icon: <img src="featurephone.svg" height="16px" />
         },

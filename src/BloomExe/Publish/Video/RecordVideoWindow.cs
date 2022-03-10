@@ -37,9 +37,18 @@ namespace Bloom.Publish.Video
 		private BloomWebSocketServer _webSocketServer;
 		private int _videoHeight = 720; // default, facebook
 		private int _videoWidth = 1280;
-		private string _codec = "h.264";
+		private Codec _codec = Codec.H264;
 		private string _pageReadTime = "3.0"; // default for pages without narration
 		private string _videoSettingsFromPreview;
+
+		// H.263, at least in its original revision, only supports certain specific resolutions, e.g. CIF = 352x288
+		// Notably, it is necessary for it to be 352x288, not the inverse 288x352. (Revision 2 supposedly allows flexible resolutions)
+		// If false, then we just do the simple thing: make the window 352x288, put a portrait book in the middle (with big blank sidebars on each side), and call it a day
+		// If true, this can make the book appear bigger by making the window portrait-sized 288x352, then recording a rotated video.
+		//   The pro is that the book is bigger. The con is that any video playing software will play it sideways. But if you just turn your device sideways, then you're golden.
+		// I tried having portrait books target H.263+ (-vcodec h263p), but it says its invalid for the container. I tried all the other variations I could think to try;
+		// this approach (targeting a newer H263) seems like a dead end.
+		private const bool _rotatePortraitH263Videos = false;
 
 		public RecordVideoWindow(BloomWebSocketServer webSocketServer)
 		{
@@ -62,7 +71,7 @@ namespace Bloom.Publish.Video
 			// really important is happening in the 'background music' stream. If that becomes
 			// a problem, we may have to somehow encourage, but not enforce, zero pageReadTime
 			// for audio-only output.
-			var pageReadTime = (_codec == "mp3" ? "0" : _pageReadTime);
+			var pageReadTime = (_codec == Codec.MP3 ? "0" : _pageReadTime);
 			var url = BloomServer.ServerUrlWithBloomPrefixEndingInSlash
 			          + "bloom-player/dist/bloomplayer.htm?centerVertically=true&reportSoundLog=true&initiallyShowAppBar=false&autoplay=yes&hideNavButtons=true&url="
 			          + bookUrl
@@ -101,7 +110,7 @@ namespace Bloom.Publish.Video
 		{
 			base.OnLoad(e);
 			_webSocketServer.SendString("recordVideo", "ready", "false");
-			_initialVideo = TempFile.WithExtension(".mp4");
+			_initialVideo = TempFile.WithExtension(_codec.ToExtension());
 			_videoOnlyPath = _initialVideo.Path;
 			RobustFile.Delete(_videoOnlyPath);
 		}
@@ -120,21 +129,21 @@ namespace Bloom.Publish.Video
 
 			// If we're doing audio there's no more to do just now; we will play the book
 			// visually, but we don't need to record what happens.
-			if (_codec == "mp3")
+			if (_codec == Codec.MP3)
 			{
 				_startTime = DateTime.Now;
 				return;
 			}
 
-			// Configure ffmpeg to record the video.
-			// Todo Linux (BL-11011): gdigrab is Windows-only, we'll need to find something else.
-			// I believe ffmpeg has an option to capture the content of an XWindow.
-			var args =
-				"-f gdigrab " // basic command for using a window (in a Windows OS) as a video input stream
-				+ "-framerate 30 " // frames per second to capture (30fps is standard for SD video)
-				+ "-draw_mouse 0 " // don't capture any mouse movement over the window
-				+ $"-i title={Text} " // identifies the window for gdigrab
-				// lbx164 is the standard encoder for H.264, which Wickipedia says is the most used (91%)
+			string videoArgs;
+			if (_codec == Codec.H263)
+			{
+				bool landscape = _videoWidth >= _videoHeight;
+				videoArgs = $"-vcodec h263 -vf \"{(landscape || !_rotatePortraitH263Videos ? "" : "transpose=1,")} scale=352:288\" ";
+			}
+			else
+			{
+				// libx264 is the standard encoder for H.264, which Wikipedia says is the most used (91%)
 				// video compression format. ffmpeg will use H.264 by default, but I think we have to
 				// specify the encoder in order to give it parameters. H.264 has a variety of 'profiles',
 				// and the one used by default, which I think may be High 4:4:4, is not widely supported.
@@ -146,9 +155,19 @@ namespace Bloom.Publish.Video
 				// in all the above places, though I'm not clear exactly what it does.
 				// To sum up, this substring, which needs to come after the inputs and before the output,
 				// tells it to make an H.264 compressed video of a type (profile) that most software can work with.
-				// Todo: we probably need something different here for 3GP output to feature phones.
-				// That might require another change to how we configure our cut-down build of ffmpeg.
-				+ "-c:v libx264 -profile:v main -pix_fmt yuv420p "
+				videoArgs = "-vcodec libx264 -profile:v main -pix_fmt yuv420p ";
+			}
+
+			// Configure ffmpeg to record the video.
+			// Todo Linux (BL-11011): gdigrab is Windows-only, we'll need to find something else.
+			// I believe ffmpeg has an option to capture the content of an XWindow.
+			var args =
+				"-f gdigrab " // basic command for using a window (in a Windows OS) as a video input stream
+				+ "-framerate 30 " // frames per second to capture (30fps is standard for SD video)
+				+ "-draw_mouse 0 " // don't capture any mouse movement over the window
+				+ $"-i title={Text} " // identifies the window for gdigrab
+				
+				+ videoArgs
 				+ _videoOnlyPath; // the intermediate output file for the recording.
 			//Debug.WriteLine("ffmpeg capture args: " + args);
 			RunFfmpeg(args);
@@ -176,7 +195,7 @@ namespace Bloom.Publish.Video
 		/// <param name="soundLogJson"></param>
 		public void StopRecording(string soundLogJson)
 		{
-			var haveVideo = _codec != "mp3";
+			var haveVideo = _codec != Codec.MP3;
 			if (haveVideo)
 			{
 				// Leaving this in temporarily since there have been reports that the window sometimes doesn't close.
@@ -221,7 +240,7 @@ namespace Bloom.Publish.Video
 				soundLog[i] = sound;
 			}
 
-			_finalVideo = TempFile.WithExtension(haveVideo ? ".mp4" : ".mp3");
+			_finalVideo = TempFile.WithExtension(_codec.ToExtension());
 			var finalOutputPath = _finalVideo.Path;
 			RobustFile.Delete(finalOutputPath);
 			if (soundLog.Length == 0)
@@ -279,6 +298,27 @@ namespace Bloom.Publish.Video
 			// in the inputs.
 			var videoIndex = soundLog.Length;
 
+			string audioArgs;
+			switch (_codec)
+			{
+				case Codec.H263:
+					audioArgs = "-acodec aac -ar 8000 ";
+					break;
+				case Codec.H264:
+					// For MP4 videos, should we we specify MP3 for the SoundHandler instead of the ffmpeg's default SoundHandler, AAC?
+					// https://www.movavi.com/learning-portal/aac-vs-mp3.html says there is marginally more compatibility for mp3,
+					// but it's talking about audio files, not the audio codec within a mp4.
+					// https://stackoverflow.com/questions/9168954/should-i-use-the-mp3-or-aac-codec-for-a-mp4-file/25718378)
+					// has ambiguous answers, but we decided in favor of AAC (the default).
+					audioArgs = "";
+					break;
+				case Codec.MP3:
+					audioArgs = "-acodec libmp3lame ";
+					break;
+				default:
+					throw new NotImplementedException();
+			}
+
 			var args = ""
 			           + inputs // the audio files are inputs, which may be referred to as [1:a], [2:a], etc.
 			           + (haveVideo ? $"-i \"{_videoOnlyPath}\" " : "") // last input (videoIndex) is the original video (if any)
@@ -292,15 +332,9 @@ namespace Bloom.Publish.Video
 			           // copy the video channel (of input videoIndex) unchanged (if we have video).
 					   // (here 'copy' is a pseudo codec...instead of encoding it in some particular way,
 					   // we just copy the original.
-					   + (haveVideo ? $"-map {videoIndex}:v -c:v copy " : "")
-			           // Shouldwe we specify MP3 for the SoundHandler instead of the default AAC?
-			           // https://www.movavi.com/learning-portal/aac-vs-mp3.html says more things
-			           // understand mp3, but it's talking about audio files.
-			           // https://stackoverflow.com/questions/9168954/should-i-use-the-mp3-or-aac-codec-for-a-mp4-file/25718378)
-			           // has ambiguous answers. It would let us build a slightly smaller ffmpeg. It would tend to make
-			           // slightly larger mp4s.
-			           // Current thinking is that it's desirable if we're generating audio-only.
-			           + (haveVideo ? "" : "-c:a libmp3lame ")
+					   + (haveVideo ? $"-map {videoIndex}:v -vcodec copy " : "")
+					   
+			           + audioArgs
 			           + "-map [out] " // send the output of the audio mix to the output
 			           + finalOutputPath; //and this is where we send it (until the user saves it elsewhere).
 			// Debug.WriteLine("ffmpeg merge args: " + args);
@@ -403,13 +437,14 @@ namespace Bloom.Publish.Video
 				return; // nothing to save, this shouldn't have happened.
 			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
 			{
-				var extension = _codec == "mp3" ? ".mp3" : ".mp4";
+				
+				var extension = _codec.ToExtension();
 				string suggestedName = string.Format($"{Path.GetFileName(_pathToRealBook)}{extension}");
 				dlg.FileName = suggestedName;
 				var outputFileLabel = L10NSharp.LocalizationManager.GetString(@"PublishTab.VideoFile",
 					"Video File",
 					@"displayed as file type for Save File dialog.");
-				if (_codec == "mp3")
+				if (_codec == Codec.MP3)
 				{
 					outputFileLabel = L10NSharp.LocalizationManager.GetString(@"PublishTab.AudioFile",
 						"Audio File",
@@ -448,7 +483,7 @@ namespace Bloom.Publish.Video
 		/// <returns>A warning message, if we can't make the window big enough to record
 		/// the optimum resolution for the format; otherwise, an empty string.</returns>
 		public static string GetDataForFormat(string format, bool landscape, 
-			out int actualWidth, out int actualHeight, out string codec)
+			out int actualWidth, out int actualHeight, out Codec codec)
 		{
 			bool tooBigForScreen = false;
 			int desiredWidth;
@@ -459,25 +494,26 @@ namespace Bloom.Publish.Video
 				case "facebook":
 					desiredHeight = landscape ? 720 : 1280;
 					desiredWidth = landscape ? 1280 : 720;
-					codec = "h.264";
+					codec = Codec.H264;
 					break;
 				case "feature":
-					// review: are these right?
-					desiredHeight = 320;
-					desiredWidth = 240;
-					codec = "h.263"; // todo: implement
+					// Targeting Common Intermediate Format (CIF), one of the resolutions allowed by the original H.263 standard.
+					// Note: I think StoryProducer app makes 176x144 (QCIF), another supported resolution but one step down in quality from CIF.
+					desiredHeight = landscape || !_rotatePortraitH263Videos ? 288 : 352;
+					desiredWidth = landscape || !_rotatePortraitH263Videos ? 352 : 288;
+					codec = Codec.H263;
 					break;
 				// more options here? YouTube videos don't have to be HD.
 				case "youtube":
 					desiredHeight = landscape ? 1080 : 1920;
 					desiredWidth = landscape ? 1920 : 1080;
-					codec = "h.264";
+					codec = Codec.H264;
 					break;
 				case "mp3":
 					// review: what size video do we want to play? Won't actually be used.
 					desiredHeight = landscape ? 720 : 1280;
 					desiredWidth = landscape ? 1280 : 720;
-					codec = "mp3";
+					codec = Codec.H263;
 					break;
 			}
 
