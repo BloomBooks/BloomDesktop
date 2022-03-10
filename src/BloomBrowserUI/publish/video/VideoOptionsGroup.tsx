@@ -99,6 +99,7 @@ export const VideoOptionsGroup: React.FunctionComponent<{
                                 font-size: smaller;
                             `}
                             l10nKey="PublishTab.RecordVideo.Format"
+                            temporarilyDisableI18nWarning={true}
                         >
                             Format
                         </Div>
@@ -160,6 +161,7 @@ export const VideoOptionsGroup: React.FunctionComponent<{
                     >
                         <Div
                             l10nKey="PublishTab.RecordVideo.TurnPageAfter"
+                            temporarilyDisableI18nWarning={true}
                             css={css`
                                 margin-bottom: 2px;
                                 margin-top: 20px;
@@ -177,6 +179,7 @@ export const VideoOptionsGroup: React.FunctionComponent<{
                             `}
                             l10nKey="Common.Seconds"
                             l10nParam0={"" + props.pageDuration}
+                            temporarilyDisableI18nWarning={true}
                         >
                             %0 seconds
                         </Div>
@@ -225,6 +228,7 @@ const VideoFormatItem: React.FunctionComponent<IFormatItem> = props => {
                 {props.icon}
                 <Div
                     l10nKey={props.l10nKey}
+                    temporarilyDisableI18nWarning={true}
                     css={css`
                         font-size: smaller;
                         margin-left: 8px;

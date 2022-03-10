@@ -2246,7 +2246,7 @@ namespace Bloom.Book
 		// "Widgets" are HTML Activities that the user creates outside of Bloom, as distinct from our built-in activities.
 		public bool HasWidgetPages()
 		{
-			var nodes = _dom.SafeSelectNodes("//*[@data-activity = 'iframe')]");
+			var nodes = _dom.SafeSelectNodes("//*[@data-activity = 'iframe']");
 			return nodes?.Count >= 1;
 		}
 
