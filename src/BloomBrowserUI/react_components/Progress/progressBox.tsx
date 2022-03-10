@@ -123,10 +123,11 @@ export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => 
     return (
         <div
             css={css`
-                overflow-y: scroll;
+                overflow-y: auto;
                 background-color: ${kLogBackgroundColor};
                 padding: ${kDialogPadding};
                 height: 100%;
+                box-sizing: border-box;
 
                 &,
                 * {
