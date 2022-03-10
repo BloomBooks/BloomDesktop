@@ -232,6 +232,20 @@ namespace Bloom.TeamCollection
 			if (checkin)
 				status = status.WithLockedBy(null);
 			var oldName = GetLocalStatus(bookFolderName).oldName;
+			// Usually we want to delete the old repo file. 
+			if (!string.IsNullOrEmpty(oldName))
+			{
+				// Rename the old repo file (or whatever). The renamed file will immediately be
+				// overwritten by the PutBookInRepo. But we hope that rename followed by overwrite
+				// will work better than writing the new file and then deleting the old one.
+				// Hopefully, it prevents any possibility of there being a time when (on a remote
+				// computer) the book looks simply deleted: the old repo file is gone but the new
+				// one has not arrived. (This is quite plausible, as a delete file message might be
+				// much faster to transmit than a complete new file, even though the delete happens
+				// later.) It's also possible that the backend can better optimize the data transfer
+				// if it can recognize that the PutBook is overwriting an existing file.
+				RenameBookInRepo(bookFolderName, oldName);
+			}
 			PutBookInRepo(folderPath, status, inLostAndFound, progressCallback);
 			// If this is true, we're about to delete or overwrite the book, so no point
 			// in updating its status (and we never call with this true in regard to a rename).
@@ -248,18 +262,6 @@ namespace Bloom.TeamCollection
 			// All this is achieved by writing the new repo status to local, since we just
 			// gave it the right checksum, and the repo status never has oldName.
 			WriteLocalStatus(bookFolderName, status);
-			// Usually we want to delete the old repo file. 
-			if (!string.IsNullOrEmpty(oldName))
-			{
-				// Usually we want to remove the old Repo file. But if the rename is just changing case and we're
-				// not on a case-sensitive platform, that would remove the current book!! (BL-10156)
-				if (SIL.PlatformUtilities.Platform.IsLinux || oldName.ToLowerInvariant() != bookFolderName.ToLowerInvariant())
-					// Do NOT make a tombstone; we don't want other clients removing the book before recognizing
-					// that it has been renamed. (The deletion, and possibly the tombstone as it is very small,
-					// might easily get through the sync process before the new, renamed book,
-					// and we process remote deletions without waiting for a full reload.)
-					DeleteBookFromRepo(oldName, false);
-			}
 			UpdateBookStatus(bookFolderName, true);
 			return status;
 		}
@@ -409,6 +411,8 @@ namespace Bloom.TeamCollection
 		}
 
 		public abstract void DeleteBookFromRepo(string bookFolderPath, bool makeTombstone = true);
+
+		public abstract void RenameBookInRepo(string newBookFolderPath, string oldName);
 
 		private void SyncCollectionFilesToRepoOnIdle(object sender, EventArgs e)
 		{

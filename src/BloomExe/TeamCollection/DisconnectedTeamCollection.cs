@@ -89,6 +89,11 @@ namespace Bloom.TeamCollection
 			throw new NotImplementedException();
 		}
 
+		public override void RenameBookInRepo(string newBookFolderPath, string oldName)
+		{
+			throw new NotImplementedException();
+		}
+
 		protected override string GetBookStatusJsonFromRepo(string bookFolderName)
 		{
 			// We're disconnected, so can't really get the status from the repo.
