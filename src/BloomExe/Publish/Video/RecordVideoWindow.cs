@@ -179,7 +179,8 @@ namespace Bloom.Publish.Video
 			var haveVideo = _codec != "mp3";
 			if (haveVideo)
 			{
-				//Debug.WriteLine("Telling ffmpeg to quit");
+				// Leaving this in temporarily since there have been reports that the window sometimes doesn't close.
+				Debug.WriteLine("Telling ffmpeg to quit");
 				_ffmpegProcess.StandardInput.WriteLine("q");
 				_ffmpegProcess.WaitForExit();
 				// Enhance: if something goes wrong, it may be useful to capture this somehow.
