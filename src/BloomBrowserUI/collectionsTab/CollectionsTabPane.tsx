@@ -16,14 +16,21 @@ import { ApiBackedCheckbox } from "../react_components/apiBackedCheckbox";
 import { useL10n } from "../react_components/l10nHooks";
 import ShowAfterDelay from "../react_components/showAfterDelay";
 import { forceCheck as convertAnyVisibleLazyLoads } from "react-lazyload";
-import IconButton from "@material-ui/core/IconButton";
-import Divider from "@material-ui/core/Divider";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import ListItemText from "@material-ui/core/ListItemText";
-import Menu from "@material-ui/core/Menu";
-import MenuItem from "@material-ui/core/MenuItem";
+import {
+    IconButton,
+    Divider,
+    ListItemIcon,
+    ListItemText,
+    Menu,
+    MenuItem
+} from "@material-ui/core";
 import NestedMenuItem from "material-ui-nested-menu-item";
 import GreyTriangleMenuIcon from "../react_components/icons/GreyTriangleMenuIcon";
+import {
+    LocalizableCheckboxMenuItem,
+    LocalizableMenuItem,
+    LocalizableNestedMenuItem
+} from "../react_components/localizableMenuItem";
 
 const kResizerSize = 10;
 
@@ -101,7 +108,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
             return;
         }
 
-        setAdjustedContextMenuPoint(event.clientX - 2, event.clientY - 4);
+        setAdjustedContextMenuPoint(event.clientX, event.clientY);
         event.preventDefault();
         event.stopPropagation();
     };
@@ -114,7 +121,8 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
         {
             label: "Open or Create Another Collection",
             l10nId: "CollectionTab.OpenCreateCollectionMenuItem",
-            command: "workspace/openOrCreateCollection"
+            command: "workspace/openOrCreateCollection",
+            addEllipsis: true
         },
         {
             label: "Make Reader Template Bloom Pack...",
@@ -123,25 +131,27 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
             command: "collections/makeBloompack"
         },
         {
-            label: "Advanced",
-            l10nId: "CollectionTab.AdvancedToolStripMenuItem",
+            label: "Troubleshooting",
+            l10nId: "CollectionTab.ContextMenu.Troubleshooting",
             shouldShow: () => true, // show for all collections (except factory)
             submenu: [
                 {
                     label: "Do Checks of All Books",
                     l10nId: "CollectionTab.CollectionMenu.doChecksOfAllBooks",
-                    command: "collections/doChecksOfAllBooks"
-                },
-                {
-                    label: "Rescue Missing Images...",
-                    l10nId: "CollectionTab.CollectionMenu.rescueMissingImages",
-                    command: "collections/rescueMissingImages"
+                    command: "collections/doChecksOfAllBooks",
+                    addEllipsis: true
                 },
                 {
                     label: "Do Updates of All Books",
                     l10nId:
                         "CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks",
-                    command: "collections/doUpdatesOfAllBooks"
+                    command: "collections/doUpdatesOfAllBooks",
+                    addEllipsis: true
+                },
+                {
+                    label: "Rescue Missing Images...",
+                    l10nId: "CollectionTab.CollectionMenu.rescueMissingImages",
+                    command: "collections/rescueMissingImages"
                 }
             ]
         }
@@ -341,7 +351,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
             {contextMousePoint && (
                 <Menu
                     keepMounted={true}
-                    open={contextMousePoint !== undefined}
+                    open={!!contextMousePoint}
                     onClose={handleClose}
                     anchorReference="anchorPosition"
                     anchorPosition={{
@@ -376,6 +386,9 @@ export interface MenuItemSpec {
     icon?: React.ReactNode;
     // if true, menu item is rendered as an ApiCheckbox with the command as its api.
     checkbox?: boolean;
+    // if true, menu item is rendered with a Bloom Enterprise icon on the right
+    requiresEnterprise?: boolean;
+    addEllipsis?: boolean;
 }
 
 // This function and the associated MenuItem classes want to become a general component for making
@@ -437,7 +450,6 @@ export const makeMenuItems = (
                         l10nId={spec.l10nId!}
                         onClick={() => close()}
                         apiEndpoint={spec.command!}
-                        icon={spec.icon}
                     ></LocalizableCheckboxMenuItem>
                 );
             }
@@ -461,6 +473,8 @@ export const makeMenuItems = (
                     l10nId={spec.l10nId!}
                     onClick={clickAction}
                     icon={spec.icon}
+                    addEllipsis={spec.addEllipsis}
+                    requiresEnterprise={spec.requiresEnterprise}
                 ></LocalizableMenuItem>
             );
         })
@@ -479,69 +493,6 @@ export const makeMenuItems = (
             (index > 0 &&
                 index < menuItemsT.length - 1 &&
                 !isDivider(menuItemsT[index + 1]!))
-    );
-};
-
-const LocalizableMenuItem: React.FunctionComponent<{
-    english: string;
-    l10nId: string;
-    onClick: React.MouseEventHandler<HTMLElement>;
-    icon?: React.ReactNode;
-}> = props => {
-    const label = useL10n(props.english, props.l10nId);
-    return (
-        <MenuItem key={props.l10nId} onClick={props.onClick}>
-            {props.icon ? (
-                <React.Fragment>
-                    <ListItemIcon
-                        css={css`
-                            min-width: 30px !important; // overrides MUI default that leaves way too much space
-                        `}
-                    >
-                        {props.icon}
-                    </ListItemIcon>
-                    <ListItemText>{label}</ListItemText>
-                </React.Fragment>
-            ) : (
-                label
-            )}
-        </MenuItem>
-    );
-};
-
-const LocalizableCheckboxMenuItem: React.FunctionComponent<{
-    english: string;
-    l10nId: string;
-    onClick: React.MouseEventHandler<HTMLElement>;
-    apiEndpoint: string;
-    icon?: React.ReactNode;
-}> = props => {
-    const label = useL10n(props.english, props.l10nId);
-    return (
-        <MenuItem key={props.l10nId} onClick={props.onClick}>
-            <ApiBackedCheckbox
-                l10nKey={props.l10nId!}
-                apiEndpoint={props.apiEndpoint}
-            >
-                {label}
-            </ApiBackedCheckbox>
-        </MenuItem>
-    );
-};
-
-const LocalizableNestedMenuItem: React.FunctionComponent<{
-    english: string;
-    l10nId: string;
-}> = props => {
-    const label = useL10n(props.english, props.l10nId);
-    return (
-        // Can't find any doc on parentMenuOpen. Examples set it to the same value
-        // as the open prop of the parent menu. But it seems to work fine just set
-        // to true. (If omitted, however, the child menu does not appear when the
-        // parent is hovered over.)
-        <NestedMenuItem key={props.l10nId} label={label} parentMenuOpen={true}>
-            {props.children}
-        </NestedMenuItem>
     );
 };
 

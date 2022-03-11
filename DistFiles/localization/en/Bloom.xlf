@@ -610,6 +610,7 @@
       <trans-unit id="CollectionTab.AdvancedToolStripMenuItem">
         <source xml:lang="en">Advanced</source>
         <note>ID: CollectionTab.AdvancedToolStripMenuItem</note>
+        <note>Obsolete for 5.3 and later</note>
       </trans-unit>
       <trans-unit id="CollectionTab.Applying">
         <source xml:lang="en">Applying updates</source>
@@ -666,14 +667,28 @@
       <trans-unit id="CollectionTab.BookMenu.MakeBloomPack">
         <source xml:lang="en">Make Bloom Pack...</source>
         <note>ID: CollectionTab.BookMenu.MakeBloomPack</note>
+        <note>Obsolete for 5.3 and later</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.Rename">
         <source xml:lang="en">Rename</source>
         <note>ID: CollectionTab.BookMenu.Rename</note>
+        <note>Obsolete for Bloom 5.3 and later</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.RenameBook">
+        <source xml:lang="en">Rename Book</source>
+        <note>ID: CollectionTab.BookMenu.RenameBook</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.SaveAsBloomPackContextMenuItem">
+        <source xml:lang="en">Save as Bloom Pack (.bloomPack)</source>
+        <note>ID: CollectionTab.BookMenu.SaveAsBloomPackContextMenuItem</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem">
         <source xml:lang="en">Save as single file (.bloomSource)...</source>
         <note>ID: CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.ShowInFileExplorer">
+        <source xml:lang="en">Show in File Explorer</source>
+        <note>ID: CollectionTab.BookMenu.ShowInFileExplorer</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
         <source xml:lang="en">Update Book</source>
@@ -731,9 +746,18 @@
         <source xml:lang="en">The book '{0}'</source>
         <note>ID: CollectionTab.ConfirmRecycleDescription</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.ContextMenu.More">
+        <source xml:lang="en">More</source>
+        <note>ID: CollectionTab.ContextMenu.More</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.ContextMenu.OpenFolderOnDisk">
         <source xml:lang="en">Open Folder on Disk</source>
         <note>ID: CollectionTab.ContextMenu.OpenFolderOnDisk</note>
+        <note>Obsolete for Bloom 5.3 and later</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ContextMenu.Troubleshooting">
+        <source xml:lang="en">Troubleshooting</source>
+        <note>ID: CollectionTab.ContextMenu.Troubleshooting</note>
       </trans-unit>
       <trans-unit id="CollectionTab.EditBookButton">
         <source xml:lang="en">Edit this book</source>
