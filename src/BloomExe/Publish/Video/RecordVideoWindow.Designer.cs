@@ -38,7 +38,7 @@
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "RecordVideoWindow";
-			this.Text = "RecordVideoWindow";
+			this.Text = "Recording in Progress...";
 			this.ResumeLayout(false);
 
 		}
