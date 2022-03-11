@@ -75,7 +75,7 @@ namespace Bloom.Collection
 			this._provinceLabel = new System.Windows.Forms.Label();
 			this._enterpriseTab = new System.Windows.Forms.TabPage();
 			this._teamCollectionTab = new System.Windows.Forms.TabPage();
-			this.reactControl1 = new Bloom.web.ReactControl();
+			this.teamCollectionSettingsReactControl = new Bloom.web.ReactControl();
 			this.tabPage4 = new System.Windows.Forms.TabPage();
 			this._automaticallyUpdate = new System.Windows.Forms.CheckBox();
 			this.label2 = new System.Windows.Forms.Label();
@@ -144,7 +144,7 @@ namespace Bloom.Collection
 			this.tabPage1.Size = new System.Drawing.Size(642, 452);
 			this.tabPage1.TabIndex = 0;
 			this.tabPage1.Text = "Languages";
-			this.tabPage1.UseVisualStyleBackColor = true;
+			this.tabPage1.UseVisualStyleBackColor = false;
 			// 
 			// _removeSignLanguageLink
 			// 
@@ -363,7 +363,8 @@ namespace Bloom.Collection
 			this.tabPage2.Size = new System.Drawing.Size(642, 452);
 			this.tabPage2.TabIndex = 1;
 			this.tabPage2.Text = "Book Making";
-			this.tabPage2.UseVisualStyleBackColor = true;
+			this.tabPage2.UseVisualStyleBackColor = false;
+			this.tabPage2.BackColor = SystemColors.Control;
 			// 
 			// _numberStyleCombo
 			// 
@@ -570,7 +571,7 @@ namespace Bloom.Collection
 			this.tabPage3.Size = new System.Drawing.Size(642, 452);
 			this.tabPage3.TabIndex = 2;
 			this.tabPage3.Text = "Project Information";
-			this.tabPage3.UseVisualStyleBackColor = true;
+			this.tabPage3.UseVisualStyleBackColor = false;
 			// 
 			// _noRenameTeamCollectionLabel
 			// 
@@ -693,11 +694,11 @@ namespace Bloom.Collection
 			this._enterpriseTab.Size = new System.Drawing.Size(642, 452);
 			this._enterpriseTab.TabIndex = 4;
 			this._enterpriseTab.Text = "Bloom Enterprise";
-			this._enterpriseTab.UseVisualStyleBackColor = true;
+			this._enterpriseTab.UseVisualStyleBackColor = false;
 			// 
 			// _teamCollectionTab
 			// 
-			this._teamCollectionTab.Controls.Add(this.reactControl1);
+			this._teamCollectionTab.Controls.Add(this.teamCollectionSettingsReactControl);
 			this._L10NSharpExtender.SetLocalizableToolTip(this._teamCollectionTab, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._teamCollectionTab, null);
 			this._L10NSharpExtender.SetLocalizingId(this._teamCollectionTab, "TeamCollection.TeamCollection");
@@ -709,19 +710,19 @@ namespace Bloom.Collection
 			this._teamCollectionTab.Text = "Team Collection";
 			this._teamCollectionTab.UseVisualStyleBackColor = true;
 			// 
-			// reactControl1
+			// teamCollectionSettingsReactControl
 			// 
-			this.reactControl1.BackColor = System.Drawing.Color.White;
-			this.reactControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.reactControl1.JavascriptBundleName = "teamCollectionSettingsBundle";
-			this._L10NSharpExtender.SetLocalizableToolTip(this.reactControl1, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.reactControl1, null);
-			this._L10NSharpExtender.SetLocalizingId(this.reactControl1, "ReactControl");
-			this.reactControl1.Location = new System.Drawing.Point(3, 3);
-			this.reactControl1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-			this.reactControl1.Name = "reactControl1";
-			this.reactControl1.Size = new System.Drawing.Size(636, 446);
-			this.reactControl1.TabIndex = 0;
+			this.teamCollectionSettingsReactControl.BackColor = System.Drawing.Color.White;
+			this.teamCollectionSettingsReactControl.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.teamCollectionSettingsReactControl.JavascriptBundleName = "teamCollectionSettingsBundle";
+			this._L10NSharpExtender.SetLocalizableToolTip(this.teamCollectionSettingsReactControl, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.teamCollectionSettingsReactControl, null);
+			this._L10NSharpExtender.SetLocalizingId(this.teamCollectionSettingsReactControl, "ReactControl");
+			this.teamCollectionSettingsReactControl.Location = new System.Drawing.Point(3, 3);
+			this.teamCollectionSettingsReactControl.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+			this.teamCollectionSettingsReactControl.Name = "teamCollectionSettingsReactControl";
+			this.teamCollectionSettingsReactControl.Size = new System.Drawing.Size(636, 446);
+			this.teamCollectionSettingsReactControl.TabIndex = 0;
 			// 
 			// tabPage4
 			// 
@@ -741,7 +742,7 @@ namespace Bloom.Collection
 			this.tabPage4.Size = new System.Drawing.Size(642, 452);
 			this.tabPage4.TabIndex = 3;
 			this.tabPage4.Text = "Advanced Program Settings";
-			this.tabPage4.UseVisualStyleBackColor = true;
+			this.tabPage4.UseVisualStyleBackColor = false;
 			// 
 			// _automaticallyUpdate
 			// 
@@ -755,7 +756,7 @@ namespace Bloom.Collection
 			this._automaticallyUpdate.Size = new System.Drawing.Size(203, 23);
 			this._automaticallyUpdate.TabIndex = 5;
 			this._automaticallyUpdate.Text = "Automatically Update Bloom";
-			this._automaticallyUpdate.UseVisualStyleBackColor = true;
+			this._automaticallyUpdate.UseVisualStyleBackColor = false;
 			this._automaticallyUpdate.CheckedChanged += new System.EventHandler(this._automaticallyUpdate_CheckedChanged);
 			// 
 			// label2
@@ -784,7 +785,7 @@ namespace Bloom.Collection
 			this._showExperimentalBookSources.Size = new System.Drawing.Size(229, 23);
 			this._showExperimentalBookSources.TabIndex = 7;
 			this._showExperimentalBookSources.Text = "Show Experimental Book Sources";
-			this._showExperimentalBookSources.UseVisualStyleBackColor = true;
+			this._showExperimentalBookSources.UseVisualStyleBackColor = false;
 			this._showExperimentalBookSources.CheckedChanged += new System.EventHandler(this._showExperimentalBookSources_CheckedChanged);
 			// 
 			// _enterpriseRequiredForTeamCollection
@@ -810,7 +811,7 @@ namespace Bloom.Collection
 			this._allowTeamCollection.Size = new System.Drawing.Size(130, 23);
 			this._allowTeamCollection.TabIndex = 9;
 			this._allowTeamCollection.Text = "Team Collections";
-			this._allowTeamCollection.UseVisualStyleBackColor = true;
+			this._allowTeamCollection.UseVisualStyleBackColor = false;
 			this._allowTeamCollection.CheckedChanged += new System.EventHandler(this._allowTeamCollection_CheckedChanged);
 			// 
 			// _enterpriseRequiredForSpreadsheetImportExport
@@ -836,7 +837,7 @@ namespace Bloom.Collection
 			this._allowSpreadsheetImportExport.Size = new System.Drawing.Size(193, 23);
 			this._allowSpreadsheetImportExport.TabIndex = 11;
 			this._allowSpreadsheetImportExport.Text = "Spreadsheet Import/Export";
-			this._allowSpreadsheetImportExport.UseVisualStyleBackColor = true;
+			this._allowSpreadsheetImportExport.UseVisualStyleBackColor = false;
 			this._allowSpreadsheetImportExport.CheckedChanged += new System.EventHandler(this._allowSpreadsheetImportExport_CheckedChanged);
 			// 
 			// _okButton
@@ -850,7 +851,7 @@ namespace Bloom.Collection
 			this._okButton.Size = new System.Drawing.Size(91, 23);
 			this._okButton.TabIndex = 1;
 			this._okButton.Text = "&OK";
-			this._okButton.UseVisualStyleBackColor = true;
+			this._okButton.UseVisualStyleBackColor = false;
 			this._okButton.Click += new System.EventHandler(this._okButton_Click);
 			// 
 			// _restartReminder
@@ -887,7 +888,7 @@ namespace Bloom.Collection
 			this._cancelButton.Size = new System.Drawing.Size(75, 23);
 			this._cancelButton.TabIndex = 21;
 			this._cancelButton.Text = "&Cancel";
-			this._cancelButton.UseVisualStyleBackColor = true;
+			this._cancelButton.UseVisualStyleBackColor = false;
 			this._cancelButton.Click += new System.EventHandler(this._cancelButton_Click);
 			// 
 			// settingsProtectionLauncherButton1
@@ -913,7 +914,7 @@ namespace Bloom.Collection
 			this._helpButton.Size = new System.Drawing.Size(75, 23);
 			this._helpButton.TabIndex = 22;
 			this._helpButton.Text = "&Help";
-			this._helpButton.UseVisualStyleBackColor = true;
+			this._helpButton.UseVisualStyleBackColor = false;
 			this._helpButton.Click += new System.EventHandler(this._helpButton_Click);
 			// 
 			// CollectionSettingsDialog
@@ -1010,11 +1011,11 @@ namespace Bloom.Collection
 		private Label label3;
 		private TabPage _enterpriseTab;
 		private TabPage _teamCollectionTab;
+		private web.ReactControl teamCollectionSettingsReactControl;
 		private LinkLabel _removeSignLanguageLink;
 		private LinkLabel _changeSignLanguageLink;
 		protected Label _signLanguageName;
 		protected Label _signLanguageLabel;
-		private web.ReactControl reactControl1;
 		private Label _noRenameTeamCollectionLabel;
 	}
 }

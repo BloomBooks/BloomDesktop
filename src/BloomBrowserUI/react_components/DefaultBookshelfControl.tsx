@@ -12,6 +12,7 @@ import { makeStyles, MenuItem, Select } from "@material-ui/core";
 import XRegExp = require("xregexp/types");
 import { useContentful } from "../contentful/UseContentful";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
+import { BloomEnterpriseIcon } from "./requiresBloomEnterprise";
 
 const windowsSelectColor = "rgb(0,120,215)";
 
@@ -157,17 +158,23 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
                     font-size: 10pt;
                 `}
             >
-                <Div
+                <div
                     css={css`
-                        ${project
-                            ? "font-family: 'Segoe UI Semibold'"
-                            : "color: grey"}
+                        display: flex;
                     `}
-                    l10nKey="CollectionSettingsDialog.BloomLibraryBookshelf"
-                    temporarilyDisableI18nWarning={true}
                 >
-                    Bloom Library Bookshelf
-                </Div>
+                    <Div
+                        css={css`
+                            margin-bottom: 4px;
+                            font-family: "segoe ui semibold";
+                        `}
+                        l10nKey="CollectionSettingsDialog.BloomLibraryBookshelf"
+                        temporarilyDisableI18nWarning={true}
+                    >
+                        Bloom Library Bookshelf
+                    </Div>
+                    <BloomEnterpriseIcon />
+                </div>
                 <Select
                     // Using a MaterialUI Select here, though we have to fight it fairly hard
                     // to get an appearance that matches the rest of the dialog. Possibly there
@@ -184,6 +191,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
                         background-color: #e1e1e1;
                         border: 1px solid #bbb;
                         font-size: 10pt;
+                        padding-left: 7px; // match what winforms is doing
                         &:before {
                             content: none;
                         }
@@ -193,9 +201,6 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
                         &:hover {
                             background-color: #e5f1fb;
                             border-color: ${windowsSelectColor};
-                        }
-                        .MuiSelect-root {
-                            padding: 3px 3px 3px 2px;
                         }
                     `}
                     value={defaultBookshelfUrlKey}
@@ -237,7 +242,8 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
                     // The normal case.
                     <Div
                         css={css`
-                            color: dimgrey; // not darkgrey, which is lighter than grey!
+                            color: black;
+                            margin-top: 1em;
                         `}
                         l10nKey="CollectionSettingsDialog.DefaultBookshelfDescription"
                         temporarilyDisableI18nWarning={true}

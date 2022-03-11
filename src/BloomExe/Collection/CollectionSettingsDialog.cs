@@ -29,12 +29,10 @@ namespace Bloom.Collection
 		private bool _restartRequired;
 		private bool _loaded;
 		private List<string> _styleNames = new List<string>();
-		// Enhance: when all the tabs are in Typescript, we should be able to move the tabs themselves there and
-		// have one browser for the whole dialog.
-		private Browser _enterpriseBrowser;
 		private string _subscriptionCode;
 		private string _brand;
 		private ReactControl _defaultBookshelfControl;
+		private ReactControl _enterpriseSettingsControl;
 
 		// Pending values edited through the CollectionSettingsApi
 		private string _pendingBookshelf;
@@ -109,7 +107,6 @@ namespace Bloom.Collection
 
 			CollectionSettingsApi.BrandingChangeHandler = ChangeBranding;
 
-			SetupEnterpriseBrowser();
 
 			TeamCollectionApi.TheOneInstance.SetCallbackToReopenCollection(() =>
 			{
@@ -136,42 +133,25 @@ namespace Bloom.Collection
 
 			// This code would mostly more naturally go in Designer. Unfortunately we can't run designer
 			// until we get back in a state where all our dependencies are sufficiently consistent.
+			_enterpriseSettingsControl = ReactControl.Create("enterpriseSettingsBundle");
+			_enterpriseSettingsControl.Dock = System.Windows.Forms.DockStyle.Fill;
+			_enterpriseTab.Controls.Add(_enterpriseSettingsControl);
+			_enterpriseSettingsControl.BackColor = _enterpriseSettingsControl.Parent.BackColor;
+
 
 			_defaultBookshelfControl = ReactControl.Create("defaultBookshelfControlBundle");
-
-			// Try to ensure these controls do not stand out against the current tab.  (BL-10973)
-			_defaultBookshelfControl.BackColor = tabPage2.BackColor;    // maybe transparent which TextBox won't allow
-			_xmatterDescription.BackColor = Color.FromArgb(255, tabPage2.BackColor);
-
+			
 			tabPage2.Controls.Add(_defaultBookshelfControl);
+			_defaultBookshelfControl.BackColor = _defaultBookshelfControl.Parent.BackColor;
 			_defaultBookshelfControl.Location = new Point(_xmatterDescription.Left, _xmatterDescription.Bottom + 30);
 			// We'd like it to be as big as possible, not just big enough for the immediate content.
 			// Until React takes over at least the whole tab, the pull-down part of the combo can't
 			// stretch outside the Gecko control.
 			_defaultBookshelfControl.Size = new Size(_xmatterList.Width, 200);
+
+			_xmatterDescription.BackColor = _xmatterDescription.Parent.BackColor;
 		}
 
-		private void SetupEnterpriseBrowser()
-		{
-			if (_enterpriseBrowser != null)
-				return; // Seems to help performance.
-			// The Size setting is needed on Linux to keep the browser from coming up as a small
-			// rectangle in the upper left corner when the dialog is initialized to open on the
-			// Enterprise tab.
-			_enterpriseBrowser = new Browser {Dock = DockStyle.Fill, Location=new Point(3,3), Size=new Size(_enterpriseTab.Width-6, _enterpriseTab.Height-6)};
-			_enterpriseBrowser.BackColor = Color.White;
-			
-			var rootFile = BloomFileLocator.GetBrowserFile(false, "collection", "enterpriseSettings.html");
-			var dummy = _enterpriseBrowser.Handle; // gets the WebBrowser created
-			_enterpriseBrowser.WebBrowser.DocumentCompleted += (sender, args) =>
-			{
-				// If the control gets added to the tab before it has navigated somewhere,
-				// it shows as solid black, despite setting the BackColor to white.
-				// So just don't show it at all until it contains what we want to see.
-				_enterpriseTab.Controls.Add(_enterpriseBrowser);
-			};
-			_enterpriseBrowser.Navigate(rootFile.ToLocalhost(), false);
-		}
 
 		protected override void OnHandleCreated(EventArgs e)
 		{

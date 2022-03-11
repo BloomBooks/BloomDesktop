@@ -1,5 +1,4 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import { Label } from "../react_components/l10nComponents";
 import { Markdown } from "../react_components/markdown";
 import { Link } from "../react_components/link";
@@ -8,6 +7,7 @@ import { RadioGroup, Radio } from "../react_components/radio";
 import { BloomApi } from "../utils/bloomApi";
 import "./enterpriseSettings.less";
 import { FontAwesomeIcon } from "../bloomIcons";
+import { WireUpForWinforms } from "../utils/WireUpWinform";
 
 // values of controlState:
 // None: the None button is selected.
@@ -484,7 +484,4 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
     }
 }
 
-// allow plain 'ol javascript in the html to connect up react
-(window as any).connectEnterpriseSettingsScreen = element => {
-    ReactDOM.render(<EnterpriseSettings />, element);
-};
+WireUpForWinforms(() => <EnterpriseSettings />);
