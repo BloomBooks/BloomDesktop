@@ -17,34 +17,11 @@ export const SimplePreview: React.FunctionComponent<{
 
     // Desktop pixels are much larger, so things come out bloated.
     // For now what we do is make the player & readium think we have twice the pixels,
-    // then shrink it all.
+    // then shrink it all. This gives the controls a more reasonable share of the preview.
     const pixelDensityMultiplier = 2;
     const scale = 25;
     const screenWidth = 9 * scale;
     const screenHeight = 16 * scale;
-
-    var iframeClasses = "";
-    if (props.landscape) {
-        iframeClasses = `
-            // height: ${(pixelDensityMultiplier * 900) / 16}%;
-            // width: ${pixelDensityMultiplier * 100}%;
-            transform: rotate(90deg)  translate(0, -${screenWidth}px)
-                scale( ${1 / pixelDensityMultiplier});
-                `;
-    } else {
-        iframeClasses = `
-            // width: ${(pixelDensityMultiplier * 900) / 16}% !important;
-            // height: ${pixelDensityMultiplier * 100}% !important;
-            transform: scale(${1 / pixelDensityMultiplier});
-            `;
-    }
-
-    var rootClasses = "";
-    if (props.landscape) {
-        rootClasses = `transform-origin: top left;
-    transform: translate(0, ${screenWidth}px )
-        rotate(-90deg);`;
-    }
 
     var width = (props.landscapeWidth * 9) / 16;
     var height = props.landscapeWidth;
@@ -54,25 +31,35 @@ export const SimplePreview: React.FunctionComponent<{
         height = temp;
     }
 
+    var minBorder = 10; // required on sides and bottom, but not top, since nav bar provides visual border there.
+    var rootWidth = props.landscapeWidth + 2 * minBorder;
+    var rootHeight = props.landscapeWidth + minBorder;
+    var sidePadding = (rootWidth - width) / 2;
+    var topPadding = (props.landscapeWidth - height) / 2;
+    var bottomPadding = topPadding + minBorder;
+
     return (
         <div>
             <div
                 css={css`
-                    height: ${height}px; // Enhance: could be conditional on landscape
-                    width: ${width}px;
-                    ${rootClasses} //background-color:
+                    box-sizing: border-box;
+                    height: ${rootHeight}px;
+                    width: ${rootWidth}px;
+                    padding: ${topPadding}px ${sidePadding}px ${bottomPadding}px
+                        ${sidePadding}px;
+                    background-color: #2e2e2e;
                 `}
             >
                 <iframe
                     id="simple-preview"
                     css={css`
-                        background-color: black;
+                        background-color: #2e2e2e;
                         border: none;
                         flex-shrink: 0; // without this, the height doesn't grow
                         transform-origin: top left;
-                        height: ${pixelDensityMultiplier * 100 + "%"};
-                        width: ${pixelDensityMultiplier * 100 + "%"};
-                        ${iframeClasses}
+                        height: ${height * pixelDensityMultiplier}px;
+                        width: ${width * pixelDensityMultiplier}px;
+                        transform: scale(${1 / pixelDensityMultiplier});
                     `}
                     title="book preview"
                     src={props.url}

@@ -36,6 +36,7 @@ import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
 import BloomButton from "../../react_components/bloomButton";
 import {
     Button,
+    CircularProgress,
     FormGroup,
     Step,
     StepContent,
@@ -48,6 +49,7 @@ import { VideoOptionsGroup } from "./VideoOptionsGroup";
 import { Div } from "../../react_components/l10nComponents";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
+import { useEffect } from "react";
 
 export const RecordVideoWindow = () => {
     // When the user changes some features, included languages, etc., we
@@ -144,10 +146,13 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
         "publish/android/defaultLandscape",
         false
     );
-    const [canRotate] = BloomApi.useApiBoolean(
-        "publish/android/canRotate",
-        false
+    const motionActive = BloomApi.useWatchApiData<boolean>(
+        "publish/android/motionBookMode",
+        false,
+        "publish",
+        "motionChanged"
     );
+    const [playing, setPlaying] = useState(false);
     useSubscribeToWebSocketForStringMessage(
         "publish-android",
         "androidPreview",
@@ -166,17 +171,43 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
     };
     const play = () => {
         sendMessageToPlayer({ play: true, autoplay: "yes" });
+        setPlaying(true);
     };
     const pause = () => {
         sendMessageToPlayer({ pause: true });
+        setPlaying(false);
     };
     const reset = () => {
+        sendMessageToPlayer({ pause: true });
         sendMessageToPlayer({ reset: true });
+        setPlaying(false);
     };
     const activitiesSkipped = useL10n(
         "Activities will be skipped",
         "PublishTab.RecordVideo.ActivitiesSkipped"
     );
+    const isPauseButtonDisabled = !playing;
+    useEffect(() => {
+        const listener = data => {
+            // something sends us an empty message, which we haven't figured out, but know we can ignore
+            if (!data || !data.data || data.data.length === 0) {
+                return;
+            }
+
+            try {
+                const msg = JSON.parse(data.data);
+                if (msg.messageType == "playbackComplete") {
+                    pause();
+                }
+            } catch (ex) {
+                // just ignore it
+            }
+        };
+        window.addEventListener("message", listener);
+        return () => {
+            window.removeEventListener("message", listener);
+        };
+    }, []);
     const circleHeight = "0.88rem";
     const blurbClasses = `
     font-size: smaller;
@@ -222,12 +253,15 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                                         l10nKey="PublishTab.RecordVideo.Instructions"
                                         temporarilyDisableI18nWarning={true}
                                     >
-                                        Use the red buttons above the book
-                                        player to select the language and other
-                                        settings.
+                                        If your book has multiple languages or
+                                        other options, you will see a row of red
+                                        buttons. Use these to set up the book
+                                        for recording.
                                     </Div>
                                     <SimplePreview
-                                        landscape={defaultLandscape}
+                                        landscape={
+                                            defaultLandscape || motionActive
+                                        }
                                         landscapeWidth={landscapeWidth}
                                         url={
                                             pathToOutputBrowser +
@@ -267,18 +301,35 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                                                 `}
                                             ></div>
                                         </Button>
-                                        <Button onClick={play}>
-                                            <PlayIcon
+                                        {playing ? (
+                                            <CircularProgress
                                                 css={css`
-                                                    color: ${kBloomBlue};
-                                                    font-size: 2rem;
+                                                    margin-top: 8px;
+                                                    margin-left: 19px;
+                                                    margin-right: 19px;
                                                 `}
-                                            />
-                                        </Button>
-                                        <Button onClick={pause}>
+                                                size="1.6rem"
+                                            ></CircularProgress>
+                                        ) : (
+                                            <Button onClick={play}>
+                                                <PlayIcon
+                                                    css={css`
+                                                        color: ${kBloomBlue};
+                                                        font-size: 2rem;
+                                                    `}
+                                                />
+                                            </Button>
+                                        )}
+                                        <Button
+                                            onClick={pause}
+                                            disabled={isPauseButtonDisabled}
+                                        >
                                             <PauseIcon
                                                 css={css`
-                                                    color: ${kBloomBlue};
+                                                    color: ${kBloomBlue +
+                                                        (isPauseButtonDisabled
+                                                            ? "80" // add 50% transparency for disabled look
+                                                            : "")};
                                                     font-size: 2rem;
                                                 `}
                                             />
