@@ -9,13 +9,13 @@ using BloomTests.TestDoubles.Book;
 
 namespace BloomTests.TestDoubles.CollectionTab
 {
-	// A simplified implementation of LibraryModel that cuts some corners in order to ease setup.
+	// A simplified implementation of CollectionModel that cuts some corners in order to ease setup.
 	// Tries to provide enough functionality to allow construction of LibraryListView without exceptions, to be able to return/load a collection, and instntiate a dummy SourceCollectionsList which has a dummy templates collection
-	class FakeLibraryModel : LibraryModel
+	class FakeCollectionModel : CollectionModel
 	{
 		public readonly string TestFolderPath;
 
-		public FakeLibraryModel(TemporaryFolder testFolder, CollectionSettings collectionSettings = null)
+		public FakeCollectionModel(TemporaryFolder testFolder, CollectionSettings collectionSettings = null)
 			: base(testFolder.Path, collectionSettings ?? new CollectionSettings(), new BookSelection(), GetDefaultSourceCollectionsList(),
 			BookCollectionFactory, null, new CreateFromSourceBookCommand(), new FakeBookServer(), new CurrentEditableCollectionSelection(), null,
 			new TeamCollectionManager(testFolder.Path, null, new BookRenamedEvent(), new BookStatusChangeEvent(), new BookSelection(), null, null),

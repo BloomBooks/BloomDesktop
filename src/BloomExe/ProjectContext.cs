@@ -120,7 +120,7 @@ namespace Bloom
 							typeof (SendReceiveCommand),
 							typeof (SelectedTabAboutToChangeEvent),
 							typeof (SelectedTabChangedEvent),
-							typeof (LibraryClosing),
+							typeof (CollectionClosing),
 							typeof (PageListChangedEvent), // REMOVE+++++++++++++++++++++++++++
 							typeof (BookRefreshEvent),
 							typeof (BookSavedEvent),
@@ -224,7 +224,7 @@ namespace Bloom
 							c.Resolve<BloomWebSocketServer>(), c.Resolve<BookRenamedEvent>(),
 							c.Resolve<BookStatusChangeEvent>(),
 							c.Resolve<BookSelection>(),
-							c.Resolve<LibraryClosing>(), c.Resolve<BookCollectionHolder>())).InstancePerLifetimeScope();
+							c.Resolve<CollectionClosing>(), c.Resolve<BookCollectionHolder>())).InstancePerLifetimeScope();
 						builder.Register<ITeamCollectionManager>(c => c.Resolve<TeamCollectionManager>()).InstancePerLifetimeScope();
 						builder.Register<CollectionSettings>(c =>
 						{
@@ -238,9 +238,9 @@ namespace Bloom
 					}
 
 
-					builder.Register<LibraryModel>(
+					builder.Register<CollectionModel>(
 						c =>
-							new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(),
+							new CollectionModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(),
 							#if Chorus
 								c.Resolve<SendReceiver>(),
 							#endif

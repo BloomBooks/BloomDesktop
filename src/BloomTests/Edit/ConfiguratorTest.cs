@@ -77,7 +77,7 @@ namespace BloomTests.Edit
 			c.CollectJsonData(stringRep);
 
 			c.ShowConfigurationDialog(Get_NotYetConfigured_CalendardBookStorage().FolderPath);
-			Assert.IsTrue(c.GetLibraryData().Contains("year"));
+			Assert.IsTrue(c.GetCollectionData().Contains("year"));
 		}
 
 
@@ -103,7 +103,7 @@ namespace BloomTests.Edit
 			first.CollectJsonData(stringRep.ToString());
 
 			var second = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
-			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetLibraryData());
+			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetCollectionData());
 			Assert.AreEqual("foo", j.library.stuff);
 		}
 
@@ -124,7 +124,7 @@ namespace BloomTests.Edit
 			first.CollectJsonData(secondData.ToString());
 
 			var second = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
-			dynamic j= (DynamicJson) DynamicJson.Parse(second.GetLibraryData());
+			dynamic j= (DynamicJson) DynamicJson.Parse(second.GetCollectionData());
 			Assert.AreEqual("2", j.library.two);
 			Assert.AreEqual("1", j.library.one);
 			Assert.AreEqual("blue", j.library.color);
@@ -142,7 +142,7 @@ namespace BloomTests.Edit
 			first.CollectJsonData(secondData.ToString());
 
 			var second = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
-			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetLibraryData());
+			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetCollectionData());
 			Assert.AreEqual("o:e", j.library.days[0]);
 			Assert.AreEqual("two", j.library.days[1]);
 		}
@@ -167,7 +167,7 @@ namespace BloomTests.Edit
 			first.CollectJsonData(secondData.ToString());
 
 			var second = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
-			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetLibraryData());
+			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetCollectionData());
 			Assert.AreEqual("v", j.library.food.veg);
 			Assert.AreEqual("{f\\:", j.library.food.fruit);
 			Assert.AreEqual("b", j.library.food.bread);
@@ -214,13 +214,13 @@ namespace BloomTests.Edit
 			dynamic j = new DynamicJson();
 			j.one = 1;
 			first.CollectJsonData(j.ToString());
-			Assert.AreEqual("{}", first.GetLibraryData());
+			Assert.AreEqual("{}", first.GetCollectionData());
 		}
 		[Test]
 		public void GetLibraryData_NothingCollected_Empty()
 		{
 			var first = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
-			Assert.AreEqual("{}", first.GetLibraryData());
+			Assert.AreEqual("{}", first.GetCollectionData());
 		}
 		[Test]
 		public void LocalData_NothingCollected_Empty()

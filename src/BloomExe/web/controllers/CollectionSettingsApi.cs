@@ -58,7 +58,7 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "enterpriseEnabled", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "enterpriseEnabled", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
@@ -91,10 +91,10 @@ namespace Bloom.web.controllers
 						BrandingChangeHandler(GetBrandingFromCode(SubscriptionCode), SubscriptionCode);
 					}
 				}, false);
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "legacyBrandingName",
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "legacyBrandingName",
 				request => { request.ReplyWithText(LegacyBrandingName ?? ""); }, false);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "subscriptionCode", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "subscriptionCode", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
@@ -120,7 +120,7 @@ namespace Bloom.web.controllers
 					request.PostSucceeded();
 				}
 			}, false);
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "enterpriseSummary", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "enterpriseSummary", request =>
 			{
 				string branding = "";
 				if (_enterpriseStatus == EnterpriseStatus.Community)
@@ -130,7 +130,7 @@ namespace Bloom.web.controllers
 				var html = GetSummaryHtml(branding);
 				request.ReplyWithText(html);
 			}, false);
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "enterpriseExpiry", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "enterpriseExpiry", request =>
 			{
 				if (_enterpriseExpiry == DateTime.MinValue)
 				{
@@ -149,7 +149,7 @@ namespace Bloom.web.controllers
 					request.ReplyWithText("unknown");
 				}
 			}, false);
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "hasSubscriptionFiles", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "hasSubscriptionFiles", request =>
 			{
 				var haveFiles = BrandingProject.HaveFilesForBranding(GetBrandingFromCode(SubscriptionCode));
 				if (haveFiles)
@@ -160,7 +160,7 @@ namespace Bloom.web.controllers
 
 			// Enhance: The get here has one signature {brandingProjectName, defaultBookshelf} while the post has another (defaultBookshelfId:string).
 			// It's 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "bookShelfData", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "bookShelfData", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{

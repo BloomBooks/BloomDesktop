@@ -55,7 +55,7 @@ namespace Bloom.Api
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler("collection/defaultFont", request =>
+			apiHandler.RegisterEndpointLegacy("collection/defaultFont", request =>
 			{
 				var bookFontName = _bookSelection.CurrentSelection.BookData.Language1.FontName;
 				if(String.IsNullOrEmpty(bookFontName))
@@ -63,12 +63,12 @@ namespace Bloom.Api
 				request.ReplyWithText(bookFontName);
 			}, handleOnUiThread: false);
 
-			apiHandler.RegisterEndpointHandler("readers/ui/.*", HandleRequest, true);
-			apiHandler.RegisterEndpointHandler("readers/io/.*", HandleRequest, false);
-			apiHandler.RegisterEndpointHandler("directoryWatcher/", ProcessDirectoryWatcher, false);
+			apiHandler.RegisterEndpointLegacy("readers/ui/.*", HandleRequest, true);
+			apiHandler.RegisterEndpointLegacy("readers/io/.*", HandleRequest, false);
+			apiHandler.RegisterEndpointLegacy("directoryWatcher/", ProcessDirectoryWatcher, false);
 
 			//we could do them all like this:
-			//server.RegisterEndpointHandler("readers/loadReaderToolSettings", r=> r.ReplyWithJson(GetDefaultReaderSettings(r.CurrentCollectionSettings)));
+			//server.RegisterEndpointLegacy("readers/loadReaderToolSettings", r=> r.ReplyWithJson(GetDefaultReaderSettings(r.CurrentCollectionSettings)));
 		}
 
 		// The current book we are editing. Currently this is needed so we can return all the text, to enable JavaScript to update

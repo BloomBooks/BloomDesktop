@@ -24,7 +24,7 @@ namespace Bloom.CollectionCreating
 			_collectionInfo = collectionInfo;
 			_destinationDirectory = destinationDirectory;
 		}
-		protected void _textLibraryName_TextChanged(object sender, EventArgs e)
+		protected void _textCollectionName_TextChanged(object sender, EventArgs e)
 		{
 			bool nameIsOK = GetNameIsOk();
 			_setNextButtonState(this, nameIsOK);

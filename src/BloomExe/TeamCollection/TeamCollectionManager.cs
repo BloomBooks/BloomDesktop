@@ -176,14 +176,14 @@ namespace Bloom.TeamCollection
 
 		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer,
 			BookRenamedEvent bookRenamedEvent, BookStatusChangeEvent bookStatusChangeEvent,
-			BookSelection bookSelection, LibraryClosing libraryClosingEvent, BookCollectionHolder bookCollectionHolder)
+			BookSelection bookSelection, CollectionClosing collectionClosingEvent, BookCollectionHolder bookCollectionHolder)
 		{
 			_webSocketServer = webSocketServer;
 			_bookStatusChangeEvent = bookStatusChangeEvent;
 			_localCollectionFolder = Path.GetDirectoryName(localCollectionPath);
 			_bookCollectionHolder = bookCollectionHolder;
 			BookSelection = bookSelection;
-			libraryClosingEvent?.Subscribe((x) =>
+			collectionClosingEvent?.Subscribe((x) =>
 			{
 				// When closing the collection...especially if we're restarting due to
 				// changed settings!...we need to save any settings changes to the repo.

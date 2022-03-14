@@ -103,7 +103,7 @@ namespace Bloom.Publish.Epub
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "save", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "save", request =>
 			{
 				{
 					string suggestedName = string.Format("{0}-{1}.epub", Path.GetFileName(_bookSelection.CurrentSelection.FolderPath),
@@ -145,7 +145,7 @@ namespace Bloom.Publish.Epub
 				}
 			}, true, false);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "epubSettings", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "epubSettings", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
@@ -186,13 +186,13 @@ namespace Bloom.Publish.Epub
 				},
 				false);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "updatePreview", request =>
 			{
 				RefreshPreview(_desiredEpubSettings);
 				request.PostSucceeded();
 			}, false); // in fact, must NOT be on UI thread
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "abortPreview", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "abortPreview", request =>
 			{
 				AbortMakingEpub();
 

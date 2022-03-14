@@ -36,17 +36,17 @@ namespace Bloom.Utils
 		}
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler("performance/showCsvFile", (request) =>
+			apiHandler.RegisterEndpointLegacy("performance/showCsvFile", (request) =>
 			{
 				Process.Start(_csvFilePath);
 				request.PostSucceeded();
 			}, false);
-			apiHandler.RegisterEndpointHandler("performance/applicationInfo", (request) =>
+			apiHandler.RegisterEndpointLegacy("performance/applicationInfo", (request) =>
 			{
 				request.ReplyWithText($"Bloom {Shell.GetShortVersionInfo()} {ApplicationUpdateSupport.ChannelName}");
 				
 			}, false);
-			apiHandler.RegisterEndpointHandler("performance/allMeasurements", (request) =>
+			apiHandler.RegisterEndpointLegacy("performance/allMeasurements", (request) =>
 			{
 				List<object> l = new List<object>();
 				foreach (var measurement in _measurements)

@@ -586,9 +586,9 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap OpenCreateLibrary16x16 {
+        internal static System.Drawing.Bitmap OpenCreateCollection16x16 {
             get {
-                object obj = ResourceManager.GetObject("OpenCreateLibrary16x16", resourceCulture);
+                object obj = ResourceManager.GetObject("OpenCreateCollection16x16", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -596,9 +596,9 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap OpenCreateLibrary24x24 {
+        internal static System.Drawing.Bitmap OpenCreateCollection24x24 {
             get {
-                object obj = ResourceManager.GetObject("OpenCreateLibrary24x24", resourceCulture);
+                object obj = ResourceManager.GetObject("OpenCreateCollection24x24", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

@@ -21,7 +21,7 @@ namespace Bloom.CollectionChoosing
 				@"|*.bloomLibrary;*.bloomCollection",
 				() => NewCollectionWizard.CreateNewCollection(() => _openAndCreateControl.UpdateUiLanguageMenuSelection()));
 
-			_openAndCreateControl.DoneChoosingOrCreatingLibrary += (x, y) =>
+			_openAndCreateControl.DoneChoosingOrCreatingCollection += (x, y) =>
 																{
 																	DialogResult = DialogResult.OK;
 																	Close();

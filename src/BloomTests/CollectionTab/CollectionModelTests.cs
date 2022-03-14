@@ -16,24 +16,24 @@ namespace BloomTests.CollectionTab
 {
 	[TestFixture]
 	[SuppressMessage("ReSharper", "LocalizableElement")]
-	class LibraryModelTests
+	class CollectionModelTests
 	{
 		private TemporaryFolder _collection;
 		private TemporaryFolder _folder;
-		private FakeLibraryModel _testLibraryModel;
+		private FakeCollectionModel _testCollectionModel;
 
 		[SetUp]
 		public void Setup()
 		{
 			ErrorReport.IsOkToInteractWithUser = false;
-			_folder = new TemporaryFolder("LibraryModelTests");
+			_folder = new TemporaryFolder("CollectionModelTests");
 
 			// ENHANCE: Sometimes making the FakeCollection temporary folder causes an UnauthorizedAccessException.
 			// Not exactly sure why or what to do about it. Possibly it could be related to file system operations
 			// being async in nature???
 			_collection = new TemporaryFolder(_folder, "FakeCollection");
 			MakeFakeCssFile();
-			_testLibraryModel = new FakeLibraryModel(_collection);
+			_testCollectionModel = new FakeCollectionModel(_collection);
 		}
 
 		private void MakeFakeCssFile()
@@ -69,18 +69,18 @@ namespace BloomTests.CollectionTab
 			File.WriteAllText(Path.Combine(extraHtmDir, "causesException.htm"), htmContents);
 		}
 
-		// Imitate LibraryModel.MakeBloomPack(), but bypasses the user interaction
+		// Imitate CollectionModel.MakeBloomPack(), but bypasses the user interaction
 		private void MakeTestBloomPack(string path, bool forReaderTools)
 		{
-			var (dirName, dirPrefix) = _testLibraryModel.GetDirNameAndPrefixForCollectionBloomPack();
-			_testLibraryModel.MakeBloomPackInternal(path, dirName, dirPrefix, forReaderTools, isCollection: true);
+			var (dirName, dirPrefix) = _testCollectionModel.GetDirNameAndPrefixForCollectionBloomPack();
+			_testCollectionModel.MakeBloomPackInternal(path, dirName, dirPrefix, forReaderTools, isCollection: true);
 		}
 
-		// Imitate LibraryModel.MakeBloomPack(), but bypasses the user interaction
+		// Imitate CollectionModel.MakeBloomPack(), but bypasses the user interaction
 		private void MakeTestSingleBookBloomPack(string path, string bookSrcPath, bool forReaderTools)
 		{
-			var (dirName, dirPrefix) = _testLibraryModel.GetDirNameAndPrefixForSingleBookBloomPack(bookSrcPath);
-			_testLibraryModel.MakeBloomPackInternal(path, dirName, dirPrefix, forReaderTools, isCollection: false);
+			var (dirName, dirPrefix) = _testCollectionModel.GetDirNameAndPrefixForSingleBookBloomPack(bookSrcPath);
+			_testCollectionModel.MakeBloomPackInternal(path, dirName, dirPrefix, forReaderTools, isCollection: false);
 		}
 
 		// Don't do anything with the zip file except read in the filenames
@@ -103,7 +103,7 @@ namespace BloomTests.CollectionTab
 			const string excludedFile = "xfile1.pdf";
 			var bloomPackName = Path.Combine(_folder.Path, "testPack.BloomPack");
 
-			// Imitate LibraryModel.MakeBloomPack() without the user interaction
+			// Imitate CollectionModel.MakeBloomPack() without the user interaction
 			MakeTestBloomPack(bloomPackName, false);
 
 			// Don't do anything with the zip file except read in the filenames
@@ -126,7 +126,7 @@ namespace BloomTests.CollectionTab
 			const string excludedFile = "thumbs.db";
 			var bloomPackName = Path.Combine(_folder.Path, "testPack.BloomPack");
 
-			// Imitate LibraryModel.MakeBloomPack() without the user interaction
+			// Imitate CollectionModel.MakeBloomPack() without the user interaction
 			MakeTestBloomPack(bloomPackName, false);
 
 			// Don't do anything with the zip file except read in the filenames
@@ -155,7 +155,7 @@ namespace BloomTests.CollectionTab
 			RobustFile.WriteAllText(Path.Combine(srcBookPath, excludedBackup), "rubbish");
 			var bloomPackName = Path.Combine(_folder.Path, "testPack.BloomPack");
 
-			// Imitate LibraryModel.MakeBloomPack() without the user interaction
+			// Imitate CollectionModel.MakeBloomPack() without the user interaction
 			MakeTestBloomPack(bloomPackName, false);
 
 			// Don't do anything with the zip file except read in the filenames
@@ -240,7 +240,7 @@ namespace BloomTests.CollectionTab
 			var bloomPackName = Path.Combine(_folder.Path, "testPack.BloomPack");
 
 			// System Under Test
-			// Imitate LibraryModel.MakeBloomPack() without the user interaction
+			// Imitate CollectionModel.MakeBloomPack() without the user interaction
 			MakeTestBloomPack(bloomPackName, false);
 
 			// Verification
@@ -256,7 +256,7 @@ namespace BloomTests.CollectionTab
 			var bloomPackName = Path.Combine(_folder.Path, "testPack.BloomPack");
 
 			// System Under Test
-			// Imitate LibraryModel.MakeBloomPack() without the user interaction
+			// Imitate CollectionModel.MakeBloomPack() without the user interaction
 			MakeTestSingleBookBloomPack(bloomPackName, srcBookPath, false);
 
 			// Verification

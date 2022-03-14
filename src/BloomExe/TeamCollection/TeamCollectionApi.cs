@@ -31,13 +31,13 @@ namespace Bloom.TeamCollection
 		private BloomWebSocketServer _socketServer;
 		private readonly CurrentEditableCollectionSelection _currentBookCollectionSelection;
 		private CollectionSettings _settings;
-		private LibraryModel _libraryModel;
+		private CollectionModel _collectionModel;
 
 		public static TeamCollectionApi TheOneInstance { get; private set; }
 
 		// Called by autofac, which creates the one instance and registers it with the server.
 		public TeamCollectionApi(CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings settings, BookSelection bookSelection,
-			ITeamCollectionManager tcManager, BookServer bookServer, BloomWebSocketServer socketServer, LibraryModel libraryModel)
+			ITeamCollectionManager tcManager, BookServer bookServer, BloomWebSocketServer socketServer, CollectionModel collectionModel)
 		{
 			_currentBookCollectionSelection = currentBookCollectionSelection;
 			_settings = settings;
@@ -46,30 +46,30 @@ namespace Bloom.TeamCollection
 			_bookSelection = bookSelection;
 			_socketServer = socketServer;
 			_bookServer = bookServer;
-			_libraryModel = libraryModel;
+			_collectionModel = collectionModel;
 			TheOneInstance = this;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandlerExact("teamCollection/repoFolderPath", HandleRepoFolderPath, false);
-			apiHandler.RegisterEndpointHandlerExact("teamCollection/isTeamCollectionEnabled", HandleIsTeamCollectionEnabled, false);
-			apiHandler.RegisterEndpointHandlerExact("teamCollection/bookStatus", HandleBookStatus, false, false);
-			apiHandler.RegisterEndpointHandlerExact("teamCollection/selectedBookStatus", HandleSelectedBookStatus, false);
-			apiHandler.RegisterEndpointHandlerExact("teamCollection/attemptLockOfCurrentBook", HandleAttemptLockOfCurrentBook, true);
-			apiHandler.RegisterEndpointHandlerExact("teamCollection/checkInCurrentBook", HandleCheckInCurrentBook, true);
-			apiHandler.RegisterEndpointHandlerExact("teamCollection/forgetChangesInSelectedBook", HandleForgetChangesInSelectedBook, true);
-			apiHandler.RegisterEndpointHandlerExact("teamCollection/chooseFolderLocation", HandleChooseFolderLocation, true);
-			apiHandler.RegisterEndpointHandlerExact("teamCollection/createTeamCollection", HandleCreateTeamCollection, true);
-			apiHandler.RegisterEndpointHandlerExact("teamCollection/joinTeamCollection", HandleJoinTeamCollection, true);
-			apiHandler.RegisterEndpointHandlerExact("teamCollection/getLog", HandleGetLog, false);
-			apiHandler.RegisterEndpointHandlerExact("teamCollection/getCollectionName", HandleGetCollectionName, false);
-			apiHandler.RegisterEndpointHandlerExact("teamCollection/showCreateTeamCollectionDialog", HandleShowCreateTeamCollectionDialog, true);
-			apiHandler.RegisterEndpointHandlerExact("teamCollection/reportBadZip", HandleReportBadZip, true);
-			apiHandler.RegisterEndpointHandlerExact("teamCollection/showRegistrationDialog", HandleShowRegistrationDialog, true, false);
-			apiHandler.RegisterEndpointHandlerExact("teamCollection/getHistory", HandleGetHistory, true);
-			apiHandler.RegisterEndpointHandlerExact("teamCollection/checkinMessage", HandleCheckinMessage, false);
-			apiHandler.RegisterEndpointHandlerExact("teamCollection/forceUnlock", HandleForceUnlock, false);
+			apiHandler.RegisterEndpointHandler("teamCollection/repoFolderPath", HandleRepoFolderPath, false);
+			apiHandler.RegisterEndpointHandler("teamCollection/isTeamCollectionEnabled", HandleIsTeamCollectionEnabled, false);
+			apiHandler.RegisterEndpointHandler("teamCollection/bookStatus", HandleBookStatus, false, false);
+			apiHandler.RegisterEndpointHandler("teamCollection/selectedBookStatus", HandleSelectedBookStatus, false);
+			apiHandler.RegisterEndpointHandler("teamCollection/attemptLockOfCurrentBook", HandleAttemptLockOfCurrentBook, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/checkInCurrentBook", HandleCheckInCurrentBook, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/forgetChangesInSelectedBook", HandleForgetChangesInSelectedBook, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/chooseFolderLocation", HandleChooseFolderLocation, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/createTeamCollection", HandleCreateTeamCollection, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/joinTeamCollection", HandleJoinTeamCollection, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/getLog", HandleGetLog, false);
+			apiHandler.RegisterEndpointHandler("teamCollection/getCollectionName", HandleGetCollectionName, false);
+			apiHandler.RegisterEndpointHandler("teamCollection/showCreateTeamCollectionDialog", HandleShowCreateTeamCollectionDialog, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/reportBadZip", HandleReportBadZip, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/showRegistrationDialog", HandleShowRegistrationDialog, true, false);
+			apiHandler.RegisterEndpointHandler("teamCollection/getHistory", HandleGetHistory, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/checkinMessage", HandleCheckinMessage, false);
+			apiHandler.RegisterEndpointHandler("teamCollection/forceUnlock", HandleForceUnlock, false);
 		}
 
 		private void HandleForceUnlock(ApiRequest request)
@@ -525,7 +525,7 @@ namespace Bloom.TeamCollection
 
 				if (finalBookName != bookName)
 				{
-					_libraryModel.UpdateLabelOfBookInEditableCollection(_bookSelection.CurrentSelection);
+					_collectionModel.UpdateLabelOfBookInEditableCollection(_bookSelection.CurrentSelection);
 				}
 				BookHistory.SetPendingCheckinMessage(_bookSelection.CurrentSelection, "");
 				UpdateUiForBook(reloadFromDisk:false, renamedTo: updatedBookFolder);

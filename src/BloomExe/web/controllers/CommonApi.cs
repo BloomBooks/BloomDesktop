@@ -48,23 +48,23 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler("uiLanguages", HandleUiLanguages, false); // App
-			apiHandler.RegisterEndpointHandler("currentUiLanguage", HandleCurrentUiLanguage, false); // App
-			apiHandler.RegisterEndpointHandler("bubbleLanguages", HandleBubbleLanguages, false); // Move to EditingViewApi
-			apiHandler.RegisterEndpointHandler("authorMode", HandleAuthorMode, false); // Move to EditingViewApi
-			apiHandler.RegisterEndpointHandler("topics", HandleTopics, false); // Move to EditingViewApi
-			apiHandler.RegisterEndpointHandler("common/error", HandleJavascriptError, false); // Common
-			apiHandler.RegisterEndpointHandler("common/preliminaryError", HandlePreliminaryJavascriptError, false); // Common
-			apiHandler.RegisterEndpointHandler("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true); // Move to EditingViewApi
-			apiHandler.RegisterEndpointHandler("common/chooseFolder", HandleChooseFolder, true);
-			apiHandler.RegisterEndpointHandler("common/showInFolder", HandleShowInFolderRequest, true); // Common
-			apiHandler.RegisterEndpointHandler("common/canModifyCurrentBook", HandleCanModifyCurrentBook, true);
-			apiHandler.RegisterEndpointHandler("common/showSettingsDialog", HandleShowSettingsDialog, false); // Common
-			apiHandler.RegisterEndpointHandler("common/problemWithBookMessage", request =>
+			apiHandler.RegisterEndpointLegacy("uiLanguages", HandleUiLanguages, false); // App
+			apiHandler.RegisterEndpointLegacy("currentUiLanguage", HandleCurrentUiLanguage, false); // App
+			apiHandler.RegisterEndpointLegacy("bubbleLanguages", HandleBubbleLanguages, false); // Move to EditingViewApi
+			apiHandler.RegisterEndpointLegacy("authorMode", HandleAuthorMode, false); // Move to EditingViewApi
+			apiHandler.RegisterEndpointLegacy("topics", HandleTopics, false); // Move to EditingViewApi
+			apiHandler.RegisterEndpointLegacy("common/error", HandleJavascriptError, false); // Common
+			apiHandler.RegisterEndpointLegacy("common/preliminaryError", HandlePreliminaryJavascriptError, false); // Common
+			apiHandler.RegisterEndpointLegacy("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true); // Move to EditingViewApi
+			apiHandler.RegisterEndpointLegacy("common/chooseFolder", HandleChooseFolder, true);
+			apiHandler.RegisterEndpointLegacy("common/showInFolder", HandleShowInFolderRequest, true); // Common
+			apiHandler.RegisterEndpointLegacy("common/canModifyCurrentBook", HandleCanModifyCurrentBook, true);
+			apiHandler.RegisterEndpointLegacy("common/showSettingsDialog", HandleShowSettingsDialog, false); // Common
+			apiHandler.RegisterEndpointLegacy("common/problemWithBookMessage", request =>
 			{
 				request.ReplyWithText(CommonMessages.GetProblemWithBookMessage(Path.GetFileName(_bookSelection.CurrentSelection?.FolderPath)));
 			}, false);
-			apiHandler.RegisterEndpointHandler("common/clickHereForHelp", request =>
+			apiHandler.RegisterEndpointLegacy("common/clickHereForHelp", request =>
 			{
 				var problemFilePath = UrlPathString.CreateFromUrlEncodedString(request.RequiredParam("problem")).NotEncoded;
 				request.ReplyWithText(CommonMessages.GetPleaseClickHereForHelpMessage(problemFilePath));
@@ -75,7 +75,7 @@ namespace Bloom.web.controllers
 			// invocation of the code that decides whether to enable the paste hyperlink button). This causes a deadlock
 			// unless we make this endpoint requiresSync:false. I think this is safe as it doesn't interact with any other
 			// Bloom objects.
-			apiHandler.RegisterEndpointHandler("common/clipboardText",
+			apiHandler.RegisterEndpointLegacy("common/clipboardText",
 				request =>
 				{
 					if (request.HttpMethod == HttpMethods.Get)
@@ -122,20 +122,20 @@ namespace Bloom.web.controllers
 						request.PostSucceeded();
 					}
 				}, false, false);
-			apiHandler.RegisterEndpointHandler("common/checkForUpdates",
+			apiHandler.RegisterEndpointLegacy("common/checkForUpdates",
 				request =>
 				{
 					WorkspaceView.CheckForUpdates();
 					request.PostSucceeded();
 				}, false);
-			apiHandler.RegisterEndpointHandler("common/channel",
+			apiHandler.RegisterEndpointLegacy("common/channel",
 				request =>
 				{
 					request.ReplyWithText(ApplicationUpdateSupport.ChannelName);
 				}, false);
 			// This is useful for debugging TypeScript code, especially on Linux.  I wouldn't necessarily expect
 			// to see it used anywhere in code that gets submitted and merged.
-			apiHandler.RegisterEndpointHandler ("common/debugMessage",
+			apiHandler.RegisterEndpointLegacy ("common/debugMessage",
 				request =>
 				{
 					var message = request.RequiredPostString();
@@ -143,7 +143,7 @@ namespace Bloom.web.controllers
 					request.PostSucceeded();
 				}, false);
 
-			apiHandler.RegisterEndpointHandler("common/loginData",
+			apiHandler.RegisterEndpointLegacy("common/loginData",
 				request =>
 				{
 					var requestData = DynamicJson.Parse(request.RequiredPostJson());
@@ -165,14 +165,14 @@ namespace Bloom.web.controllers
 			// other solutions for that including opening the dialog on Application.Idle. But the dialog needs
 			// to give a real-time result so callers can know what do with button presses. Since some of those
 			// callers are in libpalaso, we can't just ignore the result and handle the actions ourselves.
-			apiHandler.RegisterEndpointHandler("common/closeReactDialog", request =>
+			apiHandler.RegisterEndpointLegacy("common/closeReactDialog", request =>
 			{
 				ReactDialog.CloseCurrentModal(request.GetPostStringOrNull());
 				request.PostSucceeded();
 			}, true, requiresSync: false);
 
 			// TODO: move to the new App API (BL-9635)
-			apiHandler.RegisterEndpointHandler("common/reloadCollection", HandleReloadCollection, true);
+			apiHandler.RegisterEndpointLegacy("common/reloadCollection", HandleReloadCollection, true);
 		}
 
 		/// <summary>

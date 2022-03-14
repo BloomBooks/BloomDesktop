@@ -164,7 +164,7 @@ namespace Bloom.CLI
 
 		private static CreateArtifactsExitCode CreateBloomSourceArtifact(string bookPath, string creator, string zippedBloomSourceOutputPath)
 		{
-			if (!CollectionTab.LibraryModel.SaveAsBloomSourceFile(bookPath, zippedBloomSourceOutputPath, out Exception exception))
+			if (!CollectionTab.CollectionModel.SaveAsBloomSourceFile(bookPath, zippedBloomSourceOutputPath, out Exception exception))
 			{
 				return CreateArtifactsExitCode.UnhandledException;
 			}

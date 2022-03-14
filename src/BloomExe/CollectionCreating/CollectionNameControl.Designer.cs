@@ -50,7 +50,7 @@
             this._collectionNameControl.Name = "_collectionNameControl";
             this._collectionNameControl.Size = new System.Drawing.Size(229, 29);
             this._collectionNameControl.TabIndex = 10;
-            this._collectionNameControl.TextChanged += new System.EventHandler(this._textLibraryName_TextChanged);
+            this._collectionNameControl.TextChanged += new System.EventHandler(this._textCollectionName_TextChanged);
             // 
             // _exampleText
             // 

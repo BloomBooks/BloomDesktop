@@ -95,7 +95,7 @@ namespace Bloom.CollectionChoosing
 			this._browseButton.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this._browseButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this._browseButton.UseVisualStyleBackColor = true;
-			this._browseButton.Click += new System.EventHandler(this.OnBrowseForExistingLibraryClick);
+			this._browseButton.Click += new System.EventHandler(this.OnBrowseForExistingCollectionClick);
 			// 
 			// button9
 			// 
@@ -115,7 +115,7 @@ namespace Bloom.CollectionChoosing
 			this.button9.Text = "Create New Collection";
 			this.button9.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this.button9.UseVisualStyleBackColor = true;
-			this.button9.Click += new System.EventHandler(this.CreateNewLibrary_LinkClicked);
+			this.button9.Click += new System.EventHandler(this.CreateNewCollection_LinkClicked);
 			// 
 			// _templateButton
 			// 

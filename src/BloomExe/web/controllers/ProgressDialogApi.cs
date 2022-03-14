@@ -19,7 +19,7 @@ namespace Bloom.web.controllers
 		}
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler("progress/cancel", Cancel, false, false);
+			apiHandler.RegisterEndpointLegacy("progress/cancel", Cancel, false, false);
 		}
 
 		private void Cancel(ApiRequest request)

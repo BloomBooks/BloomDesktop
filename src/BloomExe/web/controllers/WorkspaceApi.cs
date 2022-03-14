@@ -24,7 +24,7 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandlerExact("workspace/openOrCreateCollection/", HandleOpenOrCreateCollection,
+			apiHandler.RegisterEndpointHandler("workspace/openOrCreateCollection/", HandleOpenOrCreateCollection,
 				true);
 		}
 
@@ -32,14 +32,14 @@ namespace Bloom.web.controllers
 		{
 			// This shuts everything down, so it needs to happen after all the request processing
 			// is complete.
-			Application.Idle += OpenCreateLibrary;
+			Application.Idle += OpenCreateCollection;
 			request.PostSucceeded();
 		}
 
-		private void OpenCreateLibrary(object sender, EventArgs e)
+		private void OpenCreateCollection(object sender, EventArgs e)
 		{
-			Application.Idle -= OpenCreateLibrary;
-			WorkspaceView.OpenCreateLibrary();
+			Application.Idle -= OpenCreateCollection;
+			WorkspaceView.OpenCreateCollection();
 		}
 	}
 }

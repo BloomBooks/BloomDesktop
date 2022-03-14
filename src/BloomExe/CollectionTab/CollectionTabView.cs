@@ -18,18 +18,18 @@ using SIL.Windows.Forms.SettingProtection;
 
 namespace Bloom.CollectionTab
 {
-	public partial class ReactCollectionTabView : UserControl, IBloomTabArea
+	public partial class CollectionTabView : UserControl, IBloomTabArea
 	{
-		private readonly LibraryModel _model;
+		private readonly CollectionModel _model;
 		private WorkspaceTabSelection _tabSelection;
 		private BookSelection _bookSelection;
 		private BloomWebSocketServer _webSocketServer;
 		private TeamCollectionManager _tcManager;
 		private bool _bookChangesPending = false; // bookchanged event while tab not visible
 
-		public delegate ReactCollectionTabView Factory();//autofac uses this
+		public delegate CollectionTabView Factory();//autofac uses this
 
-		public ReactCollectionTabView(LibraryModel model,
+		public CollectionTabView(CollectionModel model,
 			SelectedTabChangedEvent selectedTabChangedEvent,
 			SendReceiveCommand sendReceiveCommand,
 			TeamCollectionManager tcManager, BookSelection bookSelection,
@@ -311,7 +311,7 @@ namespace Bloom.CollectionTab
 
 		private void _openCreateCollectionButton_Click(object sender, EventArgs e)
 		{
-			GetWorkspaceView().OpenCreateLibrary();
+			GetWorkspaceView().OpenCreateCollection();
 		}
 
 		/// <summary>

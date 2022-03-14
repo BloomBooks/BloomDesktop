@@ -274,7 +274,7 @@
   <data name="help24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\help24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="OpenCreateLibrary24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
+  <data name="OpenCreateCollection24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\OpenCreateLibrary24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Cut16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
@@ -295,7 +295,7 @@
   <data name="AddPageButton" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\AddPageButton.PNG;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="OpenCreateLibrary16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+  <data name="OpenCreateCollection16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\OpenCreateLibrary16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="copyDisable16x161" type="System.Resources.ResXFileRef, System.Windows.Forms">
