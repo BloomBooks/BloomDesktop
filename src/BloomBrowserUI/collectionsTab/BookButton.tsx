@@ -159,7 +159,7 @@ export const BookButton: React.FunctionComponent<{
             requiresEnterprise: true
         },
         {
-            label: "Import content from Spreadsheet...",
+            label: "Import Content from Spreadsheet...",
             l10nId: "CollectionTab.BookMenu.ImportContentFromSpreadsheet",
             command: "bookCommand/importSpreadsheetContent",
             requiresSavePermission: true,
@@ -167,12 +167,12 @@ export const BookButton: React.FunctionComponent<{
         },
         { label: "-" },
         {
-            label: "Save as single file (.bloomSource)...",
+            label: "Save as Single File (*.bloomSource)...",
             l10nId: "CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem",
             command: "bookCommand/saveAsDotBloomSource"
         },
         {
-            label: "Save as Bloom Pack (.bloomPack)",
+            label: "Save as Bloom Pack (*.BloomPack)",
             l10nId: "CollectionTab.BookMenu.SaveAsBloomPackContextMenuItem",
             command: "bookCommand/makeBloompack",
             addEllipsis: true

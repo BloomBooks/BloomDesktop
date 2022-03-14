@@ -90,12 +90,16 @@ export const LocalizableMenuItem: React.FunctionComponent<LocalizableMenuItemPro
     const openCollectionSettings = () =>
         BloomApi.post("common/showSettingsDialog?tab=enterprise");
 
+    const menuClickHandler = props.requiresEnterprise
+        ? enterpriseAvailable
+            ? props.onClick
+            : openCollectionSettings
+        : props.onClick;
+
     return (
         <MenuItem
             key={props.l10nId}
-            onClick={
-                enterpriseAvailable ? props.onClick : openCollectionSettings
-            }
+            onClick={menuClickHandler}
             dense
             css={css`
                 padding: 0 6px !important; // eliminate top and bottom padding to make even denser

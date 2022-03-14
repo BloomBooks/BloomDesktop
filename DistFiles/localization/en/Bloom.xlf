@@ -661,7 +661,7 @@
         <note>ID: CollectionTab.BookMenu.ExportToXMLForInDesign</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.ImportContentFromSpreadsheet">
-        <source xml:lang="en">Import content from Spreadsheet...</source>
+        <source xml:lang="en">Import Content from Spreadsheet...</source>
         <note>ID: CollectionTab.BookMenu.ImportContentFromSpreadsheet</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.MakeBloomPack">
@@ -679,11 +679,11 @@
         <note>ID: CollectionTab.BookMenu.RenameBook</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.SaveAsBloomPackContextMenuItem">
-        <source xml:lang="en">Save as Bloom Pack (.bloomPack)</source>
+        <source xml:lang="en">Save as Bloom Pack (*.BloomPack)</source>
         <note>ID: CollectionTab.BookMenu.SaveAsBloomPackContextMenuItem</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem">
-        <source xml:lang="en">Save as single file (.bloomSource)...</source>
+        <source xml:lang="en">Save as Single File (*.bloomSource)...</source>
         <note>ID: CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.ShowInFileExplorer">
