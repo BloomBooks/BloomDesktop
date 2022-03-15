@@ -4,6 +4,7 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { BloomApi } from "../utils/bloomApi";
 import { BloomAvatar } from "../react_components/bloomAvatar";
+import { useEffect, useState } from "react";
 
 interface IBookHistoryEvent {
     Title: string;
@@ -58,9 +59,18 @@ const kEventTypes = [
     "Force Unlock"
 ]; // REVIEW maybe better to do this in c# and just send it over?
 
-export const CollectionHistoryTable: React.FunctionComponent = props => {
+export const CollectionHistoryTable: React.FunctionComponent<{
+    selectedBook?: string;
+}> = props => {
+    const currentBookOnly = !!props.selectedBook;
+    // This is a trick to force the API call to run again when the selected book changes.
+    const [generation, setGeneration] = useState(0);
+    useEffect(() => setGeneration(gen => gen + 1), [props.selectedBook]);
     const events = BloomApi.useApiData<IBookHistoryEvent[]>(
-        "teamCollection/getHistory",
+        "teamCollection/getHistory" +
+            (currentBookOnly
+                ? "?currentBookOnly=true&generation=" + generation
+                : ""),
         []
     );
 
@@ -82,7 +92,11 @@ export const CollectionHistoryTable: React.FunctionComponent = props => {
                     margin-bottom: 5px;
                 `}
             >
-                <HeaderCell colSpan={2}>Title</HeaderCell>{" "}
+                {currentBookOnly || (
+                    <React.Fragment>
+                        <HeaderCell colSpan={2}>Title</HeaderCell>{" "}
+                    </React.Fragment>
+                )}
                 <HeaderCell>When</HeaderCell>
                 <HeaderCell colSpan={2}>Who</HeaderCell>
                 <HeaderCell>What</HeaderCell>
@@ -95,19 +109,23 @@ export const CollectionHistoryTable: React.FunctionComponent = props => {
                     `}
                     key={index}
                 >
-                    <td
-                        css={css`
-                            padding-right: 4px !important;
-                        `}
-                    >
-                        <img
-                            css={css`
-                                height: 2em;
-                            `}
-                            src={e.ThumbnailPath}
-                        />
-                    </td>
-                    <TextCell>{e.Title}</TextCell>
+                    {currentBookOnly || (
+                        <React.Fragment>
+                            <td
+                                css={css`
+                                    padding-right: 4px !important;
+                                `}
+                            >
+                                <img
+                                    css={css`
+                                        height: 2em;
+                                    `}
+                                    src={e.ThumbnailPath}
+                                />
+                            </td>
+                            <TextCell>{e.Title}</TextCell>
+                        </React.Fragment>
+                    )}
 
                     <TextCell>
                         {/* Review: can we get away with this? I do want the 2021-11-01 format, and this gives that */}
