@@ -28,6 +28,7 @@ export const BookButton: React.FunctionComponent<{
     collection: ICollection;
     //selected: boolean;
     manager: BookSelectionManager;
+    isSpreadsheetFeatureActive: boolean;
 }> = props => {
     // TODO: the c# had Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont,
 
@@ -208,7 +209,7 @@ export const BookButton: React.FunctionComponent<{
             },
             {
                 label: "Show in File Explorer",
-                l10nId: "CollectionTab.ContextMenu.ShowInFileExplorer",
+                l10nId: "CollectionTab.BookMenu.ShowInFileExplorer",
                 command: "bookCommand/openFolderOnDisk",
                 shouldShow: () => true // show for all collections (except factory)
             },
@@ -415,7 +416,8 @@ export const BookButton: React.FunctionComponent<{
                         props.manager.getSelectedBookInfo()!.saveable,
                         handleClose,
                         props.book.id,
-                        props.collection.id
+                        props.collection.id,
+                        props.isSpreadsheetFeatureActive
                     )}
                 </Menu>
             )}
