@@ -30,7 +30,7 @@ namespace Bloom.Api
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointLegacy(kAppUrlPrefix + "enabledExperimentalFeatures", request =>
+			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "enabledExperimentalFeatures", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
@@ -42,7 +42,7 @@ namespace Bloom.Api
 					request.PostSucceeded();
 				}
 			}, false);
-			apiHandler.RegisterEndpointLegacy(kAppUrlPrefix + "autoUpdateSoftwareChoice", HandleAutoUpdate, false);
+			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "autoUpdateSoftwareChoice", HandleAutoUpdate, false);
 
 
 			/* It's not totally clear if these kinds of things fit well in this App api, or if we
