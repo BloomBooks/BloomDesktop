@@ -160,6 +160,7 @@ namespace Bloom.Publish.Android
 				(writeRequest, value) =>
 				{
 					writeRequest.CurrentBook.MotionMode = value;
+					_webSocketServer.SendEvent("publish", "motionChanged");
 				}
 			, true);
 

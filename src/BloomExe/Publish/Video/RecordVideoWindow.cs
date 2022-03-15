@@ -165,7 +165,7 @@ namespace Bloom.Publish.Video
 				"-f gdigrab " // basic command for using a window (in a Windows OS) as a video input stream
 				+ "-framerate 30 " // frames per second to capture (30fps is standard for SD video)
 				+ "-draw_mouse 0 " // don't capture any mouse movement over the window
-				+ $"-i title={Text} " // identifies the window for gdigrab
+				+ $"-i title=\"{Text}\" " // identifies the window for gdigrab
 				
 				+ videoArgs
 				+ _videoOnlyPath; // the intermediate output file for the recording.
@@ -194,6 +194,13 @@ namespace Bloom.Publish.Video
 		/// </summary>
 		/// <param name="soundLogJson"></param>
 		public void StopRecording(string soundLogJson)
+		{
+			StopRecordingInternal(soundLogJson);
+			// Many early returns in this method, but we always want to close this.
+			Close();
+		}
+
+		private void StopRecordingInternal(string soundLogJson)
 		{
 			var haveVideo = _codec != Codec.MP3;
 			if (haveVideo)
@@ -246,8 +253,14 @@ namespace Bloom.Publish.Video
 			if (soundLog.Length == 0)
 			{
 				if (!haveVideo)
+				{
 					return; // can't do anything useful!
+				}
+
 				RobustFile.Copy(_videoOnlyPath, finalOutputPath);
+				GotFullRecording = true;
+				// Allows the Check and Save buttons to be enabled, now we have something we can play or save.
+				_webSocketServer.SendString("recordVideo", "ready", "true");
 				return;
 			}
 
@@ -357,7 +370,6 @@ namespace Bloom.Publish.Video
 			// was complete, this would be the time to proceed with saving.
 			if (_saveReceived)
 				SaveVideo(); // now we really can.
-			Close();
 		}
 
 		private void RunFfmpeg(string args)
