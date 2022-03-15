@@ -36,13 +36,13 @@ namespace Bloom.web
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler("pageList/pages", HandlePagesRequest, false).Measureable();
-			apiHandler.RegisterEndpointHandler("pageList/pageContent", HandlePageContentRequest, false);
-			apiHandler.RegisterEndpointHandler("pageList/pageMoved", HandlePageMovedRequest, true).Measureable();
-			apiHandler.RegisterEndpointHandler("pageList/pageClicked", HandlePageClickedRequest, true);
-			apiHandler.RegisterEndpointHandler("pageList/menuClicked", HandleShowMenuRequest, true).Measureable();
+			apiHandler.RegisterEndpointLegacy("pageList/pages", HandlePagesRequest, false).Measureable();
+			apiHandler.RegisterEndpointLegacy("pageList/pageContent", HandlePageContentRequest, false);
+			apiHandler.RegisterEndpointLegacy("pageList/pageMoved", HandlePageMovedRequest, true).Measureable();
+			apiHandler.RegisterEndpointLegacy("pageList/pageClicked", HandlePageClickedRequest, true);
+			apiHandler.RegisterEndpointLegacy("pageList/menuClicked", HandleShowMenuRequest, true).Measureable();
 
-			apiHandler.RegisterEndpointHandler("pageList/bookAttributesThatMayAffectDisplay", (request) =>
+			apiHandler.RegisterEndpointLegacy("pageList/bookAttributesThatMayAffectDisplay", (request) =>
 			{
 				var attrs = _bookSelection.CurrentSelection.OurHtmlDom.GetBodyAttributesThatMayAffectDisplay();
 				// Surely there's a way to do this more safely with JSON.net but I haven't found it yet

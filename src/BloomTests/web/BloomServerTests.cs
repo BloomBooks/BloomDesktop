@@ -119,7 +119,7 @@ namespace BloomTests.web
 						Assert.That(request.CurrentCollectionSettings, Is.EqualTo(server.CurrentCollectionSettings));
 						request.ReplyWithText("Did It!");
 					};
-				server.ApiHandler.RegisterEndpointHandler("thisWontWorkWithoutInjection", testFunc, true);
+				server.ApiHandler.RegisterEndpointLegacy("thisWontWorkWithoutInjection", testFunc, true);
 
 				// Execute
 				server.MakeReply(transaction);

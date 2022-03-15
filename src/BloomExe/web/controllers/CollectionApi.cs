@@ -23,7 +23,7 @@ namespace Bloom.web.controllers
 	public class CollectionApi
 	{
 		private readonly CollectionSettings _settings;
-		private readonly LibraryModel _libraryModel;
+		private readonly CollectionModel _collectionModel;
 		public const string kApiUrlPart = "collections/";
 		private readonly BookSelection _bookSelection;
 		private BookThumbNailer _thumbNailer;
@@ -37,10 +37,10 @@ namespace Bloom.web.controllers
 		// We'd prefer to just let the WorkspaceView be a constructor arg passed to this by Autofac,
 		// but that throws an exception, probably there is some circularity.
 		public WorkspaceView WorkspaceView;
-		public 	 CollectionApi(CollectionSettings settings, LibraryModel libraryModel, BookSelection bookSelection, EditBookCommand editBookCommand, BookThumbNailer thumbNailer, BloomWebSocketServer webSocketServer)
+		public 	 CollectionApi(CollectionSettings settings, CollectionModel collectionModel, BookSelection bookSelection, EditBookCommand editBookCommand, BookThumbNailer thumbNailer, BloomWebSocketServer webSocketServer)
 		{
 			_settings = settings;
-			_libraryModel = libraryModel;
+			_collectionModel = collectionModel;
 			_bookSelection = bookSelection;
 			_editBookCommand = editBookCommand;
 			_thumbNailer = thumbNailer;
@@ -50,31 +50,31 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "list", HandleListRequest, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "list", HandleListRequest, true);
 
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "name", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "name", request =>
 			{
 				// always null? request.ReplyWithText(_collection.Name);
 				request.ReplyWithText(_settings.CollectionName);
 			}, true);
 
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "books", HandleBooksRequest, false, false);
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "book/thumbnail", HandleThumbnailRequest, false, false);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "books", HandleBooksRequest, false, false);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "book/thumbnail", HandleThumbnailRequest, false, false);
 
 			// Note: the get part of this doesn't need to run on the UI thread, or even requiresSync. If it gets called a lot, consider
 			// using different patterns for get and set so we can not use the uI thread for get.
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "selected-book-id", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "selected-book-id", request =>
 			{
 				switch (request.HttpMethod)
 				{
 					case HttpMethods.Get:
-						request.ReplyWithText("" + _libraryModel.GetSelectedBookOrNull()?.ID);
+						request.ReplyWithText("" + _collectionModel.GetSelectedBookOrNull()?.ID);
 						break;
 					case HttpMethods.Post:
 						var book = GetBookObjectFromPost(request);
 						if (book.FolderPath != _bookSelection?.CurrentSelection?.FolderPath)
 						{
-							_libraryModel.SelectBook(book);
+							_collectionModel.SelectBook(book);
 						}
 
 						request.PostSucceeded();
@@ -82,12 +82,12 @@ namespace Bloom.web.controllers
 				}
 			}, true);
 
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "selectAndEditBook", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "selectAndEditBook", request =>
 			{
 				var book = GetBookObjectFromPost(request);
 				if (book.FolderPath != _bookSelection?.CurrentSelection?.FolderPath)
 				{
-					_libraryModel.SelectBook(book);
+					_collectionModel.SelectBook(book);
 				}
 				if (GetCollectionOfRequest(request).Type == BookCollection.CollectionType.TheOneEditableCollection)
 				{
@@ -98,43 +98,43 @@ namespace Bloom.web.controllers
 			}, true);
 
 
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "duplicateBook/", (request) =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "duplicateBook/", (request) =>
 			{
-				_libraryModel.DuplicateBook(GetBookObjectFromPost(request));
+				_collectionModel.DuplicateBook(GetBookObjectFromPost(request));
 				request.PostSucceeded();
 			}, true);
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "deleteBook/", (request) =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "deleteBook/", (request) =>
 			{
 				var collection = GetCollectionOfRequest(request);
-				_libraryModel.DeleteBook(GetBookObjectFromPost(request), collection);
+				_collectionModel.DeleteBook(GetBookObjectFromPost(request), collection);
 				request.PostSucceeded();
 			}, true);
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "collectionProps/", HandleCollectionProps, false, false);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "collectionProps/", HandleCollectionProps, false, false);
 
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "makeBloompack/", (request) =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "makeBloompack/", (request) =>
 				{
-					_libraryModel.MakeReaderTemplateBloompack();
+					_collectionModel.MakeReaderTemplateBloompack();
 					request.PostSucceeded();
 				},
 				true);
 
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "doChecksOfAllBooks/", (request) =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "doChecksOfAllBooks/", (request) =>
 				{
-					_libraryModel.DoChecksOfAllBooks();
+					_collectionModel.DoChecksOfAllBooks();
 					request.PostSucceeded();
 				},
 				true);
 
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "rescueMissingImages/", (request) =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "rescueMissingImages/", (request) =>
 				{
-					_libraryModel.RescueMissingImages();
+					_collectionModel.RescueMissingImages();
 					request.PostSucceeded();
 				},
 				true);
 
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "doUpdatesOfAllBooks/", (request) =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "doUpdatesOfAllBooks/", (request) =>
 				{
-					_libraryModel.DoUpdatesOfAllBooks();
+					_collectionModel.DoUpdatesOfAllBooks();
 					request.PostSucceeded();
 				},
 				true);
@@ -155,7 +155,7 @@ namespace Bloom.web.controllers
 		public void HandleListRequest(ApiRequest request)
 		{
 			dynamic output = new List<dynamic>();
-			_libraryModel.GetBookCollections().ForEach(c =>
+			_collectionModel.GetBookCollections().ForEach(c =>
 			{
 				Debug.WriteLine($"collection: {c.Name}-->{c.PathToDirectory}");
 				// For this purpose there's no point in returning empty collections (except the editable one),
@@ -221,7 +221,7 @@ namespace Bloom.web.controllers
 		private BookCollection GetCollectionOfRequest(ApiRequest request)
 		{
 			var id = request.RequiredParam("collection-id").Trim();
-			var collection = _libraryModel.GetBookCollections().FirstOrDefault(c => c.PathToDirectory == id);
+			var collection = _collectionModel.GetBookCollections().FirstOrDefault(c => c.PathToDirectory == id);
 			if (collection == null)
 			{
 				request.Failed($"Collection named '{id}' was not found.");
@@ -249,14 +249,14 @@ namespace Bloom.web.controllers
 				// This is rarely if ever needed. Bloom already does this when selecting a book
 				// or after editing it. One case (but it won't succeed) is when the book doesn't
 				// HAVE an image on the cover.
-				_thumbNailer.MakeThumbnailOfCover(_libraryModel.GetBookFromBookInfo(bookInfo));
+				_thumbNailer.MakeThumbnailOfCover(_collectionModel.GetBookFromBookInfo(bookInfo));
 			}
 			if (RobustFile.Exists(path))
 				request.ReplyWithImage(path);
 			else
 			{
 				var errorImg = Resources.placeHolderBookThumbnail;
-				if (_libraryModel.GetBookFromBookInfo(bookInfo).HasFatalError)
+				if (_collectionModel.GetBookFromBookInfo(bookInfo).HasFatalError)
 					errorImg = Resources.Error70x70;
 				var stream = new MemoryStream();
 				errorImg.Save(stream, ImageFormat.Png);
@@ -282,7 +282,7 @@ namespace Bloom.web.controllers
 		private Book.Book GetBookObjectFromPost(ApiRequest request)
 		{
 			var info = GetBookInfoFromPost(request);
-			return _libraryModel.GetBookFromBookInfo(info);
+			return _collectionModel.GetBookFromBookInfo(info);
 
 		}
 	}

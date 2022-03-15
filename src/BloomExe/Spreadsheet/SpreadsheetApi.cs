@@ -19,14 +19,14 @@ namespace Bloom.web.controllers
 	/// </summary>
 	public class SpreadsheetApi
 	{
-		private readonly LibraryModel _libraryModel;
+		private readonly CollectionModel _collectionModel;
 		private BookSelection _bookSelection;
 		private readonly BloomWebSocketServer _webSocketServer;
 
 
-		public SpreadsheetApi(LibraryModel libraryModel, BloomWebSocketServer webSocketServer, BookSelection bookSelection)
+		public SpreadsheetApi(CollectionModel collectionModel, BloomWebSocketServer webSocketServer, BookSelection bookSelection)
 		{
-			_libraryModel = libraryModel;
+			_collectionModel = collectionModel;
 			_webSocketServer = webSocketServer;
 			_bookSelection = bookSelection;
 		}
@@ -38,13 +38,13 @@ namespace Bloom.web.controllers
 			// go through a single "bookCommand/" API, so we don't register that here.
 			// Instead all we need to register is any api enpoints used by our own spreadsheet dialogs
 
-			apiHandler.RegisterEndpointHandler("spreadsheet/export", ExportToSpreadsheet, true);
+			apiHandler.RegisterEndpointLegacy("spreadsheet/export", ExportToSpreadsheet, true);
 		}
 		private ReactDialog _openDialog = null;
 		public void ShowExportToSpreadsheetUI(Book.Book book)
 		{
 			// Throw up a Requires Bloom Enterprise dialog if it's not turned on
-			if (!_libraryModel.CollectionSettings.HaveEnterpriseFeatures)
+			if (!_collectionModel.CollectionSettings.HaveEnterpriseFeatures)
 			{
 				Enterprise.ShowRequiresEnterpriseNotice(Form.ActiveForm, "Export to Spreadsheet");
 				return;
@@ -97,7 +97,7 @@ namespace Bloom.web.controllers
 		/// </summary>
 		public void HandleImportContentFromSpreadsheet(Book.Book book)
 		{
-			if (!_libraryModel.CollectionSettings.HaveEnterpriseFeatures)
+			if (!_collectionModel.CollectionSettings.HaveEnterpriseFeatures)
 			{
 				Enterprise.ShowRequiresEnterpriseNotice(Form.ActiveForm, "Import to Spreadsheet");
 				return;

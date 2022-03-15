@@ -21,16 +21,16 @@ namespace Bloom.Edit
 	/// </summary>
 	public class Configurator
 	{
-		private readonly string _folderInWhichToReadAndSaveLibrarySettings;
+		private readonly string _folderInWhichToReadAndSaveCollectionSettings;
 		private readonly NavigationIsolator _isolator;
-		public delegate Configurator Factory(string folderInWhichToReadAndSaveLibrarySettings);//autofac uses this
+		public delegate Configurator Factory(string folderInWhichToReadAndSaveCollectionSettings);//autofac uses this
 
-		public Configurator(string folderInWhichToReadAndSaveLibrarySettings, NavigationIsolator isolator)
+		public Configurator(string folderInWhichToReadAndSaveCollectionSettings, NavigationIsolator isolator)
 		{
-			_folderInWhichToReadAndSaveLibrarySettings = folderInWhichToReadAndSaveLibrarySettings;
+			_folderInWhichToReadAndSaveCollectionSettings = folderInWhichToReadAndSaveCollectionSettings;
 			_isolator = isolator;
-			PathToLibraryJson = _folderInWhichToReadAndSaveLibrarySettings.CombineForPath("configuration.txt");
-			RequireThat.Directory(folderInWhichToReadAndSaveLibrarySettings).Exists();
+			PathToCollectionJson = _folderInWhichToReadAndSaveCollectionSettings.CombineForPath("configuration.txt");
+			RequireThat.Directory(folderInWhichToReadAndSaveCollectionSettings).Exists();
 			LocalData = string.Empty;
 		}
 
@@ -46,7 +46,7 @@ namespace Bloom.Edit
 
 		public DialogResult ShowConfigurationDialog(string folderPath)
 		{
-			using (var dlg = new ConfigurationDialog(Path.Combine(folderPath, "configuration.html"), GetLibraryData(), _isolator))
+			using (var dlg = new ConfigurationDialog(Path.Combine(folderPath, "configuration.html"), GetCollectionData(), _isolator))
 			{
 				var result = dlg.ShowDialog(null);
 				if (result == DialogResult.OK)
@@ -188,10 +188,10 @@ namespace Bloom.Edit
 
 		public string LocalData { get; set; }
 
-		private string PathToLibraryJson { get; set; }
+		private string PathToCollectionJson { get; set; }
 
 		/// <summary>
-		/// Saves off the library part to disk, stores the rest
+		/// Saves off the Collection part to disk, stores the rest
 		/// </summary>
 		/// <param name="newDataString"></param>
 		public void CollectJsonData(string newDataString)
@@ -202,26 +202,28 @@ namespace Bloom.Edit
 				return;
 			}
 			dynamic newData = DynamicJson.Parse(newDataString);
-			dynamic libraryData=null;
+			dynamic collectionData = null;
+			// This is pulling in file data. Would prefer the field be named 'collection'
+			// but that may affect older Bloom versions if we try to change it.
 			if(newData.IsDefined("library"))
 			{
-				libraryData = newData.library; //a couple RuntimeBinderException errors are normal here, just keep going, it eventually gets past it.
+				collectionData = newData.library; //a couple RuntimeBinderException errors are normal here, just keep going, it eventually gets past it.
 			}
 			//Now in LocalData, we want to save everything that isn't library data
 			newData.Delete("library");
 			LocalData = newData.ToString();
-			if (libraryData == null)
+			if (collectionData == null)
 				return;	//no library data in there, so we don't have anything to merge/save
 
-			var existingDataString = GetLibraryData();
+			var existingDataString = GetCollectionData();
 			if (!string.IsNullOrEmpty(existingDataString))
 			{
 				DynamicJson existingData = DynamicJson.Parse(existingDataString);
 				if (existingData.GetDynamicMemberNames().Contains("library"))
-					libraryData = MergeJsonData(DynamicJson.Parse(existingDataString).library.ToString(), libraryData.ToString());
+					collectionData = MergeJsonData(DynamicJson.Parse(existingDataString).library.ToString(), collectionData.ToString());
 			}
 
-			RobustFile.WriteAllText(PathToLibraryJson, libraryData.ToString());
+			RobustFile.WriteAllText(PathToCollectionJson, collectionData.ToString());
 
 
 		}
@@ -316,12 +318,12 @@ namespace Bloom.Edit
 			return o.TryGetValue(key, out v);
 		}
 
-		public string GetLibraryData()
+		public string GetCollectionData()
 		{
-			if (!RobustFile.Exists(PathToLibraryJson))
+			if (!RobustFile.Exists(PathToCollectionJson))
 				return "{}";//return "{\"dummy\": \"x\"}";//TODO
 
-			var s= RobustFile.ReadAllText(PathToLibraryJson);
+			var s= RobustFile.ReadAllText(PathToCollectionJson);
 			if(string.IsNullOrEmpty(s))
 				return string.Empty;
 
@@ -330,11 +332,11 @@ namespace Bloom.Edit
 
 		public string GetAllData()
 		{
-			string libraryData = GetLibraryData();
+			string collectionData = GetCollectionData();
 			var local = GetInnerjson(LocalData);
-			var library = GetInnerjson(libraryData);
-			if (!string.IsNullOrEmpty(library))
-				return "{" + local + ", " + library + "}";
+			var collection = GetInnerjson(collectionData);
+			if (!string.IsNullOrEmpty(collection))
+				return "{" + local + ", " + collection + "}";
 			return LocalData;
 		}
 

@@ -30,39 +30,39 @@ namespace Bloom.Publish.Video
 		{
 			
 
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "recordVideo", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "recordVideo", request =>
 			{
 				RecordVideo(request);
 				request.PostSucceeded();
 			}, true, false);
 
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "soundLog", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "soundLog", request =>
 			{
 				var soundLog = request.RequiredPostJson();
 				_recordVideoWindow.StopRecording(soundLog);
 				request.PostSucceeded();
 			}, true, false);
 
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "playVideo", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "playVideo", request =>
 			{
 				_recordVideoWindow.PlayVideo();
 				request.PostSucceeded();
 			}, true, false);
 
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "pageReadTime", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "pageReadTime", request =>
 			{
 				_pageReadTime = request.RequiredPostString();
 				_recordVideoWindow?.SetPageReadTime(_pageReadTime);
 				request.PostSucceeded();
 			}, true, false);
 
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "videoSettings", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "videoSettings", request =>
 			{
 				_settingsFromPreview = request.RequiredPostString();
 				request.PostSucceeded();
 			}, true, false);
 
-			apiHandler.RegisterBooleanEndpointHandlerExact(kApiUrlPart + "hasActivities",
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "hasActivities",
 				request =>
 				{
 					return request.CurrentBook.HasActivities;
@@ -71,20 +71,20 @@ namespace Bloom.Publish.Video
 				false,
 				true); // we don't really know, just safe default
 
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "format", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "format", request =>
 			{
 				_videoFormat = request.RequiredPostString();
 				_recordVideoWindow?.SetFormat(_videoFormat, request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape);
 				request.PostSucceeded();
 			}, true, false);
 
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "startRecording", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "startRecording", request =>
 			{
 				_recordVideoWindow?.StartFfmpeg();
 				request.PostSucceeded();
 			}, true, false);
 
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "tooBigForScreenMsg",
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "tooBigForScreenMsg",
 				request =>
 				{
 					request.ReplyWithText(RecordVideoWindow.GetDataForFormat(_videoFormat, request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape,
@@ -93,7 +93,7 @@ namespace Bloom.Publish.Video
 				 true, // has to be on UI thread because it uses Bloom's main window to find the right screen
 				false);
 
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "saveVideo", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "saveVideo", request =>
 			{
 				if (_recordVideoWindow == null)
 				{
@@ -106,7 +106,7 @@ namespace Bloom.Publish.Video
 			}, true, false);
 
 
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "updatePreview", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request =>
 			{
 				_publishToAndroidApi.MakeBloompubPreview(request, true);
 			}, false);

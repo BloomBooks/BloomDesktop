@@ -18,10 +18,10 @@ namespace Bloom.CollectionChoosing
 	public partial class OpenCreateCloneControl : UserControl
 	{
 		private MostRecentPathsList _mruList;
-		private Func<string> _createNewLibraryAndReturnPath;
+		private Func<string> _createNewCollectionAndReturnPath;
 		private string _filterString;
 
-		public event EventHandler DoneChoosingOrCreatingLibrary;
+		public event EventHandler DoneChoosingOrCreatingCollection;
 
 		public string SelectedPath { get; private set; }
 
@@ -40,10 +40,10 @@ namespace Bloom.CollectionChoosing
 
 		public void Init(MostRecentPathsList mruList,
 						 string filterString,
-						 Func<string> createNewLibraryAndReturnPath)
+						 Func<string> createNewCollectionAndReturnPath)
 		{
 			_filterString = filterString;
-			_createNewLibraryAndReturnPath = createNewLibraryAndReturnPath;
+			_createNewCollectionAndReturnPath = createNewCollectionAndReturnPath;
 			_mruList = mruList;
 		}
 
@@ -180,7 +180,7 @@ namespace Bloom.CollectionChoosing
 			SelectCollectionAndClose(((Button) sender).Tag as string);
 		}
 
-		private void OnBrowseForExistingLibraryClick(object sender, EventArgs e)
+		private void OnBrowseForExistingCollectionClick(object sender, EventArgs e)
 		{
 			if (!Directory.Exists(NewCollectionWizard.DefaultParentDirectoryForCollections))
 			{
@@ -202,9 +202,9 @@ namespace Bloom.CollectionChoosing
 			}
 		}
 
-		private void CreateNewLibrary_LinkClicked(object sender, EventArgs e)
+		private void CreateNewCollection_LinkClicked(object sender, EventArgs e)
 		{
-			var desiredOrExistingSettingsFilePath = _createNewLibraryAndReturnPath();
+			var desiredOrExistingSettingsFilePath = _createNewCollectionAndReturnPath();
 			if (desiredOrExistingSettingsFilePath == null)
 				return;
 			var settings = new CollectionSettings(desiredOrExistingSettingsFilePath);
@@ -219,7 +219,7 @@ namespace Bloom.CollectionChoosing
 				if (ReportIfInvalidCollectionToEdit(path)) return;
 				//CheckForBeingInDropboxFolder(path);
 				_mruList.AddNewPath(path);
-				Invoke(DoneChoosingOrCreatingLibrary);
+				Invoke(DoneChoosingOrCreatingCollection);
 			}
 		}
 

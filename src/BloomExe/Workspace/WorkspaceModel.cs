@@ -75,7 +75,7 @@ namespace Bloom.Workspace
 			return true;
 		}
 
-		// Must be called before we call GetBookCollections() (or GetBookCollectionsOnce) in LibraryModel.
+		// Must be called before we call GetBookCollections() (or GetBookCollectionsOnce) in CollectionModel.
 		internal void HandleTeamStuffBeforeGetBookCollections(Action whenDone)
 		{
 			// It would be nice if this was just in the  TCManager constructor. But TCManager has important

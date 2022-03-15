@@ -28,7 +28,7 @@ using SIL.Windows.Forms.FileSystem;
 
 namespace Bloom.CollectionTab
 {
-	public class LibraryModel
+	public class CollectionModel
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly string _pathToLibrary;
@@ -46,7 +46,7 @@ namespace Bloom.CollectionTab
 		private LocalizationChangedEvent _localizationChangedEvent;
 		private BookCollectionHolder _bookCollectionHolder;
 
-		public LibraryModel(string pathToLibrary, CollectionSettings collectionSettings,
+		public CollectionModel(string pathToLibrary, CollectionSettings collectionSettings,
 			//SendReceiver sendReceiver,
 			BookSelection bookSelection,
 			SourceCollectionsList sourceCollectionsList,

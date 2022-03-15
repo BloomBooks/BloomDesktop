@@ -4,7 +4,7 @@ using Bloom.web;
 
 namespace Bloom.CollectionTab
 {
-	partial class ReactCollectionTabView
+	partial class CollectionTabView
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -170,7 +170,7 @@ namespace Bloom.CollectionTab
 			// _openCreateCollectionButton
 			// 
 			this._openCreateCollectionButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._openCreateCollectionButton.Image = global::Bloom.Properties.Resources.OpenCreateLibrary24x24;
+			this._openCreateCollectionButton.Image = global::Bloom.Properties.Resources.OpenCreateCollection24x24;
 			this._openCreateCollectionButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
 			this._openCreateCollectionButton.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._openCreateCollectionButton, "Open/Create/Get Collection");
@@ -209,7 +209,7 @@ namespace Bloom.CollectionTab
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "CollectionTab.LibraryView");
-			this.Name = "ReactCollectionTabView";
+			this.Name = "CollectionTabView";
 			this.Size = new System.Drawing.Size(773, 518);
 			this._topBarControl.ResumeLayout(false);
 			this._topBarControl.PerformLayout();

@@ -19,17 +19,17 @@ namespace Bloom.Publish.Android
 	public class BulkBloomPubCreator
 	{
 		private readonly BookServer _bookServer;
-		private readonly LibraryModel _libraryModel;
+		private readonly CollectionModel _collectionModel;
 		private readonly BloomWebSocketServer _webSocketServer;
 
-		public delegate BulkBloomPubCreator Factory(BookServer bookServer, LibraryModel collectionModel,
+		public delegate BulkBloomPubCreator Factory(BookServer bookServer, CollectionModel collectionModel,
 			BloomWebSocketServer webSocketServer); //autofac uses this
 
-		public BulkBloomPubCreator(BookServer bookServer, LibraryModel libraryModel,
+		public BulkBloomPubCreator(BookServer bookServer, CollectionModel collectionModel,
 			BloomWebSocketServer webSocketServer)
 		{
 			_bookServer = bookServer;
-			_libraryModel = libraryModel;
+			_collectionModel = collectionModel;
 			_webSocketServer = webSocketServer;
 		}
 
@@ -42,7 +42,7 @@ namespace Bloom.Publish.Android
 					var dest = new TemporaryFolder("BloomPubs");
 					progress.MessageWithoutLocalizing($"Creating files in {dest.FolderPath}...");
 
-					var filenameWithoutExtension = _libraryModel.CollectionSettings.DefaultBookshelf.SanitizeFilename(' ', true);
+					var filenameWithoutExtension = _collectionModel.CollectionSettings.DefaultBookshelf.SanitizeFilename(' ', true);
 ;
 					if (bulkSaveSettings.makeBookshelfFile)
 					{
@@ -58,14 +58,14 @@ namespace Bloom.Publish.Android
 							"{ 'label': [{ 'en': 'bookshelf-name'}], 'id': 'id-of-the-bookshelf', 'color': 'hex-color-value'}";
 						var json = template.Replace('\'', '"')
 							.Replace("bookshelf-name", bulkSaveSettings.bookshelfLabel.Replace('"', '\''))
-							.Replace("id-of-the-bookshelf", _libraryModel.CollectionSettings.DefaultBookshelf)
+							.Replace("id-of-the-bookshelf", _collectionModel.CollectionSettings.DefaultBookshelf)
 							.Replace("hex-color-value", colorString);
 						var filename = $"{filenameWithoutExtension}.bloomshelf";
 						var bloomShelfPath = Path.Combine(dest.FolderPath, filename);
 						RobustFile.WriteAllText(bloomShelfPath, json, Encoding.UTF8);
 					}
 
-					foreach (var bookInfo in _libraryModel.TheOneEditableCollection.GetBookInfos())
+					foreach (var bookInfo in _collectionModel.TheOneEditableCollection.GetBookInfos())
 					{
 						if (worker.CancellationPending)
 						{
@@ -79,7 +79,7 @@ namespace Bloom.Publish.Android
 						settings.DistributionTag = bulkSaveSettings.distributionTag;
 						if (bulkSaveSettings.makeBookshelfFile)
 						{
-							settings.BookshelfTag = _libraryModel.CollectionSettings.DefaultBookshelf;
+							settings.BookshelfTag = _collectionModel.CollectionSettings.DefaultBookshelf;
 						}
 						BloomPubMaker.CreateBloomPub(bookInfo, settings, dest.FolderPath, _bookServer, progress);
 					}

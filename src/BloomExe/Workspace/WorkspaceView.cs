@@ -59,7 +59,7 @@ namespace Bloom.Workspace
 		private string _originalUiLanguageSelection;
 		private EditingView _editingView;
 		private PublishView _publishView;
-		private ReactCollectionTabView _reactCollectionTabView;
+		private CollectionTabView _collectionTabView;
 		private Control _previouslySelectedControl;
 		public event EventHandler CloseCurrentProject;
 		public event EventHandler ReopenCurrentProject;
@@ -80,7 +80,7 @@ namespace Bloom.Workspace
 		//autofac uses this
 
 		public WorkspaceView(WorkspaceModel model,
-							ReactCollectionTabView.Factory reactCollectionsTabsViewFactory,
+							CollectionTabView.Factory reactCollectionsTabsViewFactory,
 							EditingView.Factory editingViewFactory,
 							PublishView.Factory pdfViewFactory,
 							CollectionSettingsDialog.Factory settingsDialogFactory,
@@ -170,11 +170,11 @@ namespace Bloom.Workspace
 			this._editingView = editingViewFactory();
 			this._editingView.Dock = DockStyle.Fill;
 
-			_reactCollectionTabView = reactCollectionsTabsViewFactory();
-			_reactCollectionTabView.ManageSettings(_settingsLauncherHelper);
-			_reactCollectionTabView.Dock = DockStyle.Fill;
-			_reactCollectionTabView.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
-			_reactCollectionTab.Tag = _reactCollectionTabView;
+			_collectionTabView = reactCollectionsTabsViewFactory();
+			_collectionTabView.ManageSettings(_settingsLauncherHelper);
+			_collectionTabView.Dock = DockStyle.Fill;
+			_collectionTabView.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
+			_reactCollectionTab.Tag = _collectionTabView;
 			_tabStrip.SelectedTab = _reactCollectionTab;
 
 			//
@@ -189,9 +189,9 @@ namespace Bloom.Workspace
 			SetTabVisibility(_publishTab, false);
 			SetTabVisibility(_editTab, false);
 
-			this._reactCollectionTab.Text = _reactCollectionTabView.CollectionTabLabel;
+			this._reactCollectionTab.Text = _collectionTabView.CollectionTabLabel;
 			_tabStrip.SelectedTab = _reactCollectionTab;
-			SelectPage(_reactCollectionTabView);
+			SelectPage(_collectionTabView);
 
 			if (Platform.IsMono)
 			{
@@ -262,7 +262,7 @@ namespace Bloom.Workspace
 
 		private void ReadyToShowCollections()
 		{
-			_reactCollectionTabView.ReadyToShowCollections();
+			_collectionTabView.ReadyToShowCollections();
 		}
 
 		/// <summary>
@@ -759,7 +759,7 @@ namespace Bloom.Workspace
 			tab.Visible = visible;
 		}
 
-		public void OpenCreateLibrary()
+		public void OpenCreateCollection()
 		{
 			_settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
 			{

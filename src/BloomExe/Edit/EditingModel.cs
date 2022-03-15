@@ -85,7 +85,7 @@ namespace Bloom.Edit
 			DeletePageCommand deletePageCommand,
 			SelectedTabChangedEvent selectedTabChangedEvent,
 			SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
-			LibraryClosing libraryClosingEvent,
+			CollectionClosing collectionClosingEvent,
 			LocalizationChangedEvent localizationChangedEvent,
 			CollectionSettings collectionSettings,
 			//SendReceiver sendReceiver,
@@ -135,7 +135,7 @@ namespace Bloom.Edit
 			deletePageCommand.Implementer = OnDeletePage;
 			pageListChangedEvent.Subscribe(x => _view.UpdatePageList(false));
 			relocatePageEvent.Subscribe(OnRelocatePage);
-			libraryClosingEvent.Subscribe(o =>
+			collectionClosingEvent.Subscribe(o =>
 			{
 				if (Visible)
 					SaveNow();

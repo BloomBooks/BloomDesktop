@@ -50,9 +50,39 @@ namespace Bloom.Api
 		}
 
 		/// <summary>
-		/// Get called when a client (i.e. javascript) does an HTTP api call
+		/// Register some code that should be executed when a client (i.e. javascript) does an HTTP api call
+		/// where the local path of the URI starts with /bloom/api/ and what follows in the localPath matches
+		/// the regex pattern passed to the method. This is very inefficient and we are trying to retire this method
+		/// and its variants. Please design apis that can be used with the new RegisterEndpointHandler
+		/// (which means that if you want several varieties of URL handled by the same registration,
+		/// they should differ by params not the main localPath).
 		/// </summary>
+		/// <remarks>If we conclude that there are groups of URLs that are really best handled using a regex pattern,
+		/// please make a new method RegisterEndpointRegex or RegisterEndpointPattern with this implementation,
+		/// but please keep RegisterEndpointLegacy (which can call the new method) so we can continue
+		/// to track callers that have not yet been evaluated to see whether they can use the new approach.
+		/// Please also consider whether a new RegisterEndpointStartsWith would serve.</remarks>
 		/// <param name="pattern">Simple string or regex to match APIs that this can handle. This must match what comes after the ".../api/" of the URL</param>
+		[Obsolete("Method is deprecated, please use RegisterEndpointHandler or other variant")]
+		public EndpointRegistration RegisterEndpointLegacy(string pattern, EndpointHandler handler, bool handleOnUiThread, bool requiresSync = true)
+		{
+			var registration = new EndpointRegistration()
+			{
+				Handler = handler,
+				HandleOnUIThread = handleOnUiThread,
+				RequiresSync = requiresSync,
+				MeasurementLabel = pattern, // can be overridden... this is just a default
+			};
+			_endpointRegistrations[pattern.ToLowerInvariant().Trim(new char[] {'/'})] = registration;
+			return registration; // return it so the caller can say  RegisterEndpointLegacy().Measurable();
+		}
+
+		/// <summary>
+		/// Register some code that should be executed when a client (i.e. javascript) does an HTTP api call
+		/// with a particular bloom/api URL.
+		/// </summary>
+		/// <param name="pattern">Simple string identifying the API that this can handle.
+		/// This must match what comes after the "...bloom/api/" of the URL(not counting any params, i.e., anything after the ?)</param>
 		/// <param name="handler">The method to call</param>
 		/// <param name="handleOnUiThread">If true, the current thread will suspend until the UI thread can be used to call the method.
 		/// This deliberately no longer has a default. It's something that should be thought about.
@@ -68,26 +98,11 @@ namespace Bloom.Api
 		/// the epub that is being generated is obsolete and we want the new api call to go ahead so it can set a flag 
 		/// to abort the one in progress. To avoid race conditions, api calls that set requiresSync false should be kept small
 		/// and simple and be very careful about touching objects that other API calls might interact with.</param>
+		/// <remarks>This method name was previously used for the method now called RegisterEndpointLegacy,
+		/// in which the pattern argument is regex-matched against the part of the URL between /bloom/api/ and the ?.
+		/// That was very inefficient and should be used only where necessary. However, remember that this
+		/// updated API can only be called if the pattern (prefixed by /bloom/api/) matches the entire localPath.</remarks>
 		public EndpointRegistration RegisterEndpointHandler(string pattern, EndpointHandler handler, bool handleOnUiThread, bool requiresSync = true)
-		{
-			var registration = new EndpointRegistration()
-			{
-				Handler = handler,
-				HandleOnUIThread = handleOnUiThread,
-				RequiresSync = requiresSync,
-				MeasurementLabel = pattern, // can be overridden... this is just a default
-			};
-			_endpointRegistrations[pattern.ToLowerInvariant().Trim(new char[] {'/'})] = registration;
-			return registration; // return it so the caller can say  RegisterEndpointHandler().Measurable();
-		}
-
-		/// <summary>
-		/// As above, but used (especially for frequently-used API calls) when the pattern matches exactly, rather than as a prefix or regex
-		/// </summary>
-		/// <param name="pattern">Simple string identifying the API that this can handle. This must match what comes after the ".../api/" of the URL</param>
-		/// <param name="handler">The method to call</param>
-		/// <param name="handleOnUiThread">If true, the current thread will suspend until the UI thread can be used to call the method.
-		public EndpointRegistration RegisterEndpointHandlerExact(string pattern, EndpointHandler handler, bool handleOnUiThread, bool requiresSync = true)
 		{
 			var registration = new EndpointRegistration()
 			{
@@ -101,7 +116,8 @@ namespace Bloom.Api
 		}
 
 		/// <summary>
-		/// Handle simple boolean reads/writes
+		/// Handle simple boolean reads/writes where the 'pattern' is exactly equal to the localPath of the URI to be handled
+		/// (after removing the initial /bloom/api/, which should be in the URI but not in the pattern here).
 		/// </summary>
 		public void RegisterBooleanEndpointHandler(string pattern, Func<ApiRequest, bool> readAction, Action<ApiRequest, bool> writeAction,
 			bool handleOnUiThread, bool requiresSync = true)
@@ -121,32 +137,12 @@ namespace Bloom.Api
 		}
 
 		/// <summary>
-		/// Handle simple boolean reads/writes where the 'pattern' is exactly equal to the localPath of the URI to be handled
-		/// (after removing the initial api/, which should be in the URI but not in the pattern here).
-		/// </summary>
-		public void RegisterBooleanEndpointHandlerExact(string pattern, Func<ApiRequest, bool> readAction, Action<ApiRequest, bool> writeAction,
-			bool handleOnUiThread, bool requiresSync = true)
-		{
-			RegisterEndpointHandlerExact(pattern, request =>
-			{
-				if (request.HttpMethod == HttpMethods.Get)
-				{
-					request.ReplyWithBoolean(readAction(request));
-				}
-				else // post
-				{
-					writeAction(request, request.RequiredPostBooleanAsJson());
-					request.PostSucceeded();
-				}
-			}, handleOnUiThread, requiresSync);
-		}
-
-		/// <summary>
-		/// Samed as RegisterEndpointHandler, but for Endpoints that may be called by other endpoint handlers which are synchronous.
+		/// Same as RegisterEndpointHandler, but for Endpoints that may be called by other endpoint handlers which are synchronous.
 		/// If so, sets RequiresSync to false (because it would deadlock if a synchronous handler spawned off another synchronous handler)
 		/// The caller should make sure that this endpoint handler can operate correctly without exclusive access to the lock!
 		/// </summary>
-		/// <param name="pattern">Simple string or regex to match APIs that this can handle. This must match what comes after the ".../api/" of the URL</param>
+		/// <param name="pattern">Simple string to match APIs that this can handle.
+		/// This must match what comes after the ".../api/" of the URL (before any ? params)</param>
 		/// <param name="handler">The method to call</param>
 		/// <param name="handleOnUiThread">If true, the current thread will suspend until the UI thread can be used to call the method.
 		/// This deliberately no longer has a default. It's something that should be thought about.
@@ -155,7 +151,7 @@ namespace Bloom.Api
 		/// But, beware of race conditions or anything that manipulates UI controls if you make it false.</param>
 		public void RegisterEndpointHandlerUsedByOthers(string pattern, EndpointHandler handler, bool handleOnUiThread)
 		{
-			_endpointRegistrations[pattern.ToLowerInvariant().Trim(new char[] {'/'})] = new EndpointRegistration()
+			_exactEndpointRegistrations[pattern.ToLowerInvariant().Trim(new char[] {'/'})] = new EndpointRegistration()
 			{
 				Handler = handler,
 				HandleOnUIThread = handleOnUiThread,
@@ -164,7 +160,7 @@ namespace Bloom.Api
 		}
 
 		/// <summary>
-		/// Handle enum reads/writes
+		/// Handle enum reads/writes (pattern must be an exact match)
 		/// </summary>
 		public void RegisterEnumEndpointHandler<T>(string pattern, Func<ApiRequest, T> readAction, Action<ApiRequest, T> writeAction,
 			bool handleOnUiThread, bool requiresSync = true)
@@ -212,17 +208,21 @@ namespace Bloom.Api
 				}
 				// Enhance: this can be significantly slow when large numbers of requests are being received.
 				// A large proportion of our API calls actually have a single, complete string that identifies
-				// them and should be changed to use RegisterEndpointHandlerExact. Most or all of the remainder
+				// them and should be changed to use RegisterEndpointHandler. Most or all of the remainder
 				// would work as intended by testing that pair.Key.ToLower.StartsWith(endpointPath).
-				// To encourage progress towards this, we plan some renaming so that we end up with
-				// RegisterEndpointHandler...default, rename of RegisterEndpointHandlerExact
-				// RegisterEndpointHandlerPattern...same as RegisterEndpointHandler, used when we know we
+				// To encourage progress towards this, we have renamed things so that new pattern registrations
+				// can be made only by using the deprecated RegisterEndpointLegacy; the new RegisterEndpointHandler
+				// uses _exactEndpointRegistrations. Existing calls to RegisterEndpointLegacy can gradually
+				// be changed over. We may need to add
+				// RegisterEndpointHandlerPattern...same as RegisterEndpointLegacy, used when we know we
 				// need Regex matching. Hopefully can be retired eventually, and we can switch to StartsWith here.
 				// RegisterEndpointHandlerStartsWith...for now will delegate to RegisterEndpointHandlerPattern,
 				// but use when we have determined that using StartsWith is necessary and sufficient.
-				// RegisterEndpointHandlerReview...rename of current RegisterEndpointHandler, indicates
-				// APIs we have not yet checked to see which of the above they should use.
-				// For now it will delegate to RegisterEndpointHandlerPattern. Hopefully can be retired eventually.
+				// If we end up with no calls to RegisterEndpointLegacy and some to RegisterEndpointStartsWith,
+				// we can switch to using StartsWith here. If we end up with no calls to either, we can simply
+				// retire the old _endpointRegistrations.
+				// RegisterEndpointLegacy indicates APIs we have not yet checked to see which of the above
+				// they should use. Hopefully can be retired eventually.
 				foreach (var pair in _endpointRegistrations.Where(pair =>
 					Regex.Match(endpointPath,
 								"^" + //must match the beginning

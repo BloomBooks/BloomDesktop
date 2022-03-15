@@ -17,7 +17,7 @@ namespace Bloom.web
 		public static void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			// Opening a page, better be in UI thread.
-			apiHandler.RegisterEndpointHandler(kPrefix+"/.*", HandleRequest, true);
+			apiHandler.RegisterEndpointLegacy(kPrefix+"/.*", HandleRequest, true);
 		}
 
 		/// <summary>

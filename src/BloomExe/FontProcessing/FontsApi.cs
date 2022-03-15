@@ -18,8 +18,8 @@ namespace Bloom.FontProcessing
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "names", HandleNamesRequest, false);
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "metadata", HandleMetadataRequest, false);
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "names", HandleNamesRequest, false);
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "metadata", HandleMetadataRequest, false);
 		}
 
 		/// <summary>

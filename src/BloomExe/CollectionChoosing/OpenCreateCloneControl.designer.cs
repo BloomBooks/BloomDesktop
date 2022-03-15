@@ -95,7 +95,7 @@ namespace Bloom.CollectionChoosing
 			this._browseButton.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this._browseButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this._browseButton.UseVisualStyleBackColor = true;
-			this._browseButton.Click += new System.EventHandler(this.OnBrowseForExistingLibraryClick);
+			this._browseButton.Click += new System.EventHandler(this.OnBrowseForExistingCollectionClick);
 			// 
 			// button9
 			// 
@@ -103,7 +103,7 @@ namespace Bloom.CollectionChoosing
 			this.button9.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.button9.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.button9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this.button9.Image = global::Bloom.Properties.Resources.newLibrary32x32;
+			this.button9.Image = global::Bloom.Properties.Resources.newCollection32x32;
 			this.button9.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this._L10NSharpExtender.SetLocalizableToolTip(this.button9, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.button9, null);
@@ -115,7 +115,7 @@ namespace Bloom.CollectionChoosing
 			this.button9.Text = "Create New Collection";
 			this.button9.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this.button9.UseVisualStyleBackColor = true;
-			this.button9.Click += new System.EventHandler(this.CreateNewLibrary_LinkClicked);
+			this.button9.Click += new System.EventHandler(this.CreateNewCollection_LinkClicked);
 			// 
 			// _templateButton
 			// 
@@ -124,7 +124,7 @@ namespace Bloom.CollectionChoosing
 			this._templateButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this._templateButton.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._templateButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._templateButton.Image = global::Bloom.Properties.Resources.library32x32;
+			this._templateButton.Image = global::Bloom.Properties.Resources.collection32x32;
 			this._templateButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._templateButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._templateButton, null);

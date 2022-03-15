@@ -16,7 +16,7 @@ namespace Bloom.Api
 	{
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler("i18n/", HandleI18nRequest, false);
+			apiHandler.RegisterEndpointLegacy("i18n/", HandleI18nRequest, false);
 		}
 
 		public void HandleI18nRequest(ApiRequest request)

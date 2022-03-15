@@ -99,7 +99,7 @@ namespace Bloom.Publish.Android
 			// This is just for storing the user preference of method
 			// If we had a couple of these, we could just have a generic preferences api
 			// that browser-side code could use.
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "method", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "method", request =>
 			{
 				if(request.HttpMethod == HttpMethods.Get)
 				{
@@ -123,7 +123,7 @@ namespace Bloom.Publish.Android
 				}
 			}, true);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "backColor", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "backColor", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
@@ -164,13 +164,13 @@ namespace Bloom.Publish.Android
 				}
 			, true);
 
-			apiHandler.RegisterEndpointHandlerExact(kApiUrlPart + "updatePreview", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request =>
 			{
 				MakeBloompubPreview(request, false);
 			}, false);
 
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "thumbnail", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "thumbnail", request =>
 			{
 				var coverImage = request.CurrentBook.GetCoverImagePath();
 				if (coverImage == null)
@@ -190,7 +190,7 @@ namespace Bloom.Publish.Android
 				}
 			}, true);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "usb/start", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "usb/start", request =>
 			{
 #if !__MonoCS__
 
@@ -201,7 +201,7 @@ namespace Bloom.Publish.Android
 				request.PostSucceeded();
 			}, true);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "usb/stop", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "usb/stop", request =>
 			{
 #if !__MonoCS__
 				_usbPublisher.Stop();
@@ -209,7 +209,7 @@ namespace Bloom.Publish.Android
 #endif
 				request.PostSucceeded();
 			}, true);
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "wifi/start", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "wifi/start", request =>
 			{
 				SetState("ServingOnWifi");
 				UpdatePreviewIfNeeded(request);
@@ -218,14 +218,14 @@ namespace Bloom.Publish.Android
 				request.PostSucceeded();
 			}, true);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "wifi/stop", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "wifi/stop", request =>
 			{
 				_wifiPublisher.Stop();
 				SetState("stopped");
 				request.PostSucceeded();
 			}, true);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/save", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "file/save", request =>
 			{
 				UpdatePreviewIfNeeded(request);
 				FilePublisher.Save(request.CurrentBook, _bookServer, _thumbnailBackgroundColor, _progress, GetSettings());
@@ -233,12 +233,12 @@ namespace Bloom.Publish.Android
 				request.PostSucceeded();
 			}, true);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/bulkSaveBloomPubsParams", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "file/bulkSaveBloomPubsParams", request =>
 			{ 
 				request.ReplyWithJson(JsonConvert.SerializeObject(_collectionSettings.BulkPublishBloomPubSettings));
 			}, true);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/bulkSaveBloomPubs", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "file/bulkSaveBloomPubs", request =>
 			{
 				// update what's in the collection so that we remember for next time
 				_collectionSettings.BulkPublishBloomPubSettings = request.RequiredPostObject<BulkBloomPubPublishSettings>();
@@ -249,13 +249,13 @@ namespace Bloom.Publish.Android
 				request.PostSucceeded();
 			}, true);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "cleanup", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "cleanup", request =>
 			{
 				Stop();
 				request.PostSucceeded();
 			}, true);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "textToClipboard", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "textToClipboard", request =>
 			{
 				PortableClipboard.SetText(request.RequiredPostString());
 				request.PostSucceeded();
@@ -287,7 +287,7 @@ namespace Bloom.Publish.Android
 				null, // no write action
 				false,
 				true); // we don't really know, just safe default
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "languagesInBook", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "languagesInBook", request =>
 			{
 				try
 				{
@@ -333,7 +333,7 @@ namespace Bloom.Publish.Android
 					NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Error determining which languages are in the book.", null, e, true);
 				}
 			}, false);
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "includeLanguage", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "includeLanguage", request =>
 			{
 				var langCode = request.RequiredParam("langCode");
 				if (request.HttpMethod == HttpMethods.Post)

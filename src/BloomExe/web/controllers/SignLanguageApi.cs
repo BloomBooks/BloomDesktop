@@ -48,10 +48,10 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler("signLanguage/recordedVideo", HandleRecordedVideoRequest, true).Measureable("Process recorded video");
-			apiHandler.RegisterEndpointHandler("signLanguage/deleteVideo", HandleDeleteVideoRequest, true).Measureable("Delete video"); ;
-			apiHandler.RegisterEndpointHandler("signLanguage/importVideo", HandleImportVideoRequest, true); // has dialog, so measure internally after the dialog.
-			apiHandler.RegisterEndpointHandler("signLanguage/getStats", HandleVideoStatisticsRequest, true);
+			apiHandler.RegisterEndpointLegacy("signLanguage/recordedVideo", HandleRecordedVideoRequest, true).Measureable("Process recorded video");
+			apiHandler.RegisterEndpointLegacy("signLanguage/deleteVideo", HandleDeleteVideoRequest, true).Measureable("Delete video"); ;
+			apiHandler.RegisterEndpointLegacy("signLanguage/importVideo", HandleImportVideoRequest, true); // has dialog, so measure internally after the dialog.
+			apiHandler.RegisterEndpointLegacy("signLanguage/getStats", HandleVideoStatisticsRequest, true);
 		}
 
 		public Book.Book CurrentBook

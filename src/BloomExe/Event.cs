@@ -94,12 +94,12 @@ namespace Bloom
 
 
 	/// <summary>
-	/// called when the user is quiting or changing to another library
+	/// called when the user is quiting or changing to another collection
 	/// </summary>
-	public class LibraryClosing : Event<object>
+	public class CollectionClosing : Event<object>
 	{
-		public LibraryClosing()
-			: base("LibraryClosing", LoggingLevel.Major)
+		public CollectionClosing()
+			: base("CollectionClosing", LoggingLevel.Major)
 		{
 
 		}
