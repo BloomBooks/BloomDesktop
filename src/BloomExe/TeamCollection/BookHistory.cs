@@ -73,14 +73,7 @@ public class CollectionHistory
 		{
 			if (Directory.Exists(bookInfo.FolderPath))
 			{
-				var events = BookHistory.GetHistory(bookInfo);
-				// add in the title, which isn't in the database (this could done in a way that involves less duplication)
-				events.ForEach(e =>
-				{
-					e.Title = bookInfo.Title;
-					e.ThumbnailPath = Path.Combine(bookInfo.FolderPath, "thumbnail.png").ToLocalhost();
-				});
-				return events;
+				return GetBookEvents(bookInfo);
 			}
 			else
 			{
@@ -94,6 +87,18 @@ public class CollectionHistory
 		var booksWithHistory =  from b in all where b.Any() select b;
 
 		return booksWithHistory.SelectMany(e => e);
+	}
+
+	public static List<BookHistoryEvent> GetBookEvents(BookInfo bookInfo)
+	{
+		var events = BookHistory.GetHistory(bookInfo);
+		// add in the title, which isn't in the database (this could done in a way that involves less duplication)
+		events.ForEach(e =>
+		{
+			e.Title = bookInfo.Title;
+			e.ThumbnailPath = Path.Combine(bookInfo.FolderPath, "thumbnail.png").ToLocalhost();
+		});
+		return events;
 	}
 }
 

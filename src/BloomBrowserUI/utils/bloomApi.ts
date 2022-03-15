@@ -230,7 +230,7 @@ export class BloomApi {
             BloomApi.get(urlSuffix, c => {
                 setValue(c.data);
             });
-        }, [generation]);
+        }, [generation, urlSuffix]);
         return value;
     }
 
