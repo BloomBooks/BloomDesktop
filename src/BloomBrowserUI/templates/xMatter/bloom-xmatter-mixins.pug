@@ -56,8 +56,15 @@ mixin field-acknowledgments-originalVersion(lang="N1", hint="Original (or Shell)
 			| {Original Acknowledgments}
 
 
+//- This was special for Afghanistan, isn't currently available in standard page
 mixin cover-branding-bottom-left
 	div(data-book='cover-branding-left-html' lang="*")
+
+mixin cover-branding-top
+	div(data-book='cover-branding-top-html' lang="*")
+
+mixin cover-branding-bottom
+	div(data-book='cover-branding-bottom-html' lang="*")
 
 mixin credits-page-branding-top
 	block credits-page-branding-top
@@ -107,7 +114,7 @@ mixin standard-cover-contents
 	//- light of pug it is overly complicated.
 
 	block cover-above-title
-		//- normally nothing here
+		+cover-branding-top
 
 	block cover-title
 		+field-prototypeDeclaredExplicity("V,N1").bookTitle
@@ -134,6 +141,7 @@ mixin standard-cover-contents
 				.bottomRow
 					.coverBottomLangName.Cover-Default-style(data-derived='languagesOfBook')
 					+chooser-topic.coverBottomBookTopic
+			+cover-branding-bottom
 
 
 
