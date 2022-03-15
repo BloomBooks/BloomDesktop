@@ -163,6 +163,26 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap collection16x16 {
+            get {
+                object obj = ResourceManager.GetObject("collection16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap collection32x32 {
+            get {
+                object obj = ResourceManager.GetObject("collection32x32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap construction {
             get {
                 object obj = ResourceManager.GetObject("construction", resourceCulture);
@@ -506,26 +526,6 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap library16x16 {
-            get {
-                object obj = ResourceManager.GetObject("library16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap library32x32 {
-            get {
-                object obj = ResourceManager.GetObject("library32x32", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap LogoForSplashScreen {
             get {
                 object obj = ResourceManager.GetObject("LogoForSplashScreen", resourceCulture);
@@ -566,9 +566,9 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap newLibrary32x32 {
+        internal static System.Drawing.Bitmap newCollection32x32 {
             get {
-                object obj = ResourceManager.GetObject("newLibrary32x32", resourceCulture);
+                object obj = ResourceManager.GetObject("newCollection32x32", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

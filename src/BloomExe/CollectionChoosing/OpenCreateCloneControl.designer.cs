@@ -103,7 +103,7 @@ namespace Bloom.CollectionChoosing
 			this.button9.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.button9.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.button9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this.button9.Image = global::Bloom.Properties.Resources.newLibrary32x32;
+			this.button9.Image = global::Bloom.Properties.Resources.newCollection32x32;
 			this.button9.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this._L10NSharpExtender.SetLocalizableToolTip(this.button9, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.button9, null);
@@ -124,7 +124,7 @@ namespace Bloom.CollectionChoosing
 			this._templateButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this._templateButton.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._templateButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._templateButton.Image = global::Bloom.Properties.Resources.library32x32;
+			this._templateButton.Image = global::Bloom.Properties.Resources.collection32x32;
 			this._templateButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._templateButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._templateButton, null);

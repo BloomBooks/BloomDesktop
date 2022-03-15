@@ -1256,10 +1256,10 @@
     <None Include="Resources\Favicon16x16.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\library16x16.png" />
+    <None Include="Resources\collection16x16.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\library32x32.png" />
+    <None Include="Resources\collection32x32.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\settings16x16.png" />
@@ -1274,7 +1274,7 @@
     <None Include="Resources\feedback24x24.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\OpenCreateLibrary24x24.png" />
+    <None Include="Resources\OpenCreateCollection24x24.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\help24x24.png" />
@@ -1328,7 +1328,7 @@
     <None Include="Resources\undo32x32.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\newLibrary32x32.png" />
+    <None Include="Resources\newCollection32x32.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\newBook1.png" />
@@ -1491,7 +1491,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <None Include="Resources\settingsbw16x16.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\OpenCreateLibrary16x16.png" />
+    <None Include="Resources\OpenCreateCollection16x16.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\help16x16.png" />

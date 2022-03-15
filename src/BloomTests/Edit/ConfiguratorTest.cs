@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -25,12 +25,12 @@ namespace BloomTests.Edit
 		private FileLocator _fileLocator;
 		private BookStarter _starter;
 		private TemporaryFolder _shellCollectionFolder;
-		private TemporaryFolder _libraryFolder;
+		private TemporaryFolder _collectionFolder;
 
 		[SetUp]
 		public void Setup()
 		{
-			var library = new CollectionSettings
+			var collection = new CollectionSettings
 			{
 				IsSourceCollection = false,
 				Language2Iso639Code = "en",
@@ -53,9 +53,9 @@ namespace BloomTests.Edit
 			var projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
 			var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
 
-			_starter = new BookStarter(_fileLocator, (dir, fullyUpdateBookFiles) => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings), library);
+			_starter = new BookStarter(_fileLocator, (dir, fullyUpdateBookFiles) => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings), collection);
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
-			_libraryFolder = new TemporaryFolder("BookStarterTests_LibraryCollection");
+			_collectionFolder = new TemporaryFolder("BookStarterTests_Collection");
 		}
 
 		[Test]
@@ -68,7 +68,7 @@ namespace BloomTests.Edit
 		[STAThread]
 		public void ShowConfigureDialog()
 		{
-			var c = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var c = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
 
 			var stringRep = DynamicJson.Serialize(new
 			{
@@ -84,7 +84,7 @@ namespace BloomTests.Edit
 		[Test]
 		public void GetAllData_LocalOnly_ReturnLocal()
 		{
-			var c = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var c = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
 			dynamic j = new DynamicJson();
 			j.one = 1;
 			c.CollectJsonData(j.ToString());
@@ -92,9 +92,9 @@ namespace BloomTests.Edit
 		}
 
 		[Test]
-		public void LibrarySettingsAreRoundTriped()
+		public void CollectionSettingsAreRoundTriped()
 		{
-			var first = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var first = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
 			var stringRep = DynamicJson.Serialize(new
 						{
 							library = new {stuff = "foo"}
@@ -102,7 +102,7 @@ namespace BloomTests.Edit
 
 			first.CollectJsonData(stringRep.ToString());
 
-			var second = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var second = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
 			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetCollectionData());
 			Assert.AreEqual("foo", j.library.stuff);
 		}
@@ -119,11 +119,11 @@ namespace BloomTests.Edit
 				library = new { two = "2", color = "blue" }
 			});
 
-			var first = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var first = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
 			first.CollectJsonData(firstData.ToString());
 			first.CollectJsonData(secondData.ToString());
 
-			var second = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var second = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
 			dynamic j= (DynamicJson) DynamicJson.Parse(second.GetCollectionData());
 			Assert.AreEqual("2", j.library.two);
 			Assert.AreEqual("1", j.library.one);
@@ -137,11 +137,11 @@ namespace BloomTests.Edit
 			var firstData = "{\"library\":{\"days\":[\"1\",\"2\"]}}";
 			var secondData = "{\"library\":{\"days\":[\"o:e\",\"two\"]}}";
 
-			var first = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var first = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
 			first.CollectJsonData(firstData.ToString());
 			first.CollectJsonData(secondData.ToString());
 
-			var second = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var second = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
 			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetCollectionData());
 			Assert.AreEqual("o:e", j.library.days[0]);
 			Assert.AreEqual("two", j.library.days[1]);
@@ -162,11 +162,11 @@ namespace BloomTests.Edit
 				library = new { food = new { bread = "b", fruit = "{f\\:", nuts = "\"nut\"" } }
 			});
 
-			var first = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var first = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
 			first.CollectJsonData(firstData.ToString());
 			first.CollectJsonData(secondData.ToString());
 
-			var second = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var second = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
 			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetCollectionData());
 			Assert.AreEqual("v", j.library.food.veg);
 			Assert.AreEqual("{f\\:", j.library.food.fruit);
@@ -182,7 +182,7 @@ namespace BloomTests.Edit
 		[Test]
 		public void WhenCollectedNoLocalDataThenLocalDataIsEmpty()
 		{
-			var first = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var first = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
 			var stringRep = DynamicJson.Serialize(new
 				{
 					library = new {librarystuff = "foo"}
@@ -200,7 +200,7 @@ namespace BloomTests.Edit
 		[Test]
 		public void WhenCollectedNoGlobalDataThenGlobalDataIsEmpty()
 		{
-			var first = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var first = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
 			dynamic j = new DynamicJson();
 			j.one = 1;
 			first.CollectJsonData(j.ToString());
@@ -208,24 +208,24 @@ namespace BloomTests.Edit
 		}
 
 		[Test]
-		public void GetLibraryData_NoGlobalData_Empty()
+		public void GetCollectionData_NoGlobalData_Empty()
 		{
-			var first = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var first = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
 			dynamic j = new DynamicJson();
 			j.one = 1;
 			first.CollectJsonData(j.ToString());
 			Assert.AreEqual("{}", first.GetCollectionData());
 		}
 		[Test]
-		public void GetLibraryData_NothingCollected_Empty()
+		public void GetCollectionData_NothingCollected_Empty()
 		{
-			var first = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var first = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
 			Assert.AreEqual("{}", first.GetCollectionData());
 		}
 		[Test]
 		public void LocalData_NothingCollected_Empty()
 		{
-			var first = new Configurator(_libraryFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var first = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
 			Assert.AreEqual("", first.LocalData);
 		}
 
@@ -233,7 +233,7 @@ namespace BloomTests.Edit
 		private BookStorage Get_NotYetConfigured_CalendardBookStorage()
 		{
 			var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Wall Calendar");
-			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _libraryFolder.Path));
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _collectionFolder.Path));
 			var projectFolder = new TemporaryFolder("ConfiguratorTests_ProjectCollection");
 			//review
 			var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));

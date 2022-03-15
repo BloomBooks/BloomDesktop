@@ -12,7 +12,7 @@ namespace Bloom.CollectionChoosing
 		{
 			InitializeComponent();
 			//_welcomeControl.TemplateLabel.ForeColor = Color.FromArgb(0x61, 0x94, 0x38);//0xa0, 0x3c, 0x50);
-			_openAndCreateControl.TemplateButton.Image = Resources.library32x32;
+			_openAndCreateControl.TemplateButton.Image = Resources.collection32x32;
 			_openAndCreateControl.TemplateButton.Image.Tag = "testfrombloom";
 
 			_openAndCreateControl.Init(mruList,

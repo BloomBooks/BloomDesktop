@@ -395,7 +395,7 @@ namespace Bloom.Workspace
 			this._reactCollectionTab.Checked = true;
 			this._reactCollectionTab.ForeColor = System.Drawing.Color.Black;
 			this._reactCollectionTab.HotTextColor = System.Drawing.Color.Black;
-			this._reactCollectionTab.Image = global::Bloom.Properties.Resources.library32x32;
+			this._reactCollectionTab.Image = global::Bloom.Properties.Resources.collection32x32;
 			this._reactCollectionTab.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this._reactCollectionTab.IsSelected = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._reactCollectionTab, null);

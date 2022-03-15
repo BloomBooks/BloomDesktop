@@ -53,7 +53,7 @@ namespace Bloom.Api
 		/// Register some code that should be executed when a client (i.e. javascript) does an HTTP api call
 		/// where the local path of the URI starts with /bloom/api/ and what follows in the localPath matches
 		/// the regex pattern passed to the method. This is very inefficient and we are trying to retire this method
-		/// and its variants. Please design apis that can be used with the new RegisterEndpoint
+		/// and its variants. Please design apis that can be used with the new RegisterEndpointHandler
 		/// (which means that if you want several varieties of URL handled by the same registration,
 		/// they should differ by params not the main localPath).
 		/// </summary>
@@ -63,7 +63,7 @@ namespace Bloom.Api
 		/// to track callers that have not yet been evaluated to see whether they can use the new approach.
 		/// Please also consider whether a new RegisterEndpointStartsWith would serve.</remarks>
 		/// <param name="pattern">Simple string or regex to match APIs that this can handle. This must match what comes after the ".../api/" of the URL</param>
-		[Obsolete("Method is deprecated, please use RegisterEndpoint or other variant")]
+		[Obsolete("Method is deprecated, please use RegisterEndpointHandler or other variant")]
 		public EndpointRegistration RegisterEndpointLegacy(string pattern, EndpointHandler handler, bool handleOnUiThread, bool requiresSync = true)
 		{
 			var registration = new EndpointRegistration()
@@ -211,7 +211,7 @@ namespace Bloom.Api
 				// them and should be changed to use RegisterEndpointHandler. Most or all of the remainder
 				// would work as intended by testing that pair.Key.ToLower.StartsWith(endpointPath).
 				// To encourage progress towards this, we have renamed things so that new pattern registrations
-				// can be made only by using the deprecated RegisterEndpointLegacy; the new RegisterEndPoint
+				// can be made only by using the deprecated RegisterEndpointLegacy; the new RegisterEndpointHandler
 				// uses _exactEndpointRegistrations. Existing calls to RegisterEndpointLegacy can gradually
 				// be changed over. We may need to add
 				// RegisterEndpointHandlerPattern...same as RegisterEndpointLegacy, used when we know we

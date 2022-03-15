@@ -10,7 +10,7 @@ using BloomTests.TestDoubles.Book;
 namespace BloomTests.TestDoubles.CollectionTab
 {
 	// A simplified implementation of CollectionModel that cuts some corners in order to ease setup.
-	// Tries to provide enough functionality to allow construction of LibraryListView without exceptions, to be able to return/load a collection, and instntiate a dummy SourceCollectionsList which has a dummy templates collection
+	// Tries to provide enough functionality to allow construction of CollectionTabView without exceptions, to be able to return/load a collection, and instntiate a dummy SourceCollectionsList which has a dummy templates collection
 	class FakeCollectionModel : CollectionModel
 	{
 		public readonly string TestFolderPath;
