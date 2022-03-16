@@ -129,6 +129,11 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
             addEllipsis: true
         },
         {
+            label: "Make Bloom Pack of Shell Books...",
+            l10nId: "CollectionTab.MakeBloomPackOfShellBooks",
+            command: "collections/makeShellBooksBloompack"
+        },
+        {
             label: "Make Reader Template Bloom Pack...",
             l10nId:
                 "CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem",

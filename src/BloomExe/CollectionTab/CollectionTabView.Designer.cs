@@ -40,7 +40,6 @@ namespace Bloom.CollectionTab
 			this._tcStatusButton = new Bloom.TeamCollection.TeamCollectionStatusButton();
 			this._toolStrip = new System.Windows.Forms.ToolStrip();
 			this._sendReceiveButton = new System.Windows.Forms.ToolStripButton();
-			this._makeBloomPackButton = new System.Windows.Forms.ToolStripButton();
 			this._settingsButton = new System.Windows.Forms.ToolStripButton();
 			this._openCreateCollectionButton = new System.Windows.Forms.ToolStripButton();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
@@ -108,7 +107,6 @@ namespace Bloom.CollectionTab
 			this._toolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
 			this._toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._sendReceiveButton,
-            this._makeBloomPackButton,
             this._settingsButton,
             this._openCreateCollectionButton});
 			this._toolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
@@ -136,21 +134,6 @@ namespace Bloom.CollectionTab
 			this._sendReceiveButton.Size = new System.Drawing.Size(82, 66);
 			this._sendReceiveButton.Text = "Send/Receive";
 			this._sendReceiveButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			// 
-			// _makeBloomPackButton
-			// 
-			this._makeBloomPackButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._makeBloomPackButton.Image = global::Bloom.Properties.Resources.PackageFlat;
-			this._makeBloomPackButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-			this._makeBloomPackButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._makeBloomPackButton, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._makeBloomPackButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._makeBloomPackButton, "CollectionTab.MakeBloomPackButton");
-			this._makeBloomPackButton.Name = "_makeBloomPackButton";
-			this._makeBloomPackButton.Size = new System.Drawing.Size(106, 66);
-			this._makeBloomPackButton.Text = "Make Bloom Pack";
-			this._makeBloomPackButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._makeBloomPackButton.Click += new System.EventHandler(this.OnMakeBloomPackButton_Click);
 			// 
 			// _settingsButton
 			// 
@@ -228,7 +211,6 @@ namespace Bloom.CollectionTab
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.ToolStrip _toolStrip;
 		private System.Windows.Forms.ToolStripButton _sendReceiveButton;
-		private System.Windows.Forms.ToolStripButton _makeBloomPackButton;
 		private System.Windows.Forms.ToolStripButton _settingsButton;
 		private System.Windows.Forms.ToolStripButton _openCreateCollectionButton;
 		private System.Windows.Forms.ToolStrip _toolStripLeft;

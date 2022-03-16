@@ -54,7 +54,6 @@ namespace Bloom.CollectionTab
 			_toolStripLeft.SendToBack();
 
 			//TODO splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
-			_makeBloomPackButton.Visible = model.IsShellProject;
 			_sendReceiveButton.Visible = Settings.Default.ShowSendReceive;
 
 			if (sendReceiveCommand != null)
@@ -240,25 +239,6 @@ namespace Bloom.CollectionTab
 
 		}
 
-
-		private void OnMakeBloomPackButton_Click(object sender, EventArgs e)
-		{
-			// Something in the Mono runtime state machine keeps the GTK filechooser from getting the
-			// focus immediately when we invoke _collectionListView.MakeBloomPack() directly at this
-			// point.  Waiting for the next idle gets it into a state where the filechooser does receive
-			// the focus as desired.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-5809.
-			if (SIL.PlatformUtilities.Platform.IsMono)
-				Application.Idle += DeferredBloompackFileChooser;
-			else
-				_model.MakeBloomPack(false);
-		}
-
-		private void DeferredBloompackFileChooser(object sender, EventArgs e)
-		{
-			Application.Idle -= DeferredBloompackFileChooser;
-			_model.MakeBloomPack(false);
-		}
-
 		public string HelpTopicUrl
 		{
 			get
@@ -284,7 +264,6 @@ namespace Bloom.CollectionTab
 		/// (b) the Make Bloompack button only shows in source collections.
 		/// </summary>
 		public int WidthToReserveForTopBarControl => _openCreateCollectionButton.Width + _settingsButton.Width +
-			(_makeBloomPackButton.Visible ? _makeBloomPackButton.Width : 0) +
 			(_tcStatusButton.Visible ? _tcStatusButton.Width : 0);
 
 		public void PlaceTopBarControl()
