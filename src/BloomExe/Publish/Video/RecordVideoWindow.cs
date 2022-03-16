@@ -525,7 +525,7 @@ namespace Bloom.Publish.Video
 					// review: what size video do we want to play? Won't actually be used.
 					desiredHeight = landscape ? 720 : 1280;
 					desiredWidth = landscape ? 1280 : 720;
-					codec = Codec.H263;
+					codec = Codec.MP3;
 					break;
 			}
 
