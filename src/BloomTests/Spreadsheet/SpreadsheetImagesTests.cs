@@ -75,7 +75,7 @@ namespace BloomTests.Spreadsheet
 
                 <div class=""split-pane-component position-bottom"" style=""height: 30.1471%;"">
                     <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px"">
-                        <div class=""bloom-imageContainer"" title=""Name: mars 2.png Size: 130.10 kb Dots: 1041 x 447 For the current paper size: • The image container is 406 x 203 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 246 DPI. • An image with 1269 x 635 dots would fill this container at 300 DPI.""><img src=""mars%202.png"" alt="""" data-copyright="""" data-creator="""" data-license=""cc-by""></img></div>
+                        <div class=""bloom-imageContainer"" title=""Name: Mars 2.png Size: 130.10 kb Dots: 1041 x 447 For the current paper size: • The image container is 406 x 203 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 246 DPI. • An image with 1269 x 635 dots would fill this container at 300 DPI.""><img src=""Mars%202.png"" alt="""" data-copyright="""" data-creator="""" data-license=""cc-by""></img></div>
 						<div class=""bloom-imageContainer"" title=""Name:missing file.jpg Size: 130.10 kb Dots: 1041 x 447 For the current paper size: • The image container is 406 x 203 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 246 DPI. • An image with 1269 x 635 dots would fill this container at 300 DPI.""><img src=""missing%20file.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""cc-by""></img></div>
                     </div>
                 </div>
@@ -189,7 +189,7 @@ namespace BloomTests.Spreadsheet
 			var path = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(_pathToTestImages);
 
 			// We need all these files in one place so we can verify that all of them get copied except placeHolder.png
-			foreach (var name in new []{ "BloomWithTaglineAgainstLight.svg", "man.jpg", "mars 2.png", "lady24b.png", "empty-file.jpg" })
+			foreach (var name in new []{ "BloomWithTaglineAgainstLight.svg", "man.jpg", "Mars 2.png", "lady24b.png", "empty-file.jpg" })
 				RobustFile.Copy(Path.Combine(path, name), Path.Combine(_bookFolder.FolderPath, name));
 			var placeHolderSource = Path.Combine(BloomFileLocator.FactoryCollectionsDirectory, "template books", "Basic Book", "placeHolder.png");
 			RobustFile.Copy(placeHolderSource, Path.Combine(_bookFolder.FolderPath, "placeHolder.png"));
@@ -259,7 +259,7 @@ namespace BloomTests.Spreadsheet
 			Assert.That(Directory.Exists(destImageFolder));
 			Assert.That(File.Exists(Path.Combine(destImageFolder, "BloomWithTaglineAgainstLight.svg")));
 			Assert.That(File.Exists(Path.Combine(destImageFolder, "man.jpg")));
-			Assert.That(File.Exists(Path.Combine(destImageFolder, "mars 2.png")));
+			Assert.That(File.Exists(Path.Combine(destImageFolder, "Mars 2.png")));
 			Assert.That(File.Exists(Path.Combine(destImageFolder, "lady24b.png")));
 			Assert.That(File.Exists(Path.Combine(destImageFolder, "placeHolder.png")), Is.False);
 		}
@@ -273,7 +273,7 @@ namespace BloomTests.Spreadsheet
 			var path = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(_pathToTestImages);
 			var manImagePath = Path.Combine("images", "man.jpg");
 			Assert.That(_pageContentRows[0].GetCell(imageSourceColumn).Text, Is.EqualTo(manImagePath));
-			var marsImagePath = Path.Combine("images", "mars 2.png");
+			var marsImagePath = Path.Combine("images", "Mars 2.png");
 			Assert.That(_pageContentRows[1].GetCell(imageSourceColumn).Text, Is.EqualTo(marsImagePath));
 			var missingFileImagePath = Path.Combine("images", "missing file.jpg");
 			Assert.That(_pageContentRows[2].GetCell(imageSourceColumn).Text, Is.EqualTo(missingFileImagePath));
