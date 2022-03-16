@@ -1228,6 +1228,7 @@ namespace BloomTests.Publish
 						<style type='text/css' title='userModifiedStyles'>
 							/*<![CDATA[*/
 							.Times-style[lang='tpi'] { font-family: Times New Roman ! important; font-size: 12pt  }
+							.Times-style[lang='zh'] { font-family: Wen Yei ! important; font-size: 12pt  }
 							/*]]>*/
 						</style>
 					</head><body>
@@ -1239,10 +1240,13 @@ namespace BloomTests.Publish
 			{
 				fontFileFinder.NoteFontsWeCantInstall = true;
 
-				// Font called for in HTML
+				// Fonts called for in HTML
 				var timesNewRomanFileName = "Times New Roman R.ttf";
 				var tnrPath = Path.Combine(tempFontFolder.Path, timesNewRomanFileName);
 				File.WriteAllText(tnrPath, "This is phony TNR");
+				var wenYeiFileName = "Wen Yei.ttc";
+				var wenYeiPath = Path.Combine(tempFontFolder.Path, wenYeiFileName);
+				File.WriteAllText(wenYeiPath, "This is phony Wen Yei font collection");
 
 				// Font called for in custom styles CSS
 				var calibreFileName = "Calibre R.ttf";
@@ -1250,27 +1254,32 @@ namespace BloomTests.Publish
 				File.WriteAllBytes(calibrePath, new byte[200008]); // we want something with a size greater than zero in megs
 
 				fontFileFinder.FilesForFont["Times New Roman"] = new[] { tnrPath };
+				fontFileFinder.FilesForFont["Wen Yei"] = new[] { wenYeiPath };
 				fontFileFinder.FilesForFont["Calibre"] = new [] { calibrePath };
 				fontFileFinder.FontsWeCantInstall.Add("NotAllowed");
 				// And "NotFound" just doesn't get a mention anywhere.
 
 				var stubProgress = new StubProgress();
 
-				var customStylesPath = Path.Combine(testBook.FolderPath, "CustomBookStyles.css");
-				File.WriteAllText(customStylesPath, ".someStyle {font-family:Calibre} .otherStyle {font-family: NotFound} .yetAnother {font-family:NotAllowed}");
+				var customStylesPath = Path.Combine(testBook.FolderPath, "customCollectionStyles.css");
+				File.WriteAllText(customStylesPath, ".someStyle {font-family:'Calibre';} .otherStyle {font-family: 'NotFound';} .yetAnother {font-family:'NotAllowed';}");
 
 				var tnrGroup = new FontGroup();
 				tnrGroup.Normal = tnrPath;
 				fontFileFinder.FontGroups["Times New Roman"] = tnrGroup;
+				var wenYeiGroup = new FontGroup();
+				wenYeiGroup.Normal = wenYeiPath;
+				fontFileFinder.FontGroups["Wen Yei"] = wenYeiGroup;
 				var calibreGroup = new FontGroup();
 				calibreGroup.Normal = calibrePath;
 				fontFileFinder.FontGroups["Calibre"] = calibreGroup;
 
 				HashSet<string> fontsWanted = new HashSet<string>();
 				fontsWanted.Add("Times New Roman");
+				fontsWanted.Add("Wen Yei");
 				fontsWanted.Add("Calibre");
 				fontsWanted.Add("NotAllowed");
-				fontsWanted.Add("NotFound");	// probably wouldn't happen with new approach for fonts, but leave in the test
+				fontsWanted.Add("NotFound");    // probably wouldn't happen with new approach for fonts, but leave in the test
 
 				BloomPubMaker.EmbedFonts(testBook, stubProgress, fontsWanted, fontFileFinder);
 
@@ -1278,6 +1287,8 @@ namespace BloomTests.Publish
 				Assert.That(File.Exists(Path.Combine(testBook.FolderPath, calibreFileName)));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Checking Times New Roman font: License OK for embedding."));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Embedding font Times New Roman at a cost of 0.0 megs"));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("This book has text in a font named \"Wen Yei\". Bloom cannot use a font in this font's file format."));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Bloom will substitute \"Andika New Basic\" instead."));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Checking Calibre font: License OK for embedding."));
 				Assert.That(stubProgress.MessagesNotLocalized,  Has.Member("Embedding font Calibre at a cost of 0.2 megs"));
 
@@ -1295,8 +1306,21 @@ namespace BloomTests.Publish
 					+ Environment.NewLine;
 				Assert.That(fontSource, Is.EqualTo(lineTimes + lineCalibre).Or.EqualTo(lineCalibre + lineTimes));
 				AssertThatXmlIn.Dom(testBook.RawDom).HasSpecifiedNumberOfMatchesForXpath("//link[@href='fonts.css']", 1);
-			}
 
+				var styleNode = testBook.OurHtmlDom.SelectSingleNode("//head/style[@type='text/css' and @title='userModifiedStyles']");
+				Assert.That(styleNode, Is.Not.Null);
+				var styleText = styleNode.InnerXml;
+				Assert.That(styleText.Contains(".Times-style[lang='tpi'] { font-family: Times New Roman ! important; font-size: 12pt  }"), Is.True, "Times New Roman reference unchanged");
+				Assert.That(styleText.Contains("Wen Yei"), Is.False, "Wen Yei reference has been removed");
+				Assert.That(styleText.Contains(".Times-style[lang='zh'] { font-family: Andika New Basic !important; font-size: 12pt  }"), Is.True, "Wen Yei reference replaced with Andika New Basic");
+
+				var customCss = File.ReadAllText(customStylesPath);
+				Assert.That(customCss.Contains(".someStyle {font-family:'Calibre';}"), Is.True, "Calibre reference unchanged");
+				Assert.That(customCss.Contains("NotFound"), Is.False, "NotFound reference has been removed");
+				Assert.That(customCss.Contains(".otherStyle {font-family: 'Andika New Basic';}"), Is.True, "NotFound reference replaced with Andika New Basic");
+				Assert.That(customCss.Contains("NotAllowed"), Is.False, "NotAllowed reference has been removed");
+				Assert.That(customCss.Contains(".yetAnother {font-family: 'Andika New Basic';}"), Is.True, "NotAllowed reference replaced with Andika New Basic");
+			}
 		}
 
 		private class ZipHtmlObj

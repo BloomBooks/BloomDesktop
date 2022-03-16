@@ -410,7 +410,10 @@ namespace Bloom.Publish.Epub
 
 			CopyFileToEpub(epubThumbnailImagePath, true, true, kImagesFolder);
 
-			EmbedFonts(); // must call after copying stylesheets
+			var warnings = EmbedFonts(); // must call after copying stylesheets
+			if (warnings.Any())
+				PublishHelper.SendBatchedWarningMessagesToProgress(warnings, progress);
+
 			MakeNavPage();
 
 			//supporting files
@@ -1983,15 +1986,33 @@ namespace Bloom.Publish.Epub
 		/// <summary>
 		/// Try to embed the fonts we need.
 		/// </summary>
-		private void EmbedFonts()
+		/// <returns>
+		/// set of warning messages for any problems encountered (may be empty)
+		/// </returns>
+		private ISet<string> EmbedFonts()
 		{
+			ISet<string> warningMessages = new HashSet<string>();
 			var fontFileFinder = FontFileFinder.GetInstance(Program.RunningUnitTests);
 			var filesToEmbed = _fontsUsedInBook.SelectMany(fontFileFinder.GetFilesForFont).ToArray();
 			foreach (var file in filesToEmbed) {
-				CopyFileToEpub(file, subfolder:kFontsFolder);
+				var extension = Path.GetExtension(file).ToLowerInvariant();
+				if (FontMetadata.fontFileTypesBloomKnows.Contains(extension))
+				{
+					// ePUB only understands (and will embed) these types.
+					CopyFileToEpub(file, subfolder: kFontsFolder);
+				}
+				else
+				{
+					warningMessages.Add($"Cannot embed font file {file}");
+				}
 			}
 			var sb = new StringBuilder ();
 			foreach (var font in _fontsUsedInBook) {
+				if (!fontFileFinder.GetFilesForFont(font).Any(file => FontMetadata.fontFileTypesBloomKnows.Contains(Path.GetExtension(file).ToLowerInvariant())))
+				{
+					// If we can't embed the font, no reason to refer to it in the css.
+					continue;
+				}
 				var group = fontFileFinder.GetGroupForFont (font);
 				if (group != null) {
 					// The fonts.css file is stored in a subfolder as are the font files.  They are in different
@@ -2012,6 +2033,7 @@ namespace Bloom.Publish.Epub
 			Directory.CreateDirectory(Path.Combine(_contentFolder, kCssFolder));
 			RobustFile.WriteAllText(Path.Combine(_contentFolder, kCssFolder, "fonts.css"), sb.ToString());
 			_manifestItems.Add(kCssFolder+"/" + "fonts.css");
+			return warningMessages;
 		}
 
 		internal static void AddFontFace (StringBuilder sb, string name, string weight, string style, string path, string relativePathFromCss="", bool sanitizeFileName = false)
