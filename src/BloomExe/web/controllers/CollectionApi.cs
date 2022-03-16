@@ -111,6 +111,12 @@ namespace Bloom.web.controllers
 			}, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "collectionProps/", HandleCollectionProps, false, false);
 
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "makeShellBooksBloompack/", (request) =>
+				{
+					_collectionModel.MakeBloomPack(false);
+					request.PostSucceeded();
+				}, true);
+
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "makeBloompack/", (request) =>
 				{
 					_collectionModel.MakeReaderTemplateBloompack();
@@ -167,7 +173,8 @@ namespace Bloom.web.controllers
 						new
 						{
 							id = c.PathToDirectory,
-							name = c.Name
+							name = c.Name,
+							isShellProject = _collectionModel.IsShellProject
 						});
 				}
 			});
