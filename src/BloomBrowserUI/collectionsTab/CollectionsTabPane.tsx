@@ -12,19 +12,9 @@ import { CollectionsTabBookPane } from "./collectionsTabBookPane/CollectionsTabB
 import { useEffect, useMemo, useState } from "react";
 import useEventListener from "@use-it/event-listener";
 import { BookSelectionManager } from "./bookSelectionManager";
-import { ApiBackedCheckbox } from "../react_components/apiBackedCheckbox";
-import { useL10n } from "../react_components/l10nHooks";
 import ShowAfterDelay from "../react_components/showAfterDelay";
 import { forceCheck as convertAnyVisibleLazyLoads } from "react-lazyload";
-import {
-    IconButton,
-    Divider,
-    ListItemIcon,
-    ListItemText,
-    Menu,
-    MenuItem
-} from "@material-ui/core";
-import NestedMenuItem from "material-ui-nested-menu-item";
+import { IconButton, Divider, Menu } from "@material-ui/core";
 import GreyTriangleMenuIcon from "../react_components/icons/GreyTriangleMenuIcon";
 import {
     LocalizableCheckboxMenuItem,
@@ -38,11 +28,25 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     const collections = BloomApi.useApiJson("collections/list");
 
     const [draggingSplitter, setDraggingSplitter] = useState(false);
+    const [
+        isSpreadsheetFeatureActive,
+        setIsSpreadsheetFeatureActive
+    ] = useState(false);
 
     const manager: BookSelectionManager = useMemo(() => {
         const manager = new BookSelectionManager();
         manager.initialize();
         return manager;
+    }, []);
+
+    useEffect(() => {
+        BloomApi.get("app/enabledExperimentalFeatures", result => {
+            const features: string = result.data; // This is a string containing the experimental feature names
+            const featureIsActive = Boolean(
+                features.includes("spreadsheet-import-export")
+            );
+            setIsSpreadsheetFeatureActive(featureIsActive);
+        });
     }, []);
 
     const [contextMousePoint, setContextMousePoint] = React.useState<
@@ -165,7 +169,9 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
         // the collection menu commands don't actually use the ID of
         // a particular book
         "",
-        collections[0].id
+        collections[0].id,
+        // Shouldn't be any at this level, but it works better to include this here too.
+        isSpreadsheetFeatureActive
     );
 
     const sourcesCollections = collections.slice(1);
@@ -178,6 +184,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                     isEditableCollection={false}
                     manager={manager}
                     lazyLoadCollection={true}
+                    isSpreadsheetFeatureActive={isSpreadsheetFeatureActive}
                 />
             </div>
         );
@@ -303,6 +310,9 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                             isEditableCollection={true}
                             manager={manager}
                             lazyLoadCollection={false}
+                            isSpreadsheetFeatureActive={
+                                isSpreadsheetFeatureActive
+                            }
                         />
                     </div>
 
@@ -395,13 +405,19 @@ export interface MenuItemSpec {
 // pop-up menus. But at the moment a lot of the logic is specific to making menus about books and
 // book collections. I'm not seeing a good way to factor that out. Maybe it will become clear when
 // we have a third need for such a menu. For now it is just logic shared with BookButton.
+// If 'includeSpreadsheetItems' is true, then the pane has determined (api call) that the Advanced
+// checkbox for import/export spreadsheet is checked. When spreadsheet is no longer an experimental
+// feature, we can either remove the parameter or just make it always true.
+// This parameter causes menu items with "Spreadsheet" in their localization Id to be included in the
+// menu, otherwise they aren't.
 export const makeMenuItems = (
     menuItemsSpecs: MenuItemSpec[],
     isEditableCollection: boolean,
     isBookSavable: boolean,
     close: () => void,
     bookId: string,
-    collectionId: string
+    collectionId: string,
+    includeSpreadsheetItems: boolean
 ) => {
     const menuItemsT = menuItemsSpecs
         .map((spec: MenuItemSpec) => {
@@ -415,7 +431,8 @@ export const makeMenuItems = (
                     isBookSavable,
                     close,
                     bookId,
-                    collectionId
+                    collectionId,
+                    includeSpreadsheetItems
                 );
                 return (
                     <LocalizableNestedMenuItem
@@ -467,6 +484,11 @@ export const makeMenuItems = (
             if (spec.onClick) {
                 clickAction = spec.onClick;
             }
+            if (
+                !includeSpreadsheetItems &&
+                Boolean(spec.l10nId!.includes("Spreadsheet"))
+            )
+                return undefined;
             return (
                 <LocalizableMenuItem
                     english={spec.label}
