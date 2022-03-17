@@ -208,6 +208,33 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
             window.removeEventListener("message", listener);
         };
     }, []);
+    // The param is added because, if anything has changed that forces us to re-render
+    // the iframe with a different URL, we need to have the latest settings, in case new
+    // ones have been transmitted from the player to the backend. Otherwise, the player
+    // would be reset to the value we previously retrieved. With a param that includes
+    // any variable element that contributes to the preview URL, we will re-run the query
+    // any time it changes. (The actual content of the param is ignored in the backend.)
+    const videoSettings = BloomApi.useApiString(
+        "publish/video/videoSettings?regen=" + pageReadTime,
+        ""
+    );
+    let videoSettingsParam = "";
+    if (videoSettings) {
+        // videoSettings is sent as a url-encoded JSON string, which is exactly what we
+        // want. But infuriatingly, axios decides to decode it into an object. If that
+        // happens, we have to convert it back to URL-encoded stringified JSON.
+        // Possible future issue: should we apply encodeURLComponent to the stringified JSON?
+        // I know axios converts the string to an object, don't think it decodes it. No real way to test
+        // at present, because the JSON data is a language code, a number, and property names,
+        // so nothing is changed by URL encoding it. If we get some data in there that might
+        // really need URL-encoding, should test whether we need to do some encoding here.
+        if (typeof videoSettings === "string") {
+            videoSettingsParam = "&videoSettings=" + videoSettings;
+        } else {
+            videoSettingsParam =
+                "&videoSettings=" + JSON.stringify(videoSettings);
+        }
+    }
     const circleHeight = "0.88rem";
     const blurbClasses = `
     font-size: smaller;
@@ -269,7 +296,8 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                                             pageReadTime +
                                             "&url=" +
                                             encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
-                                            "&independent=false&host=bloomdesktop&skipActivities=true&hideNavButtons=true"
+                                            "&independent=false&host=bloomdesktop&skipActivities=true&hideNavButtons=true" +
+                                            videoSettingsParam
                                         }
                                     />
                                     <div

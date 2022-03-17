@@ -55,7 +55,10 @@ export const VideoOptionsGroup: React.FunctionComponent<{
     pageDuration: number;
     onSetPageDuration: (arg: number) => void;
 }> = props => {
-    const [format, setFormat] = useState("facebook");
+    const [format, setFormat] = BloomApi.useApiStringState(
+        "publish/video/format",
+        "facebook"
+    );
     const [tooBigMsg, setTooBigMsg] = useState("");
     // Manages visibility of the details popup for the main Format label (that shows in the
     // control when the dropdown is closed).
@@ -159,10 +162,6 @@ export const VideoOptionsGroup: React.FunctionComponent<{
                                         const newFormat = e.target
                                             .value as string;
                                         setFormat(newFormat);
-                                        BloomApi.postString(
-                                            "publish/video/format",
-                                            newFormat
-                                        );
                                     }}
                                     style={{ width: 160 }}
                                     renderValue={f => {
