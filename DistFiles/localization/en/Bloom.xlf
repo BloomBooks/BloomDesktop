@@ -779,6 +779,12 @@
       <trans-unit id="CollectionTab.MakeBloomPackButton">
         <source xml:lang="en">Make Bloom Pack</source>
         <note>ID: CollectionTab.MakeBloomPackButton</note>
+        <note>This string is obsolete as of Bloom version 5.3.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.MakeBloomPackOfShellBooks">
+        <source xml:lang="en">Make Bloom Pack of Shell Books</source>
+        <note>Shell Books are books that are meant to be translated.</note>
+        <note>ID: CollectionTab.MakeBloomPackOfShellBooks</note>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate">
         <source xml:lang="en">Make a book using this source</source>
