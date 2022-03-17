@@ -508,7 +508,7 @@ namespace Bloom.Publish.BloomLibrary
 			var existingBookInfo = _model.ConflictingBookInfo;
 			var updatedDateTime = (DateTime) existingBookInfo.updatedAt;
 			var createdDateTime = (DateTime) existingBookInfo.createdAt;
-			var originalTitle = existingBookInfo.originalTitle.Value;
+			var originalTitle = existingBookInfo.originalTitle?.Value;
 			var existingId = existingBookInfo.objectId.ToString();
 			var existingBookUrl = BloomLibraryUrlPrefix + "/book/" + existingId;
 
