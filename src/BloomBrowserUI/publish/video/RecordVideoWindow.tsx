@@ -41,14 +41,18 @@ import {
     Step,
     StepContent,
     StepLabel,
-    Stepper
+    Stepper,
+    Typography
 } from "@material-ui/core";
 import { kBloomRed } from "../../utils/colorUtils";
 import { SimplePreview } from "./simplePreview";
 import { VideoOptionsGroup } from "./VideoOptionsGroup";
-import { Div } from "../../react_components/l10nComponents";
+import { Div, P, Span } from "../../react_components/l10nComponents";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
-import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
+import {
+    ErrorBox,
+    NoteBox
+} from "../../react_components/BloomDialog/commonDialogComponents";
 import { useEffect } from "react";
 
 export const RecordVideoWindow = () => {
@@ -102,6 +106,14 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
     const [pageReadTime, setPageReadTime] = useState(3);
     const [progressState, setProgressState] = useState(ProgressState.Working);
     const [activeStep, setActiveStep] = useState(0);
+    const [format, setFormat] = BloomApi.useApiStringState(
+        "publish/video/format",
+        "facebook"
+    );
+    const [isScalingActive] = BloomApi.useApiBoolean(
+        "publish/video/isScalingActive",
+        false
+    );
     const gotRecording = BloomApi.useWatchBooleanEvent(
         false,
         "recordVideo",
@@ -235,14 +247,14 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                 "&videoSettings=" + JSON.stringify(videoSettings);
         }
     }
+    const recordingVideo = format != "mp3";
     const circleHeight = "0.88rem";
     const blurbClasses = `
-    font-size: smaller;
     max-width: ${landscapeWidth}px;
     margin-bottom:5px;
     color: grey;`;
     return (
-        <React.Fragment>
+        <Typography>
             <RequiresBloomEnterpriseDialog />
             <BasePublishScreen
                 className="ReaderPublishScreen"
@@ -389,6 +401,59 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                                     “Format” option in the upper right of this
                                     screen.
                                 </Div>
+                                {isScalingActive && recordingVideo && (
+                                    <ErrorBox>
+                                        <div>
+                                            <Div
+                                                css={css`
+                                                    font-style: italic;
+                                                    font-weight: bold;
+                                                `}
+                                                l10nKey="PublishTab.RecordVideo.DisableScaling"
+                                                temporarilyDisableI18nWarning={
+                                                    true
+                                                }
+                                            >
+                                                Disable Display Scaling
+                                            </Div>
+                                            <p
+                                                css={css`
+                                                    margin: 0;
+                                                `}
+                                            >
+                                                <Span
+                                                    l10nKey="PublishTab.RecordVideo.ChangeScale100"
+                                                    temporarilyDisableI18nWarning={
+                                                        true
+                                                    }
+                                                >
+                                                    Please change your display
+                                                    scaling to 100% while making
+                                                    videos. Without this, videos
+                                                    will come out at the wrong
+                                                    resolution, or not record at
+                                                    all.
+                                                </Span>{" "}
+                                                <Link
+                                                    css={css`
+                                                        text-decoration: underline;
+                                                    `}
+                                                    l10nKey="PublishTab.RecordVideo.DisplaySettings"
+                                                    temporarilyDisableI18nWarning={
+                                                        true
+                                                    }
+                                                    onClick={() =>
+                                                        BloomApi.post(
+                                                            "publish/video/displaySettings"
+                                                        )
+                                                    }
+                                                >
+                                                    Display Settings
+                                                </Link>
+                                            </p>
+                                        </div>
+                                    </ErrorBox>
+                                )}
                                 <BloomButton
                                     enabled={true}
                                     l10nKey="PublishTab.RecordVideo.Record"
@@ -473,6 +538,8 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                                 time.toString()
                             );
                         }}
+                        format={format}
+                        setFormat={setFormat}
                     ></VideoOptionsGroup>
                     {motionEnabled && (
                         <FormGroup
@@ -531,7 +598,7 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                     }}
                 />
             )}
-        </React.Fragment>
+        </Typography>
     );
 };
 

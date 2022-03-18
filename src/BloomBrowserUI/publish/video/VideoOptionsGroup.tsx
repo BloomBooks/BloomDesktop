@@ -54,11 +54,11 @@ interface IVideoFormatOptionProps extends IFormatItem {
 export const VideoOptionsGroup: React.FunctionComponent<{
     pageDuration: number;
     onSetPageDuration: (arg: number) => void;
+    format: string;
+    setFormat: (f: string) => void;
 }> = props => {
-    const [format, setFormat] = BloomApi.useApiStringState(
-        "publish/video/format",
-        "facebook"
-    );
+    const format = props.format;
+    const setFormat = props.setFormat;
     const [tooBigMsg, setTooBigMsg] = useState("");
     // Manages visibility of the details popup for the main Format label (that shows in the
     // control when the dropdown is closed).
