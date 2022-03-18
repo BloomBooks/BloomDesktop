@@ -58,8 +58,15 @@ namespace Bloom.Publish.Video
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "videoSettings", request =>
 			{
-				_settingsFromPreview = request.RequiredPostString();
-				request.PostSucceeded();
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					request.ReplyWithText(_settingsFromPreview ?? "");
+				}
+				else
+				{
+					_settingsFromPreview = request.RequiredPostString();
+					request.PostSucceeded();
+				}
 			}, true, false);
 
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "hasActivities",
@@ -73,9 +80,17 @@ namespace Bloom.Publish.Video
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "format", request =>
 			{
-				_videoFormat = request.RequiredPostString();
-				_recordVideoWindow?.SetFormat(_videoFormat, request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape);
-				request.PostSucceeded();
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					request.ReplyWithText(_videoFormat);
+				}
+				else
+				{
+					_videoFormat = request.RequiredPostString();
+					_recordVideoWindow?.SetFormat(_videoFormat,
+						request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape);
+					request.PostSucceeded();
+				}
 			}, true, false);
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "startRecording", request =>
