@@ -27,6 +27,7 @@ import { lightTheme } from "../bloomMaterialUITheme";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 export let showTeamCollectionDialog: () => void;
 import "react-tabs/style/react-tabs.less";
+import { useEffect, useState } from "react";
 
 export const TeamCollectionDialog: React.FunctionComponent<{
     showReloadButton: boolean;
@@ -37,6 +38,27 @@ export const TeamCollectionDialog: React.FunctionComponent<{
         closeDialog,
         propsForBloomDialog
     } = useSetupBloomDialog(props.dialogEnvironment);
+
+    // This ultimately controls which tab (currently Status or History) appears when the
+    // dialog opens. The idea is that it shows the History tab unless there are important
+    // messages in the Status tab.
+    // The obvious solution is to use BloomApi.useApiBoolean to get the logImportant
+    // value from the backend, and simply compute defaultTabIndex from that as either 1 or 0.
+    // That doesn't work, because the defaultTabIndex only takes effect the FIRST time the
+    // Tabs element is rendered. That will be with the default value passed to useApiBoolean.
+    // The real value obtained in a later render after the backend responds is ignored.
+    // To get around this (and reduce flicker), we don't render the Tabs element at all
+    // until we have a real value for logImportant. The initial state, -1, indicates that
+    // we're in this waiting state and shouldn't display the Tabs at all. When we get the
+    // value from the API, we set defaultTabIndex to either 0 or 1 and the Tabs element is
+    // rendered for the first time with the correct defaultIndex.
+    const [defaultTabIndex, setDefaultTabIndex] = useState(-1);
+
+    useEffect(() => {
+        BloomApi.getBoolean("teamCollection/logImportant", logImportant => {
+            setDefaultTabIndex(logImportant ? 0 : 1);
+        });
+    }, []);
 
     // hoist this up to the window level so that any code that imports showTeamCollectionDialog can show it
     // (It will still have to be declared once at the app level when it is no longer launched in its own winforms dialog.)
@@ -62,66 +84,68 @@ export const TeamCollectionDialog: React.FunctionComponent<{
                     color={"white"}
                 />
                 <DialogMiddle>
-                    <Tabs
-                        defaultIndex={0}
-                        // Seems like there should be some sort of Material-UI mode that would produce the look
-                        // John wants. A lot of their examples are quite like it, but I can't find any reason
-                        // why their examples are different from what I get with similar code. Possibly the
-                        // makeStyles that is in most of their examples pulls in this look. But we're using Emotion.
-                        css={css`
-                            .react-tabs__tab.react-tabs__tab {
-                                background-color: white;
-                                text-transform: uppercase;
-                            }
-                            .react-tabs__tab--selected {
-                                color: ${kBloomBlue};
-                                border-color: transparent;
-                                border-bottom: 2px solid ${kBloomBlue};
-                            }
-                            .react-tabs__tab-list {
-                                border: none;
-                            }
-                        `}
-                    >
-                        <TabList>
-                            <Tab>
-                                <LocalizedString
-                                    l10nKey="TeamCollection.Status"
-                                    l10nComment="Used as the name on a tab of the Team Collection dialog."
-                                    temporarilyDisableI18nWarning={true}
-                                >
-                                    Status
-                                </LocalizedString>
-                            </Tab>
-                            <Tab>
-                                <LocalizedString
-                                    l10nKey="TeamCollection.History"
-                                    l10nComment="Used as the name on a tab of the Team Collection dialog."
-                                    temporarilyDisableI18nWarning={true}
-                                >
-                                    History
-                                </LocalizedString>
-                            </Tab>
-                        </TabList>
-                        <TabPanel>
-                            <ProgressBox
-                                preloadedProgressEvents={events}
-                                css={css`
-                                    // If we have omitOuterFrame that means the dialog height is controlled by c#, so let the progress grow to fit it.
-                                    // Maybe we could have that approach *all* the time?
-                                    height: ${props.dialogEnvironment
-                                        ?.dialogFrameProvidedExternally
-                                        ? "100%"
-                                        : "350px"};
-                                    // enhance: there is a bug I haven't found where, if this is > 530px, then it overflows. Instead, the BloomDialog should keep growing.
-                                    min-width: 530px;
-                                `}
-                            />
-                        </TabPanel>
-                        <TabPanel>
-                            <CollectionHistoryTable />
-                        </TabPanel>
-                    </Tabs>
+                    {defaultTabIndex == -1 || (
+                        <Tabs
+                            defaultIndex={defaultTabIndex}
+                            // Seems like there should be some sort of Material-UI mode that would produce the look
+                            // John wants. A lot of their examples are quite like it, but I can't find any reason
+                            // why their examples are different from what I get with similar code. Possibly the
+                            // makeStyles that is in most of their examples pulls in this look. But we're using Emotion.
+                            css={css`
+                                .react-tabs__tab.react-tabs__tab {
+                                    background-color: white;
+                                    text-transform: uppercase;
+                                }
+                                .react-tabs__tab--selected {
+                                    color: ${kBloomBlue};
+                                    border-color: transparent;
+                                    border-bottom: 2px solid ${kBloomBlue};
+                                }
+                                .react-tabs__tab-list {
+                                    border: none;
+                                }
+                            `}
+                        >
+                            <TabList>
+                                <Tab>
+                                    <LocalizedString
+                                        l10nKey="TeamCollection.Status"
+                                        l10nComment="Used as the name on a tab of the Team Collection dialog."
+                                        temporarilyDisableI18nWarning={true}
+                                    >
+                                        Status
+                                    </LocalizedString>
+                                </Tab>
+                                <Tab>
+                                    <LocalizedString
+                                        l10nKey="TeamCollection.History"
+                                        l10nComment="Used as the name on a tab of the Team Collection dialog."
+                                        temporarilyDisableI18nWarning={true}
+                                    >
+                                        History
+                                    </LocalizedString>
+                                </Tab>
+                            </TabList>
+                            <TabPanel>
+                                <ProgressBox
+                                    preloadedProgressEvents={events}
+                                    css={css`
+                                        // If we have omitOuterFrame that means the dialog height is controlled by c#, so let the progress grow to fit it.
+                                        // Maybe we could have that approach *all* the time?
+                                        height: ${props.dialogEnvironment
+                                            ?.dialogFrameProvidedExternally
+                                            ? "100%"
+                                            : "350px"};
+                                        // enhance: there is a bug I haven't found where, if this is > 530px, then it overflows. Instead, the BloomDialog should keep growing.
+                                        min-width: 530px;
+                                    `}
+                                />
+                            </TabPanel>
+                            <TabPanel>
+                                <CollectionHistoryTable />
+                            </TabPanel>
+                        </Tabs>
+                    )}
                 </DialogMiddle>
 
                 <DialogBottomButtons>
