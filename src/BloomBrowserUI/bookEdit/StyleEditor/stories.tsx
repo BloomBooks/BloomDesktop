@@ -2,46 +2,10 @@
 import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { storiesOf } from "@storybook/react";
-import FontSelectComponent, { IFontMetaData } from "./fontSelectComponent";
+import FontSelectComponent from "./fontSelectComponent";
 import FontInformationPane from "../../react_components/fontInformationPane";
+import fontTestData from "../../utils/fontTestData";
 import { Typography } from "@material-ui/core";
-
-const font1: IFontMetaData = {
-    name: "Arial",
-    determinedSuitability: "ok",
-    variants: ["regular", "bold", "italic", "bold italic"],
-    designer: "Monotype",
-    fsType: "0",
-    designerURL: "http://www.google.com"
-};
-const font2: IFontMetaData = {
-    name: "Chiller",
-    determinedSuitability: "unknown"
-};
-const font3: IFontMetaData = {
-    name: "Microsoft YaHei",
-    determinedSuitability: "unsuitable",
-    determinedSuitabilityNotes: "Bloom does not support TTC fonts."
-};
-const font4: IFontMetaData = {
-    name: "Back Issues BB",
-    version: "6.0.0",
-    licenseURL: "https://foo.com",
-    copyright: "foo 2004-2005",
-    manufacturer: "Nate Piekos",
-    manufacturerURL: "https://Blambot.com",
-    fsType: "Print and preview",
-    variants: ["regular"],
-    determinedSuitability: "unknown",
-    determinedSuitabilityNotes:
-        "Has a good fsType, but as this is an unvetted manufacturer, we cannot know unambiguously what is allowed without studying the license."
-};
-
-const metadata: IFontMetaData[] = [];
-metadata.push(font1);
-metadata.push(font2);
-metadata.push(font3);
-metadata.push(font4);
 
 const Frame: React.FunctionComponent = ({ children }) => (
     <div
@@ -61,8 +25,8 @@ storiesOf("Format dialog", module)
         return React.createElement(() => (
             <Frame>
                 <FontSelectComponent
-                    fontMetadata={metadata}
-                    currentFontName={font1.name}
+                    fontMetadata={fontTestData}
+                    currentFontName={fontTestData[0].name}
                 />
             </Frame>
         ));
@@ -71,18 +35,19 @@ storiesOf("Format dialog", module)
         return React.createElement(() => (
             <Frame>
                 <FontSelectComponent
-                    fontMetadata={metadata}
-                    currentFontName={font2.name}
+                    fontMetadata={fontTestData}
+                    currentFontName={fontTestData[1].name}
                 />
             </Frame>
         ));
     })
-    .add("Font Select-current unsuitable", () => {
+    .add("Font Select-current unsuitable-pop left side", () => {
         return React.createElement(() => (
             <Frame>
                 <FontSelectComponent
-                    fontMetadata={metadata}
-                    currentFontName={font3.name}
+                    fontMetadata={fontTestData}
+                    currentFontName={fontTestData[2].name}
+                    anchorPopoverLeft={true}
                 />
             </Frame>
         ));
@@ -90,7 +55,7 @@ storiesOf("Format dialog", module)
     .add("FontInformationPane unsuitable", () => {
         return React.createElement(() => (
             <Frame>
-                <FontInformationPane metadata={font3} />
+                <FontInformationPane metadata={fontTestData[2]} />
                 <Typography variant="h6">
                     For some reason, this test needs refreshing to size itself
                     correctly.

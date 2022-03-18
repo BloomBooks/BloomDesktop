@@ -110,10 +110,7 @@ export const BloomEnterpriseIcon = props => {
 
     // Note: currently the tooltip only appears over the icon itself. But it might be nice if it could go over the children too?
     const tooltip = enterpriseAvailable
-        ? useL10n(
-              "Bloom Enterprise Feature",
-              "PublishTab.BulkBloomPub.BloomEnterpriseFeature"
-          )
+        ? useL10n("Bloom Enterprise Feature", "Common.BloomEnterpriseFeature")
         : useL10n(
               "To use this feature, you'll need to enable Bloom Enterprise.",
               "EditTab.RequiresEnterprise"

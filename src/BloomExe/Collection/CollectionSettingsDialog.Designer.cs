@@ -51,17 +51,8 @@ namespace Bloom.Collection
 			this.tabPage2 = new System.Windows.Forms.TabPage();
 			this._numberStyleCombo = new System.Windows.Forms.ComboBox();
 			this.label3 = new System.Windows.Forms.Label();
-			this._fontSettings3Link = new System.Windows.Forms.LinkLabel();
-			this._fontSettings2Link = new System.Windows.Forms.LinkLabel();
-			this._fontSettings1Link = new System.Windows.Forms.LinkLabel();
 			this._xmatterList = new System.Windows.Forms.ListView();
 			this._xmatterDescription = new System.Windows.Forms.TextBox();
-			this._fontComboLanguage3 = new System.Windows.Forms.ComboBox();
-			this._fontComboLanguage2 = new System.Windows.Forms.ComboBox();
-			this._fontComboLanguage1 = new System.Windows.Forms.ComboBox();
-			this._language3FontLabel = new System.Windows.Forms.Label();
-			this._language2FontLabel = new System.Windows.Forms.Label();
-			this._language1FontLabel = new System.Windows.Forms.Label();
 			this._xmatterPackLabel = new System.Windows.Forms.Label();
 			this.tabPage3 = new System.Windows.Forms.TabPage();
 			this._noRenameTeamCollectionLabel = new System.Windows.Forms.Label();
@@ -342,17 +333,8 @@ namespace Bloom.Collection
 			// 
 			this.tabPage2.Controls.Add(this._numberStyleCombo);
 			this.tabPage2.Controls.Add(this.label3);
-			this.tabPage2.Controls.Add(this._fontSettings3Link);
-			this.tabPage2.Controls.Add(this._fontSettings2Link);
-			this.tabPage2.Controls.Add(this._fontSettings1Link);
 			this.tabPage2.Controls.Add(this._xmatterList);
 			this.tabPage2.Controls.Add(this._xmatterDescription);
-			this.tabPage2.Controls.Add(this._fontComboLanguage3);
-			this.tabPage2.Controls.Add(this._fontComboLanguage2);
-			this.tabPage2.Controls.Add(this._fontComboLanguage1);
-			this.tabPage2.Controls.Add(this._language3FontLabel);
-			this.tabPage2.Controls.Add(this._language2FontLabel);
-			this.tabPage2.Controls.Add(this._language1FontLabel);
 			this.tabPage2.Controls.Add(this._xmatterPackLabel);
 			this._L10NSharpExtender.SetLocalizableToolTip(this.tabPage2, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.tabPage2, null);
@@ -374,7 +356,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizationComment(this._numberStyleCombo, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._numberStyleCombo, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._numberStyleCombo, "CollectionSettingsDialog._numberStyleCombo");
-			this._numberStyleCombo.Location = new System.Drawing.Point(32, 302);
+			this._numberStyleCombo.Location = new System.Drawing.Point(32, 322);
 			this._numberStyleCombo.Name = "_numberStyleCombo";
 			this._numberStyleCombo.Size = new System.Drawing.Size(189, 25);
 			this._numberStyleCombo.TabIndex = 35;
@@ -388,53 +370,11 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizationComment(this.label3, null);
 			this._L10NSharpExtender.SetLocalizingId(this.label3, "CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel" +
         "");
-			this.label3.Location = new System.Drawing.Point(28, 280);
+			this.label3.Location = new System.Drawing.Point(28, 300);
 			this.label3.Name = "label3";
 			this.label3.Size = new System.Drawing.Size(149, 19);
 			this.label3.TabIndex = 34;
 			this.label3.Text = "Page Numbering Style";
-			// 
-			// _fontSettings3Link
-			// 
-			this._fontSettings3Link.AutoSize = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._fontSettings3Link, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._fontSettings3Link, null);
-			this._L10NSharpExtender.SetLocalizingId(this._fontSettings3Link, "CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink");
-			this._fontSettings3Link.Location = new System.Drawing.Point(28, 248);
-			this._fontSettings3Link.Name = "_fontSettings3Link";
-			this._fontSettings3Link.Size = new System.Drawing.Size(141, 19);
-			this._fontSettings3Link.TabIndex = 33;
-			this._fontSettings3Link.TabStop = true;
-			this._fontSettings3Link.Text = "Special Script Settings";
-			this._fontSettings3Link.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._fontSettings3Link_LinkClicked);
-			// 
-			// _fontSettings2Link
-			// 
-			this._fontSettings2Link.AutoSize = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._fontSettings2Link, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._fontSettings2Link, null);
-			this._L10NSharpExtender.SetLocalizingId(this._fontSettings2Link, "CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink");
-			this._fontSettings2Link.Location = new System.Drawing.Point(28, 161);
-			this._fontSettings2Link.Name = "_fontSettings2Link";
-			this._fontSettings2Link.Size = new System.Drawing.Size(141, 19);
-			this._fontSettings2Link.TabIndex = 32;
-			this._fontSettings2Link.TabStop = true;
-			this._fontSettings2Link.Text = "Special Script Settings";
-			this._fontSettings2Link.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._fontSettings2Link_LinkClicked);
-			// 
-			// _fontSettings1Link
-			// 
-			this._fontSettings1Link.AutoSize = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._fontSettings1Link, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._fontSettings1Link, null);
-			this._L10NSharpExtender.SetLocalizingId(this._fontSettings1Link, "CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink");
-			this._fontSettings1Link.Location = new System.Drawing.Point(28, 74);
-			this._fontSettings1Link.Name = "_fontSettings1Link";
-			this._fontSettings1Link.Size = new System.Drawing.Size(141, 19);
-			this._fontSettings1Link.TabIndex = 31;
-			this._fontSettings1Link.TabStop = true;
-			this._fontSettings1Link.Text = "Special Script Settings";
-			this._fontSettings1Link.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._fontSettings1Link_LinkClicked);
 			// 
 			// _xmatterList
 			// 
@@ -461,83 +401,6 @@ namespace Bloom.Collection
 			this._xmatterDescription.Name = "_xmatterDescription";
 			this._xmatterDescription.Size = new System.Drawing.Size(310, 68);
 			this._xmatterDescription.TabIndex = 29;
-			// 
-			// _fontComboLanguage3
-			// 
-			this._fontComboLanguage3.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this._fontComboLanguage3.FormattingEnabled = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._fontComboLanguage3, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._fontComboLanguage3, null);
-			this._L10NSharpExtender.SetLocalizingId(this._fontComboLanguage3, "CollectionSettingsDialog._fontComboLanguage3");
-			this._fontComboLanguage3.Location = new System.Drawing.Point(31, 220);
-			this._fontComboLanguage3.Name = "_fontComboLanguage3";
-			this._fontComboLanguage3.Size = new System.Drawing.Size(190, 25);
-			this._fontComboLanguage3.TabIndex = 25;
-			this._fontComboLanguage3.SelectedIndexChanged += new System.EventHandler(this._fontComboLanguage3_SelectedIndexChanged);
-			// 
-			// _fontComboLanguage2
-			// 
-			this._fontComboLanguage2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this._fontComboLanguage2.FormattingEnabled = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._fontComboLanguage2, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._fontComboLanguage2, null);
-			this._L10NSharpExtender.SetLocalizingId(this._fontComboLanguage2, "CollectionSettingsDialog._fontComboLanguage2");
-			this._fontComboLanguage2.Location = new System.Drawing.Point(31, 133);
-			this._fontComboLanguage2.Name = "_fontComboLanguage2";
-			this._fontComboLanguage2.Size = new System.Drawing.Size(190, 25);
-			this._fontComboLanguage2.TabIndex = 23;
-			this._fontComboLanguage2.SelectedIndexChanged += new System.EventHandler(this._fontComboLanguage2_SelectedIndexChanged);
-			// 
-			// _fontComboLanguage1
-			// 
-			this._fontComboLanguage1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this._fontComboLanguage1.FormattingEnabled = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._fontComboLanguage1, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._fontComboLanguage1, null);
-			this._L10NSharpExtender.SetLocalizingId(this._fontComboLanguage1, "CollectionSettingsDialog._fontComboLanguage1");
-			this._fontComboLanguage1.Location = new System.Drawing.Point(31, 46);
-			this._fontComboLanguage1.Name = "_fontComboLanguage1";
-			this._fontComboLanguage1.Size = new System.Drawing.Size(190, 25);
-			this._fontComboLanguage1.TabIndex = 21;
-			this._fontComboLanguage1.SelectedIndexChanged += new System.EventHandler(this._fontComboLanguage1_SelectedIndexChanged);
-			// 
-			// _language3FontLabel
-			// 
-			this._language3FontLabel.AutoSize = true;
-			this._language3FontLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._L10NSharpExtender.SetLocalizableToolTip(this._language3FontLabel, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._language3FontLabel, "{0} is a language name.");
-			this._L10NSharpExtender.SetLocalizingId(this._language3FontLabel, "CollectionSettingsDialog.BookMakingTab.DefaultFontFor");
-			this._language3FontLabel.Location = new System.Drawing.Point(27, 198);
-			this._language3FontLabel.Name = "_language3FontLabel";
-			this._language3FontLabel.Size = new System.Drawing.Size(131, 19);
-			this._language3FontLabel.TabIndex = 24;
-			this._language3FontLabel.Text = "Default Font for {0}";
-			// 
-			// _language2FontLabel
-			// 
-			this._language2FontLabel.AutoSize = true;
-			this._language2FontLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._L10NSharpExtender.SetLocalizableToolTip(this._language2FontLabel, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._language2FontLabel, "{0} is a language name.");
-			this._L10NSharpExtender.SetLocalizingId(this._language2FontLabel, "CollectionSettingsDialog.BookMakingTab.DefaultFontFor");
-			this._language2FontLabel.Location = new System.Drawing.Point(27, 111);
-			this._language2FontLabel.Name = "_language2FontLabel";
-			this._language2FontLabel.Size = new System.Drawing.Size(131, 19);
-			this._language2FontLabel.TabIndex = 23;
-			this._language2FontLabel.Text = "Default Font for {0}";
-			// 
-			// _language1FontLabel
-			// 
-			this._language1FontLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._L10NSharpExtender.SetLocalizableToolTip(this._language1FontLabel, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._language1FontLabel, "{0} is a language name.");
-			this._L10NSharpExtender.SetLocalizingId(this._language1FontLabel, "CollectionSettingsDialog.BookMakingTab.DefaultFontFor");
-			this._language1FontLabel.Location = new System.Drawing.Point(27, 24);
-			this._language1FontLabel.Name = "_language1FontLabel";
-			this._language1FontLabel.Size = new System.Drawing.Size(250, 19);
-			this._language1FontLabel.TabIndex = 22;
-			this._language1FontLabel.Text = "Default Font for {0}";
 			// 
 			// _xmatterPackLabel
 			// 
@@ -988,12 +851,6 @@ namespace Bloom.Collection
         private System.Windows.Forms.TextBox _bloomCollectionName;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button _cancelButton;
-        private System.Windows.Forms.Label _language1FontLabel;
-        private System.Windows.Forms.ComboBox _fontComboLanguage1;
-		private System.Windows.Forms.Label _language2FontLabel;
-		private System.Windows.Forms.ComboBox _fontComboLanguage2;
-		private System.Windows.Forms.Label _language3FontLabel;
-		private System.Windows.Forms.ComboBox _fontComboLanguage3;
 		private CheckBox _automaticallyUpdate;
 		private Label label2;
 		private System.Windows.Forms.CheckBox _showExperimentalBookSources;
@@ -1004,9 +861,6 @@ namespace Bloom.Collection
 		private Button _helpButton;
 		private TextBox _xmatterDescription;
 		private ListView _xmatterList;
-		private LinkLabel _fontSettings3Link;
-		private LinkLabel _fontSettings2Link;
-		private LinkLabel _fontSettings1Link;
 		private ComboBox _numberStyleCombo;
 		private Label label3;
 		private TabPage _enterpriseTab;

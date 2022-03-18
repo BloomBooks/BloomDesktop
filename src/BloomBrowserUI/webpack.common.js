@@ -67,6 +67,7 @@ module.exports = merge(core, {
         messageBoxBundle: "./utils/BloomMessageBox.tsx",
         defaultBookshelfControlBundle:
             "./react_components/DefaultBookshelfControl.tsx",
+        fontScriptControlBundle: "./collection/fontScriptSettingsControl.tsx",
         progressDialogBundle: "./react_components/Progress/ProgressDialog.tsx",
         requiresBloomEnterpriseBundle:
             "./react_components/requiresBloomEnterprise.tsx",

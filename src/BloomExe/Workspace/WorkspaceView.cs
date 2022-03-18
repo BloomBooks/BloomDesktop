@@ -789,7 +789,7 @@ namespace Bloom.Workspace
 						ErrorReport.NotifyUserOfProblem(MustBeAdminMessage);
 						return DialogResult.Cancel;
 					}
-					using (var dlg = _settingsDialogFactory ())
+					using (var dlg = _settingsDialogFactory())
 					{
 						_currentlyOpenSettingsDialog = dlg;
 						dlg.SetDesiredTab(tab);

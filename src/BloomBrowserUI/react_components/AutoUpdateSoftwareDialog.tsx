@@ -24,7 +24,7 @@ export const AutoUpdateSoftwareDialog: React.FunctionComponent = () => {
         setChosenRadio(event.target.value);
     };
 
-    const isAutoUpdate: boolean = chosenRadio == "automatic";
+    const isAutoUpdate: boolean = chosenRadio === "automatic";
 
     return (
         <ThemeProvider theme={lightTheme}>

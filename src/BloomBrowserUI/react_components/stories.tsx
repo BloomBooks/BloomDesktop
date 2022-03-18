@@ -36,6 +36,7 @@ import {
     LocalizableNestedMenuItem
 } from "./localizableMenuItem";
 import { Button, Divider, Menu } from "@material-ui/core";
+import FontScriptSettingsControl from "../collection/fontScriptSettingsControl";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -414,6 +415,20 @@ storiesOf("Misc", module)
             );
         })
     );
+
+const frameDivStyle: React.CSSProperties = {
+    width: "300px",
+    height: "290px",
+    border: "1px solid green"
+};
+
+storiesOf("Misc/Collection Settings", module).add("Font-Script Control", () =>
+    React.createElement(() => (
+        <div style={frameDivStyle}>
+            <FontScriptSettingsControl />
+        </div>
+    ))
+);
 
 const playbackControlsDivStyles: React.CSSProperties = {
     width: "150px",

@@ -10,11 +10,12 @@ using SIL.Windows.Forms.WritingSystems;
 using SIL.Extensions;
 using SIL.WritingSystems;
 using System.Collections.Generic;
-using Bloom.Api;
 using Bloom.TeamCollection;
 using Bloom.MiscUI;
 using Bloom.web;
 using Bloom.web.controllers;
+using Bloom.FontProcessing;
+using Newtonsoft.Json;
 
 namespace Bloom.Collection
 {
@@ -31,8 +32,9 @@ namespace Bloom.Collection
 		private List<string> _styleNames = new List<string>();
 		private string _subscriptionCode;
 		private string _brand;
-		private ReactControl _defaultBookshelfControl;
 		private ReactControl _enterpriseSettingsControl;
+		private readonly ReactControl _defaultBookshelfControl;
+		private readonly ReactControl _fontScriptControl;
 
 		// Pending values edited through the CollectionSettingsApi
 		private string _pendingBookshelf;
@@ -50,6 +52,9 @@ namespace Bloom.Collection
 			}
 		}
 
+		// "Internal" so api can update it
+		internal readonly string[] PendingFontSelections = new[] { "", "", "" };
+
 		public CollectionSettingsDialog(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder, QueueRenameOfCollection queueRenameOfCollection, PageRefreshEvent pageRefreshEvent, TeamCollectionManager tcManager)
 		{
 			_collectionSettings = collectionSettings;
@@ -60,12 +65,16 @@ namespace Bloom.Collection
 			// moved from the Designer where it was deleted if the Designer was touched
 			_xmatterList.Columns.AddRange(new[] { new ColumnHeader() { Width = 250 } });
 
-			_language1Name.UseMnemonic = false;	// Allow & to be part of the language display names.
-			_language2Name.UseMnemonic = false;	// This may be unlikely, but can't be ruled out.
-			_language3Name.UseMnemonic = false;	// See https://issues.bloomlibrary.org/youtrack/issue/BL-9919.
-			_language1FontLabel.UseMnemonic = false;
-			_language2FontLabel.UseMnemonic = false;
-			_language3FontLabel.UseMnemonic = false;
+			_language1Name.UseMnemonic = false; // Allow & to be part of the language display names.
+			_language2Name.UseMnemonic = false; // This may be unlikely, but can't be ruled out.
+			_language3Name.UseMnemonic = false; // See https://issues.bloomlibrary.org/youtrack/issue/BL-9919.
+
+			PendingFontSelections[0] = _collectionSettings.LanguagesZeroBased[0].FontName;
+			PendingFontSelections[1] = _collectionSettings.LanguagesZeroBased[1].FontName;
+			var have3rdLanguage = _collectionSettings.LanguagesZeroBased[2] != null;
+			PendingFontSelections[2] = have3rdLanguage ?
+				_collectionSettings.LanguagesZeroBased[2].FontName :
+				"";
 			CollectionSettingsApi.DialogBeingEdited = this;
 
 			if (_collectionSettings.IsSourceCollection)
@@ -129,9 +138,7 @@ namespace Bloom.Collection
 			_enterpriseTab.Controls.Add(_enterpriseSettingsControl);
 			_enterpriseSettingsControl.BackColor = _enterpriseSettingsControl.Parent.BackColor;
 
-
 			_defaultBookshelfControl = ReactControl.Create("defaultBookshelfControlBundle");
-			
 			tabPage2.Controls.Add(_defaultBookshelfControl);
 			_defaultBookshelfControl.BackColor = _defaultBookshelfControl.Parent.BackColor;
 			_defaultBookshelfControl.Location = new Point(_xmatterDescription.Left, _xmatterDescription.Bottom + 30);
@@ -139,6 +146,16 @@ namespace Bloom.Collection
 			// Until React takes over at least the whole tab, the pull-down part of the combo can't
 			// stretch outside the Gecko control.
 			_defaultBookshelfControl.Size = new Size(_xmatterList.Width, 200);
+
+			// This control replaces 9 Forms controls (3 controls x 3 languages) with one React control.
+			// The above comment that starts "Until React takes over..." also applies to the combo and
+			// popup script information in this control. Also, when the whole tab goes to React we should
+			// be able to more easily standardize the Mui Select behavior to whatever theme we want.
+			_fontScriptControl = ReactControl.Create("fontScriptControlBundle");
+			tabPage2.Controls.Add(_fontScriptControl);
+			_fontScriptControl.BackColor = tabPage2.BackColor;
+			_fontScriptControl.Location = new Point(32, 24);
+			_fontScriptControl.Size = new Size(_xmatterDescription.Left - 32, 275);
 
 			_xmatterDescription.BackColor = _xmatterDescription.Parent.BackColor;
 		}
@@ -160,39 +177,25 @@ namespace Bloom.Collection
 
 		private void UpdateDisplay()
 		{
-			string defaultFontText =
-				LocalizationManager.GetString("CollectionSettingsDialog.BookMakingTab.DefaultFontFor", "Default Font for {0}", "{0} is a language name.");
 			var lang1UiName = _collectionSettings.Language1.Name;
 			var lang2UiName = _collectionSettings.Language2.Name;
 			_language1Name.Text = string.Format("{0} ({1})", lang1UiName, _collectionSettings.Language1Iso639Code);
 			_language2Name.Text = string.Format("{0} ({1})", lang2UiName, _collectionSettings.Language2Iso639Code);
-			_language1FontLabel.Text = string.Format(defaultFontText, lang1UiName);
-			_language2FontLabel.Text = string.Format(defaultFontText, lang2UiName);
-
-			var lang3UiName = string.Empty;
 			const string unsetLanguageName = "--";
 			if (string.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
 			{
 				_language3Name.Text = unsetLanguageName;
 				_removeLanguage3Link.Visible = false;
-				_language3FontLabel.Visible = false;
-				_fontComboLanguage3.Visible = false;
-				_fontSettings3Link.Visible = false;
 				_changeLanguage3Link.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink", "Set...", "If there is no third or sign language specified, the link changes to this.");
 			}
 			else
 			{
-				lang3UiName = _collectionSettings.Language3.Name;
+				var lang3UiName = _collectionSettings.Language3.Name;
 				_language3Name.Text = string.Format("{0} ({1})", lang3UiName, _collectionSettings.Language3Iso639Code);
-				_language3FontLabel.Text = string.Format(defaultFontText, lang3UiName);
 				_removeLanguage3Link.Visible = true;
-				_language3FontLabel.Visible = true;
-				_fontComboLanguage3.Visible = true;
-				_fontSettings3Link.Visible = true;
 				_changeLanguage3Link.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.ChangeLanguageLink", "Change...");
 			}
 
-			var signLangUiName = string.Empty;
 			if (string.IsNullOrEmpty(_collectionSettings.SignLanguageIso639Code))
 			{
 				_signLanguageName.Text = unsetLanguageName;
@@ -203,7 +206,7 @@ namespace Bloom.Collection
 			}
 			else
 			{
-				signLangUiName = _collectionSettings.GetSignLanguageName();
+				var signLangUiName = _collectionSettings.GetSignLanguageName();
 				_signLanguageName.Text = string.Format("{0} ({1})", signLangUiName, _collectionSettings.SignLanguageIso639Code);
 				_removeSignLanguageLink.Visible = true;
 				_changeSignLanguageLink.Text =
@@ -312,21 +315,19 @@ namespace Bloom.Collection
 		{
 			Logger.WriteMinorEvent("Settings Dialog OK Clicked");
 
+			CollectionSettingsApi.DialogBeingEdited = null;
 			_collectionSettings.Country = _countryText.Text.Trim();
 			_collectionSettings.Province = _provinceText.Text.Trim();
 			_collectionSettings.District = _districtText.Text.Trim();
-			if (_fontComboLanguage1.SelectedItem != null)
+
+			var languages = _collectionSettings.LanguagesZeroBased;
+			for(int i = 0; i < 3; i++)
 			{
-				_collectionSettings.Language1.FontName = _fontComboLanguage1.SelectedItem.ToString();
+				if (languages[i] == null)
+					continue;
+				languages[i].FontName = PendingFontSelections[i];
 			}
-			if (_fontComboLanguage2.SelectedItem != null)
-			{
-				_collectionSettings.Language2.FontName = _fontComboLanguage2.SelectedItem.ToString();
-			}
-			if (_fontComboLanguage3.SelectedItem != null)
-			{
-				_collectionSettings.Language3.FontName = _fontComboLanguage3.SelectedItem.ToString();
-			}
+
 			if (_numberStyleCombo.SelectedItem != null)
 			{
 				// have to do this lookup because we need the non-localized version of the name, and
@@ -373,7 +374,10 @@ namespace Bloom.Collection
 			}
 		}
 
-		private void ChangeThatRequiresRestart()
+		/// <summary>
+		/// Internal so api can trigger this.
+		/// </summary>
+		internal void ChangeThatRequiresRestart()
 		{
 			if (!_loaded)//ignore false events that come while setting upt the dialog
 				return;
@@ -393,10 +397,8 @@ namespace Bloom.Collection
 			_provinceText.Text = _collectionSettings.Province;
 			_districtText.Text = _collectionSettings.District;
 			_bloomCollectionName.Text = _collectionSettings.CollectionName;
-			LoadFontCombo();
 			LoadPageNumberStyleCombo();
 			LoadBrandingCombo();
-			AdjustFontComboDropdownWidth();
 			_brand = _collectionSettings.BrandingProjectKey;
 			_subscriptionCode = _collectionSettings.SubscriptionCode;
 			// Set the branding as an (incomplete) code if we are running with a legacy branding
@@ -460,29 +462,6 @@ namespace Bloom.Collection
 				_xmatterList.EnsureVisible(_xmatterList.SelectedIndices[0]);
 		}
 
-		/*
-		 * If changes are made to have different values in each combobox, need to modify AdjustFontComboDropdownWidth.
-		 */
-		private void LoadFontCombo()
-		{
-			// Display the fonts in sorted order.  See https://jira.sil.org/browse/BL-864.
-			var fontNames = new List<string>();
-			fontNames.AddRange(Browser.NamesOfFontsThatBrowserCanRender());
-			fontNames.Sort();
-			foreach (var font in fontNames)
-			{
-				_fontComboLanguage1.Items.Add(font);
-				_fontComboLanguage2.Items.Add(font);
-				_fontComboLanguage3.Items.Add(font);
-				if (font == _collectionSettings.Language1.FontName)
-					_fontComboLanguage1.SelectedIndex = _fontComboLanguage1.Items.Count-1;
-				if (font == _collectionSettings.Language2.FontName)
-					_fontComboLanguage2.SelectedIndex = _fontComboLanguage2.Items.Count - 1;
-				if (font == _collectionSettings.Language3.FontName)
-					_fontComboLanguage3.SelectedIndex = _fontComboLanguage3.Items.Count - 1;
-			}
-		}
-
 		private void LoadPageNumberStyleCombo()
 		{
 			_styleNames.Clear();
@@ -501,28 +480,10 @@ namespace Bloom.Collection
 		{
 		}
 
-		/*
-		 * Makes the combobox wide enough to display the longest value.
-		 * Assumes all three font comboboxes have the same items.
-		 */
-		private void AdjustFontComboDropdownWidth()
-		{
-			int width = _fontComboLanguage1.DropDownWidth;
-			using (Graphics g = _fontComboLanguage1.CreateGraphics())
-			{
-				Font font = _fontComboLanguage1.Font;
-				int vertScrollBarWidth = (_fontComboLanguage1.Items.Count > _fontComboLanguage1.MaxDropDownItems) ? SystemInformation.VerticalScrollBarWidth : 0;
-
-				width = (from string s in _fontComboLanguage1.Items select TextRenderer.MeasureText(g, s, font).Width + vertScrollBarWidth).Concat(new[] { width }).Max();
-			}
-			_fontComboLanguage1.DropDownWidth = width;
-			_fontComboLanguage2.DropDownWidth = width;
-			_fontComboLanguage3.DropDownWidth = width;
-		}
-
 		private void _cancelButton_Click(object sender, EventArgs e)
 		{
 			DialogResult = DialogResult.Cancel;
+			CollectionSettingsApi.DialogBeingEdited = null;
 			Close();
 		}
 
@@ -545,26 +506,7 @@ namespace Bloom.Collection
 			if (_bloomCollectionName.Text.Trim() == _collectionSettings.CollectionName)
 				return;
 
-
 			ChangeThatRequiresRestart();
-		}
-
-		private void _fontComboLanguage1_SelectedIndexChanged(object sender, EventArgs e)
-		{
-			if (_fontComboLanguage1.SelectedItem.ToString().ToLowerInvariant() != _collectionSettings.Language1.FontName.ToLower())
-				ChangeThatRequiresRestart();
-		}
-
-		private void _fontComboLanguage2_SelectedIndexChanged(object sender, EventArgs e)
-		{
-			if (_fontComboLanguage2.SelectedItem.ToString().ToLowerInvariant() != _collectionSettings.Language2.FontName.ToLower())
-				ChangeThatRequiresRestart();
-		}
-
-		private void _fontComboLanguage3_SelectedIndexChanged(object sender, EventArgs e)
-		{
-			if (_fontComboLanguage3.SelectedItem.ToString().ToLowerInvariant() != _collectionSettings.Language3.FontName.ToLower())
-				ChangeThatRequiresRestart();
 		}
 
 		private void _showExperimentalBookSources_CheckedChanged(object sender, EventArgs e)
@@ -594,24 +536,9 @@ namespace Bloom.Collection
 			Settings.Default.AutoUpdate = _automaticallyUpdate.Checked;
 		}
 
-		private void _fontSettings1Link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-		{
-			FontSettingsLinkClicked(_collectionSettings.Language1.Name, 1);
-		}
-
-		private void _fontSettings2Link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-		{
-			FontSettingsLinkClicked(_collectionSettings.Language2.Name, 2);
-		}
-
-		private void _fontSettings3Link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-		{
-			FontSettingsLinkClicked(_collectionSettings.Language3.Name, 3);
-		}
-
-		private void FontSettingsLinkClicked(string langName, int langNum1Based)
+		public static Boolean FontSettingsLinkClicked(CollectionSettings settings, string langName, int langNum1Based)
 		{ 
-			var langSpec = _collectionSettings.LanguagesZeroBased[langNum1Based - 1];
+			var langSpec = settings.LanguagesZeroBased[langNum1Based - 1];
 			using (var frm = new ScriptSettingsDialog())
 			{
 				frm.LanguageName = langName;
@@ -619,22 +546,23 @@ namespace Bloom.Collection
 				frm.LanguageLineSpacing = langSpec.LineHeight;
 				frm.UIFontSize = langSpec.BaseUIFontSizeInPoints;
 				frm.BreakLinesOnlyAtSpaces = langSpec.BreaksLinesOnlyAtSpaces;
-				frm.ShowDialog(this);
+				frm.ShowDialog();
 
 				// get the changes
-				if (frm.LanguageRightToLeft != langSpec.IsRightToLeft) 
-				{
-					langSpec.IsRightToLeft = frm.LanguageRightToLeft;
-					ChangeThatRequiresRestart();
-				}
 
-				// We don't need to restart, just gather the changes up. The caller
+				// We usually don't need to restart, just gather the changes up. The caller
 				// will save the .bloomCollection file. Later when a book
 				// is edited, defaultLangStyles.css will be written out in the book's folder, which is all
 				// that is needed for this setting to take effect.
 				langSpec.LineHeight = frm.LanguageLineSpacing;
 				langSpec.BreaksLinesOnlyAtSpaces = frm.BreakLinesOnlyAtSpaces;
 				langSpec.BaseUIFontSizeInPoints = frm.UIFontSize;
+				if (frm.LanguageRightToLeft != langSpec.IsRightToLeft) 
+				{
+					langSpec.IsRightToLeft = frm.LanguageRightToLeft;
+					return true;
+				}
+				return false;
 			}
 		}
 
