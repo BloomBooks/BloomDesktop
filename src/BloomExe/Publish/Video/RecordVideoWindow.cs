@@ -497,7 +497,6 @@ namespace Bloom.Publish.Video
 		public static string GetDataForFormat(string format, bool landscape, 
 			out int actualWidth, out int actualHeight, out Codec codec)
 		{
-			bool tooBigForScreen = false;
 			int desiredWidth;
 			int desiredHeight;
 			switch (format)
@@ -543,23 +542,30 @@ namespace Bloom.Publish.Video
 				var deltaH = proto.Width - proto._content.Width;
 				var maxHeight = bounds.Height - deltaV;
 				var maxWidth = bounds.Width - deltaH;
-				if (actualHeight > maxHeight)
-				{
-					tooBigForScreen = true;
-					actualHeight = (maxHeight / 2) * 2; // round down to even, ffmpeg dies on odd sizes
-					actualWidth = (actualHeight * desiredWidth / desiredHeight / 2) * 2;
-				}
 
-				if (actualWidth > maxWidth)
+				if (format == "youtube")
 				{
-					tooBigForScreen = true;
-					actualWidth = (maxWidth / 2) * 2;
-					actualHeight = (actualWidth * desiredHeight / desiredWidth / 2) * 2;
+					var bestResolutionForYouTube = GetBestYouTubeSize(maxWidth, maxHeight, landscape);
+					actualHeight = bestResolutionForYouTube.Height;
+					actualWidth = bestResolutionForYouTube.Width;
 				}
-				// Review/enhance: can we really just use any size we want like this, if the ideal won't fit?
-				// Or should we step down to the largest available of some standard set?
+				else
+				{
+					if (actualHeight > maxHeight)
+					{
+						actualHeight = (maxHeight / 2) * 2; // round down to even, ffmpeg dies on odd sizes
+						actualWidth = (actualHeight * desiredWidth / desiredHeight / 2) * 2;
+					}
+
+					if (actualWidth > maxWidth)
+					{
+						actualWidth = (maxWidth / 2) * 2;
+						actualHeight = (actualWidth * desiredHeight / desiredWidth / 2) * 2;
+					}
+				}
 			}
 
+			var tooBigForScreen = (actualWidth < desiredWidth || actualHeight < desiredHeight);
 			if (tooBigForScreen)
 			{
 				var frame = LocalizationManager.GetString("Publish.RecordVideo.ScreenTooBig",
@@ -568,6 +574,68 @@ namespace Bloom.Publish.Video
 			}
 
 			return "";
+		}
+
+		internal struct Resolution
+		{
+			public int Width;
+			public int Height;
+
+			public Resolution(int width, int height)
+			{
+				Width = width;
+				Height = height;
+			}
+
+			public Resolution GetInverse() => new Resolution(Height, Width);
+
+			public override string ToString()
+			{
+				return $"({Width}, {Height})";
+			}
+		}
+
+		// Derived from a combination of https://support.google.com/youtube/answer/6375112?hl=en&co=GENIE.Platform%3DDesktop&oco=1
+		// and by uploading high-res videos and checking Stats for Nerds -> Optimal Resolution at each playback quality
+		private static readonly Resolution[] youtubeLandscapeResolutionsHighToLow = new Resolution[] {
+			new Resolution(3840, 2160),	// 2160p
+			new Resolution(2560, 1440),	// 1440p
+			new Resolution(1920, 1080),	// 1080p
+			new Resolution(1280, 720),	// 720p
+			new Resolution(854, 480),	// 480p
+			new Resolution(640, 360),	// 360p
+			new Resolution(426, 240),	// 240p
+			new Resolution(256, 144)	// 144p
+		};
+
+		private static readonly Resolution[] youtubePortraitResolutionsHighToLow = youtubeLandscapeResolutionsHighToLow.Select(r => r.GetInverse()).ToArray();
+		// Note: You could add 1216x2160 as a portrait resolution. It's kind of a hidden thing. Although the following link is probably out of date, it brought up the idea that 1216x2160 is a resolution of some significance: https://support.google.com/youtube/thread/29004771?hl=en&msgid=29138625)
+		// Landscape 2160x1216 played back as 1918x1080 instead, though, so that's why I didn't add it to the list.
+
+		/// <summary>
+		///  Gets the largest of YouTube's standard resolutions that will fit on the screen.
+		/// </summary>
+		/// <param name="maxWidth">The maximum width we can display a window (roughly the screen width)</param>
+		/// <param name="maxHeight">The maximum height we can display a window (roughly screen height)</param>
+		/// <param name="landscape">true if the book is landscape, false if portrait</param>
+		internal static Resolution GetBestYouTubeSize(int maxWidth, int maxHeight, bool landscape)
+		{
+			var youtubeResolutionsHighToLow = landscape ? youtubeLandscapeResolutionsHighToLow : youtubePortraitResolutionsHighToLow;
+			
+			// Iterate over Youtube's recommended resolutions,
+			// from highest resolution to lowest resolution,
+			// and find the highest one that fits on the screen.
+			foreach (var resolution in youtubeResolutionsHighToLow)
+			{
+				if (resolution.Width <= maxWidth && resolution.Height <= maxHeight)
+				{
+					return resolution;
+				}
+			}
+
+			// Made it through the loop without finding any matches :(
+			// Just fallback to the screen size
+			return new Resolution(maxWidth, maxHeight);
 		}
 
 		public void SetFormat(string format, bool landscape)
