@@ -70,6 +70,14 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/getHistory", HandleGetHistory, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/checkinMessage", HandleCheckinMessage, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/forceUnlock", HandleForceUnlock, false);
+			apiHandler.RegisterBooleanEndpointHandler("teamCollection/logImportant", HandleLogImportant, null, false);
+		}
+
+		private bool HandleLogImportant(ApiRequest arg)
+		{
+			if (_tcManager?.MessageLog == null)
+				return false;
+			return _tcManager.MessageLog.Messages.Any(m => m.Important);
 		}
 
 		private void HandleForceUnlock(ApiRequest request)

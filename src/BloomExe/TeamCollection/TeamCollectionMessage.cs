@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using L10NSharp;
 
 namespace Bloom.TeamCollection
@@ -20,15 +16,19 @@ namespace Bloom.TeamCollection
 		// something happened not worth changing team icon status
 		// Corresponds to state Nominal
 		History,
+
 		// something new arrived (or a changed happened), user will be gently
 		// encouraged to reload. The Reload button will be shown.
 		NewStuff,
+
 		// Errors of ordinary severity; user firmly encouraged to reload. The presence of a message of this
 		// type will ensure that the Reload button is showing.
 		Error,
+
 		// Displays as Error, but it is not useful for user to reload, so that button should not show
 		// (at least not because this message is in the log).
 		ErrorNoReload,
+
 		// Conflicting change error serious enough that current edits
 		// will be clobbered (moved to Lost and Found); user strongly urged to reload.
 		ClobberPending,
@@ -48,6 +48,7 @@ namespace Bloom.TeamCollection
 		// process an idle event during reload, we could put it at the end, because then
 		// any events during it would not be posted until afterwards. But I'm NOT sure of that.)
 		Reloaded,
+
 		// The user has seen (or is reasonably presumed to have seen)
 		// any current errors. Only Error messages after this milestone
 		// (and after Reloaded) cause Indicator state Error.
@@ -55,6 +56,7 @@ namespace Bloom.TeamCollection
 		// milestone, but a LogDisplayed milestone will be placed AFTER them,
 		// since they are displayed immediately.)
 		LogDisplayed,
+
 		// We have displayed the dialog indicating that the book has been
 		// clobbered. Only ClobberPending messages after this (and after
 		// Reloaded) cause Indicator state ClobberPending (if we ever
@@ -72,7 +74,8 @@ namespace Bloom.TeamCollection
 		{
 		}
 
-		public TeamCollectionMessage(MessageAndMilestoneType messageType, string l10nId, string rawEnglishMessageTemplate, string param0 = null, string param1 = null)
+		public TeamCollectionMessage(MessageAndMilestoneType messageType, string l10nId,
+			string rawEnglishMessageTemplate, string param0 = null, string param1 = null)
 		{
 			MessageType = messageType;
 			When = DateTime.UtcNow;
@@ -84,16 +87,24 @@ namespace Bloom.TeamCollection
 
 		public DateTime When { get; set; }
 		public MessageAndMilestoneType MessageType { get; set; }
+
 		/// <summary>
 		/// May be empty to indicate raw message is already localized, though this is not
 		/// ideal as it's just possible someone wants to view the log in different languages.
 		/// </summary>
 		public string L10NId { get; set; }
+
 		// Possibly containing {0} and {1}, which will be replaced with Param0 and Param1.
 		// The string corresponding to L10NId in the xlf, if any, wins, even in English.
 		public string RawEnglishMessageTemplate { get; set; }
 		public string Param0 { get; set; }
 		public string Param1 { get; set; }
+
+		// Indicates message is important enough for us to show the Messages in preference to History
+		public bool Important => MessageType == MessageAndMilestoneType.NewStuff ||
+		                         MessageType == MessageAndMilestoneType.ErrorNoReload ||
+		                         MessageType == MessageAndMilestoneType.Error ||
+		                         MessageType == MessageAndMilestoneType.ClobberPending;
 
 		// Tab-delimited format:
 		// TIME TYPE StringId EnglishMessageWithParameterPlaceholders Param0 Param1
