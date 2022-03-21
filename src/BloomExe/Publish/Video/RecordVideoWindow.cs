@@ -56,7 +56,41 @@ namespace Bloom.Publish.Video
 			_webSocketServer = webSocketServer;
 			_content = new Browser();
 			_content.Dock = DockStyle.Fill;
+			_content.AutoScaleMode = AutoScaleMode.None;
 			Controls.Add(_content);
+			AutoScaleMode = AutoScaleMode.None;
+			var dummy = Handle; // force handle to be created
+			var dummy2 = _content.Handle;
+		}
+
+		public static RecordVideoWindow Create(BloomWebSocketServer webSocketServer)
+		{
+			// Creating the window with the thread set to PerMonitorAwareV2 should mean that its
+			// size is set in real pixels, and we can record at the resolution we want, even if
+			// the display is scaled. I could not get it to work; the window appears to be the
+			// correct size, but (at 150%, anyway) ffmpeg thinks it is one pixel smaller, which makes
+			// the size odd, and nothing gets saved. Also, when the window is created this way,
+			// something weird happens during playback, with a flash of a smaller page showing up
+			// before the correct appearance. Keeping this in comments in case we want to try again.
+			// However, a more promising approach might be to ship a separate program that is fully
+			// DPIAware and does nothing but display the recording window correctly.
+			// If you get this working, remember to check for running on Windows 10.
+			//var originalAwareness = SetThreadDpiAwarenessContext(ThreadDpiAwareContext.PerMonitorAwareV2);
+			var result = new RecordVideoWindow(webSocketServer);
+
+			// These lines go with the DpiAwareness trick. If we ever get it working, we'll want
+			// the new window to be on the right screen before we make any measurments.
+			//var mainWindow = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+			//if (mainWindow != null)
+			//{
+			//	result.StartPosition = FormStartPosition.Manual;
+			//	var bounds = Screen.FromControl(mainWindow).Bounds;
+			//	result.Location = bounds.Location;
+			//	var bounds2 = Screen.FromControl(result).Bounds;
+			//}
+
+			// SetThreadDpiAwarenessContext(originalAwareness);
+			return result;
 		}
 
 		/// <summary>
@@ -85,6 +119,8 @@ namespace Bloom.Publish.Video
 			}
 
 			_content.Navigate(url, false);
+			// Couldn't get this to work. See comment in constructor.
+			//_originalAwareness = SetThreadDpiAwarenessContext(ThreadDpiAwareContext.PerMonitorAwareV2);
 			// Extra space we need around the recordable content for title bars etc.
 			var deltaV = this.Height - _content.Height;
 			var deltaH = this.Width - _content.Width;
@@ -196,6 +232,13 @@ namespace Bloom.Publish.Video
 		public void StopRecording(string soundLogJson)
 		{
 			StopRecordingInternal(soundLogJson);
+
+			// Couldn't get this to work. See comment in constructor. If we do get it working,
+			// make sure it gets turned off, however things turn out. Or maybe we can turn it
+			// off much sooner, without waiting for the recording to finish? Waiting until this
+			// point didn't seem to help.
+			//SetThreadDpiAwarenessContext(_originalAwareness);
+
 			// Many early returns in this method, but we always want to close this.
 			Close();
 		}
@@ -534,8 +577,10 @@ namespace Bloom.Publish.Video
 			var mainWindow = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
 			if (mainWindow != null)
 			{
+				// Couldn't get this to work. See comment in constructor.
+				//var originalAwareness = SetThreadDpiAwarenessContext(ThreadDpiAwareContext.PerMonitorAwareV2);
 				var bounds = Screen.FromControl(mainWindow).Bounds;
-				var proto = new RecordVideoWindow(null);
+				var proto = RecordVideoWindow.Create(null);
 				// Enhance: can we improve on this? We seem to be getting numbers just a bit bigger than
 				// we need, so the output doesn't quite fill the screen.
 				var deltaV = proto.Height - proto._content.Height;
@@ -563,6 +608,9 @@ namespace Bloom.Publish.Video
 						actualHeight = (actualWidth * desiredHeight / desiredWidth / 2) * 2;
 					}
 				}
+
+				// Couldn't get this to work. See comment in constructor.
+				//SetThreadDpiAwarenessContext(originalAwareness);
 			}
 
 			var tooBigForScreen = (actualWidth < desiredWidth || actualHeight < desiredHeight);

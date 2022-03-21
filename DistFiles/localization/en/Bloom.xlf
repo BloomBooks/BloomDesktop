@@ -4019,6 +4019,10 @@
         <source xml:lang="en">Activities will be skipped</source>
         <note>ID: PublishTab.RecordVideo.ActivitiesSkipped</note>
       </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.ChangeScale100">
+        <source xml:lang="en">Please change your display scaling to 100% while making videos. Without this, videos will come out at the wrong resolution, or not record at all.</source>
+        <note>ID: PublishTab.RecordVideo.ChangeScale100</note>
+      </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.CheckRecording">
         <source xml:lang="en">Check Recording</source>
         <note>ID: PublishTab.RecordVideo.CheckRecording</note>
@@ -4026,6 +4030,14 @@
       <trans-unit id="PublishTab.RecordVideo.ConfigureAndPreview">
         <source xml:lang="en">Configure &amp; Preview</source>
         <note>ID: PublishTab.RecordVideo.ConfigureAndPreview</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.DisplaySettings">
+        <source xml:lang="en">Display Settings</source>
+        <note>ID: PublishTab.RecordVideo.DisplaySettings</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.DisableScaling">
+        <source xml:lang="en">Disable Display Scaling</source>
+        <note>ID: PublishTab.RecordVideo.DisableScaling</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.Facebook">
         <source xml:lang="en">Facebook</source>

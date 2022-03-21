@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Publish.Android;
@@ -125,11 +128,87 @@ namespace Bloom.Publish.Video
 			{
 				_publishToAndroidApi.MakeBloompubPreview(request, true);
 			}, false);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "displaySettings", request =>
+			{
+				Process.Start("desk.cpl");
+				request.PostSucceeded();
+			}, false);
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "isScalingActive",
+				request => IsScalingActive(),
+			null, true);
 		}
+
+		private bool IsScalingActive()
+		{
+			// There may be something comparable to do on Linux, but if so, it certainly won't use the
+			// Windows DLL external methods this function uses.
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+				return false;
+			// If we can't use this function, we just won't bother with a warning about scaling.
+			// Hopefully not many older systems have high-DPI monitors.
+			if (!CanUseSetThreadDpiAwarenesPerMonitorV2())
+				return false;
+
+			var scaledWidth = Screen.PrimaryScreen.Bounds.Width;
+			int bloomScaledWidth = scaledWidth;
+			var mainWindow = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+			if (mainWindow != null)
+			{
+				bloomScaledWidth = Screen.FromControl(mainWindow).Bounds.Width;
+			}
+
+			var originalAwareness = SetThreadDpiAwarenessContext(ThreadDpiAwareContext.PerMonitorAwareV2);
+			try
+			{
+				// In my testing, this did NOT give the real width, but the scaledWidth.
+				// Leaving it in in case there may be some combination of monitor settings
+				// where it indicates a difference, because I think we may well have a problem
+				// if the main monitor is scaled, even if the one Bloom is on is not.
+				// If we determine that we definitely need to check this screen as well as the
+				// one where the Bloom Window is, it may work to make a dummy window while in
+				// this thread mode, put it on that screen, and then use Screen.FromControl on that.
+				// Yet another approach would be to maximize the dummy window and then get its size.
+				if (Screen.PrimaryScreen.Bounds.Width != scaledWidth)
+					return true;
+				// We definitely have a problem if the screen that the preview will be on,
+				// the same one as Bloom, is scaled.
+				if (mainWindow != null && Screen.FromControl(mainWindow).Bounds.Width != bloomScaledWidth)
+					return true;
+			}
+			finally
+			{
+				SetThreadDpiAwarenessContext(originalAwareness);
+			}
+
+			return false;
+		}
+
+		private static bool CanUseSetThreadDpiAwarenesPerMonitorV2()
+		{
+			// Create a reference to the OS version of Windows 10 Creators Update.
+			// This is the first version of Windows that can use SetThreadDpiAwarenessContext
+			Version OsMinVersion = new Version(10, 0, 15063, 0);
+			return Environment.OSVersion.Version.CompareTo(OsMinVersion) >= 0;
+		}
+
+		// Possible values for SetThreadDpiAwarenessContext
+		enum ThreadDpiAwareContext : int
+		{
+			Invalid = 0,
+			Unaware = -1,
+			SystemAware = -2,
+			PerMonitorAware = -3,
+			/* Fails if used before Creators Update. */
+			PerMonitorAwareV2 = -4
+		}
+
+		// Use with care...Windows only! And the option we want to use only works after the 'creators update'
+		[DllImport("user32.dll")]
+		static extern ThreadDpiAwareContext SetThreadDpiAwarenessContext(PublishToVideoApi.ThreadDpiAwareContext newContext);
 
 		private void RecordVideo(ApiRequest request)
 		{
-			_recordVideoWindow = new RecordVideoWindow(_webSocketServer);
+			_recordVideoWindow = RecordVideoWindow.Create(_webSocketServer);
 			_recordVideoWindow.SetFormat(_videoFormat, request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape);
 			_recordVideoWindow.SetPageReadTime(_pageReadTime);
 			_recordVideoWindow.SetVideoSettingsFromPreview(_settingsFromPreview);
