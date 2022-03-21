@@ -402,10 +402,19 @@ namespace Bloom.TeamCollection
 
 		public void HandleGetHistory(ApiRequest request)
 		{
-			var x = CollectionHistory.GetAllEvents(_currentBookCollectionSelection.CurrentSelection)
-				.OrderByDescending(b => b.When).ToArray();
+			var currentBookOnly = request.GetParamOrNull("currentBookOnly");
+			IEnumerable<BookHistoryEvent> events;
+			if (currentBookOnly == "true")
+			{
+				events = CollectionHistory.GetBookEvents(request.CurrentBook.BookInfo);
+			}
+			else
+			{
+				events = CollectionHistory.GetAllEvents(_currentBookCollectionSelection.CurrentSelection);
+			}
+			var result = events.OrderByDescending(b => b.When).ToArray();
 			request.ReplyWithJson(JsonConvert.SerializeObject(
-				x
+				result
 			));
 		}
 

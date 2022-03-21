@@ -28,6 +28,7 @@ import { WireUpForWinforms } from "../utils/WireUpWinform";
 export let showTeamCollectionDialog: () => void;
 import "react-tabs/style/react-tabs.less";
 import { useEffect, useState } from "react";
+import { BloomTabs } from "../react_components/BloomTabs";
 
 export const TeamCollectionDialog: React.FunctionComponent<{
     showReloadButton: boolean;
@@ -85,27 +86,12 @@ export const TeamCollectionDialog: React.FunctionComponent<{
                 />
                 <DialogMiddle>
                     {defaultTabIndex == -1 || (
-                        <Tabs
-                            defaultIndex={defaultTabIndex}
-                            // Seems like there should be some sort of Material-UI mode that would produce the look
-                            // John wants. A lot of their examples are quite like it, but I can't find any reason
-                            // why their examples are different from what I get with similar code. Possibly the
-                            // makeStyles that is in most of their examples pulls in this look. But we're using Emotion.
-                            css={css`
-                                .react-tabs__tab.react-tabs__tab {
-                                    background-color: white;
-                                    text-transform: uppercase;
-                                }
-                                .react-tabs__tab--selected {
-                                    color: ${kBloomBlue};
-                                    border-color: transparent;
-                                    border-bottom: 2px solid ${kBloomBlue};
-                                }
-                                .react-tabs__tab-list {
-                                    border: none;
-                                }
-                            `}
-                        >
+ 						<BloomTabs
+                        	defaultIndex={defaultTabIndex}
+                        	color="black"
+                       	 	selectedColor={kBloomBlue}
+                       	 	labelBackgroundColor="white"
+                    	>
                             <TabList>
                                 <Tab>
                                     <LocalizedString
@@ -144,7 +130,7 @@ export const TeamCollectionDialog: React.FunctionComponent<{
                             <TabPanel>
                                 <CollectionHistoryTable />
                             </TabPanel>
-                        </Tabs>
+                        </BloomTabs>
                     )}
                 </DialogMiddle>
 

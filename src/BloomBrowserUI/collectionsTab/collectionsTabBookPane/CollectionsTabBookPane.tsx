@@ -12,6 +12,12 @@ import { useMonitorBookSelection } from "../../app/selectedBook";
 import BloomButton from "../../react_components/bloomButton";
 import { kDarkestBackground } from "../../bloomMaterialUITheme";
 import { useSubscribeToWebSocketForEvent } from "../../utils/WebSocketManager";
+import { useEnterpriseAvailable } from "../../react_components/requiresBloomEnterprise";
+import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
+import { LocalizedString } from "../../react_components/l10nComponents";
+import { CollectionHistoryTable } from "../../teamCollection/CollectionHistoryTable";
+import "react-tabs/style/react-tabs.less";
+import { BloomTabs } from "../../react_components/BloomTabs";
 
 export const CollectionsTabBookPane: React.FunctionComponent<{
     // If false, as it usually is, the overlay above the preview iframe
@@ -25,6 +31,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     const [isTeamCollection, setIsTeamCollection] = useState(false);
     const [bookStatus, setBookStatus] = useState(initialBookStatus);
     const [reload, setReload] = useState(0);
+    const enterpriseAvailable = useEnterpriseAvailable();
     // Force a reload when told the book changed, even if it's the same book [id]
     useSubscribeToWebSocketForEvent("bookContent", "reload", () =>
         setReload(old => old + 1)
@@ -150,14 +157,6 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
         >
             <div
                 css={css`
-                    margin-bottom: 10px;
-                    flex-grow: 0;
-                `}
-            >
-                {editOrMakeButton}
-            </div>
-            <div
-                css={css`
                     // We want the preview to take up the available space, limiting the Team Collection panel
                     // (if present) to what it needs.
                     flex-grow: 4;
@@ -199,16 +198,85 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                         } */
                     `}
                 ></div>
-                <iframe
-                    src={`/book-preview/index.htm?dummy=${(selectedBookId ??
-                        "") + reload}`}
-                    height="100%"
-                    width="100%"
-                    css={css`
-                        border: none;
+                <BloomTabs
+                    id="tabs"
+                    defaultIndex={0}
+                    color="grey"
+                    selectedColor="white"
+                    labelBackgroundColor={kDarkestBackground}
+                    rootCss={css`
+                        height: 100%;
+                        display: flex;
+                        flex-direction: column;
                     `}
-                    ref={iframeRef}
-                />
+                    labelCss={css`
+                        flex-grow: 1;
+                    `}
+                    contentPaneCss={css`
+                        flex-grow: 1;
+                        position: relative; // for the Edit this book button to be absolute
+                    `}
+                >
+                    <TabList>
+                        {// actually we want the (default) preview tab pane even if enterprise is not available.
+                        // but we don't need the tab label if there are no others.
+                        // And we don't need any headers if there's no selected book
+                        selectedBookId && enterpriseAvailable && (
+                            <Tab id="previewLabel">
+                                <LocalizedString l10nKey="Common.Preview">
+                                    Preview
+                                </LocalizedString>
+                            </Tab>
+                        )}
+                        {selectedBookId && enterpriseAvailable && (
+                            <Tab id="historyLabel">
+                                <LocalizedString
+                                    l10nKey="TeamCollection.History"
+                                    temporarilyDisableI18nWarning={true}
+                                >
+                                    History
+                                </LocalizedString>
+                            </Tab>
+                        )}
+                    </TabList>
+                    <TabPanel
+                        id="previewPanel"
+                        // css={css`
+                        //     position: relative;
+                        // `}
+                    >
+                        <iframe
+                            src={`/book-preview/index.htm?dummy=${(selectedBookId ??
+                                "") + reload}`}
+                            height="100%"
+                            width="100%"
+                            css={css`
+                                border: none;
+                            `}
+                            ref={iframeRef}
+                        />
+                        <div
+                            css={css`
+                                position: absolute;
+                                top: 20px;
+                                left: 10px;
+                                // overrides a material-ui tabs rule that applies to any div in the selected tab!
+                                padding: 0 !important;
+                                // keep the white background inside the button.
+                                border-radius: 5px;
+                            `}
+                        >
+                            {editOrMakeButton}
+                        </div>
+                    </TabPanel>
+                    {enterpriseAvailable && selectedBookId && (
+                        <TabPanel id="historyPanel">
+                            <CollectionHistoryTable
+                                selectedBook={selectedBookId}
+                            />
+                        </TabPanel>
+                    )}
+                </BloomTabs>
             </div>
             {// Currently, canMakeBook is a synonym for 'book is not in the current TC'
             // If that stops being true we might need another more specialized status flag.
