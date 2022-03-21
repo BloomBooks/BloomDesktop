@@ -39,7 +39,6 @@ namespace Bloom.CollectionTab
 			this._toolStripLeft = new System.Windows.Forms.ToolStrip();
 			this._tcStatusButton = new Bloom.TeamCollection.TeamCollectionStatusButton();
 			this._toolStrip = new System.Windows.Forms.ToolStrip();
-			this._sendReceiveButton = new System.Windows.Forms.ToolStripButton();
 			this._settingsButton = new System.Windows.Forms.ToolStripButton();
 			this._openCreateCollectionButton = new System.Windows.Forms.ToolStripButton();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
@@ -106,7 +105,6 @@ namespace Bloom.CollectionTab
 			this._toolStrip.Dock = System.Windows.Forms.DockStyle.Right;
 			this._toolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
 			this._toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._sendReceiveButton,
             this._settingsButton,
             this._openCreateCollectionButton});
 			this._toolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
@@ -120,20 +118,6 @@ namespace Bloom.CollectionTab
 			this._toolStrip.Size = new System.Drawing.Size(342, 69);
 			this._toolStrip.TabIndex = 31;
 			this._toolStrip.Text = "_toolStrip";
-			// 
-			// _sendReceiveButton
-			// 
-			this._sendReceiveButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._sendReceiveButton.Image = global::Bloom.Properties.Resources.sendreceiveToolbarButton;
-			this._sendReceiveButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-			this._sendReceiveButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._sendReceiveButton, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._sendReceiveButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._sendReceiveButton, "CollectionTab.SendReceive");
-			this._sendReceiveButton.Name = "_sendReceiveButton";
-			this._sendReceiveButton.Size = new System.Drawing.Size(82, 66);
-			this._sendReceiveButton.Text = "Send/Receive";
-			this._sendReceiveButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			// 
 			// _settingsButton
 			// 
@@ -210,7 +194,6 @@ namespace Bloom.CollectionTab
 		public System.Windows.Forms.Panel _topBarControl;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.ToolStrip _toolStrip;
-		private System.Windows.Forms.ToolStripButton _sendReceiveButton;
 		private System.Windows.Forms.ToolStripButton _settingsButton;
 		private System.Windows.Forms.ToolStripButton _openCreateCollectionButton;
 		private System.Windows.Forms.ToolStrip _toolStripLeft;

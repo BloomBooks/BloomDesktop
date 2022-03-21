@@ -6,7 +6,6 @@ using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
-//using Chorus.UI.Clone;
 using SIL.Windows.Forms.Extensions;
 using SIL.i18n;
 using System.Linq;
@@ -129,52 +128,7 @@ namespace Bloom.CollectionChoosing
 			tableLayoutPanel2.SetColumn(button, column);
 			return button;
 		}
-#if Chorus
-		private void OnGetFromInternet(object sender, EventArgs e)
-		{
-			using (var dlg = new Chorus.UI.Clone.GetCloneFromInternetDialog(NewCollectionWizard.DefaultParentDirectoryForCollections))
-			{
-				SelectAndCloneProject(dlg);
-			}
-		}
 
-		private void OnGetFromUsb(object sender, EventArgs e)
-		{
-			using (var dlg = new Chorus.UI.Clone.GetCloneFromUsbDialog(NewCollectionWizard.DefaultParentDirectoryForCollections))
-			{
-				SelectAndCloneProject(dlg);
-			}
-		}
-		private void OnGetFromChorusHub(object sender, EventArgs e)
-		{
-			using (var dlg = new Chorus.UI.Clone.GetCloneFromChorusHubDialog(new GetCloneFromChorusHubModel(NewCollectionWizard.DefaultParentDirectoryForCollections)))
-			{
-				SelectAndCloneProject(dlg);
-			}
-		}
-
-		private void SelectAndCloneProject(ICloneSourceDialog dlg)
-		{
-			try
-			{
-				if (!Directory.Exists(NewCollectionWizard.DefaultParentDirectoryForCollections))
-				{
-					Directory.CreateDirectory(NewCollectionWizard.DefaultParentDirectoryForCollections);
-				}
-				dlg.SetFilePatternWhichMustBeFoundInHgDataFolder("*.bloom_collection.i");
-
-				if (DialogResult.Cancel == ((Form)dlg).ShowDialog())
-					return;
-
-				SelectCollectionAndClose(CollectionSettings.FindSettingsFileInFolder(dlg.PathToNewlyClonedFolder));
-			}
-			catch (Exception error)
-			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom ran into a problem:\r\n{0}",
-																 error.Message);
-			}
-		}
-#endif
 		private void OnOpenRecentCollection(object sender, EventArgs e)
 		{
 			SelectCollectionAndClose(((Button) sender).Tag as string);
@@ -333,11 +287,6 @@ namespace Bloom.CollectionChoosing
 			}
 		}
 #endif
-
-		private void _readMoreLabel_Click(object sender, LinkLabelLinkClickedEventArgs e)
-		{
-			HelpLauncher.Show(null, "Chorus_Help.chm", "Chorus/Chorus_overview.htm");
-		}
 
 		public void UpdateUiLanguageMenuSelection()
 		{

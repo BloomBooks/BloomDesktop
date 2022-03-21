@@ -123,16 +123,6 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap cloneFromChorusHub {
-            get {
-                object obj = ResourceManager.GetObject("cloneFromChorusHub", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap cloneFromInternet {
             get {
                 object obj = ResourceManager.GetObject("cloneFromInternet", resourceCulture);
@@ -739,16 +729,6 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap sad16x16 {
             get {
                 object obj = ResourceManager.GetObject("sad16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap sendreceiveToolbarButton {
-            get {
-                object obj = ResourceManager.GetObject("sendreceiveToolbarButton", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

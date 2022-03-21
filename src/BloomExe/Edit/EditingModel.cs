@@ -40,7 +40,6 @@ namespace Bloom.Edit
 		private readonly DeletePageCommand _deletePageCommand;
 		private readonly CollectionSettings _collectionSettings;
 		private readonly SourceCollectionsList _sourceCollectionsList;
-		//private readonly SendReceiver _sendReceiver;
 		private HtmlDom _domForCurrentPage;
 		// We dispose of this when we create a new one. It may hang around a little longer than needed, but memory
 		// is the only resource being used, and there is only one instance of this object.
@@ -88,7 +87,6 @@ namespace Bloom.Edit
 			CollectionClosing collectionClosingEvent,
 			LocalizationChangedEvent localizationChangedEvent,
 			CollectionSettings collectionSettings,
-			//SendReceiver sendReceiver,
 			BloomServer server,
 			BloomWebSocketServer webSocketServer,
 			SourceCollectionsList sourceCollectionsList)
@@ -98,7 +96,6 @@ namespace Bloom.Edit
 			_duplicatePageCommand = duplicatePageCommand;
 			_deletePageCommand = deletePageCommand;
 			_collectionSettings = collectionSettings;
-			//_sendReceiver = sendReceiver;
 			_server = server;
 			_webSocketServer = webSocketServer;
 			_sourceCollectionsList = sourceCollectionsList;
@@ -184,11 +181,6 @@ namespace Bloom.Edit
 				// things get into a very bad state indeed. So arrange to re-activate ourselves as soon as the dust settles.
 				_oldActiveForm = Form.ActiveForm;
 				Application.Idle += ReactivateFormOnIdle;
-				//note: if they didn't actually change anything, Chorus is not going to actually do a checkin, so this
-				//won't pollute the history
-				#if Chorus
-					_sendReceiver.CheckInNow(string.Format("Edited '{0}'", CurrentBook.TitleBestForUserDisplay));
-				#endif
 			}
 		}
 
