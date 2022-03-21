@@ -95,7 +95,7 @@ export const VideoOptionsGroup: React.FunctionComponent<{
         },
         {
             format: "youtube",
-            label: "YouTube (full HD)",
+            label: "YouTube",
             l10nKey: "PublishTab.RecordVideo.YouTube",
             dimension: "1920x1080",
             codec: "MP4 H.264",
@@ -149,6 +149,17 @@ export const VideoOptionsGroup: React.FunctionComponent<{
                                 `}
                             >
                                 <Select
+                                    css={css`
+                                        background-color: white;
+                                        &.MuiOutlinedInput-root {
+                                            border-radius: 0 !important;
+
+                                            .MuiOutlinedInput-notchedOutline {
+                                                border-width: 1px !important;
+                                                border-color: ${kBloomBlue} !important; // it usually is anyway, but not before MUI decides to focus it.
+                                            }
+                                        }
+                                    `}
                                     value={format}
                                     open={formatDropdownIsOpen}
                                     onOpen={() => {
