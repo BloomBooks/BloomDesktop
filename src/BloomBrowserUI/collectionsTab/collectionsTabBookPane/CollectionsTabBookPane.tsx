@@ -17,6 +17,7 @@ import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import { LocalizedString } from "../../react_components/l10nComponents";
 import { CollectionHistoryTable } from "../../teamCollection/CollectionHistoryTable";
 import "react-tabs/style/react-tabs.less";
+import { BloomTabs } from "../../react_components/BloomTabs";
 
 export const CollectionsTabBookPane: React.FunctionComponent<{
     // If false, as it usually is, the overlay above the preview iframe
@@ -197,35 +198,23 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                         } */
                     `}
                 ></div>
-                <Tabs
+                <BloomTabs
                     id="tabs"
                     defaultIndex={0}
-                    // Seems like there should be some sort of Material-UI mode that would produce the look
-                    // John wants. A lot of their examples are quite like it, but I can't find any reason
-                    // why their examples are different from what I get with similar code. Possibly the
-                    // makeStyles that is in most of their examples pulls in this look. But we're using Emotion.
-                    css={css`
+                    color="grey"
+                    selectedColor="white"
+                    labelBackgroundColor={kDarkestBackground}
+                    rootCss={css`
                         height: 100%;
                         display: flex;
                         flex-direction: column;
-                        .react-tabs__tab.react-tabs__tab {
-                            background-color: ${kDarkestBackground};
-                            color: grey;
-                            text-transform: uppercase;
-                            flex-grow: 1;
-                        }
-                        .react-tabs__tab--selected {
-                            color: white !important;
-                            border-color: transparent;
-                            border-bottom: 2px solid white;
-                        }
-                        .react-tabs__tab-list {
-                            border: none;
-                        }
-                        .react-tabs__tab-panel {
-                            flex-grow: 1;
-                            position: relative; // for the Edit this book button to be absolute
-                        }
+                    `}
+                    labelCss={css`
+                        flex-grow: 1;
+                    `}
+                    contentPaneCss={css`
+                        flex-grow: 1;
+                        position: relative; // for the Edit this book button to be absolute
                     `}
                 >
                     <TabList>
@@ -287,7 +276,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                             />
                         </TabPanel>
                     )}
-                </Tabs>
+                </BloomTabs>
             </div>
             {// Currently, canMakeBook is a synonym for 'book is not in the current TC'
             // If that stops being true we might need another more specialized status flag.

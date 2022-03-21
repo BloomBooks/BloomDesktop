@@ -27,6 +27,7 @@ import { lightTheme } from "../bloomMaterialUITheme";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 export let showTeamCollectionDialog: () => void;
 import "react-tabs/style/react-tabs.less";
+import { BloomTabs } from "../react_components/BloomTabs";
 
 export const TeamCollectionDialog: React.FunctionComponent<{
     showReloadButton: boolean;
@@ -62,26 +63,11 @@ export const TeamCollectionDialog: React.FunctionComponent<{
                     color={"white"}
                 />
                 <DialogMiddle>
-                    <Tabs
+                    <BloomTabs
                         defaultIndex={0}
-                        // Seems like there should be some sort of Material-UI mode that would produce the look
-                        // John wants. A lot of their examples are quite like it, but I can't find any reason
-                        // why their examples are different from what I get with similar code. Possibly the
-                        // makeStyles that is in most of their examples pulls in this look. But we're using Emotion.
-                        css={css`
-                            .react-tabs__tab.react-tabs__tab {
-                                background-color: white;
-                                text-transform: uppercase;
-                            }
-                            .react-tabs__tab--selected {
-                                color: ${kBloomBlue};
-                                border-color: transparent;
-                                border-bottom: 2px solid ${kBloomBlue};
-                            }
-                            .react-tabs__tab-list {
-                                border: none;
-                            }
-                        `}
+                        color="black"
+                        selectedColor={kBloomBlue}
+                        labelBackgroundColor="white"
                     >
                         <TabList>
                             <Tab>
@@ -121,7 +107,7 @@ export const TeamCollectionDialog: React.FunctionComponent<{
                         <TabPanel>
                             <CollectionHistoryTable />
                         </TabPanel>
-                    </Tabs>
+                    </BloomTabs>
                 </DialogMiddle>
 
                 <DialogBottomButtons>
