@@ -31,6 +31,7 @@ import {
     LocalizableMenuItem,
     LocalizableNestedMenuItem
 } from "../react_components/localizableMenuItem";
+import { TeamCollectionDialog } from "../teamCollection/TeamCollectionDialog";
 
 const kResizerSize = 10;
 
@@ -362,6 +363,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                     {collectionMenuItems}
                 </Menu>
             )}
+            <TeamCollectionDialog />
         </div>
     );
 };

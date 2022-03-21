@@ -3,12 +3,14 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
-import { Dialog } from "@material-ui/core";
+import { Dialog, DialogProps, Paper } from "@material-ui/core";
 import CloseOnEscape from "react-close-on-escape";
 import { kDialogPadding } from "../../bloomMaterialUITheme";
 import { BloomApi } from "../../utils/bloomApi";
 import { useEffect, useState } from "react";
-import { kUiFontStack } from "../../bloomMaterialUITheme.ts";
+import { kUiFontStack } from "../../bloomMaterialUITheme";
+import { useWebSocketListener } from "../../utils/WebSocketManager";
+import Draggable from "react-draggable";
 
 // The <BloomDialog> component and its children provides consistent layout across Bloom Dialogs.
 // It can be used either inside of a winforms dialog, or as a MaterialUI Dialog.
@@ -22,13 +24,15 @@ const kDialogTopPadding = "24px";
 const kDialogSidePadding = "24px";
 const kDialogBottomPadding = "10px"; // per material, the bottom buttons are supposed to be closer to the edges
 
-export const BloomDialog: React.FunctionComponent<{
+export interface IBloomDialogProps extends DialogProps {
     open: boolean;
     // true if the caller is wrapping in a winforms dialog already
     dialogFrameProvidedExternally?: boolean;
     onClose: () => void;
     innerCss?: string;
-}> = props => {
+}
+
+export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = props => {
     const inner = (
         <div
             css={css`
@@ -83,6 +87,17 @@ export const BloomDialog: React.FunctionComponent<{
         initialFocus?.focus();
     }, []);
 
+    const PaperComponent = props => {
+        return (
+            <Draggable
+                handle="#draggable-dialog-title"
+                cancel={'[class*="MuiDialogContent-root"]'}
+            >
+                <Paper {...props} />
+            </Draggable>
+        );
+    };
+
     return (
         <CloseOnEscape
             onEscape={() => {
@@ -93,7 +108,17 @@ export const BloomDialog: React.FunctionComponent<{
                 {props.dialogFrameProvidedExternally ? (
                     inner
                 ) : (
-                    <Dialog open={props.open}>{inner}</Dialog>
+                    <Dialog
+                        PaperComponent={PaperComponent}
+                        css={css`
+                            [role="dialog"] {
+                                overflow: hidden; // only the middle should scroll. The DialogTitle and DialogBottomButtons should not.
+                            }
+                        `}
+                        {...props} // allows defining more css rules from container
+                    >
+                        {inner}
+                    </Dialog>
                 )}
             </ThemeProvider>
         </CloseOnEscape>
@@ -114,11 +139,12 @@ export const DialogTitle: React.FunctionComponent<{
         background === "transparent" ? kDialogTopPadding : kDialogPadding;
     return (
         <div
+            id="draggable-dialog-title"
             css={css`
                 color: ${color};
                 background-color: ${background};
                 display: flex;
-
+                cursor: move;
                 padding-left: ${kDialogTopPadding};
                 padding-right: ${kDialogTopPadding};
                 padding-top: ${titleTopPadding};
@@ -245,6 +271,25 @@ export const normalDialogEnvironmentForStorybook = {
     dialogFrameProvidedExternally: false,
     initiallyOpen: true
 };
+export function useSetupBloomDialogFromServer(
+    idForLaunchingFromServer: string,
+    dialogEnvironmentForStorybook?: IBloomDialogEnvironmentParams // storybook uses this
+) {
+    const dialogEnvironment = useSetupBloomDialog({
+        initiallyOpen: dialogEnvironmentForStorybook
+            ? dialogEnvironmentForStorybook.initiallyOpen
+            : false,
+        dialogFrameProvidedExternally: false
+    });
+    useWebSocketListener("WebSocketDialogLauncher", event => {
+        if (event.id === idForLaunchingFromServer) {
+            dialogEnvironment.showDialog(
+                event.message ? JSON.parse(event.message) : {}
+            );
+        }
+    });
+    return dialogEnvironment;
+}
 
 // Components that include <BloomDialog> to make a dialog should call this hook and use what it returns to manage the dialog.
 // See the uses of it in the code for examples.
@@ -255,7 +300,11 @@ export function useSetupBloomDialog(
         // we default to closed
         dialogEnvironment ? dialogEnvironment.initiallyOpen : false
     );
-    function showDialog() {
+
+    // params are like props but we get them from the websocket message that triggers the opening of the dialog from c# (see useSetupBloomDialogFromServer())
+    const [params, setParams] = useState<any>({});
+    function showDialog(params?: any) {
+        setParams(params);
         setOpen(true);
     }
     function closeDialog() {
@@ -264,6 +313,7 @@ export function useSetupBloomDialog(
         else setOpen(false);
     }
     return {
+        params,
         showDialog,
         closeDialog,
         propsForBloomDialog: {

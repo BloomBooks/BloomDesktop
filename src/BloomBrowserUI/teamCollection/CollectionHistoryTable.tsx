@@ -66,90 +66,107 @@ export const CollectionHistoryTable: React.FunctionComponent = props => {
 
     return (
         // The grand plan: https://www.figma.com/file/IlNPkoMn4Y8nlHMTCZrXfQSZ/Bloom-Collection-Tab?node-id=2707%3A6882
-        // TODO: switch to use the same grid as blorg
 
         <table
             css={css`
+                flex-grow: 1;
                 td {
                     padding-right: 15px;
                 }
             `}
         >
-            <tr
+            <thead
                 css={css`
-                    font-weight: 900;
-                    margin-top: 10px;
-                    margin-bottom: 5px;
+                    //display: block;
                 `}
             >
-                <HeaderCell colSpan={2}>Title</HeaderCell>{" "}
-                <HeaderCell>When</HeaderCell>
-                <HeaderCell colSpan={2}>Who</HeaderCell>
-                <HeaderCell>What</HeaderCell>
-                <HeaderCell>Comment</HeaderCell>
-            </tr>
-            {events.map((e, index) => (
                 <tr
                     css={css`
+                        font-weight: 900;
+                        margin-top: 10px;
                         margin-bottom: 5px;
                     `}
-                    key={index}
                 >
-                    <td
+                    <HeaderCell>When</HeaderCell>
+                    <HeaderCell colSpan={2}>Title</HeaderCell>
+                    <HeaderCell colSpan={2}>Who</HeaderCell>
+                    <HeaderCell>What</HeaderCell>
+                    <HeaderCell>Comment</HeaderCell>
+                </tr>
+            </thead>
+            <tbody
+                css={css`
+                    //display: block;
+                    //max-height: 71vh;
+                    overflow-y: auto;
+                    overflow-x: hidden;
+                    td {
+                        vertical-align: top;
+                    }
+                `}
+            >
+                {events.map((e, index) => (
+                    <tr
                         css={css`
-                            padding-right: 4px !important;
+                            margin-bottom: 5px;
                         `}
+                        key={index}
                     >
-                        <img
+                        <TextCell>
+                            {/* Review: can we get away with this? I do want the 2021-11-01 format, and this gives that */}
+                            {e.When.substring(0, 10)}
+                        </TextCell>
+                        <td
                             css={css`
-                                height: 2em;
-                            `}
-                            src={e.ThumbnailPath}
-                        />
-                    </td>
-                    <TextCell>{e.Title}</TextCell>
-
-                    <TextCell>
-                        {/* Review: can we get away with this? I do want the 2021-11-01 format, and this gives that */}
-                        {e.When.substring(0, 10)}
-                    </TextCell>
-                    <td
-                        css={css`
-                            padding-right: 2px !important;
-                            // This is usually the highest element on the row. So it's a good place to put some
-                            // padding to separate the rows. Fine tuning the padding above in TextCell and the
-                            // padding here (currently all below) controls the alignment; we aim to have single-line
-                            // text centered on the avatar.
-                            padding-top: 0px;
-                            padding-bottom: 8px;
-                        `}
-                    >
-                        <BloomAvatar
-                            email={e.UserId}
-                            name={e.UserName}
-                            avatarSizeInt={30}
-                        />
-                    </td>
-                    <TextCell>
-                        <div
-                            css={css`
-                                overflow-wrap: break-word;
-                                max-width: 5em;
+                                padding-right: 4px !important;
                             `}
                         >
-                            {e.UserName || e.UserId}
-                        </div>
-                    </TextCell>
-                    <TextCell
-                        css={css`
-                            min-width: 4em;
-                        `}
-                    >
-                        {kEventTypes[e.Type]}
-                    </TextCell>
-                    <TextCell>{e.Message}</TextCell>
-                </tr>
-            ))}
+                            <img
+                                css={css`
+                                    height: 2em;
+                                `}
+                                src={e.ThumbnailPath}
+                            />
+                        </td>
+                        <TextCell>{e.Title}</TextCell>
+                        <td
+                            css={css`
+                                padding-right: 2px !important;
+                                // This is usually the highest element on the row. So it's a good place to put some
+                                // padding to separate the rows. Fine tuning the padding above in TextCell and the
+                                // padding here (currently all below) controls the alignment; we aim to have single-line
+                                // text centered on the avatar.
+                                padding-top: 0px;
+                                padding-bottom: 8px;
+                            `}
+                        >
+                            <BloomAvatar
+                                email={e.UserId}
+                                name={e.UserName}
+                                avatarSizeInt={30}
+                            />
+                        </td>
+                        <TextCell>
+                            <div
+                                css={css`
+                                    overflow-wrap: break-word;
+                                    max-width: 5em;
+                                `}
+                            >
+                                {e.UserName || e.UserId}
+                            </div>
+                        </TextCell>
+                        <TextCell
+                            css={css`
+                                min-width: 4em;
+                            `}
+                        >
+                            {kEventTypes[e.Type]}
+                        </TextCell>
+                        <TextCell>{e.Message}</TextCell>
+                    </tr>
+                ))}
+            </tbody>
         </table>
     );
 };

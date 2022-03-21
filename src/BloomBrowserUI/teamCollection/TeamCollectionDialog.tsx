@@ -7,7 +7,10 @@ import { BloomApi } from "../utils/bloomApi";
 import "./TeamCollectionDialog.less";
 import { useL10n } from "../react_components/l10nHooks";
 import { ProgressBox } from "../react_components/Progress/progressBox";
-import { IBloomWebSocketProgressEvent } from "../utils/WebSocketManager";
+import {
+    IBloomWebSocketProgressEvent,
+    useWebSocketListener
+} from "../utils/WebSocketManager";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 import {
     BloomDialog,
@@ -16,7 +19,8 @@ import {
     DialogMiddle,
     DialogTitle,
     IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    IBloomDialogProps,
+    useSetupBloomDialogFromServer
 } from "../react_components/BloomDialog/BloomDialog";
 import { DialogCloseButton } from "../react_components/BloomDialog/commonDialogComponents";
 import { CollectionHistoryTable } from "./CollectionHistoryTable";
@@ -24,24 +28,38 @@ import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import { LocalizedString } from "../react_components/l10nComponents";
 import { ThemeProvider } from "@material-ui/styles";
 import { lightTheme } from "../bloomMaterialUITheme";
-import { WireUpForWinforms } from "../utils/WireUpWinform";
-export let showTeamCollectionDialog: () => void;
 import "react-tabs/style/react-tabs.less";
 
 export const TeamCollectionDialog: React.FunctionComponent<{
-    showReloadButton: boolean;
-    dialogEnvironment?: IBloomDialogEnvironmentParams;
+    showReloadButtonForStorybook?: boolean;
+    dialogEnvironmentForStorybook?: IBloomDialogEnvironmentParams;
 }> = props => {
     const {
-        showDialog,
+        params,
         closeDialog,
         propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+    } = useSetupBloomDialogFromServer(
+        "TeamCollectionDialog",
+        props.dialogEnvironmentForStorybook
+    );
 
-    // hoist this up to the window level so that any code that imports showTeamCollectionDialog can show it
-    // (It will still have to be declared once at the app level when it is no longer launched in its own winforms dialog.)
-    showTeamCollectionDialog = showDialog;
+    // We extract the core here so that we can avoid running most of the hook code when this dialog is not visible.
+    return propsForBloomDialog.open ? (
+        <TeamCollectionDialogInner
+            closeDialog={closeDialog}
+            propsForBloomDialog={propsForBloomDialog}
+            showReloadButton={
+                props.showReloadButtonForStorybook || params.showReloadButton
+            }
+        />
+    ) : null;
+};
 
+const TeamCollectionDialogInner: React.FunctionComponent<{
+    showReloadButton: boolean;
+    closeDialog: () => void;
+    propsForBloomDialog: IBloomDialogProps;
+}> = props => {
     const dialogTitle = useL10n(
         "Team Collection",
         "TeamCollection.TeamCollection"
@@ -53,7 +71,11 @@ export const TeamCollectionDialog: React.FunctionComponent<{
     );
 
     return (
-        <BloomDialog {...propsForBloomDialog}>
+        <BloomDialog
+            {...props.propsForBloomDialog}
+            fullWidth={true}
+            maxWidth="lg"
+        >
             <ThemeProvider theme={lightTheme}>
                 <DialogTitle
                     title={`${dialogTitle} (experimental)`}
@@ -69,6 +91,10 @@ export const TeamCollectionDialog: React.FunctionComponent<{
                         // why their examples are different from what I get with similar code. Possibly the
                         // makeStyles that is in most of their examples pulls in this look. But we're using Emotion.
                         css={css`
+                            flex-grow: 1;
+                            display: flex;
+                            flex-direction: column;
+                            height: 60vh;
                             .react-tabs__tab.react-tabs__tab {
                                 background-color: white;
                                 text-transform: uppercase;
@@ -80,6 +106,11 @@ export const TeamCollectionDialog: React.FunctionComponent<{
                             }
                             .react-tabs__tab-list {
                                 border: none;
+                            }
+                            .react-tabs__tab-panel--selected {
+                                display: flex;
+                                flex-direction: column;
+                                flex-grow: 1;
                             }
                         `}
                     >
@@ -107,12 +138,7 @@ export const TeamCollectionDialog: React.FunctionComponent<{
                             <ProgressBox
                                 preloadedProgressEvents={events}
                                 css={css`
-                                    // If we have omitOuterFrame that means the dialog height is controlled by c#, so let the progress grow to fit it.
-                                    // Maybe we could have that approach *all* the time?
-                                    height: ${props.dialogEnvironment
-                                        ?.dialogFrameProvidedExternally
-                                        ? "100%"
-                                        : "350px"};
+                                    height: 350px;
                                     // enhance: there is a bug I haven't found where, if this is > 530px, then it overflows. Instead, the BloomDialog should keep growing.
                                     min-width: 530px;
                                 `}
@@ -143,7 +169,7 @@ export const TeamCollectionDialog: React.FunctionComponent<{
                         </DialogBottomLeftButtons>
                     )}
                     <DialogCloseButton
-                        onClick={closeDialog}
+                        onClick={props.closeDialog}
                         // default action is to close *unless* we're showing reload
                         default={!props.showReloadButton}
                     />
@@ -152,5 +178,3 @@ export const TeamCollectionDialog: React.FunctionComponent<{
         </BloomDialog>
     );
 };
-
-WireUpForWinforms(TeamCollectionDialog);

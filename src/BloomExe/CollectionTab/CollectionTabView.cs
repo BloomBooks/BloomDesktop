@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 using Bloom.Properties;
 //using Bloom.SendReceive;
@@ -99,13 +99,8 @@ namespace Bloom.CollectionTab
 				// Instead, in the short term we may add a button to show the file.
 				// Later we may implement some efficient way to scroll through them.
 				// tcManager.CurrentCollection?.MessageLog?.LoadSavedMessages();
-				using (var dlg = new ReactDialog("teamCollectionDialogBundle", new { showReloadButton }))
-				{
-					dlg.Width = 600;
-					dlg.Height = 320;
-					dlg.ShowDialog(this);
-					tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
-				}
+				_webSocketServer.SendString("WebSocketDialogLauncher", "TeamCollectionDialog", $"{{\"showReloadButton\":{showReloadButton.ToString().ToLowerInvariant()}}}");
+				tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
 			};
 
 			// We don't want this control initializing until team collections sync (if any) is done.

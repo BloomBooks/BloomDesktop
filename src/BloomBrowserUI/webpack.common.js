@@ -72,7 +72,6 @@ module.exports = merge(core, {
             "./react_components/requiresBloomEnterprise.tsx",
         createTeamCollectionDialogBundle:
             "./teamCollection/CreateTeamCollection.tsx",
-        teamCollectionDialogBundle: "./teamCollection/TeamCollectionDialog.tsx",
         teamCollectionSettingsBundle:
             "./teamCollection/TeamCollectionSettingsPanel.tsx",
         joinTeamCollectionDialogBundle:
