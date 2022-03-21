@@ -33,9 +33,9 @@ export const SimplePreview: React.FunctionComponent<{
 
     var minBorder = 10; // required on sides and bottom, but not top, since nav bar provides visual border there.
     var rootWidth = props.landscapeWidth + 2 * minBorder;
-    var rootHeight = props.landscapeWidth + minBorder;
+    var rootHeight = height + minBorder;
     var sidePadding = (rootWidth - width) / 2;
-    var topPadding = (props.landscapeWidth - height) / 2;
+    var topPadding = 0;
     var bottomPadding = topPadding + minBorder;
 
     return (
