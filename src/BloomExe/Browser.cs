@@ -498,7 +498,14 @@ namespace Bloom
 				Keys keyData = Keys.Control | Keys.N;
 				ControlKeyEvent.Raise(keyData);
 			}
+#if __MonoCS__
+			_controlPressed = e.CtrlKey && e.KeyChar == 'm';	// m for menu...
+#endif
 		}
+
+#if __MonoCS__
+		private bool _controlPressed;
+#endif
 
 		private void Paste()
 		{
@@ -529,8 +536,13 @@ namespace Bloom
 			// To allow Typescript code to implement right-click, we'll do our special developer menu
 			// only if the control key is down. Though, if ContextMenuProvider is non-null, we'll assume
 			// C# is supposed to handle the context menu here.
+#if __MonoCS__
+			if (!_controlPressed && ContextMenuProvider == null)
+				return;
+#else
 			if ((Control.ModifierKeys & Keys.Control) != Keys.Control && ContextMenuProvider == null)
 				return;
+#endif
 			MenuItem FFMenuItem = null;
 			Debug.Assert(!InvokeRequired);
 #if DEBUG
