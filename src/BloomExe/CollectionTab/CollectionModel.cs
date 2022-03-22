@@ -12,7 +12,6 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.TeamCollection;
-//using Bloom.SendReceive;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Utils;
@@ -33,7 +32,6 @@ namespace Bloom.CollectionTab
 		private readonly BookSelection _bookSelection;
 		private readonly string _pathToLibrary;
 		private readonly CollectionSettings _collectionSettings;
-		//private readonly SendReceiver _sendReceiver;
 		private readonly SourceCollectionsList _sourceCollectionsList;
 		private readonly BookCollection.Factory _bookCollectionFactory;
 		private readonly EditBookCommand _editBookCommand;
@@ -47,7 +45,6 @@ namespace Bloom.CollectionTab
 		private BookCollectionHolder _bookCollectionHolder;
 
 		public CollectionModel(string pathToLibrary, CollectionSettings collectionSettings,
-			//SendReceiver sendReceiver,
 			BookSelection bookSelection,
 			SourceCollectionsList sourceCollectionsList,
 			BookCollection.Factory bookCollectionFactory,
@@ -64,7 +61,6 @@ namespace Bloom.CollectionTab
 			_bookSelection = bookSelection;
 			_pathToLibrary = pathToLibrary;
 			_collectionSettings = collectionSettings;
-			//_sendReceiver = sendReceiver;
 			_sourceCollectionsList = sourceCollectionsList;
 			_bookCollectionFactory = bookCollectionFactory;
 			_editBookCommand = editBookCommand;
@@ -376,9 +372,6 @@ namespace Bloom.CollectionTab
 					if (collection == TheOneEditableCollection)
 						_tcManager.CurrentCollection?.DeleteBookFromRepo(book.FolderPath);
 					collection.DeleteBook(book.BookInfo);
-					#if Chorus
-					_sendReceiver.CheckInNow(string.Format("Deleted '{0}'", title));
-					#endif
 					return true;
 				}
 			}

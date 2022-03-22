@@ -43,11 +43,6 @@ namespace Bloom.Workspace
 		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
 		private readonly LocalizationChangedEvent _localizationChangedEvent;
 		private readonly CollectionSettings _collectionSettings;
-#if CHORUS
-			private readonly ChorusSystem _chorusSystem;
-#else
-		// private readonly object _chorusSystem;
-#endif
 		private bool _viewInitialized;
 		private int _originalToolStripPanelWidth;
 		private int _originalToolSpecificPanelHorizPos;
@@ -85,11 +80,9 @@ namespace Bloom.Workspace
 							PublishView.Factory pdfViewFactory,
 							CollectionSettingsDialog.Factory settingsDialogFactory,
 							EditBookCommand editBookCommand,
-							SendReceiveCommand sendReceiveCommand,
 							SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 							SelectedTabChangedEvent selectedTabChangedEvent,
 							LocalizationChangedEvent localizationChangedEvent,
-							//ChorusSystem chorusSystem,
 							ILocalizationManager localizationManager,
 							CollectionSettings collectionSettings,
 							CommonApi commonApi,
@@ -157,7 +150,6 @@ namespace Bloom.Workspace
 			_settingsLauncherHelper.ManageComponent(_uiLanguageMenu);
 
 			editBookCommand.Subscribe(OnEditBook);
-			sendReceiveCommand.Subscribe(OnSendReceive);
 
 			Application.Idle += new EventHandler(Application_Idle);
 			Text = _model.ProjectName;
@@ -472,20 +464,6 @@ namespace Bloom.Workspace
 			{
 				ApplicationUpdateSupport.CheckForASquirrelUpdate(ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Quiet, newInstallDir => RestartBloom(newInstallDir), Settings.Default.AutoUpdate);
 			}
-		}
-
-		private void OnSendReceive(object obj)
-		{
-#if CHORUS
-			using (SyncDialog dlg = (SyncDialog) _chorusSystem.WinForms.CreateSynchronizationDialog())
-			{
-				dlg.ShowDialog();
-				if(dlg.SyncResult.DidGetChangesFromOthers)
-				{
-					Invoke(ReopenCurrentProject);
-				}
-			}
-#endif
 		}
 
 		void OnSettingsProtectionChanged(object sender, PropertyChangedEventArgs e)

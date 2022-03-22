@@ -223,9 +223,6 @@ namespace Bloom
 					Settings.Default.Save();
 				}
 
-#if !USING_CHORUS
-				Settings.Default.ShowSendReceive = false; // in case someone turned it on before we disabled
-#endif
 #if DEBUG
 				if (args.Length > 0)
 				{
@@ -1034,17 +1031,6 @@ namespace Bloom
 		static void HandleProjectWindowClosed(object sender, EventArgs e)
 		{
 			BloomThreadCancelService.Cancel();
-
-			#if Chorus
-			try
-			{
-				_projectContext.SendReceiver.CheckPointWithDialog("Storing History Of Your Work");
-			}
-			catch (Exception error)
-			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,"There was a problem backing up your work to the SendReceive repository on this computer.");
-			}
-			#endif
 
 			_projectContext.Dispose();
 			_projectContext = null;

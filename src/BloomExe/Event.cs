@@ -114,15 +114,6 @@ namespace Bloom
 		}
 	}
 
-	public class SendReceiveCommand : Event<object>
-	{
-		public SendReceiveCommand()
-			: base("SendReceiveCommand", LoggingLevel.Major)
-		{
-
-		}
-	}
-
 //	public class BookCollectionChangedEvent : Event<BookCollection>
 //	{ }
 

@@ -96,15 +96,6 @@ namespace Bloom.Collection
 			// The result is the bookshelf selection gets cleared when other collection settings are saved. See BL-10093.
 			PendingDefaultBookshelf = _collectionSettings.DefaultBookshelf;
 
-//		    _showSendReceive.CheckStateChanged += (sender, args) =>
-//		                                              {
-//		                                                  Settings.Default.ShowSendReceive = _showSendReceive.CheckState ==
-//		                                                                                     CheckState.Checked;
-//
-//                                                          _restartRequired = true;
-//		                                                  UpdateDisplay();
-//		                                              };
-
 			CollectionSettingsApi.BrandingChangeHandler = ChangeBranding;
 
 

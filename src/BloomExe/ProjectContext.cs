@@ -12,7 +12,6 @@ using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.FontProcessing;
 using Bloom.ImageProcessing;
-//using Bloom.SendReceive;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using Bloom.Api;
@@ -25,7 +24,6 @@ using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 using BloomTests.web.controllers;
-//using Chorus;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
@@ -117,7 +115,6 @@ namespace Bloom
 						{
 							typeof (TemplateInsertionCommand),
 							typeof (EditBookCommand),
-							typeof (SendReceiveCommand),
 							typeof (SelectedTabAboutToChangeEvent),
 							typeof (SelectedTabChangedEvent),
 							typeof (CollectionClosing),
@@ -186,32 +183,6 @@ namespace Bloom
 					var bookRenameEvent = new BookRenamedEvent();
 					builder.Register(c => bookRenameEvent).AsSelf().InstancePerLifetimeScope();
 
-					try
-					{
-#if Chorus                      //nb: we split out the ChorusSystem.Init() so that this won't ever fail, so we have something registered even if we aren't
-						//going to be able to do HG for some reason.
-						var chorusSystem = new ChorusSystem(Path.GetDirectoryName(projectSettingsPath));
-						builder.Register<ChorusSystem>(c => chorusSystem).InstancePerLifetimeScope();
-						builder.Register<SendReceiver>(c => new SendReceiver(chorusSystem, () => ProjectWindow))
-							.InstancePerLifetimeScope();
-
-					chorusSystem.Init(string.Empty/*user name*/);
-#endif
-					}
-					catch (Exception error)
-					{
-						Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(error);
-#if USING_CHORUS
-#if !DEBUG
-					SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,
-						"There was a problem loading the Chorus Send/Receive system for this collection. Bloom will try to limp along, but you'll need technical help to resolve this. If you have no other choice, find this folder: {0}, move it somewhere safe, and restart Bloom.", Path.GetDirectoryName(projectSettingsPath).CombineForPath(".hg"));
-#endif
-					//swallow for develoeprs, because this happens if you don't have the Mercurial and "Mercurial Extensions" folders in the root, and our
-					//getdependencies doesn't yet do that.
-#endif
-					}
-
-
 					//This deserves some explanation:
 					//*every* collection has a "*.BloomCollection" settings file. But the one we make the most use of is the one editable collection
 					//That's why we're registering it... it gets used all over. At the moment (May 2012), we don't ever read the
@@ -241,9 +212,6 @@ namespace Bloom
 					builder.Register<CollectionModel>(
 						c =>
 							new CollectionModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(),
-							#if Chorus
-								c.Resolve<SendReceiver>(),
-							#endif
 								c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(),
 								c.Resolve<EditBookCommand>(), c.Resolve<CreateFromSourceBookCommand>(), c.Resolve<BookServer>(),
 								c.Resolve<CurrentEditableCollectionSelection>(), c.Resolve<BookThumbNailer>(), c.Resolve<TeamCollectionManager>(),
@@ -684,13 +652,6 @@ namespace Bloom
 				 return GetBloomCommonDataFolder().CombineForPath("XMatter");
 			}
 		}
-
-#if CHORUS
-		public SendReceiver SendReceiver
-		{
-			get { return _scope.Resolve<SendReceiver>(); }
-		}
-#endif
 
 		internal BloomFileLocator OptimizedFileLocator
 		{

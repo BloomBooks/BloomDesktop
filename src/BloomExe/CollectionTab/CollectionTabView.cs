@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
 using Bloom.Properties;
-//using Bloom.SendReceive;
 using Bloom.Workspace;
 using L10NSharp;
 using SIL.Reporting;
@@ -31,7 +30,6 @@ namespace Bloom.CollectionTab
 
 		public CollectionTabView(CollectionModel model,
 			SelectedTabChangedEvent selectedTabChangedEvent,
-			SendReceiveCommand sendReceiveCommand,
 			TeamCollectionManager tcManager, BookSelection bookSelection,
 			WorkspaceTabSelection tabSelection, BloomWebSocketServer webSocketServer)
 		{
@@ -54,17 +52,6 @@ namespace Bloom.CollectionTab
 			_toolStripLeft.SendToBack();
 
 			//TODO splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
-			_sendReceiveButton.Visible = Settings.Default.ShowSendReceive;
-
-			if (sendReceiveCommand != null)
-			{
-#if Chorus
-				_sendReceiveButton.Click += (x, y) => sendReceiveCommand.Raise(this);
-				_sendReceiveButton.Enabled = !SendReceiver.SendReceiveDisabled;
-#endif
-			}
-			else
-				_sendReceiveButton.Enabled = false;
 
 			if (SIL.PlatformUtilities.Platform.IsMono)
 			{
