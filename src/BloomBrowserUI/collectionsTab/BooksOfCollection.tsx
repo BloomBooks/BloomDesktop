@@ -86,7 +86,11 @@ export const BooksOfCollection: React.FunctionComponent<{
                 >
                     {books?.map(book => {
                         return (
-                            <Grid item={true} className="book-wrapper">
+                            <Grid
+                                item={true}
+                                key={book.id}
+                                className="book-wrapper"
+                            >
                                 <LazyLoad
                                     height={bookButtonHeight}
                                     // Tells lazy loader to look for the parent element that has overflowY set to scroll or
