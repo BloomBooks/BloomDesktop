@@ -10,7 +10,6 @@ namespace BloomTests.Publish.Video
 	[TestFixture]
 	internal class RecordVideoWindowTests
 	{
-		[TestCase(2560, 1440)]
 		[TestCase(1920, 1080)]
 		[TestCase(1280, 720)]
 		[TestCase(854, 480)]
@@ -19,6 +18,15 @@ namespace BloomTests.Publish.Video
 			var result = RecordVideoWindow.GetBestYouTubeSize(maxWidth, maxHeight, true);
 
 			var expectedResult = new RecordVideoWindow.Resolution(maxWidth, maxHeight);
+			Assert.AreEqual(expectedResult.ToString(), result.ToString());
+		}
+
+		[TestCase(2560, 1440)]
+		public void RecordVideoWindowGetBestYouTubeSize_LandscapeBookOnBiggerThanFHDSizeScreen_ReturnsFHD(int maxWidth, int maxHeight)
+		{
+			var result = RecordVideoWindow.GetBestYouTubeSize(maxWidth, maxHeight, true);
+
+			var expectedResult = new RecordVideoWindow.Resolution(1920, 1080);
 			Assert.AreEqual(expectedResult.ToString(), result.ToString());
 		}
 
@@ -43,8 +51,6 @@ namespace BloomTests.Publish.Video
 			Assert.AreEqual(expectedResult.ToString(), result.ToString());
 		}
 
-		[TestCase(2160, 3840)]
-		[TestCase(1440, 2560)]
 		[TestCase(1080, 1920)]
 		[TestCase(720, 1280)]
 		[TestCase(480, 854)]
@@ -58,6 +64,17 @@ namespace BloomTests.Publish.Video
 
 			int expectedWidth = maxWidth;
 			var expectedResult = new RecordVideoWindow.Resolution(expectedWidth, expectedHeight);
+			Assert.AreEqual(expectedResult.ToString(), result.ToString());
+		}
+
+		[TestCase(2160)]
+		[TestCase(1440)]
+		public void RecordVideoWindowGetBestYouTubeSize_PortraitBookOnBiggerThanFHDPortraitScreen_ReturnsFHDSize(int maxWidth)
+		{
+			int maxHeight = maxWidth * 2;   // A 9x16 video will fit in this screen, with plenty of buffer
+			var result = RecordVideoWindow.GetBestYouTubeSize(maxWidth, maxHeight, false);
+
+			var expectedResult = new RecordVideoWindow.Resolution(1080, 1920);
 			Assert.AreEqual(expectedResult.ToString(), result.ToString());
 		}
 	}
