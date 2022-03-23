@@ -1,5 +1,8 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+
 // Storybook stories for Team Collection components
-import { lightTheme } from "../bloomMaterialUITheme";
+import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import * as React from "react";
 import { storiesOf, addDecorator } from "@storybook/react";
@@ -90,25 +93,51 @@ storiesOf("Team Collection components/StatusPanelCommon", module)
             />
         )
     )
-    .add("Checked out by me", () =>
-        testPage(
+    .add("Checked out by me", () => {
+        const messageLogStub = ( // copied from TCBookStatusPanel.tsx
+            <div
+                css={css`
+                    width: 320px;
+                `}
+            >
+                <div
+                    css={css`
+                        font-size: 11px;
+                    `}
+                >
+                    {"What changes did you make?"}
+                </div>
+                <input
+                    css={css`
+                        background-color: transparent;
+                        color: ${kBloomYellow};
+                        width: 100%;
+                        border: 1px solid #ffffffcc;
+                        border-radius: 4px;
+                        height: 36px;
+                    `}
+                    type="text"
+                    value={
+                        "test checkin message that's actually quite longish."
+                    }
+                    autoFocus={true}
+                    key="message"
+                />
+            </div>
+        );
+
+        return testPage(
             <StatusPanelCommon
                 lockState="lockedByMe"
                 title="This book is checked out to you"
                 subTitle="Are you done for now? Click this button to send your changes to your team."
                 icon={avatar(true)}
                 button={checkinButton}
-                children={
-                    <div className="userChanges">
-                        <Typography align="left" variant="subtitle2">
-                            Eventually this will be a change log area.
-                        </Typography>
-                    </div>
-                }
+                children={messageLogStub}
                 menu={<div style={menuStyles}>Menu</div>}
             />
-        )
-    )
+        );
+    })
     .add("Checked out by (Fred)", () =>
         testPage(
             <StatusPanelCommon
