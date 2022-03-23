@@ -2,14 +2,11 @@
 import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import FormGroup from "@material-ui/core/FormGroup";
-import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import { SettingsGroup } from "../commonPublish/BasePublishScreen";
 import { useL10n } from "../../react_components/l10nHooks";
 import { BloomApi } from "../../utils/bloomApi";
 import { Div } from "../../react_components/l10nComponents";
-import BloomButton from "../../react_components/bloomButton";
 import {
-    Button,
     FormControl,
     MenuItem,
     Popover,
@@ -21,7 +18,6 @@ import "../../bookEdit/css/rc-slider-bloom.less";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import AudioIcon from "@material-ui/icons/VolumeUp";
 import { useEffect, useState } from "react";
-import { format } from "path";
 import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
 
 // The things that define each item in the Format menu
@@ -206,13 +202,7 @@ export const VideoOptionsGroup: React.FunctionComponent<{
                             </div>
                         </div>
                         {tooBigMsg && (
-                            <NoteBox
-                                css={css`
-                                    border: solid 1px ${kBloomBlue + "80"};
-                                `}
-                            >
-                                {tooBigMsg}
-                            </NoteBox>
+                            <NoteBox addBorder={true}>{tooBigMsg}</NoteBox>
                         )}
                         {/** The below div is disabled for MP3 because currently, we ignore this setting and immediately flip pages with no narration in mp3 mode.
                          * That's because, in the context of making an mp3, it doesn't make much sense to spend time on pages with no audio at all, especially x-matter pages.

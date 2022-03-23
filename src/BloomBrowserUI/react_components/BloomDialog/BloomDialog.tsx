@@ -26,6 +26,7 @@ export interface IBloomDialogProps extends DialogProps {
     open: boolean;
     // true if the caller is wrapping in a winforms dialog already
     dialogFrameProvidedExternally?: boolean;
+    heightInPx?: number;
     onClose: () => void;
 }
 
@@ -55,9 +56,13 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = props => 
                 padding-bottom: ${kDialogBottomPadding};
                 // dialogFrameProvidedExternally means that we're inside of a winforms dialog.
                 /// So we grow to fit it, and we supply a single black border for some reason (?)
-                ${props.dialogFrameProvidedExternally
-                    ? `height: 100%; border: solid thin black; box-sizing: border-box;`
-                    : ""}
+                ${
+                    props.dialogFrameProvidedExternally
+                        ? `height: 100%; border: solid thin black; box-sizing: border-box;`
+                        : props.heightInPx
+                        ? `height: ${props.heightInPx}px;`
+                        : ""
+                }
 
                 * {
                     // This value is the same as that given in bloomMaterialUITheme.  For some

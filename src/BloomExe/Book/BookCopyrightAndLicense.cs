@@ -389,7 +389,7 @@ namespace Bloom.Book
 		// This will USUALLY return something like "Licensed under {some license}.", but corner cases include empty string and
 		// whatever the user puts in as CustomLicense text.
 		// The out var is for use in the full format string only (FullOriginalCopyrightLicenseSentence).
-		private static string GetOriginalLicenseSentence(IEnumerable<string> languagePriorityIds, LicenseInfo licenseInfo, out string licenseOnly)
+		public static string GetOriginalLicenseSentence(IEnumerable<string> languagePriorityIds, LicenseInfo licenseInfo, out string licenseOnly)
 		{
 			licenseOnly = licenseInfo.GetMinimalFormForCredits(languagePriorityIds, out _);
 			if (licenseInfo is CustomLicense)
