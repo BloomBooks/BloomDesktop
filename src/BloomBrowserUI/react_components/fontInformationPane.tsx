@@ -1,12 +1,13 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
 import * as React from "react";
-import { Link, Typography } from "@material-ui/core";
+import { Button, Link, Typography } from "@material-ui/core";
 
 import { IFontMetaData } from "../bookEdit/StyleEditor/fontSelectComponent";
 import InfoOutlinedIcon from "@material-ui/icons/InfoOutlined";
 import { useL10n } from "./l10nHooks";
-import { kDisabledControlGray } from "../bloomMaterialUITheme";
+import { kBloomBlue, kDisabledControlGray } from "../bloomMaterialUITheme";
+import CloseIcon from "@material-ui/icons/Close";
 
 const FontInformationPane: React.FunctionComponent<{
     metadata: IFontMetaData | undefined;
@@ -98,7 +99,30 @@ const FontInformationPane: React.FunctionComponent<{
     );
 
     return (
-        <React.Fragment>
+        <div
+            css={css`
+                display: flex;
+                flex-direction: row;
+                align-items: flex-start;
+            `}
+        >
+            <Button
+                startIcon={<CloseIcon htmlColor="white" />}
+                size="small"
+                // Clicking anywhere on the pane works, but w/o the button the user might not know this.
+                onClick={() => {}}
+                css={css`
+                    order: 1; // put icon in upper right corner
+                    padding: 2px !important;
+                    min-width: unset !important;
+                    background-color: ${kBloomBlue} !important;
+                    margin-top: 2px !important;
+                    margin-right: 2px !important;
+                    span span {
+                        margin: 0 !important;
+                    }
+                `}
+            />
             {!props.metadata || (
                 <div
                     css={css`
@@ -106,7 +130,8 @@ const FontInformationPane: React.FunctionComponent<{
                         flex: 1;
                         flex-direction: column;
                         padding: 10px;
-                        max-width: 240px;
+                        padding-right: 2px; // because close icon takes up space
+                        width: 200px;
                     `}
                 >
                     {/* Primary text message */}
@@ -196,7 +221,7 @@ const FontInformationPane: React.FunctionComponent<{
                     )}
                 </div>
             )}
-        </React.Fragment>
+        </div>
     );
 };
 

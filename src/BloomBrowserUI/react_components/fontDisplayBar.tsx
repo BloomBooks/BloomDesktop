@@ -50,7 +50,8 @@ const FontDisplayBar: React.FunctionComponent<FontDisplayBarProps> = props => {
     const getIconForFont = (): JSX.Element => (
         <div
             css={css`
-                padding-right: 15px;
+                padding-top: 3px !important;
+                padding-right: 3px !important;
             `}
         >
             {suitability === "ok" && (
@@ -88,11 +89,13 @@ const FontDisplayBar: React.FunctionComponent<FontDisplayBarProps> = props => {
 
     return (
         <div
+            className="font-display-bar"
             css={css`
-                display: flex;
-                flex: 1;
-                flex-direction: row;
+                display: flex !important;
+                flex: 1 !important;
+                flex-direction: row !important;
                 justify-content: space-between !important;
+                align-items: center !important;
             `}
         >
             <Typography

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Bloom.Api;
 using Bloom.Collection;
+using SIL.Code;
 
 namespace Bloom.web.controllers
 {
@@ -58,7 +59,7 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "enterpriseEnabled", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "enterpriseEnabled", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
@@ -91,10 +92,10 @@ namespace Bloom.web.controllers
 						BrandingChangeHandler(GetBrandingFromCode(SubscriptionCode), SubscriptionCode);
 					}
 				}, false);
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "legacyBrandingName",
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "legacyBrandingName",
 				request => { request.ReplyWithText(LegacyBrandingName ?? ""); }, false);
 
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "subscriptionCode", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "subscriptionCode", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
@@ -120,7 +121,7 @@ namespace Bloom.web.controllers
 					request.PostSucceeded();
 				}
 			}, false);
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "enterpriseSummary", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "enterpriseSummary", request =>
 			{
 				string branding = "";
 				if (_enterpriseStatus == EnterpriseStatus.Community)
@@ -130,7 +131,7 @@ namespace Bloom.web.controllers
 				var html = GetSummaryHtml(branding);
 				request.ReplyWithText(html);
 			}, false);
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "enterpriseExpiry", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "enterpriseExpiry", request =>
 			{
 				if (_enterpriseExpiry == DateTime.MinValue)
 				{
@@ -149,7 +150,7 @@ namespace Bloom.web.controllers
 					request.ReplyWithText("unknown");
 				}
 			}, false);
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "hasSubscriptionFiles", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "hasSubscriptionFiles", request =>
 			{
 				var haveFiles = BrandingProject.HaveFilesForBranding(GetBrandingFromCode(SubscriptionCode));
 				if (haveFiles)
@@ -160,7 +161,7 @@ namespace Bloom.web.controllers
 
 			// Enhance: The get here has one signature {brandingProjectName, defaultBookshelf} while the post has another (defaultBookshelfId:string).
 			// It's 
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "bookShelfData", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "bookShelfData", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
@@ -174,10 +175,74 @@ namespace Bloom.web.controllers
 					var newShelf = request.RequiredPostString();
 					if (newShelf == "none")
 						newShelf = ""; // RequiredPostString won't allow us to just pass this
-					DialogBeingEdited.PendingDefaultBookshelf = newShelf;
+					if (DialogBeingEdited != null)
+						DialogBeingEdited.PendingDefaultBookshelf = newShelf;
 					request.PostSucceeded();
 				}
 			}, false);
+			// Calls to handle communication with new FontScriptControl on Book Making tab
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "specialScriptSettings", request =>
+			{
+				if (request.HttpMethod == HttpMethods.Get)
+					return; // Should be a post
+				// Should contain a languageName and a (1-based) language number.
+				var data = DynamicJson.Parse(request.RequiredPostJson());
+				var languageNumber = (int)data.languageNumber;
+				var languageName = (string)data.languageName;
+				var needRestart = CollectionSettingsDialog.FontSettingsLinkClicked(_collectionSettings, languageName, languageNumber);
+				if (DialogBeingEdited != null && needRestart)
+					DialogBeingEdited.ChangeThatRequiresRestart();
+				request.PostSucceeded();
+			}, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "setFontForLanguage", request =>
+			{
+				if (request.HttpMethod == HttpMethods.Get)
+					return; // Should be a post
+
+				// Should contain a 1-based language number and a font name
+				var data = DynamicJson.Parse(request.RequiredPostJson());
+				var languageNumber = (int)data.languageNumber;
+				var fontName = (string)data.fontName;
+				UpdatePendingFontName(fontName, languageNumber);
+				request.PostSucceeded();
+			}, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "currentFontData", request =>
+			{
+				if (request.HttpMethod == HttpMethods.Post)
+					return; // Should be a get
+
+				// We want to return the data (languageName/fontName) for each active collection language
+				request.ReplyWithJson(GetLanguageData());
+			}, true);
+		}
+
+		private object GetLanguageData()
+		{
+			var langData = new Tuple<string, string>[3];
+			for (var i=0; i< 3; i++)
+			{
+				if (_collectionSettings.LanguagesZeroBased[i] == null ||
+					string.IsNullOrEmpty(_collectionSettings.LanguagesZeroBased[i].Name))
+					continue;
+				var name = _collectionSettings.LanguagesZeroBased[i].Name;
+				var font = _collectionSettings.LanguagesZeroBased[i].FontName;
+				langData[i] = new Tuple<string, string>(name, font);
+			}
+			return new { langData };
+		}
+
+		// languageNumber is 1-based
+		private void UpdatePendingFontName(string fontName, int languageNumber)
+		{
+			Guard.Against(languageNumber == 0, "'languageNumber' should be 1-based index, but is 0");
+
+			var zeroBasedLanguageNumber = languageNumber - 1;
+			if (zeroBasedLanguageNumber == 2 &&
+				_collectionSettings.LanguagesZeroBased[zeroBasedLanguageNumber] == null)
+				return;
+			DialogBeingEdited.PendingFontSelections[zeroBasedLanguageNumber] = fontName;
+			if (fontName != _collectionSettings.LanguagesZeroBased[zeroBasedLanguageNumber].FontName)
+				DialogBeingEdited.ChangeThatRequiresRestart();
 		}
 
 		public static string GetSummaryHtml(string branding)
