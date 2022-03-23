@@ -4,6 +4,7 @@ import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
 import { storiesOf } from "@storybook/react";
+import { Radio, RadioGroup as MuiRadioGroup } from "@material-ui/core";
 import { Expandable } from "./expandable";
 import { Checkbox } from "./checkbox";
 import { MuiCheckbox } from "./muiCheckBox";
@@ -35,8 +36,16 @@ import {
     LocalizableCheckboxMenuItem,
     LocalizableNestedMenuItem
 } from "./localizableMenuItem";
-import { Button, Divider, Menu } from "@material-ui/core";
+import {
+    Button,
+    Divider,
+    Menu,
+    FormControlLabel,
+    Checkbox as OriginalMuiCheckbox
+} from "@material-ui/core";
 import FontScriptSettingsControl from "../collection/fontScriptSettingsControl";
+import { RadioGroup } from "./RadioGroup";
+import { MuiRadio } from "./muiRadio";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -170,6 +179,86 @@ storiesOf("Localizable Widgets/MuiCheckbox", module)
                 />
             );
         })
+    )
+    .add("short and long label", () =>
+        React.createElement(() => (
+            <>
+                original mui checkbox:
+                <div>
+                    <FormControlLabel
+                        control={<OriginalMuiCheckbox />}
+                        label={"short"}
+                    />
+                    <FormControlLabel
+                        control={<OriginalMuiCheckbox />}
+                        label={
+                            "Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin."
+                        }
+                    />
+                </div>
+                <hr />
+                our mui checkbox NOT tweaked for proper alignment when the label
+                wraps:
+                <div>
+                    <MuiCheckbox
+                        label="short"
+                        checked={true}
+                        onCheckChanged={() => {}}
+                        l10nKey="bogus"
+                        legacyVersionWhichDoesntEnsureWrappedLabelsWork={true}
+                    />
+                    <MuiCheckbox
+                        label="Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin."
+                        checked={true}
+                        onCheckChanged={() => {}}
+                        l10nKey="bogus"
+                        legacyVersionWhichDoesntEnsureWrappedLabelsWork={true}
+                    />
+                </div>
+                <hr />
+                our mui checkbox tweaked for proper alignment when the label
+                wraps:
+                <div>
+                    <MuiCheckbox
+                        label="short"
+                        checked={true}
+                        onCheckChanged={() => {}}
+                        l10nKey="bogus"
+                    />
+                    <MuiCheckbox
+                        label="Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin."
+                        checked={true}
+                        onCheckChanged={() => {}}
+                        l10nKey="bogus"
+                    />
+                </div>
+                <hr />
+                tweaked / NOT tweaked / original:
+                <div
+                    css={css`
+                        display: flex;
+                    `}
+                >
+                    <MuiCheckbox
+                        label="short"
+                        checked={true}
+                        onCheckChanged={() => {}}
+                        l10nKey="bogus"
+                    />
+                    <MuiCheckbox
+                        label="short"
+                        checked={true}
+                        onCheckChanged={() => {}}
+                        l10nKey="bogus"
+                        legacyVersionWhichDoesntEnsureWrappedLabelsWork={true}
+                    />
+                    <FormControlLabel
+                        control={<OriginalMuiCheckbox />}
+                        label={"short"}
+                    />
+                </div>
+            </>
+        ))
     );
 storiesOf("Localizable Widgets/ApiCheckbox", module).add("ApiCheckbox", () =>
     React.createElement(() => (
@@ -178,6 +267,40 @@ storiesOf("Localizable Widgets/ApiCheckbox", module).add("ApiCheckbox", () =>
             l10nKey="PublishTab.Android.MotionBookMode"
             apiEndpoint="publish/android/motionBookMode"
         />
+    ))
+);
+storiesOf("Localizable Widgets/MuiRadio", module).add("MuiRadio", () =>
+    React.createElement(() => (
+        <MuiRadioGroup>
+            our mui radio tweaked for proper alignment when the label wraps:
+            <MuiRadio label={"short"} l10nKey={""} onChanged={() => {}} />
+            <MuiRadio
+                label={
+                    "Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin."
+                }
+                l10nKey={""}
+                onChanged={() => {}}
+            />
+            <hr />
+            original mui radio:
+            <FormControlLabel control={<Radio />} label={"short"} />
+            <FormControlLabel
+                control={<Radio />}
+                label={
+                    "Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin."
+                }
+            />
+            <hr />
+            ours followed by original:
+            <div
+                css={css`
+                    display: flex;
+                `}
+            >
+                <MuiRadio label={"short"} l10nKey={""} onChanged={() => {}} />
+                <FormControlLabel control={<Radio />} label={"short"} />
+            </div>
+        </MuiRadioGroup>
     ))
 );
 
@@ -412,6 +535,21 @@ storiesOf("Misc", module)
                         borderColor="#1d94a4"
                     />
                 </>
+            );
+        })
+    )
+    .add("RadioGroup", () =>
+        React.createElement(() => {
+            return (
+                <RadioGroup
+                    choices={{
+                        short: "Short label",
+                        long:
+                            "Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin."
+                    }}
+                    value={""}
+                    onChange={() => {}}
+                />
             );
         })
     );

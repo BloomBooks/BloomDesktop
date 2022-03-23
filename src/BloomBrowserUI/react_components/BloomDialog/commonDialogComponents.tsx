@@ -1,7 +1,11 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
 import * as React from "react";
-import { kDialogPadding, kBloomBlue } from "../../bloomMaterialUITheme";
+import {
+    kDialogPadding,
+    kBloomBlue,
+    kBorderRadiusForSpecialBlocks
+} from "../../bloomMaterialUITheme";
 import { BloomApi } from "../../utils/bloomApi";
 import BloomButton from "../bloomButton";
 
@@ -16,7 +20,6 @@ import {
 
 export const kErrorBoxColor = "#eb3941";
 const kLightBlueBackground = "#e5f9f0";
-const kBorderRadiusForSpecialBlocks = "3px";
 
 // just puts a rounded rectangle around the children
 export const DialogControlGroup: React.FunctionComponent<{}> = props => (
@@ -139,6 +142,22 @@ export const DialogCloseButton: React.FunctionComponent<{
     </BloomButton>
 );
 
+export const DialogOkButton: React.FunctionComponent<{
+    onClick: () => void;
+    enabled?: boolean;
+    default?: boolean;
+}> = props => (
+    <BloomButton
+        l10nKey="Common.OK"
+        hasText={true}
+        enabled={props.enabled === undefined ? true : props.enabled}
+        variant={props.default === true ? "contained" : "outlined"}
+        onClick={props.onClick}
+    >
+        OK
+    </BloomButton>
+);
+
 export const DialogCancelButton: React.FunctionComponent<{
     onClick: () => void;
     default?: boolean;
@@ -185,31 +204,44 @@ export const DialogReportButton: React.FunctionComponent<{
     </BloomButton>
 );
 
-export const NoteBox: React.FunctionComponent<{}> = props => (
-    // using <p> so that we get normal spacing when we intermix prose with the warning
-    <p
-        css={css`
-            display: flex;
-            background-color: ${kLightBlueBackground};
-            border-radius: ${kBorderRadiusForSpecialBlocks};
-            padding: ${kDialogPadding};
-            color: ${kBloomBlue};
-            font-weight: 500;
-        `}
-        {...props} // allows defining more css rules from container
-    >
-        <InfoIcon
-            color="primary"
+export const NoteBox: React.FunctionComponent<{
+    addBorder?: boolean;
+}> = props => {
+    let border = css``;
+    if (props.addBorder) {
+        border = css`
+            border: solid 1px ${kBloomBlue + "80"};
+        `;
+    }
+    return (
+        <div
             css={css`
-                margin-right: ${kDialogPadding};
+                display: flex;
+                background-color: ${kLightBlueBackground};
+                border-radius: ${kBorderRadiusForSpecialBlocks};
+                padding: ${kDialogPadding};
+                color: ${kBloomBlue};
+                font-weight: 500;
+                // The original version of this used p instead of div to get this spacing below.
+                // But we want div so we have more flexibility with adding children.
+                margin-block-end: 1em;
+                ${border};
             `}
-        />
-        {props.children}
-    </p>
-);
+            {...props} // allows defining more css rules from container
+        >
+            <InfoIcon
+                color="primary"
+                css={css`
+                    margin-right: ${kDialogPadding};
+                `}
+            />
+            {props.children}
+        </div>
+    );
+};
+
 export const WarningBox: React.FunctionComponent<{}> = props => (
-    // using <p> so that we get normal spacing when we intermix prose with the warning
-    <p
+    <div
         css={css`
             display: flex;
             &,
@@ -220,6 +252,9 @@ export const WarningBox: React.FunctionComponent<{}> = props => (
             border-radius: ${kBorderRadiusForSpecialBlocks};
             padding: ${kDialogPadding};
             font-weight: 500;
+            // The original version of this used p instead of div to get this spacing below.
+            // But we want div so we have more flexibility with adding children.
+            margin-block-end: 1em;
         `}
         {...props} // allows defining more css rules from container
     >
@@ -230,12 +265,11 @@ export const WarningBox: React.FunctionComponent<{}> = props => (
             `}
         />
         {props.children}
-    </p>
+    </div>
 );
 
 export const ErrorBox: React.FunctionComponent<{}> = props => (
-    // using <p> so that we get normal spacing when we intermix prose with the warning
-    <p
+    <div
         css={css`
             display: flex;
             background-color: ${kErrorBoxColor};
@@ -245,6 +279,9 @@ export const ErrorBox: React.FunctionComponent<{}> = props => (
             * {
                 color: white;
             }
+            // The original version of this used p instead of div to get this spacing below.
+            // But we want div so we have more flexibility with adding children.
+            margin-block-end: 1em;
         `}
         {...props} // allows defining more css rules from container
     >
@@ -254,5 +291,5 @@ export const ErrorBox: React.FunctionComponent<{}> = props => (
             `}
         />
         {props.children}
-    </p>
+    </div>
 );

@@ -151,7 +151,7 @@ namespace Bloom.Publish.BloomLibrary
             this._labelBeforeLicense.ForeColor = System.Drawing.SystemColors.ControlText;
             this._L10NSharpExtender.SetLocalizableToolTip(this._labelBeforeLicense, null);
             this._L10NSharpExtender.SetLocalizationComment(this._labelBeforeLicense, null);
-            this._L10NSharpExtender.SetLocalizingId(this._labelBeforeLicense, "PublishTab.Upload.Copyright");
+            this._L10NSharpExtender.SetLocalizingId(this._labelBeforeLicense, "Common.Copyright");
             this._labelBeforeLicense.Location = new System.Drawing.Point(3, 168);
             this._labelBeforeLicense.Name = "_labelBeforeLicense";
             this._labelBeforeLicense.Size = new System.Drawing.Size(300, 15);

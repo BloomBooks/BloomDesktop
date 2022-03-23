@@ -46,7 +46,7 @@ namespace Bloom.web.controllers
 						// "All rights reserved" is purposely not localized, so it remains an accurate representation of
 						// the English information that will be put in the file in place of a License URL.
 						License = new { type = "readOnlyText", value = licenseUrl ?? @"All rights reserved",
-							translatedLabel = LocalizationManager.GetString("BookMetadata.License", "License") },
+							translatedLabel = LocalizationManager.GetString("Common.License", "License") },
 						author = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Author,
 							translatedLabel = LocalizationManager.GetString("BookMetadata.author", "Author") },
 						summary = new { type = "bigEditableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Summary,

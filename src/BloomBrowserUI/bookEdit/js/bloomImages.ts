@@ -6,6 +6,7 @@ import { BloomApi } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
 import { updateOverlayClass } from "./bubbleManager";
+import { showCopyrightAndLicenseInfoOrDialog } from "../copyrightAndLicense/CopyrightAndLicenseDialog";
 
 const kPlaybackOrderContainerSelector: string =
     ".bloom-playbackOrderControlsContainer";
@@ -216,6 +217,9 @@ function SetupImageContainer(containerDiv: HTMLElement) {
                         ) +
                         '"></button>'
                 );
+                $(".editMetadataButton").on("click", function() {
+                    showCopyrightAndLicenseInfoOrDialog(GetRawImageUrl(img));
+                });
                 $this.find(".miniButton").each(function() {
                     $(this).removeClass("disabled");
                 });

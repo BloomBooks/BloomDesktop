@@ -432,19 +432,20 @@ export default class BloomHintBubbles {
                 whatToSay = whatToSay.substr(1);
             if (!whatToSay) return; // no empty bubbles
             var functionCall = source.data("functiononhintclick");
+            var onClick;
             if (functionCall) {
-                if (
-                    functionCall === "bookMetadataEditor" &&
-                    !BloomHintBubbles.canChangeBookLicense()
-                )
-                    return;
+                if (functionCall === "bookMetadataEditor") {
+                    if (!BloomHintBubbles.canChangeBookLicense()) return;
+                    functionCall = "clickWasAlreadyHandled";
+                    onClick =
+                        "onClick='(window.parent || window).editTabBundle.showCopyrightAndLicenseDialogForBook();'";
+                }
                 shouldShowAlways = true;
 
                 if (functionCall.indexOf("(") > 0)
                     functionCall = "javascript:" + functionCall + ";";
 
-                whatToSay =
-                    "<a href='" + functionCall + "'>" + whatToSay + "</a>";
+                whatToSay = `<a href='${functionCall}' ${onClick}>${whatToSay}</a>`;
             }
             whatToSay =
                 whatToSay +

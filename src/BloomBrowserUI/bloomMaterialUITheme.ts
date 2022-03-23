@@ -13,7 +13,9 @@ export const kBloomYellow = "#FEBF00";
 export const kPanelBackground = "#2e2e2e";
 export const kDarkestBackground = "#1a1a1a";
 export const kDisabledControlGray = "#bbb";
+export const kMutedTextGray = "gray";
 export const kVerticalSpacingBetweenDialogSections = "20px";
+export const kBorderRadiusForSpecialBlocks = "3px";
 
 // Should match @UIFontStack in bloomWebFonts.less
 export const kUiFontStack = "NotoSans, Roboto, sans-serif";

@@ -569,13 +569,7 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                         `}
                     />
                     {hasActivities && (
-                        <NoteBox
-                            css={css`
-                                border: solid 1px ${kBloomBlue + "80"};
-                            `}
-                        >
-                            {activitiesSkipped}
-                        </NoteBox>
+                        <NoteBox addBorder={true}>{activitiesSkipped}</NoteBox>
                     )}
                     <HelpGroup>
                         <HelpLink

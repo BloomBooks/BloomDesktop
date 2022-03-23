@@ -21,6 +21,7 @@ import {
     IUploadCollisionDlgProps,
     UploadCollisionDlg
 } from "./LibraryPublish/uploadCollisionDlg";
+import { RecordVideoWindow } from "./video/RecordVideoWindow";
 
 addDecorator(withA11y as any);
 
@@ -113,6 +114,9 @@ storiesOf("Publish/DeviceFrame", module)
 
 storiesOf("Publish/Bloom Reader", module).add("ReaderPublishScreen", () => (
     <ReaderPublishScreen />
+));
+storiesOf("Publish/Video", module).add("RecordVideoWindow", () => (
+    <RecordVideoWindow />
 ));
 
 storiesOf("Publish/ePUB", module)
