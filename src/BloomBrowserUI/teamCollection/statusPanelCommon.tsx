@@ -3,14 +3,9 @@ import { jsx, css } from "@emotion/core";
 
 import Typography from "@material-ui/core/Typography";
 import * as React from "react";
-import {
-    ThemeProvider,
-    useTheme,
-    createMuiTheme
-} from "@material-ui/core/styles";
-import "./statusPanelCommon.less";
+import { ThemeProvider, useTheme, createTheme } from "@material-ui/core/styles";
+import "./statusPanelCommon.less"; // Now we have .less and emotion going here. Someday we should unify.
 import { StatusPanelState } from "./TeamCollectionBookStatusPanel";
-import { StringWithOptionalLink } from "../react_components/stringWithOptionalLink";
 import { IconHeadingBodyMenuPanel } from "../react_components/iconHeadingBodyMenuPanel";
 
 export interface IStatusPanelProps {
@@ -32,7 +27,7 @@ export const StatusPanelCommon: React.FunctionComponent<IStatusPanelProps> = (
         props.lockState === "lockedByMe" || props.lockState === "needsReload"
             ? outerTheme.palette.warning.main
             : outerTheme.palette.primary.main;
-    const buttonTheme = createMuiTheme({
+    const buttonTheme = createTheme({
         palette: {
             primary: {
                 main: buttonColor
@@ -61,12 +56,31 @@ export const StatusPanelCommon: React.FunctionComponent<IStatusPanelProps> = (
                 icon={props.icon}
                 menu={props.menu}
             />
-            {props.children && (
-                <div className="panel-children">{props.children}</div>
-            )}
-            <ThemeProvider theme={buttonTheme}>
-                <div className="panel-button">{props.button}</div>
-            </ThemeProvider>
+            <div
+                css={css`
+                    flex-direction: row;
+                    flex: 1;
+                    justify-content: flex-end;
+                    align-items: flex-end;
+                    display: flex;
+                    margin-bottom: 15px;
+                `}
+            >
+                {props.children && (
+                    <div
+                        css={css`
+                            display: flex;
+                            flex: 1;
+                        `}
+                        className="panel-children"
+                    >
+                        {props.children}
+                    </div>
+                )}
+                <ThemeProvider theme={buttonTheme}>
+                    <div className="panel-button">{props.button}</div>
+                </ThemeProvider>
+            </div>
         </div>
     );
 };
