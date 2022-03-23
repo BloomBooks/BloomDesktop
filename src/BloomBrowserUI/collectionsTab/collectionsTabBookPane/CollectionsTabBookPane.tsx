@@ -123,7 +123,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                     : "app/editSelectedBook"
             }
             mightNavigate={true}
-            enabledImageFile={canMakeBook ? "newBook.png" : "EditTab.svg"}
+            enabledImageFile={canMakeBook ? "New Book.svg" : "EditTab.svg"}
             disabledImageFile={canMakeBook ? undefined : "EditTab.svg"}
             hasText={true}
             color="secondary"
