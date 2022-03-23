@@ -95,5 +95,9 @@ const doRender = (props: IConfirmDialogProps, container?: Element | null) => {
     let modalContainer;
     if (container) modalContainer = container;
     else modalContainer = getEditTabBundleExports().getModalDialogContainer();
-    ReactDOM.render(<ConfirmDialog {...props} />, modalContainer);
+    try {
+        ReactDOM.render(<ConfirmDialog {...props} />, modalContainer);
+    } catch (error) {
+        console.error(error);
+    }
 };

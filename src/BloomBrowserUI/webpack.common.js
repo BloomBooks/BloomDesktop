@@ -83,6 +83,8 @@ module.exports = merge(core, {
         duplicateManyDlgBundle: "./bookEdit/duplicateManyDialog.tsx",
         uploadIDCollisionDlgBundle:
             "./publish/LibraryPublish/uploadCollisionDlg.tsx",
+        copyrightAndLicenseBundle:
+            "./bookEdit/copyrightAndLicense/CopyrightAndLicenseDialog.tsx",
 
         collectionsTabPaneBundle: "./collectionsTab/CollectionsTabPane.tsx",
 

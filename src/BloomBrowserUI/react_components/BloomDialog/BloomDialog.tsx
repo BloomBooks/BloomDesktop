@@ -8,7 +8,7 @@ import CloseOnEscape from "react-close-on-escape";
 import { kDialogPadding } from "../../bloomMaterialUITheme";
 import { BloomApi } from "../../utils/bloomApi";
 import { useEffect, useState } from "react";
-import { kUiFontStack } from "../../bloomMaterialUITheme.ts";
+import { kUiFontStack } from "../../bloomMaterialUITheme";
 
 // The <BloomDialog> component and its children provides consistent layout across Bloom Dialogs.
 // It can be used either inside of a winforms dialog, or as a MaterialUI Dialog.
@@ -26,6 +26,7 @@ export const BloomDialog: React.FunctionComponent<{
     open: boolean;
     // true if the caller is wrapping in a winforms dialog already
     dialogFrameProvidedExternally?: boolean;
+    heightInPx?: number;
     onClose: () => void;
     innerCss?: string;
 }> = props => {
@@ -45,6 +46,8 @@ export const BloomDialog: React.FunctionComponent<{
                 ${
                     props.dialogFrameProvidedExternally
                         ? `height: 100%; border: solid thin black; box-sizing: border-box;`
+                        : props.heightInPx
+                        ? `height: ${props.heightInPx}px;`
                         : ""
                 }
 
@@ -241,7 +244,7 @@ export interface IBloomDialogEnvironmentParams {
     initiallyOpen: boolean;
 }
 
-export const normalDialogEnvironmentForStorybook = {
+export const normalDialogEnvironmentForStorybook: IBloomDialogEnvironmentParams = {
     dialogFrameProvidedExternally: false,
     initiallyOpen: true
 };
@@ -261,7 +264,7 @@ export function useSetupBloomDialog(
     function closeDialog() {
         if (dialogEnvironment?.dialogFrameProvidedExternally)
             BloomApi.post("common/closeReactDialog");
-        else setOpen(false);
+        setOpen(false);
     }
     return {
         showDialog,
