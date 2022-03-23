@@ -50,6 +50,9 @@ export const BookButton: React.FunctionComponent<{
     const collectionQuery = `collection-id=${encodeURIComponent(
         props.collection.id
     )}`;
+    const folderName = props.book.folderPath.substring(
+        props.book.folderPath.lastIndexOf("/") + 1
+    );
     useEffect(() => {
         // By requesting this here like this rather than, say, as a side effect of
         // loading the collection, we achieve several things:
@@ -67,7 +70,7 @@ export const BookButton: React.FunctionComponent<{
             );
         }
         // logically it should also be done if props.collection.id or props.book.id changes, but they don't.
-    }, [props.book.folderName, props.book.title]);
+    }, [folderName, props.book.title]);
 
     // This is a bit of a hack. For almost all purposes, 'renaming' is a private state of the button,
     // causing the button to render differently when it is true, and controlled by events inside the
@@ -111,7 +114,7 @@ export const BookButton: React.FunctionComponent<{
     const renameDiv = useRef<HTMLElement | null>();
 
     const teamCollectionStatus = useTColBookStatus(
-        props.book.folderName,
+        folderName,
         props.collection.isEditableCollection
     );
 
@@ -379,6 +382,7 @@ export const BookButton: React.FunctionComponent<{
                 `}
                 variant="outlined"
                 size="large"
+                title={props.book.folderPath}
                 onDoubleClick={handleDoubleClick}
                 onClick={e => handleClick(e)}
                 onContextMenu={e => handleContextClick(e)}

@@ -200,7 +200,7 @@ namespace Bloom.web.controllers
 					if (collection.IsFactoryInstalled)
 						title = LocalizationManager.GetDynamicString("Bloom", "TemplateBooks.BookName." + title, title);
 					return new
-						{id = info.Id, title, collectionId = collection.PathToDirectory, folderName= Path.GetFileName(info.FolderPath), isFactory = collection.IsFactoryInstalled };
+						{id = info.Id, title, collectionId = collection.PathToDirectory, folderPath = info.FolderPath, isFactory = collection.IsFactoryInstalled };
 				}).ToArray();
 
 			// The goal here is to draw the book buttons before we tie up the UI thread for a long time loading

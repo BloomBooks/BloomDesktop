@@ -14,7 +14,7 @@ export interface IBookInfo {
     id: string;
     title: string;
     collectionId: string;
-    folderName: string;
+    folderPath: string;
     isFactory: boolean;
 }
 
