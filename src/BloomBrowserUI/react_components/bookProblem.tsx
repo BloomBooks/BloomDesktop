@@ -1,11 +1,9 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
 
-import Typography from "@material-ui/core/Typography";
 import * as React from "react";
 import { BloomApi } from "../utils/bloomApi";
 import { IconHeadingBodyMenuPanel } from "./iconHeadingBodyMenuPanel";
-import { StringWithOptionalLink } from "./stringWithOptionalLink";
 
 // A block (currently sized to fit in the TeamCollectionBookStatusPanel, we could generalize)
 // that shows an error icon, a heading "There is a problem with the book <currentBook> in the Team Collection system"

@@ -598,6 +598,9 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                     onCheckChanged={v => {
                                         handleShowTailChanged(v as boolean);
                                     }}
+                                    legacyVersionWhichDoesntEnsureWrappedLabelsWork={
+                                        true
+                                    }
                                 />
                             </div>
                             <div className="comicCheckbox">
@@ -613,6 +616,9 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                     onCheckChanged={newValue => {
                                         handleRoundedCornersChanged(newValue);
                                     }}
+                                    legacyVersionWhichDoesntEnsureWrappedLabelsWork={
+                                        true
+                                    }
                                 />
                             </div>
                         </FormControl>
