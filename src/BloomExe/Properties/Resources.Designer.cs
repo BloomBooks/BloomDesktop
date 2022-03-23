@@ -546,16 +546,6 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap newBook {
-            get {
-                object obj = ResourceManager.GetObject("newBook", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap newCollection32x32 {
             get {
                 object obj = ResourceManager.GetObject("newCollection32x32", resourceCulture);
