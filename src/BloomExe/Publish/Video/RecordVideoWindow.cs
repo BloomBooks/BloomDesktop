@@ -646,9 +646,9 @@ namespace Bloom.Publish.Video
 		// Derived from a combination of https://support.google.com/youtube/answer/6375112?hl=en&co=GENIE.Platform%3DDesktop&oco=1
 		// and by uploading high-res videos and checking Stats for Nerds -> Optimal Resolution at each playback quality
 		private static readonly Resolution[] youtubeLandscapeResolutionsHighToLow = new Resolution[] {
-			new Resolution(3840, 2160),	// 2160p
-			new Resolution(2560, 1440),	// 1440p
-			new Resolution(1920, 1080),	// 1080p
+			// 3840 x 2160 (2160p) and 2560x1440 (1440p) are also supported by YouTube, but we decided not to include it.
+			// 1440p and 2160p would obviously increases the video size a lot, for a scenario we don't think is a likely need
+			new Resolution(1920, 1080),	// 1080p HD
 			new Resolution(1280, 720),	// 720p
 			new Resolution(854, 480),	// 480p
 			new Resolution(640, 360),	// 360p
@@ -657,8 +657,6 @@ namespace Bloom.Publish.Video
 		};
 
 		private static readonly Resolution[] youtubePortraitResolutionsHighToLow = youtubeLandscapeResolutionsHighToLow.Select(r => r.GetInverse()).ToArray();
-		// Note: You could add 1216x2160 as a portrait resolution. It's kind of a hidden thing. Although the following link is probably out of date, it brought up the idea that 1216x2160 is a resolution of some significance: https://support.google.com/youtube/thread/29004771?hl=en&msgid=29138625)
-		// Landscape 2160x1216 played back as 1918x1080 instead, though, so that's why I didn't add it to the list.
 
 		/// <summary>
 		///  Gets the largest of YouTube's standard resolutions that will fit on the screen.
