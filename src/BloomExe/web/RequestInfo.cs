@@ -397,10 +397,13 @@ namespace Bloom.Api
 			{
 				using (var body = request.InputStream)
 				{
-					using (StreamReader reader = new StreamReader(body, request.ContentEncoding))
+					// request.ContentEncoding is set to Encoding.Default (the system's default encoding) if it's not explicity set.
+					// We almost certainly want UTF-8 instead of the system's default encoding for transport between javascript and C#.
+					// (Of course, the system's default encoding could be be UTF-8, but that's unlikely even for Windows 10 in 2022.)
+					// See https://issues.bloomlibrary.org/youtrack/issue/BL-11053.
+					using (StreamReader reader = new StreamReader(body, Encoding.UTF8))
 					{
 						_stringContent = reader.ReadToEnd();
-
 					}
 				}
 			}
