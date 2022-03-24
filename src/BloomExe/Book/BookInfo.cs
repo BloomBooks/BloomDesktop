@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using Bloom.ImageProcessing;
 using System.Text.RegularExpressions;
@@ -45,7 +46,7 @@ namespace Bloom.Book
 		//for use by ErrorBookInfo
 		protected BookInfo()
 		{
-
+			PublishSettings = new PublishSettings();
 		}
 
 		internal BookInfo(string folderPath, bool isEditable)
@@ -58,7 +59,7 @@ namespace Bloom.Book
 				Guard.Against(!Program.RunningUnitTests, "Only use this ctor for tests and non-editable collections");
 		}
 
-		public BookInfo(string folderPath, bool isEditable, ISaveContext saveContext)
+		public BookInfo(string folderPath, bool isEditable, ISaveContext saveContext) : this()
 		{
 			Guard.AgainstNull(saveContext, "Please supply an actual saveContext");
 			
@@ -88,6 +89,8 @@ namespace Bloom.Book
 				}
 				// otherwise leave it null, first attempt to use will create a default one
 			}
+
+			PublishSettings = PublishSettings.FromFolder(FolderPath);
 		}
 
 		public enum HowToPublishImageDescriptions
@@ -347,6 +350,7 @@ namespace Bloom.Book
 				try
 				{
 					MetaData.WriteToFolder(FolderPath);
+					PublishSettings.WriteToFolder(FolderPath);
 					return;
 				}
 				catch (IOException e)
@@ -366,6 +370,12 @@ namespace Bloom.Book
 
 			} while (count < 5);
 		}
+
+
+		/// <summary>
+		/// Settings for the publish tab (and Harvester).
+		/// </summary>
+		public PublishSettings PublishSettings { get; private set; }
 
 		public string CountryName
 		{
@@ -397,6 +407,7 @@ namespace Bloom.Book
 		}
 
 		public const string MetaDataFileName = "meta.json";
+		public const string PublishSettingsFileName = "publish-settings.json";
 
 		public string Credits
 		{
@@ -1120,12 +1131,14 @@ namespace Bloom.Book
 
 		/// <summary>
 		/// This is an item the user checks-off as part of claiming that the book is fully accessible
+		/// (obsolete, now in publish settings)
 		/// </summary>
 		[JsonProperty("a11y_NoEssentialInfoByColor")]
 		public bool A11y_NoEssentialInfoByColor;
 
 		/// <summary>
 		/// This is an item the user checks-off as part of claiming that the book is fully accessible
+		/// (obsolete, now in publish settings)
 		/// </summary>
 		[JsonProperty("a11y_NoTextIncludedInAnyImages")]
 		public bool A11y_NoTextIncludedInAnyImages;

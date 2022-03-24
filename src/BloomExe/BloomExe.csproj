@@ -366,6 +366,7 @@
     <Compile Include="AboutMemory.Designer.cs">
       <DependentUpon>AboutMemory.cs</DependentUpon>
     </Compile>
+    <Compile Include="Book\PublishSettings.cs" />
     <Compile Include="Book\SaveContext.cs" />
     <Compile Include="Collection\BookCollectionHolder.cs" />
     <Compile Include="MiscUI\BloomMessageBox.cs" />
