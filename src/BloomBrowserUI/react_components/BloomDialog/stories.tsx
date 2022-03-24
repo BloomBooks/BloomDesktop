@@ -8,9 +8,7 @@ import {
     DialogBottomButtons,
     DialogBottomLeftButtons,
     DialogMiddle,
-    DialogTitle,
-    normalDialogEnvironmentForStorybook,
-    useSetupBloomDialog
+    DialogTitle
 } from "./BloomDialog";
 import { Button, CircularProgress } from "@material-ui/core";
 import {
@@ -25,6 +23,10 @@ import {
     NumberChooserDialog
 } from "../numberChooserDialog";
 import { closeDialog } from "../../bookEdit/editViewFrame";
+import {
+    normalDialogEnvironmentForStorybook,
+    useSetupBloomDialog
+} from "./BloomDialogPlumbing";
 
 storiesOf("Bloom Dialog", module)
     .add("Simple Dialog", () => {

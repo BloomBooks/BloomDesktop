@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 using Bloom.Properties;
 using Bloom.Workspace;
@@ -78,20 +78,16 @@ namespace Bloom.CollectionTab
 			};
 			_tcStatusButton.Click += (sender, args) =>
 			{
-				// Any messages for which reloading the collection is a useful action?
-				var showReloadButton = tcManager.MessageLog.ShouldShowReloadButton;
 				// Reinstate this to see messages from before we started up.
 				// We think it might be too expensive to show a list as long as this might get.
 				// Instead, in the short term we may add a button to show the file.
 				// Later we may implement some efficient way to scroll through them.
 				// tcManager.CurrentCollection?.MessageLog?.LoadSavedMessages();
-				using (var dlg = new ReactDialog("teamCollectionDialogBundle", new { showReloadButton }))
-				{
-					dlg.Width = 600;
-					dlg.Height = 320;
-					dlg.ShowDialog(this);
-					tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
-				}
+
+				dynamic messageBundle = new DynamicJson();
+				messageBundle.showReloadButton = tcManager.MessageLog.ShouldShowReloadButton;
+				_webSocketServer.LaunchDialog("TeamCollectionDialog", messageBundle);
+				tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
 			};
 
 			// We don't want this control initializing until team collections sync (if any) is done.

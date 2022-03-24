@@ -11,22 +11,39 @@ import {
     DialogBottomButtons,
     DialogBottomLeftButtons,
     DialogTitle,
-    useSetupBloomDialog,
-    IBloomDialogEnvironmentParams
+    IBloomDialogProps
 } from "../../react_components/BloomDialog/BloomDialog";
 import {
     DialogCancelButton,
     DialogFolderChooser,
     WarningBox
 } from "../../react_components/BloomDialog/commonDialogComponents";
-import { WireUpForWinforms } from "../../utils/WireUpWinform";
 
 import { kVerticalSpacingBetweenDialogSections } from "../../bloomMaterialUITheme";
 import { ExperimentalBadge } from "../../react_components/experimentalBadge";
-import { Div, P } from "../../react_components/l10nComponents";
+import { Div } from "../../react_components/l10nComponents";
+import { useEventLaunchedBloomDialog } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 
-export const SpreadsheetExportDialog: React.FunctionComponent<{
-    dialogEnvironment?: IBloomDialogEnvironmentParams;
+export const SpreadsheetExportDialogLauncher: React.FunctionComponent<{}> = () => {
+    const {
+        openingEvent,
+        closeDialog,
+        propsForBloomDialog
+    } = useEventLaunchedBloomDialog("SpreadsheetExportDialog");
+
+    // We extract the core here so that we can avoid running most of the hook code when this dialog is not visible.
+    return propsForBloomDialog.open ? (
+        <SpreadsheetExportDialog
+            closeDialog={closeDialog}
+            propsForBloomDialog={propsForBloomDialog}
+            folderPath={openingEvent.folderPath}
+        />
+    ) : null;
+};
+
+const SpreadsheetExportDialog: React.FunctionComponent<{
+    closeDialog: () => void;
+    propsForBloomDialog: IBloomDialogProps;
     folderPath: string;
 }> = props => {
     var title = useL10n(
@@ -37,15 +54,10 @@ export const SpreadsheetExportDialog: React.FunctionComponent<{
         "Target folder for the spreadsheet and images:",
         "Spreadsheet.ExportDialog.folderLabel"
     );
-
-    const { closeDialog, propsForBloomDialog } = useSetupBloomDialog(
-        props.dialogEnvironment
-    );
-
     const [folderPath, setFolderPath] = React.useState(props.folderPath);
 
     return (
-        <BloomDialog {...propsForBloomDialog}>
+        <BloomDialog {...props.propsForBloomDialog}>
             <DialogTitle title={title}>
                 <ExperimentalBadge />
             </DialogTitle>
@@ -101,15 +113,13 @@ export const SpreadsheetExportDialog: React.FunctionComponent<{
                         BloomApi.postData("spreadsheet/export", {
                             parentFolderPath: folderPath
                         });
-                        // that api call will close the dialog // closeDialog();
+                        props.closeDialog();
                     }}
                 >
                     Export
                 </BloomButton>
-                <DialogCancelButton onClick={closeDialog} />
+                <DialogCancelButton onClick={props.closeDialog} />
             </DialogBottomButtons>
         </BloomDialog>
     );
 };
-
-WireUpForWinforms(SpreadsheetExportDialog);

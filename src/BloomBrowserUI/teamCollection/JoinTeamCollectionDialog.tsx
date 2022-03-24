@@ -11,9 +11,7 @@ import {
     DialogBottomButtons,
     DialogBottomLeftButtons,
     DialogMiddle,
-    DialogTitle,
-    IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    DialogTitle
 } from "../react_components/BloomDialog/BloomDialog";
 import { useL10n } from "../react_components/l10nHooks";
 import {
@@ -23,6 +21,10 @@ import {
     NoteBox
 } from "../react_components/BloomDialog/commonDialogComponents";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
+import {
+    IBloomDialogEnvironmentParams,
+    useSetupBloomDialog
+} from "../react_components/BloomDialog/BloomDialogPlumbing";
 
 // Six variations are all handled here.
 enum JoinCollectionState {

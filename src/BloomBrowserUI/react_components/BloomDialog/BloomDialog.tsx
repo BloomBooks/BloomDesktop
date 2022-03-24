@@ -3,12 +3,12 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
-import { Dialog } from "@material-ui/core";
+import { Dialog, DialogProps, Paper } from "@material-ui/core";
 import CloseOnEscape from "react-close-on-escape";
 import { kDialogPadding } from "../../bloomMaterialUITheme";
-import { BloomApi } from "../../utils/bloomApi";
 import { useEffect, useState } from "react";
-import { kUiFontStack } from "../../bloomMaterialUITheme.ts";
+import { kUiFontStack } from "../../bloomMaterialUITheme";
+import Draggable from "react-draggable";
 
 // The <BloomDialog> component and its children provides consistent layout across Bloom Dialogs.
 // It can be used either inside of a winforms dialog, or as a MaterialUI Dialog.
@@ -22,13 +22,28 @@ const kDialogTopPadding = "24px";
 const kDialogSidePadding = "24px";
 const kDialogBottomPadding = "10px"; // per material, the bottom buttons are supposed to be closer to the edges
 
-export const BloomDialog: React.FunctionComponent<{
+export interface IBloomDialogProps extends DialogProps {
     open: boolean;
     // true if the caller is wrapping in a winforms dialog already
     dialogFrameProvidedExternally?: boolean;
     onClose: () => void;
-    innerCss?: string;
-}> = props => {
+}
+
+export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = props => {
+    // About custom styling:
+    // We need the parent to be able to specify things about the size of the dialog. Example:
+    //     <BloomDialog
+    //          fullWidth={true}
+    //          maxWidth="lg"
+    //          css={css`
+    //            height: 90vh;
+    //         `}
+    // >
+    // NB: If you make any changes to this, make sure that the TeamCollectionDialog still takes up most of the screen and the History tab
+    // still has lots of room for history and still scrolls as needed.
+    // The material props like `fullWidth={true}` and `maxWidth="lg"` get spread to the Dialog component like you would expect.
+    // However `height`, given to Dialog, doesn't work. Two choices. Either give it to the PaperComponent, or to the inner div. The later
+    // didn't work in gfx60 for a reason I did not track down.
     const inner = (
         <div
             css={css`
@@ -38,15 +53,11 @@ export const BloomDialog: React.FunctionComponent<{
                 padding-left: ${kDialogSidePadding};
                 padding-right: ${kDialogSidePadding};
                 padding-bottom: ${kDialogBottomPadding};
-                ${props.innerCss || ""}
-
                 // dialogFrameProvidedExternally means that we're inside of a winforms dialog.
                 /// So we grow to fit it, and we supply a single black border for some reason (?)
-                ${
-                    props.dialogFrameProvidedExternally
-                        ? `height: 100%; border: solid thin black; box-sizing: border-box;`
-                        : ""
-                }
+                ${props.dialogFrameProvidedExternally
+                    ? `height: 100%; border: solid thin black; box-sizing: border-box;`
+                    : ""}
 
                 * {
                     // This value is the same as that given in bloomMaterialUITheme.  For some
@@ -54,6 +65,7 @@ export const BloomDialog: React.FunctionComponent<{
                     font-family: ${kUiFontStack};
                 }
             `}
+            className={props.className} // any emotion css from the parent
         >
             {props.children}
         </div>
@@ -83,6 +95,24 @@ export const BloomDialog: React.FunctionComponent<{
         initialFocus?.focus();
     }, []);
 
+    const PaperComponent = paperProps => {
+        return (
+            <Draggable
+                handle="#draggable-dialog-title"
+                cancel={'[class*="MuiDialogContent-root"]'}
+            >
+                <Paper
+                    css={css`
+                        // Allows setting the Dialog height here on the Paper and
+                        // the children can grow into it.
+                        display: flex;
+                    `}
+                    {...paperProps}
+                />
+            </Draggable>
+        );
+    };
+
     return (
         <CloseOnEscape
             onEscape={() => {
@@ -93,7 +123,18 @@ export const BloomDialog: React.FunctionComponent<{
                 {props.dialogFrameProvidedExternally ? (
                     inner
                 ) : (
-                    <Dialog open={props.open}>{inner}</Dialog>
+                    <Dialog
+                        PaperComponent={PaperComponent}
+                        css={css`
+                            flex-grow: 1; // see note on the display property on PaperComponent
+                            [role="dialog"] {
+                                overflow: hidden; // only the middle should scroll. The DialogTitle and DialogBottomButtons should not.
+                            }
+                        `}
+                        {...props} // get  fullWidth, maxWidth, open etc. Note that css doesn't end up anywhere useful in the HTML (try the paper?)
+                    >
+                        {inner}
+                    </Dialog>
                 )}
             </ThemeProvider>
         </CloseOnEscape>
@@ -114,11 +155,12 @@ export const DialogTitle: React.FunctionComponent<{
         background === "transparent" ? kDialogTopPadding : kDialogPadding;
     return (
         <div
+            id="draggable-dialog-title"
             css={css`
                 color: ${color};
                 background-color: ${background};
                 display: flex;
-
+                cursor: move;
                 padding-left: ${kDialogTopPadding};
                 padding-right: ${kDialogTopPadding};
                 padding-top: ${titleTopPadding};
@@ -233,44 +275,3 @@ export const DialogBottomButtons: React.FunctionComponent<{}> = props => {
         </div>
     );
 };
-
-export interface IBloomDialogEnvironmentParams {
-    // true if the caller is wrapping in a winforms dialog already
-    dialogFrameProvidedExternally: boolean;
-    // storybook stories will usually set this to true so we don't have to do anything to see the dialog
-    initiallyOpen: boolean;
-}
-
-export const normalDialogEnvironmentForStorybook = {
-    dialogFrameProvidedExternally: false,
-    initiallyOpen: true
-};
-
-// Components that include <BloomDialog> to make a dialog should call this hook and use what it returns to manage the dialog.
-// See the uses of it in the code for examples.
-export function useSetupBloomDialog(
-    dialogEnvironment?: IBloomDialogEnvironmentParams
-) {
-    const [currentlyOpen, setOpen] = useState(
-        // we default to closed
-        dialogEnvironment ? dialogEnvironment.initiallyOpen : false
-    );
-    function showDialog() {
-        setOpen(true);
-    }
-    function closeDialog() {
-        if (dialogEnvironment?.dialogFrameProvidedExternally)
-            BloomApi.post("common/closeReactDialog");
-        else setOpen(false);
-    }
-    return {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog: {
-            open: currentlyOpen,
-            onClose: closeDialog,
-            dialogFrameProvidedExternally:
-                dialogEnvironment?.dialogFrameProvidedExternally || false
-        }
-    };
-}

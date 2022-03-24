@@ -17,11 +17,13 @@ import {
     BloomDialog,
     DialogTitle,
     DialogMiddle,
-    DialogBottomButtons,
-    IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    DialogBottomButtons
 } from "./BloomDialog/BloomDialog";
 import { kUiFontStack } from "../bloomMaterialUITheme";
+import {
+    IBloomDialogEnvironmentParams,
+    useSetupBloomDialog
+} from "./BloomDialog/BloomDialogPlumbing";
 
 /**
  * This function sets up the hooks to get the status of whether Bloom Enterprise is available or not
