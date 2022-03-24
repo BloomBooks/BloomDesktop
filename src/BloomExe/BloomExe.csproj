@@ -376,6 +376,7 @@
     <Compile Include="Publish\Video\RecordVideoWindow.Designer.cs">
       <DependentUpon>RecordVideoWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="Publish\Video\Resolution.cs" />
     <Compile Include="Spreadsheet\Header.cs" />
     <Compile Include="FontProcessing\FontFileFinder.cs" />
     <Compile Include="FontProcessing\FontGroup.cs" />

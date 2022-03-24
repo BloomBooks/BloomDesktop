@@ -76,6 +76,17 @@ namespace BloomTemp
 				return temp.Path;
 			}
 		}
+
+		/// <summary>
+		/// Returns a TempFile with a random file basename in 8.3 format with the specified extension
+		/// Unlike TempFile.WithExtension, this returns w143kxnu.{extension} instead of w143kxnu.idj.{extension}
+		/// </summary>
+		public static TempFile GetTempFileWithPrettyExtension(string extension)
+		{
+			var withRandomExtension = Path.GetRandomFileName();   // in 8.3 format, e.g. w143kxnu.idj
+			var withSpecifiedExtension = Path.ChangeExtension(withRandomExtension, extension);   // now w143kxnu.{extension}
+			return TempFile.WithFilename(withSpecifiedExtension);
+		}
 	}
 
 	// ENHANCE: Replace with TemporaryFolder implemented in Palaso. However, that means

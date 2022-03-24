@@ -29,6 +29,7 @@ namespace Bloom.Publish.Video
 		private DateTime _startTime;
 		private string _videoOnlyPath;
 		private string _ffmpegPath;
+		private TempFile _htmlFile;
 		private TempFile _initialVideo;
 		private TempFile _finalVideo;
 		private bool _recording = true;
@@ -40,6 +41,7 @@ namespace Bloom.Publish.Video
 		private Codec _codec = Codec.H264;
 		private string _pageReadTime = "3.0"; // default for pages without narration
 		private string _videoSettingsFromPreview;
+		private bool _shouldRotateBook = false;
 
 		// H.263, at least in its original revision, only supports certain specific resolutions, e.g. CIF = 352x288
 		// Notably, it is necessary for it to be 352x288, not the inverse 288x352. (Revision 2 supposedly allows flexible resolutions)
@@ -106,19 +108,35 @@ namespace Bloom.Publish.Video
 			// a problem, we may have to somehow encourage, but not enforce, zero pageReadTime
 			// for audio-only output.
 			var pageReadTime = (_codec == Codec.MP3 ? "0" : _pageReadTime);
-			var url = BloomServer.ServerUrlWithBloomPrefixEndingInSlash
-			          + "bloom-player/dist/bloomplayer.htm?centerVertically=true&reportSoundLog=true&initiallyShowAppBar=false&autoplay=yes&hideNavButtons=true&url="
-			          + bookUrl
-			          + $"&independent=false&host=bloomdesktop&defaultDuration={pageReadTime}&skipActivities=true";
+			var bloomPlayerUrl = BloomServer.ServerUrlWithBloomPrefixEndingInSlash
+					  + "bloom-player/dist/bloomplayer.htm?centerVertically=true&reportSoundLog=true&initiallyShowAppBar=false&autoplay=yes&hideNavButtons=true&url="
+					  + bookUrl
+					  + $"&independent=false&host=bloomdesktop&defaultDuration={pageReadTime}&skipActivities=true";
 			// The user can make choices in the preview instance of BloomPlayer...currently language and
 			// whether to play image descriptions...that need to be communicated to the recording window.
 			// If we received any, pass them on.
 			if (_videoSettingsFromPreview != null)
 			{
-				url += $"&videoSettings={_videoSettingsFromPreview}";
+				bloomPlayerUrl += $"&videoSettings={_videoSettingsFromPreview}";
+			}
+
+			string url;
+			if (!_shouldRotateBook)
+			{
+				this.Text = LocalizationManager.GetString("PublishTab.RecordVideo.RecordingInProgress",
+					"Recording in Progress...");
+				url = bloomPlayerUrl;				
+			}
+			else
+			{
+				this.Text = LocalizationManager.GetString("PublishTab.RecordVideo.RecordingInProgressSideways",
+					"Recording in Progress. Showing sideways in order to fit on your screen.");
+				GenerateRotatedHtml(bloomPlayerUrl);
+				url = _htmlFile.Path.ToLocalhost();
 			}
 
 			_content.Navigate(url, false);
+
 			// Couldn't get this to work. See comment in constructor.
 			//_originalAwareness = SetThreadDpiAwarenessContext(ThreadDpiAwareContext.PerMonitorAwareV2);
 			// Extra space we need around the recordable content for title bars etc.
@@ -126,8 +144,8 @@ namespace Bloom.Publish.Video
 			var deltaH = this.Width - _content.Width;
 			// Make the window an appropriate size so the content area gives the resolution we want.
 			// (We've already made an adjustment if the screen isn't that big.)
-			Height = _videoHeight + deltaV;
-			Width = _videoWidth + deltaH;
+			Height = (_shouldRotateBook ? _videoWidth : _videoHeight) + deltaV;
+			Width = (_shouldRotateBook ? _videoHeight: _videoWidth) + deltaH;
 			// Try to bring the preview up on the same screen as Bloom itself, in the top left so we
 			// have all the space available if we need it.
 			var mainWindow = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
@@ -139,6 +157,49 @@ namespace Bloom.Publish.Video
 			}
 
 			Show(mainWindow);
+		}
+
+		/// <summary>
+		/// Generates a temporary html file that instead of displaying the book right side up, displays the book sideways.
+		/// The temp file location can be retrieved at _htmlFile
+		/// </summary>
+		/// <remarks>Same algorithm works for either portrait or landscape books</remarks>
+		/// <param name="bloomPlayerUrl"></param>
+		private void GenerateRotatedHtml(string bloomPlayerUrl)
+		{
+			// position:absolute is needed to get rid of the scrollbars
+			// (the scrollbars appear because with the rotate transform, assuming a portrait video, despite the VISUAL  element visually appearing
+			// to be rotated and now less high, the LITERAL element still occupies the old (very tall) amount of pixels.
+			// This is placed in a container that is of short height. So, it's considered to overflow and needs a scrollbar.
+			// Position:absolute gets rid of that though.
+			//
+			// Explanation of transform:
+			// Define the transformations (particularly the rotation) to be around the top-right corner (transform-origin). (Note: the default, center, is a lot harder to explain the numbers for)
+			// Move the top-right corner into its final position.
+			// Rotate 90 degrees counterclockwise (technically, a 270 degree clockwise rotation), pivoting on the top-right corner
+			// Voila.
+			string htmlContents = $@"
+<html>
+	<head>
+		<meta charset=""UTF-8"">
+	</head>
+	<body style=""margin: 0; width: {_videoHeight}px; height: {_videoWidth}px"">
+		<iframe
+			src = ""{ XmlString.FromUnencoded(bloomPlayerUrl).Xml}""
+			style = ""position:absolute; width: {_videoWidth}px; height: {_videoHeight}px; transform-origin: top right; transform: translateX(-{_videoWidth}px) rotate(270deg); border: 0; ""
+			allowfullscreen
+			allow = ""fullscreen""
+		/>
+	</body>
+</html>";
+
+			// If the assert fails, it's a weird situation but we'll just allow this current function to continue with a brand new file
+			// We won't mess with the old file either, so if anything is still running using the old file, it'll still work
+			// It would be nice to check out the cause though and see if there's a bug preventing the temp file from getting cleaned up at the expected time.
+			Debug.Assert(_htmlFile == null, "Found existing temporary HTML file which was not properly cleaned up");
+			_htmlFile = BloomTemp.TempFileUtils.GetTempFileWithPrettyExtension("html");
+
+			RobustFile.WriteAllText(_htmlFile.Path, htmlContents);
 		}
 
 		// As window is loaded, we let Bloom Player know we are ready to start recording.
@@ -174,8 +235,8 @@ namespace Bloom.Publish.Video
 			string videoArgs;
 			if (_codec == Codec.H263)
 			{
-				bool landscape = _videoWidth >= _videoHeight;
-				videoArgs = $"-vcodec h263 -vf \"{(landscape || !_rotatePortraitH263Videos ? "" : "transpose=1,")} scale=352:288\" ";
+				bool portrait = _videoWidth < _videoHeight;
+				videoArgs = $"-vcodec h263 -vf \"{((_rotatePortraitH263Videos && portrait) || _shouldRotateBook ? "transpose=1," : "")} scale=352:288\" ";
 			}
 			else
 			{
@@ -192,6 +253,11 @@ namespace Bloom.Publish.Video
 				// To sum up, this substring, which needs to come after the inputs and before the output,
 				// tells it to make an H.264 compressed video of a type (profile) that most software can work with.
 				videoArgs = "-vcodec libx264 -profile:v main -pix_fmt yuv420p ";
+
+				if (_shouldRotateBook)
+				{
+					videoArgs += "-vf \"transpose=1\" ";
+				}
 			}
 
 			// Configure ffmpeg to record the video.
@@ -455,6 +521,8 @@ namespace Bloom.Publish.Video
 				_ffmpegProcess.StandardInput.WriteLine("q"); // stop it asap
 			}
 
+			_htmlFile?.Dispose();
+			_htmlFile = null;
 			_initialVideo?.Dispose();
 			_initialVideo = null;
 		}
@@ -464,6 +532,8 @@ namespace Bloom.Publish.Video
 		// when we're sure we need it no more.
 		public void Cleanup()
 		{
+			_htmlFile?.Dispose();
+			_htmlFile = null;
 			_finalVideo?.Dispose();
 			_finalVideo = null;
 			_initialVideo?.Dispose();
@@ -538,8 +608,10 @@ namespace Bloom.Publish.Video
 		/// <returns>A warning message, if we can't make the window big enough to record
 		/// the optimum resolution for the format; otherwise, an empty string.</returns>
 		public static string GetDataForFormat(string format, bool landscape, 
-			out int actualWidth, out int actualHeight, out Codec codec)
+			out Resolution actualResolution, out Codec codec, out bool shouldRotateBook)
 		{
+			shouldRotateBook = false;
+
 			int desiredWidth;
 			int desiredHeight;
 			switch (format)
@@ -571,8 +643,8 @@ namespace Bloom.Publish.Video
 					break;
 			}
 
-			actualWidth = desiredWidth;
-			actualHeight = desiredHeight;
+			var desiredResolution = new Resolution(desiredWidth, desiredHeight);
+			actualResolution = desiredResolution;
 
 			var mainWindow = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
 			if (mainWindow != null)
@@ -585,61 +657,67 @@ namespace Bloom.Publish.Video
 				// we need, so the output doesn't quite fill the screen.
 				var deltaV = proto.Height - proto._content.Height;
 				var deltaH = proto.Width - proto._content.Width;
-				var maxHeight = bounds.Height - deltaV;
-				var maxWidth = bounds.Width - deltaH;
 
-				if (format == "youtube")
-				{
-					var bestResolutionForYouTube = GetBestYouTubeSize(maxWidth, maxHeight, landscape);
-					actualHeight = bestResolutionForYouTube.Height;
-					actualWidth = bestResolutionForYouTube.Width;
-				}
-				else
-				{
-					if (actualHeight > maxHeight)
-					{
-						actualHeight = (maxHeight / 2) * 2; // round down to even, ffmpeg dies on odd sizes
-						actualWidth = (actualHeight * desiredWidth / desiredHeight / 2) * 2;
-					}
+				var maxResolution = new Resolution(bounds.Width - deltaH, bounds.Height - deltaV);
 
-					if (actualWidth > maxWidth)
-					{
-						actualWidth = (maxWidth / 2) * 2;
-						actualHeight = (actualWidth * desiredHeight / desiredWidth / 2) * 2;
-					}
+				actualResolution = GetBestResolutionForFormat(format, desiredResolution, maxResolution, landscape);
+				if (ShouldRotateBookForRecording(format, landscape, actualResolution, desiredResolution, maxResolution))
+				{
+					shouldRotateBook = true;
+					actualResolution = GetBestResolutionForFormat(format, desiredResolution, maxResolution.GetInverse(), landscape);
 				}
 
 				// Couldn't get this to work. See comment in constructor.
 				//SetThreadDpiAwarenessContext(originalAwareness);
 			}
 
-			var tooBigForScreen = (actualWidth < desiredWidth || actualHeight < desiredHeight);
-			if (tooBigForScreen)
+			if (IsVideoTooSmall(actualResolution, desiredResolution))
 			{
-				var frame = LocalizationManager.GetString("Publish.RecordVideo.ScreenTooBig",
+				var frame = LocalizationManager.GetString("PublishTab.RecordVideo.ScreenTooSmall",
 					"Ideally, this video target should be {0}. However that is larger than your screen, so Bloom will produce a video that is {1}.");
-				return string.Format(frame, $"{desiredWidth} x {desiredHeight}", $"{actualWidth} x {actualHeight}");
+				return string.Format(frame, $"{desiredResolution.Width} x {desiredResolution.Height}", $"{actualResolution.Width} x {actualResolution.Height}");
 			}
 
 			return "";
 		}
 
-		internal struct Resolution
+		/// <summary>
+		/// Returns true if the actual resolution of a video is smaller than the desired resolution of the video
+		/// </summary>
+		private static bool IsVideoTooSmall(Resolution actualResolution, Resolution desiredResolution)
 		{
-			public int Width;
-			public int Height;
+			return actualResolution.Width < desiredResolution.Width || actualResolution.Height < desiredResolution.Height;
+		}
 
-			public Resolution(int width, int height)
+		/// <summary>
+		/// Given a video's resolution, returns true if rotating the video would be beneficial (in the sense that it would reach the desired resolution)
+		/// </summary>
+		private static bool ShouldRotateBookForRecording(string format, bool isBookLandscape, Resolution actualResolution, Resolution desiredResolution, Resolution maxResolution)
+		{
+			// Feature phones (which uses H.263 r1) is locked to landscape, so don't rotate.
+			// mp3: The final result is audio only, no need to bother rotating the video
+			if (format == "feature" || format == "mp3")
 			{
-				Width = width;
-				Height = height;
+				return false;
 			}
 
-			public Resolution GetInverse() => new Resolution(Height, Width);
+			bool isScreenLandscape = maxResolution.Width > maxResolution.Height;
+			return (!isBookLandscape && isScreenLandscape && IsVideoTooSmall(actualResolution, desiredResolution))	// Portrait books on landscape screen
+				|| (isBookLandscape && !isScreenLandscape && IsVideoTooSmall(actualResolution, desiredResolution));	// Landscape books on portrait screen
+		}
 
-			public override string ToString()
+		/// <summary>
+		/// Returns the appropriate calculation for best resolution depending on the format selected
+		/// </summary>
+		private static Resolution GetBestResolutionForFormat(string format, Resolution desiredResolution, Resolution maxResolution, bool isBookLandscape)
+		{
+			if (format == "youtube")
 			{
-				return $"({Width}, {Height})";
+				return GetBestYouTubeResolution(maxResolution, isBookLandscape);
+			}
+			else
+			{
+				return GetBestArbitraryResolution(desiredResolution, maxResolution);
 			}
 		}
 
@@ -663,17 +741,17 @@ namespace Bloom.Publish.Video
 		/// </summary>
 		/// <param name="maxWidth">The maximum width we can display a window (roughly the screen width)</param>
 		/// <param name="maxHeight">The maximum height we can display a window (roughly screen height)</param>
-		/// <param name="landscape">true if the book is landscape, false if portrait</param>
-		internal static Resolution GetBestYouTubeSize(int maxWidth, int maxHeight, bool landscape)
+		/// <param name="isBookLandscape">true if the book is landscape, false if portrait</param>
+		internal static Resolution GetBestYouTubeResolution(Resolution maxResolution, bool isBookLandscape)
 		{
-			var youtubeResolutionsHighToLow = landscape ? youtubeLandscapeResolutionsHighToLow : youtubePortraitResolutionsHighToLow;
+			var youtubeResolutionsHighToLow = isBookLandscape ? youtubeLandscapeResolutionsHighToLow : youtubePortraitResolutionsHighToLow;
 			
 			// Iterate over Youtube's recommended resolutions,
 			// from highest resolution to lowest resolution,
 			// and find the highest one that fits on the screen.
 			foreach (var resolution in youtubeResolutionsHighToLow)
 			{
-				if (resolution.Width <= maxWidth && resolution.Height <= maxHeight)
+				if (resolution.Width <= maxResolution.Width && resolution.Height <= maxResolution.Height)
 				{
 					return resolution;
 				}
@@ -681,12 +759,37 @@ namespace Bloom.Publish.Video
 
 			// Made it through the loop without finding any matches :(
 			// Just fallback to the screen size
-			return new Resolution(maxWidth, maxHeight);
+			return maxResolution;
+		}
+
+		/// <summary>
+		/// Gets the largest resolution, up to the {desired} resolution and in accordance with the {desired} aspect ratio, that will fit on the screen
+		/// </summary>
+		/// <param name="desired">The largest desired resolution</param>
+		/// <param name="max">The max resolution that can fit on the screen</param>
+		private static Resolution GetBestArbitraryResolution(Resolution desired, Resolution max)
+		{
+			Resolution actual = desired;
+			if (actual.Height > max.Height)
+			{
+				actual.Height = (max.Height / 2) * 2; // round down to even, ffmpeg dies on odd sizes
+				actual.Width = (actual.Height * desired.Width / desired.Height / 2) * 2;
+			}
+
+			if (actual.Width > max.Width)
+			{
+				actual.Width = (max.Width / 2) * 2;
+				actual.Height = (actual.Width * desired.Height / desired.Width / 2) * 2;
+			}
+
+			return actual;
 		}
 
 		public void SetFormat(string format, bool landscape)
 		{
-			GetDataForFormat(format, landscape, out _videoWidth, out _videoHeight, out _codec);
+			GetDataForFormat(format, landscape, out Resolution videoResolution, out _codec, out _shouldRotateBook);
+			_videoWidth = videoResolution.Width;
+			_videoHeight = videoResolution.Height;
 		}
 
 		public void SetPageReadTime(string pageReadTime)
