@@ -7,18 +7,6 @@ interface IProps extends TabsProps {
     // text and bottom border for selected tab
     selectedColor: string;
     labelBackgroundColor: string;
-    // more CSS to apply to the Tabs component as a whole
-    // Note SerializedStyles is what you get as the output of an Emotion css`` function.
-    // So, you can say rootCss={css`whatever`}
-    rootCss?: SerializedStyles;
-    // more CSS to apply to the individual labels (tabs)
-    labelCss?: SerializedStyles;
-    // more CSS to apply to the particular label (tab) that is selected
-    selectedLabelCss?: SerializedStyles;
-    // more CSS to apply to the whole group of labels
-    labelGroupCss?: SerializedStyles;
-    // more CSS to apply to each of the content panes
-    contentPaneCss?: SerializedStyles;
 }
 
 // A wrapper around the react-tabs Tab element that applies some standard CSS we want in Bloom,
@@ -26,40 +14,32 @@ interface IProps extends TabsProps {
 // as we identify more common behavior we want or more things we often want to configure we can
 // improve it.
 export const BloomTabs: React.FunctionComponent<IProps> = props => {
-    const {
-        color,
-        selectedColor,
-        labelBackgroundColor,
-        rootCss,
-        labelCss,
-        selectedLabelCss,
-        labelGroupCss,
-        contentPaneCss,
-        ...tabsProps
-    } = props;
+    const { color, selectedColor, labelBackgroundColor, ...tabsProps } = props;
     return (
         <Tabs
             {...tabsProps}
             css={css`
-                ${rootCss}
+                height: 100%; // by default, we choose to make this greedy and fill up parent (note: flex-grow:1 doesn't work & isn't needed)
+                display: flex;
+                flex-direction: column;
+
                 .react-tabs__tab.react-tabs__tab {
                     background-color: ${labelBackgroundColor};
                     color: ${color};
                     text-transform: uppercase;
-                    ${labelCss}
                 }
                 .react-tabs__tab--selected {
                     color: ${selectedColor} !important;
                     border-color: transparent;
                     border-bottom: 2px solid ${selectedColor};
-                    ${selectedLabelCss}
                 }
                 .react-tabs__tab-list {
                     border: none;
-                    ${labelGroupCss}
+                    margin-bottom: 5px; // else the little selector slams into the content and looks bad
                 }
                 .react-tabs__tab-panel {
-                    ${contentPaneCss}
+                    overflow-y: auto; // make these contents scroll if needed
+                    height: 100%; // note, the child should normally also set height:100% to fill this up.
                 }
             `}
         >

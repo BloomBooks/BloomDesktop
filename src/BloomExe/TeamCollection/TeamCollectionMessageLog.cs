@@ -96,6 +96,9 @@ namespace Bloom.TeamCollection
 
 		public bool NextTeamCollectionDialogShouldForceReloadButton { get; set; }
 
+		/// <summary>
+		/// True if there is any messages for which reloading the collection is a useful action.
+		/// </summary>
 		public bool ShouldShowReloadButton =>
 			NextTeamCollectionDialogShouldForceReloadButton || ReloadMessages.Count > 0;
 

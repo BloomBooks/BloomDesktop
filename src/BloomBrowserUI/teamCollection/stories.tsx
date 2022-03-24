@@ -16,8 +16,18 @@ import { JoinTeamCollectionDialog } from "./JoinTeamCollectionDialog";
 import { TeamCollectionDialog } from "./TeamCollectionDialog";
 import { TeamCollectionSettingsPanel } from "./TeamCollectionSettingsPanel";
 import { CreateTeamCollectionDialog } from "./CreateTeamCollection";
-import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialog";
+import {
+    BloomDialog,
+    DialogBottomButtons,
+    DialogMiddle,
+    DialogTitle
+} from "../react_components/BloomDialog/BloomDialog";
 import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
+import { DialogCancelButton } from "../react_components/BloomDialog/commonDialogComponents";
+import {
+    normalDialogEnvironmentForStorybook,
+    StorybookDialogWrapper
+} from "../react_components/BloomDialog/BloomDialogPlumbing";
 
 addDecorator(storyFn => (
     <ThemeProvider theme={lightTheme}>
@@ -268,19 +278,20 @@ storiesOf("Team Collection components/JoinTeamCollection", module)
 
 storiesOf("Team Collection components/TeamCollectionDialog", module)
     .add("With reload button", () => (
-        <TeamCollectionDialog
-            showReloadButton={true}
-            dialogEnvironment={normalDialogEnvironmentForStorybook}
-        />
+        <StorybookDialogWrapper
+            id="TeamCollectionDialog"
+            params={{ showReloadButton: true }}
+        >
+            <TeamCollectionDialog />
+        </StorybookDialogWrapper>
     ))
-    .add("no dialog frame", () => (
-        <TeamCollectionDialog
-            dialogEnvironment={{
-                dialogFrameProvidedExternally: true,
-                initiallyOpen: true
-            }}
-            showReloadButton={false}
-        />
+    .add("Without reload button", () => (
+        <StorybookDialogWrapper
+            id="TeamCollectionDialog"
+            params={{ showReloadButton: false }}
+        >
+            <TeamCollectionDialog />
+        </StorybookDialogWrapper>
     ));
 
 storiesOf(
@@ -336,3 +347,24 @@ storiesOf("Team Collection components/Menu component", module).add(
         </div>
     )
 );
+
+storiesOf("BloomDialog", module).add("Test drag & resize", () => (
+    <BloomDialog onClose={() => {}} open={true}>
+        <DialogTitle title="Drag Me" />
+        <DialogMiddle>
+            <p>Blah</p>
+            <p>Blah</p>
+            <p>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                Curabitur in felis feugiat est pellentesque bibendum. Maecenas
+                non sem a augue vulputate ultricies. In hac habitasse platea
+                dictumst. Quisque augue quam, facilisis in laoreet ac,
+                consectetur luctus lectus. Cras eu condimentum sem.
+            </p>
+            <p>Blah</p>
+        </DialogMiddle>
+        <DialogBottomButtons>
+            <DialogCancelButton onClick={() => {}} />
+        </DialogBottomButtons>
+    </BloomDialog>
+));

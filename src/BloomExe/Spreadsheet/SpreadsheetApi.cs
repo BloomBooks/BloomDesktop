@@ -40,7 +40,6 @@ namespace Bloom.web.controllers
 
 			apiHandler.RegisterEndpointLegacy("spreadsheet/export", ExportToSpreadsheet, true);
 		}
-		private ReactDialog _openDialog = null;
 		public void ShowExportToSpreadsheetUI(Book.Book book)
 		{
 			// Throw up a Requires Bloom Enterprise dialog if it's not turned on
@@ -49,23 +48,13 @@ namespace Bloom.web.controllers
 				Enterprise.ShowRequiresEnterpriseNotice(Form.ActiveForm, "Export to Spreadsheet");
 				return;
 			}
-			var folderPath = GetSpreadsheetFolderFor(book, true);
 
-			using (var dlg = new ReactDialog("exportSpreadsheetDialogBundle", new
-			{ folderPath }, "Export to Spreadsheet...")
-			{ Width = 550, Height = 450 })
-			{
-				_openDialog = dlg;
-				dlg.ShowDialog();
-			}
+			dynamic messageBundle = new DynamicJson();
+			messageBundle.folderPath = GetSpreadsheetFolderFor(book, true); 
+			_webSocketServer.LaunchDialog("SpreadsheetExportDialog", messageBundle);
 		}
 		private void ExportToSpreadsheet(ApiRequest request)
 		{
-			Debug.Assert(_openDialog != null);
-			_openDialog.Close();
-			_openDialog.Dispose();
-			_openDialog = null;
-
 			var book = _bookSelection.CurrentSelection;
 			var bookPath = book.GetPathHtmlFile();
 			try

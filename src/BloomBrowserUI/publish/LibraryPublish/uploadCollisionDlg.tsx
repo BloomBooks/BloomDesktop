@@ -9,10 +9,9 @@ import {
     DialogBottomButtons,
     DialogBottomLeftButtons,
     DialogMiddle,
-    DialogTitle,
-    IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    DialogTitle
 } from "../../react_components/BloomDialog/BloomDialog";
+
 import {
     DialogCancelButton,
     DialogReportButton
@@ -25,6 +24,10 @@ import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { CSSProperties, ThemeProvider } from "@material-ui/styles";
 import HelpLink from "../../react_components/helpLink";
+import {
+    IBloomDialogEnvironmentParams,
+    useSetupBloomDialog
+} from "../../react_components/BloomDialog/BloomDialogPlumbing";
 
 export interface IUploadCollisionDlgProps {
     userEmail: string;

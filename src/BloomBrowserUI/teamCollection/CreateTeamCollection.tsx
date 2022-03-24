@@ -13,9 +13,7 @@ import {
     BloomDialog,
     DialogBottomButtons,
     DialogMiddle,
-    DialogTitle,
-    IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    DialogTitle
 } from "../react_components/BloomDialog/BloomDialog";
 import {
     DialogCancelButton,
@@ -27,6 +25,10 @@ import { useL10n } from "../react_components/l10nHooks";
 import { Checkbox } from "../react_components/checkbox";
 import { TextWithEmbeddedLink } from "../react_components/link";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
+import {
+    IBloomDialogEnvironmentParams,
+    useSetupBloomDialog
+} from "../react_components/BloomDialog/BloomDialogPlumbing";
 
 // Contents of a dialog launched from TeamCollectionSettingsPanel Create Team Collection button.
 

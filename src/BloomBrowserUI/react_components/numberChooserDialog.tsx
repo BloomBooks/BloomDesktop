@@ -6,13 +6,15 @@ import {
     BloomDialog,
     DialogBottomButtons,
     DialogMiddle,
-    DialogTitle,
-    IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    DialogTitle
 } from "./BloomDialog/BloomDialog";
 import BloomButton from "./bloomButton";
 import { DialogCancelButton } from "./BloomDialog/commonDialogComponents";
 import SmallNumberPicker from "./smallNumberPicker";
+import {
+    IBloomDialogEnvironmentParams,
+    useSetupBloomDialog
+} from "./BloomDialog/BloomDialogPlumbing";
 
 export interface INumberChooserDialogProps {
     min: number;

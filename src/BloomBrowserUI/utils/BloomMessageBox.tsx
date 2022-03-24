@@ -8,12 +8,14 @@ import { BloomApi } from "./bloomApi";
 import WarningOutlinedIcon from "@material-ui/icons/WarningOutlined";
 import {
     BloomDialog,
-    IBloomDialogEnvironmentParams,
-    useSetupBloomDialog,
     DialogBottomButtons,
     DialogMiddle,
     DialogTitle
 } from "../react_components/BloomDialog/BloomDialog";
+import {
+    IBloomDialogEnvironmentParams,
+    useSetupBloomDialog
+} from "../react_components/BloomDialog/BloomDialogPlumbing";
 
 export interface MessageBoxButton {
     text: string;

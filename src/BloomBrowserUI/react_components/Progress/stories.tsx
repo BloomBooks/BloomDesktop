@@ -6,7 +6,7 @@ import WebSocketManager, {
 } from "../../utils/WebSocketManager";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import { ProgressBox } from "./progressBox";
-import { normalDialogEnvironmentForStorybook } from "../BloomDialog/BloomDialog";
+import { normalDialogEnvironmentForStorybook } from "../BloomDialog/BloomDialogPlumbing";
 
 const kWebSocketMockContext = "mock_progress";
 interface IStoryMessage {

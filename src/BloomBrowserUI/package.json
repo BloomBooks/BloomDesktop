@@ -99,6 +99,7 @@
         "react-color": "^2.18.1",
         "react-desktop": "^0.3.9",
         "react-dom": "16.8.6",
+        "react-draggable": "^4.4.4",
         "react-dropdown-tree-select": "^1.19.0",
         "react-firebaseui": "^4.1.0",
         "react-grid-layout": "https://github.com/JohnThomson/react-grid-layout.git#includeTypes",

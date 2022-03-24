@@ -38,8 +38,6 @@ module.exports = merge(core, {
         bookPreviewBundle:
             "./collectionsTab/collectionsTabBookPane/bookPreview.ts",
         toolboxBundle: "./bookEdit/toolbox/toolboxBootstrap.ts",
-        exportSpreadsheetDialogBundle:
-            "./collectionsTab/spreadsheet/SpreadsheetExportDialog.tsx",
         pageChooserBundle: "./pageChooser/page-chooser.ts",
         pageThumbnailListBundle:
             "./bookEdit/pageThumbnailList/pageThumbnailList.tsx",
@@ -73,7 +71,6 @@ module.exports = merge(core, {
             "./react_components/requiresBloomEnterprise.tsx",
         createTeamCollectionDialogBundle:
             "./teamCollection/CreateTeamCollection.tsx",
-        teamCollectionDialogBundle: "./teamCollection/TeamCollectionDialog.tsx",
         teamCollectionSettingsBundle:
             "./teamCollection/TeamCollectionSettingsPanel.tsx",
         joinTeamCollectionDialogBundle:

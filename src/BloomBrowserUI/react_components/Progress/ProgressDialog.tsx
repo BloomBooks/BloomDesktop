@@ -16,15 +16,17 @@ import {
     DialogBottomButtons,
     DialogBottomLeftButtons,
     DialogMiddle,
-    DialogTitle,
-    IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    DialogTitle
 } from "../BloomDialog/BloomDialog";
 import {
     DialogCancelButton,
     DialogCloseButton
 } from "../BloomDialog/commonDialogComponents";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
+import {
+    IBloomDialogEnvironmentParams,
+    useSetupBloomDialog
+} from "../BloomDialog/BloomDialogPlumbing";
 
 export const ProgressDialog: React.FunctionComponent<{
     title: string;
