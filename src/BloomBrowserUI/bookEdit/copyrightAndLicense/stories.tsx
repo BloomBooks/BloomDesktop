@@ -7,7 +7,7 @@ import {
     CopyrightAndLicenseDialog,
     ICopyrightAndLicenseData
 } from "./CopyrightAndLicenseDialog";
-import { normalDialogEnvironmentForStorybook } from "../../react_components/BloomDialog/BloomDialog";
+import { normalDialogEnvironmentForStorybook } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import { CopyrightPanel } from "./CopyrightPanel";
 import { LicensePanel, LicenseType } from "./LicensePanel";
 import { LicenseBadge } from "./LicenseBadge";
