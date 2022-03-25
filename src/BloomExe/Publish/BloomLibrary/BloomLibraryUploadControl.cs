@@ -508,7 +508,39 @@ namespace Bloom.Publish.BloomLibrary
 			var existingBookInfo = _model.ConflictingBookInfo;
 			var updatedDateTime = (DateTime) existingBookInfo.updatedAt;
 			var createdDateTime = (DateTime) existingBookInfo.createdAt;
-			var originalTitle = existingBookInfo.originalTitle.Value;
+			// Find the best title available (BL-11027)
+			// Users can click on this title to bring up the existing book's page.
+			var existingTitle = existingBookInfo.title?.Value;
+			if (String.IsNullOrEmpty(existingTitle))
+			{
+				// If title is undefined (which should not be the case), then use the first title from allTitles.
+				var allTitlesString = existingBookInfo.allTitles?.Value;
+				if (!String.IsNullOrEmpty(allTitlesString))
+				{
+					try
+					{
+						var allTitles = Newtonsoft.Json.Linq.JObject.Parse(allTitlesString);
+						foreach (var title in allTitles)
+						{
+							// title.Value is dynamic language code / title string pair
+							// title.Value.Value is the actual book title in the associated language
+							if (title?.Value?.Value != null)
+							{
+								existingTitle = title.Value.Value;
+								break;
+							}
+						}
+					}
+					catch
+					{
+						// ignore parse failure -- should never happen at this point.
+					}
+				}
+			}
+			// If neither title nor allTitles are defined, just give a placeholder value.
+			if (String.IsNullOrEmpty(existingTitle))
+				existingTitle = "Unknown";
+
 			var existingId = existingBookInfo.objectId.ToString();
 			var existingBookUrl = BloomLibraryUrlPrefix + "/book/" + existingId;
 
@@ -524,7 +556,7 @@ namespace Bloom.Publish.BloomLibrary
 					newThumbUrl = newThumbPath,
 					newTitle,
 					newLanguages,
-					existingTitle = originalTitle,
+					existingTitle = existingTitle,
 					existingLanguages,
 					existingCreatedDate = createdDate,
 					existingUpdatedDate = updatedDate,
