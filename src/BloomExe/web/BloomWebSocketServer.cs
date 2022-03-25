@@ -113,6 +113,15 @@ namespace Bloom.Api
 			Application.Exit();
 		}
 
+
+		/// <summary>
+		/// Sends a message & parameters that will get picked up a React dialog that is using the useSetupBloomDialogFromServer hook.
+		/// </summary>
+		public void LaunchDialog(string dialogId,  dynamic dialogParameters)
+		{
+			SendBundle("LaunchDialog", dialogId, dialogParameters);
+		}
+
 		/// <summary>
 		///
 		/// </summary>

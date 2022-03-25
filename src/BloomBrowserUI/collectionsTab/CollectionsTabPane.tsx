@@ -21,6 +21,8 @@ import {
     LocalizableMenuItem,
     LocalizableNestedMenuItem
 } from "../react_components/localizableMenuItem";
+import { TeamCollectionDialogLauncher } from "../teamCollection/TeamCollectionDialog";
+import { SpreadsheetExportDialogLauncher } from "./spreadsheet/SpreadsheetExportDialog";
 
 const kResizerSize = 10;
 
@@ -379,6 +381,8 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                     {collectionMenuItems}
                 </Menu>
             )}
+            <TeamCollectionDialogLauncher />
+            <SpreadsheetExportDialogLauncher />
         </div>
     );
 };

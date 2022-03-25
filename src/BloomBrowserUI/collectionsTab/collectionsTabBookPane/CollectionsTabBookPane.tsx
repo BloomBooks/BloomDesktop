@@ -204,18 +204,11 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                     color="grey"
                     selectedColor="white"
                     labelBackgroundColor={kDarkestBackground}
-                    rootCss={css`
-                        height: 100%;
-                        display: flex;
-                        flex-direction: column;
-                    `}
-                    labelCss={css`
-                        flex-grow: 1;
-                    `}
-                    contentPaneCss={css`
-                        flex-grow: 1;
-                        position: relative; // for the Edit this book button to be absolute
-                    `}
+                    // contentPaneCss={css`
+                    //     flex-grow: 1;
+                    //     position: relative; // for the Edit this book button to be absolute
+                    //     color: black;
+                    // `}
                 >
                     <TabList>
                         {// actually we want the (default) preview tab pane even if enterprise is not available.
@@ -239,34 +232,45 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                             </Tab>
                         )}
                     </TabList>
-                    <TabPanel
-                        id="previewPanel"
-                        // css={css`
-                        //     position: relative;
-                        // `}
-                    >
-                        <iframe
-                            src={`/book-preview/index.htm?dummy=${(selectedBookId ??
-                                "") + reload}`}
-                            height="100%"
-                            width="100%"
-                            css={css`
-                                border: none;
-                            `}
-                            ref={iframeRef}
-                        />
+                    <TabPanel id="previewPanel">
                         <div
                             css={css`
-                                position: absolute;
-                                top: 20px;
-                                left: 10px;
-                                // overrides a material-ui tabs rule that applies to any div in the selected tab!
-                                padding: 0 !important;
-                                // keep the white background inside the button.
-                                border-radius: 5px;
+                                display: flex;
+                                flex-direction: column;
+                                /* height: calc(
+                                    100% - 4px
+                                ); // hack. JT+JH couldn't find why the parent was giving a scroll bar when everything was 100%. */
+                                height: 100%;
+                                position: relative; // this div exists so that we can provide this position relative which allows the "Edit This book" button to be absolutely positioned.
                             `}
                         >
-                            {editOrMakeButton}
+                            <div
+                                css={css`
+                                    //position: absolute;
+                                    //top: 20px;
+                                    //left: 10px;
+                                    // overrides a material-ui tabs rule that applies to any div in the selected tab!
+                                    padding: 0 !important;
+                                    // keep the white background inside the button.
+                                    border-radius: 5px;
+                                    flex-shrink: 0;
+                                    margin-top: 6px;
+                                    margin-bottom: 10px;
+                                `}
+                            >
+                                {editOrMakeButton}
+                            </div>
+                            <iframe
+                                src={`/book-preview/index.htm?dummy=${(selectedBookId ??
+                                    "") + reload}`}
+                                height="100%"
+                                width="100%"
+                                css={css`
+                                    flex-grow: 1;
+                                    border: none;
+                                `}
+                                ref={iframeRef}
+                            />
                         </div>
                     </TabPanel>
                     {enterpriseAvailable && selectedBookId && (

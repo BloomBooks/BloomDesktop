@@ -16,7 +16,7 @@ import { EPUBPublishScreen } from "./ePUBPublish/ePUBPublishScreen";
 import BookMetadataDialog from "./metadata/BookMetadataDialog";
 import "./storiesApiMocks";
 import { AccessibilityCheckScreen } from "./accessibilityCheck/accessibilityCheckScreen";
-import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialog";
+import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import {
     IUploadCollisionDlgProps,
     UploadCollisionDlg

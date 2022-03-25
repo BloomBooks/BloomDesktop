@@ -7,9 +7,7 @@ import {
     BloomDialog,
     DialogBottomButtons,
     DialogMiddle,
-    DialogTitle,
-    IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    DialogTitle
 } from "../../../react_components/BloomDialog/BloomDialog";
 import { DialogCancelButton } from "../../../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../../../react_components/l10nHooks";
@@ -21,6 +19,10 @@ import { ConditionallyEnabledBlock } from "../../../react_components/Conditional
 import { BloomApi } from "../../../utils/bloomApi";
 import { useGetLabelForCollection } from "../../../contentful/UseContentful";
 import { Div } from "../../../react_components/l10nComponents";
+import {
+    IBloomDialogEnvironmentParams,
+    useSetupBloomDialog
+} from "../../../react_components/BloomDialog/BloomDialogPlumbing";
 
 export let showBulkBloomPubDialog: () => void = () => {
     window.alert("showBulkBloomPubDialog is not set up yet.");

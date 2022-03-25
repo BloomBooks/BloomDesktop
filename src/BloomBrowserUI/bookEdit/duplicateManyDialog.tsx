@@ -1,7 +1,7 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
 import * as React from "react";
-import { IBloomDialogEnvironmentParams } from "../react_components/BloomDialog/BloomDialog";
+import { IBloomDialogEnvironmentParams } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import { useL10n } from "../react_components/l10nHooks";
 import { NumberChooserDialog } from "../react_components/numberChooserDialog";
 import { BloomApi } from "../utils/bloomApi";

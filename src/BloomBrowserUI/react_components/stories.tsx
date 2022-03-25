@@ -29,7 +29,7 @@ import {
     RequiresBloomEnterpriseNoticeDialog,
     RequiresBloomEnterpriseOverlayWrapper
 } from "./requiresBloomEnterprise";
-import { normalDialogEnvironmentForStorybook } from "./BloomDialog/BloomDialog";
+import { normalDialogEnvironmentForStorybook } from "./BloomDialog/BloomDialogPlumbing";
 import {
     LocalizableMenuItem,
     LocalizableCheckboxMenuItem,

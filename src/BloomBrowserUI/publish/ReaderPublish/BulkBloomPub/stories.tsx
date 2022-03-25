@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { storiesOf } from "@storybook/react";
 import { BulkBloomPubDialog } from "./BulkBloomPubDialog";
-import { normalDialogEnvironmentForStorybook } from "../../../react_components/BloomDialog/BloomDialog";
+import { normalDialogEnvironmentForStorybook } from "../../../react_components/BloomDialog/BloomDialogPlumbing";
 
 storiesOf("Bulk Bloompub Dialog", module).add(
     "NotifyUser, Report & Retry",
