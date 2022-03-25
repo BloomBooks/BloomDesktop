@@ -2657,12 +2657,12 @@ namespace Bloom.Book
 
 		/// <summary>
 		/// Make stuff readonly, which isn't doable via css, surprisingly
+		/// N.B. There used to be a legacy PreviewBundle here, so the above comment may be out-of-date.
 		/// </summary>
 		/// <param name="dom"></param>
 		internal void AddPreviewJavascript(HtmlDom dom)
 		{
 			dom.AddJavascriptFile("commonBundle.js".ToLocalhost());
-			dom.AddJavascriptFile("legacyBookPreviewBundle.js".ToLocalhost());
 		}
 
 		/// <summary>
