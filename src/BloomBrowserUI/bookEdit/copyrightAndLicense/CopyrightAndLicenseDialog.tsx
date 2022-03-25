@@ -12,12 +12,14 @@ import { BloomApi } from "../../utils/bloomApi";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import {
     BloomDialog,
-    IBloomDialogEnvironmentParams,
-    useSetupBloomDialog,
     DialogBottomButtons,
     DialogTitle,
     DialogMiddle
 } from "../../react_components/BloomDialog/BloomDialog";
+import {
+    IBloomDialogEnvironmentParams,
+    useSetupBloomDialog
+} from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import {
     DialogCancelButton,
     DialogOkButton
@@ -106,8 +108,18 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
         closeDialog();
     }
 
+    // If this is false, we get a react render loop and error.
+    // Our theory is some kind of focus war based on enabling/disabling the buttons.
+    const disableDragging = true;
+
     return (
-        <BloomDialog {...propsForBloomDialog} heightInPx={700}>
+        <BloomDialog
+            {...propsForBloomDialog}
+            disableDragging={disableDragging}
+            css={css`
+                height: 700px;
+            `}
+        >
             {data?.licenseInfo && (
                 <div
                     css={css`
@@ -128,6 +140,7 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
             )}
             <DialogTitle
                 title={useL10n("Copyright and License", "CopyrightAndLicense")}
+                disableDragging={disableDragging}
                 css={css`
                     padding-bottom: 0;
                     margin-bottom: 0;
