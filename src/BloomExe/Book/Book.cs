@@ -570,8 +570,6 @@ namespace Bloom.Book
 				pageDom.AddStyleSheet("branding.css");
 			}
 			pageDom.SortStyleSheetLinks();
-
-			AddPreviewJavascript(pageDom);//review: this is just for thumbnails... should we be having the javascript run?
 			return pageDom;
 		}
 
@@ -589,7 +587,6 @@ namespace Bloom.Book
 			}
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.SortStyleSheetLinks();
-			AddPreviewJavascript(pageDom);
 			HtmlDom.AddClassIfMissing(pageDom.Body, "bloom-templateThumbnail");
 			return pageDom;
 		}
@@ -869,7 +866,6 @@ namespace Bloom.Book
 			TranslationGroupManager.UpdateContentLanguageClasses(previewDom.RawDom, _bookData, primaryLanguage,
 				_bookData.Language2IsoCode, _bookData.Language3IsoCode);
 
-			AddPreviewJavascript(previewDom);
 			previewDom.AddPublishClassToBody("preview");
 
 			// Not needed for preview mode, so just remove them to reduce memory usage.
@@ -2656,16 +2652,6 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Make stuff readonly, which isn't doable via css, surprisingly
-		/// </summary>
-		/// <param name="dom"></param>
-		internal void AddPreviewJavascript(HtmlDom dom)
-		{
-			dom.AddJavascriptFile("commonBundle.js".ToLocalhost());
-			dom.AddJavascriptFile("legacyBookPreviewBundle.js".ToLocalhost());
-		}
-
-		/// <summary>
 		/// Tells videos not to preload. Useful for preview mode, where the videos will never actually play.
 		/// The goal is to minimize a memory leak where videos once loaded continue to use memory for
 		/// a long time, especially if the system has a lot (BL-9845).
@@ -3429,7 +3415,6 @@ namespace Bloom.Book
 			}
 			if (!FullBleed)
 				AddCoverColor(printingDom, Color.White);
-			AddPreviewJavascript(printingDom);
 			return printingDom;
 		}
 
