@@ -406,7 +406,8 @@ namespace Bloom.Publish.Android
 			foreach (var font in fontsWanted)
 			{
 				var fontFiles = fontFileFinder.GetFilesForFont(font);
-				var badFileType = fontFiles.Count() > 0 && !FontMetadata.fontFileTypesBloomKnows.Contains(Path.GetExtension(fontFiles.First()).ToLowerInvariant());
+				var extensionToCheck = Path.GetExtension(fontFiles.First()).ToLowerInvariant();
+				var badFileType = fontFiles.Count() > 0 && !FontMetadata.fontFileTypesBloomKnows.Contains(extensionToCheck);
 				if (fontFiles.Count() > 0 && !badFileType)
 				{
 					filesToEmbed.AddRange(fontFiles);
@@ -423,7 +424,7 @@ namespace Bloom.Publish.Android
 				}
 				if (badFileType)
 				{
-					progress.MessageWithParams("IncompatibleFontFileFormat", "{0} is a font name", "This book has text in a font named \"{0}\". Bloom cannot use a font in this font's file format.", ProgressKind.Error, font);
+					progress.MessageWithParams("IncompatibleFontFileFormat", "{0} is a font name, {1} is a file extension (for example: .ttc)", "This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).", ProgressKind.Error, font, extensionToCheck);
 				}
 				else if (fontFileFinder.FontsWeCantInstall.Contains(font))
 				{
