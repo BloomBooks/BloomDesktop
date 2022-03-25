@@ -3423,9 +3423,9 @@
         <note>{1} is a number with one decimal place, the number of megabytes the font file takes up</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.IncompatibleFontFileFormat" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\". Bloom cannot use a font in this font's file format.</source>
+        <source xml:lang="en">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</source>
         <note>ID: PublishTab.Android.File.Progress.IncompatibleFontFileFormat</note>
-        <note>{0} is a font name</note>
+        <note>{0} is a font name, {1} is a file extension (for example: .ttc)</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true">
         <source xml:lang="en">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</source>
