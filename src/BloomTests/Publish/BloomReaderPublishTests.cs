@@ -1287,7 +1287,7 @@ namespace BloomTests.Publish
 				Assert.That(File.Exists(Path.Combine(testBook.FolderPath, calibreFileName)));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Checking Times New Roman font: License OK for embedding."));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Embedding font Times New Roman at a cost of 0.0 megs"));
-				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("This book has text in a font named \"Wen Yei\". Bloom cannot use a font in this font's file format."));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("This book has text in a font named \"Wen Yei\". Bloom cannot publish this font's format (.ttc)."));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Bloom will substitute \"Andika New Basic\" instead."));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Checking Calibre font: License OK for embedding."));
 				Assert.That(stubProgress.MessagesNotLocalized,  Has.Member("Embedding font Calibre at a cost of 0.2 megs"));

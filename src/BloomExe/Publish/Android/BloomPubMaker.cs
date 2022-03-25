@@ -406,9 +406,10 @@ namespace Bloom.Publish.Android
 			foreach (var font in fontsWanted)
 			{
 				var fontFiles = fontFileFinder.GetFilesForFont(font);
-				var extensionToCheck = Path.GetExtension(fontFiles.First()).ToLowerInvariant();
-				var badFileType = fontFiles.Count() > 0 && !FontMetadata.fontFileTypesBloomKnows.Contains(extensionToCheck);
-				if (fontFiles.Count() > 0 && !badFileType)
+				var gotFiles = fontFiles.Any();
+				var extensionToCheck = gotFiles ? Path.GetExtension(fontFiles.First()).ToLowerInvariant() : "";
+				var badFileType = gotFiles && !FontMetadata.fontFileTypesBloomKnows.Contains(extensionToCheck);
+				if (gotFiles && !badFileType)
 				{
 					filesToEmbed.AddRange(fontFiles);
 					progress.MessageWithParams("PublishTab.Android.File.Progress.CheckFontOK", "{0} is a font name", "Checking {0} font: License OK for embedding.", ProgressKind.Progress, font);
