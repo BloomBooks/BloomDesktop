@@ -10,7 +10,7 @@ export interface IBloomDialogEnvironmentParams {
     initiallyOpen: boolean;
 }
 
-export const normalDialogEnvironmentForStorybook = {
+export const normalDialogEnvironmentForStorybook: IBloomDialogEnvironmentParams = {
     dialogFrameProvidedExternally: false,
     initiallyOpen: true
 };
@@ -80,7 +80,7 @@ export function useSetupBloomDialog(
     function closeDialog() {
         if (dialogEnvironment?.dialogFrameProvidedExternally)
             BloomApi.post("common/closeReactDialog");
-        else setOpen(false);
+        setOpen(false);
     }
     return {
         openingEvent: event,

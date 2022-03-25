@@ -6,7 +6,7 @@ import { ThemeProvider } from "@material-ui/styles";
 import { Dialog, DialogProps, Paper } from "@material-ui/core";
 import CloseOnEscape from "react-close-on-escape";
 import { kDialogPadding } from "../../bloomMaterialUITheme";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { kUiFontStack } from "../../bloomMaterialUITheme";
 import Draggable from "react-draggable";
 
@@ -26,8 +26,11 @@ export interface IBloomDialogProps extends DialogProps {
     open: boolean;
     // true if the caller is wrapping in a winforms dialog already
     dialogFrameProvidedExternally?: boolean;
-    heightInPx?: number;
     onClose: () => void;
+    // we know of at least one scenario (CopyrightAndLicenseDialog) which needs to do
+    // this because enabling it causes a react render loop. Our theory is that there is
+    // a focus war going on.
+    disableDragging?: boolean;
 }
 
 export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = props => {
@@ -56,13 +59,9 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = props => 
                 padding-bottom: ${kDialogBottomPadding};
                 // dialogFrameProvidedExternally means that we're inside of a winforms dialog.
                 /// So we grow to fit it, and we supply a single black border for some reason (?)
-                ${
-                    props.dialogFrameProvidedExternally
-                        ? `height: 100%; border: solid thin black; box-sizing: border-box;`
-                        : props.heightInPx
-                        ? `height: ${props.heightInPx}px;`
-                        : ""
-                }
+                ${props.dialogFrameProvidedExternally
+                    ? `height: 100%; border: solid thin black; box-sizing: border-box;`
+                    : ""}
 
                 * {
                     // This value is the same as that given in bloomMaterialUITheme.  For some
@@ -129,7 +128,9 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = props => 
                     inner
                 ) : (
                     <Dialog
-                        PaperComponent={PaperComponent}
+                        PaperComponent={
+                            props.disableDragging ? undefined : PaperComponent
+                        }
                         css={css`
                             flex-grow: 1; // see note on the display property on PaperComponent
                             [role="dialog"] {
@@ -151,9 +152,11 @@ export const DialogTitle: React.FunctionComponent<{
     color?: string;
     icon?: string;
     title: string; // note, this is prop instead of just a child so that we can ensure vertical alignment and bar height, which are easy to mess up.
+    disableDragging?: boolean;
 }> = props => {
     const color = props.color || "black";
     const background = props.backgroundColor || "transparent";
+    const cursor = props.disableDragging ? "unset" : "move";
 
     // This is lame, but it's really what looks right to me. When there is a color bar, it looks better to have less padding at the top.
     const titleTopPadding =
@@ -165,7 +168,7 @@ export const DialogTitle: React.FunctionComponent<{
                 color: ${color};
                 background-color: ${background};
                 display: flex;
-                cursor: move;
+                cursor: ${cursor};
                 padding-left: ${kDialogTopPadding};
                 padding-right: ${kDialogTopPadding};
                 padding-top: ${titleTopPadding};
