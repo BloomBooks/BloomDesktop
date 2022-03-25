@@ -1122,6 +1122,7 @@
         <note>ID: Common.WhatCausedThisProblem</note>
         <note>This is usually a link to an explanatory document.</note>
       </trans-unit>
+<!--5.3
       <trans-unit id="Copyright.CopyrightHolder" sil:dynamic="true">
         <source xml:lang="en">Copyright Holder</source>
         <note>ID: Copyright.CopyrightHolder</note>
@@ -1155,6 +1156,7 @@
         <source xml:lang="en">Copyright and License</source>
         <note>ID: CopyrightAndLicense</note>
       </trans-unit>
+-->
       <trans-unit id="Download.Completed">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
         <note>ID: Download.Completed</note>
@@ -3126,6 +3128,7 @@
         <source xml:lang="en">Comic Portrait</source>
         <note>ID: LayoutChoices.ComicPortrait</note>
       </trans-unit>
+<!--
       <trans-unit id="License.About" sil:dynamic="true">
         <source xml:lang="en">About %0</source>
         <note>ID: License.About</note>
@@ -3188,6 +3191,7 @@
         <source xml:lang="en">Anyone can use it however they want.</source>
         <note>ID: License.PublicDomain</note>
       </trans-unit>
+-->
       <trans-unit id="LicenseDialog.WindowTitle">
         <source xml:lang="en">Bloom {0}</source>
         <note>ID: LicenseDialog.WindowTitle</note>
