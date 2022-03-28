@@ -59,15 +59,12 @@ export const CopyrightPanel: React.FunctionComponent<{
         year = year.trim();
         if (!year) return false;
 
-        const yearAsNum = Number.parseInt(year, 10);
-        if (Number.isNaN(yearAsNum)) return false;
-
-        return yearAsNum >= 1900 && yearAsNum <= 2100;
+        return new RegExp("^\\d\\d\\d\\d$").test(year);
     }
 
     useEffect(() => {
         setIsHolderValid(isValidHolder(holder));
-        setIsSil(holder.toLowerCase().match(/\bsil\b/) != null);
+        setIsSil(holder.includes("SIL"));
         props.copyrightInfo.copyrightHolder = holder?.trim();
     }, [holder]);
 
@@ -91,22 +88,12 @@ export const CopyrightPanel: React.FunctionComponent<{
         if (checked) {
             setYearToPreserve(year);
             setHolderToPreserve(holder);
-            setYear(props.derivativeInfo?.originalCopyrightYear!);
-            setHolder(props.derivativeInfo?.originalCopyrightHolder!);
+            setYear(props.derivativeInfo!.originalCopyrightYear!);
+            setHolder(props.derivativeInfo!.originalCopyrightHolder!);
         } else {
             setYear(yearToPreserve);
             setHolder(holderToPreserve);
         }
-    }
-
-    function getVerticalSpacer(numPixels: number) {
-        return (
-            <div
-                css={css`
-                    height: ${numPixels}px;
-                `}
-            ></div>
-        );
     }
 
     return (
@@ -127,8 +114,10 @@ export const CopyrightPanel: React.FunctionComponent<{
                             setImageCreator(event.target.value);
                         }}
                         required={false}
+                        css={css`
+                            margin-bottom: 20px !important;
+                        `}
                     />
-                    {getVerticalSpacer(20)}
                 </>
             )}
             <MuiTextField
@@ -143,10 +132,10 @@ export const CopyrightPanel: React.FunctionComponent<{
                 required={true}
                 error={!isYearValid}
                 css={css`
-                    width: 100px;
+                    width: 150px; // Enough for slightly longer translations of the label; English only needs 100px
+                    margin-bottom: 20px !important;
                 `}
             />
-            {getVerticalSpacer(20)}
             <MuiTextField
                 label="Copyright Holder"
                 l10nKey={"Copyright.CopyrightHolder"}
@@ -157,8 +146,10 @@ export const CopyrightPanel: React.FunctionComponent<{
                 disabled={useOriginalCopyrightAndLicense}
                 required={true}
                 error={!isHolderValid}
+                css={css`
+                    margin-bottom: 11px !important;
+                `}
             />
-            {getVerticalSpacer(11)}
             {isSil && (
                 <NoteBox addBorder={true}>
                     <div>
@@ -199,11 +190,11 @@ export const CopyrightPanel: React.FunctionComponent<{
                                 checked as boolean
                             )
                         }
-                    ></MuiCheckbox>
+                    />
                     <div>
                         <div
                             css={css`
-                                margin-left: 28px; // a magic number which happens to align things
+                                margin-left: 28px; // a magic number which happens to align this text with the checkbox label just above it
                             `}
                         >
                             <div

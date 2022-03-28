@@ -3,7 +3,6 @@
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
-import { useState } from "react";
 import { MenuItem, Select } from "@material-ui/core";
 import WarningIcon from "@material-ui/icons/Warning";
 
@@ -20,13 +19,13 @@ import { LicenseType, ILicenseInfo } from "./LicensePanel";
 // Also includes the control for cc version and a link to the cc license if needed
 export const LicenseBadge: React.FunctionComponent<{
     licenseInfo: ILicenseInfo;
+    onChange: (ILicenseInfo) => void;
     disabled?: boolean;
 }> = props => {
-    const [forceRenderHack, setForceRenderHack] = useState(0);
-
-    const { licenseInfo, ...propsToPropagate } = props;
-
-    const licenseShorthand = useGetLicenseShorthand(props.licenseInfo);
+    const licenseInfo: ILicenseInfo = JSON.parse(
+        JSON.stringify(props.licenseInfo)
+    ); //clone
+    const licenseShorthand: string = useGetLicenseShorthand(props.licenseInfo);
 
     function createNonCcBadge(text: string) {
         const kPadding = "5px";
@@ -46,7 +45,6 @@ export const LicenseBadge: React.FunctionComponent<{
                     font-size: 0.75em;
                     font-weight: normal;
                 `}
-                {...propsToPropagate} // allows defining more css rules from container
             >
                 <WarningIcon
                     css={css`
@@ -86,7 +84,7 @@ export const LicenseBadge: React.FunctionComponent<{
                         <Select
                             css={css`
                                 color: ${kMutedTextGray} !important;
-                                // This isn't working:
+                                // I was trying to prevent the gray background when focused, but this isn't working:
                                 .MuiSelect-select:focus {
                                     background-color: rgba(
                                         0,
@@ -98,7 +96,7 @@ export const LicenseBadge: React.FunctionComponent<{
                             `}
                             disableUnderline={true}
                             value={
-                                licenseInfo.creativeCommonsInfo
+                                props.licenseInfo.creativeCommonsInfo
                                     .intergovernmentalVersion
                                     ? "igo3.0"
                                     : "4.0"
@@ -106,7 +104,7 @@ export const LicenseBadge: React.FunctionComponent<{
                             onChange={e => {
                                 licenseInfo.creativeCommonsInfo.intergovernmentalVersion =
                                     e.target.value === "igo3.0";
-                                setForceRenderHack(forceRenderHack + 1);
+                                props.onChange(licenseInfo);
                             }}
                             disabled={props.disabled}
                         >

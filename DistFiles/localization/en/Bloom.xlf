@@ -3128,7 +3128,7 @@
         <source xml:lang="en">Comic Portrait</source>
         <note>ID: LayoutChoices.ComicPortrait</note>
       </trans-unit>
-<!--
+<!--5.3
       <trans-unit id="License.About" sil:dynamic="true">
         <source xml:lang="en">About %0</source>
         <note>ID: License.About</note>
