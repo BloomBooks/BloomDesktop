@@ -13,7 +13,7 @@ import BloomButton from "../../react_components/bloomButton";
 import { kDarkestBackground } from "../../bloomMaterialUITheme";
 import { useSubscribeToWebSocketForEvent } from "../../utils/WebSocketManager";
 import { useEnterpriseAvailable } from "../../react_components/requiresBloomEnterprise";
-import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
+import { Tab, TabList, TabPanel } from "react-tabs";
 import { LocalizedString } from "../../react_components/l10nComponents";
 import { CollectionHistoryTable } from "../../teamCollection/CollectionHistoryTable";
 import "react-tabs/style/react-tabs.less";
