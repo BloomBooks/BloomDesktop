@@ -23,6 +23,8 @@ interface ICheckboxProps extends ILocalizationProps {
 }
 
 // A checkbox that is localizable and can toggle between either a 2 or 3 states.
+// This is a vanilla html checkbox.
+// New controls should probably use MuiCheckbox.
 export class Checkbox extends LocalizableElement<ICheckboxProps, {}> {
     // Resist the temptation to change null to undefined here.
     // This type has to match the 'ref' attribute below, which has "| null".

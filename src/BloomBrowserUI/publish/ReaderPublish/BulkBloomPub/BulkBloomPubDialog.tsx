@@ -114,7 +114,7 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                                     makeBookshelfFile: !params.makeBookshelfFile
                                 })
                             }
-                            legacyVersionWhichDoesntEnsureWrappedLabelsWork={
+                            deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
                                 true
                             }
                         ></MuiCheckbox>
@@ -226,7 +226,7 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                                     makeBloomBundle: !!checked
                                 });
                             }}
-                            legacyVersionWhichDoesntEnsureWrappedLabelsWork={
+                            deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
                                 true
                             }
                         ></MuiCheckbox>

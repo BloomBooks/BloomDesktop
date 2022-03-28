@@ -692,12 +692,25 @@ namespace Bloom.Edit
 			Settings.Default.LastSourceLanguageViewed = target.OuterHtml.Substring(start, end - start);
 		}
 
-		private Metadata _originalImageMetadata;
-		private Action<Metadata> _setNewImageMetadataActionForImageToolbox;
-		private void ProcessImageMetadataFromImageToolbox(Metadata originalMetadata, Action<Metadata> setNewImageMetadata)
+		private Metadata _originalImageMetadataFromImageToolbox;
+		// When the coyright and license dialog is launched from the palaso image toolbox,
+		// this action will be set as the thing to do to save the metadata (into the image)
+		// when the user confirms changes in the C/L dialog.
+		private Action<Metadata> _saveNewImageMetadataActionForImageToolbox;
+		// This action overrides the default "edit metadata" action in the palaso image toolbox.
+		// Its default is to launch the original palaso WinForms C/L dialog.
+		// But we launch our own react dialog. If/when the user clicks ok, we call back to palaso
+		// to save the new metadata using the saveNewImageMetadata.
+		// If the user cancels, then we never save and things get cleaned up when the
+		// modal image toolbox is closed.
+		// Note, it would, in theory, improve things to just save the new metadata
+		// here locally via an api call and then not close the dialog until that was saved.
+		// But we couldn't convince ourselves with 100% certainty that the save metadata api
+		// call would finish before the close dialog api call.
+		private void LaunchCopyrightAndLicenseDialogFromImageToolbox(Metadata originalMetadata, Action<Metadata> saveNewImageMetadata)
 		{
-			_setNewImageMetadataActionForImageToolbox = setNewImageMetadata;
-			_originalImageMetadata = originalMetadata;
+			_saveNewImageMetadataActionForImageToolbox = saveNewImageMetadata;
+			_originalImageMetadataFromImageToolbox = originalMetadata;
 			LaunchCopyrightAndLicenseDialogForImage(originalMetadata);
 		}
 
@@ -706,7 +719,8 @@ namespace Bloom.Edit
 		{
 			if (fileName == null)
 			{
-				return _originalImageMetadata;
+				// Without a file name, we are coming from the palaso image toolbox
+				return _originalImageMetadataFromImageToolbox;
 			}
 
 			// keep a reference to the fileName rather the image to avoid dispose issues
@@ -740,7 +754,6 @@ namespace Bloom.Edit
 						return null;
 					}
 				}
-				Logger.WriteEvent("Showing Metadata Editor For Image");
 
 				return imageBeingModified.Metadata;
 			}
@@ -749,9 +762,9 @@ namespace Bloom.Edit
 		/// <returns>false if saving via libpalaso image toolbox; true otherwise</returns>
 		public bool SaveImageMetadata(Metadata metadata)
 		{
-			if (_setNewImageMetadataActionForImageToolbox != null)
+			if (_saveNewImageMetadataActionForImageToolbox != null)
 			{
-				_setNewImageMetadataActionForImageToolbox(metadata);
+				_saveNewImageMetadataActionForImageToolbox(metadata);
 				return false;
 			}
 
@@ -767,8 +780,9 @@ namespace Bloom.Edit
 
 		private void LaunchCopyrightAndLicenseDialogForImage(Metadata imageMetadata)
 		{
+			var dialogTitle = LocalizationManager.GetString("CopyrightAndLicense", "Copyright and License");
 			var data = _copyrightAndLicenseApi.GetJsonFromMetadata(imageMetadata, forBook: false);
-			using (var dlg = new ReactDialog("copyrightAndLicenseBundle", new { isForBook = false, data  }, "Copyright and License"))
+			using (var dlg = new ReactDialog("copyrightAndLicenseBundle", new { isForBook = false, data }, dialogTitle))
 			{
 				dlg.Width = 500;
 				dlg.Height = 700;
@@ -1120,7 +1134,7 @@ namespace Bloom.Edit
 			// not using a "using for this" because we want to disentagle the cost of the dialog vs. working
 			// with the results of the dialog.
 			var performanceMeasureForShowingDialog = PerformanceMeasurement.Global.Measure("Show ImageToolbox Dialog");
-			using (var dlg = new ImageToolboxDialog(imageInfo, null, ProcessImageMetadataFromImageToolbox))
+			using (var dlg = new ImageToolboxDialog(imageInfo, null, LaunchCopyrightAndLicenseDialogFromImageToolbox))
 			{
 				var searchLanguage = Settings.Default.ImageSearchLanguage;
 				dlg.ImageLoadingExceptionReporter = (path, ex, msg) =>
@@ -1233,8 +1247,10 @@ namespace Bloom.Edit
 					Settings.Default.Save();
 				}
 
-				_originalImageMetadata = null;
-				_setNewImageMetadataActionForImageToolbox = null;
+				// This is sufficient cleanup because the image toolbox is modal.
+				// We clean up when it closes (or Bloom crashes in which case we don't care).
+				_originalImageMetadataFromImageToolbox = null;
+				_saveNewImageMetadataActionForImageToolbox = null;
 			}
 			TextInputBox.UseWebTextBox = useWebTextBox;
 			Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");
