@@ -3,7 +3,6 @@
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
-import { useState } from "react";
 import { MenuItem, Select } from "@material-ui/core";
 import WarningIcon from "@material-ui/icons/Warning";
 
@@ -16,17 +15,18 @@ import { useL10n } from "../../react_components/l10nHooks";
 import { Link } from "../../react_components/link";
 import { LicenseType, ILicenseInfo } from "./LicensePanel";
 
-// Displays the license as a "badge" which is either the cc image or icon and text
-// Also includes the control for cc version and a link to the cc license if needed
+// Displays the license as a "badge" which is either the cc image or icon and text.
+// Also includes the control for cc version and a link to the cc license if needed.
 export const LicenseBadge: React.FunctionComponent<{
     licenseInfo: ILicenseInfo;
+    onChange: (ILicenseInfo) => void;
     disabled?: boolean;
 }> = props => {
-    const [forceRenderHack, setForceRenderHack] = useState(0);
+    const licenseInfo: ILicenseInfo = JSON.parse(
+        JSON.stringify(props.licenseInfo)
+    ); //clone
 
-    const { licenseInfo, ...propsToPropagate } = props;
-
-    const licenseShorthand = useGetLicenseShorthand(props.licenseInfo);
+    const licenseShorthand: string = useGetLicenseShorthand(licenseInfo);
 
     function createNonCcBadge(text: string) {
         const kPadding = "5px";
@@ -46,7 +46,6 @@ export const LicenseBadge: React.FunctionComponent<{
                     font-size: 0.75em;
                     font-weight: normal;
                 `}
-                {...propsToPropagate} // allows defining more css rules from container
             >
                 <WarningIcon
                     css={css`
@@ -61,7 +60,7 @@ export const LicenseBadge: React.FunctionComponent<{
     }
 
     function createCcBadge() {
-        const token = getCcToken(props.licenseInfo);
+        const token = getCcToken(licenseInfo);
         return (
             <div
                 css={css`
@@ -86,7 +85,7 @@ export const LicenseBadge: React.FunctionComponent<{
                         <Select
                             css={css`
                                 color: ${kMutedTextGray} !important;
-                                // This isn't working:
+                                // I was trying to prevent the gray background when focused, but this isn't working:
                                 .MuiSelect-select:focus {
                                     background-color: rgba(
                                         0,
@@ -106,7 +105,7 @@ export const LicenseBadge: React.FunctionComponent<{
                             onChange={e => {
                                 licenseInfo.creativeCommonsInfo.intergovernmentalVersion =
                                     e.target.value === "igo3.0";
-                                setForceRenderHack(forceRenderHack + 1);
+                                props.onChange(licenseInfo);
                             }}
                             disabled={props.disabled}
                         >
@@ -121,8 +120,7 @@ export const LicenseBadge: React.FunctionComponent<{
                 <Link
                     href={getCcUrl(
                         token,
-                        props.licenseInfo.creativeCommonsInfo
-                            .intergovernmentalVersion
+                        licenseInfo.creativeCommonsInfo.intergovernmentalVersion
                     )}
                     l10nKey="License.About"
                     l10nComment='%0 is a shorthand version of the Creative Commons license, such as "CC-BY"'
@@ -158,7 +156,7 @@ export const LicenseBadge: React.FunctionComponent<{
         return "https://creativecommons.org/licenses/" + urlSuffix;
     }
 
-    switch (props.licenseInfo.licenseType) {
+    switch (licenseInfo.licenseType) {
         case LicenseType.CreativeCommons:
         case LicenseType.PublicDomain:
             return createCcBadge();

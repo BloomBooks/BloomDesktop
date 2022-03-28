@@ -1,7 +1,7 @@
 import { createTheme } from "@material-ui/core/styles";
 
 export const kBloomBlue = "#1d94a4";
-export const kBloomLightBlue = "#1e94a4"; // review: was this meant to be BloomBlue? see use in BooksOfCollection.less
+export const kBloomBlueLight = "#8ecad2"; // This is BloomBlue at 50% transparency on a white background
 export const kBloomPurple = "#96668f";
 const kDialogTopBottomGray = "#F1F3F4";
 const kGreyOnDarkColor = "#988b8b";

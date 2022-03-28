@@ -23,7 +23,7 @@ export const MuiRadio: React.FunctionComponent<ILocalizationProps & {
         props.l10nParam1
     );
 
-    // Work has been done below to ensure that a wrapped label will align with the control correctly.
+    // Work has been done below to ensure that a multiline (wrapped) label will align with the control correctly.
     // If messing with the layout, be sure you didn't break this by checking the storybook story.
     return (
         <FormControlLabel

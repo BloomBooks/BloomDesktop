@@ -37,8 +37,10 @@ export enum LicenseType {
 export const LicensePanel: React.FunctionComponent<{
     licenseInfo: ILicenseInfo;
     derivativeInfo?: IDerivativeInfo;
-    onChange: (isValid: boolean) => void;
+    onChange: (licenseInfo: ILicenseInfo, isValid: boolean) => void;
 }> = props => {
+    const licenseInfo = JSON.parse(JSON.stringify(props.licenseInfo)); //clone
+
     const originalLicenseShorthand = useGetLicenseShorthand(
         props.derivativeInfo?.originalLicense
     );
@@ -70,8 +72,8 @@ export const LicensePanel: React.FunctionComponent<{
         }
     }
 
-    function handleCcCheckChange() {
-        props.onChange(isLicenseValid);
+    function reportChange() {
+        props.onChange(licenseInfo, isLicenseValid);
     }
 
     function handleLicenseTypeChange(licenseType: string) {
@@ -79,26 +81,24 @@ export const LicensePanel: React.FunctionComponent<{
         setRightsStatement("");
     }
 
-    const [licenseType, setLicenseType] = useState(
-        props.licenseInfo.licenseType
-    );
+    const [licenseType, setLicenseType] = useState(licenseInfo.licenseType);
     useEffect(() => {
-        props.licenseInfo.licenseType = licenseType;
-        props.onChange(isLicenseValid);
+        licenseInfo.licenseType = licenseType;
+        reportChange();
     }, [licenseType]);
 
     const [isLicenseValid, setIsLicenseValid] = useState(true);
 
     useEffect(() => {
-        props.onChange(isLicenseValid);
+        reportChange();
     }, [isLicenseValid]);
 
     const [rightsStatement, setRightsStatement] = useState(
-        props.licenseInfo.rightsStatement
+        licenseInfo.rightsStatement
     );
 
     useEffect(() => {
-        props.licenseInfo.rightsStatement = rightsStatement?.trim();
+        licenseInfo.rightsStatement = rightsStatement?.trim();
     }, [rightsStatement]);
 
     useEffect(() => {
@@ -107,7 +107,7 @@ export const LicensePanel: React.FunctionComponent<{
         );
     }, [rightsStatement, licenseType]);
 
-    const enableCheckboxes = licenseType == LicenseType.CreativeCommons;
+    const isCCLicense = licenseType == LicenseType.CreativeCommons;
 
     if (props.derivativeInfo?.isBookDerivative && !canChangeOriginalLicense()) {
         return (
@@ -174,35 +174,38 @@ export const LicensePanel: React.FunctionComponent<{
                         <MuiCheckbox
                             label={"use the book in a commercial way"}
                             l10nKey="License.CreativeCommons.AllowCommercial"
-                            disabled={!enableCheckboxes}
+                            disabled={!isCCLicense}
                             checked={
-                                enableCheckboxes &&
-                                props.licenseInfo.creativeCommonsInfo
+                                isCCLicense &&
+                                licenseInfo.creativeCommonsInfo
                                     .allowCommercial === "yes"
                             }
                             onCheckChanged={checked => {
-                                props.licenseInfo.creativeCommonsInfo.allowCommercial = checked
+                                licenseInfo.creativeCommonsInfo.allowCommercial = checked
                                     ? "yes"
                                     : "no";
-                                handleCcCheckChange();
+                                reportChange();
                             }}
                         />
+                        {/* These two check boxes govern the allowDerivatives value. Both apply only to CC licenses.
+                        The first determines whether derivatives are allowed at all.
+                        If so, the second is enabled and determines whether allowDerivatives should be "sharealike" or simply "yes" */}
                         <MuiCheckbox
                             label={
                                 "make new versions of this book, but they must keep the author, illustrator, and other credits"
                             }
                             l10nKey="License.CreativeCommons.ShareAlike"
-                            disabled={!enableCheckboxes}
+                            disabled={!isCCLicense}
                             checked={
-                                enableCheckboxes &&
-                                props.licenseInfo.creativeCommonsInfo
+                                isCCLicense &&
+                                licenseInfo.creativeCommonsInfo
                                     .allowDerivatives !== "no"
                             }
                             onCheckChanged={checked => {
-                                props.licenseInfo.creativeCommonsInfo.allowDerivatives = checked
+                                licenseInfo.creativeCommonsInfo.allowDerivatives = checked
                                     ? "yes"
                                     : "no";
-                                handleCcCheckChange();
+                                reportChange();
                             }}
                         />
                         <MuiCheckbox
@@ -211,20 +214,20 @@ export const LicensePanel: React.FunctionComponent<{
                             }
                             l10nKey="License.CreativeCommons.DifferentLicense"
                             disabled={
-                                !enableCheckboxes ||
-                                props.licenseInfo.creativeCommonsInfo
+                                !isCCLicense ||
+                                licenseInfo.creativeCommonsInfo
                                     .allowDerivatives === "no"
                             }
                             checked={
-                                enableCheckboxes &&
-                                props.licenseInfo.creativeCommonsInfo
+                                isCCLicense &&
+                                licenseInfo.creativeCommonsInfo
                                     .allowDerivatives === "yes"
                             }
                             onCheckChanged={checked => {
-                                props.licenseInfo.creativeCommonsInfo.allowDerivatives = checked
+                                licenseInfo.creativeCommonsInfo.allowDerivatives = checked
                                     ? "yes"
                                     : "sharealike";
-                                handleCcCheckChange();
+                                reportChange();
                             }}
                         />
                     </div>

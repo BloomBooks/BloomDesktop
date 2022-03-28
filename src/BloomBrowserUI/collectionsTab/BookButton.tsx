@@ -7,12 +7,7 @@ import { Button, Menu } from "@material-ui/core";
 import TruncateMarkup from "react-truncate-markup";
 import { useTColBookStatus } from "../teamCollection/teamCollectionApi";
 import { BloomAvatar } from "../react_components/bloomAvatar";
-import {
-    kBloomBlue,
-    kBloomGold,
-    kBloomLightBlue,
-    kBloomPurple
-} from "../bloomMaterialUITheme";
+import { kBloomBlue, kBloomGold, kBloomPurple } from "../bloomMaterialUITheme";
 import { useRef, useState, useEffect } from "react";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import { BookSelectionManager, useIsSelected } from "./bookSelectionManager";
@@ -474,7 +469,7 @@ export const BookButton: React.FunctionComponent<{
                         width: calc(100% - 4px);
                         height: ${renameHeight}px;
                         margin-left: 1px;
-                        border: 1px solid ${kBloomLightBlue};
+                        border: 1px solid ${kBloomBlue};
                         top: ${bookButtonHeight - renameHeight - 6}px;
                         padding-top: 4px;
                         position: absolute;

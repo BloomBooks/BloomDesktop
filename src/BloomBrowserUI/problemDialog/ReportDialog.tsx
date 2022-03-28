@@ -353,7 +353,7 @@ export const ReportDialog: React.FunctionComponent<{
                                                             v as boolean
                                                         )
                                                     }
-                                                    legacyVersionWhichDoesntEnsureWrappedLabelsWork={
+                                                    deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
                                                         true
                                                     }
                                                 />
@@ -366,7 +366,7 @@ export const ReportDialog: React.FunctionComponent<{
                                                             v as boolean
                                                         )
                                                     }
-                                                    legacyVersionWhichDoesntEnsureWrappedLabelsWork={
+                                                    deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
                                                         true
                                                     }
                                                 />
