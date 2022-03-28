@@ -4019,7 +4019,7 @@
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Publish</note>
       </trans-unit>
-      <!-- 5.3
+	  <!-- 5.3
       <trans-unit id="PublishTab.RecordVideo.ActivitiesSkipped">
         <source xml:lang="en">Activities will be skipped</source>
         <note>ID: PublishTab.RecordVideo.ActivitiesSkipped</note>
@@ -4061,10 +4061,10 @@
         <note>ID: PublishTab.RecordVideo.Instructions</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.MakeRecording">
-        <source xml:lang="en">MakeRecording</source>
+        <source xml:lang="en">Make Recording</source>
         <note>ID: PublishTab.RecordVideo.Mp3</note>
       </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.MakeRecording">
+      <trans-unit id="PublishTab.RecordVideo.Mp3">
         <source xml:lang="en">Mp3 Audio</source>
         <note>ID: PublishTab.RecordVideo.Mp3</note>
       </trans-unit>
@@ -4075,10 +4075,26 @@
       <trans-unit id="PublishTab.RecordVideo.Record">
         <source xml:lang="en">Record</source>
         <note>ID: PublishTab.RecordVideo.Record</note>
+		<note>"Record" as in "Record a video recording"</note>
       </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.TurnPageAfter">
+	  <trans-unit id="PublishTab.RecordVideo.RecordingInProgress">
+        <source xml:lang="en">Recording in Progress...</source>
+        <note>ID: PublishTab.RecordVideo.RecordingInProgress</note>
+      </trans-unit>
+	  <trans-unit id="PublishTab.RecordVideo.RecordingInProgressSideways">
+        <source xml:lang="en">Recording in Progress. Showing sideways in order to fit on your screen.</source>
+        <note>ID: PublishTab.RecordVideo.RecordingInProgressSideways</note>
+      </trans-unit>
+	  <trans-unit id="PublishTab.RecordVideo.TurnPageAfter">
         <source xml:lang="en">Turn pages without narration after:</source>
         <note>ID: PublishTab.RecordVideo.TurnPageAfter</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.ScreenTooSmall">
+        <source xml:lang="en">Ideally, this video target should be {0}. However that is larger than your screen, so Bloom will produce a video that is {1}.</source>
+        <note>ID: PublishTab.RecordVideo.ScreenTooSmall</note>
+		<note>{0} will be replaced by the target resolution of the video. For example, "1920 x 1080".</note>
+		<note>{1} will be replaced by the actual resolution of the video. For example, "1280 x 720".</note>
+		<note>Please ensure that the translation includes the {0} and {1} placeholders in an appropriate location in the translated text.</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.WillOpenProgram">
         <source xml:lang="en">

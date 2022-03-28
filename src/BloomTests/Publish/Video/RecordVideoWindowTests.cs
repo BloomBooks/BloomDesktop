@@ -15,18 +15,18 @@ namespace BloomTests.Publish.Video
 		[TestCase(854, 480)]
 		public void RecordVideoWindowGetBestYouTubeSize_LandscapeBookOnExactStandardSizeScreen_ReturnsThatSize(int maxWidth, int maxHeight)
 		{
-			var result = RecordVideoWindow.GetBestYouTubeSize(maxWidth, maxHeight, true);
+			var result = RecordVideoWindow.GetBestYouTubeResolution(new Resolution(maxWidth, maxHeight), true);
 
-			var expectedResult = new RecordVideoWindow.Resolution(maxWidth, maxHeight);
+			var expectedResult = new Resolution(maxWidth, maxHeight);
 			Assert.AreEqual(expectedResult.ToString(), result.ToString());
 		}
 
 		[TestCase(2560, 1440)]
 		public void RecordVideoWindowGetBestYouTubeSize_LandscapeBookOnBiggerThanFHDSizeScreen_ReturnsFHD(int maxWidth, int maxHeight)
 		{
-			var result = RecordVideoWindow.GetBestYouTubeSize(maxWidth, maxHeight, true);
+			var result = RecordVideoWindow.GetBestYouTubeResolution(new Resolution(maxWidth, maxHeight), true);
 
-			var expectedResult = new RecordVideoWindow.Resolution(1920, 1080);
+			var expectedResult = new Resolution(1920, 1080);
 			Assert.AreEqual(expectedResult.ToString(), result.ToString());
 		}
 
@@ -36,18 +36,18 @@ namespace BloomTests.Publish.Video
 		[TestCase(854, 480 - 1, 640, 360)]
 		public void RecordVideoWindowGetBestYouTubeSize_LandscapeBookOnSlightlySmallerThanStandardSizeScreen_ReturnsOneStandardSizeDown(int maxWidth, int maxHeight, int expectedWidth, int expectedHeight)
 		{
-			var result = RecordVideoWindow.GetBestYouTubeSize(maxWidth, maxHeight, true);
+			var result = RecordVideoWindow.GetBestYouTubeResolution(new Resolution(maxWidth, maxHeight), true);
 
-			var expectedResult = new RecordVideoWindow.Resolution(expectedWidth, expectedHeight);
+			var expectedResult = new Resolution(expectedWidth, expectedHeight);
 			Assert.AreEqual(expectedResult.ToString(), result.ToString());
 		}
 
 		[Test]
 		public void RecordVideoWindowGetBestYouTubeSize_PortraitBookOnLandscapeScreen_ReturnsStandardHeightAndProportionalWidth()
 		{
-			var result = RecordVideoWindow.GetBestYouTubeSize(1920, 1080, false);
+			var result = RecordVideoWindow.GetBestYouTubeResolution(new Resolution(1920, 1080), false);
 
-			var expectedResult = new RecordVideoWindow.Resolution(480, 854);
+			var expectedResult = new Resolution(480, 854);
 			Assert.AreEqual(expectedResult.ToString(), result.ToString());
 		}
 
@@ -60,10 +60,10 @@ namespace BloomTests.Publish.Video
 		public void RecordVideoWindowGetBestYouTubeSize_PortraitBookOnPortraitScreen_ReturnsStandardHeightAndProportionalWidth(int maxWidth, int expectedHeight)
 		{
 			int maxHeight = maxWidth * 2;	// A 9x16 video will fit in this screen, with plenty of buffer
-			var result = RecordVideoWindow.GetBestYouTubeSize(maxWidth, maxHeight, false);
+			var result = RecordVideoWindow.GetBestYouTubeResolution(new Resolution(maxWidth, maxHeight), false);
 
 			int expectedWidth = maxWidth;
-			var expectedResult = new RecordVideoWindow.Resolution(expectedWidth, expectedHeight);
+			var expectedResult = new Resolution(expectedWidth, expectedHeight);
 			Assert.AreEqual(expectedResult.ToString(), result.ToString());
 		}
 
@@ -72,9 +72,9 @@ namespace BloomTests.Publish.Video
 		public void RecordVideoWindowGetBestYouTubeSize_PortraitBookOnBiggerThanFHDPortraitScreen_ReturnsFHDSize(int maxWidth)
 		{
 			int maxHeight = maxWidth * 2;   // A 9x16 video will fit in this screen, with plenty of buffer
-			var result = RecordVideoWindow.GetBestYouTubeSize(maxWidth, maxHeight, false);
+			var result = RecordVideoWindow.GetBestYouTubeResolution(new Resolution(maxWidth, maxHeight), false);
 
-			var expectedResult = new RecordVideoWindow.Resolution(1080, 1920);
+			var expectedResult = new Resolution(1080, 1920);
 			Assert.AreEqual(expectedResult.ToString(), result.ToString());
 		}
 	}
