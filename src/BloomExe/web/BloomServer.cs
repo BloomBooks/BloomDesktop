@@ -414,7 +414,7 @@ namespace Bloom.Api
 				if (localPath == "book-preview/index.htm")
 				{
 					info.ResponseContentType = "text/html";
-					var html = (CurrentBook.GetPreviewHtmlFileForWholeBook().getHtmlStringDisplayOnly());
+					var html = CurrentBook.GetPreviewHtmlFileForWholeBook().getHtmlStringDisplayOnly();
 					info.WriteCompleteOutput(html);
 					return true;
 				}
