@@ -2656,13 +2656,14 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Make stuff readonly, which isn't doable via css, surprisingly
+		/// Make stuff readonly, which isn't doable via css, surprisingly. And even more
+		/// surprisingly still necessary after the switch to a React Collection tab preview!
 		/// </summary>
 		/// <param name="dom"></param>
 		internal void AddPreviewJavascript(HtmlDom dom)
 		{
 			dom.AddJavascriptFile("commonBundle.js".ToLocalhost());
-			dom.AddJavascriptFile("legacyBookPreviewBundle.js".ToLocalhost());
+			dom.AddJavascriptFile("bookPreviewBundle.js".ToLocalhost());
 		}
 
 		/// <summary>
