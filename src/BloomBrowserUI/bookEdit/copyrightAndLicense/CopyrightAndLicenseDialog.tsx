@@ -60,10 +60,13 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
         propsForBloomDialog
     } = useSetupBloomDialog(props.dialogEnvironment);
 
-    // Provide external ability to show the dialog
+    // Configure the local function (`show`) for showing the dialog to be the one derived from useSetupBloomDialog (`showDialog`)
+    // which allows js launchers of the dialog to make it visible (by calling showCopyrightAndLicenseInfoOrDialog)
     show = showDialog;
 
     const data = props.data;
+
+    const dialogTitle = useL10n("Copyright and License", "CopyrightAndLicense");
 
     // Tell edit tab to disable everything when the dialog is up.
     // (Without this, the page list is not disabled since the modal
@@ -93,14 +96,22 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
 
     const [forceRenderHack, setForceRenderHack] = useState(0);
 
-    function onCopyrightChange(isValid: boolean) {
-        setForceRenderHack(forceRenderHack + 1);
+    function onCopyrightChange(
+        copyrightInfo: ICopyrightInfo,
+        useOriginalCopyrightAndLicense: boolean,
+        isValid: boolean
+    ) {
+        data.copyrightInfo = copyrightInfo;
+        if (data.derivativeInfo)
+            data.derivativeInfo.useOriginalCopyright = useOriginalCopyrightAndLicense;
         setIsCopyrightValid(isValid);
+        setForceRenderHack(forceRenderHack + 1);
     }
 
-    function onLicenseChange(isValid: boolean) {
-        setForceRenderHack(forceRenderHack + 1);
+    function onLicenseChange(licenseInfo: ILicenseInfo, isValid: boolean) {
+        data.licenseInfo = licenseInfo;
         setIsLicenseValid(isValid);
+        setForceRenderHack(forceRenderHack + 1);
     }
 
     function handleOk() {
@@ -117,10 +128,19 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
             {...propsForBloomDialog}
             disableDragging={disableDragging}
             css={css`
-                height: 700px;
+                min-height: 700px;
             `}
         >
-            {data?.licenseInfo && (
+            <DialogTitle
+                title={dialogTitle}
+                disableDragging={disableDragging}
+                css={css`
+                    padding-bottom: 0;
+                    margin-bottom: 0;
+                `}
+            />
+            {// This absolutely positioned div will appear to the right of the title text
+            data?.licenseInfo && (
                 <div
                     css={css`
                         position: absolute;
@@ -134,18 +154,14 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
                                 ? data.derivativeInfo!.originalLicense!
                                 : data.licenseInfo
                         }
+                        onChange={(newLicenseInfo: ILicenseInfo) => {
+                            data.licenseInfo = newLicenseInfo;
+                            setForceRenderHack(forceRenderHack + 1);
+                        }}
                         disabled={useOriginalCopyrightAndLicense}
                     />
                 </div>
             )}
-            <DialogTitle
-                title={useL10n("Copyright and License", "CopyrightAndLicense")}
-                disableDragging={disableDragging}
-                css={css`
-                    padding-bottom: 0;
-                    margin-bottom: 0;
-                `}
-            />
             <DialogMiddle
                 css={css`
                     width: ${props.dialogEnvironment
@@ -184,7 +200,17 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
                                 isForBook={props.isForBook}
                                 derivativeInfo={data.derivativeInfo}
                                 copyrightInfo={data.copyrightInfo}
-                                onChange={isValid => onCopyrightChange(isValid)}
+                                onChange={(
+                                    copyrightInfo,
+                                    useOriginalCopyrightAndLicense,
+                                    isValid
+                                ) =>
+                                    onCopyrightChange(
+                                        copyrightInfo,
+                                        useOriginalCopyrightAndLicense,
+                                        isValid
+                                    )
+                                }
                             />
                         )}
                     </TabPanel>
@@ -193,7 +219,9 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
                             <LicensePanel
                                 licenseInfo={data.licenseInfo}
                                 derivativeInfo={data.derivativeInfo}
-                                onChange={isValid => onLicenseChange(isValid)}
+                                onChange={(licenseInfo, isValid) =>
+                                    onLicenseChange(licenseInfo, isValid)
+                                }
                             />
                         )}
                     </TabPanel>
@@ -233,14 +261,15 @@ function showCopyrightAndLicenseDialog(
 }
 
 // Either the `get` call will show info to the user
-// (e.g. read-only info if he can't modify the image)
+// (e.g. read-only info if he can't modify the image or a message stating images cannot be changed unless unlocked)
 // or we will display the dialog.
 export function showCopyrightAndLicenseInfoOrDialog(imageUrl?: string) {
     const isForBook: boolean = !imageUrl;
     BloomApi.get(
+        // We don't uri-encode the imageUrl because we are getting it from the html tag (and therefore its already encoded).
         getApiUrlSuffix(isForBook) + (imageUrl ? `?imageUrl=${imageUrl}` : ""),
         result => {
-            if (result.data && JSON.stringify(result.data) !== "{}") {
+            if (result.data) {
                 showCopyrightAndLicenseDialog(isForBook, result.data);
             }
         },

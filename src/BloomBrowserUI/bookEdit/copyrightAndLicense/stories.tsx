@@ -85,7 +85,11 @@ const CopyrightPanelTemplate: ComponentStory<typeof CopyrightPanel> = args => {
                     copyrightYear: "2000",
                     copyrightHolder: "Bob"
                 }}
-                onChange={isValid => setValid(isValid)}
+                onChange={(
+                    copyrightInfo,
+                    useOriginalCopyrightAndLicense,
+                    isValid
+                ) => setValid(isValid)}
             />
             Valid: {valid.toString()}
         </PanelFrame>
@@ -106,7 +110,7 @@ export const _LicensePanel = () => {
                     creativeCommonsInfo: sampleCreativeCommonsInfo,
                     rightsStatement: ""
                 }}
-                onChange={isValid => setValid(isValid)}
+                onChange={(licenseInfo, isValid) => setValid(isValid)}
             />
             Valid: {valid.toString()}
         </PanelFrame>
