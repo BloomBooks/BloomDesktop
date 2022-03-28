@@ -117,6 +117,12 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = props => 
         );
     };
 
+    const {
+        dialogFrameProvidedExternally,
+        disableDragging,
+        ...propsToPass
+    } = props;
+
     return (
         <CloseOnEscape
             onEscape={() => {
@@ -137,7 +143,7 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = props => 
                                 overflow: hidden; // only the middle should scroll. The DialogTitle and DialogBottomButtons should not.
                             }
                         `}
-                        {...props} // get  fullWidth, maxWidth, open etc. Note that css doesn't end up anywhere useful in the HTML (try the paper?)
+                        {...propsToPass} // get  fullWidth, maxWidth, open etc. Note that css doesn't end up anywhere useful in the HTML (try the paper?)
                     >
                         {inner}
                     </Dialog>

@@ -436,9 +436,12 @@ export default class BloomHintBubbles {
             if (functionCall) {
                 if (functionCall === "bookMetadataEditor") {
                     if (!BloomHintBubbles.canChangeBookLicense()) return;
+                    // In C# land, the browser onClick will attempt to handle this.
+                    // This dummy function name simply indicates we've already done
+                    // all that is needed and prevents C# from interfering.
                     functionCall = "clickWasAlreadyHandled";
                     onClick =
-                        "onClick='(window.parent || window).editTabBundle.showCopyrightAndLicenseDialogForBook();'";
+                        "onClick='(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog();'";
                 }
                 shouldShowAlways = true;
 

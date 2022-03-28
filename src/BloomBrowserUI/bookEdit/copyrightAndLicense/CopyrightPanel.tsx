@@ -24,24 +24,30 @@ export const CopyrightPanel: React.FunctionComponent<{
     isForBook: boolean;
     derivativeInfo?: IDerivativeInfo;
     copyrightInfo: ICopyrightInfo;
-    onChange: (isValid: boolean) => void;
+    onChange: (
+        copyrightInfo: ICopyrightInfo,
+        useOriginalCopyrightAndLicense: boolean,
+        isValid: boolean
+    ) => void;
 }> = props => {
+    const copyrightInfo = JSON.parse(JSON.stringify(props.copyrightInfo)); //clone
+
     const [isYearValid, setIsYearValid] = useState(false);
     const [isHolderValid, setIsHolderValid] = useState(false);
+
     const [imageCreator, setImageCreator] = useState(
-        props.copyrightInfo.imageCreator || ""
+        copyrightInfo.imageCreator || ""
     );
     const [year, setYear] = useState(
-        props.copyrightInfo.copyrightYear || new Date().getFullYear().toString()
+        copyrightInfo.copyrightYear || new Date().getFullYear().toString()
     );
-    const [holder, setHolder] = useState(
-        props.copyrightInfo.copyrightHolder || ""
-    );
-    const [isSil, setIsSil] = useState(false);
+    const [holder, setHolder] = useState(copyrightInfo.copyrightHolder || "");
     const [
         useOriginalCopyrightAndLicense,
         setUseOriginalCopyrightAndLicense
     ] = useState(props.derivativeInfo?.useOriginalCopyright === true);
+
+    const [isSil, setIsSil] = useState(false);
 
     // These two values are to keep the derivative values if the user
     // turns on `useOriginalCopyrightAndLicense` and then turns it off
@@ -51,7 +57,6 @@ export const CopyrightPanel: React.FunctionComponent<{
 
     useEffect(() => {
         setIsYearValid(isValidYear(year));
-        props.copyrightInfo.copyrightYear = year?.trim();
     }, [year]);
 
     function isValidYear(year: string): boolean {
@@ -59,16 +64,12 @@ export const CopyrightPanel: React.FunctionComponent<{
         year = year.trim();
         if (!year) return false;
 
-        const yearAsNum = Number.parseInt(year, 10);
-        if (Number.isNaN(yearAsNum)) return false;
-
-        return yearAsNum >= 1900 && yearAsNum <= 2100;
+        return new RegExp("^\\d\\d\\d\\d$").test(year);
     }
 
     useEffect(() => {
         setIsHolderValid(isValidHolder(holder));
-        setIsSil(holder.toLowerCase().match(/\bsil\b/) != null);
-        props.copyrightInfo.copyrightHolder = holder?.trim();
+        setIsSil(holder.includes("SIL"));
     }, [holder]);
 
     function isValidHolder(holder: string): boolean {
@@ -78,35 +79,36 @@ export const CopyrightPanel: React.FunctionComponent<{
     }
 
     useEffect(() => {
-        props.copyrightInfo.imageCreator = imageCreator;
-    }, [imageCreator]);
-
-    useEffect(() => {
-        props.onChange(isYearValid && isHolderValid);
-    }, [isYearValid, isHolderValid, useOriginalCopyrightAndLicense]);
+        const copyrightInfoToSave: ICopyrightInfo = {
+            imageCreator: imageCreator?.trim(),
+            copyrightYear: year.trim(),
+            copyrightHolder: holder.trim()
+        };
+        props.onChange(
+            copyrightInfoToSave,
+            useOriginalCopyrightAndLicense,
+            isYearValid && isHolderValid
+        );
+    }, [
+        imageCreator,
+        year,
+        holder,
+        isYearValid,
+        isHolderValid,
+        useOriginalCopyrightAndLicense
+    ]);
 
     function handleUseOriginalCopyrightAndLicenseChanged(checked: boolean) {
         setUseOriginalCopyrightAndLicense(checked);
-        props.derivativeInfo!.useOriginalCopyright = checked;
         if (checked) {
             setYearToPreserve(year);
             setHolderToPreserve(holder);
-            setYear(props.derivativeInfo?.originalCopyrightYear!);
-            setHolder(props.derivativeInfo?.originalCopyrightHolder!);
+            setYear(props.derivativeInfo!.originalCopyrightYear!);
+            setHolder(props.derivativeInfo!.originalCopyrightHolder!);
         } else {
             setYear(yearToPreserve);
             setHolder(holderToPreserve);
         }
-    }
-
-    function getVerticalSpacer(numPixels: number) {
-        return (
-            <div
-                css={css`
-                    height: ${numPixels}px;
-                `}
-            ></div>
-        );
     }
 
     return (
@@ -127,8 +129,10 @@ export const CopyrightPanel: React.FunctionComponent<{
                             setImageCreator(event.target.value);
                         }}
                         required={false}
+                        css={css`
+                            margin-bottom: 20px !important;
+                        `}
                     />
-                    {getVerticalSpacer(20)}
                 </>
             )}
             <MuiTextField
@@ -143,10 +147,10 @@ export const CopyrightPanel: React.FunctionComponent<{
                 required={true}
                 error={!isYearValid}
                 css={css`
-                    width: 100px;
+                    width: 150px; // Enough for slightly longer translations of the label; English only needs 100px
+                    margin-bottom: 20px !important;
                 `}
             />
-            {getVerticalSpacer(20)}
             <MuiTextField
                 label="Copyright Holder"
                 l10nKey={"Copyright.CopyrightHolder"}
@@ -157,8 +161,10 @@ export const CopyrightPanel: React.FunctionComponent<{
                 disabled={useOriginalCopyrightAndLicense}
                 required={true}
                 error={!isHolderValid}
+                css={css`
+                    margin-bottom: 11px !important;
+                `}
             />
-            {getVerticalSpacer(11)}
             {isSil && (
                 <NoteBox addBorder={true}>
                     <div>
@@ -199,11 +205,11 @@ export const CopyrightPanel: React.FunctionComponent<{
                                 checked as boolean
                             )
                         }
-                    ></MuiCheckbox>
+                    />
                     <div>
                         <div
                             css={css`
-                                margin-left: 28px; // a magic number which happens to align things
+                                margin-left: 28px; // a magic number which happens to align this text with the checkbox label just above it
                             `}
                         >
                             <div

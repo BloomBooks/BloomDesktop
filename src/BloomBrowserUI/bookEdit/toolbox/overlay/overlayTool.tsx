@@ -598,7 +598,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                     onCheckChanged={v => {
                                         handleShowTailChanged(v as boolean);
                                     }}
-                                    legacyVersionWhichDoesntEnsureWrappedLabelsWork={
+                                    deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
                                         true
                                     }
                                 />
@@ -616,7 +616,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                     onCheckChanged={newValue => {
                                         handleRoundedCornersChanged(newValue);
                                     }}
-                                    legacyVersionWhichDoesntEnsureWrappedLabelsWork={
+                                    deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
                                         true
                                     }
                                 />

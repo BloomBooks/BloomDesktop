@@ -11,6 +11,8 @@ export interface IRadioProps extends ILocalizationProps {
 }
 
 // A radio button that is localizable.
+// Note that this is a vanilla html radio input.
+// Likely, any new control should be MuiRadio which is a material UI radio.
 export class Radio extends LocalizableElement<IRadioProps, {}> {
     constructor(props) {
         super(props);
@@ -80,6 +82,9 @@ export interface IRadioGroupProps {
 //      <Radio i18n="SomeScope.Blue" value="blue">Blue</Radio>
 // </RadioGroup>
 // Radio children may be nested inside other children and combined with non-radio children.
+//
+// Note that this was designed to work with the `Radio` control above.
+// But it is likely that any new controls should rather be MuiRadio.
 export class RadioGroup extends React.Component<IRadioGroupProps, {}> {
     constructor(props) {
         super(props);

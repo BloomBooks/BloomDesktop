@@ -19,7 +19,12 @@ import {
 import "../ReaderPublish/ReaderPublish.less";
 import ReactDOM = require("react-dom");
 import { ThemeProvider } from "@material-ui/styles";
-import { darkTheme, kBloomBlue, lightTheme } from "../../bloomMaterialUITheme";
+import {
+    darkTheme,
+    kBloomBlue,
+    kBloomBlueLight,
+    lightTheme
+} from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import { useSubscribeToWebSocketForStringMessage } from "../../utils/WebSocketManager";
 import { BloomApi } from "../../utils/bloomApi";
@@ -370,10 +375,9 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                                         >
                                             <PauseIcon
                                                 css={css`
-                                                    color: ${kBloomBlue +
-                                                        (isPauseButtonDisabled
-                                                            ? "80" // add 50% transparency for disabled look
-                                                            : "")};
+                                                    color: ${isPauseButtonDisabled
+                                                        ? kBloomBlueLight
+                                                        : kBloomBlue};
                                                     font-size: 2rem !important;
                                                 `}
                                             />

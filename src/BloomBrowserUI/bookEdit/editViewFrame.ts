@@ -15,11 +15,10 @@ export interface IEditViewFrameExports {
     doWhenToolboxLoaded(
         task: (toolboxFrameExports: IToolboxFrameExports) => any
     );
-    getDocument(): Document;
     getModalDialogContainer(): HTMLElement | null;
     showConfirmDialog(props: IConfirmDialogProps): void;
     showColorPickerDialog(props: IColorPickerDialogProps): void;
-    showCopyrightAndLicenseDialogForBook(): void;
+    showCopyrightAndLicenseDialog(imageUrl?: string): void;
 }
 
 export function SayHello() {
@@ -168,10 +167,6 @@ export function canUndo(): string {
 // method called from EditingModel.cs
 // for "templatesJSON", see property EditingModel.GetJsonTemplatePageObject
 
-export function getDocument(): Document {
-    return document;
-}
-
 // Only one modal dialog can be open at a time, so we'll just make space for one.
 export function getModalDialogContainer(): HTMLElement | null {
     return document.getElementById("modal-dialog-container");
@@ -185,6 +180,6 @@ export function showColorPickerDialog(props: IColorPickerDialogProps): void {
     doShowColorPickerDialog(props);
 }
 
-export function showCopyrightAndLicenseDialogForBook() {
-    showCopyrightAndLicenseInfoOrDialog();
+export function showCopyrightAndLicenseDialog(imageUrl?: string) {
+    showCopyrightAndLicenseInfoOrDialog(imageUrl);
 }
