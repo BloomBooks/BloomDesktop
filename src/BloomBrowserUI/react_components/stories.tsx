@@ -205,14 +205,18 @@ storiesOf("Localizable Widgets/MuiCheckbox", module)
                         checked={true}
                         onCheckChanged={() => {}}
                         l10nKey="bogus"
-                        legacyVersionWhichDoesntEnsureWrappedLabelsWork={true}
+                        deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
+                            true
+                        }
                     />
                     <MuiCheckbox
                         label="Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin."
                         checked={true}
                         onCheckChanged={() => {}}
                         l10nKey="bogus"
-                        legacyVersionWhichDoesntEnsureWrappedLabelsWork={true}
+                        deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
+                            true
+                        }
                     />
                 </div>
                 <hr />
@@ -250,7 +254,9 @@ storiesOf("Localizable Widgets/MuiCheckbox", module)
                         checked={true}
                         onCheckChanged={() => {}}
                         l10nKey="bogus"
-                        legacyVersionWhichDoesntEnsureWrappedLabelsWork={true}
+                        deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
+                            true
+                        }
                     />
                     <FormControlLabel
                         control={<OriginalMuiCheckbox />}

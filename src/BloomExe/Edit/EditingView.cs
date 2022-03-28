@@ -692,21 +692,19 @@ namespace Bloom.Edit
 			Settings.Default.LastSourceLanguageViewed = target.OuterHtml.Substring(start, end - start);
 		}
 
-		private Metadata _originalImageMetadata;
-		private Action<Metadata> _setNewImageMetadataActionForImageToolbox;
-		private void ProcessImageMetadataFromImageToolbox(Metadata originalMetadata, Action<Metadata> setNewImageMetadata)
-		{
-			_setNewImageMetadataActionForImageToolbox = setNewImageMetadata;
-			_originalImageMetadata = originalMetadata;
-			LaunchCopyrightAndLicenseDialogForImage(originalMetadata);
-		}
+		private Metadata _originalImageMetadataFromImageToolbox;
+		// When the copyright and license dialog is launched from the palaso image toolbox,
+		// this action will be set as the thing to do to save the metadata (into the image)
+		// when the user confirms changes in the C/L dialog.
+		private Action<Metadata> _saveNewImageMetadataActionForImageToolbox;
 
 		private string _fileNameOfImageBeingModified;
 		public Metadata PrepareToEditImageMetadata(string fileName)
 		{
 			if (fileName == null)
 			{
-				return _originalImageMetadata;
+				// Without a file name, we are coming from the palaso image toolbox
+				return _originalImageMetadataFromImageToolbox;
 			}
 
 			// keep a reference to the fileName rather the image to avoid dispose issues
@@ -740,7 +738,6 @@ namespace Bloom.Edit
 						return null;
 					}
 				}
-				Logger.WriteEvent("Showing Metadata Editor For Image");
 
 				return imageBeingModified.Metadata;
 			}
@@ -749,9 +746,9 @@ namespace Bloom.Edit
 		/// <returns>false if saving via libpalaso image toolbox; true otherwise</returns>
 		public bool SaveImageMetadata(Metadata metadata)
 		{
-			if (_setNewImageMetadataActionForImageToolbox != null)
+			if (_saveNewImageMetadataActionForImageToolbox != null)
 			{
-				_setNewImageMetadataActionForImageToolbox(metadata);
+				_saveNewImageMetadataActionForImageToolbox(metadata);
 				return false;
 			}
 
@@ -767,8 +764,9 @@ namespace Bloom.Edit
 
 		private void LaunchCopyrightAndLicenseDialogForImage(Metadata imageMetadata)
 		{
+			var dialogTitle = LocalizationManager.GetString("CopyrightAndLicense", "Copyright and License");
 			var data = _copyrightAndLicenseApi.GetJsonFromMetadata(imageMetadata, forBook: false);
-			using (var dlg = new ReactDialog("copyrightAndLicenseBundle", new { isForBook = false, data  }, "Copyright and License"))
+			using (var dlg = new ReactDialog("copyrightAndLicenseBundle", new { isForBook = false, data }, dialogTitle))
 			{
 				dlg.Width = 500;
 				dlg.Height = 700;
@@ -1120,7 +1118,23 @@ namespace Bloom.Edit
 			// not using a "using for this" because we want to disentagle the cost of the dialog vs. working
 			// with the results of the dialog.
 			var performanceMeasureForShowingDialog = PerformanceMeasurement.Global.Measure("Show ImageToolbox Dialog");
-			using (var dlg = new ImageToolboxDialog(imageInfo, null, ProcessImageMetadataFromImageToolbox))
+			using (var dlg = new ImageToolboxDialog(imageInfo, null,
+				// This action overrides the default "edit metadata" action in the palaso image toolbox.
+				// Its default is to launch the original palaso WinForms C/L dialog.
+				// But we launch our own react dialog. If/when the user clicks ok, we call back to palaso
+				// to save the new metadata using the saveNewImageMetadata.
+				// If the user cancels, then we never save and things get cleaned up when the
+				// modal image toolbox is closed.
+				// Note, it would, in theory, improve things to just save the new metadata
+				// here locally via an api call and then not close the dialog until that was saved.
+				// But we couldn't convince ourselves with 100% certainty that the save metadata api
+				// call would finish before the close dialog api call.
+				(originalMetadata, saveAction) =>
+				{
+					_saveNewImageMetadataActionForImageToolbox = saveAction;
+					_originalImageMetadataFromImageToolbox = originalMetadata;
+					LaunchCopyrightAndLicenseDialogForImage(originalMetadata);
+				}))
 			{
 				var searchLanguage = Settings.Default.ImageSearchLanguage;
 				dlg.ImageLoadingExceptionReporter = (path, ex, msg) =>
@@ -1138,7 +1152,19 @@ namespace Bloom.Edit
 				}
 
 				dlg.SearchLanguage = searchLanguage;
-				var result = dlg.ShowDialog();
+				DialogResult result;
+				try
+				{
+					result = dlg.ShowDialog();
+				}
+				finally
+				{
+					// These variables get set during a callback from the dialog that allows us to use our own way of
+					// editing metadata for an image. It's important that they get cleaned up once the dialog is closed
+					// so they don't interfere with future uses of the metadata editing code.
+					_originalImageMetadataFromImageToolbox = null;
+					_saveNewImageMetadataActionForImageToolbox = null;
+				}
 				if (performanceMeasureForShowingDialog != null)
 					performanceMeasureForShowingDialog.Dispose();
 #if MEMORYCHECK
@@ -1151,41 +1177,41 @@ namespace Bloom.Edit
 					{
 						try
 						{
-						var sameAsOriginalImage = (imageInfo == dlg.ImageInfo &&
-							oldImage == dlg.ImageInfo.Image &&
-							oldSize == dlg.ImageInfo.Image.Size &&
-							newImagePath == dlg.ImageInfo.OriginalFilePath);
-						// Avoid saving the Image data if possible.  A large PNG file can take 5-10 seconds to save.
-						// So check the current image dimensions against the original image dimensions to see if we
-						// can avoid saving.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9377.
-						int height, width; // set to -1, -1 if next call fails.
-						var gotSize = TryGetOriginalImageDimensions(dlg.ImageInfo, out height, out width);
-						var copyOriginalImage = gotSize && height == dlg.ImageInfo.Image.Height &&
-						                        width == dlg.ImageInfo.Image.Width;
-						// Copy an uncropped image's file or save a cropped image to a file before processing further.
-						// The code for ensuring non-transparency uses GraphicsMagick on the file content if possible, so the
-						// file must be in sync with the imageInfo.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8638.
-						// This applies to newly selected files as well as cropping previously selected files.
-						if (newImagePath == null || dlg.ImageInfo.OriginalFilePath != newImagePath)
-						{
-							var originalImagePath = dlg.ImageInfo.OriginalFilePath;
-							var basename = Path.GetFileNameWithoutExtension(originalImagePath);
-							// ImageInfo.Save throws an exception for .bmp files because they can't store metadata.
-							// ImageInfo.Save doesn't save .tif file properly, creating a blank image file.  So always
-							// save images in PNG format if they aren't originally JPEG format.
-							// It's important to get this right: ImageInfo.Save() throws if the actual file format
-							// doens't match the extension.
-							// (Bloom always saves images in either PNG or JPEG format anyway.  If the image is
-							// actually BMP or TIFF, it will get either get converted to PNG when resized later or
-							// it will be saved in PNG form later if it's not resized.  ImageInfo.Save is slow for
-							// PNG images, so we avoid it if at all possible.)
-							var extension = ImageUtils.AppearsToBeJpeg(dlg.ImageInfo) ? ".jpg" : ".png";
+							var sameAsOriginalImage = (imageInfo == dlg.ImageInfo &&
+								oldImage == dlg.ImageInfo.Image &&
+								oldSize == dlg.ImageInfo.Image.Size &&
+								newImagePath == dlg.ImageInfo.OriginalFilePath);
+							// Avoid saving the Image data if possible.  A large PNG file can take 5-10 seconds to save.
+							// So check the current image dimensions against the original image dimensions to see if we
+							// can avoid saving.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9377.
+							int height, width; // set to -1, -1 if next call fails.
+							var gotSize = TryGetOriginalImageDimensions(dlg.ImageInfo, out height, out width);
+							var copyOriginalImage = gotSize && height == dlg.ImageInfo.Image.Height &&
+													width == dlg.ImageInfo.Image.Width;
+							// Copy an uncropped image's file or save a cropped image to a file before processing further.
+							// The code for ensuring non-transparency uses GraphicsMagick on the file content if possible, so the
+							// file must be in sync with the imageInfo.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8638.
+							// This applies to newly selected files as well as cropping previously selected files.
+							if (newImagePath == null || dlg.ImageInfo.OriginalFilePath != newImagePath)
+							{
+								var originalImagePath = dlg.ImageInfo.OriginalFilePath;
+								var basename = Path.GetFileNameWithoutExtension(originalImagePath);
+								// ImageInfo.Save throws an exception for .bmp files because they can't store metadata.
+								// ImageInfo.Save doesn't save .tif file properly, creating a blank image file.  So always
+								// save images in PNG format if they aren't originally JPEG format.
+								// It's important to get this right: ImageInfo.Save() throws if the actual file format
+								// doens't match the extension.
+								// (Bloom always saves images in either PNG or JPEG format anyway.  If the image is
+								// actually BMP or TIFF, it will get either get converted to PNG when resized later or
+								// it will be saved in PNG form later if it's not resized.  ImageInfo.Save is slow for
+								// PNG images, so we avoid it if at all possible.)
+								var extension = ImageUtils.AppearsToBeJpeg(dlg.ImageInfo) ? ".jpg" : ".png";
 
-							var newFilename = ImageUtils.GetUnusedFilename(Path.GetTempPath(), basename, extension);
-							newImagePath = Path.Combine(Path.GetTempPath(), newFilename);
-						}
+								var newFilename = ImageUtils.GetUnusedFilename(Path.GetTempPath(), basename, extension);
+								newImagePath = Path.Combine(Path.GetTempPath(), newFilename);
+							}
 
-						var exceptionMsg = "Bloom had a problem including that image";
+							var exceptionMsg = "Bloom had a problem including that image";
 							if (copyOriginalImage || sameAsOriginalImage)
 							{
 								// Try to copy the file only if we actually need to copy it.  (BL-9737)
@@ -1232,9 +1258,6 @@ namespace Bloom.Edit
 					Settings.Default.ImageSearchLanguage = dlg.SearchLanguage;
 					Settings.Default.Save();
 				}
-
-				_originalImageMetadata = null;
-				_setNewImageMetadataActionForImageToolbox = null;
 			}
 			TextInputBox.UseWebTextBox = useWebTextBox;
 			Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");

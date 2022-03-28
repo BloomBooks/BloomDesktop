@@ -80,7 +80,7 @@ export class StringListCheckbox extends LocalizableElement<IProps, {}> {
                     this.props.onChange(this.getNewList(checked));
                 }}
                 label={this.props.label}
-                legacyVersionWhichDoesntEnsureWrappedLabelsWork={true}
+                deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={true}
             />
         );
     }

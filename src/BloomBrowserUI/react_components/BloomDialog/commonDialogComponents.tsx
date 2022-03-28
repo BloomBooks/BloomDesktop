@@ -4,7 +4,8 @@ import * as React from "react";
 import {
     kDialogPadding,
     kBloomBlue,
-    kBorderRadiusForSpecialBlocks
+    kBorderRadiusForSpecialBlocks,
+    kBloomBlueLight
 } from "../../bloomMaterialUITheme";
 import { BloomApi } from "../../utils/bloomApi";
 import BloomButton from "../bloomButton";
@@ -210,9 +211,10 @@ export const NoteBox: React.FunctionComponent<{
     let border = css``;
     if (props.addBorder) {
         border = css`
-            border: solid 1px ${kBloomBlue + "80"};
+            border: solid 1px ${kBloomBlueLight};
         `;
     }
+    const { addBorder, ...propsToPass } = props;
     return (
         <div
             css={css`
@@ -227,7 +229,7 @@ export const NoteBox: React.FunctionComponent<{
                 margin-block-end: 1em;
                 ${border};
             `}
-            {...props} // allows defining more css rules from container
+            {...propsToPass} // allows defining more css rules from container
         >
             <InfoIcon
                 color="primary"

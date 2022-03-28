@@ -20,11 +20,12 @@ export const MuiCheckbox: React.FunctionComponent<{
     onCheckChanged: (v: boolean | undefined) => void;
     l10nParam0?: string;
     l10nParam1?: string;
-    // The original version of this didn't properly handle wrapped labels.
-    // To make wrapped labels work, we had to add an extra div layer.
-    // That broke some existing usages, and I started going too deep into the rabbit hole trying
-    // to fix them, so I just added this prop instead.
-    legacyVersionWhichDoesntEnsureWrappedLabelsWork?: boolean;
+    // The original version of this didn't properly handle multiline (wrapped) labels.
+    // To make multiline labels work, we had to add an extra div layer.
+    // That broke some existing usages. When I started trying to fix them,
+    // I ended up deep in the rabbit hole, so I punted and added this prop instead.
+    // Ideally, we would fix those and get rid of this parameter.
+    deprecatedVersionWhichDoesntEnsureMultilineLabelsWork?: boolean;
 }> = props => {
     const [previousTriState, setPreviousTriState] = useState<
         boolean | undefined
@@ -46,7 +47,7 @@ export const MuiCheckbox: React.FunctionComponent<{
     const checkboxControl = (
         <Checkbox
             css={
-                !props.legacyVersionWhichDoesntEnsureWrappedLabelsWork
+                !props.deprecatedVersionWhichDoesntEnsureMultilineLabelsWork
                     ? css`
                           margin-top: -1px !important;
                       `
@@ -84,7 +85,7 @@ export const MuiCheckbox: React.FunctionComponent<{
     return (
         <FormControlLabel
             css={
-                !props.legacyVersionWhichDoesntEnsureWrappedLabelsWork
+                !props.deprecatedVersionWhichDoesntEnsureMultilineLabelsWork
                     ? css`
                           align-items: baseline !important; // !important needed to override MUI default
                       `
@@ -94,7 +95,7 @@ export const MuiCheckbox: React.FunctionComponent<{
             control={
                 // Without this empty div, the vertical alignment between the button and the label is wrong
                 // when the label wraps.
-                !props.legacyVersionWhichDoesntEnsureWrappedLabelsWork ? (
+                !props.deprecatedVersionWhichDoesntEnsureMultilineLabelsWork ? (
                     <div>{checkboxControl}</div>
                 ) : (
                     checkboxControl
