@@ -34,15 +34,17 @@ namespace Bloom.web.controllers
 						licenseImage = CreativeCommonsLicense.FromToken(token[0]).GetImage();
 					else
 						licenseImage = request.CurrentBook.GetLicenseMetadata().License.GetImage();
-					using (TempFile tempFile = new TempFile())
+					// ReplyWithImage uses the extension to determine the content type
+					using (TempFile tempFile = TempFile.WithExtension(".png"))
 					{
 						licenseImage.Save(tempFile.Path);
 						request.ReplyWithImage(tempFile.Path);
 					}
 					licenseImage.Dispose();
 				}
-				catch
+				catch (Exception e)
 				{
+					Logger.WriteError("Unable to get cc license image for dialog", e);
 					request.Failed();
 				}
 			}
@@ -85,9 +87,10 @@ namespace Bloom.web.controllers
 					metadata = View.PrepareToEditImageMetadata(imageUrl);
 					if (metadata == null)
 					{
-						request.ReplyWithText(String.Empty);
+						request.ReplyWithJson(String.Empty);
 						return;
 					}
+					Logger.WriteEvent("Showing Copyright/License Editor For Image");
 					var intellectualPropertyData = GetJsonFromMetadata(metadata, forBook: false);
 					request.ReplyWithJson(intellectualPropertyData);
 					break;
