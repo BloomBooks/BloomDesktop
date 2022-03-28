@@ -207,7 +207,7 @@ namespace Bloom.Publish.Video
 		{
 			base.OnLoad(e);
 			_webSocketServer.SendString("recordVideo", "ready", "false");
-			_initialVideo = TempFile.WithExtension(_codec.ToExtension());
+			_initialVideo = BloomTemp.TempFileUtils.GetTempFileWithPrettyExtension(_codec.ToExtension());
 			_videoOnlyPath = _initialVideo.Path;
 			RobustFile.Delete(_videoOnlyPath);
 		}
@@ -356,7 +356,7 @@ namespace Bloom.Publish.Video
 				soundLog[i] = sound;
 			}
 
-			_finalVideo = TempFile.WithExtension(_codec.ToExtension());
+			_finalVideo = BloomTemp.TempFileUtils.GetTempFileWithPrettyExtension(_codec.ToExtension());
 			var finalOutputPath = _finalVideo.Path;
 			RobustFile.Delete(finalOutputPath);
 			if (soundLog.Length == 0)
