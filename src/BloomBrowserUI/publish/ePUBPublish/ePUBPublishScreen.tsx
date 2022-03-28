@@ -1,3 +1,7 @@
+/** @jsx jsx **/
+/** @jsxFrag React.Fragment */
+import { jsx, css } from "@emotion/core";
+
 import * as React from "react";
 import { useState, useContext } from "react";
 import {
@@ -109,6 +113,12 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                 </PublishPanel>
                 <SettingsPanel>
                     <EPUBSettingsGroup />
+                    {/* push everything below this to the bottom */}
+                    <div
+                        css={css`
+                            margin-top: auto;
+                        `}
+                    />
                     <EPUBHelpGroup />
                 </SettingsPanel>
             </BasePublishScreen>

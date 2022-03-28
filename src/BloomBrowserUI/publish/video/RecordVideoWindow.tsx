@@ -254,7 +254,11 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
     margin-bottom:5px;
     color: grey;`;
     return (
-        <Typography>
+        <Typography
+            css={css`
+                height: 100%;
+            `}
+        >
             <RequiresBloomEnterpriseDialog />
             <BasePublishScreen
                 className="ReaderPublishScreen"
@@ -355,7 +359,7 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                                                 <PlayIcon
                                                     css={css`
                                                         color: ${kBloomBlue};
-                                                        font-size: 2rem;
+                                                        font-size: 2rem !important;
                                                     `}
                                                 />
                                             </Button>
@@ -370,7 +374,7 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                                                         (isPauseButtonDisabled
                                                             ? "80" // add 50% transparency for disabled look
                                                             : "")};
-                                                    font-size: 2rem;
+                                                    font-size: 2rem !important;
                                                 `}
                                             />
                                         </Button>

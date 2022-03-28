@@ -48,6 +48,8 @@ export const SimplePreview: React.FunctionComponent<{
                     padding: ${topPadding}px ${sidePadding}px ${bottomPadding}px
                         ${sidePadding}px;
                     background-color: #2e2e2e;
+                    // Prevent parent's scroll bar from being computed based on the unscaled size of our children
+                    overflow: hidden;
                 `}
             >
                 <iframe
