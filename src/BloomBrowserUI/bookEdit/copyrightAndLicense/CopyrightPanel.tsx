@@ -59,10 +59,7 @@ export const CopyrightPanel: React.FunctionComponent<{
         year = year.trim();
         if (!year) return false;
 
-        const yearAsNum = Number.parseInt(year, 10);
-        if (Number.isNaN(yearAsNum)) return false;
-
-        return yearAsNum >= 1900 && yearAsNum <= 2100;
+        return new RegExp("^\\d\\d\\d\\d$").test(year);
     }
 
     useEffect(() => {
@@ -143,7 +140,7 @@ export const CopyrightPanel: React.FunctionComponent<{
                 required={true}
                 error={!isYearValid}
                 css={css`
-                    width: 100px;
+                    width: 150px; // Enough for slightly longer translations of the label; English only needs 100px
                 `}
             />
             {getVerticalSpacer(20)}
