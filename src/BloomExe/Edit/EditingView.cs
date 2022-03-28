@@ -767,8 +767,9 @@ namespace Bloom.Edit
 
 		private void LaunchCopyrightAndLicenseDialogForImage(Metadata imageMetadata)
 		{
+			var dialogTitle = LocalizationManager.GetString("CopyrightAndLicense", "Copyright and License");
 			var data = _copyrightAndLicenseApi.GetJsonFromMetadata(imageMetadata, forBook: false);
-			using (var dlg = new ReactDialog("copyrightAndLicenseBundle", new { isForBook = false, data  }, "Copyright and License"))
+			using (var dlg = new ReactDialog("copyrightAndLicenseBundle", new { isForBook = false, data }, dialogTitle))
 			{
 				dlg.Width = 500;
 				dlg.Height = 700;

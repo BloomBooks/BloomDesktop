@@ -65,6 +65,8 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
 
     const data = props.data;
 
+    const dialogTitle = useL10n("Copyright and License", "CopyrightAndLicense");
+
     // Tell edit tab to disable everything when the dialog is up.
     // (Without this, the page list is not disabled since the modal
     // div only exists in the book pane. Once the whole edit tab is inside
@@ -117,10 +119,19 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
             {...propsForBloomDialog}
             disableDragging={disableDragging}
             css={css`
-                height: 700px;
+                min-height: 700px;
             `}
         >
-            {data?.licenseInfo && (
+            <DialogTitle
+                title={dialogTitle}
+                disableDragging={disableDragging}
+                css={css`
+                    padding-bottom: 0;
+                    margin-bottom: 0;
+                `}
+            />
+            {// This absolutely positioned div will appear to the right of the title text
+            data?.licenseInfo && (
                 <div
                     css={css`
                         position: absolute;
@@ -134,18 +145,14 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
                                 ? data.derivativeInfo!.originalLicense!
                                 : data.licenseInfo
                         }
+                        onChange={(newLicenseInfo: ILicenseInfo) => {
+                            data.licenseInfo = newLicenseInfo;
+                            setForceRenderHack(forceRenderHack + 1);
+                        }}
                         disabled={useOriginalCopyrightAndLicense}
                     />
                 </div>
             )}
-            <DialogTitle
-                title={useL10n("Copyright and License", "CopyrightAndLicense")}
-                disableDragging={disableDragging}
-                css={css`
-                    padding-bottom: 0;
-                    margin-bottom: 0;
-                `}
-            />
             <DialogMiddle
                 css={css`
                     width: ${props.dialogEnvironment
