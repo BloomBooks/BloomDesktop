@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.Book;
 using Bloom.Publish.Android;
 using SIL.PlatformUtilities;
 
@@ -111,6 +112,18 @@ namespace Bloom.Publish.Video
 				null, // no write action
 				false,
 				true); // we don't really know, just safe default
+
+			// Returns true if publish to MP3 is supported for this book, false otherwise.
+			// To be eligible to publish to MP3, the book must contain narration audio.
+			// (There's not any point to an MP3 if the book has absolutely no audio...
+			// Even a book with background music but no narration, there's not too much point to an MP3 either)
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "isMP3FormatSupported", request =>
+			{
+				// ENHANCE: If desired, you can make it only consider languages in the book that are currently relevant,
+				// instead of any language in the book.
+				var narrationAudioLangs = request.CurrentBook.GetLanguagesWithAudio();
+				return narrationAudioLangs.Any();
+			}, null, false, false);
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "startRecording", request =>
 			{

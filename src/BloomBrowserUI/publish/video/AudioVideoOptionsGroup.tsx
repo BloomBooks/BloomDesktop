@@ -50,6 +50,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
 }> = props => {
     const format = props.format;
     const setFormat = props.setFormat;
+    const [disabledFormats, setDisabledFormats] = useState<string[]>([]);
     const [tooBigMsg, setTooBigMsg] = useState("");
     // Manages visibility of the details popup for the main Format label (that shows in the
     // control when the dropdown is closed).
@@ -61,6 +62,26 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
     // we want independent control over the dropdown, but so we can hide the popup details
     // thing when we show the dropdown.
     const [formatDropdownIsOpen, setFormatDropdownIsOpen] = useState(false);
+    useEffect(() => {
+        BloomApi.get("publish/av/isMP3FormatSupported", c => {
+            const isSupported = c.data as boolean;
+
+            if (isSupported && disabledFormats.includes("mp3")) {
+                // Previously disabled, but now enabled
+                const newDisabledFormats = disabledFormats.filter(
+                    x => x !== "mp3"
+                );
+                setDisabledFormats(newDisabledFormats);
+            } else if (!isSupported && !disabledFormats.includes("mp3")) {
+                // Previously enabled, but now disabled
+                const newDisabledFormats = disabledFormats.slice(0);
+                newDisabledFormats.push("mp3");
+                setDisabledFormats(newDisabledFormats);
+            } else {
+                // disabledFormats is unchanged; don't need to set anything again.
+            }
+        });
+    }, []);
     useEffect(() => {
         BloomApi.get("publish/av/tooBigForScreenMsg", c => {
             setTooBigMsg(c.data);
@@ -108,6 +129,26 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
             )
         }
     ];
+
+    useEffect(() => {
+        // Handle any disabled formats
+        if (disabledFormats.includes(format)) {
+            const firstNonDisabledFormat = formatItems
+                .map(x => x.format)
+                .find(f => !disabledFormats.includes(f));
+
+            if (firstNonDisabledFormat === undefined) {
+                // If for some weird reason, all formats are disabled, just leave it at whatever format was originally selected.
+                return;
+            }
+
+            console.log(
+                `Because ${format} is disabled, changing format to ${firstNonDisabledFormat}`
+            );
+
+            setFormat(firstNonDisabledFormat);
+        }
+    }, [format, disabledFormats]);
 
     return (
         <SettingsGroup label={useL10n("Options", "Common.Options")}>
@@ -188,6 +229,9 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                             <MenuItem
                                                 value={item.format}
                                                 key={item.format}
+                                                disabled={disabledFormats.includes(
+                                                    item.format
+                                                )}
                                             >
                                                 <VideoFormatItem {...item} />
                                             </MenuItem>
