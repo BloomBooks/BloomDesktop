@@ -1148,30 +1148,35 @@ namespace Bloom.Book
 		/// Current possibilities are 'None', 'OnPage', and 'Links'.
 		/// </summary>
 		[JsonProperty("epub_HowToPublishImageDescriptions")]
+		[Obsolete("Please use PublishSettings.Epub.HowToPublishImageDescriptions")]
 		public BookInfo.HowToPublishImageDescriptions Epub_HowToPublishImageDescriptions;
 
 		/// <summary>
 		/// This corresponds to a checkbox indicating that the user wants to use the eReader's native font styles.
 		/// </summary>
 		[JsonProperty("epub_RemoveFontStyles")]
+		[Obsolete("Please use PublishSettings.Epub.RemoveFontSizes")]
 		public bool Epub_RemoveFontSizes;
 
 		/// <summary>
 		/// This corresponds to the checkbox values of which languages the user wants to publish the text for
 		/// </summary>
 		[JsonProperty("textLangsToPublish")]
+		[Obsolete("Please use PublishSettings.{Epub,BloomLibrary}.TextLangs")]
 		public LangsToPublishSetting TextLangsToPublish { get; set; }
 
 		/// <summary>
 		/// This corresponds to the checkbox values of which languages the user wants to publish the audio for
 		/// </summary>
 		[JsonProperty("audioLangsToPublish")]
+		[Obsolete("Please use PublishSettings.{Epub,BloomLibrary}.AudioLangs")]
 		public LangsToPublishSetting AudioLangsToPublish { get; set; }
 
 		/// <summary>
 		/// The sign language(s) -- currently we allow only one -- which the user wants to publish
 		/// </summary>
 		[JsonProperty("signLangsToPublish")]
+		[Obsolete("Please use PublishSettings.{Epub,BloomLibrary}.SignLangs")]
 		public LangsToPublishSetting SignLangsToPublish { get; set; }
 
 		// About this ignore: this actually would be perfectly fine as a top-level bit of true metadata.
@@ -1515,10 +1520,6 @@ namespace Bloom.Book
 		private string GetUpdateSource() => $"BloomDesktop {Application.ProductVersion}";
 
 		private ParseServerDate GetCurrentDate() => new ParseServerDate { Iso = DateTime.UtcNow.ToString("o") };
-
-		// For now, the audio language selection is all or nothing for Bloom Library publish
-		[JsonIgnore]
-		public bool IncludeAudioForBloomLibraryPublish => AudioLangsToPublish.ForBloomLibrary.Any(al => al.Value.IsIncluded());
 	}
 
 	/// <summary>

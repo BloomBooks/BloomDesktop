@@ -293,8 +293,8 @@ namespace Bloom.Publish.Android
 				{
 					InitializeLanguagesInBook(request);
 
-					Dictionary<string, InclusionSetting> textLangsToPublish = request.CurrentBook.BookInfo.MetaData.TextLangsToPublish.ForBloomPUB;
-					Dictionary<string, InclusionSetting> audioLangsToPublish = request.CurrentBook.BookInfo.MetaData.AudioLangsToPublish.ForBloomPUB;
+					Dictionary<string, InclusionSetting> textLangsToPublish = request.CurrentBook.BookInfo.PublishSettings.BloomPub.TextLangs;
+					Dictionary<string, InclusionSetting> audioLangsToPublish = request.CurrentBook.BookInfo.PublishSettings.BloomPub.AudioLangs;
 					
 					var result = "[" + string.Join(",", _allLanguages.Select(kvp =>
 					{
@@ -342,14 +342,14 @@ namespace Bloom.Publish.Android
 					if (includeTextValue != null)
 					{
 						var inclusionSetting = includeTextValue == "true" ? InclusionSetting.Include : InclusionSetting.Exclude;
-						request.CurrentBook.BookInfo.MetaData.TextLangsToPublish.ForBloomPUB[langCode] = inclusionSetting;
+						request.CurrentBook.BookInfo.PublishSettings.BloomPub.TextLangs[langCode] = inclusionSetting;
 					}
 
 					var includeAudioValue = request.GetParamOrNull("includeAudio");
 					if (includeAudioValue != null)
 					{
 						var inclusionSetting = includeAudioValue == "true" ? InclusionSetting.Include : InclusionSetting.Exclude;
-						request.CurrentBook.BookInfo.MetaData.AudioLangsToPublish.ForBloomPUB[langCode] = inclusionSetting;
+						request.CurrentBook.BookInfo.PublishSettings.BloomPub.AudioLangs[langCode] = inclusionSetting;
 					}
 
 					request.CurrentBook.BookInfo.Save();	// We updated the BookInfo, so need to persist the changes. (but only the bookInfo is necessary, not the whole book)
@@ -427,14 +427,10 @@ namespace Bloom.Publish.Android
 		{
 			Debug.Assert(bookInfo?.MetaData != null, "Precondition: MetaData must not be null");
 
-			if (bookInfo.MetaData.TextLangsToPublish == null)
-			{
-				bookInfo.MetaData.TextLangsToPublish = new LangsToPublishSetting();
-			}
 
-			if (bookInfo.MetaData.TextLangsToPublish.ForBloomPUB == null)
+			if (bookInfo.PublishSettings.BloomPub.TextLangs == null)
 			{
-				bookInfo.MetaData.TextLangsToPublish.ForBloomPUB = new Dictionary<string, InclusionSetting>();
+				bookInfo.PublishSettings.BloomPub.TextLangs = new Dictionary<string, InclusionSetting>();
 			}
 
 			// reinitialize our list of which languages to publish, defaulting to the ones
@@ -444,7 +440,7 @@ namespace Bloom.Publish.Android
 				var langCode = kvp.Key;
 
 				// First, check if the user has already explicitly set the value. If so, we'll just use that value and be done.
-				if (bookInfo.MetaData.TextLangsToPublish.ForBloomPUB.TryGetValue(langCode, out InclusionSetting checkboxValFromSettings))
+				if (bookInfo.PublishSettings.BloomPub.TextLangs.TryGetValue(langCode, out InclusionSetting checkboxValFromSettings))
 				{
 					if (checkboxValFromSettings.IsSpecified())
 					{
@@ -462,22 +458,17 @@ namespace Bloom.Publish.Android
 					langCode == collectionSettings?.Language1Iso639Code;
 
 				var newInitialValue = isChecked ? InclusionSetting.IncludeByDefault : InclusionSetting.ExcludeByDefault;
-				bookInfo.MetaData.TextLangsToPublish.ForBloomPUB[langCode] = newInitialValue;
+				bookInfo.PublishSettings.BloomPub.TextLangs[langCode] = newInitialValue;
 			}
 
 			// Initialize the Talking Book Languages settings
-			if (bookInfo.MetaData.AudioLangsToPublish == null)
+			if (bookInfo.PublishSettings.BloomPub.AudioLangs == null)
 			{
-				bookInfo.MetaData.AudioLangsToPublish = new LangsToPublishSetting();
-			}
-
-			if (bookInfo.MetaData.AudioLangsToPublish.ForBloomPUB == null)
-			{
-				bookInfo.MetaData.AudioLangsToPublish.ForBloomPUB = new Dictionary<string, InclusionSetting>();
+				bookInfo.PublishSettings.BloomPub.AudioLangs = new Dictionary<string, InclusionSetting>();
 				var allLangCodes = allLanguages.Select(x => x.Key);
 				foreach (var langCode in allLangCodes)
 				{
-					bookInfo.MetaData.AudioLangsToPublish.ForBloomPUB[langCode] = InclusionSetting.IncludeByDefault;
+					bookInfo.PublishSettings.BloomPub.AudioLangs[langCode] = InclusionSetting.IncludeByDefault;
 				}					
 			}
 

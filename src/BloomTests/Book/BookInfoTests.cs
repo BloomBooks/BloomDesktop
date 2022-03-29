@@ -69,12 +69,12 @@ namespace BloomTests.Book
 			Assert.That(bi.PublishSettings.AudioVideo.Motion, Is.False);
 			Assert.That(bi.PublishSettings.AudioVideo.PageTurnDelay, Is.EqualTo(0));
 			Assert.That(bi.PublishSettings.BloomPub.Motion, Is.False);
-			Assert.That(bi.PublishSettings.BloomLibrary.TextLangs, Has.Count.EqualTo(0));
-			Assert.That(bi.PublishSettings.BloomPub.TextLangs, Has.Count.EqualTo(0));
-			Assert.That(bi.PublishSettings.BloomLibrary.AudioLangs, Has.Count.EqualTo(0));
-			Assert.That(bi.PublishSettings.BloomPub.AudioLangs, Has.Count.EqualTo(0));
-			Assert.That(bi.PublishSettings.BloomLibrary.SignLangs, Has.Count.EqualTo(0));
-			Assert.That(bi.PublishSettings.BloomPub.SignLangs, Has.Count.EqualTo(0));
+			Assert.That(bi.PublishSettings.BloomLibrary.TextLangs, Is.Null);
+			Assert.That(bi.PublishSettings.BloomPub.TextLangs, Is.Null);
+			Assert.That(bi.PublishSettings.BloomLibrary.AudioLangs, Is.Null);
+			Assert.That(bi.PublishSettings.BloomPub.AudioLangs, Is.Null);
+			Assert.That(bi.PublishSettings.BloomLibrary.SignLangs, Is.Null);
+			Assert.That(bi.PublishSettings.BloomPub.SignLangs, Is.Null);
 		}
 
 		[Test]
@@ -133,12 +133,12 @@ namespace BloomTests.Book
 			Assert.That(original.PublishSettings.AudioVideo.Motion, Is.False);
 			Assert.That(original.PublishSettings.Epub.HowToPublishImageDescriptions, Is.EqualTo(BookInfo.HowToPublishImageDescriptions.None));
 			Assert.That(original.PublishSettings.Epub.RemoveFontSizes, Is.False);
-			Assert.That(original.PublishSettings.BloomPub.TextLangs, Is.Empty);
-			Assert.That(original.PublishSettings.BloomLibrary.TextLangs, Is.Empty);
-			Assert.That(original.PublishSettings.BloomPub.AudioLangs, Is.Empty);
-			Assert.That(original.PublishSettings.BloomLibrary.AudioLangs, Is.Empty);
-			Assert.That(original.PublishSettings.BloomPub.SignLangs, Is.Empty);
-			Assert.That(original.PublishSettings.BloomLibrary.SignLangs, Is.Empty);
+			Assert.That(original.PublishSettings.BloomPub.TextLangs, Is.Null);
+			Assert.That(original.PublishSettings.BloomLibrary.TextLangs, Is.Null);
+			Assert.That(original.PublishSettings.BloomPub.AudioLangs, Is.Null);
+			Assert.That(original.PublishSettings.BloomLibrary.AudioLangs, Is.Null);
+			Assert.That(original.PublishSettings.BloomPub.SignLangs, Is.Null);
+			Assert.That(original.PublishSettings.BloomLibrary.SignLangs, Is.Null);
 
 			original.MetaData.Feature_Motion = true;
 			original.MetaData.A11y_NoEssentialInfoByColor = true;

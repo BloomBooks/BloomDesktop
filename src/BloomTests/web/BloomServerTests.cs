@@ -186,14 +186,14 @@ namespace BloomTests.web
 			using (var server = CreateBloomServer(info))
 			{
 				var transaction = new PretendRequestInfo(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "api/imageDesc");
-				server.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions =
+				server.CurrentBook.BookInfo.PublishSettings.Epub.HowToPublishImageDescriptions =
 					BookInfo.HowToPublishImageDescriptions.None;
 				// set enum handler
 				server.ApiHandler.RegisterEnumEndpointHandler("imageDesc",
 					// get action
-					request => request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions,
+					request => request.CurrentBook.BookInfo.PublishSettings.Epub.HowToPublishImageDescriptions,
 					// post action
-					(request, myEnum) => request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions = myEnum,
+					(request, myEnum) => request.CurrentBook.BookInfo.PublishSettings.Epub.HowToPublishImageDescriptions = myEnum,
 					true);
 
 				// Execute get
@@ -204,7 +204,7 @@ namespace BloomTests.web
 
 				// HowToPublishImageDescriptions.Links was removed in Bloom 4.6
 				// Try another
-				server.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions =
+				server.CurrentBook.BookInfo.PublishSettings.Epub.HowToPublishImageDescriptions =
 					BookInfo.HowToPublishImageDescriptions.OnPage;
 				server.MakeReply(transaction);
 				Assert.That(transaction.ReplyContents, Is.EqualTo("OnPage"));
@@ -219,14 +219,14 @@ namespace BloomTests.web
 
 				// Verify post
 				Assert.That(transaction.ReplyContents, Is.EqualTo("OK"));
-				Assert.That(server.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions,
+				Assert.That(server.CurrentBook.BookInfo.PublishSettings.Epub.HowToPublishImageDescriptions,
 					Is.EqualTo(BookInfo.HowToPublishImageDescriptions.OnPage));
 
 				// Try another
 				transaction.SetPostJson("None");
 				server.MakeReply(transaction);
 				Assert.That(transaction.ReplyContents, Is.EqualTo("OK"));
-				Assert.That(server.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions,
+				Assert.That(server.CurrentBook.BookInfo.PublishSettings.Epub.HowToPublishImageDescriptions,
 					Is.EqualTo(BookInfo.HowToPublishImageDescriptions.None));
 			}
 		}

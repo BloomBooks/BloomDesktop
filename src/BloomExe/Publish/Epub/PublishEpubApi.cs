@@ -161,24 +161,24 @@ namespace Bloom.Publish.Epub
 			// The backend here was written with an enum that had two choices for how to publish descriptions, but we only ever
 			// have used one of them so far in the UI. So this is a boolean api that converts to an enum underlying value.
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "imageDescriptionSetting",
-				request => request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions == BookInfo.HowToPublishImageDescriptions.OnPage,
+				request => request.CurrentBook.BookInfo.PublishSettings.Epub.HowToPublishImageDescriptions == BookInfo.HowToPublishImageDescriptions.OnPage,
 				(request, onPage) =>
 				{
-					request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions = onPage
+					request.CurrentBook.BookInfo.PublishSettings.Epub.HowToPublishImageDescriptions = onPage
 						? BookInfo.HowToPublishImageDescriptions.OnPage
 						: BookInfo.HowToPublishImageDescriptions.None;
 					request.CurrentBook.BookInfo.Save();
 					var newSettings = _desiredEpubSettings.Clone();
-					newSettings.howToPublishImageDescriptions = request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions;
+					newSettings.howToPublishImageDescriptions = request.CurrentBook.BookInfo.PublishSettings.Epub.HowToPublishImageDescriptions;
 					RefreshPreview(newSettings);
 				},
 				false);
 
 			// Saving a checkbox setting that the user ticks to say "Use my E-reader's font sizes"
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "removeFontSizesSetting",
-				request => request.CurrentBook.BookInfo.MetaData.Epub_RemoveFontSizes,
+				request => request.CurrentBook.BookInfo.PublishSettings.Epub.RemoveFontSizes,
 				(request, booleanSetting) => {
-					request.CurrentBook.BookInfo.MetaData.Epub_RemoveFontSizes = booleanSetting;
+					request.CurrentBook.BookInfo.PublishSettings.Epub.RemoveFontSizes = booleanSetting;
 					request.CurrentBook.BookInfo.Save();
 					var newSettings = _desiredEpubSettings.Clone();
 					newSettings.removeFontSizes = booleanSetting;
@@ -343,8 +343,8 @@ namespace Bloom.Publish.Epub
 		public void GetEpubSettingsForCurrentBook(EpubPublishUiSettings epubPublishUiSettings)
 		{
 			var info = _bookSelection.CurrentSelection.BookInfo;
-			epubPublishUiSettings.howToPublishImageDescriptions = info.MetaData.Epub_HowToPublishImageDescriptions;
-			epubPublishUiSettings.removeFontSizes = info.MetaData.Epub_RemoveFontSizes;
+			epubPublishUiSettings.howToPublishImageDescriptions = info.PublishSettings.Epub.HowToPublishImageDescriptions;
+			epubPublishUiSettings.removeFontSizes = info.PublishSettings.Epub.RemoveFontSizes;
 		}
 
 		public void UpdateAndSave(EpubPublishUiSettings newSettings, string path, bool force, WebSocketProgress progress = null)

@@ -27,19 +27,22 @@ namespace Bloom.Book
 		public PublishSettings()
 		{
 			AudioVideo = new AudioVideoSettings();
-			BloomPub = new BloomPubSettings()
-			{
-				TextLangs = new Dictionary<string, InclusionSetting>(),
-				AudioLangs = new Dictionary<string, InclusionSetting>(),
-				SignLangs = new Dictionary<string, InclusionSetting>()
-			};
+			BloomPub = new BloomPubSettings();
+			// I'd really like to not have to mess with null testing by initializing
+			// all of these here, but considerable pre-existing logic is based on
+			//testing whether they are null.
+			//{
+			//	TextLangs = new Dictionary<string, InclusionSetting>(),
+			//	AudioLangs = new Dictionary<string, InclusionSetting>(),
+			//	SignLangs = new Dictionary<string, InclusionSetting>()
+			//};
 			Epub = new EpubSettings();
-			BloomLibrary = new BloomLibrarySettings()
-			{
-				TextLangs = new Dictionary<string, InclusionSetting>(),
-				AudioLangs = new Dictionary<string, InclusionSetting>(),
-				SignLangs = new Dictionary<string, InclusionSetting>()
-			};
+			BloomLibrary = new BloomLibrarySettings();
+			//{
+			//	TextLangs = new Dictionary<string, InclusionSetting>(),
+			//	AudioLangs = new Dictionary<string, InclusionSetting>(),
+			//	SignLangs = new Dictionary<string, InclusionSetting>()
+			//};
 		}
 
 		[JsonProperty("audioVideo")] public AudioVideoSettings AudioVideo { get; set; }
@@ -118,8 +121,6 @@ namespace Bloom.Book
 			var metaDataJson = DynamicJson.Parse(metaDataString) as DynamicJson;
 			if (metaDataJson.IsDefined("features"))
 			{
-				//var features = (dynamicMetaData.features as DynamicJson)?.Deserialize<string[]>();
-				//string[] features = dynamicMetaData.features as string[];
 				if (metaDataJson.TryGet("features", out string[] features)) {
 					if (features != null && features.Any(f => f == "motion"))
 					{
@@ -322,5 +323,9 @@ namespace Bloom.Book
 		/// <remarks>Previouly bookInfo.SignLangsToPublish.ForBloomLibrary</remarks>
 		[JsonProperty("signLangs")]
 		public Dictionary<string, InclusionSetting> SignLangs { get; set; }
+
+		// For now, the audio language selection is all or nothing for Bloom Library publish
+		[JsonIgnore]
+		public bool IncludeAudio => AudioLangs.Any(al => al.Value.IsIncluded());
 	}
 }

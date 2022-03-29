@@ -57,13 +57,13 @@ namespace Bloom.Publish.Android
 		// BL-10840 When the Harvester is getting AndroidPublishSettings, we want to use the settings
 		// for BloomLibrary, since the book has been uploaded using those settings for text and audio
 		// languages.
-		private static HashSet<string> GetLanguagesToInclude(LangsToPublishSetting langsToPublish)
+		private static HashSet<string> GetLanguagesToInclude(PublishSettings settings)
 		{
-			var dictToUse = Program.RunningHarvesterMode ? langsToPublish?.ForBloomLibrary : langsToPublish?.ForBloomPUB;
+			var dictToUse = Program.RunningHarvesterMode ? settings.BloomLibrary.TextLangs : settings.BloomPub.TextLangs;
 			// The following problem can happen if running in Harvester and 'ForBloomLibrary' isn't set up.
 			// So just use 'ForBloomPUB', which should be set up.
 			if (dictToUse == null)
-				dictToUse = langsToPublish?.ForBloomPUB;
+				dictToUse = settings.BloomPub.TextLangs;
 			// If it's still null, bail.
 			if (dictToUse == null)
 				return new HashSet<string>();
@@ -74,13 +74,13 @@ namespace Bloom.Publish.Android
 		// BL-10840 When the Harvester is getting AndroidPublishSettings, we want to use the settings
 		// for BloomLibrary, since the book has been uploaded using those settings for text and audio
 		// languages.
-		private static HashSet<string> GetLanguagesToExclude(LangsToPublishSetting langsToNotPublish)
+		private static HashSet<string> GetLanguagesToExclude(Dictionary<string, InclusionSetting> bloomPubDict, Dictionary<string, InclusionSetting> libraryDict)
 		{
-			var dictToUse = Program.RunningHarvesterMode ? langsToNotPublish?.ForBloomLibrary : langsToNotPublish?.ForBloomPUB;
+			var dictToUse = Program.RunningHarvesterMode ? libraryDict : bloomPubDict;
 			// The following problem can happen if running in Harvester and 'ForBloomLibrary' isn't set up.
 			// So just use 'ForBloomPUB', which should be set up.
 			if (dictToUse == null)
-				dictToUse = langsToNotPublish?.ForBloomPUB;
+				dictToUse = bloomPubDict;
 			// If it's still null, bail.
 			if (dictToUse == null)
 				return new HashSet<string>();
@@ -89,14 +89,16 @@ namespace Bloom.Publish.Android
 
 		public static AndroidPublishSettings FromBookInfo(BookInfo bookInfo)
 		{
-			var textLangsToPublish = bookInfo.MetaData.TextLangsToPublish;
-			var audioLangsToPublish = bookInfo.MetaData.AudioLangsToPublish;
-			var languagesToInclude = GetLanguagesToInclude(textLangsToPublish);
+			var bloomPubTextLangs = bookInfo.PublishSettings.BloomPub.TextLangs;
+			var libraryTextLangs = bookInfo.PublishSettings.BloomLibrary.TextLangs;
+			var bloomPubAudioLangs = bookInfo.PublishSettings.BloomPub.AudioLangs;
+			var libraryAudioLangs = bookInfo.PublishSettings.BloomLibrary.AudioLangs;
+			var languagesToInclude = GetLanguagesToInclude(bookInfo.PublishSettings);
 
 			HashSet<string> audioLanguagesToExclude;
-			if (bookInfo.MetaData.AudioLangsToPublish == null)
+			if (bloomPubAudioLangs == null && libraryAudioLangs == null)
 			{
-				if (textLangsToPublish == null)
+				if (bloomPubTextLangs == null && libraryTextLangs == null)
 				{
 					// We really want to exclude all of them, but we don't know what all the possibilities are.
 					audioLanguagesToExclude = new HashSet<string>();
@@ -105,13 +107,13 @@ namespace Bloom.Publish.Android
 				{
 					// We want to exclude the audio files for the languages that we are not publishing the text of.
 					// We aren't sure if we need this, or if AudioLangs is only null when there is no audio in the book at all.
-					audioLanguagesToExclude = GetLanguagesToExclude(textLangsToPublish);
+					audioLanguagesToExclude = GetLanguagesToExclude(bloomPubTextLangs, libraryTextLangs);
 				}
 			}
 			else
 			{
 				// We do have some settings for the audio languages, choose the ones that have been explicitly marked as excluded
-				audioLanguagesToExclude = GetLanguagesToExclude(audioLangsToPublish);
+				audioLanguagesToExclude = GetLanguagesToExclude(bloomPubAudioLangs, libraryAudioLangs);
 			}
 
 			return new AndroidPublishSettings()
@@ -127,7 +129,7 @@ namespace Bloom.Publish.Android
 		{
 			// Normally this is setup by the Publish screen, but if you've never visited the Publish screen for this book,
 			// then this will be null. In that case, initialize it here.
-			if (bookInfo.MetaData?.TextLangsToPublish?.ForBloomPUB == null)
+			if (bookInfo.PublishSettings.BloomPub.TextLangs == null)
 			{
 				var book = bookServer.GetBookFromBookInfo(bookInfo);
 				var allLanguages = book.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);
