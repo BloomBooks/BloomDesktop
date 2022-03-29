@@ -4,7 +4,7 @@ using Bloom.Book;
 
 namespace Bloom.Publish.Android
 {
-	// This class is used to pass settings from the PublishToAndroidApi to the many and varied
+	// This class is used to pass settings from the PublishToAndroidApi (or PublishToVideoApi, etc) to the many and varied
 	// places that they pass through before getting to BloomReaderFileMaker.
 	public class AndroidPublishSettings
 	{
@@ -23,12 +23,17 @@ namespace Bloom.Publish.Android
 		// NOTE: It's more natural for consumers to think about what languages they want to EXCLUDE, rather than what languages they want to INCLUDE.
 		public HashSet<string> AudioLanguagesToExclude;
 
+		// Should we decide whether to publish as a motion book based on the BloomPub
+		// metadata or the AudioVideo metadata? Default is of course BloomPub.
+		public bool MotionFromVideo { get; set; }
+
 		public override bool Equals(object obj)
 		{
 			if (!(obj is AndroidPublishSettings))
 				return false;
 			var other = (AndroidPublishSettings) obj;
-			return LanguagesToInclude.SetEquals(other.LanguagesToInclude) && DistributionTag == other.DistributionTag;
+			return LanguagesToInclude.SetEquals(other.LanguagesToInclude) && DistributionTag == other.DistributionTag
+				&& MotionFromVideo == other.MotionFromVideo;
 
 			// REVIEW: why wasn't AudioLanguagesToExclude included here?
 		}
@@ -49,7 +54,7 @@ namespace Bloom.Publish.Android
 
 		public override int GetHashCode()
 		{
-			return LanguagesToInclude.GetHashCode() + DistributionTag.GetHashCode();
+			return LanguagesToInclude.GetHashCode() + DistributionTag.GetHashCode() + (MotionFromVideo? 1 : 0);
 
 			// REVIEW: why wasn't AudioLanguagesToExclude included here?
 		}

@@ -164,7 +164,7 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
         false
     );
     const motionActive = BloomApi.useWatchApiData<boolean>(
-        "publish/android/motionBookMode",
+        "publish/video/motionBookMode",
         false,
         "publish",
         "motionChanged"
@@ -307,6 +307,7 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                                         for recording.
                                     </Div>
                                     <SimplePreview
+                                        key={motionActive.toString()}
                                         landscape={
                                             defaultLandscape || motionActive
                                         }
@@ -560,8 +561,9 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                                 l10nKey="PublishTab.Android.MotionBookMode"
                                 // tslint:disable-next-line:max-line-length
                                 l10nComment="Motion Books are Talking Books in which the picture fills the screen, then pans and zooms while you hear the voice recording. This happens only if you turn the book sideways."
-                                apiEndpoint="publish/android/motionBookMode"
+                                apiEndpoint="publish/video/motionBookMode"
                                 disabled={!canModifyCurrentBook}
+                                onChange={pause}
                             />
                         </FormGroup>
                     )}

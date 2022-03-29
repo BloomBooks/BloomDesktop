@@ -154,12 +154,12 @@ namespace Bloom.Publish.Android
 					// If the user has taken off all possible motion, force not having motion in the
 					// Bloom Reader book.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7680.
 					if (!readRequest.CurrentBook.HasMotionPages)
-						readRequest.CurrentBook.MotionMode = false;
-					return readRequest.CurrentBook.MotionMode;
+						readRequest.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion = false;
+					return readRequest.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion;
 				},
 				(writeRequest, value) =>
 				{
-					writeRequest.CurrentBook.MotionMode = value;
+					writeRequest.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion = value;
 					_webSocketServer.SendEvent("publish", "motionChanged");
 				}
 			, true);
@@ -273,7 +273,7 @@ namespace Bloom.Publish.Android
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "canRotate",
 				request =>
 				{
-					return request.CurrentBook.MotionMode && request.CurrentBook.HasMotionPages;
+					return request.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion && request.CurrentBook.HasMotionPages;
 				},
 				null, // no write action
 				false,
@@ -364,7 +364,7 @@ namespace Bloom.Publish.Android
 			}, false);
 		}
 
-		public void MakeBloompubPreview(ApiRequest request, bool allLanguages)
+		public void MakeBloompubPreview(ApiRequest request, bool forVideo)
 		{
 			if (request.HttpMethod == HttpMethods.Post)
 			{
@@ -382,7 +382,7 @@ namespace Bloom.Publish.Android
 
 				try
 				{
-					UpdatePreview(request, allLanguages);
+					UpdatePreview(request, forVideo);
 					request.PostSucceeded();
 				}
 				catch (Exception e)
@@ -483,15 +483,17 @@ namespace Bloom.Publish.Android
 		/// If the caller wants to insert this URL as a query parameter to another URL (e.g. like what is often done with Bloom Player),
 		/// it's the caller's responsibility to apply another layer of URL encoding to make the URL suitable to be passed as data inside another URL.
 		/// </summary>
-		private void UpdatePreview(ApiRequest request, bool allLanguages)
+		private void UpdatePreview(ApiRequest request, bool forVideo)
 		{
 			InitializeLanguagesInBook(request);
 			_lastSettings = GetSettings();
 			_lastThumbnailBackgroundColor = _thumbnailBackgroundColor;
-			if (allLanguages)
+			if (forVideo)
 			{
 				_lastSettings = _lastSettings.WithAllLanguages(_allLanguages.Keys);
 			}
+
+			_lastSettings.MotionFromVideo = forVideo;
 			PreviewUrl = MakeBloomPubForPreview(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor, _lastSettings);
 			_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, PreviewUrl);
 		}

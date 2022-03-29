@@ -3538,9 +3538,11 @@ namespace BloomTests.Book
 		[Test]
 		public void UpdateMetadataFeatures_MotionAdded_MotionFeatureTrue()
 		{
+			// The content of the DOM no longer matters. I've deliberately deleted the body attributes
+			// that used to determine it.
 			_bookDom = new HtmlDom(
 @"<html>
-	<body data-bffullscreenpicture='landscape;bloomReader'>
+	<body>
 		 <div class='bloom-page numberedPage'>
 			<div class='marginBox'>
 				<div class='bloom-imageContainer' data-initialrect='0 0 1 1' data-finalrect='0.3 0.3 0.5 0.5'>
@@ -3555,6 +3557,7 @@ namespace BloomTests.Book
 </html>");
 
 			var book = CreateBook();
+			book.BookInfo.PublishSettings.BloomPub.Motion = true;
 
 			book.UpdateMetadataFeatures(false, false, false, null);
 

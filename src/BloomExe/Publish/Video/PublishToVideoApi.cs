@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -124,10 +124,7 @@ namespace Bloom.Publish.Video
 			}, true, false);
 
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request =>
-			{
-				_publishToAndroidApi.MakeBloompubPreview(request, true);
-			}, false);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request => { UpdatePreview(request); }, false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "displaySettings", request =>
 			{
 				Process.Start("desk.cpl");
@@ -136,6 +133,28 @@ namespace Bloom.Publish.Video
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "isScalingActive",
 				request => IsScalingActive(),
 			null, true);
+
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "motionBookMode",
+				readRequest =>
+				{
+					// If the user has taken off all possible motion, force not having motion in the
+					// Bloom Reader book.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7680.
+					if (!readRequest.CurrentBook.HasMotionPages)
+						readRequest.CurrentBook.BookInfo.PublishSettings.AudioVideo.Motion = false;
+					return readRequest.CurrentBook.BookInfo.PublishSettings.AudioVideo.Motion;
+				},
+				(writeRequest, value) =>
+				{
+					writeRequest.CurrentBook.BookInfo.PublishSettings.AudioVideo.Motion = value;
+					_webSocketServer.SendEvent("publish", "motionChanged");
+					UpdatePreview(writeRequest);
+				}
+				, true, allowWriteActionToPostResult: true);
+		}
+
+		private void UpdatePreview(ApiRequest request)
+		{
+			_publishToAndroidApi.MakeBloompubPreview(request, true);
 		}
 
 		private bool IsScalingActive()

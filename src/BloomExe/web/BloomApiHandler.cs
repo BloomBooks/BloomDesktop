@@ -120,7 +120,7 @@ namespace Bloom.Api
 		/// (after removing the initial /bloom/api/, which should be in the URI but not in the pattern here).
 		/// </summary>
 		public void RegisterBooleanEndpointHandler(string pattern, Func<ApiRequest, bool> readAction, Action<ApiRequest, bool> writeAction,
-			bool handleOnUiThread, bool requiresSync = true)
+			bool handleOnUiThread, bool requiresSync = true, bool allowWriteActionToPostResult = false)
 		{
 			RegisterEndpointHandler(pattern, request =>
 			{
@@ -131,7 +131,8 @@ namespace Bloom.Api
 				else // post
 				{
 					writeAction(request, request.RequiredPostBooleanAsJson());
-					request.PostSucceeded();
+					if (!allowWriteActionToPostResult)
+						request.PostSucceeded();
 				}
 			}, handleOnUiThread, requiresSync);
 		}
