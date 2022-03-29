@@ -19,7 +19,7 @@ export interface IEditViewFrameExports {
     getModalDialogContainer(): HTMLElement | null;
     showConfirmDialog(props: IConfirmDialogProps): void;
     showColorPickerDialog(props: IColorPickerDialogProps): void;
-    showCopyrightAndLicenseDialogForBook(): void;
+    showCopyrightAndLicenseDialog(imageUrl?: string): void;
 }
 
 export function SayHello() {
@@ -185,6 +185,6 @@ export function showColorPickerDialog(props: IColorPickerDialogProps): void {
     doShowColorPickerDialog(props);
 }
 
-export function showCopyrightAndLicenseDialogForBook() {
-    showCopyrightAndLicenseInfoOrDialog();
+export function showCopyrightAndLicenseDialog(imageUrl?: string) {
+    showCopyrightAndLicenseInfoOrDialog(imageUrl);
 }

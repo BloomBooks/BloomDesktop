@@ -6,7 +6,6 @@ import { BloomApi } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
 import { updateOverlayClass } from "./bubbleManager";
-import { showCopyrightAndLicenseInfoOrDialog } from "../copyrightAndLicense/CopyrightAndLicenseDialog";
 
 const kPlaybackOrderContainerSelector: string =
     ".bloom-playbackOrderControlsContainer";
@@ -215,11 +214,15 @@ function SetupImageContainer(containerDiv: HTMLElement) {
                         theOneLocalizationManager.getText(
                             "EditTab.Image.EditMetadata"
                         ) +
-                        '"></button>'
+                        '" onClick="(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog(\'' +
+                        GetRawImageUrl(img) +
+                        "');\"></button>"
                 );
-                $(".editMetadataButton").on("click", function() {
-                    showCopyrightAndLicenseInfoOrDialog(GetRawImageUrl(img));
-                });
+                // In theory, this is a bit cleaner, but it puts the modal in just the page iframe rather than
+                // the larger edit tab context. So the toolbox is not overlaid/disabled.
+                // $(".editMetadataButton").on("click", function() {
+                //     showCopyrightAndLicenseDialog(GetRawImageUrl(img));
+                // });
                 $this.find(".miniButton").each(function() {
                     $(this).removeClass("disabled");
                 });

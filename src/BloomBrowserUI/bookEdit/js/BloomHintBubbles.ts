@@ -441,7 +441,7 @@ export default class BloomHintBubbles {
                     // all that is needed and prevents C# from interfering.
                     functionCall = "clickWasAlreadyHandled";
                     onClick =
-                        "onClick='(window.parent || window).editTabBundle.showCopyrightAndLicenseDialogForBook();'";
+                        "onClick='(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog();'";
                 }
                 shouldShowAlways = true;
 
