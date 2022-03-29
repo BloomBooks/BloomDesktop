@@ -435,7 +435,14 @@ namespace Bloom.Publish.Video
 					audioArgs = "";
 					break;
 				case Codec.MP3:
-					audioArgs = "-acodec libmp3lame ";
+					audioArgs =
+						  "-acodec libmp3lame "
+						+ "-b:a 64k ";  // Set the bitrate for the audio stream to 64 kbps
+						// For audio Sample Rate (-ar), I read suggestions to use 44.1 KHz stereo,
+						// unless the input source is 48KHz, in which just use that directly
+						// (for radio-level, you can use 22.05 kHz mono)
+						// I see ffmpeg default produce a lot of 44.1 KHz results, which is perfectly adequate if it keeps up.
+						// Just leaving it as the default unless need shows otherwise
 					break;
 				default:
 					throw new NotImplementedException();
@@ -671,7 +678,7 @@ namespace Bloom.Publish.Video
 				//SetThreadDpiAwarenessContext(originalAwareness);
 			}
 
-			if (IsVideoTooSmall(actualResolution, desiredResolution))
+			if (format != "mp3" && IsVideoTooSmall(actualResolution, desiredResolution))
 			{
 				var frame = LocalizationManager.GetString("PublishTab.RecordVideo.ScreenTooSmall",
 					"Ideally, this video target should be {0}. However that is larger than your screen, so Bloom will produce a video that is {1}.");
