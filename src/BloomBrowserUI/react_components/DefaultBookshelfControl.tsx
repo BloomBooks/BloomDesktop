@@ -188,7 +188,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
                     // some complex overlay) in an HTML input element.)
                     css={css`
                         min-width: 200px;
-                        background-color: #e1e1e1;
+                        background-color: white;
                         border: 1px solid #bbb;
                         font-size: 10pt;
                         padding-left: 7px; // match what winforms is doing
@@ -199,7 +199,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
                             content: none;
                         }
                         &:hover {
-                            background-color: #e5f1fb;
+                            background-color: white;
                             border-color: ${windowsSelectColor};
                         }
                     `}

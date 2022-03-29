@@ -115,6 +115,16 @@ namespace Bloom.Collection
 				_okButton_Click(null, null); // close this dialog
 			});
 
+			// Both of the next two settings are needed to get the combobox to show a white background.
+			// https://stackoverflow.com/questions/6468024/how-to-change-combobox-background-color-not-just-the-drop-down-list-part
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-11074 for why we want this.
+			// unfortunately, FlatStyle.Flat removes the border around the combobox.  Apparently, you
+			// can have either a border or a white background, but not both.
+			_numberStyleCombo.FlatStyle = FlatStyle.Flat;
+			_numberStyleCombo.BackColor = Color.White;
+			_xmatterList.FullRowSelect = true;		// This helps with white background on items.
+			_xmatterList.BackColor = Color.White;	// This appears to be ignored!?
+
 			UpdateDisplay();
 
 			if (CollectionSettingsApi.FixEnterpriseSubscriptionCodeMode)
@@ -448,6 +458,7 @@ namespace Bloom.Collection
 				var labelToShow = LocalizationManager.GetDynamicString("Bloom","CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack."+pack.EnglishLabel, pack.EnglishLabel, "Name of a Front/Back Matter Pack");
 				var item = _xmatterList.Items.Add(labelToShow);
 				item.Tag = pack;
+				item.BackColor = Color.White;	// BL-11074
 				if(pack.Key == _collectionSettings.XMatterPackName)
 					item.Selected = true;
 				if(pack.Key == _xmatterPackFinder.FactoryDefault.Key)
