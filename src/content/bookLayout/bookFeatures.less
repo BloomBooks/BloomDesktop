@@ -1,0 +1,82 @@
+@import "common-mixins.less";
+
+// Documentation on Book Feature in html format
+// https://docs.google.com/document/d/16M8Fvt1SLYgUX5UbWy3q9s2_ab0Ni39mVumtIYzxKm4/edit#heading=h.pdn1blelp3ds
+
+// This LESS MIXIN turns on the feature when its constraints are satisfied
+// Parameters:
+// @featureName: name of the feature *must be all-lower-case* (html rule for attributes)
+// @rules: a less "detached ruleset" that implements the feature
+
+.bookFeature(@featureName, @rules) {
+    @dataFeature: ~"data-bf@{featureName}";
+
+    body {
+        //
+        // MATCHING MEDIA CONSTRAINT
+        //
+        &[@{dataFeature}*="allMedia"],
+        &[@{dataFeature}*="print"][data-media*="print"],
+        &[@{dataFeature}*="bloomReader"][data-media*="bloomReader"],
+        &[@{dataFeature}*="epub"][data-media*="epub"],
+        &[@{dataFeature}*="video"][data-media*="video"] {
+            //
+            // MATCHING ORIENTATION CONSTRAINT
+            //
+            &[@{dataFeature}*="allOrientations"],
+            &[@{dataFeature}*="landscape"] .bloom-page[class*="Landscape"],
+            &[@{dataFeature}*="portrait"] .bloom-page[class*="Portrait"] {
+                @rules();
+            }
+        }
+    }
+}
+
+// prettier mangles mixins
+// prettier-ignore
+.bookFeature("hidepagenumbers",{
+    &::after {
+        content: unset;
+    }
+});
+
+// prettier-ignore
+.bookFeature("fullscreenpicture",{
+    //nb: this might negatively interact with "textOverlay" when we implement that
+    .bloom-translationGroup{
+        visibility: hidden;
+    }
+    .bloom-imageContainer {
+        // in full-screenpicture mode, the original imageContainer becomes the
+        // frame, and its background color provides the black bars around the
+        // animation. A new div is inserted which wraps the animation and provides
+        // the white background in case the image is partly transparent.
+        background-color:black;
+        position: fixed;
+        left: 0;
+        top: 0;
+
+        // These two lines are needed to make the cover image display properly
+        width: 100%;
+        margin-top: 0;
+
+        &[class*="Device16x9Landscape"] {
+            width: @Device16x9Landscape-Width;
+        }
+        &[class*="Device16x9Portrait"] {
+            width: @Device16x9Portrait-Width;
+        }
+    }
+});
+
+// prettier-ignore
+.bookFeature("textoverlay",{
+    // TODO
+    border-right: solid yellow;
+});
+
+// prettier-ignore
+.bookFeature("nomargin",{
+    // TODO
+    border-bottom:solid green;
+});
