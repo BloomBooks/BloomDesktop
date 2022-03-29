@@ -43,17 +43,20 @@ if (!semver.satisfies(process.version, version)) {
 //This one is really only used for 'clean';
 var outputDir = "../../output/browser";
 
-//todo: can remove these output exlusions now that output/ is now 2 levels up with the c# outpuuts
+//todo: can remove these output exclusions now that output/ is now 2 levels up with the c# outputs
 var paths = {
     help: ["./help/**/*.md"],
-    templateReadme: ["./templates/**/ReadMe*.md"],
+    templateReadme: ["../content/templates/**/ReadMe*.md"],
     infoPages: ["./infoPages/*.md"],
     distInfo: [
         "../../DistFiles/license.md",
         "../../DistFiles/AdobeColorProfileEULA.md"
     ],
     less: ["./**/*.less", "!./node_modules/**/*.less"],
-    pug: ["./**/*.pug", "!./node_modules/**/*.pug", "!./**/*mixins.pug"],
+    // Notice that, unlike with less, we are still compiling the content pug here. This is because
+    // we haven't found a good cross-platform way of using a glob with pug yet outside of gulp, and
+    // the /content project is trying to get away form using gulp.
+    pug: ["./**/*.pug", "!./node_modules/**/*.pug","../content/**/*.pug", "!../content/node_modules/**/*.pug",  "!./**/*mixins.pug"],
 
     //files we are *not* running through some compiler that need to make it into the outputDir directory.
     filesThatMightBeNeededInOutput: [
@@ -346,7 +349,7 @@ gulp.task("brandings", async function() {
 
 gulp.task("compileTemplateTypescript", function() {
     // Specifying no typeRoots is a kludge. Without it, the task reports large numbers of
-    // errors in vadrious .d.ts files in node_modules that aren't even referenced
+    // errors in various .d.ts files in node_modules that aren't even referenced
     // by the file we're supposed to be compiling. If we eventually get stuff in the template books
     // directory that uses other modules and needs their types, we'll have to find another
     // approach. But in that case, we'll probably want to switch to webpack anyway

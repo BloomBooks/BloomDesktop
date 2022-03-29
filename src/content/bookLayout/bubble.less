@@ -1,0 +1,355 @@
+@import (reference) "../../BloomBrowserUI/bloomUI.less";
+@MinTextBoxWidth: 30px;
+@MinTextBoxHeight: 30px;
+@DefaultTextBoxWidth: 140px;
+@DefaultTextBoxHeight: @MinTextBoxHeight;
+@DragHandleBackgroundColor: transparent;
+
+// This can color the svg into whatever color we want. Currently bloom-purple.
+// While working on this PR I changed the color 4 times and it's a pain to keep
+// exporting new svgs.
+// Eventually if the color settles down, we can replace this with just svg's colored like we want.
+// To generate new filter rules like this, use https://codepen.io/sosuke/pen/Pjoqqp
+@ComicAffordanceFilter: invert(48%) sepia(14%) saturate(1147%)
+    hue-rotate(257deg) brightness(90%) contrast(84%);
+
+// Don't show text over picture borders, resizing handles, or format buttons unless hovering over the image
+.bloom-imageContainer:not(.hoverUp) .bloom-textOverPicture {
+    .bloom-editable {
+        border: none;
+
+        &:after {
+            display: none !important;
+        }
+    }
+    .ui-resizable-handle {
+        display: none !important;
+    }
+    .bloom-dragHandle {
+        display: none;
+    }
+    #formatButton {
+        display: none;
+    }
+    .bloom-imageContainer {
+        &:after {
+            border: none; // overwrite rule from editMode.less
+        }
+    }
+}
+
+.bloom-imageContainer {
+    &.grabbable:not(.bloom-resizing) {
+        &,
+        .bloom-textOverPicture
+            .bloom-translationGroup
+            .bloom-editable.cke_editable {
+            cursor: grab;
+        }
+    }
+
+    &.grabbing:not(.bloom-resizing) {
+        &,
+        .bloom-textOverPicture
+            .bloom-translationGroup
+            .bloom-editable.cke_editable {
+            cursor: grabbing;
+        }
+    }
+
+    .bloom-textOverPicture:not(.ui-resizable-resizing) {
+        .bloom-dragHandle {
+            cursor: grab;
+
+            &:not(.ui-draggable-handle) {
+                cursor: text;
+            }
+
+            &.grabbing {
+                cursor: grabbing;
+            }
+        }
+    }
+
+    &.ne-resizable {
+        &,
+        .bloom-textOverPicture
+            .bloom-translationGroup
+            .bloom-editable.cke_editable {
+            cursor: ne-resize;
+        }
+    }
+
+    &.nw-resizable {
+        &,
+        .bloom-textOverPicture
+            .bloom-translationGroup
+            .bloom-editable.cke_editable {
+            cursor: nw-resize;
+        }
+    }
+
+    &.sw-resizable {
+        &,
+        .bloom-textOverPicture
+            .bloom-translationGroup
+            .bloom-editable.cke_editable {
+            cursor: sw-resize;
+        }
+    }
+
+    &.se-resizable {
+        &,
+        .bloom-textOverPicture
+            .bloom-translationGroup
+            .bloom-editable.cke_editable {
+            cursor: se-resize;
+        }
+    }
+
+    .bloom-textOverPicture {
+        position: absolute;
+        width: @DefaultTextBoxWidth;
+        min-width: @MinTextBoxWidth;
+        min-height: @MinTextBoxHeight;
+        border-radius: 3px;
+        border: none !important; // needed to override ui-draggable blue border
+        .bloom-dragHandle {
+            filter: @ComicAffordanceFilter;
+            position: absolute;
+            left: unset;
+            // NB: right is set by a rule at the end of this file
+            width: 22px;
+            height: 22px;
+            top: -15px;
+
+            &.visible {
+                // This z-index should be below the canvas
+                z-index: @dragHandleVisibleZIndex;
+            }
+
+            &.transparent {
+                // This z-index should be above the canvas
+                z-index: @dragHandleEventZIndex;
+                opacity: 0; // Fully transparent (aka invisible)
+            }
+        }
+
+        // Overrides the inherited values from editMode.less, which are a slightly different shade of blue.
+        // This rule now works for regular just text bubbles and picture or video over picture.
+        div:focus,
+        video:focus {
+            border: 1px solid @bloom-blue;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px @bloom-blue;
+        }
+
+        .bloom-translationGroup {
+            background: transparent; // don't want to worry about what background the image has
+            border: none;
+            z-index: @textOverPictureZIndex;
+            .bloom-editable {
+                min-width: @MinTextBoxWidth - 3;
+                min-height: @MinTextBoxHeight - 3 !important;
+                text-align: center;
+
+                // Move the format button and language tip out of the box, since we have a smaller-than-normal editable box here
+                overflow: visible;
+                #formatButton {
+                    &:hover {
+                        background-color: white;
+                    }
+                    filter: @ComicAffordanceFilter;
+                    left: unset;
+                    // NB: right is set by a rule at the end of this file
+                    //right: 100% + 33px;
+                    bottom: -18px;
+                }
+            }
+
+            // Language tip CSS
+            .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]) {
+                &:after {
+                    // In editMode.less, it sets the "content" property for all text boxes (which normally always have the language tip visible).
+                    // But here in text over picture, we want to default to not having the language tip visible.
+                    display: none; // Prevents padding-top from being rendered (content: "" still renders it)
+                }
+
+                &:focus:after {
+                    display: block;
+                    left: unset;
+                    text-align: right;
+                    // NB: right is set by a rule at the end of this file
+                    bottom: 3px;
+                    color: @bloom-purple;
+                    background-color: white;
+                    font-size: small;
+                    cursor: auto;
+                    &:hover {
+                        background-color: white;
+                    }
+                }
+            }
+            // Allows the format gear and language tip to be suppressed by adding a class
+            // (currently, during overflow testing). Don't normally like !important,
+            // but the rules this has to override are complex and trying to make this
+            // rule always more specific means breaking it up and putting it in multiple
+            // places (and is bug prone, if we change the other visibility rules).
+            // We absolutely want these hidden during overflow calculations!
+            .bloom-editable.disableTOPControls {
+                #formatButton,
+                &:after {
+                    display: none !important;
+                }
+            }
+        }
+    }
+}
+
+// Code to handle borders
+.bloom-imageContainer {
+    // Over picture elements with speech bubbles
+    //
+    // a TOP element that contains a data-bubble attribute and does NOT contain the substring
+    // "`style`:`none`" in the value of the data-bubble attribute
+    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]) {
+        .bloom-translationGroup {
+            .bloom-editable {
+                border: none;
+                box-shadow: none;
+            }
+        }
+    }
+
+    // The inverse of the above... text boxes which do not have bubbles
+    //
+    // The case where it doesn't contain a data-bubble attribute at all
+    .bloom-textOverPicture:not([data-bubble]),
+    // The case where it does contain a data-bubble attribute, but the style is none.
+    .bloom-textOverPicture[data-bubble*="`style`:`none`"] {
+        .bloom-translationGroup {
+            .bloom-editable {
+                &:focus {
+                    // Overrides the inherited values from editMode.less, which are a slightly different shade of blue.
+                    border: 1px solid @bloom-blue;
+                    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
+                        0 0 8px @bloom-blue;
+                }
+            }
+        }
+    }
+}
+
+.bloom-showImageDescriptions {
+    .bloom-textOverPicture {
+        // Turn this off because it's complicated to deal with these while image description tool active.
+        // Re-positioning and shrinking the text boxes proportionally while ImageDescription tool is active
+        // is possible but hugely complicates the code... so for now, just disable it.
+        // Make this rule !important because we have some quite complex rules to make certain bubbles
+        // display:flex and this needs to win.
+        display: none !important;
+    }
+}
+
+// different bubble shapes require different positioning of the affordances
+[data-bubble] {
+    // These happen to be multiples of 1.4 is because they are 1% increments of 140px (the default text box width)
+    .bloom-dragHandle {
+        right: calc(100% + 1.4px);
+    }
+    #formatButton {
+        right: calc(100% + 2.8px);
+    }
+    // we need to push the label left-ward to get out of the way of the fat part of the bubble
+    [data-languageTipContent]:after {
+        right: calc(100% + 14px) !important;
+    }
+}
+[data-bubble*="caption"] {
+    [data-languageTipContent]:after {
+        right: calc(100% + 2.8px) !important;
+    }
+}
+
+// This rule works around a bizarre bug in generating PDF from HTML (BL-9278).
+// The text in a display:block div inside atext-over-picture box on a page with
+// top: less than 3mm (possibly the bleed margin) in a full bleed book
+// shows up in the HTML but not in the PDF generated from it.
+// Making such boxes be display:flex/column changes the appearance very little
+// but works around the bug.
+// The rule is rather specific because TOP boxes with data-bubble not containing
+// style:none are already made display:flex by the rule below. We want to avoid
+// doing so usually for plain TOP boxes, because it may cause some subtle change
+// in the appearance of an existing book. Doing it when switching to full bleed
+// seems acceptable, since layout will need to be checked anyway.
+.bloom-fullBleed
+    .bloom-imageContainer
+    .bloom-textOverPicture[data-bubble*="`style`:`none`"] {
+    display: flex;
+    flex-direction: column;
+}
+
+// Set vertical alignment to center
+// Working prototype using flexboxes.
+.bloom-imageContainer {
+    // We exclude "Just Text" bubbles with no background color because
+    // 1) Visually there's not a lot of profit to it
+    // 2) So for existing books there won't be a subtle movement in the text position
+    // We want to do this to almost all bloom-textOverPicture elements. The ones we don't want to do it
+    // to have data-bubble="...`style`:`none`...`backgroundColors`:[`transparent`]
+    // or else data-bubble="...`style`:`none`..." and don't specify a background color at all.
+    // So, the first rule says we do it to anything without style:none
+    // The second says we do it to anything that specifies a backgroundColor
+    // and does NOT specify 'transparent' as the value of that background color.
+    // (Of course, there could be other ways of specifying transparent. But AFIK Bloom has never used them.)
+    // (Thus, if it has backgroundColors and isn't explicitly transparent the centering applies.)
+    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]),
+    .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]) {
+        // Center the translationGroup within the textOverPic box,
+        // instead of having the 2 px difference all at the bottom.
+        display: flex;
+        align-items: center;
+
+        // Note: Needs a bit of specificity to beat display: block rule in langVisibility.css
+        // However, also need to make sure you don't accidentall change display: none to display: flex
+        .bloom-editable.bloom-visibility-code-on,
+        .bloom-editable.bloom-visibility-user-on {
+            display: flex;
+
+            // We use direction=row, wrap, and item's basis=100% in order to layout the paragraphs (flex-item)
+            // one paragraph after another vertically.
+            // The benefit of Row instead of Column is that OverflowChecker already resizes these items well.
+            // With Column, I found that in the align-bottom case, OverflowChecker doesn't get the required height right
+            // and consequently the boxes won't be grown big enough.
+            flex-direction: row;
+            flex-wrap: wrap;
+
+            // Vertical alignment
+            align-items: center;
+            // the default for align-content is stretch, but that overrides our Paragraph Spacing setting and can create big gaps between the flex-items (paragraphs).
+            align-content: center;
+
+            // Paragraphs are the expected flex-items
+            p {
+                // Set to 100% so that two paragraphs can't share a line in the flex layout
+                flex-basis: 100%;
+                flex-grow: 0;
+            }
+        }
+
+        // bloom-vertical-align should be on the translation group
+        .bloom-vertical-align-top .bloom-editable {
+            align-items: flex-start;
+            align-content: flex-start;
+        }
+
+        .bloom-vertical-align-center .bloom-editable {
+            align-items: center;
+            align-content: center;
+        }
+
+        .bloom-vertical-align-bottom .bloom-editable {
+            align-items: flex-end;
+            align-content: flex-end;
+        }
+    }
+}
