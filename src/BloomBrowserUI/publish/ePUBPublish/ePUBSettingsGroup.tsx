@@ -74,7 +74,7 @@ export const EPUBSettingsGroup = () => {
                         css={css`
                             font-size: smaller;
                             margin-left: 8px;
-                            margin-top: 10px;
+                            margin-top: 15px;
                         `}
                     >
                         {"(" + chckoutToEdit + ")"}

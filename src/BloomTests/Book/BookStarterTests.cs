@@ -973,9 +973,9 @@ namespace BloomTests.Book
 			File.WriteAllText(shellFolderPath, content);
 			if (includeJson)
 			{
-				var json = "{'bookLineage':'first,second','bookInstanceId':'thisNewGuy','title':'Test Shell', 'suitableForMakingShells':" +
+				var json = "{\"bookLineage\":\"first,second\",\"bookInstanceId\":\"thisNewGuy\",\"title\":\"Test Shell\", \"suitableForMakingShells\":" +
 						   (makeTemplate ? "true" : "false" ) +
-						   (string.IsNullOrEmpty(bookshelf) ? "" : ",'tags':['topic:Fiction','bookshelf:" + bookshelf + "']") +
+						   (string.IsNullOrEmpty(bookshelf) ? "" : ",\"tags\":[\"topic:Fiction\",\"bookshelf:" + bookshelf + "\"]") +
 				           "}";
 				File.WriteAllText(Path.Combine(folder, BookInfo.MetaDataFileName), json);
 			}

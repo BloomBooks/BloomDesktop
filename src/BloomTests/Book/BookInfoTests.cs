@@ -57,7 +57,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void Constructor_OldJson_HasEmptyPublishProps()
+		public void Constructor_OldJson_HasDefaultPublishProps()
 		{
 			var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);
 			File.WriteAllText(jsonPath, @"{""folio"":""true"",""experimental"":""true"",""suitableForMakingShells"":""true""}");
@@ -65,9 +65,10 @@ namespace BloomTests.Book
 			Assert.That(bi.IsExperimental);
 			Assert.That(bi.IsFolio);
 			Assert.That(bi.IsSuitableForMakingShells);
-			Assert.That(bi.PublishSettings.AudioVideo.Format, Is.Null);
+			Assert.That(bi.PublishSettings.AudioVideo.Format, Is.EqualTo("facebook"));
 			Assert.That(bi.PublishSettings.AudioVideo.Motion, Is.False);
-			Assert.That(bi.PublishSettings.AudioVideo.PageTurnDelay, Is.EqualTo(0));
+			Assert.That(bi.PublishSettings.AudioVideo.PageTurnDelay, Is.EqualTo(3000));
+			Assert.That(bi.PublishSettings.AudioVideo.PlayerSettings, Is.EqualTo(""));
 			Assert.That(bi.PublishSettings.BloomPub.Motion, Is.False);
 			Assert.That(bi.PublishSettings.BloomLibrary.TextLangs, Is.Null);
 			Assert.That(bi.PublishSettings.BloomPub.TextLangs, Is.Null);
@@ -182,16 +183,6 @@ namespace BloomTests.Book
 			Assert.That(restored.PublishSettings.BloomPub.AudioLangs["es"], Is.EqualTo(InclusionSetting.IncludeByDefault));
 			Assert.That(restored.PublishSettings.BloomLibrary.SignLangs["qaa"], Is.EqualTo(InclusionSetting.Include));
 			Assert.That(restored.PublishSettings.BloomPub.SignLangs["qed"], Is.EqualTo(InclusionSetting.Exclude));
-		}
-
-		[Test]
-		public void PublishSettings_NewInstance_PropsWork()
-		{
-			var ps = new PublishSettings();
-			Assert.That(ps.AudioVideo.Format, Is.Null);
-			Assert.That(ps.AudioVideo.Motion, Is.False);
-			Assert.That(ps.AudioVideo.PageTurnDelay, Is.EqualTo(0));
-			Assert.That(ps.BloomPub.Motion, Is.False);
 		}
 
 		[TestCase(new object[] { "bookshelf:oldValue" })]
