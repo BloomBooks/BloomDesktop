@@ -297,7 +297,7 @@ namespace Bloom.Publish
 			this._superToolTip.SetSuperStuff(this._recordVideoRadio, superToolTipInfoWrapper7);
 			this._recordVideoRadio.TabIndex = 22;
 			this._recordVideoRadio.TabStop = true;
-			this._recordVideoRadio.Text = "Video";
+			this._recordVideoRadio.Text = "Audio or Video";
 			this._recordVideoRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			this._recordVideoRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._recordVideoRadio.UseVisualStyleBackColor = true;
