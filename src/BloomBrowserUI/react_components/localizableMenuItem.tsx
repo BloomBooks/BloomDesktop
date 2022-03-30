@@ -100,10 +100,9 @@ export const LocalizableMenuItem: React.FunctionComponent<LocalizableMenuItemPro
         <MenuItem
             key={props.l10nId}
             onClick={menuClickHandler}
-            dense
+            dense={true}
             css={css`
                 padding: 0 6px !important; // eliminate top and bottom padding to make even denser
-                font-family: Roboto, sans-serif;
                 font-size: 14pt;
             `}
         >
@@ -113,6 +112,7 @@ export const LocalizableMenuItem: React.FunctionComponent<LocalizableMenuItemPro
                     css={css`
                         span {
                             font-weight: 400 !important; // H6 defaults to 500; too thick
+                            font-family: Segoe UI, NotoSans, Roboto, sans-serif;
                             color: ${menuItemGray} !important;
                         }
                     `}
@@ -140,10 +140,9 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<LocalizableChe
         <MenuItem
             key={props.l10nId}
             onClick={props.onClick}
-            dense
+            dense={true}
             css={css`
                 padding: 0 6px !important; // eliminate top and bottom padding to make even denser
-                font-family: Roboto, sans-serif;
                 font-size: 14pt;
             `}
         >
@@ -161,11 +160,12 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<LocalizableChe
                     margin-left: -2px !important; // adjust checkbox over a bit
                     margin-right: 2px !important;
                 `}
-            ></Checkbox>
+            />
             <ListItemText
                 css={css`
                     span {
                         font-weight: 400 !important; // H6 defaults to 500; too thick
+                        font-family: Segoe UI, NotoSans, Roboto, sans-serif;
                         color: ${menuItemGray} !important;
                     }
                 `}
@@ -194,8 +194,9 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<BaseLocalizableM
             // Not ideal, but it works.
             css={css`
                 margin-left: ${kIconCheckboxAffordance}px !important;
-                font-family: Roboto, sans-serif;
-                font-size: 1rem !important; // slightly larger text
+                font-weight: 400 !important;
+                font-family: Segoe UI, NotoSans, Roboto, sans-serif !important;
+                font-size: 1rem !important;
                 color: ${menuItemGray} !important;
                 padding: 4px 6px 0 6px !important; // adjust for denser layout
                 justify-content: space-between !important; // move sub-menu arrow to right
