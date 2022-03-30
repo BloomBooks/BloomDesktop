@@ -158,3 +158,5 @@ src/BloomBrowserUI/bloomWebFonts.css
 src/BloomBrowserUI/templates/template books/Activity/domActivities.css
 
 src/BloomBrowserUI/templates/template books/Activity/choiceActivities.css
+
+src/content/templates/template books/Activity/simpleComprehensionQuiz.js
