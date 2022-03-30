@@ -78,6 +78,10 @@ export const CopyrightPanel: React.FunctionComponent<{
         return holder.length > 0;
     }
 
+    // This will run on first render.
+    // But that's actually what we want because the parent
+    // will update the UI based on whether our initial data
+    // is valid or not (to enable the OK button, for example).
     useEffect(() => {
         const copyrightInfoToSave: ICopyrightInfo = {
             imageCreator: imageCreator?.trim(),
