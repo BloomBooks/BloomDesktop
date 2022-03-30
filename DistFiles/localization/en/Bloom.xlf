@@ -4116,6 +4116,10 @@
         <source xml:lang="en">YouTube</source>
         <note>ID: PublishTab.RecordVideo.YouTube</note>
       </trans-unit>
+      <trans-unit id="PublishTab.RecordVideoButton">
+        <source xml:lang="en">Audio or Video</source>
+        <note>ID: PublishTab.RecordVideoButton</note>
+      </trans-unit>
       -->
       <trans-unit id="PublishTab.PublishRequiresEnterprise.FirstOverlayPage">
         <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
