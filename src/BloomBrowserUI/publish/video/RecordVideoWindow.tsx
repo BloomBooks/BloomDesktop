@@ -108,7 +108,12 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
     );
     const save = useL10n("Save", "PublishTab.RecordVideo.Save");
     const [closePending, setClosePending] = useState(false);
-    const [pageReadTime, setPageReadTime] = useState(3);
+    const [pageTurnDelayS, setPageTurnDelayS] = BloomApi.useApiStringState(
+        "publish/video/pageTurnDelay",
+        "3"
+    );
+    const pageTurnDelay = parseFloat(pageTurnDelayS);
+    const setPageTurnDelay = (n: number) => setPageTurnDelayS(n.toString());
     const [progressState, setProgressState] = useState(ProgressState.Working);
     const [activeStep, setActiveStep] = useState(0);
     const [format, setFormat] = BloomApi.useApiStringState(
@@ -232,7 +237,7 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
     // any variable element that contributes to the preview URL, we will re-run the query
     // any time it changes. (The actual content of the param is ignored in the backend.)
     const videoSettings = BloomApi.useApiString(
-        "publish/video/videoSettings?regen=" + pageReadTime,
+        "publish/video/videoSettings?regen=" + pageTurnDelay,
         ""
     );
     let videoSettingsParam = "";
@@ -315,7 +320,7 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                                         url={
                                             pathToOutputBrowser +
                                             "bloom-player/dist/bloomplayer.htm?centerVertically=true&videoPreviewMode=true&autoplay=no&defaultDuration=" +
-                                            pageReadTime +
+                                            pageTurnDelay +
                                             "&url=" +
                                             encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
                                             "&independent=false&host=bloomdesktop&skipActivities=true&hideNavButtons=true" +
@@ -539,14 +544,8 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
 
                 <SettingsPanel>
                     <VideoOptionsGroup
-                        pageDuration={pageReadTime}
-                        onSetPageDuration={time => {
-                            setPageReadTime(time);
-                            BloomApi.postString(
-                                "publish/video/pageReadTime",
-                                time.toString()
-                            );
-                        }}
+                        pageTurnDelay={pageTurnDelay}
+                        onSetPageTurnDelay={setPageTurnDelay}
                         format={format}
                         setFormat={setFormat}
                     ></VideoOptionsGroup>

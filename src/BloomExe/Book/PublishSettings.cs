@@ -183,6 +183,7 @@ namespace Bloom.Book
 			try
 			{
 				result = FromString(RobustFile.ReadAllText(path, Encoding.UTF8));
+				result.AudioVideo.FixEmptyValues();
 				return true;
 			}
 			catch (Exception e)
@@ -198,6 +199,20 @@ namespace Bloom.Book
 	/// </summary>
 	public class AudioVideoSettings
 	{
+		public AudioVideoSettings()
+		{
+			FixEmptyValues();
+		}
+
+		public void FixEmptyValues()
+		{
+			if (Format == null)
+				Format = "facebook";
+			if (PageTurnDelay == 0)
+				PageTurnDelay = 3000;
+			if (PlayerSettings == null)
+				PlayerSettings = "";
+		}
 		///// <summary>
 		///// The language selected using the language chooser control in Bloom Player
 		///// which is the primary language to be read into the video.
@@ -216,6 +231,26 @@ namespace Bloom.Book
 		/// </summary>
 		[JsonProperty("pageTurnDelay")]
 		public int PageTurnDelay { get; set; }
+
+		/// <summary>
+		/// For Javascript and the Javascript API and BloomPlayer, it's most convenient to have
+		/// this delay as a time in seconds. But for a setting to store in a persistent file,
+		/// I feel more comfortable using an int value in ms. Floating point values have all
+		/// kinds of ways to go wrong, like things that would be thought equal but are not exactly
+		/// so, locale issues,...
+		/// </summary>
+		[JsonIgnore]
+		public double PageTurnDelayDouble
+		{
+			get
+			{
+				return PageTurnDelay / 1000.0;
+			}
+			set
+			{
+				PageTurnDelay = (int)Math.Round(value * 1000);
+			}
+		}
 
 		/// <summary>
 		/// Which publishing mode to use. Currently one of facebook, feature, youtube, and mp3.

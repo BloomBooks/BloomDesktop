@@ -340,6 +340,11 @@ namespace Bloom.Book
 			return false;
 		}
 
+		public void SavePublishSettings()
+		{
+			PublishSettings.WriteToFolder(FolderPath);
+		}
+
 		public void Save()
 		{
 			// https://jira.sil.org/browse/BL-354 "The requested operation cannot be performed on a file with a user-mapped section open"
@@ -350,7 +355,7 @@ namespace Bloom.Book
 				try
 				{
 					MetaData.WriteToFolder(FolderPath);
-					PublishSettings.WriteToFolder(FolderPath);
+					SavePublishSettings();
 					return;
 				}
 				catch (IOException e)

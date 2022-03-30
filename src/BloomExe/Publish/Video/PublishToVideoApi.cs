@@ -19,9 +19,6 @@ namespace Bloom.Publish.Video
 		private PublishToAndroidApi _publishToAndroidApi;
 		private const string kApiUrlPart = "publish/video/";
 		private RecordVideoWindow _recordVideoWindow;
-		private string _videoFormat = "facebook";
-		string _pageReadTime = "3.0";
-		private string _settingsFromPreview;
 
 		public PublishToVideoApi(BloomWebSocketServer bloomWebSocketServer, PublishToAndroidApi publishToAndroidApi)
 		{
@@ -52,22 +49,31 @@ namespace Bloom.Publish.Video
 				request.PostSucceeded();
 			}, true, false);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "pageReadTime", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "pageTurnDelay", request =>
 			{
-				_pageReadTime = request.RequiredPostString();
-				_recordVideoWindow?.SetPageReadTime(_pageReadTime);
-				request.PostSucceeded();
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					request.ReplyWithText((request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PageTurnDelay / 1000.0).ToString());
+				}
+				else
+				{
+					request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PageTurnDelayDouble = double.Parse(request.RequiredPostString());
+					request.CurrentBook.BookInfo.SavePublishSettings();
+					_recordVideoWindow?.SetPageReadTime(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PageTurnDelayDouble.ToString());
+					request.PostSucceeded();
+				}
 			}, true, false);
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "videoSettings", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
-					request.ReplyWithText(_settingsFromPreview ?? "");
+					request.ReplyWithText(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PlayerSettings ?? "");
 				}
 				else
 				{
-					_settingsFromPreview = request.RequiredPostString();
+					request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PlayerSettings = request.RequiredPostString();
+					request.CurrentBook.BookInfo.SavePublishSettings();
 					request.PostSucceeded();
 				}
 			}, true, false);
@@ -85,13 +91,15 @@ namespace Bloom.Publish.Video
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
-					request.ReplyWithText(_videoFormat);
+					request.ReplyWithText(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format);
 				}
 				else
 				{
-					_videoFormat = request.RequiredPostString();
-					_recordVideoWindow?.SetFormat(_videoFormat,
+					request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format = request.RequiredPostString();
+					request.CurrentBook.BookInfo.SavePublishSettings();
+					_recordVideoWindow?.SetFormat(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format,
 						request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape);
+
 					request.PostSucceeded();
 				}
 			}, true, false);
@@ -105,7 +113,8 @@ namespace Bloom.Publish.Video
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "tooBigForScreenMsg",
 				request =>
 				{
-					request.ReplyWithText(RecordVideoWindow.GetDataForFormat(_videoFormat, request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape,
+					request.ReplyWithText(RecordVideoWindow.GetDataForFormat(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format,
+						request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape,
 						out _, out _, out _));
 				},
 				 true, // has to be on UI thread because it uses Bloom's main window to find the right screen
@@ -146,6 +155,7 @@ namespace Bloom.Publish.Video
 				(writeRequest, value) =>
 				{
 					writeRequest.CurrentBook.BookInfo.PublishSettings.AudioVideo.Motion = value;
+					writeRequest.CurrentBook.BookInfo.SavePublishSettings();
 					_webSocketServer.SendEvent("publish", "motionChanged");
 					UpdatePreview(writeRequest);
 				}
@@ -228,9 +238,10 @@ namespace Bloom.Publish.Video
 		private void RecordVideo(ApiRequest request)
 		{
 			_recordVideoWindow = RecordVideoWindow.Create(_webSocketServer);
-			_recordVideoWindow.SetFormat(_videoFormat, request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape);
-			_recordVideoWindow.SetPageReadTime(_pageReadTime);
-			_recordVideoWindow.SetVideoSettingsFromPreview(_settingsFromPreview);
+			_recordVideoWindow.SetFormat(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format,
+				request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape);
+			_recordVideoWindow.SetPageReadTime(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PageTurnDelayDouble.ToString());
+			_recordVideoWindow.SetVideoSettingsFromPreview(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PlayerSettings);
 			_recordVideoWindow.Closed += (sender, args) =>
 			{
 				if (!_recordVideoWindow.GotFullRecording)
