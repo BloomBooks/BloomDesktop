@@ -1,3 +1,5 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
 import React = require("react");
 import BookMetadataDialog from "../metadata/BookMetadataDialog";
 import { BloomApi } from "../../utils/bloomApi";
@@ -13,6 +15,14 @@ export const EPUBSettingsGroup = () => {
         "common/canModifyCurrentBook",
         false
     );
+    const chckoutToEdit = useL10n(
+        "check out to edit",
+        "TeamCollection.CheckoutToEdit",
+        undefined,
+        undefined,
+        undefined,
+        true
+    );
     return (
         <SettingsGroup
             label={useL10n(
@@ -25,14 +35,14 @@ export const EPUBSettingsGroup = () => {
                 english="Include image descriptions on page"
                 apiEndpoint="publish/epub/imageDescriptionSetting"
                 l10nKey="PublishTab.Epub.IncludeOnPage"
-                disabled={!canModifyCurrentBook}
+                disabled={false}
             />
 
             <ApiCheckbox
                 english="Use ePUB reader's text size"
                 apiEndpoint="publish/epub/removeFontSizesSetting"
                 l10nKey="PublishTab.Epub.RemoveFontSizes"
-                disabled={!canModifyCurrentBook}
+                disabled={false}
                 //TODO: priorClickAction={() => this.abortPreview()}
             />
             {/* l10nKey is intentionally not under PublishTab.Epub... we may end up with this link in other places */}
@@ -45,15 +55,32 @@ export const EPUBSettingsGroup = () => {
             >
                 Accessibility Checker
             </Link>
-            <Link
-                id="bookMetadataDialogLink"
-                l10nKey="PublishTab.BookMetadata"
-                l10nComment="This link opens a dialog box that lets you put in information someone (often a librarian) might use to search for a book with particular characteristics."
-                onClick={() => BookMetadataDialog.show()}
-                disabled={!canModifyCurrentBook}
+            <div
+                css={css`
+                    display: flex;
+                `}
             >
-                Book Metadata
-            </Link>
+                <Link
+                    id="bookMetadataDialogLink"
+                    l10nKey="PublishTab.BookMetadata"
+                    l10nComment="This link opens a dialog box that lets you put in information someone (often a librarian) might use to search for a book with particular characteristics."
+                    onClick={() => BookMetadataDialog.show()}
+                    disabled={!canModifyCurrentBook}
+                >
+                    Book Metadata
+                </Link>
+                {canModifyCurrentBook || (
+                    <div
+                        css={css`
+                            font-size: smaller;
+                            margin-left: 8px;
+                            margin-top: 10px;
+                        `}
+                    >
+                        {"(" + chckoutToEdit + ")"}
+                    </div>
+                )}
+            </div>
         </SettingsGroup>
     );
 };

@@ -12,11 +12,8 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         "publish/android/canHaveMotionMode",
         false
     );
-    const [canModifyCurrentBook] = BloomApi.useApiBoolean(
-        "common/canModifyCurrentBook",
-        false
-    );
-    const enabled = motionEnabled && canModifyCurrentBook;
+
+    const enabled = motionEnabled;
     return (
         <SettingsGroup
             label={useL10n("Features", "PublishTab.Android.Features")}
