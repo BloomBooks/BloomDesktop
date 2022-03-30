@@ -19,6 +19,7 @@ import { ConditionallyEnabledBlock } from "../../../react_components/Conditional
 import { BloomApi } from "../../../utils/bloomApi";
 import { useGetLabelForCollection } from "../../../contentful/UseContentful";
 import { Div } from "../../../react_components/l10nComponents";
+import { kMutedTextGray } from "../../../bloomMaterialUITheme";
 import {
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog
@@ -113,6 +114,9 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                                     makeBookshelfFile: !params.makeBookshelfFile
                                 })
                             }
+                            deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
+                                true
+                            }
                         ></MuiCheckbox>
                         <ConditionallyEnabledBlock
                             enable={
@@ -131,7 +135,7 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                                     l10nParam0={params.bookshelfLabel ?? ""}
                                     css={css`
                                         font-size: 10px;
-                                        color: gray;
+                                        color: ${kMutedTextGray};
                                         margin-top: -9px;
                                     `}
                                 >
@@ -222,6 +226,9 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                                     makeBloomBundle: !!checked
                                 });
                             }}
+                            deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
+                                true
+                            }
                         ></MuiCheckbox>
                     </WhatsThisBlock>
                 </DialogMiddle>

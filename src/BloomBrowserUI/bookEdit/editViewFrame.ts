@@ -18,6 +18,7 @@ export interface IEditViewFrameExports {
     getModalDialogContainer(): HTMLElement | null;
     showConfirmDialog(props: IConfirmDialogProps): void;
     showColorPickerDialog(props: IColorPickerDialogProps): void;
+    showCopyrightAndLicenseDialog(imageUrl?: string): void;
 }
 
 export function SayHello() {
@@ -35,6 +36,7 @@ export { showAddPageDialog };
 import "errorHandler";
 import { reportError } from "../lib/errorHandler";
 import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
+import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
 
 //Called by c# using editTabBundle.handleUndo()
 export function handleUndo(): void {
@@ -176,4 +178,8 @@ export function showConfirmDialog(props: IConfirmDialogProps): void {
 
 export function showColorPickerDialog(props: IColorPickerDialogProps): void {
     doShowColorPickerDialog(props);
+}
+
+export function showCopyrightAndLicenseDialog(imageUrl?: string) {
+    showCopyrightAndLicenseInfoOrDialog(imageUrl);
 }

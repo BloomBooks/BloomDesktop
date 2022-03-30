@@ -63,13 +63,7 @@ const FontInformationPane: React.FunctionComponent<{
         "This shows in the popup before the font's version number."
     );
 
-    // There is one other 'License' in BookMetaData, but I would like to have the comment here.
-    // The other option would be to put it in Common and maybe port the BookMetaData one to Common too.
-    const licenseWording = useL10n(
-        "License",
-        "FontInformationPane.License",
-        "This shows in the popup as a link to the font's license."
-    );
+    const licenseWording = useL10n("License", "Common.License");
 
     const showFontDeveloperData = (fontData: IFontMetaData | undefined) => {
         if (!fontData) return;

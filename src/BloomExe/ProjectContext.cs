@@ -69,7 +69,7 @@ namespace Bloom
 			_scope.Resolve<CollectionSettings>().CheckAndFixDependencies(_scope.Resolve<BloomFileLocator>());
 
 			if (!justEnoughForHtmlDialog)
-				ProjectWindow = _scope.Resolve <Shell>();
+			ProjectWindow = _scope.Resolve <Shell>();
 
 			string collectionDirectory = Path.GetDirectoryName(projectSettingsPath);
 
@@ -171,7 +171,8 @@ namespace Bloom
 							typeof(LibraryPublishApi),
 							typeof(WorkspaceApi),
 							typeof(BookCollectionHolder),
-							typeof(WorkspaceTabSelection)
+							typeof(WorkspaceTabSelection),
+							typeof(CopyrightAndLicenseApi)
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
@@ -316,7 +317,7 @@ namespace Bloom
 				MessageBox.Show("Bloom was not able to find all its bits. This sometimes happens when upgrading to a newer version. To fix it, please run the installer again and choose 'Repair', or uninstall and reinstall. We truly value your time and apologize for wasting it. The error was:"+Environment.NewLine+Environment.NewLine+error.Message,"Bloom Installation Problem",MessageBoxButtons.OK,MessageBoxIcon.Error);
 				Application.Exit();
 			}
-			
+
 			var server = _scope.Resolve<BloomServer>();
 			server.StartListening();
 			_scope.Resolve<AudioRecording>().RegisterWithApiHandler(server.ApiHandler);
@@ -352,6 +353,7 @@ namespace Bloom
 			_scope.Resolve<AudioSegmentationApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<BrowserDialogApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<ProblemReportApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<CopyrightAndLicenseApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<I18NApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<FileIOApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<ProgressDialogApi>().RegisterWithApiHandler(server.ApiHandler);

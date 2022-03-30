@@ -259,6 +259,7 @@
       <trans-unit id="BookMetadata.License">
         <source xml:lang="en">License</source>
         <note>ID: BookMetadata.License</note>
+        <note>Obsolete as of Bloom 5.3 (replaced by Common.License)</note>
       </trans-unit>
       <trans-unit id="BookMetadata.metapicture">
         <source xml:lang="en">Picture</source>
@@ -958,6 +959,10 @@
         <source xml:lang="en">Copy</source>
         <note>ID: Common.Copy</note>
       </trans-unit>
+      <trans-unit id="Common.Copyright">
+        <source xml:lang="en">Copyright</source>
+        <note>ID: Common.Copyright</note>
+      </trans-unit>
       <trans-unit id="Common.Delete">
         <source xml:lang="en">Delete</source>
         <note>ID: Common.Delete</note>
@@ -1000,6 +1005,10 @@
         <note>A link or button that leads to something that tells the user more about what they just read.</note>
         <note>This is the same as Settings.Enterprise.LearnMore</note>
       </trans-unit>
+      <trans-unit id="Common.License" sil:dynamic="true">
+        <source xml:lang="en">License</source>
+        <note>ID: Common.License</note>
+      </trans-unit>
       <trans-unit id="Common.Loading" sil:dynamic="true">
         <source xml:lang="en">Loading...</source>
         <note>ID: Common.Loading</note>
@@ -1031,6 +1040,10 @@
       <trans-unit id="Common.Optional">
         <source xml:lang="en">optional</source>
         <note>ID: Common.Optional</note>
+      </trans-unit>
+      <trans-unit id="Common.Other" sil:dynamic="true">
+        <source xml:lang="en">Other</source>
+        <note>ID: Common.Other</note>
       </trans-unit>
       <trans-unit id="Common.Pause" sil:dynamic="true">
         <source xml:lang="en">Pause</source>
@@ -1109,6 +1122,41 @@
         <note>ID: Common.WhatCausedThisProblem</note>
         <note>This is usually a link to an explanatory document.</note>
       </trans-unit>
+<!--5.3
+      <trans-unit id="Copyright.CopyrightHolder" sil:dynamic="true">
+        <source xml:lang="en">Copyright Holder</source>
+        <note>ID: Copyright.CopyrightHolder</note>
+      </trans-unit>
+      <trans-unit id="Copyright.CopyrightYear" sil:dynamic="true">
+        <source xml:lang="en">Copyright Year</source>
+        <note>ID: Copyright.CopyrightYear</note>
+      </trans-unit>
+      <trans-unit id="Copyright.FollowSILGuidelines" sil:dynamic="true">
+        <source xml:lang="en">Before publishing as SIL, ensure that you follow [SIL corporate guidelines].</source>
+        <note>ID: Copyright.FollowSILGuidelines</note>
+        <note>The text inside the [square brackets] will become a link to a website.</note>
+      </trans-unit>
+      <trans-unit id="Copyright.IllustratorOrPhotographer" sil:dynamic="true">
+        <source xml:lang="en">Illustrator/Photographer</source>
+        <note>ID: Copyright.IllustratorOrPhotographer</note>
+      </trans-unit>
+      <trans-unit id="Copyright.NotATranslation" sil:dynamic="true">
+        <source xml:lang="en">Not a translation or new version</source>
+        <note>ID: Copyright.NotATranslation</note>
+      </trans-unit>
+      <trans-unit id="Copyright.PublishingAsSIL" sil:dynamic="true">
+        <source xml:lang="en">Publishing as SIL</source>
+        <note>ID: Copyright.PublishingAsSIL</note>
+      </trans-unit>
+      <trans-unit id="Copyright.UseOriginalCopyright" sil:dynamic="true">
+        <source xml:lang="en">Continue to use the same copyright and license as the original book:</source>
+        <note>ID: Copyright.UseOriginalCopyright</note>
+      </trans-unit>
+      <trans-unit id="CopyrightAndLicense" sil:dynamic="true">
+        <source xml:lang="en">Copyright and License</source>
+        <note>ID: CopyrightAndLicense</note>
+      </trans-unit>
+-->
       <trans-unit id="Download.Completed">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
         <note>ID: Download.Completed</note>
@@ -2893,11 +2941,6 @@
         <note>ID: FontInformationPane.FontUnsuitable</note>
         <note>This shows in the popup when hovering over a font that Bloom can't legally host on its website.</note>
       </trans-unit>
-      <trans-unit id="FontInformationPane.License">
-        <source xml:lang="en">License</source>
-        <note>ID: FontInformationPane.License</note>
-        <note>This shows in the popup as a link to the font's license.</note>
-      </trans-unit>
       <trans-unit id="FontInformationPane.Styles">
         <source xml:lang="en">Styles</source>
         <note>ID: FontInformationPane.Styles</note>
@@ -3085,6 +3128,70 @@
         <source xml:lang="en">Comic Portrait</source>
         <note>ID: LayoutChoices.ComicPortrait</note>
       </trans-unit>
+<!--5.3
+      <trans-unit id="License.About" sil:dynamic="true">
+        <source xml:lang="en">About %0</source>
+        <note>ID: License.About</note>
+        <note>%0 is a shorthand version of the Creative Commons license, such as "CC-BY"</note>
+      </trans-unit>
+      <trans-unit id="License.AllRightsReserved" sil:dynamic="true">
+        <source xml:lang="en">All Rights Reserved</source>
+        <note>ID: License.AllRightsReserved</note>
+      </trans-unit>
+      <trans-unit id="License.AllRightsReserved.Description" sil:dynamic="true">
+        <source xml:lang="en">No one can modify or copy it without explicit permission. We will not be sharing it via Bloom Reader or BloomLibrary.org.</source>
+        <note>ID: License.AllRightsReserved.Description</note>
+      </trans-unit>
+      <trans-unit id="License.CannotChangeLicense" sil:dynamic="true">
+        <source xml:lang="en">The license of the original book does not allow changing the license in new versions.</source>
+        <note>ID: License.CannotChangeLicense</note>
+      </trans-unit>
+      <trans-unit id="License.CopyrightHolderAllows" sil:dynamic="true">
+        <source xml:lang="en">The copyright holder allows others to use the book in this way:</source>
+        <note>ID: License.CopyrightHolderAllows</note>
+      </trans-unit>
+      <trans-unit id="License.CreativeCommons.Additional" sil:dynamic="true">
+        <source xml:lang="en">You may use this space to clarify or grant additional permissions (for example, that translations are allowed), but not to alter the license.</source>
+        <note>ID: License.CreativeCommons.Additional</note>
+      </trans-unit>
+      <trans-unit id="License.CreativeCommons.AllowCommercial" sil:dynamic="true">
+        <source xml:lang="en">use the book in a commercial way</source>
+        <note>ID: License.CreativeCommons.AllowCommercial</note>
+      </trans-unit>
+      <trans-unit id="License.CreativeCommons.CopyForFree" sil:dynamic="true">
+        <source xml:lang="en">copy this book for free</source>
+        <note>ID: License.CreativeCommons.CopyForFree</note>
+      </trans-unit>
+      <trans-unit id="License.CreativeCommons.DifferentLicense" sil:dynamic="true">
+        <source xml:lang="en">apply a different license to new versions of this book</source>
+        <note>ID: License.CreativeCommons.DifferentLicense</note>
+      </trans-unit>
+      <trans-unit id="License.CreativeCommons.Intro" sil:dynamic="true">
+        <source xml:lang="en">Everyone is allowed to:</source>
+        <note>ID: License.CreativeCommons.Intro</note>
+      </trans-unit>
+      <trans-unit id="License.CreativeCommons.ShareAlike" sil:dynamic="true">
+        <source xml:lang="en">make new versions of this book, but they must keep the author, illustrator, and other credits</source>
+        <note>ID: License.CreativeCommons.ShareAlike</note>
+      </trans-unit>
+      <trans-unit id="License.Custom" sil:dynamic="true">
+        <source xml:lang="en">Custom</source>
+        <note>ID: License.Custom</note>
+      </trans-unit>
+      <trans-unit id="License.Custom.AvoidIfPossible" sil:dynamic="true">
+        <source xml:lang="en">Avoid writing a custom license if at all possible. They are difficult to write, interpret, and enforce.</source>
+        <note>ID: License.Custom.AvoidIfPossible</note>
+      </trans-unit>
+      <trans-unit id="License.OriginalLicense" sil:dynamic="true">
+        <source xml:lang="en">The original version of this book is %0</source>
+        <note>ID: License.OriginalLicense</note>
+        <note>%0 is a shorthand version of the license such as "CC-BY"</note>
+      </trans-unit>
+      <trans-unit id="License.PublicDomain" sil:dynamic="true">
+        <source xml:lang="en">Anyone can use it however they want.</source>
+        <note>ID: License.PublicDomain</note>
+      </trans-unit>
+-->
       <trans-unit id="LicenseDialog.WindowTitle">
         <source xml:lang="en">Bloom {0}</source>
         <note>ID: LicenseDialog.WindowTitle</note>
@@ -4192,6 +4299,7 @@
       <trans-unit id="PublishTab.Upload.Copyright">
         <source xml:lang="en">Copyright</source>
         <note>ID: PublishTab.Upload.Copyright</note>
+        <note>Obsolete as of Bloom 5.3 (replaced by Common.Copyright)</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Credits">
         <source xml:lang="en">credits</source>

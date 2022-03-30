@@ -28,10 +28,9 @@ using SIL.Windows.Forms.ImageToolbox.ImageGallery;
 using SIL.Windows.Forms.Widgets;
 using System.Globalization;
 using Bloom.web;
-using ICSharpCode.SharpZipLib.Zip;
-using SIL.Extensions;
 using System.Reflection;
 using Bloom.Utils;
+using Bloom.MiscUI;
 
 namespace Bloom.Edit
 {
@@ -46,6 +45,7 @@ namespace Bloom.Edit
 		private readonly DuplicatePageCommand _duplicatePageCommand;
 		private readonly DeletePageCommand _deletePageCommand;
 		private readonly SignLanguageApi _signLanguageApi;
+		private readonly CopyrightAndLicenseApi _copyrightAndLicenseApi;
 		private Action _pendingMessageHandler;
 		private bool _updatingDisplay;
 		private Color _enabledToolbarColor = Palette.DarkTextAgainstBackgroundColor;
@@ -60,7 +60,8 @@ namespace Bloom.Edit
 		public EditingView(EditingModel model, PageListView pageListView, CutCommand cutCommand, CopyCommand copyCommand,
 			PasteCommand pasteCommand, UndoCommand undoCommand, DuplicatePageCommand duplicatePageCommand,
 			DeletePageCommand deletePageCommand, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent,
-			SignLanguageApi signLanguageApi, CommonApi commonApi, EditingViewApi editingViewApi, PageListApi pageListApi, BookRenamedEvent bookRenamedEvent)
+			SignLanguageApi signLanguageApi, CommonApi commonApi, EditingViewApi editingViewApi, PageListApi pageListApi, BookRenamedEvent bookRenamedEvent,
+			CopyrightAndLicenseApi copyrightAndLicenseApi)
 		{
 			_model = model;
 			_pageListView = pageListView;
@@ -84,6 +85,9 @@ namespace Bloom.Edit
 			signLanguageApi.View = this;
 			editingViewApi.View = this;
 			commonApi.Model = _model;
+			_copyrightAndLicenseApi = copyrightAndLicenseApi;
+			copyrightAndLicenseApi.Model = _model;
+			copyrightAndLicenseApi.View = this;
 			_browser1.SetEditingCommands(cutCommand, copyCommand, pasteCommand, undoCommand);
 
 			_browser1.GeckoReady += new EventHandler(OnGeckoReady);
@@ -319,13 +323,13 @@ namespace Bloom.Edit
 				return;
 
 			Debug.WriteLine("EditTab.ParentForm_Activated(): Selecting Browser");
-//			Debug.WriteLine("browser focus: "+ (_browser1.Focused ? "true": "false"));
-//			Debug.WriteLine("active control: " + ActiveControl.Name);
-//			Debug.WriteLine("split container's control: " + _splitContainer1.ActiveControl.Name);
-//			Debug.WriteLine("_splitContainer1.ContainsFocus: " + (_splitContainer1.ContainsFocus ? "true" : "false"));
-//			Debug.WriteLine("_splitContainer2.ContainsFocus: " + (_splitContainer2.ContainsFocus ? "true" : "false"));
-//			Debug.WriteLine("_browser.ContainsFocus: " + (_browser1.ContainsFocus ? "true" : "false"));
-//			//focus() made it worse, select has no effect
+			//			Debug.WriteLine("browser focus: "+ (_browser1.Focused ? "true": "false"));
+			//			Debug.WriteLine("active control: " + ActiveControl.Name);
+			//			Debug.WriteLine("split container's control: " + _splitContainer1.ActiveControl.Name);
+			//			Debug.WriteLine("_splitContainer1.ContainsFocus: " + (_splitContainer1.ContainsFocus ? "true" : "false"));
+			//			Debug.WriteLine("_splitContainer2.ContainsFocus: " + (_splitContainer2.ContainsFocus ? "true" : "false"));
+			//			Debug.WriteLine("_browser.ContainsFocus: " + (_browser1.ContainsFocus ? "true" : "false"));
+			//			//focus() made it worse, select has no effect
 
 			/* These two lines are the result of several hours of work. The problem this solves is that when
 			 * you're switching between applications (e.g., building a shell book), the browser would highlight
@@ -360,58 +364,6 @@ namespace Bloom.Edit
 #if TooExpensive
 			_browser1.WebBrowser.DomFocus += new EventHandler<GeckoDomEventArgs>(OnBrowserFocusChanged);
 #endif
-		}
-
-		private void OnShowBookMetadataEditor()
-		{
-			try
-			{
-				_model.SaveNow();
-				//in case we were in this dialog already and made changes, which haven't found their way out to the Book yet
-
-				var metadata = _model.CurrentBook.GetLicenseMetadata();
-				var originalMetadata = BookCopyrightAndLicense.GetOriginalMetadata(_model.CurrentBook.Storage.Dom, _model.CurrentBook.BookData);
-
-				Logger.WriteEvent("Showing Metadata Editor Dialog");
-				var isDerivedBook = BookCopyrightAndLicense.IsDerivative(originalMetadata);
-				using (var dlg = new BloomMetadataEditorDialog(metadata, isDerivedBook))
-				{
-					dlg.ShowCreator = false;
-					dlg.ReplaceOriginalCopyright = !_model.CurrentBook.BookInfo.MetaData.UseOriginalCopyright;
-					if (DialogResult.OK == dlg.ShowDialog())
-					{
-						_model.CurrentBook.BookInfo.MetaData.UseOriginalCopyright = isDerivedBook && !dlg.ReplaceOriginalCopyright;
-						if (!isDerivedBook || dlg.ReplaceOriginalCopyright)
-						{
-							Logger.WriteEvent("For BL-3166 Investigation");
-							if (metadata.License == null)
-								Logger.WriteEvent("old LicenseUrl was null ");
-							else
-								Logger.WriteEvent("old LicenseUrl was " + metadata.License.Url);
-							if (dlg.Metadata.License == null)
-								Logger.WriteEvent("new LicenseUrl was null ");
-							else
-								Logger.WriteEvent("new LicenseUrl: " + dlg.Metadata.License.Url);
-							_model.ChangeBookLicenseMetaData(dlg.Metadata);
-						}
-						else
-						{
-							_model.ChangeBookLicenseMetaData(originalMetadata);
-						}
-					}
-				}
-				Logger.WriteMinorEvent("Emerged from Metadata Editor Dialog");
-			}
-			catch(Exception error)
-			{
-				// Throwing this exception is causing it to be swallowed.  It results in the web browser just showing a blank white page, but no
-				// message is displayed and no exception is caught by the debugger.
-				//#if DEBUG
-				//				throw;
-				//#endif
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,
-					"There was a problem recording your changes to the copyright and license.");
-			}
 		}
 
 		private void SetupThumnailLists()
@@ -635,10 +587,10 @@ namespace Bloom.Edit
 			}
 			var endPageLoad = DateTime.Now;
 			Logger.WriteEvent($"update page elapsed time = {endPageLoad - _beginPageLoad} (garbage collect took {endPageLoad - beginGarbageCollect}");
-//#if MEMORYCHECK
+			//#if MEMORYCHECK
 			// Check memory for the benefit of developers.
 			Bloom.Utils.MemoryManagement.CheckMemory(false, "EditingView - display page updated", false);
-//#endif
+			//#endif
 		}
 
 		public void UpdatePageList(bool emptyThumbnailCache)
@@ -686,8 +638,6 @@ namespace Bloom.Edit
 				OnCutImage(ge);
 			if(target.ClassName.Contains("copyImageButton"))
 				OnCopyImage(ge);
-			if(target.ClassName.Contains("editMetadataButton"))
-				OnEditImageMetdata(ge);
 			// (similar changeWidgetButton handled in modern way in javascript)
 
 			var anchor = target as GeckoAnchorElement;
@@ -698,9 +648,8 @@ namespace Bloom.Edit
 			}
 			if(anchor != null && anchor.Href != "" && anchor.Href != "#")
 			{
-				if(anchor.Href.Contains("bookMetadataEditor"))
+				if (anchor.Href.EndsWith("clickWasAlreadyHandled"))
 				{
-					OnShowBookMetadataEditor();
 					ge.Handled = true;
 					return;
 				}
@@ -743,81 +692,112 @@ namespace Bloom.Edit
 			Settings.Default.LastSourceLanguageViewed = target.OuterHtml.Substring(start, end - start);
 		}
 
-		private void OnEditImageMetdata(DomEventArgs ge)
-		{
-			var imageElement = GetImageNode(ge);
-			if(imageElement == null)
-				return;
-			string fileName = HtmlDom.GetImageElementUrl(imageElement).PathOnly.NotEncoded;
+		private Metadata _originalImageMetadataFromImageToolbox;
+		// When the copyright and license dialog is launched from the palaso image toolbox,
+		// this action will be set as the thing to do to save the metadata (into the image)
+		// when the user confirms changes in the C/L dialog.
+		private Action<Metadata> _saveNewImageMetadataActionForImageToolbox;
 
-			var imageInfo = ImageUpdater.GetImageInfoSafelyFromFilePath(_model.CurrentBook.FolderPath, fileName);
-			if (imageInfo == null)
+		private string _fileNameOfImageBeingModified;
+		public Metadata PrepareToEditImageMetadata(string fileName)
+		{
+			if (fileName == null)
 			{
-				return; // exception handled in ImageUpdater
+				// Without a file name, we are coming from the palaso image toolbox
+				return _originalImageMetadataFromImageToolbox;
 			}
 
-			using(imageInfo)
+			// keep a reference to the fileName rather the image to avoid dispose issues
+			_fileNameOfImageBeingModified = fileName;
+
+			using (var imageBeingModified = ImageUpdater.GetImageInfoSafelyFromFilePath(_model.CurrentBook.FolderPath, fileName))
 			{
-				if(ImageUpdater.ImageHasMetadata(imageInfo))
+				if (imageBeingModified == null)
+				{
+					return null; // exception handled in ImageUpdater
+				}
+
+				if (ImageUpdater.ImageHasMetadata(imageBeingModified))
 				{
 					// If we have metadata with an official collectionUri or we are translating a shell
 					// just give a summary of the metadata
-					if(ImageUpdater.ImageIsFromOfficialCollection(imageInfo.Metadata) || !_model.CanEditCopyrightAndLicense)
+					if (ImageUpdater.ImageIsFromOfficialCollection(imageBeingModified.Metadata) || !_model.CanEditCopyrightAndLicense)
 					{
-						MessageBox.Show(imageInfo.Metadata.GetSummaryParagraph(new string[] { "en" }, out string idOfLangUsed));
-						return;
+						MessageBox.Show(imageBeingModified.Metadata.GetSummaryParagraph(new string[] { "en" }, out string _));
+						return null;
 					}
 				}
 				else
 				{
 					// If we don't have metadata, but we are translating a shell
 					// don't allow the metadata to be edited
-					if(!_model.CanEditCopyrightAndLicense)
+					if (!_model.CanEditCopyrightAndLicense)
 					{
 						MessageBox.Show(LocalizationManager.GetString("EditTab.CannotChangeCopyright",
 							"Sorry, the copyright and license for this book cannot be changed."));
-						return;
+						return null;
 					}
 				}
-				// Otherwise, bring up the dialog to edit the metadata
-				Logger.WriteEvent("Showing Metadata Editor For Image");
-				using(var dlg = new SIL.Windows.Forms.ClearShare.WinFormsUI.MetadataEditorDialog(imageInfo.Metadata))
-				{
-					if(DialogResult.OK == dlg.ShowDialog())
-					{
-						imageInfo.Metadata = dlg.Metadata;
-						imageInfo.Metadata.StoreAsExemplar(Metadata.FileCategory.Image);
-						//update so any overlays on the image are brought up to data
-						PageEditingModel.UpdateMetadataAttributesOnImage(new ElementProxy(imageElement), imageInfo);
-						imageElement.Click(); //wake up javascript to update overlays
-						imageInfo.SaveUpdatedMetadataIfItMakesSense();
 
-						var answer =
-							MessageBox.Show(
-								LocalizationManager.GetString("EditTab.CopyImageIPMetadataQuestion",
-									"Copy this information to all other pictures in this book?", "get this after you edit the metadata of an image"),
-								LocalizationManager.GetString("EditTab.TitleOfCopyIPToWholeBooksDialog",
-									"Picture Intellectual Property Information"), MessageBoxButtons.YesNo, MessageBoxIcon.Question,
-								MessageBoxDefaultButton.Button2);
-						if (answer == DialogResult.Yes)
-						{
-							Cursor = Cursors.WaitCursor;
+				return imageBeingModified.Metadata;
+			}
+		}
 
-							// Note: if something goes wrong in this call, the user gets notified, so we don't have
-							// to catch errors here.
-							_model.CopyImageMetadataToWholeBook(dlg.Metadata);
-							// There might be more than one image on this page. Update overlays.
-							_model.RefreshDisplayOfCurrentPage();
-
-							Cursor = Cursors.Default;
-						}
-					}
-				}
+		/// <returns>false if saving via libpalaso image toolbox; true otherwise</returns>
+		public bool SaveImageMetadata(Metadata metadata)
+		{
+			if (_saveNewImageMetadataActionForImageToolbox != null)
+			{
+				_saveNewImageMetadataActionForImageToolbox(metadata);
+				return false;
 			}
 
-			//_model.SaveNow();
-			//doesn't work: _browser1.WebBrowser.Reload();
+			using (var imageBeingModified = ImageUpdater.GetImageInfoSafelyFromFilePath(_model.CurrentBook.FolderPath, _fileNameOfImageBeingModified))
+			{
+				imageBeingModified.Metadata = metadata;
+				imageBeingModified.Metadata.StoreAsExemplar(Metadata.FileCategory.Image);
+				imageBeingModified.SaveUpdatedMetadataIfItMakesSense();
+			}
+
+			return true;
 		}
+
+		private void LaunchCopyrightAndLicenseDialogForImage(Metadata imageMetadata)
+		{
+			var dialogTitle = LocalizationManager.GetString("CopyrightAndLicense", "Copyright and License");
+			var data = _copyrightAndLicenseApi.GetJsonFromMetadata(imageMetadata, forBook: false);
+			using (var dlg = new ReactDialog("copyrightAndLicenseBundle", new { isForBook = false, data }, dialogTitle))
+			{
+				dlg.Width = 500;
+				dlg.Height = 700;
+
+				dlg.ShowDialog(this);
+			}
+		}
+
+		public void AskUserToCopyImageMetadataToAllImages(Metadata metadata)
+		{
+			var answer =
+				MessageBox.Show(
+					LocalizationManager.GetString("EditTab.CopyImageIPMetadataQuestion",
+						"Copy this information to all other pictures in this book?", "get this after you edit the metadata of an image"),
+					LocalizationManager.GetString("EditTab.TitleOfCopyIPToWholeBooksDialog",
+						"Picture Intellectual Property Information"), MessageBoxButtons.YesNo, MessageBoxIcon.Question,
+					MessageBoxDefaultButton.Button2);
+			if (answer == DialogResult.Yes)
+			{
+				Cursor = Cursors.WaitCursor;
+
+				// Note: if something goes wrong in this call, the user gets notified, so we don't have
+				// to catch errors here.
+				_model.CopyImageMetadataToWholeBook(metadata);
+				// There might be more than one image on this page. Update overlays.
+				_model.RefreshDisplayOfCurrentPage();
+
+				Cursor = Cursors.Default;
+			}
+		}
+
 
 		private void OnCutImage(DomEventArgs ge)
 		{
@@ -1138,7 +1118,23 @@ namespace Bloom.Edit
 			// not using a "using for this" because we want to disentagle the cost of the dialog vs. working
 			// with the results of the dialog.
 			var performanceMeasureForShowingDialog = PerformanceMeasurement.Global.Measure("Show ImageToolbox Dialog");
-			using (var dlg = new ImageToolboxDialog(imageInfo, null))
+			using (var dlg = new ImageToolboxDialog(imageInfo, null,
+				// This action overrides the default "edit metadata" action in the palaso image toolbox.
+				// Its default is to launch the original palaso WinForms C/L dialog.
+				// But we launch our own react dialog. If/when the user clicks ok, we call back to palaso
+				// to save the new metadata using the saveNewImageMetadata.
+				// If the user cancels, then we never save and things get cleaned up when the
+				// modal image toolbox is closed.
+				// Note, it would, in theory, improve things to just save the new metadata
+				// here locally via an api call and then not close the dialog until that was saved.
+				// But we couldn't convince ourselves with 100% certainty that the save metadata api
+				// call would finish before the close dialog api call.
+				(originalMetadata, saveAction) =>
+				{
+					_saveNewImageMetadataActionForImageToolbox = saveAction;
+					_originalImageMetadataFromImageToolbox = originalMetadata;
+					LaunchCopyrightAndLicenseDialogForImage(originalMetadata);
+				}))
 			{
 				var searchLanguage = Settings.Default.ImageSearchLanguage;
 				dlg.ImageLoadingExceptionReporter = (path, ex, msg) =>
@@ -1156,7 +1152,19 @@ namespace Bloom.Edit
 				}
 
 				dlg.SearchLanguage = searchLanguage;
-				var result = dlg.ShowDialog();
+				DialogResult result;
+				try
+				{
+					result = dlg.ShowDialog();
+				}
+				finally
+				{
+					// These variables get set during a callback from the dialog that allows us to use our own way of
+					// editing metadata for an image. It's important that they get cleaned up once the dialog is closed
+					// so they don't interfere with future uses of the metadata editing code.
+					_originalImageMetadataFromImageToolbox = null;
+					_saveNewImageMetadataActionForImageToolbox = null;
+				}
 				if (performanceMeasureForShowingDialog != null)
 					performanceMeasureForShowingDialog.Dispose();
 #if MEMORYCHECK
@@ -1169,41 +1177,41 @@ namespace Bloom.Edit
 					{
 						try
 						{
-						var sameAsOriginalImage = (imageInfo == dlg.ImageInfo &&
-							oldImage == dlg.ImageInfo.Image &&
-							oldSize == dlg.ImageInfo.Image.Size &&
-							newImagePath == dlg.ImageInfo.OriginalFilePath);
-						// Avoid saving the Image data if possible.  A large PNG file can take 5-10 seconds to save.
-						// So check the current image dimensions against the original image dimensions to see if we
-						// can avoid saving.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9377.
-						int height, width; // set to -1, -1 if next call fails.
-						var gotSize = TryGetOriginalImageDimensions(dlg.ImageInfo, out height, out width);
-						var copyOriginalImage = gotSize && height == dlg.ImageInfo.Image.Height &&
-						                        width == dlg.ImageInfo.Image.Width;
-						// Copy an uncropped image's file or save a cropped image to a file before processing further.
-						// The code for ensuring non-transparency uses GraphicsMagick on the file content if possible, so the
-						// file must be in sync with the imageInfo.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8638.
-						// This applies to newly selected files as well as cropping previously selected files.
-						if (newImagePath == null || dlg.ImageInfo.OriginalFilePath != newImagePath)
-						{
-							var originalImagePath = dlg.ImageInfo.OriginalFilePath;
-							var basename = Path.GetFileNameWithoutExtension(originalImagePath);
-							// ImageInfo.Save throws an exception for .bmp files because they can't store metadata.
-							// ImageInfo.Save doesn't save .tif file properly, creating a blank image file.  So always
-							// save images in PNG format if they aren't originally JPEG format.
-							// It's important to get this right: ImageInfo.Save() throws if the actual file format
-							// doens't match the extension.
-							// (Bloom always saves images in either PNG or JPEG format anyway.  If the image is
-							// actually BMP or TIFF, it will get either get converted to PNG when resized later or
-							// it will be saved in PNG form later if it's not resized.  ImageInfo.Save is slow for
-							// PNG images, so we avoid it if at all possible.)
-							var extension = ImageUtils.AppearsToBeJpeg(dlg.ImageInfo) ? ".jpg" : ".png";
+							var sameAsOriginalImage = (imageInfo == dlg.ImageInfo &&
+								oldImage == dlg.ImageInfo.Image &&
+								oldSize == dlg.ImageInfo.Image.Size &&
+								newImagePath == dlg.ImageInfo.OriginalFilePath);
+							// Avoid saving the Image data if possible.  A large PNG file can take 5-10 seconds to save.
+							// So check the current image dimensions against the original image dimensions to see if we
+							// can avoid saving.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9377.
+							int height, width; // set to -1, -1 if next call fails.
+							var gotSize = TryGetOriginalImageDimensions(dlg.ImageInfo, out height, out width);
+							var copyOriginalImage = gotSize && height == dlg.ImageInfo.Image.Height &&
+													width == dlg.ImageInfo.Image.Width;
+							// Copy an uncropped image's file or save a cropped image to a file before processing further.
+							// The code for ensuring non-transparency uses GraphicsMagick on the file content if possible, so the
+							// file must be in sync with the imageInfo.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8638.
+							// This applies to newly selected files as well as cropping previously selected files.
+							if (newImagePath == null || dlg.ImageInfo.OriginalFilePath != newImagePath)
+							{
+								var originalImagePath = dlg.ImageInfo.OriginalFilePath;
+								var basename = Path.GetFileNameWithoutExtension(originalImagePath);
+								// ImageInfo.Save throws an exception for .bmp files because they can't store metadata.
+								// ImageInfo.Save doesn't save .tif file properly, creating a blank image file.  So always
+								// save images in PNG format if they aren't originally JPEG format.
+								// It's important to get this right: ImageInfo.Save() throws if the actual file format
+								// doens't match the extension.
+								// (Bloom always saves images in either PNG or JPEG format anyway.  If the image is
+								// actually BMP or TIFF, it will get either get converted to PNG when resized later or
+								// it will be saved in PNG form later if it's not resized.  ImageInfo.Save is slow for
+								// PNG images, so we avoid it if at all possible.)
+								var extension = ImageUtils.AppearsToBeJpeg(dlg.ImageInfo) ? ".jpg" : ".png";
 
-							var newFilename = ImageUtils.GetUnusedFilename(Path.GetTempPath(), basename, extension);
-							newImagePath = Path.Combine(Path.GetTempPath(), newFilename);
-						}
+								var newFilename = ImageUtils.GetUnusedFilename(Path.GetTempPath(), basename, extension);
+								newImagePath = Path.Combine(Path.GetTempPath(), newFilename);
+							}
 
-						var exceptionMsg = "Bloom had a problem including that image";
+							var exceptionMsg = "Bloom had a problem including that image";
 							if (copyOriginalImage || sameAsOriginalImage)
 							{
 								// Try to copy the file only if we actually need to copy it.  (BL-9737)
@@ -1318,7 +1326,7 @@ namespace Bloom.Edit
 			System.Diagnostics.Process.Start("http://community.bloomlibrary.org/t/running-out-of-memory-loading-images/3956");
 		}
 
-		void SaveChangedImage(GeckoHtmlElement imageElement, PalasoImage imageInfo, string exceptionMsg)
+		public void SaveChangedImage(GeckoHtmlElement imageElement, PalasoImage imageInfo, string exceptionMsg)
 		{
 			try
 			{

@@ -21,7 +21,8 @@ import { useSubscribeToWebSocketForEvent } from "./WebSocketManager";
 
 function isRunningStorybook(): boolean {
     try {
-        if (window.location.href.startsWith("http://localhost:61180"))
+        if (window.location.href.startsWith("http://localhost:58886"))
+            // storybook port is specified in package.json
             return true;
     } catch (e) {
         //ignore

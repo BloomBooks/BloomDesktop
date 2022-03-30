@@ -6,7 +6,7 @@ import { ThemeProvider } from "@material-ui/styles";
 import { Dialog, DialogProps, Paper } from "@material-ui/core";
 import CloseOnEscape from "react-close-on-escape";
 import { kDialogPadding } from "../../bloomMaterialUITheme";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { kUiFontStack } from "../../bloomMaterialUITheme";
 import Draggable from "react-draggable";
 
@@ -27,6 +27,10 @@ export interface IBloomDialogProps extends DialogProps {
     // true if the caller is wrapping in a winforms dialog already
     dialogFrameProvidedExternally?: boolean;
     onClose: () => void;
+    // we know of at least one scenario (CopyrightAndLicenseDialog) which needs to do
+    // this because enabling it causes a react render loop. Our theory is that there is
+    // a focus war going on.
+    disableDragging?: boolean;
 }
 
 export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = props => {
@@ -35,15 +39,11 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = props => 
     //     <BloomDialog
     //          fullWidth={true}
     //          maxWidth="lg"
-    //          css={css`
-    //            height: 90vh;
-    //         `}
     // >
     // NB: If you make any changes to this, make sure that the TeamCollectionDialog still takes up most of the screen and the History tab
     // still has lots of room for history and still scrolls as needed.
     // The material props like `fullWidth={true}` and `maxWidth="lg"` get spread to the Dialog component like you would expect.
-    // However `height`, given to Dialog, doesn't work. Two choices. Either give it to the PaperComponent, or to the inner div. The later
-    // didn't work in gfx60 for a reason I did not track down.
+    // Callers should set height on DialogMiddle which is where we want a scrollbar if it is needed.
     const inner = (
         <div
             css={css`
@@ -64,6 +64,9 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = props => 
                     // reason, it is not being applied here.  See BL-10208 and BL-10228.
                     font-family: ${kUiFontStack};
                 }
+                // This will correctly allow the DialogMiddle to add its scrollbar when needed.
+                // Callers should set dialog height by setting the height of DialogMiddle.
+                overflow: auto;
             `}
             className={props.className} // any emotion css from the parent
         >
@@ -113,6 +116,12 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = props => 
         );
     };
 
+    const {
+        dialogFrameProvidedExternally,
+        disableDragging,
+        ...propsToPass
+    } = props;
+
     return (
         <CloseOnEscape
             onEscape={() => {
@@ -124,14 +133,16 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = props => 
                     inner
                 ) : (
                     <Dialog
-                        PaperComponent={PaperComponent}
+                        PaperComponent={
+                            props.disableDragging ? undefined : PaperComponent
+                        }
                         css={css`
                             flex-grow: 1; // see note on the display property on PaperComponent
                             [role="dialog"] {
                                 overflow: hidden; // only the middle should scroll. The DialogTitle and DialogBottomButtons should not.
                             }
                         `}
-                        {...props} // get  fullWidth, maxWidth, open etc. Note that css doesn't end up anywhere useful in the HTML (try the paper?)
+                        {...propsToPass} // get  fullWidth, maxWidth, open etc. Note that css doesn't end up anywhere useful in the HTML (try the paper?)
                     >
                         {inner}
                     </Dialog>
@@ -146,9 +157,11 @@ export const DialogTitle: React.FunctionComponent<{
     color?: string;
     icon?: string;
     title: string; // note, this is prop instead of just a child so that we can ensure vertical alignment and bar height, which are easy to mess up.
+    disableDragging?: boolean;
 }> = props => {
     const color = props.color || "black";
     const background = props.backgroundColor || "transparent";
+    const cursor = props.disableDragging ? "unset" : "move";
 
     // This is lame, but it's really what looks right to me. When there is a color bar, it looks better to have less padding at the top.
     const titleTopPadding =
@@ -160,7 +173,7 @@ export const DialogTitle: React.FunctionComponent<{
                 color: ${color};
                 background-color: ${background};
                 display: flex;
-                cursor: move;
+                cursor: ${cursor};
                 padding-left: ${kDialogTopPadding};
                 padding-right: ${kDialogTopPadding};
                 padding-top: ${titleTopPadding};
@@ -214,6 +227,8 @@ export const DialogMiddle: React.FunctionComponent<{}> = props => {
                     margin-block-start: 0;
                     margin-block-end: 1em;
                 }
+
+                min-height: 100px;
             `}
             {...props}
         >
