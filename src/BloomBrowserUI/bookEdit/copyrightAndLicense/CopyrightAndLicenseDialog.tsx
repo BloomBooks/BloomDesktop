@@ -129,13 +129,7 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
     const disableDragging = true;
 
     return (
-        <BloomDialog
-            {...propsForBloomDialog}
-            disableDragging={disableDragging}
-            css={css`
-                min-height: 700px;
-            `}
-        >
+        <BloomDialog {...propsForBloomDialog} disableDragging={disableDragging}>
             <DialogTitle
                 title={dialogTitle}
                 disableDragging={disableDragging}
@@ -173,6 +167,7 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
                         ?.dialogFrameProvidedExternally
                         ? "100%"
                         : "500px"};
+                    height: 550px;
                 `}
             >
                 <BloomTabs
