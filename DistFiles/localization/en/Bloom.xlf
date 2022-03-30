@@ -3146,33 +3146,53 @@
         <source xml:lang="en">The license of the original book does not allow changing the license in new versions.</source>
         <note>ID: License.CannotChangeLicense</note>
       </trans-unit>
-      <trans-unit id="License.CopyrightHolderAllows" sil:dynamic="true">
+      <trans-unit id="License.CopyrightHolderAllows.Book" sil:dynamic="true">
         <source xml:lang="en">The copyright holder allows others to use the book in this way:</source>
-        <note>ID: License.CopyrightHolderAllows</note>
+        <note>ID: License.CopyrightHolderAllows.Book</note>
+      </trans-unit>
+      <trans-unit id="License.CopyrightHolderAllows.Image" sil:dynamic="true">
+        <source xml:lang="en">The copyright holder allows others to use the image in this way:</source>
+        <note>ID: License.CopyrightHolderAllows.Image</note>
       </trans-unit>
       <trans-unit id="License.CreativeCommons.Additional" sil:dynamic="true">
         <source xml:lang="en">You may use this space to clarify or grant additional permissions (for example, that translations are allowed), but not to alter the license.</source>
         <note>ID: License.CreativeCommons.Additional</note>
       </trans-unit>
-      <trans-unit id="License.CreativeCommons.AllowCommercial" sil:dynamic="true">
+      <trans-unit id="License.CreativeCommons.AllowCommercial.Book" sil:dynamic="true">
         <source xml:lang="en">use the book in a commercial way</source>
-        <note>ID: License.CreativeCommons.AllowCommercial</note>
+        <note>ID: License.CreativeCommons.AllowCommercial.Book</note>
       </trans-unit>
-      <trans-unit id="License.CreativeCommons.CopyForFree" sil:dynamic="true">
+      <trans-unit id="License.CreativeCommons.AllowCommercial.Image" sil:dynamic="true">
+        <source xml:lang="en">use the image in a commercial way</source>
+        <note>ID: License.CreativeCommons.AllowCommercial.Image</note>
+      </trans-unit>
+      <trans-unit id="License.CreativeCommons.CopyForFree.Book" sil:dynamic="true">
         <source xml:lang="en">copy this book for free</source>
-        <note>ID: License.CreativeCommons.CopyForFree</note>
+        <note>ID: License.CreativeCommons.CopyForFree.Book</note>
       </trans-unit>
-      <trans-unit id="License.CreativeCommons.DifferentLicense" sil:dynamic="true">
+      <trans-unit id="License.CreativeCommons.CopyForFree.Image" sil:dynamic="true">
+        <source xml:lang="en">copy this image for free</source>
+        <note>ID: License.CreativeCommons.CopyForFree.Image</note>
+      </trans-unit>
+      <trans-unit id="License.CreativeCommons.DifferentLicense.Book" sil:dynamic="true">
         <source xml:lang="en">apply a different license to new versions of this book</source>
-        <note>ID: License.CreativeCommons.DifferentLicense</note>
+        <note>ID: License.CreativeCommons.DifferentLicense.Book</note>
+      </trans-unit>
+      <trans-unit id="License.CreativeCommons.DifferentLicense.Image" sil:dynamic="true">
+        <source xml:lang="en">apply a different license to new versions of this image</source>
+        <note>ID: License.CreativeCommons.DifferentLicense.Image</note>
       </trans-unit>
       <trans-unit id="License.CreativeCommons.Intro" sil:dynamic="true">
         <source xml:lang="en">Everyone is allowed to:</source>
         <note>ID: License.CreativeCommons.Intro</note>
       </trans-unit>
-      <trans-unit id="License.CreativeCommons.ShareAlike" sil:dynamic="true">
+      <trans-unit id="License.CreativeCommons.ShareAlike.Book" sil:dynamic="true">
         <source xml:lang="en">make new versions of this book, but they must keep the author, illustrator, and other credits</source>
-        <note>ID: License.CreativeCommons.ShareAlike</note>
+        <note>ID: License.CreativeCommons.ShareAlike.Book</note>
+      </trans-unit>
+      <trans-unit id="License.CreativeCommons.ShareAlike.Image" sil:dynamic="true">
+        <source xml:lang="en">make new versions of this image, but they must keep the illustrator and other credits</source>
+        <note>ID: License.CreativeCommons.ShareAlike.Image</note>
       </trans-unit>
       <trans-unit id="License.Custom" sil:dynamic="true">
         <source xml:lang="en">Custom</source>

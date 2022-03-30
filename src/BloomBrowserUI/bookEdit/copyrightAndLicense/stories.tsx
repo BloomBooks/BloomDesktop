@@ -105,6 +105,7 @@ export const _LicensePanel = () => {
     return (
         <PanelFrame>
             <LicensePanel
+                isForBook={true}
                 licenseInfo={{
                     licenseType: "creativeCommons",
                     creativeCommonsInfo: sampleCreativeCommonsInfo,
