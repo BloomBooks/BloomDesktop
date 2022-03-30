@@ -53,7 +53,7 @@ namespace Bloom.Publish.Video
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
-					request.ReplyWithText((request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PageTurnDelay / 1000.0).ToString());
+					request.ReplyWithText((request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PageTurnDelayDouble).ToString());
 				}
 				else
 				{

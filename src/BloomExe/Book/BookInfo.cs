@@ -1135,54 +1135,16 @@ namespace Bloom.Book
 		public bool BookletMakingIsAppropriate { get; set; }
 
 		/// <summary>
-		/// This is an item the user checks-off as part of claiming that the book is fully accessible
-		/// (obsolete, now in publish settings)
+		/// This is an item the user checks-off as part of claiming that the book is fully accessible.
 		/// </summary>
 		[JsonProperty("a11y_NoEssentialInfoByColor")]
 		public bool A11y_NoEssentialInfoByColor;
 
 		/// <summary>
-		/// This is an item the user checks-off as part of claiming that the book is fully accessible
-		/// (obsolete, now in publish settings)
+		/// This is an item the user checks-off as part of claiming that the book is fully accessible.
 		/// </summary>
 		[JsonProperty("a11y_NoTextIncludedInAnyImages")]
 		public bool A11y_NoTextIncludedInAnyImages;
-
-		/// <summary>
-		/// This item indicates how the user would like Epubs of this book to handle Image Descriptions
-		/// Current possibilities are 'None', 'OnPage', and 'Links'.
-		/// </summary>
-		[JsonProperty("epub_HowToPublishImageDescriptions")]
-		[Obsolete("Please use PublishSettings.Epub.HowToPublishImageDescriptions")]
-		public BookInfo.HowToPublishImageDescriptions Epub_HowToPublishImageDescriptions;
-
-		/// <summary>
-		/// This corresponds to a checkbox indicating that the user wants to use the eReader's native font styles.
-		/// </summary>
-		[JsonProperty("epub_RemoveFontStyles")]
-		[Obsolete("Please use PublishSettings.Epub.RemoveFontSizes")]
-		public bool Epub_RemoveFontSizes;
-
-		/// <summary>
-		/// This corresponds to the checkbox values of which languages the user wants to publish the text for
-		/// </summary>
-		[JsonProperty("textLangsToPublish")]
-		[Obsolete("Please use PublishSettings.{Epub,BloomLibrary}.TextLangs")]
-		public LangsToPublishSetting TextLangsToPublish { get; set; }
-
-		/// <summary>
-		/// This corresponds to the checkbox values of which languages the user wants to publish the audio for
-		/// </summary>
-		[JsonProperty("audioLangsToPublish")]
-		[Obsolete("Please use PublishSettings.{Epub,BloomLibrary}.AudioLangs")]
-		public LangsToPublishSetting AudioLangsToPublish { get; set; }
-
-		/// <summary>
-		/// The sign language(s) -- currently we allow only one -- which the user wants to publish
-		/// </summary>
-		[JsonProperty("signLangsToPublish")]
-		[Obsolete("Please use PublishSettings.{Epub,BloomLibrary}.SignLangs")]
-		public LangsToPublishSetting SignLangsToPublish { get; set; }
 
 		// About this ignore: this actually would be perfectly fine as a top-level bit of true metadata.
 		// However, it is currently also in the toolstate, so we're leaving it out of the meta.json so as not to

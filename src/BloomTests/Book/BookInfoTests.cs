@@ -38,7 +38,7 @@ namespace BloomTests.Book
 			File.WriteAllText(jsonPath, @"{""folio"":""true"",""experimental"":""true"",""suitableForMakingShells"":""true""}");
 			var playerSettingsPath = Path.Combine(_folder.Path, BookInfo.PublishSettingsFileName);
 			File.WriteAllText(playerSettingsPath, @"{""audioVideo"": {""motion"":true, ""pageTurnDelay"":3500,
-						""imageDescriptions"":true, ""format"":""feature"",
+						""format"":""feature"",
 					""playerSettings"": ""{\""lang\"":\""qaa\"",\""imageDescriptions\"":false}""},
 					""bloomPUB"": {""motion"": true},
 					""bloomLibrary"": {""textLangs"": {""de"":""ExcludeByDefault"",""en"":""Exclude""}}}");
@@ -97,16 +97,36 @@ namespace BloomTests.Book
 				@"{""audioVideo"": {""motion"":true, ""pageTurnDelay"":2500,
 					""format"":""feature"",
 					""playerSettings"": ""{\""lang\"":\""fr\"",\""imageDescriptions\"":true}""},
-					""bloomPUB"": {""motion"": true},
-					""epub"": {}}";
+					""bloomPUB"": {""motion"": true, ""textLangs"": {""baa"":""Include"",""es"":""Exclude""},
+						""audioLangs"": { ""baa"":""IncludeByDefault"",""es"":""ExcludeByDefault""},
+						""signLangs"": { ""asl"":""Include""}},
+					""epub"": {""howToPublishImageDescriptions"":1, ""removeFontSizes"":true},
+					""bloomLibrary"": {""textLangs"": {""def"":""Include"",""xyz"":""Exclude"", ""abc"":""ExcludeByDefault""},
+						""audioLangs"": { ""def"":""IncludeByDefault"",""xyz"":""ExcludeByDefault""},
+						""signLangs"": { ""asl"":""Include""}}}";
 			var ps = PublishSettings.FromString(input);
 
 			Assert.That(ps.AudioVideo.Format, Is.EqualTo("feature"));
-
 			Assert.That(ps.AudioVideo.Motion, Is.True);
 			Assert.That(ps.AudioVideo.PageTurnDelay, Is.EqualTo(2500));
 			Assert.That(ps.AudioVideo.PlayerSettings, Is.EqualTo("{\"lang\":\"fr\",\"imageDescriptions\":true}"));
+
 			Assert.That(ps.BloomPub.Motion, Is.True);
+			Assert.That(ps.BloomPub.TextLangs["baa"], Is.EqualTo(InclusionSetting.Include));
+			Assert.That(ps.BloomPub.TextLangs["es"], Is.EqualTo(InclusionSetting.Exclude));
+			Assert.That(ps.BloomPub.AudioLangs["baa"], Is.EqualTo(InclusionSetting.IncludeByDefault));
+			Assert.That(ps.BloomPub.AudioLangs["es"], Is.EqualTo(InclusionSetting.ExcludeByDefault));
+			Assert.That(ps.BloomPub.SignLangs["asl"], Is.EqualTo(InclusionSetting.Include));
+
+			Assert.That(ps.Epub.HowToPublishImageDescriptions, Is.EqualTo(BookInfo.HowToPublishImageDescriptions.OnPage));
+			Assert.That(ps.Epub.RemoveFontSizes, Is.True);
+
+			Assert.That(ps.BloomLibrary.TextLangs["def"], Is.EqualTo(InclusionSetting.Include));
+			Assert.That(ps.BloomLibrary.TextLangs["xyz"], Is.EqualTo(InclusionSetting.Exclude));
+			Assert.That(ps.BloomLibrary.TextLangs["abc"], Is.EqualTo(InclusionSetting.ExcludeByDefault));
+			Assert.That(ps.BloomLibrary.AudioLangs["def"], Is.EqualTo(InclusionSetting.IncludeByDefault));
+			Assert.That(ps.BloomLibrary.AudioLangs["xyz"], Is.EqualTo(InclusionSetting.ExcludeByDefault));
+			Assert.That(ps.BloomLibrary.SignLangs["asl"], Is.EqualTo(InclusionSetting.Include));
 		}
 
 		[Test]
@@ -141,31 +161,51 @@ namespace BloomTests.Book
 			Assert.That(original.PublishSettings.BloomPub.SignLangs, Is.Null);
 			Assert.That(original.PublishSettings.BloomLibrary.SignLangs, Is.Null);
 
-			original.MetaData.Feature_Motion = true;
-			original.MetaData.A11y_NoEssentialInfoByColor = true;
-			original.MetaData.A11y_NoTextIncludedInAnyImages = true;
-			original.MetaData.Epub_HowToPublishImageDescriptions = BookInfo.HowToPublishImageDescriptions.OnPage;
-			original.MetaData.Epub_RemoveFontSizes = true;
+			// oldMetaJson was produced by the following code, which depends on the obsolete properties:
+			//original.MetaData.Feature_Motion = true;
+			//original.MetaData.A11y_NoEssentialInfoByColor = true;
+			//original.MetaData.A11y_NoTextIncludedInAnyImages = true;
+			//original.MetaData.Epub_HowToPublishImageDescriptions = BookInfo.HowToPublishImageDescriptions.OnPage;
+			//original.MetaData.Epub_RemoveFontSizes = true;
 
-			original.MetaData.TextLangsToPublish = new LangsToPublishSetting()
-				{ForBloomLibrary = new Dictionary<string, InclusionSetting>(),ForBloomPUB = new Dictionary<string, InclusionSetting>()};
-			original.MetaData.TextLangsToPublish.ForBloomLibrary["en"] = InclusionSetting.Include;
-			original.MetaData.TextLangsToPublish.ForBloomLibrary["fr"] = InclusionSetting.Exclude;
-			original.MetaData.TextLangsToPublish.ForBloomLibrary["tpi"] = InclusionSetting.IncludeByDefault;
-			original.MetaData.TextLangsToPublish.ForBloomPUB["tpi"] = InclusionSetting.ExcludeByDefault;
-			original.MetaData.TextLangsToPublish.ForBloomPUB["en"] = InclusionSetting.Exclude;
+			//original.MetaData.TextLangsToPublish = new LangsToPublishSetting()
+			//	{ForBloomLibrary = new Dictionary<string, InclusionSetting>(),ForBloomPUB = new Dictionary<string, InclusionSetting>()};
+			//original.MetaData.TextLangsToPublish.ForBloomLibrary["en"] = InclusionSetting.Include;
+			//original.MetaData.TextLangsToPublish.ForBloomLibrary["fr"] = InclusionSetting.Exclude;
+			//original.MetaData.TextLangsToPublish.ForBloomLibrary["tpi"] = InclusionSetting.IncludeByDefault;
+			//original.MetaData.TextLangsToPublish.ForBloomPUB["tpi"] = InclusionSetting.ExcludeByDefault;
+			//original.MetaData.TextLangsToPublish.ForBloomPUB["en"] = InclusionSetting.Exclude;
 
-			original.MetaData.AudioLangsToPublish = new LangsToPublishSetting()
-				{ ForBloomLibrary = new Dictionary<string, InclusionSetting>(), ForBloomPUB = new Dictionary<string, InclusionSetting>() };
-			original.MetaData.AudioLangsToPublish.ForBloomLibrary["en"] = InclusionSetting.ExcludeByDefault;
-			original.MetaData.AudioLangsToPublish.ForBloomPUB["es"] = InclusionSetting.IncludeByDefault;
+			//original.MetaData.AudioLangsToPublish = new LangsToPublishSetting()
+			//	{ ForBloomLibrary = new Dictionary<string, InclusionSetting>(), ForBloomPUB = new Dictionary<string, InclusionSetting>() };
+			//original.MetaData.AudioLangsToPublish.ForBloomLibrary["en"] = InclusionSetting.ExcludeByDefault;
+			//original.MetaData.AudioLangsToPublish.ForBloomPUB["es"] = InclusionSetting.IncludeByDefault;
 
-			original.MetaData.SignLangsToPublish = new LangsToPublishSetting()
-				{ ForBloomLibrary = new Dictionary<string, InclusionSetting>(), ForBloomPUB = new Dictionary<string, InclusionSetting>() };
-			original.MetaData.SignLangsToPublish.ForBloomLibrary["qaa"] = InclusionSetting.Include;
-			original.MetaData.SignLangsToPublish.ForBloomPUB["qed"] = InclusionSetting.Exclude;
+			//original.MetaData.SignLangsToPublish = new LangsToPublishSetting()
+			//	{ ForBloomLibrary = new Dictionary<string, InclusionSetting>(), ForBloomPUB = new Dictionary<string, InclusionSetting>() };
+			//original.MetaData.SignLangsToPublish.ForBloomLibrary["qaa"] = InclusionSetting.Include;
+			//original.MetaData.SignLangsToPublish.ForBloomPUB["qed"] = InclusionSetting.Exclude;
+			//original.Save();
 
-			original.Save();
+			var oldMetaJson =
+				@"{""a11y_NoEssentialInfoByColor"":true,""a11y_NoTextIncludedInAnyImages"":true,""epub_HowToPublishImageDescriptions"":1,
+				""epub_RemoveFontStyles"":true,""bookInstanceId"":""738cf8ea-357d-4c50-88d2-60774ffbd32b"",""suitableForMakingShells"":true,
+				""suitableForMakingTemplates"":false,""suitableForVernacularLibrary"":true,""bloomdVersion"":0,""experimental"":false,
+				""brandingProjectName"":null,""nameLocked"":false,""folio"":false,""isRtl"":false,""title"":"""",""allTitles"":null,
+				""originalTitle"":null,""baseUrl"":null,""bookOrder"":null,""isbn"":null,""bookLineage"":"""",""downloadSource"":null,
+				""license"":null,""formatVersion"":null,""licenseNotes"":null,""copyright"":null,""credits"":null,""tags"":null,
+				""pageCount"":0,""languages"":[],""langPointers"":null,""summary"":null,""allowUploadingToBloomLibrary"":true,
+				""bookletMakingIsAppropriate"":true,""textLangsToPublish"":{""bloomPUB"":{""tpi"":""ExcludeByDefault"",""en"":""Exclude""},
+				""bloomLibrary"":{""en"":""Include"",""fr"":""Exclude"",""tpi"":""IncludeByDefault""}},
+				""audioLangsToPublish"":{""bloomPUB"":{""es"":""IncludeByDefault""},""bloomLibrary"":{""en"":""ExcludeByDefault""}},
+				""signLangsToPublish"":{""bloomPUB"":{""qed"":""Exclude""},""bloomLibrary"":{""qaa"":""Include""}},""country"":null,
+				""province"":null,""district"":null,""uploader"":null,""tools"":null,""toolboxIsOpen"":false,""author"":null,
+				""publisher"":null,""originalPublisher"":null,""subjects"":null,""hazards"":null,""a11yFeatures"":null,
+				""a11yLevel"":null,""a11yCertifier"":null,""readingLevelDescription"":null,""typicalAgeRange"":null,
+				""features"":[""motion""],""page-number-style"":null,""language-display-names"":null,""internetLimits"":null,
+				""use-original-copyright"":false,""imported-book-source-url"":null,""phashOfFirstContentImage"":null}";
+			File.WriteAllText(jsonPath, oldMetaJson);
+
 			var settingsPath = PublishSettings.PublishSettingsPath(_folder.Path);
 			RobustFile.Delete(settingsPath);
 			var restored = new BookInfo(_folder.Path, true);
@@ -587,18 +627,22 @@ namespace BloomTests.Book
 			CollectionAssert.AreEqual(expectedResult, metadata.Feature_SignLanguage_LangCodes, "SL Language Codes");
 		}
 
-		[Test]
-		public void AudioLangsToPublishForBloomReader_GivenNonDefaultJson_DeserializesProperly()
-		{
-			var json = "{ \"audioLangsToPublish\": { \"bloomPUB\": { \"en\": \"Include\" } } }";
+		// JohnT March 2022: don't see what this test is getting at. The JSON appears to be
+		// perfectly normal for the now-obsolete way of storing audioLangsToPublish for bloomPub.
+		// Without understanding its purpose, I don't see how to migrate it to the new system.
+		// Certainly we have tests for successfully migrating data like this.
+		//[Test]
+		//public void AudioLangsToPublishForBloomReader_GivenNonDefaultJson_DeserializesProperly()
+		//{
+		//	var json = "{ \"audioLangsToPublish\": { \"bloomPUB\": { \"en\": \"Include\" } } }";
 
-			// System under test
-			var metadata = BookMetaData.FromString(json);
+		//	// System under test
+		//	var metadata = BookMetaData.FromString(json);
 
-			// Verification
-			var expected = new Dictionary<string, Bloom.Publish.InclusionSetting>();
-			expected.Add("en", Bloom.Publish.InclusionSetting.Include);
-			CollectionAssert.AreEquivalent(expected, metadata.AudioLangsToPublish.ForBloomPUB);
-		}
+		//	// Verification
+		//	var expected = new Dictionary<string, Bloom.Publish.InclusionSetting>();
+		//	expected.Add("en", Bloom.Publish.InclusionSetting.Include);
+		//	CollectionAssert.AreEquivalent(expected, metadata.AudioLangsToPublish.ForBloomPUB);
+		//}
 	}
 }

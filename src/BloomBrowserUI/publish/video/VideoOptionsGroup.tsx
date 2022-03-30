@@ -210,62 +210,62 @@ export const VideoOptionsGroup: React.FunctionComponent<{
                          * For now, we're keeping it simple and immediately flipping those pages too.
                          */}
                         {format !== "mp3" && (
-                        <div
-                            css={css`
-                                padding-right: 30px;
-                            `}
-                        >
-                            <Div
-                                l10nKey="PublishTab.RecordVideo.TurnPageAfter"
-                                temporarilyDisableI18nWarning={true}
-                                css={css`
-                                    margin-bottom: 2px;
-                                    margin-top: 20px;
-                                    font-weight: bold;
-                                `}
-                            >
-                                Turn pages without narration after:
-                            </Div>
-                            <Div
-                                css={css`
-                                    text-align: center;
-                                    margin-bottom: 2px;
-                                `}
-                                l10nKey="Common.Seconds"
-                                l10nParam0={"" + props.pageTurnDelay}
-                                temporarilyDisableI18nWarning={true}
-                            >
-                                %0 seconds
-                            </Div>
                             <div
-                                className="bgSliderWrapper"
                                 css={css`
-                                    .rc-slider-rail {
-                                        background-color: #ddd !important;
-                                    }
-                                    .rc-slider-handle {
-                                        background-color: ${kBloomBlue} !important;
-                                    }
-                                    .rc-slider-dot {
-                                        background-color: ${kBloomBlue} !important;
-                                        border-color: white !important; // should match background, I think.
-                                    }
-                                    .rc-slider-track {
-                                        background-color: ${kBloomBlue}60 !important;
-                                    }
+                                    padding-right: 30px;
                                 `}
                             >
-                                <Slider
-                                    max={10}
-                                    min={1}
-                                    value={props.pageTurnDelay}
-                                    step={0.5}
-                                    onChange={value =>
-                                        props.onSetPageTurnDelay(value)
-                                    }
-                                />
+                                <Div
+                                    l10nKey="PublishTab.RecordVideo.TurnPageAfter"
+                                    temporarilyDisableI18nWarning={true}
+                                    css={css`
+                                        margin-bottom: 2px;
+                                        margin-top: 20px;
+                                        font-weight: bold;
+                                    `}
+                                >
+                                    Turn pages without narration after:
+                                </Div>
+                                <Div
+                                    css={css`
+                                        text-align: center;
+                                        margin-bottom: 2px;
+                                    `}
+                                    l10nKey="Common.Seconds"
+                                    l10nParam0={"" + props.pageTurnDelay}
+                                    temporarilyDisableI18nWarning={true}
+                                >
+                                    %0 seconds
+                                </Div>
+                                <div
+                                    className="bgSliderWrapper"
+                                    css={css`
+                                        .rc-slider-rail {
+                                            background-color: #ddd !important;
+                                        }
+                                        .rc-slider-handle {
+                                            background-color: ${kBloomBlue} !important;
+                                        }
+                                        .rc-slider-dot {
+                                            background-color: ${kBloomBlue} !important;
+                                            border-color: white !important; // should match background, I think.
+                                        }
+                                        .rc-slider-track {
+                                            background-color: ${kBloomBlue}60 !important;
+                                        }
+                                    `}
+                                >
+                                    <Slider
+                                        max={10}
+                                        min={1}
+                                        value={props.pageTurnDelay}
+                                        step={0.5}
+                                        onChange={value =>
+                                            props.onSetPageTurnDelay(value)
+                                        }
+                                    />
+                                </div>
                             </div>
-                        </div>
                         )}
                     </Typography>
                 </FormControl>

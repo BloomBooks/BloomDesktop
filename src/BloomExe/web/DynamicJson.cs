@@ -420,8 +420,6 @@ namespace Bloom.Api
 			{
 				return false;
 			}
-			
-
 			return true;
 		}
 

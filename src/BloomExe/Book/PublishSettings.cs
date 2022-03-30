@@ -19,8 +19,6 @@ namespace Bloom.Book
 	/// the book.
 	/// These objects are stored in meta.json (for now, at least) as the PublishSettings field.
 	/// This means this object must be suitable for use in JsonConvert.SerializeObject/DeserializeObject.
-	/// This is a work in progress. Currently it holds only some of the settings that logically
-	/// belong in it.
 	/// </summary>
 	public class PublishSettings
 	{
@@ -77,16 +75,6 @@ namespace Bloom.Book
 			RobustFile.WriteAllText(publishSettingsPath, Json);
 		}
 
-		public static bool PropertyExists(dynamic obj, string name)
-		{
-			if (obj == null) return false;
-			if (obj is IDictionary<string, object> dict)
-			{
-				return dict.ContainsKey(name);
-			}
-			return obj.GetType().GetProperty(name) != null;
-		}
-
 		/// <summary>
 		/// Make a PublishSettings by reading the json file in the book folder.
 		/// If some exception is thrown while trying to do that, or if it doesn't exist,
@@ -118,6 +106,12 @@ namespace Bloom.Book
 			if (!RobustFile.Exists(metaDataPath))
 				return settings;
 			var metaDataString = File.ReadAllText(metaDataPath, Encoding.UTF8);
+
+			// I chose to do this using DynamicJson, rather than just BloomMetaData.FromString() and
+			// reading the obsolete properties, in hopes that we can eventually retire the obsolete
+			// properties. However, that may not be possible without breaking things when we attempt
+			// to load an old meta.json with JsonConvert. Still, at least this approach makes for
+			// fewer warnings about use of obsolete methods.
 			var metaDataJson = DynamicJson.Parse(metaDataString) as DynamicJson;
 			if (metaDataJson.IsDefined("features"))
 			{
@@ -141,7 +135,7 @@ namespace Bloom.Book
 					settings.Epub.HowToPublishImageDescriptions = BookInfo.HowToPublishImageDescriptions.OnPage;
 			}
 
-			// Note the name mismatch here. The old prpoerty unfortunately had this name, though all
+			// Note the name mismatch here. The old property unfortunately had this name, though all
 			// we actually remove is font size rules.
 			if (metaDataJson.TryGetValue("epub_RemoveFontStyles", out bool val3))
 			{
@@ -213,18 +207,6 @@ namespace Bloom.Book
 			if (PlayerSettings == null)
 				PlayerSettings = "";
 		}
-		///// <summary>
-		///// The language selected using the language chooser control in Bloom Player
-		///// which is the primary language to be read into the video.
-		///// </summary>
-		//[JsonProperty("lang")]
-		//public string Lang { get; set; }
-		
-		///// <summary>
-		///// Whether to play image description audio while recording the book. (Set by BloomPlayer control.)
-		///// </summary>
-		//[JsonProperty("imageDescriptions")]
-		//public bool ImageDescriptions { get; set; }
 
 		/// <summary>
 		/// How long to display pages with no narration (milliseconds)
@@ -307,7 +289,7 @@ namespace Bloom.Book
 		/// This corresponds to the checkbox values of which languages the user wants to publish the audio for
 		/// </summary>
 		/// <remarks>Previouly bookInfo.AudioLangsToPublish.ForBloomPUB</remarks>
-		[JsonProperty("audioLangsh")]
+		[JsonProperty("audioLangs")]
 		public Dictionary<string, InclusionSetting> AudioLangs { get; set; }
 
 		/// <summary>
