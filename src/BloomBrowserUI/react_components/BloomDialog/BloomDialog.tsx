@@ -39,15 +39,11 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = props => 
     //     <BloomDialog
     //          fullWidth={true}
     //          maxWidth="lg"
-    //          css={css`
-    //            height: 90vh;
-    //         `}
     // >
     // NB: If you make any changes to this, make sure that the TeamCollectionDialog still takes up most of the screen and the History tab
     // still has lots of room for history and still scrolls as needed.
     // The material props like `fullWidth={true}` and `maxWidth="lg"` get spread to the Dialog component like you would expect.
-    // However `height`, given to Dialog, doesn't work. Two choices. Either give it to the PaperComponent, or to the inner div. The later
-    // didn't work in gfx60 for a reason I did not track down.
+    // Callers should set height on DialogMiddle which is where we want a scrollbar if it is needed.
     const inner = (
         <div
             css={css`
@@ -68,6 +64,9 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = props => 
                     // reason, it is not being applied here.  See BL-10208 and BL-10228.
                     font-family: ${kUiFontStack};
                 }
+                // This will correctly allow the DialogMiddle to add its scrollbar when needed.
+                // Callers should set dialog height by setting the height of DialogMiddle.
+                overflow: auto;
             `}
             className={props.className} // any emotion css from the parent
         >
@@ -228,6 +227,8 @@ export const DialogMiddle: React.FunctionComponent<{}> = props => {
                     margin-block-start: 0;
                     margin-block-end: 1em;
                 }
+
+                min-height: 100px;
             `}
             {...props}
         >
