@@ -35,6 +35,7 @@ export enum LicenseType {
 
 // Fields used to modify the license (of a book or image)
 export const LicensePanel: React.FunctionComponent<{
+    isForBook: boolean; // or image
     licenseInfo: ILicenseInfo;
     derivativeInfo?: IDerivativeInfo;
     onChange: (licenseInfo: ILicenseInfo, isValid: boolean) => void;
@@ -135,11 +136,24 @@ export const LicensePanel: React.FunctionComponent<{
         );
     }
 
+    function getBookOrImage(): string {
+        return props.isForBook ? "book" : "image";
+    }
+    function getL10nIdForBookOrImage(idBase: string): string {
+        return idBase + props.isForBook ? ".Book" : ".Image";
+    }
+
     return (
         <div>
-            <Div l10nKey="License.CopyrightHolderAllows">
-                The copyright holder allows others to use the book in this way:
+            <Div
+                l10nKey={getL10nIdForBookOrImage(
+                    "License.CopyrightHolderAllows"
+                )}
+            >
+                The copyright holder allows others to use the {getBookOrImage()}{" "}
+                in this way:
             </Div>
+
             <RadioGroup
                 value={licenseType}
                 defaultValue="creativeCommons"
@@ -163,8 +177,10 @@ export const LicensePanel: React.FunctionComponent<{
                         `}
                     >
                         <MuiCheckbox
-                            label={"copy this book for free"}
-                            l10nKey="License.CreativeCommons.CopyForFree"
+                            label={`copy this ${getBookOrImage()} for free`}
+                            l10nKey={getL10nIdForBookOrImage(
+                                "License.CreativeCommons.CopyForFree"
+                            )}
                             disabled={true}
                             checked={
                                 licenseType === LicenseType.CreativeCommons
@@ -172,8 +188,10 @@ export const LicensePanel: React.FunctionComponent<{
                             onCheckChanged={() => {}}
                         />
                         <MuiCheckbox
-                            label={"use the book in a commercial way"}
-                            l10nKey="License.CreativeCommons.AllowCommercial"
+                            label={`use the ${getBookOrImage()} in a commercial way`}
+                            l10nKey={getL10nIdForBookOrImage(
+                                "License.CreativeCommons.AllowCommercial"
+                            )}
                             disabled={!isCCLicense}
                             checked={
                                 isCCLicense &&
@@ -192,9 +210,13 @@ export const LicensePanel: React.FunctionComponent<{
                         If so, the second is enabled and determines whether allowDerivatives should be "sharealike" or simply "yes" */}
                         <MuiCheckbox
                             label={
-                                "make new versions of this book, but they must keep the author, illustrator, and other credits"
+                                props.isForBook
+                                    ? "make new versions of this book, but they must keep the author, illustrator, and other credits"
+                                    : "make new versions of this image, but they must keep the illustrator and other credits"
                             }
-                            l10nKey="License.CreativeCommons.ShareAlike"
+                            l10nKey={getL10nIdForBookOrImage(
+                                "License.CreativeCommons.ShareAlike"
+                            )}
                             disabled={!isCCLicense}
                             checked={
                                 isCCLicense &&
@@ -209,10 +231,10 @@ export const LicensePanel: React.FunctionComponent<{
                             }}
                         />
                         <MuiCheckbox
-                            label={
-                                "apply a different license to new versions of this book"
-                            }
-                            l10nKey="License.CreativeCommons.DifferentLicense"
+                            label={`apply a different license to new versions of this ${getBookOrImage()}`}
+                            l10nKey={getL10nIdForBookOrImage(
+                                "License.CreativeCommons.DifferentLicense"
+                            )}
                             disabled={
                                 !isCCLicense ||
                                 licenseInfo.creativeCommonsInfo

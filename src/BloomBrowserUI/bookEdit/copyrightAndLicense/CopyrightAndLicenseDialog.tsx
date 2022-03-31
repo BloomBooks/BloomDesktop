@@ -167,7 +167,7 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
                         ?.dialogFrameProvidedExternally
                         ? "100%"
                         : "500px"};
-                    height: 550px;
+                    height: 575px;
                 `}
             >
                 <BloomTabs
@@ -217,6 +217,7 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
                     <TabPanel>
                         {licenseInfo && (
                             <LicensePanel
+                                isForBook={props.isForBook}
                                 licenseInfo={licenseInfo}
                                 derivativeInfo={props.data.derivativeInfo}
                                 onChange={(licenseInfo, isValid) =>
