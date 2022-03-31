@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.0-beta0135\build\SIL.Windows.Forms.Keyboarding.props" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.0-beta0135\build\SIL.Windows.Forms.Keyboarding.props')" />
   <Import Project="..\..\packages\NUnit.3.13.2\build\NUnit.props" Condition="Exists('..\..\packages\NUnit.3.13.2\build\NUnit.props')" />
@@ -380,6 +380,7 @@
     <Compile Include="web\controllers\ReadersApiTests.cs" />
     <Compile Include="web\controllers\ApiTest.cs" />
     <Compile Include="WebLibraryIntegration\ProblemBookUploaderTests.cs" />
+    <Compile Include="web\DynamicJsonTests.cs" />
     <Compile Include="web\ImageServerTests.cs" />
     <Compile Include="web\controllers\EndpointHandlerTests.cs" />
     <Compile Include="web\RequestInfoTests.cs" />

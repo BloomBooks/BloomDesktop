@@ -23,9 +23,11 @@ namespace Bloom.Publish.Android
 		// NOTE: It's more natural for consumers to think about what languages they want to EXCLUDE, rather than what languages they want to INCLUDE.
 		public HashSet<string> AudioLanguagesToExclude;
 
-		// Should we decide whether to publish as a motion book based on the BloomPub
-		// metadata or the AudioVideo metadata? Default is of course BloomPub.
-		public bool MotionFromVideo { get; set; }
+		// Should we publish as a motion book?
+		// Note: rather than a default of false, this should normally be set to the PublishSettings.BloomPub.Motion
+		// value stored in the book's BookInfo. This happens automatically if creating one using ForBloomInfo.
+		// If you want a different value, for example, AudioVideo.Settings, be sure to set that up.
+		public bool Motion { get; set; }
 
 		public override bool Equals(object obj)
 		{
@@ -33,7 +35,7 @@ namespace Bloom.Publish.Android
 				return false;
 			var other = (AndroidPublishSettings) obj;
 			return LanguagesToInclude.SetEquals(other.LanguagesToInclude) && DistributionTag == other.DistributionTag
-				&& MotionFromVideo == other.MotionFromVideo;
+				&& Motion == other.Motion;
 
 			// REVIEW: why wasn't AudioLanguagesToExclude included here?
 		}
@@ -54,7 +56,7 @@ namespace Bloom.Publish.Android
 
 		public override int GetHashCode()
 		{
-			return LanguagesToInclude.GetHashCode() + DistributionTag.GetHashCode() + (MotionFromVideo? 1 : 0);
+			return LanguagesToInclude.GetHashCode() + DistributionTag.GetHashCode() + (Motion? 1 : 0);
 
 			// REVIEW: why wasn't AudioLanguagesToExclude included here?
 		}
@@ -126,7 +128,9 @@ namespace Bloom.Publish.Android
 				// Note - we want it such that even if the underlying data changes, this settings object won't.
 				// (Converting the IEnumerable to a HashSet above happens to accomplish that)
 				LanguagesToInclude = languagesToInclude,
-				AudioLanguagesToExclude = audioLanguagesToExclude
+				AudioLanguagesToExclude = audioLanguagesToExclude,
+				// All the paths that use this are making settings for BloomPub, not Video.
+				Motion = bookInfo.PublishSettings.BloomPub.Motion
 			};
 		}
 

@@ -232,7 +232,7 @@ export const VideoOptionsGroup: React.FunctionComponent<{
                                         margin-bottom: 2px;
                                     `}
                                     l10nKey="Common.Seconds"
-                                    l10nParam0={"" + props.pageTurnDelay}
+                                    l10nParam0={props.pageTurnDelay.toString()}
                                     temporarilyDisableI18nWarning={true}
                                 >
                                     %0 seconds

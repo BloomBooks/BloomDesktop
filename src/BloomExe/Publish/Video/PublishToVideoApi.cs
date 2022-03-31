@@ -28,7 +28,7 @@ namespace Bloom.Publish.Video
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			
+
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "recordVideo", request =>
 			{
@@ -36,6 +36,9 @@ namespace Bloom.Publish.Video
 				request.PostSucceeded();
 			}, true, false);
 
+			// This is sent directly from BloomPlayer when it gets to the end of making the recording.
+			// The player gives Bloom a list of all the sounds it played and their timings so we can
+			// merge them into the captured video.
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "soundLog", request =>
 			{
 				var soundLog = request.RequiredPostJson();
@@ -57,8 +60,7 @@ namespace Bloom.Publish.Video
 					request.ReplyWithJson(new {
 						format= settings.Format,
 						pageTurnDelay = settings.PageTurnDelayDouble,
-						motion = settings.Motion,
-						playerSettings = settings.PlayerSettings
+						motion = settings.Motion
 					});
 				}
 				else
@@ -77,7 +79,6 @@ namespace Bloom.Publish.Video
 						request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape);
 					if (settings.Motion != oldMotion)
 					{
-						//_webSocketServer.SendEvent("publish", "motionChanged");
 						UpdatePreview(request); // does its own success/fail
 					}
 					else

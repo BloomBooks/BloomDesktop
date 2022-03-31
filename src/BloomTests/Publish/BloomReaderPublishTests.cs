@@ -1370,7 +1370,7 @@ namespace BloomTests.Publish
 			{
 				BloomPubMaker.CreateBloomPub(bloomdTempFile.Path, testBook.FolderPath, _bookServer,  new NullWebSocketProgress(),
 					isTemplateBook: false, creator: creator, 
-					settings: new AndroidPublishSettings() {LanguagesToInclude = languagesToInclude});
+					settings: new AndroidPublishSettings() {LanguagesToInclude = languagesToInclude, Motion = testBook.BookInfo.PublishSettings.BloomPub.Motion});
 				var zip = new ZipFile(bloomdTempFile.Path);
 				var newHtml = GetEntryContents(zip, bookFileName);
 				var paramObj = new ZipHtmlObj(zip, newHtml);

@@ -11,28 +11,12 @@ import { SettingsGroup } from "../commonPublish/BasePublishScreen";
 import { useL10n } from "../../react_components/l10nHooks";
 import { default as InfoIcon } from "@material-ui/icons/InfoOutlined";
 import { InfoTooltip } from "../../react_components/icons/InfoTooltip";
+import { RequiresCheckoutInfo } from "../../react_components/requiresCheckoutInfo";
 
 export const EPUBSettingsGroup = () => {
     //const [includeImageDescriptionOnPage,setIncludeImageDescriptionOnPage] = BloomApi.useApiBoolean("publish/epub/imageDescriptionSetting", true);
-    const [canModifyCurrentBook] = BloomApi.useApiBoolean(
-        "common/canModifyCurrentBook",
-        false
-    );
-    const checkoutToEdit = useL10n(
-        "Check out the book to use this control",
-        "TeamCollection.CheckoutToEdit",
-        undefined,
-        undefined,
-        undefined,
-        true
-    );
+    const canModifyCurrentBook = BloomApi.useCanModifyCurrentBook();
 
-    // controls visibility and placement of the 'tooltip' on the info icon when bookdata is disabled.
-    const [anchorEl, setAnchorEl] = React.useState<SVGSVGElement | null>(null);
-    const tooltipOpen = Boolean(anchorEl);
-    const handlePopoverOpen = (event: React.MouseEvent<SVGSVGElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
     return (
         <SettingsGroup
             label={useL10n(
@@ -80,20 +64,12 @@ export const EPUBSettingsGroup = () => {
                 >
                     Book Metadata
                 </Link>
-                {canModifyCurrentBook || (
-                    <InfoTooltip
-                        css={css`
-                            margin-top: 15px; // needed to align, despite supposed centering
-                            margin-left: 5px;
-                        `}
-                        color="gray"
-                        size="15px"
-                        l10nKey="TeamCollection.CheckoutToEdit"
-                        temporarilyDisableI18nWarning={true}
-                    >
-                        Check out the book to use this control
-                    </InfoTooltip>
-                )}
+                <RequiresCheckoutInfo
+                    css={css`
+                        margin-top: 17px; // needed to align, despite supposed centering
+                        margin-left: 5px;
+                    `}
+                />
             </div>
         </SettingsGroup>
     );

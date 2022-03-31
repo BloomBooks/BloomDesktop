@@ -9,9 +9,8 @@ import { default as InfoIcon } from "@material-ui/icons/InfoOutlined";
 import { Popover } from "@material-ui/core";
 
 interface IProps extends ILocalizationProps {
-    color?: string; // of the info icon
-    size?: string; // of the info icon
-    className?: string; // passed on to the info icon
+color?: string; // of the info icon
+size?: string; // of the info icon
 }
 
 // Displays an info icon. When hovered over (or clicked) it displays the message indicated by its props
@@ -29,7 +28,7 @@ export const InfoTooltip: React.FunctionComponent<IProps> = props => {
     return (
         <div>
             <InfoIcon
-                className={className}
+                className={className} // pick up any css from the emotion props of the caller
                 css={css`
                     ${color ? "color: " + color : ""};
                     ${size ? "font-size: " + size : ""};

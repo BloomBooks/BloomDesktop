@@ -2220,7 +2220,7 @@ namespace Bloom.Book
 		/// mainly because it's so common for elements there to be in just a national language (BL-8527).
 		/// For some purposes, a language that occurs ONLY in xmatter doesn't count at all... it won't even be
 		/// a key in the dictionary unless includeLangsOccurringOnlyInXmatter is true.
-		///  
+		///
 		/// For determining which Text Languages to display in Publish -> Android and which pages to delete
 		/// from a .bloomd file, we pass the parameter as true. I (gjm) am unclear as to why historically
 		/// we did it this way, but BL-7967 might be part of the problem
@@ -2627,7 +2627,7 @@ namespace Bloom.Book
 			if (SetCoverColorInternal(color))
 			{
 				Save();
-				ContentsChanged?.Invoke(this, new EventArgs());	
+				ContentsChanged?.Invoke(this, new EventArgs());
 			}
 		}
 
@@ -4361,6 +4361,10 @@ namespace Bloom.Book
 		/// </summary>
 		private void UpdateMotionFeature()
 		{
+			// Conceptually, this *might* want to be a separate options from what you do in the BloomPUB publish.
+			// For example, motion is not currently one of your choices in the upload "features" setting, which
+			// is confusing. But in any case, at the moment, the BloomPUB screen is the way we give instructions
+			// to the Harvester for this setting, so this code is correct at the moment.
 			BookInfo.MetaData.Feature_Motion = BookInfo.PublishSettings.BloomPub.Motion;
 		}
 
@@ -4509,7 +4513,7 @@ namespace Bloom.Book
 				var id = node.GetOptionalStringAttribute("id", null);
 				if (String.IsNullOrEmpty(id))
 					continue;
-						
+
 				var fileNames = BookStorage.GetNarrationAudioFileNames(id, true);
 
 				bool doesAnyAudioFileExist = false;

@@ -494,7 +494,7 @@ namespace Bloom.Publish.Android
 				_lastSettings = _lastSettings.WithAllLanguages(_allLanguages.Keys);
 			}
 
-			_lastSettings.MotionFromVideo = forVideo;
+			_lastSettings.Motion = forVideo ? request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Motion : request.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion;
 			PreviewUrl = MakeBloomPubForPreview(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor, _lastSettings);
 			_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, PreviewUrl);
 		}

@@ -27,21 +27,8 @@ namespace Bloom.Book
 		{
 			AudioVideo = new AudioVideoSettings();
 			BloomPub = new BloomPubSettings();
-			// I'd really like to not have to mess with null testing by initializing
-			// all of these here, but considerable pre-existing logic is based on
-			//testing whether they are null.
-			//{
-			//	TextLangs = new Dictionary<string, InclusionSetting>(),
-			//	AudioLangs = new Dictionary<string, InclusionSetting>(),
-			//	SignLangs = new Dictionary<string, InclusionSetting>()
-			//};
 			Epub = new EpubSettings();
 			BloomLibrary = new BloomLibrarySettings();
-			//{
-			//	TextLangs = new Dictionary<string, InclusionSetting>(),
-			//	AudioLangs = new Dictionary<string, InclusionSetting>(),
-			//	SignLangs = new Dictionary<string, InclusionSetting>()
-			//};
 		}
 
 		[JsonProperty("audioVideo")] public AudioVideoSettings AudioVideo { get; set; }

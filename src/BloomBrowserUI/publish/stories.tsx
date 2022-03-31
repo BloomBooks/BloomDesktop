@@ -115,7 +115,7 @@ storiesOf("Publish/DeviceFrame", module)
 storiesOf("Publish/Bloom Reader", module).add("ReaderPublishScreen", () => (
     <ReaderPublishScreen />
 ));
-storiesOf("publish/av", module).add("RecordVideoWindow", () => (
+storiesOf("Publish/Video", module).add("RecordVideoWindow", () => (
     <RecordVideoWindow />
 ));
 

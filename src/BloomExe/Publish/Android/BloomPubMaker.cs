@@ -100,9 +100,7 @@ namespace Bloom.Publish.Android
 			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer,
 				tentativeBookFolderPath, isTemplateBook);
 
-			modifiedBook.SetMotionAttributesOnBody(settings?.MotionFromVideo ?? false
-				? modifiedBook.BookInfo.PublishSettings.AudioVideo.Motion
-				: modifiedBook.BookInfo.PublishSettings.BloomPub.Motion);
+			modifiedBook.SetMotionAttributesOnBody(settings?.Motion ?? false);
 
 			// Although usually tentativeBookFolderPath and modifiedBook.FolderPath are the same, there are some exceptions
 			// In the process of bringing a book up-to-date (called by MakeDeviceXmatterTempBook), the folder path may change.
