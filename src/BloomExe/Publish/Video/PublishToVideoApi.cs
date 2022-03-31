@@ -17,7 +17,7 @@ namespace Bloom.Publish.Video
 		// It's slightly weird that we use one of these, but the video is done by means
 		// of an android-type book preview, and this class knows all about how to make one.
 		private PublishToAndroidApi _publishToAndroidApi;
-		private const string kApiUrlPart = "publish/video/";
+		private const string kApiUrlPart = "publish/av/";
 		private RecordVideoWindow _recordVideoWindow;
 
 		public PublishToVideoApi(BloomWebSocketServer bloomWebSocketServer, PublishToAndroidApi publishToAndroidApi)
@@ -49,21 +49,43 @@ namespace Bloom.Publish.Video
 				request.PostSucceeded();
 			}, true, false);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "pageTurnDelay", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "settings", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
-					request.ReplyWithText((request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PageTurnDelayDouble).ToString());
+					var settings = request.CurrentBook.BookInfo.PublishSettings.AudioVideo;
+					request.ReplyWithJson(new {
+						format= settings.Format,
+						pageTurnDelay = settings.PageTurnDelayDouble,
+						motion = settings.Motion,
+						playerSettings = settings.PlayerSettings
+					});
 				}
 				else
 				{
-					request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PageTurnDelayDouble = double.Parse(request.RequiredPostString());
+					var data = DynamicJson.Parse(request.RequiredPostJson());
+					var settings = request.CurrentBook.BookInfo.PublishSettings.AudioVideo;
+					var oldMotion = settings.Motion;
+					settings.Format = data.format;
+					settings.PageTurnDelayDouble = data.pageTurnDelay;
+					settings.Motion = data.motion;
+
 					request.CurrentBook.BookInfo.SavePublishSettings();
-					_recordVideoWindow?.SetPageReadTime(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PageTurnDelayDouble.ToString());
-					request.PostSucceeded();
+
+					_recordVideoWindow?.SetPageReadTime(settings.PageTurnDelayDouble.ToString());
+					_recordVideoWindow?.SetFormat(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format,
+						request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape);
+					if (settings.Motion != oldMotion)
+					{
+						//_webSocketServer.SendEvent("publish", "motionChanged");
+						UpdatePreview(request); // does its own success/fail
+					}
+					else
+					{
+						request.PostSucceeded();
+					}
 				}
 			}, true, false);
-
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "videoSettings", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
@@ -72,11 +94,12 @@ namespace Bloom.Publish.Video
 				}
 				else
 				{
-					request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PlayerSettings = request.RequiredPostString();
+					request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PlayerSettings =
+						request.RequiredPostString();
 					request.CurrentBook.BookInfo.SavePublishSettings();
-					request.PostSucceeded();
 				}
 			}, true, false);
+
 
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "hasActivities",
 				request =>
@@ -86,23 +109,6 @@ namespace Bloom.Publish.Video
 				null, // no write action
 				false,
 				true); // we don't really know, just safe default
-
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "format", request =>
-			{
-				if (request.HttpMethod == HttpMethods.Get)
-				{
-					request.ReplyWithText(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format);
-				}
-				else
-				{
-					request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format = request.RequiredPostString();
-					request.CurrentBook.BookInfo.SavePublishSettings();
-					_recordVideoWindow?.SetFormat(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format,
-						request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape);
-
-					request.PostSucceeded();
-				}
-			}, true, false);
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "startRecording", request =>
 			{
@@ -142,24 +148,6 @@ namespace Bloom.Publish.Video
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "isScalingActive",
 				request => IsScalingActive(),
 			null, true);
-
-			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "motionBookMode",
-				readRequest =>
-				{
-					// If the user has taken off all possible motion, force not having motion in the
-					// Bloom Reader book.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7680.
-					if (!readRequest.CurrentBook.HasMotionPages)
-						readRequest.CurrentBook.BookInfo.PublishSettings.AudioVideo.Motion = false;
-					return readRequest.CurrentBook.BookInfo.PublishSettings.AudioVideo.Motion;
-				},
-				(writeRequest, value) =>
-				{
-					writeRequest.CurrentBook.BookInfo.PublishSettings.AudioVideo.Motion = value;
-					writeRequest.CurrentBook.BookInfo.SavePublishSettings();
-					_webSocketServer.SendEvent("publish", "motionChanged");
-					UpdatePreview(writeRequest);
-				}
-				, true, allowWriteActionToPostResult: true);
 		}
 
 		private void UpdatePreview(ApiRequest request)

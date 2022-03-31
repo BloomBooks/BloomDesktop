@@ -10,6 +10,7 @@ using Bloom.Utils;
 using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom.Book
 {
@@ -72,7 +73,14 @@ namespace Bloom.Book
 		public void WriteToFolder(string bookFolderPath)
 		{
 			var publishSettingsPath = PublishSettingsPath(bookFolderPath);
-			RobustFile.WriteAllText(publishSettingsPath, Json);
+			try
+			{
+				RobustFile.WriteAllText(publishSettingsPath, Json);
+			}
+			catch (Exception e)
+			{
+				ErrorReport.NotifyUserOfProblem(e, "Bloom could not save your publish settings.");
+			}
 		}
 
 		/// <summary>
@@ -105,7 +113,7 @@ namespace Bloom.Book
 			var settings = new PublishSettings();
 			if (!RobustFile.Exists(metaDataPath))
 				return settings;
-			var metaDataString = File.ReadAllText(metaDataPath, Encoding.UTF8);
+			var metaDataString = RobustFile.ReadAllText(metaDataPath, Encoding.UTF8);
 
 			// I chose to do this using DynamicJson, rather than just BloomMetaData.FromString() and
 			// reading the obsolete properties, in hopes that we can eventually retire the obsolete

@@ -10,6 +10,7 @@ import { Link } from "../../react_components/link";
 import { SettingsGroup } from "../commonPublish/BasePublishScreen";
 import { useL10n } from "../../react_components/l10nHooks";
 import { default as InfoIcon } from "@material-ui/icons/InfoOutlined";
+import { InfoTooltip } from "../../react_components/icons/InfoTooltip";
 
 export const EPUBSettingsGroup = () => {
     //const [includeImageDescriptionOnPage,setIncludeImageDescriptionOnPage] = BloomApi.useApiBoolean("publish/epub/imageDescriptionSetting", true);
@@ -80,57 +81,18 @@ export const EPUBSettingsGroup = () => {
                     Book Metadata
                 </Link>
                 {canModifyCurrentBook || (
-                    <div>
-                        <InfoIcon
-                            css={css`
-                                margin-top: 15px; // needed to align, despite supposed centering
-                                margin-left: 5px;
-                                color: gray;
-                                font-size: 15px;
-                            `}
-                            onMouseEnter={handlePopoverOpen}
-                            onMouseLeave={() => setAnchorEl(null)}
-                        ></InfoIcon>
-                        <Popover
-                            // We use this for a more controllable tooltip than we get with titleAccess on the icon.
-                            id={"popover-info-tooltip"}
-                            css={css`
-                                // This is just an informational popover, we don't need to suppress events outside it.
-                                // Even more importantly, we don't want to prevent the parent control from receiving
-                                // the mouse-move events that would indicate the mouse is no longer over the anchor
-                                // and so the popover should be removed!
-                                pointer-events: none;
-                            `}
-                            // This might be a better way to do it in material-ui 5? Not in V4 API, but in MUI examples.
-                            // sx={{
-                            //     pointerEvents: 'none',
-                            //   }}
-                            open={tooltipOpen}
-                            anchorEl={anchorEl}
-                            anchorOrigin={{
-                                vertical: "bottom",
-                                horizontal: "center"
-                            }}
-                            transformOrigin={{
-                                // 15 pixels below the bottom (based on anchorOrigin) of the anchor;
-                                // leaves room for arrow and a bit of margin.
-                                vertical: -15,
-                                horizontal: "center"
-                            }}
-                            onClose={() => setAnchorEl(null)}
-                            disableRestoreFocus // most MUI examples have this, not sure what it does.
-                        >
-                            <div
-                                css={css`
-                                    padding: 2px 4px;
-                                    max-width: 150px;
-                                    font-size: smaller;
-                                `}
-                            >
-                                {checkoutToEdit}
-                            </div>
-                        </Popover>
-                    </div>
+                    <InfoTooltip
+                        css={css`
+                            margin-top: 15px; // needed to align, despite supposed centering
+                            margin-left: 5px;
+                        `}
+                        color="gray"
+                        size="15px"
+                        l10nKey="TeamCollection.CheckoutToEdit"
+                        temporarilyDisableI18nWarning={true}
+                    >
+                        Check out the book to use this control
+                    </InfoTooltip>
                 )}
             </div>
         </SettingsGroup>

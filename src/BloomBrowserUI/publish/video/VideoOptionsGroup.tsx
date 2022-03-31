@@ -67,7 +67,7 @@ export const VideoOptionsGroup: React.FunctionComponent<{
     // thing when we show the dropdown.
     const [formatDropdownIsOpen, setFormatDropdownIsOpen] = useState(false);
     useEffect(() => {
-        BloomApi.get("publish/video/tooBigForScreenMsg", c => {
+        BloomApi.get("publish/av/tooBigForScreenMsg", c => {
             setTooBigMsg(c.data);
         });
     }, [format]);
