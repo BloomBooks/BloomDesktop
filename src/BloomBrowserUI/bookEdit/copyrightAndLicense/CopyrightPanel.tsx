@@ -153,6 +153,11 @@ export const CopyrightPanel: React.FunctionComponent<{
                 css={css`
                     width: 150px; // Enough for slightly longer translations of the label; English only needs 100px
                     margin-bottom: 20px !important;
+
+                    // Hide the up/down control
+                    input {
+                        -moz-appearance: textfield;
+                    }
                 `}
             />
             <MuiTextField
