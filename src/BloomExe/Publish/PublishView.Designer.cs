@@ -70,7 +70,7 @@ namespace Bloom.Publish
 			this._openinBrowserMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._openPDF = new System.Windows.Forms.ToolStripMenuItem();
 			this.exportAudioFiles1PerPageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this._androidRadio = new System.Windows.Forms.RadioButton();
+			this._bloomPUBRadio = new System.Windows.Forms.RadioButton();
 			this._recordVideoRadio = new System.Windows.Forms.RadioButton();
 			this._uploadRadio = new System.Windows.Forms.RadioButton();
 			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
@@ -176,15 +176,15 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.ColumnCount = 1;
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.tableLayoutPanel1.ContextMenuStrip = this._contextMenuStrip;
-			this.tableLayoutPanel1.Controls.Add(this._androidRadio, 0, 8);
+			this.tableLayoutPanel1.Controls.Add(this._bloomPUBRadio, 0, 8);
 			this.tableLayoutPanel1.Controls.Add(this._recordVideoRadio, 0, 9);
-			this.tableLayoutPanel1.Controls.Add(this._uploadRadio, 0, 10);
+			this.tableLayoutPanel1.Controls.Add(this._uploadRadio, 0, 7);
 			this.tableLayoutPanel1.Controls.Add(this._menusToolStrip, 0, 0);
 			this.tableLayoutPanel1.Controls.Add(this._bookletCoverRadio, 0, 3);
 			this.tableLayoutPanel1.Controls.Add(this.label1, 0, 5);
 			this.tableLayoutPanel1.Controls.Add(this._bookletBodyRadio, 0, 4);
 			this.tableLayoutPanel1.Controls.Add(this._simpleAllPagesRadio, 0, 1);
-			this.tableLayoutPanel1.Controls.Add(this._epubRadio, 0, 7);
+			this.tableLayoutPanel1.Controls.Add(this._epubRadio, 0, 10);
 			this.tableLayoutPanel1.Controls.Add(this._noBookletsMessage, 0, 2);
 			this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Left;
 			this.tableLayoutPanel1.ForeColor = System.Drawing.Color.White;
@@ -249,32 +249,32 @@ namespace Bloom.Publish
 			this.exportAudioFiles1PerPageToolStripMenuItem.Text = "Export audio files, 1 per page";
 			this.exportAudioFiles1PerPageToolStripMenuItem.Click += new System.EventHandler(this.ExportAudioFiles1PerPageToolStripMenuItem_Click);
 			// 
-			// _androidRadio
+			// _bloomPUBRadio
 			// 
-			this._androidRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._androidRadio.Image = global::Bloom.Properties.Resources.android;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._androidRadio, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._androidRadio, null);
-			this._L10NSharpExtender.SetLocalizingId(this._androidRadio, "PublishTab.AndroidButton");
-			this._androidRadio.Location = new System.Drawing.Point(3, 448);
-			this._androidRadio.Name = "_androidRadio";
-			this._androidRadio.Size = new System.Drawing.Size(105, 71);
+			this._bloomPUBRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._bloomPUBRadio.Image = global::Bloom.Properties.Resources.BloomPUB;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._bloomPUBRadio, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._bloomPUBRadio, null);
+			this._L10NSharpExtender.SetLocalizingId(this._bloomPUBRadio, "PublishTab.bloomPUBButton");
+			this._bloomPUBRadio.Location = new System.Drawing.Point(3, 448);
+			this._bloomPUBRadio.Name = "_bloomPUBRadio";
+			this._bloomPUBRadio.Size = new System.Drawing.Size(105, 71);
 			superToolTipInfo1.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			superToolTipInfo1.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
 			superToolTipInfo1.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo1.BodyText = "Publish to an Android device.";
+			superToolTipInfo1.BodyText = "Publish to an bloomPUB device.";
 			superToolTipInfo1.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
 			superToolTipInfo1.ShowHeader = false;
 			superToolTipInfoWrapper1.SuperToolTipInfo = superToolTipInfo1;
 			superToolTipInfoWrapper1.UseSuperToolTip = true;
-			this._superToolTip.SetSuperStuff(this._androidRadio, superToolTipInfoWrapper1);
-			this._androidRadio.TabIndex = 22;
-			this._androidRadio.TabStop = true;
-			this._androidRadio.Text = "Bloom Reader";
-			this._androidRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-			this._androidRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._androidRadio.UseVisualStyleBackColor = true;
-			this._androidRadio.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
+			this._superToolTip.SetSuperStuff(this._bloomPUBRadio, superToolTipInfoWrapper1);
+			this._bloomPUBRadio.TabIndex = 22;
+			this._bloomPUBRadio.TabStop = true;
+			this._bloomPUBRadio.Text = "Bloom Reader";
+			this._bloomPUBRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			this._bloomPUBRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._bloomPUBRadio.UseVisualStyleBackColor = true;
+			this._bloomPUBRadio.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
 			// 
 			// _recordVideoRadio
 			// 
@@ -640,7 +640,7 @@ namespace Bloom.Publish
 		private SIL.Windows.Forms.SuperToolTip.SuperToolTip _superToolTip;
 		private System.Windows.Forms.ToolStripMenuItem _openPDF;
         private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.RadioButton _androidRadio;
+		private System.Windows.Forms.RadioButton _bloomPUBRadio;
 		private System.Windows.Forms.RadioButton _recordVideoRadio;
 		private System.Windows.Forms.RadioButton _uploadRadio;
 		private System.Windows.Forms.RadioButton _epubRadio;

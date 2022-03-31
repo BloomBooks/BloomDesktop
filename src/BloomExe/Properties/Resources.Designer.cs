@@ -83,16 +83,6 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap android {
-            get {
-                object obj = ResourceManager.GetObject("android", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap Bloom {
             get {
                 object obj = ResourceManager.GetObject("Bloom", resourceCulture);
@@ -116,6 +106,16 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap BloomPack64x64 {
             get {
                 object obj = ResourceManager.GetObject("BloomPack64x64", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap BloomPUB {
+            get {
+                object obj = ResourceManager.GetObject("BloomPUB", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

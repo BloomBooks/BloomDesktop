@@ -133,7 +133,7 @@ namespace Bloom.Publish
 			_bookletBodyRadio.Enabled = enable;
 			_bookletCoverRadio.Enabled = enable;
 			_simpleAllPagesRadio.Enabled = enable;
-			_androidRadio.Enabled = enable;
+			_bloomPUBRadio.Enabled = enable;
 			_recordVideoRadio.Enabled = enable;
 		}
 
@@ -184,7 +184,7 @@ namespace Bloom.Publish
 			_bookletBodyRadio.AutoCheck = autoCheck;
 			_uploadRadio.AutoCheck = autoCheck;
 			_epubRadio.AutoCheck = autoCheck;
-			_androidRadio.AutoCheck = autoCheck;
+			_bloomPUBRadio.AutoCheck = autoCheck;
 			_recordVideoRadio.AutoCheck = autoCheck;
 		}
 
@@ -194,7 +194,7 @@ namespace Bloom.Publish
 			LocalizeSuperToolTip(_bookletCoverRadio, "PublishTab.CoverOnlyRadio");
 			LocalizeSuperToolTip(_bookletBodyRadio, "PublishTab.BodyOnlyRadio");
 			LocalizeSuperToolTip(_uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
-			LocalizeSuperToolTip(_androidRadio, "PublishTab.AndroidButton");
+			LocalizeSuperToolTip(_bloomPUBRadio, "PublishTab.AndroidButton");
 			LocalizeSuperToolTip(_recordVideoRadio, "PublishTab.PublishTab.RecordVideoButton");
 		}
 
@@ -260,7 +260,7 @@ namespace Bloom.Publish
 		private void ClearRadioButtons()
 		{
 			_bookletCoverRadio.Checked = _bookletBodyRadio.Checked =
-				_simpleAllPagesRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = _androidRadio.Checked = _recordVideoRadio.Checked = false;
+				_simpleAllPagesRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = _bloomPUBRadio.Checked = _recordVideoRadio.Checked = false;
 		}
 
 		internal bool IsMakingPdf
@@ -350,7 +350,7 @@ namespace Bloom.Publish
 					_model.DisplayMode = PublishModel.DisplayModes.Upload;
 				else if (_epubRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.EPUB;
-				else if (_androidRadio.Checked)
+				else if (_bloomPUBRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.Android;
 				else if (_recordVideoRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.Video;
@@ -388,7 +388,7 @@ namespace Bloom.Publish
 			_bookletBodyRadio.Enabled = _model.AllowPdfBooklet;
 			_bookletCoverRadio.Enabled = _model.AllowPdfCover;
 			_openinBrowserMenuItem.Enabled = _openPDF.Enabled = _model.PdfGenerationSucceeded;
-			_androidRadio.Enabled = _model.AllowAndroid;
+			_bloomPUBRadio.Enabled = _model.AllowAndroid;
 			_epubRadio.Enabled = _model.AllowEPUB;
 
 
@@ -754,7 +754,7 @@ namespace Bloom.Publish
 				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
 				_model.DisplayMode = PublishModel.DisplayModes.Upload;
 			}
-			else if (_androidRadio.Checked)
+			else if (_bloomPUBRadio.Checked)
 			{
 				_model.DisplayMode = PublishModel.DisplayModes.Android;
 			}
