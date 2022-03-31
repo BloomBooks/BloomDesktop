@@ -126,7 +126,7 @@ namespace Bloom.Publish.BloomLibrary
 
 			UpdateFeaturesCheckBoxesDisplay();
 
-			var languageSelectionsForThisBook = _model.Book.BookInfo.MetaData.TextLangsToPublish.ForBloomLibrary;
+			var languageSelectionsForThisBook = _model.Book.BookInfo.PublishSettings.BloomLibrary.TextLangs;
 			var allLanguages = _model.AllLanguages;
 			foreach (var lang in allLanguages.Keys)
 			{
@@ -227,7 +227,7 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			var book = _model.Book;
 
-			_narrationAudioCheckBox.Checked = book.BookInfo.MetaData.IncludeAudioForBloomLibraryPublish;
+			_narrationAudioCheckBox.Checked = book.BookInfo.PublishSettings.BloomLibrary.IncludeAudio;
 
 			if (!book.Storage.GetNarrationAudioFileNamesReferencedInBook(false)
 				.Any(fileName => RobustFile.Exists(Path.Combine(AudioProcessor.GetAudioFolderPath(book.FolderPath), fileName))))

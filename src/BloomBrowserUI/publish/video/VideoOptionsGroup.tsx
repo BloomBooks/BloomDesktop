@@ -48,8 +48,8 @@ interface IVideoFormatOptionProps extends IFormatItem {
 }
 
 export const VideoOptionsGroup: React.FunctionComponent<{
-    pageDuration: number;
-    onSetPageDuration: (arg: number) => void;
+    pageTurnDelay: number;
+    onSetPageTurnDelay: (arg: number) => void;
     format: string;
     setFormat: (f: string) => void;
 }> = props => {
@@ -67,7 +67,7 @@ export const VideoOptionsGroup: React.FunctionComponent<{
     // thing when we show the dropdown.
     const [formatDropdownIsOpen, setFormatDropdownIsOpen] = useState(false);
     useEffect(() => {
-        BloomApi.get("publish/video/tooBigForScreenMsg", c => {
+        BloomApi.get("publish/av/tooBigForScreenMsg", c => {
             setTooBigMsg(c.data);
         });
     }, [format]);
@@ -232,7 +232,7 @@ export const VideoOptionsGroup: React.FunctionComponent<{
                                         margin-bottom: 2px;
                                     `}
                                     l10nKey="Common.Seconds"
-                                    l10nParam0={"" + props.pageDuration}
+                                    l10nParam0={props.pageTurnDelay.toString()}
                                     temporarilyDisableI18nWarning={true}
                                 >
                                     %0 seconds
@@ -258,10 +258,10 @@ export const VideoOptionsGroup: React.FunctionComponent<{
                                     <Slider
                                         max={10}
                                         min={1}
-                                        value={props.pageDuration}
+                                        value={props.pageTurnDelay}
                                         step={0.5}
                                         onChange={value =>
-                                            props.onSetPageDuration(value)
+                                            props.onSetPageTurnDelay(value)
                                         }
                                     />
                                 </div>

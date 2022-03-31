@@ -2220,7 +2220,7 @@ namespace Bloom.Book
 		/// mainly because it's so common for elements there to be in just a national language (BL-8527).
 		/// For some purposes, a language that occurs ONLY in xmatter doesn't count at all... it won't even be
 		/// a key in the dictionary unless includeLangsOccurringOnlyInXmatter is true.
-		///  
+		///
 		/// For determining which Text Languages to display in Publish -> Android and which pages to delete
 		/// from a .bloomd file, we pass the parameter as true. I (gjm) am unclear as to why historically
 		/// we did it this way, but BL-7967 might be part of the problem
@@ -2627,7 +2627,7 @@ namespace Bloom.Book
 			if (SetCoverColorInternal(color))
 			{
 				Save();
-				ContentsChanged?.Invoke(this, new EventArgs());	
+				ContentsChanged?.Invoke(this, new EventArgs());
 			}
 		}
 
@@ -4361,7 +4361,11 @@ namespace Bloom.Book
 		/// </summary>
 		private void UpdateMotionFeature()
 		{
-			BookInfo.MetaData.Feature_Motion = MotionMode;
+			// Conceptually, this *might* want to be a separate options from what you do in the BloomPUB publish.
+			// For example, motion is not currently one of your choices in the upload "features" setting, which
+			// is confusing. But in any case, at the moment, the BloomPUB screen is the way we give instructions
+			// to the Harvester for this setting, so this code is correct at the moment.
+			BookInfo.MetaData.Feature_Motion = BookInfo.PublishSettings.BloomPub.Motion;
 		}
 
 		/// <summary>
@@ -4378,45 +4382,41 @@ namespace Bloom.Book
 			book.Storage.Update("widget-placeholder.svg");
 		}
 
-		// This is a shorthand for a whole set of features.
-		// Note: we are currently planning to eventually store this primarily in the data-div, with the
-		// body feature attributes present only so that CSS can base things on it. This method would then
-		// be responsible to set that too...and probably that is what it should read.
-		public bool MotionMode
+		/// <summary>
+		/// Motion mode is currently implemented in the player in response to a set of six features
+		/// which we place on the body. The original idea was that we might want to control these
+		/// behaviors independently, and even possibly that any of them might depend on whether the
+		/// device is in landscape mode and what media is being used; we don't currently use any
+		/// of those capabilities.
+		/// </summary>
+		/// <param name="motion"></param>
+		public void SetMotionAttributesOnBody(bool motion)
 		{
-			// Review: the issue suggested that it's only true if it has all of them. Currently they all get
-			// set or cleared together, so it makes no difference.
-			// I don't think it's helpful to have yet another place in our code
-			// that knows which six features make up MotionBookMode, so I decided to just check the most
-			// characteristic one.
-			get { return OurHtmlDom.BookHasFeature("fullscreenpicture", "landscape", "bloomReader"); }
-			set
-			{
-				Action<string, string, string> addOrRemove;
-					if (value) addOrRemove = (string featureName, string orientationConstraint, string mediaConstraint) =>
-						OurHtmlDom.SetBookFeature(featureName, orientationConstraint, mediaConstraint);
-					else addOrRemove = (string featureName, string orientationConstraint, string mediaConstraint) =>
-						OurHtmlDom.ClearBookFeature(featureName, orientationConstraint, mediaConstraint);
-				// Enhance: we can probably put all this in HtmlDom and have it not know about the particular features, just copy them
-				// from the datadiv. That means it will need to be possible to identify them by some attribute, e.g. data-isBookFeature="true"
-				// these are read by Bloom Reader (and eventually Reading App Builder?)
-				addOrRemove("autoadvance", "landscape", "bloomReader");
-				addOrRemove("canrotate", "allOrientations", "bloomReader");
-				addOrRemove("playanimations", "landscape", "bloomReader");// could be ignoreAnimations
-				addOrRemove("playmusic", "landscape", "bloomReader");
-				addOrRemove("playnarration", "landscape", "bloomReader");
+			Action<string, string, string> addOrRemove;
+			if (motion)
+				addOrRemove = (string featureName, string orientationConstraint, string mediaConstraint) =>
+					OurHtmlDom.SetBookFeature(featureName, orientationConstraint, mediaConstraint);
+			else
+				addOrRemove = (string featureName, string orientationConstraint, string mediaConstraint) =>
+					OurHtmlDom.ClearBookFeature(featureName, orientationConstraint, mediaConstraint);
+			// Enhance: we can probably put all this in HtmlDom and have it not know about the particular features, just copy them
+			// from the datadiv. That means it will need to be possible to identify them by some attribute, e.g. data-isBookFeature="true"
+			// these are read by Bloom Reader (and eventually Reading App Builder?)
+			addOrRemove("autoadvance", "landscape", "bloomReader");
+			addOrRemove("canrotate", "allOrientations", "bloomReader");
+			addOrRemove("playanimations", "landscape", "bloomReader"); // could be ignoreAnimations
+			addOrRemove("playmusic", "landscape", "bloomReader");
+			addOrRemove("playnarration", "landscape", "bloomReader");
 
-				// these are read by css
-				//modifiedBook.OurHtmlDom.SetBookFeature("hideMargin", "landscape", "bloomReader");
-				//modifiedBook.OurHtmlDom.SetBookFeature("hidePageNumbers", "landscape", "bloomReader");
-				addOrRemove("fullscreenpicture", "landscape", "bloomReader");
+			// these are read by css
+			//modifiedBook.OurHtmlDom.SetBookFeature("hideMargin", "landscape", "bloomReader");
+			//modifiedBook.OurHtmlDom.SetBookFeature("hidePageNumbers", "landscape", "bloomReader");
+			addOrRemove("fullscreenpicture", "landscape", "bloomReader");
 
-				// Though the feature was/is getting set correctly at publish time, somehow it was getting out of
-				// sync (see BL-8049). So, now we also set it here immediately when the value changes.
-				BookInfo.MetaData.Feature_Motion = value;
+			// Make sure we publish this feature consistent with the publication setting.
+			BookInfo.MetaData.Feature_Motion = motion;
 
-				Save();
-			}
+			Save();
 		}
 
 		/// <summary>
@@ -4513,7 +4513,7 @@ namespace Bloom.Book
 				var id = node.GetOptionalStringAttribute("id", null);
 				if (String.IsNullOrEmpty(id))
 					continue;
-						
+
 				var fileNames = BookStorage.GetNarrationAudioFileNames(id, true);
 
 				bool doesAnyAudioFileExist = false;

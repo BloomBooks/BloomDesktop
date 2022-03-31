@@ -242,12 +242,12 @@ namespace BloomTests.Publish
 		/// This method needs to handle motion, image descriptions, and talking book.
 		/// </summary>
 		[Test]
-		public void CompressBookForDevice_SetsExpectedFeatures()
+		public void CompressBookForDevice_SetsExpectedFeaturesAndAttributes()
 		{
 			const string imgsToRemove = "<img src='nonsence.svg'/><img src=\"rubbish\"/>";
 			var htmlTemplate = @"
 <html>
-<body data-bfautoadvance='landscape;bloomReader' data-bfcanrotate='allOrientations;bloomReader' data-bfplayanimations='landscape;bloomReader' data-bfplaymusic='landscape;bloomReader' data-bfplaynarration='landscape;bloomReader' data-bffullscreenpicture='landscape;bloomReader'>
+<body>
 	<div class='bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual' data-page='' id='3dba74c5-adc9-4c0d-9934-e8484fb6e2e2' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398382' data-page-number='4' lang=''>
 		<div class='marginBox'>
             <div style='min-height: 42px;' class='split-pane horizontal-percent'>
@@ -315,6 +315,19 @@ namespace BloomTests.Publish
 						@"this is a fake for testing");
 					File.WriteAllText(Path.Combine(audioFolder, "i2335f5ae-2cff-4029-a85c-951cc33256a4.wav"),
 						@"this is a fake for testing");
+					testBook.BookInfo.PublishSettings.BloomPub.Motion = true;
+					testBook.BookInfo.Save();
+				},
+				assertionsOnResultingHtmlString: html =>
+				{
+					var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+					var body = htmlDom.DocumentElement.GetElementsByTagName("body")[0];
+					Assert.That(body.Attributes["data-bfautoadvance"]?.Value, Is.EqualTo("landscape;bloomReader"));
+					Assert.That(body.Attributes["data-bfcanrotate"]?.Value, Is.EqualTo("allOrientations;bloomReader"));
+					Assert.That(body.Attributes["data-bfplayanimations"]?.Value, Is.EqualTo("landscape;bloomReader"));
+					Assert.That(body.Attributes["data-bfplaymusic"]?.Value, Is.EqualTo("landscape;bloomReader"));
+					Assert.That(body.Attributes["data-bfplaynarration"]?.Value, Is.EqualTo("landscape;bloomReader"));
+					Assert.That(body.Attributes["data-bffullscreenpicture"]?.Value, Is.EqualTo("landscape;bloomReader"));
 				},
 
 				assertionsOnZipArchive: paramObj =>
@@ -1357,7 +1370,7 @@ namespace BloomTests.Publish
 			{
 				BloomPubMaker.CreateBloomPub(bloomdTempFile.Path, testBook.FolderPath, _bookServer,  new NullWebSocketProgress(),
 					isTemplateBook: false, creator: creator, 
-					settings: new AndroidPublishSettings() {LanguagesToInclude = languagesToInclude});
+					settings: new AndroidPublishSettings() {LanguagesToInclude = languagesToInclude, Motion = testBook.BookInfo.PublishSettings.BloomPub.Motion});
 				var zip = new ZipFile(bloomdTempFile.Path);
 				var newHtml = GetEntryContents(zip, bookFileName);
 				var paramObj = new ZipHtmlObj(zip, newHtml);

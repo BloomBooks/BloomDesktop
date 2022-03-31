@@ -100,6 +100,8 @@ namespace Bloom.Publish.Android
 			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer,
 				tentativeBookFolderPath, isTemplateBook);
 
+			modifiedBook.SetMotionAttributesOnBody(settings?.Motion ?? false);
+
 			// Although usually tentativeBookFolderPath and modifiedBook.FolderPath are the same, there are some exceptions
 			// In the process of bringing a book up-to-date (called by MakeDeviceXmatterTempBook), the folder path may change.
 			// For example, it could change if the original folder path contains punctuation marks now deemed dangerous.

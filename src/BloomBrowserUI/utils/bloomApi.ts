@@ -213,6 +213,14 @@ export class BloomApi {
         return [value, fn];
     }
 
+    public static useCanModifyCurrentBook(): boolean {
+        const [canModifyCurrentBook] = BloomApi.useApiBoolean(
+            "common/canModifyCurrentBook",
+            false
+        );
+        return canModifyCurrentBook;
+    }
+
     public static useApiData<T>(urlSuffix: string, defaultValue: T): T {
         return this.useApiDataInternal(urlSuffix, defaultValue);
     }

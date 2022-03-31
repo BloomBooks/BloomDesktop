@@ -7,7 +7,7 @@ import PauseIcon from "@material-ui/icons/PauseCircleFilled";
 import SkipPreviousIcon from "@material-ui/icons/SkipPrevious";
 import SaveIcon from "@material-ui/icons/Save";
 import RecordIcon from "@material-ui/icons/RadioButtonChecked";
-
+import { useDebounce } from "use-debounce";
 import {
     BasePublishScreen,
     PreviewPanel,
@@ -59,6 +59,7 @@ import {
     NoteBox
 } from "../../react_components/BloomDialog/commonDialogComponents";
 import { useEffect } from "react";
+import { MuiCheckbox } from "../../react_components/muiCheckBox";
 
 export const RecordVideoWindow = () => {
     // When the user changes some features, included languages, etc., we
@@ -86,6 +87,12 @@ interface IBookProps {
     hasAnimation: boolean;
 }
 
+interface IAudioVideoSettings {
+    format: string;
+    pageTurnDelay: number;
+    motion: boolean;
+}
+
 const RecordVideoWindowInternal: React.FunctionComponent<{
     onReset: () => void;
 }> = props => {
@@ -108,15 +115,23 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
     );
     const save = useL10n("Save", "PublishTab.RecordVideo.Save");
     const [closePending, setClosePending] = useState(false);
-    const [pageReadTime, setPageReadTime] = useState(3);
+    const [avSettings, setAvSettings] = BloomApi.useApiState<
+        IAudioVideoSettings
+    >("publish/av/settings", {
+        format: "facebook",
+        pageTurnDelay: 3,
+        motion: false
+    });
+
+    const [debouncedPageTurnDelay] = useDebounce(
+        avSettings.pageTurnDelay,
+        1000
+    );
+
     const [progressState, setProgressState] = useState(ProgressState.Working);
     const [activeStep, setActiveStep] = useState(0);
-    const [format, setFormat] = BloomApi.useApiStringState(
-        "publish/video/format",
-        "facebook"
-    );
     const [isScalingActive] = BloomApi.useApiBoolean(
-        "publish/video/isScalingActive",
+        "publish/av/isScalingActive",
         false
     );
     const gotRecording = BloomApi.useWatchBooleanEvent(
@@ -124,17 +139,13 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
         "recordVideo",
         "ready"
     );
-    const [canModifyCurrentBook] = BloomApi.useApiBoolean(
-        "common/canModifyCurrentBook",
-        false
-    );
 
     const [motionEnabled] = BloomApi.useApiBoolean(
         "publish/android/canHaveMotionMode",
         false
     );
     const [hasActivities] = BloomApi.useApiBoolean(
-        "publish/video/hasActivities",
+        "publish/av/hasActivities",
         false
     );
     React.useEffect(() => {
@@ -163,12 +174,7 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
         "publish/android/defaultLandscape",
         false
     );
-    const motionActive = BloomApi.useWatchApiData<boolean>(
-        "publish/android/motionBookMode",
-        false,
-        "publish",
-        "motionChanged"
-    );
+
     const [playing, setPlaying] = useState(false);
     useSubscribeToWebSocketForStringMessage(
         "publish-android",
@@ -232,7 +238,7 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
     // any variable element that contributes to the preview URL, we will re-run the query
     // any time it changes. (The actual content of the param is ignored in the backend.)
     const videoSettings = BloomApi.useApiString(
-        "publish/video/videoSettings?regen=" + pageReadTime,
+        "publish/av/videoSettings?regen=" + avSettings.pageTurnDelay,
         ""
     );
     let videoSettingsParam = "";
@@ -252,7 +258,7 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                 "&videoSettings=" + JSON.stringify(videoSettings);
         }
     }
-    const recordingVideo = format != "mp3";
+    const recordingVideo = avSettings.format != "mp3";
     const circleHeight = "0.88rem";
     const blurbClasses = `
     max-width: ${landscapeWidth}px;
@@ -307,14 +313,18 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                                         for recording.
                                     </Div>
                                     <SimplePreview
+                                        // using this key ensures that the preview is regenerated when motion changes,
+                                        // which would not otherwise happen because it's not part of the props
+                                        key={avSettings.motion.toString()}
                                         landscape={
-                                            defaultLandscape || motionActive
+                                            defaultLandscape ||
+                                            avSettings.motion
                                         }
                                         landscapeWidth={landscapeWidth}
                                         url={
                                             pathToOutputBrowser +
                                             "bloom-player/dist/bloomplayer.htm?centerVertically=true&videoPreviewMode=true&autoplay=no&defaultDuration=" +
-                                            pageReadTime +
+                                            debouncedPageTurnDelay +
                                             "&url=" +
                                             encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
                                             "&independent=false&host=bloomdesktop&skipActivities=true&hideNavButtons=true" +
@@ -452,7 +462,7 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                                                     }
                                                     onClick={() =>
                                                         BloomApi.post(
-                                                            "publish/video/displaySettings"
+                                                            "publish/av/displaySettings"
                                                         )
                                                     }
                                                 >
@@ -465,7 +475,7 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                                 <BloomButton
                                     enabled={true}
                                     l10nKey="PublishTab.RecordVideo.Record"
-                                    clickApiEndpoint="publish/video/recordVideo"
+                                    clickApiEndpoint="publish/av/recordVideo"
                                     temporarilyDisableI18nWarning={true}
                                     iconBeforeText={
                                         <RecordIcon
@@ -496,7 +506,7 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                                     enabled={gotRecording}
                                     l10nKey="PublishTab.RecordVideo.Play"
                                     temporarilyDisableI18nWarning={true}
-                                    clickApiEndpoint="publish/video/playVideo"
+                                    clickApiEndpoint="publish/av/playVideo"
                                     iconBeforeText={
                                         <PlayIcon
                                             css={css`
@@ -520,7 +530,7 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                                     enabled={gotRecording}
                                     l10nKey="PublishTab.Save"
                                     temporarilyDisableI18nWarning={true}
-                                    clickApiEndpoint="publish/video/saveVideo"
+                                    clickApiEndpoint="publish/av/saveVideo"
                                     iconBeforeText={
                                         <SaveIcon
                                             css={css`
@@ -538,16 +548,14 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
 
                 <SettingsPanel>
                     <VideoOptionsGroup
-                        pageDuration={pageReadTime}
-                        onSetPageDuration={time => {
-                            setPageReadTime(time);
-                            BloomApi.postString(
-                                "publish/video/pageReadTime",
-                                time.toString()
-                            );
-                        }}
-                        format={format}
-                        setFormat={setFormat}
+                        pageTurnDelay={avSettings.pageTurnDelay}
+                        onSetPageTurnDelay={(n: number) =>
+                            setAvSettings({ ...avSettings, pageTurnDelay: n })
+                        }
+                        format={avSettings.format}
+                        setFormat={(f: string) =>
+                            setAvSettings({ ...avSettings, format: f })
+                        }
                     ></VideoOptionsGroup>
                     {motionEnabled && (
                         <FormGroup
@@ -555,14 +563,19 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                                 margin-top: 20px;
                             `}
                         >
-                            <ApiCheckbox
-                                english="Motion Book"
+                            <MuiCheckbox
+                                label="Motion Book"
                                 l10nKey="PublishTab.Android.MotionBookMode"
-                                // tslint:disable-next-line:max-line-length
-                                l10nComment="Motion Books are Talking Books in which the picture fills the screen, then pans and zooms while you hear the voice recording. This happens only if you turn the book sideways."
-                                apiEndpoint="publish/android/motionBookMode"
-                                disabled={!canModifyCurrentBook}
-                            />
+                                checked={avSettings.motion}
+                                onCheckChanged={m => {
+                                    setAvSettings({
+                                        ...avSettings,
+                                        motion: m!
+                                    });
+                                    // Will restart due to regenerating, we want the controls to show not playing.
+                                    pause();
+                                }}
+                            ></MuiCheckbox>
                         </FormGroup>
                     )}
 
@@ -589,7 +602,7 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
             {inStorybookMode || (
                 <PublishProgressDialog
                     heading={heading}
-                    startApiEndpoint="publish/video/updatePreview"
+                    startApiEndpoint="publish/av/updatePreview"
                     webSocketClientContext="publish-android"
                     progressState={progressState}
                     setProgressState={setProgressState}

@@ -12,11 +12,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         "publish/android/canHaveMotionMode",
         false
     );
-    const [canModifyCurrentBook] = BloomApi.useApiBoolean(
-        "common/canModifyCurrentBook",
-        false
-    );
-    const enabled = motionEnabled && canModifyCurrentBook;
+
     return (
         <SettingsGroup
             label={useL10n("Features", "PublishTab.Android.Features")}
@@ -30,7 +26,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                     l10nComment="Motion Books are Talking Books in which the picture fills the screen, then pans and zooms while you hear the voice recording. This happens only if you turn the book sideways."
                     apiEndpoint="publish/android/motionBookMode"
                     onChange={props.onChange}
-                    disabled={!enabled}
+                    disabled={!motionEnabled}
                 />
                 {/* <ApiCheckbox label="Sign Language" />
             <ApiCheckbox label="Image Descriptions" /> */}

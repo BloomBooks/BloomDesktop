@@ -154,12 +154,13 @@ namespace Bloom.Publish.Android
 					// If the user has taken off all possible motion, force not having motion in the
 					// Bloom Reader book.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7680.
 					if (!readRequest.CurrentBook.HasMotionPages)
-						readRequest.CurrentBook.MotionMode = false;
-					return readRequest.CurrentBook.MotionMode;
+						readRequest.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion = false;
+					return readRequest.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion;
 				},
 				(writeRequest, value) =>
 				{
-					writeRequest.CurrentBook.MotionMode = value;
+					writeRequest.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion = value;
+					writeRequest.CurrentBook.BookInfo.SavePublishSettings();
 					_webSocketServer.SendEvent("publish", "motionChanged");
 				}
 			, true);
@@ -273,7 +274,7 @@ namespace Bloom.Publish.Android
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "canRotate",
 				request =>
 				{
-					return request.CurrentBook.MotionMode && request.CurrentBook.HasMotionPages;
+					return request.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion && request.CurrentBook.HasMotionPages;
 				},
 				null, // no write action
 				false,
@@ -293,8 +294,8 @@ namespace Bloom.Publish.Android
 				{
 					InitializeLanguagesInBook(request);
 
-					Dictionary<string, InclusionSetting> textLangsToPublish = request.CurrentBook.BookInfo.MetaData.TextLangsToPublish.ForBloomPUB;
-					Dictionary<string, InclusionSetting> audioLangsToPublish = request.CurrentBook.BookInfo.MetaData.AudioLangsToPublish.ForBloomPUB;
+					Dictionary<string, InclusionSetting> textLangsToPublish = request.CurrentBook.BookInfo.PublishSettings.BloomPub.TextLangs;
+					Dictionary<string, InclusionSetting> audioLangsToPublish = request.CurrentBook.BookInfo.PublishSettings.BloomPub.AudioLangs;
 					
 					var result = "[" + string.Join(",", _allLanguages.Select(kvp =>
 					{
@@ -342,14 +343,14 @@ namespace Bloom.Publish.Android
 					if (includeTextValue != null)
 					{
 						var inclusionSetting = includeTextValue == "true" ? InclusionSetting.Include : InclusionSetting.Exclude;
-						request.CurrentBook.BookInfo.MetaData.TextLangsToPublish.ForBloomPUB[langCode] = inclusionSetting;
+						request.CurrentBook.BookInfo.PublishSettings.BloomPub.TextLangs[langCode] = inclusionSetting;
 					}
 
 					var includeAudioValue = request.GetParamOrNull("includeAudio");
 					if (includeAudioValue != null)
 					{
 						var inclusionSetting = includeAudioValue == "true" ? InclusionSetting.Include : InclusionSetting.Exclude;
-						request.CurrentBook.BookInfo.MetaData.AudioLangsToPublish.ForBloomPUB[langCode] = inclusionSetting;
+						request.CurrentBook.BookInfo.PublishSettings.BloomPub.AudioLangs[langCode] = inclusionSetting;
 					}
 
 					request.CurrentBook.BookInfo.Save();	// We updated the BookInfo, so need to persist the changes. (but only the bookInfo is necessary, not the whole book)
@@ -364,7 +365,7 @@ namespace Bloom.Publish.Android
 			}, false);
 		}
 
-		public void MakeBloompubPreview(ApiRequest request, bool allLanguages)
+		public void MakeBloompubPreview(ApiRequest request, bool forVideo)
 		{
 			if (request.HttpMethod == HttpMethods.Post)
 			{
@@ -382,7 +383,7 @@ namespace Bloom.Publish.Android
 
 				try
 				{
-					UpdatePreview(request, allLanguages);
+					UpdatePreview(request, forVideo);
 					request.PostSucceeded();
 				}
 				catch (Exception e)
@@ -427,14 +428,10 @@ namespace Bloom.Publish.Android
 		{
 			Debug.Assert(bookInfo?.MetaData != null, "Precondition: MetaData must not be null");
 
-			if (bookInfo.MetaData.TextLangsToPublish == null)
-			{
-				bookInfo.MetaData.TextLangsToPublish = new LangsToPublishSetting();
-			}
 
-			if (bookInfo.MetaData.TextLangsToPublish.ForBloomPUB == null)
+			if (bookInfo.PublishSettings.BloomPub.TextLangs == null)
 			{
-				bookInfo.MetaData.TextLangsToPublish.ForBloomPUB = new Dictionary<string, InclusionSetting>();
+				bookInfo.PublishSettings.BloomPub.TextLangs = new Dictionary<string, InclusionSetting>();
 			}
 
 			// reinitialize our list of which languages to publish, defaulting to the ones
@@ -444,7 +441,7 @@ namespace Bloom.Publish.Android
 				var langCode = kvp.Key;
 
 				// First, check if the user has already explicitly set the value. If so, we'll just use that value and be done.
-				if (bookInfo.MetaData.TextLangsToPublish.ForBloomPUB.TryGetValue(langCode, out InclusionSetting checkboxValFromSettings))
+				if (bookInfo.PublishSettings.BloomPub.TextLangs.TryGetValue(langCode, out InclusionSetting checkboxValFromSettings))
 				{
 					if (checkboxValFromSettings.IsSpecified())
 					{
@@ -462,22 +459,17 @@ namespace Bloom.Publish.Android
 					langCode == collectionSettings?.Language1Iso639Code;
 
 				var newInitialValue = isChecked ? InclusionSetting.IncludeByDefault : InclusionSetting.ExcludeByDefault;
-				bookInfo.MetaData.TextLangsToPublish.ForBloomPUB[langCode] = newInitialValue;
+				bookInfo.PublishSettings.BloomPub.TextLangs[langCode] = newInitialValue;
 			}
 
 			// Initialize the Talking Book Languages settings
-			if (bookInfo.MetaData.AudioLangsToPublish == null)
+			if (bookInfo.PublishSettings.BloomPub.AudioLangs == null)
 			{
-				bookInfo.MetaData.AudioLangsToPublish = new LangsToPublishSetting();
-			}
-
-			if (bookInfo.MetaData.AudioLangsToPublish.ForBloomPUB == null)
-			{
-				bookInfo.MetaData.AudioLangsToPublish.ForBloomPUB = new Dictionary<string, InclusionSetting>();
+				bookInfo.PublishSettings.BloomPub.AudioLangs = new Dictionary<string, InclusionSetting>();
 				var allLangCodes = allLanguages.Select(x => x.Key);
 				foreach (var langCode in allLangCodes)
 				{
-					bookInfo.MetaData.AudioLangsToPublish.ForBloomPUB[langCode] = InclusionSetting.IncludeByDefault;
+					bookInfo.PublishSettings.BloomPub.AudioLangs[langCode] = InclusionSetting.IncludeByDefault;
 				}					
 			}
 
@@ -492,15 +484,17 @@ namespace Bloom.Publish.Android
 		/// If the caller wants to insert this URL as a query parameter to another URL (e.g. like what is often done with Bloom Player),
 		/// it's the caller's responsibility to apply another layer of URL encoding to make the URL suitable to be passed as data inside another URL.
 		/// </summary>
-		private void UpdatePreview(ApiRequest request, bool allLanguages)
+		private void UpdatePreview(ApiRequest request, bool forVideo)
 		{
 			InitializeLanguagesInBook(request);
 			_lastSettings = GetSettings();
 			_lastThumbnailBackgroundColor = _thumbnailBackgroundColor;
-			if (allLanguages)
+			if (forVideo)
 			{
 				_lastSettings = _lastSettings.WithAllLanguages(_allLanguages.Keys);
 			}
+
+			_lastSettings.Motion = forVideo ? request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Motion : request.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion;
 			PreviewUrl = MakeBloomPubForPreview(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor, _lastSettings);
 			_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, PreviewUrl);
 		}
