@@ -12,8 +12,22 @@
         height: 1.5cm;
     }
 }
-[data-book="title-page-branding-bottom-html"] img {
-    margin-bottom: 1em;
+// [data-xmatter-page="credits"] {
+//     * {
+//         margin-bottom: 1em;
+//         text-align: justify;
+//     }
+// }
+// NB: space is really tight with 16x9 portrait and landscape
+// NB: the rule in bloom-xmatter.common seems to assume there is only an image, and it's hard to override.
+//  That's why we have `div.titlePage` here, to increase our precedence score.
+div.titlePage [data-book="title-page-branding-bottom-html"] {
+    max-height: 24mm;
+    line-height: 18px;
+    img {
+        margin-bottom: 5px;
+        height: 13mm;
+    }
 }
 [data-book="credits-page-branding-top-html"] img {
     width: 100%;
@@ -30,14 +44,15 @@
         margin-bottom: 1em;
     }
 }
-img.bloom-badge {
-    width: 100%;
-    height: 1.5cm;
+[data-book="outside-back-cover-branding-bottom-html"] {
+    img.bloom-badge {
+        width: 100%;
+        height: 1.5cm;
+    }
 }
 
-[data-xmatter-page="credits"] {
-    * {
-        margin-bottom: 1em;
-        text-align: justify;
+div.Device16x9Landscape {
+    img.bloom-badge {
+        height: 1cm; // there isn't enough room for the 1.5 cm badge
     }
 }
