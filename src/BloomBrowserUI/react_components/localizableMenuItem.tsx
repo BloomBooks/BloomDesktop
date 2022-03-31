@@ -40,7 +40,7 @@ const kEnterpriseStickerAffordance = 28;
 const typographyProps: TypographyProps = {
     variant: "h6"
 };
-const menuItemGray = "rgba(0, 0, 0, 0.64)";
+const menuItemColor = "black";
 
 export const LocalizableMenuItem: React.FunctionComponent<LocalizableMenuItemProps> = props => {
     const label = useL10n(props.english, props.l10nId);
@@ -113,7 +113,7 @@ export const LocalizableMenuItem: React.FunctionComponent<LocalizableMenuItemPro
                         span {
                             font-weight: 400 !important; // H6 defaults to 500; too thick
                             font-family: Segoe UI, NotoSans, Roboto, sans-serif;
-                            color: ${menuItemGray} !important;
+                            color: ${menuItemColor} !important;
                         }
                     `}
                     primaryTypographyProps={typographyProps}
@@ -147,8 +147,8 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<LocalizableChe
             `}
         >
             <Checkbox
-                icon={<CheckBoxOutlineBlankIcon htmlColor={menuItemGray} />}
-                checkedIcon={<CheckBoxIcon htmlColor={menuItemGray} />}
+                icon={<CheckBoxOutlineBlankIcon htmlColor={menuItemColor} />}
+                checkedIcon={<CheckBoxIcon htmlColor={menuItemColor} />}
                 checked={checked}
                 onChange={e => {
                     BloomApi.postBoolean(props.apiEndpoint, e.target.checked);
@@ -166,7 +166,7 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<LocalizableChe
                     span {
                         font-weight: 400 !important; // H6 defaults to 500; too thick
                         font-family: Segoe UI, NotoSans, Roboto, sans-serif;
-                        color: ${menuItemGray} !important;
+                        color: ${menuItemColor} !important;
                     }
                 `}
                 primaryTypographyProps={typographyProps}
@@ -197,7 +197,7 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<BaseLocalizableM
                 font-weight: 400 !important;
                 font-family: Segoe UI, NotoSans, Roboto, sans-serif !important;
                 font-size: 1rem !important;
-                color: ${menuItemGray} !important;
+                color: ${menuItemColor} !important;
                 padding: 4px 6px 0 6px !important; // adjust for denser layout
                 justify-content: space-between !important; // move sub-menu arrow to right
             `}
