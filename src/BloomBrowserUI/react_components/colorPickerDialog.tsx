@@ -207,6 +207,10 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                     className="bloomModalDialog color-picker-dialog"
                     open={open}
                     PaperComponent={PaperComponent}
+                    onClose={(_event, reason) => {
+                        if (reason === "backdropClick")
+                            onClose(DialogResult.OK); // BL-9930
+                    }}
                 >
                     <DialogTitle
                         id="draggable-color-picker-title"
