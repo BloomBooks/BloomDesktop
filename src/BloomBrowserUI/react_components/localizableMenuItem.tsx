@@ -152,6 +152,7 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<LocalizableChe
                 checked={checked}
                 onChange={e => {
                     BloomApi.postBoolean(props.apiEndpoint, e.target.checked);
+                    setChecked(e.target.checked);
                 }}
                 css={css`
                     width: ${kIconCheckboxAffordance}px !important;
