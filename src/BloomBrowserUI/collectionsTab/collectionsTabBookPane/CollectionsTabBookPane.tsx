@@ -65,6 +65,10 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     }, [selectedBookId, saveable, reload]);
 
     const canMakeBook = collectionKind != "main";
+    // History, and thus the tab controls, are only relevant if there's a selected book
+    // that is in the main collection, and only allowed if enterprise is enabled.
+    const showTabs =
+        selectedBookId && enterpriseAvailable && collectionKind == "main";
 
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -211,17 +215,16 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                     // `}
                 >
                     <TabList>
-                        {// actually we want the (default) preview tab pane even if enterprise is not available.
+                        {// actually we want the (default) preview tab pane even we're not showing history.
                         // but we don't need the tab label if there are no others.
-                        // And we don't need any headers if there's no selected book
-                        selectedBookId && enterpriseAvailable && (
+                        showTabs && (
                             <Tab id="previewLabel">
                                 <LocalizedString l10nKey="Common.Preview">
                                     Preview
                                 </LocalizedString>
                             </Tab>
                         )}
-                        {selectedBookId && enterpriseAvailable && (
+                        {showTabs && (
                             <Tab id="historyLabel">
                                 <LocalizedString
                                     l10nKey="TeamCollection.History"
