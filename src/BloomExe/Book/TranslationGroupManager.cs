@@ -325,6 +325,8 @@ namespace Bloom.Book
 			string contentLanguageIso2, string contentLanguageIso3, // these are effected by the multilingual settings for this book
 			BookData bookData) // use to get the collection's current N1 and N2 in xmatter or other template pages that specify default languages
 		{
+			if (string.IsNullOrEmpty(lang))
+				return false; // if by any bizarre chance we have a block with an empty language code, we don't want to show it!
 			// Note: There is code in bloom-player that is modeled after this code.
 			//       If this function changes, you should check in bloom-player's bloom-player-core.tsx file, function shouldNormallyShowEditable().
 			//       It may benefit from being updated too.
@@ -496,6 +498,11 @@ namespace Bloom.Book
 			{
 				Console.Write("stop");
 			}
+
+			// If we don't have the relevant language code in this collection, don't make a block for it!
+			if (string.IsNullOrEmpty(isoCode))
+				return null;
+
 			XmlNodeList editableChildrenOfTheGroup =
 				groupElement.SafeSelectNodes("*[self::textarea or contains(@class,'bloom-editable')]");
 
