@@ -55,4 +55,11 @@ div.Device16x9Landscape {
     img.bloom-badge {
         height: 1cm; // there isn't enough room for the 1.5 cm badge
     }
+    // ...and worse yet, in Bloom Reader preview, *any* size badge gets overwritten by the material above.
+    // so we shrink the logo too
+    [data-book="outside-back-cover-branding-top-html"] {
+        img {
+            height: 2cm;
+        }
+    }
 }
