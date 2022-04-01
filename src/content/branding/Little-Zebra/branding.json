@@ -16,7 +16,7 @@
         {
             "data-book": "outside-back-cover-branding-top-html",
             "lang": "*",
-            "content": "<img class='branding' src='Little-Zebra.png'/><p>Little Zebra Books help children<br/>to discover the joy of reading<br/>through beautiful books<br/>in African languages.</p><p>Find out more at <a href='https://www.littlezebrabooks.com'>www.littlezebrabooks.com</a></p><p>or contact us by email: <a href='mailto::info@littlezebrabooks.com'>info@littlezebrabooks.com</a></p>",
+            "content": "<img class='branding' src='Little-Zebra.png'/><p>Little Zebra Books help children<br/>to discover the joy of reading<br/>through beautiful books<br/>in African languages.</p><p>Find out more at <a href='https://www.littlezebrabooks.com'>www.littlezebrabooks.com</a></p><p>or contact us by email: <a href='mailto:info@littlezebrabooks.com'>info@littlezebrabooks.com</a></p>",
             "condition": "always"
         },
         {
