@@ -476,7 +476,8 @@ export const makeMenuItems = (
                     <LocalizableCheckboxMenuItem
                         english={spec.label}
                         l10nId={spec.l10nId!}
-                        onClick={() => close()}
+                        // We deliberately do NOT close the menu, so the user can see it really got checked.
+                        onClick={() => {}}
                         apiEndpoint={spec.command!}
                     ></LocalizableCheckboxMenuItem>
                 );
