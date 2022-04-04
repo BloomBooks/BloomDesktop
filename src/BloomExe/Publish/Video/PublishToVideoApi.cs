@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Publish.Android;
+using SIL.PlatformUtilities;
 
 namespace Bloom.Publish.Video
 {
@@ -76,7 +77,7 @@ namespace Bloom.Publish.Video
 
 					_recordVideoWindow?.SetPageReadTime(settings.PageTurnDelayDouble.ToString());
 					_recordVideoWindow?.SetFormat(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format,
-						request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape);
+						ShouldRecordAsLandscape(request.CurrentBook));
 					if (settings.Motion != oldMotion)
 					{
 						UpdatePreview(request); // does its own success/fail
@@ -121,7 +122,7 @@ namespace Bloom.Publish.Video
 				request =>
 				{
 					request.ReplyWithText(RecordVideoWindow.GetDataForFormat(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format,
-						request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape,
+						ShouldRecordAsLandscape(request.CurrentBook),
 						out _, out _, out _));
 				},
 				 true, // has to be on UI thread because it uses Bloom's main window to find the right screen
@@ -156,11 +157,24 @@ namespace Bloom.Publish.Video
 			_publishToAndroidApi.MakeBloompubPreview(request, true);
 		}
 
+
+		/// <summary>
+		/// Return true if the book should be published in landscape mode, that is,
+		/// either it is created as a landscape book, or it is a motion book configured
+		/// to play in motion mode.
+		/// </summary>
+		/// <param name="book"></param>
+		/// <returns></returns>
+		public static bool ShouldRecordAsLandscape(Book.Book book)
+		{
+			return book.BookInfo.PublishSettings.AudioVideo.Motion || book.GetLayout().SizeAndOrientation.IsLandScape;
+		}
+
 		private bool IsScalingActive()
 		{
 			// There may be something comparable to do on Linux, but if so, it certainly won't use the
 			// Windows DLL external methods this function uses.
-			if (SIL.PlatformUtilities.Platform.IsLinux)
+			if (Platform.IsLinux)
 				return false;
 			// If we can't use this function, we just won't bother with a warning about scaling.
 			// Hopefully not many older systems have high-DPI monitors.
@@ -228,7 +242,7 @@ namespace Bloom.Publish.Video
 		{
 			_recordVideoWindow = RecordVideoWindow.Create(_webSocketServer);
 			_recordVideoWindow.SetFormat(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format,
-				request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape);
+				ShouldRecordAsLandscape(request.CurrentBook));
 			_recordVideoWindow.SetPageReadTime(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PageTurnDelayDouble.ToString());
 			_recordVideoWindow.SetVideoSettingsFromPreview(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PlayerSettings);
 			_recordVideoWindow.Closed += (sender, args) =>

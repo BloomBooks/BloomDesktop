@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.Book;
 using Bloom.Utils;
 using L10NSharp;
 using SIL.IO;
