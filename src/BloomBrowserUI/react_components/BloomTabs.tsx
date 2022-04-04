@@ -30,6 +30,7 @@ export const BloomTabs: React.FunctionComponent<IProps> = props => {
                 }
                 .react-tabs__tab--selected {
                     color: ${selectedColor} !important;
+                    font-weight: bold;
                     border-color: transparent;
                     border-bottom: 2px solid ${selectedColor};
                 }

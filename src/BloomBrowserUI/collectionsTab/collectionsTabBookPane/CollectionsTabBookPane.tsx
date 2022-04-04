@@ -205,14 +205,12 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                 <BloomTabs
                     id="tabs"
                     defaultIndex={0}
-                    color="grey"
+                    color="white"
                     selectedColor="white"
                     labelBackgroundColor={kDarkestBackground}
-                    // contentPaneCss={css`
-                    //     flex-grow: 1;
-                    //     position: relative; // for the Edit this book button to be absolute
-                    //     color: black;
-                    // `}
+                    css={css`
+                        font-family: "segoe ui";
+                    `}
                 >
                     <TabList>
                         {// actually we want the (default) preview tab pane even we're not showing history.
