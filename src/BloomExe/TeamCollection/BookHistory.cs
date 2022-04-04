@@ -34,8 +34,11 @@ namespace Bloom.TeamCollection
 		Created,
 		Renamed,
 		Uploaded,
-		ForcedUnlock
+		ForcedUnlock,
+		ImportSpreadsheet,
+		// NB: add them here, too: teamCollection\CollectionHistoryTable.tsx
 	}
+
 	[Table("events")]
 	public class BookHistoryEvent
 	{
