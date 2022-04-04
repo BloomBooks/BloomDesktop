@@ -10,11 +10,9 @@ import RecordIcon from "@material-ui/icons/RadioButtonChecked";
 import { useDebounce } from "use-debounce";
 import {
     BasePublishScreen,
-    PreviewPanel,
     PublishPanel,
     HelpGroup,
-    SettingsPanel,
-    CommandsGroup
+    SettingsPanel
 } from "../commonPublish/BasePublishScreen";
 import "../ReaderPublish/ReaderPublish.less";
 import ReactDOM = require("react-dom");
@@ -29,12 +27,8 @@ import { StorybookContext } from "../../.storybook/StoryBookContext";
 import { useSubscribeToWebSocketForStringMessage } from "../../utils/WebSocketManager";
 import { BloomApi } from "../../utils/bloomApi";
 import HelpLink from "../../react_components/helpLink";
-import HtmlHelpLink from "../../react_components/htmlHelpLink";
-import { Link, LinkWithDisabledStyles } from "../../react_components/link";
-import {
-    RequiresBloomEnterpriseAdjacentIconWrapper,
-    RequiresBloomEnterpriseDialog
-} from "../../react_components/requiresBloomEnterprise";
+import { Link } from "../../react_components/link";
+import { RequiresBloomEnterpriseDialog } from "../../react_components/requiresBloomEnterprise";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
@@ -52,8 +46,7 @@ import {
 import { kBloomRed } from "../../utils/colorUtils";
 import { SimplePreview } from "./simplePreview";
 import { VideoOptionsGroup } from "./VideoOptionsGroup";
-import { Div, P, Span } from "../../react_components/l10nComponents";
-import { ApiCheckbox } from "../../react_components/ApiCheckbox";
+import { Div, Span } from "../../react_components/l10nComponents";
 import {
     ErrorBox,
     NoteBox
@@ -266,6 +259,7 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
     color: grey;`;
     return (
         <Typography
+            component={"div"}
             css={css`
                 height: 100%;
             `}

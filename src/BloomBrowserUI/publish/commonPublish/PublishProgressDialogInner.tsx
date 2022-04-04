@@ -61,11 +61,13 @@ export const ProgressDialogInner: React.FunctionComponent<{
         <Dialog
             className="progress-dialog"
             open={props.progressState !== ProgressState.Closed}
-            onBackdropClick={() => {
-                // allow just clicking out of the dialog to close, unless we're still working,
-                // in which case you have to go and click on "CANCEL" or "Stop Sharing"
-                if (!somethingStillGoing) {
-                    props.onUserClosed();
+            onClose={(_event, reason) => {
+                if (reason === "backdropClick") {
+                    // allow just clicking out of the dialog to close, unless we're still working,
+                    // in which case you have to go and click on "CANCEL" or "Stop Sharing"
+                    if (!somethingStillGoing) {
+                        props.onUserClosed();
+                    }
                 }
             }}
         >

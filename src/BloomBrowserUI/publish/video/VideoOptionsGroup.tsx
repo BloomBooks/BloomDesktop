@@ -118,7 +118,7 @@ export const VideoOptionsGroup: React.FunctionComponent<{
         <SettingsGroup label={useL10n("Options", "Common.Options")}>
             <FormGroup>
                 <FormControl variant="outlined">
-                    <Typography>
+                    <Typography component={"div"}>
                         <div
                             css={css`
                                 display: flex;
