@@ -2936,6 +2936,11 @@
         <note>ID: FontInformationPane.FontUnknown</note>
         <note>This shows in the popup when hovering over a font when Bloom can't determine if it is useable legally.</note>
       </trans-unit>
+      <trans-unit id="FontInformationPane.FontFormatUnsuitable">
+        <source xml:lang="en">This font is in a file format that Bloom cannot use for ebooks. Please use a different font.</source>
+        <note>ID: FontInformationPane.FontFormatUnsuitable</note>
+        <note>This shows in the popup when hovering over a font that Bloom can't legally host on its website.</note>
+      </trans-unit>
       <trans-unit id="FontInformationPane.FontUnsuitable">
         <source xml:lang="en">The metadata inside this font tells us that it may not be embedded for free in ebooks and the web. Please use a different font.</source>
         <note>ID: FontInformationPane.FontUnsuitable</note>
@@ -4340,6 +4345,28 @@
       <trans-unit id="PublishTab.Upload.FinalUploadFailureNotice">
         <source xml:lang="en">Sorry, "{0}" was not successfully uploaded. Sometimes this is caused by temporary problems with the servers we use. It's worth trying again in an hour or two. If you regularly get this problem please report it to us.</source>
         <note>ID: PublishTab.Upload.FinalUploadFailureNotice</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.FontProblem">
+        <source xml:lang="en">This book has a font, “{0}”, which has the following problem:</source>
+        <note>ID: PublishTab.FontProblem</note>
+        <note>{0} is replaced by the name of the font.  Do not try to translate it.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.FontProblem.Exception">
+        <source xml:lang="en">The font's file cannot be processed by Bloom and may be corrupted or not a font file.</source>
+        <note>ID: PublishTab.FontProblem.Exception</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.FontProblem.Format">
+        <source xml:lang="en">Bloom cannot publish ebooks with this font's format ({0}).</source>
+        <note>ID: PublishTab.FontProblem.Format</note>
+        <note>{0} is replaced by the filename extension of the font (something like ".ttc").  Do not try to translate it.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.FontProblem.License">
+        <source xml:lang="en">The metadata inside this font tells us that it may not be embedded for free in ebooks and the web.</source>
+        <note>ID: PublishTab.FontProblem.License</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.FontProblem.Result">
+        <source xml:lang="en">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the “READ” button or downloads for BloomPUB or ePUB.</source>
+        <note>ID: PublishTab.FontProblem.Result</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Gaurantee">
         <source xml:lang="en">By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes.</source>

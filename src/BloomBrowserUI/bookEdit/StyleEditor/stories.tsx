@@ -34,8 +34,8 @@ const unknownFont: IFontMetaData = {
 };
 const unsuitableFont: IFontMetaData = {
     name: "Microsoft YaHei",
-    determinedSuitability: "unsuitable",
-    determinedSuitabilityNotes: "Bloom does not support TTC fonts."
+    determinedSuitability: "invalid",
+    determinedSuitabilityNotes: "Bloom does not support .ttc fonts."
 };
 const moreCompleteUnknownFont: IFontMetaData = {
     name: "Back Issues BB",
