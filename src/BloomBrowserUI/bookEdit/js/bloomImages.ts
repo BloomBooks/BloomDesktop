@@ -207,22 +207,16 @@ function SetupImageContainer(containerDiv: HTMLElement) {
             SetImageTooltip(containerDiv);
 
             if (IsImageReal(img)) {
-                $this.prepend(
-                    '<button class="editMetadataButton imageButton imageOverlayButton ' +
-                        buttonModifier +
-                        '" title="' +
-                        theOneLocalizationManager.getText(
-                            "EditTab.Image.EditMetadata"
-                        ) +
-                        '" onClick="(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog(\'' +
-                        GetRawImageUrl(img) +
-                        "');\"></button>"
+                const title = theOneLocalizationManager.getText(
+                    "EditTab.Image.EditMetadata"
                 );
-                // In theory, this is a bit cleaner, but it puts the modal in just the page iframe rather than
-                // the larger edit tab context. So the toolbox is not overlaid/disabled.
-                // $(".editMetadataButton").on("click", function() {
-                //     showCopyrightAndLicenseDialog(GetRawImageUrl(img));
-                // });
+                const button = `<button class="editMetadataButton imageButton imageOverlayButton ${buttonModifier}" title="${title}"></button>`;
+                $this.prepend(button);
+                const imageUrl = GetRawImageUrl(img);
+                $(".editMetadataButton").attr(
+                    "onClick",
+                    `(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog('${imageUrl}');`
+                );
                 $this.find(".miniButton").each(function() {
                     $(this).removeClass("disabled");
                 });
