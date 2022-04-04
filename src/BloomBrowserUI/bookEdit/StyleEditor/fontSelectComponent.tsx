@@ -27,7 +27,8 @@ export interface IFontMetaData {
     designer?: string;
     designerURL?: string;
     trademark?: string;
-    determinedSuitability: "ok" | "unknown" | "unsuitable";
+    // These values are also listed in FontMetadata in src/BloomExe/FontProcessing/FontMetadata.cs.
+    determinedSuitability: "ok" | "unknown" | "unsuitable" | "invalid";
     determinedSuitabilityNotes?: string;
 }
 
