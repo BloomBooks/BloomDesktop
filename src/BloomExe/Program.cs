@@ -397,6 +397,10 @@ namespace Bloom
 						{
 							try
 							{
+								// Using Windows File Explorer to open a file causes the Current Directory to be set to the directory we want to
+								// rename, and that prevents the rename. Since we don't even use Current Directory in Bloom, just change it to temp.
+								// See BL-11004
+								Directory.SetCurrentDirectory(Path.GetTempPath());
 								var pathToNewCollection = CollectionSettings.RenameCollection(args[1], args[2]);
 								//MessageBox.Show("Your collection has been renamed.");
 								Settings.Default.MruProjects.AddNewPath(pathToNewCollection);
