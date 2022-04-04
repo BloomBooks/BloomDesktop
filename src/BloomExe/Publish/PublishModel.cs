@@ -695,6 +695,7 @@ namespace Bloom.Publish
 						div.ParentNode.RemoveChild(div);
 				}
 			}
+			// ENHANCE: remove language-specific style settings for unwanted languages
 		}
 
 		// This is a highly experimental export which may evolve as we work on this with Age of Learning.

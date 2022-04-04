@@ -28,25 +28,38 @@ namespace Bloom.FontProcessing
 		public string trademark { get; private set; }
 		public string determinedSuitability { get; private set; }
 		public string determinedSuitabilityNotes { get; private set; }
+		public string fileExtension { get; private set; }
 
 		public static HashSet<string> fontFileTypesBloomKnows = new HashSet<string>() { ".ttf", ".otf", ".woff", ".woff2" };
 
+		// Four possible values for determinedSuitability
+		// These are also listed in IFontMetaData in src/BloomBrowserUI/bookEdit/StyleEditor/fontSelectComponent.tsx.
+		public const string kOK = "ok";					// everything checks out okay!!
+		public const string kUnsuitable = "unsuitable";	// license problem
+		public const string kUnknown = "unknown";			// no license information
+		public const string kInvalid = "invalid";			// bad file format (eg, .ttc)
 
 		/// <summary>
 		/// On Window, we can use System.Windows.Media (which provides the GlyphTypeface class) to
-		/// provide all the font metatdata information.
+		/// provide all the font metadata information.
 		/// On Linux, we have to use Sharpfont from nuget (which provides the Sharpfont.Face class)
 		/// for reading the font's embedding flag plus running /usr/bin/otfino for everything else.
 		/// We get /usr/bin/otfinfo as part of the lcdf-typetools package that is specified in the
 		/// debian/control file.
-		/// clas
 		/// </summary>
-		public FontMetadata(string name, FontGroup group)
+		public FontMetadata(string fontName, FontGroup group)
 		{
-			const string kInvalid = "invalid font file";
-			const string kUnsuitable = "unsuitable";
+			name = fontName;
+			fileExtension = Path.GetExtension(group.Normal);
 
-			this.name = name;
+			// First we detect invalid font types that we don't know how to handle (like .ttc)
+			var bloomKnows = fontFileTypesBloomKnows.Contains(fileExtension.ToLowerInvariant());
+			if (!bloomKnows)
+			{
+				determinedSuitability = kInvalid;
+				determinedSuitabilityNotes = "Bloom does not support " + fileExtension + " fonts.";
+				return;
+			}
 #if __MonoCS__
 			try
 			{
@@ -55,7 +68,22 @@ namespace Bloom.FontProcessing
 					using (var face = new Face(lib, group.Normal))
 					{
 						var embeddingFlags = face.GetFSTypeFlags();
-						if ((embeddingFlags & EmbeddingTypes.RestrictedLicense) == EmbeddingTypes.RestrictedLicense)
+						/*
+						   Quoting from the standard (https://docs.microsoft.com/en-us/typography/opentype/spec/os2#fstype)
+							Valid fonts must set at most one of bits 1, 2 or 3; bit 0 is permanently reserved and must be zero.
+							Valid values for this sub-field are 0, 2, 4 or 8. The meaning of these values is as follows:
+							0: Installable embedding
+							2: Restricted License embedding
+							4: Preview & Print embedding
+							8: Editable embedding
+
+							The specification for versions 0 to 2 did not specify that bits 0 to 3 must be mutually exclusive.
+							Rather, those specifications stated that, in the event that more than one of bits 0 to 3 are set in
+							a given font, then the least-restrictive permission indicated take precedence.
+							So we pay attention to RestrictedLicense only if neither Editable nor PreviewAndPrint is set.  (This
+							is apparently what Microsoft does in the GlyphTypeFace implementation.)
+						*/
+						if ((embeddingFlags & (EmbeddingTypes.RestrictedLicense|EmbeddingTypes.Editable|EmbeddingTypes.PreviewAndPrint)) == EmbeddingTypes.RestrictedLicense)
 						{
 							fsType = "Restricted License";
 						}
@@ -94,10 +122,9 @@ namespace Bloom.FontProcessing
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine("SharpLib EXCEPTION for {0}: {1}", group.Normal, ex);
+				Console.WriteLine("SharpLib threw an exception for {0}: {1}", group.Normal, ex);
+				determinedSuitability = kInvalid;
 				determinedSuitabilityNotes = $"SharpLib exception: {ex}";
-				determinedSuitability = kUnsuitable;
-				fsType = kInvalid;
 				return;
 			}
 			try
@@ -124,27 +151,17 @@ namespace Bloom.FontProcessing
 				}
 				else
 				{
-					Console.WriteLine("oftinfo -i \"{0}\" returned {1}.  Standard Error =\n{2}", group.Normal, process.ExitCode, standardError);
-					var msg = $"otfinfo returned: {process.ExitCode}. Standard Error={Environment.NewLine}{standardError}";
-					if (String.IsNullOrEmpty(determinedSuitabilityNotes))
-						determinedSuitabilityNotes = msg;
-					else
-						determinedSuitabilityNotes = determinedSuitabilityNotes + "; " + msg;
-					determinedSuitability = kUnsuitable;
-					fsType = kInvalid;
+					Console.WriteLine("otfinfo -i \"{0}\" returned {1}.  Standard Error =\n{2}", group.Normal, process.ExitCode, standardError);
+					determinedSuitability = kInvalid;
+					determinedSuitabilityNotes = $"otfinfo returned: {process.ExitCode}. Standard Error={Environment.NewLine}{standardError}";
 					return;
 				}
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("Process.Start() of /usr/bin/otfinfo -i \"{0}\" threw an exception: {1}", group.Normal, e);
-				var msg = $"Process.Start of \"otfinfo\" exception: {e}";
-				if (String.IsNullOrEmpty(determinedSuitabilityNotes))
-					determinedSuitabilityNotes = msg;
-				else
-					determinedSuitabilityNotes = determinedSuitabilityNotes + "; " + msg;
-				determinedSuitability = kUnsuitable;
-				fsType = kInvalid;
+				Console.WriteLine("Process.Start() of otfinfo -i \"{0}\" threw an exception: {1}", group.Normal, e);
+				determinedSuitability = kInvalid;
+				determinedSuitabilityNotes = $"Process.Start of \"otfinfo\" exception: {e}";
 				return;
 			}
 #else
@@ -197,29 +214,15 @@ namespace Bloom.FontProcessing
 			{
 				// file is somehow corrupt or not really a font file? Just ignore it.
 				Console.WriteLine("GlyphTypeface for \"{0}\" threw an exception: {1}", group.Normal, e);
-				var msg = $"GlyphTypeface exception: {e}";
-				if (String.IsNullOrEmpty(determinedSuitabilityNotes))
-					determinedSuitabilityNotes = msg;
-				else
-					determinedSuitabilityNotes = determinedSuitabilityNotes + "; " + msg;
-				determinedSuitability = kUnsuitable;
-				fsType = kInvalid;
+				determinedSuitability = kInvalid;
+				determinedSuitabilityNotes = $"GlyphTypeface exception: {e}";
 				return;
 			}
 #endif
 			variants = group.GetAvailableVariants().ToArray();
 
 			// Now for the hard part: setting DeterminedSuitability
-			// First we declare unsuitable font types that we don't know how to handle (like .ttc)
-			var fontExtension = Path.GetExtension(group.Normal);
-			var bloomKnows = fontFileTypesBloomKnows.Contains(fontExtension.ToLowerInvariant());
-			if (!bloomKnows)
-			{
-				determinedSuitability = "unsuitable";
-				determinedSuitabilityNotes = "Bloom does not support " + fontExtension.ToUpper() + " fonts.";
-				return;
-			}
-			// Now we check out the license information.
+			// Check out the license information.
 			if (!String.IsNullOrEmpty(license))
 			{
 				if (license.Contains("Open Font License") || license.Contains("OFL") ||
@@ -228,7 +231,7 @@ namespace Bloom.FontProcessing
 					(license.Contains("GNU license") && license.Contains("www.gnu.org")) ||
 					license.Contains("GNU LGPL") || license.Contains("GNU Lesser General Public License"))
 				{
-					determinedSuitability = "ok";
+					determinedSuitability = kOK;
 					if (license.Contains("Open Font License") || license.Contains("OFL"))
 						determinedSuitabilityNotes = "Open Font License";
 					else if (license.StartsWith("Licensed under the Apache License"))
@@ -241,14 +244,14 @@ namespace Bloom.FontProcessing
 				}
 				if (license.Replace('\n',' ').Contains("free of charge") && license.Contains("Bitstream"))
 				{
-					determinedSuitability = "ok";
+					determinedSuitability = kOK;
 					determinedSuitabilityNotes = "Bitstream free license";
 					return;
 				}
 			}
 			if (licenseURL == "http://dejavu-fonts.org/wiki/License")
 			{
-				determinedSuitability = "ok";
+				determinedSuitability = kOK;
 				determinedSuitabilityNotes = "Bitstream free license";
 				return;
 			}
@@ -257,32 +260,32 @@ namespace Bloom.FontProcessing
 				// some people put license information in the copyright string.
 				if (copyright.Contains("Artistic License"))
 				{
-					determinedSuitability = "ok";
+					determinedSuitability = kOK;
 					determinedSuitabilityNotes = "Artistic License";
 					return;
 				}
 				if (copyright.Contains("GNU General Public License") || copyright.Contains(" GPL "))
 				{
-					determinedSuitability = "ok";
+					determinedSuitability = kOK;
 					determinedSuitabilityNotes = "GNU GPL";
 					return;
 				}
 				if (copyright.Contains("SIL Open Font License"))
 				{
-					determinedSuitability = "ok";
+					determinedSuitability = kOK;
 					determinedSuitabilityNotes = "Open Font License";
 					return;
 				}
 				if (copyright.Contains("Ubuntu Font Licence"))  // British spelling I assume...
 				{
-					determinedSuitability = "ok";
+					determinedSuitability = kOK;
 					determinedSuitabilityNotes = "Ubuntu Font Licence";
 					return;
 				}
 			}
 			if (fsType == "Restricted License" || fsType == "Bitmaps Only")
 			{
-				determinedSuitability = "unsuitable";
+				determinedSuitability = kUnsuitable;
 				determinedSuitabilityNotes = "unambiguous fsType value";
 				return;
 			}
@@ -294,12 +297,12 @@ namespace Bloom.FontProcessing
 				)
 			{
 				// Review what about "Print and Preview"?
-				determinedSuitability = "ok";
+				determinedSuitability = kOK;
 				determinedSuitabilityNotes = "fsType from reliable source";
 				return;
 			}
 			// Give up.  More heuristics may suggest themselves.
-			determinedSuitability = "unknown";
+			determinedSuitability = kUnknown;
 			determinedSuitabilityNotes = "no reliable information";
 		}
 
@@ -410,5 +413,11 @@ namespace Bloom.FontProcessing
 			}
 		}
 #endif
+
+		internal void SetSuitabilityForTest(string suit)
+		{
+			determinedSuitability = suit;
+			determinedSuitabilityNotes = "Testing";
+		}
 	}
 }
