@@ -15,6 +15,7 @@ using Bloom.web.controllers;
 using L10NSharp;
 using SIL.IO;
 using SIL.Progress;
+using Bloom.FontProcessing;
 
 namespace Bloom.Publish
 {
@@ -520,6 +521,147 @@ namespace Bloom.Publish
 				// Messages are already localized
 				progress.WriteMessageWithColor(_bloomWarning.ToString(), "{0}", warningMessage);
 			}
+		}
+
+
+		private static Dictionary<string, FontMetadata> _fontMetadataMap;
+		/// <summary>
+		/// Checks the wanted fonts for being valid for  embedding, both for licensing and for the type of file
+		/// (based on the filename extension).
+		/// The list of rejected fonts is returned in badFonts and the list of files to copy for good fonts is
+		/// returned in filesToEmbed.  Messages are written to the progress output as the processing goes along.
+		/// </summary>
+		public static void CheckFontsForEmbedding(IWebSocketProgress progress, HashSet<string> fontsWanted, IFontFinder fontFileFinder,
+			string defaultFont, List<string> filesToEmbed, HashSet<string> badFonts)
+		{
+			fontFileFinder.NoteFontsWeCantInstall = true;
+			if (_fontMetadataMap == null)
+			{
+				_fontMetadataMap = new Dictionary<string, FontMetadata>();
+				foreach (var meta in FontsApi.AvailableFontMetadata)
+					_fontMetadataMap.Add(meta.name, meta);
+			}
+			foreach (var font in fontsWanted)
+			{
+				var fontFiles = fontFileFinder.GetFilesForFont(font);
+				var fsTypeOK = fontFiles.Any(); // fonts eliminated by fsType don't have any files recorded
+				var badLicense = false;
+				var missingLicense = true;
+				if (_fontMetadataMap.TryGetValue(font, out var meta))
+				{
+					switch (meta.determinedSuitability)
+					{
+						case "unsuitable":
+							badLicense = true;
+							missingLicense = false;
+							break;
+						case "unknown":  // default setting
+							break;
+						case "ok":
+							badLicense = false;
+							missingLicense = false;
+							badLicense = false;
+							break;
+					}
+				}
+				var extensionToCheck = fsTypeOK ? Path.GetExtension(fontFiles.First()).ToLowerInvariant() : "";
+				var badFileType = fsTypeOK && !FontMetadata.fontFileTypesBloomKnows.Contains(extensionToCheck);
+				if (fsTypeOK && !badFileType && !badLicense)
+				{
+					filesToEmbed.AddRange(fontFiles);
+					if (missingLicense)
+						progress.MessageWithParams("PublishTab.Android.File.Progress.UnknownLicense", "{0} is a font name", "Checking {0} font: Unknown license", ProgressKind.Progress, font);
+					else
+						progress.MessageWithParams("PublishTab.Android.File.Progress.CheckFontOK", "{0} is a font name", "Checking {0} font: License OK for embedding.", ProgressKind.Progress, font);
+					// Assumes only one font file per font; if we embed multiple ones will need to enhance this.
+					var size = new FileInfo(fontFiles.First()).Length;
+					var sizeToReport = (size / 1000000.0).ToString("F1"); // purposely locale-specific; might be e.g. 1,2
+					progress.MessageWithParams("PublishTab.Android.File.Progress.Embedding",
+						"{1} is a number with one decimal place, the number of megabytes the font file takes up",
+						"Embedding font {0} at a cost of {1} megs",
+						ProgressKind.Note,
+						font, sizeToReport);
+					continue;
+				}
+				if (badFileType)
+				{
+					progress.MessageWithParams("PublishTab.Android.File.Progress.IncompatibleFontFileFormat", "{0} is a font name, {1} is a file extension (for example: .ttc)", "This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).", ProgressKind.Error, font, extensionToCheck);
+				}
+				else if (fontFileFinder.FontsWeCantInstall.Contains(font) || badLicense)
+				{
+					progress.MessageWithParams("PublishTab.Android.File.Progress.LicenseForbids", "{0} is a font name", "This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.", ProgressKind.Error, font);
+				}
+				else
+				{
+					progress.MessageWithParams("NoFontFound", "{0} is a font name", "This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.", ProgressKind.Error, font);
+				}
+				progress.MessageWithParams("PublishTab.Android.File.Progress.SubstitutingAndika", "{0} is a font name", "Bloom will substitute \"{0}\" instead.", ProgressKind.Error, defaultFont, font);
+				badFonts.Add(font); // need to prevent the bad/missing font from showing up in fonts.css and elsewhere
+			}
+		}
+
+		/// <summary>
+		/// Fix the standard CSS files to replace any fonts listed in badFonts with the defaultFont value.
+		/// </summary>
+		public static void FixCssReferencesForBadFonts(string cssFolderPath, string defaultFont, HashSet<string> badFonts)
+		{
+			// Note that the font may be referred to in defaultLangStyles.css, in customCollectionStyles.css, or in a style defined in the HTML.
+			// This method handles the .css files.
+			var defaultLangStyles = Path.Combine(cssFolderPath, "defaultLangStyles.css");
+			if (RobustFile.Exists(defaultLangStyles))
+			{
+				var cssTextOrig = RobustFile.ReadAllText(defaultLangStyles);
+				var cssText = cssTextOrig;
+				foreach (var font in badFonts)
+				{
+					var cssRegex = new System.Text.RegularExpressions.Regex($"font-family:\\s*'?{font}'?;");
+					cssText = cssRegex.Replace(cssText, $"font-family: '{defaultFont}';");
+				}
+				if (cssText != cssTextOrig)
+					RobustFile.WriteAllText(defaultLangStyles, cssText);
+			}
+			var customCollectionStyles = Path.Combine(cssFolderPath, "customCollectionStyles.css");
+			if (RobustFile.Exists(customCollectionStyles))
+			{
+				var cssTextOrig = RobustFile.ReadAllText(customCollectionStyles);
+				var cssText = cssTextOrig;
+				foreach (var font in badFonts)
+				{
+					var cssRegex = new System.Text.RegularExpressions.Regex($"font-family:\\s*'?{font}'?;");
+					cssText = cssRegex.Replace(cssText, $"font-family: '{defaultFont}';");
+				}
+				if (cssText != cssTextOrig)
+					RobustFile.WriteAllText(customCollectionStyles, cssText);
+			}
+		}
+
+		/// <summary>
+		/// Fix the userModifiedStyles in the HTML DOM to replace any fonts listed in badFonts with the defaultFont
+		/// value.  Note that ePUB uses namespaces in its XHTML files while BloomPub does not use namespaces.
+		/// </summary>
+		/// <returns><c>true</c> if any references for bad fonts were fixed, <c>false</c> otherwise.</returns>
+		public static bool FixXmlDomReferencesForBadFonts(XmlDocument bookDoc, string defaultFont, HashSet<string> badFonts,
+			XmlNamespaceManager nsmgr = null, string nsPrefix = "")	// these two arguments needed for processing ePUB files.
+		{
+			// Now for styles defined in the dom...
+			var xpath = $"//{nsPrefix}head/{nsPrefix}style[@type='text/css' and @title='userModifiedStyles']";
+			var userStylesNode = nsmgr == null ? bookDoc.FirstChild.SelectSingleNode(xpath) : bookDoc.FirstChild.SelectSingleNode(xpath, nsmgr);
+			if (userStylesNode != null && !String.IsNullOrEmpty(userStylesNode.InnerXml) && userStylesNode.InnerXml.Contains("font-family:"))
+			{
+				var cssTextOrig = userStylesNode.InnerXml;  // InnerXml needed to preserve CDATA markup
+				var cssText = cssTextOrig;
+				foreach (var font in badFonts)
+				{
+					var cssRegex = new System.Text.RegularExpressions.Regex($"font-family:\\s*{font}\\s*!\\s*important;");
+					cssText = cssRegex.Replace(cssText, $"font-family: {defaultFont} !important;");
+				}
+				if (cssText != cssTextOrig)
+				{
+					userStylesNode.InnerXml = cssText;
+					return true;
+				}
+			}
+			return false;
 		}
 	}
 }

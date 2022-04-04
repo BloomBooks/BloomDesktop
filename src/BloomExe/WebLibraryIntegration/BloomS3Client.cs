@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,6 +15,7 @@ using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.FontProcessing;
 using Bloom.Publish;
 using Bloom.web.controllers;
 using BloomTemp;
@@ -261,9 +263,75 @@ namespace Bloom.WebLibraryIntegration
 			if (languagesToInclude != null && languagesToInclude.Count() > 0)
 				RemoveUnwantedLanguageData(destDirName, languagesToInclude);
 
+			ReportInvalidFonts(destDirName, languagesToInclude, progress);
+
 			UploadDirectory(prefix, wrapperPath, progress);
 
 			DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));
+		}
+
+		private static Dictionary<string, FontMetadata> _fontMetadataMap;
+
+		private void ReportInvalidFonts(string destDirName, IEnumerable<string> languagesToInclude, IProgress progress)
+		{
+			// For ePUB and BloomPub, we can display the book to determine exactly which fonts are
+			// actually used.  We can't do that for uploads, so we scan css files and the styles
+			// set in the html file to see what font-family values are present.
+			HashSet<string> fontsFound = new HashSet<string>();
+			foreach (var filepath in Directory.EnumerateFiles(destDirName, "*.css"))
+			{
+				var cssContent = RobustFile.ReadAllText(filepath);
+				HtmlDom.FindFontsUsedInCss(cssContent, fontsFound, includeFallbackFonts:true);
+			}
+			// There should be only one html file with the same name as the directory it's in, but let's
+			// not make any assumptions here.
+			foreach (var filepath in Directory.EnumerateFiles(destDirName, "*.htm"))
+			{
+				var cssContent = RobustFile.ReadAllText(filepath);
+				HtmlDom.FindFontsUsedInCss(cssContent, fontsFound, includeFallbackFonts:true);	// works on HTML files as well
+			}
+			if (_fontMetadataMap == null)
+			{
+				_fontMetadataMap = new Dictionary<string, FontMetadata>();
+				foreach (var meta in FontsApi.AvailableFontMetadata)
+					_fontMetadataMap.Add(meta.name, meta);
+			}
+			var cssGenericFonts = new HashSet<string> { "serif", "sans-serif", "cursive", "fantasy", "monospace" };
+			foreach (var font in fontsFound)
+			{
+				if (cssGenericFonts.Contains(font.ToLowerInvariant()))
+					continue;
+				if (_fontMetadataMap.TryGetValue(font, out var meta))
+				{
+					switch (meta.determinedSuitability)
+					{
+						case "ok":
+							break;
+						case "unknown":
+							//progress.WriteWarning("This book has a font, \"{0}\", which has an unknown license.", font);
+							//break;
+						case "unsuitable":
+							var msgFmt1 = LocalizationManager.GetString("PublishTab.Upload.FontProblem",
+								"This book has a font, \"{0}\", which has the following problem:");
+							var msg2 = meta.FontIsBadFormat(out string type) ?
+								String.Format(LocalizationManager.GetString("PublishTab.Upload.FontProblem.Format",
+									"Bloom cannot publish ePUBs and BloomPubs with this font's format ({0})."), type) :
+								LocalizationManager.GetString("PublishTab.Upload.FontProblem.License",
+									"The metadata inside this font tells us that it may not be embedded for free in ebooks and the web.");
+							var msg3 = LocalizationManager.GetString("PublishTab.Upload.FontProblem.Result",
+								"BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the “READ” button or downloads for BloomPUB or ePUB.");
+							// progress.WriteError() uses Color.Red, but also exposes a link to "report error" which we don't want here.
+							progress.WriteMessageWithColor("Red", msgFmt1, font);
+							progress.WriteMessageWithColor("Red", " \u2022 {0}", msg2);
+							progress.WriteMessageWithColor("Red", " \u2022 {0}", msg3);
+							break;
+					}
+				}
+				else
+				{
+					//progress.WriteWarning("This book has a font, \"{0}\", which is not on this computer and whose license is unknown.", font);
+				}
+			}
 		}
 
 		private void ProcessVideosInTempDirectory(string destDirName)
@@ -342,6 +410,7 @@ namespace Bloom.WebLibraryIntegration
 				PublishModel.RemoveUnwantedLanguageData(dom, languagesToInclude);
 				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, filepath);
 			}
+			// ENHANCE: remove language specific language data from all CSS files for unwanted languages.
 		}
 
 

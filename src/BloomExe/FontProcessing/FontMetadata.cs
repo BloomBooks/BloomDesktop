@@ -31,15 +31,17 @@ namespace Bloom.FontProcessing
 
 		public static HashSet<string> fontFileTypesBloomKnows = new HashSet<string>() { ".ttf", ".otf", ".woff", ".woff2" };
 
+		// These strings are also used in fontInformationPane.tsx.
+		const string kInvalidFontHeader = "Bloom does not support ";
+		const string kInvalidFontTrailer = " fonts.";
 
 		/// <summary>
 		/// On Window, we can use System.Windows.Media (which provides the GlyphTypeface class) to
-		/// provide all the font metatdata information.
+		/// provide all the font metadata information.
 		/// On Linux, we have to use Sharpfont from nuget (which provides the Sharpfont.Face class)
 		/// for reading the font's embedding flag plus running /usr/bin/otfino for everything else.
 		/// We get /usr/bin/otfinfo as part of the lcdf-typetools package that is specified in the
 		/// debian/control file.
-		/// clas
 		/// </summary>
 		public FontMetadata(string name, FontGroup group)
 		{
@@ -125,11 +127,20 @@ namespace Bloom.FontProcessing
 				else
 				{
 					Console.WriteLine("oftinfo -i \"{0}\" returned {1}.  Standard Error =\n{2}", group.Normal, process.ExitCode, standardError);
-					var msg = $"otfinfo returned: {process.ExitCode}. Standard Error={Environment.NewLine}{standardError}";
-					if (String.IsNullOrEmpty(determinedSuitabilityNotes))
-						determinedSuitabilityNotes = msg;
+					var fontType = Path.GetExtension(group.Normal);
+					var knownType = fontFileTypesBloomKnows.Contains(fontType.ToLowerInvariant());
+					if (!knownType)
+					{
+						determinedSuitabilityNotes = kInvalidFontHeader + fontType.ToUpperInvariant() + kInvalidFontTrailer;
+					}
 					else
-						determinedSuitabilityNotes = determinedSuitabilityNotes + "; " + msg;
+					{
+						var msg = $"otfinfo returned: {process.ExitCode}. Standard Error={Environment.NewLine}{standardError}";
+						if (String.IsNullOrEmpty(determinedSuitabilityNotes))
+							determinedSuitabilityNotes = msg;
+						else
+							determinedSuitabilityNotes = determinedSuitabilityNotes + "; " + msg;
+					}
 					determinedSuitability = kUnsuitable;
 					fsType = kInvalid;
 					return;
@@ -216,7 +227,7 @@ namespace Bloom.FontProcessing
 			if (!bloomKnows)
 			{
 				determinedSuitability = "unsuitable";
-				determinedSuitabilityNotes = "Bloom does not support " + fontExtension.ToUpper() + " fonts.";
+				determinedSuitabilityNotes = kInvalidFontHeader + fontExtension.ToUpper() + kInvalidFontTrailer;
 				return;
 			}
 			// Now we check out the license information.
@@ -410,5 +421,28 @@ namespace Bloom.FontProcessing
 			}
 		}
 #endif
+
+		/// <summary>
+		/// Check whether this font is unsuitable due to its file format.  This is accomplished
+		/// by checking the determinedSuitabilityNotes for a specific message.  The filename
+		/// extension is returned in the output variable if the file format is unsuitable.
+		/// </summary>
+		/// <returns><c>true</c> if the font has a bad format, <c>false</c> otherwise.</returns>
+		/// <param name="extension">Extension.</param>
+		public bool FontIsBadFormat(out string extension)
+		{
+			if (determinedSuitabilityNotes.StartsWith(kInvalidFontHeader, StringComparison.Ordinal))
+			{
+				var type = determinedSuitabilityNotes.Substring(kInvalidFontHeader.Length);
+				type = type.Substring(0, type.LastIndexOf(kInvalidFontTrailer, StringComparison.Ordinal)).Trim();
+				if (!String.IsNullOrWhiteSpace(type))
+				{
+					extension = type.ToLowerInvariant();
+					return true;
+				}
+			}
+			extension = null;
+			return false;
+		}
 	}
 }

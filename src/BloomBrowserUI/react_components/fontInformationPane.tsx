@@ -18,6 +18,10 @@ const FontInformationPane: React.FunctionComponent<{
             : undefined;
 
     const suitability = props.metadata?.determinedSuitability;
+    const whySuitableOrNot = props.metadata?.determinedSuitabilityNotes ?? "";
+    // These strings are defined in FontMetadata.cs.
+    const kInvalidFontHeader = "Bloom does not support ";
+    const kInvalidFontTrailer = " fonts.";
 
     const textColor =
         suitability === "ok"
@@ -38,7 +42,13 @@ const FontInformationPane: React.FunctionComponent<{
         "This shows in the popup when hovering over a font when Bloom can't determine if it is useable legally."
     );
 
-    const UnsuitableFontMessage = useL10n(
+    const UnsuitableFontFormatMessage = useL10n(
+        "This font is in a file format that Bloom cannot use for ebooks. Please use a different font.",
+        "FontInformationPane.FontFormatUnsuitable",
+        "This shows in the popup when hovering over a font that Bloom can't use in ebooks due to its file format."
+    );
+
+    const UnsuitableFontLicenseMessage = useL10n(
         "The metadata inside this font tells us that it may not be embedded for free in ebooks and the web. Please use a different font.",
         "FontInformationPane.FontUnsuitable",
         "This shows in the popup when hovering over a font that Bloom can't legally host on its website."
@@ -49,7 +59,10 @@ const FontInformationPane: React.FunctionComponent<{
             ? OkayFontMessage
             : suitability === "unknown"
             ? UnknownFontMessage
-            : UnsuitableFontMessage;
+            : whySuitableOrNot.startsWith(kInvalidFontHeader) &&
+              whySuitableOrNot.endsWith(kInvalidFontTrailer)
+            ? UnsuitableFontFormatMessage
+            : UnsuitableFontLicenseMessage;
 
     const styleWording = useL10n(
         "Styles",
