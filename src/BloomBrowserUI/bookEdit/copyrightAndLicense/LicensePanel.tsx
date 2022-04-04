@@ -100,6 +100,7 @@ export const LicensePanel: React.FunctionComponent<{
 
     useEffect(() => {
         licenseInfo.rightsStatement = rightsStatement?.trim();
+        reportChange();
     }, [rightsStatement]);
 
     useEffect(() => {
