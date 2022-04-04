@@ -410,7 +410,7 @@ namespace Bloom.Publish.Epub
 
 			CopyFileToEpub(epubThumbnailImagePath, true, true, kImagesFolder);
 
-			var warnings = EmbedFonts(); // must call after copying stylesheets
+			var warnings = EmbedFonts(progress); // must call after copying stylesheets
 			if (warnings.Any())
 				PublishHelper.SendBatchedWarningMessagesToProgress(warnings, progress);
 
@@ -1989,16 +1989,17 @@ namespace Bloom.Publish.Epub
 		/// <returns>
 		/// set of warning messages for any problems encountered (may be empty)
 		/// </returns>
-		private ISet<string> EmbedFonts()
+		private ISet<string> EmbedFonts(WebSocketProgress progress)
 		{
 			ISet<string> warningMessages = new HashSet<string>();
 			var fontFileFinder = FontFileFinder.GetInstance(Program.RunningUnitTests);
-			var filesToEmbed = _fontsUsedInBook.SelectMany(fontFileFinder.GetFilesForFont).ToArray();
+			const string defaultFont = "Andika New Basic";
+			PublishHelper.CheckFontsForEmbedding(progress, _fontsUsedInBook, fontFileFinder, out List<string> filesToEmbed, out HashSet<string> badFonts);
 			foreach (var file in filesToEmbed) {
 				var extension = Path.GetExtension(file).ToLowerInvariant();
 				if (FontMetadata.fontFileTypesBloomKnows.Contains(extension))
 				{
-					// ePUB only understands (and will embed) these types.
+					// ePUB only understands (and will embed) these types. [This check may now be redundant.]
 					CopyFileToEpub(file, subfolder: kFontsFolder);
 				}
 				else
@@ -2008,6 +2009,8 @@ namespace Bloom.Publish.Epub
 			}
 			var sb = new StringBuilder ();
 			foreach (var font in _fontsUsedInBook) {
+				if (badFonts.Contains(font))
+					continue;
 				if (!fontFileFinder.GetFilesForFont(font).Any(file => FontMetadata.fontFileTypesBloomKnows.Contains(Path.GetExtension(file).ToLowerInvariant())))
 				{
 					// If we can't embed the font, no reason to refer to it in the css.
@@ -2030,10 +2033,35 @@ namespace Bloom.Publish.Epub
 					//AddFontFace(sb, font, "bold", "italic", group.BoldItalic);
 				}
 			}
+			if (badFonts.Any() && !_fontsUsedInBook.Contains(defaultFont))
+				AddFontFace(sb, defaultFont, "normal", "normal", fontFileFinder.GetGroupForFont(defaultFont).Normal, "../"+kFontsFolder+"/");
 			Directory.CreateDirectory(Path.Combine(_contentFolder, kCssFolder));
 			RobustFile.WriteAllText(Path.Combine(_contentFolder, kCssFolder, "fonts.css"), sb.ToString());
 			_manifestItems.Add(kCssFolder+"/" + "fonts.css");
+			// Repair defaultLangStyles.css and other places in the output book if needed.
+			if (badFonts.Any())
+			{
+				PublishHelper.FixCssReferencesForBadFonts(Path.Combine(_contentFolder, kCssFolder), defaultFont, badFonts);
+				FixXhtmlReferencesForBadFonts(_contentFolder, defaultFont, badFonts);
+			}
+
 			return warningMessages;
+		}
+
+		private void FixXhtmlReferencesForBadFonts(string contentFolder, string defaultFont, HashSet<string> badFonts)
+		{
+			foreach (var xhtmlFileName in Directory.EnumerateFiles(contentFolder, "*.xhtml"))
+			{
+				if (Path.GetFileName(xhtmlFileName) == "nav.xhtml")
+					continue;
+				var bookDoc = new XmlDocument();
+				bookDoc.PreserveWhitespace = true;
+				bookDoc.Load(xhtmlFileName);
+				var nsmgr = new XmlNamespaceManager(bookDoc.NameTable);
+				nsmgr.AddNamespace("x", "http://www.w3.org/1999/xhtml");
+				if (PublishHelper.FixXmlDomReferencesForBadFonts(bookDoc, defaultFont, badFonts, nsmgr, "x:"))
+					bookDoc.Save(xhtmlFileName);
+			}
 		}
 
 		internal static void AddFontFace (StringBuilder sb, string name, string weight, string style, string path, string relativePathFromCss="", bool sanitizeFileName = false)
