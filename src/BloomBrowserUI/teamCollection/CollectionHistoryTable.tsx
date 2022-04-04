@@ -58,7 +58,8 @@ const kEventTypes = [
     "Created",
     "Renamed",
     "Uploaded",
-    "Force Unlock"
+    "Force Unlock",
+    "Import Spreadsheet"
 ]; // REVIEW maybe better to do this in c# and just send it over?
 
 export const CollectionHistoryTable: React.FunctionComponent<{
