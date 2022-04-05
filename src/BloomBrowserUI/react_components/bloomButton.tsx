@@ -70,6 +70,7 @@ export default class BloomButton extends LocalizableElement<
         // This allows us to NOT pass props that we don't need to the (eventual) DOM element.
         // Avoids big React warnings in the console.
         const {
+            enabled,
             l10nKey,
             clickApiEndpoint,
             mightNavigate,
@@ -78,7 +79,7 @@ export default class BloomButton extends LocalizableElement<
             hasText,
             iconBeforeText,
             temporarilyDisableI18nWarning,
-            ...extraCssFromContainer
+            ...propsToPass
         } = this.props;
         return this.props.transparent ? (
             // I don't know how to make a material-ui button transparent at the moment,
@@ -87,14 +88,13 @@ export default class BloomButton extends LocalizableElement<
         ) : (
             // if not transparent, then we can use Material-ui
             <Button
-                {...this.props} // Bring in other props like disableRipple. By being first, this will be overridden by anything that follows
                 {...commonProps}
                 variant={this.props.variant || "contained"}
                 color={this.props.color ? this.props.color : "primary"}
                 startIcon={this.props.iconBeforeText}
                 size={this.props.size}
                 href={this.props.href}
-                {...extraCssFromContainer} // Allow defining more css rules from the parent. By being last, the parent will win.
+                {...propsToPass} // Allow defining more css rules or other props like disableRipple from the parent. By being last, the parent will win.
             >
                 {commonChildren}
             </Button>
