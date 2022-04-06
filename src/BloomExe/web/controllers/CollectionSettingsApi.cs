@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Bloom.Api;
+using Bloom.Book;
 using Bloom.Collection;
+using L10NSharp;
 using SIL.Code;
 
 namespace Bloom.web.controllers
@@ -46,10 +49,13 @@ namespace Bloom.web.controllers
 		public static string LegacyBrandingName { get; set; }
 
 		private readonly CollectionSettings _collectionSettings;
+		private readonly List<object> _xmatterOfferings = new List<object>();
+		private readonly XMatterPackFinder _xmatterPackFinder;
 
-		public CollectionSettingsApi(CollectionSettings collectionSettings)
+		public CollectionSettingsApi(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder)
 		{
 			_collectionSettings = collectionSettings;
+			_xmatterPackFinder = xmatterPackFinder;
 		}
 
 		private bool IsEnterpriseEnabled
@@ -214,6 +220,84 @@ namespace Bloom.web.controllers
 				// We want to return the data (languageName/fontName) for each active collection language
 				request.ReplyWithJson(GetLanguageData());
 			}, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "numberingStyle", request =>
+			{
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					// Should return all available numbering styles and the current style
+					request.ReplyWithJson(GetNumberingStyleData());
+				}
+				else
+				{
+					// We are receiving a pending numbering style change
+					var newNumberingStyle = request.RequiredPostString();
+					UpdatePendingNumberingStyle(newNumberingStyle);
+					request.PostSucceeded();
+				}
+			}, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "xmatter", request =>
+			{
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					// Should return all available xMatters and the current selected xMatter
+					request.ReplyWithJson(SetupXMatterList());
+				}
+				else
+				{
+					// We are receiving a pending xMatter change
+					var newXmatter = request.RequiredPostString();
+					UpdatePendingXmatter(newXmatter);
+					request.PostSucceeded();
+				}
+			}, true);
+		}
+
+		private object SetupXMatterList()
+		{
+			string currentXmatter = null;
+			if (_xmatterOfferings.Count.Equals(0))
+			{
+				var packsToSkip = new string[] { "null", "bigbook", "SHRP", "SHARP", "ForUnitTest", "TemplateStarter" };
+
+				string lockedDownXMatterKey = null;
+				var xmatterFromBranding = _collectionSettings.GetXMatterPackNameSpecifiedByBrandingOrNull();
+				if (null != xmatterFromBranding)
+				{
+					lockedDownXMatterKey = xmatterFromBranding;
+				}
+				var offerings = _xmatterPackFinder.GetXMattersToOfferInSettings(lockedDownXMatterKey);
+
+				foreach (var pack in offerings)
+				{
+					if (packsToSkip.Any(s => pack.Key.ToLowerInvariant().Contains(s.ToLower())))
+						continue;
+
+					var labelToShow = LocalizationManager.GetDynamicString("Bloom", "CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack." + pack.EnglishLabel, pack.EnglishLabel, "Name of a Front/Back Matter Pack");
+					var description = pack.GetDescription(); // already localized, if available
+					var item = new { displayName = labelToShow, internalName = pack.Key, description };
+					_xmatterOfferings.Add(item);
+					if (pack.Key == _collectionSettings.XMatterPackName)
+						currentXmatter = pack.Key;
+				}
+			}
+			// If we haven't found the pack that used to be selected in the collection, use the default factory item.
+			if (currentXmatter == null)
+				currentXmatter = _xmatterPackFinder.FactoryDefault.Key;
+			return new Tuple<string, object>(currentXmatter,
+				_xmatterOfferings.ToArray());
+		}
+
+		private object GetNumberingStyleData()
+		{
+			var numberingStyles = new List<object>();
+			foreach (var styleKey in CollectionSettings.CssNumberStylesToCultureOrDigits.Keys)
+			{
+				var localizedStyle =
+					LocalizationManager.GetString("CollectionSettingsDialog.BookMakingTab.PageNumberingStyle." + styleKey, styleKey);
+				numberingStyles.Add(new { localizedStyle, styleKey });
+			}
+			return new Tuple<string, object>(
+				_collectionSettings.PageNumberStyle, numberingStyles.ToArray());
 		}
 
 		private object GetLanguageData()
@@ -240,9 +324,30 @@ namespace Bloom.web.controllers
 			if (zeroBasedLanguageNumber == 2 &&
 				_collectionSettings.LanguagesZeroBased[zeroBasedLanguageNumber] == null)
 				return;
-			DialogBeingEdited.PendingFontSelections[zeroBasedLanguageNumber] = fontName;
+			if (DialogBeingEdited != null)
+				DialogBeingEdited.PendingFontSelections[zeroBasedLanguageNumber] = fontName;
 			if (fontName != _collectionSettings.LanguagesZeroBased[zeroBasedLanguageNumber].FontName)
 				DialogBeingEdited.ChangeThatRequiresRestart();
+		}
+
+		private void UpdatePendingNumberingStyle(string numberingStyle)
+		{
+			if (DialogBeingEdited != null)
+			{
+				DialogBeingEdited.PendingNumberingStyle = numberingStyle;
+				if (numberingStyle != _collectionSettings.PageNumberStyle)
+					DialogBeingEdited.ChangeThatRequiresRestart();
+			}
+		}
+
+		private void UpdatePendingXmatter(string xMatterChoice)
+		{
+			if (DialogBeingEdited != null)
+			{
+				DialogBeingEdited.PendingXmatter = xMatterChoice;
+				if (xMatterChoice != _collectionSettings.XMatterPackName)
+					DialogBeingEdited.ChangeThatRequiresRestart();
+			}
 		}
 
 		public static string GetSummaryHtml(string branding)
