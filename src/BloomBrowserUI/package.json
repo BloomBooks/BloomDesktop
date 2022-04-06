@@ -17,6 +17,7 @@
         "teamcitytest": "karma start karma.conf.js --browsers Chrome --reporters teamcity --single-run",
         "// 'build': 'does a nice new clean build of the output/browser folder.'": "",
         "build": "gulp && npm run build:content",
+        "build:deps": "yarn && cd ../content && yarn",
         "build:pug": "gulp pug",
         "build-short": "gulp build-short && npm run build:content",
         "build-prod": "gulp build-prod  && npm run build:content",
