@@ -8,6 +8,7 @@ using Bloom.Api;
 using Bloom.Publish;
 using Bloom.Utils;
 using Newtonsoft.Json;
+using Sentry;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
@@ -96,72 +97,83 @@ namespace Bloom.Book
 		static PublishSettings MigrateSettings(string bookFolderPath)
 		{
 			// See if we can migrate data from an old metaData.
+
 			var metaDataPath = BookMetaData.MetaDataPath(bookFolderPath);
 			var settings = new PublishSettings();
-			if (!RobustFile.Exists(metaDataPath))
-				return settings;
-			var metaDataString = RobustFile.ReadAllText(metaDataPath, Encoding.UTF8);
-
-			// I chose to do this using DynamicJson, rather than just BloomMetaData.FromString() and
-			// reading the obsolete properties, in hopes that we can eventually retire the obsolete
-			// properties. However, that may not be possible without breaking things when we attempt
-			// to load an old meta.json with JsonConvert. Still, at least this approach makes for
-			// fewer warnings about use of obsolete methods.
-			var metaDataJson = DynamicJson.Parse(metaDataString) as DynamicJson;
-			if (metaDataJson.IsDefined("features"))
+			try
 			{
-				if (metaDataJson.TryGet("features", out string[] features)) {
-					if (features != null && features.Any(f => f == "motion"))
+				if (!RobustFile.Exists(metaDataPath))
+					return settings;
+				var metaDataString = RobustFile.ReadAllText(metaDataPath, Encoding.UTF8);
+
+				// I chose to do this using DynamicJson, rather than just BloomMetaData.FromString() and
+				// reading the obsolete properties, in hopes that we can eventually retire the obsolete
+				// properties. However, that may not be possible without breaking things when we attempt
+				// to load an old meta.json with JsonConvert. Still, at least this approach makes for
+				// fewer warnings about use of obsolete methods.
+				var metaDataJson = DynamicJson.Parse(metaDataString) as DynamicJson;
+				if (metaDataJson.IsDefined("features"))
+				{
+					if (metaDataJson.TryGet("features", out string[] features))
 					{
-						settings.BloomPub.Motion = true;
-						settings.AudioVideo.Motion = true; // something of a guess
+						if (features != null && features.Any(f => f == "motion"))
+						{
+							settings.BloomPub.Motion = true;
+							settings.AudioVideo.Motion = true; // something of a guess
+						}
 					}
 				}
-			}
 
-			if (metaDataJson.TryGetValue("epub_HowToPublishImageDescriptions", out double val2))
-			{
-				// unfortunately the default way an enum is converted to Json is as a number.
-				// 'None' comes out as 0, OnPage as 1, and if by any chance we encounter an old book
-				// using 'Link' that will be 2. We don't have Link any more, but that indicates
-				// a desire to publish, so for now we'll treat it as OnPage. No other values should
-				// be possible in legacy data. So basically, any value other than zero counts as OnPage
-				if (val2 != 0)
-					settings.Epub.HowToPublishImageDescriptions = BookInfo.HowToPublishImageDescriptions.OnPage;
-			}
+				if (metaDataJson.TryGetValue("epub_HowToPublishImageDescriptions", out double val2))
+				{
+					// unfortunately the default way an enum is converted to Json is as a number.
+					// 'None' comes out as 0, OnPage as 1, and if by any chance we encounter an old book
+					// using 'Link' that will be 2. We don't have Link any more, but that indicates
+					// a desire to publish, so for now we'll treat it as OnPage. No other values should
+					// be possible in legacy data. So basically, any value other than zero counts as OnPage
+					if (val2 != 0)
+						settings.Epub.HowToPublishImageDescriptions = BookInfo.HowToPublishImageDescriptions.OnPage;
+				}
 
-			// Note the name mismatch here. The old property unfortunately had this name, though all
-			// we actually remove is font size rules.
-			if (metaDataJson.TryGetValue("epub_RemoveFontStyles", out bool val3))
-			{
-				settings.Epub.RemoveFontSizes = val3;
-			}
+				// Note the name mismatch here. The old property unfortunately had this name, though all
+				// we actually remove is font size rules.
+				if (metaDataJson.TryGetValue("epub_RemoveFontStyles", out bool val3))
+				{
+					settings.Epub.RemoveFontSizes = val3;
+				}
 
-			if (metaDataJson.TryGet("textLangsToPublish", out DynamicJson langs))
-			{
-				if (langs.TryGet("bloomPUB", out Dictionary<string, InclusionSetting> forBloomPub))
-					settings.BloomPub.TextLangs = forBloomPub;
-				if (langs.TryGet("bloomLibrary", out Dictionary<string, InclusionSetting> forBloomLibrary))
-					settings.BloomLibrary.TextLangs = forBloomLibrary;
-			}
+				if (metaDataJson.TryGet("textLangsToPublish", out DynamicJson langs))
+				{
+					if (langs.TryGet("bloomPUB", out Dictionary<string, InclusionSetting> forBloomPub))
+						settings.BloomPub.TextLangs = forBloomPub;
+					if (langs.TryGet("bloomLibrary", out Dictionary<string, InclusionSetting> forBloomLibrary))
+						settings.BloomLibrary.TextLangs = forBloomLibrary;
+				}
 
-			if (metaDataJson.TryGet("audioLangsToPublish", out DynamicJson audioLangs))
-			{
-				if (audioLangs.TryGet("bloomPUB", out Dictionary<string, InclusionSetting> forBloomPub))
-					settings.BloomPub.AudioLangs = forBloomPub;
-				if (audioLangs.TryGet("bloomLibrary", out Dictionary<string, InclusionSetting> forBloomLibrary))
-					settings.BloomLibrary.AudioLangs = forBloomLibrary;
-			}
+				if (metaDataJson.TryGet("audioLangsToPublish", out DynamicJson audioLangs))
+				{
+					if (audioLangs.TryGet("bloomPUB", out Dictionary<string, InclusionSetting> forBloomPub))
+						settings.BloomPub.AudioLangs = forBloomPub;
+					if (audioLangs.TryGet("bloomLibrary", out Dictionary<string, InclusionSetting> forBloomLibrary))
+						settings.BloomLibrary.AudioLangs = forBloomLibrary;
+				}
 
-			if (metaDataJson.TryGet("signLangsToPublish", out DynamicJson signLangs))
+				if (metaDataJson.TryGet("signLangsToPublish", out DynamicJson signLangs))
+				{
+					if (signLangs.TryGet("bloomPUB", out Dictionary<string, InclusionSetting> forBloomPub))
+						settings.BloomPub.SignLangs = forBloomPub;
+					if (signLangs.TryGet("bloomLibrary", out Dictionary<string, InclusionSetting> forBloomLibrary))
+						settings.BloomLibrary.SignLangs = forBloomLibrary;
+				}
+			}
+			catch (Exception e)
 			{
-				if (signLangs.TryGet("bloomPUB", out Dictionary<string, InclusionSetting> forBloomPub))
-					settings.BloomPub.SignLangs = forBloomPub;
-				if (signLangs.TryGet("bloomLibrary", out Dictionary<string, InclusionSetting> forBloomLibrary))
-					settings.BloomLibrary.SignLangs = forBloomLibrary;
+				// If we can't migrate for some reason, just drop back to defaults.
+				SentrySdk.CaptureException(e);
 			}
 
 			return settings;
+
 		}
 
 		private static bool TryReadSettings(string path, out PublishSettings result)
