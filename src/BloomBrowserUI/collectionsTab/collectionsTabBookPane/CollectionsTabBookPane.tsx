@@ -31,10 +31,14 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     const [isTeamCollection, setIsTeamCollection] = useState(false);
     const [bookStatus, setBookStatus] = useState(initialBookStatus);
     const [reload, setReload] = useState(0);
+    const [reloadStatus, setReloadStatus] = useState(0);
     const enterpriseAvailable = useEnterpriseAvailable();
     // Force a reload when told the book changed, even if it's the same book [id]
     useSubscribeToWebSocketForEvent("bookContent", "reload", () =>
         setReload(old => old + 1)
+    );
+    useSubscribeToWebSocketForEvent("bookStatus", "reload", () =>
+        setReloadStatus(old => old + 1)
     );
 
     const {
@@ -62,7 +66,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                 setBookStatus({ ...bookStatus, error: errorMessage });
             }
         );
-    }, [selectedBookId, saveable, reload]);
+    }, [selectedBookId, saveable, reload, reloadStatus]);
 
     const canMakeBook = collectionKind != "main";
     // History, and thus the tab controls, are only relevant if there's a selected book
