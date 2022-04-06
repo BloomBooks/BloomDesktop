@@ -353,6 +353,10 @@
         <source xml:lang="en">This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate2</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BloomLibraryBookshelf">
+        <source xml:lang="en">Bloom Library Bookshelf</source>
+        <note>ID: CollectionSettingsDialog.BloomLibraryBookshelf</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
         <source xml:lang="en">Book Making</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel</note>

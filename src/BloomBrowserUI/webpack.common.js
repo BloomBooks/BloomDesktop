@@ -65,9 +65,7 @@ module.exports = merge(core, {
         // These work with c# ReactControl:
         problemReportBundle: "./problemDialog/ProblemDialog.tsx",
         messageBoxBundle: "./utils/BloomMessageBox.tsx",
-        defaultBookshelfControlBundle:
-            "./react_components/DefaultBookshelfControl.tsx",
-        fontScriptControlBundle: "./collection/fontScriptSettingsControl.tsx",
+        bookMakingSettingsBundle: "./collection/bookMakingSettingsControl.tsx",
         progressDialogBundle: "./react_components/Progress/ProgressDialog.tsx",
         requiresBloomEnterpriseBundle:
             "./react_components/requiresBloomEnterprise.tsx",

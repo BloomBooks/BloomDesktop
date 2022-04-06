@@ -6,7 +6,6 @@ import { BloomApi } from "../utils/bloomApi";
 import { lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { IFontMetaData } from "../bookEdit/StyleEditor/fontSelectComponent";
-import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { useEffect, useState } from "react";
 import SingleFontSection from "../react_components/singleFontSection";
 
@@ -62,13 +61,12 @@ export const FontScriptSettingsControl: React.FunctionComponent = () => {
     return (
         <ThemeProvider theme={lightTheme}>
             <div
-                // Partly copied from DefaultBookshelfControl, which also tries to imitate winForms.
                 css={css`
-                    font-family: "Segoe UI";
                     font-size: 10pt;
                     display: flex;
                     flex: 1;
                     flex-direction: column;
+                    min-height: 275px; // Don't change height of control as 3rd Lang. comes and goes.
                 `}
             >
                 {/* Language 1 section */}
@@ -104,5 +102,3 @@ export const FontScriptSettingsControl: React.FunctionComponent = () => {
 };
 
 export default FontScriptSettingsControl;
-
-WireUpForWinforms(FontScriptSettingsControl);
