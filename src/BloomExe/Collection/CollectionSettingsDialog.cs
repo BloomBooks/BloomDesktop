@@ -1,5 +1,4 @@
 using System;
-using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
@@ -9,13 +8,10 @@ using SIL.Reporting;
 using SIL.Windows.Forms.WritingSystems;
 using SIL.Extensions;
 using SIL.WritingSystems;
-using System.Collections.Generic;
 using Bloom.TeamCollection;
 using Bloom.MiscUI;
-using Bloom.web;
 using Bloom.web.controllers;
-using Bloom.FontProcessing;
-using Newtonsoft.Json;
+using Bloom.Api;
 
 namespace Bloom.Collection
 {
@@ -24,17 +20,12 @@ namespace Bloom.Collection
 		public delegate CollectionSettingsDialog Factory();//autofac uses this
 
 		private readonly CollectionSettings _collectionSettings;
-		private XMatterPackFinder _xmatterPackFinder;
 		private readonly QueueRenameOfCollection _queueRenameOfCollection;
 		private readonly PageRefreshEvent _pageRefreshEvent;
 		private bool _restartRequired;
 		private bool _loaded;
-		private List<string> _styleNames = new List<string>();
 		private string _subscriptionCode;
 		private string _brand;
-		private ReactControl _enterpriseSettingsControl;
-		private readonly ReactControl _defaultBookshelfControl;
-		private readonly ReactControl _fontScriptControl;
 
 		// Pending values edited through the CollectionSettingsApi
 		private string _pendingBookshelf;
@@ -52,18 +43,19 @@ namespace Bloom.Collection
 			}
 		}
 
-		// "Internal" so api can update it
+		// "Internal" so CollectionSettingsApi can update these.
 		internal readonly string[] PendingFontSelections = new[] { "", "", "" };
+		internal string PendingNumberingStyle { get; set; }
+		internal string PendingXmatter { get; set; }
 
-		public CollectionSettingsDialog(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder, QueueRenameOfCollection queueRenameOfCollection, PageRefreshEvent pageRefreshEvent, TeamCollectionManager tcManager)
+		public CollectionSettingsDialog(CollectionSettings collectionSettings,
+			QueueRenameOfCollection queueRenameOfCollection, PageRefreshEvent pageRefreshEvent,
+			TeamCollectionManager tcManager)
 		{
 			_collectionSettings = collectionSettings;
-			_xmatterPackFinder = xmatterPackFinder;
 			_queueRenameOfCollection = queueRenameOfCollection;
 			_pageRefreshEvent = pageRefreshEvent;
 			InitializeComponent();
-			// moved from the Designer where it was deleted if the Designer was touched
-			_xmatterList.Columns.AddRange(new[] { new ColumnHeader() { Width = 250 } });
 
 			_language1Name.UseMnemonic = false; // Allow & to be part of the language display names.
 			_language2Name.UseMnemonic = false; // This may be unlikely, but can't be ruled out.
@@ -75,6 +67,8 @@ namespace Bloom.Collection
 			PendingFontSelections[2] = have3rdLanguage ?
 				_collectionSettings.LanguagesZeroBased[2].FontName :
 				"";
+			PendingNumberingStyle = _collectionSettings.PageNumberStyle;
+			PendingXmatter = _collectionSettings.XMatterPackName;
 			CollectionSettingsApi.DialogBeingEdited = this;
 
 			if (_collectionSettings.IsSourceCollection)
@@ -107,23 +101,12 @@ namespace Bloom.Collection
 
 			CollectionSettingsApi.BrandingChangeHandler = ChangeBranding;
 
-
 			TeamCollectionApi.TheOneInstance.SetCallbackToReopenCollection(() =>
 			{
 				_restartRequired = true;
 				ReactDialog.CloseCurrentModal(); // close the top Create dialog
 				_okButton_Click(null, null); // close this dialog
 			});
-
-			// Both of the next two settings are needed to get the combobox to show a white background.
-			// https://stackoverflow.com/questions/6468024/how-to-change-combobox-background-color-not-just-the-drop-down-list-part
-			// See https://issues.bloomlibrary.org/youtrack/issue/BL-11074 for why we want this.
-			// unfortunately, FlatStyle.Flat removes the border around the combobox.  Apparently, you
-			// can have either a border or a white background, but not both.
-			_numberStyleCombo.FlatStyle = FlatStyle.Flat;
-			_numberStyleCombo.BackColor = Color.White;
-			_xmatterList.FullRowSelect = true;		// This helps with white background on items.
-			_xmatterList.BackColor = Color.White;	// This appears to be ignored!?
 
 			UpdateDisplay();
 
@@ -140,36 +123,7 @@ namespace Bloom.Collection
 			{
 				_bloomCollectionName.Enabled = false;
 			}
-
-			// This code would mostly more naturally go in Designer. Unfortunately we can't run designer
-			// until we get back in a state where all our dependencies are sufficiently consistent.
-			_enterpriseSettingsControl = ReactControl.Create("enterpriseSettingsBundle");
-			_enterpriseSettingsControl.Dock = System.Windows.Forms.DockStyle.Fill;
-			_enterpriseTab.Controls.Add(_enterpriseSettingsControl);
-			_enterpriseSettingsControl.BackColor = _enterpriseSettingsControl.Parent.BackColor;
-
-			_defaultBookshelfControl = ReactControl.Create("defaultBookshelfControlBundle");
-			tabPage2.Controls.Add(_defaultBookshelfControl);
-			_defaultBookshelfControl.BackColor = _defaultBookshelfControl.Parent.BackColor;
-			_defaultBookshelfControl.Location = new Point(_xmatterDescription.Left, _xmatterDescription.Bottom + 30);
-			// We'd like it to be as big as possible, not just big enough for the immediate content.
-			// Until React takes over at least the whole tab, the pull-down part of the combo can't
-			// stretch outside the Gecko control.
-			_defaultBookshelfControl.Size = new Size(_xmatterList.Width, 200);
-
-			// This control replaces 9 Forms controls (3 controls x 3 languages) with one React control.
-			// The above comment that starts "Until React takes over..." also applies to the combo and
-			// popup script information in this control. Also, when the whole tab goes to React we should
-			// be able to more easily standardize the Mui Select behavior to whatever theme we want.
-			_fontScriptControl = ReactControl.Create("fontScriptControlBundle");
-			tabPage2.Controls.Add(_fontScriptControl);
-			_fontScriptControl.BackColor = tabPage2.BackColor;
-			_fontScriptControl.Location = new Point(32, 24);
-			_fontScriptControl.Size = new Size(_xmatterDescription.Left - 32, 275);
-
-			_xmatterDescription.BackColor = _xmatterDescription.Parent.BackColor;
 		}
-
 
 		protected override void OnHandleCreated(EventArgs e)
 		{
@@ -338,13 +292,8 @@ namespace Bloom.Collection
 				languages[i].FontName = PendingFontSelections[i];
 			}
 
-			if (_numberStyleCombo.SelectedItem != null)
-			{
-				// have to do this lookup because we need the non-localized version of the name, and
-				// we can't get at the original dictionary by index
-				var styleName = _styleNames[_numberStyleCombo.SelectedIndex];
-				_collectionSettings.PageNumberStyle = styleName;
-			}
+			_collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
+			_collectionSettings.XMatterPackName = PendingXmatter;
 
 			_collectionSettings.BrandingProjectKey = _brand;
 			_collectionSettings.SubscriptionCode = _subscriptionCode;
@@ -359,12 +308,6 @@ namespace Bloom.Collection
 				//_collectionSettings.PrepareToRenameCollection(_bloomCollectionName.Text.SanitizeFilename('-'));
 			}
 			Logger.WriteEvent("Closing Settings Dialog");
-			if (_xmatterList.SelectedItems.Count > 0 &&
-			    ((XMatterInfo) _xmatterList.SelectedItems[0].Tag).Key != _collectionSettings.XMatterPackName)
-			{
-				_collectionSettings.XMatterPackName = ((XMatterInfo)_xmatterList.SelectedItems[0].Tag).Key;
-				_restartRequired = true;// now that we've made them match, we won't detect by the normal means, so set this hard flag
-			}
 
 			_collectionSettings.DefaultBookshelf = PendingDefaultBookshelf;
 			_collectionSettings.Save();
@@ -380,7 +323,7 @@ namespace Bloom.Collection
 		{
 			get
 			{
-				return _xmatterList.SelectedItems.Count > 0 && ((XMatterInfo)_xmatterList.SelectedItems[0].Tag).Key != _collectionSettings.XMatterPackName;
+				return PendingXmatter != _collectionSettings.XMatterPackName;
 			}
 		}
 
@@ -407,8 +350,6 @@ namespace Bloom.Collection
 			_provinceText.Text = _collectionSettings.Province;
 			_districtText.Text = _collectionSettings.District;
 			_bloomCollectionName.Text = _collectionSettings.CollectionName;
-			LoadPageNumberStyleCombo();
-			LoadBrandingCombo();
 			_brand = _collectionSettings.BrandingProjectKey;
 			_subscriptionCode = _collectionSettings.SubscriptionCode;
 			// Set the branding as an (incomplete) code if we are running with a legacy branding
@@ -432,65 +373,6 @@ namespace Bloom.Collection
 			return BrandingProject.HaveFilesForBranding(_brand) || CollectionSettingsApi.GetExpirationDate(_subscriptionCode) != DateTime.MinValue;
 		}
 
-		/// <summary>
-		/// NB The selection stuff is flaky if we attempt to select things before the control is all created, settled down, bored.
-		/// </summary>
-		private void SetupXMatterList()
-		{
-			var packsToSkip = new string[] {"null", "bigbook", "SHRP", "SHARP", "ForUnitTest", "TemplateStarter"};
-			_xmatterList.Items.Clear();
-			ListViewItem itemForFactoryDefault = null;
-
-			string lockedDownXMatterKey = null;
-			var xmatterFromBranding = _collectionSettings.GetXMatterPackNameSpecifiedByBrandingOrNull();
-			if (null != xmatterFromBranding)
-			{
-				_xmatterList.Enabled = false;
-				lockedDownXMatterKey = xmatterFromBranding;
-			}
-			var offerings = _xmatterPackFinder.GetXMattersToOfferInSettings(lockedDownXMatterKey);
-			
-			foreach (var pack in offerings)
-			{
-				if (packsToSkip.Any(s => pack.Key.ToLowerInvariant().Contains(s.ToLower())))
-					continue;
-
-				var labelToShow = LocalizationManager.GetDynamicString("Bloom","CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack."+pack.EnglishLabel, pack.EnglishLabel, "Name of a Front/Back Matter Pack");
-				var item = _xmatterList.Items.Add(labelToShow);
-				item.Tag = pack;
-				item.BackColor = Color.White;	// BL-11074
-				if(pack.Key == _collectionSettings.XMatterPackName)
-					item.Selected = true;
-				if(pack.Key == _xmatterPackFinder.FactoryDefault.Key)
-				{
-					itemForFactoryDefault = item;
-				}
-			}
-			if(itemForFactoryDefault != null && _xmatterList.SelectedItems.Count == 0) //if the xmatter they used to have selected is gone or was renamed or something
-				itemForFactoryDefault.Selected = true;
-
-			if(_xmatterList.SelectedIndices.Count > 0)
-				_xmatterList.EnsureVisible(_xmatterList.SelectedIndices[0]);
-		}
-
-		private void LoadPageNumberStyleCombo()
-		{
-			_styleNames.Clear();
-			foreach (var styleKey in CollectionSettings.CssNumberStylesToCultureOrDigits.Keys)
-			{
-				_styleNames.Add(styleKey);
-				var localizedStyle =
-					LocalizationManager.GetString("CollectionSettingsDialog.BookMakingTab.PageNumberingStyle." + styleKey, styleKey);
-				_numberStyleCombo.Items.Add(localizedStyle);
-				if (styleKey == _collectionSettings.PageNumberStyle)
-					_numberStyleCombo.SelectedIndex = _numberStyleCombo.Items.Count - 1;
-			}
-		}
-
-		private void LoadBrandingCombo()
-		{
-		}
-
 		private void _cancelButton_Click(object sender, EventArgs e)
 		{
 			DialogResult = DialogResult.Cancel;
@@ -502,7 +384,7 @@ namespace Bloom.Collection
 		{
 			if (_tab.SelectedTab == tabPage1)
 				HelpLauncher.Show(this, "Tasks/Basic_tasks/Change_languages.htm");
-			else if (_tab.SelectedTab == tabPage2)
+			else if (_tab.SelectedTab == _bookMakingTab)
 				HelpLauncher.Show(this, "Tasks/Basic_tasks/Select_front_matter_or_back_matter_from_a_pack.htm");
 			else if (_tab.SelectedTab == tabPage3)
 				HelpLauncher.Show(this, "Tasks/Basic_tasks/Enter_project_information.htm");
@@ -526,28 +408,12 @@ namespace Bloom.Collection
 			ChangeThatRequiresRestart();
 		}
 
-		private void _xmatterList_SelectedIndexChanged(object sender, EventArgs e)
-		{
-			if (_xmatterList.SelectedItems.Count == 0 || _xmatterList.SelectedItems[0].Tag == null)
-				_xmatterDescription.Text = "";
-			else
-				_xmatterDescription.Text = ((XMatterInfo)_xmatterList.SelectedItems[0].Tag).GetDescription();
-
-			UpdateDisplay(); //may show restart required, if we have changed but not changed back to the orginal.
-		}
-
-		private void _tab_SelectedIndexChanged(object sender, EventArgs e)
-		{
-			if(_tab.SelectedIndex == 1)
-				SetupXMatterList();
-		}
-
 		private void _automaticallyUpdate_CheckedChanged(object sender, EventArgs e)
 		{
 			Settings.Default.AutoUpdate = _automaticallyUpdate.Checked;
 		}
 
-		public static Boolean FontSettingsLinkClicked(CollectionSettings settings, string langName, int langNum1Based)
+		public static bool FontSettingsLinkClicked(CollectionSettings settings, string langName, int langNum1Based)
 		{ 
 			var langSpec = settings.LanguagesZeroBased[langNum1Based - 1];
 			using (var frm = new ScriptSettingsDialog())

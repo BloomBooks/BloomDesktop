@@ -79,13 +79,12 @@ storiesOf("Format dialog", module)
             </Frame>
         ));
     })
-    .add("Font Select-current unsuitable-pop left side", () => {
+    .add("Font Select-current unsuitable", () => {
         return React.createElement(() => (
             <Frame>
                 <FontSelectComponent
                     fontMetadata={fontTestData}
                     currentFontName={unsuitableFont.name}
-                    anchorPopoverLeft={true}
                 />
             </Frame>
         ));

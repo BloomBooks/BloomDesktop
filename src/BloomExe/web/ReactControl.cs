@@ -145,6 +145,8 @@ namespace Bloom.web
 			// to prevent a flash of white while the React is rendering.
 			var backColor = MiscUtils.ColorToHtmlCode(BackColor);
 
+			// The 'body' height: auto rule keeps a winforms tab that only contains a ReactControl
+			// from unnecessary scrolling.
 			RobustFile.WriteAllText(tempFile.Path, $@"<!DOCTYPE html>
 				<html style='height:100%'>
 				<head>
@@ -158,7 +160,7 @@ namespace Bloom.web
 						}};
 					</script>					
 				</head>
-				<body style='margin:0; height:100%; background-color:{backColor};'>
+				<body style='margin:0; height:auto; background-color:{backColor};'>
 					<div id='reactRoot' style='height:100%'>Javascript should have replaced this. Make sure that the javascript bundle '{bundleNameWithExtension}' includes a single call to WireUpForWinforms()</div>
 				</body>
 				</html>");
