@@ -49,7 +49,7 @@ namespace Bloom.web.controllers
 		public static string LegacyBrandingName { get; set; }
 
 		private readonly CollectionSettings _collectionSettings;
-		private readonly List<object> _xmatterOfferings = new List<object>();
+		private readonly List<object> _numberingStyles = new List<object>();
 		private readonly XMatterPackFinder _xmatterPackFinder;
 
 		public CollectionSettingsApi(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder)
@@ -255,54 +255,56 @@ namespace Bloom.web.controllers
 		private object SetupXMatterList()
 		{
 			string currentXmatter = null;
-			if (_xmatterOfferings.Count.Equals(0))
+			var xmatterOfferings = new List<object>();
+			var packsToSkip = new string[] { "null", "bigbook", "SHRP", "SHARP", "ForUnitTest", "TemplateStarter" };
+
+			string lockedDownXMatterKey = null;
+			var xmatterFromBranding = _collectionSettings.GetXMatterPackNameSpecifiedByBrandingOrNull();
+			if (null != xmatterFromBranding)
 			{
-				var packsToSkip = new string[] { "null", "bigbook", "SHRP", "SHARP", "ForUnitTest", "TemplateStarter" };
+				lockedDownXMatterKey = xmatterFromBranding;
+			}
+			var offerings = _xmatterPackFinder.GetXMattersToOfferInSettings(lockedDownXMatterKey);
 
-				string lockedDownXMatterKey = null;
-				var xmatterFromBranding = _collectionSettings.GetXMatterPackNameSpecifiedByBrandingOrNull();
-				if (null != xmatterFromBranding)
-				{
-					lockedDownXMatterKey = xmatterFromBranding;
-				}
-				var offerings = _xmatterPackFinder.GetXMattersToOfferInSettings(lockedDownXMatterKey);
+			foreach (var pack in offerings)
+			{
+				if (packsToSkip.Any(s => pack.Key.ToLowerInvariant().Contains(s.ToLower())))
+					continue;
 
-				foreach (var pack in offerings)
-				{
-					if (packsToSkip.Any(s => pack.Key.ToLowerInvariant().Contains(s.ToLower())))
-						continue;
-
-					var labelToShow = LocalizationManager.GetDynamicString("Bloom", "CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack." + pack.EnglishLabel, pack.EnglishLabel, "Name of a Front/Back Matter Pack");
-					var description = pack.GetDescription(); // already localized, if available
-					var item = new { displayName = labelToShow, internalName = pack.Key, description };
-					_xmatterOfferings.Add(item);
-					if (pack.Key == _collectionSettings.XMatterPackName)
-						currentXmatter = pack.Key;
-				}
+				var labelToShow = LocalizationManager.GetDynamicString("Bloom", "CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack." + pack.EnglishLabel, pack.EnglishLabel, "Name of a Front/Back Matter Pack");
+				var description = pack.GetDescription(); // already localized, if available
+				var item = new { displayName = labelToShow, internalName = pack.Key, description };
+				xmatterOfferings.Add(item);
+				if (pack.Key == _collectionSettings.XMatterPackName)
+					currentXmatter = pack.Key;
 			}
 			// If we haven't found the pack that used to be selected in the collection, use the default factory item.
 			if (currentXmatter == null)
 				currentXmatter = _xmatterPackFinder.FactoryDefault.Key;
-			return new Tuple<string, object>(currentXmatter,
-				_xmatterOfferings.ToArray());
+			return new { currentXmatter, xmatterOfferings = xmatterOfferings.ToArray() };
 		}
 
 		private object GetNumberingStyleData()
 		{
-			var numberingStyles = new List<object>();
-			foreach (var styleKey in CollectionSettings.CssNumberStylesToCultureOrDigits.Keys)
+			if (_numberingStyles.Count == 0)
 			{
-				var localizedStyle =
-					LocalizationManager.GetString("CollectionSettingsDialog.BookMakingTab.PageNumberingStyle." + styleKey, styleKey);
-				numberingStyles.Add(new { localizedStyle, styleKey });
+				foreach (var styleKey in CollectionSettings.CssNumberStylesToCultureOrDigits.Keys)
+				{
+					var localizedStyle =
+						LocalizationManager.GetString("CollectionSettingsDialog.BookMakingTab.PageNumberingStyle." + styleKey, styleKey);
+					_numberingStyles.Add(new { localizedStyle, styleKey });
+				}
 			}
-			return new Tuple<string, object>(
-				_collectionSettings.PageNumberStyle, numberingStyles.ToArray());
+			return new
+			{
+				currentPageNumberStyle = _collectionSettings.PageNumberStyle,
+				numberingStyleData = _numberingStyles.ToArray()
+			};
 		}
 
 		private object GetLanguageData()
 		{
-			var langData = new Tuple<string, string>[3];
+			var langData = new object[3];
 			for (var i=0; i< 3; i++)
 			{
 				if (_collectionSettings.LanguagesZeroBased[i] == null ||
@@ -310,9 +312,9 @@ namespace Bloom.web.controllers
 					continue;
 				var name = _collectionSettings.LanguagesZeroBased[i].Name;
 				var font = _collectionSettings.LanguagesZeroBased[i].FontName;
-				langData[i] = new Tuple<string, string>(name, font);
+				langData[i] = new { languageName = name, fontName = font };
 			}
-			return new { langData };
+			return langData;
 		}
 
 		// languageNumber is 1-based

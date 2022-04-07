@@ -8,7 +8,7 @@ import { RequiresBloomEnterpriseOverlayWrapper } from "../react_components/requi
 import "./TeamCollectionSettingsPanel.less";
 import { lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
-
+import { tabMargins } from "../collection/commonTabSettings";
 import BloomButton from "../react_components/bloomButton";
 
 import { WarningBox } from "../react_components/BloomDialog/commonDialogComponents";
@@ -140,7 +140,13 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
 
     return (
         <ThemeProvider theme={lightTheme}>
-            <div id="teamCollection-settings">
+            <div
+                id="teamCollection-settings"
+                css={css`
+                    margin: ${tabMargins.top} ${tabMargins.side}
+                        ${tabMargins.bottom};
+                `}
+            >
                 <RequiresBloomEnterpriseOverlayWrapper>
                     <React.Fragment>
                         {intro}

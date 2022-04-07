@@ -105,12 +105,20 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
 
     const errorCaseDescription = useL10n(
         "Bloom could not reach server to get the list of bookshelves.",
-        "CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer"
+        "CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer",
+        undefined,
+        undefined,
+        undefined,
+        true // don't localize for now
     );
 
     const defaultCaseDescription = useL10n(
         "Projects that have Bloom Enterprise subscriptions can arrange for one or more bookshelves on the Bloom Library. All books uploaded from this collection will go into the selected bookshelf.",
-        "CollectionSettingsDialog.BookMakingTab.BookshelfDescription"
+        "CollectionSettingsDialog.BookMakingTab.BookshelfDescription",
+        undefined,
+        undefined,
+        undefined,
+        true // don't localize for now
     );
 
     const commonDescriptionCss =

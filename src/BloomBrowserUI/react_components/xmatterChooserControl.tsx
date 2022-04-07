@@ -7,7 +7,7 @@ import { useL10n } from "./l10nHooks";
 import { List, ListItem, ListItemText, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
 
-interface XmatterInfo {
+interface IXmatterInfo {
     displayName: string;
     description: string;
     internalName: string;
@@ -26,7 +26,7 @@ const XmatterChooserControl: React.FunctionComponent = () => {
     const [selectedXmatter, setSelectedXmatter] = useState<string | undefined>(
         undefined
     );
-    const [xmatterData, setXmatterData] = useState<XmatterInfo[] | undefined>(
+    const [xmatterData, setXmatterData] = useState<IXmatterInfo[] | undefined>(
         undefined
     );
 
@@ -43,15 +43,15 @@ const XmatterChooserControl: React.FunctionComponent = () => {
 
     const findByDisplayName = (
         displayName: string
-    ): XmatterInfo | undefined => {
+    ): IXmatterInfo | undefined => {
         if (!xmatterData) return undefined;
         return xmatterData!.find(xm => xm.displayName === displayName);
     };
 
     useEffect(() => {
         BloomApi.get("settings/xmatter", result => {
-            setSelectedXmatter(result.data.Item1 as string);
-            setXmatterData(result.data.Item2 as XmatterInfo[]);
+            setSelectedXmatter(result.data.currentXmatter as string);
+            setXmatterData(result.data.xmatterOfferings as IXmatterInfo[]);
         });
     }, []);
 

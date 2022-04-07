@@ -39,8 +39,10 @@ const PageNumberStyleControl: React.FunctionComponent = () => {
     useEffect(() => {
         // Gets all available numbering styles and the current style
         BloomApi.get("settings/numberingStyle", result => {
-            setSelectedStyle(result.data.Item1 as string);
-            setNumberingStyles(result.data.Item2 as PageNumberStyle[]);
+            setSelectedStyle(result.data.currentPageNumberStyle as string);
+            setNumberingStyles(
+                result.data.numberingStyleData as PageNumberStyle[]
+            );
         });
     }, []);
 

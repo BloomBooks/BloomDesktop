@@ -7,11 +7,9 @@ import DefaultBookshelfControl from "../react_components/DefaultBookshelfControl
 import PageNumberStyleControl from "../react_components/pageNumberStyleControl";
 import XmatterChooserControl from "../react_components/xmatterChooserControl";
 import FontScriptSettingsControl from "./fontScriptSettingsControl";
+import { tabMargins } from "./commonTabSettings";
 
 import { WireUpForWinforms } from "../utils/WireUpWinform";
-
-const topMargin = "24";
-const sideMargin = "26";
 
 const BookMakingSettingsControl: React.FunctionComponent = () => {
     return (
@@ -21,7 +19,8 @@ const BookMakingSettingsControl: React.FunctionComponent = () => {
                     display: flex;
                     justify-content: space-between;
                     flex-direction: row;
-                    margin: ${topMargin}px ${sideMargin}px 0;
+                    margin: ${tabMargins.top} ${tabMargins.side}
+                        ${tabMargins.bottom};
                     font-size: 10pt;
                 `}
             >
@@ -39,7 +38,7 @@ const BookMakingSettingsControl: React.FunctionComponent = () => {
                         flex-direction: column;
                         align-items: flex-start;
                         flex: 3;
-                        margin-left: ${sideMargin}px;
+                        margin-left: ${tabMargins.side};
                     `}
                 >
                     <XmatterChooserControl />
