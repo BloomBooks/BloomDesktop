@@ -12,7 +12,7 @@ namespace Bloom.Publish.Video
 	/// <summary>
 	/// API calls starting with publish/video, used in the Publish panel for Video
 	/// </summary>
-	public class PublishToVideoApi
+	public class PublishAudioVideoAPI
 	{
 		private readonly BloomWebSocketServer _webSocketServer;
 		// It's slightly weird that we use one of these, but the video is done by means
@@ -21,7 +21,7 @@ namespace Bloom.Publish.Video
 		private const string kApiUrlPart = "publish/av/";
 		private RecordVideoWindow _recordVideoWindow;
 
-		public PublishToVideoApi(BloomWebSocketServer bloomWebSocketServer, PublishToAndroidApi publishToAndroidApi)
+		public PublishAudioVideoAPI(BloomWebSocketServer bloomWebSocketServer, PublishToAndroidApi publishToAndroidApi)
 		{
 			_webSocketServer = bloomWebSocketServer;
 			_publishToAndroidApi = publishToAndroidApi;
@@ -236,7 +236,7 @@ namespace Bloom.Publish.Video
 
 		// Use with care...Windows only! And the option we want to use only works after the 'creators update'
 		[DllImport("user32.dll")]
-		static extern ThreadDpiAwareContext SetThreadDpiAwarenessContext(PublishToVideoApi.ThreadDpiAwareContext newContext);
+		static extern ThreadDpiAwareContext SetThreadDpiAwarenessContext(PublishAudioVideoAPI.ThreadDpiAwareContext newContext);
 
 		private void RecordVideo(ApiRequest request)
 		{

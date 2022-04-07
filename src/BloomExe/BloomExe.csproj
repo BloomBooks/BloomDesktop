@@ -371,7 +371,7 @@
     <Compile Include="Collection\BookCollectionHolder.cs" />
     <Compile Include="MiscUI\BloomMessageBox.cs" />
     <Compile Include="Publish\Video\Codec.cs" />
-    <Compile Include="Publish\Video\PublishToVideoApi.cs" />
+    <Compile Include="Publish\Video\PublishAudioVideoAPI.cs" />
     <Compile Include="Publish\Video\RecordVideoWindow.cs">
       <SubType>Form</SubType>
     </Compile>

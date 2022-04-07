@@ -54,14 +54,14 @@ import {
 import { useEffect } from "react";
 import { MuiCheckbox } from "../../react_components/muiCheckBox";
 
-export const RecordVideoWindow = () => {
+export const PublishAudioVideo = () => {
     // When the user changes some features, included languages, etc., we
     // need to rebuild the book and re-run all of our Bloom API queries.
     // This requires a hard-reset of the whole screen, which we do by
     // incrementing a `key` prop on the core of this screen.
     const [keyForReset, setKeyForReset] = useState(0);
     return (
-        <RecordVideoWindowInternal
+        <PublishAudioVideoInternalInternal
             key={keyForReset}
             onReset={() => {
                 setKeyForReset(keyForReset + 1);
@@ -86,7 +86,7 @@ interface IAudioVideoSettings {
     motion: boolean;
 }
 
-const RecordVideoWindowInternal: React.FunctionComponent<{
+const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     onReset: () => void;
 }> = props => {
     const inStorybookMode = useContext(StorybookContext);
@@ -616,11 +616,11 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
 // if that html has the root page we need.
 // WE could now switch to doing this with ReactControl. But it's easier if all the publish HTML
 // panels work the same way.
-if (document.getElementById("RecordVideoScreen")) {
+if (document.getElementById("PublishAudioVideo")) {
     ReactDOM.render(
         <ThemeProvider theme={lightTheme}>
-            <RecordVideoWindow />
+            <PublishAudioVideo />
         </ThemeProvider>,
-        document.getElementById("RecordVideoScreen")
+        document.getElementById("PublishAudioVideo")
     );
 }

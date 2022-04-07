@@ -36,7 +36,7 @@ namespace Bloom.Publish
 		private HtmlPublishPanel _htmlControl;
 		private NavigationIsolator _isolator;
 		private PublishToAndroidApi _publishApi;
-		private PublishToVideoApi _publishToVideoApi;
+		private PublishAudioVideoAPI _publishToVideoApi;
 		private PublishEpubApi _publishEpubApi;
 		private BloomWebSocketServer _webSocketServer;
 		private readonly string _cantPublishPageWithPlaceholder;
@@ -48,7 +48,7 @@ namespace Bloom.Publish
 		public PublishView(PublishModel model,
 			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookUpload bookTransferrer, NavigationIsolator isolator,
 			PublishToAndroidApi publishApi, PublishEpubApi publishEpubApi, BloomWebSocketServer webSocketServer,
-			PublishToVideoApi publishToVideoApi)
+			PublishAudioVideoAPI publishToVideoApi)
 		{
 			_bookTransferrer = bookTransferrer;
 			_isolator = isolator;
@@ -353,7 +353,7 @@ namespace Bloom.Publish
 				else if (_bloomPUBRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.Android;
 				else if (_recordVideoRadio.Checked)
-					_model.DisplayMode = PublishModel.DisplayModes.Video;
+					_model.DisplayMode = PublishModel.DisplayModes.AudioVideo;
 				else if (_model.PdfGenerationSucceeded)
 					_model.DisplayMode = PublishModel.DisplayModes.ShowPdf;
 				else
@@ -516,7 +516,7 @@ namespace Bloom.Publish
 				Controls.Remove(_uploadControl);
 				_uploadControl = null;
 			}
-			if((displayMode != PublishModel.DisplayModes.Android && displayMode != PublishModel.DisplayModes.EPUB && displayMode != PublishModel.DisplayModes.Video)
+			if((displayMode != PublishModel.DisplayModes.Android && displayMode != PublishModel.DisplayModes.EPUB && displayMode != PublishModel.DisplayModes.AudioVideo)
 			   && _htmlControl != null && Controls.Contains(_htmlControl))
 			{
 				Controls.Remove(_htmlControl);
@@ -596,10 +596,10 @@ namespace Bloom.Publish
 					BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "ReaderPublish", "loader.html"));
 					break;
-				case PublishModel.DisplayModes.Video:
+				case PublishModel.DisplayModes.AudioVideo:
 					_saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
 					BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
-					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "video", "RecordVideoWindow.html"));
+					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "video", "PublishAudioVideo.html"));
 					break;
 				case PublishModel.DisplayModes.EPUB:
 					_saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
@@ -760,7 +760,7 @@ namespace Bloom.Publish
 			}
 			else if (_recordVideoRadio.Checked)
 			{
-				_model.DisplayMode = PublishModel.DisplayModes.Video;
+				_model.DisplayMode = PublishModel.DisplayModes.AudioVideo;
 			}
 			else // no buttons selected
 			{
