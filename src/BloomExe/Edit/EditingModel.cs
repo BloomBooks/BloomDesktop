@@ -1569,6 +1569,9 @@ namespace Bloom.Edit
 				// know...  So strip the extension off the folder name to get the widget name.
 				widgetName = Path.GetFileNameWithoutExtension(widgetName);
 			}
+			// Ampersands cause problems for BloomPubReader, so replace them.  (BL-10045)
+			if (widgetName.Contains("&"))
+				widgetName = widgetName.Replace("&", "_");
 			var widgetPath = Path.Combine(Path.GetTempPath(), "Bloom", widgetName + ".wdgt");
 			using (TemporaryFolder temp = new TemporaryFolder("CreatingWidgetForBloom"))
 			{
