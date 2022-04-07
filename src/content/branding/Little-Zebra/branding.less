@@ -63,3 +63,18 @@ div.Device16x9Landscape {
         }
     }
 }
+
+.outsideBackCover {
+    &.QuarterLetterLandscape,
+    &.A6Landscape {
+        [data-book="outside-back-cover-branding-bottom-html"] {
+            display: none; //there's just no room for the made-with Bloom
+        }
+    }
+    .marginBox [data-book="outside-back-cover-branding-bottom-html"] {
+        margin-top: auto !important;
+    }
+    .bloom-translationGroup {
+        display: none; // there's just no room on small sizes, and Jeni says they don't need it ever.
+    }
+}
