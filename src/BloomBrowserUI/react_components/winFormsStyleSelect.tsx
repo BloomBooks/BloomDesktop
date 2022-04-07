@@ -22,9 +22,9 @@ interface FormsSelectProps {
     currentValue: string;
 }
 
-// This component attempts to imitate a winforms combobox in React. As such it's probably a temporary
-// thing as Bloom matures and moves away from winforms altogether.
-const FormsSelect: React.FunctionComponent<FormsSelectProps> = props => {
+// This component initially attempted to imitate a winforms combobox in React.
+// Since we're moving away from winforms, that restriction has relaxed somewhat.
+const WinFormsStyleSelect: React.FunctionComponent<FormsSelectProps> = props => {
     const classes = useStyles();
 
     const selectMenuProps = {
@@ -43,7 +43,8 @@ const FormsSelect: React.FunctionComponent<FormsSelectProps> = props => {
         }
     };
 
-    // Match the border color of the other selects in the Format dialog.
+    // Match the border color of the other selects in the Edit tab cog Format dialog.
+    // Without this, the gray border on this one is too light in comparison to the others.
     const matchingBorderColor = "border-color: #808080 !important;";
 
     const finalKey = props.idKey ? props.idKey.toString() : "";
@@ -99,4 +100,4 @@ const FormsSelect: React.FunctionComponent<FormsSelectProps> = props => {
     );
 };
 
-export default FormsSelect;
+export default WinFormsStyleSelect;

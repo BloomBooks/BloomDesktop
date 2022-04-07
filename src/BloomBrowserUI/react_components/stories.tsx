@@ -48,10 +48,9 @@ import {
     FormControlLabel,
     Checkbox as OriginalMuiCheckbox
 } from "@material-ui/core";
-import FontScriptSettingsControl from "../collection/fontScriptSettingsControl";
 import { RadioGroup } from "./RadioGroup";
 import { MuiRadio } from "./muiRadio";
-import FormsSelect from "./formsSelect";
+import WinFormsStyleSelect from "./winFormsStyleSelect";
 import BookMakingSettingsControl from "../collection/bookMakingSettingsControl";
 
 storiesOf("Localizable Widgets", module)
@@ -617,13 +616,13 @@ storiesOf("Misc/Collection Settings", module)
     .add("WinForms imitating Select", () =>
         React.createElement(() => (
             <div style={frameDivStyle}>
-                <FormsSelect
+                <WinFormsStyleSelect
                     idKey="test1"
                     currentValue="Two"
                     onChangeHandler={() => {}}
                 >
                     {selectTestChildren}
-                </FormsSelect>
+                </WinFormsStyleSelect>
             </div>
         ))
     )

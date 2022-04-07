@@ -7,7 +7,7 @@ import { lightTheme } from "../../bloomMaterialUITheme";
 import { MenuItem, Popover, PopoverOrigin } from "@material-ui/core";
 import FontDisplayBar from "../../react_components/fontDisplayBar";
 import FontInformationPane from "../../react_components/fontInformationPane";
-import FormsSelect from "../../react_components/formsSelect";
+import WinFormsStyleSelect from "../../react_components/winFormsStyleSelect";
 
 export interface IFontMetaData {
     name: string;
@@ -117,13 +117,13 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
 
     return (
         <ThemeProvider theme={lightTheme}>
-            <FormsSelect
+            <WinFormsStyleSelect
                 idKey={finalKey}
                 currentValue={textValue}
                 onChangeHandler={handleFontChange}
             >
                 {getMenuItemsFromFontMetaData()}
-            </FormsSelect>
+            </WinFormsStyleSelect>
             {/* This is the font information popup that gives information about the hovered font. */}
             <Popover
                 open={isPopoverOpen}
