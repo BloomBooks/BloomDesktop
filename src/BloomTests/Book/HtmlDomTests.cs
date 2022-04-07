@@ -1747,5 +1747,126 @@ p {
 			var output = HtmlDom.ReplaceAllIdValues(input);
 			Assert.That(output, Is.EqualTo(input));
 		}
+
+		[Test]
+		[TestCase(@"/* *** DO NOT EDIT! ***   These styles are controlled by the Settings dialog box in Bloom. */
+/* They may be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */
+
+.numberedPage::after
+{
+ font-family: 'Andika';
+ direction: ltr;
+}
+
+[lang='en']
+{
+ font-family: 'Andika New Basic';
+ direction: ltr;
+}
+
+[lang='enc']
+{
+ font-family: 'Charis';
+ direction: ltr;
+}
+
+[lang='fr']
+{
+ font-family: 'Doulos';
+ direction: ltr;
+}
+[lang='zh-CN']
+{
+ font-family: 'Engravers MT';
+ direction: ltr;
+}
+",
+	@"/* *** DO NOT EDIT! ***   These styles are controlled by the Settings dialog box in Bloom. */
+/* They may be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */
+
+.numberedPage::after
+{
+ font-family: 'Andika';
+ direction: ltr;
+}
+
+[lang='en']
+{
+ font-family: 'Andika New Basic';
+ direction: ltr;
+}
+
+
+[lang='fr']
+{
+ font-family: 'Doulos';
+ direction: ltr;
+}
+
+")]
+		[TestCase(@"/*<![CDATA[*/
+    .BigWords-style { font-size: 28pt !important; text-align: center !important; }
+    .normal-style[lang=""en""] { font-family: Annapurna SIL !important; font-size: 16pt !important; line-height: 1.5 !important; }
+    .normal-style { font-size: 16pt !important; line-height: 1.5 !important; }
+    .BigWords-style[lang=""enc""] { font-family: Engravers MT !important; font-size: 28pt !important; }
+    .BigWords-style[lang=""zh-CN""] { font-family: WenQuanYi Zen Hei !important; font-size: 28pt !important; }
+    .Title-On-Cover-style[lang=""en""] { line-height: 1.1 !important; }/*]]>*/",
+    	@"/*<![CDATA[*/
+    .BigWords-style { font-size: 28pt !important; text-align: center !important; }
+    .normal-style[lang=""en""] { font-family: Annapurna SIL !important; font-size: 16pt !important; line-height: 1.5 !important; }
+    .normal-style { font-size: 16pt !important; line-height: 1.5 !important; }
+
+    .Title-On-Cover-style[lang=""en""] { line-height: 1.1 !important; }/*]]>*/")]
+		public void RemoveUnwantedLanguageRulesFromCss_RemovesUnwanted(string cssText, string desiredResult)
+		{
+			var output = HtmlDom.RemoveUnwantedLanguageRulesFromCss(cssText, new[] { "en", "fr" });
+			Assert.That(output, Is.EqualTo(desiredResult));
+		}
+
+		[Test]
+		[TestCase(@"/* *** DO NOT EDIT! ***   These styles are controlled by the Settings dialog box in Bloom. */
+/* They may be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */
+
+.numberedPage::after
+{
+ font-family: 'Andika';
+ direction: ltr;
+}
+
+[lang='en']
+{
+ font-family: 'Andika New Basic';
+ direction: ltr;
+}
+
+[lang='enc']
+{
+ font-family: 'Charis';
+ direction: ltr;
+}
+
+[lang='fr']
+{
+ font-family: 'Doulos';
+ direction: ltr;
+}
+[lang='zh-CN']
+{
+ font-family: 'Engravers MT';
+ direction: ltr;
+}
+")]
+		[TestCase(@"/*<![CDATA[*/
+    .BigWords-style { font-size: 28pt !important; text-align: center !important; }
+    .normal-style[lang=""en""] { font-family: Annapurna SIL !important; font-size: 16pt !important; line-height: 1.5 !important; }
+    .normal-style { font-size: 16pt !important; line-height: 1.5 !important; }
+    .BigWords-style[lang=""enc""] { font-family: Engravers MT !important; font-size: 28pt !important; }
+    .BigWords-style[lang=""zh-CN""] { font-family: Engravers MT !important; font-size: 28pt !important; }
+    .Title-On-Cover-style[lang=""en""] { line-height: 1.1 !important; }/*]]>*/")]
+		public void RemoveUnwantedLanguageRulesFromCss_AllWanted_NoChange(string cssText)
+		{
+			var output = HtmlDom.RemoveUnwantedLanguageRulesFromCss(cssText, new[] { "en", "fr", "enc", "zh-CN" });
+			Assert.That(output, Is.EqualTo(cssText));
+		}
 	}
 }
