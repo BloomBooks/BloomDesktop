@@ -1747,5 +1747,152 @@ p {
 			var output = HtmlDom.ReplaceAllIdValues(input);
 			Assert.That(output, Is.EqualTo(input));
 		}
+
+		[Test]
+		public void RemoveUnwantedLanguageRulesFromCss_Removes1()
+		{
+			var cssText = @"/* *** DO NOT EDIT! ***   These styles are controlled by the Settings dialog box in Bloom. */
+/* They may be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */
+
+.numberedPage::after
+{
+ font-family: 'Andika';
+ direction: ltr;
+}
+
+[lang='en']
+{
+ font-family: 'Andika New Basic';
+ direction: ltr;
+}
+
+[lang='enc']
+{
+ font-family: 'Charis';
+ direction: ltr;
+}
+
+[lang='fr']
+{
+ font-family: 'Doulos';
+ direction: ltr;
+}
+[lang='zh-CN']
+{
+ font-family: 'Engravers MT';
+ direction: ltr;
+}
+";
+			var desiredResult = @"/* *** DO NOT EDIT! ***   These styles are controlled by the Settings dialog box in Bloom. */
+/* They may be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */
+
+.numberedPage::after
+{
+ font-family: 'Andika';
+ direction: ltr;
+}
+
+[lang='en']
+{
+ font-family: 'Andika New Basic';
+ direction: ltr;
+}
+
+
+[lang='fr']
+{
+ font-family: 'Doulos';
+ direction: ltr;
+}
+
+";
+
+			var output = HtmlDom.RemoveUnwantedLanguageRulesFromCss(cssText, new[] { "en", "fr" });
+			// Does doesn't seem to have string equality in its repertoire
+			Assert.That(output, Does.StartWith(desiredResult));
+			Assert.That(output, Does.EndWith(desiredResult));
+		}
+
+		[Test]
+		public void RemoveUnwantedLanguageRulesFromCss_NoChange1()
+		{
+			var cssText = @"/* *** DO NOT EDIT! ***   These styles are controlled by the Settings dialog box in Bloom. */
+/* They may be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */
+
+.numberedPage::after
+{
+ font-family: 'Andika';
+ direction: ltr;
+}
+
+[lang='en']
+{
+ font-family: 'Andika New Basic';
+ direction: ltr;
+}
+
+[lang='enc']
+{
+ font-family: 'Charis';
+ direction: ltr;
+}
+
+[lang='fr']
+{
+ font-family: 'Doulos';
+ direction: ltr;
+}
+[lang='zh-CN']
+{
+ font-family: 'Engravers MT';
+ direction: ltr;
+}
+";
+
+			var output = HtmlDom.RemoveUnwantedLanguageRulesFromCss(cssText, new[] { "en", "fr", "enc", "zh-CN" });
+			// Does doesn't seem to have string equality in its repertoire
+			Assert.That(output, Does.StartWith(cssText));
+			Assert.That(output, Does.EndWith(cssText));
+		}
+
+		[Test]
+		public void RemoveUnwantedLanguageRulesFromCss_Removes2()
+		{
+			var cssText = @"/*<![CDATA[*/
+    .BigWords-style { font-size: 28pt !important; text-align: center !important; }
+    .normal-style[lang=""en""] { font-family: Annapurna SIL !important; font-size: 16pt !important; line-height: 1.5 !important; }
+    .normal-style { font-size: 16pt !important; line-height: 1.5 !important; }
+    .BigWords-style[lang=""enc""] { font-family: Engravers MT !important; font-size: 28pt !important; }
+    .BigWords-style[lang=""zh-CN""] { font-family: WenQuanYi Zen Hei !important; font-size: 28pt !important; }
+    .Title-On-Cover-style[lang=""en""] { line-height: 1.1 !important; }/*]]>*/";
+			var desiredResult = @"/*<![CDATA[*/
+    .BigWords-style { font-size: 28pt !important; text-align: center !important; }
+    .normal-style[lang=""en""] { font-family: Annapurna SIL !important; font-size: 16pt !important; line-height: 1.5 !important; }
+    .normal-style { font-size: 16pt !important; line-height: 1.5 !important; }
+
+    .Title-On-Cover-style[lang=""en""] { line-height: 1.1 !important; }/*]]>*/";
+
+			var output = HtmlDom.RemoveUnwantedLanguageRulesFromCss(cssText, new[] { "en", "fr" });
+			// Does doesn't seem to have string equality in its repertoire
+			Assert.That(output, Does.StartWith(desiredResult));
+			Assert.That(output, Does.EndWith(desiredResult));
+		}
+
+		[Test]
+		public void RemoveUnwantedLanguageRulesFromCss_NoChange2()
+		{
+			var cssText = @"/*<![CDATA[*/
+    .BigWords-style { font-size: 28pt !important; text-align: center !important; }
+    .normal-style[lang=""en""] { font-family: Annapurna SIL !important; font-size: 16pt !important; line-height: 1.5 !important; }
+    .normal-style { font-size: 16pt !important; line-height: 1.5 !important; }
+    .BigWords-style[lang=""enc""] { font-family: Engravers MT !important; font-size: 28pt !important; }
+    .BigWords-style[lang=""zh-CN""] { font-family: Engravers MT !important; font-size: 28pt !important; }
+    .Title-On-Cover-style[lang=""en""] { line-height: 1.1 !important; }/*]]>*/";
+
+			var output = HtmlDom.RemoveUnwantedLanguageRulesFromCss(cssText, new[] { "en", "fr", "enc", "zh-CN" });
+			// Does doesn't seem to have string equality in its repertoire
+			Assert.That(output, Does.StartWith(cssText));
+			Assert.That(output, Does.EndWith(cssText));
+		}
 	}
 }

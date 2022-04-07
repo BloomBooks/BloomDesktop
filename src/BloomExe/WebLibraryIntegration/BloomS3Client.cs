@@ -344,7 +344,14 @@ namespace Bloom.WebLibraryIntegration
 				PublishModel.RemoveUnwantedLanguageData(dom, languagesToInclude);
 				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, filepath);
 			}
-			// ENHANCE: remove language specific style settings from all CSS files for unwanted languages.
+			// Remove language specific style settings from all CSS files for unwanted languages.
+			foreach (var filepath in Directory.EnumerateFiles(destDirName, "*.css"))
+			{
+				var cssTextOrig = RobustFile.ReadAllText(filepath);
+				var cssText = HtmlDom.RemoveUnwantedLanguageRulesFromCss(cssTextOrig, languagesToInclude);
+				if (cssText != cssTextOrig)
+					RobustFile.WriteAllText(filepath, cssText);
+			}
 		}
 
 
