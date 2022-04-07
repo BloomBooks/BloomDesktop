@@ -45,7 +45,7 @@ import {
 } from "@material-ui/core";
 import { kBloomRed } from "../../utils/colorUtils";
 import { SimplePreview } from "./simplePreview";
-import { VideoOptionsGroup } from "./VideoOptionsGroup";
+import { AudioVideoOptionsGroup } from "./AudioVideoOptionsGroup";
 import { Div, Span } from "../../react_components/l10nComponents";
 import {
     ErrorBox,
@@ -541,7 +541,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                 </PublishPanel>
 
                 <SettingsPanel>
-                    <VideoOptionsGroup
+                    <AudioVideoOptionsGroup
                         pageTurnDelay={avSettings.pageTurnDelay}
                         onSetPageTurnDelay={(n: number) =>
                             setAvSettings({ ...avSettings, pageTurnDelay: n })
@@ -550,7 +550,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                         setFormat={(f: string) =>
                             setAvSettings({ ...avSettings, format: f })
                         }
-                    ></VideoOptionsGroup>
+                    ></AudioVideoOptionsGroup>
                     {motionEnabled && (
                         <FormGroup
                             css={css`

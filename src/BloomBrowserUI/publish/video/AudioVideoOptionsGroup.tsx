@@ -31,7 +31,7 @@ interface IFormatItem {
 }
 
 // Props for the VideoFormatOptions component, which displays an instance of IFormatItem
-interface IVideoFormatOptionProps extends IFormatItem {
+interface IProps extends IFormatItem {
     // The VideoFormatItem may (when hovered over) display a popup with more details.
     // Usually the VFM controls for itself whether this is shown; but we also permit
     // this behavior to work in the controlled component mode, where the client controls
@@ -47,7 +47,7 @@ interface IVideoFormatOptionProps extends IFormatItem {
     popupAnchorElement?: HTMLElement | null;
 }
 
-export const VideoOptionsGroup: React.FunctionComponent<{
+export const AudioVideoOptionsGroup: React.FunctionComponent<{
     pageTurnDelay: number;
     onSetPageTurnDelay: (arg: number) => void;
     format: string;
@@ -274,7 +274,7 @@ export const VideoOptionsGroup: React.FunctionComponent<{
     );
 };
 
-const VideoFormatItem: React.FunctionComponent<IVideoFormatOptionProps> = props => {
+const VideoFormatItem: React.FunctionComponent<IProps> = props => {
     // controls visibility and placement of the detail popup element when we are not
     // being used in controlled mode. Ignored if props.changePopupAnchor is defined.
     const [localAnchorEl, setAnchorEl] = React.useState<HTMLElement | null>(
