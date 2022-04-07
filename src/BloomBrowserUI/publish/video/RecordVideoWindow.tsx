@@ -584,10 +584,10 @@ const RecordVideoWindowInternal: React.FunctionComponent<{
                     )}
                     <HelpGroup>
                         <HelpLink
-                            l10nKey="PublishTab.Android.AboutBookFeatures"
-                            helpId="Tasks/Publish_tasks/Features.htm"
+                            l10nKey="PublishTab.RecordVideo.OverviewHelpLink"
+                            helpId="Tasks/Publish_tasks/Create_Video_of_book.htm"
                         >
-                            About Book Features
+                            Publishing Audio or Video Books
                         </HelpLink>
                     </HelpGroup>
                 </SettingsPanel>
