@@ -261,6 +261,8 @@ namespace Bloom.WebLibraryIntegration
 			if (languagesToInclude != null && languagesToInclude.Count() > 0)
 				RemoveUnwantedLanguageData(destDirName, languagesToInclude);
 
+			PublishHelper.ReportInvalidFonts(destDirName, progress);
+
 			UploadDirectory(prefix, wrapperPath, progress);
 
 			DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));
@@ -342,6 +344,7 @@ namespace Bloom.WebLibraryIntegration
 				PublishModel.RemoveUnwantedLanguageData(dom, languagesToInclude);
 				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, filepath);
 			}
+			// ENHANCE: remove language specific style settings from all CSS files for unwanted languages.
 		}
 
 

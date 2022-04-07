@@ -65,7 +65,7 @@ const FontDisplayBar: React.FunctionComponent<FontDisplayBarProps> = props => {
                     {...commonProps}
                 />
             )}
-            {suitability === "unsuitable" && (
+            {(suitability === "unsuitable" || suitability === "invalid") && (
                 <UnsuitableIcon
                     htmlColor={
                         props.inDropdownList

@@ -1257,35 +1257,42 @@ namespace BloomTests.Publish
 				var timesNewRomanFileName = "Times New Roman R.ttf";
 				var tnrPath = Path.Combine(tempFontFolder.Path, timesNewRomanFileName);
 				File.WriteAllText(tnrPath, "This is phony TNR");
+				var tnrGroup = new FontGroup {Normal=tnrPath};
+				var timesMeta = new FontMetadata("Times New Roman", tnrGroup);
+				timesMeta.SetSuitabilityForTest(FontMetadata.kOK);
+				FontsApi.AvailableFontMetadataDictionary.Add("Times New Roman", timesMeta);
+
 				var wenYeiFileName = "Wen Yei.ttc";
 				var wenYeiPath = Path.Combine(tempFontFolder.Path, wenYeiFileName);
 				File.WriteAllText(wenYeiPath, "This is phony Wen Yei font collection");
+				var wenYeiGroup = new FontGroup {Normal=wenYeiPath};
+				var wenYeiMeta = new FontMetadata("Wen Yei", wenYeiGroup);
+				// Code marks invalid based on .ttc filename extension
+				FontsApi.AvailableFontMetadataDictionary.Add("Wen Yei", wenYeiMeta);
 
 				// Font called for in custom styles CSS
 				var calibreFileName = "Calibre R.ttf";
 				var calibrePath = Path.Combine(tempFontFolder.Path, calibreFileName);
 				File.WriteAllBytes(calibrePath, new byte[200008]); // we want something with a size greater than zero in megs
+				var calibreGroup = new FontGroup{Normal=calibrePath};
+				var calibreMeta = new FontMetadata("Calibre", calibreGroup);
+				calibreMeta.SetSuitabilityForTest(FontMetadata.kOK);
+				FontsApi.AvailableFontMetadataDictionary.Add("Calibre", calibreMeta);
 
+				fontFileFinder.FontGroups["Times New Roman"] = tnrGroup;
 				fontFileFinder.FilesForFont["Times New Roman"] = new[] { tnrPath };
+				fontFileFinder.FontGroups["Wen Yei"] = wenYeiGroup;
 				fontFileFinder.FilesForFont["Wen Yei"] = new[] { wenYeiPath };
+				fontFileFinder.FontGroups["Calibre"] = calibreGroup;
 				fontFileFinder.FilesForFont["Calibre"] = new [] { calibrePath };
 				fontFileFinder.FontsWeCantInstall.Add("NotAllowed");
 				// And "NotFound" just doesn't get a mention anywhere.
+				PublishHelper.ClearFontMetadataMapForTests();
 
 				var stubProgress = new StubProgress();
 
 				var customStylesPath = Path.Combine(testBook.FolderPath, "customCollectionStyles.css");
 				File.WriteAllText(customStylesPath, ".someStyle {font-family:'Calibre';} .otherStyle {font-family: 'NotFound';} .yetAnother {font-family:'NotAllowed';}");
-
-				var tnrGroup = new FontGroup();
-				tnrGroup.Normal = tnrPath;
-				fontFileFinder.FontGroups["Times New Roman"] = tnrGroup;
-				var wenYeiGroup = new FontGroup();
-				wenYeiGroup.Normal = wenYeiPath;
-				fontFileFinder.FontGroups["Wen Yei"] = wenYeiGroup;
-				var calibreGroup = new FontGroup();
-				calibreGroup.Normal = calibrePath;
-				fontFileFinder.FontGroups["Calibre"] = calibreGroup;
 
 				HashSet<string> fontsWanted = new HashSet<string>();
 				fontsWanted.Add("Times New Roman");

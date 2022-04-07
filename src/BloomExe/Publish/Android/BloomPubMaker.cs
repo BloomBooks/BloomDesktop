@@ -395,52 +395,12 @@ namespace Bloom.Publish.Android
 		/// Create an extra css file (fonts.css) which tells the book to find the font files for those font families
 		/// in the local folder, and insert a link to it into the book.
 		/// </summary>
-		/// <param name="book"></param>
-		/// <param name="progress"></param>
 		/// <param name="fontFileFinder">use new FontFinder() for real, or a stub in testing</param>
 		public static void EmbedFonts(Book.Book book, IWebSocketProgress progress, HashSet<string> fontsWanted, IFontFinder fontFileFinder)
 		{
 			const string defaultFont = "Andika New Basic"; // already in BR, don't need to embed or make rule.
 			fontsWanted.Remove(defaultFont);
-			fontFileFinder.NoteFontsWeCantInstall = true;
-			var filesToEmbed = new List<string>();
-			var badFonts = new HashSet<string>();
-			foreach (var font in fontsWanted)
-			{
-				var fontFiles = fontFileFinder.GetFilesForFont(font);
-				var gotFiles = fontFiles.Any();
-				var extensionToCheck = gotFiles ? Path.GetExtension(fontFiles.First()).ToLowerInvariant() : "";
-				var badFileType = gotFiles && !FontMetadata.fontFileTypesBloomKnows.Contains(extensionToCheck);
-				if (gotFiles && !badFileType)
-				{
-					filesToEmbed.AddRange(fontFiles);
-					progress.MessageWithParams("PublishTab.Android.File.Progress.CheckFontOK", "{0} is a font name", "Checking {0} font: License OK for embedding.", ProgressKind.Progress, font);
-					// Assumes only one font file per font; if we embed multiple ones will need to enhance this.
-					var size = new FileInfo(fontFiles.First()).Length;
-					var sizeToReport = (size / 1000000.0).ToString("F1"); // purposely locale-specific; might be e.g. 1,2
-					progress.MessageWithParams("PublishTab.Android.File.Progress.Embedding",
-						"{1} is a number with one decimal place, the number of megabytes the font file takes up",
-						"Embedding font {0} at a cost of {1} megs",
-						ProgressKind.Note,
-						font, sizeToReport);
-					continue;
-				}
-				if (badFileType)
-				{
-					progress.MessageWithParams("IncompatibleFontFileFormat", "{0} is a font name, {1} is a file extension (for example: .ttc)", "This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).", ProgressKind.Error, font, extensionToCheck);
-				}
-				else if (fontFileFinder.FontsWeCantInstall.Contains(font))
-				{
-					//progress.Error("Common.Warning", "Warning");
-					progress.MessageWithParams("LicenseForbids","{0} is a font name", "This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.",ProgressKind.Error, font);
-				}
-				else
-				{
-					progress.MessageWithParams("NoFontFound", "{0} is a font name", "This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.", ProgressKind.Error, font);
-				}
-				progress.MessageWithParams("SubstitutingAndika", "{0} is a font name", "Bloom will substitute \"{0}\" instead.", ProgressKind.Error, defaultFont, font);
-				badFonts.Add(font);	// need to prevent the bad/missing font from showing up in fonts.css and elsewhere
-			}
+			PublishHelper.CheckFontsForEmbedding(progress, fontsWanted, fontFileFinder, out List<string> filesToEmbed, out HashSet<string> badFonts);
 			foreach (var file in filesToEmbed)
 			{
 				// Enhance: do we need to worry about problem characters in font file names?
@@ -469,51 +429,9 @@ namespace Bloom.Publish.Android
 			book.OurHtmlDom.AddStyleSheet("fonts.css");
 			// Repair defaultLangStyles.css and other places in the output book if needed.
 			if (badFonts.Any())
-				FixCssReferencesForBadFonts(book, defaultFont, badFonts);
-		}
-
-		private static void FixCssReferencesForBadFonts(Book.Book book, string defaultFont, HashSet<string> badFonts)
-		{
-			// Note that the font may be referred to in defaultLangStyles.css, in customCollectionStyles.css, or in a style defined in the HTML.
-			var defaultLangStyles = Path.Combine(book.FolderPath, "defaultLangStyles.css");
-			if (RobustFile.Exists(defaultLangStyles))
 			{
-				var cssTextOrig = RobustFile.ReadAllText(defaultLangStyles);
-				var cssText = cssTextOrig;
-				foreach (var font in badFonts)
-				{
-					var cssRegex = new System.Text.RegularExpressions.Regex($"font-family:\\s*'?{font}'?;");
-					cssText = cssRegex.Replace(cssText, $"font-family: '{defaultFont}';");
-				}
-				if (cssText != cssTextOrig)
-					RobustFile.WriteAllText(defaultLangStyles, cssText);
-			}
-			var customCollectionStyles = Path.Combine(book.FolderPath, "customCollectionStyles.css");
-			if (RobustFile.Exists(customCollectionStyles))
-			{
-				var cssTextOrig = RobustFile.ReadAllText(customCollectionStyles);
-				var cssText = cssTextOrig;
-				foreach (var font in badFonts)
-				{
-					var cssRegex = new System.Text.RegularExpressions.Regex($"font-family:\\s*'?{font}'?;");
-					cssText = cssRegex.Replace(cssText, $"font-family: '{defaultFont}';");
-				}
-				if (cssText != cssTextOrig)
-					RobustFile.WriteAllText(customCollectionStyles, cssText);
-			}
-			// Now for styles defined in the dom...
-			var userStylesNode = book.OurHtmlDom.SelectSingleNode("//head/style[@type='text/css' and @title='userModifiedStyles']");
-			if (userStylesNode != null && !String.IsNullOrEmpty(userStylesNode.InnerXml) && userStylesNode.InnerXml.Contains("font-family:"))
-			{
-				var cssTextOrig = userStylesNode.InnerXml;  // InnerXml needed to preserve CDATA markup
-				var cssText = cssTextOrig;
-				foreach (var font in badFonts)
-				{
-					var cssRegex = new System.Text.RegularExpressions.Regex($"font-family:\\s*{font}\\s*!\\s*important;");
-					cssText = cssRegex.Replace(cssText, $"font-family: {defaultFont} !important;");
-				}
-				if (cssText != cssTextOrig)
-					userStylesNode.InnerXml = cssText;
+				PublishHelper.FixCssReferencesForBadFonts(book.FolderPath, defaultFont, badFonts);
+				PublishHelper.FixXmlDomReferencesForBadFonts(book.OurHtmlDom.RawDom, defaultFont, badFonts);
 			}
 		}
 
