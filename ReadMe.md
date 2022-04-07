@@ -41,6 +41,8 @@ To install nvm (and the needed versions of nodejs) on Linux, run these commands 
 This will build and test the Typescript, javascript, less, and pug:
 
     nvm use 16.13.1    # or whatever the current package.json "engine" specifies
+    cd src/content
+    yarn
     cd ../BloomBrowserUI
     yarn
     yarn build

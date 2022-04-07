@@ -10,11 +10,6 @@
     "engines": {
         "node": "~16.13.1"
     },
-    "private": true,
-    "// workspaces here is so that `yarn install` will also install what we need for content": "",
-    "workspaces": [
-        "../content"
-    ],
     "scripts": {
         "test": "karma start --browsers Firefox  --single-run",
         "testWatch": "karma start --browsers Firefox",

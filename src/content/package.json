@@ -1,7 +1,4 @@
 {
-    "name": "content",
-    "private": true,
-    "version": "0.0.0",
     "scripts": {
         "build": "npm-run-all build:pug build:less build:branding:files build:templates:files build:templates:typescript",
         "watch": "npm-run-all watch:pug watch:less watch:branding:files",
