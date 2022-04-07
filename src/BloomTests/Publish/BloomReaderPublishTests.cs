@@ -1249,6 +1249,7 @@ namespace BloomTests.Publish
 			</body></html>";
 			var testBook = CreateBookWithPhysicalFile(bookHtml, bringBookUpToDate: false);
 			var fontFileFinder = new StubFontFinder();
+			FontsApi.AvailableFontMetadataDictionary.Clear();
 			using (var tempFontFolder = new TemporaryFolder("EmbedFonts_EmbedsExpectedFontsAndReportsOthers"))
 			{
 				fontFileFinder.NoteFontsWeCantInstall = true;
