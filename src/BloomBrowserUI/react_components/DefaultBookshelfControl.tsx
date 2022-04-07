@@ -197,7 +197,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
                         font-size: 10pt;
                         padding-left: 7px; // match what winforms is doing
                         &:before {
-                            content: none;
+                            content: none !important; // 'important' gets rid of dotted line under Select
                         }
                         &:after {
                             content: none;
