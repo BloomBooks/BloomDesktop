@@ -157,7 +157,7 @@ git checkout bloom-ffmpeg5.0
 mkdir build
 cd build
 ../configure \
- --disable-postproc --enable-avcodec --enable-avdevice --enable-avformat --enable-avfilter --enable-swresample --enable-swscale --disable-encoders --enable-encoder='rawvideo,libx264,libvpx_vp8,aac,libmp3lame,h263' --disable-hwaccels --disable-parsers --enable-parser=h264,vp8,mpegaudio --disable-protocols --enable-protocol='file,concat' --disable-muxers --enable-muxer='rawvideo,mp4,mp3,tgp' --disable-bsfs --disable-filters --enable-filter='scale,adelay,afade,amix,aresample,volume' --disable-indevs --enable-indev=gdigrab --disable-outdevs \
+ --disable-postproc --enable-avcodec --enable-avdevice --enable-avformat --enable-avfilter --enable-swresample --enable-swscale --disable-encoders --enable-encoder='rawvideo,libx264,libvpx_vp8,aac,libmp3lame,h263' --disable-hwaccels --disable-parsers --enable-parser=h264,vp8,mpegaudio --disable-protocols --enable-protocol='file,concat' --disable-muxers --enable-muxer='rawvideo,mp4,mp3,tgp' --disable-bsfs --disable-filters --enable-filter='scale,adelay,amix,aresample,volume' --disable-indevs --enable-indev=gdigrab --disable-outdevs \
   \
  --disable-autodetect --enable-libx264 --enable-libvorbis --enable-libvpx --enable-libmp3lame \
   \
