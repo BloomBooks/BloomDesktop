@@ -4,7 +4,11 @@ import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
 import { storiesOf } from "@storybook/react";
-import { Radio, RadioGroup as MuiRadioGroup } from "@material-ui/core";
+import {
+    Radio,
+    RadioGroup as MuiRadioGroup,
+    Typography
+} from "@material-ui/core";
 import { Expandable } from "./expandable";
 import { Checkbox } from "./checkbox";
 import { MuiCheckbox } from "./muiCheckBox";
@@ -40,12 +44,14 @@ import {
     Button,
     Divider,
     Menu,
+    MenuItem,
     FormControlLabel,
     Checkbox as OriginalMuiCheckbox
 } from "@material-ui/core";
-import FontScriptSettingsControl from "../collection/fontScriptSettingsControl";
 import { RadioGroup } from "./RadioGroup";
 import { MuiRadio } from "./muiRadio";
+import WinFormsStyleSelect from "./winFormsStyleSelect";
+import BookMakingSettingsControl from "../collection/bookMakingSettingsControl";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -560,19 +566,79 @@ storiesOf("Misc", module)
         })
     );
 
-const frameDivStyle: React.CSSProperties = {
-    width: "300px",
-    height: "290px",
-    border: "1px solid green"
+const selectItem1 = {
+    name: "1st menu item",
+    value: "One"
 };
 
-storiesOf("Misc/Collection Settings", module).add("Font-Script Control", () =>
-    React.createElement(() => (
-        <div style={frameDivStyle}>
-            <FontScriptSettingsControl />
-        </div>
-    ))
-);
+const selectItem2 = {
+    name: "2nd menu item",
+    value: "Two"
+};
+
+const selectItem3 = {
+    name: "3rd menu item",
+    value: "Three"
+};
+
+const selectItem4 = {
+    name: "4th menu item",
+    value: "Four"
+};
+
+const selectTestData = [selectItem1, selectItem2, selectItem3, selectItem4];
+
+const selectTestChildren: JSX.Element[] = selectTestData.map((item, index) => {
+    return (
+        <MenuItem
+            key={index}
+            value={item.value}
+            dense
+            css={css`
+                padding-top: 0 !important;
+                padding-bottom: 0 !important;
+            `}
+        >
+            {item.name}
+        </MenuItem>
+    );
+});
+
+const frameDivStyle: React.CSSProperties = {
+    // This is the size of the collection settings dialog tabpanes
+    width: "642px",
+    height: "452px",
+    border: "1px solid green",
+    backgroundColor: "#F0F0F0" // winforms control background
+};
+
+storiesOf("Misc/Collection Settings", module)
+    .add("WinForms imitating Select", () =>
+        React.createElement(() => (
+            <div style={frameDivStyle}>
+                <WinFormsStyleSelect
+                    idKey="test1"
+                    currentValue="Two"
+                    onChangeHandler={() => {}}
+                >
+                    {selectTestChildren}
+                </WinFormsStyleSelect>
+            </div>
+        ))
+    )
+    .add("Book Making tab pane", () =>
+        React.createElement(() => (
+            <div>
+                <div style={frameDivStyle}>
+                    <BookMakingSettingsControl />
+                </div>
+                <Typography>
+                    Have Bloom running while testing this and the api calls will
+                    work.
+                </Typography>
+            </div>
+        ))
+    );
 
 const playbackControlsDivStyles: React.CSSProperties = {
     width: "150px",

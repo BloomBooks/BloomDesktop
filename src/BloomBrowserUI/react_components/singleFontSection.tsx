@@ -6,8 +6,9 @@ import { BloomApi } from "../utils/bloomApi";
 import FontSelectComponent, {
     IFontMetaData
 } from "../bookEdit/StyleEditor/fontSelectComponent";
-import { Div } from "./l10nComponents";
 import { Link } from "./link";
+import { useL10n } from "./l10nHooks";
+import { Typography } from "@material-ui/core";
 
 const SingleFontSection: React.FunctionComponent<{
     languageNumber: number;
@@ -27,27 +28,27 @@ const SingleFontSection: React.FunctionComponent<{
         });
     };
 
+    const defaultFontMessage = useL10n(
+        "Default Font for {0}",
+        "CollectionSettingsDialog.BookMakingTab.DefaultFontFor",
+        "{0} is a language name.",
+        props.languageName
+    );
+
     return (
         <React.Fragment>
-            <div
+            <Typography
                 css={css`
-                    font-family: "Segoe UI Semibold";
+                    font-family: Segoe UI !important;
+                    font-weight: 700 !important;
                 `}
             >
-                <Div
-                    l10nKey="CollectionSettingsDialog.BookMakingTab.DefaultFontFor"
-                    l10nParam0={props.languageName}
-                >
-                    Default Font for {0}
-                </Div>
-            </div>
+                {defaultFontMessage}
+            </Typography>
             <FontSelectComponent
                 key={props.languageNumber}
                 fontMetadata={props.fontMetadata}
                 currentFontName={props.currentFontName}
-                // The popover will left-justify itself, since there are blocking controls to the right.
-                // Once the whole tab becomes a React control, we can probably do away with this.
-                anchorPopoverLeft={true}
                 onChangeFont={fontChangeHandler}
                 css={css`
                     width: 200px;

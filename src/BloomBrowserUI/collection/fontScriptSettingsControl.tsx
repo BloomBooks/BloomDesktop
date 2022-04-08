@@ -6,7 +6,6 @@ import { BloomApi } from "../utils/bloomApi";
 import { lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { IFontMetaData } from "../bookEdit/StyleEditor/fontSelectComponent";
-import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { useEffect, useState } from "react";
 import SingleFontSection from "../react_components/singleFontSection";
 
@@ -38,17 +37,17 @@ export const FontScriptSettingsControl: React.FunctionComponent = () => {
 
     useEffect(() => {
         BloomApi.get("settings/currentFontData", result => {
-            // fontData should be 2 or 3 tuples of (language display name and current font name)
-            const fontData = result.data.langData;
+            // fontData should be 2 or 3 sets of (language display name and current font name)
+            const fontData = result.data;
             // Language 1 data
-            setLanguage1Name(fontData[0].Item1);
-            setLanguage1Font(fontData[0].Item2);
+            setLanguage1Name(fontData[0].languageName);
+            setLanguage1Font(fontData[0].fontName);
             // Language 2 data
-            setLanguage2Name(fontData[1].Item1);
-            setLanguage2Font(fontData[1].Item2);
+            setLanguage2Name(fontData[1].languageName);
+            setLanguage2Font(fontData[1].fontName);
             // Language 3 data - possibly undefined
-            setLanguage3Name(fontData[2]?.Item1);
-            setLanguage3Font(fontData[2]?.Item2);
+            setLanguage3Name(fontData[2]?.languageName);
+            setLanguage3Font(fontData[2]?.fontName);
         });
     }, []);
 
@@ -62,13 +61,12 @@ export const FontScriptSettingsControl: React.FunctionComponent = () => {
     return (
         <ThemeProvider theme={lightTheme}>
             <div
-                // Partly copied from DefaultBookshelfControl, which also tries to imitate winForms.
                 css={css`
-                    font-family: "Segoe UI";
                     font-size: 10pt;
                     display: flex;
                     flex: 1;
                     flex-direction: column;
+                    min-height: 275px; // Don't change height of control as 3rd Lang. comes and goes.
                 `}
             >
                 {/* Language 1 section */}
@@ -104,5 +102,3 @@ export const FontScriptSettingsControl: React.FunctionComponent = () => {
 };
 
 export default FontScriptSettingsControl;
-
-WireUpForWinforms(FontScriptSettingsControl);
