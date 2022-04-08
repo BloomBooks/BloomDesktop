@@ -6,19 +6,14 @@ import { SettingsGroup } from "../commonPublish/BasePublishScreen";
 import { useL10n } from "../../react_components/l10nHooks";
 import { BloomApi } from "../../utils/bloomApi";
 import { Div } from "../../react_components/l10nComponents";
-import {
-    FormControl,
-    MenuItem,
-    Popover,
-    Select,
-    Typography
-} from "@material-ui/core";
+import { FormControl, MenuItem, Select, Typography } from "@material-ui/core";
 import Slider from "rc-slider";
 import "../../bookEdit/css/rc-slider-bloom.less";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import AudioIcon from "@material-ui/icons/VolumeUp";
 import { useEffect, useState } from "react";
 import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
+import { BloomTooltip } from "../../react_components/BloomToolTip";
 
 // The things that define each item in the Format menu
 interface IFormatItem {
@@ -275,51 +270,33 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
 };
 
 const VideoFormatItem: React.FunctionComponent<IProps> = props => {
-    // controls visibility and placement of the detail popup element when we are not
-    // being used in controlled mode. Ignored if props.changePopupAnchor is defined.
-    const [localAnchorEl, setAnchorEl] = React.useState<HTMLElement | null>(
-        null
-    );
-
-    // Handle an event that should open the detail popover.
-    const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
-        if (props.changePopupAnchor) {
-            props.changePopupAnchor(event.currentTarget);
-        } else {
-            setAnchorEl(event.currentTarget);
-        }
-    };
-
-    const anchorEl = props.changePopupAnchor
-        ? props.popupAnchorElement
-        : localAnchorEl;
-
-    // Handle an event that should close the detail popover.
-    const handlePopoverClose = () => {
-        if (props.changePopupAnchor) {
-            props.changePopupAnchor(null);
-        } else {
-            setAnchorEl(null);
-        }
-    };
-
-    const open = Boolean(anchorEl);
     const id = "mouse-over-popover-" + props.format;
-
-    const arrowSize = 8;
     const popupColor = kBloomBlue;
 
     return (
-        <div>
+        <BloomTooltip
+            id={id}
+            tooltipBackColor={popupColor}
+            popupAnchorElement={props.popupAnchorElement}
+            changePopupAnchor={props.changePopupAnchor}
+            tooltipContent={
+                <div
+                    css={css`
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                    `}
+                >
+                    <div>{props.dimension}</div>
+                    <div>{props.codec}</div>
+                </div>
+            }
+        >
             <div
                 css={css`
                     display: flex;
                     min-width: 155px;
                 `}
-                aria-owns={open ? id : undefined}
-                aria-haspopup="true"
-                onMouseEnter={handlePopoverOpen}
-                onMouseLeave={handlePopoverClose}
             >
                 {props.icon}
                 <Div
@@ -331,88 +308,7 @@ const VideoFormatItem: React.FunctionComponent<IProps> = props => {
                 >
                     {props.label}
                 </Div>
-                <Popover
-                    id={id}
-                    css={css`
-                        // This is just an informational popover, we don't need to suppress events outside it.
-                        // Even more importantly, we don't want to prevent the parent control from receiving
-                        // the mouse-move events that would indicate the mouse is no longer over the anchor
-                        // and so the popover should be removed!
-                        pointer-events: none;
-                        .MuiPopover-paper {
-                            // This allows the arrow to be seen. (If instead we try to make the arrow be
-                            // inside the main content area of the popover, it is impossible to get the
-                            // right background color to make the area either side of the arrow look right.
-                            // The popover div is added at the root level so that the whole thing doesn't
-                            // get clipped; therefore, a transparent background doesn't 'see' the thing that
-                            // it seems, visibly, to be on top of. And the background is very variable, as it
-                            // might be over a selected item, an unselected item, the shadow that gets created
-                            // around the popover, a combination of the above...)
-                            overflow: visible !important;
-                        }
-                    `}
-                    // This might be a better way to do it in material-ui 5? Not in V4 API, but in MUI examples.
-                    // sx={{
-                    //     pointerEvents: 'none',
-                    //   }}
-                    open={open}
-                    anchorEl={anchorEl}
-                    anchorOrigin={{
-                        vertical: "bottom",
-                        horizontal: "right"
-                    }}
-                    transformOrigin={{
-                        // 15 pixels below the bottom (based on anchorOrigin) of the anchor;
-                        // leaves room for arrow and a bit of margin.
-                        vertical: -15,
-                        horizontal: "right"
-                    }}
-                    onClose={handlePopoverClose}
-                    disableRestoreFocus // most MUI examples have this, not sure what it does.
-                >
-                    <div
-                        css={css`
-                            position: relative;
-                        `}
-                    >
-                        <div
-                            css={css`
-                                // This div makes the arrow.
-                                // I have not made it smart enough to move around if popover
-                                // gets smart and places the popover in an unexpected place
-                                // (e.g., so it fits in the window). This control is used in a small
-                                // enough screen region that I don't think this is likely to happen.
-                                border: solid ${arrowSize}px;
-                                position: absolute;
-                                top: ${1 - 2 * arrowSize}px;
-                                left: calc(50% - ${arrowSize / 2}px);
-                                border-color: transparent;
-                                border-bottom-color: ${popupColor};
-                            `}
-                        ></div>
-                        <div
-                            css={css`
-                                background-color: ${popupColor};
-                                color: white;
-                                border-radius: 4px;
-                                padding: 4px 8px;
-                                position: relative;
-                            `}
-                        >
-                            <div
-                                css={css`
-                                    display: flex;
-                                    flex-direction: column;
-                                    justify-content: center;
-                                `}
-                            >
-                                <div>{props.dimension}</div>
-                                <div>{props.codec}</div>
-                            </div>
-                        </div>
-                    </div>
-                </Popover>
             </div>
-        </div>
+        </BloomTooltip>
     );
 };
