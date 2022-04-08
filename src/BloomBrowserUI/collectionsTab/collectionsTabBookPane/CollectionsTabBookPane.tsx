@@ -71,8 +71,12 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     const canMakeBook = collectionKind != "main";
     // History, and thus the tab controls, are only relevant if there's a selected book
     // that is in the main collection, and only allowed if enterprise is enabled.
+    // We currently only collect useful history in team collections, so hide it otherwise.
     const showTabs =
-        selectedBookId && enterpriseAvailable && collectionKind == "main";
+        selectedBookId &&
+        enterpriseAvailable &&
+        collectionKind == "main" &&
+        isTeamCollection;
 
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
