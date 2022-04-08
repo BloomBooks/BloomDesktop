@@ -319,8 +319,8 @@ namespace Bloom.ErrorReporter
 		public void ReportNonFatalExceptionWithMessage(Exception error, string messageFormat, params object[] args)
 		{
 			var message = String.Format(messageFormat, args);
-			var shortMsg = error.Data["ProblemReportShortMessage"] as string;
-			var imageFilepath = error.Data["ProblemImagePath"] as string;
+			var shortMsg = error?.Data["ProblemReportShortMessage"] as string;
+			var imageFilepath = error?.Data["ProblemImagePath"] as string;
 			string[] extraFilepaths = null;
 			if (!String.IsNullOrEmpty(imageFilepath) && RobustFile.Exists(imageFilepath))
 			{
