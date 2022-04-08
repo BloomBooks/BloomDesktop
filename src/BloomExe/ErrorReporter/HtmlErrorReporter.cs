@@ -399,7 +399,17 @@ namespace Bloom.ErrorReporter
 			// ENHANCE: Allow the caller to pass in the control, which would be at the front of this.
 			//System.Windows.Forms.Control control = Form.ActiveForm ?? FatalExceptionHandler.ControlOnUIThread;
 			var control = GetControlToUse();
-			SafeInvoke.InvokeIfPossible("Show Error Reporter", control, false, () =>
+
+			//   For a long time, we used false for this parameter (this causes Control.BeginInvoke to be used instead of Control.Invoke).
+			// However, that's not right. The return value of this function does depend upon the delegate's completion;
+			// therefore it should be run synchronously to receive the correct return value.
+			//   The downside though is that we open ourselves up to a chance of deadlock, if A) the delegate or B) any work ahead of the delegate on the main thread
+			// depends upon the calling function. Thankfully, I think scenario A can basically be ruled out / ignored.
+			// Unfortunately, Scenario B is quite open-ended and difficult to ensure won't happen, but... well, I think that just means that
+			// // Main Thread work that blocks needs to be very careful and cognization of this scenario, and I don't think it's that unreasonable
+			// to ask people to be super careful when the main thread blocks.
+			bool isSynchronous = true;
+			SafeInvoke.InvokeIfPossible("Show Error Reporter", control, isSynchronous, () =>
 			{
 				// Uses a browser dialog to show the problem report
 				try
