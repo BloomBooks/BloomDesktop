@@ -162,6 +162,11 @@ namespace Bloom.ErrorReporter
 				// Tests another path through libPalaso directly (goes thru overloads 3, 4, 5)
 				ErrorReport.NotifyUserOfProblem((Exception)null, fakeProblemMessage);
 			}
+			else if (title == "Error NotifyUser ReportException NoRetry")
+			{
+				// Tests another path through libPalaso directly (goes thru overloads 3, 4, 5)
+				ErrorReport.NotifyUserOfProblem(fakeException, fakeProblemMessage);
+			}
 			else if (title == "Error NotifyUser Report NoRetry 2")
 			{
 				// Tests a path where you need to go through the ErrorReportUtils adapters
