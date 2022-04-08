@@ -373,6 +373,12 @@ namespace Bloom.Publish.Video
 				_webSocketServer.SendString("recordVideo", "ready", "true");
 				return;
 			}
+			// Narration is never truncated, so always has a default endTime.
+			// If the last music ends up not being truncated (unlikely), I think we can let
+			// it play to its natural end. In this case pathologically we might fade some earlier music.
+			// But I think BP will currently put an end time on any music that didn't play to the end and
+			// then start repeating.
+			var lastMusic = soundLog.LastOrDefault(item => item.endTime != default(DateTime));
 
 			// configure ffmpeg to merge everything.
 			// each sound file becomes an input by prefixing the path with -i.
@@ -387,9 +393,12 @@ namespace Bloom.Publish.Video
 				if (item.endTime != default(DateTime))
 				{
 					var duration = (item.endTime - item.startTime);
-
-
 					result += $"atrim=end={duration.TotalSeconds},";
+					if (item == lastMusic)
+					{
+						var fadeDuration = Math.Min(2, duration.TotalSeconds - 0.001); // make sure it ends up positive.
+						result += $"afade=t=out:st={duration.TotalSeconds - fadeDuration}:d={fadeDuration},";
+					}
 				}
 
 				// Add instructions to delay it by the right amount
