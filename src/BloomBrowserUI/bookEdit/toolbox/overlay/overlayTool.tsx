@@ -219,7 +219,8 @@ const OverlayToolControls: React.FunctionComponent = () => {
             const newSpec = bubbleMgr.updateSelectedFamilyBubbleSpec(
                 newBubbleProps
             );
-            setCurrentFamilySpec(newSpec); // we do this because the new style's spec may affect Show Tail too
+            // We do this because the new style's spec may affect Show Tail, or background opacity too.
+            setCurrentFamilySpec(newSpec);
         }
     };
 
@@ -277,6 +278,8 @@ const OverlayToolControls: React.FunctionComponent = () => {
             setTextColorSwatch(newColorSwatch);
 
             bubbleMgr.setTextColor(color);
+            // BL-9936/11104 Without this, bubble manager is up-to-date, but React doesn't know about it.
+            updateReactFromComical(bubbleMgr);
         }
     };
 
@@ -293,7 +296,17 @@ const OverlayToolControls: React.FunctionComponent = () => {
                 backgroundColors,
                 newColorSwatch.opacity
             );
+            // BL-9936/11104 Without this, bubble manager is up-to-date, but React doesn't know about it.
+            updateReactFromComical(bubbleMgr);
         }
+    };
+
+    // We use this to get React's 'currentFamilySpec' up-to-date with what comical has, since some minor
+    // React-initiated changes don't trigger BubbleManager's 'requestBubbleChangeNotification'.
+    // Changing 'currentFamilySpec' is what updates the UI of the toolbox in general.
+    const updateReactFromComical = (bubbleMgr: BubbleManager) => {
+        const newSpec = bubbleMgr.getSelectedFamilySpec();
+        setCurrentFamilySpec(newSpec);
     };
 
     // Callback when outline color of the bubble is changed
