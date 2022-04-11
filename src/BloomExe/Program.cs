@@ -100,6 +100,11 @@ namespace Bloom
 		{
 			_uiThreadId = Thread.CurrentThread.ManagedThreadId;
 			Logger.Init();
+			// Configure TempFile to create temp files with a "bloom" prefix so we can
+			// catch stuff we make that doesn't get cleaned up properly, including in our
+			// final call to CleanupTempFolder. Also prevents our temp files competing with
+			// other programs for 64K available default temp file names.
+			TempFile.NamePrefix = "bloom";
 			CheckForCorruptUserConfig();
 			// We want to do this as early as possible, definitely before we create
 			// the TeamCollectionManager, which needs the registered user information.
@@ -466,6 +471,10 @@ namespace Bloom
 				UniqueToken.ReleaseToken();
 
 				_sentry?.Dispose();
+#if ! Debug
+				// In a debug build we want to be able to see if we're leaving garbage around.
+				TempFile.CleanupTempFolder();
+#endif
 			}
 			Settings.Default.FirstTimeRun = false;
 			Settings.Default.Save();
