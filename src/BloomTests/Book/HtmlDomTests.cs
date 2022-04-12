@@ -1797,6 +1797,7 @@ p {
 }
 
 
+
 [lang='fr']
 {
  font-family: 'Doulos';
@@ -1815,6 +1816,7 @@ p {
     .BigWords-style { font-size: 28pt !important; text-align: center !important; }
     .normal-style[lang=""en""] { font-family: Annapurna SIL !important; font-size: 16pt !important; line-height: 1.5 !important; }
     .normal-style { font-size: 16pt !important; line-height: 1.5 !important; }
+
 
     .Title-On-Cover-style[lang=""en""] { line-height: 1.1 !important; }/*]]>*/")]
 		public void RemoveUnwantedLanguageRulesFromCss_RemovesUnwanted(string cssText, string desiredResult)
