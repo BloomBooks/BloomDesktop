@@ -16,7 +16,9 @@ namespace Bloom.Api
 	{
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointLegacy("i18n/", HandleI18nRequest, false);
+			// We get lots of these requests, and they don't use any non-local data except the LocalizationManager,
+			// which is designed to be thread-safe for lookup functions. So we can take advantage of parallelism here.
+			apiHandler.RegisterEndpointLegacy("i18n/", HandleI18nRequest, false, false);
 		}
 
 		public void HandleI18nRequest(ApiRequest request)
