@@ -68,7 +68,8 @@ namespace Bloom.Api
 			var message = string.Format("{{\"{0}\": {{\"enabled\": \"{1}\"}}}}", cmd.Name, cmd.Enabled.ToString());
 			foreach(var socket in _allSockets)
 			{
-				socket.Send(message);
+				if (socket != null && socket.IsAvailable)
+					socket.Send(message);
 			}
 		}
 
