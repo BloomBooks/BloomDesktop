@@ -695,7 +695,15 @@ namespace Bloom.Publish
 						div.ParentNode.RemoveChild(div);
 				}
 			}
-			// ENHANCE: remove language-specific style settings for unwanted languages
+			// Remove language-specific style settings for unwanted languages
+			var stylesNode = dom.RawDom.SelectSingleNode("//head/style[@type='text/css' and @title='userModifiedStyles']");
+			if (stylesNode != null)
+			{
+				var cssTextOrig = stylesNode.InnerXml;   // InnerXml needed to preserve CDATA markup
+				var cssText = HtmlDom.RemoveUnwantedLanguageRulesFromCss(cssTextOrig, languagesToInclude);
+				if (cssText != cssTextOrig)
+					stylesNode.InnerXml = cssText;
+			}
 		}
 
 		// This is a highly experimental export which may evolve as we work on this with Age of Learning.
