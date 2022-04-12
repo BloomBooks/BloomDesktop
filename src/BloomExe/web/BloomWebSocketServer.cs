@@ -145,7 +145,8 @@ namespace Bloom.Api
 						// I don't know if Sending on a closed socket would throw, so we'll catch it in any case
 						try
 						{
-							socket?.Send(eventObject.ToString());
+							if (socket != null && socket.IsAvailable)
+								socket.Send(eventObject.ToString());
 						}
 						catch (Exception error)
 						{
