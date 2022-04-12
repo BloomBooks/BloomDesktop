@@ -396,7 +396,9 @@ namespace Bloom.Publish.Video
 					result += $"atrim=end={duration.TotalSeconds},";
 					if (item == lastMusic)
 					{
-						var fadeDuration = Math.Min(2, duration.TotalSeconds - 0.001); // make sure it (and out:st) ends up positive.
+						// Make sure the fadeDuration is at least slightly less than the actual duration,
+						// so the fade start time will be positive. On longer sounds we aim for two seconds.
+						var fadeDuration = Math.Min(2, duration.TotalSeconds - 0.001);
 						// Fades its input (the output of the trim).
 						// - t=out makes it fade out (at the end) rather than in (at the beginning)
 						// - st=x makes the fade start x seconds from the start (and so fadeDuration from the end)
