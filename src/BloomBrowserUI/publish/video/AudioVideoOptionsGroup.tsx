@@ -96,7 +96,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
             format: "mp3",
             label: "Mp3 Audio",
             l10nKey: "PublishTab.RecordVideo.Mp3",
-            dimension: "no video",
+            dimension: "64 kbps",
             codec: "MP3",
             icon: (
                 <AudioIcon
@@ -284,7 +284,7 @@ const VideoFormatItem: React.FunctionComponent<IProps> = props => {
                     css={css`
                         display: flex;
                         flex-direction: column;
-                        justify-content: center;
+                        align-items: center;
                     `}
                 >
                     <div>{props.dimension}</div>
