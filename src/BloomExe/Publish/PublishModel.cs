@@ -706,6 +706,20 @@ namespace Bloom.Publish
 			}
 		}
 
+		/// <summary>
+		/// Remove language specific style settings for unwanted languages from all CSS files in the given directory.
+		/// </summary>
+		public static void RemoveUnwantedLanguageRulesFromCssFiles(string dirName, IEnumerable<string> wantedLanguages)
+		{
+			foreach (var filepath in Directory.EnumerateFiles(dirName, "*.css"))
+			{
+				var cssTextOrig = RobustFile.ReadAllText(filepath);
+				var cssText = HtmlDom.RemoveUnwantedLanguageRulesFromCss(cssTextOrig, wantedLanguages);
+				if (cssText != cssTextOrig)
+					RobustFile.WriteAllText(filepath, cssText);
+			}
+		}
+
 		// This is a highly experimental export which may evolve as we work on this with Age of Learning.
 		public void ExportAudioFiles1PerPage()
 		{
