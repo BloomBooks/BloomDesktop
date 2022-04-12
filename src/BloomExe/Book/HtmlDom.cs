@@ -1924,7 +1924,7 @@ namespace Bloom.Book
 					unwantedLanguages.Add(lang);
 			}
 			foreach (var lang in unwantedLanguages)
-				cssText = Regex.Replace(cssText, @"([\r\n])[-.\s\w]*\[lang=(['""])" + lang + @"\2\]\s*{[^}]*}", "$1");
+				cssText = Regex.Replace(cssText, @"([\r\n]+)[-.\s\w]*\[lang=(['""])" + lang + @"\2\]\s*{[^}]*}", "$1");
 
 			return cssText;
 		}
