@@ -99,6 +99,7 @@ namespace Bloom.Publish.Video
 					request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PlayerSettings =
 						request.RequiredPostString();
 					request.CurrentBook.BookInfo.SavePublishSettings();
+					request.PostSucceeded();
 				}
 			}, true, false);
 
