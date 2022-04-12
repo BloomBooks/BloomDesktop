@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/core";
 import React = require("react");
 import { default as InfoIcon } from "@material-ui/icons/InfoOutlined";
-import { Popover } from "@material-ui/core";
+import { Popover, Typography } from "@material-ui/core";
 
 // This class supports adding a tooltip to its children.
 // We use this for a more controllable tooltip than we get with title and similar properties.
@@ -113,7 +113,11 @@ export const BloomTooltip: React.FunctionComponent<{
                 onClose={handlePopoverClose}
                 disableRestoreFocus // most MUI examples have this, not sure what it does.
             >
-                <div
+                <Typography
+                    // We need our standard Typography here because when rendered it's not an actual
+                    // child (in the DOM) of the thing its a (React) child of. It gets put in a popover
+                    // at the root level. So we need to pull in our standard text appearance.
+                    component="div"
                     css={css`
                         position: relative;
                     `}
@@ -144,7 +148,7 @@ export const BloomTooltip: React.FunctionComponent<{
                     >
                         {props.tooltipContent}
                     </div>
-                </div>
+                </Typography>
             </Popover>
         </div>
     );
