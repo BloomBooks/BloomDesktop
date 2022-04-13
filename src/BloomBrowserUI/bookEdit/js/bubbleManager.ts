@@ -625,6 +625,7 @@ export class BubbleManager {
                 this.setTextColorInternal(hexOrRgbColor, bubble.content)
             );
         }
+        this.restoreFocus();
     }
 
     private setTextColorInternal(hexOrRgbColor: string, element: HTMLElement) {
@@ -680,6 +681,29 @@ export class BubbleManager {
         });
         // reset active element
         this.setActiveElement(originalActiveElement);
+        this.restoreFocus();
+    }
+
+    // Here we keep track of something (currently, typically, an input box in
+    // the color chooser) to which focus needs to be restored after we modify
+    // foreground or background color on the bubble, since those processes
+    // involve focusing the bubble and this is iconvenient when typing in the
+    // input boxes.
+    private thingToFocusAfterSettingColor: HTMLElement;
+    private restoreFocus() {
+        if (this.thingToFocusAfterSettingColor) {
+            this.thingToFocusAfterSettingColor.focus();
+            // I don't fully understand why we need this, but without it, the input
+            // doesn't end up focused. Apparently we just need to overcome whatever
+            // is stealing the focus before the next cycle.
+            setTimeout(() => {
+                this.thingToFocusAfterSettingColor.focus();
+            }, 0);
+        }
+    }
+
+    public setThingToFocusAfterSettingColor(x: HTMLElement): void {
+        this.thingToFocusAfterSettingColor = x;
     }
 
     public getBackgroundColorArray(familySpec: BubbleSpec): string[] {
