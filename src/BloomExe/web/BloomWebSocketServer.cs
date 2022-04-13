@@ -150,14 +150,30 @@ namespace Bloom.Api
 					// see if it's been removed
 					if (_allSockets.Contains(socket))
 					{
-						// it could *still* be closed by the time we execute this,
-						// I don't know if Sending on a closed socket would throw, so we'll catch it in any case
 						try
 						{
-							socket?.Send(eventObject.ToString());
+							if (socket == null || !socket.IsAvailable)
+							{
+								// As of mid-April 2022, we were getting lots of failures to send which we assume were because we were
+								// not checking socket.IsAvailable previously. For now, we are going to leave this toast in place
+								// in the hopes that future Sentry reports (enhanced with this information) will lead us discover something we
+								// can improve.
+								NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "web socket is not available when trying to send",
+									$"socket subprotocol: {socket?.ConnectionInfo?.SubProtocol}; bundle clientContext: {clientContext}, eventId: {eventId}, eventBundle: {eventBundle}");
+							}
+							else
+							{
+								// If this fails, it is likely to result in a TaskScheduler.UnobservedTaskException event
+								// and will not get caught in the catch clause below. But it does get picked up
+								// by Sentry's handler and reported. Now that we are checking for IsAvailable above,
+								// we don't expect that to happen anymore. See BL-11124.
+								socket.Send(eventObject.ToString());
+							}
 						}
 						catch (Exception error)
 						{
+							// See comment on Send call above. We don't expect this catch clause to fire,
+							// but I'm leaving it here in case there is another situation we don't know about.
 							NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, exception: error);
 						}
 					}
