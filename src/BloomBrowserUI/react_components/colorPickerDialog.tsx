@@ -1,6 +1,6 @@
 import React = require("react");
 import * as ReactDOM from "react-dom";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Dialog from "@material-ui/core/Dialog";
 import {
     Button,
@@ -32,6 +32,7 @@ export interface IColorPickerDialogProps {
     initialColor: ISwatchDefn;
     defaultSwatchColors: ISwatchDefn[];
     onChange: (color: ISwatchDefn) => void;
+    onInputFocus: (input: HTMLElement) => void;
 }
 
 function PaperComponent(props) {
@@ -54,6 +55,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
     const [currentColor, setCurrentColor] = useState(props.initialColor);
     const [swatchArray, setSwatchArray] = useState(props.defaultSwatchColors);
     externalSetOpen = setOpen;
+    const dlgRef = useRef<HTMLElement>(null);
 
     React.useEffect(() => {
         if (open) {
@@ -72,6 +74,49 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
             setCurrentColor(props.initialColor);
         }
     }, [open]);
+
+    const focusFunc = (ev: FocusEvent) => {
+        props.onInputFocus(ev.currentTarget as HTMLElement);
+    };
+
+    React.useEffect(() => {
+        var parent = dlgRef.current;
+        if (!parent) {
+            return;
+        }
+
+        // When we make incremental color changes while editing one of these inputs,
+        // the process of applying the changed color to the overlay moves the focus
+        // to the overlay. This makes it painfully necessary to click back in the input
+        // box after each keystroke. This code arranges that when one of our inputs gets
+        // focused, we pass that information to our client, which uses it to refocus
+        // the appropriate control once things stabilize in the overlay.
+        var inputs = Array.from(parent.getElementsByTagName("input"));
+        inputs.forEach(input => input.addEventListener("focus", focusFunc));
+
+        // In addition to this cleanup, I feel as if we should be doing something like
+        // calling props.onInputFocus(null) when the input is no longer focused.
+        // This is not easy. We can't simply add an onBlur; the reason for keeping track
+        // of the focused input is that focus is being undesirably moved away and we want
+        // to put it back. Also, we may have moved focus to another input and already
+        // updated input focus to point to that. An onblur with a time delay is conceivable,
+        // but it's hard to know what delay.
+        // In any case, I don't think it's actually necessary. The focus is only put back
+        // to an elment passed to onInputFocus as a result of the dialog sending a color change.
+        // Once the dialog closes (which it will if anything outside is clicked), it won't be
+        // sending color changes so nothing will be done with the input focus. And there is
+        // nothing else to focus inside the dialog (unless conceivably the direct manipulation
+        // controls might be focused for accessibility? But someone who prefers keyboard is
+        // much more likely to want to type into the boxes.)
+        // If somehow something messes with color some other way, well, if the dialog is not
+        // open I'm pretty sure the system won't set focus to one of its controls.
+        return () => {
+            var inputs = Array.from(parent!.getElementsByTagName("input"));
+            inputs.forEach(input =>
+                input.removeEventListener("focus", focusFunc)
+            );
+        };
+    }, [dlgRef.current]);
 
     const convertJsonColorsToSwatches = (jsonArray: any): ISwatchDefn[] => {
         return jsonArray.map((bubbleSpecColor: { colors: string[] }) => {
@@ -206,6 +251,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                 <Dialog
                     className="bloomModalDialog color-picker-dialog"
                     open={open}
+                    ref={dlgRef}
                     PaperComponent={PaperComponent}
                     onClose={(_event, reason) => {
                         if (reason === "backdropClick")

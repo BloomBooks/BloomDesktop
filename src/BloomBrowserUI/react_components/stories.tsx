@@ -861,7 +861,8 @@ storiesOf("Custom Color Chooser", module)
                 localizedTitle: "Custom Color Picker",
                 initialColor: chooserCurrentBackgroundColor,
                 defaultSwatchColors: defaultSwatches,
-                onChange: color => handleColorChange(color)
+                onChange: color => handleColorChange(color),
+                onInputFocus: () => {}
             };
 
             return (

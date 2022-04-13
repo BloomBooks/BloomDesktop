@@ -283,6 +283,9 @@ const OverlayToolControls: React.FunctionComponent = () => {
         }
     };
 
+    const noteInputFocused = (input: HTMLElement) =>
+        OverlayTool.bubbleManager()?.setThingToFocusAfterSettingColor(input);
+
     // We come into this from chooser change
     const updateBackgroundColor = (newColorSwatch: ISwatchDefn) => {
         const bubbleMgr = OverlayTool.bubbleManager();
@@ -437,7 +440,8 @@ const OverlayToolControls: React.FunctionComponent = () => {
             localizedTitle: textColorTitle,
             initialColor: textColorSwatch,
             defaultSwatchColors: defaultTextColors,
-            onChange: color => updateTextColor(color)
+            onChange: color => updateTextColor(color),
+            onInputFocus: noteInputFocused
         };
         getEditTabBundleExports().showColorPickerDialog(colorPickerDialogProps);
     };
@@ -451,7 +455,8 @@ const OverlayToolControls: React.FunctionComponent = () => {
             localizedTitle: backgroundColorTitle,
             initialColor: backgroundColorSwatch,
             defaultSwatchColors: defaultBackgroundColors,
-            onChange: color => updateBackgroundColor(color)
+            onChange: color => updateBackgroundColor(color),
+            onInputFocus: noteInputFocused
         };
         // If the background color is fully transparent, change it to fully opaque
         // so that the user can choose a color immediately (and adjust opacity to
