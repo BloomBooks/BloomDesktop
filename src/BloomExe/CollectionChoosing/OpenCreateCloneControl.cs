@@ -186,7 +186,53 @@ namespace Bloom.CollectionChoosing
 				MessageBox.Show(msg);
 				return true;
 			}
+			if (IsInsideZipFile(path))
+			{
+				var msg = L10NSharp.LocalizationManager.GetString("OpenCreateCloneControl.InZipFileMessage",
+					"It looks like you are trying to open a Bloom Collection from inside of a ZIP file. You need to first unzip the ZIP file, and then open the collection.");
+				MessageBox.Show(msg);
+				return true;
+			}
 			return false;
+		}
+
+		private static bool IsInsideZipFile(string path)
+		{
+			// Windows Explorer and 7-Zip both do a minimal extraction to the user's temp folder
+			// when the user double-clicks on a .bloomCollection file inside a zip archive.
+			// The same occurs for archive programs on Linux.  Only Windows Explorer creates the
+			// file on disk as read-only, so that's not a general check.  But all of these create
+			// only the one (.bloomCollection) file in the temporary folder.
+			var tempDir = Path.GetTempPath();
+			var folder = Path.GetDirectoryName(path);
+			if (SIL.PlatformUtilities.Platform.IsWindows)
+			{
+				if (folder.StartsWith(tempDir, StringComparison.InvariantCulture) &&
+						(folder.Contains(@".zip\") ||	// Windows Explorer
+						folder.Contains(@"\7z")))		// 7-Zip
+				{
+					return IsSingleFileInFolder(folder);
+				}
+			}
+			else
+			{
+				var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+				if (folder.StartsWith(Path.Combine(tempDir, ".fr-"), StringComparison.InvariantCulture) ||
+					folder.StartsWith(Path.Combine(tempDir, "xa-"), StringComparison.InvariantCulture) ||
+					folder.StartsWith(Path.Combine(homeDir, ".cache/.fr-"), StringComparison.InvariantCulture))
+				{
+					return IsSingleFileInFolder(folder);
+				}
+			}
+			return false;
+		}
+
+		private static bool IsSingleFileInFolder(string folder)
+		{
+			var fileCount = Directory.EnumerateFiles(folder).Count();
+			var dirCount = Directory.EnumerateDirectories(folder).Count();
+			// Check if only one file (presumably the .bloomCollection file) is available in the folder.
+			return (fileCount == 1 && dirCount == 0);
 		}
 
 		public static bool IsInvalidCollectionToEdit(string path)
