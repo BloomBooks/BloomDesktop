@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Management;
 using System.Security.AccessControl;
 using System.Security.Principal;
@@ -236,6 +237,82 @@ namespace Bloom.Utils
 			if (SIL.PlatformUtilities.Platform.IsWindows)
 				ffmpeg = Path.Combine(BloomFileLocator.GetCodeBaseFolder(), "ffmpeg.exe");
 			return RobustFile.Exists(ffmpeg) ? ffmpeg : string.Empty;
+		}
+
+		/// <summary>
+		/// Check whether the .bloomCollection file pointed to by path is either inside an uneditable source collection
+		/// or is inside a ZIP file that needs to be unzipped before using.
+		/// </summary>
+		/// <returns><c>true</c> if the path points to an invalid collection to edit, <c>false</c> otherwise.</returns>
+		public static bool ReportIfInvalidCollectionToEdit(string path)
+		{
+			if (IsInvalidCollectionToEdit(path))
+			{
+				var msg = L10NSharp.LocalizationManager.GetString("OpenCreateCloneControl.InSourceCollectionMessage",
+					"This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.");
+				MessageBox.Show(msg);
+				return true;
+			}
+			if (IsInsideZipFile(path))
+			{
+				var msg = L10NSharp.LocalizationManager.GetString("OpenCreateCloneControl.InZipFileMessage",
+					"It looks like you are trying to open a Bloom Collection from inside of a ZIP file. You need to first unzip the ZIP file, and then open the collection.");
+				MessageBox.Show(msg);
+				return true;
+			}
+			return false;
+		}
+
+		private static bool IsInsideZipFile(string path)
+		{
+			// Windows Explorer and 7-Zip both do a minimal extraction to the user's temp folder
+			// when the user double-clicks on a .bloomCollection file inside a zip archive.
+			// Something similar happens for archive programs on Linux.  Only Windows Explorer
+			// creates the file on disk as read-only, so that's not a general check.  But all
+			// of these create only the one (.bloomCollection) file in the temporary folder.
+			var tempDir = Path.GetTempPath();
+			var folder = Path.GetDirectoryName(path);
+			if (SIL.PlatformUtilities.Platform.IsWindows)
+			{
+				if (folder.StartsWith(tempDir, StringComparison.InvariantCulture) &&
+						(folder.Contains(@".zip\") ||   // Windows Explorer
+						folder.Contains(@"\7z")))       // 7-Zip
+				{
+					return IsSingleFileInFolder(folder);
+				}
+			}
+			else
+			{
+				var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+				if (folder.StartsWith(Path.Combine(tempDir, ".fr-"), StringComparison.InvariantCulture) ||
+					folder.StartsWith(Path.Combine(tempDir, "xa-"), StringComparison.InvariantCulture) ||
+					folder.StartsWith(Path.Combine(homeDir, ".cache/.fr-"), StringComparison.InvariantCulture))
+				{
+					return IsSingleFileInFolder(folder);
+				}
+			}
+			return false;
+		}
+
+		/// <summary>
+		/// Check if only one file (presumably the .bloomCollection file) is available in the folder.
+		/// </summary>
+		private static bool IsSingleFileInFolder(string folder)
+		{
+			var fileCount = Directory.EnumerateFiles(folder).Count();
+			var dirCount = Directory.EnumerateDirectories(folder).Count();
+			return (fileCount == 1 && dirCount == 0);
+		}
+
+		/// <summary>
+		/// Check whether the path is inside either the installed collection folder or inside the folder
+		/// containing factory template books.  If either condition is true, the collection cannot be edited.
+		/// </summary>
+		/// <returns><c>true</c> if the collection pointed to by path is not valid to edit, <c>false</c> otherwise.</returns>
+		public static bool IsInvalidCollectionToEdit(string path)
+		{
+			return path.StartsWith(ProjectContext.GetInstalledCollectionsDirectory())
+				|| path.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory);
 		}
 	}
 }
