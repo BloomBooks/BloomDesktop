@@ -70,7 +70,7 @@ export const PublishAudioVideo = () => {
     );
 };
 
-const landscapeWidth = 600;
+const landscapeWidth = 400;
 
 /// What BloomPlayer reportBookProperties sends.
 interface IBookProps {
