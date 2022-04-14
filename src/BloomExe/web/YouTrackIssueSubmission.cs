@@ -62,7 +62,7 @@ namespace Bloom
 					_client.DefaultRequestHeaders.Add("Accept", appJson);
 			}
 			// Get the base website address for our YouTrack instance.
-			_youTrackBaseSite = UrlLookup.LookupUrl(UrlType.IssueTrackingSystemBackend, false, true);
+			_youTrackBaseSite = UrlLookup.LookupUrl(UrlType.IssueTrackingSystemBackend, null, false, true);
 		}
 
 		/// <summary>

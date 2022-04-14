@@ -757,7 +757,7 @@ namespace Bloom.Publish.BloomLibrary
 
 		public static string BloomLibraryUrlPrefix
 		{
-			get { return UrlLookup.LookupUrl(UrlType.LibrarySite, BookUpload.UseSandbox); }
+			get { return UrlLookup.LookupUrl(UrlType.LibrarySite, null, BookUpload.UseSandbox); }
 		}
 
 		private IEnumerable<string> LanguagesCheckedToUpload
