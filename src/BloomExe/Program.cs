@@ -393,7 +393,7 @@ namespace Bloom
 
 						if (args.Length == 1 && !IsInstallerLaunch(args) && !IsLocalizationHarvestingLaunch(args) && args[0].ToLowerInvariant().EndsWith(@".bloomcollection"))
 						{
-							if (CollectionChoosing.OpenCreateCloneControl.ReportIfInvalidCollectionToEdit(args[0]))
+							if (Utils.MiscUtils.ReportIfInvalidCollectionToEdit(args[0]))
 								return 1;
 							Settings.Default.MruProjects.AddNewPath(args[0]);
 						}
@@ -880,8 +880,7 @@ namespace Bloom
 
 			if (!string.IsNullOrEmpty(path))
 			{
-				//CollectionChoosing.OpenCreateCloneControl.CheckForBeingInDropboxFolder(path);
-				while (CollectionChoosing.OpenCreateCloneControl.IsInvalidCollectionToEdit(path))
+				while (Utils.MiscUtils.IsInvalidCollectionToEdit(path))
 				{
 					// Somehow...from a previous version?...we have an invalid file in our MRU list.
 					Settings.Default.MruProjects.RemovePath(path);
