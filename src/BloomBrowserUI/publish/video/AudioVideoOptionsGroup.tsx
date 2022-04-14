@@ -46,10 +46,14 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
     pageTurnDelay: number;
     onSetPageTurnDelay: (arg: number) => void;
     format: string;
-    setFormat: (f: string) => void;
+    onFormatChanged: (f: string) => void;
 }> = props => {
-    const format = props.format;
-    const setFormat = props.setFormat;
+    // When using props.format directly, it was possible to make VideoFormat render in an inconsistent state.
+    // (It rendered Icon as final value, but Label as intermediate value -> inconsistent rendering!)
+    // Making our own version of format using useState, rather than using props.format directly, makes this go away somehow.
+    // (Maybe because we're making it more explicit to React that the state is being updated and it needs to re-render stuff,
+    // but I don't follow understand why it wasn't working before)
+    const [myFormat, setMyFormat] = useState(props.format);
     const [disabledFormats, setDisabledFormats] = useState<string[]>([]);
     const [tooBigMsg, setTooBigMsg] = useState("");
     // Manages visibility of the details popup for the main Format label (that shows in the
@@ -67,16 +71,11 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
             const isSupported = c.data as boolean;
 
             if (isSupported && disabledFormats.includes("mp3")) {
-                // Previously disabled, but now enabled
-                const newDisabledFormats = disabledFormats.filter(
-                    x => x !== "mp3"
-                );
-                setDisabledFormats(newDisabledFormats);
+                // Previously disabled, but now no longer
+                setDisabledFormats(disabledFormats.filter(x => x !== "mp3"));
             } else if (!isSupported && !disabledFormats.includes("mp3")) {
-                // Previously enabled, but now disabled
-                const newDisabledFormats = disabledFormats.slice(0);
-                newDisabledFormats.push("mp3");
-                setDisabledFormats(newDisabledFormats);
+                // Previously not disabled, but now it is
+                setDisabledFormats(disabledFormats.concat(["mp3"]));
             } else {
                 // disabledFormats is unchanged; don't need to set anything again.
             }
@@ -86,7 +85,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
         BloomApi.get("publish/av/tooBigForScreenMsg", c => {
             setTooBigMsg(c.data);
         });
-    }, [format]);
+    }, [myFormat]);
 
     const formatItems: IFormatItem[] = [
         {
@@ -132,7 +131,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
 
     useEffect(() => {
         // Handle any disabled formats
-        if (disabledFormats.includes(format)) {
+        if (disabledFormats.includes(myFormat)) {
             const firstNonDisabledFormat = formatItems
                 .map(x => x.format)
                 .find(f => !disabledFormats.includes(f));
@@ -142,13 +141,10 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                 return;
             }
 
-            console.log(
-                `Because ${format} is disabled, changing format to ${firstNonDisabledFormat}`
-            );
-
-            setFormat(firstNonDisabledFormat);
+            setMyFormat(firstNonDisabledFormat);
+            props.onFormatChanged(firstNonDisabledFormat);
         }
-    }, [format, disabledFormats]);
+    }, [myFormat, disabledFormats]);
 
     return (
         <SettingsGroup label={useL10n("Options", "Common.Options")}>
@@ -192,7 +188,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                             }
                                         }
                                     `}
-                                    value={format}
+                                    value={myFormat}
                                     open={formatDropdownIsOpen}
                                     onOpen={() => {
                                         setFormatPopupAnchor(null);
@@ -204,7 +200,8 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                     onChange={e => {
                                         const newFormat = e.target
                                             .value as string;
-                                        setFormat(newFormat);
+                                        setMyFormat(newFormat);
+                                        props.onFormatChanged(newFormat);
                                     }}
                                     style={{ width: 160 }}
                                     renderValue={f => {
@@ -248,7 +245,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                          * Pages with background music but no narration are a trickier case. We think usually it won't be valuable to linger on them, but there could be some exceptions.
                          * For now, we're keeping it simple and immediately flipping those pages too.
                          */}
-                        {format !== "mp3" && (
+                        {myFormat !== "mp3" && (
                             <div
                                 css={css`
                                     padding-right: 30px;
