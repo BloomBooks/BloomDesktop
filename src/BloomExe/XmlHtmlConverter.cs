@@ -38,7 +38,7 @@ namespace Bloom
 			var dom = new XmlDocument();
 			content = AddFillerToKeepTidyFromRemovingEmptyElements(content);
 
-			//in BL-2250, we found that in previous versions, this method would turn, for example, "<u> </u>" REMOVEWHITESPACE.
+			//in BL-2250, we found that in previous versions, this method would return, for example, "<u> </u>" REMOVEWHITESPACE.
 			//That is fixed now, but this is needed to give to clean up existing books.
 			content = content.Replace(@"REMOVEWHITESPACE", "");
 
@@ -66,6 +66,13 @@ namespace Bloom
 			var removedSvgs = new List<string>();
 			content = RemoveSvgs(content, removedSvgs);
 
+			// Hand editing HTML files can sometimes, with some editors, introduce a BOM after the first character in the HTML file.
+			// These can cause problems in creating PDFs (see https://issues.bloomlibrary.org/youtrack/issue/BL-11127).
+			// Either having a BOM or not having a BOM as the first character in the file doesn't really matter.  (File storage tends
+			// to use UTF-8, which doesn't need BOMs.)  And the tidy processing below strips an initial BOM anyway, so it doesn't
+			// hurt to do it here if it exists.  (Starting the search after the first character is perhaps a trivial optimization.)
+			if (content.IndexOf('\uFEFF', 1) > 0)
+				content = content.Replace("\uFEFF", "");
 
 			//using (var temp = new TempFile())
 			var temp = new TempFile();

@@ -345,5 +345,20 @@ namespace BloomTests
 			// Trim because it may mess with leading or trailing white space in ways we don't care about.
 			Assert.That(xml.Trim(), Is.EqualTo(styleContent.Replace(">", "&gt;").Trim()));
 		}
+
+		[Test]
+		public void GetXmlDomFromHtml_RemovesBOMs()
+		{
+			var bookHtml = "\uFEFF" + @"<html><head>
+						<link rel='stylesheet' href='Basic Book.css' type='text/css'></link>
+						<link rel='stylesheet' href='Traditional-XMatter.css' type='text/css'></link>
+					</head><body>" + "\uFEFF" + @"
+					<div class='bloom-page' id='guid1'></div>"+"\uFEFF"+@"
+			</body></html>";
+			var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(bookHtml);
+			var outerXml = htmlDom.OuterXml;
+			var idxBOM = outerXml.IndexOf('\uFEFF');
+			Assert.That(idxBOM, Is.EqualTo(-1), "All BOMs are removed.");
+		}
 	}
 }
