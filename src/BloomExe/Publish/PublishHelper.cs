@@ -260,8 +260,9 @@ namespace Bloom.Publish
 						elt.ParentNode.RemoveChild(elt);
 					}
 				}
-				// We need the font information for visible text elements as well.  This is a side-effect but related to
-				// unwanted elements in that we don't need fonts that are used only by unwanted elements.
+				// We need the font information for wanted text elements as well.  This is a side-effect but related to
+				// unwanted elements in that we don't need fonts that are used only by unwanted elements.  Note that
+				// elements don't need to be actually visible to provide computed style information such as font-family.
 				foreach (XmlElement elt in page.SafeSelectNodes(".//div"))
 				{
 					StoreFontUsed(elt);
@@ -349,6 +350,10 @@ namespace Bloom.Publish
 		/// <summary>
 		/// Stores the font used.  Note that unwanted elements should have been removed already.
 		/// </summary>
+		/// <remarks>
+		/// Elements that are made invisible by CSS still have their styles computed and can provide font information.
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-11108 for a misunderstanding of this.
+		/// </remarks>
 		private void StoreFontUsed(XmlElement elt)
 		{
 			var id = elt.Attributes["id"].Value;

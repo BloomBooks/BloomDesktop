@@ -126,7 +126,10 @@ namespace Bloom.Publish.Android
 
 
 			if (settings?.LanguagesToInclude != null)
+			{
 				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings.LanguagesToInclude, modifiedBook.BookData.MetadataLanguage1IsoCode);
+				PublishModel.RemoveUnwantedLanguageRulesFromCssFiles(modifiedBook.FolderPath, settings.LanguagesToInclude);
+			}
 			else if (Program.RunningHarvesterMode && modifiedBook.OurHtmlDom.SelectSingleNode(BookStorage.ComicalXpath) != null)
 			{
 				// This indicates that we are harvesting a book with comic speech bubbles or other overlays (Overlay Tool).
