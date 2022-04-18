@@ -1344,16 +1344,22 @@ namespace Bloom
 			var htmlAndSentryReporter = new CompositeErrorReporter(orderedReporters, primaryReporter: HtmlErrorReporter.Instance);
 			ErrorReport.SetErrorReporter(htmlAndSentryReporter);
 
-
-			string issueTrackingUrl = UrlLookup.LookupUrl(UrlType.IssueTrackingSystem);
-			ExceptionReportingDialog.PrivacyNotice = string.Format(@"If you don't care who reads your bug report, you can skip this notice.
+			var msgTemplate = @"If you don't care who reads your bug report, you can skip this notice.
 
 When you submit a crash report or other issue, the contents of your email go in our issue tracking system, ""YouTrack"", which is available via the web at {0}. This is the normal way to handle issues in an open-source project.
 
 Our issue-tracking system is searchable by anyone. Search engines (like Google) should not search it, so someone searching with Google should not see your report, but we can't promise this for all search engines.
 
 Anyone looking specifically at our issue tracking system can read what you sent us. So if you have something private to say, please send it to one of the developers privately with a note that you don't want the issue in our issue tracking system. If need be, we'll make some kind of sanitized place-holder for your issue so that we don't lose it.
-", issueTrackingUrl);
+";
+			// To save startup time, we'll initially set the privacy notice based on our fallback version of this URL,
+			// then get the real one in the background (which will also make other URLs available faster when needed).
+			string issueTrackingUrl = UrlLookup.LookupUrl(UrlType.IssueTrackingSystem, acceptFinalUrl: (realUrl) =>
+			{
+				ExceptionReportingDialog.PrivacyNotice = string.Format(msgTemplate, realUrl);
+			});
+			
+			ExceptionReportingDialog.PrivacyNotice = string.Format(msgTemplate, issueTrackingUrl);
 			SIL.Reporting.ErrorReport.EmailAddress = "issues@bloomlibrary.org";
 			SIL.Reporting.ErrorReport.AddStandardProperties();
 			// with squirrel, the file's dates only reflect when they were installed, so we override this version thing which

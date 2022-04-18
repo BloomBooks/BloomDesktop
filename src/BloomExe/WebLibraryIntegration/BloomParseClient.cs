@@ -103,7 +103,7 @@ namespace Bloom.WebLibraryIntegration
 
 		public string GetRealUrl()
 		{
-			return UrlLookup.LookupUrl(UrlType.Parse, BookUpload.UseSandbox);
+			return UrlLookup.LookupUrl(UrlType.Parse, null, BookUpload.UseSandbox);
 		}
 
 		private RestRequest MakeRequest(string path, Method requestType)

@@ -299,7 +299,7 @@ namespace Bloom.Book
 			{
 				var msg = LocalizationManager.GetString("Errors.NeedNewerVersion",
 					"{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}", "{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.");
-				msg = String.Format(msg, path, $"<a href='{UrlLookup.LookupUrl(UrlType.LibrarySite)}'>BloomLibrary.org</a>");
+				msg = String.Format(msg, path, $"<a href='{UrlLookup.LookupUrl(UrlType.LibrarySite, null)}'>BloomLibrary.org</a>");
 				msg += $". (Format {versionString} vs. {kMaxBloomFormatVersionToRead})";
 				return msg;
 			}
@@ -373,7 +373,7 @@ namespace Bloom.Book
 					string message =
 						$"<strong>{messageNewVersionNeededHeader}</strong><br/><br/><br/>" +
 						$"{messageCurrentRunningVersion}. {messageFeatureRequiresNewerVersion}<br/><br/>" +
-						$"<a href='{UrlLookup.LookupUrl(UrlType.LibrarySite)}/installers'>{messageDownloadLatestVersion}</a>";  // Enhance: is there a market-specific version of Bloom Library? If so, ideal to link to it somehow.
+						$"<a href='{UrlLookup.LookupUrl(UrlType.LibrarySite, null)}/installers'>{messageDownloadLatestVersion}</a>";  // Enhance: is there a market-specific version of Bloom Library? If so, ideal to link to it somehow.
 
 					return message;
 				}

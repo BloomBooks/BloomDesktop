@@ -604,7 +604,7 @@ namespace Bloom.Workspace
 				"The final item in the UI Language menu. When clicked, it opens Bloom's page in the Crowdin web-based translation system.");
 			var helpItem = uiMenuControl.DropDownItems.Add(message);
 			helpItem.Image = Resources.weblink;
-			helpItem.Click += (sender, args) => SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.LocalizingSystem));
+			helpItem.Click += (sender, args) => SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.LocalizingSystem, null));
 		}
 
 		private static int compareLangItems(LanguageItem a, LanguageItem b)
@@ -964,7 +964,7 @@ namespace Bloom.Workspace
 
 		private void _webSiteMenuItem_Click(object sender, EventArgs e)
 		{
-			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.LibrarySite));
+			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.LibrarySite, null));
 		}
 
 		private void _releaseNotesMenuItem_Click(object sender, EventArgs e)
@@ -985,12 +985,12 @@ namespace Bloom.Workspace
 
 		private void _requestAFeatureMenuItem_Click(object sender, EventArgs e)
 		{
-			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.UserSuggestions));
+			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.UserSuggestions, null));
 		}
 
 		private void _askAQuestionMenuItem_Click(object sender, EventArgs e)
 		{
-			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.Support));
+			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.Support, null));
 		}
 
 		// Currently not used, but I'm leaving the method in case we want to put it
