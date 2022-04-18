@@ -63,6 +63,8 @@ namespace Bloom.ToPalaso
 		/// </remarks>
 		public static void CopyFolder(string sourcePath, string destinationPath)
 		{
+			Utils.LongPathAware.ThrowIfExceedsMaxPath(sourcePath);
+			Utils.LongPathAware.ThrowIfExceedsMaxPath(destinationPath); //example: BL-10353
 			Directory.CreateDirectory(destinationPath);
 			foreach (var filePath in Directory.GetFiles(sourcePath))
 			{

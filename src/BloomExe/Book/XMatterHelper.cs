@@ -215,7 +215,9 @@ namespace Bloom.Book
 				string path = Path.GetDirectoryName(PathToXMatterHtml);
 				foreach (var file in Directory.GetFiles(path, "*.png").Concat(Directory.GetFiles(path, "*.jpg").Concat(Directory.GetFiles(path, "*.gif").Concat(Directory.GetFiles(path, "*.bmp")))))
 				{
-					RobustFile.Copy(file, FolderPathForCopyingXMatterFiles.CombineForPath(Path.GetFileName(file)), true);
+					string destFileName = FolderPathForCopyingXMatterFiles.CombineForPath(Path.GetFileName(file));
+					Utils.LongPathAware.ThrowIfExceedsMaxPath(destFileName);
+					RobustFile.Copy(file, destFileName, true);
 				}
 			}
 

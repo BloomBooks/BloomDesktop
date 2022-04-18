@@ -267,12 +267,28 @@ namespace Bloom.web.controllers
 			bookTemplatePaths.AddRange(sourceBookPaths
 				.Where(path =>
 				{
-					if (string.IsNullOrEmpty(path))
-						return false; // not sure how this happens.
-					var pathToTemplatesFolder = Path.Combine(Path.GetDirectoryName(path), TemplateFolderName);
-					if (!Directory.Exists(pathToTemplatesFolder))
-						return false;
-					return !RobustFile.Exists(Path.Combine(pathToTemplatesFolder, "NotForAddPage.txt"));
+					try
+					{
+						if (string.IsNullOrEmpty(path))
+							return false; // not sure how this happens.
+
+						Utils.LongPathAware.ThrowIfExceedsMaxPath(path); // added after BL-10012.
+						var pathToTemplatesFolder = Path.Combine(Path.GetDirectoryName(path), TemplateFolderName);
+						if (!Directory.Exists(pathToTemplatesFolder))
+							return false;
+						return !RobustFile.Exists(Path.Combine(pathToTemplatesFolder, "NotForAddPage.txt"));
+					}
+
+					catch (System.IO.PathTooLongException e) // this will also catch the subclass, Bloom.Utils.PathTooLongException
+					{
+						Logger.WriteError($" While adding '{path}' to bookTemplatePaths. Possibly BL-10012.",e);
+						throw e;
+					}
+					catch (Exception e)
+					{
+						Logger.WriteError($" While adding '{path}' to bookTemplatePaths.", e);
+						throw e;
+					}
 				})
 				.Select(path => Platform.IsWindows ? path.ToLowerInvariant() : path));
 
