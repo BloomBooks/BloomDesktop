@@ -152,6 +152,7 @@ namespace Bloom.Book
 				InitCoverColor(); // should use the same color as what they saw in the preview of the template/shell
 			}
 			FixBookIdAndLineageIfNeeded();
+			FixUrlEncodedCoverImageIfNeeded();
 			Storage.Dom.RemoveExtraBookTitles();
 			Storage.Dom.RemoveExtraContentTypesMetas();
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");
@@ -1867,6 +1868,44 @@ namespace Bloom.Book
 				if (bookDOM.GetMetaValue("title", "") != "Basic Book")
 				{
 					bookDOM.UpdateMetaElement("bloomBookId", Guid.NewGuid().ToString());
+				}
+			}
+		}
+
+		/// <summary>
+		/// Repair any cover image filenames that were left URL-encoded by earlier versions of
+		/// Bloom.  Although rare, this has surfaced recently.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-11145
+		/// and https://issues.bloomlibrary.org/youtrack/issue/BH-6143.
+		/// </remarks>
+		private void FixUrlEncodedCoverImageIfNeeded()
+		{
+			var node = Storage.Dom.SelectSingleNode("//body/div[@id='bloomDataDiv']/div[@data-book='coverImage']");
+			if (node == null)
+				return;     // shouldn't happen, but nothing to fix if it does.
+			var text = node.InnerText;
+			if (!String.IsNullOrWhiteSpace(text) && RobustFile.Exists(Path.Combine(FolderPath, text)))
+				return;     // file exists, no need to tweak reference
+			const string kUrlEncodedRegex = "%[0-9a-fA-F][0-9a-fA-F]";
+			if (Regex.IsMatch(text, kUrlEncodedRegex))
+			{
+				var filepath = UrlPathString.GetFullyDecodedPath(FolderPath, ref text);
+				if (!Regex.IsMatch(filepath, kUrlEncodedRegex))
+					node.InnerText = text;
+				var src = node.GetAttribute("src");
+				if (Regex.IsMatch(src, "%25[0-9a-fA-F][0-9a-fA-F]"))
+				{
+					// This looks like it was doubly encoded: remove one layer of encoding.
+					src = HttpUtility.UrlDecode(src);
+					node.SetAttribute("src", src);
+				}
+				var alt = node.GetAttribute("alt");
+				if (Regex.IsMatch(alt, kUrlEncodedRegex))
+				{
+					alt = HttpUtility.UrlDecode(alt);
+					node.SetAttribute("alt", alt);
 				}
 			}
 		}
