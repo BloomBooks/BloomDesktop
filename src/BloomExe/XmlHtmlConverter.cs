@@ -71,7 +71,7 @@ namespace Bloom
 			// Either having a BOM or not having a BOM as the first character in the file doesn't really matter.  (File storage tends
 			// to use UTF-8, which doesn't need BOMs.)  And the tidy processing below strips an initial BOM anyway, so it doesn't
 			// hurt to do it here if it exists.  (Starting the search after the first character is perhaps a trivial optimization.)
-			if (content.IndexOf('\uFEFF', 1) > 0)
+			if (!String.IsNullOrEmpty(content) && content.IndexOf('\uFEFF', 1) > 0)
 				content = content.Replace("\uFEFF", "");
 
 			//using (var temp = new TempFile())
