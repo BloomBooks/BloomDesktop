@@ -158,8 +158,11 @@ namespace Bloom.Api
 								// not checking socket.IsAvailable previously. For now, we are going to leave this toast in place
 								// in the hopes that future Sentry reports (enhanced with this information) will lead us discover something we
 								// can improve.
+								var subProtocolDetail = socket?.ConnectionInfo?.SubProtocol == null ? "subprotocol is null" : $"subprotocol: { socket.ConnectionInfo.SubProtocol}";
+								var connectionInfoDetail = socket?.ConnectionInfo == null ? "socket.ConnectionInfo is null" : subProtocolDetail;
+								var socketDetail = socket == null ? "socket is null; " : $"socket is not available, {connectionInfoDetail}; ";
 								NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "web socket is not available when trying to send",
-									$"socket subprotocol: {socket?.ConnectionInfo?.SubProtocol}; bundle clientContext: {clientContext}, eventId: {eventId}, eventBundle: {eventBundle}");
+									$"{socketDetail} bundle clientContext: {clientContext}, eventId: {eventId}, eventBundle: {eventBundle}");
 							}
 							else
 							{
