@@ -152,6 +152,7 @@ namespace Bloom.Book
 				InitCoverColor(); // should use the same color as what they saw in the preview of the template/shell
 			}
 			FixBookIdAndLineageIfNeeded();
+			FixUrlEncodedCoverImageIfNeeded();
 			Storage.Dom.RemoveExtraBookTitles();
 			Storage.Dom.RemoveExtraContentTypesMetas();
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");
@@ -1132,11 +1133,13 @@ namespace Bloom.Book
 			var filename = Path.GetFileName(coverImagePath);
 			if (filename != coverImageFileName)
 			{
+				// Note that setting InnerText or calling SetAttribute automatically XML-encodes any necessary
+				// characters.  Getting InnerText or calling GetAttribute reverses the changes, if any.
 				coverImgElt.InnerText = filename;
-				var urlPathString = UrlPathString.CreateFromUnencodedString(filename);
-				var encoded = urlPathString.UrlEncoded;
-				coverImgElt.SetAttribute("src", encoded);
-				coverImgElt.SetAttribute("alt", $"This picture, {encoded}, is missing or was loading too slowly.");
+				coverImgElt.SetAttribute("src", filename);
+				var localizedFormatString = LocalizationManager.GetString("EditTab.Image.AltMsg", "This picture, {0}, is missing or was loading too slowly.");
+				var altValue = String.Format(localizedFormatString, filename);
+				coverImgElt.SetAttribute("alt", altValue);
 			}
 		}
 
@@ -1869,6 +1872,35 @@ namespace Bloom.Book
 				{
 					bookDOM.UpdateMetaElement("bloomBookId", Guid.NewGuid().ToString());
 				}
+			}
+		}
+
+		/// <summary>
+		/// Repair any cover image filenames that were left URL-encoded by earlier versions of
+		/// Bloom.  Although rare, this has surfaced recently.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-11145
+		/// and https://issues.bloomlibrary.org/youtrack/issue/BH-6143.
+		/// </remarks>
+		private void FixUrlEncodedCoverImageIfNeeded()
+		{
+			var node = Storage.Dom.SelectSingleNode("//body/div[@id='bloomDataDiv']/div[@data-book='coverImage']");
+			if (node == null)
+				return;     // shouldn't happen, but nothing to fix if it does.
+			var text = node.InnerText;
+			if (!String.IsNullOrWhiteSpace(text) && RobustFile.Exists(Path.Combine(FolderPath, text)))
+				return;     // file exists, no need to tweak reference
+			// GetFullyDecodedPath decodes until either the file exists or no further URL decoding is possible.
+			// If the file isn't found, then text is the original value.
+			var filepath = UrlPathString.GetFullyDecodedPath(FolderPath, ref text);
+			if (text != node.InnerText)
+			{
+				node.InnerText = text;
+				node.SetAttribute("src", text);
+				var localizedFormatString = LocalizationManager.GetString("EditTab.Image.AltMsg", "This picture, {0}, is missing or was loading too slowly.");
+				var altValue = String.Format(localizedFormatString, text);
+				node.SetAttribute("alt", altValue);
 			}
 		}
 
