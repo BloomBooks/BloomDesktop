@@ -67,7 +67,8 @@ To enable Spreadsheet Import/Export, tick the box under `Collection Settings / A
 ## New Collection UI (Experimental)
 
 As the next phase of our multi-year effort to modernize the Bloom code base, we have completely rewritten the left-hand side of the Collection Tab using Web technologies. This has been a *very large* undertaking, so we're making it available as an experimental feature for Bloom 5.2 to give us all more time to test it. With this new interface, Team Collections get nice avatar images of their teammates over books they have checked out:
-![image|284x373](upload://kc9k4d5h1vHV4lvDH98AmW4pmKh.png)
+
+![Books with badges showing who has them checked out](https://i.imgur.com/LSfuxiS.png)
 
 Other users will notice only minor improvements to book thumbnail buttons. To enable this new mode, tick the box under `Collection Settings / Advanced Program Settings / Try the New Version of the Collection Tab`.
 
