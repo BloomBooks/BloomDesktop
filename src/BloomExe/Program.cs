@@ -406,7 +406,7 @@ namespace Bloom
 
 							if (path.ToLowerInvariant().EndsWith(@".bloomcollection"))
 							{
-								if (CollectionChoosing.OpenCreateCloneControl.ReportIfInvalidCollectionToEdit(path))
+								if (Utils.MiscUtils.ReportIfInvalidCollectionToEdit(path))
 									return 1;
 								Settings.Default.MruProjects.AddNewPath(path);
 							}
