@@ -391,11 +391,25 @@ namespace Bloom
 						SetUpLocalization();
 
 
-						if (args.Length == 1 && !IsInstallerLaunch(args) && !IsLocalizationHarvestingLaunch(args) && args[0].ToLowerInvariant().EndsWith(@".bloomcollection"))
-						{
-							if (Utils.MiscUtils.ReportIfInvalidCollectionToEdit(args[0]))
-								return 1;
-							Settings.Default.MruProjects.AddNewPath(args[0]);
+						if (args.Length == 1 && !IsInstallerLaunch(args) && !IsLocalizationHarvestingLaunch(args)) {
+							
+							// See BL-10012. Windows File explorer will give us an 8.3 path with ".BLO" at the end, so might as well convert it now.
+							var path = Utils.LongPathAware.GetLongPath(args[0]);
+
+							// See BL-10012. We'll die eventually, might as well nip this in the bud.
+							if (Utils.LongPathAware.GetExceedsMaxPath(path))
+							{
+								var pathForWantOfAClosure = path;
+								StartupScreenManager.AddStartupAction(() => Utils.LongPathAware.ReportLongPath(pathForWantOfAClosure));
+								path = ""; // go forwards as if we weren't given an explicit collection to open (except we're showing a report about what happened)
+							}
+
+							if (path.ToLowerInvariant().EndsWith(@".bloomcollection"))
+							{
+								if (CollectionChoosing.OpenCreateCloneControl.ReportIfInvalidCollectionToEdit(path))
+									return 1;
+								Settings.Default.MruProjects.AddNewPath(path);
+							}
 						}
 
 						if (args.Length > 0 && args[0] == "--rename")
@@ -878,6 +892,15 @@ namespace Bloom
 		{
 			var path = Settings.Default.MruProjects.Latest;
 
+			// Catch case where the last collection was so long that windows gave us a 8.3 version which will eventuall
+			// fail. Just fail right now, don't bother to have a conversation with the user about it.
+			// This might be impossible in real life, I'm not sure. Part of BL-10012.
+			if (path.EndsWith(".BLO"))
+			{				
+				Settings.Default.MruProjects.RemovePath(path);
+				path = null;
+			}
+
 			if (!string.IsNullOrEmpty(path))
 			{
 				while (Utils.MiscUtils.IsInvalidCollectionToEdit(path))
@@ -898,22 +921,31 @@ namespace Bloom
 		}
 
 		/// ------------------------------------------------------------------------------------
-		private static bool OpenProjectWindow(string projectPath)
+		private static bool OpenProjectWindow(string collectionPath)
 		{
 			Debug.Assert(_projectContext == null);
 
 			try
 			{
+				//// See BL-10012.
+				var path = Bloom.Utils.LongPathAware.GetLongPath(collectionPath);
+				if (Utils.LongPathAware.GetExceedsMaxPath(path))
+				{
+					Utils.LongPathAware.ReportLongPath(path);
+					return false;
+					
+				}
+
 				//NB: initially, you could have multiple blooms, if they were different projects.
 				//however, then we switched to the embedded http image server, which can't share
 				//a port. So we could fix that (get different ports), but for now, I'm just going
 				//to lock it down to a single bloom
-/*					if (!GrabTokenForThisProject(projectPath))
-					{
-						return false;
-					}
-				*/
-				_projectContext = _applicationContainer.CreateProjectContext(projectPath);
+				/*					if (!GrabTokenForThisProject(projectPath))
+									{
+										return false;
+									}
+								*/
+				_projectContext = _applicationContainer.CreateProjectContext(path);
 				_projectContext.ProjectWindow.Closed += HandleProjectWindowClosed;
 				_projectContext.ProjectWindow.Activated += HandleProjectWindowActivated;
 #if DEBUG
@@ -931,7 +963,7 @@ namespace Bloom
 			}
 			catch (Exception e)
 			{
-				HandleErrorOpeningProjectWindow(e, projectPath);
+				HandleErrorOpeningProjectWindow(e, collectionPath);
 			}
 
 			return false;

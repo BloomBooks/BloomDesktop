@@ -467,6 +467,14 @@ namespace Bloom.web.controllers
 				_showingProblemReport = true;
 			}
 
+			// We have a better UI for this problem
+			// Note that this will trigger whether it's a plain 'ol System.IO.PathTooLongException, or our own enhanced subclass, Bloom.Utiles.PathTooLongException
+			if (exception is System.IO.PathTooLongException)
+			{
+				Utils.LongPathAware.ReportLongPath((System.IO.PathTooLongException)exception);
+				return;
+			}
+
 			GatherReportInfoExceptScreenshot(exception, detailedMessage, shortUserLevelMessage, isShortMessagePreEncoded);
 
 			if (controlForScreenshotting == null)

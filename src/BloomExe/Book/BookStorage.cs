@@ -1724,6 +1724,12 @@ namespace Bloom.Book
 			}
 			var backupPath = GetBackupFilePath();
 
+			if (Utils.LongPathAware.GetExceedsMaxPath(pathToExistingHtml))
+			{
+				Utils.LongPathAware.ReportLongPath(pathToExistingHtml);
+				return;
+			}
+
 			// If we have a single html file, or an html file whose name matches the folder, then we can proceed.
 			// ALternatively, if we want to fully update the book and we have a backup file, then we'll use that to proceed.
 			// If neither of these cases apply, then we'll need to complain to the user and hope that he or she can
@@ -2149,6 +2155,7 @@ namespace Bloom.Book
 						var destPath = Path.Combine(FolderPath, fileName);
 						try
 						{
+							Utils.LongPathAware.ThrowIfExceedsMaxPath(destPath); //example: BL-8284
 							RobustFile.Copy(sourcePath, destPath, true);
 						}
 						catch (UnauthorizedAccessException err)

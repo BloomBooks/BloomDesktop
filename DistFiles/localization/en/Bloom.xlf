@@ -2806,6 +2806,10 @@
         <note>ID: ErrorReport.Report</note>
         <note>"Report" as in "Report this problem to Bloom Support"</note>
       </trans-unit>
+      <trans-unit id="Errors.PathTooLong">
+        <source xml:lang="en">Please move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by your collection being too deeply nested in many folders on your hard drive.</source>
+        <note>ID: Errors.PathTooLong</note>
+      </trans-unit>
       <trans-unit id="Errors.BookProblem">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
         <note>ID: Errors.BookProblem</note>

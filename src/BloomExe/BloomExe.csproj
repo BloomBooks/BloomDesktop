@@ -508,6 +508,7 @@
     <Compile Include="Utils\BloomUnauthorizedAccessException.cs" />
     <Compile Include="Utils\ConsoleProgress.cs" />
     <Compile Include="Utils\DropboxUtils.cs" />
+    <Compile Include="Utils\LongPathAware.cs" />
     <Compile Include="Utils\MemoryUtils.cs" />
     <Compile Include="Utils\FileSystemWatcherExtensions.cs" />
     <Compile Include="Utils\MiscUtils.cs" />
