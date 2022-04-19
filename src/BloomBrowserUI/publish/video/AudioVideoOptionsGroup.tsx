@@ -46,10 +46,18 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
     pageTurnDelay: number;
     onSetPageTurnDelay: (arg: number) => void;
     format: string;
-    setFormat: (f: string) => void;
+    onFormatChanged: (f: string) => void;
 }> = props => {
-    const format = props.format;
-    const setFormat = props.setFormat;
+    // When using props.format directly, it was possible to make VideoFormat render in an inconsistent state.
+    // (It rendered Icon as final value, but Label as intermediate value -> inconsistent rendering!)
+    // Making our own version of format using useState, rather than using props.format directly, makes this go away somehow.
+    // (Maybe because we're making it more explicit to React that the state is being updated and it needs to re-render stuff,
+    // but I don't fully understand why it wasn't working before)
+    const [format, setFormat] = useState(props.format);
+
+    // Stores which formats should be non-selectable.
+    const [disabledFormats, setDisabledFormats] = useState<string[]>([]);
+
     const [tooBigMsg, setTooBigMsg] = useState("");
     // Manages visibility of the details popup for the main Format label (that shows in the
     // control when the dropdown is closed).
@@ -61,6 +69,18 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
     // we want independent control over the dropdown, but so we can hide the popup details
     // thing when we show the dropdown.
     const [formatDropdownIsOpen, setFormatDropdownIsOpen] = useState(false);
+
+    // When component is mounted, find out which formats should be disabled, then update the state.
+    useEffect(() => {
+        // Currently, only mp3 format can be disabled. Everything else is always enabled right now.
+        BloomApi.get("publish/av/isMP3FormatSupported", c => {
+            const isSupported = c.data as boolean;
+            if (!isSupported) {
+                setDisabledFormats(prevValue => prevValue.concat(["mp3"]));
+            }
+        });
+    }, []);
+
     useEffect(() => {
         BloomApi.get("publish/av/tooBigForScreenMsg", c => {
             setTooBigMsg(c.data);
@@ -108,6 +128,23 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
             )
         }
     ];
+
+    useEffect(() => {
+        // Ensure selection is not disabled
+        if (disabledFormats.includes(format)) {
+            const firstNonDisabledFormat = formatItems
+                .map(x => x.format)
+                .find(f => !disabledFormats.includes(f));
+
+            if (firstNonDisabledFormat === undefined) {
+                // If for some weird reason, all formats are disabled, just leave it at whatever format was originally selected.
+                return;
+            }
+
+            setFormat(firstNonDisabledFormat);
+            props.onFormatChanged(firstNonDisabledFormat);
+        }
+    }, [format, disabledFormats]);
 
     return (
         <SettingsGroup label={useL10n("Options", "Common.Options")}>
@@ -164,6 +201,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                         const newFormat = e.target
                                             .value as string;
                                         setFormat(newFormat);
+                                        props.onFormatChanged(newFormat);
                                     }}
                                     style={{ width: 160 }}
                                     renderValue={f => {
@@ -188,6 +226,9 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                             <MenuItem
                                                 value={item.format}
                                                 key={item.format}
+                                                disabled={disabledFormats.includes(
+                                                    item.format
+                                                )}
                                             >
                                                 <VideoFormatItem {...item} />
                                             </MenuItem>

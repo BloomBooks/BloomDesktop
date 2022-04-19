@@ -547,7 +547,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                             setAvSettings({ ...avSettings, pageTurnDelay: n })
                         }
                         format={avSettings.format}
-                        setFormat={(f: string) =>
+                        onFormatChanged={(f: string) =>
                             setAvSettings({ ...avSettings, format: f })
                         }
                     ></AudioVideoOptionsGroup>
