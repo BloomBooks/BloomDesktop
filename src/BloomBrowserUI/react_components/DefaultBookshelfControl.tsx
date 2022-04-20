@@ -159,9 +159,6 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
                 // a different behavior in Gecko and FF, though actually the difference
                 // is window width).
                 minHeight: "auto"
-            },
-            "& li:hover": {
-                color: "white"
             }
         }
     });
