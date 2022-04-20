@@ -3476,12 +3476,26 @@
       <trans-unit id="PublishTab.Android.BloomD.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en">Sharing .bloomd Files</source>
         <note>ID: PublishTab.Android.BloomD.Hint.Heading</note>
-        <note></note>
+        <note>Obsolete in 5.3+</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true">
         <source xml:lang="en">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</source>
         <note>ID: PublishTab.Android.BloomD.Hint</note>
-        <note></note>
+        <note>Obsolete in 5.3+</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomPUB.Hint.Heading" sil:dynamic="true">
+        <source xml:lang="en">Sharing BloomPUB Files</source>
+        <note>ID: PublishTab.Android.BloomPUB.Hint.Heading</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomPUB.Hint" sil:dynamic="true">
+        <source xml:lang="en">You can use SD cards and sharing apps like email, Google Drive, and WhatsApp to get your .bloompub file onto a device that has &lt;a href="https://bloomlibrary.org/page/create/bloom-reader"&gt;Bloom Reader&lt;/a&gt; (Android) or &lt;a href="https://github.com/BloomBooks/bloompub-viewer/releases"&gt;BloomPUB Viewer&lt;/a&gt; (Windows). You can also create a stand-alone app using &lt;a href="https://software.sil.org/readingappbuilder/"&gt;Reading App Builder&lt;/a&gt;.</source>
+        <note>ID: PublishTab.Android.BloomPUB.Hint</note>
+        <note>The 3 links should be left untranslated as well as the file type '.bloompub'. Beware of machine translations that eliminate the 'b'.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomPUB.Hint2" sil:dynamic="true">
+        <source xml:lang="en">Note that when you upload your book to &lt;a href="https://bloomlibrary.org/"&gt;BloomLibrary.org&lt;/a&gt;, we will create a BloomPUB file for you that people can download.</source>
+        <note>ID: PublishTab.Android.BloomPUB.Hint2</note>
+        <note>The link should be left untranslated as well as the file type 'BloomPUB'.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en"> USB is Difficult</source>
@@ -3527,6 +3541,11 @@
       <trans-unit id="PublishTab.Android.ChooseFile" sil:dynamic="true">
         <source xml:lang="en">Save Bloom Reader File</source>
         <note>ID: PublishTab.Android.ChooseFile</note>
+        <note>Obsolete in 5.3+</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.ChooseBloomPUBFile" sil:dynamic="true">
+        <source xml:lang="en">Save BloomPUB File</source>
+        <note>ID: PublishTab.Android.ChooseBloomPUBFile</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true">
         <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
@@ -3805,6 +3824,11 @@
       <trans-unit id="PublishTab.BodyOnlyRadio">
         <source xml:lang="en">Booklet Insides</source>
         <note>ID: PublishTab.BodyOnlyRadio</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.bloomPUBButton">
+        <source xml:lang="en">BloomPUB</source>
+        <note>ID: PublishTab.bloomPUBButton</note>
+        <note>This is the label under the BloomPUB icon on the left side of the Publish screen.</note>
       </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make a booklet from the inside pages of the book.\nPages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>

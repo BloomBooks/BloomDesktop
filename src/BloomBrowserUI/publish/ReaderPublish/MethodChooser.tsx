@@ -13,6 +13,7 @@ import Typography from "@material-ui/core/Typography";
 import { LocalizedString } from "../../react_components/l10nComponents";
 import { default as InfoIcon } from "@material-ui/icons/InfoOutlined";
 import HtmlHelpLink from "../../react_components/htmlHelpLink";
+import { kMutedTextGray } from "../../bloomMaterialUiTheme";
 
 const wifiImage = require("./publish-via-wifi.svg");
 const usbImage = require("./publish-via-usb.svg");
@@ -33,6 +34,7 @@ export const MethodChooser: React.FunctionComponent = () => {
     );
 
     const methodImage = (methodNameToImageUrl as any)[method];
+
     return (
         <>
             <div className={"methodChooserRoot"}>
@@ -46,8 +48,8 @@ export const MethodChooser: React.FunctionComponent = () => {
                                 "PublishTab.Android.ChooseWifi"
                             ),
                             file: useL10n(
-                                "Save Bloom Reader File",
-                                "PublishTab.Android.ChooseFile"
+                                "Save BloomPUB File",
+                                "PublishTab.Android.ChooseBloomPUBFile"
                             ),
                             usb: useL10n(
                                 "Send over USB Cable",
@@ -121,15 +123,64 @@ function getHint(method: string) {
                     <div className="hint-heading">
                         <InfoIcon color="primary" />
                         <Typography variant="h6">
-                            <LocalizedString l10nKey="PublishTab.Android.BloomD.Hint.Heading">
-                                Sharing .bloomd Files
+                            <LocalizedString l10nKey="PublishTab.Android.BloomPUB.Hint.Heading">
+                                Sharing BloomPUB Files
                             </LocalizedString>
                         </Typography>
                     </div>
-                    <Typography>
-                        <LocalizedString l10nKey="PublishTab.Android.BloomD.Hint">
-                            You can use sharing apps like email, Dropbox, and
-                            WhatsApp to get your .bloomd file onto a device.
+                    <Typography
+                        css={css`
+                            color: ${kMutedTextGray};
+                            a {
+                                color: ${kMutedTextGray};
+                            }
+                        `}
+                    >
+                        <LocalizedString
+                            l10nKey="PublishTab.Android.BloomPUB.Hint"
+                            l10nComment="The 3 links should be left untranslated as well as the file type '.bloompub'. Beware of machine translations that eliminate the 'b'."
+                        >
+                            You can use SD cards and sharing apps like email,
+                            Google Drive, and WhatsApp to get your .bloompub
+                            file onto a device that has{" "}
+                            <a href="https://bloomlibrary.org/page/create/bloom-reader">
+                                Bloom Reader
+                            </a>{" "}
+                            (Android) or{" "}
+                            <a href="https://github.com/BloomBooks/bloompub-viewer/releases">
+                                BloomPUB Viewer
+                            </a>{" "}
+                            (Windows). You can also create a stand-alone app
+                            using{" "}
+                            <a href="https://software.sil.org/readingappbuilder/">
+                                Reading App Builder
+                            </a>
+                            .
+                        </LocalizedString>
+                    </Typography>
+                    <div
+                        css={css`
+                            height: 1em !important;
+                        `}
+                    />
+                    <Typography
+                        css={css`
+                            color: ${kMutedTextGray};
+                            a {
+                                color: ${kMutedTextGray};
+                            }
+                        `}
+                    >
+                        <LocalizedString
+                            l10nKey="PublishTab.Android.BloomPUB.Hint2"
+                            l10nComment="The link should be left untranslated as well as the file type 'BloomPUB'."
+                        >
+                            Note that when you upload your book to{" "}
+                            <a href="https://bloomlibrary.org/">
+                                BloomLibrary.org
+                            </a>
+                            , we will create a BloomPUB file for you that people
+                            can download.
                         </LocalizedString>
                     </Typography>
                 </>
@@ -155,7 +206,11 @@ function getHint(method: string) {
                             </LocalizedString>
                         </Typography>
                     </div>
-                    <Typography>
+                    <Typography
+                        css={css`
+                            color: ${kMutedTextGray};
+                        `}
+                    >
                         <LocalizedString l10nKey="PublishTab.Android.USB.Hint">
                             To Send via USB, you may need to get the right
                             cable, install phone drivers on your computer, or
@@ -175,7 +230,11 @@ function getHint(method: string) {
                             </LocalizedString>
                         </Typography>
                     </div>
-                    <Typography>
+                    <Typography
+                        css={css`
+                            color: ${kMutedTextGray};
+                        `}
+                    >
                         <LocalizedString
                             l10nKey="PublishTab.Android.WiFi.Hint"
                             l10nComment="This is preceded by a heading that says 'No Wi-Fi Network'. 'one' here refers to 'Wi Fi' network."
