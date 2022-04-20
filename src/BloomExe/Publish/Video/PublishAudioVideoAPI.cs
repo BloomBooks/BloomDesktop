@@ -30,8 +30,6 @@ namespace Bloom.Publish.Video
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-
-
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "recordVideo", request =>
 			{
 				RecordVideo(request);
@@ -59,10 +57,29 @@ namespace Bloom.Publish.Video
 				if (request.HttpMethod == HttpMethods.Get)
 				{
 					var settings = request.CurrentBook.BookInfo.PublishSettings.AudioVideo;
+					var lastPageIndex = request.CurrentBook.GetPages().Count() - 1;
+					// this default might be too high but I don't think it will ever be too low.
+					// The HTML side will handle it being too high.
+					var pageRange = new[] { 0, lastPageIndex };
+					if (settings.PageRange!= null && settings.PageRange.Length == 2)
+					{
+						// I wanted to do something like this as validation, in case the book changed
+						// since we saved. But we don't have an accurate page count of the modified version
+						// of the book that the range applies to yet. (e.g., switch to device xmatter, strip
+						// activities,...
+						//pageRange[1] = Math.Min(settings.PageRange[1], lastPageIndex); // not more than the pages we have
+						//pageRange[0] = Math.Min(settings.PageRange[0], pageRange[1] - 1); // at least one less than lim
+						//if (pageRange[0] < 0)
+						//	pageRange[0] = 0;
+						//if (pageRange[1] < pageRange[0] + 1)
+						//	pageRange[1] = Math.Min(pageRange[0] + 1, lastPageIndex);
+						pageRange = settings.PageRange;
+					}
 					request.ReplyWithJson(new {
 						format= settings.Format,
 						pageTurnDelay = settings.PageTurnDelayDouble,
-						motion = settings.Motion
+						motion = settings.Motion,
+						pageRange
 					});
 				}
 				else
@@ -73,6 +90,16 @@ namespace Bloom.Publish.Video
 					settings.Format = data.format;
 					settings.PageTurnDelayDouble = data.pageTurnDelay;
 					settings.Motion = data.motion;
+					// pageRange also comes in as doubles. "as double[]" does not work, so have to do them individually.
+					settings.PageRange = new int[0];
+					// Typescript passes an empty array if all pages are selected.
+					// This allows us naturally to keep everything selected until the user explicitly changes something.
+					if (data.pageRange.IsArray && data.pageRange.Count == 2)
+					{
+						var start = (int)data.pageRange[0];
+						var end = (int)data.pageRange[1];
+						settings.PageRange = new[] { start, end };
+					}
 
 					request.CurrentBook.BookInfo.SavePublishSettings();
 
@@ -259,6 +286,7 @@ namespace Bloom.Publish.Video
 				ShouldRecordAsLandscape(request.CurrentBook));
 			_recordVideoWindow.SetPageReadTime(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PageTurnDelayDouble.ToString());
 			_recordVideoWindow.SetVideoSettingsFromPreview(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PlayerSettings);
+			_recordVideoWindow.SetPageRange(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PageRange);
 			_recordVideoWindow.Closed += (sender, args) =>
 			{
 				if (!_recordVideoWindow.GotFullRecording)

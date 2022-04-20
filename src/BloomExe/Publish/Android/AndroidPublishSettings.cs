@@ -23,6 +23,13 @@ namespace Bloom.Publish.Android
 		// NOTE: It's more natural for consumers to think about what languages they want to EXCLUDE, rather than what languages they want to INCLUDE.
 		public HashSet<string> AudioLanguagesToExclude;
 
+		// Triggers both not deleting them...they are harmless when making a video...
+		// and sending a list of them over a web socket.
+		public bool WantPageLabels;
+
+		// True to remove activities, quiz pages...stuff that's inappropriate for making videos.
+		public bool RemoveInteractivePages;
+
 		// Should we publish as a motion book?
 		// Note: rather than a default of false, this should normally be set to the PublishSettings.BloomPub.Motion
 		// value stored in the book's BookInfo. This happens automatically if creating one using ForBloomInfo.

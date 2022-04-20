@@ -7,13 +7,15 @@ import { useL10n } from "../../react_components/l10nHooks";
 import { BloomApi } from "../../utils/bloomApi";
 import { Div } from "../../react_components/l10nComponents";
 import { FormControl, MenuItem, Select, Typography } from "@material-ui/core";
-import Slider from "rc-slider";
+import Slider from "@material-ui/core/Slider";
 import "../../bookEdit/css/rc-slider-bloom.less";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import AudioIcon from "@material-ui/icons/VolumeUp";
 import { useEffect, useState } from "react";
 import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
+import { MuiCheckbox } from "../../react_components/muiCheckBox";
+import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
 
 // The things that define each item in the Format menu
 interface IFormatItem {
@@ -47,6 +49,10 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
     onSetPageTurnDelay: (arg: number) => void;
     format: string;
     onFormatChanged: (f: string) => void;
+    pageRange: number[];
+    onSetPageRange: (arg: number[]) => void;
+    motion: boolean;
+    onMotionChange: (arg: boolean) => void;
 }> = props => {
     // When using props.format directly, it was possible to make VideoFormat render in an inconsistent state.
     // (It rendered Icon as final value, but Label as intermediate value -> inconsistent rendering!)
@@ -57,6 +63,10 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
 
     // Stores which formats should be non-selectable.
     const [disabledFormats, setDisabledFormats] = useState<string[]>([]);
+    const [motionEnabled] = BloomApi.useApiBoolean(
+        "publish/android/canHaveMotionMode",
+        false
+    );
 
     const [tooBigMsg, setTooBigMsg] = useState("");
     // Manages visibility of the details popup for the main Format label (that shows in the
@@ -86,6 +96,51 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
             setTooBigMsg(c.data);
         });
     }, [format]);
+    const [pageLabels, setPageLabels] = useState([]);
+    useSubscribeToWebSocketForObject("publishPageLabels", "ready", data =>
+        setPageLabels((data as any).labels)
+    );
+
+    const setPageRange = (range: number[]) => {
+        if (range[0] === 0 && range[1] === pageLabels.length - 1) {
+            props.onSetPageRange([]);
+        } else {
+            props.onSetPageRange(range);
+        }
+    };
+
+    const pageRange = Array.from(props.pageRange);
+    if (pageLabels.length) {
+        if (pageRange.length == 0) {
+            // we want them all
+            pageRange.push(0);
+            pageRange.push(pageLabels.length - 1);
+        }
+        // validate pageRange and notify parent if it is corrected.
+        // Needing to correct is normal since the initial guess is based on pages
+        // in the original book, but the bloomPub version may well omit some.
+        var changed = false;
+        if (pageRange[1] >= pageLabels.length) {
+            pageRange[1] = pageLabels.length - 1;
+            changed = true;
+        }
+        if (pageRange[0] > pageRange[1]) {
+            pageRange[0] = pageRange[1];
+            changed = true;
+        }
+        if (changed) {
+            setPageRange(pageRange);
+        }
+    }
+
+    // "marks" are usually tick marks along the slider at equal intervals, but we're using
+    // it unconventionally with just two marks that correspond to the thumb positions, to show the
+    // corresponding page labels.
+    const marks: Array<{ value: number; label: string }> = [];
+    for (var i = 0; i < pageRange.length; i++) {
+        var index = pageRange[i];
+        marks[i] = { value: index, label: pageLabels[index] };
+    }
 
     const formatItems: IFormatItem[] = [
         {
@@ -248,6 +303,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                         {format !== "mp3" && (
                             <div
                                 css={css`
+                                    // The label can extend well beyond the end of the slider, so we need some extra space.
                                     padding-right: 30px;
                                 `}
                             >
@@ -273,36 +329,78 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                 >
                                     %0 seconds
                                 </Div>
-                                <div
-                                    className="bgSliderWrapper"
-                                    css={css`
-                                        .rc-slider-rail {
-                                            background-color: #ddd !important;
-                                        }
-                                        .rc-slider-handle {
-                                            background-color: ${kBloomBlue} !important;
-                                        }
-                                        .rc-slider-dot {
-                                            background-color: ${kBloomBlue} !important;
-                                            border-color: white !important; // should match background, I think.
-                                        }
-                                        .rc-slider-track {
-                                            background-color: ${kBloomBlue}60 !important;
-                                        }
-                                    `}
-                                >
+                                <div className="bgSliderWrapper">
                                     <Slider
                                         max={10}
                                         min={1}
                                         value={props.pageTurnDelay}
                                         step={0.5}
-                                        onChange={value =>
-                                            props.onSetPageTurnDelay(value)
+                                        onChange={(event, value) =>
+                                            props.onSetPageTurnDelay(
+                                                value as number
+                                            )
                                         }
                                     />
                                 </div>
                             </div>
                         )}
+                        {motionEnabled && (
+                            <FormGroup
+                                css={css`
+                                    margin-top: 20px;
+                                `}
+                            >
+                                <MuiCheckbox
+                                    label="Motion Book"
+                                    l10nKey="PublishTab.Android.MotionBookMode"
+                                    checked={props.motion}
+                                    onCheckChanged={props.onMotionChange}
+                                ></MuiCheckbox>
+                            </FormGroup>
+                        )}
+                        <Div
+                            l10nKey="PublishTab.RecordVideo.RecordThesePages"
+                            temporarilyDisableI18nWarning={true}
+                            css={css`
+                                margin-bottom: 2px;
+                                margin-top: 20px;
+                                font-weight: bold;
+                            `}
+                        >
+                            Record These Pages:
+                        </Div>
+                        <div
+                            css={css`
+                                // The label can extend well beyond the end of the slider, so we need some extra space.
+                                padding-right: 30px;
+                            `}
+                        >
+                            {pageLabels.length && (
+                                <Slider
+                                    css={css`
+                                        .MuiSlider-markLabel {
+                                            max-width: 40px; // encourages wrapping, but long words can still overflow, and short ones center
+                                            white-space: normal; // allows wrapping
+                                            text-align: center;
+                                        }
+                                    `}
+                                    max={pageLabels.length - 1}
+                                    min={0}
+                                    value={pageRange}
+                                    step={1}
+                                    onChange={(event, value) => {
+                                        var newVal = value as number[];
+                                        if (
+                                            newVal[0] != pageRange[0] ||
+                                            newVal[1] != pageRange[1]
+                                        ) {
+                                            setPageRange(newVal);
+                                        }
+                                    }}
+                                    marks={marks}
+                                />
+                            )}
+                        </div>
                     </Typography>
                 </FormControl>
             </FormGroup>

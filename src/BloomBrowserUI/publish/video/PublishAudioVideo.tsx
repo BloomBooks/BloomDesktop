@@ -84,6 +84,7 @@ interface IAudioVideoSettings {
     format: string;
     pageTurnDelay: number;
     motion: boolean;
+    pageRange: number[]; // two numbers! Or possibly zero, meaning the whole book
 }
 
 const PublishAudioVideoInternalInternal: React.FunctionComponent<{
@@ -113,7 +114,8 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     >("publish/av/settings", {
         format: "facebook",
         pageTurnDelay: 3,
-        motion: false
+        motion: false,
+        pageRange: []
     });
 
     const [debouncedPageTurnDelay] = useDebounce(
@@ -133,10 +135,6 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         "ready"
     );
 
-    const [motionEnabled] = BloomApi.useApiBoolean(
-        "publish/android/canHaveMotionMode",
-        false
-    );
     const [hasActivities] = BloomApi.useApiBoolean(
         "publish/av/hasActivities",
         false
@@ -186,7 +184,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         preview.contentWindow?.postMessage(JSON.stringify(msg), "*");
     };
     const play = () => {
-        sendMessageToPlayer({ play: true, autoplay: "yes" });
+        sendMessageToPlayer({ play: true });
         setPlaying(true);
     };
     const pause = () => {
@@ -250,6 +248,14 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
             videoSettingsParam =
                 "&videoSettings=" + JSON.stringify(videoSettings);
         }
+    }
+    let pageRangeSetting = "";
+    if (avSettings.pageRange.length == 2) {
+        pageRangeSetting = `&start-page=${
+            avSettings.pageRange[0]
+        }&autoplay-count=${avSettings.pageRange[1] -
+            avSettings.pageRange[0] +
+            1}`;
     }
     const recordingVideo = avSettings.format != "mp3";
     const circleHeight = "0.88rem";
@@ -317,12 +323,13 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                         landscapeWidth={landscapeWidth}
                                         url={
                                             pathToOutputBrowser +
-                                            "bloom-player/dist/bloomplayer.htm?centerVertically=true&videoPreviewMode=true&autoplay=no&defaultDuration=" +
+                                            "bloom-player/dist/bloomplayer.htm?centerVertically=true&videoPreviewMode=true&autoplay=yes&paused=true&defaultDuration=" +
                                             debouncedPageTurnDelay +
                                             "&url=" +
                                             encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
                                             "&independent=false&host=bloomdesktop&skipActivities=true&hideNavButtons=true" +
-                                            videoSettingsParam
+                                            videoSettingsParam +
+                                            pageRangeSetting
                                         }
                                     />
                                     <div
@@ -408,10 +415,10 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                     l10nKey="PublishTab.RecordVideo.WillOpenRecordingWindow"
                                     temporarilyDisableI18nWarning={true}
                                 >
-                                    This will open a window and play the whole
-                                    book. Bloom will record it to match the
-                                    “Format” option in the upper right of this
-                                    screen.
+                                    This will open a window and play the
+                                    selected pages. Bloom will record it to
+                                    match the “Format” option in the upper right
+                                    of this screen.
                                 </Div>
                                 {isScalingActive && recordingVideo && (
                                     <ErrorBox>
@@ -550,28 +557,20 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                         onFormatChanged={(f: string) =>
                             setAvSettings({ ...avSettings, format: f })
                         }
+                        pageRange={avSettings.pageRange}
+                        onSetPageRange={(range: number[]) =>
+                            setAvSettings({ ...avSettings, pageRange: range })
+                        }
+                        motion={avSettings.motion}
+                        onMotionChange={m => {
+                            setAvSettings({
+                                ...avSettings,
+                                motion: m!
+                            });
+                            // Will restart due to regenerating, we want the controls to show not playing.
+                            pause();
+                        }}
                     ></AudioVideoOptionsGroup>
-                    {motionEnabled && (
-                        <FormGroup
-                            css={css`
-                                margin-top: 20px;
-                            `}
-                        >
-                            <MuiCheckbox
-                                label="Motion Book"
-                                l10nKey="PublishTab.Android.MotionBookMode"
-                                checked={avSettings.motion}
-                                onCheckChanged={m => {
-                                    setAvSettings({
-                                        ...avSettings,
-                                        motion: m!
-                                    });
-                                    // Will restart due to regenerating, we want the controls to show not playing.
-                                    pause();
-                                }}
-                            ></MuiCheckbox>
-                        </FormGroup>
-                    )}
 
                     {/* push everything to the bottom */}
                     <div

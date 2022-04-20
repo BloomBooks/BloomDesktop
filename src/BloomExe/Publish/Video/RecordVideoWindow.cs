@@ -43,6 +43,7 @@ namespace Bloom.Publish.Video
 		private string _pageReadTime = "3.0"; // default for pages without narration
 		private string _videoSettingsFromPreview;
 		private bool _shouldRotateBook = false;
+		private int[] _pageRange = new int[0];
 
 		// H.263, at least in its original revision, only supports certain specific resolutions, e.g. CIF = 352x288
 		// Notably, it is necessary for it to be 352x288, not the inverse 288x352. (Revision 2 supposedly allows flexible resolutions)
@@ -96,6 +97,11 @@ namespace Bloom.Publish.Video
 			return result;
 		}
 
+		public void SetPageRange(int[] range)
+		{
+			_pageRange = range;
+		}
+
 		/// <summary>
 		/// As we show the window, we immediately load Bloom player into the browser and start
 		/// navigating to it.
@@ -109,10 +115,12 @@ namespace Bloom.Publish.Video
 			// a problem, we may have to somehow encourage, but not enforce, zero pageReadTime
 			// for audio-only output.
 			var pageReadTime = (_codec == Codec.MP3 ? "0" : _pageReadTime);
+			string pageRangeParams = _pageRange.Length == 2
+				? $"&start-page={_pageRange[0]}&autoplay-count={_pageRange[1] - _pageRange[0] + 1}" : "";
 			var bloomPlayerUrl = BloomServer.ServerUrlWithBloomPrefixEndingInSlash
-					  + "bloom-player/dist/bloomplayer.htm?centerVertically=true&reportSoundLog=true&initiallyShowAppBar=false&autoplay=yes&hideNavButtons=true&url="
-					  + bookUrl
-					  + $"&independent=false&host=bloomdesktop&defaultDuration={pageReadTime}&skipActivities=true";
+			                     + "bloom-player/dist/bloomplayer.htm?centerVertically=true&reportSoundLog=true&initiallyShowAppBar=false&autoplay=yes&hideNavButtons=true&url="
+			                     + bookUrl
+			                     + $"&independent=false&host=bloomdesktop&defaultDuration={pageReadTime}&skipActivities=true{pageRangeParams}";
 			// The user can make choices in the preview instance of BloomPlayer...currently language and
 			// whether to play image descriptions...that need to be communicated to the recording window.
 			// If we received any, pass them on.

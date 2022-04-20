@@ -213,6 +213,8 @@ namespace Bloom.Book
 				PageTurnDelay = 3000;
 			if (PlayerSettings == null)
 				PlayerSettings = "";
+			if (PageRange == null)
+				PageRange = new int[0];
 		}
 
 		/// <summary>
@@ -269,6 +271,11 @@ namespace Bloom.Book
 		/// </summary>
 		[JsonProperty("playerSettings")]
 		public string PlayerSettings { get; set; }
+
+		// An array (should always be exactly two items) of pages to include.
+		// May be null or an empty array to indicate "all pages"
+		[JsonProperty("pageRange")]
+		public int[] PageRange { get; set; }
 	}
 
 	/// <summary>

@@ -124,6 +124,13 @@ namespace Bloom.Publish.Android
 				modifiedBook.Storage.BookInfo.UpdateOneSingletonTag("bookshelf", settings.BookshelfTag);
 			}
 
+			if (settings?.RemoveInteractivePages ?? false)
+			{
+				var activities = modifiedBook.GetPageElements().Cast<XmlNode>()
+					.Where(x => x is XmlElement elt && HtmlDom.IsActivityPage(elt)).ToArray();
+				foreach (var page in activities)
+					page.ParentNode.RemoveChild(page);
+			}
 
 			if (settings?.LanguagesToInclude != null)
 			{
@@ -149,7 +156,8 @@ namespace Bloom.Publish.Android
 			{
 				helper.ControlForInvoke = ControlForInvoke;
 				ISet<string> warningMessages = new HashSet<string>();
-				helper.RemoveUnwantedContent(modifiedBook.OurHtmlDom, modifiedBook, false, warningMessages);
+				helper.RemoveUnwantedContent(modifiedBook.OurHtmlDom, modifiedBook, false,
+					warningMessages, keepPageLabels:settings?.WantPageLabels??false);
 				PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
 				fontsUsed = helper.FontsUsed;
 			}
