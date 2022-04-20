@@ -102,16 +102,25 @@ export class LocalizableElement<
         return retval;
     }
 
+    private attributeString(tagType: string, props: any): string {
+        // warning: don't try to access props["href"] unless you're dealing with an anchor tag.
+        return tagType === "a" ? ' href="' + props["href"] + '"' : "";
+    }
+
     // reverse-engineered from React/TSX
-    // handles only one level of markup without any attributes.  Making this recursive
+    // handles only one level of markup without most attributes.  Making this recursive
     // may well work, but YAGNI.
+    // We make one exception to include a href attribute, if the html is an anchor tag.
     public extractRawHtml(item: object): string {
         const type = item["type"];
         const props = item["props"];
         if (type != null && typeof type === "string" && props != null) {
             const children = props["children"];
             if (typeof children === "string") {
-                return "<" + type + ">" + children + "</" + type + ">";
+                return `<${type}${this.attributeString(
+                    type,
+                    props
+                )}>${children}</${type}>`;
             }
         }
         return "[UNKNOWN DATA]";

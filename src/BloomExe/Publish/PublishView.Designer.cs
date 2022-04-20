@@ -254,7 +254,7 @@ namespace Bloom.Publish
 			this._bloomPUBRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._bloomPUBRadio.Image = global::Bloom.Properties.Resources.BloomPUB;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._bloomPUBRadio, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._bloomPUBRadio, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._bloomPUBRadio, "This is the label under the BloomPUB icon on the left side of the Publish screen.");
 			this._L10NSharpExtender.SetLocalizingId(this._bloomPUBRadio, "PublishTab.bloomPUBButton");
 			this._bloomPUBRadio.Location = new System.Drawing.Point(3, 448);
 			this._bloomPUBRadio.Name = "_bloomPUBRadio";
@@ -270,7 +270,7 @@ namespace Bloom.Publish
 			this._superToolTip.SetSuperStuff(this._bloomPUBRadio, superToolTipInfoWrapper1);
 			this._bloomPUBRadio.TabIndex = 22;
 			this._bloomPUBRadio.TabStop = true;
-			this._bloomPUBRadio.Text = "Bloom Reader";
+			this._bloomPUBRadio.Text = "BloomPUB";
 			this._bloomPUBRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			this._bloomPUBRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._bloomPUBRadio.UseVisualStyleBackColor = true;
