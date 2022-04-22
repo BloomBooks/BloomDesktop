@@ -4092,7 +4092,7 @@ namespace Bloom.Book
 		{
 			foreach (var page in RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToArray())
 			{
-				if (PublishHelper.IsActivityPage(page))
+				if (HtmlDom.IsActivityPage(page))
 					continue;
 				if (PageHasImages(page))
 					continue;
@@ -4140,7 +4140,11 @@ namespace Bloom.Book
 		{
 			foreach (XmlElement div in page.SafeSelectNodes(".//div[@lang]"))
 			{
-				if (languagesToLookFor.Contains(div.GetStringAttribute("lang")) && !string.IsNullOrWhiteSpace(div.InnerText))
+				if (languagesToLookFor.Contains(div.GetStringAttribute("lang"))
+				    && !string.IsNullOrWhiteSpace(div.InnerText)
+					// page labels are deleted in most scenarios; even when kept, they are not a reason
+					// to keep otherwise blank pages.
+				    && div.Attributes["class"]?.Value != "pageLabel")
 					return true;
 			}
 			return false;

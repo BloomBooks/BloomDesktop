@@ -2262,17 +2262,21 @@ namespace Bloom.Book
 
 		public bool HasQuizPages()
 		{
+			return HasQuizPageContent(_dom.DocumentElement);
+		}
+		public static bool HasQuizPageContent(XmlElement element)
+		{
 			// Current style comprehension quiz pages
-			var nodes1 = _dom.SafeSelectNodes("//*[contains(@class, 'simple-comprehension-quiz')]");
+			if (element.SafeSelectNodes(".//*[contains(@class, 'simple-comprehension-quiz')]")?.Count >= 1)
+				return true;
 			// Legacy style comprehension quiz pages
-			var nodes2 = _dom.SafeSelectNodes("//*[contains(@class, 'questions')]");
-			return nodes1?.Count >= 1 || nodes2?.Count >= 1;
+			return element.SafeSelectNodes(".//*[contains(@class, 'questions')]")?.Count >= 1;
 		}
 
 		// "Widgets" are HTML Activities that the user creates outside of Bloom, as distinct from our built-in activities.
 		public bool HasWidgetPages()
 		{
-			var nodes = _dom.SafeSelectNodes("//*[@data-activity = 'iframe']");
+			var nodes = _dom.SafeSelectNodes("//*[@data-activity]");
 			return nodes?.Count >= 1;
 		}
 
@@ -2283,7 +2287,19 @@ namespace Bloom.Book
 			// but for compatibility with legacy books (and in case I'm wrong) I'm keeping the other checks.
 			// This test should be consistent with the isActivity method in bloom player's bloom-player-core code.
 			return _dom.SelectSingleNode("//div[contains(@class, 'bloom-interactive-page')]")!= null
-				|| HasQuizPages() || HasWidgetPages();
+			       || HasQuizPages() || HasWidgetPages();
+		}
+
+		public static bool IsActivityPage(XmlElement pageElement)
+		{
+			var classes = pageElement.GetAttribute("class");
+			// I'd say it's impossible for this to be empty or null, but...
+			Debug.Assert(!string.IsNullOrEmpty(classes), "How did we get a page with no classes!?");
+			// The class is for 4.6, the attribute is for later versions.
+			if (classes.Contains("bloom-interactive-page") || pageElement.HasAttribute("data-activity"))
+				return true;
+
+			return HasQuizPageContent(pageElement);
 		}
 
 		public  bool HasOverlayPages()

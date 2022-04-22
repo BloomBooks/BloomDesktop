@@ -495,6 +495,10 @@ namespace Bloom.Publish.Android
 			}
 
 			_lastSettings.Motion = forVideo ? request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Motion : request.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion;
+			_lastSettings.WantPageLabels = forVideo;
+			// BloomPlayer is capable of skipping these, but they confuse the page list we use to populate
+			// the page-range control.
+			_lastSettings.RemoveInteractivePages = forVideo;
 			PreviewUrl = MakeBloomPubForPreview(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor, _lastSettings);
 			_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, PreviewUrl);
 		}
@@ -604,7 +608,7 @@ namespace Bloom.Publish.Android
 		/// <param name="backColor"></param>
 		/// <param name="settings"></param>
 		/// <returns>A valid, well-formed URL on localhost that points to the bloomd</returns>
-		public static string MakeBloomPubForPreview(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor, AndroidPublishSettings settings = null)
+		public string MakeBloomPubForPreview(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor, AndroidPublishSettings settings = null)
 		{
 			progress.Message("PublishTab.Epub.PreparingPreview", "Preparing Preview");	// message shared with Epub publishing
 			if (settings?.LanguagesToInclude != null)
@@ -633,6 +637,28 @@ namespace Bloom.Publish.Android
 			CurrentPublicationFolder = _stagingFolder.FolderPath;
 			var modifiedBook = BloomPubMaker.PrepareBookForBloomReader(book.FolderPath, bookServer, _stagingFolder, progress,book.IsTemplateBook, settings: settings);
 			progress.Message("Common.Done", "Shown in a list of messages when Bloom has completed a task.", "Done");
+			if (settings?.WantPageLabels ?? false)
+			{
+				int pageNum = 0;
+				var labelData
+					= modifiedBook.GetPages().Select(p =>
+					{
+						var caption = p.GetCaptionOrPageNumber(ref pageNum, out string i18nId);
+						if (!string.IsNullOrEmpty(caption))
+							caption = I18NApi.GetTranslationDefaultMayNotBeEnglish(i18nId, caption);
+						return caption;
+					}).ToArray();
+				dynamic messageBundle = new DynamicJson();
+				messageBundle.labels = labelData;
+				// We send these through the websocket rather than getting them through an API because the
+				// API request would very likely come before we finish generating the preview so at best we'd
+				// have to delay the response. Then the request might time out on a long book. So we'd really
+				// need an event anyway to tell the Typescript code it is time to request the labels.
+				// And then it would take some nasty spaghetti code to get the labels to the PublishVideoApi
+				// class so it could reply to the request. Cleaner just to send it through the socket.
+				_webSocketServer.SendBundle("publishPageLabels", "ready", messageBundle);
+			}
+
 			return modifiedBook.FolderPath.ToLocalhost();
 		}
 

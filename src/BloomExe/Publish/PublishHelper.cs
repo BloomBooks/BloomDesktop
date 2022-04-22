@@ -55,7 +55,7 @@ namespace Bloom.Publish
 		/// Remove unwanted content from the XHTML of this book.  As a side-effect, store the fonts used in the remaining
 		/// content of the book.
 		/// </summary>
-		public void RemoveUnwantedContent(HtmlDom dom, Book.Book book, bool removeInactiveLanguages, ISet<string> warningMessages, EpubMaker epubMaker = null)
+		public void RemoveUnwantedContent(HtmlDom dom, Book.Book book, bool removeInactiveLanguages, ISet<string> warningMessages, EpubMaker epubMaker = null, bool keepPageLabels = false)
 		{
 			FontsUsed.Clear();
 			// Removing unwanted content involves a real browser really navigating. I'm not sure exactly why,
@@ -68,14 +68,14 @@ namespace Bloom.Publish
 					ControlForInvoke = Form.ActiveForm;
 				ControlForInvoke.Invoke((Action)(delegate
 				{
-					RemoveUnwantedContentInternal(dom, book, removeInactiveLanguages, epubMaker, warningMessages);
+					RemoveUnwantedContentInternal(dom, book, removeInactiveLanguages, epubMaker, warningMessages, keepPageLabels);
 				}));
 			}
 			else
-				RemoveUnwantedContentInternal(dom, book, removeInactiveLanguages, epubMaker, warningMessages);
+				RemoveUnwantedContentInternal(dom, book, removeInactiveLanguages, epubMaker, warningMessages, keepPageLabels);
 		}
 
-		private void RemoveUnwantedContentInternal(HtmlDom dom, Book.Book book, bool removeInactiveLanguages, EpubMaker epubMaker, ISet<string> warningMessages)
+		private void RemoveUnwantedContentInternal(HtmlDom dom, Book.Book book, bool removeInactiveLanguages, EpubMaker epubMaker, ISet<string> warningMessages, bool keepPageLabels = false)
 		{
 			// The ControlForInvoke can be null for tests.  If it's not null, we better not need an Invoke!
 			Debug.Assert(ControlForInvoke==null || !ControlForInvoke.InvokeRequired); // should be called on UI thread.
@@ -108,7 +108,7 @@ namespace Bloom.Publish
 			{
 				if (!book.IsTemplateBook)
 				{
-					if (HasClass(elt, "pageLabel"))
+					if (!keepPageLabels && HasClass(elt, "pageLabel"))
 						elt.ParentNode.RemoveChild(elt);
 
 					if (HasClass(elt, "pageDescription"))
@@ -270,15 +270,6 @@ namespace Bloom.Publish
 				RemoveTempIds(page); // don't need temporary IDs any more.
 				toBeDeleted.Clear();
 			}
-		}
-
-		public static bool IsActivityPage(XmlElement pageElement)
-		{
-			var classes = pageElement.GetAttribute("class");
-			// I'd say it's impossible for this to be empty or null, but...
-			Debug.Assert(!string.IsNullOrEmpty(classes), "How did we get a page with no classes!?");
-			// The class is for 4.6, the attribute is for later versions.
-			return classes.Contains("bloom-interactive-page") || pageElement.HasAttribute("data-activity");
 		}
 
 		public static void RemoveEnterpriseFeaturesIfNeeded(Book.Book book, List<XmlElement> pageElts, ISet<string> warningMessages)
