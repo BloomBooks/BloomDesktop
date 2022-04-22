@@ -65,6 +65,7 @@ storiesOf("Format dialog", module)
                 <FontSelectComponent
                     fontMetadata={fontTestData}
                     currentFontName={suitableFont.name}
+                    languageNumber={0}
                 />
             </Frame>
         ));
@@ -75,6 +76,7 @@ storiesOf("Format dialog", module)
                 <FontSelectComponent
                     fontMetadata={fontTestData}
                     currentFontName={unknownFont.name}
+                    languageNumber={1}
                 />
             </Frame>
         ));
@@ -85,6 +87,7 @@ storiesOf("Format dialog", module)
                 <FontSelectComponent
                     fontMetadata={fontTestData}
                     currentFontName={unsuitableFont.name}
+                    languageNumber={2}
                 />
             </Frame>
         ));

@@ -46,7 +46,7 @@ const SingleFontSection: React.FunctionComponent<{
                 {defaultFontMessage}
             </Typography>
             <FontSelectComponent
-                key={props.languageNumber}
+                languageNumber={props.languageNumber}
                 fontMetadata={props.fontMetadata}
                 currentFontName={props.currentFontName}
                 onChangeFont={fontChangeHandler}

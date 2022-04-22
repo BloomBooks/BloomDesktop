@@ -30,7 +30,9 @@ export interface IFontMetaData {
 interface FontSelectProps {
     fontMetadata?: IFontMetaData[];
     currentFontName: string;
-    key?: number; // only needed if there are multiple font selects in a location (like CollectionSettings)
+    // As we move toward a single browser for Bloom, the chance that multiple font selects
+    // will be in the DOM at a time increases. So we'll just require a number to use as a key.
+    languageNumber: number;
     onChangeFont?: (fontname: string) => void;
 }
 
@@ -104,9 +106,7 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
         }
     };
 
-    const finalKey = props.key
-        ? `font-select${props.key.toString()}`
-        : "font-select-unknownKey";
+    const finalKey = `font-${props.languageNumber.toString()}`;
 
     const transformOrigin: PopoverOrigin = {
         vertical: "top",
