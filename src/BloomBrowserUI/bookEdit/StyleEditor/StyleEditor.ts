@@ -1081,6 +1081,7 @@ export default class StyleEditor {
                                 React.createElement(FontSelectComponent, {
                                     fontMetadata: fontMetadata,
                                     currentFontName: current.fontName,
+                                    languageNumber: 0,
                                     onChangeFont: name => this.changeFont(name)
                                 }),
                                 document.getElementById("fontSelectComponent")
@@ -1199,8 +1200,10 @@ export default class StyleEditor {
     // Since both the font list popover and the FontInformationPane use the same root class, and since
     // both are well outside the dialog in the DOM, we can search the DOM for this class to determine
     // if either popover is active.
+    // We have to look for a class that starts with 'MuiPopover-root' because MUI tends to add random
+    // suffixes to the class names.
     private popoverIsUp(): boolean {
-        return $("body").find(".MuiPopover-root").length > 0;
+        return $("body").find("[class*='MuiPopover-root']").length > 0;
     }
 
     public closeDialog(event: JQueryEventObject, toolbar: JQuery) {

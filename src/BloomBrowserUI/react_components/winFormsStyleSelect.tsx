@@ -75,13 +75,13 @@ const WinFormsStyleSelect: React.FunctionComponent<FormsSelectProps> = props => 
                 `}
             >
                 <Select
-                    id={`font-select${finalKey}`}
+                    id={`select-${finalKey}`}
                     MenuProps={selectMenuProps}
                     onChange={props.onChangeHandler}
                     value={props.currentValue}
                     variant="outlined"
                     css={css`
-                        #font-select${finalKey} {
+                        #select-${finalKey} {
                             display: flex;
                             flex: 1;
                             flex-direction: row;
