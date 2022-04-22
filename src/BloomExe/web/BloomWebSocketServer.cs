@@ -152,25 +152,35 @@ namespace Bloom.Api
 					{
 						try
 						{
-							if (socket == null || !socket.IsAvailable)
-							{
-								// As of mid-April 2022, we were getting lots of failures to send which we assume were because we were
-								// not checking socket.IsAvailable previously. For now, we are going to leave this toast in place
-								// in the hopes that future Sentry reports (enhanced with this information) will lead us discover something we
-								// can improve.
-								var subProtocolDetail = socket?.ConnectionInfo?.SubProtocol == null ? "subprotocol is null" : $"subprotocol: { socket.ConnectionInfo.SubProtocol}";
-								var connectionInfoDetail = socket?.ConnectionInfo == null ? "socket.ConnectionInfo is null" : subProtocolDetail;
-								var socketDetail = socket == null ? "socket is null; " : $"socket is not available, {connectionInfoDetail}; ";
-								NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "web socket is not available when trying to send",
-									$"{socketDetail} bundle clientContext: {clientContext}, eventId: {eventId}, eventBundle: {eventBundle}");
-							}
-							else
+							if (socket != null && socket.IsAvailable)
 							{
 								// If this fails, it is likely to result in a TaskScheduler.UnobservedTaskException event
 								// and will not get caught in the catch clause below. But it does get picked up
 								// by Sentry's handler and reported. Now that we are checking for IsAvailable above,
 								// we don't expect that to happen anymore. See BL-11124.
 								socket.Send(eventObject.ToString());
+							}
+							else if (ApplicationUpdateSupport.IsDev)
+							{
+								// In mid-April 2022, we realized that we were not checking for IsAvailable and were getting
+								// lots of Sentry errors on the original call: `socket?.Send(eventObject.ToString());`.
+								// So we started only calling `Send` if `socket.IsAvailable` but also started sending
+								// Sentry errors with more info, hoping to discern why we are getting into that state so much.
+								// We did get over 200 reports for "web socket is not available when trying to send"
+								// but the info did not give us any more understanding. So we decided to stop sending the Sentry
+								// reports. For now, we'll bother devs if they get into this situation. But it may soon
+								// be evident that we don't want to even do that. See BL-11124.
+								// Note that while we don't have an explanation of why/how this happens at all for nulls or
+								// so often for !IsAvailable, we are hopeful that users aren't actually losing important events.
+								// Likely, the socket we want to send on is truly irrelevant by the time we get into this situation.
+								// It is important to note that we are trying to send on all open sockets. So hopefully the one we
+								// actually care about is being sent on successfully.
+								var subProtocolDetail = socket?.ConnectionInfo?.SubProtocol == null ? "subprotocol is null" : $"subprotocol: { socket.ConnectionInfo.SubProtocol}";
+								var connectionInfoDetail = socket?.ConnectionInfo == null ? "socket.ConnectionInfo is null" : subProtocolDetail;
+								var socketDetail = socket == null ? "web socket is null; " : $"web socket is not available, {connectionInfoDetail}; ";
+								NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Alpha, "web socket is not available when trying to send",
+									$"{socketDetail} bundle clientContext: {clientContext}, eventId: {eventId}, eventBundle: {eventBundle}",
+									skipSentryReport: true);
 							}
 						}
 						catch (Exception error)
