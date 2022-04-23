@@ -78,36 +78,43 @@ namespace Bloom.web
 			string url;
 			if (s_liveUrlCache.TryGetValue(urlType, out url))
 				return url;
-			if (acceptFinalUrl == null)
+			if (!Program.RunningUnitTests)
 			{
-				// If it really is necessary, you can remove this message. It's just designed to make someone think
-				// if adding a call that might slow things down and send the query twice. If that happens, consider
-				// adding some locking to make sure the actual server query only gets sent once.
-				Debug.Fail("If at all possible, you should provide an appropriate acceptFinalUrl param when looking up a url during startup.");
-				// We need the true value now. Get it.
-				if (TryGetUrlDataFromServer() && s_liveUrlCache.TryGetValue(urlType, out url))
+				// (If we're running unit tests, we can go with the default URLs.
+				// Otherwise, try to get the real ones, now or later.)
+				if (acceptFinalUrl == null)
 				{
-					return url;
-				}
-				Logger.WriteEvent("Unable to look up URL type " + urlType);
-			}
-			else
-			{
-				// We can live with a fallback value for now, but get the real one in the background,
-				// and then deliver it.
-				var backgroundWorker = new BackgroundWorker();
-				backgroundWorker.DoWork += (sender, args) =>
-				{
+					// If it really is necessary, you can remove this message. It's just designed to make someone think
+					// if adding a call that might slow things down and send the query twice. If that happens, consider
+					// adding some locking to make sure the actual server query only gets sent once.
+					Debug.Fail(
+						"If at all possible, you should provide an appropriate acceptFinalUrl param when looking up a url during startup.");
+					// We need the true value now. Get it.
 					if (TryGetUrlDataFromServer() && s_liveUrlCache.TryGetValue(urlType, out url))
 					{
-						acceptFinalUrl(url);
+						return url;
 					}
-					else
+
+					Logger.WriteEvent("Unable to look up URL type " + urlType);
+				}
+				else
+				{
+					// We can live with a fallback value for now, but get the real one in the background,
+					// and then deliver it.
+					var backgroundWorker = new BackgroundWorker();
+					backgroundWorker.DoWork += (sender, args) =>
 					{
-						Logger.WriteEvent("Unable to look up URL type " + urlType);
-					}
-				};
-				backgroundWorker.RunWorkerAsync();
+						if (TryGetUrlDataFromServer() && s_liveUrlCache.TryGetValue(urlType, out url))
+						{
+							acceptFinalUrl(url);
+						}
+						else
+						{
+							Logger.WriteEvent("Unable to look up URL type " + urlType);
+						}
+					};
+					backgroundWorker.RunWorkerAsync();
+				}
 			}
 
 			var fallbackUrl = LookupFallbackUrl(urlType);
