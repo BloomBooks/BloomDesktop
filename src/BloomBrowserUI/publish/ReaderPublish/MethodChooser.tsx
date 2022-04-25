@@ -13,7 +13,7 @@ import Typography from "@material-ui/core/Typography";
 import { LocalizedString } from "../../react_components/l10nComponents";
 import { default as InfoIcon } from "@material-ui/icons/InfoOutlined";
 import HtmlHelpLink from "../../react_components/htmlHelpLink";
-import { kMutedTextGray } from "../../bloomMaterialUiTheme";
+import { kMutedTextGray } from "../../bloomMaterialUITheme";
 
 const wifiImage = require("./publish-via-wifi.svg");
 const usbImage = require("./publish-via-usb.svg");
