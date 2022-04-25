@@ -1007,10 +1007,6 @@ namespace Bloom.Publish
 			_model.DebugCurrentPDFLayout();
 		}
 
-		private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
-		{
-
-		}
 		private void _openPDF_Click(object sender, EventArgs e)
 		{
 			PathUtilities.OpenFileInApplication(_model.PdfFilePath);

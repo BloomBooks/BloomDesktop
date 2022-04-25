@@ -201,9 +201,11 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.Size = new System.Drawing.Size(114, 677);
+			this.tableLayoutPanel1.Size = new System.Drawing.Size(150, 677);
+			// This line stops horizontal scrolling when vertical scrolling starts.
+			// https://stackoverflow.com/questions/2197452/how-to-disable-horizontal-scrollbar-for-table-panel-in-winforms
+			this.tableLayoutPanel1.Padding = new System.Windows.Forms.Padding(0, 0, System.Windows.Forms.SystemInformation.VerticalScrollBarWidth + 4, 0);
 			this.tableLayoutPanel1.TabIndex = 10;
-			this.tableLayoutPanel1.Paint += new System.Windows.Forms.PaintEventHandler(this.tableLayoutPanel1_Paint);
 			// 
 			// _contextMenuStrip
 			// 
