@@ -389,7 +389,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         "teamCollection/attemptLockOfCurrentBook",
                         response => {
                             // Not much to do. Change of state is handled by websocket notifications.
-                            // We want to keep it that way, so we don't have to worry about here about
+                            // We want to keep it that way, so we don't have to worry here about
                             // whether the checkout attempt succeeded or not.
                             setBusy(false);
                         },

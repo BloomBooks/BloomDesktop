@@ -319,7 +319,6 @@ namespace Bloom.TeamCollection
 			if (connectionProblem != null)
 			{
 				MakeDisconnected(connectionProblem, CurrentCollection.RepoDescription);
-				RaiseTeamCollectionStatusChanged(); // make the TC icon update
 				return false;
 			}
 
@@ -333,6 +332,7 @@ namespace Bloom.TeamCollection
 			CurrentCollectionEvenIfDisconnected = new DisconnectedTeamCollection(this, _localCollectionFolder, repoDescription);
 			CurrentCollectionEvenIfDisconnected.SocketServer = SocketServer;
 			CurrentCollectionEvenIfDisconnected.TCManager = this;
+			// Every call to MessageLog.WriteMessage() also raises the TeamCollectionStatusChanged event.
 			CurrentCollectionEvenIfDisconnected.MessageLog.WriteMessage(message);
 			CurrentCollectionEvenIfDisconnected.MessageLog.WriteMessage(MessageAndMilestoneType.Error, "TeamCollection.OperatingDisconnected", "When you have resolved this problem, please click \"Reload Collection\". Until then, your Team Collection will operate in \"Disconnected\" mode.",
 				null, null);

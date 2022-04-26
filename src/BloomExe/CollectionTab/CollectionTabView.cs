@@ -276,10 +276,16 @@ namespace Bloom.CollectionTab
 
 		/// <summary>
 		/// Set a new TC status image. Called at Idle time or startup, on the UI thread.
+		/// N.B.: It also gets called if the user tries to do something and the TeamCollection suddenly
+		/// recognizes it is in a disconnected state.
 		/// </summary>
 		public void SetTeamCollectionStatus(TeamCollectionManager tcManager)
 		{
 			_tcStatusButton.Update(tcManager.CollectionStatus);
+			// This will cause the CollectionsTabBookPane to reload the status of the book
+			// (and the collection itself), which will trickle down to the status panel.
+			if (tcManager.CollectionStatus == TeamCollectionStatus.Disconnected)
+				_webSocketServer.SendEvent("bookStatus", "reload");
 		}
 
 		private void _tcStatusButton_Click(object sender, EventArgs e)
