@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Diagnostics;
@@ -217,6 +217,7 @@ namespace Bloom.MiscUI
 			{
 				_pauseTimer.Interval = 1000 * seconds;
 			}
+			TopMost = true;
 			Show();
 		}
 
