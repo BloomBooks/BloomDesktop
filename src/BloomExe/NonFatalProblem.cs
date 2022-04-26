@@ -227,9 +227,7 @@ namespace Bloom
 		{
 			// The form is used for the screen shot as well as for synchronizing, so get the shell if possible.
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-8348.
-			var formForSynchronizing = Application.OpenForms.Cast<Form>().Where(x => x is Bloom.Shell).FirstOrDefault();
-			if (formForSynchronizing == null)
-				formForSynchronizing = Application.OpenForms.Cast<Form>().LastOrDefault();
+			var formForSynchronizing = Shell.GetShellOrOtherOpenForm();
 			if (formForSynchronizing == null)
 				return; // can't safely show a toast, may be on wrong thread.
 
