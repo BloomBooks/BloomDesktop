@@ -568,9 +568,7 @@ namespace Bloom.Publish.BloomLibrary
 				dlg.Width = 770;
 				dlg.Height = 570;
 				dlg.ControlBox = false;
-				// Without this line, especially when debugging, the dialog can end up hidden by Bloom!
-				dlg.TopMost = true;
-				dlg.ShowDialog();
+				dlg.ShowDialog(Shell.GetShellOrOtherOpenForm());
 			}
 		}
 
