@@ -21,6 +21,14 @@ namespace Bloom
 {
 	public partial class Shell : SIL.Windows.Forms.Miscellaneous.FormForUsingPortableClipboard
 	{
+		public static Form GetShellOrOtherOpenForm()
+		{
+			var form = Application.OpenForms.Cast<Form>().Where(x => x is Shell).FirstOrDefault();
+			if (form == null)
+				form = Application.OpenForms.Cast<Form>().LastOrDefault();
+			return form;
+		}
+
 		private readonly CollectionSettings _collectionSettings;
 		private readonly CollectionClosing _collectionClosingEvent;
 		private readonly ControlKeyEvent _controlKeyEvent;

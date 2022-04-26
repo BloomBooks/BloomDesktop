@@ -217,8 +217,7 @@ namespace Bloom.MiscUI
 			{
 				_pauseTimer.Interval = 1000 * seconds;
 			}
-			TopMost = true;
-			Show();
+			Show(Shell.GetShellOrOtherOpenForm());
 		}
 
 		public void UpdateMessage(string newMessage)
