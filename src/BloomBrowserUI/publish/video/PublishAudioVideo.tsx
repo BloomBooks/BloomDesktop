@@ -585,6 +585,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                         <HelpLink
                             l10nKey="PublishTab.RecordVideo.OverviewHelpLink"
                             helpId="Tasks/Publish_tasks/Create_audio_or_video_of_book.htm"
+                            temporarilyDisableI18nWarning={true}
                         >
                             Publishing Audio or Video Books
                         </HelpLink>

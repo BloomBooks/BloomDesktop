@@ -4177,6 +4177,10 @@
         <source xml:lang="en">Mp3 Audio</source>
         <note>ID: PublishTab.RecordVideo.Mp3</note>
       </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.OverviewHelpLink">
+        <source xml:lang="en">Publishing Audio or Video Books</source>
+        <note>ID: PublishTab.RecordVideo.OverviewHelpLink</note>
+      </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.Play">
         <source xml:lang="en">Play Recording</source>
         <note>ID: PublishTab.RecordVideo.Play</note>
