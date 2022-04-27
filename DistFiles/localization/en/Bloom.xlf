@@ -4161,6 +4161,14 @@
         <source xml:lang="en">Feature Phone</source>
         <note>ID: PublishTab.RecordVideo.FeaturePhone</note>
       </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.FinalizingAudio">
+        <source xml:lang="en">Finalizing audio</source>
+        <note>ID: PublishTab.RecordVideo.FinalizingAudio</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.FinishingInitialVideoRecording">
+        <source xml:lang="en">Finishing initial video recording</source>
+        <note>ID: PublishTab.RecordVideo.FinishingInitialVideoRecording</note>
+      </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.Format">
         <source xml:lang="en">Format</source>
         <note>ID: PublishTab.RecordVideo.Format</note>
@@ -4171,7 +4179,11 @@
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.MakeRecording">
         <source xml:lang="en">Make Recording</source>
-        <note>ID: PublishTab.RecordVideo.Mp3</note>
+        <note>ID: PublishTab.RecordVideo.MakeRecording</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.MergingAudioVideo">
+        <source xml:lang="en">Merging audio and video</source>
+        <note>ID: PublishTab.RecordVideo.MergingAudioVideo</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.Mp3">
         <source xml:lang="en">Mp3 Audio</source>
@@ -4184,6 +4196,10 @@
       <trans-unit id="PublishTab.RecordVideo.Play">
         <source xml:lang="en">Play Recording</source>
         <note>ID: PublishTab.RecordVideo.Play</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.ProcessingAudio">
+        <source xml:lang="en">Processing audio</source>
+        <note>ID: PublishTab.RecordVideo.ProcessingAudio</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.Record">
         <source xml:lang="en">Record</source>
