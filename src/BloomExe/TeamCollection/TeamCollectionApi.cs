@@ -294,17 +294,17 @@ namespace Bloom.TeamCollection
 			bool problem = false;
 			// bookFolderName may be null when no book is selected, e.g., after deleting one.
 			var status = bookFolderName == null ? null :_tcManager.CurrentCollection?.GetStatus(bookFolderName);
-				// At this level, we know this is the path to the .bloom file in the repo
-				// (though if we implement another backend, we'll have to generalize the notion somehow).
-				// For the Javascript, it's just an argument to pass to
-				// CommonMessages.GetPleaseClickHereForHelpMessage(). It's only used if hasInvalidRepoData is non-empty.
-				string clickHereArg = "";
-				var folderTC = _tcManager.CurrentCollection as FolderTeamCollection;
-				if (folderTC != null && bookFolderName != null)
-				{
-					clickHereArg = UrlPathString.CreateFromUnencodedString(folderTC.GetPathToBookFileInRepo(bookFolderName))
-						.UrlEncoded;
-				}
+			// At this level, we know this is the path to the .bloom file in the repo
+			// (though if we implement another backend, we'll have to generalize the notion somehow).
+			// For the Javascript, it's just an argument to pass to
+			// CommonMessages.GetPleaseClickHereForHelpMessage(). It's only used if hasInvalidRepoData is non-empty.
+			string clickHereArg = "";
+			var folderTC = _tcManager.CurrentCollection as FolderTeamCollection;
+			if (folderTC != null && bookFolderName != null)
+			{
+				clickHereArg = UrlPathString.CreateFromUnencodedString(folderTC.GetPathToBookFileInRepo(bookFolderName))
+					.UrlEncoded;
+			}
 
 			string hasInvalidRepoData = (status?.hasInvalidRepoData ?? false) ?
 					(folderTC)?.GetCouldNotOpenCorruptZipMessage()
@@ -344,9 +344,23 @@ namespace Bloom.TeamCollection
 				// it for the two bits of information actually needed by the status panel when disconnected.
 				whenLocked = _tcManager.CurrentCollection?.WhenWasBookLocked(bookFolderName) ??
 				             DateTime.MaxValue;
-				newLocalBook = whoHasBookLocked == TeamCollection.FakeUserIndicatingNewBook;
-				if (newLocalBook)
-					whoHasBookLocked = CurrentUser;
+				if (whoHasBookLocked == TeamCollection.FakeUserIndicatingNewBook)
+				{
+					// This situation comes about from two different scenarios:
+					// 1) The user is creating a new book and TeamCollection status doesn't matter
+					// 2) The user is trying to check out an existing book and TeamCollectionManager
+					//    discovers [through CheckConnection()] that it is suddenly in a disconnected
+					//    state.
+					// In both cases, the current selected book is in view. The only way to tell these two
+					// situations apart is that in (1) book.IsSaveable is true and in (2) it is not.
+					if (book.IsSaveable)
+					{
+						whoHasBookLocked = CurrentUser;
+						newLocalBook = true;
+					} else {
+						whoHasBookLocked = null;
+					}
+				}
 				problem = _tcManager.CurrentCollection?.HasLocalChangesThatMustBeClobbered(bookFolderName) ?? false;
 			}
 			catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
