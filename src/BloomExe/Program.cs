@@ -892,22 +892,24 @@ namespace Bloom
 		{
 			var path = Settings.Default.MruProjects.Latest;
 
-			// Catch case where the last collection was so long that windows gave us a 8.3 version which will eventuall
-			// fail. Just fail right now, don't bother to have a conversation with the user about it.
-			// This might be impossible in real life, I'm not sure. Part of BL-10012.
-			if (path.EndsWith(".BLO"))
-			{				
-				Settings.Default.MruProjects.RemovePath(path);
-				path = null;
-			}
-
 			if (!string.IsNullOrEmpty(path))
 			{
-				while (Utils.MiscUtils.IsInvalidCollectionToEdit(path))
+				// Catch case where the last collection was so long that windows gave us a 8.3 version which will eventually
+				// fail. Just fail right now, don't bother to have a conversation with the user about it.
+				// This might be impossible in real life, I'm not sure. Part of BL-10012.
+				if (path.EndsWith(".BLO"))
 				{
-					// Somehow...from a previous version?...we have an invalid file in our MRU list.
 					Settings.Default.MruProjects.RemovePath(path);
-					path = Settings.Default.MruProjects.Latest;
+					path = null;
+				}
+				else
+				{
+					while (Utils.MiscUtils.IsInvalidCollectionToEdit(path))
+					{
+						// Somehow...from a previous version?...we have an invalid file in our MRU list.
+						Settings.Default.MruProjects.RemovePath(path);
+						path = Settings.Default.MruProjects.Latest;
+					}
 				}
 			}
 
