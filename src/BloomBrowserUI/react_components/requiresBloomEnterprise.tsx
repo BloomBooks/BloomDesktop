@@ -385,11 +385,10 @@ export const RequiresBloomEnterpriseDialog: React.FunctionComponent<{
         propsForBloomDialog
     } = useSetupBloomDialog(props.dialogEnvironment);
     showRequiresBloomEnterpriseDialog = showDialog;
-    const kBlockSeparation = "30px";
 
     const dialogTitle = useL10n(
         "Bloom Enterprise Feature",
-        "PublishTab.BulkBloomPub.BloomEnterpriseFeature"
+        "Common.BloomEnterpriseFeature"
     );
 
     return (
