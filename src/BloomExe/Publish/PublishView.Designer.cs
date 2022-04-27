@@ -20,13 +20,11 @@ namespace Bloom.Publish
 				return;
 			disposed = true;
             if (disposing)
-            {
-				if (components != null)
-	                components.Dispose();
-	            if (_publishApi != null)
-	            {
-		            _publishApi.Stop();
-	            }
+            {				
+	            components?.Dispose();
+	            
+		        _publishApi?.Dispose();
+	            
 				if (_htmlControl != null)
 				{
 					_htmlControl.Dispose();
