@@ -351,13 +351,16 @@ namespace Bloom.TeamCollection
 					// 2) The user is trying to check out an existing book and TeamCollectionManager
 					//    discovers [through CheckConnection()] that it is suddenly in a disconnected
 					//    state.
-					// In both cases, the current selected book is in view. The only way to tell these two
-					// situations apart is that in (1) book.IsSaveable is true and in (2) it is not.
+					// In both cases, the current selected book is in view. The only way to tell
+					// these two situations apart is that in (1) book.IsSaveable is true
+					// and in (2) it is not.
 					if (book.IsSaveable)
 					{
 						whoHasBookLocked = CurrentUser;
 						newLocalBook = true;
-					} else {
+					}
+					else
+					{
 						whoHasBookLocked = null;
 					}
 				}
@@ -402,7 +405,7 @@ namespace Bloom.TeamCollection
 					request.Failed("not registered");
 					return;
 				}
-				request.ReplyWithJson(GetBookStatusJson(BookFolderName, request.CurrentBook));
+				request.ReplyWithJson(GetBookStatusJson(BookFolderName, _bookSelection.CurrentSelection));
 			}
 			catch (Exception e)
 			{
