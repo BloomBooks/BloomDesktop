@@ -195,23 +195,34 @@ namespace Bloom.Collection
 				if (bool.TryParse(s, out b))
 					return b;
 			}
-			// Compute value since it wasn't stored.
-			if (!LookupIsoCode.AreLanguagesLoaded)
+			try
 			{
-				if (!SIL.WritingSystems.Sldr.IsInitialized)
-					SIL.WritingSystems.Sldr.Initialize(true);	// needed for tests
-				LookupIsoCode.IncludeScriptMarkers = false;
-				// The previous line should have loaded the LanguageLookup object: if something changes so that
-				// it doesn't, ensure that happens anyway.
+				// Compute value since it wasn't stored.
 				if (!LookupIsoCode.AreLanguagesLoaded)
-					LookupIsoCode.LoadLanguages();
-			}
-			if (String.IsNullOrWhiteSpace(Iso639Code))
-				return false;	// undefined (probably language3)
+				{
+					if (!SIL.WritingSystems.Sldr.IsInitialized)
+						SIL.WritingSystems.Sldr.Initialize(true);	// needed for tests
+					LookupIsoCode.IncludeScriptMarkers = false;
+					// The previous line should have loaded the LanguageLookup object: if something changes so that
+					// it doesn't, ensure that happens anyway.
+					if (!LookupIsoCode.AreLanguagesLoaded)
+						LookupIsoCode.LoadLanguages();
+				}
+				if (String.IsNullOrWhiteSpace(Iso639Code))
+					return false;	// undefined (probably language3)
 
-			var language = LookupIsoCode.LanguageLookup.GetLanguageFromCode(Iso639Code);
-			// (If the lookup didn't find a language, treat the name as custom.)
-			return Name != language?.Names?.FirstOrDefault();
+				var language = LookupIsoCode.LanguageLookup.GetLanguageFromCode(Iso639Code);
+				// (If the lookup didn't find a language, treat the name as custom.)
+				return Name != language?.Names?.FirstOrDefault();
+			}
+			// This is a pretty rare case: the collection needs to NOT have an isCustom value for one
+			// of its languages AND the user must have somehow denied himself access to the
+			// langtags.json file in the SldrCache. Let's assume they're not using a custom name.
+			// At least we stopped Bloom from crashing.
+			catch (UnauthorizedAccessException)
+			{
+				return false;
+			}
 		}
 
 		private bool ReadBoolean(XElement xml, string id, bool defaultValue)
