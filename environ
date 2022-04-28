@@ -1,4 +1,5 @@
 # Environment settings for running programs with the SIL version of mono
+# (or with the system mono: set MONO_PREFIX to /usr.
 # Set MONO_ENVIRON to this file's pathname, then run, for example,
 #    /opt/mono5-sil/bin/mono --debug Bloom.exe
 # These setting assume that the packaged SIL Mono is installed in /opt/mono5-sil.
@@ -14,7 +15,6 @@ BASE="$(pwd)"
 # Also determine the location of the geckofx assemblies and shared object libraries.
 . ./environ-xulrunner
 
-#GDK_SHARP=/usr/lib/cli/gdk-sharp-2.0
 GDK_SHARP=/usr/lib/cli/glib-sharp-3.0/:/usr/lib/cli/gtk-sharp-3.0/:/usr/lib/cli/gdk-sharp-3.0/:/usr/lib/cli/atk-sharp-3.0/:/usr/lib/cli/gio-sharp-3.0/
 
 MONO_PATH="${GDK_SHARP}:${GECKOFX}"
@@ -58,10 +58,10 @@ fi
 if [ "$RUNMODE" = "PACKAGE" -o "$RUNMODE" = "INSTALLED" ]
 then
 	# Add packaged mono items to paths
-	PATH="/opt/mono5-sil/bin:${PATH}"
-	LD_LIBRARY_PATH="/opt/mono5-sil/lib:${LD_LIBRARY_PATH}"
-	PKG_CONFIG_PATH="/opt/mono5-sil/lib/pkgconfig:${PKG_CONFIG_PATH}"
-	MONO_GAC_PREFIX="/opt/mono5-sil:/usr"
+	PATH="${MONO_PREFIX}/bin:${PATH}"
+	LD_LIBRARY_PATH="${MONO_PREFIX}/lib:${LD_LIBRARY_PATH}"
+	PKG_CONFIG_PATH="${MONO_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}"
+	MONO_GAC_PREFIX="${MONO_PREFIX}:/usr"
 else
 	# Add locally-built mono items to paths
 	# We also add the default values for PKG_CONFIG_PATH - MonoDevelop resets the PKG_CONFIG_PATH
