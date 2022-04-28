@@ -4,12 +4,10 @@ using System.Drawing;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Windows;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
-using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Publish.Android.file;
 using SIL.Windows.Forms.Miscellaneous;
@@ -23,8 +21,6 @@ using BloomTemp;
 using DesktopAnalytics;
 using SIL.IO;
 using Newtonsoft.Json;
-using System.Windows.Forms;
-using Application = System.Windows.Forms.Application;
 
 namespace Bloom.Publish.Android
 {
@@ -191,7 +187,7 @@ namespace Bloom.Publish.Android
 				}
 			}, true);
 
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "usb/start", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "usb/start", request =>
 			{
 #if !__MonoCS__
 
@@ -202,10 +198,10 @@ namespace Bloom.Publish.Android
 				request.PostSucceeded();
 			}, true);
 
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "usb/stop", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "usb/stop", request =>
 			{
 #if !__MonoCS__
-				_usbPublisher.Stop();
+				_usbPublisher.Stop(disposing: false);
 				SetState("stopped");
 #endif
 				request.PostSucceeded();
@@ -247,12 +243,6 @@ namespace Bloom.Publish.Android
 
 				_bulkBloomPubCreator.PublishAllBooks(_collectionSettings.BulkPublishBloomPubSettings);
 				SetState("stopped");
-				request.PostSucceeded();
-			}, true);
-
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "cleanup", request =>
-			{
-				Stop();
 				request.PostSucceeded();
 			}, true);
 
@@ -513,10 +503,10 @@ namespace Bloom.Publish.Android
 			UpdatePreview(request, false);
 		}
 
-		public void Stop()
+		public void Dispose()
 		{
 #if !__MonoCS__
-			_usbPublisher.Stop();
+			_usbPublisher.Stop(disposing: true);
 #endif
 			_wifiPublisher.Stop();
 			SetState("stopped");
