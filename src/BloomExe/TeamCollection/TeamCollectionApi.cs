@@ -346,18 +346,23 @@ namespace Bloom.TeamCollection
 				             DateTime.MaxValue;
 				if (whoHasBookLocked == TeamCollection.FakeUserIndicatingNewBook)
 				{
-					// This situation comes about from two different scenarios:
+					// This situation comes about from three different scenarios:
 					// 1) The user is creating a new book and TeamCollection status doesn't matter
 					// 2) The user is trying to check out an existing book and TeamCollectionManager
 					//    discovers [through CheckConnection()] that it is suddenly in a disconnected
 					//    state.
-					// In both cases, the current selected book is in view. The only way to tell these two
-					// situations apart is that in (1) book.IsSaveable is true and in (2) it is not.
-					if (book.IsSaveable)
+					// 3) Testing, where 'book' will be null
+					// In the first two cases, the current selected book is in view. The only way to tell
+					// these two situations apart is that in (1) book.IsSaveable is true and in
+					// (2) it is not.
+					// First, take care of the test situation.
+					if (book == null || book.IsSaveable)
 					{
 						whoHasBookLocked = CurrentUser;
 						newLocalBook = true;
-					} else {
+					}
+					else
+					{
 						whoHasBookLocked = null;
 					}
 				}
