@@ -1,13 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.AccessControl;
 using System.Security.Principal;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Bloom;
 using Bloom.Api;
 using Bloom.Book;
@@ -280,7 +276,14 @@ namespace BloomTests.TeamCollection
 			{
 				SIL.Windows.Forms.Registration.Registration.Default.Email = "me@example.com";
 
-				var apiBuilder = new TeamCollectionApiBuilder().WithDefaultMocks(true);
+				var mockBook = new Mock<Bloom.Book.Book>();
+				mockBook.Setup(m => m.IsSaveable).Returns(true);
+				mockBook.Setup(m => m.FolderPath).Returns("");
+				var mockBookSelection = new Mock<BookSelection>();
+				mockBookSelection.Setup(m => m.CurrentSelection).Returns(mockBook.Object);
+
+				var apiBuilder = new TeamCollectionApiBuilder().WithDefaultMocks(true).
+					WithBookSelection(mockBookSelection.Object);
 				var api = apiBuilder.Build();
 				api.RegisterWithApiHandler(_server.ApiHandler);
 

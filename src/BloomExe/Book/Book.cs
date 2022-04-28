@@ -754,7 +754,8 @@ namespace Bloom.Book
 		/// True if changes to the book may currently be saved. This includes the book being checked out
 		/// if it is in a team collection, and by intent should include any future requirements.
 		/// </summary>
-		public bool IsSaveable => IsEditable && BookInfo.IsSaveable;
+		/// <remarks>Making this virtual allows tests to mock it.</remarks>
+		public virtual bool IsSaveable => IsEditable && BookInfo.IsSaveable;
 
 
 		/// <summary>
