@@ -307,15 +307,6 @@ function SetBookCopyrightAndLicenseButtonVisibility(container) {
         .css("display", shouldShowButton ? "inline" : "none");
 }
 
-function DecodeHtml(encodedString) {
-    return encodedString
-        .replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/&#39;/g, "'")
-        .replace(/&#169;/g, "©");
-}
-
 function GetEditor() {
     return new StyleEditor("/bloom/bookEdit");
 }
