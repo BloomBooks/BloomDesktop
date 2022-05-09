@@ -150,18 +150,36 @@ export default class BloomField {
                 );
             }
 
-            const paras = event.data.dataValue.match(/<p>/g);
+            let paras = event.data.dataValue.match(/<p>/g);
             if (!paras) {
-                // Enhance: should we remove the probable <span> and just leave the text?
-                // But it might be carrying some important style info.
-                return;
+                // BL-9961 If we're inserting plain text from Notepad, we will arrive here because
+                // 'dataValue' doesn't have paragraphs, but we actually want them.
+                // Finding where the original string with its paragraphs was passed inside the
+                // dataTransfer object was a bit tricky.
+                const textWithReturns: string =
+                    event.data.dataTransfer._.data.Text;
+                if (!textWithReturns.includes("\n")) {
+                    // Enhance: should we remove the probable <span> and just leave the text?
+                    // But it might be carrying some important style info.
+                    return;
+                }
+                // Split the text on carriage returns and put it back together with each bit in a paragraph.
+                const reconstitutedTextWithParas = textWithReturns
+                    .split("\n")
+                    .reduce(
+                        (resultSoFar, part) =>
+                            resultSoFar + "<p>" + part + "</p>",
+                        ""
+                    );
+                // Reset dataValue
+                event.data.dataValue = reconstitutedTextWithParas;
             }
             // OK, we are going to unwrap the first <p> and just leave its content.
             // This prevents a typically unwanted extra line break being inserted before the
             // start of the material copied. Without the <p> wrapper, that material just
             // gets inserted into the current paragraph.
             let endMkr = "";
-            if (paras.length === 1) {
+            if (paras?.length === 1) {
                 // Unwrapping the one and only <p> will leave no break between what used to be that
                 // paragraph and the following text, which should now start a new paragraph.
                 // We insert an empty paragraph to force a break, but that will leave an unwanted
