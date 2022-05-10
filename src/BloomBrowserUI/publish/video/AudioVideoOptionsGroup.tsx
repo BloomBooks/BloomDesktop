@@ -54,13 +54,6 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
     motion: boolean;
     onMotionChange: (arg: boolean) => void;
 }> = props => {
-    // When using props.format directly, it was possible to make VideoFormat render in an inconsistent state.
-    // (It rendered Icon as final value, but Label as intermediate value -> inconsistent rendering!)
-    // Making our own version of format using useState, rather than using props.format directly, makes this go away somehow.
-    // (Maybe because we're making it more explicit to React that the state is being updated and it needs to re-render stuff,
-    // but I don't fully understand why it wasn't working before)
-    const [format, setFormat] = useState(props.format);
-
     // Stores which formats should be non-selectable.
     const [disabledFormats, setDisabledFormats] = useState<string[]>([]);
     const [motionEnabled] = BloomApi.useApiBoolean(
@@ -95,7 +88,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
         BloomApi.get("publish/av/tooBigForScreenMsg", c => {
             setTooBigMsg(c.data);
         });
-    }, [format]);
+    }, [props.format]);
     const [pageLabels, setPageLabels] = useState([]);
     useSubscribeToWebSocketForObject("publishPageLabels", "ready", data =>
         setPageLabels((data as any).labels)
@@ -186,7 +179,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
 
     useEffect(() => {
         // Ensure selection is not disabled
-        if (disabledFormats.includes(format)) {
+        if (disabledFormats.includes(props.format)) {
             const firstNonDisabledFormat = formatItems
                 .map(x => x.format)
                 .find(f => !disabledFormats.includes(f));
@@ -196,10 +189,9 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                 return;
             }
 
-            setFormat(firstNonDisabledFormat);
             props.onFormatChanged(firstNonDisabledFormat);
         }
-    }, [format, disabledFormats]);
+    }, [props.format, disabledFormats]);
 
     return (
         <SettingsGroup label={useL10n("Options", "Common.Options")}>
@@ -243,7 +235,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                             }
                                         }
                                     `}
-                                    value={format}
+                                    value={props.format}
                                     open={formatDropdownIsOpen}
                                     onOpen={() => {
                                         setFormatPopupAnchor(null);
@@ -255,7 +247,6 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                     onChange={e => {
                                         const newFormat = e.target
                                             .value as string;
-                                        setFormat(newFormat);
                                         props.onFormatChanged(newFormat);
                                     }}
                                     style={{ width: 160 }}
@@ -300,7 +291,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                          * Pages with background music but no narration are a trickier case. We think usually it won't be valuable to linger on them, but there could be some exceptions.
                          * For now, we're keeping it simple and immediately flipping those pages too.
                          */}
-                        {format !== "mp3" && (
+                        {props.format !== "mp3" && (
                             <div
                                 css={css`
                                     // The label can extend well beyond the end of the slider, so we need some extra space.
@@ -444,6 +435,7 @@ const VideoFormatItem: React.FunctionComponent<IProps> = props => {
                     css={css`
                         margin-left: 8px;
                     `}
+                    key={props.l10nKey} // prevents stale labels (BL-11179)
                 >
                     {props.label}
                 </Div>
