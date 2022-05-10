@@ -2,9 +2,10 @@
  * Bloom signals it by deleting a flag file, or after 60 seconds, or when Bloom
  * dies prematurely.
  * ----------------------------------------------------------------------------
- * Copyright (c) 2017 SIL International
+ * Copyright (c) 2017-2022 SIL International
  * This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
  */
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -34,7 +35,10 @@ static gchar ** GetArgvForBloom(int, char **);
 static gchar ** GetEnvpForBloom(void);
 static int CreateFlagFile(void);
 static void BloomDiedEarly(GPid pid, gint status, gpointer user_data);
-
+static gboolean ShouldUseSystemMono();
+ 
+/* global variable set early on */
+static gboolean useSystemMono = false;
 
 /******************************************************************************
  * NAME
@@ -76,6 +80,8 @@ int main(int argc, char *argv[])
 		unlink(flagFile);
 		return 1;
 	}
+
+	useSystemMono = ShouldUseSystemMono();
 
 	/* start the real Bloom program */
 	gchar ** argvBloom = GetArgvForBloom(argc, argv);
@@ -154,8 +160,11 @@ static gchar ** GetArgvForBloom(int argcOrig, char ** argvOrig)
 	gchar ** argvNew = g_new(gchar *, argcOrig + 2);	// 1 new arg + terminating NULL
 
 	// On Linux, mono is the program that is running: Bloom.exe is just data for the program
-	// Bloom uses the debugged version of Mono 5.16.0.1 packaged by SIL/LSDev.
-	argvNew[0] = g_strdup("/opt/mono5-sil/bin/mono");
+	// Bloom uses the debugged version of Mono 5.16.0.1 packaged by SIL/LSDev on older versions
+	// of Linux.  From Ubuntu 22.04 on (or in flatpak packages), Bloom must use the standard
+	// system mono.
+
+	argvNew[0] = g_strdup(useSystemMono ? "/usr/bin/mono" : "/opt/mono5-sil/bin/mono");
 	// Sacrifice line numbers in stack dumps for speed -- often don't see them anyway.
 	// If we do reinstate the "--debug", then the "+ 2" and "1 new" above need to be
 	// incremented, and the "[1]", "[i+1]", and "[argcOrig+1]" below need to be incremented.
@@ -239,20 +248,15 @@ static gchar ** GetEnvpForBloom()
 		libpath = g_strconcat(programDirectory, "/Firefox:", libpathOld, NULL);
 	envp = g_environ_setenv(envp, "LD_LIBRARY_PATH", libpath, true);
 
-	//printf("programDirectory=%s\n", programDirectory);
-	//printf("XULRUNNER=%s\n", xulpath);
-	//printf("LD_LIBRARY_PATH=%s\n", libpath);
-	//printf("LD_PRELOAD=%s\n", preload);
-
 	/* also set MONO_PREFIX, other MONO related values, and PATH */
-	envp = g_environ_setenv(envp, "MONO_PREFIX", g_strdup("/opt/mono5-sil"), true);
+	envp = g_environ_setenv(envp, "MONO_PREFIX", g_strdup(useSystemMono ? "/usr" : "/opt/mono5-sil"), true);
 	envp = g_environ_setenv(envp, "MONO_RUNTIME", g_strdup("v4.0.30319"), true);
 	envp = g_environ_setenv(envp, "MONO_DEBUG", g_strdup("explicit-null-checks"), true);
 	envp = g_environ_setenv(envp, "MONO_ENV_OPTIONS", g_strdup("-O=-gshared"), true);
 	envp = g_environ_setenv(envp, "MONO_TRACE_LISTENER", g_strdup("Console.Out"), true);
 	envp = g_environ_setenv(envp, "MONO_MWF_SCALING", g_strdup("disable"), true);
 	envp = g_environ_setenv(envp, "MONO_PATH", g_strconcat(programDirectory, ":/usr/lib/cli/gdk-sharp-2.0", NULL), true);
-	envp = g_environ_setenv(envp, "MONO_GAC_PREFIX", g_strdup("/opt/mono5-sil:/usr"), true);
+	envp = g_environ_setenv(envp, "MONO_GAC_PREFIX", g_strdup(useSystemMono ? "/usr" : "/opt/mono5-sil:/usr"), true);
 
 	const char * pathOld = g_environ_getenv(envp, "PATH");
 	const char * path;
@@ -296,4 +300,18 @@ static int CreateFlagFile()
 static void BloomDiedEarly(GPid pid, gint status, gpointer user_data)
 {
 	gtk_main_quit();
+}
+
+
+/******************************************************************************
+ * NAME
+ *    ShouldUseSystemMono
+ * DESCRIPTION
+ *    Check whether or not the system mono should be used instead our mono5-sil.
+ * RETURN VALUE
+ *    true if the system mono should be used
+ */
+static gboolean ShouldUseSystemMono()
+{
+	return access("/opt/mono5-sil/bin/mono", F_OK) != 0;
 }
