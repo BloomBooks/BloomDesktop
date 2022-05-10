@@ -269,7 +269,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         setPlayState(true);
     }
 
-    private pausePlaying() {
+    public pausePlaying() {
         this.pausePlayer();
         this.setState({ playing: false });
     }
@@ -424,7 +424,7 @@ export class MusicToolAdaptor extends ToolboxToolReactAdaptor {
     }
     public hideTool() {
         if (this.controlsElement) {
-            this.controlsElement.pausePlayer();
+            this.controlsElement.pausePlaying();
         }
     }
     public newPageReady() {
