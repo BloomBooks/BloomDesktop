@@ -233,32 +233,37 @@ namespace Bloom.Collection
 				if (_bookInfos == null)
 				{
 					_watcherIsDisabled = true;
-					_bookInfos = new List<Book.BookInfo>();
-					var bookFolders = ProjectContext.SafeGetDirectories(_path).Select(dir => new DirectoryInfo(dir))
-						.ToArray();
-
-					//var orderedBookFolders = bookFolders.OrderBy(f => f.Name);
-					var orderedBookFolders = bookFolders.OrderBy(f => f.Name, new NaturalSortComparer<string>());
-					foreach (var folder in orderedBookFolders)
+					try
 					{
-						if (Path.GetFileName(folder.FullName).StartsWith(".")) //as in ".hg"
-							continue;
-						// Don't want things in the templates/xmatter folder
-						// (even SIL-Cameroon-Mothballed, which no longer has xmatter in its filename)
-						// so filter on the whole path.
-						if (folder.FullName.ToLowerInvariant().Contains("xmatter"))
-							continue;
-						// Note: this used to be .bloom-ignore. We believe that is no longer used.
-						// It was changed because files starting with dot are normally invisible,
-						// which could make it hard to see why a book is skipped, and also because
-						// we were having trouble finding a way to get a file called .bloom-ignore
-						// included in the filesThatMightBeNeededInOutput list in gulpfile.js.
-						if (RobustFile.Exists(Path.Combine(folder.FullName, "BloomIgnore.txt")))
-							continue;
-						AddBookInfo(folder.FullName);
-					}
+						_bookInfos = new List<Book.BookInfo>();
+						var bookFolders = ProjectContext.SafeGetDirectories(_path).Select(dir => new DirectoryInfo(dir))
+							.ToArray();
 
-					_watcherIsDisabled = false;
+						//var orderedBookFolders = bookFolders.OrderBy(f => f.Name);
+						var orderedBookFolders = bookFolders.OrderBy(f => f.Name, new NaturalSortComparer<string>());
+						foreach (var folder in orderedBookFolders)
+						{
+							if (Path.GetFileName(folder.FullName).StartsWith(".")) //as in ".hg"
+								continue;
+							// Don't want things in the templates/xmatter folder
+							// (even SIL-Cameroon-Mothballed, which no longer has xmatter in its filename)
+							// so filter on the whole path.
+							if (folder.FullName.ToLowerInvariant().Contains("xmatter"))
+								continue;
+							// Note: this used to be .bloom-ignore. We believe that is no longer used.
+							// It was changed because files starting with dot are normally invisible,
+							// which could make it hard to see why a book is skipped, and also because
+							// we were having trouble finding a way to get a file called .bloom-ignore
+							// included in the filesThatMightBeNeededInOutput list in gulpfile.js.
+							if (RobustFile.Exists(Path.Combine(folder.FullName, "BloomIgnore.txt")))
+								continue;
+							AddBookInfo(folder.FullName);
+						}
+					}
+					finally
+					{
+						_watcherIsDisabled = false;
+					}
 				}
 
 				return _bookInfos;
