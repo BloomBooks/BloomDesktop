@@ -509,7 +509,6 @@ namespace Bloom.Publish.Android
 			_usbPublisher.Stop(disposing: true);
 #endif
 			_wifiPublisher.Stop();
-			SetState("stopped");
 			_stagingFolder?.Dispose();
 		}
 
